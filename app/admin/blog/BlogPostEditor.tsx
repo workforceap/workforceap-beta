@@ -326,7 +326,7 @@ export default function BlogPostEditor({
                     fontSize: '0.8125rem',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
-                    color: 'var(--color-accent)',
+                    color: 'var(--wa-accent-text)',
                     fontWeight: 600,
                   }}
                 >
@@ -443,7 +443,7 @@ export default function BlogPostEditor({
                 {generateLoading ? 'Generating…' : 'Generate Draft →'}
               </button>
               {generateToast && (
-                <span style={{ marginLeft: '1rem', fontSize: '0.9rem', color: 'var(--color-accent)' }}>
+                <span style={{ marginLeft: '1rem', fontSize: '0.9rem', color: 'var(--wa-accent-text)' }}>
                   {generateToast}
                 </span>
               )}
@@ -625,7 +625,7 @@ export default function BlogPostEditor({
             rel="noopener noreferrer"
             style={{
               padding: '0.5rem 1.25rem',
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               textDecoration: 'none',
               alignSelf: 'center',
             }}

@@ -338,7 +338,7 @@ async function renderLegacy({
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
               <div>
-                <Link href={`/admin/jobs/${job.id}`} style={{ fontWeight: 700, color: 'var(--color-accent)', textDecoration: 'none' }}>
+                <Link href={`/admin/jobs/${job.id}`} style={{ fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none' }}>
                   {job.title}
                 </Link>
                 <p style={{ margin: '0.35rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
@@ -404,7 +404,7 @@ async function renderLegacy({
           ) : (
             <>
               No jobs in this view ({currentFilter}).{' '}
-              <Link href="/admin/jobs?filter=all" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+              <Link href="/admin/jobs?filter=all" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
                 Show all ({totalJobsInDb})
               </Link>
             </>

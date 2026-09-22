@@ -53,7 +53,7 @@ const kitBtnSolid: CSSProperties = {
   minHeight: 44,
   padding: '10px 16px',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   border: '1px solid var(--wa-accent)',
   fontWeight: 600,
   fontSize: 'var(--wa-type-body)',
@@ -722,7 +722,7 @@ export default function InterviewCoach({
             background: 'var(--wa-accent)',
             borderRadius: 'var(--wa-radius)',
             padding: 20,
-            color: 'var(--wa-on-accent)',
+            color: 'var(--wa-on-accent-control)',
             marginBottom: 16,
             textAlign: 'center',
           }}

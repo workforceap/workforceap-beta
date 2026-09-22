@@ -45,7 +45,7 @@ export default function MemberSessionCard({ actorName, startedAt, toolCount }: M
           aria-hidden
           style={{
             background: 'rgba(173,44,77,0.14)',
-            color: 'var(--color-accent)',
+            color: 'var(--wa-accent-text)',
             width: '2.5rem',
             height: '2.5rem',
             borderRadius: '999px',

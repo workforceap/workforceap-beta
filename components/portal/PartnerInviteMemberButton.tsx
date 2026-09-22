@@ -138,7 +138,7 @@ export default function PartnerInviteMemberButton({ compact = false }: Props) {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--wa-accent-text)' }}>
                   Partner Invite
                 </p>
                 <h2 id={titleId} style={{ margin: '0.35rem 0 0.3rem', fontSize: '1.2rem', color: 'var(--color-on-surface)' }}>

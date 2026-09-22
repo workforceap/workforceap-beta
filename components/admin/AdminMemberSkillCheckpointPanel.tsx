@@ -96,7 +96,7 @@ function StarStoryToggle({ starStory }: { starStory: string }) {
           padding: 0,
           cursor: 'pointer',
           fontSize: '0.8125rem',
-          color: 'var(--color-accent)',
+          color: 'var(--wa-accent-text)',
           fontWeight: 600,
         }}
       >
@@ -406,7 +406,7 @@ export default function AdminMemberSkillCheckpointPanel({
             style={{
               fontSize: '1.25rem',
               fontWeight: 800,
-              color: summary.careerReadinessPct >= 80 ? 'var(--wa-success-dark)' : summary.careerReadinessPct >= 40 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+              color: summary.careerReadinessPct >= 80 ? 'var(--wa-success-dark)' : summary.careerReadinessPct >= 40 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
             }}
           >
             {summary.careerReadinessPct}% of missions passed

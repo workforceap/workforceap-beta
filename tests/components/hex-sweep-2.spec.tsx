@@ -360,3 +360,143 @@ describe('the text tokens this sweep introduced clear WCAG AA in both themes', (
     }
   });
 });
+
+/**
+ * Mobile / dark scout 2026-09-22, M1 + M4 + M13 + M14 — text on and in the accent.
+ *
+ * Two different fills are in play and they must not be confused:
+ *  - `--wa-accent` follows light-dark() (#ad2c4d → #e0658a). Its foreground is
+ *    `--wa-on-accent-control` (white → #2a0d16). The rail, the count badges, the
+ *    staff bottom-nav tab and the solid `--wa-accent` controls read it (M1, M13, M14).
+ *  - `--color-accent` does NOT follow dark mode: css/main.css's `:root` literal
+ *    and the default org's `--org-accent` (prisma/seed.ts → OrgBrandingStyle) both
+ *    hold it at #ad2c4d, so white on it is 6.47:1 in either mode and stays white.
+ *    What failed was `--color-accent` as TEXT on dark surfaces (2.78:1); those
+ *    consumers now read `--wa-accent-text` (#8c0f37 → #f39ab5) (M4).
+ * The token maps below model both realities: the default org (`--org-accent`
+ * #ad2c4d on :root) and an org with no accent, where whichever `:root` the
+ * bundler emits last decides between main.css's literal and the portal bridge.
+ */
+describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M13 / M14)', () => {
+  const brand = readCss('css/wa-brand-tokens.css');
+  const portalTokens = readCss('css/portal-tokens.css');
+  const mainCss = readCss('css/main.css');
+  const rail = readCss('css/portal-main-extracted.css');
+  /** main.css `:root` emitted last (the cascade the inspector measured live). */
+  const mainLast = loadRootTokens(brand, portalTokens, mainCss);
+  /** portal bridge emitted last: `--color-accent: var(--wa-accent)`. */
+  const bridgeLast = loadRootTokens(brand, mainCss, portalTokens);
+  /** default org: OrgBrandingStyle sets `--org-accent` / `--color-accent` #ad2c4d on :root. */
+  const defaultOrg = new Map(mainLast).set('--org-accent', '#ad2c4d').set('--color-accent', 'var(--org-accent)');
+  const cascades: Array<[string, Map<string, string>]> = [['default org', defaultOrg], ['no org accent, main.css last', mainLast], ['no org accent, bridge last', bridgeLast]];
+  const SHELL = ':is(html[data-portal-role], .workspace-shell-root[data-workspace-role])';
+
+  /** `prop: value` pairs of the first rule whose selector list is exactly `selector`, `!important` dropped. */
+  function declsOf(css: string, selector: string): Record<string, string> {
+    const src = css.replace(/\/\*[\s\S]*?\*\//g, '');
+    const start = src.indexOf(`${selector} {`);
+    if (start < 0) throw new Error(`rule not found: ${selector}`);
+    const body = src.slice(start + selector.length + 2, src.indexOf('}', start));
+    const out: Record<string, string> = {};
+    for (const m of body.matchAll(/([\w-]+)\s*:\s*([^;]+);/g)) out[m[1]] = m[2].replace(/\s*!important/, '').trim();
+    return out;
+  }
+  const ratio = (fg: string, bg: string, tokens: Map<string, string>, scheme: 'light' | 'dark') =>
+    contrast(colorOf(fg, tokens, scheme), colorOf(bg, tokens, scheme));
+
+  it('the pairs this fix relies on: --wa-on-accent-control on --wa-accent, --wa-accent-text on the surfaces', () => {
+    for (const scheme of ['light', 'dark'] as const) {
+      expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent)', mainLast, scheme), `${scheme} control text`).toBeGreaterThanOrEqual(4.5);
+      for (const surface of ['var(--wa-surface)', 'var(--wa-bg)', 'var(--wa-surface-2)', 'var(--wa-accent-soft)']) {
+        const bg = over(colorOf(surface, mainLast, scheme), colorOf('var(--wa-surface)', mainLast, scheme));
+        expect(contrast(colorOf('var(--wa-accent-text)', mainLast, scheme), bg), `${scheme} accent text on ${surface}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+    // the dark literal surfaces the scout measured against (#1e1417 card, #0c0e10 lowest)
+    expect(ratio('var(--wa-accent-text)', '#0c0e10', mainLast, 'dark')).toBeGreaterThanOrEqual(4.5);
+    // and the text this replaces really did fail there in dark
+    expect(ratio('var(--color-accent)', 'var(--wa-surface)', defaultOrg, 'dark')).toBeLessThan(4.5);
+  });
+
+  it.each(['light', 'dark'] as const)('%s: the active rail row, its icon, both count badges and the bottom-nav tab read on --wa-accent (M1, M13)', async (scheme) => {
+    const { default: WorkspaceSidebarSections } = await import('@/components/portal/WorkspaceSidebarSections');
+    const items = [
+      { href: '/partner', label: 'Overview', group: 'primary' as const, exact: true, badgeKey: 'jobs_pending' as const },
+      { href: '/partner/milestones', label: 'Milestones', group: 'primary' as const, badgeKey: 'jobs_live' as const },
+    ];
+    const { container } = render(
+      <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_live: 3 }}
+        translateLabel={(s) => s} childToggleLabel={() => 'toggle'} onNavigate={() => {}} storageKey={`m13-${scheme}`} forceExpanded />,
+    );
+    const active = container.querySelector<HTMLAnchorElement>('a.workspace-sidebar-link.active')!;
+    expect(active.textContent).toContain('Milestones');
+    expect(active.querySelector('.workspace-nav-badge')?.textContent).toBe('3');
+    expect(container.querySelector('a.workspace-sidebar-link:not(.active) .workspace-nav-badge')?.textContent).toBe('2');
+
+    const row = declsOf(rail, `${SHELL} .workspace-sidebar-link.active`);
+    expect(row.background).toContain('--wa-accent');
+    const icon = declsOf(rail, `${SHELL} .workspace-sidebar-link.active .workspace-sidebar-icon,\n${SHELL} .workspace-sidebar-link.active svg`);
+    const badge = declsOf(rail, `${SHELL} .workspace-nav-badge`);
+    const activeBadge = declsOf(rail, `${SHELL} .workspace-sidebar-link.active .workspace-nav-badge`);
+    const tab = declsOf(rail, '.workspace-shell-root[data-workspace-role] .marketing-bottom-nav__link--active');
+    for (const [name, tokens] of cascades) {
+      expect(ratio(row.color, row.background, tokens, scheme), `${scheme} ${name} active row label`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(icon.color, row.background, tokens, scheme), `${scheme} ${name} active row icon`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(badge.color, badge.background, tokens, scheme), `${scheme} ${name} count badge`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(activeBadge.color, activeBadge.background, tokens, scheme), `${scheme} ${name} badge on the active row`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(activeBadge.background, row.background, tokens, scheme), `${scheme} ${name} badge pill against the row`).toBeGreaterThanOrEqual(3);
+      expect(ratio(tab.color, tab.background, tokens, scheme), `${scheme} ${name} bottom-nav active tab`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it.each(['light', 'dark'] as const)('%s: admin links painted as accent text read on the dark surfaces (M4)', async (scheme) => {
+    vi.stubGlobal('fetch', vi.fn(async () => json({}, 500)));
+    const { default: MfaStatusBanner } = await import('@/components/admin/MfaStatusBanner');
+    const { default: PartnersTableClient } = await import('@/components/admin/PartnersTableClient');
+    render(<MfaStatusBanner />);
+    const mfa = await screen.findByText('Set up now →');
+    const partner = { id: 'p1', name: 'Partner p1', slug: 'p1', contactName: null, contactEmail: null, contactPhone: null, active: false, status: 'pending_approval', notes: null, logoUrl: null, brandColor: null, _count: { counselors: 1, referrals: 2 } };
+    render(<PartnersTableClient superAdmin partners={[partner]} subgroups={[]} />);
+    const review = screen.getByText('Review →') as HTMLElement;
+    for (const link of [mfa, review]) {
+      expect(link.style.color).toBe('var(--wa-accent-text)');
+      for (const [name, tokens] of cascades) {
+        for (const surface of ['var(--wa-surface)', 'var(--wa-bg)']) {
+          expect(ratio(link.style.color, surface, tokens, scheme), `${scheme} ${name} ${link.textContent} on ${surface}`).toBeGreaterThanOrEqual(4.5);
+        }
+        if (scheme === 'dark') expect(ratio(link.style.color, '#0c0e10', tokens, scheme), `${name} ${link.textContent} on #0c0e10`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it.each(['light', 'dark'] as const)('%s: white stays on the --color-accent fills (Delete account, .btn-primary) with the default org accent', async (scheme) => {
+    const { default: DeleteAccountButton } = await import('@/components/portal/DeleteAccountButton');
+    render(<DeleteAccountButton />);
+    const button = screen.getByRole('button', { name: /delete/i });
+    expect(button.style.background).toBe('var(--color-accent)');
+    expect(button.style.color).toBe('white');
+    const white = '#ffffff'; // jsdom keeps the keyword; the helper resolves hex
+    const btnPrimary = declsOf(mainCss, '.btn-primary,\na.btn-primary,\nbutton.btn-primary');
+    expect(btnPrimary.background).toBe('var(--color-accent)');
+    for (const [name, tokens] of [cascades[0], cascades[1]]) {
+      expect(ratio(white, button.style.background, tokens, scheme), `${scheme} ${name} Delete account`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(btnPrimary.color, btnPrimary.background, tokens, scheme), `${scheme} ${name} .btn-primary`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it.each(['light', 'dark'] as const)('%s: a solid --wa-accent chip reads through --wa-on-accent-control (M14)', async (scheme) => {
+    vi.stubGlobal('fetch', vi.fn(async () => json({ milestones: [{ id: 'm1', kind: 'placement', label: 'Placed', memberId: 'u1', memberName: 'Ada', at: '2026-09-01T00:00:00Z' }] })));
+    const { default: PartnerMilestonesMobile } = await import('@/components/partner/PartnerMilestonesMobile');
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={messages}><PartnerMilestonesMobile /></NextIntlClientProvider>,
+    );
+    await screen.findByText('Pending Review');
+    const chips = Array.from(container.querySelectorAll<HTMLElement>('[style]')).filter((el) => el.style.background === 'var(--wa-accent)');
+    expect(chips.length).toBeGreaterThan(0);
+    for (const chip of chips) {
+      expect(chip.style.color).toBe('var(--wa-on-accent-control)');
+      expect(ratio(chip.style.color, chip.style.background, mainLast, scheme)).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent)', mainLast, scheme)).toBeGreaterThanOrEqual(4.5);
+  });
+});

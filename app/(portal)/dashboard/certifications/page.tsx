@@ -197,7 +197,7 @@ export default async function DashboardCertificationsPage({
             {
               icon: 'workspace_premium',
               label: `${certs.length} earned`,
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               bg: 'rgba(173,44,77,0.12)',
             },
             {
@@ -324,7 +324,7 @@ export default async function DashboardCertificationsPage({
             }}
           >
             <div style={{ display: 'flex', gap: '0.625rem', marginBottom: '0.75rem', alignItems: 'flex-start' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', flexShrink: 0 }} aria-hidden="true">help_center</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', flexShrink: 0 }} aria-hidden="true">help_center</span>
               <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0 }}>
                 Not sure which cert to go after?
               </p>
@@ -350,7 +350,7 @@ export default async function DashboardCertificationsPage({
                     textDecoration: 'none',
                   }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">workspace_premium</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--wa-accent-text)' }} aria-hidden="true">workspace_premium</span>
                   {label}
                 </a>
               ))}
@@ -364,7 +364,7 @@ export default async function DashboardCertificationsPage({
                 marginTop: '0.875rem',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                color: 'var(--color-accent)',
+                color: 'var(--wa-accent-text)',
                 textDecoration: 'none',
               }}
             >
@@ -409,7 +409,7 @@ export default async function DashboardCertificationsPage({
                 className="material-symbols-outlined"
                 style={{
                   fontSize: '2rem',
-                  color: 'var(--color-accent)',
+                  color: 'var(--wa-accent-text)',
                   background: 'rgba(173,44,77,0.12)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-3)',
@@ -520,7 +520,7 @@ export default async function DashboardCertificationsPage({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--color-accent)', flexShrink: 0, marginTop: '0.1rem' }} aria-hidden="true">help_center</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--wa-accent-text)', flexShrink: 0, marginTop: '0.1rem' }} aria-hidden="true">help_center</span>
               <div>
                 <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: '0 0 0.25rem' }}>
                   Not sure which cert to go after?
@@ -555,7 +555,7 @@ export default async function DashboardCertificationsPage({
                     textDecoration: 'none',
                   }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '0.9rem', color: 'var(--color-accent)' }} aria-hidden="true">workspace_premium</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '0.9rem', color: 'var(--wa-accent-text)' }} aria-hidden="true">workspace_premium</span>
                   {cert.label}
                 </a>
               ))}
@@ -599,7 +599,7 @@ export default async function DashboardCertificationsPage({
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
                 <span
                   className="material-symbols-outlined"
-                  style={{ fontSize: '1.5rem', color: 'var(--color-accent)', '--ms-fill': 1 }}
+                  style={{ fontSize: '1.5rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}
                 >
                   route
                 </span>
@@ -665,7 +665,7 @@ export default async function DashboardCertificationsPage({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', '--ms-fill': 1 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}>
                   download
                 </span>
                 <h3 style={{ fontSize: 'var(--font-size-h4)', fontWeight: 'var(--font-weight-medium)', margin: 0 }}>Certificate Record</h3>
@@ -710,7 +710,7 @@ export default async function DashboardCertificationsPage({
               ) : (
                 <PortalEmptyState
                   icon={
-                    <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
                       workspace_premium
                     </span>
                   }
@@ -771,7 +771,7 @@ export default async function DashboardCertificationsPage({
           {/* Certificate Roadmap section */}
           <section style={{ marginBottom: 'var(--space-12)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.5rem', color: 'var(--color-accent)', '--ms-fill': 1 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.5rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}>
                 timeline
               </span>
               <h2 className="portal-section-heading" style={{ margin: 0 }}>Certificate Roadmap</h2>

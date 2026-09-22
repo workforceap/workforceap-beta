@@ -82,7 +82,7 @@ export default function SubgroupForm({ users, partners, subgroup }: Props) {
   return (
     <form onSubmit={handleSubmit} noValidate style={{ maxWidth: '560px' }}>
       {error && (
-        <div id="subgroupform-error" role="alert" style={{ padding: '0.75rem', marginBottom: '1rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', borderRadius: '6px', color: 'var(--color-accent)' }}>
+        <div id="subgroupform-error" role="alert" style={{ padding: '0.75rem', marginBottom: '1rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', borderRadius: '6px', color: 'var(--wa-accent-text)' }}>
           {error}
         </div>
       )}

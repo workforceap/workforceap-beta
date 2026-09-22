@@ -1062,7 +1062,7 @@ export default function MembersTable({
                       aria-label={`Select ${m.fullName}`}
                     />
                   </label>
-                  <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 700, color: 'var(--color-accent)', wordBreak: 'break-word' }} onClick={(e) => e.stopPropagation()}>
+                  <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 700, color: 'var(--wa-accent-text)', wordBreak: 'break-word' }} onClick={(e) => e.stopPropagation()}>
                     {m.healthStatus && <HealthDot status={m.healthStatus} />}
                     {m.fullName}
                   </Link>

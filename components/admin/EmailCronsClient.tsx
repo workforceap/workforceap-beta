@@ -346,11 +346,11 @@ export default function EmailCronsClient({
         </div>
         <div className="portal-metric-card">
           <div className="portal-metric-card__icon-wrap" style={{ background: errorRuns > 0 ? 'rgba(173,44,77,0.1)' : 'rgba(74,155,79,0.1)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: errorRuns > 0 ? 'var(--color-accent)' : 'var(--wa-success-dark)', fontVariationSettings: "'FILL' 1" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: errorRuns > 0 ? 'var(--wa-accent-text)' : 'var(--wa-success-dark)', fontVariationSettings: "'FILL' 1" }}>
               {errorRuns > 0 ? 'error' : 'verified'}
             </span>
           </div>
-          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: errorRuns > 0 ? 'var(--color-accent)' : undefined }}>{errorRuns}</p>
+          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: errorRuns > 0 ? 'var(--wa-accent-text)' : undefined }}>{errorRuns}</p>
           <p className="portal-metric-card__label">Recent Errors</p>
         </div>
         <div className="portal-metric-card">
@@ -364,11 +364,11 @@ export default function EmailCronsClient({
         </div>
         <div className="portal-metric-card">
           <div className="portal-metric-card__icon-wrap" style={{ background: attentionCount > 0 ? 'rgba(173,44,77,0.1)' : 'rgba(74,155,79,0.1)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: attentionCount > 0 ? 'var(--color-accent)' : 'var(--wa-success-dark)', fontVariationSettings: "'FILL' 1" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: attentionCount > 0 ? 'var(--wa-accent-text)' : 'var(--wa-success-dark)', fontVariationSettings: "'FILL' 1" }}>
               {attentionCount > 0 ? 'notification_important' : 'verified'}
             </span>
           </div>
-          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: attentionCount > 0 ? 'var(--color-accent)' : undefined }}>{attentionCount}</p>
+          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: attentionCount > 0 ? 'var(--wa-accent-text)' : undefined }}>{attentionCount}</p>
           <p className="portal-metric-card__label">Need Attention</p>
         </div>
       </div>
@@ -384,7 +384,7 @@ export default function EmailCronsClient({
             borderRadius: '9999px',
             border: '1px solid var(--color-accent)',
             background: 'rgba(173,44,77,0.1)',
-            color: 'var(--color-accent)',
+            color: 'var(--wa-accent-text)',
             fontWeight: 700,
             fontSize: '0.8125rem',
             cursor: activatingAll ? 'default' : 'pointer',
@@ -404,7 +404,7 @@ export default function EmailCronsClient({
               borderRadius: '9999px',
               border: filterCategory === cat ? '1px solid var(--color-accent)' : '1px solid var(--outline-variant)',
               background: filterCategory === cat ? 'rgba(173,44,77,0.1)' : 'transparent',
-              color: filterCategory === cat ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+              color: filterCategory === cat ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
               fontWeight: 700,
               fontSize: '0.8125rem',
               cursor: 'pointer',
@@ -460,7 +460,7 @@ export default function EmailCronsClient({
                       {cron.category}
                     </span>
                     {!cron.enabled && (
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--wa-accent-text)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                         Disabled
                       </span>
                     )}
@@ -470,7 +470,7 @@ export default function EmailCronsClient({
                       </span>
                     )}
                     {(cron.lastRunStatus === 'error' || cron.lastRunStatus === 'errored') && (
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--wa-accent-text)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                         Failed last run
                       </span>
                     )}
@@ -589,7 +589,7 @@ export default function EmailCronsClient({
                       padding: '0.4rem 0.875rem', borderRadius: '0.5rem',
                       border: isPreviewOpen ? '1px solid var(--color-accent)' : '1px solid var(--outline-variant)',
                       background: isPreviewOpen ? 'rgba(173,44,77,0.08)' : 'var(--surface-container)',
-                      color: isPreviewOpen ? 'var(--color-accent)' : 'var(--color-on-surface)',
+                      color: isPreviewOpen ? 'var(--wa-accent-text)' : 'var(--color-on-surface)',
                       fontWeight: 700, fontSize: '0.8125rem',
                       cursor: isPreviewingThis ? 'default' : 'pointer',
                       opacity: isPreviewingThis ? 0.7 : 1, whiteSpace: 'nowrap',
@@ -617,10 +617,10 @@ export default function EmailCronsClient({
               {triggerResult && (
                 <div style={{ margin: '0 1.25rem', padding: '0.75rem 1rem', borderRadius: '0.625rem', background: triggerResult.ok ? 'rgba(74,155,79,0.08)' : 'rgba(173,44,77,0.08)', border: `1px solid ${triggerResult.ok ? 'rgba(74,155,79,0.2)' : 'rgba(173,44,77,0.2)'}`, marginBottom: '0.875rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: triggerResult.ok ? '0.375rem' : 0 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: triggerResult.ok ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: triggerResult.ok ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
                       {triggerResult.ok ? 'check_circle' : 'error'}
                     </span>
-                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: triggerResult.ok ? 'var(--wa-success-dark)' : 'var(--color-accent)' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: triggerResult.ok ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)' }}>
                       {triggerResult.ok ? 'Triggered successfully' : `Failed: ${triggerResult.error}`}
                     </span>
                   </div>
@@ -732,7 +732,7 @@ export default function EmailCronsClient({
               </p>
               {pendingTrigger.recipientCount !== null && (
                 <div style={{ padding: '0.75rem 1rem', background: 'var(--surface-container)', borderRadius: '0.625rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle', marginRight: '0.375rem', color: pendingTrigger.recipientCount === 0 ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle', marginRight: '0.375rem', color: pendingTrigger.recipientCount === 0 ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
                     {pendingTrigger.recipientCount === 0 ? 'check_circle' : 'group'}
                   </span>
                   {pendingTrigger.recipientCount === 0
@@ -760,14 +760,14 @@ export default function EmailCronsClient({
               <p style={{ margin: '0 0 0.875rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Simulated — no emails were sent.</p>
 
               {pendingDryRun.note && (
-                <div style={{ padding: '0.75rem 1rem', background: 'rgba(173,44,77,0.08)', borderRadius: '0.625rem', marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-accent)' }}>
+                <div style={{ padding: '0.75rem 1rem', background: 'rgba(173,44,77,0.08)', borderRadius: '0.625rem', marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--wa-accent-text)' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle', marginRight: '0.375rem', fontVariationSettings: "'FILL' 1" }}>error</span>
                   {pendingDryRun.note}
                 </div>
               )}
 
               <div style={{ padding: '0.75rem 1rem', background: 'var(--surface-container)', borderRadius: '0.625rem', marginBottom: '1.25rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle', marginRight: '0.375rem', color: pendingDryRun.recipientCount === 0 ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle', marginRight: '0.375rem', color: pendingDryRun.recipientCount === 0 ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
                   {pendingDryRun.recipientCount === 0 ? 'check_circle' : 'group'}
                 </span>
                 {pendingDryRun.recipientCount === 0

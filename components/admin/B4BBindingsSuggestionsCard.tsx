@@ -122,7 +122,7 @@ export default function B4BBindingsSuggestionsCard() {
             borderRadius: '0.6rem',
             border: '1px solid var(--color-accent)',
             background: loading ? 'var(--surface-container)' : 'var(--color-accent)',
-            color: loading ? 'var(--color-accent)' : 'var(--wa-on-accent-control)',
+            color: loading ? 'var(--wa-accent-text)' : 'var(--wa-on-accent-control)',
             fontWeight: 700,
             fontSize: '0.85rem',
             cursor: loading ? 'not-allowed' : 'pointer',

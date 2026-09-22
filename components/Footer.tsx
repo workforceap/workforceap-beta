@@ -25,7 +25,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
               style={{ maxWidth: '180px', height: 'auto', marginBottom: '1rem' }}
             />
           ) : (
-            <div style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '1.5rem' }}>
+            <div style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--wa-accent-text)', marginBottom: '1.5rem' }}>
               {t('workforceAdvancementProject')}
             </div>
           )}

@@ -87,7 +87,7 @@ export default function SeedCanonicalMappingsFromB4BButton() {
           borderRadius: '0.65rem',
           border: '1px solid var(--color-accent)',
           background: running ? 'var(--surface-container)' : 'var(--color-accent)',
-          color: running ? 'var(--color-accent)' : '#fff',
+          color: running ? 'var(--wa-accent-text)' : '#fff',
           fontWeight: 700,
           fontSize: '0.9rem',
           cursor: running ? 'not-allowed' : 'pointer',

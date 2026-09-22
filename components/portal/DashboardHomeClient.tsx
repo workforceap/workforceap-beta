@@ -315,7 +315,7 @@ export default function DashboardHomeClient({
               {programTitle}
             </span>
           ) : null}
-          <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 700 }}>
+          <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--wa-accent-text)', fontSize: '0.8125rem', fontWeight: 700 }}>
             {state === 'A' ? t('stateGettingStarted') : state === 'B' ? t('stateReadyForPreassessment') : state === 'C' ? t('myTrainingMetricLabel') : t('trainingComplete')}
           </span>
           {(state === 'C' || state === 'D') && (
@@ -345,7 +345,7 @@ export default function DashboardHomeClient({
               {noApplicationOnFile ? (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                    <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)' }}>description</span>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)' }}>description</span>
                     <h3 style={{ fontWeight: 700, fontSize: '0.875rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Program Application</h3>
                   </div>
                   <div className="portal-card portal-card--flat portal-card--padded-sm" style={{ marginBottom: '1rem' }}>
@@ -365,7 +365,7 @@ export default function DashboardHomeClient({
               ) : applicationStatus ? (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                    <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)' }}>task_alt</span>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)' }}>task_alt</span>
                     <h3 style={{ fontWeight: 700, fontSize: '0.875rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Application Status</h3>
                   </div>
                   {applicationStatus.progressIndex !== null && (
@@ -423,7 +423,7 @@ export default function DashboardHomeClient({
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {showPreassessmentScore && (
-                        <span style={{ padding: '0.25rem 0.625rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', fontSize: '0.8125rem', borderRadius: '9999px', fontWeight: 600 }}>
+                        <span style={{ padding: '0.25rem 0.625rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--wa-accent-text)', fontSize: '0.8125rem', borderRadius: '9999px', fontWeight: 600 }}>
                           Preassessment: {assessmentScorePct}%
                         </span>
                       )}
@@ -457,7 +457,7 @@ export default function DashboardHomeClient({
         </Link>
         <Link
           href="/dashboard/resources"
-          style={{ color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}
+          style={{ color: 'var(--wa-accent-text)', fontSize: '0.8125rem', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}
           onClick={() => handleDashboardAction('help_resources_clicked')}
         >
           Get Support
@@ -503,7 +503,7 @@ export default function DashboardHomeClient({
                   </p>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '-0.04em' }}>
+                  <span style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--wa-accent-text)', letterSpacing: '-0.04em' }}>
                     {progressPct}<span style={{ fontSize: '1.25rem' }}>%</span>
                   </span>
                   <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>Progress</span>
@@ -523,7 +523,7 @@ export default function DashboardHomeClient({
                   return (
                     <div key={`${i}-${label}`} className="portal-milestone-step" style={{
                       opacity: item.done ? 0.5 : isCurrent ? 1 : 0.35,
-                      color: isCurrent ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+                      color: isCurrent ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
                     }}>
                       {item.done ? (
                         <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', marginBottom: '0.5rem', '--ms-fill': 1 }}>check_circle</span>
@@ -549,7 +549,7 @@ export default function DashboardHomeClient({
           >
             <div className="portal-card__body">
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.5rem', flexShrink: 0, '--ms-fill': 1 } as object}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.5rem', flexShrink: 0, '--ms-fill': 1 } as object}>
                   school
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -584,7 +584,7 @@ export default function DashboardHomeClient({
           <section className="portal-card portal-card--flat" style={{ gridColumn: 'span 12' }}>
             <div className="portal-card__body">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)' }}>assignment</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)' }}>assignment</span>
               <h3 style={{ fontWeight: 700, fontSize: '0.875rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pre-screening (before your interview)</h3>
             </div>
             <MemberPreScreeningForm />
@@ -597,7 +597,7 @@ export default function DashboardHomeClient({
           <section className="portal-card portal-card--flat" style={{ gridColumn: 'span 12' }}>
             <div className="portal-card__body">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)' }}>videocam</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)' }}>videocam</span>
               <h3 style={{ fontWeight: 700, fontSize: '0.875rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Interview</h3>
             </div>
             {interviewRequestedAt ? (
@@ -629,7 +629,7 @@ export default function DashboardHomeClient({
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
             <div className="portal-card portal-card--flat" style={{ padding: '1rem 1.1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: dominantNextAction ? 'var(--color-on-surface-variant)' : 'var(--color-accent)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: dominantNextAction ? 'var(--color-on-surface-variant)' : 'var(--wa-accent-text)' }}>
                 {state === 'A' ? t('stateGettingStarted') : state === 'B' ? t('yourNextStep') : state === 'C' ? t('firstCertTrainingStage') : t('trainingComplete')}
               </p>
               <h4 style={{ fontWeight: 700, fontSize: '1rem', margin: '0.45rem 0 0.35rem', color: 'var(--color-on-surface)' }}>
@@ -697,7 +697,7 @@ export default function DashboardHomeClient({
                 <Link href="/dashboard/messages" className="btn btn-muted" onClick={() => handleDashboardAction('help_counselor_clicked')}>
                   Message counselor
                 </Link>
-                <Link href="/dashboard/resources" style={{ color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none', alignSelf: 'center' }} onClick={() => handleDashboardAction('help_resources_clicked')}>
+                <Link href="/dashboard/resources" style={{ color: 'var(--wa-accent-text)', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none', alignSelf: 'center' }} onClick={() => handleDashboardAction('help_resources_clicked')}>
                   Get support
                 </Link>
               </div>
@@ -717,7 +717,7 @@ export default function DashboardHomeClient({
                 <Link href="/dashboard/ai-tools/voice-interview" className="btn btn-muted" onClick={() => handleDashboardAction('ai_tools_clicked')}>
                   Open voice coach
                 </Link>
-                <Link href={primaryAction?.href ?? '/dashboard/ai-tools'} style={{ color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none', alignSelf: 'center' }} onClick={() => handleDashboardAction(primaryAction ? 'primary_recommended_action_clicked' : 'ai_tools_clicked')}>
+                <Link href={primaryAction?.href ?? '/dashboard/ai-tools'} style={{ color: 'var(--wa-accent-text)', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none', alignSelf: 'center' }} onClick={() => handleDashboardAction(primaryAction ? 'primary_recommended_action_clicked' : 'ai_tools_clicked')}>
                   {primaryAction ? 'Open recommended tool' : 'Open career tools'}
                 </Link>
               </div>
@@ -785,7 +785,7 @@ export default function DashboardHomeClient({
                   { done: checklist.startFirstCourse, label: 'Open your first course' },
                   { done: checklist.completeFirstCourse, label: 'Complete your first course' },
                 ]).map(({ done, label }) => (
-                  <li key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', fontSize: '0.875rem', color: done ? 'var(--color-on-surface-variant)' : 'var(--color-accent)' }}>
+                  <li key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', fontSize: '0.875rem', color: done ? 'var(--color-on-surface-variant)' : 'var(--wa-accent-text)' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: done ? 'var(--color-green)' : 'var(--surface-container-highest)', '--ms-fill': done ? 1 : 0 }}>
                       {done ? 'check_circle' : 'circle'}
                     </span>

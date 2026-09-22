@@ -220,12 +220,12 @@ export default function CourseraProvisioningQueueTable({
                   <StatusTag tone={badgeVariantToKitTone(STATE_VARIANT[row.state])}>{PROVISIONING_STATE_LABELS[row.state]}</StatusTag>
                 </span>
                 {row.approvalMismatch ? (
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>
                     Coursera activity without portal approval
                   </span>
                 ) : null}
                 {row.hasUnmatchedRows ? (
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>
                     {row.unmatchedCourseraRows} unlinked Coursera row{row.unmatchedCourseraRows === 1 ? '' : 's'}
                   </span>
                 ) : null}
@@ -287,7 +287,7 @@ export default function CourseraProvisioningQueueTable({
                     >
                       {fmtDate(row.lastSignInAt)}
                     </time>
-                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-accent)' }}>{t('lastSignIn')}</div>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>{t('lastSignIn')}</div>
                     {counts}
                   </div>
                 );

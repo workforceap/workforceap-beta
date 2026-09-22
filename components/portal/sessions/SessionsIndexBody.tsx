@@ -177,7 +177,7 @@ export default async function SessionsIndexBody({
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--color-on-surface-variant)', margin: 0 }}>
             Someone new sat down. Create their account, build their profile, and ship them resume + cover letter + interview prep in one session.
           </p>
-          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>
+          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>
             Start walk-in &rarr;
           </div>
         </Link>
@@ -196,7 +196,7 @@ export default async function SessionsIndexBody({
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--color-on-surface-variant)', margin: 0 }}>
             Pick someone from your roster. Update their profile, then run the same 4-step build &mdash; outputs save to their portal and email.
           </p>
-          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>
+          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>
             Pick a member &rarr;
           </div>
         </Link>

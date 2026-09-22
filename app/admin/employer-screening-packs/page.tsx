@@ -160,7 +160,7 @@ async function renderLegacy() {
       />
       <p style={{ maxWidth: 720, fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', marginBottom: '1rem' }}>
         Questions are stored as JSON. See{' '}
-        <Link href="/admin/career-mappings" style={{ fontWeight: 700, color: 'var(--color-accent)' }}>
+        <Link href="/admin/career-mappings" style={{ fontWeight: 700, color: 'var(--wa-accent-text)' }}>
           Career paths
         </Link>{' '}
         for O*NET mappings. One active pack per program is recommended — deactivate older rows when publishing a new version.

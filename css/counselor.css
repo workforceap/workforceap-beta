@@ -247,7 +247,7 @@
   margin-top: 1rem;
   background: none;
   border: none;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-size: 0.9rem;
   cursor: pointer;
   text-decoration: underline;
@@ -302,7 +302,7 @@
 .readiness-counselor-page { padding-top: 1.5rem; }
 .readiness-counselor-header { margin-bottom: 1.5rem; }
 .readiness-back-link {
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   margin-bottom: 0.5rem;
   display: inline-block;
 }
@@ -393,7 +393,7 @@
   color: var(--color-on-surface-variant);
   cursor: pointer;
 }
-.readiness-notes-btn:hover { color: var(--color-accent); }
+.readiness-notes-btn:hover { color: var(--wa-accent-text); }
 .readiness-notes-input {
   display: block;
   width: 100%;

@@ -428,7 +428,7 @@ export default async function AdminTodayPage({
           >
             <span
               className="material-symbols-outlined"
-              style={{ color: 'var(--color-accent)' }}
+              style={{ color: 'var(--wa-accent-text)' }}
               aria-hidden
             >
               event_available
@@ -442,7 +442,7 @@ export default async function AdminTodayPage({
             style={{
               fontSize: '0.8125rem',
               fontWeight: 600,
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
             }}
           >
             View sessions &rarr;

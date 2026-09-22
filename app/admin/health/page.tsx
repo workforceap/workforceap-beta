@@ -619,7 +619,7 @@ function LegacyHealthView({
           <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
             Active Alerts
             {alerts.length > 0 && (
-              <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>
+              <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>
                 ({alerts.length})
               </span>
             )}
@@ -679,7 +679,7 @@ export default function AdminHealthPage() {
         <PageHeader title="System Health" subtitle="Services & integrations" />
         <div
           data-portal-error-state="admin-health-load-failed"
-          style={{ padding: '2rem', color: 'var(--color-accent)' }}
+          style={{ padding: '2rem', color: 'var(--wa-accent-text)' }}
         >
           <p>Error loading health data: {error || 'No data'}</p>
           <button onClick={refetch} className="btn btn-primary btn-sm" style={{ marginTop: '1rem' }}>

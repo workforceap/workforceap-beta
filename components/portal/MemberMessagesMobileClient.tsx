@@ -314,7 +314,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
               className="wa-w-16 wa-h-16 wa-rounded-full wa-flex wa-items-center wa-justify-center"
               style={{ background: 'var(--surface-container-high)' }}
             >
-              <span className="material-symbols-outlined wa-text-2xl" style={{ color: 'var(--color-accent)' }}>
+              <span className="material-symbols-outlined wa-text-2xl" style={{ color: 'var(--wa-accent-text)' }}>
                 chat_bubble_outline
               </span>
             </div>

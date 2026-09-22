@@ -169,7 +169,7 @@ function MobileApplicationCard({
           aria-expanded={open}
           aria-controls={`mobile-status-panel-${application.id}`}
           className="wa-mt-3 wa-text-xs wa-font-medium hover:wa-underline focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[var(--color-accent)] focus-visible:wa-ring-offset-1 wa-rounded-sm"
-          style={{ color: "var(--color-accent)" }}
+          style={{ color: "var(--wa-accent-text)" }}
         >
           Update Status
         </button>

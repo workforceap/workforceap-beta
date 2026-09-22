@@ -95,7 +95,7 @@ export default async function ApplyProgramIntro({
         .apply-program-intro__summary-hint {
           font-size: var(--font-size-sm);
           font-weight: 600;
-          color: var(--color-accent);
+          color: var(--wa-accent-text);
         }
 
         .apply-program-intro__panel {

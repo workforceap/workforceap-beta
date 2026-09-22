@@ -193,7 +193,7 @@ export default function JobApplicationCard({
           <Link
             href={application.url}
             className="wa-font-medium hover:wa-underline"
-            style={{ color: "var(--color-accent)" }}
+            style={{ color: "var(--wa-accent-text)" }}
             onClick={(e) => e.stopPropagation()}
           >
             View job posting →
@@ -213,7 +213,7 @@ export default function JobApplicationCard({
       {application.nextInterviewDate && (
         <p
           className="wa-text-xs wa-font-medium wa-mb-2"
-          style={{ color: "var(--color-accent)" }}
+          style={{ color: "var(--wa-accent-text)" }}
         >
           Interview: {formatDate(application.nextInterviewDate)}
         </p>

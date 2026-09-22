@@ -102,7 +102,7 @@ export default function ResourcesClient({ resources }: { resources: Resource[] }
                         minHeight: 40,
                         padding: '0.5rem 1.125rem',
                         background: 'var(--wa-accent)',
-                        color: 'var(--wa-on-accent)',
+                        color: 'var(--wa-on-accent-control)',
                         borderRadius: 999,
                         fontSize: '0.875rem',
                         fontWeight: 700,

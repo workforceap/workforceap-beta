@@ -72,7 +72,7 @@ function pillButton({
   } as const;
   const style =
     variant === 'accent'
-      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)' }
+      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }
       : { ...base, background: 'var(--wa-surface)', color: 'var(--wa-text)', borderColor: 'var(--wa-border)' };
   return (
     <button type="button" className="wa-kit-focus" disabled={disabled} onClick={onClick} style={style}>
@@ -104,7 +104,7 @@ function pillLink({
   } as const;
   const style =
     variant === 'accent'
-      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)' }
+      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }
       : { ...base, background: 'var(--wa-surface)', color: 'var(--wa-text)', borderColor: 'var(--wa-border)' };
 
   return (

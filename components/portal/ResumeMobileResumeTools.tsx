@@ -200,7 +200,7 @@ export default function ResumeMobileResumeTools({
             {resumeData?.originalUrl && (
               <>
                 {' '}
-                <a href={resumeData.originalUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+                <a href={resumeData.originalUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
                   Open file
                 </a>
               </>
@@ -219,7 +219,7 @@ export default function ResumeMobileResumeTools({
         </div>
         {completeness < recommendedProfileCompleteness && (
           <p style={{ marginBottom: '0.75rem', fontSize: '0.8125rem' }}>
-            <Link href="/dashboard/profile" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+            <Link href="/dashboard/profile" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
               Complete My Profile
             </Link>{' '}
             for a better resume. You can still generate now.

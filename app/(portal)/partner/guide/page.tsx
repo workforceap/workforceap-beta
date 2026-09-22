@@ -149,7 +149,7 @@ export default async function PartnerGuidePage() {
               </div>
               <div className="portal-card portal-card--flat" style={{ flex: 1, padding: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.5rem' }}>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem' }} aria-hidden="true">{step.icon}</span>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem' }} aria-hidden="true">{step.icon}</span>
                   <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-on-surface)', letterSpacing: '-0.01em' }}>{step.title}</h3>
                 </div>
                 <p style={{ fontSize: '0.9375rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6, marginBottom: '0.75rem' }}>
@@ -166,7 +166,7 @@ export default async function PartnerGuidePage() {
                     marginTop: '0.875rem',
                     fontSize: '0.875rem',
                     fontWeight: 600,
-                    color: 'var(--color-accent)',
+                    color: 'var(--wa-accent-text)',
                     textDecoration: 'none',
                   }}>
                     {step.link.label}
@@ -193,7 +193,7 @@ export default async function PartnerGuidePage() {
             { label: 'Placed in jobs', value: placedCount, icon: 'work' },
           ].map((stat) => (
             <div key={stat.label} className="portal-card portal-card--flat" style={{ padding: '1.5rem', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.5rem', display: 'block', marginBottom: '0.75rem' }} aria-hidden="true">{stat.icon}</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.5rem', display: 'block', marginBottom: '0.75rem' }} aria-hidden="true">{stat.icon}</span>
               <p className="wa-tabular-nums" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '0.375rem' }}>
                 {stat.value}
               </p>
@@ -235,12 +235,12 @@ export default async function PartnerGuidePage() {
         gap: '1rem',
         flexWrap: 'wrap',
       }}>
-        <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.5rem', flexShrink: 0 }} aria-hidden="true">mail</span>
+        <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.5rem', flexShrink: 0 }} aria-hidden="true">mail</span>
         <div>
           <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '0.125rem' }}>Questions?</p>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
             Reach us at{' '}
-            <a href="mailto:partnersupport@workforceap.org" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+            <a href="mailto:partnersupport@workforceap.org" style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}>
               partnersupport@workforceap.org
             </a>
           </p>

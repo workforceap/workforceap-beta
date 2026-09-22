@@ -1382,7 +1382,7 @@ a.wa-kit-tab {
   flex-shrink: 0;
   border-radius: 999px;
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   font-size: var(--wa-type-meta);
   font-weight: 700;
   font-variant-numeric: tabular-nums;

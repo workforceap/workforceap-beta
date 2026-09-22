@@ -97,7 +97,7 @@ export default function PartnerDeactivateDialog({ partner, partners, onClose }: 
                     padding: '0.75rem',
                     background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
                     borderRadius: '6px',
-                    color: 'var(--color-accent)',
+                    color: 'var(--wa-accent-text)',
                     fontSize: '0.9rem',
                   }}
                 >

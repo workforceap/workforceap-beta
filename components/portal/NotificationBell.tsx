@@ -307,7 +307,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                 <LegacyGlyph
                   name={n.type === 'message' ? 'forum' : n.type === 'course_complete' ? 'school' : n.type === 'job_match' ? 'work' : n.type === 'survey_due' ? 'assignment' : n.type === 'broadcast' ? 'campaign' : 'notifications'}
                   size={16}
-                  style={{ color: 'var(--color-accent)' }}
+                  style={{ color: 'var(--wa-accent-text)' }}
                 />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -321,7 +321,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                     {!n.readAt && (
                       <button
                         onClick={(e) => { e.stopPropagation(); void markRead(n.id); }}
-                        style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       >
                         Mark read
                       </button>
@@ -363,7 +363,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
         }}
         aria-label={totalUnread > 0 ? `${totalUnread} notification${totalUnread !== 1 ? 's' : ''}` : 'Notifications'}
         aria-expanded={open}
-        style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '2.25rem', height: '2.25rem', borderRadius: '0.5rem', background: open ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'transparent', border: 'none', cursor: 'pointer', color: totalUnread > 0 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', transition: 'background 0.15s' }}
+        style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '2.25rem', height: '2.25rem', borderRadius: '0.5rem', background: open ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'transparent', border: 'none', cursor: 'pointer', color: totalUnread > 0 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', transition: 'background 0.15s' }}
       >
         <LegacyGlyph name="notifications" size={20} strokeWidth={totalUnread > 0 ? 2.5 : 2} />
         {totalUnread > 0 && (
@@ -408,13 +408,13 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
             {dbUnreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}
+                style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--wa-accent-text)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}
               >
                 Mark all read
               </button>
             )}
             {shownBadgeTotal > 0 && (
-              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--wa-accent-text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {shownBadgeTotal} new
               </span>
             )}
@@ -422,8 +422,8 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
 
           {fetchError && (
             <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(173,44,77,0.08)' }}>
-              <LegacyGlyph name="error" size={18} style={{ color: 'var(--color-accent)' }} />
-              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-accent)', fontWeight: 600 }}>{fetchError}</p>
+              <LegacyGlyph name="error" size={18} style={{ color: 'var(--wa-accent-text)' }} />
+              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--wa-accent-text)', fontWeight: 600 }}>{fetchError}</p>
             </div>
           )}
 
@@ -457,13 +457,13 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                     style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '0.875rem 1rem', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                   >
                     <div style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <LegacyGlyph name={n.icon} size={16} style={{ color: 'var(--color-accent)' }} />
+                      <LegacyGlyph name={n.icon} size={16} style={{ color: 'var(--wa-accent-text)' }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.label}</p>
                     </div>
                     {n.count > 0 && (
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--color-accent)', flexShrink: 0 }}>{n.count}</span>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--wa-accent-text)', flexShrink: 0 }}>{n.count}</span>
                     )}
                   </a>
                 ))}

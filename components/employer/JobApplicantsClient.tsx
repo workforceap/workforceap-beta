@@ -80,7 +80,7 @@ export default function JobApplicantsClient({
   return (
     <div>
       {error && (
-        <div className="portal-card portal-card--flat" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'rgba(140,15,55,0.06)', color: 'var(--color-accent)' }} role="alert">
+        <div className="portal-card portal-card--flat" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'rgba(140,15,55,0.06)', color: 'var(--wa-accent-text)' }} role="alert">
           {error}
         </div>
       )}
