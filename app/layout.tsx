@@ -209,8 +209,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         <ThemeInitScript nonce={cspNonce} />
+        {/* Inline nonce-bearing scripts carry suppressHydrationWarning: browsers
+            blank the `nonce` attribute under a header-delivered CSP, which React
+            dev otherwise reports as a hydration mismatch (see ThemeInitScript). */}
         <script
           nonce={cspNonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var KEY='wap:chunk-reload-once';try{sessionStorage.removeItem(KEY);}catch(_s){}var shouldRecover=function(input){var text='';if(typeof input==='string')text=input;else if(input&&typeof input==='object'){text=[input.name,input.message,input.reason,input.request].filter(Boolean).join(' ');}text=String(text||'').toLowerCase();return text.includes('chunkloaderror')||text.includes('loading chunk')||text.includes('failed to fetch dynamically imported module');};var reloadOnce=function(){try{if(sessionStorage.getItem(KEY)==='1')return;sessionStorage.setItem(KEY,'1');}catch(_e){}window.location.reload();};window.addEventListener('error',function(event){var err=event&&event.error?event.error:null;var message=(event&&event.message)|| (err&&err.message) || err; if(shouldRecover(message)) reloadOnce();},{capture:true});window.addEventListener('unhandledrejection',function(event){var reason=event&&'reason' in event?event.reason:null; if(shouldRecover(reason)){if(event&&event.preventDefault)event.preventDefault();reloadOnce();}},{capture:true});}catch(_e){}})();`,
           }}
@@ -279,10 +283,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {/* Google Consent Mode v2: deny by default, then sync with the
                 cookie banner. Tags loaded by GTM honor these defaults until
                 an `update` is pushed by CookieConsentBanner. */}
-            <Script
+            {/* A plain inline script (not next/script beforeInteractive): it runs
+                at parse time, ahead of the afterInteractive gtm loader either
+                way, and next/script cannot carry suppressHydrationWarning onto
+                the element it renders (its rest props go into the __next_s
+                payload), so the CSP nonce would log a hydration mismatch. */}
+            <script
               id="gtm-consent-default"
-              strategy="beforeInteractive"
               nonce={cspNonce}
+              suppressHydrationWarning
               dangerouslySetInnerHTML={{
                 __html: `(function(){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=window.gtag||gtag;var stored=null;try{stored=JSON.parse(localStorage.getItem('wap-cookie-consent')||'null');}catch(_e){}var decision=stored&&(stored.decision||(stored.accepted===true?'accepted':stored.accepted===false?'declined':null));var v=decision==='accepted'?'granted':'denied';gtag('consent','default',{ad_storage:v,ad_user_data:v,ad_personalization:v,analytics_storage:v,wait_for_update:500});})();`,
               }}

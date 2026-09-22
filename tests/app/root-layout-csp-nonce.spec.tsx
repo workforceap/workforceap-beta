@@ -48,8 +48,8 @@ afterEach(() => vi.restoreAllMocks());
 
 it('stamps the middleware nonce on every inline script the root layout renders (WAP-36 phase 1)', async () => {
   const scripts = await collectScripts(new Headers({ 'x-nonce': 'synthetic-nonce-value-0001' }));
-  const kinds = scripts.map((s) => (s.type === 'script' ? 'script' : s.type === Script ? `Script:${s.props.id}` : 'ThemeInitScript'));
-  expect(kinds).toEqual(expect.arrayContaining(['ThemeInitScript', 'script', 'Script:sw-register', 'Script:gtm-consent-default', 'Script:gtm']));
+  const kinds = scripts.map((s) => (s.type === 'script' ? (s.props.id ? `script#${s.props.id}` : 'script') : s.type === Script ? `Script:${s.props.id}` : 'ThemeInitScript'));
+  expect(kinds).toEqual(expect.arrayContaining(['ThemeInitScript', 'script', 'script#gtm-consent-default', 'Script:sw-register', 'Script:gtm']));
   for (const script of scripts) expect(script.props.nonce, kinds[scripts.indexOf(script)]).toBe('synthetic-nonce-value-0001');
 
   // The theme bootstrap forwards the nonce onto the real <script> element.
