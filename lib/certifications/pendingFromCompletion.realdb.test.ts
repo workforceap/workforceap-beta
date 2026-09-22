@@ -208,6 +208,39 @@ test('respects a certificate the member added under the same name for another co
   assert.equal(audits, 0);
 });
 
+test('inside a writer transaction, a pre-existing certificate does not abort the completion write', async () => {
+  // b4bSync hands its per-row `tx` to upsertMergedCourseProgress, which hands
+  // it to the certificate helper. The certificate for COURSE already exists
+  // (approved, from the case above). With a plain INSERT the unique violation
+  // would poison the transaction (25P02) and roll back the COMPLETED row the
+  // sync was writing; ON CONFLICT DO NOTHING must leave it committable.
+  const courseId = `in-tx-${runId}`;
+  const outcome = await prisma.$transaction(async (tx) => {
+    await tx.courseProgress.create({
+      data: {
+        userId: seeded.userId, programSlug: PROGRAM, courseSlug: COURSE, courseId,
+        status: 'COMPLETED', percentComplete: 100, progressPct: 100, completedAt: new Date('2026-09-12T00:00:00.000Z'),
+      },
+    });
+    const certificate = await ensurePendingCertificationForCompletion(
+      { userId: seeded.userId, programSlug: PROGRAM, courseSlug: COURSE, courseraCourseId: courseId, source: 'coursera-progress-merge' },
+      { db: tx },
+    );
+    // The transaction is still live after the duplicate: another statement runs.
+    const stillLive = await tx.courseProgress.count({ where: { userId: seeded.userId, courseSlug: COURSE } });
+    return { certificate, stillLive };
+  });
+
+  assert.equal(outcome.certificate.created, false);
+  assert.equal(outcome.certificate.status, 'approved');
+  assert.equal(outcome.stillLive, 1);
+  const committed = await prisma.courseProgress.findMany({ where: { userId: seeded.userId, courseSlug: COURSE } });
+  assert.equal(committed.length, 1, "the caller's COMPLETED write committed");
+  assert.equal(committed[0].status, 'COMPLETED');
+  assert.equal(await prisma.userCertification.count({ where: { userId: seeded.userId, certName: CATALOG_NAME } }), 1, 'still one certificate, still approved');
+  assert.equal((await prisma.userCertification.findUniqueOrThrow({ where: { userId_certName: { userId: seeded.userId, certName: CATALOG_NAME } } })).status, 'approved');
+});
+
 test('backfill: only members get a certificate, and a shared catalog name comes out qualified', async () => {
   const program = PROGRAMS.find((p) => p.slug === PROGRAM)!;
   const course = program.courses.find((c) => c.slug === SHARED_COURSE)!;
@@ -232,7 +265,7 @@ test('backfill: only members get a certificate, and a shared catalog name comes 
   }
 
   const dry = await backfillPendingCertificationsFromCompletions(prisma, { apply: false, organizationId: seeded.orgId, userId: null, allCompleted: false });
-  assert.equal(dry.scanned, 1, 'member row only: the staff row is not even read');
+  assert.equal(dry.scanned, 2, 'member rows only (this one and the in-transaction case above): the staff row is not even read');
   assert.equal(dry.missing, 1);
   assert.equal(dry.created, 0);
   assert.equal(await prisma.userCertification.count({ where: { userId: { in: [seeded.userId, seeded.staffUserId] }, certName: { startsWith: SHARED_NAME } } }), 0, 'dry run writes nothing');

@@ -101,7 +101,6 @@ describe('completeMemberCourse hands Coursera-reported completions to the certif
       userId: 'user-1',
       programSlug: PROGRAM,
       courseSlug: COURSE,
-      courseName: 'Introduction to Technical Support',
       courseraCourseId: COURSERA_ID,
       completedAt: learnerActivityAt,
       source: 'coursera-enterprise-sync',

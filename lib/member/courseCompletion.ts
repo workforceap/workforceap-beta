@@ -146,7 +146,6 @@ export async function completeMemberCourse(args: {
       userId: args.userId,
       programSlug,
       courseSlug: matchedCourse.slug,
-      courseName: matchedCourse.name,
       courseraCourseId: courseId,
       completedAt: args.learnerActivityAt ?? null,
       source: args.source,

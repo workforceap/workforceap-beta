@@ -1,6 +1,7 @@
 import type { CertStatus, Prisma, PrismaClient } from '@prisma/client';
 
 import { auditLog } from '@/lib/audit';
+import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
 import { PROGRAMS, getDiscoveredProgram, getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { prisma } from '@/lib/db/prisma';
@@ -33,13 +34,15 @@ import { prisma } from '@/lib/db/prisma';
  * The certificate name is resolved from the canonical catalog first
  * (`lib/content/programs.ts`, then the discovered Coursera catalog) so every
  * write path (webhook, xAPI, B4B cron, per-user sync, CSV import, backfill)
- * lands on the same `certName` for the same course. 12 of the 189 catalog
- * course names repeat across programs ("Lab, Project, and Test Preparation"
- * is in seven), and the unique key is (user, name): a member in two programs
- * would otherwise finish the second "same-named" course and get nothing. A
- * shared name is therefore qualified with the program's display title; a
- * name unique to one program stays as it is (see
- * `resolveCertificationNameForCourse`).
+ * lands on the same `certName` for the same course. Course names repeat
+ * across programs ("Lab, Project, and Test Preparation" is in seven canonical
+ * programs; "Data Analysis with Python" in two discovered ones), and the
+ * unique key is (user, name): a member in two programs would otherwise finish
+ * the second "same-named" course and get nothing. A name either catalog
+ * carries in more than one program is therefore qualified with the program's
+ * display title; a name unique to one program stays as it is (see
+ * `resolveCertificationNameForCourse`). The name never depends on what the
+ * caller knew about the course, so every path spells it identically.
  *
  * The client is injectable: the shared progress writer hands over the
  * transaction it is running in, so a rolled-back completion never leaves an
@@ -60,8 +63,6 @@ export type EnsurePendingCertificationInput = {
   userId: string;
   programSlug: string;
   courseSlug: string;
-  /** Provider/display name; used only when neither catalog knows the course. */
-  courseName?: string | null;
   courseraCourseId?: string | null;
   /** Provider completion time when known; otherwise the row is dated now. */
   completedAt?: Date | null;
@@ -86,24 +87,39 @@ export type PendingCertificationDb = Pick<Prisma.TransactionClient, 'userCertifi
   $transaction?: PrismaClient['$transaction'];
 };
 
+function programTitleForSlug(programSlug: string): string {
+  const canonical = canonicalizeProgramSlug(programSlug);
+  return getProgramDisplayTitle(getProgramBySlug(canonical) ?? canonical);
+}
+
 /**
- * Trimmed catalog course name -> canonical program slugs that carry a course
- * with that name. Built once from `PROGRAMS`; a name in more than one program
- * needs qualifying (see module comment).
+ * Trimmed course name -> display titles of the programs that carry a course
+ * with that name, from both catalogs (`PROGRAMS` and the discovered Coursera
+ * catalog, which has more courses for some programs). Keyed by display title
+ * rather than slug: the discovered catalog lists one program under two slugs
+ * (`comptia-network-professional-certificate` and `...-network-plus-...`,
+ * same title), and that is one program, not a collision. Built once; a name
+ * in more than one program needs qualifying (see module comment), and the
+ * qualifier is that same title, so qualified names are distinct by
+ * construction.
  */
 let programsByCourseName: Map<string, Set<string>> | null = null;
 
 function programsCarryingCourseName(name: string): ReadonlySet<string> {
   if (!programsByCourseName) {
     const index = new Map<string, Set<string>>();
+    const add = (programSlug: string, courseName: string) => {
+      const key = courseName.trim();
+      if (!key) return;
+      const set = index.get(key) ?? new Set<string>();
+      set.add(programTitleForSlug(programSlug));
+      index.set(key, set);
+    };
     for (const program of PROGRAMS) {
-      for (const course of program.courses) {
-        const key = course.name.trim();
-        if (!key) continue;
-        const set = index.get(key) ?? new Set<string>();
-        set.add(program.slug);
-        index.set(key, set);
-      }
+      for (const course of program.courses) add(program.slug, course.name);
+    }
+    for (const [programSlug, discovered] of Object.entries(DISCOVERED_COURSERA_PROGRAMS)) {
+      for (const course of discovered.courses) add(programSlug, course.name);
     }
     programsByCourseName = index;
   }
@@ -134,32 +150,27 @@ export function humaniseCourseSlug(slug: string): string {
 
 /**
  * Stable certificate name for a completed course: canonical catalog name,
- * then the discovered Coursera catalog, then the caller's display name, then
- * the slug humanised. When the catalog carries that name in more than one
- * program the program's display title is appended
+ * then the discovered Coursera catalog, then the slug humanised. It is a
+ * pure function of (program, course) on purpose: a provider display name is
+ * deliberately not an input, so the live hooks and the backfill cannot spell
+ * the same course two ways. When either catalog carries that name in more
+ * than one program the program's display title is appended
  * (`"Lab, Project, and Test Preparation — IT Support Professional Certificate (IBM)"`)
  * so a member in two programs gets one certificate per course, not one per
- * name. Exported so the backfill script produces the identical names the
- * live paths write.
+ * name.
  */
 export function resolveCertificationNameForCourse(input: {
   programSlug: string;
   courseSlug: string;
-  courseName?: string | null;
 }): string {
   const canonicalProgramSlug = canonicalizeProgramSlug(input.programSlug);
   const baseName =
     catalogCourseName(canonicalProgramSlug, input.courseSlug)
-    ?? (input.courseName?.trim() || humaniseCourseSlug(input.courseSlug));
+    ?? humaniseCourseSlug(input.courseSlug);
   if (programsCarryingCourseName(baseName).size > 1) {
-    const program = getProgramBySlug(canonicalProgramSlug);
-    return `${baseName} — ${getProgramDisplayTitle(program ?? canonicalProgramSlug)}`;
+    return `${baseName} — ${programTitleForSlug(canonicalProgramSlug)}`;
   }
   return baseName;
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'P2002';
 }
 
 export async function ensurePendingCertificationForCompletion(
@@ -172,39 +183,28 @@ export async function ensurePendingCertificationForCompletion(
   const earnedAt =
     input.completedAt && Number.isFinite(input.completedAt.getTime()) ? input.completedAt : now;
 
-  // Read and insert run on one client: the unique key makes the insert the
-  // real guard, the read keeps the common repeat case free of P2002 noise and
-  // tells us whether the row is ours to describe as created.
+  // INSERT ... ON CONFLICT DO NOTHING, then read the row. An existing
+  // certificate (the member's own, staff-decided, or a concurrent report's)
+  // is skipped without an error: this often runs inside a writer's
+  // transaction, where a unique violation would abort the whole transaction
+  // and roll back the completion it was reporting. `count` says whether the
+  // row is ours.
   const upsertPending = async (client: Pick<Prisma.TransactionClient, 'userCertification'>) => {
-    const existing = await client.userCertification.findUnique({
+    const { count } = await client.userCertification.createMany({
+      data: [{
+        userId: input.userId,
+        certName,
+        earnedAt,
+        status: 'pending',
+        submittedAt: now,
+      }],
+      skipDuplicates: true,
+    });
+    const row = await client.userCertification.findUnique({
       where: { userId_certName: { userId: input.userId, certName } },
       select: { id: true, status: true },
     });
-    if (existing) {
-      return { created: false as const, id: existing.id, status: existing.status };
-    }
-    try {
-      const row = await client.userCertification.create({
-        data: {
-          userId: input.userId,
-          certName,
-          earnedAt,
-          status: 'pending',
-          submittedAt: now,
-        },
-        select: { id: true, status: true },
-      });
-      return { created: true as const, id: row.id, status: row.status };
-    } catch (error) {
-      // Two completion reports for the same course racing on the unique key:
-      // the other writer owns the row, and this one changes nothing.
-      if (!isUniqueViolation(error)) throw error;
-      const raced = await client.userCertification.findUnique({
-        where: { userId_certName: { userId: input.userId, certName } },
-        select: { id: true, status: true },
-      });
-      return { created: false as const, id: raced?.id ?? null, status: raced?.status ?? null };
-    }
+    return { created: count === 1, id: row?.id ?? null, status: row?.status ?? null };
   };
 
   // Root client: our own transaction. Transaction client handed in by a
