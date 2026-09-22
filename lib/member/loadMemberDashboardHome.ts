@@ -10,6 +10,7 @@ import {
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { effectiveStreak } from '@/lib/member/streakDisplay';
+import { isTrainingActivityStale } from '@/lib/member/trainingStaleness';
 import { ACTIVE_APPLICATION_STATUSES } from '@/lib/member/jobPipelineDisplay';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import { EVENT_LABELS, getLevelForPoints, getNextLevel } from '@/lib/member/pointsConfig';
@@ -73,6 +74,12 @@ export type MemberDashboardHomeView = {
   approvalStatus: MemberApprovalStatus;
   firstName: string;
   coursePercent: number;
+  /**
+   * Training has gone quiet for longer than `STALE_TRAINING_ACTIVITY_DAYS`
+   * (or the stale-training cron has already flagged it). The Course stat tile
+   * only warns when this is true — being newly enrolled at 0% is not a fault.
+   */
+  courseProgressStale: boolean;
   programTitle?: string;
   /** Coursera progress exists, but no WAP program is assigned yet. */
   noProgram?: boolean;
@@ -143,6 +150,10 @@ type DashboardUserRow = MemberApprovalFacts & {
   fullName: string | null;
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
+  /** Program enrolment date — the staleness clock's fallback start. */
+  enrolledAt?: Date | null;
+  /** Written by the stale-training cron once it has flagged this member. */
+  staleTrainingDetectedAt?: Date | null;
   organization: {
     courses: Array<{
       programSlug: string;
@@ -153,13 +164,14 @@ type DashboardUserRow = MemberApprovalFacts & {
       courseraSlug: string | null;
     }>;
   };
-  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string; enrolledByAdminId?: string | null }>;
+  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string; enrolledByAdminId?: string | null; enrolledAt?: Date | null }>;
   courseProgress: Array<{
     programSlug: string;
     courseSlug: string;
     courseId: string | null;
     percentComplete: number;
     status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+    lastActivityAt?: Date | null;
   }>;
   memberProgramProgress: Array<{
     programSlug: string;
@@ -404,6 +416,7 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
   return {
     firstName,
     coursePercent: 0,
+    courseProgressStale: false,
     approvalStatus: buildMemberApprovalStatus({}),
     activeJobs: 0,
     certs: 0,
@@ -536,9 +549,24 @@ function shapeHome(args: {
     certCount: args.row._count.userCertifications,
   });
 
+  // Newest saved training activity across every course. `courseProgress` is
+  // ordered by `lastActivityAt` desc, but Postgres sorts NULLs first on a
+  // descending sort, so take the max rather than trusting row 0.
+  const lastTrainingActivityAt = args.row.courseProgress.reduce<Date | null>((latest, row) => {
+    const at = row.lastActivityAt ?? null;
+    if (!at) return latest;
+    return !latest || at.getTime() > latest.getTime() ? at : latest;
+  }, null);
+  const courseProgressStale = isTrainingActivityStale({
+    lastActivityAt: lastTrainingActivityAt,
+    eligibleSince: args.row.courseEnrollments[0]?.enrolledAt ?? args.row.enrolledAt ?? null,
+    staleDetectedAt: args.row.staleTrainingDetectedAt ?? null,
+  });
+
   return {
     firstName,
     coursePercent: pct,
+    courseProgressStale,
     approvalStatus: buildMemberApprovalStatus(args.row),
     programTitle: program?.title ?? undefined,
     noProgram: Boolean(program && !assignedSlug),
@@ -593,6 +621,8 @@ function userSelect() {
     },
     enrolledProgram: true,
     assessmentCompleted: true,
+    enrolledAt: true,
+    staleTrainingDetectedAt: true,
     organization: {
       select: {
         courses: {
@@ -612,7 +642,7 @@ function userSelect() {
     courseEnrollments: {
       where: { isPrimary: true },
       take: 1,
-      select: { programSlug: true, curriculumVersion: true, enrolledByAdminId: true },
+      select: { programSlug: true, curriculumVersion: true, enrolledByAdminId: true, enrolledAt: true },
     },
     courseProgress: {
       orderBy: [{ lastActivityAt: 'desc' as const }, { lastUpdatedAt: 'desc' as const }],
@@ -623,6 +653,7 @@ function userSelect() {
         courseId: true,
         percentComplete: true,
         status: true,
+        lastActivityAt: true,
       },
     },
     memberProgramProgress: {

@@ -663,3 +663,111 @@ test('lean loader uses the assigned program over the legacy pointer and still re
   assert.equal(view.coursePercent, 0);
   assert.equal(view.programTitle, getProgramBySlug(canonicalizeProgramSlug(FIXTURE_PROGRAM_SLUG))?.title);
 });
+
+/**
+ * The Course stat tile's warning is gated on this flag, so the loader must not
+ * report a member who has just enrolled as stalled. The threshold is
+ * `STALE_TRAINING_ACTIVITY_DAYS` (14) from lib/member/trainingStaleness.ts.
+ */
+const DAY_MS = 24 * 60 * 60 * 1000;
+const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
+const progressRow = (overrides: Record<string, unknown> = {}) => ({
+  programSlug: 'it-support-professional-certificate-ibm',
+  courseSlug: 'introduction-to-technical-support',
+  courseId: 'rNyuLa-pEeytqw64hz8ZCw',
+  percentComplete: 0,
+  status: 'NOT_STARTED' as const,
+  ...overrides,
+});
+
+async function staleFlagFor(overrides: Record<string, unknown>) {
+  const { db } = mockDb({ row: makeRow(overrides) });
+  const view = await loadMemberDashboardHome({ userId: 'member-1', fallbackDisplayName: 'Pat' }, db);
+  return view.courseProgressStale;
+}
+
+test('courseProgressStale: a member who enrolled today at 0% is not stalled', async () => {
+  assert.equal(
+    await staleFlagFor({
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(0) }],
+      courseProgress: [],
+    }),
+    false,
+  );
+});
+
+test('courseProgressStale: 0% with no activity since enrolling long ago is stalled', async () => {
+  assert.equal(
+    await staleFlagFor({
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(40) }],
+      courseProgress: [],
+    }),
+    true,
+  );
+});
+
+test('courseProgressStale: the newest activity wins even when a NULL-dated row sorts first', async () => {
+  // Postgres sorts NULLs first on a DESC order, so the loader must take the
+  // max rather than trusting `courseProgress[0]`.
+  assert.equal(
+    await staleFlagFor({
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(90) }],
+      courseProgress: [
+        progressRow({ lastActivityAt: null }),
+        progressRow({ courseSlug: 'introduction-to-hardware-and-operating-systems', lastActivityAt: daysAgo(30) }),
+        progressRow({ courseSlug: 'introduction-to-software-programming-and-databases', lastActivityAt: daysAgo(2) }),
+      ],
+    }),
+    false,
+  );
+});
+
+test('courseProgressStale: activity older than the threshold is stalled', async () => {
+  assert.equal(
+    await staleFlagFor({
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(90) }],
+      courseProgress: [progressRow({ lastActivityAt: daysAgo(20) })],
+    }),
+    true,
+  );
+});
+
+test('courseProgressStale: the cron flag is trusted on its own', async () => {
+  assert.equal(
+    await staleFlagFor({
+      staleTrainingDetectedAt: daysAgo(1),
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(0) }],
+      courseProgress: [progressRow({ lastActivityAt: daysAgo(0) })],
+    }),
+    true,
+  );
+});
+
+test('courseProgressStale: nothing is claimed with no enrolment or activity date on file', async () => {
+  assert.equal(
+    await staleFlagFor({
+      enrolledAt: null,
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+      courseProgress: [progressRow({ lastActivityAt: null })],
+    }),
+    false,
+  );
+});
+
+test('courseProgressStale: falls back to the user enrolment date when the enrollment row has none', async () => {
+  assert.equal(
+    await staleFlagFor({
+      enrolledAt: daysAgo(60),
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+      courseProgress: [],
+    }),
+    true,
+  );
+});
+
+test('courseProgressStale: the zeroed view for a missing user row is not stalled', async () => {
+  const { db } = mockDb({ row: null });
+  const view = await loadMemberDashboardHome({ userId: 'member-1', fallbackDisplayName: 'pat@example.com' }, db);
+  assert.equal(view.coursePercent, 0);
+  assert.equal(view.courseProgressStale, false);
+});

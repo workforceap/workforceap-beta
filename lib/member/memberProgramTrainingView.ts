@@ -11,9 +11,14 @@ import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation'
 import { scoreScaledToDisplayPercent } from '@/lib/coursera/courseGradeDisplay';
 import { prisma } from '@/lib/db/prisma';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { STALE_TRAINING_ACTIVITY_DAYS } from '@/lib/member/trainingStaleness';
 
-/** Days without training activity before we surface counselor escalation on the dashboard. */
-export const STALE_TRAINING_ACTIVITY_DAYS = 14;
+/**
+ * Days without training activity before we surface counselor escalation on the
+ * dashboard. Defined in `lib/member/trainingStaleness.ts` and re-exported here
+ * so the existing import path keeps working and there is still one number.
+ */
+export { STALE_TRAINING_ACTIVITY_DAYS };
 
 export type MemberProgramTrainingView = {
   completedCount: number;

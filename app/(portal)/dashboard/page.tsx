@@ -194,6 +194,7 @@ async function renderMemberDashboard(
       <MemberHomeKit
         firstName={home.firstName}
         coursePercent={home.coursePercent}
+        courseProgressStale={home.courseProgressStale}
         programTitle={home.programTitle}
         programStatus={home.programStatus}
         noProgram={home.noProgram}

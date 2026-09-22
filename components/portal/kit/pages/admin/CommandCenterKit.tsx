@@ -118,7 +118,7 @@ export interface CommandCenterKitProps {
   /** Program Health breakdown rows. */
   programHealth?: ProgramHealthDatum[];
   /**
-   * One muted line under the "Program health" heading saying what the figure
+   * One muted line under the "Enrollment share by program" heading saying what the figure
    * counts and what the bar measures. #2425 (S21) stopped the rows printing
    * "10 · 100%", which read as a completion or health score, but left the
    * remaining count unlabelled; this is the definition that goes with it.
@@ -383,11 +383,11 @@ export function CommandCenterKit({
 
         <aside className={styles.context} aria-label="Program and system context">
           <section aria-labelledby="admin-program-health-title" className={styles.section}>
-            <header className={styles.sectionHeading}><h2 id="admin-program-health-title">Program health</h2></header>
+            <header className={styles.sectionHeading}><h2 id="admin-program-health-title">Enrollment share by program</h2></header>
             {programHealthCaption ? (
               <p className={styles.meta} data-program-health-caption="1" style={{ marginBottom: 10 }}>{programHealthCaption}</p>
             ) : null}
-            {programHealth.length > 0 ? <RankBars data={programHealth} /> : <p className={styles.meta}>No program health data available.</p>}
+            {programHealth.length > 0 ? <RankBars data={programHealth} /> : <p className={styles.meta}>No enrollment data available.</p>}
           </section>
 
           {systemHealth && systemHealth.length > 0 ? (

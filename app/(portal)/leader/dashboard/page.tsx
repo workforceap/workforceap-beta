@@ -6,7 +6,10 @@ import { requestFailureMessage } from "@/lib/http/requestFailureCopy";
 import PortalPageFrame from "@/components/portal/PortalPageFrame";
 import PageHeader from "@/components/portal/PageHeader";
 import DataTable, { type DataTableColumn } from "@/components/portal/ui/DataTable";
-import { statusColor, type StatusTone } from "@/lib/ui/statusColors";
+import { StatusTag, type KitTone } from "@/components/portal/kit";
+// `statusColor` here is only the error banner and the curriculum index bubble;
+// the member status vocabulary is the kit's `KitTone` (WAP-135).
+import { statusColor } from "@/lib/ui/statusColors";
 import { programDisplayTitle } from "@/lib/content/programTitle";
 
 interface Member {
@@ -78,11 +81,15 @@ function EmptyPanel({ icon, text }: { icon: string; text: string }) {
   );
 }
 
-function memberStatusTone(m: Member): { tone: StatusTone; label: string } {
-  if (m.placementRecord) return { tone: "success", label: "Placed" };
+/**
+ * Kit tones are the one status vocabulary (WAP-135). The four labels are
+ * unchanged; only the tone names and the rendering moved onto the kit.
+ */
+function memberStatusTone(m: Member): { tone: KitTone; label: string } {
+  if (m.placementRecord) return { tone: "ok", label: "Placed" };
   if (m.interviewEligible) return { tone: "info", label: "Interview ready" };
-  if (m.assessmentCompleted) return { tone: "warning", label: "Assessed" };
-  return { tone: "neutral", label: "New" };
+  if (m.assessmentCompleted) return { tone: "warn", label: "Assessed" };
+  return { tone: "muted", label: "New" };
 }
 
 export default function LeaderDashboardPage() {
@@ -128,25 +135,9 @@ export default function LeaderDashboardPage() {
       align: "right",
       cell: (m) => {
         const { tone, label } = memberStatusTone(m.user);
-        const { fg, bg, border } = statusColor(tone);
-        return (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "0.2rem 0.6rem",
-              borderRadius: "var(--radius-full)",
-              fontSize: "0.8125rem",
-              fontWeight: 700,
-              color: fg,
-              background: bg,
-              border: `1px solid ${border}`,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </span>
-        );
+        // `.wa-kit-tag` is inline-flex, so it still sits flush right in this
+        // `align: "right"` cell the way the hand-built chip did.
+        return <StatusTag tone={tone} style={{ whiteSpace: "nowrap" }}>{label}</StatusTag>;
       },
     },
   ];

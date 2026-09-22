@@ -124,17 +124,23 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
     expect(tileFor(container, 'Certs').querySelector(`.${toneClass('ok')}`)).not.toBeNull();
   });
 
-  it('paints the course tile from its value: ok when finished, warn when enrolled and not started', () => {
+  it('paints the course tile from its value: ok when finished, warn only once not-started has gone stale', () => {
     const done = renderHome({ coursePercent: 100 });
     expect(tileFor(done.container, 'Course').querySelector(`.${toneClass('ok')}`)).not.toBeNull();
     cleanup();
 
-    const unstarted = renderHome({ coursePercent: 0 });
+    // Enrolled and not started is only worth a nudge once the shared
+    // staleness threshold has passed; 0% an hour after enrolling is not.
+    const fresh = renderHome({ coursePercent: 0 });
+    expect(tileFor(fresh.container, 'Course').querySelector('[class*="wa-kit-tone--"]')).toBeNull();
+    cleanup();
+
+    const unstarted = renderHome({ coursePercent: 0, courseProgressStale: true });
     expect(tileFor(unstarted.container, 'Course').querySelector(`.${toneClass('warn')}`)).not.toBeNull();
     cleanup();
 
     // No program to be behind on, so nothing to warn about.
-    const noProgram = renderHome({ coursePercent: 0, programTitle: undefined });
+    const noProgram = renderHome({ coursePercent: 0, courseProgressStale: true, programTitle: undefined });
     expect(noProgram.container.querySelector(`.${toneClass('warn')}`)).toBeNull();
   });
 
