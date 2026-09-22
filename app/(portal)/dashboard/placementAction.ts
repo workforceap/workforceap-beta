@@ -8,6 +8,11 @@ import { revalidatePath } from 'next/cache';
 import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
 import { persistEvent } from '@/lib/events/track';
 import { recordApplicationStatusChange } from '@/lib/member/applicationStatusEvent';
+import {
+  recordPlacementFromApplication,
+  type RecordPlacementOutcome,
+} from '@/lib/placement/recordPlacementFromApplication';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 export async function confirmPlacement(jobApplicationId: string) {
   const user = await getUser();
@@ -34,6 +39,36 @@ export async function confirmPlacement(jobApplicationId: string) {
       data: { status: 'ACCEPTED', updatedAt: now },
     });
 
+    // Stand up the PlacementRecord the same way an employer marking the
+    // application hired does (lib/employer/applicationStatusEffects.ts), so a
+    // self-reported hire reaches the retention check-ins, the First 90 Days
+    // card and the placement counts instead of stopping at an event. The row
+    // is member-reported and `startDateVerified: false` until a counselor
+    // confirms start date and wage; one row per member, so a second
+    // confirmation or a later employer 'hired' lands on this same row.
+    // Fail-soft like the employer path: the status update above has already
+    // committed, and the claim event below must still be written.
+    let placementOutcome: RecordPlacementOutcome | 'failed' = 'failed';
+    let placementRecordId: string | null = null;
+    try {
+      const recorded = await recordPlacementFromApplication({
+        userId: user.id,
+        employerName: application.company,
+        jobTitle: application.role,
+        source: 'member_self_report',
+        applicationId: application.id,
+        actorUserId: user.id,
+        now,
+      });
+      placementOutcome = recorded.outcome;
+      placementRecordId = recorded.placement.id;
+    } catch (err) {
+      captureApiError(err, {
+        route: 'dashboard/confirmPlacement',
+        extra: { userId: user.id, applicationId: application.id, stage: 'member-placement-record' },
+      });
+    }
+
     await persistEvent({
       userId: user.id,
       eventName: 'placement_confirmation_submitted',
@@ -50,7 +85,9 @@ export async function confirmPlacement(jobApplicationId: string) {
         role: application.role,
         confirmedAt: now.toISOString(),
         pendingReview: true,
-        note: 'Member self-reported offer acceptance. No placement record created until staff review.',
+        placementOutcome,
+        placementRecordId,
+        note: 'Member self-reported offer acceptance. Recorded as a member-reported placement; start date and wage stay unverified until staff review.',
       },
       sourcePage: '/dashboard',
     }, prisma);
@@ -67,7 +104,7 @@ export async function confirmPlacement(jobApplicationId: string) {
         kind: 'placement_confirmation_submitted',
         headline: `${application.company} offer reported by member`,
         detail:
-          'Member self-reported an accepted role. WorkforceAP review is still pending before placement is finalized.',
+          'Member self-reported an accepted role. Recorded as a member-reported placement; WorkforceAP still verifies start date and wage before it is finalized.',
         entityType: 'JobApplication',
         entityId: application.id,
       });
@@ -98,6 +135,8 @@ export async function confirmPlacement(jobApplicationId: string) {
 
   revalidatePath('/dashboard');
   revalidatePath('/admin');
+  revalidatePath('/admin/placements');
+  revalidatePath('/counselor/placements');
   revalidatePath(`/admin/members/${user.id}`);
   revalidatePath('/partner');
   revalidatePath('/partner/attention');

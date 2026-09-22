@@ -48,7 +48,7 @@ export default function PlacementConfirmationStrip({ offers }: { offers: any[] }
               <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-success)', fontVariationSettings: "'FILL' 1", flexShrink: 0, marginLeft: '0.5rem' }} aria-hidden>work</span>
             </div>
             <p style={{ fontSize: '0.8125rem', color: 'var(--wa-on-success)', margin: 0, lineHeight: 1.5 }}>
-              Let WorkforceAP know you accepted the offer. This does not change your support, access, or placement status on its own — it just alerts the team to review and follow up.
+              Let WorkforceAP know you accepted the offer. We log it as a placement you reported and alert your counselor to confirm the start date and pay — your support and access do not change.
             </p>
             {errors[offer.id] ? (
               <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-on-success)', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>

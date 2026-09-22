@@ -27,6 +27,7 @@ export const VITEST_LIBRARY_SPECS = Object.freeze([
   'lib/member/getMemberState.test.ts',
   'lib/member/streaks.test.ts',
   'lib/member/xapiVerbProgress.test.ts',
+  'lib/placement/recordPlacementFromApplication.test.ts',
   'lib/platform/orgBrandingCache.test.ts',
   'lib/readiness/progressSummary.test.ts',
   'lib/readiness/progressView.test.ts',
