@@ -299,6 +299,50 @@ try {
   assert.deepEqual(byId(rows()), before);
   console.log('PASS the rollback is idempotent');
 
+  // 6b. The rollback's occupied-key guard. down.sql documents that it skips a
+  //     key new activity has re-taken rather than failing, but nothing proved
+  //     it: before the guard this raised 23505 on the natural unique
+  //     (user_id, program_slug, course_slug) and aborted the whole rollback,
+  //     so the documented recovery path did not work.
+  resetTables();
+  sql(`DELETE FROM public.course_progress;`);
+  sql(`
+    INSERT INTO public.course_progress (id, user_id, program_slug, course_slug, status, last_updated_at)
+    VALUES ('cp-reoccupy', 'u-orphan', 'comptia-a-professional-certificate',
+            'comptia-a-professional-certificate-course-9', 'COMPLETED', now());
+  `);
+  sql(migration);
+  assert.equal(byId(rows())['cp-reoccupy'].course_slug, 'practice-exam-for-comptia-a');
+
+  // The member earns progress on the synthetic key again after the migration.
+  sql(`
+    INSERT INTO public.course_progress (id, user_id, program_slug, course_slug, status, last_updated_at)
+    VALUES ('cp-newer', 'u-orphan', 'comptia-a-professional-certificate',
+            'comptia-a-professional-certificate-course-9', 'IN_PROGRESS', now());
+  `);
+
+  sql(rollback);
+  const reoccupied = byId(rows());
+  assert.deepEqual(
+    {
+      moved: reoccupied['cp-reoccupy'].course_slug,
+      movedStatus: reoccupied['cp-reoccupy'].status,
+      newer: reoccupied['cp-newer'].course_slug,
+      newerStatus: reoccupied['cp-newer'].status,
+      total: Object.keys(reoccupied).length,
+    },
+    {
+      // The guard holds it on the destination rather than colliding.
+      moved: 'practice-exam-for-comptia-a',
+      movedStatus: 'COMPLETED',
+      // The newer row is left exactly as it is; nothing is overwritten.
+      newer: 'comptia-a-professional-certificate-course-9',
+      newerStatus: 'IN_PROGRESS',
+      total: 2,
+    },
+  );
+  console.log('PASS the rollback skips a key new activity has re-taken instead of failing');
+
   // 7. Every pair in the mapping moves, and the migration moves nothing else.
   resetTables();
   sql(`DELETE FROM public.course_progress;`);
