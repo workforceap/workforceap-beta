@@ -41,7 +41,7 @@ vi.mock('@elevenlabs/client', () => ({
   },
 }));
 
-const BRIDGED_NEUTRALS = ['--wa-sidebar-bg', '--wa-sidebar-text', '--wa-sidebar-border', '--wa-surface-2', '--wa-muted'] as const;
+const BRIDGED_NEUTRALS = ['--wa-sidebar-bg', '--wa-sidebar-text', '--wa-sidebar-border', '--wa-sidebar-muted', '--wa-surface-2', '--wa-muted'] as const;
 const MODULE_CSS = 'components/portal/WioaQualificationClient.module.css';
 
 /** Every `--wa-*` custom property referenced by an inline style under `root`. */
@@ -124,7 +124,18 @@ describe('public WIOA screening: the voice panel resolves every token it paints'
     expectResolvable(root, ['--wa-sidebar-bg', '--wa-sidebar-text']);
   });
 
-  it('the .public bridge copies the five portal-only neutrals from portal-tokens.css verbatim', () => {
+  it('a muted VoiceOrb (mic off) still resolves on this route: --wa-sidebar-muted is bridged', async () => {
+    const { VoiceOrb } = await import('@/components/portal/kit/VoiceOrb');
+    const { container } = render(
+      <VoiceOrb getLevel={() => 0} active={false} connecting={false} muted accent="var(--wa-hero-crimson)" accentDark="var(--wa-hero-crimson-dark)" size={120} />,
+    );
+    const painted = paintedTokenNames(container);
+    expect([...painted]).toContain('--wa-sidebar-muted');
+    const available = publicRouteTokens();
+    expect([...painted].filter((name) => !available.has(name)), 'orb tokens the public route cannot resolve').toEqual([]);
+  });
+
+  it('the .public bridge copies the six portal-only neutrals from portal-tokens.css verbatim', () => {
     const bridge = loadBlockTokens(readCss(MODULE_CSS), '.public');
     const portal = loadRootTokens(readCss('css/portal-tokens.css'));
     const brand = loadRootTokens(readCss('css/wa-brand-tokens.css'));
