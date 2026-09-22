@@ -212,8 +212,16 @@ export default async function PartnerDashboardPage({
           take: 8,
           select: { id: true, userId: true, metadata: true, createdAt: true },
         }),
+        // Same population as the "Members referred" count above, so the
+        // table never lists a staff or seeded-fixture account the tile
+        // excludes (its detail page would render notFound; scout D1
+        // 2026-09-22).
         prisma.partnerReferral.findMany({
-          where: { partnerId: ctx.partnerId },
+          where: {
+            partnerId: ctx.partnerId,
+            partner: { organizationId: ctx.partner.organizationId },
+            member: memberFilter,
+          },
           orderBy: { referredAt: 'desc' },
           take: 10,
           select: {
