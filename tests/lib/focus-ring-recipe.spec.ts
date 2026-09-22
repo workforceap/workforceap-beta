@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -24,8 +24,8 @@ function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
 }
 
-function focusBlocks(file: string): Block[] {
-  const source = stripComments(readFileSync(path.join(CSS_DIR, file), 'utf8'));
+function focusBlocks(file: string, dir: string = CSS_DIR): Block[] {
+  const source = stripComments(readFileSync(path.join(dir, file), 'utf8'));
   const blocks: Block[] = [];
   const stack: { selector: string; start: number }[] = [];
   let selectorStart = 0;
@@ -127,5 +127,76 @@ describe('focus ring recipe', () => {
     expect(main).not.toMatch(/outline: 2px solid var\(--color-gold\)/);
     expect(main).not.toMatch(/\*:focus-visible \{\s*outline: 2px solid var\(--color-accent\)/);
     expect(publicA11y).not.toMatch(/#2563eb/);
+  });
+});
+
+/**
+ * Portal refine (2026-09-22): the same recipe, enforced outside css/. Sixteen
+ * focus rules in colocated `components/portal/**` CSS modules and two inline
+ * `<style>` strings (PortalVoiceSession, VoiceStudioKit) drew their own ring —
+ * 2–3px accent outlines, soft-tint shadows, a `#121212 / #ad2c4d` hex pair.
+ * They read the tokens now, so this describe walks the modules with the same
+ * `violation()` the css/ sweep uses.
+ */
+describe('focus ring recipe — portal CSS modules and inline styles', () => {
+  const PORTAL_DIR = path.resolve(__dirname, '../../components/portal');
+  const modules: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const full = path.join(dir, entry);
+      if (statSync(full).isDirectory()) walk(full);
+      else if (entry.endsWith('.module.css')) modules.push(path.relative(PORTAL_DIR, full));
+    }
+  };
+  walk(PORTAL_DIR);
+
+  it('sees the modules that used to draw their own rings', () => {
+    for (const rel of [
+      'AssessmentForm.module.css',
+      'CoachChat.module.css',
+      'CounselorMessagesInboxClient.module.css',
+      'InterestProfilerClient.module.css',
+      'MemberLabWorkspace.module.css',
+      'ProactiveInsightCard.module.css',
+      'TodayHero.module.css',
+      'WioaQualificationClient.module.css',
+    ]) {
+      expect(modules).toContain(rel);
+    }
+  });
+
+  it('every :focus / :focus-visible rule in components/portal/**/*.module.css is the kit recipe', () => {
+    const offenders: string[] = [];
+    let ringRules = 0;
+    for (const rel of modules) {
+      for (const block of focusBlocks(rel, PORTAL_DIR)) {
+        const problem = violation(block);
+        if (problem) offenders.push(`components/portal/${rel}:${block.line} ${block.selector} — ${problem}`);
+        if (block.declarations.has('box-shadow')) ringRules += 1;
+      }
+    }
+    expect(offenders).toEqual([]);
+    // The module rules moved onto the recipe all declare the ring shadow (the
+    // parser above counts top-level :focus / :focus-visible blocks only).
+    expect(ringRules).toBeGreaterThanOrEqual(14);
+  });
+
+  it.each([
+    ['PortalVoiceSession.tsx', /\.pvs-focus-dark:focus-visible \{([^}]*)\}/],
+    ['kit/pages/VoiceStudioKit.tsx', /\.vs-focus-dark:focus-visible \{([^}]*)\}/],
+  ])('%s inline <style> ring is the on-dark recipe', (rel, rule) => {
+    const source = readFileSync(path.join(PORTAL_DIR, rel), 'utf8');
+    const match = source.match(rule);
+    expect(match, `${rel} still declares its dark-chrome focus rule`).not.toBeNull();
+    const declarations = new Map<string, string>();
+    for (const decl of match![1].split(';')) {
+      const colon = decl.indexOf(':');
+      if (colon < 0) continue;
+      declarations.set(decl.slice(0, colon).trim().toLowerCase(), decl.slice(colon + 1).trim().replace(/\s+/g, ' '));
+    }
+    const block: Block = { file: rel, line: 0, selector: rule.source, declarations, forcedColors: false };
+    expect(violation(block)).toBeNull();
+    expect(declarations.get('box-shadow')).toBe('var(--wa-focus-ring-on-dark)');
+    expect(source).not.toMatch(/0 0 0 4px #ad2c4d/);
   });
 });

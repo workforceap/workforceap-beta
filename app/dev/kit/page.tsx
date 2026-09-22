@@ -94,7 +94,7 @@ function Showcase({ surface }: { surface: SurfaceMode }) {
           <div className="wa-kit-card wa-kit-card--gradient-crimson" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 150 }}>
             <div style={{ fontSize: 22 }}>✦</div>
             <div>
-              <h3 style={{ fontWeight: 800, fontSize: 18 }}>Career Toolkit</h3>
+              <h3 style={{ fontWeight: 800, fontSize: 18 }}>AI Career Tools</h3>
               <p style={{ fontSize: 13, opacity: 0.85 }}>gradient in warm · tint in dense</p>
             </div>
           </div>
@@ -110,7 +110,7 @@ function Showcase({ surface }: { surface: SurfaceMode }) {
 
         {/* persona components */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5" style={{ marginTop: 20 }}>
-          <FeatureTile icon="✦" badge="AI" title="Career Toolkit" body="Resume audit + cover letters." tone="crimson" />
+          <FeatureTile icon="✦" badge="AI" title="AI Career Tools" body="Resume audit + cover letters." tone="crimson" />
           <FeatureTile icon="★" badge="NEXT" title="Next Badge" body="2 modules to go." tone="gold" />
           <div className="wa-kit-card">
             <RankBars

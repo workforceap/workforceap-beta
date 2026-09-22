@@ -41,6 +41,9 @@
   --wa-surface-2: light-dark(#f4f4f5, #25181c); /* subtle raised fill (icon tiles, chips) */
   --wa-text: light-dark(#1a1a1a, #f2e8ea);
   --wa-muted: light-dark(#6b6b6b, #b39ea4);
+  /* Muted text on a muted fill (.wa-kit-tag--muted on --wa-border): --wa-muted
+     measured 4.35:1 there, one step darker clears AA. Not for body copy. */
+  --wa-muted-strong: light-dark(#595959, #c8c8c8);
   --wa-border: light-dark(#e8e8e8, #372830);
   /* Interactive boundaries need stronger contrast than decorative dividers. */
   --wa-control-border: light-dark(#858585, #aa808d);

@@ -8,7 +8,7 @@ import { getProgramBySlug } from '@/lib/content/programs';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { prisma } from '@/lib/db/prisma';
 import PageHeader from '@/components/portal/PageHeader';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -236,8 +236,8 @@ export default async function MemberGuidePage() {
                     }}>
                       Step {step.num}
                     </span>
-                    {isDone && <StatusBadge label="Done" variant="success" />}
-                    {isActive && <StatusBadge label="Up next" variant="accent" />}
+                    {isDone && <StatusTag tone="ok">Done</StatusTag>}
+                    {isActive && <StatusTag tone="alert">Up next</StatusTag>}
                   </div>
                   <h3 style={{
                     fontSize: '1rem',

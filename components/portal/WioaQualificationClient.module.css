@@ -9,7 +9,7 @@
 .root ul, .root ol { margin: 0; padding-inline-start: 24px; }
 .root li + li { margin-top: 8px; }
 .root input, .root select { font-size: 16px; }
-.root :is(input, select, a):focus-visible { outline: 2px solid var(--wa-text); outline-offset: 3px; box-shadow: 0 0 0 3px var(--wa-text); }
+.root :is(input, select, a):focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring); }
 .root :global(.astryx-segmented-control-item) { min-height: 44px; white-space: normal; height: auto; }
 .root :global(.astryx-checkbox-input), .root :global(.astryx-radio-list-item) { min-height: 44px; }
 .root :global(.wa-kit-field-label) { display: block; font-size: 16px; font-weight: 600; }

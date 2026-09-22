@@ -361,8 +361,63 @@ html.dark [data-surface] .wa-kit-card,
   background: var(--wa-info-soft);
 }
 .wa-kit-tag--muted {
-  color: light-dark(var(--wa-muted), #c8c8c8);
+  /* --wa-muted (#6b6b6b) on --wa-border measured 4.35:1 — under AA for 13px
+     uppercase text. Darkened one step so muted pills clear 4.5:1 in light mode;
+     the dark pair was already 8:1+. */
+  color: var(--wa-muted-strong);
   background: light-dark(var(--wa-border), rgba(255, 255, 255, 0.08));
+}
+
+/* Trend delta chip (StatSparkTile, member home KPI tiles): arrow + value.
+   Layout only — the colour comes from composing .wa-kit-tag--ok (up) or
+   .wa-kit-tag--danger (down), the WCAG-tuned text-on-tint pairs above (4.5:1
+   in both modes). Painting the text from the base --wa-success / --wa-danger
+   hue measured 3.1:1 on the soft tint. No uppercase: it is a number. */
+.wa-kit-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  width: fit-content;
+}
+
+/* Saved-view chip strip above a kit table: one row that scrolls sideways on
+   phones instead of shrinking or clipping the last chip. The 4px bleed keeps
+   the focus ring (2px ring at 2px offset) inside the scroll box. */
+.wa-kit-view-chips {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px;
+  margin: -4px;
+}
+.wa-kit-view-chips::-webkit-scrollbar {
+  display: none;
+}
+.wa-kit-view-chips .astryx-segmented-control {
+  width: max-content;
+  max-width: none;
+}
+.wa-kit-view-chips .astryx-segmented-control-item {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Keyboard hint inside UniversalSearch (dark shell chrome): the gray Astryx
+   Token measured 3.1:1 on the header. */
+.wa-kit-search-hint {
+  font-family: inherit;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-sidebar-muted);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--wa-radius-sm);
+  padding: 1px 6px;
 }
 
 /* Semantic tone hook. A container declares its tone once (the same six
@@ -749,6 +804,7 @@ a.wa-kit-tab {
 }
 .wa-kit-table-cell--num {
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 /* Scroll cue: right-edge fade while more columns hide off-screen. */
 .wa-kit-table-wrap--cue[data-scrollable='true']:not([data-scroll-end='true'])::after {

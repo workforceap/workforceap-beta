@@ -423,8 +423,6 @@ function ExecutiveDashboardContent() {
       {/* Footer note */}
       <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
         Metrics refresh on page load. Data sourced from member_events and user tables.
-        <br />
-        Placement tracking KPIs coming soon (waiting on placement workflow completion).
       </p>
     </div>
   );

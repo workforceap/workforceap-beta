@@ -116,8 +116,9 @@
 }
 
 .quick:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--color-accent, #ad2c4d) 60%, transparent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 .quickPrimary {

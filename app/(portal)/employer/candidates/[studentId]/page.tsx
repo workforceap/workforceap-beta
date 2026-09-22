@@ -16,7 +16,8 @@ import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import { employerAiMatchStatusBadgeVariant, employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import {
   employerJobPostingApplicationStatusBadgeVariant,
@@ -259,10 +260,9 @@ export default async function EmployerCandidateProfilePage({
                     </div>
                   </div>
                   <div style={{ marginTop: '0.6rem' }}>
-                    <StatusBadge
-                      label={employerMatchPipelineLabel(selectedMatch.status)}
-                      variant={employerAiMatchStatusBadgeVariant(selectedMatch.status)}
-                    />
+                    <StatusTag tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(selectedMatch.status))}>
+                      {employerMatchPipelineLabel(selectedMatch.status)}
+                    </StatusTag>
                   </div>
                 </div>
               ) : null}
@@ -403,10 +403,9 @@ export default async function EmployerCandidateProfilePage({
                       </div>
                     </div>
                     <div style={{ marginTop: '0.55rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
-                      <StatusBadge
-                        label={employerMatchPipelineLabel(match.status)}
-                        variant={employerAiMatchStatusBadgeVariant(match.status)}
-                      />
+                      <StatusTag tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(match.status))}>
+                        {employerMatchPipelineLabel(match.status)}
+                      </StatusTag>
                       {highlightJobId === match.jobId ? (
                         <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span>
                       ) : null}
@@ -432,10 +431,9 @@ export default async function EmployerCandidateProfilePage({
                       {application.job.title}
                     </Link>
                     <div style={{ marginTop: '0.35rem' }}>
-                      <StatusBadge
-                        label={employerJobPostingApplicationStatusLabel(application.status)}
-                        variant={employerJobPostingApplicationStatusBadgeVariant(application.status)}
-                      />
+                      <StatusTag tone={badgeVariantToKitTone(employerJobPostingApplicationStatusBadgeVariant(application.status))}>
+                        {employerJobPostingApplicationStatusLabel(application.status)}
+                      </StatusTag>
                     </div>
                     <p style={{ margin: '0.45rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       Applied {formatDateTime(application.appliedAt)}
@@ -640,10 +638,9 @@ export default async function EmployerCandidateProfilePage({
                           </div>
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginTop: '0.65rem' }}>
-                          <StatusBadge
-                            label={employerMatchPipelineLabel(match.status)}
-                            variant={employerAiMatchStatusBadgeVariant(match.status)}
-                          />
+                          <StatusTag tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(match.status))}>
+                            {employerMatchPipelineLabel(match.status)}
+                          </StatusTag>
                           {highlightJobId === match.jobId ? <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span> : null}
                         </div>
                       </div>
@@ -668,10 +665,9 @@ export default async function EmployerCandidateProfilePage({
                               Applied {formatDateTime(application.appliedAt)}
                             </p>
                           </div>
-                          <StatusBadge
-                            label={employerJobPostingApplicationStatusLabel(application.status)}
-                            variant={employerJobPostingApplicationStatusBadgeVariant(application.status)}
-                          />
+                          <StatusTag tone={badgeVariantToKitTone(employerJobPostingApplicationStatusBadgeVariant(application.status))}>
+                            {employerJobPostingApplicationStatusLabel(application.status)}
+                          </StatusTag>
                         </div>
                       </div>
                     ))}

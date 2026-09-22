@@ -285,27 +285,14 @@ function KitCardHead({ title, linkLabel, linkHref }: { title: string; linkLabel?
 
 /**
  * Trend pill. The direction IS the state, so it declares its own tone hook
- * (`ok` up / `danger` down) and paints from `--wa-kit-tone`; it never names
- * `var(--wa-success)` / `var(--wa-danger)` inline (#2434, WAP-99).
+ * (`ok` up / `danger` down) through `.wa-kit-delta` + `.wa-kit-tag--ok|danger` — the
+ * WCAG-tuned text-on-tint pairs the status pills already prove; the base
+ * `--wa-kit-tone` hue measured 3.1:1 on its soft tint (#2434, WAP-99).
  */
 function DeltaChip({ delta, direction = 'up' }: { delta: string; direction?: 'up' | 'down' }) {
   const Icon = direction === 'down' ? ArrowDown : ArrowUp;
   return (
-    <span
-      className={toneClass(direction === 'down' ? 'danger' : 'ok')}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 3,
-        fontSize: 'var(--wa-type-meta)',
-        fontWeight: 700,
-        padding: '4px 8px',
-        borderRadius: 999,
-        color: 'var(--wa-kit-tone)',
-        background: 'var(--wa-kit-tone-soft)',
-        fontVariantNumeric: 'tabular-nums',
-      }}
-    >
+    <span className={cx('wa-kit-delta', direction === 'down' ? 'wa-kit-tag--danger' : 'wa-kit-tag--ok')}>
       <Icon size={10} aria-hidden />
       {delta}
     </span>

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { statusLabel } from '@/lib/employer/statusLabel';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
+import { StatusTag, type KitTone } from '@/components/portal/kit';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 
 const STATUS_CHIP_FILTERS = [
@@ -26,14 +27,14 @@ const STATUS_ACTIONS: Record<string, string[]> = {
   rejected: [],
 };
 
-function statusColor(status: string): { bg: string; color: string } {
-  if (status === 'hired') return { bg: 'color-mix(in srgb, var(--color-green) 16%, transparent)', color: 'var(--color-green)' };
-  if (status === 'rejected') return { bg: 'color-mix(in srgb, var(--wa-danger, #dc2626) 14%, transparent)', color: 'var(--wa-danger, #dc2626)' };
-  if (status === 'pending') return { bg: '#fff1f2', color: 'var(--color-accent)' };
-  if (status === 'reviewing') return { bg: 'color-mix(in srgb, var(--color-gold) 18%, transparent)', color: 'var(--color-gold)' };
-  if (status === 'interview') return { bg: '#dbeafe', color: '#1e3a8a' };
-  if (status === 'offered') return { bg: '#f3e8ff', color: '#6b21a8' };
-  return { bg: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' };
+/** Application status → kit tone (guide §4): rejected is a failed state, so it reads kit `danger`. */
+function statusTone(status: string): KitTone {
+  if (status === 'hired') return 'ok';
+  if (status === 'rejected') return 'danger';
+  if (status === 'pending') return 'alert';
+  if (status === 'reviewing') return 'warn';
+  if (status === 'interview' || status === 'offered') return 'info';
+  return 'muted';
 }
 
 function applicationStatusLabel(status: string): string {
@@ -174,7 +175,6 @@ export default function MobileApplicationsClient({
             const isExpanded = expandedId === app.id;
             const isChatOpen = openChatId === app.id;
             const isChatLoading = chatLoadingId === app.id;
-            const sc = statusColor(app.status);
             const nextStatuses = STATUS_ACTIONS[app.status] ?? [];
             const studentName = app.student.fullName?.trim() || app.student.email;
 
@@ -203,12 +203,9 @@ export default function MobileApplicationsClient({
                       <h4 className="font-bold text-sm truncate" style={{ color: 'var(--color-on-surface)' }}>
                         {studentName}
                       </h4>
-                      <span
-                        className="px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-tighter flex-shrink-0"
-                        style={{ background: sc.bg, color: sc.color, whiteSpace: 'nowrap' }}
-                      >
+                      <StatusTag tone={statusTone(app.status)} style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                         {applicationStatusLabel(app.status)}
-                      </span>
+                      </StatusTag>
                     </div>
                     <p className="text-xs font-semibold uppercase tracking-wider truncate mt-0.5" style={{ color: 'var(--color-on-surface-variant)' }}>
                       {app.job.title}

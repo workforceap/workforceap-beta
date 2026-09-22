@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { Download } from 'lucide-react';
 import {
   DesignSurface,
   SectionHeader,
@@ -237,11 +238,7 @@ export function AdminDashboardKit({
       variant="secondary"
       size="sm"
       href={exportHref}
-      icon={
-        <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden>
-          download
-        </span>
-      }
+      icon={<Download size={16} aria-hidden />}
     />
   );
 

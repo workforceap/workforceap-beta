@@ -159,12 +159,6 @@ function illustrativeGiveback(hires: number): string {
   return `$${total.toLocaleString('en-US')}`;
 }
 
-function fitScoreColor(pct: number): string {
-  if (pct >= 80) return 'var(--wa-success)';
-  if (pct >= 60) return 'var(--wa-gold)';
-  return 'var(--wa-muted)';
-}
-
 /* ---------------------------------------------------------------------- */
 /* Candidate table                                                         */
 /* ---------------------------------------------------------------------- */
@@ -196,9 +190,10 @@ const candidateColumns: Column<EmployerCandidateRow>[] = [
     key: 'fit',
     header: 'Fit',
     align: 'right',
+    numeric: true,
     render: (row) =>
       typeof row.fitScore === 'number' ? (
-        <span style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: fitScoreColor(clampPct(row.fitScore)) }}>
+        <span style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: 'var(--wa-text)' }}>
           {clampPct(row.fitScore)}%
         </span>
       ) : (
@@ -238,7 +233,7 @@ function candidateCard(row: EmployerCandidateRow) {
       <div className="wa-flex wa-items-center wa-justify-between" style={{ marginTop: 10 }}>
         <StageTrack index={stage.index} total={stage.total} tone={stage.tone} />
         {typeof row.fitScore === 'number' ? (
-          <span style={{ fontSize: 13, fontWeight: 800, color: fitScoreColor(clampPct(row.fitScore)), fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--wa-text)', fontVariantNumeric: 'tabular-nums' }}>
             {clampPct(row.fitScore)}% fit
           </span>
         ) : row.appliedLabel ? (
@@ -321,7 +316,7 @@ export function EmployerHomeKit({
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="wa-kit-card lg:wa-col-span-8">
             <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Candidate pipeline</h3>
+              <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Candidate pipeline</h2>
               <a
                 href={pipelineHref}
                 className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"

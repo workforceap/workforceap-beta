@@ -4,7 +4,8 @@ import { formatPortalDateTime } from '@/lib/formatDate';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import DataTable from '@/components/portal/ui/DataTable';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import type { BadgeVariant } from '@/components/portal/StatusBadge';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import type { EnrollmentPipelineRow, EnrollmentSignal } from '@/lib/admin/courseraEnrollmentPipeline';
@@ -398,7 +399,7 @@ export default function CourseraEnrollmentPipelineTable({
             header: 'Observed learning',
             cell: (row) => (
               <div>
-                <StatusBadge label={SIGNAL_CONFIG[row.signal].label} variant={SIGNAL_CONFIG[row.signal].variant} />
+                <StatusTag tone={badgeVariantToKitTone(SIGNAL_CONFIG[row.signal].variant)}>{SIGNAL_CONFIG[row.signal].label}</StatusTag>
                 {row.hasEnrollmentReceipt ? <div style={{ fontSize: '0.8125rem' }}>Enrollment receipt recorded</div> : null}
                 {row.lastActivityAt ? (
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.2rem' }}>

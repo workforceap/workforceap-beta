@@ -105,6 +105,24 @@ describe('kit DataTable — selection and bulk bar', () => {
   });
 });
 
+describe('kit DataTable — numeric columns (guide §6a)', () => {
+  it('paints `numeric` columns with .wa-kit-table-cell--num on the header and every cell', () => {
+    const numericColumns: Column<Row>[] = [
+      { key: 'name', header: 'Name', stickyLeft: true },
+      { key: 'issues', header: 'Issues', numeric: true },
+    ];
+    render(<DataTable<Row> {...base} columns={numericColumns} />);
+    const table = screen.getByRole('table');
+    const header = within(table).getByRole('columnheader', { name: 'Issues' });
+    expect(header).toHaveClass('wa-kit-table-cell--num');
+    expect(header).toHaveStyle({ textAlign: 'right' });
+    const cells = within(table).getAllByRole('cell').filter((cell) => cell.classList.contains('wa-kit-table-cell--num'));
+    expect(cells).toHaveLength(rows.length);
+    expect(cells.map((cell) => cell.textContent)).toEqual(['2', '0', '1']);
+    expect(within(table).getByRole('columnheader', { name: 'Name' })).not.toHaveClass('wa-kit-table-cell--num');
+  });
+});
+
 describe('kit DataTable — pagination footer', () => {
   it('renders the pager only when there is more than one page and reports the next page', () => {
     const onChange = vi.fn();

@@ -6,7 +6,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import DataTable from '@/components/portal/ui/DataTable';
 import { isAppLocale, type AppLocale } from '@/lib/i18n/config';
 import { formatDate } from '@/lib/i18n/date';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import type { BadgeVariant } from '@/components/portal/StatusBadge';
 import {
   buildProvisioningCsv,
@@ -216,7 +217,7 @@ export default function CourseraProvisioningQueueTable({
             cell: (row) => (
               <div style={{ display: 'grid', gap: '0.25rem', justifyItems: 'start' }}>
                 <span title={PROVISIONING_STATE_HINTS[row.state]}>
-                  <StatusBadge label={PROVISIONING_STATE_LABELS[row.state]} variant={STATE_VARIANT[row.state]} />
+                  <StatusTag tone={badgeVariantToKitTone(STATE_VARIANT[row.state])}>{PROVISIONING_STATE_LABELS[row.state]}</StatusTag>
                 </span>
                 {row.approvalMismatch ? (
                   <span style={{ fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
