@@ -6,6 +6,8 @@ type Surface = {
   subtext?: string;
   icon: ReactNode;
   glowColor: string;
+  /** Badge label colour when the glow hue is too light to read as text. */
+  badgeColor?: string;
   gradient: string;
   ctaGradient?: string;
   ctaShadow?: string;
@@ -20,6 +22,12 @@ type Surface = {
 const CRIMSON = 'var(--wa-hero-crimson)';
 const CRIMSON_DARK = 'var(--wa-hero-crimson-dark)';
 const GOLD = '#a47f38';
+/**
+ * Badge copy on the gold surfaces sits on the card surface, where brand gold is
+ * 3.7:1 on white. `--wa-gold-dark` is the text-on-gold token (#7d5f26 / #e0b062:
+ * 5.9:1 on white, 9.0:1 on the dark surface); the glow keeps the brand gold.
+ */
+const GOLD_TEXT = 'var(--wa-gold-dark)';
 /**
  * White CTA text sits on these gradients, so the floor must be the tuned
  * hero gold (#7d5f26, 5.9:1 with white) rather than brand gold (#a47f38,
@@ -38,6 +46,7 @@ export const readinessVoiceSurface: Surface = {
   subtext: 'Stuck on what to do next? Talk it through and leave with one clear next step.',
   icon: icon(Target),
   glowColor: GOLD,
+  badgeColor: GOLD_TEXT,
   gradient: GOLD_TEXT_GRADIENT,
   ctaGradient: GOLD_TEXT_GRADIENT,
   ctaShadow: '0 8px 24px rgba(164,127,56,0.24)',
@@ -89,6 +98,7 @@ export const partnerVoiceSurface: Surface = {
   subtext: 'Referrals, member progress, and partner tools.',
   icon: icon(Handshake),
   glowColor: GOLD,
+  badgeColor: GOLD_TEXT,
   gradient: GOLD_TEXT_GRADIENT,
   ctaGradient: GOLD_TEXT_GRADIENT,
   ctaShadow: '0 8px 24px rgba(164,127,56,0.24)',
