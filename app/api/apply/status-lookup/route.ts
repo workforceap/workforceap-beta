@@ -17,8 +17,11 @@ function getClientIp(request: NextRequest): string {
   );
 }
 
+// This endpoint does not look up applications (anti-enumeration, AUDIT §H-S4),
+// so the copy must not imply one happened. There is no SMS sender in this
+// codebase; decisions go out by email only.
 const genericMessage =
-  'If we have an application on file for that email, you will receive status updates by email and SMS. Otherwise, you can submit a new application at workforceap.org/apply.';
+  'This page cannot look up application status. If you applied, your decision will be sent by email to the address you applied with. To ask about your application now, contact the team at workforceap.org/contact, or submit a new application at workforceap.org/apply.';
 
 const genericResponse = {
   found: false,

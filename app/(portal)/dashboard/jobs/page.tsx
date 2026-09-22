@@ -18,6 +18,8 @@ import {
   type OpenRoleRow,
 } from '@/components/portal/kit/pages/member/MemberJobsKit';
 import { displayJobLocation, isActiveApplicationStatus } from '@/lib/member/jobPipelineDisplay';
+import { buildExternalJobBoards, buildExternalJobSearchQuery } from '@/lib/member/externalJobSearchQuery';
+import type { CareerMatchResult } from '@/lib/onet/types';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -44,6 +46,9 @@ export default async function JobsPage({
   let ageGroup: 'under14' | 'youth14to17' | 'adult18plus' = 'adult18plus';
   let profileCity: string | null = null;
   let profileState: string | null = null;
+  // External job-board links search for the member's target role (career-quiz
+  // top occupation), else their program title, else the generic literal.
+  let externalSearch = buildExternalJobSearchQuery({});
   // SSR: fetch applied job IDs so job cards can show "Applied" badge.
   let appliedJobIds: string[] = [];
   // Pull the member's tracked applications (all statuses) — SAVED rows feed
@@ -68,7 +73,19 @@ export default async function JobsPage({
     const [profileResult, appliedResult, pipelineResult] = await Promise.allSettled([
       prisma.profile.findUnique({
         where: { userId: user.id },
-        select: { dob: true, isMinor: true, city: true, state: true },
+        select: {
+          dob: true,
+          isMinor: true,
+          city: true,
+          state: true,
+          user: {
+            select: {
+              careerRecommendationJson: true,
+              enrolledProgram: true,
+              courseEnrollments: { where: { isPrimary: true }, take: 1, select: { programSlug: true } },
+            },
+          },
+        },
       }),
       prisma.jobApplication.findMany({
         take: 500,
@@ -110,6 +127,10 @@ export default async function JobsPage({
       }
       profileCity = profile?.city?.trim() || null;
       profileState = profile?.state?.trim() || null;
+      externalSearch = buildExternalJobSearchQuery({
+        careerRecommendation: (profile?.user?.careerRecommendationJson ?? null) as CareerMatchResult | null,
+        programSlug: profile?.user?.courseEnrollments[0]?.programSlug ?? profile?.user?.enrolledProgram ?? null,
+      });
     } else {
       ageGroup = 'adult18plus';
     }
@@ -132,38 +153,7 @@ export default async function JobsPage({
     'Cedar Park, TX',
     'Pflugerville, TX',
   ].filter((location, index, arr) => arr.indexOf(location) === index);
-  const externalBoards = [
-    {
-      label: 'Indeed',
-      href: `https://www.indeed.com/jobs?${new URLSearchParams({ q: 'jobs', l: primaryLocation }).toString()}`,
-      note: 'Largest local coverage across industries.',
-      bestFor: 'fastest broad search',
-    },
-    {
-      label: 'LinkedIn',
-      href: `https://www.linkedin.com/jobs/search/?${new URLSearchParams({ keywords: 'jobs', location: primaryLocation }).toString()}`,
-      note: 'Strong for professional, tech, and corporate roles.',
-      bestFor: 'office, tech, and employer networking',
-    },
-    {
-      label: 'Glassdoor',
-      href: `https://www.glassdoor.com/Job/jobs.htm?${new URLSearchParams({ 'sc.keyword': `jobs ${primaryLocation}` }).toString()}`,
-      note: 'Job listings plus salary and company review context.',
-      bestFor: 'salary checks before you apply',
-    },
-    {
-      label: 'ZipRecruiter',
-      href: `https://www.ziprecruiter.com/jobs-search?${new URLSearchParams({ search: 'jobs', location: primaryLocation }).toString()}`,
-      note: 'Good metro and suburb coverage.',
-      bestFor: 'wider Austin-metro reach',
-    },
-    {
-      label: 'WorkInTexas / AustinJobs',
-      href: 'https://www.workintexas.com/vosnet/Default.aspx',
-      note: 'Texas Workforce Commission portal for local and public-sector roles.',
-      bestFor: 'public-sector and workforce-system jobs',
-    },
-  ];
+  const externalBoards = buildExternalJobBoards({ query: externalSearch.query, location: primaryLocation });
 
   // SSR: Prefetch first 20 jobs for SEO and faster initial load
   let initialJobs: Array<{
@@ -475,6 +465,11 @@ export default async function JobsPage({
               ? `Using your profile location: ${primaryLocation}.`
               : 'If no city is saved yet, start with Austin metro and nearby suburbs.'}
           </p>
+          {externalSearch.source !== 'default' ? (
+            <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0' }} data-external-search-source={externalSearch.source}>
+              {`Links below search for "${externalSearch.query}" from your ${externalSearch.source === 'occupation' ? 'career match' : 'program'}.`}
+            </p>
+          ) : null}
           {user ? (
             <p style={{ fontSize: 13, margin: '6px 0 0' }}>
               <a

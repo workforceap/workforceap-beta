@@ -27,6 +27,7 @@ import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
+import CertificationsEmptyNotice, { CERTIFICATES_EMPTY_DESCRIPTION } from '@/components/portal/CertificationsEmptyNotice';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -246,9 +247,7 @@ export default async function DashboardCertificationsPage({
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {certs.length === 0 ? (
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>
-                No certificates recorded yet. Certificates appear here when you complete Coursera courses (they sync automatically) or when you add certificates you've earned elsewhere.
-              </p>
+              <CertificationsEmptyNotice />
             ) : (
               certs.map((cert) => (
                 <CertificationEarnedRowMobile key={cert.id} certName={cert.certName} earnedAt={cert.earnedAt} />
@@ -501,7 +500,7 @@ export default async function DashboardCertificationsPage({
                 >
                   {certs.length > 0
                     ? 'Credentials saved to your WorkforceAP profile. Official PDF certificates come from the issuing organization (Coursera, CompTIA, etc.).'
-                    : 'Earn certificates through your program pathway to see them listed here. Coursera certificates sync automatically; others can be added manually.'}
+                    : CERTIFICATES_EMPTY_DESCRIPTION}
                 </div>
               </div>
             </div>
@@ -716,7 +715,7 @@ export default async function DashboardCertificationsPage({
                     </span>
                   }
                   title="No certificates yet"
-                  description="Earn certificates through your program pathway to see them listed here. Coursera certificates sync automatically; others can be added manually."
+                  description={CERTIFICATES_EMPTY_DESCRIPTION}
                   primaryAction={{ href: '/dashboard/learning', label: 'Go to Learning Hub' }}
                   secondaryAction={{ href: '/dashboard/ai-tools/career-business-coach', label: 'Talk to Career Coach' }}
                 />
