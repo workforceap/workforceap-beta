@@ -1,11 +1,21 @@
 /**
  * Failed-send record (WAP-163).
  *
- * Between 2026-06-29 and 2026-09-06, 768 outbound emails failed on one
+ * Between 2026-07-02 and 2026-09-01, 768 outbound emails failed on one
  * header bug and nothing surfaced or re-sent them: `lib/email/send.ts` wrote a
  * `workflow_diagnostics` row with only `{ to, subject }`, which is not enough
  * to list the failures by template, to tell a permanent rejection from a
  * transient one, or to re-invoke the template with the same payload.
+ *
+ * Those 768 are the CRLF-header subset of 810 `email_send` failure rows in
+ * total (768 CRLF, 32 Resend rate-limit, 10 invalid-address), oldest
+ * 2026-07-02 21:50. Measured against production on 2026-09-22 — an earlier
+ * version of this comment said 2026-06-29 to 2026-09-06, which was wrong in
+ * both directions: nothing exists on 06-29 at all, and 09-06 is the last
+ * rate-limit row rather than the last CRLF one. That wrong start date was
+ * taken at face value and produced a wrong retention deadline, so if you
+ * update these figures, re-measure and re-date this note rather than
+ * adjusting it from memory.
  *
  * Every failed send now carries a typed metadata block: template name and
  * params (when the wrapper opted in, see `SendBrandedEmailArgs.template`),
