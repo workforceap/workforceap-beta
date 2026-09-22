@@ -11,6 +11,7 @@ import {
   type JobApplicationSource,
 } from '@/lib/member/jobApplicationKanban';
 import { updateJobApplicationSchema } from '@/lib/validation/jobApplication';
+import { applicationStatusChangeMetadata } from '@/lib/member/applicationStatusEvent';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -151,10 +152,10 @@ function parseStatus(rawStatus: unknown): JobApplicationDbStatus | undefined {
           entityType: 'job_application',
           entityId: application.id,
           sourcePage: '/dashboard/job-applications',
-          metadata: {
-            previousStatus: getJobApplicationStage(existing.status),
-            nextStatus: getJobApplicationStage(data.status),
-          },
+          // Shared with the three paths that were silent until now, so all
+          // four write one metadata shape (stages, plus the raw db statuses
+          // stages fold away).
+          metadata: applicationStatusChangeMetadata(existing.status, data.status),
         });
       } else {
         await trackEvent({

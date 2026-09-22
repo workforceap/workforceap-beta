@@ -11,9 +11,38 @@ type Preview = {
   primary: { id: string; fullName: string; email: string; phone: string | null; enrolledProgram: string | null; assessmentCompleted: boolean };
   secondary: { id: string; fullName: string; email: string; phone: string | null; enrolledProgram: string | null; assessmentCompleted: boolean };
   conflicts: { field: string; message: string }[];
-  relationsToRepoint: { model: string; field: string; count: number }[];
+  relationsToRepoint: {
+    model: string;
+    field: string;
+    count: number;
+    moving: number;
+    keptOnSecondary: number;
+    stranded?: { noun: string; plural: string; weight: 'state' | 'review' };
+  }[];
   scalarFieldsToMerge: string[];
 };
+
+type PreviewRelation = {
+  model: string;
+  field: string;
+  count: number;
+  moving: number;
+  keptOnSecondary: number;
+  stranded?: { noun: string; plural: string; weight: 'state' | 'review' };
+};
+
+/** "a placement record" / "2 certifications" — singular reads better at one. */
+function countedNoun(relation: PreviewRelation): string {
+  const impact = relation.stranded;
+  if (!impact) return `${relation.keptOnSecondary} records`;
+  return relation.keptOnSecondary === 1 ? impact.noun : `${relation.keptOnSecondary} ${impact.plural}`;
+}
+
+/** "a, b and c" */
+function joinPhrases(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? '';
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
 
 export default function MemberMergeClient() {
   const [primaryQuery, setPrimaryQuery] = useState('');
@@ -23,6 +52,11 @@ export default function MemberMergeClient() {
   const [primary, setPrimary] = useState<Suggestion | null>(null);
   const [secondary, setSecondary] = useState<Suggestion | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
+  /** Relations that will actually leave something behind, by how much it matters. */
+  const strandedByWeight = (weight: 'state' | 'review'): PreviewRelation[] =>
+    (preview?.relationsToRepoint ?? []).filter(
+      (relation) => relation.keptOnSecondary > 0 && relation.stranded?.weight === weight,
+    );
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [merging, setMerging] = useState(false);
   const [confirmMerge, setConfirmMerge] = useState(false);
@@ -287,17 +321,59 @@ export default function MemberMergeClient() {
               </div>
             )}
 
+            {strandedByWeight('review').length > 0 && (
+              <div
+                data-merge-review-required
+                role="alert"
+                style={{
+                  padding: '0.625rem 0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '2px solid var(--color-error, #b3261e)',
+                  background: 'var(--color-error-container, #fcebea)',
+                  color: 'var(--color-on-error-container, #410e0b)',
+                  fontSize: '0.875rem',
+                }}
+              >
+                <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>A human has to decide this one</div>
+                <div>
+                  Both members hold {joinPhrases(strandedByWeight('review').map((r) => countedNoun(r)))}. Merging leaves the
+                  duplicate&apos;s on the archived account — it is not deleted, but nothing picks which one is real.
+                  Check both before you merge.
+                </div>
+              </div>
+            )}
+
+            {strandedByWeight('state').length > 0 && (
+              <div data-merge-stranded-state style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Left on the duplicate</div>
+                <div>
+                  The primary already has its own, so this merge will not move{' '}
+                  {joinPhrases(strandedByWeight('state').map((r) => countedNoun(r)))}. Nothing is deleted.
+                </div>
+              </div>
+            )}
+
             {preview.relationsToRepoint.length > 0 && (
               <div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.375rem' }}>Related records transferred ({preview.relationsToRepoint.reduce((s, r) => s + r.count, 0)} total)</div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.375rem' }}>Related records transferred ({preview.relationsToRepoint.reduce((s, r) => s + r.moving, 0)} of {preview.relationsToRepoint.reduce((s, r) => s + r.count, 0)})</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(14rem, 1fr))', gap: '0.375rem', fontSize: '0.8125rem' }}>
                   {preview.relationsToRepoint.map((r) => (
                     <div key={`${r.model}-${r.field}`} style={{ padding: '0.35rem 0.5rem', borderRadius: '0.375rem', background: 'var(--surface-container-low)' }}>
                       <span style={{ fontWeight: 600 }}>{r.model}</span>{' '}
-                      <span style={{ color: 'var(--color-on-surface-variant)' }}>({r.count})</span>
+                      <span style={{ color: 'var(--color-on-surface-variant)' }}>({r.moving})</span>
+                      {r.keptOnSecondary > 0 && (
+                        <div data-merge-kept style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                          {r.keptOnSecondary} already on {preview.primary.fullName || 'the primary'} — kept on the duplicate
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
+                {preview.relationsToRepoint.some((r) => r.keptOnSecondary > 0) && (
+                  <div data-merge-kept-note style={{ marginTop: '0.375rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                    Records the primary already has are left on the duplicate rather than moved. Nothing is deleted; the duplicate is archived, not removed.
+                  </div>
+                )}
               </div>
             )}
 
