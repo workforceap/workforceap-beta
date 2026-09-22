@@ -19,17 +19,13 @@
  * failure. The shared client sets maxWait 5 s / timeout 10 s
  * (lib/db/prisma.ts), the same values production runs with.
  */
-import test, { after } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
 import { prisma } from '../db/prisma';
 
 import { buildMergePreview, executeMemberMerge } from './memberMerge';
-
-after(async () => {
-  await prisma.$disconnect();
-});
 
 type Fixture = {
   organizationId: string;
