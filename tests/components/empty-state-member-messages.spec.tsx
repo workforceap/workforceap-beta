@@ -191,6 +191,21 @@ describe('member messages (legacy mobile): open thread with nothing sent yet', (
     expect(screen.queryByText('No messages yet. Say hello!')).toBeNull();
   });
 
+  it('keeps the empty state in the first viewport: centred, and the thread does not auto-scroll when nothing is there to scroll to', () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    const { container, unmount } = openThread('en');
+    const empty = emptyOf(container, 'first');
+    expect(empty.parentElement?.className).toContain('wa-justify-center');
+    expect(empty.parentElement?.className).toContain('wa-h-full');
+    expect(scroll).not.toHaveBeenCalled();
+    unmount();
+    // With a message the thread still scrolls to the latest bubble.
+    const view = portal('en', <MemberMessagesMobileClient initial={{ thread, counselorName: 'Dana Lee', counselorInitials: 'DL', messages: [{ id: 'm-1', threadId: 'thread-1', authorId: 'counselor-1', body: 'Hi Sam', createdAt: '2026-09-01T12:00:00Z' }], memberUserId: 'member-1', lastMsgText: 'Hi Sam', lastMsgTime: '', unreadCount: 0 }} />);
+    fireEvent.click(view.getByRole('button', { name: /Dana Lee/ }));
+    expect(scroll).toHaveBeenCalled();
+  });
+
   it('no counselor assigned yet is the warn unavailable state', () => {
     const { container } = openThread('en', unassigned, null);
     const empty = emptyOf(container, 'unavailable');

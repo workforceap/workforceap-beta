@@ -3856,7 +3856,7 @@
     },
     "inboxUnavailable": {
       "title": "Sua caixa de entrada ainda não está pronta",
-      "body": "Sua conversa aparecerá aqui quando o tópico estiver configurado.",
+      "body": "Sua conversa aparecerá aqui assim que estiver configurada.",
       "action": "Voltar ao painel",
       "overviewAction": "Voltar à visão geral"
     },

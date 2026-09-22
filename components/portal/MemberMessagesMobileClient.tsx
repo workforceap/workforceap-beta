@@ -99,7 +99,10 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
 
   useEffect(() => {
     if (view === 'thread') {
-      scrollToBottom();
+      // Nothing to scroll to on an empty thread — and the shell is 100dvh /
+      // overflow hidden under the sticky top bar, so scrolling the window would
+      // push the empty state's icon and title out of the first viewport.
+      if (messages.length > 0) scrollToBottom();
       void markRead();
     }
   }, [view, messages.length, scrollToBottom, markRead]);
@@ -315,6 +318,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
         {messages.length === 0 ? (
           /* Same two situations as the desktop client: first message vs. no
              counselor assigned yet (honest, warn); writing works in both. */
+          <div className="wa-flex wa-flex-col wa-justify-center wa-h-full">
           <KitEmptyState
             kind={thread.counselorUserId ? 'first' : 'unavailable'}
             framed
@@ -330,6 +334,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
               onClick: () => composeRef.current?.focus(),
             }}
           />
+          </div>
         ) : (
           messages.map((m) => {
             const mine = m.authorId === memberUserId;
