@@ -34,6 +34,7 @@ import {
   EMPLOYER_CORROBORATION_MARKER,
   EMPLOYER_HIRED_NOTE,
   MEMBER_SELF_REPORT_NOTE,
+  isMemberReportedPlacement,
   recordPlacementFromApplication,
 } from './recordPlacementFromApplication';
 import { notifyAndRecordPlacement } from '@/lib/employer/applicationStatusEffects';
@@ -301,5 +302,90 @@ describe('notifyAndRecordPlacement (the employer route side-effect) goes through
     expect(prisma.placementRecord.update).not.toHaveBeenCalled();
     const notified = vi.mocked(createNotification).mock.calls.map((call) => call[0]);
     expect(notified.map((n) => n.userId)).toEqual([MEMBER_ID]);
+  });
+});
+
+describe('member and employer confirm at the same moment (P2002 on the unique member row)', () => {
+  const uniqueViolation = () => Object.assign(new Error('Unique constraint failed on the fields: (`user_id`)'), { code: 'P2002' });
+
+  it('employer create loses the race to the member: corroborates the member row instead of failing', async () => {
+    vi.mocked(prisma.placementRecord.findUnique)
+      .mockResolvedValueOnce(null as never)
+      .mockResolvedValueOnce(memberReportedRow as never);
+    vi.mocked(prisma.placementRecord.create).mockRejectedValueOnce(uniqueViolation());
+
+    const result = await recordPlacementFromApplication({
+      userId: MEMBER_ID,
+      employerName: 'Acme Corporation',
+      jobTitle: 'Help Desk Technician',
+      source: 'employer_hired',
+      applicationId: 'posting-app-1',
+      actorUserId: 'employer-user',
+      now: NOW,
+    });
+
+    expect(result.outcome).toBe('corroborated');
+    expect(prisma.placementRecord.findUnique).toHaveBeenCalledTimes(2);
+    expect(prisma.placementRecord.update).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(prisma.placementRecord.update).mock.calls[0][0].data).toMatchObject({ employerName: 'Acme Corporation' });
+    // Only the corroboration is audited; the lost create leaves no trace and awards nothing.
+    expect(auditLog).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(auditLog).mock.calls[0][0]).toMatchObject({ action: 'placement_update' });
+    expect(awardPoints).not.toHaveBeenCalled();
+  });
+
+  it('member create loses the race to the employer: reports unchanged, duplicates nothing', async () => {
+    vi.mocked(prisma.placementRecord.findUnique)
+      .mockResolvedValueOnce(null as never)
+      .mockResolvedValueOnce({ ...memberReportedRow, employerName: 'Acme Corporation', notes: EMPLOYER_HIRED_NOTE } as never);
+    vi.mocked(prisma.placementRecord.create).mockRejectedValueOnce(uniqueViolation());
+
+    const result = await recordPlacementFromApplication({
+      userId: MEMBER_ID,
+      employerName: 'Acme',
+      jobTitle: 'Help desk',
+      source: 'member_self_report',
+      applicationId: 'job-app-1',
+      actorUserId: MEMBER_ID,
+      now: NOW,
+    });
+
+    expect(result).toEqual({
+      outcome: 'unchanged',
+      placement: { id: 'placement-1', employerName: 'Acme Corporation', jobTitle: memberReportedRow.jobTitle },
+    });
+    expect(prisma.placementRecord.update).not.toHaveBeenCalled();
+    expect(auditLog).not.toHaveBeenCalled();
+    expect(createNotification).not.toHaveBeenCalled();
+  });
+
+  it('any other create failure still surfaces to the caller', async () => {
+    vi.mocked(prisma.placementRecord.create).mockRejectedValueOnce(Object.assign(new Error('connection lost'), { code: 'P1017' }));
+
+    await expect(
+      recordPlacementFromApplication({
+        userId: MEMBER_ID,
+        employerName: 'Acme',
+        jobTitle: 'Help desk',
+        source: 'member_self_report',
+        applicationId: 'job-app-1',
+        actorUserId: MEMBER_ID,
+        now: NOW,
+      }),
+    ).rejects.toThrow('connection lost');
+    expect(prisma.placementRecord.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.placementRecord.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('isMemberReportedPlacement (staff lists)', () => {
+  it('is true only for the unverified row this writer created from a member confirmation', () => {
+    expect(isMemberReportedPlacement({ placedBy: null, startDateVerified: false, notes: MEMBER_SELF_REPORT_NOTE })).toBe(true);
+    // Employer corroboration appends to the note; still member-reported until verified.
+    expect(isMemberReportedPlacement({ placedBy: null, startDateVerified: false, notes: `${MEMBER_SELF_REPORT_NOTE}\nEmployer confirmed this hire on 2026-09-22 (application a1).` })).toBe(true);
+    expect(isMemberReportedPlacement({ placedBy: null, startDateVerified: true, notes: MEMBER_SELF_REPORT_NOTE })).toBe(false);
+    expect(isMemberReportedPlacement({ placedBy: 'staff-1', startDateVerified: false, notes: MEMBER_SELF_REPORT_NOTE })).toBe(false);
+    expect(isMemberReportedPlacement({ placedBy: null, startDateVerified: false, notes: EMPLOYER_HIRED_NOTE })).toBe(false);
+    expect(isMemberReportedPlacement({ placedBy: null, startDateVerified: false, notes: null })).toBe(false);
   });
 });

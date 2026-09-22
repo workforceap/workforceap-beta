@@ -63,8 +63,9 @@ export type RecordPlacementResult = {
   placement: { id: string; employerName: string; jobTitle: string };
 };
 
-export const MEMBER_SELF_REPORT_NOTE =
-  'Member-reported: created when the member confirmed accepting this offer on their dashboard. Verify start date and wage.';
+/** Leads every note this writer leaves on a member's own confirmation; `isMemberReportedPlacement` keys on it. */
+export const MEMBER_SELF_REPORT_PREFIX = 'Member-reported:';
+export const MEMBER_SELF_REPORT_NOTE = `${MEMBER_SELF_REPORT_PREFIX} created when the member confirmed accepting this offer on their dashboard. Verify start date and wage.`;
 export const EMPLOYER_HIRED_NOTE =
   'Auto-created when the employer marked this application hired. Verify start date and wage.';
 /** Prefix of the note line appended when an employer confirms a member-reported hire. Also the repeat guard. */
@@ -75,7 +76,23 @@ export const PLACEMENT_SOURCE_LABEL: Record<PlacementSource, string> = {
   employer_hired: 'employer marked hired',
 };
 
-export async function recordPlacementFromApplication(args: {
+/**
+ * True for a row this writer created from the member's own confirmation and
+ * that no counselor/admin has since verified. Staff lists use it to tell a
+ * self-report apart from a staff-entered or employer-created pending row:
+ * the schema has no source column, so the marker is the note this writer
+ * wrote plus the absence of `placedBy`. An employer corroboration appends to
+ * that note and keeps the row member-reported until it is verified.
+ */
+export function isMemberReportedPlacement(row: {
+  placedBy: string | null;
+  startDateVerified: boolean;
+  notes: string | null;
+}): boolean {
+  return row.placedBy === null && !row.startDateVerified && (row.notes ?? '').startsWith(MEMBER_SELF_REPORT_PREFIX);
+}
+
+export type RecordPlacementArgs = {
   /** The member who was hired. */
   userId: string;
   employerName: string;
@@ -89,29 +106,23 @@ export async function recordPlacementFromApplication(args: {
   /** Who triggered the write: the member, or the employer's user (null when unknown). */
   actorUserId: string | null;
   now?: Date;
-}): Promise<RecordPlacementResult> {
+};
+
+export async function recordPlacementFromApplication(args: RecordPlacementArgs): Promise<RecordPlacementResult> {
   const { userId, employerName, jobTitle, source, applicationId, actorUserId } = args;
   const now = args.now ?? new Date();
 
-  const existing = await prisma.placementRecord.findUnique({
-    where: { userId },
-    select: {
-      id: true,
-      employerName: true,
-      jobTitle: true,
-      notes: true,
-      placedBy: true,
-      startDateVerified: true,
-    },
+  const existing = await findExistingPlacement(userId);
+  if (existing) return reconcileExistingPlacement(existing, args, now);
+
+  const student = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { enrolledProgram: true },
   });
 
-  if (!existing) {
-    const student = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { enrolledProgram: true },
-    });
-
-    const placement = await prisma.placementRecord.create({
+  let placement: RecordPlacementResult['placement'];
+  try {
+    placement = await prisma.placementRecord.create({
       data: {
         userId,
         employerName,
@@ -126,6 +137,16 @@ export async function recordPlacementFromApplication(args: {
       },
       select: { id: true, employerName: true, jobTitle: true },
     });
+  } catch (err) {
+    // The member and the employer confirmed at the same moment: both read no
+    // row, one create won the unique index on userId. Reconcile against the
+    // winner instead of surfacing the loser as a failure, so the employer's
+    // corroboration (or the member's claim) is not lost to the race.
+    if (!isUniqueViolation(err)) throw err;
+    const raced = await findExistingPlacement(userId);
+    if (!raced) throw err;
+    return reconcileExistingPlacement(raced, args, now);
+  }
 
     // WIOA grant claims need a tamper-evident change history (AUDIT H-DEP4);
     // same action/targetType as the admin create route so one query lists
@@ -153,8 +174,41 @@ export async function recordPlacementFromApplication(args: {
     await notifyPlacementRecorded({ userId, placement, source });
 
     return { outcome: 'created', placement };
-  }
+}
 
+type ExistingPlacement = {
+  id: string;
+  employerName: string;
+  jobTitle: string;
+  notes: string | null;
+  placedBy: string | null;
+  startDateVerified: boolean;
+};
+
+async function findExistingPlacement(userId: string): Promise<ExistingPlacement | null> {
+  return prisma.placementRecord.findUnique({
+    where: { userId },
+    select: { id: true, employerName: true, jobTitle: true, notes: true, placedBy: true, startDateVerified: true },
+  });
+}
+
+/** Prisma's unique-constraint code, matched the way lib/member/points.ts and lib/member/referrals.ts do. */
+function isUniqueViolation(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && (err as { code?: unknown }).code === 'P2002';
+}
+
+/**
+ * The member already has a row. An employer 'hired' on the member's own
+ * unverified self-report corroborates that row in place; every other case
+ * (staff-entered, verified, already corroborated, or a repeat from the same
+ * side) leaves the row alone and reports `unchanged`.
+ */
+async function reconcileExistingPlacement(
+  existing: ExistingPlacement,
+  args: RecordPlacementArgs,
+  now: Date,
+): Promise<RecordPlacementResult> {
+  const { userId, employerName, jobTitle, source, applicationId, actorUserId } = args;
   const alreadyCorroborated = (existing.notes ?? '').includes(EMPLOYER_CORROBORATION_MARKER);
   const staffOwned = existing.placedBy !== null || existing.startDateVerified;
 

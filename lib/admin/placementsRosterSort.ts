@@ -20,7 +20,8 @@ export const DEFAULT_PLACEMENT_SORT_KEY: PlacementSortKey = 'student';
 export const DEFAULT_PLACEMENT_SORT_DIRECTION: PlacementSortDirection = 'asc';
 
 const SURVEY_RANK: Record<SurveyStatus, number> = { Pending: 0, Done: 1 };
-const STATUS_RANK: Record<ConfirmStatus, number> = { Pending: 0, Confirmed: 1 };
+// Member-reported first: it is the pending state that most needs a staff look.
+const STATUS_RANK: Record<ConfirmStatus, number> = { 'Member-reported': 0, Pending: 1, Confirmed: 2 };
 
 /** Extract leading numeric wage for sort (e.g. "$52k" → 52000). */
 function wageValue(wage: string): number | null {

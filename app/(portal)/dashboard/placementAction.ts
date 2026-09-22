@@ -14,9 +14,23 @@ import {
 } from '@/lib/placement/recordPlacementFromApplication';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
-export async function confirmPlacement(jobApplicationId: string) {
+export type ConfirmPlacementResult = {
+  /**
+   * What happened to the member's PlacementRecord: 'created' (first
+   * confirmation), 'unchanged' (already on record, nothing re-sent), or
+   * 'failed' (the record write threw; the claim event still carries the
+   * report for staff review). The strip reads this to tell the member the
+   * truth for their case.
+   */
+  placementOutcome: RecordPlacementOutcome | 'failed';
+};
+
+export async function confirmPlacement(jobApplicationId: string): Promise<ConfirmPlacementResult> {
   const user = await getUser();
   if (!user) throw new Error('Unauthorized');
+
+  let placementOutcome: RecordPlacementOutcome | 'failed' = 'failed';
+  let placementRecordId: string | null = null;
 
   await withUserGuc(user, async () => {
     const application = await prisma.jobApplication.findUnique({
@@ -48,8 +62,6 @@ export async function confirmPlacement(jobApplicationId: string) {
     // confirmation or a later employer 'hired' lands on this same row.
     // Fail-soft like the employer path: the status update above has already
     // committed, and the claim event below must still be written.
-    let placementOutcome: RecordPlacementOutcome | 'failed' = 'failed';
-    let placementRecordId: string | null = null;
     try {
       const recorded = await recordPlacementFromApplication({
         userId: user.id,
@@ -141,4 +153,6 @@ export async function confirmPlacement(jobApplicationId: string) {
   revalidatePath('/partner');
   revalidatePath('/partner/attention');
   revalidatePath('/partner/outcomes');
+
+  return { placementOutcome };
 }

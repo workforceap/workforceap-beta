@@ -34,13 +34,20 @@ import {
  *
  * Columns: Student · Employer · Role · Wage · Survey · Status.
  *  - Survey: Done (a follow-up survey was completed) = ok, else Pending = muted.
- *  - Status: Confirmed (startDateVerified) = ok, else Pending = muted.
+ *  - Status: Confirmed (startDateVerified) = ok; Member-reported, unverified
+ *    (the member confirmed an offer themselves, no staff verification yet) =
+ *    warning; else Pending = muted.
  */
 
 /** Follow-up survey progress for a placement. */
 export type SurveyStatus = 'Pending' | 'Done';
-/** Hire confirmation state (mockup: "Confirmed" vs "Pending"). */
-export type ConfirmStatus = 'Pending' | 'Confirmed';
+/**
+ * Hire confirmation state (mockup: "Confirmed" vs "Pending"). 'Member-reported'
+ * is a pending row the member created by confirming an offer on their own
+ * dashboard (lib/placement/recordPlacementFromApplication.ts); staff must be
+ * able to tell it from a row a counselor or employer stood up.
+ */
+export type ConfirmStatus = 'Pending' | 'Confirmed' | 'Member-reported';
 
 export interface PlacementRow {
   id: string;
@@ -87,6 +94,14 @@ const SURVEY_TONE: Record<SurveyStatus, TokenColor> = {
 const STATUS_TONE: Record<ConfirmStatus, TokenColor> = {
   Pending: 'gray',
   Confirmed: 'green',
+  'Member-reported': 'yellow',
+};
+
+/** What the Status token says; the member-reported state spells out that it is unverified. */
+export const STATUS_LABEL: Record<ConfirmStatus, string> = {
+  Pending: 'Pending',
+  Confirmed: 'Confirmed',
+  'Member-reported': 'Member-reported, unverified',
 };
 
 export function PlacementsKit({
@@ -182,7 +197,7 @@ export function PlacementsKit({
       ariaSort: ariaSortForColumn('status', sortKey, sortDirection),
       render: (row) => (
         <span style={{ display: 'inline-flex', whiteSpace: 'nowrap' }}>
-          <Token label={row.status} size="sm" color={STATUS_TONE[row.status]} />
+          <Token label={STATUS_LABEL[row.status]} size="sm" color={STATUS_TONE[row.status]} />
         </span>
       ),
     },
@@ -283,7 +298,7 @@ export function PlacementsKit({
                 </div>
               </div>
               <div style={{ flexShrink: 0 }}>
-                <Token label={row.status} size="sm" color={STATUS_TONE[row.status]} />
+                <Token label={STATUS_LABEL[row.status]} size="sm" color={STATUS_TONE[row.status]} />
               </div>
             </div>
             <div
