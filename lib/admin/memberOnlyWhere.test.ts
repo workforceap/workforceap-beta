@@ -15,6 +15,7 @@ import {
   memberOnlyProfileWhere,
   memberOnlyRoleSql,
   memberOnlySqlJoin,
+  memberOrDogfoodRoleSql,
 } from './memberOnlyWhere';
 import { ROLE_PRECEDENCE, resolveEffectiveRole } from '@/lib/auth/roleAccess';
 
@@ -383,6 +384,23 @@ test('memberOnlyRoleSql reads both stores, inlines only validated role names, an
   assert.equal(memberOnlyRoleSql('u_scope').sql.includes('u_scope.id'), true);
   assert.equal(memberOnlyRoleSql('u_scope').sql.includes('u.id'), false);
   assert.throws(() => memberOnlyRoleSql('u; DROP TABLE users'), /Invalid SQL alias/);
+});
+
+test('memberOrDogfoodRoleSql is the dogfood twin: admin profiles count, partner-side ones never do, nothing is bound', () => {
+  const predicate = memberOrDogfoodRoleSql();
+  assert.match(predicate.sql, /EXISTS \(SELECT 1 FROM user_roles .*member_only_role\.name = 'member'\)/);
+  assert.match(predicate.sql, /EXISTS \(SELECT 1 FROM profiles .*member_only_profile\.role IN \('member','admin','super_admin'\)\)/);
+  assert.match(predicate.sql, /NOT EXISTS \(SELECT 1 FROM profiles .*role IN \('case_manager','counselor','employer','partner'\)\)/);
+  assert.equal(predicate.sql.includes('?'), false);
+  assert.deepEqual(predicate.values, []);
+  // Same role lists as the Prisma entries, so the two cannot drift apart.
+  const memberRoles = [MEMBER_ROLE_NAME, ...DOGFOOD_PROFILE_ROLES];
+  assert.equal(predicate.sql.includes(`IN (${memberRoles.map((r) => `'${r}'`).join(',')})`), true);
+  const excluded = NON_MEMBER_PROFILE_ROLES.filter((r) => !(DOGFOOD_PROFILE_ROLES as readonly string[]).includes(r));
+  assert.equal(predicate.sql.includes(`IN (${excluded.map((r) => `'${r}'`).join(',')})`), true);
+  assert.equal(memberOrDogfoodRoleSql('u_scope').sql.includes('u_scope.id'), true);
+  assert.equal(memberOrDogfoodRoleSql('u_scope').sql.includes(' u.id'), false);
+  assert.throws(() => memberOrDogfoodRoleSql('u; DROP TABLE users'), /Invalid SQL alias/);
 });
 
 test('memberOnlySqlJoin is the raw-SQL twin: the one role definition plus the fixture-email exclusion', () => {

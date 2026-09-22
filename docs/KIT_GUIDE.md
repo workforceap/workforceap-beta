@@ -155,13 +155,14 @@ only radius / padding / pop / shadow change.
 Wrap the **route-group layout**, not individual components:
 
 ```tsx
-import { DesignSurface, useSurface } from '@/components/portal/kit';
+import { DesignSurface } from '@/components/portal/kit';
 
 <DesignSurface surface="warm">{children}</DesignSurface>   // member
 <DesignSurface surface="dense">{children}</DesignSurface>  // admin / staff / data
 ```
 
-`useSurface()` returns `'warm' | 'dense'` for the rare component that must branch in JS
+`useSurface()` (import it from `@/components/portal/kit/DesignSurface`; it is not in the
+barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
 (default is `'dense'` if unwrapped). Components should normally *not* branch — consuming
 `--wa-radius`/`--wa-pad`/`--wa-pop` makes them adapt automatically. Spec:
 `docs/PORTAL_DESIGN_KIT.md`.
@@ -294,8 +295,17 @@ Every kit primitive accepts `className`, `style`, `ref` (plain prop, React 19 st
 
 ## 6. Component index (`components/portal/kit/index.ts`)
 
-Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` types, `toneClass`,
+Foundation: `DesignSurface`, `colorVar` + `KitColor`/`KitTone` types, `toneClass`,
 `KitBaseProps` / `KitDataAttrs` / `cx` (§5).
+
+The barrel exports what pages compose through it. A kit module that only its kit siblings
+use is imported from its own file instead (the way `GuidedTour` already is), and `pnpm knip`
+reports any barrel re-export nothing imports — keep that at zero. Direct-import modules today:
+`useSurface` (`kit/DesignSurface`), `useListFocus` / `LIST_ITEM_ATTR` (`kit/hooks/useListFocus`),
+`announce` / `getFocusable` (`kit/hooks/useAnnounce`, `kit/hooks/useFocusTrap`),
+`KitTableToolbar`, `KitRowMenu`, `kitTableUrlState`, `KanbanColumnHeader` (`kit/Kanban`),
+`Sparkline` (`kit/Charts`), `DeltaChip` (`kit/CommandCenter`), `AppShellSidebar`,
+`UniversalSearch`.
 
 | Component | Use for |
 |---|---|
@@ -309,17 +319,17 @@ Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` ty
 | `ProgressRing`, `ProgressBar` | completion / capacity |
 | `Avatar` | people |
 | `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
-| `KitTableToolbar` (+ `KitTableViewChip`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`). |
-| `KitRowMenu` (+ `KitRowMenuItem`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
+| `KitTableToolbar` (+ `KitTableViewChip`; import from `kit/KitTableToolbar`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`; import from `kit/kitTableUrlState`). |
+| `KitRowMenu` (+ `KitRowMenuItem`; import from `kit/KitRowMenu`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
 | `QueueRow`, `WorkQueueItem` | staff work queues |
-| `KanbanBoard`, `KanbanColumnHeader` | pipeline boards |
-| `BarChartMini`, `RankBars` | inline mini charts |
+| `KanbanBoard` (+ `KanbanColumnHeader` from `kit/Kanban`) | pipeline boards |
+| `BarChartMini`, `RankBars`, `AreaChartMini`, `TrendPlaceholder` | inline mini charts (`Sparkline` from `kit/Charts`) |
 | `FormField`, `Toggle` | form controls |
 | `ChatThread` | message threads |
 | `Tabs`, `TabPanel` | section tabs around server-rendered panels (WAI-ARIA tabs on `useListFocus`; `?tab=` mirrored with `history.replaceState`; an in-page `#anchor` inside a panel opens that panel). Counselor student detail is the reference. |
-| `AppShellSidebar`, `AppShellMember` | shell chrome (dense sidebar / member tabs) |
-| `UniversalSearch` | global search affordance |
+| `AppShellMember` (+ `AppShellSidebar` from `kit/AppShellSidebar`) | shell chrome (member tabs / dense sidebar) |
+| `UniversalSearch` (`kit/UniversalSearch`, not in the barrel) | global search affordance |
 | `GuidedTour` | guided-tour engine: spotlight ring + step popover over `[data-tour]` anchors, steps from `lib/tours/registry.ts` through `TourContext`, copy from the `tours` i18n namespace, chrome on `--wa-*` and `--z-tour`. Not in the barrel (it depends on `components/onboarding/TourContext`) — import `@/components/portal/kit/GuidedTour` directly; `TourProviderWrapper` already mounts it for every portal. Reopen a tour from the header `PortalHelpMenu`; offer it once with `TourOfferStrip`. |
 | `MemberDashboardKit` | composed member dashboard |
 
@@ -369,8 +379,8 @@ any future kit Dialog/Menu/Combobox must be built on them):
 | Hook | Use for |
 |---|---|
 | `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close. Prefer native `<dialog>.showModal()` when possible. |
-| `useListFocus` | roving tabindex for tablists/menus/result lists — Arrow keys (RTL-aware), Home/End, one tab stop, self-repairing as items mount/unmount. Mark items with `data-kit-list-item`. |
-| `useAnnounce` / `announce` | screen-reader announcements ("12 results", "Saved"). Singleton persistent live regions — never mount your own `aria-live` div per component (freshly-mounted regions don't announce). |
+| `useListFocus` (`kit/hooks/useListFocus`, not in the barrel) | roving tabindex for tablists/menus/result lists — Arrow keys (RTL-aware), Home/End, one tab stop, self-repairing as items mount/unmount. Mark items with `data-kit-list-item`. |
+| `useAnnounce` (barrel) / `announce` (`kit/hooks/useAnnounce`) | screen-reader announcements ("12 results", "Saved"). Singleton persistent live regions — never mount your own `aria-live` div per component (freshly-mounted regions don't announce). |
 
 Reference compositions ("templates"): `components/portal/kit/pages/{member,admin,admin-subviews}/`
 plus `PartnerOverviewKit.tsx`, `VoiceStudioKit.tsx`. **Start new pages by copying the nearest one.**

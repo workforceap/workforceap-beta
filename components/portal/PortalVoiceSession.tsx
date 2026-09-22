@@ -181,6 +181,29 @@ const PULSE_STYLE = `
 .pvs-focus-dark:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring-on-dark); }
 `;
 
+/**
+ * Session chrome stays dark in both themes (KIT_GUIDE §6: live-session panels
+ * read the constant `--wa-sidebar-*` set, not raw hex). Text and borders are
+ * the sidebar tokens, tints are `color-mix` over them, and the coach accent
+ * may be any CSS colour, a caller's `var(--wa-gold)` included, because every
+ * alpha step is a `color-mix` and never a string-concatenated hex suffix.
+ * White alpha tints (`rgba(255,255,255,…)`) stay as written: alpha over the
+ * dark panel reads the same in both modes.
+ */
+const PANEL_BG = 'var(--wa-sidebar-bg)';
+/** The inset transcript / suggestion wells: one step darker than the panel. */
+const PANEL_WELL = 'color-mix(in srgb, var(--wa-sidebar-bg) 70%, black)';
+const PANEL_BORDER = 'var(--wa-sidebar-border)';
+const PANEL_TEXT = 'var(--wa-sidebar-text)';
+/** Error notices: brand crimson tints on the dark panel, pink text over them. */
+const ALERT_BG = 'color-mix(in srgb, var(--wa-hero-crimson) 15%, transparent)';
+const ALERT_BORDER = 'color-mix(in srgb, var(--wa-hero-crimson) 40%, transparent)';
+const ALERT_TEXT = 'color-mix(in srgb, var(--wa-hero-crimson) 35%, var(--wa-sidebar-text))';
+/** Was `${accent}44` / `${accent}88`: 0x44/0xff ≈ 27%, 0x88/0xff ≈ 53%. */
+function accentAlpha(accentColor: string, percent: number): string {
+  return `color-mix(in srgb, ${accentColor} ${percent}%, transparent)`;
+}
+
 /** Sent with `sendContextualUpdate`; bounded by the shared resume-coach disclosure contract. */
 const LIVE_RESUME_CONTEXT_PREFIX =
   '[Live resume draft updated — treat this as the current draft; the member may have edited text or accepted suggestions.]\n';
@@ -200,8 +223,8 @@ export default function PortalVoiceSession({
   fallbackAgentNotice = 'The dedicated coach for this tool is unavailable right now, so you are talking with Lilley, the WorkforceAP career coach.',
   description,
   dataUseNotice = 'By starting, you send microphone audio, the live transcript, and this tool\'s session context to ElevenLabs, our voice provider. Do not share passwords, Social Security numbers, or financial account details.',
-  accent = '#ad2c4d',
-  accentDark = '#8b1f38',
+  accent = 'var(--wa-hero-crimson)',
+  accentDark = 'var(--wa-hero-crimson-dark)',
   speakingLabel = 'Assistant is speaking…',
   listeningLabel = 'Listening — speak when ready',
   suggestionsEndpoint,
@@ -801,7 +824,7 @@ export default function PortalVoiceSession({
       <div
         style={{
           maxWidth: 560,
-          background: '#1a1a1a',
+          background: PANEL_BG,
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 32px)',
           boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
@@ -819,11 +842,11 @@ export default function PortalVoiceSession({
           />
         </div>
         {titleAs === 'h2' ? (
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: PANEL_TEXT, marginBottom: '0.5rem', textAlign: 'center' }}>
             {title}
           </h2>
         ) : (
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: PANEL_TEXT, marginBottom: '0.5rem', textAlign: 'center' }}>
             {title}
           </h3>
         )}
@@ -840,7 +863,7 @@ export default function PortalVoiceSession({
           }}
         >
           {dataUseNotice}{' '}
-          <a href="/privacy" style={{ color: '#fff', textDecoration: 'underline' }}>
+          <a href="/privacy" style={{ color: PANEL_TEXT, textDecoration: 'underline' }}>
             Privacy details
           </a>
         </p>
@@ -851,13 +874,13 @@ export default function PortalVoiceSession({
               display: 'flex',
               alignItems: 'flex-start',
               gap: '0.5rem',
-              background: 'rgba(173,44,77,0.15)',
-              border: '1px solid rgba(173,44,77,0.4)',
+              background: ALERT_BG,
+              border: `1px solid ${ALERT_BORDER}`,
               borderRadius: 12,
               padding: '0.75rem 1rem',
               marginBottom: '1rem',
               fontSize: '0.85rem',
-              color: '#f0a9b8',
+              color: ALERT_TEXT,
               fontWeight: 600,
             }}
           >
@@ -873,7 +896,7 @@ export default function PortalVoiceSession({
             display: 'block',
             width: '100%',
             background: accent,
-            color: '#fff',
+            color: PANEL_TEXT,
             border: 0,
             borderRadius: 12,
             padding: '0.875rem',
@@ -881,7 +904,7 @@ export default function PortalVoiceSession({
             fontSize: '1rem',
             cursor: 'pointer',
             transition: 'background 0.2s, box-shadow 0.2s',
-            boxShadow: `0 4px 20px ${accent}44`,
+            boxShadow: `0 4px 20px ${accentAlpha(accent, 27)}`,
           }}
         >
           Start voice session
@@ -896,7 +919,7 @@ export default function PortalVoiceSession({
         style={{
           maxWidth: 560,
           textAlign: 'center',
-          background: '#1a1a1a',
+          background: PANEL_BG,
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 32px)',
           boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
@@ -923,7 +946,7 @@ export default function PortalVoiceSession({
       <div
         style={{
           maxWidth: 560,
-          background: '#1a1a1a',
+          background: PANEL_BG,
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 32px)',
           boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
@@ -941,7 +964,7 @@ export default function PortalVoiceSession({
           />
         </div>
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', marginBottom: '0.35rem' }}>
+          <div style={{ fontSize: '1rem', fontWeight: 700, color: PANEL_TEXT, marginBottom: '0.35rem' }}>
             {agentSpeaking ? speakingLabel : listeningLabel}
           </div>
           <span
@@ -949,7 +972,7 @@ export default function PortalVoiceSession({
               display: 'inline-block',
               padding: '0.2rem 0.65rem',
               borderRadius: 999,
-              background: 'rgba(173,44,77,0.18)',
+              background: accentAlpha(accent, 18),
               fontSize: '0.8125rem',
               color: accent,
               fontWeight: 600,
@@ -985,15 +1008,15 @@ export default function PortalVoiceSession({
             style={{
               marginBottom: '1.25rem',
               borderRadius: 16,
-              border: '1px solid #262626',
-              background: '#0f0f10',
+              border: `1px solid ${PANEL_BORDER}`,
+              background: PANEL_WELL,
               overflow: 'hidden',
             }}
           >
             <div
               style={{
                 padding: '0.5rem 0.75rem',
-                borderBottom: '1px solid #262626',
+                borderBottom: `1px solid ${PANEL_BORDER}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -1061,9 +1084,9 @@ export default function PortalVoiceSession({
                       </span>
                       <span
                         style={{
-                          color: isAgent ? 'rgba(255,255,255,0.9)' : '#fff',
+                          color: isAgent ? 'rgba(255,255,255,0.9)' : PANEL_TEXT,
                           wordBreak: 'break-word',
-                          borderLeft: `2px solid ${isAgent ? `${accent}88` : 'rgba(255,255,255,0.2)'}`,
+                          borderLeft: `2px solid ${isAgent ? accentAlpha(accent, 53) : 'rgba(255,255,255,0.2)'}`,
                           paddingLeft: '0.5rem',
                         }}
                       >
@@ -1084,7 +1107,7 @@ export default function PortalVoiceSession({
           style={{
             width: '100%',
             background: accent,
-            color: '#fff',
+            color: PANEL_TEXT,
             border: 0,
             borderRadius: 12,
             padding: '0.75rem',
@@ -1105,7 +1128,7 @@ export default function PortalVoiceSession({
     <div
       style={{
         maxWidth: 560,
-        background: '#1a1a1a',
+        background: PANEL_BG,
         borderRadius: 24,
         padding: 'clamp(20px, 5vw, 32px)',
         boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
@@ -1118,13 +1141,13 @@ export default function PortalVoiceSession({
           <div
             role="alert"
             style={{
-              background: 'rgba(173,44,77,0.15)',
-              border: '1px solid rgba(173,44,77,0.4)',
+              background: ALERT_BG,
+              border: `1px solid ${ALERT_BORDER}`,
               borderRadius: 12,
               padding: '0.75rem 1rem',
               marginBottom: '1rem',
               fontSize: '0.85rem',
-              color: '#f0a9b8',
+              color: ALERT_TEXT,
               textAlign: 'left',
             }}
           >
@@ -1149,7 +1172,7 @@ export default function PortalVoiceSession({
           onClick={reset}
           style={{
             background: 'rgba(255,255,255,0.1)',
-            color: '#fff',
+            color: PANEL_TEXT,
             border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: 12,
             padding: '0.65rem 1.25rem',
@@ -1178,8 +1201,8 @@ export default function PortalVoiceSession({
               <div
                 key={i}
                 style={{
-                  background: '#0f0f10',
-                  border: '1px solid #262626',
+                  background: PANEL_WELL,
+                  border: `1px solid ${PANEL_BORDER}`,
                   borderRadius: 16,
                   padding: '1rem',
                   marginBottom: '0.75rem',
@@ -1199,8 +1222,8 @@ export default function PortalVoiceSession({
                       style={{
                         borderRadius: 10,
                         padding: '0.65rem 0.75rem',
-                        background: '#f3f4f6',
-                        border: '1px solid #e5e7eb',
+                        background: 'var(--wa-surface-2)',
+                        border: '1px solid var(--wa-border)',
                         minWidth: 0,
                       }}
                     >
@@ -1210,7 +1233,7 @@ export default function PortalVoiceSession({
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: '0.06em',
-                          color: '#6b7280',
+                          color: 'var(--wa-muted)',
                         }}
                       >
                         Before
@@ -1221,7 +1244,7 @@ export default function PortalVoiceSession({
                           fontSize: '0.85rem',
                           lineHeight: 1.45,
                           textDecoration: 'line-through',
-                          color: '#6b7280',
+                          color: 'var(--wa-muted)',
                         }}
                       >
                         {s.original}
@@ -1232,8 +1255,8 @@ export default function PortalVoiceSession({
                     style={{
                       borderRadius: 10,
                       padding: '0.65rem 0.75rem',
-                      background: '#ecfdf5',
-                      border: '1px solid #d1fae5',
+                      background: 'var(--wa-success-soft)',
+                      border: '1px solid color-mix(in srgb, var(--wa-success) 35%, transparent)',
                       minWidth: 0,
                     }}
                   >
@@ -1243,12 +1266,12 @@ export default function PortalVoiceSession({
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.06em',
-                        color: '#166534',
+                        color: 'var(--wa-success-dark)',
                       }}
                     >
                       After
                     </span>
-                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', lineHeight: 1.45, fontWeight: 500, color: '#14532d' }}>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', lineHeight: 1.45, fontWeight: 500, color: 'var(--wa-success-dark)' }}>
                       {s.suggested}
                     </p>
                   </div>
@@ -1264,7 +1287,7 @@ export default function PortalVoiceSession({
                     }}
                     style={{
                       background: accent,
-                      color: '#fff',
+                      color: PANEL_TEXT,
                       border: 0,
                       borderRadius: 8,
                       padding: '0.45rem 1rem',
