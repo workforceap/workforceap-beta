@@ -110,10 +110,10 @@ export default function EmployerMatchHistoryClient({
 }: {
   initialRows: EmployerMatchHistoryRow[];
   /**
-   * Which empty state is honest when there are no rows, decided by the page from
-   * its posting counts (lib/employer/emptyState.ts `employerPipelineEmptyVariant`):
-   * no posting at all → `postings`; postings but none live → `pipelineNotLive`;
-   * live postings the matcher has not paired yet → `pipelineNoMatches` (default).
+   * Which empty state is honest when there are no rows, for a page that can count
+   * postings (lib/employer/emptyState.ts `employerPipelineEmptyVariant`): no posting
+   * at all → `postings`; postings but none live → `pipelineNotLive`; live postings
+   * the matcher has not paired yet → `pipelineNoMatches` (default).
    */
   emptyVariant?: Extract<EmployerEmptyVariant, 'postings' | 'pipelineNotLive' | 'pipelineNoMatches'>;
 }) {

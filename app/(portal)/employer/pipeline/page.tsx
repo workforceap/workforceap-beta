@@ -40,11 +40,11 @@ export default async function EmployerPipelinePage() {
   const t = await getTranslations('employer');
 
   const liveJobWhere = { employerId: ctx.employerId, status: 'live' as const };
-  const [postingTotal, jobTotal, jobs] = await Promise.all([
-    // Every posting, any status: with none the first step is to post; with
-    // some but none live, matching has nothing to run on yet.
-    prisma.job.count({ where: { employerId: ctx.employerId } }),
-    prisma.job.count({ where: liveJobWhere }),
+  const [postingsByStatus, jobs] = await Promise.all([
+    // One read for every posting, any status (replaces the live-only count):
+    // with none the first step is to post; with some but none live, matching
+    // has nothing to run on yet.
+    prisma.job.groupBy({ by: ['status'], where: { employerId: ctx.employerId }, _count: { id: true } }),
     prisma.job.findMany({
       take: EMPLOYER_LIST_CAP,
       where: liveJobWhere,
@@ -52,6 +52,9 @@ export default async function EmployerPipelinePage() {
       orderBy: { updatedAt: 'desc' },
     }),
   ]);
+
+  const postingTotal = postingsByStatus.reduce((sum, row) => sum + row._count.id, 0);
+  const jobTotal = postingsByStatus.find((row) => row.status === 'live')?._count.id ?? 0;
 
   const jobIds = jobs.map((j) => j.id);
   const matchTotal =

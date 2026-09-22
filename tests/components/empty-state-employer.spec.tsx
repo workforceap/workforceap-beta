@@ -181,7 +181,7 @@ describe('/employer/pipeline page', () => {
     clean(container);
   });
   it('postings exist but none is live: not-live, not "post a job"', async () => {
-    db.overrides['job.count'] = async (args) => ((args as { where: { status?: string } }).where.status === 'live' ? 0 : 3);
+    db.overrides['job.groupBy'] = async () => [{ status: 'draft', _count: { id: 2 } }, { status: 'pending', _count: { id: 1 } }];
     const { container } = await page();
     const empties = container.querySelectorAll<HTMLElement>('[data-testid="employer-empty"]');
     expect(empties).toHaveLength(2);
@@ -192,7 +192,7 @@ describe('/employer/pipeline page', () => {
     link(empties[0], 'View your postings', '/employer/jobs');
   });
   it('a live posting the matcher has not paired: no suggested candidates, never a promise that AI will match', async () => {
-    db.overrides['job.count'] = async () => 1;
+    db.overrides['job.groupBy'] = async () => [{ status: 'live', _count: { id: 1 } }];
     db.overrides['job.findMany'] = async () => [{ id: 'job-1', title: 'Warehouse Associate' }];
     const { container } = await page();
     const empties = container.querySelectorAll<HTMLElement>('[data-testid="employer-empty"]');
@@ -256,18 +256,18 @@ describe('/employer/jobs page + EmployerJobsBoard', () => {
 });
 
 describe('/employer/matches page + EmployerMatchHistoryClient', () => {
-  it('the client defaults to no-suggested-candidates and the page passes the posting-count variant', async () => {
+  it('the client defaults to no-suggested-candidates, takes a posting-count variant, and the page renders the default', async () => {
     const a = portal('en', <EmployerMatchHistoryClient initialRows={[]} />);
     expect(emptyOf(a.container, 'unavailable').dataset.variant).toBe('pipelineNoMatches');
     a.unmount();
     const b = portal('en', <EmployerMatchHistoryClient initialRows={[]} emptyVariant="postings" />);
     link(emptyOf(b.container, 'first'), 'Post a job', '/employer/jobs/new');
     b.unmount();
-    db.overrides['job.count'] = async (args) => ((args as { where: { status?: string } }).where.status === 'live' ? 0 : 2);
     const { container } = portal('en', <>{await EmployerMatchesPage()}</>);
     const empty = emptyOf(container, 'unavailable');
-    expect(empty.dataset.variant).toBe('pipelineNotLive');
-    expect(within(empty).getByRole('heading', { level: 2 })).toHaveTextContent('No live postings yet');
+    expect(empty.dataset.variant).toBe('pipelineNoMatches');
+    expect(within(empty).getByRole('heading', { level: 2 })).toHaveTextContent('No suggested candidates yet');
+    link(empty, 'View your postings', '/employer/jobs');
     clean(container);
   });
 });
