@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "59d7cb2699f9fd7287f5acb4c6fcc73521d650aa115b4d263e72345dc2998556",
+  "inputTreeSha256": "4c3faaccc63708dda03625b5b80eca1b7fafb9060b1b1169da564133f2c92dc9",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -10161,9 +10161,9 @@
       "path": "app/(portal)/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 51353,
-      "lines": 1223,
-      "sha256": "254e2ec82e169517d65d6e7a2781efbe2ba91d4937203c3700c679c3e129c823",
+      "bytes": 51392,
+      "lines": 1224,
+      "sha256": "588e8df0c2e19fddbdcff00748945badebb8f645bbc5bb9d168412b1de1ac603",
       "binary": false,
       "exports": [
         {
@@ -10231,21 +10231,21 @@
       "path": "app/(portal)/dashboard/placementAction.ts",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 2595,
-      "lines": 76,
-      "sha256": "1699968f3b1b17543c1cd0f10bfe5a32cb2da22ebc141a321227a380fba05a87",
+      "bytes": 4313,
+      "lines": 105,
+      "sha256": "4a60826423f6479ee4b09928239562f544f7d30de26205b24c7e7457fb1bf9cc",
       "binary": false,
       "exports": [
         {
           "name": "confirmPlacement",
-          "line": 11,
+          "line": 12,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "confirmPlacement",
-          "line": 11,
+          "line": 12,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -35888,46 +35888,46 @@
       "path": "app/api/member/applications/[id]/route.ts",
       "area": "api",
       "domain": "jobs-employers",
-      "bytes": 5151,
-      "lines": 117,
-      "sha256": "4c90f3b2f9300d639d8dd8fc0646b9e241e3f6ba4afb048af4979feb444c139a",
+      "bytes": 5743,
+      "lines": 131,
+      "sha256": "bf03fefae14057466cf1ec4d450ec9bc0cc310a65cc6adcf6f1fc34cea16c57a",
       "binary": false,
       "exports": [
         {
           "name": "PATCH",
-          "line": 87,
+          "line": 101,
           "kind": "Variable"
         },
         {
           "name": "DELETE",
-          "line": 117,
+          "line": 131,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "updateSchema",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "_PATCH",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PATCH",
-          "line": 87,
+          "line": 101,
           "kind": "Variable"
         },
         {
           "name": "_DELETE",
-          "line": 87,
+          "line": 101,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DELETE",
-          "line": 117,
+          "line": 131,
           "kind": "Variable"
         }
       ],
@@ -36996,41 +36996,41 @@
       "path": "app/api/member/job-applications/[id]/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 6810,
-      "lines": 180,
-      "sha256": "aab61e0ecaa29e6b09f76bbd715ac0e175bcda409a19d5974aec8783504ccc4d",
+      "bytes": 7000,
+      "lines": 181,
+      "sha256": "20a49e939a0bfb74b589f079aea6fa7a80ca989c25e763e623511dc4582cf7ba",
       "binary": false,
       "exports": [
         {
           "name": "PATCH",
-          "line": 42,
+          "line": 43,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "Props",
-          "line": 19,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DB_STATUSES",
-          "line": 21,
+          "line": 22,
           "kind": "Variable"
         },
         {
           "name": "KANBAN_STAGES",
-          "line": 31,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "parseStatus",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PATCH",
-          "line": 42,
+          "line": 43,
           "kind": "Variable"
         }
       ],
@@ -124605,26 +124605,26 @@
       "path": "lib/jobs/syncCuratedJobToTracker.ts",
       "area": "libraries",
       "domain": "jobs-employers",
-      "bytes": 1523,
-      "lines": 60,
-      "sha256": "dc0dce5cc8b9f26b01729211ae03f731711020a3028514d378b627c803df3f0f",
+      "bytes": 2905,
+      "lines": 87,
+      "sha256": "30bcd6550bcd28764f5906f4317dfb840aeb367e44e45625d906ccd92edd2a9a",
       "binary": false,
       "exports": [
         {
           "name": "syncCuratedJobToTracker",
-          "line": 13,
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "JobForTracker",
-          "line": 4,
+          "line": 6,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "syncCuratedJobToTracker",
-          "line": 13,
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -125624,6 +125624,50 @@
         {
           "name": "formatFeedbackPromptDate",
           "line": 49,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/applicationStatusEvent.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 3869,
+      "lines": 90,
+      "sha256": "f3912518129b1c4c7a460dece251b9433b67a733b19b2c8a49cb13a3135c6265",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ApplicationStatusChange",
+          "line": 37,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "applicationStatusChangeMetadata",
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recordApplicationStatusChange",
+          "line": 68,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ApplicationStatusChange",
+          "line": 37,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "applicationStatusChangeMetadata",
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recordApplicationStatusChange",
+          "line": 68,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -128286,9 +128330,9 @@
       "path": "lib/member/loadMemberDashboardHome.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 25741,
-      "lines": 665,
-      "sha256": "81d07acc52c0e97353ede16e2ca9ffaa0b5ee2d85f6a16d9a2bc58cc80a0a9d9",
+      "bytes": 31441,
+      "lines": 792,
+      "sha256": "8b178a21732b3b354aa32c7fb7d4531037ec06e50b391219222a6b103c52a9d5",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -128316,6 +128360,11 @@
           "name": "mockDb",
           "line": 78,
           "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "DAY_MS",
+          "line": 668,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -128324,201 +128373,201 @@
       "path": "lib/member/loadMemberDashboardHome.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 25655,
-      "lines": 742,
-      "sha256": "a092718202c27e756613bd4e9649cb9c5ba8086d4165378abb1620f33dc7e2d8",
+      "bytes": 27733,
+      "lines": 782,
+      "sha256": "3cd379fc6b3cd0632fa2621d2a8f9482f8c9f862912d6e3c10b7ec0ae42daf20",
       "binary": false,
       "exports": [
         {
           "name": "MEMBER_DASHBOARD_HOME_PRISMA_BUDGET",
-          "line": 45,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "DashboardPipelineRow",
-          "line": 51,
+          "line": 71,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardGoalSummary",
-          "line": 61,
+          "line": 81,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardPointsLedgerEntry",
-          "line": 66,
+          "line": 86,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberDashboardHomeView",
-          "line": 72,
+          "line": 92,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LoadMemberDashboardHomeArgs",
-          "line": 123,
+          "line": 155,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "mapPipelineRows",
-          "line": 217,
+          "line": 249,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pointsLedgerColor",
-          "line": 234,
+          "line": 266,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapPointsLedger",
-          "line": 244,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "mapGoalSummaries",
-          "line": 254,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "deriveNextBadge",
           "line": 276,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "mapGoalSummaries",
+          "line": 286,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "deriveNextBadge",
+          "line": 308,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "loadMemberDashboardHome",
-          "line": 720,
+          "line": 760,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MEMBER_DASHBOARD_HOME_PRISMA_BUDGET",
-          "line": 45,
+          "line": 52,
           "kind": "Variable"
         },
         {
-          "name": "WEEK_MS",
-          "line": 47,
+          "name": "POINTS_TRANSACTION_TAKE",
+          "line": 67,
           "kind": "Variable"
         },
         {
           "name": "PIPELINE_ROW_STATUSES_EXCLUDED",
-          "line": 49,
+          "line": 69,
           "kind": "Variable"
         },
         {
           "name": "DashboardPipelineRow",
-          "line": 51,
+          "line": 71,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardGoalSummary",
-          "line": 61,
+          "line": 81,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardPointsLedgerEntry",
-          "line": 66,
+          "line": 86,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberDashboardHomeView",
-          "line": 72,
+          "line": 92,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LoadMemberDashboardHomeArgs",
-          "line": 123,
+          "line": 155,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardHomeTx",
-          "line": 130,
+          "line": 162,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardHomeDb",
-          "line": 136,
+          "line": 168,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardUserRow",
-          "line": 140,
+          "line": 172,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STAGE_TONE_BY_STATUS",
-          "line": 206,
+          "line": 238,
           "kind": "Variable"
         },
         {
           "name": "mapPipelineRows",
-          "line": 217,
+          "line": 249,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pointsLedgerColor",
-          "line": 234,
+          "line": 266,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapPointsLedger",
-          "line": 244,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "mapGoalSummaries",
-          "line": 254,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "deriveNextBadge",
           "line": 276,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "mapGoalSummaries",
+          "line": 286,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "deriveNextBadge",
+          "line": 308,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "displayFirstName",
-          "line": 305,
+          "line": 337,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dashboardHomeStateLetter",
-          "line": 318,
+          "line": 350,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fallbackDashboardHomeAction",
-          "line": 329,
+          "line": 361,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveDashboardHomeNextAction",
-          "line": 362,
+          "line": 394,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "emptyHome",
-          "line": 391,
+          "line": 423,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "shapeHome",
-          "line": 434,
+          "line": 466,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "userSelect",
-          "line": 577,
+          "line": 614,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchHomeRow",
-          "line": 689,
+          "line": 729,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadMemberDashboardHome",
-          "line": 720,
+          "line": 760,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -129043,6 +129092,158 @@
         {
           "name": "buildMemberShellIdentity",
           "line": 43,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/memberPointsTrend.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 11842,
+      "lines": 247,
+      "sha256": "97345f11f9cf2fef6599084f86b249eb51f5179dfd34481576c6f337ae0aa86f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "NOW",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY_MS",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "at",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "chipThisWeek",
+          "line": 23,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/memberPointsTrend.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 8114,
+      "lines": 189,
+      "sha256": "755999d3e15972303198bc178a6a39d95187dc49301f3edbacf0796a6fba9dcf",
+      "binary": false,
+      "exports": [
+        {
+          "name": "MEMBER_TREND_WEEK_MS",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_TREND_WEEKS",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "PointsTrendTransaction",
+          "line": 32,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberStatSpark",
+          "line": 38,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberPointsTrend",
+          "line": 44,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "memberTrendWindows",
+          "line": 70,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberPointsTrend",
+          "line": 90,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberPointsSpark",
+          "line": 145,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "PointsLedgerReconciliation",
+          "line": 158,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "reconcilePointsLedger",
+          "line": 182,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MEMBER_TREND_WEEK_MS",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_TREND_WEEKS",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "PointsTrendTransaction",
+          "line": 32,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberStatSpark",
+          "line": 38,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberPointsTrend",
+          "line": 44,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TrendWindow",
+          "line": 57,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "memberTrendWindows",
+          "line": 70,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberPointsTrend",
+          "line": 90,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberPointsSpark",
+          "line": 145,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "PointsLedgerReconciliation",
+          "line": 158,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "reconcilePointsLedger",
+          "line": 182,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -151462,9 +151663,9 @@
       "path": "package.json",
       "area": "root",
       "domain": "root",
-      "bytes": 8199,
-      "lines": 151,
-      "sha256": "06d39174e38dc9e3ed8c64647defe43e8c9787a43372073f8a413d37d7325a3a",
+      "bytes": 8301,
+      "lines": 152,
+      "sha256": "2c9361886265a93fcd44515aa25a0e175c0cabd2740630e2c5b074d428370a65",
       "binary": false
     },
     {
@@ -154966,6 +155167,34 @@
         {
           "name": "titleCell",
           "line": 60,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/audit-points-ledger-drift.ts",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 5348,
+      "lines": 137,
+      "sha256": "56cd7326367ef4a68579f542b3afc2eaba05b8342b9b13c1c7ce6bdc34c0f27c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "prisma",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "parseLimit",
+          "line": 33,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "main",
+          "line": 40,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -164828,6 +165057,59 @@
       "directive": null
     },
     {
+      "path": "tests/api/application-status-events.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 13694,
+      "lines": 358,
+      "sha256": "37bbdf6c0880a146eda17cd0f413ff0d9f1a554e5cfe60fd83acd2a53127565b",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "MEMBER_ID",
+          "line": 60,
+          "kind": "Variable"
+        },
+        {
+          "name": "APPLICATION_ID",
+          "line": 61,
+          "kind": "Variable"
+        },
+        {
+          "name": "EventParams",
+          "line": 63,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "emitted",
+          "line": 73,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "statusEvents",
+          "line": 80,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "assertOrdered",
+          "line": 85,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "patchRequest",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "patchContext",
+          "line": 112,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/api/apply-confirmation-clarity.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -172010,6 +172292,39 @@
         {
           "name": "expectAlert",
           "line": 51,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/member-home-points-trend.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5445,
+      "lines": 130,
+      "sha256": "49794bb5d1bca37ccc20ee643242ba53a234ef71109dbc741b42cb732c6f7648",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "DAY_MS",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "LEDGER",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "renderHome",
+          "line": 42,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sparklines",
+          "line": 58,
           "kind": "FunctionDeclaration"
         }
       ],

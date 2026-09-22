@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "59d7cb2699f9fd7287f5acb4c6fcc73521d650aa115b4d263e72345dc2998556",
+  "inputTreeSha256": "4c3faaccc63708dda03625b5b80eca1b7fafb9060b1b1169da564133f2c92dc9",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5057,
-    "sourceModules": 3696,
-    "importReferences": 18475,
-    "resolvedLocalReferences": 12419,
+    "files": 5063,
+    "sourceModules": 3702,
+    "importReferences": 18503,
+    "resolvedLocalReferences": 12438,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1071,
     "nextRouteFiles": 1037,
@@ -22,10 +22,10 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 1015,
-    "testCandidates": 1003,
+    "testFiles": 1018,
+    "testCandidates": 1006,
     "testHelpers": 12,
-    "staticallySelectedTests": 1001,
+    "staticallySelectedTests": 1004,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1098
+      "files": 1101
     },
     {
       "area": "localization",
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 146
+      "files": 147
     },
     {
       "area": "pages",
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 604
+      "files": 606
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 941
+      "references": 942
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 760
+      "references": 761
     },
     {
       "file": "lib/auth/roles.ts",
@@ -179,11 +179,11 @@
       "references": 106
     },
     {
-      "file": "lib/content/programTitle.ts",
-      "references": 83
+      "file": "lib/events/track.ts",
+      "references": 85
     },
     {
-      "file": "lib/events/track.ts",
+      "file": "lib/content/programTitle.ts",
       "references": 83
     },
     {
@@ -207,15 +207,15 @@
       "references": 57
     },
     {
+      "file": "messages/en.json",
+      "references": 55
+    },
+    {
       "file": "lib/content/programCurriculumManifest.ts",
       "references": 54
     },
     {
       "file": "lib/supabase-admin.ts",
-      "references": 54
-    },
-    {
-      "file": "messages/en.json",
       "references": 54
     },
     {
@@ -358,7 +358,7 @@
     },
     {
       "file": "app/(portal)/dashboard/page.tsx",
-      "lines": 1223
+      "lines": 1224
     },
     {
       "file": "app/dev/astryx/table/page.tsx",
