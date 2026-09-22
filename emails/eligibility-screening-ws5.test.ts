@@ -89,7 +89,8 @@ describe('applicationConfirmationHtml WS5 eligibility payload', () => {
     assert.match(html, /Answers saved:<\/strong> 11/);
     assertNoAnswers(html);
     assert.match(html, /Thank you for becoming a member of Workforce Advancement Project!/);
-    assert.match(html, /1(?:&ndash;|–|-)\s*2 business days/);
+    assert.doesNotMatch(html, /1(?:&ndash;|–|-)\s*2 business days/);
+    assert.match(html, /A counselor reviews every application\. You&rsquo;ll get an email when a decision is made\./);
     assert.ok(!html.includes('3 to 5 business days'));
   });
 

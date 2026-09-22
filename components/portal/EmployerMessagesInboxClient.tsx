@@ -174,7 +174,7 @@ export default function EmployerMessagesInboxClient({
         messages: teamInitial.messages,
         portalUserId,
       }}
-      subtitle="We typically reply within one business day."
+      subtitle="Our team reads every message and replies here."
       emptyHint="No messages yet. Ask a question about job postings, applications, or candidate matches."
     />
   );

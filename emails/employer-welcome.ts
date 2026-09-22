@@ -17,7 +17,7 @@ export function employerWelcomeHtml(params: {
   <li><strong>Track your pipeline</strong> — move candidates from submitted → reviewed → interviewed → hired</li>
 </ul>
 
-<p>Your job postings go through a quick review before going live. We typically approve within 1 business day.</p>
+<p>Your job postings go through a quick review before going live. You&rsquo;ll see each posting&rsquo;s status in your employer dashboard.</p>
 
 <p>If you have questions, reply to this email or call us at (512) 777-1808.</p>
 

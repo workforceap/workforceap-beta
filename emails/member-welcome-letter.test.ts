@@ -60,7 +60,8 @@ describe('applicationConfirmationHtml welcome letter', () => {
     assert.ok(html.includes('Hi Alex'));
     assertLetterPhrases(html);
     assert.match(html, /application id is <strong>app-welcome-1<\/strong>/);
-    assert.match(html, /1(?:&ndash;|–|-)\s*2 business days/);
+    assert.doesNotMatch(html, /1(?:&ndash;|–|-)\s*2 business days/);
+    assert.match(html, /A counselor reviews every application/);
   });
 });
 

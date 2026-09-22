@@ -20,7 +20,7 @@ export function schoolEnrollmentParentAckHtml(params: {
     <p>Here is what happens next:</p>
     <ol>
       <li><strong>Application received</strong> &mdash; the student&rsquo;s application is on file with WorkforceAP</li>
-      <li><strong>Program enrollment setup (24&ndash;48 hours)</strong> &mdash; our team enrolls the student into their chosen program. This is a manual process, so please allow 24&ndash;48 hours</li>
+      <li><strong>Program enrollment setup</strong> &mdash; our team enrolls the student into their chosen program by hand and emails them when it&rsquo;s done</li>
       <li><strong>Guardian consent</strong> &mdash; for students under 18, ${escapeHtml(params.schoolName)} collects a parent/guardian consent form before training is activated</li>
     </ol>
     <p>Questions? Call <a href="tel:+15127771808">(512) 777-1808</a> or email <a href="mailto:info@workforceap.org">info@workforceap.org</a>.</p>

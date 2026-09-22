@@ -26,14 +26,14 @@ import DashboardHomeClient, { type DashboardApplicationStatusProps } from '@/com
 const RETIRED_COPY = /1 to 2 business days|business days|typically respond/i;
 
 const underReview: DashboardApplicationStatusProps = {
-  label: 'Under review',
+  label: 'Applied',
   submittedAt: '2026-09-01T12:00:00.000Z',
   programInterest: 'it-support-professional-certificate-ibm',
   nextStep: 'Staff are reviewing your application.',
   showResponseEstimate: true,
   waitEstimate: { medianDays: 40, sampleSize: 12 },
-  progressIndex: 2,
-  stage: 'under_review',
+  progressIndex: 1,
+  stage: 'applied',
 };
 
 function renderLegacy(applicationStatus: DashboardApplicationStatusProps) {
@@ -60,7 +60,7 @@ afterEach(cleanup);
 describe('legacy dashboard application card wait copy', () => {
   it('quotes the measured median approval wait while the application is under review', () => {
     const { container } = renderLegacy(underReview);
-    expect(container.textContent).toContain('Under review');
+    expect(container.textContent).toContain('Applied');
     expect(container.querySelector('[data-approval-wait-estimate]')?.textContent).toBe(
       'Recent applications were approved in about 40 days (based on 12 approvals in the last 30 days).',
     );
@@ -69,7 +69,7 @@ describe('legacy dashboard application card wait copy', () => {
 
   it('renders no wait line at all when the estimate is null', () => {
     const { container } = renderLegacy({ ...underReview, waitEstimate: null });
-    expect(container.textContent).toContain('Under review');
+    expect(container.textContent).toContain('Applied');
     expect(container.querySelector('[data-approval-wait-estimate]')).toBeNull();
     expect(container.textContent).not.toMatch(RETIRED_COPY);
   });
