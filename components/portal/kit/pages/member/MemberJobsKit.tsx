@@ -165,6 +165,7 @@ export function MemberJobsKit({
             </div>
             {applications.length > 0 ? <JobsCta href={browseHref}>Browse openings</JobsCta> : null}
           </div>
+          {/* The empty state is the card's own branch: the table below only mounts with rows, so it carries no `empty` prop. */}
           {applications.length === 0 ? (
             <KitEmptyState
               kind="first"
@@ -180,12 +181,6 @@ export function MemberJobsKit({
               mobile="cards"
               cardRender={applicationCard}
               minWidth={560}
-              empty={{
-                kind: 'first',
-                title: t('applications.title'),
-                description: t('applications.body'),
-                primaryAction: { label: t('applications.action'), href: browseHref },
-              }}
             />
           )}
         </div>
