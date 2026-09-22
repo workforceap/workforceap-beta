@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "b20cc9698120722deba97c7482948af99d6205a3243c2815bb10bf730fb1de2b",
+  "inputTreeSha256": "59d7cb2699f9fd7287f5acb4c6fcc73521d650aa115b4d263e72345dc2998556",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -76036,9 +76036,9 @@
       "path": "docs/HANDOFF.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 7480,
+      "bytes": 7496,
       "lines": 104,
-      "sha256": "89a2073d9d4595c4627d7543d7ee6d2164e74badb41e1e3f77789088044aa3f9",
+      "sha256": "bd1fb6433b0921e7edd638ebe717717a57aa718d1da2df69ff6c27ac33b82820",
       "binary": false
     },
     {
@@ -156394,85 +156394,85 @@
       "path": "scripts/check-supabase-env.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 6048,
-      "lines": 133,
-      "sha256": "d1b822af16a2dcbeba630bad59fe78064f9e11d5ddb7fa3a3293e3128aff4d16",
+      "bytes": 6155,
+      "lines": 134,
+      "sha256": "1beba270f6d7ade4ed1187d1f94962acc1186b94de20453d90d39700208e5c32",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "POOL_CONTRACT_ENFORCED_VERCEL_ENVS",
-          "line": 46,
-          "kind": "Variable"
-        },
-        {
-          "name": "checkPoolContract",
           "line": 47,
           "kind": "Variable"
         },
         {
+          "name": "checkPoolContract",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
           "name": "DEMO_REF",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "PROD_REF",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "formatSupabaseEnvGuardFailure",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "inspectSupabaseEnvironment",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "projectForAnonKey",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "projectForUrl",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "env",
-          "line": 69,
+          "line": 70,
           "kind": "Variable"
         },
         {
           "name": "urls",
-          "line": 71,
+          "line": 72,
           "kind": "Variable"
         },
         {
           "name": "expected",
-          "line": 78,
-          "kind": "Variable"
-        },
-        {
-          "name": "errors",
           "line": 79,
           "kind": "Variable"
         },
         {
-          "name": "seen",
+          "name": "errors",
           "line": 80,
           "kind": "Variable"
         },
         {
+          "name": "seen",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
           "name": "onVercel",
-          "line": 103,
+          "line": 104,
           "kind": "Variable"
         },
         {
           "name": "enforcePoolContract",
-          "line": 104,
+          "line": 105,
           "kind": "Variable"
         }
       ],
