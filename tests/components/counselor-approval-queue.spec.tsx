@@ -105,6 +105,10 @@ describe('Counselor Today — waiting on your decision', () => {
   it('empty queue renders the same kit empty state the Today groups use, and a zero tile with no tone', () => {
     render(<CounselorTodayKit queue={attention} approvals={emptyApprovalQueue()} />);
     expect(within(section()).getByRole('heading', { level: 3 })).toHaveTextContent('Nothing is waiting on you');
+    // Zero decisions is the goal: `clear`, ok tone, not an alert.
+    expect(section().querySelector('.wa-kit-empty')).toHaveAttribute('data-kind', 'clear');
+    expect(section().querySelector('.wa-kit-empty')).toHaveAttribute('data-tone', 'ok');
+    expect(screen.queryByRole('alert')).toBeNull();
     expect(within(section()).queryAllByRole('listitem')).toHaveLength(0);
     expect(section()).toHaveAttribute('data-count', '0');
     expect(section()).toHaveTextContent('0 decisions');
@@ -126,7 +130,11 @@ describe('Counselor Today — waiting on your decision', () => {
     expect(screen.getByTestId('today-tile-awaiting-decision')).toHaveTextContent('Approval queue did not load');
     // The attention tiles and groups still render.
     expect(screen.getByTestId('today-group-at_risk')).toBeInTheDocument();
-    expect(screen.queryByRole('alert')).toBeNull();
+    // The failed load is the one alert on the page: `unavailable` + danger, never a confirmed empty.
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('data-kind', 'unavailable');
+    expect(alert).toHaveAttribute('data-tone', 'danger');
+    expect(section().contains(alert)).toBe(true);
   });
 });
 

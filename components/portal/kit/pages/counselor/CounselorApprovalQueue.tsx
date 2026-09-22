@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ClipboardCheck, ShieldCheck, RotateCcw } from 'lucide-react';
+import { ClipboardCheck, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { KitEmptyState, StatusTag, type KitTone } from '@/components/portal/kit';
 import { cx } from '@/components/portal/kit/base';
@@ -22,7 +22,9 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
  * The whole row is a link to the Application review panel on the member's
  * page (`#counselor-intake-review-panel`), where the decision is recorded.
  *
- * Empty and failed states use the same KitEmptyState the Today groups use.
+ * Empty and failed states use the same KitEmptyState the Today groups use:
+ * an empty queue is `clear` (zero decisions is the goal), a failed load is
+ * `unavailable` + danger (role="alert") with a Retry, never a confirmed empty.
  * Pure and serializable: no clock reads, so a render test is deterministic.
  */
 
@@ -36,6 +38,7 @@ export interface CounselorApprovalQueueProps {
 
 export const APPROVAL_QUEUE_TITLE = 'Waiting on your decision';
 export const APPROVAL_QUEUE_EMPTY_TITLE = 'Nothing is waiting on you';
+export const APPROVAL_QUEUE_LOAD_FAILED_TITLE = "Couldn't load the approval queue";
 
 const KIND_ICON: Record<ApprovalDecisionKind, LucideIcon> = {
   application: ClipboardCheck,
@@ -122,18 +125,16 @@ export function CounselorApprovalQueue({
       </p>
       {loadError ? (
         <KitEmptyState
-          title="Couldn't load the approval queue"
+          kind="unavailable"
+          tone="danger"
+          title={APPROVAL_QUEUE_LOAD_FAILED_TITLE}
           description="The decisions list did not answer. The rest of Today is unaffected."
           headingAs="h3"
-          action={
-            <Link href={retryHref} className="wa-kit-cta">
-              <RotateCcw size={14} aria-hidden style={{ marginRight: 6, verticalAlign: 'middle' }} />
-              Retry
-            </Link>
-          }
+          primaryAction={{ label: 'Retry', href: retryHref }}
         />
       ) : count === 0 ? (
         <KitEmptyState
+          kind="clear"
           title={APPROVAL_QUEUE_EMPTY_TITLE}
           description="Every application and intake check on your caseload has a decision."
           headingAs="h3"

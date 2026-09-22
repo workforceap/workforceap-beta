@@ -5,7 +5,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import CounselorRosterEmpty from '@/components/portal/counselor/CounselorRosterEmpty';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import CounselorStudentsRosterClient from '@/components/portal/counselor/CounselorStudentsRosterClient';
@@ -322,13 +322,7 @@ export default async function CounselorStudentsPage({
 
         {assignments.length === 0 ? (
           <div style={{ padding: '0 1rem' }}>
-            <PortalEmptyState
-              title={t('noMembersAssignedYet')}
-              description={t('membersAppearOnceAssigned')}
-              icon={<span className="material-symbols-outlined" aria-hidden="true">person_search</span>}
-              primaryAction={{ label: t('openMessages'), href: '/counselor/messages' }}
-              secondaryAction={{ label: t('counselorGuide'), href: '/counselor/guide' }}
-            />
+            <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h2" />
           </div>
         ) : (
           <CounselorStudentsRosterClient rows={rosterRows} filterMeta={filterMeta} initialFilter={filter} />
@@ -350,13 +344,7 @@ export default async function CounselorStudentsPage({
         ) : null}
 
         {assignments.length === 0 ? (
-          <PortalEmptyState
-            title={t('noMembersAssignedYet')}
-            description={t('membersAppearOnceAssigned')}
-            icon={<span className="material-symbols-outlined" aria-hidden="true">person_search</span>}
-            primaryAction={{ label: t('openMessages'), href: '/counselor/messages' }}
-            secondaryAction={{ label: t('counselorGuide'), href: '/counselor/guide' }}
-          />
+          <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h2" />
         ) : (
           <CounselorStudentsRosterClient rows={rosterRows} filterMeta={filterMeta} initialFilter={filter} />
         )}

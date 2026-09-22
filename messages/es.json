@@ -1206,16 +1206,8 @@
     "inAProgram": "En un programa",
     "noProgramYet": "Sin programa aún",
     "activeRoster": "Lista activa",
-    "noMembersAssignedYet": "Aún no hay miembros asignados",
-    "membersAppearOnceAssigned": "Los miembros aparecen aquí cuando un administrador te los asigna.",
-    "noConversationsMatch": "Ninguna conversación coincide",
-    "tryAnotherFilterOrSearch": "Prueba otro filtro o término de búsqueda.",
-    "clearConversationFilters": "Borrar filtros",
-    "counselorGuide": "Guía del consejero",
     "resources": "Recursos",
     "openMessages": "Abrir mensajes",
-    "contactAdminForAssignments": "Contactar al administrador para asignaciones",
-    "counselorResources": "Recursos del consejero",
     "enrolled": "Inscrito",
     "notEnrolled": "No inscrito",
     "noProgram": "Sin programa",
@@ -1273,22 +1265,15 @@
     "atRiskHighCount": "Alto",
     "atRiskMediumCount": "Medio",
     "atRiskLoadingNotes": "Cargando resumen de riesgo...",
-    "atRiskNoAlerts": "No hay alertas de riesgo en este momento. ¡Buen trabajo!",
     "atRiskRecentAlerts": "Alertas recientes",
     "counselorNameFallback": "Consejero",
-    "membersAppearOnceAssignedMobile": "Los miembros aparecerán aquí cuando un administrador los asigne. Mientras tanto, explora la guía del consejero.",
     "unknownProgram": "Programa desconocido",
     "available": "Disponible",
     "messages": "Mensajes",
     "hotQueueHoursAgo": "{count}h",
     "hotQueueDaysAgo": "{count}d",
     "workQueueSubtitle": "Miembros esperando una respuesta por más de 24 horas. Ordenados del más antiguo al más reciente.",
-    "workQueueLoadError": "No se pudo cargar la cola de trabajo",
-    "workQueueLoadErrorDesc": "Algo salió mal al obtener la cola. Intenta refrescar la página.",
     "retry": "Reintentar",
-    "workQueueEmptyDesc": "Ningún miembro está esperando más de 24 horas por una respuesta. Buen trabajo.",
-    "workQueueNoRepliesTitle": "Ninguna respuesta atrasada",
-    "workQueueOtherFlagged": "{count, plural, one {# miembro está marcado por otro motivo} other {# miembros están marcados por otros motivos}} — la misma lista que muestra Inbox zero.",
     "emptyMessagePreview": "(sin contenido de mensaje)",
     "backToDashboard": "Volver al panel",
     "workQueueMembersAwaiting": "{count} miembro{count, plural, =1 {} other {s}} esperando respuesta",
@@ -1297,8 +1282,6 @@
     "inactiveMembersSubtitle": "Miembros que no han estado activos en la plataforma. Comuníquese directamente por correo electrónico o teléfono, luego registre el contacto para que otro personal pueda ver que se contactó al miembro.",
     "minDaysInactive": "Días mínimos inactivo",
     "loadingMemberList": "Cargando lista de miembros…",
-    "everyoneIsActive": "Todos están activos",
-    "noMembersInactive": "Ningún miembro ha estado inactivo por {days}+ días con este filtro.",
     "needsAttention": "Necesita atención",
     "membersThreshold": "{count} miembro{count, plural, =1 {} other {s}} · umbral {days}+ días",
     "daysInactive": "Días inactivo",
@@ -1312,7 +1295,6 @@
     "saving": "Guardando…",
     "logged": "Registrado ✓",
     "logOutreach": "Registrar contacto",
-    "couldNotLoadInactiveMembers": "No se pudieron cargar los miembros inactivos",
     "couldNotLogOutreach": "No se pudo registrar el contacto. Inténtalo de nuevo.",
     "never": "Nunca",
     "critical": "Crítico",
@@ -1344,8 +1326,6 @@
     "notes": "Notas",
     "recording": "Registrando…",
     "loadingPlacements": "Cargando colocaciones…",
-    "noPlacementsYet": "Aún no hay colocaciones",
-    "noPlacementsDesc": "Cuando registres una colocación, aparecerá en esta lista para tu equipo.",
     "recordedPlacements": "Colocaciones registradas",
     "total": "total",
     "salary": "Salario",
@@ -3996,6 +3976,100 @@
       "title": "No se pudo cargar tu puntaje de preparación",
       "body": "Actualiza la página. Si esto sigue pasando, escribe a tu orientador.",
       "action": "Abrir el coach de preparación"
+    },
+    "counselor": {
+      "roster": {
+        "title": "Aún no hay miembros asignados",
+        "body": "Un administrador te asigna miembros. Cuando eso ocurra, aparecerán aquí con su progreso, nivel de riesgo y última actividad. La guía del orientador explica qué hacer primero.",
+        "action": "Abrir la guía del orientador",
+        "secondary": "Recursos para orientadores"
+      },
+      "rosterNoCounselorRecord": {
+        "title": "Tu cuenta no tiene registro de orientador",
+        "body": "Esta lista muestra los miembros asignados a un orientador. Tu cuenta de administrador no tiene registro de orientador, así que aquí no aparece nada. La lista de miembros de administración incluye a todos los miembros.",
+        "action": "Abrir miembros de administración"
+      },
+      "rosterFiltered": {
+        "title": "Ningún miembro coincide con este filtro",
+        "body": "Borra el filtro para ver a todos en tu lista.",
+        "action": "Borrar filtro"
+      },
+      "rosterAtRisk": {
+        "title": "No hay miembros en riesgo en tu lista",
+        "body": "Todos están por debajo del umbral de riesgo medio, o el análisis de riesgo aún no se ha ejecutado. Borra el filtro para ver a todos."
+      },
+      "rosterUpcomingSession": {
+        "title": "No hay sesiones en los próximos 7 días",
+        "body": "Ningún miembro asignado tiene una sesión de mentoría programada en los próximos 7 días. Borra el filtro para ver a todos."
+      },
+      "rosterPendingApplication": {
+        "title": "No hay solicitudes pendientes de decisión",
+        "body": "Ningún miembro asignado tiene una solicitud en espera de decisión. Borra el filtro para ver a todos."
+      },
+      "atRiskClear": {
+        "title": "No hay miembros en riesgo en tu caso",
+        "body": "Nadie a quien apoyas tiene una {reason} ahora ({definition}). Los casos nuevos aparecen aquí después del análisis de riesgo nocturno.",
+        "action": "Abrir Hoy",
+        "secondary": "Ver mis miembros"
+      },
+      "atRiskFiltered": {
+        "title": "Ningún miembro en riesgo coincide con tus filtros",
+        "body": "Borra los filtros para ver todos los casos guardados.",
+        "action": "Borrar filtros"
+      },
+      "atRiskUnavailable": {
+        "title": "No pudimos cargar los miembros en riesgo",
+        "action": "Intentar de nuevo",
+        "secondary": "Volver a Hoy"
+      },
+      "placements": {
+        "title": "Aún no hay colocaciones",
+        "body": "Las colocaciones registradas para tus miembros aparecen aquí con empleador, puesto y fecha de inicio. Registra la primera.",
+        "action": "Registrar colocación"
+      },
+      "placementsUnavailable": {
+        "title": "No se pudieron cargar las colocaciones",
+        "body": "La lista de colocaciones no respondió. Intenta de nuevo; si sigue pasando, avisa a un administrador.",
+        "action": "Intentar de nuevo"
+      },
+      "inactiveClear": {
+        "title": "Todos están activos",
+        "body": "Ningún miembro lleva {days}+ días sin actividad.",
+        "action": "Mis miembros"
+      },
+      "inactiveUnavailable": {
+        "title": "No se pudieron cargar los miembros inactivos",
+        "body": "La lista de miembros no respondió. Intenta de nuevo.",
+        "action": "Intentar de nuevo"
+      },
+      "workQueueClear": {
+        "title": "Todo al día",
+        "body": "Ningún miembro lleva más de un día esperando respuesta, y no hay nada más marcado.",
+        "action": "Abrir mensajes",
+        "secondary": "Volver a Hoy"
+      },
+      "workQueueNoReplies": {
+        "title": "No hay respuestas atrasadas",
+        "body": "{count, plural, one {# miembro está marcado por otro motivo} other {# miembros están marcados por otros motivos}} — la misma lista que muestra Bandeja cero.",
+        "bodyUnknown": "Ningún miembro lleva más de un día esperando respuesta. Las demás marcas están en Bandeja cero.",
+        "action": "Abrir Bandeja cero"
+      },
+      "workQueueUnavailable": {
+        "title": "No se pudo cargar la cola de trabajo",
+        "body": "Algo salió mal al obtener la cola. Intenta de nuevo.",
+        "action": "Reintentar"
+      },
+      "inbox": {
+        "title": "Aún no hay miembros asignados",
+        "body": "Las conversaciones aparecen aquí cuando un administrador te asigna miembros.",
+        "action": "Abrir la guía del orientador",
+        "secondary": "Volver a Hoy"
+      },
+      "inboxFiltered": {
+        "title": "Ninguna conversación coincide",
+        "body": "Borra el filtro o la búsqueda para ver todas las conversaciones.",
+        "action": "Borrar filtros"
+      }
     }
   }
 }
