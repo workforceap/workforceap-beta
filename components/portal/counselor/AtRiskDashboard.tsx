@@ -890,8 +890,9 @@ function FilterChip({
 }) {
   // Severity chips carry an explicit KitColor; status chips reuse the
   // StatusTag tone→color mapping so "Open" reads the same everywhere.
-  // `ok` reads the text-on-success-tint token: --wa-success itself is a fill
-  // colour (3.1:1 on its own tint), not a text colour.
+  // TONE_COLOR is the fill hue (border, tint); the label reads TONE_TEXT below,
+  // because --wa-success / --wa-gold / --wa-info are fill colours (3.1–4.3:1
+  // as 13px text), not text colours.
   const TONE_COLOR: Record<KitTone, string> = {
     ok: 'var(--wa-success)',
     warn: 'var(--wa-gold)',
