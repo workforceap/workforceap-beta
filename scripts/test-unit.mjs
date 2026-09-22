@@ -97,6 +97,12 @@ function classify(relPath) {
     }
     return { unknownVitest: true };
   }
+  if (/lib\/admin\/memberMergeRealDb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Proves PostgreSQL transaction semantics the merge depends on (a
+    // duplicate key aborts the whole transaction), which a Prisma mock cannot
+    // reproduce by construction. Runs in the `database-contract` lane.
+    return { skip: 'realDb' };
+  }
   if (/lib\/auth\/roles\.test\.ts/.test(normalized) && !REAL_DB) {
     // Hits the real Prisma client via getProfileRole — needs a postgres
     // server. The default lane has none; the `database-contract` CI job
