@@ -70,8 +70,6 @@ vi.mock('@astryxdesign/core/ProgressBar', () => ({
   ProgressBar: () => <div role="progressbar" />,
 }));
 
-import AdminStudentsPage from '@/app/admin/students/page';
-
 const PROBE = /to_regclass\('public\.coursera_xapi_events'\)/;
 const isProbe = (call: unknown[]) => PROBE.test((call[0] as TemplateStringsArray).join(''));
 const probeCalls = () => db.$queryRaw.mock.calls.filter(isProbe);

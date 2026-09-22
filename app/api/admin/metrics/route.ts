@@ -8,6 +8,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { countUnmatchedLearners } from '@/lib/coursera/progressQueries';
+import { COURSERA_XAPI_UNAVAILABLE, type CourseraXapiDegradation } from '@/lib/coursera/xapiUnavailableNotice';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -173,9 +174,19 @@ async function computeAdminRouteMetricsPayload(
   // equals the page it opens. The old query INNER JOINed users on
   // matched_user_id, which is NULL for every unmatched row, so it printed 0
   // while 4,216 unmatched events existed (S5).
+  // Sources the numbers knowingly exclude. Additive: `summary`/`funnels`/
+  // `trends` are unchanged, and the dashboard's typed reader ignores it.
+  // `coursera_xapi_events` absent (db:push environments) means the unmatched
+  // count above ran without the xAPI branch, so it is narrower than
+  // production's rather than wrong; the probe inside the loader reports it.
+  const degraded: CourseraXapiDegradation[] = [];
   let unmatchedCoursera: number;
   try {
-    unmatchedCoursera = await countUnmatchedLearners(orgId, { includeTestAccounts: false, strict: true });
+    unmatchedCoursera = await countUnmatchedLearners(orgId, {
+      includeTestAccounts: false,
+      strict: true,
+      onXapiTableMissing: () => { if (!degraded.includes(COURSERA_XAPI_UNAVAILABLE)) degraded.push(COURSERA_XAPI_UNAVAILABLE); },
+    });
   } catch (error) {
     console.error('Failed to get unmatched coursera', error);
     unmatchedCoursera = 0;
@@ -260,6 +271,7 @@ async function computeAdminRouteMetricsPayload(
       enrollments: weeklyEnrollments,
       dashboardViews: weeklyDashboardViews,
     },
+    degraded,
   };
 }export const GET = withApiGuc(async (request: NextRequest) => {
   try {

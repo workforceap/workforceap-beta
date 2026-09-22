@@ -14,6 +14,7 @@ import {
   countUnmatchedLearners,
   loadUnmatchedLearners,
 } from '@/lib/coursera/progressQueries';
+import { COURSERA_XAPI_UNAVAILABLE_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
 import { CourseraCatalogHealthSection } from '@/components/admin/CourseraCatalogHealthTable';
 import {
   CourseraSyncKit,
@@ -71,10 +72,15 @@ export async function ReportingCourseraSection({
     console.error('[admin/reporting/coursera] kit sync status failed:', error);
   }
 
+  // When `coursera_xapi_events` is absent (db:push environments) the three
+  // unmatched reads succeed without the xAPI branch; the probe inside them
+  // reports that here so the card can say the list is knowingly incomplete.
+  let xapiUnavailable = false;
+  const onXapiTableMissing = () => { xapiUnavailable = true; };
   const [unmatchedResult, hiddenTestResult, unmatchedCountResult, approvedResult, activityResult, unresolvedOrgResult] = await Promise.allSettled([
-    loadUnmatchedLearners(organizationId, 500, { includeTestAccounts: false, strict: true }),
-    countHiddenTestAccountUnmatchedLearners(organizationId, { strict: true }),
-    countUnmatchedLearners(organizationId, { includeTestAccounts: false, strict: true }),
+    loadUnmatchedLearners(organizationId, 500, { includeTestAccounts: false, strict: true, onXapiTableMissing }),
+    countHiddenTestAccountUnmatchedLearners(organizationId, { strict: true, onXapiTableMissing }),
+    countUnmatchedLearners(organizationId, { includeTestAccounts: false, strict: true, onXapiTableMissing }),
     withAdminPageScope(scope, (db) => db.user.count({
       where: { organizationId, deletedAt: null, courseraEnrollmentApproved: true },
     })),
@@ -162,6 +168,7 @@ export async function ReportingCourseraSection({
         unmatchedTotal={kitUnmatchedTotal}
         unmatchedLoaded={kitUnmatchedLoaded}
         hiddenTestCount={kitHiddenTest}
+        notice={xapiUnavailable ? COURSERA_XAPI_UNAVAILABLE_NOTICE : undefined}
         approvedForEnrollment={kitApprovedForEnrollment}
         activeLast30Days={kitActiveLast30Days}
         unresolvedOrgSentinels={kitUnresolvedOrgSentinels}

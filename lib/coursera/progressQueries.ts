@@ -446,9 +446,14 @@ export async function loadUnmatchedLearners(
  *
  * Scoped by `organizationId`, same posture as `loadUnmatchedLearners`.
  */
-export async function countHiddenTestAccountUnmatchedLearners(organizationId: string, options: { strict?: boolean } = {}): Promise<number> {
+export async function countHiddenTestAccountUnmatchedLearners(
+  organizationId: string,
+  options: Pick<LoadUnmatchedLearnersOptions, 'strict' | 'onXapiTableMissing'> = {},
+): Promise<number> {
   try {
-    const xapiBranch = (await courseraXapiEventsTablePresent()) ? xapiUnmatchedEmailBranch(organizationId) : Prisma.empty;
+    const xapiPresent = await courseraXapiEventsTablePresent();
+    if (!xapiPresent) options.onXapiTableMissing?.();
+    const xapiBranch = xapiPresent ? xapiUnmatchedEmailBranch(organizationId) : Prisma.empty;
     const rows = await prisma.$queryRaw<Array<{ count: bigint | number }>>`
       WITH unioned AS (
         SELECT LOWER(external_email) AS email

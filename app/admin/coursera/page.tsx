@@ -27,6 +27,7 @@ import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { COURSERA_XAPI_UNAVAILABLE_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
 import { getDiscoveredProgram, getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
@@ -456,12 +457,18 @@ export default async function AdminCourseraPage({
   const courseProgress = await loadCourseProgressSummary(organizationId);
   const xapiCourseProgress = await loadXapiCourseProgressSummary(organizationId, members);
   const badgeProgress = await loadBadgeProgressSummary(organizationId);
+  // When `coursera_xapi_events` is absent (db:push environments) both reads
+  // succeed without the xAPI branch; the probe inside them reports that here
+  // so the unmatched section can say the list is knowingly incomplete.
+  let xapiUnavailable = false;
+  const onXapiTableMissing = () => { xapiUnavailable = true; };
   const unmatchedLearners = await loadUnmatchedLearners(organizationId, 500, {
     includeTestAccounts: showTestAccounts,
+    onXapiTableMissing,
   });
   const hiddenTestAccountCount = showTestAccounts
     ? 0
-    : await countHiddenTestAccountUnmatchedLearners(organizationId);
+    : await countHiddenTestAccountUnmatchedLearners(organizationId, { onXapiTableMissing });
   const skillsetProgress = await getCourseraSkillsetProgressSummary(10, { organizationId });
 
   if (auditEmailRaw.trim().length > 0) {
@@ -1135,7 +1142,7 @@ export default async function AdminCourseraPage({
       <details
         className="content-card"
         style={collapsibleSectionStyle}
-        open={unmatchedLearners.length > 0 || showTestAccounts || hiddenTestAccountCount > 0}
+        open={unmatchedLearners.length > 0 || showTestAccounts || hiddenTestAccountCount > 0 || xapiUnavailable}
       >
         <summary style={collapsibleSummaryStyle}>
           <span>
@@ -1147,6 +1154,11 @@ export default async function AdminCourseraPage({
           </span>
         </summary>
         <div style={collapsibleBodyStyle}>
+        {xapiUnavailable ? (
+          <p role="status" className="wa-kit-training-notice" data-testid="coursera-xapi-notice">
+            {COURSERA_XAPI_UNAVAILABLE_NOTICE}
+          </p>
+        ) : null}
         {hiddenTestAccountCount > 0 ? (
           <div
             style={{

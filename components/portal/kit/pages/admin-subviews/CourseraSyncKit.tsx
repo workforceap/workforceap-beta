@@ -75,6 +75,13 @@ export interface CourseraSyncKitProps {
   unmatchedTotal: number | null;
   unmatchedLoaded?: boolean;
   hiddenTestCount?: number | null;
+  /**
+   * Why a list that loaded without error is still narrower than production's
+   * (e.g. `coursera_xapi_events` absent). Rendered in the kit's info-toned
+   * `role="status"` slot inside the Unmatched Learners card; omitted = nothing
+   * to say.
+   */
+  notice?: string;
   /** Force Sync target — the legacy interactive view that hosts the real button. */
   forceSyncHref: string;
   /** Header action (e.g. a link to Coursera health diagnostics). */
@@ -154,6 +161,7 @@ export function CourseraSyncKit({
   unmatchedTotal,
   unmatchedLoaded = true,
   hiddenTestCount = null,
+  notice,
   forceSyncHref,
   headerAction,
   approvedForEnrollment,
@@ -323,6 +331,11 @@ export function CourseraSyncKit({
           <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 14px' }}>
             Recorded Coursera identities with no matching member. This is an activity backlog, not a provider membership roster.
           </p>
+          {notice ? (
+            <p role="status" className="wa-kit-training-notice" data-testid="coursera-sync-notice">
+              {notice}
+            </p>
+          ) : null}
 
           {!unmatchedLoaded ? (
             <EmptyState
