@@ -35,7 +35,8 @@ export default function MemberDashboardVoiceSection() {
           <VoiceCoachLauncherCard
             badge="Introduction"
             icon={<Mic size={22} aria-hidden="true" />}
-            glowColor="#a47f38"
+            glowColor="var(--wa-gold)"
+            badgeColor="var(--wa-gold-dark)"
             gradient={GOLD_TEXT_GRADIENT}
             title="Elevator Introduction"
             description="Generate a clean 10 to 20 second intro, save it, and email it to yourself right away."

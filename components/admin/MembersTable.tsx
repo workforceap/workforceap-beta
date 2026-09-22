@@ -952,7 +952,7 @@ export default function MembersTable({
               cell: (m) => (
                 <span title={m.profile?.smsOptIn ? 'SMS opted in' : 'SMS not opted in'}>
                   {formatPhone(m.profile?.profilePhone ?? m.phone)}
-                  {m.profile?.smsOptIn && <span style={{ marginLeft: 4, fontSize: '0.8125rem', color: '#16a34a' }}>✓ SMS</span>}
+                  {m.profile?.smsOptIn && <span style={{ marginLeft: 4, fontSize: '0.8125rem', color: 'var(--wa-success-dark)' }}>✓ SMS</span>}
                 </span>
               ),
             },

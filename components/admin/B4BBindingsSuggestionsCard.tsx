@@ -122,7 +122,9 @@ export default function B4BBindingsSuggestionsCard() {
             borderRadius: '0.6rem',
             border: '1px solid var(--color-accent)',
             background: loading ? 'var(--surface-container)' : 'var(--color-accent)',
-            color: loading ? 'var(--wa-accent-text)' : 'var(--wa-on-accent-control)',
+            // --color-accent is the org accent and does not follow dark mode, so
+            // its foreground is the constant --wa-on-accent (white), like .btn-primary.
+            color: loading ? 'var(--wa-accent-text)' : 'var(--wa-on-accent)',
             fontWeight: 700,
             fontSize: '0.85rem',
             cursor: loading ? 'not-allowed' : 'pointer',
