@@ -116,13 +116,6 @@
   color: var(--wa-text);
 }
 
-/* Programmatic focus (the step heading receives focus on navigation) shows
-   no mouse ring; keyboard focus keeps the recipe via :focus-visible below. */
-.heading:focus:not(:focus-visible),
-.confirmTitle:focus:not(:focus-visible) {
-  outline: none;
-}
-
 .heading:focus-visible,
 .confirmTitle:focus-visible {
   outline: 2px solid transparent;

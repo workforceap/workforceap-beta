@@ -47,14 +47,14 @@ export function CardHead({ title, linkLabel, linkHref }: { title: string; linkLa
 
 /**
  * Trend pill: arrow + value, up (ok) or down (danger). Paints through
- * `.wa-kit-delta--up|down` (css/portal-kit.css), the WCAG-tuned text-on-tint
- * pairs shared with `.wa-kit-tag--ok|danger`; the Astryx `Badge` success
+ * `.wa-kit-delta` + `.wa-kit-tag--ok|danger` (css/portal-kit.css), the WCAG-tuned
+ * text-on-tint pairs the status pills already prove; the Astryx `Badge` success
  * variant read the base `--wa-success` hue at 3.1:1 on its tint.
  */
 export function DeltaChip({ delta, direction = 'up' }: { delta: string; direction?: 'up' | 'down' }) {
   const Icon = direction === 'down' ? ArrowDown : ArrowUp;
   return (
-    <span className={cx('wa-kit-delta', direction === 'down' ? 'wa-kit-delta--down' : 'wa-kit-delta--up')}>
+    <span className={cx('wa-kit-delta', direction === 'down' ? 'wa-kit-tag--danger' : 'wa-kit-tag--ok')}>
       <Icon size={10} aria-hidden />
       {delta}
     </span>

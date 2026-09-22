@@ -41,7 +41,7 @@
 .workspace :global(.portal-inbox__list) { flex: 1; min-height: 0; overflow-y: auto; border-right: 0; }
 .workspace :global(.portal-inbox-row) { display: block; width: 100%; padding: var(--wa-pad-sm); border: 0; border-top: 1px solid var(--wa-border); border-radius: 0; background: transparent; text-align: left; color: var(--wa-text); }
 .workspace :global(.portal-inbox-row--active) { background: var(--wa-surface-2); box-shadow: inset 3px 0 var(--wa-accent); }
-.workspace :global(.portal-inbox-row):focus-visible { outline: 2px solid transparent; outline-offset: -3px; box-shadow: inset 0 0 0 2px var(--wa-surface), inset 0 0 0 4px var(--wa-accent); }
+.workspace :global(.portal-inbox-row):focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring); }
 .workspace :global(.portal-inbox-row__inner) { display: flex; gap: 0.5rem; align-items: flex-start; }
 .workspace :global(.portal-inbox-row__main) { flex: 1; min-width: 0; }
 .workspace :global(.portal-inbox-row__top) { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.5rem; }

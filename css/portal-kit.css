@@ -364,14 +364,15 @@ html.dark [data-surface] .wa-kit-card,
   /* --wa-muted (#6b6b6b) on --wa-border measured 4.35:1 — under AA for 13px
      uppercase text. Darkened one step so muted pills clear 4.5:1 in light mode;
      the dark pair was already 8:1+. */
-  color: light-dark(#595959, #c8c8c8);
+  color: var(--wa-muted-strong);
   background: light-dark(var(--wa-border), rgba(255, 255, 255, 0.08));
 }
 
 /* Trend delta chip (StatSparkTile, member home KPI tiles): arrow + value.
-   Reads the same WCAG-tuned text-on-tint pairs as .wa-kit-tag--ok / --danger
-   (4.5:1 in both modes). Painting the text from the base --wa-success /
-   --wa-danger hue measured 3.1:1 on the soft tint. */
+   Layout only — the colour comes from composing .wa-kit-tag--ok (up) or
+   .wa-kit-tag--danger (down), the WCAG-tuned text-on-tint pairs above (4.5:1
+   in both modes). Painting the text from the base --wa-success / --wa-danger
+   hue measured 3.1:1 on the soft tint. No uppercase: it is a number. */
 .wa-kit-delta {
   display: inline-flex;
   align-items: center;
@@ -383,24 +384,16 @@ html.dark [data-surface] .wa-kit-card,
   font-variant-numeric: tabular-nums;
   width: fit-content;
 }
-.wa-kit-delta--up {
-  color: light-dark(#2e7d32, #74c878);
-  background: light-dark(
-    color-mix(in srgb, var(--wa-success) 12%, transparent),
-    color-mix(in srgb, var(--wa-success) 18%, transparent)
-  );
-}
-.wa-kit-delta--down {
-  color: light-dark(#b91c1c, #f28b8b);
-  background: var(--wa-danger-soft);
-}
 
 /* Saved-view chip strip above a kit table: one row that scrolls sideways on
-   phones instead of shrinking or clipping the last chip. */
+   phones instead of shrinking or clipping the last chip. The 4px bleed keeps
+   the focus ring (2px ring at 2px offset) inside the scroll box. */
 .wa-kit-view-chips {
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  padding: 4px;
+  margin: -4px;
 }
 .wa-kit-view-chips::-webkit-scrollbar {
   display: none;

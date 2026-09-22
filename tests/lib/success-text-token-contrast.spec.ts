@@ -112,12 +112,13 @@ describe('DeltaChip reads the text-on-tint pairs, not the base hue', () => {
     return over([...hue.slice(0, 3), pct / 100], parseColor(surface[mode]));
   }
 
-  const up = ruleColour('.wa-kit-delta--up');
-  const down = ruleColour('.wa-kit-delta--down');
+  // The chip composes the status-pill colour classes; the pill pairs are what is measured.
+  const up = ruleColour('.wa-kit-tag--ok');
+  const down = ruleColour('.wa-kit-tag--danger');
 
   it('up: clears 4.5:1 on the 12% / 18% success tints in light and dark', () => {
-    expect(kitCss).toMatch(/\.wa-kit-delta--up \{[^}]*color-mix\(in srgb, var\(--wa-success\) 12%, transparent\)/);
-    expect(kitCss).toMatch(/\.wa-kit-delta--up \{[^}]*color-mix\(in srgb, var\(--wa-success\) 18%, transparent\)/);
+    expect(kitCss).toMatch(/\.wa-kit-tag--ok \{[^}]*color-mix\(in srgb, var\(--wa-success\) 12%, transparent\)/);
+    expect(kitCss).toMatch(/\.wa-kit-tag--ok \{[^}]*color-mix\(in srgb, var\(--wa-success\) 18%, transparent\)/);
     expect(contrast(parseColor(up.light), successTint(12, 'light'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(parseColor(up.dark), successTint(18, 'dark'))).toBeGreaterThanOrEqual(4.5);
   });
@@ -139,10 +140,79 @@ describe('DeltaChip reads the text-on-tint pairs, not the base hue', () => {
     for (const source of [commandCenter, memberHome]) {
       const chip = source.match(/function DeltaChip[\s\S]*?\n\}/)?.[0] ?? '';
       expect(chip).toContain("'wa-kit-delta'");
-      expect(chip).toContain("'wa-kit-delta--down' : 'wa-kit-delta--up'");
+      expect(chip).toContain("'wa-kit-tag--danger' : 'wa-kit-tag--ok'");
       expect(chip).not.toContain('var(--wa-kit-tone)');
       expect(chip).not.toContain('<Badge');
     }
     expect(commandCenter).not.toMatch(/import \{ Badge \} from '@astryxdesign\/core\/Badge'/);
+  });
+});
+
+/**
+ * Portal refine (2026-09-22): more small text the proof-route audit measured
+ * under AA on default kit surfaces, pinned as computed ratios from the token
+ * layer and css/portal-kit.css so a token or class edit cannot quietly drop
+ * them back under 4.5:1. Behaviour (what the components render) is covered in
+ * tests/components/kit-status-tones.spec.tsx; this file owns the arithmetic.
+ */
+describe('kit status surfaces clear AA (portal refine 2026-09-22)', () => {
+  const kitCss = readFileSync(path.join(root, 'css/portal-kit.css'), 'utf8');
+  const surface = lightDark('--wa-surface');
+  const border = lightDark('--wa-border');
+  const WHITE = [255, 255, 255];
+
+  function constant(token: string): string {
+    const m = tokensCss.match(new RegExp(`${token}:\\s*(#[0-9a-fA-F]{6});`));
+    expect(m, `${token} must be a constant hex`).not.toBeNull();
+    return m![1];
+  }
+
+  describe('.wa-kit-tag--muted (Applied / Draft / Closed / Not verified)', () => {
+    // --wa-muted (#6b6b6b) on --wa-border measured 4.35:1 for 13px uppercase text;
+    // the pill reads the one-step-darker --wa-muted-strong token.
+    const mutedBlock = kitCss.match(/\.wa-kit-tag--muted\s*\{([^}]*)\}/);
+    expect(mutedBlock).not.toBeNull();
+    expect(mutedBlock![1]).toContain('color: var(--wa-muted-strong)');
+    const text = lightDark('--wa-muted-strong');
+    it('light: clears 4.5:1 on --wa-border', () => {
+      expect(contrast(parseColor(text.light), parseColor(border.light))).toBeGreaterThanOrEqual(4.5);
+    });
+    it('dark: clears 4.5:1 on the 8% white tint over --wa-surface', () => {
+      expect(contrast(parseColor(text.dark), over([255, 255, 255, 0.08], parseColor(surface.dark)))).toBeGreaterThanOrEqual(4.5);
+    });
+    it('the --wa-muted token it used to read is under AA there (why the class has its own value)', () => {
+      expect(contrast(parseColor(lightDark('--wa-muted').light), parseColor(border.light))).toBeLessThan(4.5);
+    });
+  });
+
+  it('.wa-kit-search-hint (⌘K on the dark shell header) reads --wa-sidebar-muted at 4.5:1+', () => {
+    const block = kitCss.match(/\.wa-kit-search-hint\s*\{([^}]*)\}/);
+    expect(block).not.toBeNull();
+    expect(block![1]).toContain('color: var(--wa-sidebar-muted)');
+    const bg = over([255, 255, 255, 0.1], parseColor(constant('--wa-sidebar-bg')));
+    expect(contrast(parseColor(constant('--wa-sidebar-muted')), bg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  describe('voice session Start / End fills (mode-constant hero hues + --wa-on-hero)', () => {
+    const source = readFileSync(path.join(root, 'components/portal/kit/pages/VoiceStudioKit.tsx'), 'utf8');
+    it.each(['--wa-hero-crimson', '--wa-hero-gold'])('%s carries --wa-on-hero at 4.5:1 in both themes', (token) => {
+      expect(contrast(parseColor(constant('--wa-on-hero')), parseColor(constant(token)))).toBeGreaterThanOrEqual(4.5);
+    });
+    it('white on the base --wa-gold the button used to read is under AA', () => {
+      expect(contrast(WHITE, parseColor(lightDark('--wa-gold').light))).toBeLessThan(4.5);
+    });
+    it('the session agents declare the hero fills and the buttons read them', () => {
+      expect(source).toContain("solid: 'var(--wa-hero-crimson)'");
+      expect(source).toContain("solid: 'var(--wa-hero-gold)'");
+      // Start, End and the member's transcript bubble.
+      expect(source.match(/background: solid,\n\s+color: 'var\(--wa-on-hero\)'/g)?.length ?? 0).toBe(3);
+      expect(source).not.toMatch(/background: accent,\n\s+color: 'var\(--wa-on-accent\)'/);
+    });
+  });
+
+  it('the base --wa-success / --wa-gold hues on white are under AA, so numerals stay --wa-text (guide §4)', () => {
+    expect(contrast(parseColor(lightDark('--wa-success').light), WHITE)).toBeLessThan(4.5);
+    expect(contrast(parseColor(lightDark('--wa-gold').light), WHITE)).toBeLessThan(4.5);
+    expect(contrast(parseColor(lightDark('--wa-text').light), WHITE)).toBeGreaterThanOrEqual(4.5);
   });
 });
