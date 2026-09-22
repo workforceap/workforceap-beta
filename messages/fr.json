@@ -3783,7 +3783,7 @@
   "empty": {
     "activeApplications": {
       "title": "Aucune candidature active",
-      "body": "Les emplois auxquels vous postulez apparaissent ici jusqu’à ce que l’employeur les clôture. Parcourez les offres pour ajouter la première.",
+      "body": "Les emplois que vous enregistrez ou auxquels vous postulez apparaissent ici jusqu’à ce que vous les marquiez comme acceptés ou clôturés. Parcourez les offres pour ajouter la première.",
       "action": "Parcourir les offres"
     },
     "applications": {
@@ -3795,8 +3795,8 @@
     "matches": {
       "title": "Aucun poste correspondant pour l’instant",
       "body": "Les postes qui correspondent à votre profil apparaissent ici. Mettez votre profil à jour pour que nous puissions vous en proposer.",
-      "action": "Mettre à jour le profil",
-      "secondary": "Parcourir les emplois"
+      "browse": "Parcourir les emplois",
+      "profile": "Mettre à jour le profil"
     },
     "openings": {
       "title": "Aucune offre active pour le moment",

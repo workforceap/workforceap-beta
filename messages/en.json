@@ -3843,7 +3843,7 @@
   "empty": {
     "activeApplications": {
       "title": "No active applications",
-      "body": "Jobs you apply to appear here until the employer closes them. Browse openings to add your first one.",
+      "body": "Jobs you save or apply to appear here until you mark them accepted or closed. Browse openings to add your first one.",
       "action": "Browse openings"
     },
     "applications": {
@@ -3855,8 +3855,8 @@
     "matches": {
       "title": "No matched roles yet",
       "body": "Roles that fit your profile appear here. Update your profile so we can match you.",
-      "action": "Update profile",
-      "secondary": "Browse jobs"
+      "browse": "Browse jobs",
+      "profile": "Update profile"
     },
     "openings": {
       "title": "No live openings right now",

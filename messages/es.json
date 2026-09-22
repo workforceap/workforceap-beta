@@ -3843,7 +3843,7 @@
   "empty": {
     "activeApplications": {
       "title": "No hay solicitudes activas",
-      "body": "Los empleos a los que postulas aparecen aquí hasta que el empleador los cierra. Explora las ofertas para agregar la primera.",
+      "body": "Los empleos que guardas o a los que postulas aparecen aquí hasta que los marques como aceptados o cerrados. Explora las ofertas para agregar la primera.",
       "action": "Ver ofertas"
     },
     "applications": {
@@ -3855,8 +3855,8 @@
     "matches": {
       "title": "Aún no hay roles compatibles",
       "body": "Los roles que encajan con tu perfil aparecen aquí. Actualiza tu perfil para que podamos emparejarte.",
-      "action": "Actualizar perfil",
-      "secondary": "Ver empleos"
+      "browse": "Ver empleos",
+      "profile": "Actualizar perfil"
     },
     "openings": {
       "title": "No hay ofertas activas ahora",

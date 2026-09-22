@@ -110,8 +110,8 @@ export default function MatchedRoles() {
           title={t('matches.title')}
           description={t('matches.body')}
           icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">work_outline</span>}
-          primaryAction={{ label: t('matches.action'), href: '/dashboard/profile' }}
-          secondaryAction={{ label: t('matches.secondary'), href: '/dashboard/jobs' }}
+          primaryAction={{ label: t('matches.browse'), href: '/dashboard/jobs' }}
+          secondaryAction={{ label: t('matches.profile'), href: '/dashboard/profile' }}
         />
       </section>
     );

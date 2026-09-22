@@ -240,8 +240,8 @@ export function MemberJobsKit({
                 kind="first"
                 title={t('matches.title')}
                 description={t('matches.body')}
-                primaryAction={{ label: t('matches.action'), href: profileHref }}
-                secondaryAction={applications.length === 0 ? { label: t('matches.secondary'), href: browseHref } : undefined}
+                primaryAction={{ label: t('matches.profile'), href: profileHref }}
+                secondaryAction={applications.length === 0 ? { label: t('matches.browse'), href: browseHref } : undefined}
               />
             </div>
           ) : (

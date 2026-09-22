@@ -26,7 +26,8 @@ test('empty recommendations copy is a short next step, not a truncated paragraph
   assert.equal(en.empty.matches.title, 'No matched roles yet');
   assert.ok(en.empty.matches.body.length <= 96);
   assert.doesNotMatch(en.empty.matches.body, /Keep your profile and certifications up to date and/);
-  assert.equal(en.empty.matches.action, 'Update profile');
+  assert.equal(en.empty.matches.profile, 'Update profile');
+  assert.equal(en.empty.matches.browse, 'Browse jobs');
 });
 
 test('board inventory empty names next steps without promising seeded jobs', () => {

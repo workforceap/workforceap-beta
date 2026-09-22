@@ -81,8 +81,8 @@ describe('MemberJobsKit (/dashboard/jobs pipeline)', () => {
     expect(within(openings).getByRole('link', { name: m.empty.openings.secondary })).toHaveAttribute('href', '/dashboard/messages');
 
     expect(within(matches).getByRole('heading', { level: 3 })).toHaveTextContent(m.empty.matches.title);
-    expect(within(matches).getByRole('link', { name: m.empty.matches.action })).toHaveAttribute('href', '/dashboard/profile');
-    expect(within(matches).getByRole('link', { name: m.empty.matches.secondary })).toHaveAttribute('href', JOBS_OPEN_ROLES_ANCHOR);
+    expect(within(matches).getByRole('link', { name: m.empty.matches.profile })).toHaveAttribute('href', '/dashboard/profile');
+    expect(within(matches).getByRole('link', { name: m.empty.matches.browse })).toHaveAttribute('href', JOBS_OPEN_ROLES_ANCHOR);
 
     for (const old of ['Track jobs you apply to. They appear here.', 'No matching roles yet', 'Update your profile so we can match you to openings.']) {
       expect(screen.queryByText(old)).toBeNull();
@@ -97,8 +97,8 @@ describe('MemberJobsKit (/dashboard/jobs pipeline)', () => {
       />
     ));
     const matches = empties(container, 'first').find((e) => e.textContent?.includes(en.empty.matches.title)) as HTMLElement;
-    expect(within(matches).getByRole('link', { name: en.empty.matches.action })).toBeInTheDocument();
-    expect(within(matches).queryByRole('link', { name: en.empty.matches.secondary })).toBeNull();
+    expect(within(matches).getByRole('link', { name: en.empty.matches.profile })).toBeInTheDocument();
+    expect(within(matches).queryByRole('link', { name: en.empty.matches.browse })).toBeNull();
   });
 
   it('shares the open-roles state with the board proof', () => {

@@ -3783,7 +3783,7 @@
   "empty": {
     "activeApplications": {
       "title": "Nenhuma candidatura ativa",
-      "body": "As vagas às quais você se candidata aparecem aqui até o empregador encerrá-las. Veja as vagas abertas para adicionar a primeira.",
+      "body": "As vagas que você salva ou às quais se candidata aparecem aqui até você marcá-las como aceitas ou encerradas. Veja as vagas abertas para adicionar a primeira.",
       "action": "Ver vagas abertas"
     },
     "applications": {
@@ -3795,8 +3795,8 @@
     "matches": {
       "title": "Nenhuma vaga compatível ainda",
       "body": "As vagas que combinam com seu perfil aparecem aqui. Atualize seu perfil para que possamos encontrar correspondências.",
-      "action": "Atualizar perfil",
-      "secondary": "Ver vagas"
+      "browse": "Ver vagas",
+      "profile": "Atualizar perfil"
     },
     "openings": {
       "title": "Nenhuma vaga ativa no momento",

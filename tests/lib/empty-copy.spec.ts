@@ -42,8 +42,15 @@ describe('empty.* copy', () => {
       expect(leaf.title).toMatch(/^No .+/);
       expect(leaf.body).toMatch(/appear here/);
       expect(leaf.body.length).toBeLessThanOrEqual(140);
-      expect(leaf.action.length).toBeGreaterThan(0);
     }
+    expect(en.empty.activeApplications.action.length).toBeGreaterThan(0);
+    expect(en.empty.applications.action.length).toBeGreaterThan(0);
+    expect(en.empty.matches.browse.length).toBeGreaterThan(0);
+    // The home pipeline lists saved rows too and only the member closes a row —
+    // no employer action exists, so the sentence must not claim one.
+    expect(en.empty.activeApplications.body).toMatch(/save or apply/);
+    expect(en.empty.activeApplications.body).toMatch(/you mark them/);
+    expect(en.empty.activeApplications.body).not.toMatch(/employer/i);
     expect(en.empty.applications.title).toBe('No applications yet');
     expect(en.empty.applications.body).toMatch(/openings/i);
     expect(en.empty.stage.title).toBe('Nothing in this stage');

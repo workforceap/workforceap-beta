@@ -100,7 +100,7 @@ describe('member home: matched roles', () => {
     );
   }
 
-  it.each(Object.keys(LOCALES) as Locale[])('%s: no matches yet is a first state with Update profile as the first action', async (locale) => {
+  it.each(Object.keys(LOCALES) as Locale[])('%s: no matches yet is a first state whose first action is the job board', async (locale) => {
     const m = LOCALES[locale];
     fetchMock.mockResolvedValue(json({ jobs: [] }));
     const { container } = show(locale);
@@ -110,9 +110,13 @@ describe('member home: matched roles', () => {
     expect(empty.dataset.tone).toBe('muted');
     expect(empty.className).toContain('wa-kit-empty--framed');
     expect(within(empty).getByText(m.empty.matches.body)).toBeInTheDocument();
-    expect(within(empty).getByRole('link', { name: m.empty.matches.action })).toHaveAttribute('href', '/dashboard/profile');
-    const secondary = within(empty).getByRole('link', { name: m.empty.matches.secondary });
-    expect(secondary).toHaveAttribute('href', '/dashboard/jobs');
+    // Matching scores program / assessment / certifications / course completion,
+    // not profile fields, so the board is the first route and the profile the quiet one.
+    const primary = within(empty).getByRole('link', { name: m.empty.matches.browse });
+    expect(primary).toHaveAttribute('href', '/dashboard/jobs');
+    expect(primary.className).not.toContain('wa-kit-cta--ghost');
+    const secondary = within(empty).getByRole('link', { name: m.empty.matches.profile });
+    expect(secondary).toHaveAttribute('href', '/dashboard/profile');
     expect(secondary.className).toContain('wa-kit-cta--ghost');
     expect(empty.textContent).not.toMatch(RAW_KEY);
     expect(screen.queryByText('No matched jobs yet')).toBeNull();
