@@ -10,12 +10,12 @@
      The real tokens are dark-first (`:root` = dark, `html:not(.dark)` =
      light), so mapping onto them fixes both themes at once and keeps this
      page following the site theme instead of fighting it. */
-  --surface:var(--surface-container-lowest,#ffffff);
+  --surface:var(--surface-container-lowest);
   /* Raised chip fill (skill tags). Missed in the first pass, which left
      the tags white-on-white in dark mode once --text resolved to a light
      value. Must stay a *raised* step above --surface, not equal to it. */
-  --surface-2:var(--surface-container,#f0f1f3);
-  --bg:var(--surface-container-low,#f7f4f1);
+  --surface-2:var(--surface-container);
+  --bg:var(--surface-container-low);
   --text:var(--color-on-surface,#1c1b1b);
   --muted:var(--color-on-surface-variant,#584144);
   --border:var(--outline-variant,#e4e4e7);
@@ -158,9 +158,9 @@
 /* Soft recovery when /enroll/[school] does not resolve a live partner page.
    Prefer kit --wa-* tokens for the missing surface (KIT_GUIDE §1). */
 .enroll-school--missing{
-  --surface:var(--wa-surface,var(--surface-container-lowest,#ffffff));
-  --surface-2:var(--wa-surface-2,var(--surface-container,#f0f1f3));
-  --bg:var(--wa-bg,var(--surface-container-low,#f7f4f1));
+  --surface:var(--wa-surface,var(--surface-container-lowest));
+  --surface-2:var(--wa-surface-2,var(--surface-container));
+  --bg:var(--wa-bg,var(--surface-container-low));
   --text:var(--wa-text,var(--color-on-surface,#1c1b1b));
   --muted:var(--wa-muted,var(--color-on-surface-variant,#584144));
   --border:var(--wa-border,var(--outline-variant,#e4e4e7));

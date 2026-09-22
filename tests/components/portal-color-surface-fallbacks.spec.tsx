@@ -57,6 +57,17 @@ const publicPageMocks = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/tokenizedLink', () => ({ validateTokenizedLink: publicPageMocks.validateTokenizedLink }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findUnique: publicPageMocks.findUnique } } }));
+// Root-layout surfaces rendered below: the footer's logo, language toggle and the
+// error boundary's Sentry hook are chrome around the painted styles under test.
+vi.mock('next/image', () => ({
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    const { alt, ...rest } = props;
+    // eslint-disable-next-line @next/next/no-img-element -- test mock for next/image
+    return <img {...rest} alt={alt ?? ''} />;
+  },
+}));
+vi.mock('@/components/portal/LanguageToggle', () => ({ default: () => <div data-testid="language-toggle" /> }));
+vi.mock('@sentry/nextjs', () => ({ captureException: vi.fn() }));
 
 import TriageNudgePanel from '@/components/portal/counselor/TriageNudgePanel';
 import DashboardProgramSelector from '@/components/portal/DashboardProgramSelector';
@@ -72,6 +83,11 @@ import MemberFeedbackModal from '@/components/portal/MemberFeedbackModal';
 import DeleteAccountButton from '@/components/portal/DeleteAccountButton';
 import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
 import AdminMemberQuickSummary from '@/components/admin/AdminMemberQuickSummary';
+import Footer from '@/components/Footer';
+import RouteErrorFallback from '@/components/error/RouteErrorFallback';
+import MarketingRouteLoading from '@/components/marketing/MarketingRouteLoading';
+import ScrollToTopButton from '@/components/ScrollToTopButton';
+import OrgOutcomesClient from '@/app/org/[slug]/outcomes/OrgOutcomesClient';
 
 /**
  * Review of #2478 (item 4) found eleven inline styles across seven portal/admin
@@ -360,13 +376,16 @@ describe('no stylesheet on either route chain carries a literal fallback on a su
 /*
  * #2501's body named the sheet-level `var(--surface-container-*, <literal>)` fallbacks as a separate
  * sweep. css/main.css defines the whole scale on `:root` and `html:not(.dark)` and loads on every
- * route, so on the portal chain each literal was dead weight that read as a live colour; the portal
- * sheets and the three portal CSS modules now read the token bare. css/main.css, css/marketing.css
- * and css/enroll-school.css keep theirs (root-chain sweep, out of this lane), so only the portal
- * chain is pinned here.
+ * route (app/layout.tsx), so on either chain each literal was dead weight that read as a live
+ * colour; the portal sheets and the three portal CSS modules read the token bare since #2506, and
+ * the root-chain sheets (css/main.css, css/marketing.css, plus css/enroll-school.css, which only
+ * /enroll/[school] imports under the same root layout) followed in the #2506 follow-up. The Astro
+ * marketing site imports none of these sheets (marketing/src/layouts/Layout.astro loads only
+ * css/wa-brand-tokens.css), so no chain without the token reads them.
  */
-describe('no stylesheet or CSS module on the portal chain carries a literal fallback on a surface-container token', () => {
-  it.each([...PORTAL_CHAIN_SHEETS, ...SURFACE_MODULE_SHEETS])('%s', (sheet) => {
+const ENROLL_SHEETS = ['css/enroll-school.css'];
+describe('no stylesheet or CSS module on either route chain carries a literal fallback on a surface-container token', () => {
+  it.each([...PORTAL_CHAIN_SHEETS, ...ROOT_CHAIN_SHEETS, ...ENROLL_SHEETS, ...SURFACE_MODULE_SHEETS])('%s', (sheet) => {
     const css = readCss(sheet).replace(/\/\*[\s\S]*?\*\//g, '');
     const offenders = css.split('\n').filter((line) => SURFACE_CONTAINER_LITERAL_FALLBACK.test(line));
     expect(offenders, `${sheet} literal surface-container fallbacks`).toEqual([]);
@@ -834,6 +853,79 @@ describe('inline surface-container fills read the token bare (portal chain)', ()
     const text = await screen.findByText('Ada is on track: two courses done this month.');
     const box = text.closest('div[style]') as HTMLElement;
     expect(backgroundOf(box), 'quick summary box').toBe('var(--surface-container-low)');
+    expectNoLiteralTokenFallback(container);
+    expectNoLegacyName(container);
+  });
+});
+
+/*
+ * ---------------------------------------------------------------------------
+ * Root-chain follow-up to the sweep above (#2506 inspection, "Remaining" list). Every site below
+ * renders under app/layout.tsx, which imports css/main.css, so `--surface-container-*` is defined
+ * in both schemes wherever they paint and the literal never took the fallback branch. The footer,
+ * the route error boundary and the partner outcomes selector paint inline; the marketing skeleton
+ * and the scroll-to-top button paint through a `<style>` tag, so their sheet text is checked too.
+ * ---------------------------------------------------------------------------
+ */
+function styleTagText(root: HTMLElement): string[] {
+  return Array.from(root.querySelectorAll('style')).map((el) => el.textContent ?? '');
+}
+function expectNoLiteralSurfaceFallbackInStyleTags(root: HTMLElement): string {
+  const sheets = styleTagText(root);
+  expect(sheets.length).toBeGreaterThan(0);
+  for (const sheet of sheets) {
+    expect(sheet, 'literal fallback on a surface token in a <style> tag').not.toMatch(SURFACE_LITERAL_FALLBACK);
+    expect(sheet, 'literal fallback on a surface-container token in a <style> tag').not.toMatch(SURFACE_CONTAINER_LITERAL_FALLBACK);
+  }
+  return sheets.join('\n');
+}
+
+describe('root-chain surfaces read the surface-container token bare', () => {
+  it('Footer rules its three dividers with --surface-container-highest', () => {
+    const { container } = render(<Footer />);
+    const footer = container.querySelector('footer') as HTMLElement;
+    expect(footer.style.borderTop, 'footer top rule').toBe('1px solid var(--surface-container-highest)');
+    const rules = paintedStyles(container).filter((style) => style.includes('--surface-container-highest'));
+    expect(rules, 'footer + two inner dividers').toHaveLength(3);
+    for (const rule of rules) expect(rule).toContain('1px solid var(--surface-container-highest)');
+    expectNoLiteralTokenFallback(container);
+    expectNoLegacyName(container);
+  });
+
+  it('RouteErrorFallback paints its full-height backdrop from --surface-container-lowest', () => {
+    const { container } = render(<RouteErrorFallback error={new Error('boom')} reset={() => {}} context="public" />);
+    const backdrop = container.querySelector('.route-error-fallback') as HTMLElement;
+    expect(backgroundOf(backdrop), 'error boundary backdrop').toBe(PUBLIC_FILL);
+    expectNoLiteralTokenFallback(container);
+    expectNoLegacyName(container);
+  });
+
+  it('MarketingRouteLoading shimmers between --surface-container-low and --surface-container in both schemes', () => {
+    const { container } = render(<MarketingRouteLoading />);
+    const sheet = expectNoLiteralSurfaceFallbackInStyleTags(container);
+    expect(sheet.match(/var\(--surface-container-low\) (?:25|75)%/g), 'low stops, light + dark').toHaveLength(4);
+    expect(sheet.match(/var\(--surface-container\) 50%/g), 'mid stop, light + dark').toHaveLength(2);
+    expect(sheet).toContain('html.dark .marketing-skeleton');
+  });
+
+  it('ScrollToTopButton frosts its disc from --surface-container-high once it appears', () => {
+    Object.defineProperty(window, 'scrollY', { value: 500, configurable: true, writable: true });
+    const { container } = render(<ScrollToTopButton />);
+    fireEvent.scroll(window);
+    expect(screen.getByRole('button', { name: 'Scroll to top' })).toBeTruthy();
+    const sheet = expectNoLiteralSurfaceFallbackInStyleTags(container);
+    expect(sheet).toContain('color-mix(in srgb, var(--surface-container-high) 92%, transparent)');
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true, writable: true });
+  });
+
+  it('OrgOutcomesClient quarter selector paints --surface-container', async () => {
+    fetchMock.mockResolvedValue(Response.json({ error: 'Report unavailable' }, { status: 503 }));
+    const { container } = render(
+      <OrgOutcomesClient partnerId="p-1" partnerName="Concordia HS" partnerSlug="concordia" partnerLogo={null} partnerBrandColor={null} />,
+    );
+    await screen.findByText('Report unavailable');
+    const selector = screen.getByLabelText('Quarter').parentElement?.parentElement as HTMLElement;
+    expect(backgroundOf(selector), 'quarter selector').toBe('var(--surface-container)');
     expectNoLiteralTokenFallback(container);
     expectNoLegacyName(container);
   });
