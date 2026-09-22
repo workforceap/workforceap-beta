@@ -200,6 +200,12 @@ async function main() {
       '--import',
       'tsx',
       '--test',
+      // The real-DB suites share one PostgreSQL (`wap_contract` in the
+      // database-contract lane). node:test's default concurrency runs the
+      // files as parallel processes, which raced shared rows and stacked
+      // long interactive transactions on a 4-vCPU runner. Run them one file
+      // at a time; the default mocked lane keeps node's default parallelism.
+      ...(REAL_DB ? ['--test-concurrency=1'] : []),
       ...runnable,
     ],
     { stdio: 'inherit', cwd: ROOT, env },

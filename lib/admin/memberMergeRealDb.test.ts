@@ -9,16 +9,23 @@
  *
  * Runs only in the database-contract lane (`npm run test:db-contract`, or
  * `TEST_REAL_DB=1`); `scripts/test-unit.mjs` skips it otherwise.
+ *
+ * Uses the shared client from lib/db/prisma like the other two real-DB
+ * suites. A bare `new PrismaClient()` ran the merge transactions below with
+ * Prisma's defaults (maxWait 2 s, timeout 5 s); executeMemberMerge issues
+ * roughly 180 statements per interactive transaction, so on a loaded CI
+ * runner sharing one PostgreSQL with the other suites the 5 s budget is the
+ * likely cause of the intermittent `Database contract (PostgreSQL 16)`
+ * failure. The shared client sets maxWait 5 s / timeout 10 s
+ * (lib/db/prisma.ts), the same values production runs with.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db/prisma';
 
 import { buildMergePreview, executeMemberMerge } from './memberMerge';
-
-const prisma = new PrismaClient();
 
 type Fixture = {
   organizationId: string;
