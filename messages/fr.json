@@ -1149,16 +1149,8 @@
     "inAProgram": "En programme",
     "noProgramYet": "Pas encore de programme",
     "activeRoster": "Liste active",
-    "noMembersAssignedYet": "Aucun membre assigné pour l'instant",
-    "membersAppearOnceAssigned": "Les membres apparaissent ici une fois qu'un administrateur vous les assigne.",
-    "noConversationsMatch": "Aucune conversation ne correspond",
-    "tryAnotherFilterOrSearch": "Essayez un autre filtre ou terme de recherche.",
-    "clearConversationFilters": "Effacer les filtres",
-    "counselorGuide": "Guide du conseiller",
     "resources": "Ressources",
     "openMessages": "Ouvrir les messages",
-    "contactAdminForAssignments": "Contacter l'admin pour les assignations",
-    "counselorResources": "Ressources du conseiller",
     "enrolled": "Inscrit",
     "notEnrolled": "Non inscrit",
     "noProgram": "Aucun programme",
@@ -1211,7 +1203,6 @@
     "trainingProgressUnavailable": "Progrès de formation indisponible",
     "sortedByRecentlyAssigned": "Triés par assignation la plus récente.",
     "available": "Disponible",
-    "membersAppearOnceAssignedMobile": "Les membres apparaîtront ici une fois assignés par un administrateur. En attendant, explorez le guide du conseiller.",
     "hotQueueHoursAgo": "{count}h",
     "hotQueueDaysAgo": "{count}j",
     "messages": "Messages",
@@ -1221,17 +1212,11 @@
     "atRiskHighCount": "Élevé",
     "atRiskLoadingNotes": "Chargement du résumé à risque…",
     "atRiskMediumCount": "Moyen",
-    "atRiskNoAlerts": "Aucune alerte à risque pour le moment. Bon travail !",
     "atRiskRecentAlerts": "Alertes récentes",
     "atRiskSummaryTitle": "Alertes à risque",
     "atRiskViewAll": "Voir tout",
     "workQueueSubtitle": "Membres attendant une réponse depuis plus de 24 heures. Triés du plus ancien au plus récent.",
-    "workQueueLoadError": "Impossible de charger la file d'attente",
-    "workQueueLoadErrorDesc": "Une erreur s'est produite lors de la récupération de la file d'attente. Essayez d'actualiser la page.",
     "retry": "Réessayer",
-    "workQueueEmptyDesc": "Aucun membre n'attend une réponse depuis plus de 24 heures. Bon travail.",
-    "workQueueNoRepliesTitle": "Aucune réponse en retard",
-    "workQueueOtherFlagged": "{count, plural, one {# membre est signalé pour une autre raison} other {# membres sont signalés pour d'autres raisons}} — la même liste que celle d'Inbox zero.",
     "emptyMessagePreview": "(aucun contenu de message)",
     "backToDashboard": "Retour au tableau de bord",
     "workQueueMembersAwaiting": "{count} membre{count, plural, =1 {} other {s}} en attente de réponse",
@@ -1240,8 +1225,6 @@
     "inactiveMembersSubtitle": "Membres qui n'ont pas été actifs sur la plateforme. Contactez-les directement par e-mail ou téléphone, puis enregistrez le contact pour que le personnel puisse voir que le membre a été contacté.",
     "minDaysInactive": "Jours minimum inactifs",
     "loadingMemberList": "Chargement de la liste des membres…",
-    "everyoneIsActive": "Tout le monde est actif",
-    "noMembersInactive": "Aucun membre n'est inactif depuis {days}+ jours avec ce filtre.",
     "needsAttention": "Nécessite attention",
     "membersThreshold": "{count} membre{count, plural, =1 {} other {s}} · seuil {days}+ jours",
     "daysInactive": "Jours inactifs",
@@ -1255,7 +1238,6 @@
     "saving": "Enregistrement…",
     "logged": "Enregistré ✓",
     "logOutreach": "Enregistrer le contact",
-    "couldNotLoadInactiveMembers": "Impossible de charger les membres inactifs",
     "couldNotLogOutreach": "Impossible d'enregistrer le contact. Veuillez réessayer.",
     "never": "Jamais",
     "critical": "Critique",
@@ -1287,8 +1269,6 @@
     "notes": "Notes",
     "recording": "Recording…",
     "loadingPlacements": "Loading placements…",
-    "noPlacementsYet": "No placements yet",
-    "noPlacementsDesc": "When you record a placement, it will appear in this list for your team.",
     "recordedPlacements": "Recorded placements",
     "total": "total",
     "salary": "Salary",
@@ -1971,7 +1951,7 @@
       "stat3Value": "340",
       "stat3Label": "Membres placés via partenaires",
       "howTitle": "Comment démarrer un partenariat",
-      "howSubtitle": "Trois étapes. La plupart des organisations réfèrent en moins d'une semaine.",
+      "howSubtitle": "Trois étapes. Commencez à référer dès que votre portail est actif ; nous vous le confirmons par e-mail.",
       "howStep1Title": "Écrivez-nous ou inscrivez-vous",
       "howStep1Desc": "Remplissez le formulaire ci-dessous ou écrivez à partners@workforceap.org avec une note rapide sur votre organisation.",
       "howStep2Title": "Obtenez l'accès au portail",
@@ -2099,7 +2079,7 @@
       "heroHeadline": "Partagez votre expertise. Changez une carrière.",
       "heroSubheadline": "Les mentors WorkforceAP sont des professionnels de l'industrie qui offrent bénévolement leur temps pour guider les chercheurs d'emploi. Votre expérience vaut plus que vous ne le pensez — et elle est déductible des impôts.",
       "title": "Devenir mentor",
-      "waitlistCopy": "Nous acceptons actuellement les candidatures de mentor et créons des paires au fur et à mesure que notre cohorte grandit. La plupart des jumelages commencent 4 à 8 semaines après votre candidature, lorsqu'un membre atteint l'étape de préparation à l'entretien de son programme dans votre domaine.",
+      "waitlistCopy": "Nous acceptons actuellement les candidatures de mentor. Nous examinons chaque candidature et vous envoyons un e-mail dès votre approbation ; les membres vous demandent ensuite des séances depuis leur portail.",
       "waitlistCta": "Rejoindre la liste d'attente",
       "waitlistEyebrow": "Liste d'attente mentor · Pré-lancement"
     },
@@ -3929,6 +3909,100 @@
       "title": "Impossible de charger votre score de préparation",
       "body": "Actualisez la page. Si cela persiste, écrivez à votre conseiller.",
       "action": "Ouvrir le coach de préparation"
+    },
+    "counselor": {
+      "roster": {
+        "title": "Aucun membre attribué pour le moment",
+        "body": "Un administrateur vous attribue des membres. Ils apparaîtront alors ici avec leur progression, leur niveau de risque et leur dernière activité. Le guide du conseiller explique par quoi commencer.",
+        "action": "Ouvrir le guide du conseiller",
+        "secondary": "Ressources du conseiller"
+      },
+      "rosterNoCounselorRecord": {
+        "title": "Aucune fiche conseiller pour votre compte",
+        "body": "Cette liste présente les membres attribués à un conseiller. Votre compte administrateur n'a pas de fiche conseiller, rien n'est donc affiché ici. La liste des membres de l'administration couvre tous les membres.",
+        "action": "Ouvrir les membres de l'administration"
+      },
+      "rosterFiltered": {
+        "title": "Aucun membre ne correspond à ce filtre",
+        "body": "Effacez le filtre pour voir tout le monde dans votre liste.",
+        "action": "Effacer le filtre"
+      },
+      "rosterAtRisk": {
+        "title": "Aucun membre à risque dans votre liste",
+        "body": "Tout le monde est sous le seuil de risque moyen, ou l'analyse de risque n'a pas encore été lancée. Effacez le filtre pour voir tout le monde."
+      },
+      "rosterUpcomingSession": {
+        "title": "Aucune séance dans les 7 prochains jours",
+        "body": "Aucun membre attribué n'a de séance de mentorat prévue dans les 7 prochains jours. Effacez le filtre pour voir tout le monde."
+      },
+      "rosterPendingApplication": {
+        "title": "Aucune candidature en attente de décision",
+        "body": "Aucun membre attribué n'a de candidature en attente de décision. Effacez le filtre pour voir tout le monde."
+      },
+      "atRiskClear": {
+        "title": "Aucun membre à risque dans votre portefeuille",
+        "body": "Personne parmi les membres que vous suivez n'a de {reason} en ce moment ({definition}). Les nouveaux cas apparaissent ici après l'analyse de risque nocturne.",
+        "action": "Ouvrir Aujourd'hui",
+        "secondary": "Voir mes membres"
+      },
+      "atRiskFiltered": {
+        "title": "Aucun membre à risque ne correspond à vos filtres",
+        "body": "Effacez les filtres pour voir tous les cas enregistrés.",
+        "action": "Effacer les filtres"
+      },
+      "atRiskUnavailable": {
+        "title": "Impossible de charger les membres à risque",
+        "action": "Réessayer",
+        "secondary": "Retour à Aujourd'hui"
+      },
+      "placements": {
+        "title": "Aucun placement pour le moment",
+        "body": "Les placements enregistrés pour vos membres apparaissent ici avec l'employeur, le poste et la date de début. Enregistrez le premier.",
+        "action": "Enregistrer un placement"
+      },
+      "placementsUnavailable": {
+        "title": "Impossible de charger les placements",
+        "body": "La liste des placements n'a pas répondu. Réessayez ; si cela persiste, prévenez un administrateur.",
+        "action": "Réessayer"
+      },
+      "inactiveClear": {
+        "title": "Tout le monde est actif",
+        "body": "Aucun membre n'est resté {days}+ jours sans activité.",
+        "action": "Mes membres"
+      },
+      "inactiveUnavailable": {
+        "title": "Impossible de charger les membres inactifs",
+        "body": "La liste des membres n'a pas répondu. Réessayez.",
+        "action": "Réessayer"
+      },
+      "workQueueClear": {
+        "title": "Tout est à jour",
+        "body": "Aucun membre n'attend une réponse depuis plus d'une journée, et rien d'autre n'est signalé.",
+        "action": "Ouvrir les messages",
+        "secondary": "Retour à Aujourd'hui"
+      },
+      "workQueueNoReplies": {
+        "title": "Aucune réponse en retard",
+        "body": "{count, plural, one {# membre est signalé pour une autre raison} other {# membres sont signalés pour d'autres raisons}} — la même liste que Boîte zéro.",
+        "bodyUnknown": "Aucun membre n'attend une réponse depuis plus d'une journée. Les autres signalements sont dans Boîte zéro.",
+        "action": "Ouvrir Boîte zéro"
+      },
+      "workQueueUnavailable": {
+        "title": "Impossible de charger la file de travail",
+        "body": "Une erreur s'est produite lors du chargement de la file. Réessayez.",
+        "action": "Réessayer"
+      },
+      "inbox": {
+        "title": "Aucun membre attribué pour le moment",
+        "body": "Les conversations apparaissent ici lorsqu'un administrateur vous attribue des membres.",
+        "action": "Ouvrir le guide du conseiller",
+        "secondary": "Retour à Aujourd'hui"
+      },
+      "inboxFiltered": {
+        "title": "Aucune conversation ne correspond",
+        "body": "Effacez le filtre ou la recherche pour voir toutes les conversations.",
+        "action": "Effacer les filtres"
+      }
     },
     "employer": {
       "postings": {

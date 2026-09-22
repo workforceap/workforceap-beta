@@ -1,24 +1,18 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render as rtlRender, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
+
+/** Rendered with exactly the messages the (portal) layout ships to the browser. */
+function render(ui: React.ReactElement) {
+  return rtlRender(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{ui}</NextIntlClientProvider>);
+}
 
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
   ),
-}));
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
-    const copy: Record<string, string> = {
-      noMembersAssignedYet: 'No members assigned yet',
-      membersAppearOnceAssigned: 'Members appear here once an admin assigns them to you.',
-      noConversationsMatch: 'No conversations match',
-      tryAnotherFilterOrSearch: 'Try another filter or search term.',
-      clearConversationFilters: 'Clear filters',
-      browseAllMembers: 'Browse all members',
-      backToDashboard: 'Back to dashboard',
-    };
-    return copy[key] ?? key;
-  },
 }));
 vi.mock('@/components/admin/AdminMemberCounselorChatClient', () => ({
   default: ({ messagesApiBase, initial }: { messagesApiBase: string; initial: { member: { id: string } } }) => (
@@ -199,11 +193,12 @@ describe('CounselorMessagesInboxClient kit empty states', () => {
     vi.clearAllMocks();
   });
 
-  it('shows roster + dashboard CTAs when no members are assigned', () => {
+  it('shows the guide + Today CTAs when no members are assigned (unavailable: an admin assigns)', () => {
     render(<CounselorMessagesInboxClient staffUserId="staff-1" rows={[]} />);
     expect(screen.getAllByRole('heading', { name: 'No members assigned yet' }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('link', { name: 'Browse all members' })[0]).toHaveAttribute('href', '/counselor/students');
-    expect(screen.getAllByRole('link', { name: 'Back to dashboard' })[0]).toHaveAttribute('href', '/counselor');
+    expect(screen.getAllByTestId('counselor-inbox-empty')[0]).toHaveAttribute('data-kind', 'unavailable');
+    expect(screen.getAllByRole('link', { name: 'Open the counselor guide' })[0]).toHaveAttribute('href', '/counselor/guide');
+    expect(screen.getAllByRole('link', { name: 'Back to Today' })[0]).toHaveAttribute('href', '/counselor');
   });
 
   it('offers clear-filters when a filter yields no conversations', async () => {
@@ -213,6 +208,7 @@ describe('CounselorMessagesInboxClient kit empty states', () => {
     const filters = within(screen.getAllByRole('group', { name: 'Filter conversations' })[0]);
     fireEvent.click(filters.getByRole('button', { name: 'Unread 0' }));
     expect(await screen.findAllByRole('heading', { name: 'No conversations match' })).not.toHaveLength(0);
+    expect(screen.getAllByTestId('counselor-inbox-filtered')[0]).toHaveAttribute('data-kind', 'filtered');
     fireEvent.click(screen.getAllByRole('button', { name: 'Clear filters' })[0]);
     expect(screen.queryByRole('heading', { name: 'No conversations match' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Ada Member/ }).length).toBeGreaterThan(0);

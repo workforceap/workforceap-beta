@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { AlertTriangle, Clock, MessageSquare, RotateCcw } from 'lucide-react';
+import { AlertTriangle, Clock, MessageSquare } from 'lucide-react';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import {
   formatTimeWaiting,
   getCounselorWorkQueue,
@@ -14,7 +13,7 @@ import {
   type WorkQueueContext,
   type WorkQueueRow,
 } from '@/lib/counselor/workQueue';
-import { DesignSurface, SectionHeader, Avatar, StatusTag, colorVar, type KitColor, type KitTone } from '@/components/portal/kit';
+import { DesignSurface, SectionHeader, Avatar, StatusTag, KitEmptyState, colorVar, type KitColor, type KitTone } from '@/components/portal/kit';
 import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
@@ -116,6 +115,18 @@ export default async function CounselorWorkQueuePage() {
   const flaggedElsewhere = context ? Math.max(0, context.flaggedTotal - context.awaitingReply) : 0;
 
   const t = await getTranslations('counselor');
+  const tEmpty = await getTranslations('empty');
+  // Empty slice: `clear`. "All caught up" is claimed only when the shared
+  // attention context loaded and nothing else is flagged; when other members
+  // are flagged, or the context itself failed, the title stays "No replies
+  // overdue" and the CTA is Inbox zero (the list that holds the other flags).
+  const emptyGroup = context && flaggedElsewhere === 0 ? 'workQueueClear' : 'workQueueNoReplies';
+  const emptyBody =
+    emptyGroup === 'workQueueClear'
+      ? tEmpty('counselor.workQueueClear.body')
+      : context
+        ? tEmpty('counselor.workQueueNoReplies.body', { count: flaggedElsewhere })
+        : tEmpty('counselor.workQueueNoReplies.bodyUnknown');
 
   return (
     <PortalPageFrame>
@@ -131,36 +142,34 @@ export default async function CounselorWorkQueuePage() {
       <section style={{ padding: '0 clamp(1rem, 4vw, 1.5rem) 2rem' }}>
         <DesignSurface surface="dense">
           {error ? (
-            <div
-              className="wa-kit-card"
+            <KitEmptyState
+              framed
+              kind="unavailable"
+              tone="danger"
+              headingAs="h2"
               data-portal-error-state="counselor-work-queue-load-failed"
-              style={{ textAlign: 'center' }}
-            >
-              <AlertTriangle size={28} aria-hidden style={{ color: 'var(--wa-accent)', display: 'block', margin: '0 auto 1rem' }} />
-              <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: 'var(--wa-text)' }}>
-                {t('workQueueLoadError')}
-              </h3>
-              <p style={{ fontSize: 14, color: 'var(--wa-muted)', marginBottom: 20 }}>{t('workQueueLoadErrorDesc')}</p>
-              <Link href="/counselor/queue" className="btn btn-primary">
-                <RotateCcw size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-                {t('retry')}
-              </Link>
-            </div>
+              icon={<AlertTriangle size={13} aria-hidden="true" />}
+              title={tEmpty('counselor.workQueueUnavailable.title')}
+              description={tEmpty('counselor.workQueueUnavailable.body')}
+              primaryAction={{ label: tEmpty('counselor.workQueueUnavailable.action'), href: '/counselor/queue' }}
+            />
           ) : rows.length === 0 ? (
-            <PortalEmptyState
-              title={flaggedElsewhere > 0 ? t('workQueueNoRepliesTitle') : t('allCaughtUp')}
-              description={
-                flaggedElsewhere > 0
-                  ? t('workQueueOtherFlagged', { count: flaggedElsewhere })
-                  : t('workQueueEmptyDesc')
-              }
-              icon={<Clock size={28} style={{ color: 'var(--wa-success)' }} />}
+            <KitEmptyState
+              framed
+              kind="clear"
+              tone={emptyGroup === 'workQueueClear' ? 'ok' : 'info'}
+              headingAs="h2"
+              data-testid="work-queue-empty"
+              data-variant={emptyGroup}
+              icon={<Clock size={13} aria-hidden="true" />}
+              title={tEmpty(`counselor.${emptyGroup}.title`)}
+              description={emptyBody}
               primaryAction={
-                flaggedElsewhere > 0
-                  ? { label: t('inboxZero'), href: '/counselor/inbox' }
-                  : { label: t('openMessages'), href: '/counselor/messages' }
+                emptyGroup === 'workQueueClear'
+                  ? { label: tEmpty('counselor.workQueueClear.action'), href: '/counselor/messages' }
+                  : { label: tEmpty('counselor.workQueueNoReplies.action'), href: '/counselor/inbox' }
               }
-              secondaryAction={{ label: t('backToDashboard'), href: '/counselor' }}
+              secondaryAction={{ label: tEmpty('counselor.workQueueClear.secondary'), href: '/counselor' }}
             />
           ) : (
             <>

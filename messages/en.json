@@ -1206,16 +1206,8 @@
     "inAProgram": "In a Program",
     "noProgramYet": "No Program Yet",
     "activeRoster": "Active Roster",
-    "noMembersAssignedYet": "No members assigned yet",
-    "membersAppearOnceAssigned": "Members appear here once an admin assigns them to you.",
-    "noConversationsMatch": "No conversations match",
-    "tryAnotherFilterOrSearch": "Try another filter or search term.",
-    "clearConversationFilters": "Clear filters",
-    "counselorGuide": "Counselor Guide",
     "resources": "Resources",
     "openMessages": "Open messages",
-    "contactAdminForAssignments": "Contact Admin for Assignments",
-    "counselorResources": "Counselor Resources",
     "enrolled": "Enrolled",
     "notEnrolled": "Not enrolled",
     "noProgram": "No program",
@@ -1308,22 +1300,15 @@
     "atRiskHighCount": "High",
     "atRiskMediumCount": "Medium",
     "atRiskLoadingNotes": "Loading at-risk summary…",
-    "atRiskNoAlerts": "No at-risk alerts right now. Great work!",
     "atRiskRecentAlerts": "Recent alerts",
     "counselorNameFallback": "Counselor",
-    "membersAppearOnceAssignedMobile": "Members will appear here once an admin assigns them. In the meantime, explore the counselor guide.",
     "unknownProgram": "Unknown program",
     "available": "Available",
     "messages": "Messages",
     "hotQueueHoursAgo": "{count}h",
     "hotQueueDaysAgo": "{count}d",
     "workQueueSubtitle": "Members waiting on a reply for more than 24 hours. Sorted oldest first.",
-    "workQueueLoadError": "Could not load work queue",
-    "workQueueLoadErrorDesc": "Something went wrong fetching the queue. Try refreshing the page.",
     "retry": "Retry",
-    "workQueueEmptyDesc": "No member is waiting more than 24 hours for a reply. Nice work.",
-    "workQueueNoRepliesTitle": "No replies overdue",
-    "workQueueOtherFlagged": "{count, plural, one {# member is flagged for another reason} other {# members are flagged for other reasons}} — the same list Inbox zero shows.",
     "emptyMessagePreview": "(no message content)",
     "backToDashboard": "Back to dashboard",
     "workQueueMembersAwaiting": "{count} member{count, plural, =1 {} other {s}} awaiting reply",
@@ -1332,8 +1317,6 @@
     "inactiveMembersSubtitle": "Members who haven't been active on the platform. Reach out directly by email or phone, then log outreach so other staff can see the member was contacted.",
     "minDaysInactive": "Minimum days inactive",
     "loadingMemberList": "Loading member list…",
-    "everyoneIsActive": "Everyone is active",
-    "noMembersInactive": "No members have been inactive for {days}+ days with this filter.",
     "needsAttention": "Needs attention",
     "membersThreshold": "{count} member{count, plural, =1 {} other {s}} · threshold {days}+ days",
     "daysInactive": "Days inactive",
@@ -1347,7 +1330,6 @@
     "saving": "Saving…",
     "logged": "Logged ✓",
     "logOutreach": "Log outreach",
-    "couldNotLoadInactiveMembers": "Could not load inactive members",
     "couldNotLogOutreach": "Could not log outreach. Please try again.",
     "never": "Never",
     "critical": "Critical",
@@ -1379,8 +1361,6 @@
     "notes": "Notes",
     "recording": "Recording…",
     "loadingPlacements": "Loading placements…",
-    "noPlacementsYet": "No placements yet",
-    "noPlacementsDesc": "When you record a placement, it will appear in this list for your team.",
     "recordedPlacements": "Recorded placements",
     "total": "total",
     "salary": "Salary",
@@ -2031,7 +2011,7 @@
       "stat3Value": "340",
       "stat3Label": "Members placed via partners",
       "howTitle": "How partnerships start",
-      "howSubtitle": "Three steps. Most orgs are referring inside a week.",
+      "howSubtitle": "Three steps. Start referring as soon as your portal is live; we'll confirm by email.",
       "howStep1Title": "Email or sign up",
       "howStep1Desc": "Fill the signup form below or email partners@workforceap.org with a quick note about your org.",
       "howStep2Title": "Get portal access",
@@ -2195,7 +2175,7 @@
       "title": "Become a Mentor",
       "description": "Volunteer your expertise to help job-seekers advance their careers. Log hours, earn a tax deduction letter, and give back to your community.",
       "waitlistEyebrow": "Mentor waitlist · Pre-launch",
-      "waitlistCopy": "We're accepting mentor applications now and matching as our cohort grows. Most pairings start 4–8 weeks after you apply, when a member reaches the interview-prep stage of their program in your domain.",
+      "waitlistCopy": "We're accepting mentor applications now. We review every application and email you when you're approved; members then request sessions with you from their portal.",
       "waitlistCta": "Join the waitlist",
       "heroHeadline": "Share Your Expertise. Change a Career.",
       "heroSubheadline": "WorkforceAP mentors are industry professionals who volunteer their time to guide job-seekers. Your experience is worth more than you think — and it's tax-deductible.",
@@ -3989,6 +3969,100 @@
       "title": "Couldn't load your readiness score",
       "body": "Refresh the page. If this keeps happening, message your counselor.",
       "action": "Open readiness coach"
+    },
+    "counselor": {
+      "roster": {
+        "title": "No members assigned yet",
+        "body": "An admin assigns members to you. Once that happens they appear here with progress, risk level and last activity. The counselor guide covers what to do first.",
+        "action": "Open the counselor guide",
+        "secondary": "Counselor resources"
+      },
+      "rosterNoCounselorRecord": {
+        "title": "No counselor record for your account",
+        "body": "This roster lists the members assigned to a counselor. Your admin account has no counselor record, so nothing is listed here. The admin members list covers every member.",
+        "action": "Open admin members"
+      },
+      "rosterFiltered": {
+        "title": "No members match this filter",
+        "body": "Clear the filter to see everyone on your roster.",
+        "action": "Clear filter"
+      },
+      "rosterAtRisk": {
+        "title": "No at-risk members in your roster",
+        "body": "Everyone is below the medium risk threshold, or the risk scan has not run yet. Clear the filter to see everyone."
+      },
+      "rosterUpcomingSession": {
+        "title": "No upcoming sessions in the next 7 days",
+        "body": "No assigned member has a mentor session scheduled in the next 7 days. Clear the filter to see everyone."
+      },
+      "rosterPendingApplication": {
+        "title": "No applications awaiting a decision",
+        "body": "No assigned member has an application waiting on a decision. Clear the filter to see everyone."
+      },
+      "atRiskClear": {
+        "title": "No at-risk members on your caseload",
+        "body": "Nobody you support has a {reason} right now ({definition}). New cases appear here after the nightly risk scan.",
+        "action": "Open Today",
+        "secondary": "View caseload"
+      },
+      "atRiskFiltered": {
+        "title": "No at-risk members match your filters",
+        "body": "Clear the filters to see every saved case.",
+        "action": "Clear filters"
+      },
+      "atRiskUnavailable": {
+        "title": "We couldn't load at-risk members",
+        "action": "Try again",
+        "secondary": "Back to Today"
+      },
+      "placements": {
+        "title": "No placements yet",
+        "body": "Placements recorded for your members appear here with employer, role and start date. Record the first one.",
+        "action": "Record placement"
+      },
+      "placementsUnavailable": {
+        "title": "Couldn't load placements",
+        "body": "The placements list did not answer. Try again; if this keeps happening, tell an admin.",
+        "action": "Try again"
+      },
+      "inactiveClear": {
+        "title": "Everyone is active",
+        "body": "No member has gone {days}+ days without activity.",
+        "action": "My members"
+      },
+      "inactiveUnavailable": {
+        "title": "Couldn't load inactive members",
+        "body": "The member list did not answer. Try again.",
+        "action": "Try again"
+      },
+      "workQueueClear": {
+        "title": "All caught up",
+        "body": "No member has waited more than a day for a reply, and nothing else is flagged.",
+        "action": "Open messages",
+        "secondary": "Back to Today"
+      },
+      "workQueueNoReplies": {
+        "title": "No replies overdue",
+        "body": "{count, plural, one {# member is flagged for another reason} other {# members are flagged for other reasons}} — the same list Inbox zero shows.",
+        "bodyUnknown": "No member has waited more than a day for a reply. Other flags are listed in Inbox zero.",
+        "action": "Open Inbox zero"
+      },
+      "workQueueUnavailable": {
+        "title": "Could not load work queue",
+        "body": "Something went wrong fetching the queue. Try again.",
+        "action": "Retry"
+      },
+      "inbox": {
+        "title": "No members assigned yet",
+        "body": "Conversations appear here once an admin assigns members to you.",
+        "action": "Open the counselor guide",
+        "secondary": "Back to Today"
+      },
+      "inboxFiltered": {
+        "title": "No conversations match",
+        "body": "Clear the filter or search to see every conversation.",
+        "action": "Clear filters"
+      }
     },
     "employer": {
       "postings": {

@@ -1149,16 +1149,8 @@
     "inAProgram": "Em um programa",
     "noProgramYet": "Sem programa ainda",
     "activeRoster": "Lista ativa",
-    "noMembersAssignedYet": "Nenhum membro atribuído ainda",
-    "membersAppearOnceAssigned": "Os membros aparecem aqui assim que um administrador os atribuir a você.",
-    "noConversationsMatch": "Nenhuma conversa corresponde",
-    "tryAnotherFilterOrSearch": "Tente outro filtro ou termo de busca.",
-    "clearConversationFilters": "Limpar filtros",
-    "counselorGuide": "Guia do conselheiro",
     "resources": "Recursos",
     "openMessages": "Abrir mensagens",
-    "contactAdminForAssignments": "Contatar admin para atribuições",
-    "counselorResources": "Recursos do conselheiro",
     "enrolled": "Matriculado",
     "notEnrolled": "Não matriculado",
     "noProgram": "Nenhum programa",
@@ -1211,7 +1203,6 @@
     "trainingProgressUnavailable": "Progresso do treinamento indisponível",
     "sortedByRecentlyAssigned": "Ordenados por atribuição mais recente.",
     "available": "Disponível",
-    "membersAppearOnceAssignedMobile": "Os membros aparecerão aqui assim que forem atribuídos por um administrador. Enquanto isso, explore o guia do conselheiro.",
     "hotQueueHoursAgo": "{count}h",
     "hotQueueDaysAgo": "{count}d",
     "messages": "Mensagens",
@@ -1221,17 +1212,11 @@
     "atRiskHighCount": "Alto",
     "atRiskLoadingNotes": "Carregando resumo de risco…",
     "atRiskMediumCount": "Médio",
-    "atRiskNoAlerts": "Nenhum alerta de risco no momento. Ótimo trabalho!",
     "atRiskRecentAlerts": "Alertas recentes",
     "atRiskSummaryTitle": "Alertas de Risco",
     "atRiskViewAll": "Ver todos",
     "workQueueSubtitle": "Membros aguardando uma resposta há mais de 24 horas. Ordenados do mais antigo ao mais recente.",
-    "workQueueLoadError": "Não foi possível carregar a fila de trabalho",
-    "workQueueLoadErrorDesc": "Algo deu errado ao buscar a fila. Tente atualizar a página.",
     "retry": "Tentar novamente",
-    "workQueueEmptyDesc": "Nenhum membro está aguardando uma resposta há mais de 24 horas. Bom trabalho.",
-    "workQueueNoRepliesTitle": "Nenhuma resposta atrasada",
-    "workQueueOtherFlagged": "{count, plural, one {# membro está sinalizado por outro motivo} other {# membros estão sinalizados por outros motivos}} — a mesma lista que o Inbox zero mostra.",
     "emptyMessagePreview": "(sem conteúdo de mensagem)",
     "backToDashboard": "Voltar ao painel",
     "workQueueMembersAwaiting": "{count} membro{count, plural, =1 {} other {s}} aguardando resposta",
@@ -1240,8 +1225,6 @@
     "inactiveMembersSubtitle": "Membros que não estiveram ativos na plataforma. Entre em contato diretamente por e-mail ou telefone, depois registre o contato para que outros funcionários possam ver que o membro foi contactado.",
     "minDaysInactive": "Dias mínimos inativos",
     "loadingMemberList": "Carregando lista de membros…",
-    "everyoneIsActive": "Todos estão ativos",
-    "noMembersInactive": "Nenhum membro esteve inativo por {days}+ dias com este filtro.",
     "needsAttention": "Precisa de atenção",
     "membersThreshold": "{count} membro{count, plural, =1 {} other {s}} · limiar {days}+ dias",
     "daysInactive": "Dias inativos",
@@ -1255,7 +1238,6 @@
     "saving": "Salvando…",
     "logged": "Registrado ✓",
     "logOutreach": "Registrar contato",
-    "couldNotLoadInactiveMembers": "Não foi possível carregar membros inativos",
     "couldNotLogOutreach": "Não foi possível registrar o contato. Tente novamente.",
     "never": "Nunca",
     "critical": "Crítico",
@@ -1287,8 +1269,6 @@
     "notes": "Notes",
     "recording": "Recording…",
     "loadingPlacements": "Loading placements…",
-    "noPlacementsYet": "No placements yet",
-    "noPlacementsDesc": "When you record a placement, it will appear in this list for your team.",
     "recordedPlacements": "Recorded placements",
     "total": "total",
     "salary": "Salary",
@@ -1971,7 +1951,7 @@
       "stat3Value": "340",
       "stat3Label": "Membros colocados via parceiros",
       "howTitle": "Como as parcerias começam",
-      "howSubtitle": "Três passos. A maioria das organizações começa a indicar em menos de uma semana.",
+      "howSubtitle": "Três passos. Comece a indicar assim que seu portal estiver ativo; confirmamos por e-mail.",
       "howStep1Title": "Envie um e-mail ou cadastre-se",
       "howStep1Desc": "Preencha o formulário de cadastro abaixo ou envie um e-mail para partners@workforceap.org com uma breve nota sobre sua organização.",
       "howStep2Title": "Receba acesso ao portal",
@@ -2099,7 +2079,7 @@
       "heroHeadline": "Compartilhe sua expertise. Mude uma carreira.",
       "heroSubheadline": "Os mentores do WorkforceAP são profissionais da indústria que doam seu tempo para orientar candidatos a emprego. Sua experiência vale mais do que você imagina — e é dedutível de impostos.",
       "title": "Torne-se um mentor",
-      "waitlistCopy": "Estamos aceitando candidaturas de mentor agora e fazendo o pareamento conforme nossa turma cresce. A maioria dos pareamentos começa 4 a 8 semanas após sua candidatura, quando um membro alcança a etapa de preparação para entrevista do programa na sua área.",
+      "waitlistCopy": "Estamos aceitando candidaturas de mentor agora. Analisamos cada candidatura e enviamos um e-mail quando você for aprovado; depois, os membros solicitam sessões com você pelo portal.",
       "waitlistCta": "Entrar na lista de espera",
       "waitlistEyebrow": "Lista de espera de mentores · Pré-lançamento"
     },
@@ -3929,6 +3909,100 @@
       "title": "Não foi possível carregar sua pontuação de prontidão",
       "body": "Atualize a página. Se isso continuar acontecendo, escreva ao seu conselheiro.",
       "action": "Abrir o coach de prontidão"
+    },
+    "counselor": {
+      "roster": {
+        "title": "Ainda não há membros atribuídos",
+        "body": "Um administrador atribui membros a você. Quando isso acontecer, eles aparecerão aqui com progresso, nível de risco e última atividade. O guia do conselheiro explica o que fazer primeiro.",
+        "action": "Abrir o guia do conselheiro",
+        "secondary": "Recursos do conselheiro"
+      },
+      "rosterNoCounselorRecord": {
+        "title": "Sua conta não tem registro de conselheiro",
+        "body": "Esta lista mostra os membros atribuídos a um conselheiro. Sua conta de administrador não tem registro de conselheiro, então nada aparece aqui. A lista de membros da administração inclui todos os membros.",
+        "action": "Abrir membros da administração"
+      },
+      "rosterFiltered": {
+        "title": "Nenhum membro corresponde a este filtro",
+        "body": "Limpe o filtro para ver todos na sua lista.",
+        "action": "Limpar filtro"
+      },
+      "rosterAtRisk": {
+        "title": "Nenhum membro em risco na sua lista",
+        "body": "Todos estão abaixo do limite de risco médio, ou a análise de risco ainda não foi executada. Limpe o filtro para ver todos."
+      },
+      "rosterUpcomingSession": {
+        "title": "Nenhuma sessão nos próximos 7 dias",
+        "body": "Nenhum membro atribuído tem sessão de mentoria agendada nos próximos 7 dias. Limpe o filtro para ver todos."
+      },
+      "rosterPendingApplication": {
+        "title": "Nenhuma inscrição aguardando decisão",
+        "body": "Nenhum membro atribuído tem uma inscrição aguardando decisão. Limpe o filtro para ver todos."
+      },
+      "atRiskClear": {
+        "title": "Nenhum membro em risco na sua carteira",
+        "body": "Ninguém que você acompanha tem um {reason} agora ({definition}). Novos casos aparecem aqui após a análise de risco noturna.",
+        "action": "Abrir Hoje",
+        "secondary": "Ver meus membros"
+      },
+      "atRiskFiltered": {
+        "title": "Nenhum membro em risco corresponde aos seus filtros",
+        "body": "Limpe os filtros para ver todos os casos salvos.",
+        "action": "Limpar filtros"
+      },
+      "atRiskUnavailable": {
+        "title": "Não foi possível carregar os membros em risco",
+        "action": "Tentar novamente",
+        "secondary": "Voltar para Hoje"
+      },
+      "placements": {
+        "title": "Ainda não há colocações",
+        "body": "As colocações registradas para os seus membros aparecem aqui com empregador, cargo e data de início. Registre a primeira.",
+        "action": "Registrar colocação"
+      },
+      "placementsUnavailable": {
+        "title": "Não foi possível carregar as colocações",
+        "body": "A lista de colocações não respondeu. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "action": "Tentar novamente"
+      },
+      "inactiveClear": {
+        "title": "Todos estão ativos",
+        "body": "Nenhum membro ficou {days}+ dias sem atividade.",
+        "action": "Meus membros"
+      },
+      "inactiveUnavailable": {
+        "title": "Não foi possível carregar os membros inativos",
+        "body": "A lista de membros não respondeu. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "workQueueClear": {
+        "title": "Tudo em dia",
+        "body": "Nenhum membro espera resposta há mais de um dia, e nada mais está sinalizado.",
+        "action": "Abrir mensagens",
+        "secondary": "Voltar para Hoje"
+      },
+      "workQueueNoReplies": {
+        "title": "Nenhuma resposta atrasada",
+        "body": "{count, plural, one {# membro está sinalizado por outro motivo} other {# membros estão sinalizados por outros motivos}} — a mesma lista que a Caixa zero mostra.",
+        "bodyUnknown": "Nenhum membro espera resposta há mais de um dia. As demais sinalizações estão na Caixa zero.",
+        "action": "Abrir Caixa zero"
+      },
+      "workQueueUnavailable": {
+        "title": "Não foi possível carregar a fila de trabalho",
+        "body": "Algo deu errado ao buscar a fila. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "inbox": {
+        "title": "Ainda não há membros atribuídos",
+        "body": "As conversas aparecem aqui quando um administrador atribui membros a você.",
+        "action": "Abrir o guia do conselheiro",
+        "secondary": "Voltar para Hoje"
+      },
+      "inboxFiltered": {
+        "title": "Nenhuma conversa corresponde",
+        "body": "Limpe o filtro ou a busca para ver todas as conversas.",
+        "action": "Limpar filtros"
+      }
     },
     "employer": {
       "postings": {

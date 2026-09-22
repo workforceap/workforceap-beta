@@ -4,10 +4,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { PartyPopper } from 'lucide-react';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import {
   DesignSurface,
+  KitEmptyState,
   SectionHeader,
   DataTable,
   StatusTag,
@@ -46,10 +46,11 @@ function PortalListSkeleton({ label }: { label: string }) {
 
 export default function InactiveMembersPage() {
   const t = useTranslations('counselor');
+  const tEmpty = useTranslations('empty');
   const [days, setDays] = useState(7);
   const [members, setMembers] = useState<InactiveMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   // Per-action error is intentionally separate from the page-load `error`
   // so a single outreach failure doesn't hide the whole member list.
   const [actionError, setActionError] = useState<string | null>(null);
@@ -63,7 +64,7 @@ export default function InactiveMembersPage() {
     const isCurrentLoad = () => activeLoadId.current === loadId;
 
     setLoading(true);
-    setError(null);
+    setError(false);
     try {
       const res = await fetchWithTimeout(`/api/counselor/inactive-members?days=${days}`, {}, 15000);
       if (!res.ok) throw new Error('Failed to load');
@@ -72,14 +73,14 @@ export default function InactiveMembersPage() {
       setMembers(data.members || []);
     } catch {
       if (isCurrentLoad()) {
-        setError(t('couldNotLoadInactiveMembers'));
+        setError(true);
       }
     } finally {
       if (isCurrentLoad()) {
         setLoading(false);
       }
     }
-  }, [days, t]);
+  }, [days]);
 
   useEffect(() => {
     loadMembers();
@@ -243,10 +244,16 @@ export default function InactiveMembersPage() {
 
       {loading ? <PortalListSkeleton label={t('loadingMemberList')} /> : null}
 
-      {error ? (
-        <div role="alert" style={{ color: 'var(--wa-danger)', padding: '1rem', textAlign: 'center', fontWeight: 600 }}>
-          {error}
-        </div>
+      {!loading && error ? (
+        <KitEmptyState
+          framed
+          kind="unavailable"
+          tone="danger"
+          data-testid="inactive-members-load-failed"
+          title={tEmpty('counselor.inactiveUnavailable.title')}
+          description={tEmpty('counselor.inactiveUnavailable.body')}
+          primaryAction={{ label: tEmpty('counselor.inactiveUnavailable.action'), onClick: () => void loadMembers() }}
+        />
       ) : null}
 
       {actionError ? (
@@ -267,11 +274,15 @@ export default function InactiveMembersPage() {
       ) : null}
 
       {!loading && !error && members.length === 0 ? (
-        <PortalEmptyState
-          title={t('everyoneIsActive')}
-          description={t('noMembersInactive', { days })}
-          icon={<PartyPopper size={48} style={{ color: 'var(--wa-muted)' }} aria-hidden />}
-          primaryAction={{ label: t('myMembersTitle'), href: '/counselor/students' }}
+        // Zero inactive members at this threshold is the goal: `clear` (ok).
+        <KitEmptyState
+          framed
+          kind="clear"
+          data-testid="inactive-members-clear"
+          title={tEmpty('counselor.inactiveClear.title')}
+          description={tEmpty('counselor.inactiveClear.body', { days })}
+          icon={<PartyPopper size={13} aria-hidden="true" />}
+          primaryAction={{ label: tEmpty('counselor.inactiveClear.action'), href: '/counselor/students' }}
         />
       ) : null}
 
@@ -351,8 +362,7 @@ export default function InactiveMembersPage() {
                 </div>
               );
             }}
-            emptyTitle={t('everyoneIsActive')}
-            emptyDescription={t('noMembersInactive', { days })}
+            empty={{ kind: 'clear', title: tEmpty('counselor.inactiveClear.title'), description: tEmpty('counselor.inactiveClear.body', { days }) }}
           />
         </>
       ) : null}

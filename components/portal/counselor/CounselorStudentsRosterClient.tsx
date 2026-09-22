@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { NO_ACTIVITY_RECORDED_LABEL } from '@/lib/counselor/lastActivity';
 import { useMemo, useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { MessageSquare } from 'lucide-react';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import type { BadgeVariant } from '@/components/portal/StatusBadge';
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
 import { intakeStatusKey, intakeStatusLabel, intakeStatusTone, type IntakeStatusKey } from '@/lib/status/applicationStatusVocabulary';
@@ -19,6 +19,7 @@ import {
   StatusTag,
   ProgressBar,
   Toggle,
+  KitEmptyState,
   type Column,
   type KitTone,
 } from '@/components/portal/kit';
@@ -151,6 +152,7 @@ type Props = {
 };
 
 export default function CounselorStudentsRosterClient({ rows, filterMeta, initialFilter }: Props) {
+  const tEmpty = useTranslations('empty');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -203,25 +205,21 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
 
   if (rows.length === 0) return null;
 
+  // Rows exist (the page renders its own state for an empty roster) and the
+  // chip / toggle matched none of them: `filtered`, with the sentence for the
+  // rule that filtered them (KIT_GUIDE §6). The at-risk toggle without a chip
+  // reads as the at-risk chip.
   const emptyFiltered = visible.length === 0 && (activeFilter != null || atRiskOnly);
-
-  const emptyTitle =
-    activeFilter === 'at-risk'
-      ? 'No at-risk members in your roster'
-      : activeFilter === 'upcoming-session'
-        ? 'No upcoming sessions in the next 7 days'
-        : activeFilter === 'pending-application'
-          ? 'No members with pending applications'
-          : 'No at-risk members in your roster';
-
-  const emptyDescription =
-    activeFilter === 'at-risk'
-      ? 'Everyone is below the medium risk threshold, or alerts have not run yet.'
-      : activeFilter === 'upcoming-session'
-        ? 'No members have mentor sessions scheduled in the next 7 days.'
-        : activeFilter === 'pending-application'
-          ? 'All assigned members have completed or had their applications reviewed.'
-          : 'Everyone is below the medium risk threshold, or alerts have not run yet.';
+  const emptyGroup =
+    activeFilter === 'upcoming-session'
+      ? 'rosterUpcomingSession'
+      : activeFilter === 'pending-application'
+        ? 'rosterPendingApplication'
+        : 'rosterAtRisk';
+  const clearFilters = () => {
+    setAtRiskOnly(false);
+    if (activeFilter) updateFilter(null);
+  };
 
   type Row = CounselorRosterClientRow;
 
@@ -386,10 +384,13 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
       </div>
 
       {emptyFiltered ? (
-        <PortalEmptyState
-          title={emptyTitle}
-          description={emptyDescription}
-          primaryAction={{ label: 'Clear filter', href: pathname ?? '/counselor/students' }}
+        <KitEmptyState
+          framed
+          kind="filtered"
+          data-testid="counselor-roster-filtered-empty"
+          title={tEmpty(`counselor.${emptyGroup}.title`)}
+          description={tEmpty(`counselor.${emptyGroup}.body`)}
+          primaryAction={{ label: tEmpty('counselor.rosterFiltered.action'), onClick: clearFilters }}
         />
       ) : (
         <DataTable<Row>
@@ -434,8 +435,11 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
               </div>
             );
           }}
-          emptyTitle="No students match this view"
-          emptyDescription="Try a different filter."
+          empty={{
+            kind: 'filtered',
+            title: tEmpty('counselor.rosterFiltered.title'),
+            description: tEmpty('counselor.rosterFiltered.body'),
+          }}
         />
       )}
     </DesignSurface>

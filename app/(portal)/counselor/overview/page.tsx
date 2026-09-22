@@ -18,7 +18,7 @@ import CounselorPortalVoiceBlock from '@/components/portal/CounselorPortalVoiceB
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import CounselorRosterEmpty from '@/components/portal/counselor/CounselorRosterEmpty';
 import StatusBadge from '@/components/portal/StatusBadge';
 import { getGoodTimeOfDayPhrase } from '@/lib/time/greeting';
 import { getProgramBySlug } from '@/lib/content/programs';
@@ -380,13 +380,7 @@ export default async function CounselorPortalPage({
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
             {assignments.length === 0 ? (
-              <PortalEmptyState
-                title={t('noMembersAssignedYet')}
-                description={t('membersAppearOnceAssignedMobile')}
-                icon={<span className="material-symbols-outlined" aria-hidden="true">person_search</span>}
-                primaryAction={{ label: t('counselorGuide'), href: '/counselor/guide' }}
-                secondaryAction={{ label: t('resources'), href: '/counselor/resources' }}
-              />
+              <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h4" />
             ) : (
               assignments.map((a) => {
                 const assignment = resolveTrainingProgressAssignment(
@@ -507,13 +501,7 @@ export default async function CounselorPortalPage({
             </div>
 
             {assignments.length === 0 ? (
-              <PortalEmptyState
-                title={t('noMembersAssignedYet')}
-                description={t('membersAppearOnceAssigned')}
-                icon={<span className="material-symbols-outlined" aria-hidden="true">person_search</span>}
-                primaryAction={{ label: t('contactAdminForAssignments'), href: 'mailto:info@workforceap.org?subject=Member%20assignments%20for%20counselor%20portal' }}
-                secondaryAction={{ label: t('counselorResources'), href: '/counselor/resources' }}
-              />
+              <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h4" />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {assignments.map((assignment) => {

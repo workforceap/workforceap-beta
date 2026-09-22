@@ -5,9 +5,9 @@ import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { useState, useEffect } from 'react';
 import { Briefcase } from 'lucide-react';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import {
   DesignSurface,
+  KitEmptyState,
   SectionHeader,
   DataTable,
   KpiStrip,
@@ -72,7 +72,10 @@ const textAreaStyle: React.CSSProperties = {
 export default function PlacementsPage() {
   const t = useTranslations('counselor');
   const tCommon = useTranslations('common');
+  const tEmpty = useTranslations('empty');
   const [placements, setPlacements] = useState<Placement[]>([]);
+  // A failed list read is its own state: it must never render as "No placements yet".
+  const [loadError, setLoadError] = useState(false);
   const [memberOptions, setMemberOptions] = useState<MemberOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -93,6 +96,7 @@ export default function PlacementsPage() {
 
   const loadPlacements = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const res = await fetch('/api/counselor/placements');
       if (!res.ok) throw new Error('Failed');
@@ -101,8 +105,7 @@ export default function PlacementsPage() {
       setMemberOptions(data.memberOptions || []);
     } catch {
       setMemberOptions([]);
-      setMessage('Could not load placements');
-      setMessageIsSuccess(false);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -336,12 +339,31 @@ export default function PlacementsPage() {
 
         {loading ? <PortalListSkeleton label={t('loadingPlacements')} /> : null}
 
-        {!loading && placements.length === 0 ? (
-          <PortalEmptyState
-            title={t('noPlacementsYet')}
-            description={t('noPlacementsDesc')}
-            icon={<Briefcase size={48} aria-hidden style={{ color: 'var(--color-on-surface-variant)' }} />}
-            primaryAction={{ label: t('recordPlacement'), onClick: () => setShowAddForm(true) }}
+        {!loading && loadError ? (
+          <KitEmptyState
+            framed
+            kind="unavailable"
+            tone="danger"
+            data-testid="placements-load-failed"
+            title={tEmpty('counselor.placementsUnavailable.title')}
+            description={tEmpty('counselor.placementsUnavailable.body')}
+            icon={<Briefcase size={13} aria-hidden="true" />}
+            primaryAction={{ label: tEmpty('counselor.placementsUnavailable.action'), onClick: () => void loadPlacements() }}
+          />
+        ) : null}
+
+        {!loading && !loadError && placements.length === 0 ? (
+          // The query is scoped to this counselor's assigned members (admins: the
+          // org); zero rows means nobody has recorded one yet — `first`, and the
+          // first action is the form on this page.
+          <KitEmptyState
+            framed
+            kind="first"
+            data-testid="placements-empty"
+            title={tEmpty('counselor.placements.title')}
+            description={tEmpty('counselor.placements.body')}
+            icon={<Briefcase size={13} aria-hidden="true" />}
+            primaryAction={{ label: tEmpty('counselor.placements.action'), onClick: () => setShowAddForm(true) }}
           />
         ) : null}
 
@@ -410,8 +432,7 @@ export default function PlacementsPage() {
                     </div>
                   </div>
                 )}
-                emptyTitle={t('noPlacementsYet')}
-                emptyDescription={t('noPlacementsDesc')}
+                empty={{ kind: 'first', title: tEmpty('counselor.placements.title'), description: tEmpty('counselor.placements.body') }}
               />
             </div>
           </>
