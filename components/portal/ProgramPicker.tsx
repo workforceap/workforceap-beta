@@ -25,7 +25,7 @@ const kitPrimaryBtn: CSSProperties = {
   minHeight: 44,
   padding: '10px 16px',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   fontWeight: 600,
   fontSize: 14,
   borderRadius: 999,

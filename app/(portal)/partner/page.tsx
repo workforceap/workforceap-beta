@@ -11,7 +11,9 @@ import { formatPortalDateTime } from '@/lib/formatDate';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 
 import { loadPartnerReferralBundle, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
-import { PIPELINE_STAGE_LABELS } from '@/lib/pipeline/stage';
+import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/lib/pipeline/stage';
+import { programDisplayTitle } from '@/lib/content/programTitle';
+import PartnerReferredMembersMobile, { type PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
 import { formatPortalDate } from '@/lib/formatDate';
 import CopyReferralLink from '@/components/partner/CopyReferralLink';
 import PartnerReferralShare from '@/components/partner/PartnerReferralShare';
@@ -227,7 +229,15 @@ export default async function PartnerDashboardPage({
           select: {
             id: true,
             referredAt: true,
-            member: { select: { id: true, fullName: true, enrolledAt: true } },
+            member: {
+              select: {
+                id: true,
+                fullName: true,
+                enrolledAt: true,
+                enrolledProgram: true,
+                placementRecord: { select: { startDateVerified: true } },
+              },
+            },
           },
         }),
         prisma.memberEvent.findMany({
@@ -267,6 +277,29 @@ export default async function PartnerDashboardPage({
         };
       })
       .filter((row): row is ReferralKitRow => row !== null);
+
+    // Phone widths reuse the /partner/referred-members card list instead of
+    // the 600px table behind a horizontal drag (scout M9, 2026-09-22). This
+    // lean path loads no pipeline bundle, so the stage is the coarse
+    // referred -> enrolled -> placed ladder the funnel below already uses.
+    const referralMobileRows: PartnerMemberRow[] = recentReferrals.flatMap((r) => {
+      const m = r.member;
+      if (!m) return [];
+      const stage: PipelineStage = m.placementRecord ? 'placed' : m.enrolledAt ? 'enrolled' : 'applied';
+      return [
+        {
+          id: m.id,
+          fullName: m.fullName,
+          stage,
+          stageLabel: PIPELINE_STAGE_LABELS[stage],
+          progress: 0,
+          programTitle: m.enrolledProgram ? programDisplayTitle(m.enrolledProgram) : '—',
+          story: '',
+          referredAtLabel: formatPortalDate(r.referredAt),
+          placementVerified: m.placementRecord ? m.placementRecord.startDateVerified : null,
+        },
+      ];
+    });
 
     // Payout history — PARTNER_PAYOUT_SENT member events carry the paying
     // partnerId in `metadata`; the relation filter above narrows to this
@@ -474,29 +507,34 @@ export default async function PartnerDashboardPage({
                 </Link>
               }
             />
-            <KitDataTable<ReferralKitRow>
-              columns={[
-                {
-                  key: 'name',
-                  header: t('name'),
-                  render: (row) => (
-                    <Link
-                      href={`/partner/referred-members/${row.id}`}
-                      style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
-                    >
-                      {row.name}
-                    </Link>
-                  ),
-                },
-                { key: 'status', header: t('status') },
-                { key: 'referred', header: 'Referred' },
-              ]}
-              rows={referralRows}
-              rowKey={(row) => row.id}
-              mobile="scroll"
-              emptyTitle="No referred members yet"
-              emptyDescription="New referrals will appear here after members apply through this partner."
-            />
+            <div className="wa-block md:wa-hidden">
+              <PartnerReferredMembersMobile rows={referralMobileRows} />
+            </div>
+            <div className="wa-hidden md:wa-block">
+              <KitDataTable<ReferralKitRow>
+                columns={[
+                  {
+                    key: 'name',
+                    header: t('name'),
+                    render: (row) => (
+                      <Link
+                        href={`/partner/referred-members/${row.id}`}
+                        style={{ fontWeight: 600, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
+                      >
+                        {row.name}
+                      </Link>
+                    ),
+                  },
+                  { key: 'status', header: t('status') },
+                  { key: 'referred', header: 'Referred' },
+                ]}
+                rows={referralRows}
+                rowKey={(row) => row.id}
+                mobile="scroll"
+                emptyTitle="No referred members yet"
+                emptyDescription="New referrals will appear here after members apply through this partner."
+              />
+            </div>
           </div>
 
           {showPayouts ? (
@@ -658,7 +696,7 @@ export default async function PartnerDashboardPage({
       cell: (row) => (
         <Link
           href={`/partner/referred-members/${row.id}`}
-          style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
+          style={{ fontWeight: 600, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
         >
           {row.fullName}
         </Link>
@@ -759,7 +797,7 @@ export default async function PartnerDashboardPage({
       <div style={{ padding: '1.5rem 1.5rem 0.75rem' }}>
         <p
           className="wa-text-[13px] wa-uppercase wa-tracking-[0.15em] wa-font-bold wa-mb-1"
-          style={{ color: 'var(--color-accent)' }}
+          style={{ color: 'var(--wa-accent-text)' }}
         >
           {t('partnerDashboard')}
         </p>
@@ -854,7 +892,7 @@ export default async function PartnerDashboardPage({
             <CopyReferralLink url={referralApplyUrl} referralCodeDisplay={partnerRow.referralCode ?? partnerRow.slug ?? refParam} />
             {showReferralBadge ? (
               <details style={{ marginTop: '0.85rem' }}>
-                <summary style={{ cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>
                   Website badge embed code
                 </summary>
                 <pre style={{ margin: '0.75rem 0 0', padding: '0.85rem', overflowX: 'auto', borderRadius: 'var(--radius-md)', background: 'var(--color-gray-900)', color: 'var(--color-white)', fontSize: '0.8125rem', lineHeight: 1.5 }}>
@@ -937,13 +975,13 @@ export default async function PartnerDashboardPage({
             }}
           >
             <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '0.625rem', background: 'rgba(173,44,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">lightbulb</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">lightbulb</span>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>{nextAction.label}</p>
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{nextAction.tip}</p>
             </div>
-            <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">chevron_right</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">chevron_right</span>
           </div>
         </Link>
       </div>
@@ -979,7 +1017,7 @@ export default async function PartnerDashboardPage({
             <PortalCard className="portal-card--compact">
               <div className="portal-inbox-row__inner" style={{ padding: '0.1rem 0' }}>
                 <div className="portal-inbox-row__badge" aria-hidden>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">flag</span>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">flag</span>
                 </div>
                 <div className="portal-inbox-row__main">
                   <div className="portal-inbox-row__top">
@@ -1140,7 +1178,7 @@ export default async function PartnerDashboardPage({
             <CopyReferralLink url={referralApplyUrl} referralCodeDisplay={partnerRow.referralCode ?? partnerRow.slug ?? refParam} />
             {showReferralBadge ? (
               <details style={{ marginTop: '1rem' }}>
-                <summary style={{ cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-accent)' }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>
                   Website badge embed code
                 </summary>
                 <pre style={{ margin: '0.75rem 0 0', padding: '1rem', overflowX: 'auto', borderRadius: 'var(--radius-md)', background: 'var(--color-gray-900)', color: 'var(--color-white)', fontSize: '0.8125rem', lineHeight: 1.5 }}>
@@ -1225,12 +1263,12 @@ export default async function PartnerDashboardPage({
             className="portal-alert portal-alert--accent hover:wa-opacity-80 active:wa-scale-[0.99] wa-transition-all"
             style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', flexShrink: 0 }} aria-hidden="true">lightbulb</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', flexShrink: 0 }} aria-hidden="true">lightbulb</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0 }}>{nextAction.label}</p>
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{nextAction.tip}</p>
             </div>
-            <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">arrow_forward</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">arrow_forward</span>
           </div>
         </Link>
       </section>
@@ -1321,7 +1359,7 @@ export default async function PartnerDashboardPage({
                 <div style={{ marginBottom: '1.25rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                     <span style={{ color: 'var(--color-on-surface)' }}>{t('placementRate')}</span>
-                    <span className="wa-tabular-nums" style={{ color: 'var(--color-accent)', fontSize: '1rem' }}>{conversionRate}%</span>
+                    <span className="wa-tabular-nums" style={{ color: 'var(--wa-accent-text)', fontSize: '1rem' }}>{conversionRate}%</span>
                   </div>
                   <div className="portal-progress-bar">
                     <div className="portal-progress-bar__fill" style={{ width: `${conversionRate}%` }} />

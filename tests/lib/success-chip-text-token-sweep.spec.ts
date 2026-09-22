@@ -1,6 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import React from 'react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import AtRiskDashboard from '@/components/portal/counselor/AtRiskDashboard';
+
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('@/components/portal/counselor/AtRiskDetailModal', () => ({ default: () => null }));
+vi.mock('@/components/portal/PortalInlineSpinner', () => ({ PortalInlineSpinner: () => null }));
 
 /**
  * Deferred contrast item from the green-status sweep (#2365): two more chips
@@ -56,13 +64,26 @@ const pageBg = lightDark('--wa-bg');
 const surface = lightDark('--wa-surface');
 
 describe('AtRiskDashboard status filter chip (ok tone)', () => {
-  const source = readFileSync(path.join(root, 'components/portal/counselor/AtRiskDashboard.tsx'), 'utf8');
-  const chip = source.match(/function FilterChip[\s\S]*?(?=\nfunction FilterTag)/)?.[0] ?? '';
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
+  // Rendered check (was a source-string pin on FilterChip): the "Resolved"
+  // chip is the ok tone. Its label paints --wa-success-dark at rest and stays
+  // so when active, where the fill becomes --wa-success-soft; the fill hue
+  // --wa-success may drive the border and tint, never the text.
   it('reads --wa-success-dark for its text and --wa-success-soft when active', () => {
-    expect(chip).toMatch(/ok:\s*'var\(--wa-success-dark\)'/);
-    expect(chip).toContain("tone === 'ok' ? 'var(--wa-success-soft)'");
-    expect(chip).not.toMatch(/ok:\s*'var\(--wa-success\)'/);
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ results: [] })));
+    render(React.createElement(AtRiskDashboard, { initialMembers: [] }));
+    const chip = screen.getByRole('button', { name: /^Resolved · \d+$/ });
+    expect(chip.style.color).toBe('var(--wa-success-dark)');
+    expect(chip.style.background).toBe('var(--wa-bg)');
+    fireEvent.click(chip);
+    const active = screen.getByRole('button', { name: /^Resolved · \d+$/ });
+    expect(active.style.color).toBe('var(--wa-success-dark)');
+    expect(active.style.background).toBe('var(--wa-success-soft)');
+    expect(active.style.color).not.toBe('var(--wa-success)');
   });
 
   it('clears 4.5:1 while inactive on --wa-bg in both schemes', () => {

@@ -78,7 +78,7 @@ export default function PartnerSettingsEditRequest({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.5rem 1rem', borderRadius: '0.625rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-accent)', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer' }}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.5rem 1rem', borderRadius: '0.625rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--wa-accent-text)', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer' }}
       >
         <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">edit</span>
         Request changes
@@ -120,7 +120,7 @@ export default function PartnerSettingsEditRequest({
           style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem', resize: 'vertical', boxSizing: 'border-box' }}
         />
       </div>
-      {error && <p role="alert" style={{ fontSize: '0.875rem', color: 'var(--color-accent)', margin: 0 }}>{error}</p>}
+      {error && <p role="alert" style={{ fontSize: '0.875rem', color: 'var(--wa-accent-text)', margin: 0 }}>{error}</p>}
       <div style={{ display: 'flex', gap: '0.625rem' }}>
         <button
           type="submit"

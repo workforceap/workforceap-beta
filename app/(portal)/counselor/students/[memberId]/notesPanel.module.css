@@ -108,7 +108,7 @@
   min-height: 2.75rem;
   padding: 0.5rem 1rem;
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   border: none;
   border-radius: var(--wa-radius-sm);
   font-size: var(--wa-type-meta);

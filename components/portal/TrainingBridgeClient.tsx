@@ -35,7 +35,7 @@ const primaryPillStyle = {
   justifyContent: 'center',
   gap: '0.4rem',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
   fontSize: '0.85rem',
   borderRadius: 999,

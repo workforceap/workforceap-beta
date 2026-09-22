@@ -264,7 +264,7 @@ export default async function AdminMemberStakeholderPage({
               fontWeight: 800,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               margin: '0 0 0.4rem',
             }}
           >

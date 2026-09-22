@@ -70,7 +70,7 @@ export default function First90DaysCard({
             aria-hidden
             style={{
               background: 'rgba(173,44,77,0.14)',
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               width: '2.5rem',
               height: '2.5rem',
               borderRadius: '999px',
@@ -170,7 +170,7 @@ export default function First90DaysCard({
             {savedResponse !== 'going_well' && (
               <Link
                 href="/dashboard/messages"
-                style={{ display: 'inline-block', marginTop: '0.5rem', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-accent)', textDecoration: 'none' }}
+                style={{ display: 'inline-block', marginTop: '0.5rem', fontSize: '0.85rem', fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
               >
                 {t('messageCounselor')}
               </Link>
@@ -200,7 +200,7 @@ export default function First90DaysCard({
               ))}
             </div>
             {error && (
-              <p role="alert" style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
+              <p role="alert" style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>
                 {t('saveError')}
               </p>
             )}
@@ -214,7 +214,7 @@ export default function First90DaysCard({
               cursor: 'pointer',
               fontSize: '0.85rem',
               fontWeight: 700,
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               listStyle: 'none',
               display: 'inline-flex',
               alignItems: 'center',

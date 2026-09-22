@@ -600,7 +600,7 @@ export default async function AdminCourseraPage({
               plus one-click approve and enroll.
             </span>
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>Open</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>Open</span>
         </Link>
 
         <Link
@@ -624,7 +624,7 @@ export default async function AdminCourseraPage({
               enrolled / active / stalled / completed, with filters and CSV export. Read-only.
             </span>
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>Open</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>Open</span>
         </Link>
 
         <Link
@@ -647,7 +647,7 @@ export default async function AdminCourseraPage({
               Read-only overview of canonical mappings, xAPI traffic, B4B sync state, ignored events, and unmatched actors.
             </span>
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>Open</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>Open</span>
         </Link>
 
         <div className="content-card" style={{ padding: '1rem 1.2rem', display: 'grid', gap: '0.5rem' }}>
@@ -935,7 +935,7 @@ export default async function AdminCourseraPage({
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(164, 127, 56, 0.14)',
-                            color: 'var(--color-accent)',
+                            color: 'var(--wa-accent-text)',
                           }}
                         >
                           in progress

@@ -176,7 +176,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
   };
 
   return (
-    <section className="wa-kit-card" data-testid="counselor-intake-review-panel">
+    <section id="counselor-intake-review-panel" className="wa-kit-card" data-testid="counselor-intake-review-panel">
       <h2 className={styles.title}>Application review</h2>
       <p className={`wa-kit-meta ${styles.help}`}>
         Approve, deny, or request more information on this member&apos;s program application. Decisions use the same

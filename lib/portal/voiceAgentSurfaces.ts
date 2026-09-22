@@ -37,6 +37,21 @@ export const GOLD_TEXT_GRADIENT = 'linear-gradient(135deg, var(--wa-hero-gold), 
 const BLUE = '#2b7bb9';
 const BLUE_DARK = '#1f5a87';
 
+/**
+ * PortalVoiceSession accent props for the employer voice card (scout M8). The
+ * panel's orb / tints keep the info hue; the solid "Start voice session" fill
+ * is the info tone pairing: --wa-info-dark under --wa-on-accent-control (white
+ * in light, dark ink in dark, where the fill lightens to #74b3e3). The former
+ * `accent="var(--color-blue)"` with the panel's white label measured 2.36:1
+ * in dark mode.
+ */
+export const employerVoiceSessionAccent = {
+  accent: 'var(--color-blue)',
+  accentDark: 'var(--color-blue)',
+  ctaBackground: 'var(--wa-info-dark)',
+  ctaColor: 'var(--wa-on-accent-control)',
+} as const;
+
 const icon = (Icon: typeof Target) => createElement(Icon, { size: 22, 'aria-hidden': true });
 
 export const readinessVoiceSurface: Surface = {
@@ -88,6 +103,9 @@ export const employerVoiceSurface: Surface = {
   subtext: 'Postings, applicants, and navigating the employer portal.',
   icon: icon(Building2),
   glowColor: CRIMSON,
+  // Hero crimson stays #ad2c4d in dark: 2.99:1 on the dark card. --wa-accent-text
+  // is the text-on-surface accent (#8c0f37 light / #f39ab5 dark).
+  badgeColor: 'var(--wa-accent-text)',
   gradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
   ctaGradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
   ctaShadow: '0 8px 24px rgba(173,44,77,0.2)',

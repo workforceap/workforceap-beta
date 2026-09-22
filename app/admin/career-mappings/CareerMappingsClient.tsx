@@ -257,7 +257,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
 
       <div className="content-card" style={{ padding: '0.85rem 1rem', marginBottom: '1rem', fontSize: '0.88rem', color: 'var(--color-on-surface-variant)' }}>
         Employer-designed screening packs (shown to members near program completion) are managed separately:{' '}
-        <a href="/admin/employer-screening-packs" style={{ fontWeight: 700, color: 'var(--color-accent)' }}>
+        <a href="/admin/employer-screening-packs" style={{ fontWeight: 700, color: 'var(--wa-accent-text)' }}>
           Employer screening packs
         </a>
         .
@@ -292,21 +292,21 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-container-high)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
               >
-                <span style={{ fontSize: '0.8125rem', fontWeight: 800, fontFamily: 'monospace', color: 'var(--color-accent)', flexShrink: 0, paddingTop: '0.2rem' }}>{o.code}</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 800, fontFamily: 'monospace', color: 'var(--wa-accent-text)', flexShrink: 0, paddingTop: '0.2rem' }}>{o.code}</span>
                 <span style={{ fontSize: '0.9rem', color: 'var(--color-on-surface)', lineHeight: 1.3 }}>{o.title}</span>
               </button>
             ))}
           </div>
         )}
         {searchError && (
-          <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', color: 'var(--color-accent)', fontSize: '0.8125rem' }}>
+          <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', color: 'var(--wa-accent-text)', fontSize: '0.8125rem' }}>
             {searchError}
           </div>
         )}
       </div>
 
       {message && (
-        <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', border: `1px solid ${message.type === 'ok' ? 'rgba(74,155,79,0.25)' : 'rgba(173,44,77,0.25)'}`, color: message.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)' }}>
+        <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', border: `1px solid ${message.type === 'ok' ? 'rgba(74,155,79,0.25)' : 'rgba(173,44,77,0.25)'}`, color: message.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)' }}>
           {message.text}
         </div>
       )}
@@ -323,7 +323,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
               <div key={p.slug} className="portal-card portal-card--flat" style={{ padding: '1.125rem' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.75rem' }}>
                   <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '0.625rem', background: p.categoryColor ? `${p.categoryColor}22` : 'rgba(173,44,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: p.categoryColor ?? 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>school</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: p.categoryColor ?? 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>school</span>
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>{p.category ?? 'Program'}</p>
@@ -349,7 +349,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                     setSearchQ(words.slice(0, 3).join(' '));
                     searchRef.current?.focus();
                   }}
-                  style={{ marginTop: '0.875rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  style={{ marginTop: '0.875rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                 >
                   Find O*NET matches
                   <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }}>search</span>
@@ -368,7 +368,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                 <button
                   type="button"
                   onClick={() => { setSelectedOcc(null); setMappings([]); setAutoMatches([]); setMessage(null); setSearchError(null); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8125rem', fontWeight: 700 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--wa-accent-text)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8125rem', fontWeight: 700 }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>arrow_back</span>
                   All programs
@@ -428,7 +428,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                         <div key={match.programSlug} className="portal-card portal-card--flat" style={{ padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', opacity: already ? 0.6 : 1 }}>
                           {/* Program icon */}
                           <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '0.625rem', background: prog?.categoryColor ? `${prog.categoryColor}22` : 'rgba(173,44,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: prog?.categoryColor ?? 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>school</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: prog?.categoryColor ?? 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>school</span>
                           </div>
                           {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -509,7 +509,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                               <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0 }}>
                                 {prog?.title ?? programDisplayTitle(m.programSlug)}
                               </p>
-                              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: `color-mix(in srgb, ${REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)'} 13%, transparent)`, color: REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: `color-mix(in srgb, ${REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)'} 13%, transparent)`, color: REC_TYPE_COLOR[m.recommendationType] ?? 'var(--wa-accent-text)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 {m.recommendationType}
                               </span>
                               <span style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -659,7 +659,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                     padding: '0.15rem 0.4rem',
                     borderRadius: '9999px',
                     background: `color-mix(in srgb, ${ACTION_COLOR[entry.action] ?? 'var(--color-accent)'} 13%, transparent)`,
-                    color: ACTION_COLOR[entry.action] ?? 'var(--color-accent)',
+                    color: ACTION_COLOR[entry.action] ?? 'var(--wa-accent-text)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',
                     flexShrink: 0,

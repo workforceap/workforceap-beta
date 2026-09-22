@@ -343,7 +343,7 @@ export default function InterestProfilerClient() {
                 if (!p) return null;
                 return (
                   <li key={slug}>
-                    <Link href={`/programs/${slug}`} style={{ fontWeight: 600, color: 'var(--color-accent)' }}>
+                    <Link href={`/programs/${slug}`} style={{ fontWeight: 600, color: 'var(--wa-accent-text)' }}>
                       {p.title}
                     </Link>
                     <span style={{ color: 'var(--color-on-surface-variant)', marginLeft: 8 }}>{p.categoryLabel}</span>
@@ -356,14 +356,14 @@ export default function InterestProfilerClient() {
 
         {/* Skill profile connection */}
         <div style={{ padding: '1rem 1.125rem', background: 'rgba(173,44,77,0.07)', border: '1px solid rgba(173,44,77,0.15)', borderRadius: '0.875rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
-          <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.375rem', flexShrink: 0, marginTop: '0.125rem', fontVariationSettings: "'FILL' 1" }}>radar</span>
+          <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.375rem', flexShrink: 0, marginTop: '0.125rem', fontVariationSettings: "'FILL' 1" }}>radar</span>
           <div>
             <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: '0 0 0.25rem' }}>
               Your answers are feeding your Skill Profile
             </p>
             <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>
               These results have been saved and blended into your radar chart in the{' '}
-              <Link href="/dashboard/ai-tools/skill-mapper" style={{ color: 'var(--color-accent)', fontWeight: 700 }}>
+              <Link href="/dashboard/ai-tools/skill-mapper" style={{ color: 'var(--wa-accent-text)', fontWeight: 700 }}>
                 Skill Mapper
               </Link>
               . Go there to compare your profile against any O*NET occupation.

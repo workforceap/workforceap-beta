@@ -121,7 +121,7 @@ export default function LogCertificationModal() {
           />
         </label>
         {error ? (
-          <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-accent)' }}>
+          <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>
             {error}
           </p>
         ) : null}

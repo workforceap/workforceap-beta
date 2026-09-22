@@ -57,7 +57,7 @@ export default function MfaStatusBanner() {
         </p>
         <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
           Admin and counselor accounts must have 2FA enabled.{' '}
-          <a href="/setup-mfa" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+          <a href="/setup-mfa" style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}>
             Set up now →
           </a>
         </p>

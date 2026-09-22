@@ -54,12 +54,15 @@ function ContinueThisCourseButton({
       />
     );
   }
+  // The link form is the kit CTA, not `<Button href>`: Astryx paints its
+  // variant colours inside `@layer astryx-base`, and the unlayered
+  // `a { color: inherit }` in css/main.css beats any layered rule on an
+  // anchor, so the Astryx `<a>` label inherited body text (2.69:1 on crimson).
+  // `.wa-kit-cta` pairs --wa-accent with --wa-on-accent-control in both modes.
   return (
-    <Button
-      label="Continue this course"
-      variant="primary"
-      size="lg"
+    <Link
       href={target.href}
+      className="wa-kit-cta wa-kit-focus"
       target={target.kind === 'coursera' ? '_blank' : undefined}
       rel={target.kind === 'coursera' ? 'noopener noreferrer' : undefined}
       onClick={
@@ -70,7 +73,9 @@ function ContinueThisCourseButton({
             }
           : undefined
       }
-    />
+    >
+      Continue this course
+    </Link>
   );
 }
 export interface MemberTrainingWorkspaceProps {

@@ -108,7 +108,7 @@ export default function B4BProgramsListButton() {
                     <td style={{ padding: '0.4rem 0.5rem', verticalAlign: 'top', fontFamily: 'inherit' }}>{p.name}</td>
                     <td style={{ padding: '0.4rem 0.5rem', verticalAlign: 'top' }}>
                       {p.url ? (
-                        <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)' }}>
+                        <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)' }}>
                           {p.url.length > 60 ? p.url.slice(0, 60) + '…' : p.url}
                         </a>
                       ) : (

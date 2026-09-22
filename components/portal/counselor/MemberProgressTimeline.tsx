@@ -181,7 +181,7 @@ export default function MemberProgressTimeline({ events }: Props) {
                       style={{
                         fontSize: '0.8125rem',
                         fontWeight: 700,
-                        color: 'var(--color-accent)',
+                        color: 'var(--wa-accent-text)',
                         background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
                         padding: '0.15rem 0.5rem',
                         borderRadius: '9999px',

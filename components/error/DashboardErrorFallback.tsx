@@ -76,7 +76,7 @@ export default function DashboardErrorFallback({
           className="material-symbols-outlined"
           style={{
             fontSize: '1.125rem',
-            color: 'var(--color-accent)',
+            color: 'var(--wa-accent-text)',
             fontVariationSettings: "'FILL' 1",
           }}
           aria-hidden="true"

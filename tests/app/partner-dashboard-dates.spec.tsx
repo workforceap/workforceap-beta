@@ -42,6 +42,8 @@ vi.mock('@/components/portal/kit', () => ({
   ),
   QueueRow: ({ meta }: { meta?: string }) => <div data-testid="queue-row">{meta}</div>,
 }));
+// The phone-width card list is a client component with its own translations; the desktop kit table is what these specs read.
+vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({ default: () => null }));
 
 import PartnerDashboardPage from '@/app/(portal)/partner/page';
 

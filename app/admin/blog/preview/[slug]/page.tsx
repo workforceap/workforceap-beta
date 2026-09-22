@@ -155,7 +155,7 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
                 <li key={r.slug} style={{ marginBottom: '0.5rem' }}>
                   <Link
                     href={`/blog/${r.slug}`}
-                    style={{ color: 'var(--color-accent)', textDecoration: 'none' }}
+                    style={{ color: 'var(--wa-accent-text)', textDecoration: 'none' }}
                   >
                     {r.title}
                   </Link>

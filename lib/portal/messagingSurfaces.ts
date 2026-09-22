@@ -6,6 +6,11 @@ type MessagingSurface = {
   subtext?: string;
   icon: string;
   glowColor: string;
+  /**
+   * Badge label colour when the glow hue is too light to read as 13px text on
+   * the card (same contract as voiceAgentSurfaces.ts). The glow keeps the hue.
+   */
+  badgeColor?: string;
   gradient: string;
 };
 
@@ -22,6 +27,8 @@ export const partnerMessagingSurface: MessagingSurface = {
   subtext: 'Direct line to WorkforceAP — referrals, milestones, and resources.',
   icon: '🤝',
   glowColor: '#ea580c',
+  // #ea580c on white measured 3.56:1; the text-on-gold token is the warm text hue.
+  badgeColor: 'var(--wa-gold-dark)',
   gradient: 'linear-gradient(135deg, #ea580c, #f97316, #fdba74)',
 };
 
@@ -30,6 +37,8 @@ export const employerMessagingSurface: MessagingSurface = {
   subtext: 'Your team channel and candidate threads in one place.',
   icon: '🏢',
   glowColor: '#4f46e5',
+  // #4f46e5 on the dark card measured 3.08:1; the text-on-info token is the cool text hue.
+  badgeColor: 'var(--wa-info-dark)',
   gradient: 'linear-gradient(135deg, #4f46e5, #6366f1, #a5b4fc)',
 };
 

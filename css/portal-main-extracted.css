@@ -105,7 +105,7 @@
   margin: 0;
   color: var(--color-on-surface-variant);
 }
-.job-readiness-next a { color: var(--color-accent); font-weight: 500; }
+.job-readiness-next a { color: var(--wa-accent-text); font-weight: 500; }
 .job-readiness-breakdown-toggle {
     font-size: 0.85rem;
     color: var(--color-on-surface-variant);
@@ -115,7 +115,7 @@
     padding: 0.25rem 0;
     margin-top: 0.5rem;
 }
-.job-readiness-breakdown-toggle:hover { color: var(--color-accent); text-decoration: underline; }
+.job-readiness-breakdown-toggle:hover { color: var(--wa-accent-text); text-decoration: underline; }
 .job-readiness-breakdown {
     list-style: none;
     padding: 0;
@@ -190,11 +190,11 @@
 .weekly-recap-section ul { margin: 0; padding-left: 1.25rem; }
 .weekly-recap-actions { list-style: none; padding-left: 0; }
 .weekly-recap-actions li { margin-bottom: 0.5rem; }
-.weekly-recap-actions a { color: var(--color-accent); font-weight: 500; }
+.weekly-recap-actions a { color: var(--wa-accent-text); font-weight: 500; }
 .weekly-recap-score-value { font-size: 1.5rem; font-weight: 700; color: var(--color-accent); }
 .weekly-recap-empty { padding: 2rem; text-align: center; }
 .weekly-recap-hint { margin-top: 1.5rem; font-size: 0.9rem; }
-.weekly-recap-hint a { color: var(--color-accent); }
+.weekly-recap-hint a { color: var(--wa-accent-text); }
 
 /* Admin metrics */
 .admin-metrics-grid {
@@ -370,7 +370,7 @@
 .resource-card-category {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-transform: uppercase;
     letter-spacing: 0.03em;
 }
@@ -420,7 +420,7 @@
 }
 .resource-card-download:hover:not(:disabled) {
     border-color: var(--color-accent);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .resource-card-download:disabled { opacity: 0.6; cursor: not-allowed; }
 .resource-card-arrow {
@@ -603,7 +603,7 @@
     font-size: 0.9rem;
     color: var(--color-on-surface-variant);
 }
-.ai-result-saved a { color: var(--color-accent); font-weight: 500; }
+.ai-result-saved a { color: var(--wa-accent-text); font-weight: 500; }
 .ai-result-saved a:hover { text-decoration: underline; }
 
 .interview-practice-form { margin-top: 1rem; }
@@ -661,7 +661,7 @@
 .interview-practice-example strong { font-size: 0.85rem; color: var(--color-on-surface-variant); }
 .interview-practice-star {
     font-size: 0.85rem;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     margin: 0.35rem 0 0;
 }
 .interview-practice-saved {
@@ -784,7 +784,7 @@
 }
 .application-tracker-filter-chip:hover {
     border-color: var(--color-accent);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .application-tracker-filter-chip.active {
     background: var(--color-accent);
@@ -890,7 +890,7 @@
 .learning-path-category {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-transform: uppercase;
 }
 .learning-path-header h3 { font-size: 1.15rem; margin: 0.35rem 0 0; }
@@ -914,7 +914,7 @@
     content: '→';
     position: absolute;
     left: 0;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .learning-path-meta {
     font-size: 0.85rem;
@@ -1073,7 +1073,7 @@ html.dark .portal-nav {
     color: var(--color-primary);
 }
 .employer-portal-brand:hover {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .employer-portal-nav {
     display: flex;
@@ -1119,7 +1119,7 @@ html.dark .portal-nav {
     border-bottom: 1px solid rgba(59, 130, 246, 0.15);
 }
 .employer-super-admin-banner a {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: underline;
 }
 .employer-portal-main {
@@ -1267,6 +1267,35 @@ html {
         display: none;
     }
 }
+/* Staff shells at phone width (scout M2, 2026-09-22). WorkspaceShell adds
+   --minimal-mobile to every non-member header below 769px: the brand column
+   keeps room for the wordmark + current page instead of shrinking to a few
+   pixels, and the tier badge, attribution and impersonation chip leave the
+   meta row (the badge is repeated in the drawer, the banner already says
+   "Viewing as"). Only the role / super-admin switcher and the bell stay. */
+@media (max-width: 768px) {
+    .workspace-shell-root:not([data-workspace-role='member']) .workspace-shell-header--minimal-mobile .workspace-shell-header__brand {
+        flex: 0 1 auto;
+        min-width: 9.5rem;
+    }
+    /* The wordmark keeps a 24px target (the 44px tap-target rule would make
+       the brand column 66px tall); the current page name sits under it. */
+    .workspace-shell-root:not([data-workspace-role='member']) .workspace-shell-header--minimal-mobile .workspace-shell-brand {
+        display: inline-flex;
+        align-items: center;
+        min-height: 1.5rem;
+        padding-block: 0.1875rem;
+        white-space: nowrap;
+    }
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .super-admin-view-switcher--with-badge {
+        padding-block: 0;
+    }
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-tier-badge,
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-attribution,
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-impersonating-chip {
+        display: none;
+    }
+}
 @media (max-width: 768px) and (prefers-reduced-motion: no-preference) {
     .workspace-shell-header {
         transition: padding 0.2s ease, box-shadow 0.2s ease, gap 0.2s ease;
@@ -1356,14 +1385,14 @@ html.dark .workspace-shell-header,
     line-height: 1.2;
 }
 .workspace-shell-brand:hover {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .workspace-shell-tagline {
     font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .workspace-shell-brand-meta {
     display: flex;
@@ -1378,7 +1407,7 @@ html.dark .workspace-shell-header,
     gap: 0.35rem;
     font-size: 0.8125rem;
     font-weight: 700;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
     max-width: 100%;
 }
@@ -1566,7 +1595,7 @@ html.dark .workspace-tab-bar {
     border-color: color-mix(in srgb, var(--color-accent) 16%, var(--outline-variant) 84%);
 }
 .workspace-tab--active {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     border-color: color-mix(in srgb, var(--color-accent) 28%, transparent 72%);
     font-weight: 700;
     background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 13%, var(--color-white) 87%), color-mix(in srgb, var(--color-accent) 8%, var(--color-white) 92%));
@@ -1812,7 +1841,7 @@ html.dark .workspace-sidebar-group-label {
     font-weight: 700;
     text-align: center;
     background: rgba(173, 44, 77, 0.12);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .workspace-shell-context--chip {
     padding: 0.2rem 0.55rem;
@@ -1893,7 +1922,7 @@ html.dark .workspace-sidebar-group-label {
     border-radius: 999px;
     background: linear-gradient(135deg, rgba(173, 44, 77, 0.14), rgba(173, 44, 77, 0.06));
     border: 1px solid rgba(173, 44, 77, 0.35);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .workspace-sidebar-context--chip {
     padding: 0.15rem 0.45rem;
@@ -2007,7 +2036,7 @@ html.dark .workspace-sidebar-group-label {
     color: var(--color-on-surface-variant);
 }
 .portal-minimal-footer__inner a {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
     text-decoration: none;
 }
@@ -2026,7 +2055,7 @@ html.dark .workspace-sidebar-group-label {
 }
 .workspace-sidebar-link.active {
     background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 12%, var(--color-white) 88%), color-mix(in srgb, var(--color-accent) 7%, var(--color-white) 93%));
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 700;
     border-color: color-mix(in srgb, var(--color-accent) 24%, transparent 76%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 1px 2px rgba(0,0,0,0.04);
@@ -2131,7 +2160,7 @@ html.dark .workspace-sidebar-group-label {
 .workspace-sidebar-home-link {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
 }
 .workspace-sidebar-home-link:hover {
@@ -2178,7 +2207,7 @@ html.dark .workspace-sidebar-group-label {
     border-bottom: 1px solid rgba(59, 130, 246, 0.15);
 }
 .workspace-super-admin-banner a {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: underline;
 }
 
@@ -2461,7 +2490,7 @@ html.dark .workspace-sidebar-group-label {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .partner-milestone-label {
     font-weight: 500;
@@ -2500,7 +2529,7 @@ html.dark .workspace-sidebar-group-label {
 }
 .employer-work-queue-filter.is-active {
     border-color: var(--color-accent);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     background: rgba(173, 44, 77, 0.06);
 }
 .employer-work-queue-section {
@@ -2543,7 +2572,7 @@ html.dark .workspace-sidebar-group-label {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     margin-right: 0.35rem;
 }
 .employer-work-queue-meta {
@@ -2626,7 +2655,7 @@ html.dark .workspace-sidebar-group-label {
 }
 .partner-tier-filter.is-active {
     border-color: var(--color-accent);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .partner-attention-list {
     list-style: none;
@@ -2747,7 +2776,7 @@ html.dark .workspace-sidebar-group-label {
 .member-job-posting-link {
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 /* Employer portal — dashboard home (classes were unstyled) */
@@ -2799,7 +2828,7 @@ html.dark .workspace-sidebar-group-label {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     margin: 0;
 }
 .employer-dash-stats {
@@ -2819,7 +2848,7 @@ html.dark .workspace-sidebar-group-label {
 .employer-dash-stat-icon {
     display: flex;
     justify-content: center;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     margin-bottom: 0.35rem;
 }
 .employer-dash-stat-value {
@@ -2893,7 +2922,7 @@ html.dark .workspace-sidebar-group-label {
 .employer-dash-inline-link {
     font-size: 0.88rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
     white-space: nowrap;
 }
@@ -2933,7 +2962,7 @@ html.dark .workspace-sidebar-group-label {
 }
 .employer-dash-activity-link {
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
 }
 .employer-dash-activity-link:hover {
@@ -3088,7 +3117,7 @@ html.dark .workspace-sidebar-group-label {
 }
 .employer-settings-next-steps__link {
     font-weight: 700;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
 }
 .employer-settings-next-steps__link:hover {
@@ -3106,7 +3135,7 @@ html.dark .workspace-sidebar-group-label {
     font-size: 0.95rem;
 }
 .employer-settings-mailto {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
 }
 
@@ -3126,7 +3155,7 @@ html.dark .workspace-sidebar-group-label {
     color: var(--color-on-surface-variant);
 }
 .help-request-card a {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
 }
 
@@ -3340,7 +3369,7 @@ html.dark .workspace-sidebar-group-label {
 .blog-card-cta {
     display: inline-block;
     font-size: 0.875rem;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
     margin: 0.75rem 1.25rem 1.25rem;
 }
@@ -3467,7 +3496,7 @@ html.dark .workspace-sidebar-group-label {
     margin-bottom: 0.75rem;
 }
 .blog-post-related a {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
 }
 .blog-post-related a:hover { text-decoration: underline; }
@@ -3485,7 +3514,7 @@ html.dark .workspace-sidebar-group-label {
 .blog-filter-chip[data-active="true"] {
     border-color: var(--color-accent);
     background: rgba(173, 44, 77, 0.1);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
 }
 html.dark .blog-filter-chip[data-active="true"] {
@@ -3621,7 +3650,7 @@ html.dark .blog-post-article {
     gap: 0.35rem;
     font-size: 0.9375rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
     margin-bottom: 1.25rem;
 }
@@ -3736,7 +3765,7 @@ html.dark .blog-post-article {
     color: var(--color-primary);
 }
 .dashboard-sidebar-link.active {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
     background: rgba(173, 44, 77, 0.08);
 }
@@ -4401,16 +4430,16 @@ html.dark .admin-super-messages-bubble.is-staff {
     color: var(--color-primary);
 }
 .admin-sidebar-link:hover .admin-sidebar-icon {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .admin-sidebar-link.active {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
     background: rgba(173, 44, 77, 0.12);
     box-shadow: inset 3px 0 0 0 var(--color-accent);
 }
 .admin-sidebar-link.active .admin-sidebar-icon {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 /* Dashboard home — quick stats */
@@ -4446,7 +4475,7 @@ html.dark .admin-super-messages-bubble.is-staff {
 .dashboard-stat-icon {
     font-size: 1.25rem;
     margin-bottom: 0.35rem;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 /* Student dashboard — Today / Next Step (student-success coach) */
@@ -4645,7 +4674,7 @@ html.dark .admin-super-messages-bubble.is-staff {
     gap: 0.35rem;
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     margin-bottom: 0.5rem;
 }
 .dashboard-weekly-nudge {
@@ -4670,7 +4699,7 @@ html.dark .admin-super-messages-bubble.is-staff {
 }
 .dashboard-weekly-links a {
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
 }
 .dashboard-weekly-links a:hover {
@@ -4733,7 +4762,7 @@ html.dark .admin-super-messages-bubble.is-staff {
     gap: 0.25rem;
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .dashboard-also-link:hover {
     text-decoration: underline;
@@ -5006,7 +5035,7 @@ html.dark .admin-super-messages-bubble.is-staff {
     box-shadow: 0 0 0 2px rgba(173, 44, 77, 0.25);
 }
 .training-course-up-next {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
     font-size: 0.8125rem;
 }
@@ -5207,7 +5236,7 @@ html.dark .admin-super-messages-bubble.is-staff {
 }
 .training-status-chip--up-next {
     background: rgba(196, 30, 58, 0.12);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .training-status-chip--pending {
     background: var(--color-gray-100, #f5f5f5);
@@ -5631,7 +5660,7 @@ html.dark .training-status-chip--pending {
 .partner-impact-hero-main .partner-impact-hero-value {
     font-size: clamp(2.3rem, 4vw, 3.4rem);
     font-weight: 800;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .partner-impact-hero-secondary .partner-impact-hero-value {
     font-size: clamp(1.75rem, 3vw, 2.4rem);
@@ -5650,7 +5679,7 @@ html.dark .training-status-chip--pending {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .partner-journey-stages {
     display: flex;
@@ -5916,7 +5945,7 @@ html.dark .training-status-chip--pending {
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
     padding: 0.1rem 0.4rem;
     border-radius: 999px;
@@ -5943,7 +5972,7 @@ html.dark .training-status-chip--pending {
 }
 .dashboard-program-badge.complete {
     background: rgba(173, 44, 77, 0.12);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .dashboard-program-badge.pending {
     background: var(--color-gray-100);
@@ -5951,7 +5980,7 @@ html.dark .training-status-chip--pending {
 }
 .dashboard-program-badge.next {
     background: rgba(173, 44, 77, 0.1);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
 }
 html.dark .dashboard-program-course-list li {
@@ -6139,7 +6168,7 @@ html.dark .admin-members-search-input {
 
 .admin-members-count-line__filters {
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 .admin-members-filters {
@@ -6231,7 +6260,7 @@ td.admin-members-col-select {
 .admin-members-bulk-bar__count {
     font-size: 1.15rem;
     font-weight: 800;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 .admin-members-bulk-bar__sub {
@@ -6358,7 +6387,7 @@ td.admin-members-col-select {
     background: var(--color-light);
 }
 .admin-blog-actions-dropdown button[data-danger] {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 .admin-empty-state {
@@ -6485,7 +6514,7 @@ td.admin-members-col-select {
 }
 .employers-program-salary {
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 .employers-ai-support-section .container {
@@ -6677,7 +6706,7 @@ td.admin-members-col-select {
 }
 .employers-quote-mark {
     font-size: 2.5rem;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     opacity: 0.4;
     line-height: 1;
     display: block;
@@ -6903,7 +6932,7 @@ td.admin-members-col-select {
 .job-card__title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     margin: 0 0 0.25rem;
     line-height: 1.3;
 }
@@ -6951,7 +6980,7 @@ td.admin-members-col-select {
 }
 .job-card:hover .job-card__arrow {
     transform: translateX(4px);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 /* Skeleton loading */
@@ -7186,7 +7215,7 @@ td.admin-members-col-select {
 .login-form-footer-links a {
     font-size: 0.9375rem;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     text-decoration: none;
 }
 .login-form-footer-links a:hover {
@@ -7413,7 +7442,7 @@ td.admin-members-col-select {
     margin-bottom: var(--space-6, 1.5rem);
 }
 .app-system-page__wordmark:hover {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .app-system-page__eyebrow {
     font-size: 0.8125rem;
@@ -7585,7 +7614,7 @@ td.admin-members-col-select {
     height: 3rem;
     border-radius: var(--radius-md);
     background: rgba(173, 44, 77, 0.08);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .learning-hub-card-body {
     flex: 1;
@@ -7612,7 +7641,7 @@ td.admin-members-col-select {
     align-self: center;
 }
 .learning-hub-card:hover .learning-hub-card-chevron {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 /* Portal route fallbacks (error / not-found inside member shell) */
@@ -8469,7 +8498,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
 .employer-suggested-programs__more summary {
     cursor: pointer;
     font-weight: 600;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .employer-suggested-programs__list--compact {
     margin-top: 0.65rem;
@@ -9243,7 +9272,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
     border: 1px solid var(--color-accent);
     border-radius: 6px;
     text-decoration: none;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 600;
     font-size: 0.9rem;
 }
@@ -9299,7 +9328,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
 }
 .portal-resources-link-card-cta {
     font-size: 0.85rem;
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 500;
 }
 .portal-resources-grid-cards {
@@ -9370,7 +9399,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
     color: var(--color-on-surface-variant);
 }
 .assessments-card__icon--accent {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 .assessments-card__title {
     font-size: 1.15rem;
@@ -9476,7 +9505,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
     color: var(--color-on-surface-variant);
 }
 .coursera-footer-note a {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
 }
 
 /* Mobile stacked card layout for admin-style tables (needs data-label on cells for row captions) */
@@ -9665,11 +9694,11 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
 /* Active = solid crimson fill + white (matches admin-full mockup) */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active {
   background: var(--wa-accent, #ad2c4d) !important;
-  color: #ffffff !important;
+  color: var(--wa-on-accent-control) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-sidebar-icon,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active svg {
-  color: #ffffff !important;
+  color: var(--wa-on-accent-control) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-group-label,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-label {
@@ -9700,17 +9729,18 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-nav-badge {
   background: var(--wa-accent, #ad2c4d) !important;
-  color: #ffffff !important;
+  color: var(--wa-on-accent-control) !important;
   border: none !important;
   font-size: 0.8125rem;
   font-weight: 700;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
 }
-/* On an active (crimson) row, keep the badge legible (translucent white). */
+/* On an active (accent) row the badge inverts: solid on-accent pill, accent text.
+   The old translucent white read 2.41:1 on the dark-mode accent. */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-nav-badge {
-  background: rgba(255, 255, 255, 0.25) !important;
-  color: #ffffff !important;
+  background: var(--wa-on-accent-control) !important;
+  color: var(--wa-accent, #ad2c4d) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-toolbar,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-inner {
@@ -10025,7 +10055,7 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     transform: none;
 }
 .workspace-shell-root[data-workspace-role] .marketing-bottom-nav__link--active {
-    color: var(--wa-on-accent);
+    color: var(--wa-on-accent-control);
     background: var(--wa-accent);
 }
 .workspace-shell-root[data-workspace-role] .marketing-bottom-nav__label {

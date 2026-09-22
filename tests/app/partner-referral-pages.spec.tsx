@@ -32,6 +32,8 @@ vi.mock('@/components/portal/kit', () => ({
   PageOpener: ({ title }: { title: string }) => <h1>{title}</h1>,
   DataTable: () => null, QueueRow: () => null,
 }));
+// The phone-width card list is a client component with its own translations; the desktop kit table is what these specs read.
+vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({ default: () => null }));
 
 import PartnerDashboardPage from '@/app/(portal)/partner/page';
 import PartnerGuidePage from '@/app/(portal)/partner/guide/page';
