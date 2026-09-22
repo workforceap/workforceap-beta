@@ -5,11 +5,14 @@
 Start with [the Workforce AP knowledge base](docs/knowledge-base/README.md) and its
 [compact agent context](docs/knowledge-base/agent-context.md). It connects every
 tracked area to routes, models, dependencies, tests, architecture diagrams and
-evidence-backed technical debt. Use `npm run kb:query -- "symbol or feature"` for
-focused lookup. Update the relevant guide and run `npm run kb:generate` after
-staging source changes; `npm run kb:test` and `npm run kb:check` validate the tools,
-index freshness and links. The existing domain, deployment and database rules
-below remain authoritative; static indexes do not prove live behavior.
+evidence-backed technical debt. The index under `docs/knowledge-base/generated/` is
+build output and is not tracked in Git: run `npm run kb:generate` once per clone before
+`npm run kb:query -- "symbol or feature"`. Update the relevant guide and regenerate after
+staging source changes, but never stage the generated directory; `npm run kb:test` and
+`npm run kb:check` validate the tools, the index and links, and `npm run kb:verify`
+runs generation and validation together the way CI does. The existing domain,
+deployment and database rules below remain authoritative; static indexes do not
+prove live behavior.
 
 ## Cursor Cloud specific instructions
 
