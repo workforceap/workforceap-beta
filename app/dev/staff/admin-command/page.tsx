@@ -120,13 +120,17 @@ const QUEUE_ITEMS: CommandCenterQueueItem[] = [
  * printed beside the count). The old fixture printed "312 · 74%" with a
  * per-row ok/alert tone — the completion-score misread S21 removed from the
  * live pages — so the showcase disagreed with what ships.
+ *
+ * The rows carry no `tone` and no `color`, matching the live pages: a share
+ * of enrolled students has no ok/warn/alert reading, so the bars take the
+ * kit's neutral accent rather than the blanket green they used to paint.
  */
 const PROGRAM_HEALTH: ProgramHealthDatum[] = [
-  { label: 'Cloud & IT', value: '312 enrolled', pct: 37, color: 'success' },
-  { label: 'Data & AI', value: '198 enrolled', pct: 23, color: 'success' },
-  { label: 'Healthcare', value: '156 enrolled', pct: 18, color: 'success' },
-  { label: 'Manufacturing', value: '100 enrolled', pct: 12, color: 'success' },
-  { label: 'Skilled Trades', value: '81 enrolled', pct: 10, color: 'success' },
+  { label: 'Cloud & IT', value: '312 enrolled', pct: 37 },
+  { label: 'Data & AI', value: '198 enrolled', pct: 23 },
+  { label: 'Healthcare', value: '156 enrolled', pct: 18 },
+  { label: 'Manufacturing', value: '100 enrolled', pct: 12 },
+  { label: 'Skilled Trades', value: '81 enrolled', pct: 10 },
 ];
 
 const PLACEMENTS_BY_MONTH: ChartDatum[] = [

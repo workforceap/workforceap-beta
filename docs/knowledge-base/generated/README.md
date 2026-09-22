@@ -16,10 +16,10 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | communications | 72 | [Open](communications.md) |
 | components | 621 | [Open](components.md) |
 | content | 14 | [Open](content.md) |
-| database | 212 | [Open](database.md) |
+| database | 214 | [Open](database.md) |
 | delivery | 10 | [Open](delivery.md) |
 | documentation | 358 | [Open](documentation.md) |
-| libraries | 1097 | [Open](libraries.md) |
+| libraries | 1098 | [Open](libraries.md) |
 | localization | 6 | [Open](localization.md) |
 | operations | 146 | [Open](operations.md) |
 | pages | 656 | [Open](pages.md) |

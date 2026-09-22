@@ -3,7 +3,8 @@
  *
  * Purpose: when Google Ads turns on, an admin can hit this route and
  * confirm signups + funnel events are flowing. NOT a BI tool — see
- * `app/admin/metrics/page.tsx` for the analytics chart suite.
+ * `/admin/reporting` for the analytics chart suite (`app/admin/metrics`
+ * redirects there unless `?ui=legacy` is set).
  *
  * Auth: `app/admin/layout.tsx` already redirects non-admins. We still
  * do a defensive isAdmin check + redirect to keep this page safe if

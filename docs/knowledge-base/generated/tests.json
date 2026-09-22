@@ -4530,6 +4530,38 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/content/coursera/courseSlugRemap.test.ts",
+    "area": "libraries",
+    "domain": "learning-coursera",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/content/programs.ts",
+        "line": 10
+      },
+      {
+        "file": "lib/content/programSlug.ts",
+        "line": 11
+      },
+      {
+        "file": "lib/content/coursera/courseSlugRemap.ts",
+        "line": 13
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/content/coursera/curatedCollections.test.ts",
     "area": "libraries",
     "domain": "learning-coursera",
@@ -8264,6 +8296,30 @@
       {
         "file": "lib/content/programs.ts",
         "line": 11
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/member/programProgressRepair.test.ts",
+    "area": "libraries",
+    "domain": "member-counselor",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/member/programProgressRepair.ts",
+        "line": 15
       }
     ],
     "kind": "test-candidate",
@@ -24223,6 +24279,39 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/program-health-tone.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
+        "line": 4
+      },
+      {
+        "file": "lib/admin/commandCenterHelpers.ts",
+        "line": 5
+      },
+      {
+        "file": "components/portal/kit/index.ts",
+        "line": 6
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/program-outcome-claims.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -30657,6 +30746,17 @@
   },
   {
     "file": "tests/migrations/placement-survey-sent-state.mjs",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [],
+    "localReferences": [],
+    "kind": "test-helper",
+    "declaredRunners": [],
+    "collectionStatus": "helper-not-a-suite",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/migrations/wap76-course-slug-remap.mjs",
     "area": "tests",
     "domain": "tests",
     "frameworkImports": [],

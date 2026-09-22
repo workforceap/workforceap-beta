@@ -360,7 +360,7 @@
 | [app/admin/career-mappings/page.tsx](../../../app/admin/career-mappings/page.tsx) | 172 | administration | generateMetadata:16, default:30 |
 | [app/admin/certifications/loading.tsx](../../../app/admin/certifications/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/certifications/page.tsx](../../../app/admin/certifications/page.tsx) | 237 | administration | generateMetadata:17, default:25 |
-| [app/admin/command-center/page.tsx](../../../app/admin/command-center/page.tsx) | 273 | administration | dynamic:24, generateMetadata:26, default:34 |
+| [app/admin/command-center/page.tsx](../../../app/admin/command-center/page.tsx) | 279 | administration | dynamic:24, generateMetadata:26, default:34 |
 | [app/admin/counselors/loading.tsx](../../../app/admin/counselors/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/counselors/page.tsx](../../../app/admin/counselors/page.tsx) | 154 | administration | generateMetadata:17, default:48 |
 | [app/admin/coursera/csv-import/page.tsx](../../../app/admin/coursera/csv-import/page.tsx) | 60 | learning-coursera | metadata:11, dynamic:17, default:19 |
@@ -399,7 +399,7 @@
 | [app/admin/feature-flags/page.tsx](../../../app/admin/feature-flags/page.tsx) | 95 | administration | generateMetadata:16, default:36 |
 | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/feedback/page.tsx](../../../app/admin/feedback/page.tsx) | 165 | administration | dynamic:16, generateMetadata:18, default:124 |
-| [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 406 | administration | dynamic:39, generateMetadata:50, default:142 |
+| [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 407 | administration | dynamic:40, generateMetadata:51, default:143 |
 | [app/admin/guide/page.tsx](../../../app/admin/guide/page.tsx) | 250 | administration | generateMetadata:20, default:112 |
 | [app/admin/health/page.tsx](../../../app/admin/health/page.tsx) | 703 | administration | default:660 |
 | [app/admin/invites/InvitesLegacyClient.tsx](../../../app/admin/invites/InvitesLegacyClient.tsx) | 202 | administration | default:196 |
@@ -452,7 +452,7 @@
 | [app/admin/outcomes/page.tsx](../../../app/admin/outcomes/page.tsx) | 49 | administration | generateMetadata:12, default:26 |
 | [app/admin/overview/loading.tsx](../../../app/admin/overview/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/overview/page.tsx](../../../app/admin/overview/page.tsx) | 655 | administration | generateMetadata:46, default:111 |
-| [app/admin/page.tsx](../../../app/admin/page.tsx) | 487 | administration | generateMetadata:33, default:48 |
+| [app/admin/page.tsx](../../../app/admin/page.tsx) | 488 | administration | generateMetadata:33, default:48 |
 | [app/admin/partners/OpenPartnerPortalButton.tsx](../../../app/admin/partners/OpenPartnerPortalButton.tsx) | 62 | partners-funding | default:6 |
 | [app/admin/partners/\[id\]/page.tsx](../../../app/admin/partners/%5Bid%5D/page.tsx) | 391 | partners-funding | default:56 |
 | [app/admin/partners/\[id\]/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx](../../../app/admin/partners/%5Bid%5D/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx) | 476 | partners-funding | default:158 |
@@ -594,7 +594,7 @@
 | [app/dev/member/salary-negotiation/page.tsx](../../../app/dev/member/salary-negotiation/page.tsx) | 43 | member-counselor | dynamic:10, default:26 |
 | [app/dev/member/toolkit/page.tsx](../../../app/dev/member/toolkit/page.tsx) | 39 | member-counselor | dynamic:13, default:19 |
 | [app/dev/member/wioa-qualification/page.tsx](../../../app/dev/member/wioa-qualification/page.tsx) | 14 | partners-funding | dynamic:9, default:11 |
-| [app/dev/staff/admin-command/page.tsx](../../../app/dev/staff/admin-command/page.tsx) | 175 | pages | dynamic:21, default:158 |
+| [app/dev/staff/admin-command/page.tsx](../../../app/dev/staff/admin-command/page.tsx) | 179 | pages | dynamic:21, default:162 |
 | [app/dev/staff/admin-shell/layout.tsx](../../../app/dev/staff/admin-shell/layout.tsx) | 18 | pages | metadata:13, default:15 |
 | [app/dev/staff/admin-shell/page.tsx](../../../app/dev/staff/admin-shell/page.tsx) | 22 | pages | dynamic:13, default:15 |
 | [app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx](../../../app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx) | 37 | pages | default:12 |

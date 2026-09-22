@@ -198,7 +198,9 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
 });
 
 describe('3. Command Center says what the program-health figure counts (S21 follow-on)', () => {
-  const ROWS = [{ label: 'Cloud & IT', value: '312 enrolled', pct: 37, color: 'success' as const }];
+  // No colour: a share of enrolled students has no ok/warn/alert reading, so
+  // the bars take the kit's neutral accent (see program-health-tone.spec.tsx).
+  const ROWS = [{ label: 'Cloud & IT', value: '312 enrolled', pct: 37 }];
 
   it('prints the member-only definition and the share meaning under the heading', () => {
     render(<CommandCenterKit programHealth={ROWS} programHealthCaption={PROGRAM_HEALTH_CAPTION} />);
