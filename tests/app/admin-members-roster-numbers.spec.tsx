@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 
 /**
@@ -110,7 +111,8 @@ describe('/admin/members roster population (audit S3; Mike: "remove staff in cou
     const where = mocks.userFindMany.mock.calls[0][0].where;
     // Staff and dogfood admins used to sit in the roster and its count line:
     // /admin/members printed 131 where /admin/students printed 126.
-    expect(where.profile).toEqual({ role: 'member' });
+    // One definition of "a member" (WAP-182 item 3).
+    expect(where).toMatchObject(MEMBER_ONLY_WHERE);
     expect(mocks.userCount.mock.calls[0][0].where).toEqual(where);
   });
 
@@ -118,7 +120,8 @@ describe('/admin/members roster population (audit S3; Mike: "remove staff in cou
     const tree = await AdminMembersPage({ searchParams: Promise.resolve({ staff: '1' }) });
 
     const where = mocks.userFindMany.mock.calls[0][0].where;
-    expect(where.profile).toEqual({ role: { in: ['member', 'admin', 'super_admin'] } });
+    expect(where).toMatchObject(MEMBER_OR_DOGFOOD_WHERE);
+    expect(where).not.toMatchObject(MEMBER_ONLY_WHERE);
     // The table says so on the count line rather than quietly inflating it.
     expect(propsFor(tree, MembersTable)?.includeStaff).toBe(true);
   });

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { Prisma } from '@prisma/client';
 const h = vi.hoisted(() => ({ raw: vi.fn(), referrals: vi.fn(), transaction: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
@@ -28,7 +29,7 @@ describe('partner attention page loader', () => {
   expect(result.total).toBe(504); expect(result.counts).toEqual(counts);
   expect(h.referrals).toHaveBeenCalledWith(expect.objectContaining({ where: {
     id: { in: ['r-old-a','r-old-b'] }, partnerId: 'p1', partner: { organizationId: 'o1', active: true },
-    member: expect.objectContaining({ organizationId: 'o1', deletedAt: null, profile: { role: 'member' } }),
+    member: expect.objectContaining({ organizationId: 'o1', deletedAt: null, ...MEMBER_ONLY_WHERE }),
   } }));
   const options = parseAttentionQuery(new URLSearchParams({ tier: 'high', cursor: result.nextCursor! }), { partnerId: 'p1', organizationId: 'o1' }, now);
   expect(options.cursor?.referralId).toBe('r-old-b'); expect(options.asOf).toEqual(now);

@@ -4,8 +4,8 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 /**
  * Admin-preview caseload: every enrolled member in the actor's organization.
- * Member-role profiles only — staff accounts with a program pointer are not
- * caseload (admin audit 2026-09-20, 4.1).
+ * Members only by the one definition in `MEMBER_ONLY_WHERE` — staff accounts
+ * with a program pointer are not caseload (admin audit 2026-09-20, 4.1).
  */
 export function enrolledMembersInOrganizationWhere(organizationId: string) {
   return {

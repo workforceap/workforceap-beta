@@ -103,6 +103,14 @@ function classify(relPath) {
     // reproduce by construction. Runs in the `database-contract` lane.
     return { skip: 'realDb' };
   }
+  if (/lib\/admin\/memberOnlyWhere\.realdb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Seeds rows and runs the real member predicate through Prisma and
+    // PostgreSQL (WAP-182 item 3): a nested `NOT`, a `profile: null` to-one
+    // filter, a `userRoles: { none }` to-many filter and a derived-table
+    // join are exactly what a mock cannot vouch for. The `database-contract`
+    // CI job runs this lane with TEST_REAL_DB=1 against a pushed schema.
+    return { skip: 'realDb' };
+  }
   if (/lib\/auth\/roles\.test\.ts/.test(normalized) && !REAL_DB) {
     // Hits the real Prisma client via getProfileRole — needs a postgres
     // server. The default lane has none; the `database-contract` CI job
