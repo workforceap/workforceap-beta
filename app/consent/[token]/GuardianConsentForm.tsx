@@ -75,7 +75,7 @@ export default function GuardianConsentForm({
           border: '1px solid var(--color-outline, #e2e2e2)',
           borderRadius: '0.75rem',
           padding: '1.5rem',
-          background: 'var(--color-surface, #fff)',
+          background: 'var(--surface-container-lowest)',
         }}
       >
         <h2 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem' }}>Consent recorded</h2>

@@ -109,7 +109,7 @@ export default function DashboardProgramSelector({
             minWidth: '14rem',
             maxWidth: '18rem',
             listStyle: 'none',
-            background: 'var(--color-surface, white)',
+            background: 'var(--wa-surface)',
             border: '1px solid var(--outline-variant, rgba(0,0,0,0.12))',
             borderRadius: '0.6rem',
             boxShadow: '0 12px 28px rgba(17, 24, 39, 0.12)',

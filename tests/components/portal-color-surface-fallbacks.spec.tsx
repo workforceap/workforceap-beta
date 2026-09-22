@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   colorOf,
   contrast,
+  loadBlockTokens,
   loadRootTokens,
   readCss,
   resolve,
@@ -22,6 +23,23 @@ import AdminMemberWioaReviewPanel from '@/components/admin/AdminMemberWioaReview
 import AdminMemberEnrollmentFundingForm from '@/components/admin/AdminMemberEnrollmentFundingForm';
 import AdminMemberSkillCheckpointPanel from '@/components/admin/AdminMemberSkillCheckpointPanel';
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+
+// Follow-up sweep (#2482 left the `var(--color-surface, <literal>)` sites): the
+// two tokenized public pages are async server components that only need the
+// link validator and one prisma read, both mocked so the card renders here.
+const publicPageMocks = vi.hoisted(() => ({
+  validateTokenizedLink: vi.fn(),
+  findUnique: vi.fn(),
+}));
+vi.mock('@/lib/tokenizedLink', () => ({ validateTokenizedLink: publicPageMocks.validateTokenizedLink }));
+vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findUnique: publicPageMocks.findUnique } } }));
+
+import TriageNudgePanel from '@/components/portal/counselor/TriageNudgePanel';
+import DashboardProgramSelector from '@/components/portal/DashboardProgramSelector';
+import TrainingProgressClient from '@/components/admin/TrainingProgressClient';
+import GuardianConsentForm from '@/app/consent/[token]/GuardianConsentForm';
+import GuardianConsentPage from '@/app/consent/[token]/page';
+import PublicQuestionnairePage from '@/app/q/[token]/page';
 
 /**
  * Review of #2478 (item 4) found eleven inline styles across seven portal/admin
@@ -216,6 +234,204 @@ describe('AdminMemberSkillCheckpointPanel', () => {
     const popover = retry.querySelector<HTMLElement>('[id^="override-dropdown-"]');
     expect(popover).not.toBeNull();
     expectSurfaceFill(popover as HTMLElement, 'override popover');
+    expectNoLegacyName(container);
+  });
+});
+
+/*
+ * ---------------------------------------------------------------------------
+ * With-fallback sites (follow-up to #2482).
+ *
+ * #2482 moved the bare `var(--color-surface)` fills; six more sites were
+ * written as `var(--color-surface, #fff)` / `, white)` / `--color-surface-container,
+ * #f5f5f5)`. The token is still undefined there, so the literal always won:
+ * a white (or light-grey) slab in dark mode. A literal fallback on a surface
+ * token defeats dark mode by construction, so the checks below fail on ANY
+ * literal fallback for the surface family — in the styles the components
+ * paint and in the stylesheets each route chain loads — and then pin the
+ * token each site now reads:
+ *
+ *   - portal / admin chain (css/portal.css → portal-tokens → wa-brand-tokens):
+ *     `--wa-surface` for the dashboard program popover and the training-progress
+ *     toolbar, `--wa-surface-2` (the kit's subtle raised fill) for the nested
+ *     triage nudge panel that used to fall back to #f5f5f5.
+ *   - root-layout routes (/consent/[token], /q/[token] load only css/main.css +
+ *     wa-brand-tokens, never portal-tokens, so `--wa-surface` does not exist
+ *     there): `--surface-container-lowest`, the marketing card surface that
+ *     css/main.css defines for both `html:not(.dark)` and `:root`/`html.dark`.
+ * ---------------------------------------------------------------------------
+ */
+
+/**
+ * `var(--<surface token>, <anything that is not another var()>)`. The surface
+ * family: the never-defined `--color-surface*` names and the kit neutrals
+ * `--wa-surface`, `--wa-surface-2`, `--wa-bg` and their `--color-background-card`
+ * bridge. `--wa-surface-glass` is a translucent chrome token with its own
+ * rgba fallback and is deliberately outside the family.
+ */
+const SURFACE_LITERAL_FALLBACK =
+  /var\(\s*--(?:color-surface(?:-[\w-]+)?|wa-surface(?:-2)?|wa-bg|color-background-card)\s*,(?!\s*var\()\s*[^)]+\)/i;
+const PUBLIC_FILL = 'var(--surface-container-lowest)';
+const RAISED_FILL = 'var(--wa-surface-2)';
+
+/** Stylesheets the portal/admin layouts and the root layout actually load. */
+const PORTAL_CHAIN_SHEETS = [
+  'css/wa-brand-tokens.css',
+  'css/portal-tokens.css',
+  'css/portal.css',
+  'css/portal-kit.css',
+  'css/portal-ui-kit.css',
+  'css/portal-main-extracted.css',
+  'css/counselor.css',
+  'css/portal-a11y.css',
+  'css/mobile-dashboard-fixes.css',
+];
+const ROOT_CHAIN_SHEETS = ['css/main.css', 'css/marketing.css', 'css/marketing-depth.css', 'css/marketing-a11y.css', 'css/astryx-brand-bridge.css'];
+
+/** The root layout chain: css/main.css keeps dark defaults on :root and light overrides on html:not(.dark). */
+function rootChainTokens(scheme: 'light' | 'dark'): Map<string, string> {
+  const main = readCss('css/main.css');
+  const tokens = loadRootTokens(readCss('css/wa-brand-tokens.css'), main);
+  const overrides = loadBlockTokens(main, scheme === 'light' ? 'html:not(.dark)' : 'html.dark');
+  for (const [name, value] of overrides) tokens.set(name, value);
+  return tokens;
+}
+
+function expectNoLiteralSurfaceFallback(container: HTMLElement) {
+  const styles = paintedStyles(container);
+  expect(styles.length).toBeGreaterThan(0);
+  for (const style of styles) {
+    expect(style, `literal fallback on a surface token: ${style}`).not.toMatch(SURFACE_LITERAL_FALLBACK);
+  }
+}
+
+describe('no stylesheet on either route chain carries a literal fallback on a surface token', () => {
+  it.each([...PORTAL_CHAIN_SHEETS, ...ROOT_CHAIN_SHEETS])('%s', (sheet) => {
+    const css = readCss(sheet).replace(/\/\*[\s\S]*?\*\//g, '');
+    const offenders = css.split('\n').filter((line) => SURFACE_LITERAL_FALLBACK.test(line));
+    expect(offenders, `${sheet} literal surface fallbacks`).toEqual([]);
+  });
+});
+
+describe('--surface-container-lowest is the opaque card fill on the root-layout chain', () => {
+  it('resolves in both schemes, differs between them, and carries the on-surface text at AA', () => {
+    const light = rootChainTokens('light');
+    const dark = rootChainTokens('dark');
+    expect(light.has(NEVER_DEFINED)).toBe(false);
+    expect(light.has('--wa-surface'), 'portal neutral must not leak onto the root chain').toBe(false);
+    const lightFill = colorOf(PUBLIC_FILL, light, 'light');
+    const darkFill = colorOf(PUBLIC_FILL, dark, 'dark');
+    expect(lightFill.a).toBe(1);
+    expect(darkFill.a).toBe(1);
+    expect(resolve(PUBLIC_FILL, light, 'light')).not.toBe(resolve(PUBLIC_FILL, dark, 'dark'));
+    for (const text of ['var(--color-on-surface)', 'var(--color-on-surface-variant)']) {
+      expect(contrast(colorOf(text, light, 'light'), lightFill), `${text} light`).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(colorOf(text, dark, 'dark'), darkFill), `${text} dark`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('--wa-surface-2 is opaque, distinct per scheme and readable on the portal chain', () => {
+    const tokens = portalChainTokens();
+    const light = colorOf(RAISED_FILL, tokens, 'light');
+    const dark = colorOf(RAISED_FILL, tokens, 'dark');
+    expect(light.a).toBe(1);
+    expect(dark.a).toBe(1);
+    expect(resolve(RAISED_FILL, tokens, 'light')).not.toBe(resolve(RAISED_FILL, tokens, 'dark'));
+    expect(contrast(colorOf(TEXT, tokens, 'light'), light)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(colorOf(TEXT, tokens, 'dark'), dark)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('DashboardProgramSelector popover', () => {
+  it('paints the listbox from --wa-surface with no literal fallback', () => {
+    const { container } = render(
+      <DashboardProgramSelector
+        activeProgramSlug="it-support"
+        options={[
+          { id: 'e1', programSlug: 'it-support', programTitle: 'IT Support', isPrimary: true },
+          { id: 'e2', programSlug: 'cyber', programTitle: 'Cybersecurity', isPrimary: false },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('dashboard-program-selector'));
+    const listbox = screen.getByRole('listbox');
+    expectSurfaceFill(listbox, 'program popover');
+    expectNoLiteralSurfaceFallback(container);
+    expectNoLegacyName(container);
+  });
+});
+
+describe('TrainingProgressClient toolbar', () => {
+  it('paints the view/filter toolbar from --wa-surface with no literal fallback', () => {
+    const { container } = render(<TrainingProgressClient curriculumRows={[]} rawRows={[]} canonicalCatalog={[]} />);
+    const toolbar = screen.getByRole('tablist', { name: 'Training progress view' }).parentElement as HTMLElement;
+    expectSurfaceFill(toolbar, 'training progress toolbar');
+    expectNoLiteralSurfaceFallback(container);
+    expectNoLegacyName(container);
+  });
+});
+
+describe('TriageNudgePanel', () => {
+  it('paints the open nudge panel from --wa-surface-2, never the undefined --color-surface-container', () => {
+    const { container } = render(
+      <TriageNudgePanel
+        memberId="m-1"
+        memberName="Ada Lovelace"
+        templates={[
+          { id: 'check_in', label: 'Check in', preview: 'Hi Ada, checking in.' },
+          { id: 'stalled_step', label: 'Stalled step', preview: 'Hi Ada, you are close.' },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Send nudge' }));
+    const panel = screen.getByText('Nudge Ada Lovelace').parentElement as HTMLElement;
+    expect(backgroundOf(panel), 'nudge panel background').toBe(RAISED_FILL);
+    expect(getComputedStyle(panel).getPropertyValue('background')).not.toContain('--color-surface-container');
+    expectNoLiteralSurfaceFallback(container);
+    expectNoLegacyName(container);
+  });
+});
+
+describe('tokenized public pages (root layout, no portal tokens)', () => {
+  beforeEach(() => {
+    publicPageMocks.validateTokenizedLink.mockReset();
+    publicPageMocks.findUnique.mockReset();
+  });
+
+  it('GuardianConsentPage message card paints from --surface-container-lowest', async () => {
+    publicPageMocks.validateTokenizedLink.mockResolvedValue({ ok: false, reason: 'expired' });
+    const { container } = render(await GuardianConsentPage({ params: Promise.resolve({ token: 'tok' }) }));
+    const card = screen.getByRole('heading', { name: 'This link has expired' }).parentElement as HTMLElement;
+    expect(backgroundOf(card), 'consent message card').toBe(PUBLIC_FILL);
+    expectNoLiteralSurfaceFallback(container);
+    expectNoLegacyName(container);
+    expect(publicPageMocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('PublicQuestionnairePage message card paints from --surface-container-lowest', async () => {
+    publicPageMocks.validateTokenizedLink.mockResolvedValue({ ok: false, reason: 'consumed' });
+    const { container } = render(await PublicQuestionnairePage({ params: Promise.resolve({ token: 'tok' }) }));
+    const card = screen.getByRole('heading', { name: 'This link has already been used' }).parentElement as HTMLElement;
+    expect(backgroundOf(card), 'questionnaire message card').toBe(PUBLIC_FILL);
+    expectNoLiteralSurfaceFallback(container);
+    expectNoLegacyName(container);
+    expect(publicPageMocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('GuardianConsentForm "Consent recorded" status card paints from --surface-container-lowest', async () => {
+    fetchMock.mockResolvedValue(Response.json({ ok: true }));
+    const { container } = render(
+      <GuardianConsentForm
+        token="tok"
+        prefill={{ studentFirstName: 'Sam', guardianName: 'Pat Doe', guardianEmail: 'pat@example.org', guardianPhone: '' }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.submit(screen.getByRole('checkbox').closest('form') as HTMLFormElement);
+    const status = await screen.findByRole('status');
+    expect(within(status).getByRole('heading', { name: 'Consent recorded' })).toBeTruthy();
+    expect(backgroundOf(status), 'consent recorded card').toBe(PUBLIC_FILL);
+    expectNoLiteralSurfaceFallback(container);
     expectNoLegacyName(container);
   });
 });
