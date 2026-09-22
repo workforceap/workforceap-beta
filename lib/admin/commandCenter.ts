@@ -9,6 +9,7 @@ import { loadPersistedAtRiskMembers, persistedRiskCommandRow } from '@/lib/membe
 import { APPLICANT_TRIAGE_BUCKET_RANK, APPLICANT_TRIAGE_BUCKET_TEXT } from '@/lib/admin/applicantTriage';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { loadApplicantTriageByUserIds, type ApplicantTriageLoaded } from '@/lib/admin/applicantTriageLoad';
+import { applicationStatusKey, applicationStatusLabel } from '@/lib/status/applicationStatusVocabulary';
 import {
   buildApplicationEmailPacket,
   buildProgramHealthRows,
@@ -205,7 +206,7 @@ async function loadApplicationsPending(
       phone: row.user.phone,
       programLabel,
       status: row.status as 'PENDING' | 'NEEDS_INFO',
-      statusLabel: row.status === ApplicationStatus.NEEDS_INFO ? 'Needs more info' : 'Waiting for review',
+      statusLabel: applicationStatusLabel(applicationStatusKey(row.status), 'staff'),
       submittedAt,
       submittedDaysAgo,
       recommendedCareerTitle: row.recommendedCareerTitle,

@@ -365,13 +365,10 @@ html.dark [data-surface] .astryx-card,
   user-select: none;
 }
 
-/* Empty state — CSS fallback for inline styles in PortalEmptyState component */
+/* Empty state — PortalEmptyState is KitEmptyState with `framed`; the box
+   (surface, border, radius, padding, alignment) is `.wa-kit-empty--framed` in
+   portal-kit.css. Only the legacy width cap lives here. */
 .portal-empty-state {
-  text-align: center;
-  padding: 2.5rem 1.5rem;
-  border-radius: var(--radius-lg, 12px);
-  border: 1px solid rgba(88, 65, 68, 0.08);
-  background: var(--surface-container-lowest, #f6f3f2);
   max-width: 28rem;
   margin: 0 auto;
 }

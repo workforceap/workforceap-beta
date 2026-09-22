@@ -3800,5 +3800,45 @@
         }
       }
     }
+  },
+  "status": {
+    "application": {
+      "member": {
+        "not_submitted": "No hay una solicitud registrada",
+        "pending": "Pendiente de revisión",
+        "needs_info": "Se solicitó más información",
+        "approved": "Solicitud aprobada",
+        "denied": "Solicitud cerrada",
+        "unknown": "Estado no registrado"
+      },
+      "staff": {
+        "not_submitted": "No hay una solicitud registrada",
+        "pending": "Pendiente de decisión",
+        "needs_info": "En espera del solicitante",
+        "approved": "Aprobada",
+        "denied": "Denegada",
+        "unknown": "Estado no registrado"
+      }
+    },
+    "intake": {
+      "member": {
+        "not_reviewed": "Estado no registrado",
+        "pending": "Revisión pendiente",
+        "in_review": "En revisión",
+        "needs_info": "Se solicitó más información",
+        "verified": "Admisión verificada por el personal",
+        "not_eligible": "El personal registró que no cumple los requisitos",
+        "unknown": "Estado no registrado"
+      },
+      "staff": {
+        "not_reviewed": "Sin revisar",
+        "pending": "Pendiente de revisión",
+        "in_review": "En revisión",
+        "needs_info": "Necesita más información",
+        "verified": "Admisión verificada",
+        "not_eligible": "No cumple los requisitos",
+        "unknown": "Estado no registrado"
+      }
+    }
   }
 }

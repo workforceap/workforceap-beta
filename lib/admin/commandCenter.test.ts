@@ -88,7 +88,7 @@ describe('admin command center helpers', () => {
           phone: null,
           programLabel: 'IT Support',
           status: 'PENDING',
-          statusLabel: 'Waiting for review',
+          statusLabel: 'Awaiting decision',
           submittedAt: new Date('2026-06-01T00:00:00Z'),
           submittedDaysAgo: 14,
           recommendedCareerTitle: null,

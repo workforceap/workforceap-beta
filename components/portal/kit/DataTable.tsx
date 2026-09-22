@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { type KitBaseProps, type KitDataAttrs } from './base';
-import { KitEmptyState } from './KitEmptyState';
+import { KitEmptyState, type KitEmptyStateProps } from './KitEmptyState';
 import {
   KitTablePager,
   KitTableShell,
@@ -9,6 +9,14 @@ import {
 } from './KitTableShell';
 
 export type { KitTableBulkBarContext, KitTablePagination };
+
+/**
+ * The table's empty state — `KitEmptyState` props minus the ones the shell
+ * owns. `title` defaults to "No rows yet"; `kind` to `first` (pass `filtered`
+ * when a search / filter is active, with a "Clear filters" `primaryAction`).
+ */
+export type DataTableEmpty = Partial<Pick<KitEmptyStateProps, 'title'>> &
+  Omit<KitEmptyStateProps, 'title' | 'headingAs' | 'framed' | 'ref'>;
 
 export interface Column<T> {
   /** Stable key for React. */
@@ -38,7 +46,11 @@ interface DataTableProps<T> extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
   cardRender?: (row: T) => ReactNode;
   minWidth?: number;
   onRowClick?: (row: T) => void;
+  /** Empty state (kind, description, actions, icon). Wins over the legacy `emptyTitle` pair. */
+  empty?: DataTableEmpty;
+  /** @deprecated Use `empty={{ title }}`. Still honoured. */
   emptyTitle?: string;
+  /** @deprecated Use `empty={{ description }}`. Still honoured. */
   emptyDescription?: string;
   /** Override surface-driven density. */
   density?: 'compact' | 'balanced' | 'spacious';
@@ -80,6 +92,7 @@ export function DataTable<T>({
   cardRender,
   minWidth = 600,
   onRowClick,
+  empty,
   emptyTitle = 'No rows yet',
   emptyDescription,
   density,
@@ -129,13 +142,19 @@ export function DataTable<T>({
 
   const single = mobile === 'scroll' || !cardRender;
 
+  const emptyProps: KitEmptyStateProps = {
+    kind: 'first',
+    ...empty,
+    title: empty?.title ?? emptyTitle,
+    description: empty?.description ?? emptyDescription,
+  };
+
   const tableEl = (
     <KitTableShell
       columns={shellColumns}
       rows={shellRows}
       minWidth={minWidth}
-      emptyTitle={emptyTitle}
-      emptyDescription={emptyDescription}
+      empty={emptyProps}
       onRowKeyClick={onRowKeyClick}
       density={density}
       stickyHeader={stickyHeader}
@@ -170,7 +189,7 @@ export function DataTable<T>({
           </div>
         ) : null}
         {rows.length === 0 ? (
-          <KitEmptyState title={emptyTitle} description={emptyDescription} />
+          <KitEmptyState {...emptyProps} />
         ) : (
           rows.map((row) => (
             <div

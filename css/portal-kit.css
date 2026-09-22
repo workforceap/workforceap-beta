@@ -472,6 +472,50 @@ html.dark [data-surface] .wa-kit-card,
   font-weight: 700;
   white-space: nowrap;
 }
+
+/* Empty state (KitEmptyState) — the one component for an empty list.
+   `data-kind` names the situation: first | filtered | unavailable | clear
+   (KIT_GUIDE §6). The container declares its tone through .wa-kit-tone--*
+   (first / filtered → muted, unavailable → warn, clear → ok); the icon chip
+   and, for unavailable / clear, the left edge paint from --wa-kit-tone. It is
+   bare by default (inside a card or a table cell the parent frames it);
+   `--framed` is the standalone box PortalEmptyState draws. Type stays on
+   --wa-type-body / --wa-type-meta (13px floor); no colour is named here. */
+.wa-kit-empty {
+  text-align: left;
+  padding: 0;
+  color: var(--wa-text);
+}
+.wa-kit-empty--framed {
+  background: var(--wa-surface-2);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius);
+  padding: var(--wa-pad);
+}
+.wa-kit-empty--unavailable,
+.wa-kit-empty--clear {
+  border-left: 3px solid var(--wa-kit-tone, var(--wa-border));
+}
+.wa-kit-empty--unavailable:not(.wa-kit-empty--framed),
+.wa-kit-empty--clear:not(.wa-kit-empty--framed) {
+  padding-left: var(--wa-pad-sm);
+}
+/* The icon chip hugs its content: callers pass 24-48px glyphs, so the fixed
+   34px .wa-kit-tone-icon box becomes a floor, never a clip. */
+.wa-kit-empty-icon {
+  width: auto;
+  height: auto;
+  min-width: 34px;
+  min-height: 34px;
+  overflow: visible;
+  margin-bottom: 12px;
+}
+.wa-kit-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
 /* StatTile parts. The number is neutral --wa-text whatever the tile's tone
    (WAP-99: categorical totals never paint); a tone declared on the card paints
    the edge accent (.wa-kit-tone-edge) only. The caption carries its own tone
