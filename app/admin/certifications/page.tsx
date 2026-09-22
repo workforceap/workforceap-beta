@@ -103,7 +103,8 @@ export default async function AdminCertificationsAnalyticsPage({
   }
 
   const [rows, recentCerts] = await Promise.all([
-    getCertificationsCohortStats(),
+    // Super admins keep the platform-wide roll-up; an org admin sees their tenant.
+    getCertificationsCohortStats(scope.superAdmin ? null : scope.orgId),
     withAdminPageScope(scope, (db) => db.userCertification.findMany({
       where: { ...userOrg },
       orderBy: { earnedAt: 'desc' },
