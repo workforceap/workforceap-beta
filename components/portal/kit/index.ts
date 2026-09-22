@@ -5,17 +5,23 @@
  * semantics, the KitBaseProps contract, and the anti-pattern list. If you
  * change exports here, update the guide's component index in the same PR.
  *
+ * The barrel carries what pages compose through it. A kit module that only
+ * its own kit siblings use (`useSurface`, `useListFocus`, `announce`,
+ * `KitTableToolbar`, `KitRowMenu`, `kitTableUrlState`, `KanbanColumnHeader`,
+ * `Sparkline`, `DeltaChip`, `AppShellSidebar`, `UniversalSearch`) is
+ * imported from its own file, like `GuidedTour`; `pnpm knip` reports any
+ * re-export nothing imports, and this file is kept at zero.
+ *
  * Kit primitives (`StatusTag`, `Avatar`, `ProgressBar`, `KitEmptyState`, …)
  * stay on `--wa-*`. Pages compose Astryx Card/Token/Button per KIT_GUIDE §9;
  * the barrel does not wrap primitives in Astryx. `./astryxMap.ts` is only the
  * tone bridge where kit still feeds Astryx Token/Badge: `alert` → brand
  * magenta, `danger` → true red. Do not collapse those tones.
  */
-export { DesignSurface, useSurface, type SurfaceMode } from './DesignSurface';
+export { DesignSurface, type SurfaceMode } from './DesignSurface';
 export { cx, type KitBaseProps, type KitDataAttrs } from './base';
-export { useFocusTrap, getFocusable, type FocusTrapOptions } from './hooks/useFocusTrap';
-export { useListFocus, LIST_ITEM_ATTR, type ListFocusOptions } from './hooks/useListFocus';
-export { useAnnounce, announce } from './hooks/useAnnounce';
+export { useFocusTrap, type FocusTrapOptions } from './hooks/useFocusTrap';
+export { useAnnounce } from './hooks/useAnnounce';
 export { StatTile } from './StatTile';
 export { KpiStrip, type KpiItem } from './KpiStrip';
 export { StatusTag } from './StatusTag';
@@ -27,26 +33,13 @@ export { ProgressRing } from './ProgressRing';
 export { ProgressBar } from './ProgressBar';
 export { Avatar } from './Avatar';
 export { DataTable, type Column, type KitTablePagination, type KitTableBulkBarContext } from './DataTable';
-export { KitTableToolbar, type KitTableViewChip } from './KitTableToolbar';
-export { KitRowMenu, type KitRowMenuItem } from './KitRowMenu';
-export {
-  KIT_TABLE_PAGE_SIZE,
-  readKitTableUrlState,
-  writeKitTableUrlState,
-  kitTableHref,
-  parseKitTableSort,
-  serializeKitTableSort,
-  type KitTableSort,
-  type KitTableUrlState,
-} from './kitTableUrlState';
 export { FeatureTile } from './FeatureTile';
 export { QueueRow, type QueueTone } from './QueueRow';
 export { WorkQueueItem } from './WorkQueueItem';
-export { KanbanBoard, KanbanColumnHeader, type KanbanColumnData, type KanbanCardData } from './Kanban';
-export { BarChartMini, RankBars, Sparkline, TrendPlaceholder, AreaChartMini, type ChartDatum, type RankDatum } from './Charts';
+export { KanbanBoard, type KanbanColumnData, type KanbanCardData } from './Kanban';
+export { BarChartMini, RankBars, TrendPlaceholder, AreaChartMini, type ChartDatum, type RankDatum } from './Charts';
 export {
   CardHead,
-  DeltaChip,
   StatSparkTile,
   StageTrack,
   SegmentedProgress,
@@ -55,8 +48,6 @@ export {
 export { FormField, Toggle } from './FormField';
 export { ChatThread, type ChatMessage } from './ChatThread';
 export { Tabs, TabPanel, type KitTabItem } from './Tabs';
-export { AppShellSidebar, type NavItem, type NavGroup } from './AppShellSidebar';
 export { AppShellMember, type MemberTab } from './AppShellMember';
-export { UniversalSearch } from './UniversalSearch';
 export { MemberDashboardKit, type MemberDashboardKitProps } from './MemberDashboardKit';
 export { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';

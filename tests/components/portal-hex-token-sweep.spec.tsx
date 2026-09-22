@@ -15,9 +15,10 @@ import { readCss, loadRootTokens, colorOf, contrast } from '@/lib/ui/cssTokenCon
  *
  * Allowlist (each a deliberate keep, see the constants in SessionRunClient):
  *  - #0077b5: LinkedIn's brand blue — a third-party identity colour.
- *  - #2563eb / #1e40af: PortalVoiceSession derives `${accent}44` alpha strings
- *    from its accent prop, so it must be handed a 6-digit hex until that
- *    component moves to color-mix (owned by the portal-ui-refine branch).
+ *  - #2563eb / #1e40af: SessionRunClient's VOICE_ACCENT / VOICE_ACCENT_DARK
+ *    constants. PortalVoiceSession no longer needs a hex (its alpha steps are
+ *    color-mix, see the PortalVoiceSession describe below), so these can flip
+ *    to var(--wa-info) / var(--wa-info-dark) in that file and leave this list.
  */
 const ALLOWED_HEX = new Set(['#0077b5', '#2563eb', '#1e40af']);
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;
@@ -58,6 +59,19 @@ vi.mock('recharts', async (orig) => {
   };
 });
 
+// PortalVoiceSession's real client is only reached in the describe below; the
+// stub connects, emits one line per speaker and hands back an endable session.
+type SessionCallbacks = { onConnect?: () => void; onMessage?: (event: unknown) => void };
+const startVoiceSession = vi.fn(async (cfg: SessionCallbacks) => {
+  queueMicrotask(() => {
+    cfg.onConnect?.();
+    cfg.onMessage?.({ source: 'ai', role: 'agent', message: 'Tell me about your last role.' });
+    cfg.onMessage?.({ source: 'user', role: 'user', message: 'I led a four-person support desk.' });
+  });
+  return { endSession: vi.fn(), sendContextualUpdate: vi.fn(), setVolume: vi.fn() };
+});
+vi.mock('@elevenlabs/client', () => ({ Conversation: { startSession: (cfg: SessionCallbacks) => startVoiceSession(cfg) } }));
+
 /** Every colour-bearing value that reached the DOM: inline styles + SVG paint attributes. */
 function paintedValues(root: HTMLElement): string[] {
   const out: string[] = [];
@@ -76,6 +90,16 @@ function unexpectedHex(root: HTMLElement): string[] {
     ...values.flatMap((v) => v.match(HEX) ?? []).filter((h) => !ALLOWED_HEX.has(h.toLowerCase())),
     ...values.flatMap((v) => v.match(BARE_RGB) ?? []).filter((c) => !ALLOWED_RGB.has(c)),
   ];
+}
+
+/** No allowlist: every hex or bare rgb() that reached the DOM. */
+function allLiterals(root: HTMLElement): string[] {
+  const values = paintedValues(root);
+  return [...values.flatMap((v) => v.match(HEX) ?? []), ...values.flatMap((v) => v.match(BARE_RGB) ?? [])];
+}
+
+function styleOf(el: Element | null): string {
+  return el?.getAttribute('style') ?? '';
 }
 
 beforeAll(() => {
@@ -130,8 +154,8 @@ describe('SessionRunClient paints from --wa-* tokens', () => {
     for (const btn of screen.getAllByRole('button', { name: /use voice/i })) fireEvent.click(btn);
     const voice = screen.getAllByTestId('voice-session');
     expect(voice.length).toBeGreaterThan(0);
-    // (The interview card already passed the gold token pair before this
-    // sweep; PortalVoiceSession's alpha concat on that value is a follow-up.)
+    // (The interview card passes the gold token pair; PortalVoiceSession mixes
+    // its alpha steps with color-mix, so either form is a valid accent.)
     for (const v of voice) {
       expect(['#2563eb', 'var(--wa-gold)']).toContain(v.getAttribute('data-accent'));
       expect(['#1e40af', 'var(--wa-gold-dark)']).toContain(v.getAttribute('data-accent-dark'));
@@ -212,5 +236,142 @@ describe('CertificationsEarnMoreCard paints from the hero tokens', () => {
     expect(action.getAttribute('style')).toContain('var(--wa-hero-action-bg)');
     expect(action.getAttribute('style')).toContain('var(--wa-hero-action-text)');
     expect(action).toHaveAttribute('href', '/dashboard/learning');
+  });
+});
+
+/**
+ * Follow-up to the sweep above: PortalVoiceSession carried ~31 hex literals
+ * and derived its glow / transcript rule from `${accent}44` / `${accent}88`,
+ * a string concat that only works for a 6-digit hex accent. Callers already
+ * pass `var(--wa-gold)` (SessionRunClient interview card) and
+ * `colorVar('accent')` (CareerBusinessCoachKit), which yielded the invalid
+ * `var(--wa-gold)44`. The alpha steps are now `color-mix(in srgb, <accent>
+ * 27% / 53%, transparent)`; the panel reads the constant `--wa-sidebar-*`
+ * chrome. These tests drive the real component through pre, error, active
+ * (live transcript) and done (suggestion cards) with the client, microphone
+ * and endpoints mocked, and inspect the inline styles that reached the DOM.
+ */
+function mockEndpoints(suggestions: Array<{ original?: string; suggested: string; context: string }>) {
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+    const body = String(url).includes('suggestions') ? { suggestions } : { signedUrl: 'wss://voice.example/session' };
+    return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }));
+}
+
+async function renderVoice(props: Record<string, unknown> = {}) {
+  const { default: PortalVoiceSession } = await import('@/components/portal/PortalVoiceSession');
+  return render(
+    <PortalVoiceSession
+      sessionEndpoint="/api/voice/session"
+      suggestionsEndpoint="/api/voice/suggestions"
+      title="Interview coach"
+      description="Practice answering out loud."
+      liveTranscriptCoachLabel="Interviewer"
+      liveTranscriptYouLabel="You"
+      {...props}
+    />,
+  );
+}
+
+describe('PortalVoiceSession paints from --wa-* tokens with a token accent', () => {
+  const GOLD = { accent: 'var(--wa-gold)', accentDark: 'var(--wa-gold-dark)' };
+
+  it('pre phase: no literal, and the start glow is a color-mix of the caller accent, never a hex-suffix concat', async () => {
+    const { container } = await renderVoice(GOLD);
+    expect(allLiterals(container)).toEqual([]);
+    const start = screen.getByRole('button', { name: /start voice session/i });
+    const style = styleOf(start);
+    expect(style).toContain('background: var(--wa-gold)');
+    expect(style).toContain('color: var(--wa-sidebar-text)');
+    expect(style).toContain('box-shadow: 0 4px 20px color-mix(in srgb, var(--wa-gold) 27%, transparent)');
+    expect(style).not.toContain('var(--wa-gold)44');
+    // Panel chrome reads the constant sidebar set, so it is dark in both themes.
+    expect(styleOf(container.firstElementChild)).toContain('background: var(--wa-sidebar-bg)');
+    expect(styleOf(screen.getByRole('heading', { name: 'Interview coach' }))).toContain('color: var(--wa-sidebar-text)');
+  });
+
+  it('defaults to the brand crimson tokens when no accent is passed', async () => {
+    const { container } = await renderVoice();
+    expect(allLiterals(container)).toEqual([]);
+    expect(styleOf(screen.getByRole('button', { name: /start voice session/i }))).toContain('background: var(--wa-hero-crimson)');
+  });
+
+  it('error notice: crimson tints and pink text as color-mix over the panel, no literal', async () => {
+    // No mediaDevices in jsdom: the microphone request throws and the panel shows the alert.
+    vi.stubGlobal('navigator', { ...navigator, mediaDevices: undefined });
+    const { container } = await renderVoice(GOLD);
+    fireEvent.click(screen.getByRole('button', { name: /start voice session/i }));
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/Microphone: access is required/);
+    const style = styleOf(alert);
+    expect(style).toContain('background: color-mix(in srgb, var(--wa-hero-crimson) 15%, transparent)');
+    expect(style).toContain('border: 1px solid color-mix(in srgb, var(--wa-hero-crimson) 40%, transparent)');
+    expect(style).toContain('color: color-mix(in srgb, var(--wa-hero-crimson) 35%, var(--wa-sidebar-text))');
+    expect(allLiterals(container)).toEqual([]);
+  });
+
+  it('active and done phases: transcript rule, speaking pill, wells and suggestion cards are token-only', async () => {
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      mediaDevices: { getUserMedia: async () => ({ getTracks: () => [] }) },
+    });
+    mockEndpoints([
+      { original: 'Did support stuff.', suggested: 'Led a four-person support desk.', context: 'Quantify the team you led.' },
+    ]);
+    const { container } = await renderVoice(GOLD);
+    fireEvent.click(screen.getByRole('button', { name: /start voice session/i }));
+
+    // Active: End session button, the live transcript with both speakers.
+    const end = await screen.findByRole('button', { name: /end session/i });
+    expect(startVoiceSession).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.getByRole('log').textContent).toContain('I led a four-person support desk.'));
+    expect(allLiterals(container)).toEqual([]);
+    const painted = paintedValues(container).join('\n');
+    // The coach line's rule is the 53% accent step (was `${accent}88`).
+    expect(painted).toContain('border-left: 2px solid color-mix(in srgb, var(--wa-gold) 53%, transparent)');
+    expect(painted).not.toContain('var(--wa-gold)88');
+    // Speaking / listening pill tints the accent instead of a fixed crimson rgba.
+    expect(painted).toContain('background: color-mix(in srgb, var(--wa-gold) 18%, transparent)');
+    // The transcript well is one step darker than the panel, bordered by the sidebar token.
+    expect(styleOf(screen.getByRole('log'))).toContain('background: color-mix(in srgb, var(--wa-sidebar-bg) 70%, black)');
+    expect(styleOf(screen.getByRole('log'))).toContain('border: 1px solid var(--wa-sidebar-border)');
+    expect(styleOf(end)).toContain('background: var(--wa-gold)');
+
+    // Done: suggestion cards (Before / After) from the mocked endpoint.
+    fireEvent.click(end);
+    await screen.findByText('Coach suggestions (1)');
+    expect(allLiterals(container)).toEqual([]);
+    const before = screen.getByText('Before').parentElement!;
+    expect(styleOf(before)).toContain('background: var(--wa-surface-2)');
+    expect(styleOf(before)).toContain('border: 1px solid var(--wa-border)');
+    expect(styleOf(screen.getByText('Before'))).toContain('color: var(--wa-muted)');
+    const after = screen.getByText('After').parentElement!;
+    expect(styleOf(after)).toContain('background: var(--wa-success-soft)');
+    expect(styleOf(after)).toContain('border: 1px solid color-mix(in srgb, var(--wa-success) 35%, transparent)');
+    expect(styleOf(screen.getByText('After'))).toContain('color: var(--wa-success-dark)');
+    expect(styleOf(screen.getByText('Led a four-person support desk.'))).toContain('color: var(--wa-success-dark)');
+    expect(styleOf(screen.getByRole('button', { name: /approve/i }))).toContain('background: var(--wa-gold)');
+    vi.unstubAllGlobals();
+    startVoiceSession.mockClear();
+  });
+});
+
+describe('AdminAnalyticsCharts grid', () => {
+  it('draws every CartesianGrid line from --wa-border so it resolves in light mode too', async () => {
+    const { default: Charts } = await import('@/components/admin/AdminAnalyticsCharts');
+    const days = Array.from({ length: 14 }, (_, i) => ({ date: `9/${i + 8}`, events: 5 + ((i * 7) % 11), aiTools: 2 + ((i * 3) % 6), applications: (i * 5) % 4 }));
+    const programs = ['IT Support', 'Cybersecurity', 'Data Analytics', 'Project Mgmt'];
+    const { container } = render(
+      <Charts dailyActivity={days} enrollmentByProgram={programs.map((program, i) => ({ program, count: 40 - i * 4 }))}
+        placementStats={{ enrolled: 120, placed: 48, certifications: 77, placementRate: 40 }} inactive14Days={9} applicationsSubmitted={210} resourcesCompleted={512}
+        aiToolStats={{ runsLastNDays: 88, trend: 12, totalRuns: 1400, breakdown: [{ toolType: 'cover_letter', count: 30 }, { toolType: 'gap_analyzer', count: 14 }] }} />,
+    );
+    const grids = container.querySelectorAll('.recharts-cartesian-grid');
+    expect(grids.length).toBe(3);
+    const lines = Array.from(container.querySelectorAll('.recharts-cartesian-grid line'));
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) expect(line.getAttribute('stroke')).toBe('var(--wa-border)');
+    // The old `rgba(255,255,255,0.05)` was white-on-white in light mode.
+    expect(lines.some((l) => /rgba\(255,\s*255,\s*255/.test(l.getAttribute('stroke') ?? ''))).toBe(false);
   });
 });

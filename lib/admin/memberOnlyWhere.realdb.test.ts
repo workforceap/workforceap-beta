@@ -20,10 +20,13 @@ import { randomUUID } from 'node:crypto';
 
 import {
   MEMBER_ONLY_WHERE,
+  MEMBER_OR_DOGFOOD_ROLE_NOT,
   MEMBER_OR_DOGFOOD_WHERE,
+  memberOnlyEmailSql,
   memberOnlyProfileWhere,
   memberOnlyRoleSql,
   memberOnlySqlJoin,
+  memberOrDogfoodRoleSql,
 } from './memberOnlyWhere';
 import { prisma } from '../db/prisma';
 
@@ -259,6 +262,64 @@ test('memberOnlyRoleSql is the role half alone, on any user alias', async () => 
   ]);
   assert.equal(expected.size, EXPECTED_MEMBERS + FIXTURE_CASES.length);
   assert.deepEqual(new Set(rows.map((r) => r.id)), expected);
+});
+
+test('memberOrDogfoodRoleSql selects the same rows as the Prisma MEMBER_OR_DOGFOOD predicate', async () => {
+  // The role half alone keeps the fixture accounts, like memberOnlyRoleSql.
+  const expected = new Set([
+    ...CASES.filter((c) => c.dogfood).map((c) => seeded.ids.get(c.key)!),
+    ...FIXTURE_CASES.map((c) => seeded.ids.get(c.key)!),
+  ]);
+  assert.equal(expected.size, EXPECTED_DOGFOOD + FIXTURE_CASES.length);
+  assert.equal(expected.size, 10);
+
+  const sqlRows = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT u_scope.id FROM users u_scope
+    WHERE u_scope.organization_id = ${seeded.orgId}
+      AND u_scope.deleted_at IS NULL
+      AND ${memberOrDogfoodRoleSql('u_scope')}`;
+  const prismaRows = await prisma.user.findMany({
+    where: { ...scope(), NOT: MEMBER_OR_DOGFOOD_ROLE_NOT },
+    select: { id: true },
+  });
+  assert.deepEqual(new Set(sqlRows.map((r) => r.id)), expected, 'raw SQL twin');
+  assert.deepEqual(new Set(prismaRows.map((r) => r.id)), expected, 'Prisma NOT entries');
+
+  // The shape lib/admin/jobReadyCandidates.ts runs: role twin AND email twin
+  // is MEMBER_OR_DOGFOOD_WHERE, row for row.
+  const jobReadyShape = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT u.id FROM users u
+    WHERE u.organization_id = ${seeded.orgId}
+      AND u.deleted_at IS NULL
+      AND ${memberOrDogfoodRoleSql('u')}
+      AND ${memberOnlyEmailSql('u')}`;
+  const dogfoodWhere = await prisma.user.findMany({ where: { ...scope(), ...MEMBER_OR_DOGFOOD_WHERE }, select: { id: true } });
+  assert.equal(jobReadyShape.length, EXPECTED_DOGFOOD);
+  assert.deepEqual(new Set(jobReadyShape.map((r) => r.id)), new Set(dogfoodWhere.map((r) => r.id)));
+
+  // The predicate this twin replaced, `INNER JOIN profiles p ... p.role IN
+  // ('member', 'admin', 'super_admin')`, needs a profiles row naming one of
+  // those roles. On this roster it loses four accounts the one definition
+  // keeps: the user_roles-only member, the blank and out-of-vocabulary
+  // profile roles, and the profile-less seeded fixture.
+  const legacy = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT u.id FROM users u
+    INNER JOIN profiles p ON p.user_id = u.id
+    WHERE u.organization_id = ${seeded.orgId}
+      AND u.deleted_at IS NULL
+      AND p.role IN ('member', 'admin', 'super_admin')`;
+  const legacyIds = new Set(legacy.map((r) => r.id));
+  const dropped = [...expected].filter((id) => !legacyIds.has(id));
+  assert.deepEqual(
+    new Set(dropped.map((id) => [...seeded.ids.entries()].find(([, v]) => v === id)![0])),
+    new Set([
+      'user_roles-only member, no profile row',
+      'blank profile role with a member row',
+      'out-of-vocabulary profile role with a member row',
+      'seeded pattern account',
+    ]),
+  );
+  for (const id of legacyIds) assert.equal(expected.has(id), true, 'the legacy predicate never kept a row the twin drops');
 });
 
 test('the two definitions this converges really do disagree on this roster', async () => {

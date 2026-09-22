@@ -144,7 +144,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
                 <stop offset="95%" stopColor={GREEN} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--wa-border)" />
             <XAxis dataKey="date" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
             <YAxis tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
             <Tooltip {...tooltipStyle} />
@@ -183,7 +183,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
           <SectionLabel title="Enrollment by Program" sub="Active members per program track" />
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={enrollmentByProgram} layout="vertical" margin={{ left: 8, right: 16, top: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--wa-border)" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
               <YAxis type="category" dataKey="program" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={110}
                 tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '…' : v} />
@@ -250,7 +250,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
           />
           <ResponsiveContainer width="100%" height={Math.max(180, aiBreakdown.length * 36)}>
             <BarChart data={aiBreakdown} layout="vertical" margin={{ left: 8, right: 40, top: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--wa-border)" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} allowDecimals={false} />
               <YAxis type="category" dataKey="tool" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={130} />
               <Tooltip {...tooltipStyle} />

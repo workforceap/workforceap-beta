@@ -281,6 +281,27 @@ export function memberOnlyEmailSql(userAlias = 'u'): Prisma.Sql {
 }
 
 /**
+ * The one role predicate as raw SQL, parameterised the same way
+ * {@link memberRoleNotEntries} is for Prisma: a member is named by a
+ * `user_roles` row or by a profile whose `role` is one of
+ * `memberProfileRoles`, and never by a profile whose `role` is one of
+ * `excludedProfileRoles`. Both role lists are module constants, inlined as
+ * validated literals, so the fragment binds nothing.
+ */
+function memberRoleSql(
+  userAlias: string,
+  memberProfileRoles: readonly string[],
+  excludedProfileRoles: readonly string[],
+): Prisma.Sql {
+  const u = sqlIdentifier(userAlias);
+  const memberRole = sqlRoleLiteralList([MEMBER_ROLE_NAME]);
+  const profileNamesMember = memberProfileRoles.length === 1
+    ? Prisma.sql`member_only_profile.role = ${sqlRoleLiteralList(memberProfileRoles)}`
+    : Prisma.sql`member_only_profile.role IN (${sqlRoleLiteralList(memberProfileRoles)})`;
+  return Prisma.sql`(EXISTS (SELECT 1 FROM user_roles member_only_row INNER JOIN roles member_only_role ON member_only_role.id = member_only_row.role_id WHERE member_only_row.user_id = ${u}.id AND member_only_role.name = ${memberRole}) OR EXISTS (SELECT 1 FROM profiles member_only_profile WHERE member_only_profile.user_id = ${u}.id AND ${profileNamesMember})) AND NOT EXISTS (SELECT 1 FROM profiles member_only_staff_profile WHERE member_only_staff_profile.user_id = ${u}.id AND member_only_staff_profile.role IN (${sqlRoleLiteralList(excludedProfileRoles)}))`;
+}
+
+/**
  * Raw-SQL twin of the role half of {@link MEMBER_ONLY_WHERE}: a boolean
  * predicate on the `users` alias alone, so a query that already joins
  * `profiles` for its own columns can drop its hand-written
@@ -292,9 +313,21 @@ export function memberOnlyEmailSql(userAlias = 'u'): Prisma.Sql {
  * literal, so a caller's parameter list is unchanged.
  */
 export function memberOnlyRoleSql(userAlias = 'u'): Prisma.Sql {
-  const u = sqlIdentifier(userAlias);
-  const memberRole = sqlRoleLiteralList([MEMBER_ROLE_NAME]);
-  return Prisma.sql`(EXISTS (SELECT 1 FROM user_roles member_only_row INNER JOIN roles member_only_role ON member_only_role.id = member_only_row.role_id WHERE member_only_row.user_id = ${u}.id AND member_only_role.name = ${memberRole}) OR EXISTS (SELECT 1 FROM profiles member_only_profile WHERE member_only_profile.user_id = ${u}.id AND member_only_profile.role = ${memberRole})) AND NOT EXISTS (SELECT 1 FROM profiles member_only_staff_profile WHERE member_only_staff_profile.user_id = ${u}.id AND member_only_staff_profile.role IN (${sqlRoleLiteralList(NON_MEMBER_PROFILE_ROLES)}))`;
+  return memberRoleSql(userAlias, [MEMBER_ROLE_NAME], NON_MEMBER_PROFILE_ROLES);
+}
+
+/**
+ * Raw-SQL twin of {@link MEMBER_OR_DOGFOOD_ROLE_NOT} (the role half of
+ * {@link MEMBER_OR_DOGFOOD_WHERE}), for the hand-written queries behind
+ * admin dogfood surfaces (job-ready candidates). Replaces the last
+ * `p.role IN ('member', 'admin', 'super_admin')` predicate, which required a
+ * `profiles` row and so silently dropped a member named only by a
+ * `user_roles` row. Same alias handling and no bound parameters, like
+ * {@link memberOnlyRoleSql}; `memberOnlyWhere.realdb.test.ts` pins it to the
+ * Prisma predicate row for row.
+ */
+export function memberOrDogfoodRoleSql(userAlias = 'u'): Prisma.Sql {
+  return memberRoleSql(userAlias, [MEMBER_ROLE_NAME, ...DOGFOOD_PROFILE_ROLES], DOGFOOD_EXCLUDED_PROFILE_ROLES);
 }
 
 /**
