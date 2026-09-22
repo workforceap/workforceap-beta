@@ -40,7 +40,7 @@ const JOURNEY_STEPS = [
   {
     num: 3,
     title: 'Start Coursera training',
-    desc: 'Open your assigned Coursera courses and finish them in order. Completed Coursera courses show in My program and are not added to My Certificates automatically yet — add each certificate you earn there and our team verifies it before it counts as earned. Verified certificates are what employers see on your WorkforceAP record, and your cert progress is directly tied to job eligibility in the employer pipeline.',
+    desc: 'Open your assigned Coursera courses and finish them in order. When Coursera reports a completed course we add a pending certificate to My Certificates; our team verifies it before it counts as earned, and you can also add a certificate you earned elsewhere. Verified certificates are what employers see on your WorkforceAP record, and your cert progress is directly tied to job eligibility in the employer pipeline.',
     href: '/dashboard',
     cta: 'Open Training',
     icon: 'school',
@@ -232,7 +232,7 @@ export default async function MemberGuidePage() {
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: isActive ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+                      color: isActive ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
                     }}>
                       Step {step.num}
                     </span>
@@ -308,7 +308,7 @@ export default async function MemberGuidePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">{b.icon}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">{b.icon}</span>
               </div>
               <div>
                 <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>{b.title}</h3>
@@ -343,7 +343,7 @@ export default async function MemberGuidePage() {
           </p>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
             Message your counselor — they&rsquo;re here to help with anything.{' '}
-            <Link href="/dashboard/messages" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/dashboard/messages" style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}>
               Send a message →
             </Link>
           </p>

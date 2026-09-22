@@ -108,7 +108,7 @@ export function MemberCertificatesKit({
               <div className="wa-kit-card">
                 <KitEmptyState
                   title="No certificates yet"
-                  description="Completed credentials will appear here after they are logged and verified."
+                  description="When Coursera reports a completed course it appears here as a pending certificate; our team verifies it before it counts as earned. You can also add a certificate yourself."
                   action={
                     continueIsPrimary ? (
                       <span className="wa-flex wa-flex-wrap wa-items-center wa-justify-center wa-gap-3">

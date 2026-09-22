@@ -419,7 +419,7 @@ export default function PartnerQuarterlyOutcomesClient({
                     key: 'name',
                     header: 'Name',
                     cell: (m) => (
-                      <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 600, color: 'var(--color-accent)' }}>
+                      <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 600, color: 'var(--wa-accent-text)' }}>
                         {m.fullName}
                       </Link>
                     ),

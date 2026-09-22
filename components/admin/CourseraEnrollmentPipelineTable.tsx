@@ -294,7 +294,7 @@ export default function CourseraEnrollmentPipelineTable({
       </div>
 
       {loadError ? (
-        <p role="alert" style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-accent)' }}>
+        <p role="alert" style={{ margin: 0, fontSize: '0.85rem', color: 'var(--wa-accent-text)' }}>
           {loadError}
         </p>
       ) : null}

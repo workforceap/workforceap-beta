@@ -193,7 +193,7 @@ export default function MemberCounselorChatClient({
         {messages.length === 0 ? (
           <PortalEmptyState
             icon={
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
                 chat_bubble_outline
               </span>
             }

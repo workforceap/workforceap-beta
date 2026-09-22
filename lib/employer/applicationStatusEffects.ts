@@ -3,7 +3,7 @@ import 'server-only';
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { captureApiError } from '@/lib/observability/captureApiError';
-import { awardPoints } from '@/lib/member/points';
+import { recordPlacementFromApplication } from '@/lib/placement/recordPlacementFromApplication';
 
 const APPLICATION_STATUS_MESSAGE: Record<string, { title: string; body: (jobTitle: string) => string }> = {
   interview: {
@@ -35,7 +35,9 @@ const APPLICATION_STATUS_MESSAGE: Record<string, { title: string; body: (jobTitl
  * (lib/cron/placement-surveys.ts) and funder outcome reports pick up the
  * placement. Previously an employer marking an application 'hired' had zero
  * downstream effect — placements only existed if a counselor/admin
- * remembered to type one in manually.
+ * remembered to type one in manually. The record itself is written by
+ * lib/placement/recordPlacementFromApplication.ts, shared with the member's
+ * own confirm-offer action so both sides of a hire land on one row.
  */
 export async function notifyAndRecordPlacement(args: {
   applicationId: string;
@@ -64,22 +66,32 @@ export async function notifyAndRecordPlacement(args: {
   if (nextStatus !== 'hired') return;
 
   try {
-    // PlacementRecord.userId is @unique — one row per member. If a placement
-    // already exists (e.g. a counselor entered one manually, or this route
-    // fires twice on a retry), leave it untouched rather than overwrite
-    // counselor-verified data with an auto-generated guess.
-    const existing = await prisma.placementRecord.findUnique({ where: { userId: studentId } });
-    if (existing) return;
-
     const employer = await prisma.employer.findUnique({
       where: { id: employerId },
       select: { companyName: true, userId: true },
     });
 
-    // Congratulate the employer and nudge them toward their next hire. Sits
-    // alongside the placement bookkeeping below inside the same fail-soft
-    // try/catch — a notification hiccup must never fail the employer's
-    // application status update.
+    // Shared with the member's confirm-offer action
+    // (app/(portal)/dashboard/placementAction.ts). PlacementRecord.userId is
+    // @unique — one row per member — so a retry, a counselor-entered row or
+    // a hire the member already self-reported all land on the same row:
+    // 'created' stands a new unverified row up, 'corroborated' confirms the
+    // member's self-report in place, 'unchanged' leaves staff-owned or
+    // verified data alone. The helper writes the audit row, awards the
+    // points and notifies the member and their counselor.
+    const { outcome } = await recordPlacementFromApplication({
+      userId: studentId,
+      employerName: employer?.companyName ?? 'Unknown employer',
+      jobTitle,
+      source: 'employer_hired',
+      applicationId,
+      actorUserId: employer?.userId ?? null,
+    });
+    if (outcome === 'unchanged') return;
+
+    // Congratulate the employer and nudge them toward their next hire. Inside
+    // the same fail-soft try/catch — a notification hiccup must never fail
+    // the employer's application status update.
     if (employer?.userId) {
       await createNotification({
         userId: employer.userId,
@@ -87,50 +99,6 @@ export async function notifyAndRecordPlacement(args: {
         title: 'Great hire! Post your next role',
         body: `Congratulations on your hire${jobTitle ? ` for ${jobTitle}` : ''}! Ready to fill another position?`,
         data: { link: '/employer/jobs/new' },
-      });
-    }
-
-    const student = await prisma.user.findUnique({
-      where: { id: studentId },
-      select: { enrolledProgram: true },
-    });
-
-    const placement = await prisma.placementRecord.create({
-      data: {
-        userId: studentId,
-        employerName: employer?.companyName ?? 'Unknown employer',
-        jobTitle,
-        programSlug: student?.enrolledProgram ?? null,
-        placedAt: new Date(),
-        // Unverified until a counselor confirms start date/wage — this row
-        // exists so the retention pipeline and funder reports don't miss the
-        // hire, not to assert unconfirmed facts as ground truth.
-        startDateVerified: false,
-        notes: 'Auto-created when the employer marked this application hired. Verify start date and wage.',
-      },
-    });
-
-    void awardPoints(studentId, 'placement_recorded', placement.id).catch(() => {});
-
-    await createNotification({
-      userId: studentId,
-      type: 'placement',
-      title: 'Placement recorded',
-      body: `We've logged your placement at ${placement.employerName}. Your counselor will follow up to confirm details.`,
-      data: { link: '/dashboard' },
-    });
-
-    const assignment = await prisma.counselorAssignment.findFirst({
-      where: { memberId: studentId, active: true },
-      select: { counselor: { select: { userId: true } } },
-    });
-    if (assignment?.counselor.userId) {
-      await createNotification({
-        userId: assignment.counselor.userId,
-        type: 'placement',
-        title: 'Member placed — verify details',
-        body: `A member you counsel was marked hired at ${placement.employerName} (${jobTitle}). Confirm start date and wage for funder reporting.`,
-        data: { link: `/counselor/students/${studentId}` },
       });
     }
   } catch (err) {

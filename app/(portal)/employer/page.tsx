@@ -476,7 +476,7 @@ export default async function EmployerDashboardPage({
           )}
           <Link href="/employer/jobs/new"
             className="hover:wa-opacity-90 active:wa-scale-[0.98] wa-transition-[opacity,transform] motion-reduce:wa-transition-none" style={{ padding:"1rem", borderRadius:"0.75rem", display:"flex", flexDirection:"column", gap:"0.5rem", alignItems:"flex-start", textDecoration:"none", minHeight:"44px", background: 'var(--surface-container-high)', color: 'var(--color-on-surface)' }}>
-            <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)' }} aria-hidden="true">add_circle</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)' }} aria-hidden="true">add_circle</span>
             <span className="wa-text-sm wa-font-bold wa-leading-tight">{t('postARole')}</span>
           </Link>
           <Link href="/employer/messages"
@@ -492,7 +492,7 @@ export default async function EmployerDashboardPage({
             <Link
               href="/employer/applications"
               className="wa-text-xs wa-font-bold wa-uppercase wa-tracking-widest"
-              style={{ textDecoration:"none", color: 'var(--color-accent)' }}
+              style={{ textDecoration:"none", color: 'var(--wa-accent-text)' }}
             >
               {t('viewAll')}
             </Link>
@@ -652,7 +652,7 @@ export default async function EmployerDashboardPage({
                 { icon: 'gavel', label: t('filledClosed'), value: filledPositions, iconColor: 'var(--color-on-surface-variant)' },
               ].map((item) => (
                 <div key={item.label} className="portal-pipeline-item">
-                  <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', '--ms-fill': 1 }} aria-hidden="true">{item.icon}</span>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', '--ms-fill': 1 }} aria-hidden="true">{item.icon}</span>
                   <div style={{ flex: 1 }}>
                     <p className="portal-pipeline-item__label">{item.label}</p>
                     <p className="portal-pipeline-item__meta">{item.value} {item.label.toLowerCase()}</p>
@@ -708,7 +708,7 @@ export default async function EmployerDashboardPage({
               >
                 <div style={{ marginBottom: '1rem' }}>
                   <h4 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.25rem', color: 'var(--color-on-surface)' }}>{app.student.fullName}</h4>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 500, marginBottom: '0.75rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', fontWeight: 500, marginBottom: '0.75rem' }}>
                     {t('appliedTo')} {app.job.title}
                   </p>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>

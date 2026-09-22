@@ -116,7 +116,7 @@ export default function CertificationAddForm() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.5rem 1rem', borderRadius: '0.625rem', border: '2px dashed rgba(173,44,77,0.3)', background: 'rgba(173,44,77,0.04)', color: 'var(--color-accent)', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', width: '100%', justifyContent: 'center' }}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.5rem 1rem', borderRadius: '0.625rem', border: '2px dashed rgba(173,44,77,0.3)', background: 'rgba(173,44,77,0.04)', color: 'var(--wa-accent-text)', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', width: '100%', justifyContent: 'center' }}
       >
         <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">add_circle</span>
         Add a Certificate
@@ -145,7 +145,7 @@ export default function CertificationAddForm() {
       </div>
 
       {error && (
-        <p role="alert" style={{ fontSize: '0.875rem', color: 'var(--color-accent)', margin: 0, padding: '0.5rem 0.75rem', background: 'rgba(173,44,77,0.08)', borderRadius: '0.5rem' }}>{error}</p>
+        <p role="alert" style={{ fontSize: '0.875rem', color: 'var(--wa-accent-text)', margin: 0, padding: '0.5rem 0.75rem', background: 'rgba(173,44,77,0.08)', borderRadius: '0.5rem' }}>{error}</p>
       )}
 
       {/* Certificate name */}

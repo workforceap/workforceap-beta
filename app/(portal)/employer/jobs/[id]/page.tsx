@@ -112,7 +112,7 @@ export default async function EmployerJobDetailPage({ params }: Props) {
       ? { bg: 'color-mix(in srgb, var(--color-green) 12%, transparent)', color: 'var(--color-green)' }
       : editReadiness.level === 'usable'
         ? { bg: 'color-mix(in srgb, var(--color-gold) 14%, transparent)', color: 'var(--color-gold)' }
-        : { bg: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)' };
+        : { bg: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--wa-accent-text)' };
 
   return (
     <>

@@ -201,7 +201,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}
+                style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}
               >
                 Download ↗
               </a>

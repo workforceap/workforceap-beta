@@ -309,7 +309,7 @@ export default async function CareerBriefPage() {
       {dominantNextAction && (
         <div style={{ marginTop: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
+            <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
               priority_high
             </span>
             <h2
@@ -338,7 +338,7 @@ export default async function CareerBriefPage() {
               className="portal-quick-action-item__icon"
               style={{
                 background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
-                color: 'var(--color-accent)',
+                color: 'var(--wa-accent-text)',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
@@ -355,7 +355,7 @@ export default async function CareerBriefPage() {
             </div>
             <span
               className="material-symbols-outlined"
-              style={{ fontSize: '1rem', color: 'var(--color-accent)', opacity: 0.6, flexShrink: 0 }}
+              style={{ fontSize: '1rem', color: 'var(--wa-accent-text)', opacity: 0.6, flexShrink: 0 }}
               aria-hidden="true"
             >
               chevron_right
@@ -369,7 +369,7 @@ export default async function CareerBriefPage() {
         <div style={{ marginTop: '1.5rem' }}>
           <div className="portal-card portal-card--flat" style={{ padding: '1.125rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
+              <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
                 flag
               </span>
               <h2
@@ -403,7 +403,7 @@ export default async function CareerBriefPage() {
       {/* ── Quick Links ── */}
       <div style={{ marginTop: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
+          <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
             build
           </span>
           <h2
@@ -455,7 +455,7 @@ export default async function CareerBriefPage() {
             >
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: '1rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}
+                style={{ fontSize: '1rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}
                 aria-hidden="true"
               >
                 {link.icon}

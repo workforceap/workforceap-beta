@@ -207,7 +207,7 @@ export default function MemberNextStepsStrip({
                   padding: '0.3rem 0.6rem',
                   borderRadius: '9999px',
                   background: 'var(--wa-accent)',
-                  color: 'var(--wa-on-accent)',
+                  color: 'var(--wa-on-accent-control)',
                   fontSize: '0.8125rem',
                   fontWeight: 700,
                   letterSpacing: '0.04em',

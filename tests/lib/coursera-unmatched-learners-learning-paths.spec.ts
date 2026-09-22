@@ -19,14 +19,29 @@ function sqlText(call: RawCall): string {
   return call[0].join('?');
 }
 
+/** `loadUnmatchedLearners` first checks the catalog for `coursera_xapi_events` (created at runtime, not by db push). */
+const XAPI_TABLE_PROBE = /to_regclass\('public\.coursera_xapi_events'\)/;
+const isXapiTableProbe = (call: RawCall) => XAPI_TABLE_PROBE.test(call[0].join(''));
+
+/** The table exists here; the UNION, badges and grades queries are served from `results` in that order. */
+function serveQueries(...results: unknown[][]): void {
+  const queue = [...results];
+  mocks.queryRaw.mockImplementation(async (strings: TemplateStringsArray) =>
+    XAPI_TABLE_PROBE.test(strings.join('')) ? [{ present: true }] : queue.shift() ?? []);
+}
+
+function dataCalls(): RawCall[] {
+  return (mocks.queryRaw.mock.calls as RawCall[]).filter((call) => !isXapiTableProbe(call));
+}
+
 describe('loadUnmatchedLearners ignores Learning Path rows', () => {
   beforeEach(() => {
     mocks.queryRaw.mockReset();
   });
 
   it('excludes every registered path id from the course count and the progress rows', async () => {
-    mocks.queryRaw
-      .mockResolvedValueOnce([
+    serveQueries(
+      [
         {
           externalEmail: 'learner@example.com',
           externalName: 'Learner',
@@ -37,9 +52,9 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
           actorHomePage: null,
           lastActivityTime: new Date('2026-09-12T00:00:00Z'),
         },
-      ])
-      .mockResolvedValueOnce([]) // badges
-      .mockResolvedValueOnce([
+      ],
+      [], // badges
+      [
         {
           externalEmail: 'learner@example.com',
           courseGrade: null,
@@ -47,14 +62,15 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
           isCompleted: false,
           lastActivityTime: new Date('2026-09-12T00:00:00Z'),
         },
-      ]);
+      ],
+    );
 
     const learners = await loadUnmatchedLearners('org-1', 100, { includeTestAccounts: true });
 
     expect(learners).toHaveLength(1);
     expect(learners[0]).toMatchObject({ courseCount: 1, latestProgressPercent: 38, averageProgressPercent: 38 });
 
-    const calls = mocks.queryRaw.mock.calls as RawCall[];
+    const calls = dataCalls();
     expect(calls).toHaveLength(3);
 
     const unionText = sqlText(calls[0]);
@@ -69,8 +85,8 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
   });
 
   it('skips a newer 0% row when choosing latestProgressPercent', async () => {
-    mocks.queryRaw
-      .mockResolvedValueOnce([
+    serveQueries(
+      [
         {
           externalEmail: 'learner@example.com',
           externalName: 'Learner',
@@ -81,9 +97,9 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
           actorHomePage: null,
           lastActivityTime: new Date('2026-09-16T00:00:00Z'),
         },
-      ])
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([
+      ],
+      [],
+      [
         {
           externalEmail: 'learner@example.com',
           courseGrade: null,
@@ -98,7 +114,8 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
           isCompleted: false,
           lastActivityTime: new Date('2026-09-12T00:00:00Z'),
         },
-      ]);
+      ],
+    );
 
     const learners = await loadUnmatchedLearners('org-1', 100, { includeTestAccounts: true });
 
@@ -110,8 +127,8 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
   });
 
   it('keeps latestProgressPercent at 0 when every unmatched row is unused', async () => {
-    mocks.queryRaw
-      .mockResolvedValueOnce([
+    serveQueries(
+      [
         {
           externalEmail: 'learner@example.com',
           externalName: 'Learner',
@@ -122,9 +139,9 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
           actorHomePage: null,
           lastActivityTime: new Date('2026-09-16T00:00:00Z'),
         },
-      ])
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([
+      ],
+      [],
+      [
         {
           externalEmail: 'learner@example.com',
           courseGrade: null,
@@ -132,7 +149,8 @@ describe('loadUnmatchedLearners ignores Learning Path rows', () => {
           isCompleted: false,
           lastActivityTime: new Date('2026-09-16T00:00:00Z'),
         },
-      ]);
+      ],
+    );
 
     const learners = await loadUnmatchedLearners('org-1', 100, { includeTestAccounts: true });
 

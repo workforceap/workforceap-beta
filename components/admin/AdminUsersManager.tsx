@@ -333,7 +333,7 @@ export default function AdminUsersManager({
       <p className="wa-kit-people-count" role="status">{pending ? 'Searching all accounts…' : `${totalCount.toLocaleString()} matching account${totalCount === 1 ? '' : 's'}`}</p>
 
       {message && (
-        <div style={{ padding: '0.75rem 0.9rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.12)' : message.type === 'warn' ? 'rgba(217,119,6,0.12)' : 'rgba(173,44,77,0.12)', color: message.type === 'ok' ? 'var(--wa-success-dark)' : message.type === 'warn' ? '#b45309' : 'var(--color-accent)', fontWeight: 600 }}>
+        <div style={{ padding: '0.75rem 0.9rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.12)' : message.type === 'warn' ? 'rgba(217,119,6,0.12)' : 'rgba(173,44,77,0.12)', color: message.type === 'ok' ? 'var(--wa-success-dark)' : message.type === 'warn' ? '#b45309' : 'var(--wa-accent-text)', fontWeight: 600 }}>
           {message.text}
         </div>
       )}
@@ -472,7 +472,7 @@ export default function AdminUsersManager({
                         <button
                           type="button"
                           className="btn btn-outline btn-sm"
-                          style={{ color: 'var(--color-accent)', borderColor: 'var(--color-accent)' }}
+                          style={{ color: 'var(--wa-accent-text)', borderColor: 'var(--color-accent)' }}
                           disabled={isSelfRow(user.id)}
                           title={isSelfRow(user.id) ? SELF_DELETE_BLOCKED_TITLE : undefined}
                           onClick={() => setConfirmDeleteId(user.id)}
@@ -557,7 +557,7 @@ export default function AdminUsersManager({
                     <button
                       type="button"
                       className="btn btn-outline btn-sm"
-                      style={{ color: 'var(--color-accent)', borderColor: 'var(--color-accent)' }}
+                      style={{ color: 'var(--wa-accent-text)', borderColor: 'var(--color-accent)' }}
                       disabled={isSelfRow(user.id)}
                       title={isSelfRow(user.id) ? SELF_DELETE_BLOCKED_TITLE : undefined}
                       onClick={() => setConfirmDeleteId(user.id)}

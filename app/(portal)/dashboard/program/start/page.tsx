@@ -121,7 +121,7 @@ export default async function ProgramStartPage() {
             </PortalCard>
           ) : courseraReady ? (
             <PortalCard>
-              <p style={{ fontWeight: 700, color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>You are on file for training access</p>
+              <p style={{ fontWeight: 700, color: 'var(--wa-accent-text)', margin: '0 0 0.5rem' }}>You are on file for training access</p>
               <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
                 Your enrollment is connected. Continue in{' '}
                 <Link href="/dashboard" className="wa-text-[var(--color-accent-dark)] wa-font-semibold">

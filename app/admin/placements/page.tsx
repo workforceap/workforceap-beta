@@ -11,8 +11,10 @@ import PageHeader from '@/components/portal/PageHeader';
 import PlacementsTableClient from '@/components/admin/PlacementsTableClient';
 import {
   PlacementsKit,
+  type ConfirmStatus,
   type PlacementRow,
 } from '@/components/portal/kit/pages/admin-subviews/PlacementsKit';
+import { isMemberReportedPlacement } from '@/lib/placement/recordPlacementFromApplication';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -28,6 +30,10 @@ const placementListSelect = {
   jobTitle: true,
   startDate: true,
   startDateVerified: true,
+  // Source of an unverified row: `placedBy` is set only by staff routes and
+  // the member self-report writer leaves its marker in `notes`.
+  placedBy: true,
+  notes: true,
   salaryOffered: true,
   retentionDecision: true,
   retentionStatus: true,
@@ -45,6 +51,12 @@ function formatWageShort(salary: number | null): string {
   if (salary >= 1000 && salary % 1000 === 0) return `$${Math.round(salary / 1000)}k`;
   if (salary >= 10000) return `$${Math.round(salary / 1000)}k`;
   return `$${salary.toLocaleString()}`;
+}
+
+/** Confirmed once verified; a member's own unverified confirmation is called out so staff can tell it from other pending rows. */
+function confirmStatusOf(record: Pick<PlacementRecord, 'startDateVerified' | 'placedBy' | 'notes'>): ConfirmStatus {
+  if (record.startDateVerified) return 'Confirmed';
+  return isMemberReportedPlacement(record) ? 'Member-reported' : 'Pending';
 }
 
 /** A retention value counts as retained if it explicitly says so. */
@@ -96,7 +108,9 @@ export default async function AdminPlacementsPage({
             </div>
           }
         />
-        <PlacementsTableClient placements={placements} />
+        <PlacementsTableClient
+          placements={placements.map((p) => ({ ...p, memberReported: confirmStatusOf(p) === 'Member-reported' }))}
+        />
       </PortalPageFrame>
     );
   }
@@ -169,7 +183,7 @@ export default async function AdminPlacementsPage({
     role: p.jobTitle || '—',
     wage: formatWageShort(p.salaryOffered),
     survey: completedSurveyIds.has(p.id) ? 'Done' : 'Pending',
-    status: p.startDateVerified ? 'Confirmed' : 'Pending',
+    status: confirmStatusOf(p),
   }));
 
   return (

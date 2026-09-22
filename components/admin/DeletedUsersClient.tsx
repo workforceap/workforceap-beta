@@ -258,7 +258,7 @@ export default function DeletedUsersClient({
                           padding: '0.15rem 0.5rem',
                           borderRadius: '999px',
                           background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)',
-                          color: 'var(--color-accent)',
+                          color: 'var(--wa-accent-text)',
                           verticalAlign: 'middle',
                         }}
                       >

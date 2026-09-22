@@ -216,7 +216,7 @@ export default function EmployerMessagesInboxClient({
                   gap: '0.25rem',
                   background: 'none',
                   border: 'none',
-                  color: 'var(--color-accent)',
+                  color: 'var(--wa-accent-text)',
                   fontWeight: 600,
                   fontSize: '0.875rem',
                   cursor: 'pointer',

@@ -132,7 +132,7 @@ export default function SessionsHistoryClient({
           className="portal-card portal-card--flat"
           style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-on-surface-variant)' }}
         >
-          <Sparkles size={28} aria-hidden style={{ margin: '0 auto 0.75rem', display: 'block', color: 'var(--color-accent)' }} />
+          <Sparkles size={28} aria-hidden style={{ margin: '0 auto 0.75rem', display: 'block', color: 'var(--wa-accent-text)' }} />
           <p style={{ margin: 0, fontWeight: 600, color: 'var(--color-on-surface)' }}>{emptyTitle}</p>
           <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>{emptyBody}</p>
         </div>
@@ -198,7 +198,7 @@ export default function SessionsHistoryClient({
                 style={{
                   fontSize: '0.85rem',
                   fontWeight: 600,
-                  color: 'var(--color-accent)',
+                  color: 'var(--wa-accent-text)',
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
                 }}

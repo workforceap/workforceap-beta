@@ -38,7 +38,7 @@
   padding-inline: var(--wa-pad);
   border-radius: var(--wa-radius-sm);
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;

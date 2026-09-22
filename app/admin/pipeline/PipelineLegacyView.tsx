@@ -153,7 +153,7 @@ export default function PipelineLegacyView() {
       <div className="portal-card portal-card--flat" style={{ padding: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700 }}>{t('totalMembersInPipeline')}</h3>
-          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-accent)' }}>{total.toLocaleString()}</span>
+          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--wa-accent-text)' }}>{total.toLocaleString()}</span>
         </div>
         <div style={{ height: '2rem', background: 'var(--surface-container)', borderRadius: '0.5rem', overflow: 'hidden', display: 'flex' }}>
           {STAGES.map((stage) => {
