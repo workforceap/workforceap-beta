@@ -13,7 +13,8 @@ import { toneClass } from '@/components/portal/kit';
  * "not a completion or health score". So the bars carry NO status colour:
  *
  *   - not the blanket `color: 'success'` they used to carry, which painted
- *     every program green under a heading that reads "Program health" and so
+ *     every program green under a heading that then read "Program health"
+ *     (since renamed "Enrollment share by program") and so
  *     re-told, in colour, the completion-score misread #2425 (S21) removed
  *     from the printed numbers;
  *   - and not a tone derived from `pct` either, which would invent a health

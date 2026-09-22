@@ -93,3 +93,52 @@ describe('MemberHomeKit resume module CTA', () => {
     expect(screen.getByRole('link', { name: /Resume module/ }).getAttribute('href')).toBe('/dashboard/program');
   });
 });
+
+/**
+ * The Course tile used to warn purely because progress was 0%, so a member who
+ * enrolled an hour ago opened the dashboard to a gold chip. The warn tone now
+ * waits for the shared staleness threshold (`STALE_TRAINING_ACTIVITY_DAYS`,
+ * 14 days) that the loader evaluates.
+ */
+describe('MemberHomeKit Course tile warning', () => {
+  /**
+   * Locates the Course stat tile and proves the row is really there first: a
+   * `querySelector` that stops matching would otherwise make every tone
+   * assertion below vacuously true.
+   */
+  function courseTileTone(): string | null {
+    const card = screen.getByText('Course').closest('.wa-kit-card');
+    expect(card).not.toBeNull();
+    const row = card!.parentElement!;
+    expect(row.children).toHaveLength(4);
+    expect(row.children[0]).toBe(card);
+    expect(row.children[1].textContent).toContain('Active jobs');
+    const toned = card!.querySelector<HTMLElement>('[class*="wa-kit-tone--"]');
+    return toned ? toned.className.match(/wa-kit-tone--(\w+)/)![1] : null;
+  }
+
+  it('does not warn at 0% for a member whose training has not gone stale', () => {
+    renderKit(<MemberHomeKit {...base} coursePercent={0} courseProgressStale={false} />);
+    expect(courseTileTone()).toBeNull();
+  });
+
+  it('defaults to no warning when the caller supplies no staleness signal', () => {
+    renderKit(<MemberHomeKit {...base} coursePercent={0} />);
+    expect(courseTileTone()).toBeNull();
+  });
+
+  it('warns at 0% once the staleness threshold has been crossed', () => {
+    renderKit(<MemberHomeKit {...base} coursePercent={0} courseProgressStale />);
+    expect(courseTileTone()).toBe('warn');
+  });
+
+  it('never warns without an enrolled program, stale or not', () => {
+    renderKit(<MemberHomeKit {...base} programTitle={undefined} coursePercent={0} courseProgressStale />);
+    expect(courseTileTone()).toBeNull();
+  });
+
+  it('still reads as done at 100%, and staleness does not override it', () => {
+    renderKit(<MemberHomeKit {...base} coursePercent={100} courseProgressStale />);
+    expect(courseTileTone()).toBe('ok');
+  });
+});

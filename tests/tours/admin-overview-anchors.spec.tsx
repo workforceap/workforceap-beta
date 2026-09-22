@@ -92,7 +92,7 @@ describe('admin Command Center leaves every guided-tour anchor to the shell', ()
     expect(getAdminCommandCenter).toHaveBeenCalledTimes(1);
     expect(html).toContain('Command Center');
     expect(html).toContain('What needs you today');
-    expect(html).toContain('Program health');
+    expect(html).toContain('Enrollment share by program');
     expect(html).not.toContain('data-portal-error-state');
     for (const step of TOUR_REGISTRY['admin.home'].steps) {
       expect(anchors(html, step.target), step.target).toBe(0);

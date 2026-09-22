@@ -135,6 +135,13 @@ export interface MemberHomeKitProps {
   greeting?: string;
   /** 0–100 course completion. */
   coursePercent?: number;
+  /**
+   * Training has been quiet past the shared staleness threshold
+   * (`STALE_TRAINING_ACTIVITY_DAYS`, 14 days), or the stale-training cron has
+   * already flagged it. Gates the Course tile's warning tone — a member who
+   * enrolled an hour ago is at 0% for no bad reason.
+   */
+  courseProgressStale?: boolean;
   activeJobs?: number;
   certs?: number;
   points?: number;
@@ -603,6 +610,7 @@ export function MemberHomeKit({
   firstName = '',
   greeting,
   coursePercent = 0,
+  courseProgressStale = false,
   activeJobs = 0,
   certs = 0,
   points = 0,
@@ -655,8 +663,11 @@ export function MemberHomeKit({
       icon: BookOpen,
       label: 'Course',
       value: `${pct}%`,
-      // Finished the course; nothing started while enrolled is worth a nudge.
-      tone: pct >= 100 ? 'ok' : pct === 0 && programTitle ? 'warn' : undefined,
+      // Finished the course reads as done. Nothing started while enrolled is
+      // only worth a nudge once it has actually gone quiet: 0% an hour after
+      // enrolling is not a fault, so the warn tone waits for the shared
+      // staleness threshold (`STALE_TRAINING_ACTIVITY_DAYS`) to be crossed.
+      tone: pct >= 100 ? 'ok' : pct === 0 && programTitle && courseProgressStale ? 'warn' : undefined,
       spark: courseSpark,
     },
     {

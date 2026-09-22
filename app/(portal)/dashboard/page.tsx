@@ -47,6 +47,7 @@ import {
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
 import { getAIToolFollowThrough } from '@/lib/member/aiToolFollowThrough';
 import { isTrainingStaleForCounselorEscalation } from '@/lib/member/memberProgramTrainingView';
+import { trainingEligibleSince as resolveTrainingEligibleSince } from '@/lib/member/trainingStaleness';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import DashboardErrorFallback from '@/components/error/DashboardErrorFallback';
 import { getMemberPoints } from '@/lib/member/points';
@@ -194,6 +195,7 @@ async function renderMemberDashboard(
       <MemberHomeKit
         firstName={home.firstName}
         coursePercent={home.coursePercent}
+        courseProgressStale={home.courseProgressStale}
         programTitle={home.programTitle}
         programStatus={home.programStatus}
         noProgram={home.noProgram}
@@ -612,13 +614,14 @@ async function renderMemberDashboard(
     <SkillMissionTeaserCard data={skillMissionTeaserData} />
   );
 
-  let trainingEligibleSince: Date | null = null;
-  if (enrolledProgram && assessmentCompleted) {
-    const enrolledMs = dbUser.enrolledAt?.getTime() ?? 0;
-    const assessMs = intakeExtra?.assessmentCompletedAt?.getTime() ?? 0;
-    const mx = Math.max(enrolledMs, assessMs);
-    trainingEligibleSince = mx > 0 ? new Date(mx) : null;
-  }
+  // Shared with the dashboard home loader so the two training surfaces cannot
+  // disagree about when a member became able to start (WAP-135 follow-up).
+  const trainingEligibleSince = resolveTrainingEligibleSince({
+    enrolledProgram,
+    assessmentCompleted,
+    enrolledAt: dbUser.enrolledAt,
+    assessmentCompletedAt: intakeExtra?.assessmentCompletedAt,
+  });
 
   const hasPlacementRecord = !!intakeExtra?.placementRecord?.placedAt;
 

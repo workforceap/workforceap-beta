@@ -231,9 +231,10 @@ export default async function AdminCommandCenterPage({
     // No `tone` and no `color`: the bars take the kit's neutral accent. `pct`
     // is PROGRAM_HEALTH_SHARE_LABEL — a share of enrolled students, not a
     // state — so there is nothing here to be `ok` or `warn` about. The old
-    // `color: 'success'` painted every bar green under a heading that reads
-    // "Program health", which is the completion-score misread S21 removed
-    // from the printed numbers, re-told in colour.
+    // `color: 'success'` painted every bar green under a heading that then
+    // read "Program health" (since renamed "Enrollment share by program"),
+    // which is the completion-score misread S21 removed from the printed
+    // numbers, re-told in colour.
     const programHealth: ProgramHealthDatum[] = data.programHealth.map((row) => ({
       label: row.label,
       value: `${row.count} enrolled`,

@@ -10,6 +10,7 @@ import {
 import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
+import { isTrainingActivityStale } from '@/lib/member/trainingStaleness';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { deriveCareerPlanSignal, type CareerPlanSignal } from '@/lib/admin/careerPlanSignal';
 import {
@@ -58,13 +59,18 @@ export type TrainingDashboardData = {
   rows: TrainingDashboardRow[];
 };
 
-const STALE_TRAINING_DAYS = 14;
-
+/**
+ * One threshold, one predicate. This used to declare its own
+ * `STALE_TRAINING_DAYS = 14` and its own copy of the rule; both now come from
+ * `lib/member/trainingStaleness.ts`, which the member surfaces also use.
+ * Behaviour is unchanged — the two implementations were already identical.
+ */
 function isStale(lastTrainingActivityAt: Date | null, enrolledAt: Date | null, staleTrainingDetectedAt: Date | null): boolean {
-  if (staleTrainingDetectedAt) return true;
-  const baseline = lastTrainingActivityAt ?? enrolledAt;
-  if (!baseline) return false;
-  return Date.now() - baseline.getTime() > STALE_TRAINING_DAYS * 24 * 60 * 60 * 1000;
+  return isTrainingActivityStale({
+    lastActivityAt: lastTrainingActivityAt,
+    eligibleSince: enrolledAt,
+    staleDetectedAt: staleTrainingDetectedAt,
+  });
 }
 
 export async function loadTrainingDashboardData(
