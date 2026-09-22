@@ -3313,6 +3313,14 @@
     "ownerStaff": "Le personnel de WorkforceAP",
     "ownerCounselor": "Votre conseiller(ère), {name}",
     "whatsNext": "Ensuite : {text}",
+    "reviewer": {
+      "assignedApproval": "Votre conseiller(ère), {name}, examinera votre candidature.",
+      "assignedIntake": "Votre conseiller(ère), {name}, terminera votre examen d’admission.",
+      "unassigned": "Un(e) conseiller(ère) vous sera attribué(e) ; son nom apparaîtra ici.",
+      "message": "Écrire à {name}",
+      "decisionStep": "Nous examinons votre candidature ; vous recevrez la décision par e-mail et la verrez ici.",
+      "waitEstimate": "Les candidatures récentes ont été examinées en environ {days, plural, one {# jour} other {# jours}} (d’après {count} décisions au cours des 30 derniers jours)."
+    },
     "next": {
       "application": {
         "not_submitted": "Soumettez votre candidature pour que le personnel puisse commencer l’examen.",
@@ -3320,7 +3328,7 @@
         "needs_info": "Envoyez les informations demandées par votre équipe pour que l’examen continue.",
         "approved": "L’examen du dossier d’admission est la prochaine étape.",
         "denied": "Contactez votre équipe pour en discuter ou pour postuler de nouveau.",
-        "unknown": "Demandez à votre équipe de confirmer l’état de votre candidature."
+        "unknown": "L’état de votre candidature n’est pas encore enregistré ici."
       },
       "intake": {
         "upcoming": "Commence après l’approbation de votre candidature.",
@@ -3329,13 +3337,13 @@
         "needs_info": "Envoyez les documents demandés par votre équipe pour terminer l’examen d’admission.",
         "verified": "L’approbation de la formation est la prochaine étape.",
         "not_eligible": "Votre équipe vous expliquera les options qui vous sont ouvertes.",
-        "unknown": "Demandez à votre équipe de confirmer l’état de l’examen d’admission."
+        "unknown": "Aucun examen d’admission n’est encore enregistré. Le personnel met cette étape à jour quand l’examen commence."
       },
       "training": {
         "upcoming": "Commence après la vérification de l’examen d’admission.",
         "pending": "Le personnel approuve votre inscription à la formation, puis vous recevez une invitation Coursera.",
         "approved": "Vérifiez votre courriel pour l’invitation Coursera et acceptez-la.",
-        "unknown": "Demandez à votre équipe de confirmer si la formation a été approuvée."
+        "unknown": "Aucune approbation de formation n’est encore enregistrée. Le personnel met cette étape à jour une fois la décision prise."
       }
     },
     "applicationStatus": {

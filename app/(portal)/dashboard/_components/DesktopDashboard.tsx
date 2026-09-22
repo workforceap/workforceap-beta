@@ -48,6 +48,7 @@ export default async function DesktopDashboard({
   superAdmin,
   intakeExtra,
   wizardProgramInterest,
+  counselorContext,
   todayHero,
   skillMissionTeaser,
   showProgramSelector,
@@ -118,6 +119,10 @@ export default async function DesktopDashboard({
                 initialProgramInterest: wizardProgramInterest,
                 initialReferralSource: intakeExtra?.profile?.referralSource ?? '',
                 initialStep: intakeExtra?.onboardingCurrentStep ?? 0,
+                counselor: counselorContext?.counselor
+                  ? { firstName: counselorContext.counselor.firstName, messagingHref: counselorContext.counselor.messagingHref }
+                  : null,
+                waitEstimate: counselorContext?.waitEstimate ?? null,
               }}
             >
               {activeTab === 'home' ? (

@@ -6,6 +6,7 @@ import type { FirstValueAction } from '@/lib/member/firstValueActions';
 import type { CareerMatchResult } from '@/lib/onet/types';
 import type { LevelName } from '@/lib/member/pointsConfig';
 import type { MemberDashboardTab, MemberDashboardTabLink } from '@/lib/member/dashboardTabs';
+import type { MemberCounselorContext } from '@/lib/member/counselorContext';
 
 /** The `t` function from `getTranslations('dashboard')`, threaded from page.tsx. */
 export type DashboardTranslator = Awaited<ReturnType<typeof getTranslations>>;
@@ -79,6 +80,8 @@ export type DesktopDashboardProps = {
     } | null;
   } | null;
   wizardProgramInterest: string;
+  /** Assigned counselor + measured wait for the wizard's closing step; null when the wizard is not shown. */
+  counselorContext: MemberCounselorContext | null;
   todayHero: ReactNode;
   skillMissionTeaser: ReactNode;
   showProgramSelector: boolean;

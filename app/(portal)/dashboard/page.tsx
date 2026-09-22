@@ -73,6 +73,7 @@ import MobileRecentActivity from './_components/MobileRecentActivity';
 import DesktopDashboard from './_components/DesktopDashboard';
 import { MemberDashboardKit } from '@/components/portal/kit';
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
+import { getMemberCounselorContext } from '@/lib/member/counselorContext';
 import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import SkillMissionTeaserCard, {
@@ -182,11 +183,17 @@ async function renderMemberDashboard(
     // card above the dashboard; a finished or closed one drops below the
     // content as a single collapsed line (memberApprovalCardPlacement).
     const approvalPlacement = memberApprovalCardPlacement(home.approvalStatus);
+    // Who reviews the pending step and the measured wait: only while a step
+    // is still in flight, so a finished pathway keeps the 1-2 op budget.
+    const counselorContext = home.approvalStatus.currentStage === 'complete'
+      ? null
+      : await getMemberCounselorContext(user.id);
     const approvalCard = (
       <MemberApprovalStatusCard
         status={home.approvalStatus}
         storageUserId={user.id}
         placement={approvalPlacement}
+        counselorContext={counselorContext}
       />
     );
     return (
@@ -513,6 +520,9 @@ async function renderMemberDashboard(
     intakeExtra?.onboardingCompletedAt != null && intakeExtra?.tourCompletedAt == null;
   const wizardProgramInterest =
     memberState.application?.programInterest ?? intakeExtra?.programInterest ?? '';
+  // The wizard's closing step names the assigned counselor and the measured
+  // review wait; loaded only while the wizard is actually shown.
+  const wizardCounselorContext = showMemberOnboarding ? await getMemberCounselorContext(user.id) : null;
 
   // ── Application status ── (from memberState, single source of truth)
   const applicationStatusView = memberState.application;
@@ -1179,6 +1189,7 @@ async function renderMemberDashboard(
         superAdmin={superAdmin}
         intakeExtra={intakeExtra}
         wizardProgramInterest={wizardProgramInterest}
+        counselorContext={wizardCounselorContext}
         todayHero={todayHero}
         skillMissionTeaser={skillMissionTeaser}
         showProgramSelector={showProgramSelector}
