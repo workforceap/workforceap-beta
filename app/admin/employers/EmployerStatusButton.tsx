@@ -60,7 +60,7 @@ export default function EmployerStatusButton({
         <button
           type="button"
           className="btn btn-sm"
-          style={{ background: 'var(--wa-success-dark)', color: '#fff', border: 'none' }}
+          style={{ background: 'var(--wa-success-dark)', color: 'var(--wa-on-success)', border: 'none' }}
           disabled={loading}
           onClick={() => void updateStatus('approve')}
           title="Approve employer"

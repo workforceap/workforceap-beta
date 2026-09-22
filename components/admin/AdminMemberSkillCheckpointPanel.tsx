@@ -40,10 +40,10 @@ type SkillMissionSummary = {
 };
 
 const STATUS_BADGE: Record<MissionStatus, { label: string; bg: string; color: string }> = {
-  passed: { label: 'Passed', bg: 'rgba(74,155,79,0.12)', color: '#256b2a' },
-  needs_retry: { label: 'Needs retry', bg: 'rgba(200,50,50,0.1)', color: '#9b1c1c' },
-  ready: { label: 'Ready', bg: 'rgba(37,99,235,0.1)', color: '#1d4ed8' },
-  locked: { label: 'Locked', bg: 'rgba(107,114,128,0.1)', color: '#4b5563' },
+  passed: { label: 'Passed', bg: 'var(--wa-success-soft)', color: 'var(--wa-success-dark)' },
+  needs_retry: { label: 'Needs retry', bg: 'var(--wa-danger-soft)', color: 'var(--wa-danger-text)' },
+  ready: { label: 'Ready', bg: 'var(--wa-info-soft)', color: 'var(--wa-info-dark)' },
+  locked: { label: 'Locked', bg: 'color-mix(in srgb, var(--wa-muted) 12%, transparent)', color: 'var(--wa-muted-strong)' },
 };
 
 function StatusBadge({ status }: { status: MissionStatus }) {
@@ -74,8 +74,8 @@ function SkillChip({ label, variant = 'green' }: { label: string; variant?: 'gre
         borderRadius: '9999px',
         fontSize: '0.8125rem',
         fontWeight: 600,
-        background: isGreen ? 'rgba(74,155,79,0.1)' : 'rgba(37,99,235,0.08)',
-        color: isGreen ? '#256b2a' : '#1d4ed8',
+        background: isGreen ? 'var(--wa-success-soft)' : 'var(--wa-info-soft)',
+        color: isGreen ? 'var(--wa-success-dark)' : 'var(--wa-info-dark)',
       }}
     >
       {label}
@@ -223,7 +223,7 @@ function OverrideDropdown({
             Force retry
           </button>
           {err && (
-            <p role="alert" style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem', color: 'var(--color-error, #c83232)' }}>
+            <p role="alert" style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-danger-text)' }}>
               {err}
             </p>
           )}
@@ -327,14 +327,14 @@ function MissionCard({
           {mission.latestResult.coachingNote && (
             <div
               style={{
-                background: 'rgba(200,50,50,0.06)',
-                borderLeft: '3px solid rgba(200,50,50,0.4)',
+                background: 'color-mix(in srgb, var(--wa-danger) 6%, transparent)',
+                borderLeft: '3px solid color-mix(in srgb, var(--wa-danger) 40%, transparent)',
                 borderRadius: '0 0.4rem 0.4rem 0',
                 padding: '0.55rem 0.75rem',
                 marginBottom: '0.5rem',
               }}
             >
-              <p style={{ margin: '0 0 0.2rem', fontSize: '0.8125rem', fontWeight: 700, color: '#9b1c1c', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <p style={{ margin: '0 0 0.2rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-danger-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 AI coaching note
               </p>
               <p style={{ margin: 0, fontSize: '0.87rem', lineHeight: 1.5, color: 'var(--color-on-surface)' }}>
@@ -406,22 +406,22 @@ export default function AdminMemberSkillCheckpointPanel({
             style={{
               fontSize: '1.25rem',
               fontWeight: 800,
-              color: summary.careerReadinessPct >= 80 ? '#256b2a' : summary.careerReadinessPct >= 40 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+              color: summary.careerReadinessPct >= 80 ? 'var(--wa-success-dark)' : summary.careerReadinessPct >= 40 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
             }}
           >
             {summary.careerReadinessPct}% of missions passed
           </span>
           <div style={{ display: 'flex', gap: '0.4rem', fontSize: '0.8125rem' }}>
-            <span style={{ padding: '0.15rem 0.45rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.12)', color: '#256b2a', fontWeight: 600 }}>
+            <span style={{ padding: '0.15rem 0.45rem', borderRadius: '9999px', background: 'var(--wa-success-soft)', color: 'var(--wa-success-dark)', fontWeight: 600 }}>
               {summary.passedCount} passed
             </span>
             {summary.readyCount > 0 && (
-              <span style={{ padding: '0.15rem 0.45rem', borderRadius: '9999px', background: 'rgba(37,99,235,0.1)', color: '#1d4ed8', fontWeight: 600 }}>
+              <span style={{ padding: '0.15rem 0.45rem', borderRadius: '9999px', background: 'var(--wa-info-soft)', color: 'var(--wa-info-dark)', fontWeight: 600 }}>
                 {summary.readyCount} ready
               </span>
             )}
             {summary.retryCount > 0 && (
-              <span style={{ padding: '0.15rem 0.45rem', borderRadius: '9999px', background: 'rgba(200,50,50,0.1)', color: '#9b1c1c', fontWeight: 600 }}>
+              <span style={{ padding: '0.15rem 0.45rem', borderRadius: '9999px', background: 'var(--wa-danger-soft)', color: 'var(--wa-danger-text)', fontWeight: 600 }}>
                 {summary.retryCount} retry
               </span>
             )}

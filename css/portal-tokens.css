@@ -48,6 +48,13 @@
   /* Interactive boundaries need stronger contrast than decorative dividers. */
   --wa-control-border: light-dark(#858585, #aa808d);
   --wa-track: light-dark(#f0eef0, #2c1c21);
+  /* Text on the danger tint and on plain surfaces. --wa-danger (#dc2626) is
+     4.4:1 on --wa-bg, so it stays a fill / border hue; this is the
+     .wa-kit-tag--danger foreground pair (4.5:1+ on --wa-danger-soft, both modes). */
+  --wa-danger-text: light-dark(#b91c1c, #f28b8b);
+  /* Foreground on a solid --wa-success-dark fill (placement strip): white in
+     light; dark ink in dark, where that fill lightens to #8fd9b0. */
+  --wa-on-success: light-dark(#ffffff, #0f2a16);
   /* Shared portal canvas: warm wash on --wa-bg. Header/nav sit on this, not a
      separate white/glass slab. Shell paints it; pages inside stay transparent. */
   --wa-bg-wave:

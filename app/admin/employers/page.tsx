@@ -31,23 +31,23 @@ function getPartnershipTier(placementAgreementSigned: boolean, hiringPipelineAct
   bg: string;
 } {
   if (placementAgreementSigned && hiringPipelineActive) {
-    return { label: 'Strategic Hiring Partner', color: '#ad2c4d', bg: 'rgba(173,44,77,0.10)' };
+    return { label: 'Strategic Hiring Partner', color: 'var(--wa-accent-text)', bg: 'var(--wa-accent-soft)' };
   }
   if (placementAgreementSigned) {
     return { label: 'Hiring Partner', color: '#a47f38', bg: 'rgba(164,127,56,0.14)' };
   }
   if (hiringPipelineActive) {
-    return { label: 'Active Pipeline', color: '#2e7d32', bg: 'rgba(46,125,50,0.10)' };
+    return { label: 'Active Pipeline', color: 'var(--wa-success-dark)', bg: 'var(--wa-success-soft)' };
   }
   return { label: 'Standard', color: 'var(--color-on-surface-variant)', bg: 'var(--surface-container)' };
 }
 
 function statusBadgeStyle(status: string) {
   if (status === 'active') {
-    return { background: 'rgba(74, 155, 79, 0.12)', color: '#2d7a32' };
+    return { background: 'var(--wa-success-soft)', color: 'var(--wa-success-dark)' };
   }
   if (status === 'pending_approval') {
-    return { background: 'rgba(245, 158, 11, 0.12)', color: '#b45309' };
+    return { background: 'var(--wa-gold-soft)', color: 'var(--wa-gold-dark)' };
   }
   return { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' };
 }
@@ -336,7 +336,7 @@ export default async function AdminEmployersPage({
                 <div key={e.id} className="portal-activity-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.75rem' }}>
                   {/* Header row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-                    <div style={{ width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
+                    <div style={{ width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--wa-on-hero)', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
                       {initials}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>

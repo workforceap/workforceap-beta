@@ -9,6 +9,7 @@ import {
   type JobApplicationStatus,
 } from "@/lib/jobApplications/constants";
 import JobApplicationCard from "./JobApplicationCard";
+import { JOB_APPLICATION_STATUS_ACCENT } from "@/lib/jobApplications/statusAccents";
 
 interface JobApplicationKanbanProps {
   applications: JobApplication[];
@@ -25,26 +26,16 @@ const STATUS_LABELS: Record<JobApplicationStatus, string> = {
   REJECTED: "Rejected",
 };
 
-/** Left accent on kanban cards / columns — WorkforceAP burgundy on Applied */
-const STATUS_ACCENTS: Record<JobApplicationStatus, string> = {
-  SAVED: "#64748b",
-  APPLIED: "#8c0f37",
-  PHONE_SCREEN: "#2563eb",
-  INTERVIEWING: "#d97706",
-  OFFER: "#16a34a",
-  ACCEPTED: "#059669",
-  REJECTED: "#dc2626",
-};
-
-/** Status badge tint, derived from the same accent hexes above via color-mix
- * so the badge stays legible (and doesn't turn into a pale, near-white
- * patch) on dark surfaces — matches the `--wa-accent-soft` tinting idiom
- * used across the kit instead of fixed Tailwind gray/blue/amber swatches. */
+/** Status badge tint, derived from the same accent token as the card / column
+ * (lib/jobApplications/statusAccents.ts) via color-mix so the badge stays
+ * legible (and doesn't turn into a pale, near-white patch) on dark surfaces —
+ * the `--wa-accent-soft` tinting idiom used across the kit. 10% keeps the
+ * Offer green at 4.5:1+ on its own tint (16% measured 4.2:1). */
 function statusBadgeStyle(status: JobApplicationStatus): CSSProperties {
-  const hex = STATUS_ACCENTS[status];
+  const accent = JOB_APPLICATION_STATUS_ACCENT[status];
   return {
-    background: `color-mix(in srgb, ${hex} 16%, transparent)`,
-    color: hex,
+    background: `color-mix(in srgb, ${accent} 10%, transparent)`,
+    color: accent,
   };
 }
 
@@ -83,7 +74,7 @@ function MobileApplicationCard({
         {
           padding: "1rem",
           marginBottom: "0.75rem",
-          "--portal-kanban-accent": STATUS_ACCENTS[application.status],
+          "--portal-kanban-accent": JOB_APPLICATION_STATUS_ACCENT[application.status],
         } as CSSProperties
       }
     >
@@ -157,7 +148,7 @@ function MobileApplicationCard({
               type="button"
               onClick={handleSave}
               className="wa-flex-1 wa-px-3 wa-py-2 wa-text-white wa-text-sm wa-font-medium wa-rounded hover:wa-opacity-90 wa-transition-opacity focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[var(--color-accent)] focus-visible:wa-ring-offset-1"
-              style={{ background: "var(--color-accent-dark, #6b0c29)" }}
+              style={{ background: "var(--wa-accent-dark)" }}
             >
               Save
             </button>
@@ -248,7 +239,7 @@ export default function JobApplicationKanban({
               className="portal-kanban-column"
               style={
                 {
-                  "--portal-kanban-accent": STATUS_ACCENTS[status],
+                  "--portal-kanban-accent": JOB_APPLICATION_STATUS_ACCENT[status],
                 } as CSSProperties
               }
             >

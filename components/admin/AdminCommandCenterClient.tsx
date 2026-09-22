@@ -219,7 +219,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
                       type="button"
                       className={`btn btn-sm ${action.tone === 'primary' ? 'btn-primary' : 'btn-outline'}`}
                       onClick={() => openBulk(action.status)}
-                      style={action.tone === 'danger' ? { borderColor: '#fecaca', color: '#b91c1c' } : undefined}
+                      style={action.tone === 'danger' ? { borderColor: 'color-mix(in srgb, var(--wa-danger) 35%, transparent)', color: 'var(--wa-danger-text)' } : undefined}
                     >
                       {action.label} ({activeSelected.size})
                     </button>
@@ -228,7 +228,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
               ) : null}
             </div>
           ) : null}
-          {bulkResult ? <p role="status" style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: '#166534' }}>{bulkResult}</p> : null}
+          {bulkResult ? <p role="status" style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: 'var(--wa-success-dark)' }}>{bulkResult}</p> : null}
           {data.applicationsPending.map((row) => (
             <ApplicationCard
               key={row.applicationId}
@@ -287,7 +287,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
                 />
               </label>
             ) : null}
-            {bulkError ? <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', color: '#b91c1c' }}>{bulkError}</p> : null}
+            {bulkError ? <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--wa-danger-text)' }}>{bulkError}</p> : null}
             {outcomeUncertain ? (
               <button type="button" className="btn btn-outline btn-sm" onClick={() => {
                 setBulkAction(null);
@@ -498,7 +498,7 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
             className={`btn btn-sm ${action.tone === 'primary' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => review(action.status)}
             disabled={isPending}
-            style={action.tone === 'danger' ? { borderColor: '#fecaca', color: '#b91c1c' } : undefined}
+            style={action.tone === 'danger' ? { borderColor: 'color-mix(in srgb, var(--wa-danger) 35%, transparent)', color: 'var(--wa-danger-text)' } : undefined}
           >
             {isPending ? 'Saving…' : action.status === 'DENIED' && denialOpen ? 'Confirm not a fit' : action.label}
           </button>
@@ -518,8 +518,8 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
           />
         </label>
       ) : null}
-      {done ? <p role="status" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#166534' }}>{done}</p> : null}
-      {error ? <p role="alert" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#b91c1c' }}>{error}</p> : null}
+      {done ? <p role="status" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-success-dark)' }}>{done}</p> : null}
+      {error ? <p role="alert" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-danger-text)' }}>{error}</p> : null}
     </div>
   );
 }

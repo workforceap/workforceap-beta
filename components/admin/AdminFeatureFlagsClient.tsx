@@ -21,22 +21,22 @@ const ALL_ROLES = ['member', 'admin', 'super_admin', 'case_manager', 'counselor'
 
 function RoleBadge({ role }: { role: string }) {
   const colorMap: Record<string, string> = {
-    member: 'rgba(37,99,235,0.12)',
-    admin: 'rgba(74,155,79,0.12)',
-    super_admin: 'rgba(173,44,77,0.12)',
-    case_manager: 'rgba(217,119,6,0.12)',
-    counselor: 'rgba(164,127,56,0.14)',
-    partner: 'rgba(15,118,110,0.12)',
-    employer: 'rgba(173,44,77,0.12)',
+    member: 'var(--wa-info-soft)',
+    admin: 'var(--wa-success-soft)',
+    super_admin: 'var(--wa-accent-soft)',
+    case_manager: 'var(--wa-gold-soft)',
+    counselor: 'color-mix(in srgb, var(--wa-gold) 14%, transparent)',
+    partner: 'color-mix(in srgb, var(--wa-success-soft) 50%, var(--wa-info-soft))',
+    employer: 'var(--wa-accent-soft)',
   };
   const textMap: Record<string, string> = {
-    member: '#2563eb',
-    admin: '#4a9b4f',
-    super_admin: '#ad2c4d',
-    case_manager: '#d97706',
-    counselor: 'var(--wa-gold)',
-    partner: '#0f766e',
-    employer: 'var(--wa-accent)',
+    member: 'var(--wa-info-dark)',
+    admin: 'var(--wa-success-dark)',
+    super_admin: 'var(--wa-accent-text)',
+    case_manager: 'var(--wa-gold-dark)',
+    counselor: 'color-mix(in srgb, var(--wa-gold-dark) 60%, var(--wa-accent-text))',
+    partner: 'color-mix(in srgb, var(--wa-success-dark) 50%, var(--wa-info-dark))',
+    employer: 'var(--wa-accent-text)',
   };
   return (
     <span
@@ -236,7 +236,7 @@ export default function AdminFeatureFlagsClient({ notice }: { notice?: React.Rea
       {notice}
 
       {error && (
-        <div role="alert" style={{ padding: '1rem', background: 'rgba(173,44,77,0.08)', color: '#ad2c4d', borderRadius: '0.625rem', marginBottom: '1rem' }}>
+        <div role="alert" style={{ padding: '1rem', background: 'color-mix(in srgb, var(--wa-accent) 8%, transparent)', color: 'var(--wa-accent-text)', borderRadius: '0.625rem', marginBottom: '1rem' }}>
           {error}
         </div>
       )}
@@ -361,7 +361,7 @@ export default function AdminFeatureFlagsClient({ notice }: { notice?: React.Rea
                       width: '2.5rem',
                       height: '2.5rem',
                       borderRadius: '0.625rem',
-                      background: flag.enabled ? 'rgba(74,155,79,0.12)' : 'var(--surface-container)',
+                      background: flag.enabled ? 'var(--wa-success-soft)' : 'var(--surface-container)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -372,7 +372,7 @@ export default function AdminFeatureFlagsClient({ notice }: { notice?: React.Rea
                       className="material-symbols-outlined"
                       style={{
                         fontSize: '1.125rem',
-                        color: flag.enabled ? '#4a9b4f' : 'var(--color-on-surface-variant)',
+                        color: flag.enabled ? 'var(--wa-success)' : 'var(--color-on-surface-variant)',
                         fontVariationSettings: "'FILL' 1",
                       }}
                     >
@@ -391,8 +391,8 @@ export default function AdminFeatureFlagsClient({ notice }: { notice?: React.Rea
                           fontWeight: 800,
                           padding: '0.15rem 0.5rem',
                           borderRadius: '9999px',
-                          background: flag.enabled ? 'rgba(74,155,79,0.12)' : 'var(--surface-container-high)',
-                          color: flag.enabled ? '#4a9b4f' : 'var(--color-on-surface-variant)',
+                          background: flag.enabled ? 'var(--wa-success-soft)' : 'var(--surface-container-high)',
+                          color: flag.enabled ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.08em',
                           flexShrink: 0,
@@ -484,7 +484,7 @@ export default function AdminFeatureFlagsClient({ notice }: { notice?: React.Rea
                       onClick={() => setConfirmDeleteId(flag.id)}
                       disabled={savingId === flag.id}
                       aria-label={`Delete "${flag.name}"`}
-                      style={{ color: '#ad2c4d', borderColor: 'rgba(173,44,77,0.3)' }}
+                      style={{ color: 'var(--wa-accent-text)', borderColor: 'color-mix(in srgb, var(--wa-accent) 30%, transparent)' }}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }} aria-hidden="true">
                         delete

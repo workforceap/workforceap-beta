@@ -22,11 +22,13 @@ interface WebhookEvent {
 }
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  success: { bg: 'rgba(34,197,94,0.1)', color: '#16a34a' },
-  failed: { bg: 'rgba(239,68,68,0.1)', color: '#dc2626' },
-  retrying: { bg: 'rgba(59,130,246,0.1)', color: '#2563eb' },
-  dead_letter: { bg: 'rgba(249,115,22,0.1)', color: '#ea580c' },
+  success: { bg: 'var(--wa-success-soft)', color: 'var(--wa-success-dark)' },
+  failed: { bg: 'var(--wa-danger-soft)', color: 'var(--wa-danger-text)' },
+  retrying: { bg: 'var(--wa-info-soft)', color: 'var(--wa-info-dark)' },
+  // Orange: between the red of `failed` and the gold of a warning.
+  dead_letter: { bg: 'var(--wa-gold-soft)', color: 'color-mix(in srgb, var(--wa-danger-text) 55%, var(--wa-gold-dark))' },
 };
+const UNKNOWN_STATUS_STYLE = { bg: 'color-mix(in srgb, var(--wa-muted) 12%, transparent)', color: 'var(--wa-muted-strong)' };
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -218,7 +220,7 @@ export default function WebhookEventsClient({
             fontSize: '0.875rem',
             borderRadius: 'var(--radius-md)',
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'var(--wa-on-accent-control)',
             border: 'none',
             cursor: 'pointer',
           }}
@@ -335,7 +337,7 @@ export default function WebhookEventsClient({
               key: 'status',
               header: 'Status',
               cell: (e) => {
-                const style = STATUS_STYLES[e.status] ?? { bg: 'rgba(100,116,139,0.1)', color: '#64748b' };
+                const style = STATUS_STYLES[e.status] ?? UNKNOWN_STATUS_STYLE;
                 return (
                   <span
                     style={{
@@ -399,7 +401,7 @@ export default function WebhookEventsClient({
       {/* Mobile card list */}
       <div className="md:wa-hidden wa-flex wa-flex-col" style={{ gap: '0.625rem' }}>
         {events.map((e) => {
-          const style = STATUS_STYLES[e.status] ?? { bg: 'rgba(100,116,139,0.1)', color: '#64748b' };
+          const style = STATUS_STYLES[e.status] ?? UNKNOWN_STATUS_STYLE;
           return (
             <div
               key={e.id}
@@ -446,7 +448,7 @@ export default function WebhookEventsClient({
                     maxHeight: '200px',
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word',
-                    color: '#dc2626',
+                    color: 'var(--wa-danger-text)',
                   }}
                 >
                   {e.errorMessage}

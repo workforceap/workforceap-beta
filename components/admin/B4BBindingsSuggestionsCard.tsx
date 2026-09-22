@@ -122,7 +122,7 @@ export default function B4BBindingsSuggestionsCard() {
             borderRadius: '0.6rem',
             border: '1px solid var(--color-accent)',
             background: loading ? 'var(--surface-container)' : 'var(--color-accent)',
-            color: loading ? 'var(--color-accent)' : '#fff',
+            color: loading ? 'var(--color-accent)' : 'var(--wa-on-accent-control)',
             fontWeight: 700,
             fontSize: '0.85rem',
             cursor: loading ? 'not-allowed' : 'pointer',
@@ -133,7 +133,7 @@ export default function B4BBindingsSuggestionsCard() {
       </div>
 
       {error ? (
-        <div style={{ fontSize: '0.85rem', color: 'var(--color-error, #dc2626)' }}>Error: {error}</div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--wa-danger-text)' }}>Error: {error}</div>
       ) : null}
 
       {report ? (
@@ -157,10 +157,10 @@ export default function B4BBindingsSuggestionsCard() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', fontSize: '0.8125rem' }}>
             <div>Catalog: <strong>{report.totalCatalogPrograms}</strong></div>
             <div>B4B: <strong>{report.totalB4BPrograms}</strong></div>
-            <div>Already bound: <strong style={{ color: '#16a34a' }}>{report.alreadyBound}</strong></div>
-            <div>Exact: <strong style={{ color: '#d97706' }}>{report.exactMatches}</strong></div>
-            <div>Partial: <strong style={{ color: '#d97706' }}>{report.partialMatches}</strong></div>
-            <div>Unmatched: <strong style={{ color: '#dc2626' }}>{report.unmatched}</strong></div>
+            <div>Already bound: <strong style={{ color: 'var(--wa-success-dark)' }}>{report.alreadyBound}</strong></div>
+            <div>Exact: <strong style={{ color: 'var(--wa-gold-dark)' }}>{report.exactMatches}</strong></div>
+            <div>Partial: <strong style={{ color: 'var(--wa-gold-dark)' }}>{report.partialMatches}</strong></div>
+            <div>Unmatched: <strong style={{ color: 'var(--wa-danger-text)' }}>{report.unmatched}</strong></div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '24rem', overflowY: 'auto' }}>
@@ -189,12 +189,12 @@ export default function B4BBindingsSuggestionsCard() {
                     suggested: <code>{s.suggestedB4BId}</code> ({s.suggestedB4BName})
                   </div>
                 ) : (
-                  <div style={{ color: 'var(--color-error, #dc2626)' }}>
+                  <div style={{ color: 'var(--wa-danger-text)' }}>
                     No B4B program with a matching name found — bind manually.
                   </div>
                 )}
                 {s.currentB4BId && s.currentB4BId !== s.suggestedB4BId ? (
-                  <div style={{ color: '#dc2626' }}>
+                  <div style={{ color: 'var(--wa-danger-text)' }}>
                     currently bound to <code>{s.currentB4BId}</code> — drift!
                   </div>
                 ) : null}

@@ -82,11 +82,11 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
         disabled={loading !== null}
         style={{
           padding: '0.25rem 0.5rem',
-          background: 'rgba(74, 155, 79, 0.12)',
-          border: '1px solid rgba(74, 155, 79, 0.3)',
+          background: 'var(--wa-success-soft)',
+          border: '1px solid color-mix(in srgb, var(--wa-success) 30%, transparent)',
           borderRadius: '4px',
           cursor: loading ? 'wait' : 'pointer',
-          color: '#2d7a32',
+          color: 'var(--wa-success-dark)',
           fontSize: '0.8125rem',
           fontWeight: 600,
           display: 'inline-flex',
@@ -112,11 +112,11 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
             disabled={loading !== null}
             style={{
               padding: '0.25rem 0.5rem',
-              background: 'rgba(185, 28, 28, 0.08)',
-              border: '1px solid rgba(185, 28, 28, 0.25)',
+              background: 'var(--wa-danger-soft)',
+              border: '1px solid color-mix(in srgb, var(--wa-danger) 25%, transparent)',
               borderRadius: '4px',
               cursor: loading ? 'wait' : 'pointer',
-              color: '#b91c1c',
+              color: 'var(--wa-danger-text)',
               fontSize: '0.8125rem',
               fontWeight: 600,
               display: 'inline-flex',
@@ -135,11 +135,11 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
           disabled={loading !== null}
           style={{
             padding: '0.25rem 0.5rem',
-            background: 'rgba(185, 28, 28, 0.08)',
-            border: '1px solid rgba(185, 28, 28, 0.25)',
+            background: 'var(--wa-danger-soft)',
+            border: '1px solid color-mix(in srgb, var(--wa-danger) 25%, transparent)',
             borderRadius: '4px',
             cursor: loading ? 'wait' : 'pointer',
-            color: '#b91c1c',
+            color: 'var(--wa-danger-text)',
             fontSize: '0.8125rem',
             fontWeight: 600,
             display: 'inline-flex',
@@ -251,11 +251,11 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 borderRadius: '4px',
                 fontSize: '0.8125rem',
                 background: isPending
-                  ? 'rgba(255, 187, 0, 0.15)'
+                  ? 'var(--wa-gold-soft)'
                   : partner.active
-                    ? 'rgba(74, 155, 79, 0.12)'
+                    ? 'var(--wa-success-soft)'
                     : 'var(--surface-container)',
-                color: isPending ? '#b38600' : partner.active ? '#2d7a32' : 'var(--color-on-surface-variant)',
+                color: isPending ? 'var(--wa-gold-dark)' : partner.active ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)',
               }}
             >
               {isPending ? 'Pending' : partner.active ? 'Active' : 'Inactive'}
@@ -428,15 +428,15 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                   style={{
                     background:
                       partner.status === 'pending_approval'
-                        ? 'rgba(255,187,0,0.15)'
+                        ? 'var(--wa-gold-soft)'
                         : partner.active
-                          ? 'rgba(74,155,79,0.12)'
+                          ? 'var(--wa-success-soft)'
                           : 'var(--surface-container)',
                     color:
                       partner.status === 'pending_approval'
-                        ? '#b38600'
+                        ? 'var(--wa-gold-dark)'
                         : partner.active
-                          ? '#2d7a32'
+                          ? 'var(--wa-success-dark)'
                           : 'var(--color-on-surface-variant)',
                   }}
                 >

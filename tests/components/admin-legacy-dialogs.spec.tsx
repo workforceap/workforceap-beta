@@ -119,7 +119,9 @@ describe('EmployerStatusButton', () => {
     render(<EmployerStatusButton employerId="e-1" status="pending_approval" />);
     const approve = screen.getByRole('button', { name: /approve/i });
     expect(approve.style.background).toBe('var(--wa-success-dark)');
-    expect(approve.style.color).toBe('rgb(255, 255, 255)');
+    // Foreground is the token pair for a solid --wa-success-dark fill (white in
+    // light, dark ink where the fill lightens), not a #fff literal.
+    expect(approve.style.color).toBe('var(--wa-on-success)');
     expect(document.querySelector('[style*="#2d7a32"]')).toBeNull();
   });
 });
