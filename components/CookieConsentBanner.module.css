@@ -56,7 +56,7 @@
 .decline {
   background: transparent;
   color: var(--color-on-surface);
-  border: 1px solid var(--wa-control-border, currentColor);
+  border: 1px solid var(--wa-control-border, var(--color-on-surface));
 }
 .accept {
   background: var(--color-accent);

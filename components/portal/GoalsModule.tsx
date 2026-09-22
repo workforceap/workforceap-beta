@@ -323,10 +323,10 @@ export default function GoalsModule() {
               <li
                 key={goal.id}
                 style={{
-                  border: '1px solid var(--color-outline-variant, rgba(0,0,0,0.08))',
+                  border: '1px solid var(--wa-border)',
                   borderRadius: '0.75rem',
                   padding: '0.85rem 0.9rem',
-                  background: 'var(--surface-container-lowest, transparent)',
+                  background: 'var(--surface-container-lowest)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>

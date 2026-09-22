@@ -98,7 +98,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
         padding: '0.75rem',
         borderRadius: 8,
         background: 'var(--wa-surface-2)',
-        border: '1px solid var(--color-outline-variant, #e0e0e0)',
+        border: '1px solid var(--wa-border)',
         display: 'grid',
         gap: '0.5rem',
       }}
@@ -130,7 +130,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
             width: '100%',
             padding: '0.5rem',
             borderRadius: 6,
-            border: '1px solid var(--color-outline-variant, #ccc)',
+            border: '1px solid var(--wa-control-border)',
             fontSize: '0.85rem',
             fontFamily: 'inherit',
             resize: 'vertical',
