@@ -3883,6 +3883,62 @@
     },
     "stage": {
       "title": "Nothing in this stage"
+    },
+    "thread": {
+      "title": "No messages yet",
+      "body": "Write your first message and the conversation appears here.",
+      "action": "Write a message"
+    },
+    "counselorThread": {
+      "title": "No messages yet",
+      "body": "Write to your counselor and the conversation appears here.",
+      "action": "Write a message"
+    },
+    "counselorUnassigned": {
+      "title": "No counselor assigned yet",
+      "body": "You can still write here. WorkforceAP staff read this thread until a counselor is assigned to you.",
+      "action": "Write a message"
+    },
+    "conversations": {
+      "title": "No conversations yet",
+      "body": "Your counselor thread appears here after you send a message."
+    },
+    "conversationsFiltered": {
+      "title": "No conversations match this search",
+      "body": "Clear the search to see every conversation.",
+      "action": "Clear search"
+    },
+    "inboxProvisioning": {
+      "title": "Your inbox is being set up",
+      "body": "Messages open once your account finishes setting up. Email support if you need help now.",
+      "action": "Email support",
+      "secondary": "Back to dashboard"
+    },
+    "inboxUnavailable": {
+      "title": "Your inbox is not ready yet",
+      "body": "Your conversation appears here once the thread is set up.",
+      "action": "Back to dashboard",
+      "overviewAction": "Back to overview"
+    },
+    "teamThreadEmployer": {
+      "title": "No messages yet",
+      "body": "Ask a question about job postings, applications, or candidate matches.",
+      "action": "Write a message"
+    },
+    "teamThreadPartner": {
+      "title": "No messages yet",
+      "body": "Reach out about referrals, milestones, or program questions.",
+      "action": "Write a message"
+    },
+    "applicationThread": {
+      "title": "No messages yet",
+      "body": "Start the conversation about this application.",
+      "action": "Write a message"
+    },
+    "applicationThreadUnavailable": {
+      "title": "This conversation could not load",
+      "body": "Try again, or pick another conversation from the list.",
+      "action": "Try again"
     }
   }
 }

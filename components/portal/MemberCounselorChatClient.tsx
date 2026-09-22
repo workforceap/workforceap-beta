@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit';
 import { memberMessagingSurface } from '@/lib/portal/messagingSurfaces';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
 
@@ -51,7 +52,9 @@ export default function MemberCounselorChatClient({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const realtimeInstanceRef = useRef(0);
+  const t = useTranslations('empty');
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: scrollBehavior() });
@@ -191,14 +194,23 @@ export default function MemberCounselorChatClient({
       ) : null}
       <div className="member-counselor-chat__scroll" role="log" aria-live="polite" aria-relevant="additions">
         {messages.length === 0 ? (
-          <PortalEmptyState
+          /* A thread with no messages is the first step (`first`); with no
+             counselor assigned yet it is honest about who reads it
+             (`unavailable`, warn) — the member can still write either way. */
+          <KitEmptyState
+            kind={thread.counselorUserId ? 'first' : 'unavailable'}
+            framed
             icon={
               <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
                 chat_bubble_outline
               </span>
             }
-            title="No messages yet"
-            description="Say hello to your counselor — they reply within 2 business days."
+            title={thread.counselorUserId ? t('counselorThread.title') : t('counselorUnassigned.title')}
+            description={thread.counselorUserId ? t('counselorThread.body') : t('counselorUnassigned.body')}
+            primaryAction={{
+              label: thread.counselorUserId ? t('counselorThread.action') : t('counselorUnassigned.action'),
+              onClick: () => inputRef.current?.focus(),
+            }}
           />
         ) : (
           messages.map((m) => {
@@ -224,6 +236,7 @@ export default function MemberCounselorChatClient({
         </label>
         <textarea
           id="member-chat-input"
+          ref={inputRef}
           className="member-counselor-chat__input"
           rows={3}
           value={draft}

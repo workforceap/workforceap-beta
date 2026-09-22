@@ -3823,6 +3823,62 @@
     },
     "stage": {
       "title": "Nada nesta etapa"
+    },
+    "thread": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Escreva sua primeira mensagem e a conversa aparecerá aqui.",
+      "action": "Escrever uma mensagem"
+    },
+    "counselorThread": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Escreva para seu orientador e a conversa aparecerá aqui.",
+      "action": "Escrever uma mensagem"
+    },
+    "counselorUnassigned": {
+      "title": "Nenhum orientador atribuído ainda",
+      "body": "Você ainda pode escrever aqui. A equipe da WorkforceAP lê esta conversa até que um orientador seja atribuído a você.",
+      "action": "Escrever uma mensagem"
+    },
+    "conversations": {
+      "title": "Nenhuma conversa ainda",
+      "body": "A conversa com seu orientador aparecerá aqui depois que você enviar uma mensagem."
+    },
+    "conversationsFiltered": {
+      "title": "Nenhuma conversa corresponde a esta busca",
+      "body": "Limpe a busca para ver todas as conversas.",
+      "action": "Limpar busca"
+    },
+    "inboxProvisioning": {
+      "title": "Sua caixa de entrada está sendo configurada",
+      "body": "As mensagens serão liberadas quando a configuração da sua conta terminar. Escreva para o suporte se precisar de ajuda agora.",
+      "action": "Escrever para o suporte",
+      "secondary": "Voltar ao painel"
+    },
+    "inboxUnavailable": {
+      "title": "Sua caixa de entrada ainda não está pronta",
+      "body": "Sua conversa aparecerá aqui assim que estiver configurada.",
+      "action": "Voltar ao painel",
+      "overviewAction": "Voltar à visão geral"
+    },
+    "teamThreadEmployer": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Faça uma pergunta sobre vagas, candidaturas ou candidatos compatíveis.",
+      "action": "Escrever uma mensagem"
+    },
+    "teamThreadPartner": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Fale conosco sobre indicações, marcos ou dúvidas do programa.",
+      "action": "Escrever uma mensagem"
+    },
+    "applicationThread": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Inicie a conversa sobre esta candidatura.",
+      "action": "Escrever uma mensagem"
+    },
+    "applicationThreadUnavailable": {
+      "title": "Não foi possível carregar esta conversa",
+      "body": "Tente novamente ou escolha outra conversa na lista.",
+      "action": "Tentar novamente"
     }
   }
 }

@@ -19,7 +19,6 @@ vi.mock('@/lib/member/loadTrainingWorkspace', () => ({ loadTrainingWorkspace: vi
 vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
 vi.mock('@/components/portal/PageHeader', () => ({ default: () => null }));
 vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({ MemberMessagesKit: () => null }));
-vi.mock('@/components/portal/kit/pages/member/MemberMessagesEmpty', () => ({ MemberMessagesEmpty: () => null }));
 vi.mock('@/components/portal/MemberCounselorChatClient', () => ({ default: () => null }));
 // Surface the server-computed inbox preview time so the assertion can see it.
 vi.mock('@/components/portal/MemberMessagesMobileClient', () => ({

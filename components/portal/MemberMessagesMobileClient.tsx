@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,7 +74,9 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const composeRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations('empty');
   const [searchQuery, setSearchQuery] = useState('');
 
   const scrollToBottom = useCallback(() => {
@@ -95,7 +99,10 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
 
   useEffect(() => {
     if (view === 'thread') {
-      scrollToBottom();
+      // Nothing to scroll to on an empty thread — and the shell is 100dvh /
+      // overflow hidden under the sticky top bar, so scrolling the window would
+      // push the empty state's icon and title out of the first viewport.
+      if (messages.length > 0) scrollToBottom();
       void markRead();
     }
   }, [view, messages.length, scrollToBottom, markRead]);
@@ -309,18 +316,24 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
         aria-relevant="additions"
       >
         {messages.length === 0 ? (
-          <div className="wa-flex wa-flex-col wa-items-center wa-justify-center wa-h-full wa-gap-3 wa-text-center">
-            <div
-              className="wa-w-16 wa-h-16 wa-rounded-full wa-flex wa-items-center wa-justify-center"
-              style={{ background: 'var(--surface-container-high)' }}
-            >
+          /* Same two situations as the desktop client: first message vs. no
+             counselor assigned yet (honest, warn); writing works in both. */
+          <div className="wa-flex wa-flex-col wa-justify-center wa-h-full">
+          <KitEmptyState
+            kind={thread.counselorUserId ? 'first' : 'unavailable'}
+            framed
+            icon={
               <span className="material-symbols-outlined wa-text-2xl" style={{ color: 'var(--wa-accent-text)' }}>
                 chat_bubble_outline
               </span>
-            </div>
-            <p className="wa-text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-              No messages yet. Say hello!
-            </p>
+            }
+            title={thread.counselorUserId ? t('counselorThread.title') : t('counselorUnassigned.title')}
+            description={thread.counselorUserId ? t('counselorThread.body') : t('counselorUnassigned.body')}
+            primaryAction={{
+              label: thread.counselorUserId ? t('counselorThread.action') : t('counselorUnassigned.action'),
+              onClick: () => composeRef.current?.focus(),
+            }}
+          />
           </div>
         ) : (
           messages.map((m) => {
@@ -372,6 +385,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
         </label>
         <textarea
           id="portal-messages-compose-input"
+          ref={composeRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {

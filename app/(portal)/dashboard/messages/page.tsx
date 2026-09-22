@@ -12,9 +12,8 @@ import PageHeader from '@/components/portal/PageHeader';
 import MemberCounselorChatClient from '@/components/portal/MemberCounselorChatClient';
 import MemberMessagesMobileClient from '@/components/portal/MemberMessagesMobileClient';
 import { getTranslations } from 'next-intl/server';
-import { MemberMessagesEmpty } from '@/components/portal/kit/pages/member/MemberMessagesEmpty';
-import { MemberMessagesKit } from '@/components/portal/kit/pages/member/MemberMessagesKit';
-import type { ChatMessage } from '@/components/portal/kit';
+import { MemberMessagesFrame, MemberMessagesKit } from '@/components/portal/kit/pages/member/MemberMessagesKit';
+import { KitEmptyState, type ChatMessage } from '@/components/portal/kit';
 import { loadTrainingWorkspace } from '@/lib/member/loadTrainingWorkspace';
 import { buildTrainingFeedbackDraft } from '@/lib/member/trainingFeedbackDraft';
 
@@ -48,23 +47,33 @@ export default async function MemberMessagesPage({
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const t = await getTranslations('messages');
+  const te = await getTranslations('empty');
 
   // Guard: an authenticated session whose user has no member row yet — a
   // new-signup provisioning race, or a removed/rebuilt account — would FK-violate
   // on `messageThread.create()` (message_threads_member_id_fkey) and crash the
   // ENTIRE member dashboard into the error boundary (Sentry JAVASCRIPT-NEXTJS-1B).
-  // Render a safe, empty inbox instead of taking the dashboard down.
+  // Render a safe, empty inbox instead of taking the dashboard down — an
+  // `unavailable` state (KIT_GUIDE §6): nothing is confirmed empty, the
+  // account is still provisioning, and support is the real route now.
   const memberRow = await prisma.user.findUnique({
     where: { id: user.id },
     select: { id: true },
   });
   if (!memberRow) {
     return (
-      <MemberMessagesEmpty
-        title={t('noMessagesYet')}
-        actionLabel="Email support"
-        actionHref="mailto:info@workforceap.org"
-      />
+      <MemberMessagesFrame>
+        <div className="wa-kit-card">
+          <KitEmptyState
+            kind="unavailable"
+            headingAs="h2"
+            title={te('inboxProvisioning.title')}
+            description={te('inboxProvisioning.body')}
+            primaryAction={{ label: te('inboxProvisioning.action'), href: 'mailto:info@workforceap.org' }}
+            secondaryAction={{ label: te('inboxProvisioning.secondary'), href: '/dashboard' }}
+          />
+        </div>
+      </MemberMessagesFrame>
     );
   }
 
@@ -72,13 +81,20 @@ export default async function MemberMessagesPage({
     ? await prisma.messageThread.findUnique({ where: { memberId: user.id } })
     : await getOrCreateMemberCounselorThread(user.id, { assignIfUnassigned: true });
   if (!thread) {
+    // Only reachable in a read-only audit (the live path creates the thread):
+    // the inbox is not ready in this view, which is not "no messages yet".
     return (
-      <MemberMessagesEmpty
-        title="No messages yet"
-        description="Your counselor conversation will appear here after the first message."
-        actionLabel="Back to dashboard"
-        actionHref="/dashboard"
-      />
+      <MemberMessagesFrame>
+        <div className="wa-kit-card">
+          <KitEmptyState
+            kind="unavailable"
+            headingAs="h2"
+            title={te('inboxUnavailable.title')}
+            description={te('inboxUnavailable.body')}
+            primaryAction={{ label: te('inboxUnavailable.action'), href: '/dashboard' }}
+          />
+        </div>
+      </MemberMessagesFrame>
     );
   }
 
