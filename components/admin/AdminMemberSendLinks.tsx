@@ -110,7 +110,7 @@ export default function AdminMemberSendLinks({ memberId }: { memberId: string })
     borderRadius: '0.45rem',
     border: '1px solid var(--color-accent, #ad2c4d)',
     background: 'var(--color-accent, #ad2c4d)',
-    color: 'var(--wa-on-accent-control)',
+    color: '#fff',
   } as const;
 
   return (

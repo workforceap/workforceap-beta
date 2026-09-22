@@ -112,7 +112,7 @@ export default function CourseraAccountLinkCard({ portalEmail, initialCourseraEm
           </p>
         ) : null}
         {message ? <p className="coursera-footnote" style={{ color: 'var(--color-green)', margin: 0 }}>{message}</p> : null}
-        {error ? <p className="coursera-footnote" style={{ color: 'var(--color-accent)', margin: 0 }}>{error}</p> : null}
+        {error ? <p className="coursera-footnote" style={{ color: 'var(--wa-accent-text)', margin: 0 }}>{error}</p> : null}
       </div>
     </section>
   );

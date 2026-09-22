@@ -201,7 +201,7 @@ export default function MobileProfileSkillsResume({
       {hasResume ? (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '24px' }} aria-hidden="true">description</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '24px' }} aria-hidden="true">description</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p className="wa-text-sm wa-font-semibold wa-truncate" style={{ color: 'var(--color-on-surface)' }}>
                 {fileName}
@@ -210,7 +210,7 @@ export default function MobileProfileSkillsResume({
             </div>
             <button type="button"
               className="wa-text-xs wa-font-bold"
-              style={{ padding: '0.375rem 0.75rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)' }}
+              style={{ padding: '0.375rem 0.75rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--wa-accent-text)' }}
               onClick={() => {
                 if (!uploadInFlightRef.current) fileRef.current?.click();
               }}
@@ -233,7 +233,7 @@ export default function MobileProfileSkillsResume({
                 borderRadius: '0.5rem',
                 border: '1px solid var(--outline-variant)',
                 background: 'var(--surface-container-lowest)',
-                color: 'var(--color-accent)',
+                color: 'var(--wa-accent-text)',
                 fontWeight: 700,
                 fontSize: '0.8125rem',
                 display: 'flex',
@@ -254,11 +254,11 @@ export default function MobileProfileSkillsResume({
                 <span className="wa-text-xs wa-font-bold" style={{ color: 'var(--color-on-surface)' }}>Resume preview</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   {previewDownloadUrl ? (
-                    <a href={previewDownloadUrl} target="_blank" rel="noopener noreferrer" className="wa-text-xs wa-font-bold" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>
+                    <a href={previewDownloadUrl} target="_blank" rel="noopener noreferrer" className="wa-text-xs wa-font-bold" style={{ color: 'var(--wa-accent-text)', textDecoration: 'none' }}>
                       Download
                     </a>
                   ) : null}
-                  <button type="button" onClick={closePreview} className="wa-text-xs wa-font-bold" style={{ color: 'var(--color-accent)', background: 'none', border: 0, padding: 0 }}>
+                  <button type="button" onClick={closePreview} className="wa-text-xs wa-font-bold" style={{ color: 'var(--wa-accent-text)', background: 'none', border: 0, padding: 0 }}>
                     Hide
                   </button>
                 </div>
@@ -271,7 +271,7 @@ export default function MobileProfileSkillsResume({
               {previewError ? (
                 <div style={{ padding: '1rem', textAlign: 'center' }}>
                   <p role="alert" style={{ margin: '0 0 0.75rem', color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>{previewError}</p>
-                  <button type="button" onClick={() => void refreshResumeState(true)} className="wa-text-xs wa-font-bold" style={{ color: 'var(--color-accent)', background: 'none', border: 0, padding: 0 }}>
+                  <button type="button" onClick={() => void refreshResumeState(true)} className="wa-text-xs wa-font-bold" style={{ color: 'var(--wa-accent-text)', background: 'none', border: 0, padding: 0 }}>
                     Try again
                   </button>
                 </div>
@@ -307,7 +307,7 @@ export default function MobileProfileSkillsResume({
                     {preview.extension ? `${preview.extension.toUpperCase()} preview is not supported.` : 'This resume cannot be previewed.'}
                   </p>
                   {preview.downloadUrl ? (
-                    <a href={preview.downloadUrl} target="_blank" rel="noopener noreferrer" className="wa-text-xs wa-font-bold" style={{ color: 'var(--color-accent)' }}>
+                    <a href={preview.downloadUrl} target="_blank" rel="noopener noreferrer" className="wa-text-xs wa-font-bold" style={{ color: 'var(--wa-accent-text)' }}>
                       Download resume
                     </a>
                   ) : null}
@@ -324,7 +324,7 @@ export default function MobileProfileSkillsResume({
           }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '1.5rem 0', borderRadius: '0.75rem', border: '2px dashed var(--outline-variant)', background: 'var(--surface-container-lowest)', cursor: uploading ? 'wait' : 'pointer', opacity: uploading ? 0.6 : 1 }}
         >
-          <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.875rem' }} aria-hidden="true">
+          <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.875rem' }} aria-hidden="true">
             {uploading ? 'hourglass_top' : 'upload_file'}
           </span>
           <p role="status" aria-live="polite" className="wa-text-sm wa-font-semibold" style={{ color: 'var(--color-on-surface)' }}>
@@ -336,7 +336,7 @@ export default function MobileProfileSkillsResume({
       )}
 
       {error ? (
-        <p role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.8125rem', marginTop: '0.5rem' }}>{error}</p>
+        <p role="alert" style={{ color: 'var(--wa-accent-text)', fontSize: '0.8125rem', marginTop: '0.5rem' }}>{error}</p>
       ) : null}
       {warning ? (
         <p role="status" style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', marginTop: '0.5rem' }}>{warning}</p>

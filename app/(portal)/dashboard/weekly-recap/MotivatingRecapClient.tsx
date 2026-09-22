@@ -145,7 +145,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
               }}
             >
               <p style={{ ...SUBTLE_LABEL, fontSize: '0.8125rem', marginBottom: '0.2rem' }}>Readiness</p>
-              <p style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--color-accent)', margin: 0, lineHeight: 1 }}>
+              <p style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--wa-accent-text)', margin: 0, lineHeight: 1 }}>
                 {score}
                 <span style={{ fontSize: '0.95rem', color: 'var(--color-on-surface-variant)' }}>%</span>
               </p>
@@ -157,7 +157,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
       {/* Wins this week */}
       <section style={{ marginBottom: '1.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
             celebration
           </span>
           <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>Your wins this week</h2>
@@ -227,7 +227,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
       {goals.length > 0 && (
         <section style={{ marginBottom: '1.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>flag</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>flag</span>
             <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>Progress toward your goals</h2>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -272,7 +272,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
       {plan.length > 0 && (
         <section style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>rocket_launch</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>rocket_launch</span>
             <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>Your plan for next week</h2>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
@@ -303,21 +303,21 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
                       alignItems: 'center',
                       justifyContent: 'center',
                       background: 'rgba(173,44,77,0.10)',
-                      color: 'var(--color-accent)',
+                      color: 'var(--wa-accent-text)',
                       flexShrink: 0,
                     }}
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '1.15rem', fontVariationSettings: "'FILL' 1" }}>{p.icon ?? 'arrow_forward'}</span>
                   </span>
                   {p.source === 'goal' && (
-                    <span style={{ ...SUBTLE_LABEL, fontSize: '0.8125rem', color: 'var(--color-accent)' }}>Goal step</span>
+                    <span style={{ ...SUBTLE_LABEL, fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>Goal step</span>
                   )}
                 </div>
                 <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.35 }}>{p.title}</p>
                 {p.body && (
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>{p.body}</p>
                 )}
-                <span style={{ marginTop: 'auto', fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-accent)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                <span style={{ marginTop: 'auto', fontSize: '0.82rem', fontWeight: 800, color: 'var(--wa-accent-text)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                   {p.cta ?? 'Get started'}
                   <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>chevron_right</span>
                 </span>
@@ -329,7 +329,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
 
       {/* Nav */}
       <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', paddingTop: '1rem', borderTop: '1px solid var(--outline-variant)' }}>
-        <Link href="/dashboard" style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-accent)', textDecoration: 'none' }}>← Dashboard</Link>
+        <Link href="/dashboard" style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none' }}>← Dashboard</Link>
         <Link href="/dashboard/career-brief" style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', textDecoration: 'none' }}>
           Career Brief →
         </Link>

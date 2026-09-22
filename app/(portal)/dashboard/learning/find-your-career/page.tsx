@@ -55,7 +55,7 @@ export default async function FindYourCareerPage() {
         >
           <span
             className="material-symbols-outlined"
-            style={{ fontSize: '1.25rem', color: 'var(--color-accent)', flexShrink: 0, marginTop: '0.125rem' }}
+            style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', flexShrink: 0, marginTop: '0.125rem' }}
            aria-hidden="true">
             lightbulb
           </span>
@@ -83,7 +83,7 @@ export default async function FindYourCareerPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                   <span
                     className="material-symbols-outlined"
-                    style={{ color: 'var(--color-accent)', '--ms-fill': 1 }}
+                    style={{ color: 'var(--wa-accent-text)', '--ms-fill': 1 }}
                     aria-hidden="true"
                   >
                     {tool.icon}
@@ -93,7 +93,7 @@ export default async function FindYourCareerPage() {
                 <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.45 }}>
                   {tool.description}
                 </p>
-                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 500 }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--wa-accent-text)', fontWeight: 500 }}>
                   {tool.tip}
                 </p>
               </Link>
@@ -124,7 +124,7 @@ export default async function FindYourCareerPage() {
               <Link key={link.href} href={link.href} className="portal-action-row" style={{ gap: '0.75rem' }}>
                 <span
                   className="material-symbols-outlined"
-                  style={{ fontSize: '1.125rem', color: 'var(--color-accent)', '--ms-fill': 1 }}
+                  style={{ fontSize: '1.125rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}
                   aria-hidden="true"
                 >
                   {link.icon}

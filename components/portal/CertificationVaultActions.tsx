@@ -39,7 +39,7 @@ export function CertificationViewButton({
     variant === 'mobile'
       ? {
           background: 'var(--color-accent)',
-          color: 'var(--wa-on-accent-control)',
+          color: '#fff',
           border: 'none',
           borderRadius: '0.5rem',
           padding: '0.375rem 0.75rem',
@@ -51,7 +51,7 @@ export function CertificationViewButton({
         }
       : {
           background: 'var(--surface-container-high)',
-          color: 'var(--color-accent)',
+          color: 'var(--wa-accent-text)',
           border: '1px solid var(--outline-variant)',
           borderRadius: '0.5rem',
           padding: '0.35rem 0.75rem',

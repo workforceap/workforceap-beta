@@ -327,7 +327,7 @@
   border-radius: 14px;
   border: none;
   background: var(--color-accent, #ad2c4d);
-  color: var(--wa-on-accent-control);
+  color: #fff;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
 }

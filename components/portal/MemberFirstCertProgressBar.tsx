@@ -60,7 +60,7 @@ export default function MemberFirstCertProgressBar({ progress, compact }: Props)
           style={{
             fontSize: compact ? '0.8125rem' : '0.875rem',
             fontWeight: 800,
-            color: isComplete ? 'var(--color-green)' : 'var(--color-accent)',
+            color: isComplete ? 'var(--color-green)' : 'var(--wa-accent-text)',
             whiteSpace: 'nowrap',
             fontVariantNumeric: 'tabular-nums',
           }}

@@ -109,7 +109,7 @@ export default function ElevatorPitchDeploymentLogger() {
             gap: '0.375rem',
             padding: '0.5rem 1.125rem',
             background: 'var(--color-accent)',
-            color: 'var(--wa-on-accent-control)',
+            color: '#fff',
             border: 'none',
             borderRadius: '0.5rem',
             fontSize: '0.875rem',
@@ -155,7 +155,7 @@ export default function ElevatorPitchDeploymentLogger() {
                   flexShrink: 0,
                   marginTop: '0.0625rem',
                 }}>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '0.875rem' }} aria-hidden="true">record_voice_over</span>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '0.875rem' }} aria-hidden="true">record_voice_over</span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'baseline', flexWrap: 'wrap' }}>
@@ -212,7 +212,7 @@ export default function ElevatorPitchDeploymentLogger() {
 
             {success ? (
               <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)' }} aria-hidden="true">check_circle</span>
+                <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)' }} aria-hidden="true">check_circle</span>
                 <p style={{ fontWeight: 700, color: 'var(--color-on-surface)', marginTop: '0.5rem' }}>Logged!</p>
               </div>
             ) : (
@@ -306,7 +306,7 @@ export default function ElevatorPitchDeploymentLogger() {
                         borderRadius: '0.5rem',
                         fontSize: '0.875rem',
                         fontWeight: 700,
-                        color: 'var(--wa-on-accent-control)',
+                        color: '#fff',
                         cursor: submitting ? 'not-allowed' : 'pointer',
                         opacity: submitting ? 0.7 : 1,
                       }}

@@ -232,7 +232,7 @@ export default async function MemberGuidePage() {
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: isActive ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+                      color: isActive ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
                     }}>
                       Step {step.num}
                     </span>
@@ -258,7 +258,7 @@ export default async function MemberGuidePage() {
                       gap: '0.375rem',
                       padding: '0.625rem 1.25rem',
                       background: 'var(--color-accent)',
-                      color: 'var(--wa-on-accent-control)',
+                      color: 'var(--color-white)',
                       borderRadius: '0.5rem',
                       fontSize: '0.875rem',
                       fontWeight: 700,
@@ -308,7 +308,7 @@ export default async function MemberGuidePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">{b.icon}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">{b.icon}</span>
               </div>
               <div>
                 <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>{b.title}</h3>
@@ -343,7 +343,7 @@ export default async function MemberGuidePage() {
           </p>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
             Message your counselor — they&rsquo;re here to help with anything.{' '}
-            <Link href="/dashboard/messages" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/dashboard/messages" style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}>
               Send a message →
             </Link>
           </p>

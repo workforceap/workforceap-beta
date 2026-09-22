@@ -77,7 +77,7 @@ export default function PWAInstallPrompt() {
         left: '1rem',
         right: '1rem',
         zIndex: 9999,
-        background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
+        background: 'linear-gradient(135deg, var(--color-accent-dark, #8a233d), var(--color-accent, #ad2c4d))',
         color: '#fff',
         borderRadius: '1rem',
         padding: '1rem 1.25rem',
@@ -125,8 +125,8 @@ export default function PWAInstallPrompt() {
         <button
           onClick={handleInstall}
           style={{
-            background: 'var(--wa-hero-action-bg)',
-            color: 'var(--wa-hero-action-text)',
+            background: '#fff',
+            color: 'var(--color-accent-dark, #8a233d)',
             border: 'none',
             padding: '0.5rem 0.875rem',
             minHeight: 44,

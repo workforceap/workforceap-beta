@@ -73,7 +73,7 @@
 
 .portal-role-switcher-option.current {
   background: var(--color-accent);
-  color: var(--wa-on-accent-control);
+  color: var(--color-white);
   font-weight: 600;
 }
 

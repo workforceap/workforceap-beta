@@ -142,7 +142,7 @@ function SkillAssessmentRenderer({ raw }: { raw: string }) {
                 <div style={{ flex: 1, height: '6px', background: 'var(--surface-container-highest)', borderRadius: '9999px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${s.score}%`, background: 'linear-gradient(to right, var(--color-accent-dark), var(--color-accent))', borderRadius: '9999px', transition: 'width 0.6s' }} />
                 </div>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', minWidth: '32px', textAlign: 'right' }}>{s.score}%</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)', minWidth: '32px', textAlign: 'right' }}>{s.score}%</span>
               </div>
             ))}
           </div>
@@ -159,7 +159,7 @@ function SkillAssessmentRenderer({ raw }: { raw: string }) {
                 <div style={{ flex: 1, height: '6px', background: 'var(--surface-container-highest)', borderRadius: '9999px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${Math.min(100, g.current ?? 0)}%`, background: 'var(--surface-container-high)', borderRadius: '9999px' }} />
                 </div>
-                <span style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', minWidth: '80px', textAlign: 'right', fontWeight: 600 }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', minWidth: '80px', textAlign: 'right', fontWeight: 600 }}>
                   {g.current ?? 0}% → {g.target ?? 0}%
                 </span>
               </div>
@@ -176,9 +176,9 @@ function ResumeRenderer({ raw }: { raw: string }) {
     <div className="ai-result-markdown" style={{ fontSize: '0.875rem', color: 'var(--color-on-surface)', lineHeight: 1.65, margin: 0 }}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
         p: ({ children }) => <p style={{ margin: '0 0 0.75rem', lineHeight: 1.65 }}>{children}</p>,
-        h1: ({ children }) => <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', margin: '0 0 0.375rem', borderBottom: '1px solid color-mix(in srgb, var(--color-accent) 15%, transparent)', paddingBottom: '0.25rem' }}>{children}</p>,
-        h2: ({ children }) => <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', margin: '0 0 0.375rem', borderBottom: '1px solid color-mix(in srgb, var(--color-accent) 15%, transparent)', paddingBottom: '0.25rem' }}>{children}</p>,
-        h3: ({ children }) => <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', margin: '0 0 0.375rem', borderBottom: '1px solid color-mix(in srgb, var(--color-accent) 15%, transparent)', paddingBottom: '0.25rem' }}>{children}</p>,
+        h1: ({ children }) => <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--wa-accent-text)', margin: '0 0 0.375rem', borderBottom: '1px solid color-mix(in srgb, var(--color-accent) 15%, transparent)', paddingBottom: '0.25rem' }}>{children}</p>,
+        h2: ({ children }) => <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--wa-accent-text)', margin: '0 0 0.375rem', borderBottom: '1px solid color-mix(in srgb, var(--color-accent) 15%, transparent)', paddingBottom: '0.25rem' }}>{children}</p>,
+        h3: ({ children }) => <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--wa-accent-text)', margin: '0 0 0.375rem', borderBottom: '1px solid color-mix(in srgb, var(--color-accent) 15%, transparent)', paddingBottom: '0.25rem' }}>{children}</p>,
         ul: ({ children }) => <ul style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ul>,
         ol: ({ children }) => <ol style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ol>,
         li: ({ children }) => <li style={{ margin: '0.25rem 0' }}>{children}</li>,
@@ -186,7 +186,7 @@ function ResumeRenderer({ raw }: { raw: string }) {
         em: ({ children }) => <em style={{ fontStyle: 'italic', color: 'var(--color-on-surface-variant)' }}>{children}</em>,
         code: ({ children }) => <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.15rem 0.35rem', borderRadius: '0.25rem', color: 'var(--color-on-surface)' }}>{children}</code>,
         pre: ({ children }) => <pre style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.75rem', borderRadius: '0.5rem', overflow: 'auto', margin: '0.75rem 0' }}>{children}</pre>,
-        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>{children}</a>,
+        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>{children}</a>,
         blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid var(--color-accent)', paddingLeft: '0.75rem', margin: '0.75rem 0', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>{children}</blockquote>,
       }}>
         {raw}
@@ -200,9 +200,9 @@ function CoverLetterRenderer({ raw }: { raw: string }) {
     <div className="ai-result-markdown" style={{ fontSize: '0.9rem', color: 'var(--color-on-surface)', lineHeight: 1.7, margin: 0 }}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
         p: ({ children }) => <p style={{ margin: '0 0 0.875rem', lineHeight: 1.7 }}>{children}</p>,
-        h1: ({ children }) => <h1 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '1rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h1>,
-        h2: ({ children }) => <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0.875rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h2>,
-        h3: ({ children }) => <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: '0.75rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h3>,
+        h1: ({ children }) => <h1 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '1rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h1>,
+        h2: ({ children }) => <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0.875rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h2>,
+        h3: ({ children }) => <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: '0.75rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h3>,
         ul: ({ children }) => <ul style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ul>,
         ol: ({ children }) => <ol style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ol>,
         li: ({ children }) => <li style={{ margin: '0.25rem 0' }}>{children}</li>,
@@ -210,7 +210,7 @@ function CoverLetterRenderer({ raw }: { raw: string }) {
         em: ({ children }) => <em style={{ fontStyle: 'italic', color: 'var(--color-on-surface-variant)' }}>{children}</em>,
         code: ({ children }) => <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.15rem 0.35rem', borderRadius: '0.25rem', color: 'var(--color-on-surface)' }}>{children}</code>,
         pre: ({ children }) => <pre style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.75rem', borderRadius: '0.5rem', overflow: 'auto', margin: '0.75rem 0' }}>{children}</pre>,
-        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>{children}</a>,
+        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>{children}</a>,
         blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid var(--color-accent)', paddingLeft: '0.75rem', margin: '0.75rem 0', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>{children}</blockquote>,
       }}>
         {raw}
@@ -232,7 +232,7 @@ function LinkedInHeadlineRenderer({ raw }: { raw: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
       {headlines.map((h, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem', background: 'var(--surface-container-low)', borderRadius: '0.75rem', border: '1px solid var(--outline-variant)' }}>
-          <span style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-accent)', padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', flexShrink: 0, marginTop: '0.1rem' }}>#{i + 1}</span>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--wa-accent-text)', padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', flexShrink: 0, marginTop: '0.1rem' }}>#{i + 1}</span>
           <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.45 }}>{h}</p>
         </div>
       ))}
@@ -263,7 +263,7 @@ function InterviewQARenderer({ raw }: { raw: string }) {
         return (
           <div key={i} style={{ padding: '1rem', background: 'var(--surface-container-low)', borderRadius: '0.875rem', border: '1px solid var(--outline-variant)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: tip || sample ? '0.625rem' : 0 }}>
-              <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--wa-on-accent-control)', background: 'var(--color-accent)', borderRadius: '9999px', width: '1.5rem', height: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: '#fff', background: 'var(--color-accent)', borderRadius: '9999px', width: '1.5rem', height: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.4 }}>{questionText}</p>
                 {type && <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{type}</p>}
@@ -272,7 +272,7 @@ function InterviewQARenderer({ raw }: { raw: string }) {
             {tip && (
               <div style={{ padding: '0.5rem 0.75rem', background: 'color-mix(in srgb, var(--color-accent) 7%, transparent)', borderRadius: '0.5rem', borderLeft: '2px solid var(--color-accent)', marginLeft: '2.25rem' }}>
                 <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>
-                  <strong style={{ color: 'var(--color-accent)' }}>Tip:</strong> {tip}
+                  <strong style={{ color: 'var(--wa-accent-text)' }}>Tip:</strong> {tip}
                 </p>
               </div>
             )}
@@ -326,7 +326,7 @@ function JobMatchRenderer({ raw }: { raw: string }) {
       )}
       {gaps.length > 0 && (
         <div>
-          <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>Gaps to Address</p>
+          <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--wa-accent-text)', margin: '0 0 0.5rem' }}>Gaps to Address</p>
           {gaps.map((g, i) => (
             <div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.375rem' }}>
               <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '1rem', color: 'var(--color-gold)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>warning</span>
@@ -345,7 +345,7 @@ function ProseSectionRenderer({ raw, toolLabel }: { raw: string; toolLabel?: str
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>
+          <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--wa-accent-text)', margin: '0 0 0.5rem' }}>
             AI Elevator Introduction
           </p>
           <p style={{ fontSize: '1rem', lineHeight: 1.7, color: 'var(--color-on-surface)', margin: 0 }}>
@@ -379,9 +379,9 @@ function ProseSectionRenderer({ raw, toolLabel }: { raw: string; toolLabel?: str
     <div className="ai-result-markdown" style={{ fontSize: '0.875rem', color: 'var(--color-on-surface)', lineHeight: 1.65, margin: 0 }}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
         p: ({ children }) => <p style={{ margin: '0 0 0.75rem', lineHeight: 1.65 }}>{children}</p>,
-        h1: ({ children }) => <h1 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '1rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h1>,
-        h2: ({ children }) => <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0.875rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h2>,
-        h3: ({ children }) => <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: '0.75rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h3>,
+        h1: ({ children }) => <h1 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '1rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h1>,
+        h2: ({ children }) => <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0.875rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h2>,
+        h3: ({ children }) => <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: '0.75rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h3>,
         ul: ({ children }) => <ul style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ul>,
         ol: ({ children }) => <ol style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ol>,
         li: ({ children }) => <li style={{ margin: '0.25rem 0' }}>{children}</li>,
@@ -389,7 +389,7 @@ function ProseSectionRenderer({ raw, toolLabel }: { raw: string; toolLabel?: str
         em: ({ children }) => <em style={{ fontStyle: 'italic', color: 'var(--color-on-surface-variant)' }}>{children}</em>,
         code: ({ children }) => <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.15rem 0.35rem', borderRadius: '0.25rem', color: 'var(--color-on-surface)' }}>{children}</code>,
         pre: ({ children }) => <pre style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.75rem', borderRadius: '0.5rem', overflow: 'auto', margin: '0.75rem 0' }}>{children}</pre>,
-        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>{children}</a>,
+        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>{children}</a>,
         blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid var(--color-accent)', paddingLeft: '0.75rem', margin: '0.75rem 0', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>{children}</blockquote>,
       }}>
         {raw}
@@ -404,9 +404,9 @@ function FallbackRenderer({ raw }: { raw: string }) {
     <div className="ai-result-markdown" style={{ fontSize: '0.875rem', color: 'var(--color-on-surface)', lineHeight: 1.65, margin: 0 }}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
         p: ({ children }) => <p style={{ margin: '0 0 0.75rem', lineHeight: 1.65 }}>{children}</p>,
-        h1: ({ children }) => <h1 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '1rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h1>,
-        h2: ({ children }) => <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0.875rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h2>,
-        h3: ({ children }) => <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: '0.75rem 0 0.5rem', color: 'var(--color-accent)' }}>{children}</h3>,
+        h1: ({ children }) => <h1 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '1rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h1>,
+        h2: ({ children }) => <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0.875rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h2>,
+        h3: ({ children }) => <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: '0.75rem 0 0.5rem', color: 'var(--wa-accent-text)' }}>{children}</h3>,
         ul: ({ children }) => <ul style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ul>,
         ol: ({ children }) => <ol style={{ margin: '0.5rem 0', paddingLeft: '1.25rem' }}>{children}</ol>,
         li: ({ children }) => <li style={{ margin: '0.25rem 0' }}>{children}</li>,
@@ -414,7 +414,7 @@ function FallbackRenderer({ raw }: { raw: string }) {
         em: ({ children }) => <em style={{ fontStyle: 'italic', color: 'var(--color-on-surface-variant)' }}>{children}</em>,
         code: ({ children }) => <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.15rem 0.35rem', borderRadius: '0.25rem', color: 'var(--color-on-surface)' }}>{children}</code>,
         pre: ({ children }) => <pre style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'var(--surface-container-high)', padding: '0.75rem', borderRadius: '0.5rem', overflow: 'auto', margin: '0.75rem 0' }}>{children}</pre>,
-        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>{children}</a>,
+        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>{children}</a>,
         blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid var(--color-accent)', paddingLeft: '0.75rem', margin: '0.75rem 0', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>{children}</blockquote>,
       }}>
         {text}

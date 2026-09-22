@@ -234,7 +234,7 @@ html.dark [data-surface] .astryx-card,
 .portal-section-action {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -399,11 +399,11 @@ html.dark [data-surface] .astryx-card,
 }
 .portal-alert__label {
   font-weight: 600;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-size: 0.875rem;
 }
 .portal-alert__action {
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-weight: 600;
   font-size: 0.875rem;
   text-decoration: none;
@@ -460,7 +460,7 @@ html.dark [data-surface] .astryx-card,
   background: var(--color-accent);
   padding: 1.5rem;
   border-radius: 0.75rem;
-  color: var(--wa-on-accent-control);
+  color: #fff;
   position: relative;
   overflow: hidden;
 }
@@ -478,7 +478,7 @@ html.dark [data-surface] .astryx-card,
   display: inline-block;
   padding: 0.5rem 1rem;
   background: rgba(255, 255, 255, 0.9);
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   border-radius: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -655,7 +655,7 @@ html.dark [data-surface] .astryx-card,
   }
   .mobile-bottom-nav a.active,
   .mobile-bottom-nav button.active {
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     opacity: 1;
     background: rgba(173, 44, 77, 0.05);
   }
@@ -680,7 +680,7 @@ html.dark [data-surface] .astryx-card,
     height: 3.5rem;
     border-radius: 50%;
     background: var(--color-accent);
-    color: var(--wa-on-accent-control);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1320,7 +1320,7 @@ html.dark [data-surface] .astryx-card,
 }
 
 .portal-messages-header-btn {
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   padding: 6px;
   border-radius: 9999px;
   display: flex;
@@ -1409,8 +1409,8 @@ html.dark [data-surface] .astryx-card,
   flex-shrink: 0;
   background: linear-gradient(
     135deg,
-    var(--wa-hero-crimson-dark),
-    var(--wa-hero-crimson)
+    var(--color-accent-dark, #6b0c29),
+    var(--color-accent)
   );
 }
 
@@ -1432,7 +1432,7 @@ html.dark [data-surface] .astryx-card,
 
 .portal-messages-badge {
   flex-shrink: 0;
-  color: var(--wa-on-accent-control);
+  color: #fff;
   font-size: 13px;
   font-weight: 700;
   height: 20px;
@@ -1446,7 +1446,7 @@ html.dark [data-surface] .astryx-card,
 }
 
 .portal-messages-bubble--mine {
-  background: var(--wa-hero-crimson-dark);
+  background: var(--color-accent-dark, #6b0c29);
   color: #fff;
   border-radius: 18px 18px 4px 18px;
   white-space: pre-wrap;
@@ -1491,8 +1491,8 @@ html.dark [data-surface] .astryx-card,
   text-align: left;
   background: linear-gradient(
     135deg,
-    var(--wa-hero-crimson),
-    var(--wa-hero-crimson-dark)
+    var(--color-accent),
+    var(--color-accent-dark, #6b0c29)
   );
   color: #fff;
   box-shadow: 0 4px 16px
@@ -1846,7 +1846,7 @@ html.dark .employer-applications-table.admin-table thead th {
 
 .portal-metric-card__icon-wrap--accent {
   background: rgba(173, 44, 77, 0.15);
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
 }
 .portal-metric-card__icon-wrap--gold {
   background: rgba(255, 187, 0, 0.12);
@@ -1955,7 +1955,7 @@ html.dark .employer-applications-table.admin-table thead th {
 
 .portal-action-card__badge--accent {
   background: var(--color-accent);
-  color: var(--wa-on-accent-control);
+  color: #fff;
 }
 .portal-action-card__badge--gold {
   background: var(--color-gold);
@@ -2022,7 +2022,7 @@ html.dark .employer-applications-table.admin-table thead th {
   margin-top: 0.875rem;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   text-decoration: none;
 }
 
@@ -2073,7 +2073,7 @@ html.dark .employer-applications-table.admin-table thead th {
   justify-content: center;
   flex-shrink: 0;
   margin-top: 0.1rem;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
 }
 
 .portal-quick-action-item__label {
@@ -2194,8 +2194,8 @@ html.dark .employer-applications-table.admin-table thead th {
   flex-shrink: 0;
   background: linear-gradient(
     135deg,
-    var(--wa-hero-crimson-dark),
-    var(--wa-hero-crimson)
+    var(--color-accent-dark),
+    var(--color-accent)
   );
   color: #fff;
   box-shadow: 0 4px 16px rgba(173, 44, 77, 0.35);
@@ -2320,7 +2320,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-journey-step__label--active {
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
 }
 
 .portal-journey-step__detail {
@@ -2414,7 +2414,7 @@ html.dark .employer-applications-table.admin-table thead th {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
 }
 
 .portal-quick-grid-item__label {
@@ -2453,7 +2453,7 @@ html.dark .employer-applications-table.admin-table thead th {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   flex-shrink: 0;
   font-size: 1rem;
 }
@@ -2479,7 +2479,7 @@ html.dark .employer-applications-table.admin-table thead th {
 .portal-dash-section-header__action {
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   text-decoration: none;
   opacity: 0.9;
 }
@@ -2623,7 +2623,7 @@ html.dark .employer-applications-table.admin-table thead th {
   position: absolute;
   font-size: 0.8125rem;
   font-weight: 800;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
 }
 
 /* ── Mobile dashboard padding fix (clear bottom nav) ── */
@@ -2741,7 +2741,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 .import-job-back button {
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -2828,7 +2828,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   border-radius: 0.75rem;
   background: rgba(173, 44, 77, 0.1);
   border: 1px solid rgba(173, 44, 77, 0.25);
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
@@ -2915,7 +2915,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 .import-job-draft-card__cta {
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   margin-top: 0.375rem;
 }
 .import-job-draft-grid__more {
@@ -2924,7 +2924,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   padding: 0.875rem;
 }
 .import-job-draft-grid__more a {
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-weight: 700;
 }
 
@@ -3036,7 +3036,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 .import-review-summary__hint {
   font-size: 0.8125rem;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-weight: 600;
 }
 .import-review-summary__fields {
@@ -3059,7 +3059,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 .import-review-summary__field.is-empty {
   background: rgba(173, 44, 77, 0.08);
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
 }
 
 /* ── Icon button focus ring (notification bell, search trigger, etc.) ── */
@@ -3256,14 +3256,14 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     margin-left: 0.15rem;
     border-radius: 999px;
     background: var(--wa-accent);
-    color: var(--wa-on-accent);
+    color: var(--wa-on-accent-control);
     font-size: var(--wa-type-meta);
     font-weight: 700;
     line-height: 1;
   }
   .member-portal-top-nav__link--active .member-portal-top-nav__badge {
     background: var(--wa-accent);
-    color: var(--wa-on-accent);
+    color: var(--wa-on-accent-control);
   }
   /* Right-edge gradient signaling more content is scrollable. */
   .member-portal-top-nav__edge-fade {
@@ -3397,19 +3397,7 @@ a.portal-card:active,
   opacity: 0.5;
 }
 .legacy-view-notice__link {
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-weight: 700;
   text-decoration: underline;
-}
-
-/*
- * Legacy `.btn-primary` / `.btn-accent` (css/main.css) fill with --color-accent
- * under white. Under the portal layouts that fill lightens in dark mode
- * (css/portal-tokens.css html.dark), so the foreground must adapt with it.
- * `html body` outranks main.css's `button.btn-primary` whatever the emit order;
- * the member shell's own .btn.btn-primary rule sets the same token.
- */
-html body .btn-primary,
-html body .btn-accent {
-  color: var(--wa-on-accent-control);
 }

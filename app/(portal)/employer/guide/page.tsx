@@ -108,7 +108,7 @@ export default async function EmployerGuidePage() {
             },
           ].map((step, i) => (
             <div key={step.num} className="portal-card portal-card--flat" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: '1rem', right: '1.25rem', fontSize: '3.5rem', fontWeight: 900, color: 'var(--color-accent)', opacity: 0.06, lineHeight: 1, letterSpacing: '-0.05em', userSelect: 'none' }}>
+              <div style={{ position: 'absolute', top: '1rem', right: '1.25rem', fontSize: '3.5rem', fontWeight: 900, color: 'var(--wa-accent-text)', opacity: 0.06, lineHeight: 1, letterSpacing: '-0.05em', userSelect: 'none' }}>
                 {step.num}
               </div>
               <div style={{
@@ -121,7 +121,7 @@ export default async function EmployerGuidePage() {
                 justifyContent: 'center',
                 marginBottom: '1.25rem',
               }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">{step.icon}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">{step.icon}</span>
               </div>
               <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '0.625rem', letterSpacing: '-0.02em' }}>
                 {step.title}
@@ -139,7 +139,7 @@ export default async function EmployerGuidePage() {
                     gap: '0.375rem',
                     padding: '0.5625rem 1.125rem',
                     background: 'var(--color-accent)',
-                    color: 'var(--wa-on-accent-control)',
+                    color: 'var(--color-on-accent)',
                     borderRadius: '0.5rem',
                     fontSize: '0.8125rem',
                     fontWeight: 700,
@@ -198,7 +198,7 @@ export default async function EmployerGuidePage() {
                 justifyContent: 'center',
                 gap: '0.5rem',
                 padding: '0.75rem',
-                background: 'linear-gradient(135deg, var(--wa-hero-crimson), #670024)',
+                background: 'linear-gradient(135deg, var(--color-accent), #670024)',
                 color: 'var(--color-on-accent)',
                 borderRadius: '0.5rem',
                 fontSize: '0.875rem',
@@ -235,7 +235,7 @@ export default async function EmployerGuidePage() {
                   textDecoration: 'none',
                 }}
               >
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">{item.icon}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">{item.icon}</span>
                 <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--color-on-surface)', flex: 1 }}>{item.label}</span>
                 <span className="material-symbols-outlined" style={{ color: 'var(--color-on-surface-variant)', opacity: 0.4, fontSize: '1rem' }} aria-hidden="true">chevron_right</span>
               </Link>
@@ -281,7 +281,7 @@ export default async function EmployerGuidePage() {
           </p>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
             Email us at{' '}
-            <a href="mailto:partnerships@workforceap.org" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+            <a href="mailto:partnerships@workforceap.org" style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}>
               partnerships@workforceap.org
             </a>
           </p>
@@ -295,7 +295,7 @@ export default async function EmployerGuidePage() {
             gap: '0.375rem',
             padding: '0.625rem 1.25rem',
             background: 'var(--color-accent)',
-            color: 'var(--wa-on-accent-control)',
+            color: 'var(--color-on-accent)',
             borderRadius: '0.5rem',
             fontSize: '0.875rem',
             fontWeight: 700,

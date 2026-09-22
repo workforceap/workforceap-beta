@@ -155,7 +155,7 @@ export default function PartnerEditModal({ partner, subgroups, programs = [], on
                 marginBottom: '1rem',
                 background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
                 borderRadius: '6px',
-                color: 'var(--color-accent)',
+                color: 'var(--wa-accent-text)',
                 fontSize: '0.9rem',
               }}
             >

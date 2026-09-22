@@ -331,10 +331,10 @@ export default async function CounselorPortalPage({
       <div className="wa-block md:wa-hidden portal-mobile-content">
         {/* Hero */}
         <div className="portal-pad-x" style={{ paddingTop:"1.5rem", paddingBottom:"0.5rem" }}>
-          <p className="wa-text-[13px] wa-uppercase wa-tracking-[0.12em] wa-font-semibold" style={{ color: 'var(--color-accent)', marginBottom:"0.5rem" }}>{t('counselorDashboard')}</p>
+          <p className="wa-text-[13px] wa-uppercase wa-tracking-[0.12em] wa-font-semibold" style={{ color: 'var(--wa-accent-text)', marginBottom:"0.5rem" }}>{t('counselorDashboard')}</p>
           <h2 className="wa-text-3xl wa-font-extrabold wa-tracking-tight text-on-surface wa-leading-tight">
             {goodTimePhrase},{' '}
-            <span style={{ color: 'var(--color-accent)' }}>{firstName}</span>
+            <span style={{ color: 'var(--wa-accent-text)' }}>{firstName}</span>
           </h2>
         </div>
         <div className="portal-pad-x" style={{ marginBottom: '1rem' }}>
@@ -350,7 +350,7 @@ export default async function CounselorPortalPage({
         </div>
         {/* Stats grid */}
         <div className="portal-pad-x" style={{ marginTop:"1rem", display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:"1rem", marginBottom:"1.5rem" }}>
-          <div style={{gridColumn:"span 2", borderRadius:"0.75rem", padding:"1.25rem", position:"relative", overflow:"hidden", background: 'var(--color-accent)', color: 'var(--wa-on-accent-control)'}}>
+          <div className="wa-text-white" style={{gridColumn:"span 2", borderRadius:"0.75rem", padding:"1.25rem", position:"relative", overflow:"hidden", background: 'var(--color-accent)'}}>
             <div style={{ position:"relative", zIndex:10 }}>
               <p className="wa-text-[13px] wa-uppercase wa-tracking-widest" style={{ opacity:0.85, marginBottom:"0.25rem" }}>{t('yourMembers')}</p>
               <p className="wa-text-4xl wa-font-bold wa-tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{assignments.length}</p>
@@ -368,7 +368,7 @@ export default async function CounselorPortalPage({
             <div className="portal-metric-card__icon-wrap portal-metric-card__icon-wrap--accent">
               <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">mark_email_unread</span>
             </div>
-            <p className="portal-metric-card__value" style={{ fontSize: '1.5rem', fontVariantNumeric: 'tabular-nums', color: messagesNeedingReply > 0 ? 'var(--color-accent)' : undefined }}>{messagesNeedingReply}</p>
+            <p className="portal-metric-card__value" style={{ fontSize: '1.5rem', fontVariantNumeric: 'tabular-nums', color: messagesNeedingReply > 0 ? 'var(--wa-accent-text)' : undefined }}>{messagesNeedingReply}</p>
             <p className="portal-metric-card__label">{t('awaitingReply')}</p>
           </div>
         </div>
@@ -434,7 +434,7 @@ export default async function CounselorPortalPage({
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <h4 title={a.member.fullName ?? undefined} className="wa-font-bold text-on-surface wa-text-base wa-truncate">{a.member.fullName}</h4>
-                      <p className="wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-wider wa-truncate" style={{marginBottom:"0.25rem", color: 'var(--color-accent)'}}>{prog}</p>
+                      <p className="wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-wider wa-truncate" style={{marginBottom:"0.25rem", color: 'var(--wa-accent-text)'}}>{prog}</p>
                       {trainingProgressPct === null ? (
                         <p className="wa-text-[13px] wa-font-semibold text-on-surface-variant" style={{ margin: 0 }}>
                           {enrolledSlug ? t('trainingProgressUnavailable') : t('notEnrolled')}
@@ -483,7 +483,7 @@ export default async function CounselorPortalPage({
             <div className="portal-metric-card__icon-wrap" style={{ background: card.bg }}>
               <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: card.iconColor, fontVariationSettings: "'FILL' 1" }} aria-hidden="true">{card.icon}</span>
             </div>
-            <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: card.value > 0 && card.label === t('awaitingReply') ? 'var(--color-accent)' : undefined }}>{card.value}</p>
+            <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: card.value > 0 && card.label === t('awaitingReply') ? 'var(--wa-accent-text)' : undefined }}>{card.value}</p>
             <p className="portal-metric-card__label">{card.label}</p>
           </div>
         ))}
@@ -529,7 +529,7 @@ export default async function CounselorPortalPage({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <div style={{
                             width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem',
-                            background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
+                            background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '0.875rem', fontWeight: 700, color: '#fff', flexShrink: 0,
                           }}>
@@ -608,7 +608,7 @@ export default async function CounselorPortalPage({
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.875rem', color: 'var(--color-on-surface)' }}>{t('awaitingReply')}</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: messagesNeedingReply > 0 ? 'var(--color-accent)' : 'var(--color-on-surface)' }}>{messagesNeedingReply}</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: messagesNeedingReply > 0 ? 'var(--wa-accent-text)' : 'var(--color-on-surface)' }}>{messagesNeedingReply}</span>
               </div>
               <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '1rem', marginTop: '0.25rem' }}>
                 <Link href="/counselor/messages" className="btn btn-primary btn-full-width" style={{ fontSize: '0.8125rem' }}>

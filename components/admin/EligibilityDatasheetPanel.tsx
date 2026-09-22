@@ -127,7 +127,7 @@ export default function EligibilityDatasheetPanel({ previewRows }: Props) {
         <div style={{ padding: '0.5rem', background: 'rgba(173,44,77,0.1)', borderRadius: '0.5rem' }}>
           <span
             className="material-symbols-outlined"
-            style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }}
+            style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }}
             aria-hidden="true"
           >
             table_chart
@@ -182,7 +182,7 @@ export default function EligibilityDatasheetPanel({ previewRows }: Props) {
           className="btn"
           style={{
             background: 'var(--color-accent)',
-            color: 'var(--wa-on-accent-control)',
+            color: '#fff',
             border: 'none',
             cursor: isPending ? 'wait' : 'pointer',
           }}

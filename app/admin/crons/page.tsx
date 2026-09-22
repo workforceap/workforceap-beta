@@ -237,7 +237,7 @@ async function renderLegacy() {
           <div className="portal-metric-card__icon-wrap portal-metric-card__icon-wrap--accent">
             <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }}>error</span>
           </div>
-          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: failedLast24h > 0 ? 'var(--color-accent)' : undefined }}>{failedLast24h}</p>
+          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: failedLast24h > 0 ? 'var(--wa-accent-text)' : undefined }}>{failedLast24h}</p>
           <p className="portal-metric-card__label">Failed (24h)</p>
         </div>
         <div className="portal-metric-card">

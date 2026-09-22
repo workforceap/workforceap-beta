@@ -86,7 +86,7 @@ const primaryPillStyle = {
   minHeight: 44,
   padding: '10px 20px',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
   fontSize: '0.85rem',
   borderRadius: 999,
@@ -135,7 +135,7 @@ function AxisLegend({ axes }: { axes: string[] }) {
                 <span style={{
                   fontSize: '0.8125rem', fontWeight: 700, padding: '0.15rem 0.5rem',
                   borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
-                  color: 'var(--color-accent)', flexShrink: 0, lineHeight: '1.6'}}>
+                  color: 'var(--wa-accent-text)', flexShrink: 0, lineHeight: '1.6'}}>
                   {axis}
                 </span>
                 <div>
@@ -274,7 +274,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
   return (
     <div style={{ marginTop: '1.5rem' }}>
       <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <BookOpen size={16} style={{ color: 'var(--color-accent)' }} />
+        <BookOpen size={16} style={{ color: 'var(--wa-accent-text)' }} />
         Fastest Path to Close Gaps
       </h4>
       <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
@@ -290,7 +290,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
               borderBottom: '1px solid var(--surface-container-highest)',
               fontSize: '0.8125rem',
               fontWeight: 600,
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem'
@@ -390,7 +390,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       padding: '0.35rem 0.5rem',
                       borderRadius: '0.375rem',
                       background: 'var(--color-accent)',
-                      color: 'var(--wa-on-accent-control)',
+                      color: 'var(--wa-on-accent)',
                       fontSize: '0.8125rem',
                       fontWeight: 600,
                       textDecoration: 'none',
@@ -721,7 +721,7 @@ export default function SkillMapperClient() {
     border: 'none',
     borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent',
     background: 'transparent',
-    color: active ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+    color: active ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
     fontWeight: active ? 700 : 400,
     fontSize: '0.875rem',
     cursor: 'pointer'} as React.CSSProperties);
@@ -915,7 +915,7 @@ export default function SkillMapperClient() {
                           )}
                         </div>
                         <Link href={`/programs/${mp.programSlug}`} style={{
-                          background: 'var(--wa-accent)', color: 'var(--wa-on-accent)', borderRadius: 'var(--wa-radius-sm)',
+                          background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', borderRadius: 'var(--wa-radius-sm)',
                           padding: '0.35rem 0.625rem', fontSize: '0.8125rem', fontWeight: 600,
                           textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}} onClick={() => trackFunnelEvent('skill_mapper', 'program_recommendation_viewed', { program_slug: mp.programSlug, recommendation_type: mp.recommendationType })}>View →</Link>
                       </div>
@@ -930,7 +930,7 @@ export default function SkillMapperClient() {
                       <Link href={`/programs/${matchedPrograms[0].programSlug}`} style={{
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                         padding: '0.5rem 1rem', borderRadius: 999,
-                        background: 'var(--wa-accent)', color: 'var(--wa-on-accent)',
+                        background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
                         fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'enroll_cta_clicked', { program_slug: matchedPrograms[0].programSlug })}>
                         Enroll in {matchedPrograms[0].programTitle}
                       </Link>
@@ -1007,8 +1007,8 @@ export default function SkillMapperClient() {
                   </div>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.5 }}>
                     Your profile reflects what we found in your resume and certifications.
-                    {' '}<a href="/dashboard/learning/interest-profiler" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>Complete the Interest Profiler</a> or{' '}
-                    <a href="/dashboard/resume" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>update your resume</a> to show more of your experience.
+                    {' '}<a href="/dashboard/learning/interest-profiler" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>Complete the Interest Profiler</a> or{' '}
+                    <a href="/dashboard/resume" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>update your resume</a> to show more of your experience.
                   </p>
                 </>
               ) : (
@@ -1064,7 +1064,7 @@ export default function SkillMapperClient() {
               {memberCerts.length === 0 && (
                 <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem', marginTop: '-0.25rem' }}>
                   No certifications on file —{' '}
-                  <a href="/dashboard/certifications" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>add certs in Verification Vault</a>
+                  <a href="/dashboard/certifications" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>add certs in Verification Vault</a>
                   {' '}to strengthen your radar.
                 </p>
               )}
@@ -1185,7 +1185,7 @@ export default function SkillMapperClient() {
                 <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
                   Your current profile is based on certifications and resume. Complete the O*NET Interest Profiler to significantly enrich your radar chart with interest-based signals.
                 </p>
-                <a href="/dashboard/learning/interest-profiler" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)', fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none' }}>
+                <a href="/dashboard/learning/interest-profiler" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none' }}>
                   <ArrowRight size={15} aria-hidden="true" />
                   Start 30-question assessment (~10 min)
                 </a>
@@ -1198,7 +1198,7 @@ export default function SkillMapperClient() {
             <div style={{ marginTop: '0.875rem', padding: '0.75rem 1rem', background: 'color-mix(in srgb, var(--wa-success) 8%, transparent)', border: '1px solid var(--wa-success)', borderRadius: 'var(--wa-radius-sm)', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <CheckCircle2 size={16} aria-hidden="true" style={{ color: 'var(--wa-success)', flexShrink: 0 }} />
               <span><strong style={{ color: 'var(--wa-success)' }}>Interest Profiler complete</strong> — your 30-question results are blended into this radar.{' '}
-                <a href="/dashboard/learning/interest-profiler" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>Retake</a>
+                <a href="/dashboard/learning/interest-profiler" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>Retake</a>
               </span>
             </div>
           )}
@@ -1233,7 +1233,7 @@ export default function SkillMapperClient() {
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.35rem 0.75rem', borderRadius: 999,
-                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent)',
+                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
                       fontWeight: 700, fontSize: '0.8125rem', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
@@ -1251,7 +1251,7 @@ export default function SkillMapperClient() {
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.45rem 0.9rem', borderRadius: 999,
-                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent)',
+                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
                       fontWeight: 800, fontSize: '0.8125rem', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
@@ -1260,7 +1260,7 @@ export default function SkillMapperClient() {
                     {extractingResume ? 'Re-analyzing…' : 'Reanalyze resume skills'}
                   </button>
                 )}
-                <a href="/dashboard/ai-tools/resume-studio?view=rewrite" style={{ color: 'var(--color-accent)', fontWeight: 700, fontSize: '0.8125rem' }}>Update resume</a>
+                <a href="/dashboard/ai-tools/resume-studio?view=rewrite" style={{ color: 'var(--wa-accent-text)', fontWeight: 700, fontSize: '0.8125rem' }}>Update resume</a>
               </div>
             </div>
           )}
@@ -1280,7 +1280,7 @@ export default function SkillMapperClient() {
                   <a href="/dashboard/resume" style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                     padding: '0.35rem 0.75rem', borderRadius: 999,
-                    background: 'var(--wa-accent)', color: 'var(--wa-on-accent)',
+                    background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
                     fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}}>
                     <UploadCloud size={14} aria-hidden="true" />
                     Upload resume

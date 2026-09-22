@@ -80,7 +80,7 @@ export default function JobApplicantsClient({
   return (
     <div>
       {error && (
-        <div className="portal-card portal-card--flat" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'rgba(140,15,55,0.06)', color: 'var(--color-accent)' }} role="alert">
+        <div className="portal-card portal-card--flat" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'rgba(140,15,55,0.06)', color: 'var(--wa-accent-text)' }} role="alert">
           {error}
         </div>
       )}
@@ -100,7 +100,7 @@ export default function JobApplicantsClient({
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
+                    background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
                     color: '#fff',
                     fontWeight: 700,
                     fontSize: '0.8125rem',
@@ -181,7 +181,7 @@ export default function JobApplicantsClient({
                             alignItems: 'center',
                             justifyContent: 'center',
                             flexShrink: 0,
-                            background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
+                            background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
                             color: '#fff',
                             fontWeight: 700,
                             fontSize: '0.8125rem',

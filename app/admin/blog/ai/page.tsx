@@ -14,7 +14,7 @@ export default async function AdminBlogAIPage() {
     <div style={{ paddingTop: '1.5rem' }}>
       <Link
         href="/admin/blog"
-        style={{ color: 'var(--color-accent)', marginBottom: '1rem', display: 'inline-block' }}
+        style={{ color: 'var(--wa-accent-text)', marginBottom: '1rem', display: 'inline-block' }}
       >
         ← Back to Blog
       </Link>

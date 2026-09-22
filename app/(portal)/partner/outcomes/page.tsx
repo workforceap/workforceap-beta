@@ -38,7 +38,7 @@ const overviewLinkStyle = {
   padding: '8px 16px',
   borderRadius: 'var(--wa-radius-sm)',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
   fontSize: 13,
   textDecoration: 'none',

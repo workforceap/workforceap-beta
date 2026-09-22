@@ -142,7 +142,7 @@ export default async function CounselorGuidePage() {
               gap: '0.375rem',
               padding: '0.5625rem 1.125rem',
               background: 'var(--color-accent)',
-              color: 'var(--wa-on-accent-control)',
+              color: '#fff',
               borderRadius: '0.5rem',
               fontSize: '0.8125rem',
               fontWeight: 700,
@@ -175,7 +175,7 @@ export default async function CounselorGuidePage() {
                   justifyContent: 'center',
                   flexShrink: 0,
                 }}>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1rem' }} aria-hidden="true">{item.icon}</span>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1rem' }} aria-hidden="true">{item.icon}</span>
                 </div>
                 <p style={{ fontSize: '0.9375rem', color: 'var(--color-on-surface)', lineHeight: 1.5, paddingTop: '0.25rem' }}>{item.text}</p>
               </div>
@@ -200,7 +200,7 @@ export default async function CounselorGuidePage() {
                 borderRadius: '0.625rem',
                 textDecoration: 'none',
               }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">{item.icon}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">{item.icon}</span>
                 <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--color-on-surface)', flex: 1 }}>{item.label}</span>
                 <span className="material-symbols-outlined" style={{ color: 'var(--color-on-surface-variant)', opacity: 0.4, fontSize: '1rem' }} aria-hidden="true">chevron_right</span>
               </Link>
@@ -239,7 +239,7 @@ export default async function CounselorGuidePage() {
                 flexShrink: 0,
                 fontSize: '0.8125rem',
                 fontWeight: 800,
-                color: s.done ? 'var(--color-green)' : 'var(--color-accent)',
+                color: s.done ? 'var(--color-green)' : 'var(--wa-accent-text)',
               }}>
                 {s.done ? <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }} aria-hidden="true">check</span> : s.stage}
               </div>

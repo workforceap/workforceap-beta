@@ -301,7 +301,7 @@ export default async function EmployerCandidateProfilePage({
                 <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{student.profile?.employmentStatus ?? '—'}</p>
               </div>
               {student.profile?.profileLinkedin ? (
-                <a href={student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', fontWeight: 700, textDecoration: 'none' }}>
+                <a href={student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)', fontWeight: 700, textDecoration: 'none' }}>
                   Open LinkedIn profile →
                 </a>
               ) : null}
@@ -398,7 +398,7 @@ export default async function EmployerCandidateProfilePage({
                           Added {formatDateTime(match.createdAt)}
                         </p>
                       </div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-accent)', flexShrink: 0 }}>
+                      <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--wa-accent-text)', flexShrink: 0 }}>
                         {matchScoreAsPercent(match.matchScore)}%
                       </div>
                     </div>
@@ -407,7 +407,7 @@ export default async function EmployerCandidateProfilePage({
                         {employerMatchPipelineLabel(match.status)}
                       </StatusTag>
                       {highlightJobId === match.jobId ? (
-                        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span>
+                        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>Current focus</span>
                       ) : null}
                     </div>
                   </div>
@@ -453,7 +453,7 @@ export default async function EmployerCandidateProfilePage({
                 textAlign: 'center',
                 padding: '0.8rem',
                 background: 'var(--color-accent)',
-                color: 'var(--wa-on-accent-control)',
+                color: 'var(--color-on-accent)',
                 borderRadius: '0.75rem',
                 fontWeight: 700,
                 textDecoration: 'none',
@@ -633,7 +633,7 @@ export default async function EmployerCandidateProfilePage({
                             </p>
                           </div>
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-accent)' }}>{matchScoreAsPercent(match.matchScore)}%</div>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--wa-accent-text)' }}>{matchScoreAsPercent(match.matchScore)}%</div>
                             <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>match</div>
                           </div>
                         </div>
@@ -641,7 +641,7 @@ export default async function EmployerCandidateProfilePage({
                           <StatusTag tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(match.status))}>
                             {employerMatchPipelineLabel(match.status)}
                           </StatusTag>
-                          {highlightJobId === match.jobId ? <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span> : null}
+                          {highlightJobId === match.jobId ? <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>Current focus</span> : null}
                         </div>
                       </div>
                     ))}

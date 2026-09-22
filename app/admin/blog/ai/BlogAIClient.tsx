@@ -144,7 +144,7 @@ export default function BlogAIClient({ postCount }: { postCount: number }) {
             style={{
               padding: '0.5rem 1rem',
               background: 'var(--color-accent)',
-              color: 'var(--wa-on-accent-control)',
+              color: 'white',
               border: 'none',
               borderRadius: '6px',
               fontWeight: 600,
@@ -168,7 +168,7 @@ export default function BlogAIClient({ postCount }: { postCount: number }) {
           style={{
             padding: '0.5rem 1.25rem',
             background: 'var(--color-accent)',
-            color: 'var(--wa-on-accent-control)',
+            color: 'white',
             border: 'none',
             borderRadius: '6px',
             fontWeight: 600,

@@ -129,7 +129,7 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
                 display: 'inline-block',
                 padding: '0.75rem 1.5rem',
                 background: 'var(--color-accent)',
-                color: 'var(--wa-on-accent-control)',
+                color: 'white',
                 borderRadius: '6px',
                 textDecoration: 'none',
                 fontWeight: 600,
@@ -155,7 +155,7 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
                 <li key={r.slug} style={{ marginBottom: '0.5rem' }}>
                   <Link
                     href={`/blog/${r.slug}`}
-                    style={{ color: 'var(--color-accent)', textDecoration: 'none' }}
+                    style={{ color: 'var(--wa-accent-text)', textDecoration: 'none' }}
                   >
                     {r.title}
                   </Link>

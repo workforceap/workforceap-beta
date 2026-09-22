@@ -519,7 +519,7 @@ export default async function PartnerDashboardPage({
                     render: (row) => (
                       <Link
                         href={`/partner/referred-members/${row.id}`}
-                        style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
+                        style={{ fontWeight: 600, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
                       >
                         {row.name}
                       </Link>
@@ -696,7 +696,7 @@ export default async function PartnerDashboardPage({
       cell: (row) => (
         <Link
           href={`/partner/referred-members/${row.id}`}
-          style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
+          style={{ fontWeight: 600, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
         >
           {row.fullName}
         </Link>
@@ -797,7 +797,7 @@ export default async function PartnerDashboardPage({
       <div style={{ padding: '1.5rem 1.5rem 0.75rem' }}>
         <p
           className="wa-text-[13px] wa-uppercase wa-tracking-[0.15em] wa-font-bold wa-mb-1"
-          style={{ color: 'var(--color-accent)' }}
+          style={{ color: 'var(--wa-accent-text)' }}
         >
           {t('partnerDashboard')}
         </p>
@@ -892,7 +892,7 @@ export default async function PartnerDashboardPage({
             <CopyReferralLink url={referralApplyUrl} referralCodeDisplay={partnerRow.referralCode ?? partnerRow.slug ?? refParam} />
             {showReferralBadge ? (
               <details style={{ marginTop: '0.85rem' }}>
-                <summary style={{ cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>
                   Website badge embed code
                 </summary>
                 <pre style={{ margin: '0.75rem 0 0', padding: '0.85rem', overflowX: 'auto', borderRadius: 'var(--radius-md)', background: 'var(--color-gray-900)', color: 'var(--color-white)', fontSize: '0.8125rem', lineHeight: 1.5 }}>
@@ -975,13 +975,13 @@ export default async function PartnerDashboardPage({
             }}
           >
             <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '0.625rem', background: 'rgba(173,44,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">lightbulb</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">lightbulb</span>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>{nextAction.label}</p>
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{nextAction.tip}</p>
             </div>
-            <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">chevron_right</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">chevron_right</span>
           </div>
         </Link>
       </div>
@@ -1017,7 +1017,7 @@ export default async function PartnerDashboardPage({
             <PortalCard className="portal-card--compact">
               <div className="portal-inbox-row__inner" style={{ padding: '0.1rem 0' }}>
                 <div className="portal-inbox-row__badge" aria-hidden>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">flag</span>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">flag</span>
                 </div>
                 <div className="portal-inbox-row__main">
                   <div className="portal-inbox-row__top">
@@ -1178,7 +1178,7 @@ export default async function PartnerDashboardPage({
             <CopyReferralLink url={referralApplyUrl} referralCodeDisplay={partnerRow.referralCode ?? partnerRow.slug ?? refParam} />
             {showReferralBadge ? (
               <details style={{ marginTop: '1rem' }}>
-                <summary style={{ cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-accent)' }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>
                   Website badge embed code
                 </summary>
                 <pre style={{ margin: '0.75rem 0 0', padding: '1rem', overflowX: 'auto', borderRadius: 'var(--radius-md)', background: 'var(--color-gray-900)', color: 'var(--color-white)', fontSize: '0.8125rem', lineHeight: 1.5 }}>
@@ -1263,12 +1263,12 @@ export default async function PartnerDashboardPage({
             className="portal-alert portal-alert--accent hover:wa-opacity-80 active:wa-scale-[0.99] wa-transition-all"
             style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', flexShrink: 0 }} aria-hidden="true">lightbulb</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', flexShrink: 0 }} aria-hidden="true">lightbulb</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0 }}>{nextAction.label}</p>
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{nextAction.tip}</p>
             </div>
-            <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">arrow_forward</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem', flexShrink: 0 }} aria-hidden="true">arrow_forward</span>
           </div>
         </Link>
       </section>
@@ -1321,7 +1321,7 @@ export default async function PartnerDashboardPage({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div style={{
                             width: '2.25rem', height: '2.25rem', borderRadius: '9999px',
-                            background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
+                            background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-accent)', flexShrink: 0,
                           }}>
@@ -1359,7 +1359,7 @@ export default async function PartnerDashboardPage({
                 <div style={{ marginBottom: '1.25rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                     <span style={{ color: 'var(--color-on-surface)' }}>{t('placementRate')}</span>
-                    <span className="wa-tabular-nums" style={{ color: 'var(--color-accent)', fontSize: '1rem' }}>{conversionRate}%</span>
+                    <span className="wa-tabular-nums" style={{ color: 'var(--wa-accent-text)', fontSize: '1rem' }}>{conversionRate}%</span>
                   </div>
                   <div className="portal-progress-bar">
                     <div className="portal-progress-bar__fill" style={{ width: `${conversionRate}%` }} />

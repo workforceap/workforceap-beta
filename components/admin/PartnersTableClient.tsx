@@ -198,7 +198,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
             <div style={{ fontWeight: 600 }}>{partner.name}</div>
             <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{partner.slug}</div>
             {partner.partnerType === 'high_school' || partner.enrollmentPageEnabled || partner.sponsoredEnrollment ? (
-              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', marginTop: 2 }}>School partner</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)', marginTop: 2 }}>School partner</div>
             ) : null}
           </>
         ),
@@ -273,7 +273,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 <ApproveRejectButtons partnerId={partner.id} onDone={() => router.refresh()} />
                 <Link
                   href={`/admin/partners/${partner.id}`}
-                  style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
+                  style={{ color: 'var(--wa-accent-text)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
                 >
                   Review →
                 </Link>
@@ -327,7 +327,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 )}
                 <Link
                   href={`/admin/partners/${partner.id}`}
-                  style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
+                  style={{ color: 'var(--wa-accent-text)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
                 >
                   Manage →
                 </Link>
@@ -369,7 +369,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 borderRadius: '6px',
                 border: `1px solid ${filter === f ? 'var(--color-accent)' : 'var(--outline-variant)'}`,
                 background: filter === f ? 'rgba(173,44,77,0.08)' : 'var(--color-white)',
-                color: filter === f ? 'var(--color-accent)' : 'var(--color-on-surface)',
+                color: filter === f ? 'var(--wa-accent-text)' : 'var(--color-on-surface)',
                 cursor: 'pointer',
                 fontSize: '0.9rem',
               }}

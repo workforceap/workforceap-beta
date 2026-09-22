@@ -204,17 +204,6 @@ html.dark [data-surface],
   --color-primary: var(--wa-accent);
 }
 
-/*
- * Astryx `<Button variant="primary">` paints --color-accent under
- * --color-on-accent. Portal-wide the fill lightens in dark mode (above), so the
- * constant-white --color-on-accent measured 3.28:1 there (M1 "Add student").
- * Scope the adaptive control foreground to the primary button only:
- * --color-on-accent stays white for the hero / gradient consumers that rely on it.
- */
-.astryx-button.primary {
-  --color-on-accent: var(--wa-on-accent-control);
-}
-
 /* WARM — member surfaces: Bold + Calm. Soft corners, generous space, pop on. */
 [data-surface='warm'] {
   --wa-radius: 26px;
@@ -245,21 +234,8 @@ html.dark [data-surface],
  * Works under both surfaces (warm/dense only change radius/pad/pop, not color).
  */
 html.dark,
-html[data-theme='dark'] {
+[data-theme='dark'] {
   color-scheme: dark;
-  /*
-   * Legacy accent aliases (M4, scout 2026-09-22). css/main.css declares
-   * `:root { --color-accent: #ad2c4d; --color-accent-dark: #8c0f37 }` and its
-   * html.dark block never remaps them, so whichever `:root` the bundler emits
-   * last wins and the bridge alias above lost: partner / admin / employer links
-   * painted the light crimson on dark surfaces (2.78:1). Re-assert here at
-   * html.dark specificity (0,1,1), which beats any `:root` regardless of order.
-   * Light mode is untouched (main.css values equal the light halves). A tenant
-   * accent from components/platform/OrgBrandingStyle.tsx (`--org-accent`) still
-   * wins. Foregrounds on these fills pair with --wa-on-accent-control.
-   */
-  --color-accent: var(--org-accent, var(--wa-accent));
-  --color-accent-dark: var(--wa-accent-dark);
 }
 
 /* Reduced motion: kit components gate their own animations on this too. */

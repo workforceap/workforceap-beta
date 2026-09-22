@@ -649,7 +649,7 @@ export default function SessionRunClient({
         ) : null}
         <div className="form-group" style={{ marginBottom: '0.75rem' }}>
           <label htmlFor="session-job-target">
-            Target role <span style={{ color: 'var(--color-accent)' }}>*</span>
+            Target role <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
           </label>
           <input
             id="session-job-target"
@@ -663,7 +663,7 @@ export default function SessionRunClient({
         <div className="form-group" style={{ marginBottom: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
             <label htmlFor="session-resume-text" style={{ margin: 0 }}>
-              Resume / experience <span style={{ color: 'var(--color-accent)' }}>*</span>
+              Resume / experience <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
             </label>
             <label
               style={{
@@ -690,7 +690,7 @@ export default function SessionRunClient({
             </label>
           </div>
           {uploadResumeError ? (
-            <p role="alert" style={{ margin: '0 0 0.35rem', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>{uploadResumeError}</p>
+            <p role="alert" style={{ margin: '0 0 0.35rem', fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>{uploadResumeError}</p>
           ) : null}
           {uploadResumeWarning ? (
             <p role="status" style={{ margin: '0 0 0.35rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{uploadResumeWarning}</p>
@@ -719,7 +719,7 @@ export default function SessionRunClient({
           {resumeState.status === 'running' ? 'Generating…' : resumeState.output ? 'Re-run' : 'Build resume'}
         </button>
         {resumeState.error ? (
-          <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{resumeState.error}</p>
+          <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{resumeState.error}</p>
         ) : null}
         {resumeState.output ? (
           <OutputPanel label="Polished resume" body={resumeState.output} savedTo={memberFullName} />
@@ -812,7 +812,7 @@ export default function SessionRunClient({
         </div>
         <div className="form-group" style={{ marginBottom: '0.75rem' }}>
           <label htmlFor="session-job-desc">
-            Job description <span style={{ color: 'var(--color-accent)' }}>*</span>
+            Job description <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
           </label>
           <textarea
             id="session-job-desc"
@@ -838,7 +838,7 @@ export default function SessionRunClient({
           {coverState.status === 'running' ? 'Generating…' : coverState.output ? 'Re-run' : 'Build cover letter'}
         </button>
         {coverState.error ? (
-          <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{coverState.error}</p>
+          <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{coverState.error}</p>
         ) : null}
         {coverState.output ? (
           <OutputPanel label="Tailored cover letter" body={coverState.output} savedTo={memberFullName} />
@@ -931,7 +931,7 @@ export default function SessionRunClient({
           {interviewState.status === 'running' ? 'Generating…' : interviewState.output ? 'Re-run' : 'Generate questions'}
         </button>
         {interviewState.error ? (
-          <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{interviewState.error}</p>
+          <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{interviewState.error}</p>
         ) : null}
         {interviewState.output ? (
           <InterviewOutput body={interviewState.output} savedTo={memberFullName} />
@@ -953,7 +953,7 @@ export default function SessionRunClient({
           {resumeAnalysisState.status === 'running' ? <PortalInlineSpinner size={16} /> : <Sparkles size={16} aria-hidden />}
           {resumeAnalysisState.status === 'running' ? 'Analyzing…' : resumeAnalysisState.output ? 'Re-run' : 'Analyze resume'}
         </button>
-        {resumeAnalysisState.error && <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{resumeAnalysisState.error}</p>}
+        {resumeAnalysisState.error && <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{resumeAnalysisState.error}</p>}
         {resumeAnalysisState.output && <OutputPanel label="Resume analysis" body={resumeAnalysisState.output} savedTo={memberFullName} />}
       </SectionCard>
 
@@ -972,7 +972,7 @@ export default function SessionRunClient({
           {gapState.status === 'running' ? <PortalInlineSpinner size={16} /> : <Sparkles size={16} aria-hidden />}
           {gapState.status === 'running' ? 'Analyzing…' : gapState.output ? 'Re-run' : 'Analyze gaps'}
         </button>
-        {gapState.error && <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{gapState.error}</p>}
+        {gapState.error && <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{gapState.error}</p>}
         {gapState.output && <OutputPanel label="Gap analysis" body={gapState.output} savedTo={memberFullName} />}
       </SectionCard>
 
@@ -986,7 +986,7 @@ export default function SessionRunClient({
           Score how well the resume matches a specific job posting and surface quick wins.
         </p>
         <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-          <label htmlFor="session-jms-desc">Job description <span style={{ color: 'var(--color-accent)' }}>*</span></label>
+          <label htmlFor="session-jms-desc">Job description <span style={{ color: 'var(--wa-accent-text)' }}>*</span></label>
           <textarea id="session-jms-desc" value={jobDescription} onChange={(e) => setJobDescription(e.target.value)}
             rows={4} placeholder="Paste the job posting here (reuses input from cover letter card)."
             disabled={jobMatchState.status === 'running'} />
@@ -997,7 +997,7 @@ export default function SessionRunClient({
           {jobMatchState.status === 'running' ? <PortalInlineSpinner size={16} /> : <Sparkles size={16} aria-hidden />}
           {jobMatchState.status === 'running' ? 'Scoring…' : jobMatchState.output ? 'Re-run' : 'Score match'}
         </button>
-        {jobMatchState.error && <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{jobMatchState.error}</p>}
+        {jobMatchState.error && <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{jobMatchState.error}</p>}
         {jobMatchState.output && <OutputPanel label="Job match analysis" body={jobMatchState.output} savedTo={memberFullName} />}
       </SectionCard>
 
@@ -1010,7 +1010,7 @@ export default function SessionRunClient({
           Generate 3–5 LinkedIn headline options under 120 characters. Uses target role from step 2.
         </p>
         <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-          <label htmlFor="session-headline-skills">Key skills <span style={{ color: 'var(--color-accent)' }}>*</span></label>
+          <label htmlFor="session-headline-skills">Key skills <span style={{ color: 'var(--wa-accent-text)' }}>*</span></label>
           <input id="session-headline-skills" type="text" value={keySkills} onChange={(e) => setKeySkills(e.target.value)}
             placeholder="e.g. Sales, CRM, Salesforce, B2B SaaS" disabled={headlineState.status === 'running'} />
         </div>
@@ -1025,7 +1025,7 @@ export default function SessionRunClient({
           {headlineState.status === 'running' ? <PortalInlineSpinner size={16} /> : <Sparkles size={16} aria-hidden />}
           {headlineState.status === 'running' ? 'Generating…' : headlineState.output ? 'Re-run' : 'Generate headlines'}
         </button>
-        {headlineState.error && <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{headlineState.error}</p>}
+        {headlineState.error && <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{headlineState.error}</p>}
         {headlineState.output && <OutputPanel label="LinkedIn headline options" body={headlineState.output} savedTo={memberFullName} />}
       </SectionCard>
 
@@ -1050,7 +1050,7 @@ export default function SessionRunClient({
           {aboutState.status === 'running' ? <PortalInlineSpinner size={16} /> : <Sparkles size={16} aria-hidden />}
           {aboutState.status === 'running' ? 'Generating…' : aboutState.output ? 'Re-run' : 'Write About section'}
         </button>
-        {aboutState.error && <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{aboutState.error}</p>}
+        {aboutState.error && <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{aboutState.error}</p>}
         {aboutState.output && <OutputPanel label="LinkedIn About section" body={aboutState.output} savedTo={memberFullName} />}
       </SectionCard>
 
@@ -1064,12 +1064,12 @@ export default function SessionRunClient({
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
           <div className="form-group" style={{ margin: 0 }}>
-            <label htmlFor="session-sal-offer">Current offer ($) <span style={{ color: 'var(--color-accent)' }}>*</span></label>
+            <label htmlFor="session-sal-offer">Current offer ($) <span style={{ color: 'var(--wa-accent-text)' }}>*</span></label>
             <input id="session-sal-offer" type="number" value={currentOffer} onChange={(e) => setCurrentOffer(e.target.value)}
               placeholder="65000" disabled={salaryState.status === 'running'} />
           </div>
           <div className="form-group" style={{ margin: 0 }}>
-            <label htmlFor="session-sal-target">Target salary ($) <span style={{ color: 'var(--color-accent)' }}>*</span></label>
+            <label htmlFor="session-sal-target">Target salary ($) <span style={{ color: 'var(--wa-accent-text)' }}>*</span></label>
             <input id="session-sal-target" type="number" value={targetSalary} onChange={(e) => setTargetSalary(e.target.value)}
               placeholder="75000" disabled={salaryState.status === 'running'} />
           </div>
@@ -1088,7 +1088,7 @@ export default function SessionRunClient({
           {salaryState.status === 'running' ? <PortalInlineSpinner size={16} /> : <Sparkles size={16} aria-hidden />}
           {salaryState.status === 'running' ? 'Generating…' : salaryState.output ? 'Re-run' : 'Build script'}
         </button>
-        {salaryState.error && <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{salaryState.error}</p>}
+        {salaryState.error && <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{salaryState.error}</p>}
         {salaryState.output && <OutputPanel label="Negotiation script" body={salaryState.output} savedTo={memberFullName} />}
       </SectionCard>
 
@@ -1123,7 +1123,7 @@ export default function SessionRunClient({
           {pitchState.status === 'running' ? <PortalInlineSpinner size={16} /> : <Sparkles size={16} aria-hidden />}
           {pitchState.status === 'running' ? 'Generating…' : pitchState.output ? 'Re-run' : 'Build pitch'}
         </button>
-        {pitchState.error && <p role="alert" style={{ color: 'var(--color-accent)', marginTop: '0.5rem' }}>{pitchState.error}</p>}
+        {pitchState.error && <p role="alert" style={{ color: 'var(--wa-accent-text)', marginTop: '0.5rem' }}>{pitchState.error}</p>}
         {pitchState.output && <OutputPanel label="Elevator pitch" body={pitchState.output} savedTo={memberFullName} />}
       </SectionCard>
 
@@ -1177,7 +1177,7 @@ export default function SessionRunClient({
         )}
       </div>
       {packetError ? (
-        <p role="alert" style={{ color: 'var(--color-accent)' }}>{packetError}</p>
+        <p role="alert" style={{ color: 'var(--wa-accent-text)' }}>{packetError}</p>
       ) : null}
 
       {packetSent ? (

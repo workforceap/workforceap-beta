@@ -151,7 +151,7 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
                 key: 'name',
                 header: 'Name',
                 cell: (m) => (
-                  <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 600, color: 'var(--color-accent)' }}>
+                  <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 600, color: 'var(--wa-accent-text)' }}>
                     {m.fullName}
                   </Link>
                 ),
@@ -193,7 +193,7 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
           {members.map((m) => (
             <li key={`card-${m.id}`} className="admin-portal-card">
               <div className="admin-portal-card__header">
-                <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 700, color: 'var(--color-accent)' }}>
+                <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 700, color: 'var(--wa-accent-text)' }}>
                   {m.fullName}
                 </Link>
               </div>

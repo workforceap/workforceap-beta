@@ -29,7 +29,7 @@ export default function StartTourButton({ className, style, variant = 'outline' 
           border: 'none',
           cursor: 'pointer',
           background: 'var(--color-accent)',
-          color: 'var(--wa-on-accent-control)',
+          color: '#fff',
         }
       : {
           display: 'inline-flex',
