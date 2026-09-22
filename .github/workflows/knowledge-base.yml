@@ -28,5 +28,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Verify knowledge tooling
         run: npm run kb:test
-      - name: Verify source index and links
+      - name: Generate the index from the checked-out source
+        run: npm run kb:generate
+      - name: Verify the index is reproducible and every KB link resolves
         run: npm run kb:check

@@ -21,10 +21,17 @@ The [audit baseline](audit-baseline.json) identifies the reviewed application re
 Read this page and the one relevant domain page first. Do not load the complete machine inventory into an agent prompt. It is intentionally exhaustive; the query tool returns only matching locations.
 
 ```bash
+npm run kb:generate   # once per clone: writes the git-ignored generated/ directory
 node scripts/knowledge-query.mjs "CourseEnrollment"
 node scripts/knowledge-query.mjs "guardian" --limit 15
 node scripts/knowledge-query.mjs --references lib/tenant/withTenantScope.ts --limit 20
 ```
+
+Everything under `generated/` is build output and is **not tracked in Git**. Run
+`npm run kb:generate` to produce it; until you do, links on this page that point into
+`generated/` resolve only after that command (and do not resolve when browsing this file
+on GitHub). CI regenerates the directory from the checked-out source and verifies it on
+every pull request, so the index is always derived from the commit being reviewed.
 
 The query tool reads generated JSON and prints paths, symbols and references. It does not contact production, load environment values, or run application code.
 
