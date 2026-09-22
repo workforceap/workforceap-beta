@@ -17,7 +17,11 @@ vi.mock('@/lib/auth/roles', () => ({ requireAdmin: vi.fn() }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(() => Promise.resolve()) }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn(), captureApiResponseError: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({
-  prisma: { workflowDiagnostic: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() } },
+  prisma: {
+    workflowDiagnostic: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    // WAP-163: the route mirrors the replay onto the preserved copy, when one exists.
+    emailFailureSnapshot: { findUnique: vi.fn(), update: vi.fn() },
+  },
 }));
 vi.mock('@/lib/email', () => ({
   sendApplicantFollowupEmail: vi.fn(),
@@ -69,6 +73,8 @@ beforeEach(() => {
   vi.mocked(requireAdmin).mockResolvedValue(undefined);
   vi.mocked(prisma.workflowDiagnostic.create).mockResolvedValue({ id: 'diag-2' } as never);
   vi.mocked(prisma.workflowDiagnostic.update).mockResolvedValue({} as never);
+  vi.mocked(prisma.emailFailureSnapshot.findUnique).mockResolvedValue(null as never);
+  vi.mocked(prisma.emailFailureSnapshot.update).mockResolvedValue({} as never);
   vi.mocked(sendApplicantFollowupEmail).mockResolvedValue({ ok: true });
 });
 
@@ -192,5 +198,97 @@ describe('POST /api/admin/email-failures/[id]/resend', () => {
     expect(res.status).toBe(422);
     expect(await res.json()).toMatchObject({ ok: false, error: expect.stringMatching(/fixture/) });
     expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({ metadata: expect.objectContaining({ ok: false, skipped: true }) }));
+  });
+});
+
+/**
+ * WAP-163: `email_failure_snapshots` rows are inserted with `skipDuplicates`,
+ * so nothing ever refreshes an existing copy. If a row is re-sent after being
+ * snapshotted, the copy must learn about it here — otherwise the purge takes
+ * the source and the surviving evidence claims a re-sent failure was never
+ * re-sent.
+ */
+describe('the preserved copy is kept in step with the replay', () => {
+  const snapshotRow = {
+    id: 'snap-1',
+    metadata: { to: ['ada@example.org'], subject: 'Your WorkforceAP Application is Being Reviewed' },
+  };
+
+  it('stamps the replay onto the snapshot when the row has already been preserved', async () => {
+    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow(replayable) as never);
+    vi.mocked(prisma.emailFailureSnapshot.findUnique).mockResolvedValue(snapshotRow as never);
+
+    const res = await call();
+    expect(res.status).toBe(200);
+
+    expect(prisma.emailFailureSnapshot.findUnique).toHaveBeenCalledWith({
+      where: { sourceDiagnosticId: 'diag-1' },
+      select: { id: true, metadata: true },
+    });
+    expect(prisma.emailFailureSnapshot.update).toHaveBeenCalledTimes(1);
+
+    const [args] = vi.mocked(prisma.emailFailureSnapshot.update).mock.calls[0] as [
+      { where: { id: string }; data: { metadata: Record<string, unknown> } },
+    ];
+    expect(args.where).toEqual({ id: 'snap-1' });
+    // The replay fields are added; the original evidence is not discarded.
+    expect(args.data.metadata).toMatchObject({
+      to: ['ada@example.org'],
+      subject: 'Your WorkforceAP Application is Being Reviewed',
+      resentOk: true,
+      resentDiagnosticId: 'diag-2',
+    });
+    expect(typeof args.data.metadata.resentAt).toBe('string');
+
+    // Source and copy carry the same replay stamp.
+    const [sourceArgs] = vi.mocked(prisma.workflowDiagnostic.update).mock.calls[0] as [
+      { data: { metadata: Record<string, unknown> } },
+    ];
+    expect(sourceArgs.data.metadata.resentAt).toBe(args.data.metadata.resentAt);
+    expect(sourceArgs.data.metadata.resentOk).toBe(args.data.metadata.resentOk);
+    expect(sourceArgs.data.metadata.resentDiagnosticId).toBe(args.data.metadata.resentDiagnosticId);
+  });
+
+  it('writes no snapshot update when the row has not been preserved yet', async () => {
+    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow(replayable) as never);
+    vi.mocked(prisma.emailFailureSnapshot.findUnique).mockResolvedValue(null as never);
+
+    const res = await call();
+
+    expect(res.status).toBe(200);
+    expect(prisma.emailFailureSnapshot.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.emailFailureSnapshot.update).not.toHaveBeenCalled();
+    // The source row is still stamped; the copy simply does not exist yet and
+    // will be written with the replay fields already on it.
+    expect(prisma.workflowDiagnostic.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('records a failed replay on the copy as well, not only a successful one', async () => {
+    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow(replayable) as never);
+    vi.mocked(prisma.emailFailureSnapshot.findUnique).mockResolvedValue(snapshotRow as never);
+    vi.mocked(sendApplicantFollowupEmail).mockResolvedValue({ ok: false, error: 'provider rejected' });
+
+    const res = await call();
+    expect(res.status).toBe(502);
+
+    expect(prisma.emailFailureSnapshot.update).toHaveBeenCalledTimes(1);
+    const [args] = vi.mocked(prisma.emailFailureSnapshot.update).mock.calls[0] as [
+      { data: { metadata: Record<string, unknown> } },
+    ];
+    expect(args.data.metadata.resentOk).toBe(false);
+  });
+
+  it('surfaces a mirror failure as a 500 rather than letting the records disagree quietly', async () => {
+    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow(replayable) as never);
+    vi.mocked(prisma.emailFailureSnapshot.findUnique).mockResolvedValue(snapshotRow as never);
+    vi.mocked(prisma.emailFailureSnapshot.update).mockRejectedValue(new Error('snapshot row is locked'));
+
+    const res = await call();
+
+    expect(res.status).toBe(500);
+    // The send and its outcome row are already recorded, so the replay itself
+    // is not lost by the 500 — only the request fails.
+    expect(sendApplicantFollowupEmail).toHaveBeenCalledTimes(1);
+    expect(prisma.workflowDiagnostic.create).toHaveBeenCalledTimes(1);
   });
 });

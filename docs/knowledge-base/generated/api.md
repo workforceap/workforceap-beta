@@ -65,7 +65,7 @@
 | [app/api/admin/email-crons/\[id\]/trigger/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/trigger/route.ts) | 108 | communications | POST:11 |
 | [app/api/admin/email-crons/activate-all/route.ts](../../../app/api/admin/email-crons/activate-all/route.ts) | 73 | communications | POST:12 |
 | [app/api/admin/email-crons/route.ts](../../../app/api/admin/email-crons/route.ts) | 66 | communications | GET:9 |
-| [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | 148 | communications | maxDuration:17, POST:32 |
+| [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | 161 | communications | maxDuration:18, POST:35 |
 | [app/api/admin/email-templates/\[id\]/preview/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.test.ts) | 6 | communications |  |
 | [app/api/admin/email-templates/\[id\]/preview/route.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.ts) | 43 | communications | POST:9 |
 | [app/api/admin/email-templates/\[id\]/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/route.test.ts) | 6 | communications |  |
@@ -292,7 +292,7 @@
 | [app/api/cron/coursera-b4b-sync/route.ts](../../../app/api/cron/coursera-b4b-sync/route.ts) | 92 | learning-coursera | maxDuration:13, GET:91, POST:92 |
 | [app/api/cron/coursera-sync/route.ts](../../../app/api/cron/coursera-sync/route.ts) | 175 | learning-coursera | maxDuration:14, GET:174, POST:175 |
 | [app/api/cron/coursera-training-sync/route.ts](../../../app/api/cron/coursera-training-sync/route.ts) | 38 | learning-coursera | maxDuration:10, GET:38 |
-| [app/api/cron/data-cleanup/route.ts](../../../app/api/cron/data-cleanup/route.ts) | 62 | communications | maxDuration:9, GET:61, POST:62 |
+| [app/api/cron/data-cleanup/route.ts](../../../app/api/cron/data-cleanup/route.ts) | 67 | communications | maxDuration:9, GET:66, POST:67 |
 | [app/api/cron/deploy-health/route.ts](../../../app/api/cron/deploy-health/route.ts) | 81 | communications | maxDuration:7, GET:80, POST:81 |
 | [app/api/cron/employer-pending-applicants/route.ts](../../../app/api/cron/employer-pending-applicants/route.ts) | 172 | communications | maxDuration:12, GET:171, POST:172 |
 | [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 123 | communications | maxDuration:16, GET:122, POST:123 |

@@ -1,13 +1,33 @@
 /**
- * Copy every `email_send` failure row from `workflow_diagnostics` into
- * `email_failure_snapshots` before the retention purge removes it
- * (WORKFLOW_DIAGNOSTIC_RETENTION_DAYS: default 90, WAP-17 intends 60 once
- * this script has demonstrably run in production — run it at least that
- * often or failures older than the window are lost).
+ * Manual catch-up copy of every `email_send` failure row from
+ * `workflow_diagnostics` into `email_failure_snapshots`.
+ *
+ * Since WAP-163 the daily retention cron does this automatically for the rows
+ * it is about to delete: `lib/retention/cleanup.ts` snapshots each
+ * `workflow_diagnostics` batch inside the same transaction as its delete, so
+ * nothing ages out uncopied. This script stays for the jobs that cron cannot
+ * do, because it is not bounded by the retention cutoff:
+ *
+ *   - pull the evidence for rows that have NOT reached the cutoff yet
+ *     (e.g. before lowering WORKFLOW_DIAGNOSTIC_RETENTION_DAYS to 60, WAP-17);
+ *   - `--dry-run` classification of the backlog by error class and template;
+ *   - a catch-up after a window in which the cron was failing.
+ *
+ * It shares the cron's predicate, mapping and idempotent insert
+ * (`lib/email/failureSnapshot.ts`) rather than keeping a second copy of them.
  *
  * Idempotent: rows are keyed by `source_diagnostic_id`, so re-running only
  * adds rows that appeared since the last run. Nothing is deleted or updated in
  * `workflow_diagnostics`. Read-only against the source; additive on the copy.
+ *
+ * This script PRESERVES; it does not re-send, and must not grow into a
+ * re-sender. The copy is deliberately the whole failure set, because it is
+ * evidence. The re-send scope is narrower and was ruled on separately: replay
+ * only the course-paid and application-status failures, and send dormant
+ * members one fresh "we miss you" message rather than replaying the queued
+ * ones. Any future re-send tool reads `email_failure_snapshots`, filters to
+ * `template_key` in that approved set, and goes through the existing admin
+ * resend path (`lib/email/resendRegistry.ts`) — not through this file.
  *
  * Usage (against the database named by DATABASE_URL / POSTGRES_PRISMA_URL):
  *   node scripts/prisma-env.js npx tsx scripts/snapshot-email-failures.ts --dry-run
@@ -21,11 +41,10 @@
 import { PrismaClient } from '@prisma/client';
 
 import {
-  EMAIL_FAILURE_STATUSES,
+  emailFailureDiagnosticWhere,
+  snapshotEmailFailures,
   snapshotRunLabel,
-  toEmailFailureSnapshotRow,
 } from '../lib/email/failureSnapshot';
-import { EMAIL_SEND_WORKFLOW } from '../lib/email/failureRecord';
 
 const prisma = new PrismaClient();
 
@@ -42,14 +61,10 @@ async function main() {
   if (sinceDate && Number.isNaN(sinceDate.getTime())) {
     throw new Error(`--since is not a date: ${since}`);
   }
-  const batch = Math.max(1, Math.min(2000, Number(readFlag('batch') ?? 500) || 500));
+  const batchSize = Number(readFlag('batch') ?? 500) || 500;
   const run = snapshotRunLabel();
 
-  const where = {
-    workflow: EMAIL_SEND_WORKFLOW,
-    status: { in: [...EMAIL_FAILURE_STATUSES] },
-    ...(sinceDate ? { createdAt: { gte: sinceDate } } : {}),
-  };
+  const where = emailFailureDiagnosticWhere(sinceDate ? { createdAt: { gte: sinceDate } } : {});
 
   const [sourceTotal, alreadySnapshotted] = await Promise.all([
     prisma.workflowDiagnostic.count({ where }),
@@ -58,52 +73,35 @@ async function main() {
   console.log(`[snapshot-email-failures] run=${run} dryRun=${dryRun}`);
   console.log(`[snapshot-email-failures] source email_send failure rows: ${sourceTotal}; snapshot rows before: ${alreadySnapshotted}`);
 
-  let scanned = 0;
-  let inserted = 0;
   const byClass = new Map<string, number>();
   const byTemplate = new Map<string, number>();
   let oldest: Date | null = null;
   let newest: Date | null = null;
-  let cursor: string | undefined;
 
-  for (;;) {
-    const rows = await prisma.workflowDiagnostic.findMany({
-      where,
-      orderBy: { id: 'asc' },
-      take: batch,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      select: {
-        id: true, workflow: true, status: true, actorUserId: true, entityType: true, entityId: true,
-        summary: true, provider: true, method: true, fallbackPath: true, failureReason: true,
-        metadata: true, createdAt: true,
+  const { scanned, inserted } = await snapshotEmailFailures(
+    prisma,
+    run,
+    {
+      batchSize,
+      since: sinceDate,
+      dryRun,
+      onBatch: (rows) => {
+        for (const row of rows) {
+          byClass.set(row.errorClass, (byClass.get(row.errorClass) ?? 0) + 1);
+          const template = row.templateKey ?? '(untyped)';
+          byTemplate.set(template, (byTemplate.get(template) ?? 0) + 1);
+          if (!oldest || row.diagnosticCreatedAt < oldest) oldest = row.diagnosticCreatedAt;
+          if (!newest || row.diagnosticCreatedAt > newest) newest = row.diagnosticCreatedAt;
+        }
       },
-    });
-    if (rows.length === 0) break;
-    cursor = rows[rows.length - 1].id;
-    scanned += rows.length;
-
-    const mapped = rows.map((row) => toEmailFailureSnapshotRow(row, run));
-    for (const row of mapped) {
-      byClass.set(row.errorClass, (byClass.get(row.errorClass) ?? 0) + 1);
-      const template = row.templateKey ?? '(untyped)';
-      byTemplate.set(template, (byTemplate.get(template) ?? 0) + 1);
-      if (!oldest || row.diagnosticCreatedAt < oldest) oldest = row.diagnosticCreatedAt;
-      if (!newest || row.diagnosticCreatedAt > newest) newest = row.diagnosticCreatedAt;
-    }
-
-    if (!dryRun) {
-      const result = await prisma.emailFailureSnapshot.createMany({
-        data: mapped.map((row) => ({ ...row, metadata: row.metadata === null ? undefined : (row.metadata as object) })),
-        skipDuplicates: true,
-      });
-      inserted += result.count;
-    }
-    if (rows.length < batch) break;
-  }
+    },
+  );
 
   const after = dryRun ? alreadySnapshotted : await prisma.emailFailureSnapshot.count();
   console.log(`[snapshot-email-failures] scanned=${scanned} inserted=${inserted} skippedExisting=${scanned - inserted} snapshotRowsAfter=${after}`);
-  console.log(`[snapshot-email-failures] window: ${oldest?.toISOString() ?? '-'} .. ${newest?.toISOString() ?? '-'}`);
+  const oldestIso = oldest ? (oldest as Date).toISOString() : '-';
+  const newestIso = newest ? (newest as Date).toISOString() : '-';
+  console.log(`[snapshot-email-failures] window: ${oldestIso} .. ${newestIso}`);
   console.log('[snapshot-email-failures] by error class:', Object.fromEntries([...byClass.entries()].sort()));
   console.log('[snapshot-email-failures] by template:', Object.fromEntries([...byTemplate.entries()].sort((a, b) => b[1] - a[1])));
   if (!dryRun && after < sourceTotal) {

@@ -20,6 +20,9 @@ export const maxDuration = 300;
  *
  * A run with any per-table error is recorded as an error and answers 500, so
  * the wrapper marks the execution FAILED instead of `ok` (WAP-177 fix 3).
+ * That is also how a failed email-failure snapshot surfaces: the
+ * `workflow_diagnostics` purge is blocked rather than silently destroying the
+ * evidence, and the run is red (WAP-163).
  *
  * Secured by CRON_SECRET.
  */
@@ -50,6 +53,8 @@ async function handle(_request: Request) {
   return NextResponse.json({
     ok: !failed,
     totalDeleted: report.totalDeleted,
+    emailFailuresSnapshotted: report.emailFailuresSnapshotted,
+    emailFailuresScanned: report.emailFailuresScanned,
     deletedAccounts: report.deletedAccounts,
     blockedAccounts: report.blockedAccounts ?? [],
     results: report.results,

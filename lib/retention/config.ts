@@ -92,10 +92,15 @@ export const PUBLIC_LEAD_RETENTION_DAYS = 180;
  * The window is env-driven with a default of 90 (the pre-WAP-17 value) rather
  * than a hard 60, on purpose: the first cleanup run after a hard cut would
  * delete every row in the 60-90 day band in one pass, and those rows are the
- * only record of the 818 lost emails until scripts/snapshot-email-failures.ts
- * has demonstrably run in production. Operator sequence: run the snapshot,
- * confirm the rows landed in `email_failure_snapshots`, then set
- * WORKFLOW_DIAGNOSTIC_RETENTION_DAYS=60 in Vercel. Anything that is not a
+ * only record of the 810 lost emails (measured against production
+ * 2026-09-22; an earlier note here said 818). As of WAP-163 the retention
+ * cleanup snapshots each `workflow_diagnostics` batch into
+ * `email_failure_snapshots` before deleting it, so the copy no longer depends
+ * on someone having run scripts/snapshot-email-failures.ts first. Lowering
+ * this to 60 would purge 256 email-failure rows on the very next run, so the
+ * order matters: land the snapshot-on-purge change, then set
+ * WORKFLOW_DIAGNOSTIC_RETENTION_DAYS=60 in Vercel — and confirm the rows are
+ * landing in `email_failure_snapshots` either way. Anything that is not a
  * positive integer falls back to 90 so a typo can never widen the purge.
  */
 export const DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS = 90;
