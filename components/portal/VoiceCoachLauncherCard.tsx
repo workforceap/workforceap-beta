@@ -52,7 +52,8 @@ export default function VoiceCoachLauncherCard({
             fontWeight: 700,
             color: '#fff',
             background: ctaGradient ?? surface.gradient,
-            boxShadow: ctaShadow ?? `0 8px 24px ${surface.glowColor}33`,
+            // color-mix, not a hex-alpha suffix: glowColor may be a var().
+            boxShadow: ctaShadow ?? `0 8px 24px color-mix(in srgb, ${surface.glowColor} 20%, transparent)`,
             textAlign: 'center',
             padding: '0.65rem 2.5rem 0.65rem 1rem',
           }}

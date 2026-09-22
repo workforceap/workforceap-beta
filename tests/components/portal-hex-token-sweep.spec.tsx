@@ -416,6 +416,25 @@ describe('voiceAgentSurfaces crimson surfaces paint from the hero tokens', () =>
   });
 });
 
+describe('VoiceCoachLauncherCard CTA shadow', () => {
+  it('falls back to a color-mix of the glow colour when no ctaShadow is passed, never a hex-alpha suffix', async () => {
+    const { default: Card } = await import('@/components/portal/VoiceCoachLauncherCard');
+    const { ctaShadow: _omitted, ...surface } = (await import('@/lib/portal/voice')).resumeCoachVoiceSurface;
+    void _omitted;
+    const { container } = render(
+      <Card {...surface} title="Resume coach" description="Line by line." href="/dashboard/resume-coach" ctaLabel="Open" />,
+    );
+    const cta = screen.getByRole('link', { name: /open/i });
+    const style = styleOf(cta);
+    expect(style).toContain('box-shadow: 0 8px 24px color-mix(in srgb, var(--wa-hero-crimson) 20%, transparent)');
+    expect(style).not.toMatch(/\)33\b/);
+    expect(style).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
+    // The white CTA text on the hero gradient is the one deliberate literal
+    // here (jsdom normalises `#fff` to rgb); the shadow contributes none.
+    expect(allLiterals(container)).toEqual(['rgb(255, 255, 255)']);
+  });
+});
+
 describe('AdminAnalyticsCharts grid', () => {
   it('draws every CartesianGrid line from --wa-border so it resolves in light mode too', async () => {
     const { default: Charts } = await import('@/components/admin/AdminAnalyticsCharts');
