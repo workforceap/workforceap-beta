@@ -111,32 +111,39 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
       (el) => el.childElementCount === 0 && el.textContent === label,
     );
     expect(labelEl, `stat tile "${label}"`).toBeTruthy();
-    return labelEl!.closest('.wa-kit-card') as HTMLElement;
+    // The home tiles are the kit StatSparkTile (an Astryx Card, not `.wa-kit-card`);
+    // the marked element is the one that declares the tone hook itself.
+    return labelEl!.closest('[data-testid="stat-spark-tile"]') as HTMLElement;
+  }
+
+  /** The tile's tone hook lives on the tile element itself or a descendant. */
+  function toned(tile: HTMLElement, selector: string): Element | null {
+    return tile.matches(selector) ? tile : tile.querySelector(selector);
   }
 
   it('gives no tile a tone just for being in its column', () => {
     const { container } = renderHome();
     // 42% course, 2 jobs, 1 cert, 640 points: only the two "you have some"
     // states paint. Nothing is magenta-because-first or gold-because-third.
-    expect(tileFor(container, 'Course').querySelector('[class*="wa-kit-tone--"]')).toBeNull();
-    expect(tileFor(container, 'Points').querySelector('[class*="wa-kit-tone--"]')).toBeNull();
-    expect(tileFor(container, 'Active jobs').querySelector(`.${toneClass('ok')}`)).not.toBeNull();
-    expect(tileFor(container, 'Certs').querySelector(`.${toneClass('ok')}`)).not.toBeNull();
+    expect(toned(tileFor(container, 'Course'), '[class*="wa-kit-tone--"]')).toBeNull();
+    expect(toned(tileFor(container, 'Points'), '[class*="wa-kit-tone--"]')).toBeNull();
+    expect(toned(tileFor(container, 'Active jobs'), `.${toneClass('ok')}`)).not.toBeNull();
+    expect(toned(tileFor(container, 'Certs'), `.${toneClass('ok')}`)).not.toBeNull();
   });
 
   it('paints the course tile from its value: ok when finished, warn only once not-started has gone stale', () => {
     const done = renderHome({ coursePercent: 100 });
-    expect(tileFor(done.container, 'Course').querySelector(`.${toneClass('ok')}`)).not.toBeNull();
+    expect(toned(tileFor(done.container, 'Course'), `.${toneClass('ok')}`)).not.toBeNull();
     cleanup();
 
     // Enrolled and not started is only worth a nudge once the shared
     // staleness threshold has passed; 0% an hour after enrolling is not.
     const fresh = renderHome({ coursePercent: 0 });
-    expect(tileFor(fresh.container, 'Course').querySelector('[class*="wa-kit-tone--"]')).toBeNull();
+    expect(toned(tileFor(fresh.container, 'Course'), '[class*="wa-kit-tone--"]')).toBeNull();
     cleanup();
 
     const unstarted = renderHome({ coursePercent: 0, courseProgressStale: true });
-    expect(tileFor(unstarted.container, 'Course').querySelector(`.${toneClass('warn')}`)).not.toBeNull();
+    expect(toned(tileFor(unstarted.container, 'Course'), `.${toneClass('warn')}`)).not.toBeNull();
     cleanup();
 
     // No program to be behind on, so nothing to warn about.

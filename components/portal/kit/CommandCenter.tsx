@@ -15,7 +15,7 @@ import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import Link from 'next/link';
 import { Sparkline, TrendPlaceholder } from './Charts';
 import { cx } from './base';
-import { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
+import { toneClass, tonePaint, type KitTone } from './tokens';
 
 /** Trend series + optional delta chip for a stat tile. Omit any field to hide that piece. */
 export interface SparkStat {
@@ -105,7 +105,7 @@ export function StatSparkTile({
 }) {
   return (
     <Card>
-      <div className={cx(toneClass(tone))} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div data-testid="stat-spark-tile" className={cx(toneClass(tone))} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div className="wa-flex wa-items-start wa-justify-between">
         <div aria-hidden className="wa-kit-tone-icon">
           {icon}
@@ -146,27 +146,24 @@ export function StatSparkTile({
 
 /**
  * N-segment stage tracker (e.g. a 3-step application/candidate pipeline). Fills
- * `index` of `total` segments with the tone colour (`.wa-kit-tone--<tone>`; the
- * old `color` prop is deprecated). Decorative (aria-hidden);
+ * `index` of `total` segments with the tone colour (`.wa-kit-tone--<tone>`);
+ * untoned it paints the brand accent. Decorative (aria-hidden);
  * pair with a visible status label.
  */
 export function StageTrack({
   index,
   total = 3,
   tone,
-  color,
   width = 84,
 }: {
   index: number;
   total?: number;
   /** Semantic state of the filled segments (`ok` placed, `warn` interviewing, …); omit for accent. */
   tone?: KitTone;
-  /** @deprecated Categorical fill — use `tone`. Ignored when `tone` is set. */
-  color?: KitColor;
   width?: number;
 }) {
   const filled = Math.max(0, Math.min(total, index));
-  const c = tonePaint(tone, color) ?? 'var(--wa-accent)';
+  const c = tonePaint(tone) ?? 'var(--wa-accent)';
   return (
     <div aria-hidden className={cx('wa-flex wa-items-center wa-gap-1', toneClass(tone))} style={{ width }}>
       {Array.from({ length: total }).map((_, i) => (
@@ -176,21 +173,27 @@ export function StageTrack({
   );
 }
 
-/** Percent → segmented progress bar with progressbar semantics (next-badge/goal look). */
+/**
+ * Percent → segmented progress bar with progressbar semantics (next-badge/goal
+ * look). Same tone contract as `StageTrack`: a `tone` declares
+ * `.wa-kit-tone--<tone>` and the filled segments paint from `--wa-kit-tone`;
+ * untoned they paint the brand accent.
+ */
 export function SegmentedProgress({
   pct,
   segments,
-  color = 'accent',
+  tone,
   label,
 }: {
   pct: number;
   segments: number;
-  color?: KitColor;
+  /** Semantic state of the filled segments (`ok` on track, `warn` lagging, …); omit for accent. */
+  tone?: KitTone;
   label: string;
 }) {
   const clamped = clampPct(pct);
   const filled = Math.round((clamped / 100) * segments);
-  const c = colorVar(color);
+  const c = tonePaint(tone) ?? 'var(--wa-accent)';
   return (
     <div
       role="progressbar"
@@ -198,7 +201,7 @@ export function SegmentedProgress({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={label}
-      className="wa-flex wa-items-center wa-gap-1"
+      className={cx('wa-flex wa-items-center wa-gap-1', toneClass(tone))}
     >
       {Array.from({ length: segments }).map((_, i) => (
         <span key={i} aria-hidden style={{ flex: 1, height: 6, borderRadius: 3, background: i < filled ? c : 'var(--wa-track)' }} />

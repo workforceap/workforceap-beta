@@ -278,7 +278,7 @@ export default async function DashboardPointsPage() {
                   <span>{pctToNext}% to {nextLevel.label}</span>
                   <span>Next: {nextLevel.label} at {nextLevel.min.toLocaleString()} pts</span>
                 </div>
-                <SegmentedProgress pct={pctToNext} segments={12} color="accent" label={`Progress toward ${nextLevel.label}`} />
+                <SegmentedProgress pct={pctToNext} segments={12} label={`Progress toward ${nextLevel.label}`} />
               </>
             ) : (
               <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--wa-muted)' }}>

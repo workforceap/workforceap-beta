@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { STATUS_COLORS } from '@/lib/ui/statusColors';
 import StatusBadge from '@/components/portal/StatusBadge';
+import { DeltaChip, StatSparkTile } from '@/components/portal/kit/CommandCenter';
 
 /**
  * Green status text (StatusBadge `success`, STATUS_COLORS.success, the
@@ -91,13 +92,13 @@ describe('--wa-success-dark text-on-success-tint token', () => {
  * hue — 3.13:1 on `--wa-success-soft` — through the Astryx Badge `success`
  * variant in one copy and `var(--wa-kit-tone)` in the other. Both now read
  * `.wa-kit-delta--up|down` (css/portal-kit.css), whose text/tint pairs are
- * the WCAG-tuned ones `.wa-kit-tag--ok|danger` already prove.
+ * the WCAG-tuned ones `.wa-kit-tag--ok|danger` already prove. The member home
+ * copy is gone (its tiles render the kit `StatSparkTile`), so one rendered
+ * chip is the only renderer to check.
  */
 describe('DeltaChip reads the text-on-tint pairs, not the base hue', () => {
   const kitCss = readFileSync(path.join(root, 'css/portal-kit.css'), 'utf8');
   const surface = lightDark('--wa-surface');
-  const commandCenter = readFileSync(path.join(root, 'components/portal/kit/CommandCenter.tsx'), 'utf8');
-  const memberHome = readFileSync(path.join(root, 'components/portal/kit/pages/member/MemberHomeKit.tsx'), 'utf8');
 
   function ruleColour(selector: string): { light: string; dark: string } {
     const block = kitCss.match(new RegExp(`${selector.replace(/[.-]/g, '\\$&')}\\s*\\{([^}]*)\\}`));
@@ -136,15 +137,22 @@ describe('DeltaChip reads the text-on-tint pairs, not the base hue', () => {
     expect(contrast(base, parseColor(lightDark('--wa-success-soft').light))).toBeLessThan(4.5);
   });
 
-  it('both DeltaChip renderers paint through the class only', () => {
-    for (const source of [commandCenter, memberHome]) {
-      const chip = source.match(/function DeltaChip[\s\S]*?\n\}/)?.[0] ?? '';
-      expect(chip).toContain("'wa-kit-delta'");
-      expect(chip).toContain("'wa-kit-tag--danger' : 'wa-kit-tag--ok'");
-      expect(chip).not.toContain('var(--wa-kit-tone)');
-      expect(chip).not.toContain('<Badge');
+  it('the rendered DeltaChip paints through the class only: no inline hue, no Astryx Badge', () => {
+    const up = renderToStaticMarkup(createElement(DeltaChip, { delta: '4%' }));
+    const down = renderToStaticMarkup(createElement(DeltaChip, { delta: '2', direction: 'down' }));
+    expect(up).toMatch(/<span class="wa-kit-delta wa-kit-tag--ok"/);
+    expect(down).toMatch(/<span class="wa-kit-delta wa-kit-tag--danger"/);
+    for (const markup of [up, down]) {
+      expect(markup).not.toContain('--wa-kit-tone');
+      expect(markup).not.toContain('--wa-success');
+      expect(markup).not.toMatch(/<span[^>]*style=/);
     }
-    expect(commandCenter).not.toMatch(/import \{ Badge \} from '@astryxdesign\/core\/Badge'/);
+    // The tile mounts that same chip: the only element carrying the delta text is the class-painted span.
+    const tile = renderToStaticMarkup(
+      createElement(StatSparkTile, { icon: createElement('i'), label: 'Active jobs', value: 4, tone: 'ok', spark: { delta: '1' } }),
+    );
+    expect(tile.match(/wa-kit-delta wa-kit-tag--ok/g)).toHaveLength(1);
+    expect(tile).not.toMatch(/<span class="wa-kit-delta[^"]*" style=/);
   });
 });
 

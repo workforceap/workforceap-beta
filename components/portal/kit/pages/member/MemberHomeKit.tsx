@@ -9,7 +9,6 @@ import {
   GraduationCap,
   ArrowRight,
   ArrowUp,
-  ArrowDown,
   Flame,
   Target,
   BookOpen,
@@ -25,8 +24,8 @@ import {
   PageOpener,
   ProgressBar,
   ProgressRing,
+  StatSparkTile,
   StatusTag,
-  TrendPlaceholder,
   colorVar,
   cx,
   toneClass,
@@ -93,7 +92,11 @@ interface GoalSummary {
   percent: number;
 }
 
-/** Tiny inline sparkline + delta chip for a stat tile. Omit any field to hide that piece. */
+/**
+ * Tiny inline sparkline + delta chip for a stat tile. Omit any field to hide
+ * that piece. Structurally the kit's `SparkStat` (components/portal/kit/
+ * CommandCenter.tsx) — the home tiles render the shared `StatSparkTile`.
+ */
 export interface StatSpark {
   /** Sparkline series (2+ points, auto-scaled). Omit/short and the tile shows the muted `dashboard.noTrendYet` slot instead (TrendPlaceholder), not a blank. */
   series?: number[];
@@ -232,23 +235,6 @@ function logoColorFor(name: string): string {
   return LOGO_COLORS[hash % LOGO_COLORS.length];
 }
 
-function sparklinePoints(series: number[]): string {
-  const w = 100;
-  const h = 28;
-  const pad = 2;
-  const min = Math.min(...series);
-  const max = Math.max(...series);
-  const range = max - min || 1;
-  const stepX = series.length > 1 ? (w - pad * 2) / (series.length - 1) : 0;
-  return series
-    .map((v, i) => {
-      const x = pad + i * stepX;
-      const y = pad + (h - pad * 2) * (1 - (v - min) / range);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(' ');
-}
-
 /* ---------------------------------------------------------------------- */
 /* Presentational sub-components                                          */
 /* ---------------------------------------------------------------------- */
@@ -279,90 +265,6 @@ function KitCardHead({ title, linkLabel, linkHref }: { title: string; linkLabel?
           {linkLabel}
         </a>
       ) : null}
-    </div>
-  );
-}
-
-/**
- * Trend pill. The direction IS the state, so it declares its own tone hook
- * (`ok` up / `danger` down) through `.wa-kit-delta` + `.wa-kit-tag--ok|danger` — the
- * WCAG-tuned text-on-tint pairs the status pills already prove; the base
- * `--wa-kit-tone` hue measured 3.1:1 on its soft tint (#2434, WAP-99).
- */
-function DeltaChip({ delta, direction = 'up' }: { delta: string; direction?: 'up' | 'down' }) {
-  const Icon = direction === 'down' ? ArrowDown : ArrowUp;
-  return (
-    <span className={cx('wa-kit-delta', direction === 'down' ? 'wa-kit-tag--danger' : 'wa-kit-tag--ok')}>
-      <Icon size={10} aria-hidden />
-      {delta}
-    </span>
-  );
-}
-
-/**
- * Member home KPI tile, on the same tone contract as the kit's
- * `StatSparkTile` (components/portal/kit/CommandCenter.tsx): the value is
- * always neutral `--wa-text`, and a `tone` — a state derived from the value,
- * never the column it sits in (WAP-99) — declares `.wa-kit-tone--<tone>` so
- * the icon chip and the trend line paint from `--wa-kit-tone`. Untoned, the
- * chip is the neutral surface pair and the line is the brand accent.
- */
-function StatSparkTile({
-  icon: Icon,
-  label,
-  value,
-  tone,
-  spark,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string | number;
-  /** Semantic state derived from the value; paints the icon chip and trend line only. */
-  tone?: KitTone;
-  spark?: StatSpark;
-}) {
-  const t = useTranslations('dashboard');
-  return (
-    <div className="wa-kit-card">
-      <div className={cx(toneClass(tone))} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div className="wa-flex wa-items-start wa-justify-between">
-        <div aria-hidden className="wa-kit-tone-icon">
-          <Icon size={16} />
-        </div>
-        {spark?.delta ? <DeltaChip delta={spark.delta} direction={spark.direction} /> : null}
-      </div>
-      <div>
-        <div
-          style={{
-            fontSize: 26,
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-            color: 'var(--wa-text)',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          {value}
-        </div>
-        <div style={{ marginTop: 4, fontSize: 'var(--wa-type-meta)', fontWeight: 600, color: 'var(--wa-muted)' }}>
-          {label}
-        </div>
-      </div>
-      {spark?.series && spark.series.length > 1 ? (
-        <svg aria-hidden focusable="false" viewBox="0 0 100 28" width="100%" height={28} preserveAspectRatio="none">
-          <polyline
-            points={sparklinePoints(spark.series)}
-            fill="none"
-            stroke={tone ? 'var(--wa-kit-tone)' : 'var(--wa-accent)'}
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ) : spark?.delta ? null : (
-        <TrendPlaceholder label={t('noTrendYet')} />
-      )}
-      </div>
     </div>
   );
 }
@@ -634,6 +536,7 @@ export function MemberHomeKit({
   pointsThisWeek,
   pointsLedger = [],
 }: MemberHomeKitProps) {
+  const t = useTranslations('dashboard');
   const pct = clampPct(coursePercent);
 
   /**
@@ -737,9 +640,20 @@ export function MemberHomeKit({
 
         {/* 3. Stat tiles — icon + delta chip + value/label + optional sparkline. */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
-          {statTiles.map((t) => (
-            <StatSparkTile key={t.key} icon={t.icon} label={t.label} value={t.value} tone={t.tone} spark={t.spark} />
-          ))}
+          {statTiles.map((tile) => {
+            const Icon = tile.icon;
+            return (
+              <StatSparkTile
+                key={tile.key}
+                icon={<Icon size={16} />}
+                label={tile.label}
+                value={tile.value}
+                tone={tile.tone}
+                spark={tile.spark}
+                emptyTrendLabel={t('noTrendYet')}
+              />
+            );
+          })}
         </div>
 
         {/* 4. Mixed row — certification ring, weekly activity, points ledger. */}

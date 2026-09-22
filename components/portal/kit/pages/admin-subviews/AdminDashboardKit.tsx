@@ -115,11 +115,11 @@ export interface AdminDashboardKitProps {
   exportHref?: string;
 }
 
-/** Funnel rate → bar color: ≥50 success, ≥25 gold, else accent. */
-function funnelColor(rate: number): RankDatum['color'] {
-  if (rate >= 50) return 'success';
-  if (rate >= 25) return 'gold';
-  return 'accent';
+/** Funnel rate → bar tone: ≥50 on track (`ok`), ≥25 lagging (`warn`), else needs a look (`alert`). */
+function funnelTone(rate: number): KitTone {
+  if (rate >= 50) return 'ok';
+  if (rate >= 25) return 'warn';
+  return 'alert';
 }
 
 const numStyle = { fontVariantNumeric: 'tabular-nums' as const };
@@ -226,7 +226,7 @@ export function AdminDashboardKit({
     label: f.name,
     value: `${f.current} of ${f.target} · ${f.rate}%`,
     pct: Math.min(Math.max(f.rate, 0), 100),
-    color: funnelColor(f.rate),
+    tone: funnelTone(f.rate),
   }));
 
   const hasTrends =
