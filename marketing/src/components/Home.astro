@@ -5,14 +5,14 @@ interface Props { lang?: string }
 const { lang = 'en' } = Astro.props;
 const t = useT(lang);
 const p = lang === 'en' ? '' : `/${lang}`; // locale-prefixed internal links
+// Banner statement (marketing.home.missionStatement): en is Mike Brown's verbatim text (#2473);
+// es/fr/pt are machine translations pending native-speaker review — 2026-09-22.
 ---
 <!-- HERO -->
 <section class="hero"><div class="wrap grid">
   <div>
     <span class="eyebrow"><span class="dot"></span>{t('marketing.home.programsEyebrow')} · 501(c)(3)</span>
     <h1>{t('marketing.home.heroTagline')}<br><span class="grad-text">{t('marketing.home.heroTaglineAccent')}</span></h1>
-    <!-- Banner statement (marketing.home.missionStatement): en is Mike Brown's verbatim text (#2473);
-         es/fr/pt are machine translations pending native-speaker review — 2026-09-22. -->
     <div class="mission">
       <span class="mission__label">{t('marketing.home.heroBrandLine')}</span>
       <p>{t('marketing.home.missionStatement')}</p>
