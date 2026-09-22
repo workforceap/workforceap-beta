@@ -1,10 +1,11 @@
 /**
  * Email failure evidence snapshot.
  *
- * `workflow_diagnostics` is the only record of the 818 outbound emails that
- * failed in 2026, and its retention purge (WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
- * default 90; WAP-17 lowers it to 60 only after this snapshot has run) deletes more of it every
- * day. `email_failure_snapshots` keeps a verbatim copy of every `email_send`
+ * `workflow_diagnostics` is the only record of the 810 outbound emails that
+ * failed in 2026 (768 CRLF-header, 32 rate-limit, 10 invalid-address;
+ * measured against production 2026-09-22, when an earlier note here said
+ * 818), and its retention purge (WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
+ * default 90) deletes more of it every day. `email_failure_snapshots` keeps a verbatim copy of every `email_send`
  * failure row for a year. This module holds the pure mapping from a
  * diagnostic row to a snapshot row *and* the two copy paths built on it, so
  * there is exactly one definition of what the evidence is:
@@ -288,4 +289,70 @@ export async function snapshotEmailFailures(
   }
 
   return { scanned, inserted };
+}
+
+/**
+ * The fields the admin resend route stamps onto a source diagnostic row once
+ * a replay has been attempted (see `EmailFailureMetadata` in ./failureRecord).
+ */
+export type EmailFailureResendStamp = {
+  resentAt: string;
+  resentOk: boolean;
+  resentDiagnosticId: string;
+};
+
+/** The slice of a Prisma client needed to refresh one existing snapshot row. */
+export type EmailFailureSnapshotMirrorClient = {
+  emailFailureSnapshot: {
+    findUnique: (args: {
+      where: { sourceDiagnosticId: string };
+      select: { id: true; metadata: true };
+    }) => Promise<{ id: string; metadata: unknown } | null>;
+    update: (args: { where: { id: string }; data: { metadata: object } }) => Promise<unknown>;
+  };
+};
+
+/**
+ * Keep an already-written snapshot row in step with its source row when the
+ * admin resend route stamps the replay result onto that source.
+ *
+ * Why this exists: the snapshot insert is `skipDuplicates` on
+ * `source_diagnostic_id`, which makes re-runs idempotent but also means an
+ * existing copy is never refreshed. A row snapshotted *before* it was re-sent
+ * would therefore keep its pre-resend metadata forever, and once the retention
+ * purge takes the source row the preserved evidence would say a re-sent
+ * failure was never re-sent — the copy outliving the truth it was made to
+ * preserve. With Mike's re-send campaign authorised over exactly these rows,
+ * that is a live path rather than a theoretical one.
+ *
+ * `app/api/admin/email-failures/[id]/resend/route.ts` is the only writer in
+ * the codebase that mutates an existing `workflow_diagnostics` row, so the
+ * resend stamp is the only divergence that can occur, and mirroring it closes
+ * the gap rather than narrowing it.
+ *
+ * Returns true when a snapshot row was found and refreshed. A missing snapshot
+ * is a no-op and not an error: that row has simply not been copied yet, and
+ * whenever it is, it will be copied with the resend fields already on it.
+ */
+export async function mirrorResendOntoEmailFailureSnapshot(
+  client: EmailFailureSnapshotMirrorClient,
+  sourceDiagnosticId: string,
+  resend: EmailFailureResendStamp,
+): Promise<boolean> {
+  const existing = await client.emailFailureSnapshot.findUnique({
+    where: { sourceDiagnosticId },
+    select: { id: true, metadata: true },
+  });
+  if (!existing) return false;
+
+  const base =
+    existing.metadata !== null && typeof existing.metadata === 'object' && !Array.isArray(existing.metadata)
+      ? (existing.metadata as Record<string, unknown>)
+      : {};
+
+  await client.emailFailureSnapshot.update({
+    where: { id: existing.id },
+    data: { metadata: { ...base, ...resend } },
+  });
+  return true;
 }

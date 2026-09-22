@@ -26,6 +26,13 @@ export type CleanupResult = {
    * Present only for `workflowDiagnostic` (see SNAPSHOT_BEFORE_DELETE_MODEL).
    */
   snapshotted?: number;
+  /**
+   * Rows that matched the email-failure predicate in the batches this model
+   * purged, whether or not the copy inserted them. Reported next to
+   * `snapshotted` so `snapshotted: 0` can be told apart: equal counts mean
+   * "already copied", a zero `snapshotScanned` means "nothing matched".
+   */
+  snapshotScanned?: number;
   error?: string;
 };
 
@@ -36,6 +43,13 @@ export type DataCleanupReport = {
   totalDeleted: number;
   /** WAP-163: email-failure diagnostics copied to `email_failure_snapshots` this run. */
   emailFailuresSnapshotted: number;
+  /**
+   * WAP-163: email-failure diagnostics the purge matched this run. Without it,
+   * `emailFailuresSnapshotted: 0` is ambiguous between "nothing was eligible"
+   * and "everything eligible was already copied" — which is exactly the
+   * distinction the operator watching the 2026-10-01 run needs.
+   */
+  emailFailuresScanned: number;
   deletedAccounts?: number;
   /** Soft-deleted accounts past retention that a foreign key still holds. */
   blockedAccounts?: BlockedAccount[];
@@ -51,25 +65,47 @@ const SNAPSHOT_BEFORE_DELETE_MODEL = 'workflowDiagnostic';
 
 /**
  * Copy the email-failure evidence out of the batch that is about to be
- * deleted. Called inside the batch's transaction, before its `deleteMany`.
+ * deleted. Called before that batch's `deleteMany`, in the same
+ * `prisma.$transaction` callback.
  *
- * This is deliberately not wrapped in a try/catch: a snapshot failure must
- * abort the transaction, so the `deleteMany` never runs and the already-written
- * snapshot rows roll back with it. The throw propagates out of `cleanupTable`,
- * `runDataCleanup` records it against the model, and `/api/cron/data-cleanup`
- * answers 500 and logs the run as failed. A partial snapshot followed by a
- * successful delete is therefore not a reachable state — the worst case is a
- * run that deletes nothing and is loudly red.
+ * **The load-bearing property is ordering, not atomicity.** The copy is the
+ * first statement and the delete the second, and the copy is `await`ed, so a
+ * snapshot failure throws before the delete is ever issued. That holds in
+ * every environment. It is deliberately not wrapped in a try/catch: the throw
+ * propagates out of `cleanupTable`, `runDataCleanup` records it against the
+ * model, and `/api/cron/data-cleanup` answers 500 and logs the run failed.
+ *
+ * Atomicity is a production-only bonus on top of that ordering, and must not
+ * be relied on elsewhere: `installFlattenTxOverride` in lib/db/prisma.ts
+ * replaces `$transaction(fn)` with a plain `fn(client)` whenever the policy is
+ * `flattened` — `PRISMA_FLATTEN_TX=1`, or `VERCEL_ENV` of `preview` or
+ * `development` (see lib/db/transactionPolicy.ts; production cannot be
+ * flattened, the assert there refuses the flag). So in preview and dev there
+ * is no transaction and no rollback.
+ *
+ * That is survivable because of which way the two failure modes point:
+ *
+ * - snapshot fails → no delete, in both modes. The rows stay.
+ * - delete fails after the snapshot committed → in production both roll back;
+ *   flattened, the snapshot rows are already committed and the source rows are
+ *   still there. The result is a *surplus* copy, which the next run absorbs
+ *   for free because the insert is `skipDuplicates` on the unique
+ *   `source_diagnostic_id`.
+ *
+ * Both modes therefore make "deleted but not copied" unreachable, which is the
+ * outcome that loses evidence. The worst case anywhere is a run that deletes
+ * nothing, is loudly red, and has copied a few rows early.
  */
 async function snapshotBatchBeforeDelete(
   tx: EmailFailureSnapshotClient,
   cfg: RetentionTableConfig,
   ids: readonly string[],
   snapshotRun: string | null,
-): Promise<number> {
-  if (cfg.model !== SNAPSHOT_BEFORE_DELETE_MODEL || snapshotRun === null) return 0;
-  const result = await snapshotEmailFailuresByDiagnosticId(tx, ids, snapshotRun);
-  return result.inserted;
+): Promise<{ scanned: number; inserted: number }> {
+  if (cfg.model !== SNAPSHOT_BEFORE_DELETE_MODEL || snapshotRun === null) {
+    return { scanned: 0, inserted: 0 };
+  }
+  return snapshotEmailFailuresByDiagnosticId(tx, ids, snapshotRun);
 }
 
 /**
@@ -105,6 +141,7 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
 
   let totalDeleted = 0;
   let totalSnapshotted = 0;
+  let totalSnapshotScanned = 0;
   let batchCount = 0;
 
   while (true) {
@@ -132,7 +169,12 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
     // Find-then-delete-by-id is a read-then-write logical unit: the delete
     // targets exactly the IDs the read just selected, so both must run
     // inside the same $transaction to keep a consistent, GUC-tagged view.
-    const batchResult: { deletedCount: number; batchSize: number; snapshotted: number } | null =
+    const batchResult: {
+      deletedCount: number;
+      batchSize: number;
+      snapshotted: number;
+      snapshotScanned: number;
+    } | null =
       await prisma.$transaction(async (tx) => {
         const txDelegate = (tx as any)[cfg.model];
         const rows: { id: string }[] = await txDelegate.findMany({
@@ -146,21 +188,28 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
 
         const ids = rows.map((r) => r.id);
 
-        // Evidence first. If this throws, the transaction aborts and the
-        // delete below never runs (WAP-163).
-        const snapshotted = await snapshotBatchBeforeDelete(tx, cfg, ids, snapshotRun);
+        // Evidence first: this is `await`ed before the delete is issued, so a
+        // snapshot failure means no delete — in every environment, whether or
+        // not the surrounding `$transaction` is a real one (WAP-163).
+        const snapshot = await snapshotBatchBeforeDelete(tx, cfg, ids, snapshotRun);
 
         const deleteResult = await txDelegate.deleteMany({
           where: { id: { in: ids } },
         });
 
-        return { deletedCount: deleteResult.count ?? rows.length, batchSize: rows.length, snapshotted };
+        return {
+          deletedCount: deleteResult.count ?? rows.length,
+          batchSize: rows.length,
+          snapshotted: snapshot.inserted,
+          snapshotScanned: snapshot.scanned,
+        };
       });
 
     if (batchResult === null) break;
 
     totalDeleted += batchResult.deletedCount;
     totalSnapshotted += batchResult.snapshotted;
+    totalSnapshotScanned += batchResult.snapshotScanned;
     batchCount += 1;
 
     if (batchResult.batchSize < RETENTION_BATCH_SIZE) break;
@@ -170,7 +219,9 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
     model: cfg.model,
     deleted: totalDeleted,
     batchCount,
-    ...(snapshotRun !== null ? { snapshotted: totalSnapshotted } : {}),
+    ...(snapshotRun !== null
+      ? { snapshotted: totalSnapshotted, snapshotScanned: totalSnapshotScanned }
+      : {}),
   };
 }
 
@@ -368,6 +419,7 @@ export async function runDataCleanup(): Promise<DataCleanupReport> {
   const results: CleanupResult[] = [];
   let totalDeleted = 0;
   let emailFailuresSnapshotted = 0;
+  let emailFailuresScanned = 0;
 
   for (const cfg of RETENTION_TABLES) {
     try {
@@ -375,6 +427,7 @@ export async function runDataCleanup(): Promise<DataCleanupReport> {
       results.push(result);
       totalDeleted += result.deleted;
       emailFailuresSnapshotted += result.snapshotted ?? 0;
+      emailFailuresScanned += result.snapshotScanned ?? 0;
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
       console.error(`[data-cleanup] Failed for ${cfg.model}:`, error);
@@ -431,6 +484,7 @@ export async function runDataCleanup(): Promise<DataCleanupReport> {
     results,
     totalDeleted,
     emailFailuresSnapshotted,
+    emailFailuresScanned,
     deletedAccounts,
     blockedAccounts,
   };

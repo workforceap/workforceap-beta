@@ -5,6 +5,7 @@ import {
   EMAIL_FAILURE_STATUSES,
   emailFailureDiagnosticWhere,
   isEmailFailureDiagnostic,
+  mirrorResendOntoEmailFailureSnapshot,
   snapshotEmailFailures,
   snapshotEmailFailuresByDiagnosticId,
   snapshotRunLabel,
@@ -13,6 +14,7 @@ import {
   type EmailFailureDiagnosticSource,
   type EmailFailureSnapshotClient,
   type EmailFailureSnapshotCreateData,
+  type EmailFailureSnapshotMirrorClient,
 } from './failureSnapshot';
 import { buildEmailFailureMetadata, recipientHash } from './failureRecord';
 
@@ -327,5 +329,111 @@ describe('snapshotEmailFailures (the catch-up script path)', () => {
     for (const call of findManyCalls) {
       assert.ok(typeof call.take === 'number' && call.take >= 1 && call.take <= 2000, String(call.take));
     }
+  });
+});
+
+describe('mirrorResendOntoEmailFailureSnapshot', () => {
+  function mirrorClient(rows: { id: string; sourceDiagnosticId: string; metadata: unknown }[]) {
+    const updates: { id: string; metadata: object }[] = [];
+    const client: EmailFailureSnapshotMirrorClient = {
+      emailFailureSnapshot: {
+        findUnique: async ({ where }) => {
+          const hit = rows.find((row) => row.sourceDiagnosticId === where.sourceDiagnosticId);
+          return hit ? { id: hit.id, metadata: hit.metadata } : null;
+        },
+        update: async ({ where, data }) => {
+          const hit = rows.find((row) => row.id === where.id);
+          if (!hit) throw new Error(`no snapshot row ${where.id}`);
+          hit.metadata = data.metadata;
+          updates.push({ id: where.id, metadata: data.metadata });
+          return hit;
+        },
+      },
+    };
+    return { client, rows, updates };
+  }
+
+  const stamp = {
+    resentAt: '2026-09-22T12:00:00.000Z',
+    resentOk: true,
+    resentDiagnosticId: 'diag-resend-1',
+  };
+
+  it('stamps the replay onto an existing copy without discarding the original metadata', async () => {
+    const { client, rows, updates } = mirrorClient([
+      {
+        id: 'snap-1',
+        sourceDiagnosticId: 'diag-a',
+        metadata: { to: ['member@example.org'], subject: 'Your course is paid for', errorClass: 'header_invalid' },
+      },
+    ]);
+
+    const mirrored = await mirrorResendOntoEmailFailureSnapshot(client, 'diag-a', stamp);
+
+    assert.equal(mirrored, true);
+    assert.equal(updates.length, 1);
+    assert.equal(updates[0].id, 'snap-1');
+    assert.deepEqual(rows[0].metadata, {
+      to: ['member@example.org'],
+      subject: 'Your course is paid for',
+      errorClass: 'header_invalid',
+      resentAt: '2026-09-22T12:00:00.000Z',
+      resentOk: true,
+      resentDiagnosticId: 'diag-resend-1',
+    });
+  });
+
+  it('is a no-op when the row has not been snapshotted yet', async () => {
+    const { client, updates } = mirrorClient([
+      { id: 'snap-1', sourceDiagnosticId: 'diag-other', metadata: {} },
+    ]);
+
+    const mirrored = await mirrorResendOntoEmailFailureSnapshot(client, 'diag-a', stamp);
+
+    assert.equal(mirrored, false);
+    assert.equal(updates.length, 0);
+  });
+
+  it('tolerates a snapshot row whose metadata is null or not an object', async () => {
+    for (const metadata of [null, undefined, 'a string', 42, ['an', 'array']]) {
+      const { client, rows, updates } = mirrorClient([
+        { id: 'snap-1', sourceDiagnosticId: 'diag-a', metadata },
+      ]);
+
+      const mirrored = await mirrorResendOntoEmailFailureSnapshot(client, 'diag-a', stamp);
+
+      assert.equal(mirrored, true, JSON.stringify(metadata ?? null));
+      assert.equal(updates.length, 1);
+      assert.deepEqual(rows[0].metadata, stamp, JSON.stringify(metadata ?? null));
+    }
+  });
+
+  it('records a failed replay too, so the evidence shows the attempt', async () => {
+    const { client, rows } = mirrorClient([
+      { id: 'snap-1', sourceDiagnosticId: 'diag-a', metadata: { subject: 'We Miss You' } },
+    ]);
+
+    await mirrorResendOntoEmailFailureSnapshot(client, 'diag-a', { ...stamp, resentOk: false });
+
+    assert.deepEqual(rows[0].metadata, {
+      subject: 'We Miss You',
+      resentAt: '2026-09-22T12:00:00.000Z',
+      resentOk: false,
+      resentDiagnosticId: 'diag-resend-1',
+    });
+  });
+
+  it('propagates a write failure rather than leaving the two records silently disagreeing', async () => {
+    const { client } = mirrorClient([
+      { id: 'snap-1', sourceDiagnosticId: 'diag-a', metadata: {} },
+    ]);
+    client.emailFailureSnapshot.update = async () => {
+      throw new Error('snapshot row is locked');
+    };
+
+    await assert.rejects(
+      () => mirrorResendOntoEmailFailureSnapshot(client, 'diag-a', stamp),
+      /snapshot row is locked/,
+    );
   });
 });

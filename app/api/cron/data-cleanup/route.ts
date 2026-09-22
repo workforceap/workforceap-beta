@@ -54,6 +54,7 @@ async function handle(_request: Request) {
     ok: !failed,
     totalDeleted: report.totalDeleted,
     emailFailuresSnapshotted: report.emailFailuresSnapshotted,
+    emailFailuresScanned: report.emailFailuresScanned,
     deletedAccounts: report.deletedAccounts,
     blockedAccounts: report.blockedAccounts ?? [],
     results: report.results,

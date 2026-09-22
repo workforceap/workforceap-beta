@@ -31881,8 +31881,16 @@
   },
   {
     "from": "app/api/admin/email-failures/[id]/resend/route.ts",
-    "specifier": "@/lib/email/resendRegistry",
+    "specifier": "@/lib/email/failureSnapshot",
     "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureSnapshot.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/email/resendRegistry",
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/email/resendRegistry.ts"
@@ -31890,7 +31898,7 @@
   {
     "from": "app/api/admin/email-failures/[id]/resend/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -106562,7 +106570,7 @@
   {
     "from": "lib/email/failureRecord.ts",
     "specifier": "node:crypto",
-    "line": 17,
+    "line": 27,
     "kind": "import",
     "external": true,
     "package": "node:crypto"
@@ -106570,7 +106578,7 @@
   {
     "from": "lib/email/failureRecord.ts",
     "specifier": "@/lib/email/rateLimitError",
-    "line": 19,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
@@ -106602,7 +106610,7 @@
   {
     "from": "lib/email/failureSnapshot.test.ts",
     "specifier": "./failureRecord",
-    "line": 17,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureRecord.ts"
@@ -106610,7 +106618,7 @@
   {
     "from": "lib/email/failureSnapshot.ts",
     "specifier": "@/lib/email/failureRecord",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureRecord.ts"
@@ -115410,7 +115418,7 @@
   {
     "from": "lib/retention/cleanup.test.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 59,
+    "line": 65,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -141282,7 +141290,7 @@
   {
     "from": "tests/email/resend-route.spec.ts",
     "specifier": "@/app/api/admin/email-failures/[id]/resend/route",
-    "line": 34,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/email-failures/[id]/resend/route.ts"
@@ -141290,7 +141298,7 @@
   {
     "from": "tests/email/resend-route.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 35,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -141298,7 +141306,7 @@
   {
     "from": "tests/email/resend-route.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 36,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -141306,7 +141314,7 @@
   {
     "from": "tests/email/resend-route.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 37,
+    "line": 41,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -141314,7 +141322,7 @@
   {
     "from": "tests/email/resend-route.spec.ts",
     "specifier": "@/lib/audit",
-    "line": 38,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -141322,7 +141330,7 @@
   {
     "from": "tests/email/resend-route.spec.ts",
     "specifier": "@/lib/email",
-    "line": 39,
+    "line": 43,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -141330,7 +141338,7 @@
   {
     "from": "tests/email/resend-route.spec.ts",
     "specifier": "@/lib/email/resendRegistry",
-    "line": 40,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "lib/email/resendRegistry.ts"

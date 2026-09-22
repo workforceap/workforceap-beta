@@ -55,6 +55,12 @@ vi.mock('@/lib/db/prisma', () => ({
     $queryRawUnsafe: vi.fn(),
     $queryRaw: (...args: unknown[]) => mockQueryRaw(...args),
     $executeRaw: (...args: unknown[]) => mockExecuteRaw(...args),
+    // NB: this fake runs the callback against the plain client and never rolls
+    // anything back — i.e. it behaves exactly like `installFlattenTxOverride`
+    // in lib/db/prisma.ts does under PRISMA_FLATTEN_TX=1 / VERCEL_ENV=preview.
+    // So every assertion below about the snapshot blocking the delete is proved
+    // in the *weaker* of the two environments: it rests on ordering alone, not
+    // on rollback (WAP-163).
     $transaction: async (arg: unknown) => {
       const { prisma } = await import('@/lib/db/prisma');
       opLog.push('tx:begin');
@@ -337,6 +343,7 @@ describe('email-failure snapshot before the workflow_diagnostics purge (WAP-163)
 
     expect(result.deleted).toBe(4);
     expect(result.snapshotted).toBe(3);
+    expect(result.snapshotScanned).toBe(3);
     expect(diagnostics).toHaveLength(0);
 
     // The evidence landed: one row per email-failure diagnostic, and nothing else.
@@ -359,12 +366,18 @@ describe('email-failure snapshot before the workflow_diagnostics purge (WAP-163)
 
     expect(result.deleted).toBe(1);
     expect(result.snapshotted).toBe(0);
+    // Nothing matched, as distinct from "everything matched and was already
+    // copied" — the two cases the operator has to be able to tell apart.
+    expect(result.snapshotScanned).toBe(0);
     expect(snapshotTable).toHaveLength(0);
     expect(mockSnapshotCreateMany).not.toHaveBeenCalled();
     expect(opLog).toEqual(['tx:begin', 'batch:read', 'snapshot:read', 'delete', 'tx:end']);
   });
 
   it('a snapshot failure blocks the delete: no rows leave workflow_diagnostics', async () => {
+    // This holds on ordering alone. The transaction fake above grants no
+    // rollback, so this is the flattened-mode guarantee; production additionally
+    // rolls the batch back.
     mockSnapshotCreateMany.mockRejectedValue(new Error('email_failure_snapshots is unavailable'));
 
     await expect(cleanupTable(cfg)).rejects.toThrow('email_failure_snapshots is unavailable');
@@ -438,6 +451,9 @@ describe('email-failure snapshot before the workflow_diagnostics purge (WAP-163)
 
     expect(result.deleted).toBe(4);
     expect(result.snapshotted).toBe(0);
+    // The pair that disambiguates a zero: 3 matched, 0 inserted, because all
+    // three were already copied by the run that then failed its delete.
+    expect(result.snapshotScanned).toBe(3);
     expect(snapshotTable).toHaveLength(3);
     expect(snapshotTable.map((row) => row.sourceDiagnosticId).sort()).toEqual(['diag-a', 'diag-b', 'diag-c']);
     // Every insert is skipDuplicates, which is what makes the retry safe.
@@ -459,6 +475,7 @@ describe('email-failure snapshot before the workflow_diagnostics purge (WAP-163)
     expect(result.batchCount).toBe(2);
     expect(result.deleted).toBe(1004);
     expect(result.snapshotted).toBe(1003);
+    expect(result.snapshotScanned).toBe(1003);
     expect(snapshotTable).toHaveLength(1003);
     expect(diagnostics).toHaveLength(0);
 
@@ -485,6 +502,7 @@ describe('email-failure snapshot before the workflow_diagnostics purge (WAP-163)
 
     expect(result.deleted).toBe(1);
     expect(result).not.toHaveProperty('snapshotted');
+    expect(result).not.toHaveProperty('snapshotScanned');
     expect(mockSnapshotCreateMany).not.toHaveBeenCalled();
   });
 
@@ -497,8 +515,10 @@ describe('email-failure snapshot before the workflow_diagnostics purge (WAP-163)
     const report = await runDataCleanup();
 
     expect(report.emailFailuresSnapshotted).toBe(3);
+    expect(report.emailFailuresScanned).toBe(3);
     const entry = report.results.find((r) => r.model === 'workflowDiagnostic');
     expect(entry?.snapshotted).toBe(3);
+    expect(entry?.snapshotScanned).toBe(3);
   });
 
   it('does not shorten the retention window it snapshots for', () => {
@@ -511,33 +531,49 @@ describe('email-failure snapshot before the workflow_diagnostics purge (WAP-163)
 
 /**
  * WAP-163's deadline, pinned so it cannot be re-argued from memory.
- * `lib/email/failureRecord.ts` records the outage as 2026-06-29 → 2026-09-06.
- * Dates are built in local time on both sides so the assertion holds in any
- * CI timezone; production runs UTC, where local midnight is UTC midnight.
+ *
+ * Production, measured 2026-09-22: the oldest `email_send` failure row is
+ * 2026-07-02 21:50. (`lib/email/failureRecord.ts` used to say the outage began
+ * 2026-06-29, which was wrong and produced a deadline a whole run early; that
+ * comment is corrected in this change.)
+ *
+ * Dates are built in local time on both sides so the assertions hold in any CI
+ * timezone; production runs UTC, where local midnight is UTC midnight.
  */
-describe('when the 2026-06-29 email failures start aging out', () => {
+describe('when the oldest email failure starts aging out', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('survives the 2026-09-27 run and is deleted by the 2026-09-28 one', () => {
-    const oldestFailure = new Date(2026, 5, 29, 8, 0, 0); // 2026-06-29 08:00
+  it('floors the cutoff to calendar midnight, not to the moment the cron fires', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 30, 7, 30, 0)); // 2026-09-30 07:30
+
+    const cutoff = getCutoffDate(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS);
+
+    // This time-of-day assertion is the whole mechanism. Without the flooring
+    // the cutoff would be 07:30 on the same calendar day — the date parts below
+    // would be identical — and every row written before 07:30 on its last day
+    // would be purged one run early.
+    expect([cutoff.getHours(), cutoff.getMinutes(), cutoff.getSeconds(), cutoff.getMilliseconds()]).toEqual([
+      0, 0, 0, 0,
+    ]);
+    expect([cutoff.getFullYear(), cutoff.getMonth(), cutoff.getDate()]).toEqual([2026, 6, 2]);
+  });
+
+  it('keeps the 2026-07-02 21:50 row through the 09-30 run and deletes it on 10-01', () => {
+    const oldestFailure = new Date(2026, 6, 2, 21, 50, 0); // 2026-07-02 21:50, from production
     vi.useFakeTimers();
 
-    // The cron fires at 07:30. `getCutoffDate` floors to midnight, so on
-    // 09-27 the cutoff is 06-29T00:00 and an 06-29 row is not yet `lt` it.
-    vi.setSystemTime(new Date(2026, 8, 27, 7, 30, 0));
-    const cutoffOn27th = getCutoffDate(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS);
-    expect(cutoffOn27th.getFullYear()).toBe(2026);
-    expect(cutoffOn27th.getMonth()).toBe(5);
-    expect(cutoffOn27th.getDate()).toBe(29);
-    expect(oldestFailure.getTime() < cutoffOn27th.getTime()).toBe(false);
+    // 09-30 07:30 → cutoff 2026-07-02T00:00, so the 21:50 row is not `lt` it.
+    // The row *turns* 90 days old at 2026-09-30 21:50, and nothing runs at
+    // 21:50 — which is why ageing out and being deleted are different days.
+    vi.setSystemTime(new Date(2026, 8, 30, 7, 30, 0));
+    expect(oldestFailure.getTime() < getCutoffDate(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS).getTime()).toBe(false);
 
-    // On 09-28 the cutoff moves to 06-30T00:00 and the row is in scope.
-    vi.setSystemTime(new Date(2026, 8, 28, 7, 30, 0));
-    const cutoffOn28th = getCutoffDate(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS);
-    expect(cutoffOn28th.getDate()).toBe(30);
-    expect(oldestFailure.getTime() < cutoffOn28th.getTime()).toBe(true);
+    // 10-01 07:30 → cutoff 2026-07-03T00:00 and the row is finally in scope.
+    vi.setSystemTime(new Date(2026, 9, 1, 7, 30, 0));
+    expect(oldestFailure.getTime() < getCutoffDate(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS).getTime()).toBe(true);
   });
 });
 

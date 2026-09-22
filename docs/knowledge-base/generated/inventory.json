@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "e2b7e59fd933936fb94016cd6197a4c2131146a57a5b21d0748b4e399dbbb820",
+  "inputTreeSha256": "fdfd00c5e038abb920156e14fe5b2f72827dbf89a5295fb7e15f4013cbe26098",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -24057,36 +24057,36 @@
       "path": "app/api/admin/email-failures/[id]/resend/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 5551,
-      "lines": 148,
-      "sha256": "ac7383c0855e4181433ac5282b99bb7d9b2b95faf552813bd49a1ac318f30019",
+      "bytes": 6556,
+      "lines": 161,
+      "sha256": "8fd7b110af4382a51b4097fb09b31843a44ef33d3c2dfaf93402edadf88923b2",
       "binary": false,
       "exports": [
         {
           "name": "maxDuration",
-          "line": 17,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 32,
+          "line": 35,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "maxDuration",
-          "line": 17,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "ROUTE",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 32,
+          "line": 35,
           "kind": "Variable"
         }
       ],
@@ -32594,9 +32594,9 @@
       "path": "app/api/cron/data-cleanup/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 2508,
-      "lines": 62,
-      "sha256": "41621bab59763e0fe2126e4d0ade22e21e0b25dbb34ccf1190780f27452e58e6",
+      "bytes": 2814,
+      "lines": 67,
+      "sha256": "fb070ad366192cc089dd8f2a1728772b5b3f45a5374cbe2323b9f8eb869ca681",
       "binary": false,
       "exports": [
         {
@@ -32606,12 +32606,12 @@
         },
         {
           "name": "GET",
-          "line": 61,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 62,
+          "line": 67,
           "kind": "Variable"
         }
       ],
@@ -32623,17 +32623,17 @@
         },
         {
           "name": "handle",
-          "line": 26,
+          "line": 29,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 61,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 62,
+          "line": 67,
           "kind": "Variable"
         }
       ],
@@ -118464,146 +118464,146 @@
       "path": "lib/email/failureRecord.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 8938,
-      "lines": 201,
-      "sha256": "5f4c1578f626674457b151618f18234c0f0efb1196cb109ffbba5ad35a35ffad",
+      "bytes": 9564,
+      "lines": 211,
+      "sha256": "0c3e560e846839d2bf949efcfdbb56c4636057b7a1baef0d1cb1c3a5ec9807b0",
       "binary": false,
       "exports": [
         {
           "name": "EMAIL_SEND_WORKFLOW",
-          "line": 22,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_TEMPLATE_ENTITY_TYPE",
-          "line": 24,
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_RESEND_METHOD",
-          "line": 26,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureClass",
-          "line": 28,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailTemplateRef",
-          "line": 36,
+          "line": 46,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "EmailFailureMetadata",
-          "line": 43,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 94,
+          "line": 104,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 120,
+          "line": 130,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientDomain",
-          "line": 127,
+          "line": 137,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildEmailFailureMetadata",
-          "line": 138,
+          "line": 148,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 174,
+          "line": 184,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "EMAIL_SEND_WORKFLOW",
-          "line": 22,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_TEMPLATE_ENTITY_TYPE",
-          "line": 24,
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_RESEND_METHOD",
-          "line": 26,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureClass",
-          "line": 28,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailTemplateRef",
-          "line": 36,
+          "line": 46,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "EmailFailureMetadata",
-          "line": 43,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "asRecord",
-          "line": 68,
+          "line": 78,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "statusOf",
-          "line": 74,
+          "line": 84,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "messageOf",
-          "line": 81,
+          "line": 91,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 94,
+          "line": 104,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 120,
+          "line": 130,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientDomain",
-          "line": 127,
+          "line": 137,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "jsonSafe",
-          "line": 134,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildEmailFailureMetadata",
-          "line": 138,
+          "line": 148,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FAILURE_CLASSES",
-          "line": 165,
+          "line": 175,
           "kind": "Variable"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 174,
+          "line": 184,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -118613,21 +118613,36 @@
       "path": "lib/email/failureSnapshot.test.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 3980,
-      "lines": 91,
-      "sha256": "30afc3ecc3bc66e1ed999914de9e6a48fef87cd5ef4846c1ef1cbfa7a338bb8d",
+      "bytes": 17501,
+      "lines": 439,
+      "sha256": "78a5916b0723fb966783cdd1ac2e355ba72baf89cc1b69d56a575bbdc56a57e6",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "CRLF",
-          "line": 13,
+          "line": 21,
           "kind": "Variable"
         },
         {
           "name": "diagnostic",
-          "line": 15,
+          "line": 23,
           "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fakeClient",
+          "line": 107,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "FAILURES",
+          "line": 156,
+          "kind": "Variable"
+        },
+        {
+          "name": "NON_FAILURES",
+          "line": 162,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -118636,71 +118651,191 @@
       "path": "lib/email/failureSnapshot.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 3781,
-      "lines": 107,
-      "sha256": "761e7e8a6dc5639ac1a3bda4a4862975fba28658fe5bef53d77c7f331dc2c202",
+      "bytes": 12998,
+      "lines": 358,
+      "sha256": "f0834bcd8b3d7fe18625fa3f58bb5b07f995e340de7249338b7d9879135ba564",
       "binary": false,
       "exports": [
         {
           "name": "EMAIL_FAILURE_STATUSES",
-          "line": 25,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureDiagnosticSource",
-          "line": 27,
+          "line": 34,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailFailureSnapshotRow",
-          "line": 43,
+          "line": 50,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isEmailFailureDiagnostic",
-          "line": 66,
+          "line": 73,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toEmailFailureSnapshotRow",
-          "line": 75,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "snapshotRunLabel",
-          "line": 105,
+          "line": 112,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EMAIL_FAILURE_DIAGNOSTIC_SELECT",
+          "line": 121,
+          "kind": "Variable"
+        },
+        {
+          "name": "emailFailureDiagnosticWhere",
+          "line": 142,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotCreateData",
+          "line": 154,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "toEmailFailureSnapshotCreateData",
+          "line": 156,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotClient",
+          "line": 170,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotWriteResult",
+          "line": 189,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "snapshotEmailFailuresByDiagnosticId",
+          "line": 212,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SnapshotEmailFailuresOptions",
+          "line": 234,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "snapshotEmailFailures",
+          "line": 253,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EmailFailureResendStamp",
+          "line": 298,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotMirrorClient",
+          "line": 305,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "mirrorResendOntoEmailFailureSnapshot",
+          "line": 337,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "EMAIL_FAILURE_STATUSES",
-          "line": 25,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureDiagnosticSource",
-          "line": 27,
+          "line": 34,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailFailureSnapshotRow",
-          "line": 43,
+          "line": 50,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isEmailFailureDiagnostic",
-          "line": 66,
+          "line": 73,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toEmailFailureSnapshotRow",
-          "line": 75,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "snapshotRunLabel",
-          "line": 105,
+          "line": 112,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EMAIL_FAILURE_DIAGNOSTIC_SELECT",
+          "line": 121,
+          "kind": "Variable"
+        },
+        {
+          "name": "emailFailureDiagnosticWhere",
+          "line": 142,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotCreateData",
+          "line": 154,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "toEmailFailureSnapshotCreateData",
+          "line": 156,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotClient",
+          "line": 170,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotWriteResult",
+          "line": 189,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "snapshotEmailFailuresByDiagnosticId",
+          "line": 212,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SnapshotEmailFailuresOptions",
+          "line": 234,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "snapshotEmailFailures",
+          "line": 253,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EmailFailureResendStamp",
+          "line": 298,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotMirrorClient",
+          "line": 305,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "mirrorResendOntoEmailFailureSnapshot",
+          "line": 337,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141916,50 +142051,70 @@
       "path": "lib/retention/cleanup.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 18763,
-      "lines": 469,
-      "sha256": "dec569c86f232b42937ba094eca4c68d1bf05afe0afe8aaf73c987cd1913e238",
+      "bytes": 35630,
+      "lines": 865,
+      "sha256": "9bf9c6ec62d6459de2e16e8837dabcba9b2bdb416b3a8be58370a54aef7d3211",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "mockDeleteMany",
-          "line": 12,
-          "kind": "Variable"
-        },
-        {
-          "name": "mockFindMany",
           "line": 13,
           "kind": "Variable"
         },
         {
-          "name": "mockCount",
+          "name": "mockFindMany",
           "line": 14,
           "kind": "Variable"
         },
         {
-          "name": "mockAuditEventDeleteMany",
+          "name": "mockCount",
           "line": 15,
           "kind": "Variable"
         },
         {
-          "name": "mockAnonymizeMember",
+          "name": "mockAuditEventDeleteMany",
           "line": 16,
           "kind": "Variable"
         },
         {
-          "name": "mockQueryRaw",
+          "name": "mockAnonymizeMember",
           "line": 17,
           "kind": "Variable"
         },
         {
-          "name": "mockExecuteRaw",
+          "name": "mockQueryRaw",
           "line": 18,
           "kind": "Variable"
         },
         {
+          "name": "mockExecuteRaw",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "mockSnapshotCreateMany",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "opLog",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "workflowDiagnosticOverride",
+          "line": 36,
+          "kind": "Variable"
+        },
+        {
           "name": "foreignKeyError",
-          "line": 25,
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "daysAgo",
+          "line": 225,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141969,106 +142124,116 @@
       "path": "lib/retention/cleanup.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 13441,
-      "lines": 372,
-      "sha256": "4ee143da01ea1fbc248ec99721dcf24be0d628098152058c90e1a82e46fd445a",
+      "bytes": 18842,
+      "lines": 491,
+      "sha256": "4e89376d7c7ba9e7ebdc8f48494415ab13bdb8883cff9c47485fb9ea2ed78e3b",
       "binary": false,
       "exports": [
         {
           "name": "CleanupResult",
-          "line": 15,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DataCleanupReport",
-          "line": 22,
+          "line": 39,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "cleanupTable",
-          "line": 41,
+          "line": 123,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupUnmatchedCourseraXapiEvents",
-          "line": 135,
+          "line": 243,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 181,
+          "line": 289,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 186,
+          "line": 294,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 204,
+          "line": 312,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 244,
+          "line": 352,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 304,
+          "line": 417,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CleanupResult",
-          "line": 15,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DataCleanupReport",
-          "line": 22,
+          "line": 39,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "SNAPSHOT_BEFORE_DELETE_MODEL",
+          "line": 64,
+          "kind": "Variable"
+        },
+        {
+          "name": "snapshotBatchBeforeDelete",
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "cleanupTable",
-          "line": 41,
+          "line": 123,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupUnmatchedCourseraXapiEvents",
-          "line": 135,
+          "line": 243,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 181,
+          "line": 289,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 186,
+          "line": 294,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SELF_SERVICE_AUDIT_ACTOR_ROLE",
-          "line": 197,
+          "line": 305,
           "kind": "Variable"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 204,
+          "line": 312,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 244,
+          "line": 352,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 304,
+          "line": 417,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -142096,9 +142261,9 @@
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 10212,
-      "lines": 253,
-      "sha256": "75399f6900edd7bea5ac2497572ddf69db77c8dc99ea7de7173528f133027903",
+      "bytes": 10568,
+      "lines": 258,
+      "sha256": "b62cd3d6c7b573d81d8ea209bf43ed3f7519e6e884aa4c4960b6f4352ec92cce",
       "binary": false,
       "exports": [
         {
@@ -142128,62 +142293,62 @@
         },
         {
           "name": "DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
-          "line": 101,
+          "line": 106,
           "kind": "Variable"
         },
         {
           "name": "resolveWorkflowDiagnosticRetentionDays",
-          "line": 103,
+          "line": 108,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
-          "line": 112,
+          "line": 117,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
-          "line": 119,
+          "line": 124,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 145,
+          "line": 150,
           "kind": "Variable"
         },
         {
           "name": "resolveUnmatchedXapiEventRetentionDays",
-          "line": 147,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 156,
+          "line": 161,
           "kind": "Variable"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_LABEL",
-          "line": 159,
+          "line": 164,
           "kind": "Variable"
         },
         {
           "name": "CSP_VIOLATION_BUCKET_RETENTION_DAYS",
-          "line": 171,
+          "line": 176,
           "kind": "Variable"
         },
         {
           "name": "RETENTION_TABLES",
-          "line": 173,
+          "line": 178,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 245,
+          "line": 250,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 248,
+          "line": 253,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -142215,62 +142380,62 @@
         },
         {
           "name": "DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
-          "line": 101,
+          "line": 106,
           "kind": "Variable"
         },
         {
           "name": "resolveWorkflowDiagnosticRetentionDays",
-          "line": 103,
+          "line": 108,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
-          "line": 112,
+          "line": 117,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
-          "line": 119,
+          "line": 124,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 145,
+          "line": 150,
           "kind": "Variable"
         },
         {
           "name": "resolveUnmatchedXapiEventRetentionDays",
-          "line": 147,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 156,
+          "line": 161,
           "kind": "Variable"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_LABEL",
-          "line": 159,
+          "line": 164,
           "kind": "Variable"
         },
         {
           "name": "CSP_VIOLATION_BUCKET_RETENTION_DAYS",
-          "line": 171,
+          "line": 176,
           "kind": "Variable"
         },
         {
           "name": "RETENTION_TABLES",
-          "line": 173,
+          "line": 178,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 245,
+          "line": 250,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 248,
+          "line": 253,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -161314,25 +161479,25 @@
       "path": "scripts/snapshot-email-failures.ts",
       "area": "operations",
       "domain": "operations",
-      "bytes": 5022,
-      "lines": 119,
-      "sha256": "dc1e15b3e5a413d35f2ed22b9135ec85fb30df7e8841a42e0844115eba9e3d85",
+      "bytes": 5323,
+      "lines": 117,
+      "sha256": "f095f34d117b9be29419a606c22098fd2d5a4b72491a1e732894f2946d7480eb",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "prisma",
-          "line": 30,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "readFlag",
-          "line": 32,
+          "line": 51,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "main",
-          "line": 38,
+          "line": 57,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -174353,25 +174518,25 @@
       "path": "tests/email/resend-route.spec.ts",
       "area": "tests",
       "domain": "communications",
-      "bytes": 10234,
-      "lines": 196,
-      "sha256": "b1f9a87fb3c5d5594f9ac84916a1c77aa58b1604612d8ee650156a6ad62e0fa9",
+      "bytes": 14973,
+      "lines": 294,
+      "sha256": "8be4e25f6b2e406c6332285c8064d0a55f856eda3929c8b6e6f61a133d70aaef",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "call",
-          "line": 42,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "failedRow",
-          "line": 48,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "replayable",
-          "line": 54,
+          "line": 58,
           "kind": "Variable"
         }
       ],
