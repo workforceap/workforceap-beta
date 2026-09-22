@@ -144,7 +144,7 @@ export default function OrgOutcomesClient({
           alignItems: 'center',
           gap: '1rem',
           flexWrap: 'wrap',
-          background: 'var(--surface-container, #f5f5f5)',
+          background: 'var(--surface-container)',
           borderRadius: '8px',
           border: '1px solid var(--outline-variant, #e0e0e0)',
         }}

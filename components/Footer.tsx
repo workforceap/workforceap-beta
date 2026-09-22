@@ -8,7 +8,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
   const t = useTranslations('footer');
   const year = new Date().getFullYear();
   return (
-    <footer style={{ background: 'var(--color-background-dark, #121416)', borderTop: '1px solid var(--surface-container-highest, #333537)', paddingTop: '4rem', paddingBottom: '2rem', color: 'var(--color-on-surface, #e2e2e5)' }}>
+    <footer style={{ background: 'var(--color-background-dark, #121416)', borderTop: '1px solid var(--surface-container-highest)', paddingTop: '4rem', paddingBottom: '2rem', color: 'var(--color-on-surface, #e2e2e5)' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '3rem', padding: '0 2rem 4rem', maxWidth: '1400px', margin: '0 auto' }}>
         {/* Brand Column */}
         <div>
@@ -89,7 +89,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
       </div>
 
       {/* Workforce ecosystem context */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem 2rem 1.5rem', borderTop: '1px solid var(--surface-container-highest, #333537)', textAlign: 'center' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem 2rem 1.5rem', borderTop: '1px solid var(--surface-container-highest)', textAlign: 'center' }}>
         <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           {t('experienceAcrossEcosystem')}
         </p>
@@ -103,7 +103,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
       </div>
 
       {/* Copyright bar */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 2rem 0', borderTop: '1px solid var(--surface-container-highest, #333537)', textAlign: 'center' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 2rem 0', borderTop: '1px solid var(--surface-container-highest)', textAlign: 'center' }}>
         <div style={{ marginBottom: '1rem', color: 'var(--color-on-surface-variant)' }}>
           <LanguageToggle />
         </div>

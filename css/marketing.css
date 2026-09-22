@@ -857,7 +857,7 @@ html.has-marketing-main-nav {
   }
 
   .programs-mobile-browse__chip:active {
-    background: var(--surface-container-highest, #ddd9d8);
+    background: var(--surface-container-highest);
     transform: scale(0.98);
   }
 }
@@ -1068,7 +1068,7 @@ a.home-program-card:active {
     padding: 0.45rem 0.85rem;
     border-radius: 50px;
     border: 1px solid var(--outline-variant, rgba(28, 27, 27, 0.12));
-    background: var(--surface-container-high, #e5e2e1);
+    background: var(--surface-container-high);
     color: var(--color-on-surface);
     font-size: 0.8125rem;
     font-weight: 600;

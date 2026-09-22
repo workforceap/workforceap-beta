@@ -20,9 +20,12 @@ export const WIOA_AWAITING_REVIEW_STATUSES: readonly string[] = ['pending', 'in_
 
 /**
  * A pending screening older than this is called out in the digest. Four
- * members waited about four months before anyone noticed (WAP-166); two
- * weeks is the longest wait the member-facing copy ("a few business days",
- * WAP-91) can be stretched to without being untrue.
+ * members waited about four months before anyone noticed (WAP-166). The
+ * member-facing copy no longer quotes a turnaround (the WAP-91 "a few
+ * business days" promise was removed; members now see a measured wait
+ * estimate or nothing, lib/member/counselorContext.ts), so this threshold
+ * is a staff-side alarm only: two weeks without a review is a stall, not a
+ * busy week.
  */
 export const WIOA_QUEUE_AGE_ALERT_DAYS = 14;
 
