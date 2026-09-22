@@ -19,24 +19,62 @@ import pt from '@/messages/pt.json';
  * when that module's hardcoded sentences moved into messages.
  */
 
-type Leaf = Record<string, string>;
-type Namespace = Record<string, Leaf>;
-const LOCALES: Record<string, Namespace> = { en: en.empty, es: es.empty, fr: fr.empty, pt: pt.empty };
+/** A group is `{title, body, action…}`; a role (`counselor`) nests one level of groups. */
+type Tree = { [key: string]: string | Tree };
+const LOCALES: Record<string, Tree> = { en: en.empty, es: es.empty, fr: fr.empty, pt: pt.empty };
 
-function shape(ns: Namespace): string[] {
-  return Object.entries(ns).flatMap(([group, leaf]) => Object.keys(leaf).map((k) => `${group}.${k}`)).sort();
+function leaves(tree: Tree, prefix = ''): Array<[string, string]> {
+  return Object.entries(tree).flatMap(([k, v]) =>
+    typeof v === 'string' ? [[`${prefix}${k}`, v] as [string, string]] : leaves(v, `${prefix}${k}.`),
+  );
+}
+function shape(ns: Tree): string[] {
+  return leaves(ns).map(([k]) => k).sort();
 }
 
 describe('empty.* copy', () => {
   it('has the same keys, all filled, in en/es/fr/pt', () => {
     const reference = shape(LOCALES.en);
-    expect(reference.length).toBeGreaterThanOrEqual(104);
+    expect(reference.length).toBeGreaterThanOrEqual(160);
     for (const [locale, ns] of Object.entries(LOCALES)) {
       expect(shape(ns), locale).toEqual(reference);
-      for (const [group, leaf] of Object.entries(ns)) {
-        for (const [k, v] of Object.entries(leaf)) expect(v.trim(), `${locale} empty.${group}.${k}`).not.toBe('');
-      }
+      for (const [k, v] of leaves(ns)) expect(v.trim(), `${locale} empty.${k}`).not.toBe('');
     }
+  });
+
+  it('counselor: no-assignment states are unavailable words (an admin assigns), zero-is-good states are titled as the goal, failures name what did not load', () => {
+    const c = en.empty.counselor;
+    for (const group of [c.roster, c.inbox]) {
+      expect(group.title).toBe('No members assigned yet');
+      expect(group.body).toMatch(/admin assigns/);
+      expect(group.body).not.toMatch(/Browse|mailto/);
+      expect(group.action).toBe('Open the counselor guide');
+    }
+    expect(c.rosterNoCounselorRecord.body).toMatch(/no counselor record/);
+    expect(c.rosterNoCounselorRecord.action).toBe('Open admin members');
+    // Filtered: the rule that filtered, then clear it.
+    for (const group of [c.rosterAtRisk, c.rosterUpcomingSession, c.rosterPendingApplication]) expect(group.body).toMatch(/Clear the filter/);
+    expect(c.rosterFiltered.action).toBe('Clear filter');
+    expect(c.atRiskFiltered.action).toBe('Clear filters');
+    expect(c.inboxFiltered.action).toBe('Clear filters');
+    // Clear: the goal, never a promise of when the next row arrives.
+    expect(c.atRiskClear.title).toBe('No at-risk members on your caseload');
+    expect(c.atRiskClear.body).toMatch(/\{reason\}.*\{definition\}/);
+    expect(c.inactiveClear.body).toMatch(/\{days\}\+ days/);
+    expect(c.workQueueClear.title).toBe('All caught up');
+    expect(c.workQueueClear.body).toMatch(/nothing else is flagged/);
+    expect(c.workQueueNoReplies.title).toBe('No replies overdue');
+    expect(c.workQueueNoReplies.body).toMatch(/plural/);
+    expect(c.workQueueNoReplies.bodyUnknown).not.toMatch(/All caught up|nothing else/);
+    // Unavailable (failed): what did not load + a retry verb.
+    for (const group of [c.atRiskUnavailable, c.placementsUnavailable, c.inactiveUnavailable, c.workQueueUnavailable]) {
+      expect(group.title).toMatch(/load/i);
+      expect(group.action).toMatch(/^(Try again|Retry)$/);
+    }
+    // First: the counselor's own first action lives on the page.
+    expect(c.placements.title).toBe('No placements yet');
+    expect(c.placements.action).toBe('Record placement');
+    expect(c.placements.body).not.toMatch(/it will appear/);
   });
 
   it('first states name the thing, say what appears here, and end on the first action', () => {

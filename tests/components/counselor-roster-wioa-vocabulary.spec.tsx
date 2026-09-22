@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render as rtlRender, screen } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
+
+/** Rendered with exactly the messages the (portal) layout ships to the browser. */
+function render(ui: React.ReactElement) {
+  return rtlRender(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{ui}</NextIntlClientProvider>);
+}
 
 /**
  * Counselor roster WIOA pill speaks the shared staff intake vocabulary.
