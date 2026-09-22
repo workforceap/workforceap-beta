@@ -33,6 +33,9 @@
     --crimson:var(--wa-accent,#ad2c4d); --accent-dark:var(--wa-accent-dark,#8c0f37); --plum:#6d1437;
     --gold:var(--wa-gold,#a47f38); --gold-dark:var(--wa-gold-dark,#7d5f26);
     --blue:var(--wa-info,#2b7bb9); --green:var(--wa-success,#4a9b4f);
+    /* Text-bearing success labels: --green (#4a9b4f) is 3.45:1 on white, below AA for
+       body-size text. Icons and fills keep --green; small labels use this dark ramp. */
+    --green-dark:var(--wa-success-dark,#357a3a);
     /* Gold ramp for the hero and CTA treatments. These three values had no name
        at all: they were repeated as raw hex 53, 33 and 32 times across 20 page
        files, which is what "hardcoded colours on the public pages" mostly was.

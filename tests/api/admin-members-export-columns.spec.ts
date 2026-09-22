@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 /**
  * Column semantics of the /admin/members CSV (admin number audit 2026-09-20):
@@ -151,13 +152,16 @@ describe('members CSV population (audit S3; Mike: "remove staff in count")', () 
   it('exports members only by default, matching the screen', async () => {
     await runExport();
     const where = mocks.findMany.mock.calls[0][0].where;
-    expect(where.profile).toEqual({ role: 'member' });
+    // One definition of "a member" (WAP-182 item 3): the shared helper,
+    // which asks `user_roles` first and falls back to `profiles.role`.
+    expect(where).toMatchObject(MEMBER_ONLY_WHERE);
   });
 
   it('follows the roster\'s "Include staff accounts" box when it is ticked', async () => {
     await runExport('?staff=1');
     const where = mocks.findMany.mock.calls[0][0].where;
-    expect(where.profile).toEqual({ role: { in: ['member', 'admin', 'super_admin'] } });
+    expect(where).toMatchObject(MEMBER_OR_DOGFOOD_WHERE);
+    expect(where).not.toMatchObject(MEMBER_ONLY_WHERE);
   });
 });
 

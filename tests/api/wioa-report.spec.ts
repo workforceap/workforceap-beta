@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 // ─── Mocks ───
 vi.mock('next/server', () => {
@@ -164,6 +165,19 @@ describe('GET /api/admin/reports/wioa', () => {
       { programSlug: 'cna', _count: { programSlug: 50 } },
       { programSlug: 'it-support', _count: { programSlug: 30 } },
     ]);
+
+    // One definition of "a member" (WAP-182 item 3). This report used to
+    // filter on `userRoles: { some: { role: { name: 'member' } } }`, which
+    // counted every staff account holding the baseline row `ensureAppUser`
+    // grants and skipped the fixture-email exclusion. Both the headline count
+    // and the demographics sample must come from the shared helper, or a
+    // funder figure disagrees with /admin/students and the board pack.
+    const countWhere = vi.mocked(prisma.user.count).mock.calls[0][0]?.where;
+    expect(countWhere).toMatchObject(MEMBER_ONLY_WHERE);
+    const demographicsWhere = vi.mocked(prisma.user.findMany).mock.calls[0][0]?.where;
+    expect(demographicsWhere).toMatchObject(MEMBER_ONLY_WHERE);
+    expect(vi.mocked(prisma.user.count)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(prisma.user.findMany)).toHaveBeenCalledTimes(1);
   });
 
   it('defaults to full-year when quarter is omitted', async () => {
