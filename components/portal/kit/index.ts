@@ -50,4 +50,4 @@ export { ChatThread, type ChatMessage } from './ChatThread';
 export { Tabs, TabPanel, type KitTabItem } from './Tabs';
 export { AppShellMember, type MemberTab } from './AppShellMember';
 export { MemberDashboardKit, type MemberDashboardKitProps } from './MemberDashboardKit';
-export { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
+export { colorVar, textColorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';

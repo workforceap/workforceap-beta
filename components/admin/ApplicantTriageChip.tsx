@@ -35,7 +35,10 @@ export default function ApplicantTriageChip({ bucket, label, reasons, size = 'sm
         gap: '0.25rem',
         padding: size === 'sm' ? '0.15rem 0.5rem' : '0.25rem 0.65rem',
         borderRadius: '50px',
-        fontSize: size === 'sm' ? '0.72rem' : '0.8rem',
+        // 0.72rem was 11.52px, under the 12px floor; --wa-type-meta (13px) is
+        // the smallest chip size token (kit tags). Fallback for routes that
+        // load only the brand tokens.
+        fontSize: 'var(--wa-type-meta, 13px)',
         fontWeight: 700,
         whiteSpace: 'nowrap',
         color: tone.color,

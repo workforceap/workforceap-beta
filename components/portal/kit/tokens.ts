@@ -20,6 +20,27 @@ export function colorVar(c: KitColor | undefined, fallback: KitColor = 'text'): 
 }
 
 /**
+ * Text twin of `colorVar`. The brand hues in COLOR_VARS are fill / stroke
+ * colours: --wa-gold is 3.7:1 on white, --wa-success 3.5:1, --wa-info 4.3:1,
+ * so 13px labels painted from them (match percentages, filter chips) fail AA.
+ * These are the `-dark` / `-text` tokens the kit tags already use, tuned to
+ * 4.5:1+ on --wa-bg / --wa-surface and on their own soft tints in both modes.
+ */
+const TEXT_COLOR_VARS: Record<KitColor, string> = {
+  accent: 'var(--wa-accent-text)',
+  accentDark: 'var(--wa-accent-text)',
+  gold: 'var(--wa-gold-dark)',
+  info: 'var(--wa-info-dark)',
+  success: 'var(--wa-success-dark)',
+  text: 'var(--wa-text)',
+  muted: 'var(--wa-muted)',
+};
+
+export function textColorVar(c: KitColor | undefined, fallback: KitColor = 'text'): string {
+  return TEXT_COLOR_VARS[c ?? fallback];
+}
+
+/**
  * `alert` = brand-magenta attention (`--wa-accent`) for "needs a look" states.
  * `danger` = true red (`--wa-danger`) for destructive/error/failed states.
  * They're deliberately distinct so a rejected/failed row doesn't read as just
