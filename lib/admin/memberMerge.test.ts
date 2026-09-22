@@ -70,6 +70,11 @@ function planDelegates(rows: MockRows) {
     delegates[spec.model] = {
       count: async ({ where }: { where: Record<string, unknown> }) => matching(where).length,
       findMany: async ({ where }: { where: Record<string, unknown> }) => matching(where),
+      update: async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+        const target = all().find((row) => row.id === where.id);
+        if (target) Object.assign(target, data);
+        return target ?? {};
+      },
       updateMany: async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
         const excluded = (where.NOT as Array<Record<string, unknown>> | undefined) ?? [];
         const moving = matching(where).filter(
@@ -367,7 +372,23 @@ describe('collision planning (the duplicate key never reaches PostgreSQL)', () =
   });
 
   it('keeps a singly-unique row on the merged account rather than failing', async () => {
-    // placedOutcome.userId is unique on its own: the primary already has one.
+    // preScreeningDraft.userId is unique on its own and resolves keepPrimary:
+    // an unsubmitted draft the primary already has its own version of.
+    const rows = {
+      preScreeningDraft: [
+        { userId: 'primary', id: 'psd-primary' },
+        { userId: 'secondary', id: 'psd-secondary' },
+      ],
+    };
+    const tx = makeMockTx({ rows });
+    const result = await executeMemberMerge(tx, 'primary', 'secondary', 'admin-1');
+    expect(rows.preScreeningDraft.find((row) => row.id === 'psd-secondary')?.userId).toBe('secondary');
+    expect(result.repointed).toContain('preScreeningDraft.userId(0, 1 kept on the merged account)');
+  });
+
+  it('refuses the merge outright when two real records compete', async () => {
+    // Both members have a placement. No rule can honestly pick, so the merge
+    // is blocked as a named conflict instead of one being stranded silently.
     const rows = {
       placedOutcome: [
         { userId: 'primary', id: 'po-primary' },
@@ -375,9 +396,43 @@ describe('collision planning (the duplicate key never reaches PostgreSQL)', () =
       ],
     };
     const tx = makeMockTx({ rows });
-    const result = await executeMemberMerge(tx, 'primary', 'secondary', 'admin-1');
+    await expect(executeMemberMerge(tx, 'primary', 'secondary', 'admin-1')).rejects.toThrow(
+      /Merge blocked by/,
+    );
+    // Nothing moved.
     expect(rows.placedOutcome.find((row) => row.id === 'po-secondary')?.userId).toBe('secondary');
-    expect(result.repointed).toContain('placedOutcome.userId(0, 1 kept on the merged account)');
+  });
+
+  it('lifts the stronger value onto the primary instead of revoking it', async () => {
+    const rows = {
+      learningProgress: [
+        { id: 'lp-primary', userId: 'primary', pathwayId: 'p1', completed: false, progress: 0 },
+        { id: 'lp-secondary', userId: 'secondary', pathwayId: 'p1', completed: true, progress: 90 },
+      ],
+    };
+    const tx = makeMockTx({ rows });
+    const result = await executeMemberMerge(tx, 'primary', 'secondary', 'admin-1');
+
+    const primaryRow = rows.learningProgress.find((row) => row.id === 'lp-primary')!;
+    expect(primaryRow.completed).toBe(true);
+    expect(primaryRow.progress).toBe(90);
+    // Nothing deleted: the duplicate stays on the archived account.
+    expect(rows.learningProgress.find((row) => row.id === 'lp-secondary')?.userId).toBe('secondary');
+    expect(result.repointed).toContain('learningProgress.userId(0, 1 kept on the merged account, 1 lifted onto the primary)');
+  });
+
+  it('does not drag the primary backwards when its row is already stronger', async () => {
+    const rows = {
+      learningProgress: [
+        { id: 'lp-primary', userId: 'primary', pathwayId: 'p1', completed: true, progress: 100 },
+        { id: 'lp-secondary', userId: 'secondary', pathwayId: 'p1', completed: false, progress: 5 },
+      ],
+    };
+    const tx = makeMockTx({ rows });
+    await executeMemberMerge(tx, 'primary', 'secondary', 'admin-1');
+    const primaryRow = rows.learningProgress.find((row) => row.id === 'lp-primary')!;
+    expect(primaryRow.progress).toBe(100);
+    expect(primaryRow.completed).toBe(true);
   });
 
   it('reports which relation failed instead of calling everything a constraint conflict', async () => {

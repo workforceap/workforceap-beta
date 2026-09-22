@@ -11,9 +11,38 @@ type Preview = {
   primary: { id: string; fullName: string; email: string; phone: string | null; enrolledProgram: string | null; assessmentCompleted: boolean };
   secondary: { id: string; fullName: string; email: string; phone: string | null; enrolledProgram: string | null; assessmentCompleted: boolean };
   conflicts: { field: string; message: string }[];
-  relationsToRepoint: { model: string; field: string; count: number; moving: number; keptOnSecondary: number }[];
+  relationsToRepoint: {
+    model: string;
+    field: string;
+    count: number;
+    moving: number;
+    keptOnSecondary: number;
+    stranded?: { noun: string; plural: string; weight: 'state' | 'review' };
+  }[];
   scalarFieldsToMerge: string[];
 };
+
+type PreviewRelation = {
+  model: string;
+  field: string;
+  count: number;
+  moving: number;
+  keptOnSecondary: number;
+  stranded?: { noun: string; plural: string; weight: 'state' | 'review' };
+};
+
+/** "a placement record" / "2 certifications" — singular reads better at one. */
+function countedNoun(relation: PreviewRelation): string {
+  const impact = relation.stranded;
+  if (!impact) return `${relation.keptOnSecondary} records`;
+  return relation.keptOnSecondary === 1 ? impact.noun : `${relation.keptOnSecondary} ${impact.plural}`;
+}
+
+/** "a, b and c" */
+function joinPhrases(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? '';
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
 
 export default function MemberMergeClient() {
   const [primaryQuery, setPrimaryQuery] = useState('');
@@ -23,6 +52,11 @@ export default function MemberMergeClient() {
   const [primary, setPrimary] = useState<Suggestion | null>(null);
   const [secondary, setSecondary] = useState<Suggestion | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
+  /** Relations that will actually leave something behind, by how much it matters. */
+  const strandedByWeight = (weight: 'state' | 'review'): PreviewRelation[] =>
+    (preview?.relationsToRepoint ?? []).filter(
+      (relation) => relation.keptOnSecondary > 0 && relation.stranded?.weight === weight,
+    );
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [merging, setMerging] = useState(false);
   const [confirmMerge, setConfirmMerge] = useState(false);
@@ -283,6 +317,38 @@ export default function MemberMergeClient() {
                   {preview.scalarFieldsToMerge.map((f) => (
                     <span key={f} style={{ fontSize: '0.8125rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.1)', color: '#166534', fontWeight: 600 }}>{f}</span>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {strandedByWeight('review').length > 0 && (
+              <div
+                data-merge-review-required
+                role="alert"
+                style={{
+                  padding: '0.625rem 0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '2px solid var(--color-error, #b3261e)',
+                  background: 'var(--color-error-container, #fcebea)',
+                  color: 'var(--color-on-error-container, #410e0b)',
+                  fontSize: '0.875rem',
+                }}
+              >
+                <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>A human has to decide this one</div>
+                <div>
+                  Both members hold {joinPhrases(strandedByWeight('review').map((r) => countedNoun(r)))}. Merging leaves the
+                  duplicate&apos;s on the archived account — it is not deleted, but nothing picks which one is real.
+                  Check both before you merge.
+                </div>
+              </div>
+            )}
+
+            {strandedByWeight('state').length > 0 && (
+              <div data-merge-stranded-state style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Left on the duplicate</div>
+                <div>
+                  The primary already has its own, so this merge will not move{' '}
+                  {joinPhrases(strandedByWeight('state').map((r) => countedNoun(r)))}. Nothing is deleted.
                 </div>
               </div>
             )}

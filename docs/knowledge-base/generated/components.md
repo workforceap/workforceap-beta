@@ -109,8 +109,8 @@
 | [components/admin/MemberDetailActions.test.tsx](../../../components/admin/MemberDetailActions.test.tsx) | 110 | administration |  |
 | [components/admin/MemberDetailActions.tsx](../../../components/admin/MemberDetailActions.tsx) | 246 | administration | ProgramOption:7, default:30 |
 | [components/admin/MemberDuplicatesClient.tsx](../../../components/admin/MemberDuplicatesClient.tsx) | 256 | administration | default:46 |
-| [components/admin/MemberMergeClient.test.tsx](../../../components/admin/MemberMergeClient.test.tsx) | 164 | administration |  |
-| [components/admin/MemberMergeClient.tsx](../../../components/admin/MemberMergeClient.tsx) | 356 | administration | default:18 |
+| [components/admin/MemberMergeClient.test.tsx](../../../components/admin/MemberMergeClient.test.tsx) | 261 | administration |  |
+| [components/admin/MemberMergeClient.tsx](../../../components/admin/MemberMergeClient.tsx) | 422 | administration | default:47 |
 | [components/admin/MemberPartnerSection.tsx](../../../components/admin/MemberPartnerSection.tsx) | 88 | administration | default:9 |
 | [components/admin/MemberSubgroupSection.tsx](../../../components/admin/MemberSubgroupSection.tsx) | 143 | administration | default:9 |
 | [components/admin/MembersListNav.tsx](../../../components/admin/MembersListNav.tsx) | 85 | administration | default:53 |

@@ -78,11 +78,11 @@
 | [lib/admin/logCronRun.ts](../../../lib/admin/logCronRun.ts) | 29 | administration | logCronRun:7 |
 | [lib/admin/matchSuggestionsConfig.ts](../../../lib/admin/matchSuggestionsConfig.ts) | 16 | administration | getMatchSuggestionsTestRecipient:8, isMatchSuggestionsDryRun:13 |
 | [lib/admin/memberActivity.ts](../../../lib/admin/memberActivity.ts) | 135 | administration | MemberActivityKind:13, MemberActivityAuditInput:15, MemberActivityEventInput:24, MemberActivityDetail:35, MemberActivityRow:42, MEMBER_ACTIVITY_CAP:55, MEMBER_EVENT_LOAD_CAP:57, redactActivityMetadata:64, formatActivityMetadata:69, humanizeActivityName:88, buildMemberActivityRows:111 |
-| [lib/admin/memberMerge.test.ts](../../../lib/admin/memberMerge.test.ts) | 400 | administration |  |
-| [lib/admin/memberMerge.ts](../../../lib/admin/memberMerge.ts) | 709 | administration | MergeConflict:12, MergePreview:19, MergeResult:40, RepointOutcome:78, repointRelation:99, previewRepoint:156, assertNoCourseraOwnershipForMemberMerge:214, checkMergeConflicts:277, buildMergePreview:342, executeMemberMerge:446 |
-| [lib/admin/memberMergeRealDb.test.ts](../../../lib/admin/memberMergeRealDb.test.ts) | 239 | administration |  |
-| [lib/admin/memberMergeRepointPlan.test.ts](../../../lib/admin/memberMergeRepointPlan.test.ts) | 156 | administration |  |
-| [lib/admin/memberMergeRepointPlan.ts](../../../lib/admin/memberMergeRepointPlan.ts) | 118 | administration | RepointSpec:31, MEMBER_MERGE_REPOINT_PLAN:48, MEMBER_MERGE_PREVIEW_ONLY:114 |
+| [lib/admin/memberMerge.test.ts](../../../lib/admin/memberMerge.test.ts) | 455 | administration |  |
+| [lib/admin/memberMerge.ts](../../../lib/admin/memberMerge.ts) | 955 | administration | MergeConflict:15, MergePreview:22, MergeResult:68, resolutionFor:91, secondaryIsStronger:126, RepointOutcome:176, repointRelation:202, previewRepoint:307, assertNoCourseraOwnershipForMemberMerge:372, checkMergeConflicts:435, buildMergePreview:535, executeMemberMerge:688 |
+| [lib/admin/memberMergeRealDb.test.ts](../../../lib/admin/memberMergeRealDb.test.ts) | 419 | administration |  |
+| [lib/admin/memberMergeRepointPlan.test.ts](../../../lib/admin/memberMergeRepointPlan.test.ts) | 401 | administration |  |
+| [lib/admin/memberMergeRepointPlan.ts](../../../lib/admin/memberMergeRepointPlan.ts) | 292 | administration | StrandedImpact:38, StrengthColumn:63, CollisionResolution:84, RepointSpec:106, MEMBER_MERGE_REPOINT_PLAN:137, STRANDING_NOT_SURFACED:202, USER_FK_NOT_REPOINTED:229, USER_FK_HANDLED_ELSEWHERE:270, MEMBER_MERGE_PREVIEW_ONLY:288 |
 | [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 198 | administration |  |
 | [lib/admin/memberOnlyWhere.ts](../../../lib/admin/memberOnlyWhere.ts) | 150 | administration | MEMBER_ONLY_EXCLUDED_EMAILS:16, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS:35, MEMBER_ONLY_EXCLUDED_EMAIL_NOT:42, MEMBER_ONLY_EMAIL_WHERE:53, STAFF_PROFILE_ROLES:64, MEMBER_ONLY_WHERE:79, MEMBER_OR_DOGFOOD_WHERE:94, memberOnlyProfileWhere:105, memberOnlyEmailSql:126, memberOnlySqlJoin:146 |
 | [lib/admin/memberOutcomesSummary.ts](../../../lib/admin/memberOutcomesSummary.ts) | 40 | administration | getMemberOutcomesSummary:11 |
