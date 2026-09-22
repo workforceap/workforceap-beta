@@ -10,7 +10,7 @@ import {
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { effectiveStreak } from '@/lib/member/streakDisplay';
-import { isTrainingActivityStale } from '@/lib/member/trainingStaleness';
+import { isTrainingActivityStale, trainingEligibleSince } from '@/lib/member/trainingStaleness';
 import { ACTIVE_APPLICATION_STATUSES } from '@/lib/member/jobPipelineDisplay';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import { EVENT_LABELS, getLevelForPoints, getNextLevel } from '@/lib/member/pointsConfig';
@@ -150,8 +150,10 @@ type DashboardUserRow = MemberApprovalFacts & {
   fullName: string | null;
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
-  /** Program enrolment date — the staleness clock's fallback start. */
+  /** Program enrolment date — half of the training-eligibility baseline. */
   enrolledAt?: Date | null;
+  /** Preassessment completion — the other half; training cannot start before it. */
+  assessmentCompletedAt?: Date | null;
   /** Written by the stale-training cron once it has flagged this member. */
   staleTrainingDetectedAt?: Date | null;
   organization: {
@@ -552,14 +554,30 @@ function shapeHome(args: {
   // Newest saved training activity across every course. `courseProgress` is
   // ordered by `lastActivityAt` desc, but Postgres sorts NULLs first on a
   // descending sort, so take the max rather than trusting row 0.
+  //
+  // Bounded by the same `take: 500` the progress maths already uses. A member
+  // with more than 500 null-dated progress rows would have their real
+  // activity fall outside the window and read as stale; that needs 500+
+  // course rows on one member, which the catalog does not produce. Worth
+  // knowing if the denominator ever grows.
   const lastTrainingActivityAt = args.row.courseProgress.reduce<Date | null>((latest, row) => {
     const at = row.lastActivityAt ?? null;
     if (!at) return latest;
     return !latest || at.getTime() > latest.getTime() ? at : latest;
   }, null);
+  // The same baseline the member program page uses for
+  // `isTrainingStaleForCounselorEscalation`: the later of enrolment and
+  // finishing the preassessment, and only once both are true. Using the
+  // program-enrolment date alone would call a member stale on their first day
+  // of actually being able to start, and would disagree with that page.
   const courseProgressStale = isTrainingActivityStale({
     lastActivityAt: lastTrainingActivityAt,
-    eligibleSince: args.row.courseEnrollments[0]?.enrolledAt ?? args.row.enrolledAt ?? null,
+    eligibleSince: trainingEligibleSince({
+      enrolledProgram: assignedSlug,
+      assessmentCompleted: args.row.assessmentCompleted,
+      enrolledAt: args.row.enrolledAt,
+      assessmentCompletedAt: args.row.assessmentCompletedAt,
+    }),
     staleDetectedAt: args.row.staleTrainingDetectedAt ?? null,
   });
 
@@ -622,6 +640,7 @@ function userSelect() {
     enrolledProgram: true,
     assessmentCompleted: true,
     enrolledAt: true,
+    assessmentCompletedAt: true,
     staleTrainingDetectedAt: true,
     organization: {
       select: {

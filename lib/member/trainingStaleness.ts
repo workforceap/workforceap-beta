@@ -13,10 +13,36 @@ export const STALE_TRAINING_ACTIVITY_DAYS = 14;
 
 const STALE_TRAINING_ACTIVITY_MS = STALE_TRAINING_ACTIVITY_DAYS * 24 * 60 * 60 * 1000;
 
+/**
+ * When the member could first have opened training: the later of being
+ * enrolled and having finished the preassessment, and only once both are
+ * true. Before that there is nothing to be late for, so there is no baseline
+ * and nothing is stale.
+ *
+ * `app/(portal)/dashboard/page.tsx` computed this inline for
+ * `isTrainingStaleForCounselorEscalation`. It lives here now because the
+ * member dashboard home needs the identical answer — a member who enrolled
+ * 60 days ago but finished the assessment yesterday is on day one of being
+ * able to start, and the two surfaces must not disagree about that.
+ */
+export function trainingEligibleSince(input: {
+  /** Resolved program slug, or null when staff has not assigned one. */
+  enrolledProgram: string | null | undefined;
+  assessmentCompleted: boolean | null | undefined;
+  enrolledAt: Date | null | undefined;
+  assessmentCompletedAt: Date | null | undefined;
+}): Date | null {
+  if (!input.enrolledProgram || !input.assessmentCompleted) return null;
+  const enrolledMs = input.enrolledAt?.getTime() ?? 0;
+  const assessedMs = input.assessmentCompletedAt?.getTime() ?? 0;
+  const latest = Math.max(enrolledMs, assessedMs);
+  return latest > 0 ? new Date(latest) : null;
+}
+
 export type TrainingStalenessInput = {
   /** Most recent saved training activity, across every course. */
   lastActivityAt: Date | null;
-  /** When the member could first have started — the clock runs from here when nothing is saved yet. */
+  /** From {@link trainingEligibleSince}; the clock runs from here when nothing is saved yet. */
   eligibleSince: Date | null;
   /** Already flagged by the stale-training cron; trust it rather than recomputing. */
   staleDetectedAt?: Date | null;

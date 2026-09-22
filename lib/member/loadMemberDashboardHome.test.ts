@@ -75,16 +75,49 @@ function makeRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
+/**
+ * Project a fixture row through the loader's real `select`, the way Prisma
+ * does: a field the query does not ask for does not come back.
+ *
+ * Without this the mock hands back the whole fixture whatever the query says,
+ * so the eight `courseProgressStale` cases below would prove the shaping and
+ * nothing about the query — deleting `enrolledAt`, `assessmentCompletedAt`,
+ * `staleTrainingDetectedAt` or `lastActivityAt` from `userSelect()` would
+ * leave every test passing while the flag was permanently false in
+ * production. That mutation is the reason this exists.
+ */
+function projectSelect(row: unknown, select: Record<string, unknown>): unknown {
+  if (row === null || row === undefined) return row;
+  if (Array.isArray(row)) return row.map((entry) => projectSelect(entry, select));
+  if (typeof row !== 'object' || row instanceof Date) return row;
+  const source = row as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [key, spec] of Object.entries(select)) {
+    if (!(key in source)) continue;
+    if (spec === true) {
+      out[key] = source[key];
+    } else if (spec && typeof spec === 'object') {
+      const nested = (spec as { select?: Record<string, unknown> }).select;
+      out[key] = nested ? projectSelect(source[key], nested) : source[key];
+    }
+  }
+  return out;
+}
+
 function mockDb(opts: {
   row?: ReturnType<typeof makeRow> | null;
   missFirst?: boolean;
 }) {
   let findUniqueCalls = 0;
   let txCalls = 0;
-  const findUnique = async () => {
+  // `args` is `unknown` to match the loader's own DashboardHomeTx signature.
+  const findUnique = async (args: unknown) => {
     findUniqueCalls += 1;
     if (opts.missFirst && findUniqueCalls === 1) return null;
-    return opts.row === undefined ? makeRow() : opts.row;
+    const row = opts.row === undefined ? makeRow() : opts.row;
+    const select = (args as { select?: Record<string, unknown> } | undefined)?.select;
+    if (!row || !select) return row;
+    return projectSelect(row, select) as typeof row;
   };
   const db = {
     $transaction: async <T,>(fn: (tx: { user: { findUnique: typeof findUnique } }) => Promise<T>) => {
@@ -666,8 +699,14 @@ test('lean loader uses the assigned program over the legacy pointer and still re
 
 /**
  * The Course stat tile's warning is gated on this flag, so the loader must not
- * report a member who has just enrolled as stalled. The threshold is
- * `STALE_TRAINING_ACTIVITY_DAYS` (14) from lib/member/trainingStaleness.ts.
+ * report a member who has just become able to start as stalled. The threshold
+ * is `STALE_TRAINING_ACTIVITY_DAYS` (14) and the baseline is
+ * `trainingEligibleSince` — both from lib/member/trainingStaleness.ts, and
+ * both shared with the member program page.
+ *
+ * `mockDb` projects the fixture through the loader's real `select`, so these
+ * cases also pin the query: drop a column from `userSelect()` and the ones
+ * that expect `true` fail.
  */
 const DAY_MS = 24 * 60 * 60 * 1000;
 const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
@@ -679,6 +718,13 @@ const progressRow = (overrides: Record<string, unknown> = {}) => ({
   status: 'NOT_STARTED' as const,
   ...overrides,
 });
+/** Enrolled and assessed, i.e. actually able to open training. */
+const ableToStart = (enrolledDaysAgo: number, assessedDaysAgo: number) => ({
+  assessmentCompleted: true,
+  enrolledAt: daysAgo(enrolledDaysAgo),
+  assessmentCompletedAt: daysAgo(assessedDaysAgo),
+  courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+});
 
 async function staleFlagFor(overrides: Record<string, unknown>) {
   const { db } = mockDb({ row: makeRow(overrides) });
@@ -686,23 +732,48 @@ async function staleFlagFor(overrides: Record<string, unknown>) {
   return view.courseProgressStale;
 }
 
-test('courseProgressStale: a member who enrolled today at 0% is not stalled', async () => {
+test('courseProgressStale: a member who became able to start today is not stalled', async () => {
+  assert.equal(await staleFlagFor({ ...ableToStart(0, 0), courseProgress: [] }), false);
+});
+
+test('courseProgressStale: 0% with no activity since becoming able to start long ago is stalled', async () => {
+  assert.equal(await staleFlagFor({ ...ableToStart(40, 40), courseProgress: [] }), true);
+});
+
+test('courseProgressStale: the clock starts at the LATER of enrolment and the preassessment', async () => {
+  // Enrolled 60 days ago, finished the preassessment yesterday. This is day
+  // one of being able to start, so nothing is late yet — and the member
+  // program page says the same. Using the enrolment date alone would paint
+  // the gold chip here, which is the bug this rule exists to avoid.
+  assert.equal(await staleFlagFor({ ...ableToStart(60, 1), courseProgress: [] }), false);
+  // The mirror image: assessed long ago, enrolled yesterday.
+  assert.equal(await staleFlagFor({ ...ableToStart(1, 60), courseProgress: [] }), false);
+});
+
+test('courseProgressStale: nothing is claimed before the member can start', async () => {
+  // Enrolled ages ago but the preassessment is not done, so training has not
+  // opened and there is nothing to be late for.
   assert.equal(
     await staleFlagFor({
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(0) }],
+      assessmentCompleted: false,
+      enrolledAt: daysAgo(120),
+      assessmentCompletedAt: null,
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
       courseProgress: [],
     }),
     false,
   );
-});
-
-test('courseProgressStale: 0% with no activity since enrolling long ago is stalled', async () => {
+  // Assessed, but staff has assigned no program.
   assert.equal(
     await staleFlagFor({
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(40) }],
+      assessmentCompleted: true,
+      enrolledAt: daysAgo(120),
+      assessmentCompletedAt: daysAgo(120),
+      enrolledProgram: null,
+      courseEnrollments: [],
       courseProgress: [],
     }),
-    true,
+    false,
   );
 });
 
@@ -711,7 +782,7 @@ test('courseProgressStale: the newest activity wins even when a NULL-dated row s
   // max rather than trusting `courseProgress[0]`.
   assert.equal(
     await staleFlagFor({
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(90) }],
+      ...ableToStart(90, 90),
       courseProgress: [
         progressRow({ lastActivityAt: null }),
         progressRow({ courseSlug: 'introduction-to-hardware-and-operating-systems', lastActivityAt: daysAgo(30) }),
@@ -724,42 +795,31 @@ test('courseProgressStale: the newest activity wins even when a NULL-dated row s
 
 test('courseProgressStale: activity older than the threshold is stalled', async () => {
   assert.equal(
-    await staleFlagFor({
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(90) }],
-      courseProgress: [progressRow({ lastActivityAt: daysAgo(20) })],
-    }),
+    await staleFlagFor({ ...ableToStart(90, 90), courseProgress: [progressRow({ lastActivityAt: daysAgo(20) })] }),
     true,
+  );
+});
+
+test('courseProgressStale: saved activity beats the eligibility baseline in both directions', async () => {
+  // Able to start only yesterday, but somehow has activity 30 days old: the
+  // saved activity is the truth.
+  assert.equal(
+    await staleFlagFor({ ...ableToStart(1, 1), courseProgress: [progressRow({ lastActivityAt: daysAgo(30) })] }),
+    true,
+  );
+  // Able to start 90 days ago, active yesterday.
+  assert.equal(
+    await staleFlagFor({ ...ableToStart(90, 90), courseProgress: [progressRow({ lastActivityAt: daysAgo(1) })] }),
+    false,
   );
 });
 
 test('courseProgressStale: the cron flag is trusted on its own', async () => {
   assert.equal(
     await staleFlagFor({
+      ...ableToStart(0, 0),
       staleTrainingDetectedAt: daysAgo(1),
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', enrolledAt: daysAgo(0) }],
       courseProgress: [progressRow({ lastActivityAt: daysAgo(0) })],
-    }),
-    true,
-  );
-});
-
-test('courseProgressStale: nothing is claimed with no enrolment or activity date on file', async () => {
-  assert.equal(
-    await staleFlagFor({
-      enrolledAt: null,
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
-      courseProgress: [progressRow({ lastActivityAt: null })],
-    }),
-    false,
-  );
-});
-
-test('courseProgressStale: falls back to the user enrolment date when the enrollment row has none', async () => {
-  assert.equal(
-    await staleFlagFor({
-      enrolledAt: daysAgo(60),
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
-      courseProgress: [],
     }),
     true,
   );
@@ -770,4 +830,25 @@ test('courseProgressStale: the zeroed view for a missing user row is not stalled
   const view = await loadMemberDashboardHome({ userId: 'member-1', fallbackDisplayName: 'pat@example.com' }, db);
   assert.equal(view.coursePercent, 0);
   assert.equal(view.courseProgressStale, false);
+});
+
+/**
+ * Source-text pins. Weak evidence — they assert the text of a file, not its
+ * behaviour, and they go stale silently if the code is restructured. They are
+ * here because the alternative is silence: deleting the prop from the page
+ * disconnects the feature end to end and no behavioural test in this repo
+ * notices, since the page is a server component the unit lane cannot render.
+ * The query side is pinned properly by `projectSelect` above; this covers the
+ * one hop that cannot be.
+ */
+test('the dashboard page passes courseProgressStale through to the kit', () => {
+  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
+  assert.match(src, /courseProgressStale=\{home\.courseProgressStale\}/);
+});
+
+test('the loader selects every column the staleness baseline reads', () => {
+  const src = readFileSync(path.join(ROOT, 'lib/member/loadMemberDashboardHome.ts'), 'utf8');
+  for (const column of ['enrolledAt: true', 'assessmentCompletedAt: true', 'staleTrainingDetectedAt: true', 'lastActivityAt: true']) {
+    assert.match(src, new RegExp(column.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `userSelect() must ask for ${column}`);
+  }
 });

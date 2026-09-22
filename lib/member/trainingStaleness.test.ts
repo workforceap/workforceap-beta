@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { STALE_TRAINING_ACTIVITY_DAYS, isTrainingActivityStale } from './trainingStaleness';
+import { STALE_TRAINING_ACTIVITY_DAYS, isTrainingActivityStale, trainingEligibleSince } from './trainingStaleness';
 
 const NOW = new Date('2026-09-21T12:00:00Z');
 const daysAgo = (days: number) => new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
@@ -56,5 +56,50 @@ test('the cron flag short-circuits to stale even with no dates', () => {
   assert.equal(
     isTrainingActivityStale({ lastActivityAt: null, eligibleSince: null, staleDetectedAt: daysAgo(2), now: NOW }),
     true,
+  );
+});
+
+/**
+ * `trainingEligibleSince` is the baseline both the member program page and the
+ * dashboard home loader feed to the staleness rule. It was inline in
+ * `app/(portal)/dashboard/page.tsx`; the two must not drift apart again.
+ */
+const AUG = new Date('2026-08-01T00:00:00Z');
+const SEP = new Date('2026-09-20T00:00:00Z');
+
+test('eligibility is the later of enrolment and the preassessment', () => {
+  assert.deepEqual(
+    trainingEligibleSince({ enrolledProgram: 'p', assessmentCompleted: true, enrolledAt: AUG, assessmentCompletedAt: SEP }),
+    SEP,
+  );
+  assert.deepEqual(
+    trainingEligibleSince({ enrolledProgram: 'p', assessmentCompleted: true, enrolledAt: SEP, assessmentCompletedAt: AUG }),
+    SEP,
+  );
+});
+
+test('there is no baseline until the member is both enrolled and assessed', () => {
+  assert.equal(
+    trainingEligibleSince({ enrolledProgram: 'p', assessmentCompleted: false, enrolledAt: AUG, assessmentCompletedAt: SEP }),
+    null,
+  );
+  assert.equal(
+    trainingEligibleSince({ enrolledProgram: null, assessmentCompleted: true, enrolledAt: AUG, assessmentCompletedAt: SEP }),
+    null,
+  );
+});
+
+test('eligibility falls back to whichever date exists, and is null with neither', () => {
+  assert.deepEqual(
+    trainingEligibleSince({ enrolledProgram: 'p', assessmentCompleted: true, enrolledAt: null, assessmentCompletedAt: SEP }),
+    SEP,
+  );
+  assert.deepEqual(
+    trainingEligibleSince({ enrolledProgram: 'p', assessmentCompleted: true, enrolledAt: AUG, assessmentCompletedAt: null }),
+    AUG,
+  );
+  assert.equal(
+    trainingEligibleSince({ enrolledProgram: 'p', assessmentCompleted: true, enrolledAt: null, assessmentCompletedAt: null }),
+    null,
   );
 });
