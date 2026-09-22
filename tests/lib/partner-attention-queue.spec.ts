@@ -9,6 +9,7 @@ vi.mock('@/lib/db/prisma', () => ({
   },
 }));
 
+import { memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 import { partnerAttentionRows } from '@/lib/partner/attentionQueue';
 import { buildAttentionPageQuery } from '@/lib/partner/attentionPagination';
 
@@ -103,7 +104,9 @@ describe('partner follow-up eligibility', () => {
     const query = buildAttentionPageQuery('partner-1', 'org-1', { tier: 'all', asOf: now, limit: 50 });
     expect(query.text).toContain('p.active = true');
     expect(query.text).toContain('u.deleted_at IS NULL');
-    expect(query.text).toContain("profile.role = 'member'");
+    // One definition of "a member" (WAP-182 item 3): the shared predicate,
+    // not a hand-written `profile.role = 'member'`.
+    expect(query.text).toContain(memberOnlyRoleSql('u').text);
     expect(query.text).toContain('NOT EXISTS (SELECT 1 FROM user_certifications');
     expect(query.values).toContain('partner-1');
     expect(query.values.filter(value => value === 'org-1')).toHaveLength(2);

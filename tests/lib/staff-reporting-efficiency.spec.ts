@@ -5,7 +5,7 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { count: h.countUsers }, pla
 import { getMemberOutcomesSummary } from '@/lib/admin/memberOutcomesSummary';
 import { loadCounselorRoster, parseCounselorRosterQuery } from '@/lib/admin/counselorRoster';
 import { loadCounselorAssignmentAggregates } from '@/lib/admin/counselorRosterAggregates';
-import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 
 const now = new Date('2026-09-19T12:00:00Z');
 const cutoff = new Date(now.getTime() - 90 * 86400000);
@@ -33,7 +33,7 @@ describe('member outcomes summary', () => {
     expect(h.countPlacements.mock.calls[0][0].where).toEqual({ user: { organizationId: 'org-1', ...MEMBER_ONLY_WHERE } });
     const [strings, ...values] = h.average.mock.calls[0] as [TemplateStringsArray, ...unknown[]];
     const average = Prisma.sql(strings, ...values);
-    expect(average.sql).toContain("member_profile.role = 'member'");
+    expect(average.sql.replace(/\s+/g, ' ')).toContain(memberOnlySqlJoin().sql.replace(/\s+/g, ' ').trim());
     expect(average.values).toContain('org-1');
     expect(h.average).toHaveBeenCalledTimes(1); expect(h.countUsers).toHaveBeenCalledTimes(1);
   });

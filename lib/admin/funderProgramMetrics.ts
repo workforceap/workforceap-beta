@@ -1,4 +1,4 @@
-import { MEMBER_ONLY_WHERE, memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, memberOnlyEmailSql, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 import type { FunderProgramSummaryRow } from '@/lib/admin/funderProgramSummaryCsv';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -58,8 +58,8 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
       SELECT u.enrolled_program AS slug, COUNT(DISTINCT a.user_id)::int AS cnt
       FROM at_risk_alerts a
       INNER JOIN users u ON u.id = a.user_id AND u.organization_id = ${orgId}
-      INNER JOIN profiles p ON p.user_id = u.id AND p.role = 'member'
       WHERE a.status IN ('open', 'acknowledged')
+        AND ${memberOnlyRoleSql('u')}
         AND a.score >= ${THRESHOLDS.HIGH}
         AND u.deleted_at IS NULL
         AND u.enrolled_program IS NOT NULL

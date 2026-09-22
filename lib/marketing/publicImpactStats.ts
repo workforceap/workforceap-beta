@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { ANALYTICS_COHORT_DETAIL_CAP, sqlCount } from '@/lib/db/scanCaps';
-import { MEMBER_ONLY_WHERE, memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, memberOnlyEmailSql, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
@@ -197,8 +197,6 @@ export async function getPublicImpactStats(orgId: string): Promise<PublicImpactS
           enrolled_program.canonical_slug AS program_slug,
           COUNT(DISTINCT u.id)::bigint AS count
         FROM users u
-        INNER JOIN profiles p
-          ON p.user_id = u.id AND p.role = 'member'
         INNER JOIN learner_program_assignments ce
           ON ce.user_id = u.id
         INNER JOIN validated_programs enrolled_program
@@ -213,6 +211,7 @@ export async function getPublicImpactStats(orgId: string): Promise<PublicImpactS
         WHERE u.organization_id = ${orgId}
           AND u.deleted_at IS NULL
           AND u.enrolled_program IS NOT NULL
+          AND ${memberOnlyRoleSql('u')}
           AND ${memberOnlyEmailSql('u')}
           AND EXISTS (
             SELECT 1
@@ -250,12 +249,11 @@ export async function getPublicImpactStats(orgId: string): Promise<PublicImpactS
         SELECT AVG(pr.wage_at_follow_up - pr.salary_offered) AS avg_delta, COUNT(*)::bigint AS n
         FROM placement_records pr
         INNER JOIN users u ON u.id = pr.user_id
-        LEFT JOIN profiles p ON p.user_id = u.id
         WHERE pr.salary_offered IS NOT NULL
           AND pr.wage_at_follow_up IS NOT NULL
           AND u.organization_id = ${orgId}
           AND u.deleted_at IS NULL
-          AND p.role = 'member'
+          AND ${memberOnlyRoleSql('u')}
           AND ${memberOnlyEmailSql('u')}
       `,
     ]);

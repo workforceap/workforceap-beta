@@ -24,7 +24,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const REAL_DB_SUITES = ['lib/auth/roles.test.ts', 'lib/admin/memberMergeRealDb.test.ts'];
+const REAL_DB_SUITES = ['lib/auth/roles.test.ts', 'lib/admin/memberMergeRealDb.test.ts', 'lib/admin/memberOnlyWhere.realdb.test.ts'];
 
 function requireLocal(name) {
   const raw = process.env[name];
