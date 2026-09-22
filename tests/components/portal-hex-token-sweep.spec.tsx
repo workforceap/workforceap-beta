@@ -400,7 +400,10 @@ describe('voiceAgentSurfaces crimson surfaces paint from the hero tokens', () =>
       const ring = styleOf(container.firstElementChild);
       expect(ring).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
       expect(ring).toContain('box-shadow: 0 16px 48px color-mix(in srgb, var(--wa-hero-crimson) 16%, transparent)');
-      expect(styleOf(screen.getByText(surface.badge))).toContain('color: var(--wa-hero-crimson)');
+      // The badge sits on the card, not the ring: a surface may name a text
+      // token (`badgeColor`) where the hero crimson is under AA on the dark
+      // card (scout M10, employer: 2.99:1); the ring and glow keep the crimson.
+      expect(styleOf(screen.getByText(surface.badge))).toContain(`color: ${surface.badgeColor ?? 'var(--wa-hero-crimson)'}`);
       // The CTA gradient callers paint from is the same token pair.
       expect(surface.ctaGradient).toBe('linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
       expect(surface.ctaGradient).not.toMatch(HEX);
