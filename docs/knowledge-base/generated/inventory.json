@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "ed05a30a6d6ded50a0e883ddc39d7f08ccaa8b0a1427bb94dab0ed6f57443ff6",
+  "inputTreeSha256": "b20cc9698120722deba97c7482948af99d6205a3243c2815bb10bf730fb1de2b",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -104344,18 +104344,12 @@
       "path": "lib/content/coursera/catalogCoverage.test.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 5025,
-      "lines": 108,
-      "sha256": "ed2067113a094d8a69b36625a578f732c29165bd58e7fade63e71efda7824886",
+      "bytes": 2455,
+      "lines": 53,
+      "sha256": "e5d3c767853b7cc572e82df6c3e9006b84946dc8734e6cf4b9e895ef04b6ee83",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "DELIBERATELY_UNREFRESHED",
-          "line": 65,
-          "kind": "Variable"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -105065,29 +105059,29 @@
       "path": "lib/content/courseraDiscoveredCatalog.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 38837,
-      "lines": 376,
-      "sha256": "697558b3fd26f13567a1e1b4fb5dc55e333332973cb392d4705b65b1c96ce392",
+      "bytes": 38429,
+      "lines": 369,
+      "sha256": "ab4db45359b6ecacd2532aba7471ac39ac99d0d4a8512240d9054a33c8f45fe8",
       "binary": false,
       "exports": [
         {
           "name": "CourseraProgramSlug",
-          "line": 334,
+          "line": 327,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredProgram",
-          "line": 339,
+          "line": 332,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredCourse",
-          "line": 351,
+          "line": 344,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DISCOVERED_COURSERA_PROGRAMS",
-          "line": 375,
+          "line": 368,
           "kind": "Variable"
         }
       ],
@@ -105099,42 +105093,42 @@
         },
         {
           "name": "CourseraProgramSlug",
-          "line": 334,
+          "line": 327,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredProgramInner",
-          "line": 335,
+          "line": 328,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredCourseInner",
-          "line": 336,
+          "line": 329,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredProgram",
-          "line": 339,
+          "line": 332,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredCourse",
-          "line": 351,
+          "line": 344,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "WAP_PROGRAM_DISCOVERED_ALIASES",
-          "line": 354,
+          "line": 347,
           "kind": "Variable"
         },
         {
           "name": "mergeDiscoveredWithWapAliases",
-          "line": 364,
+          "line": 357,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DISCOVERED_COURSERA_PROGRAMS",
-          "line": 375,
+          "line": 368,
           "kind": "Variable"
         }
       ],
@@ -107330,9 +107324,9 @@
       "path": "lib/content/syllabusCatalogParity.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 11641,
-      "lines": 190,
-      "sha256": "e20a86a819478640c9d281112291ecf7972a5ee5c8ec421050e9a002e0105d64",
+      "bytes": 10426,
+      "lines": 184,
+      "sha256": "e0333ae63fc46a1b746a2e4048b30804c7c5f2e1c02f132274fbe7985b56b788",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -107353,12 +107347,12 @@
         },
         {
           "name": "isAllowlisted",
-          "line": 78,
+          "line": 72,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "syllabusPrograms",
-          "line": 82,
+          "line": 76,
           "kind": "Variable"
         }
       ],
@@ -179066,9 +179060,9 @@
       "path": "tests/migrations/wap76-course-slug-remap.mjs",
       "area": "tests",
       "domain": "tests",
-      "bytes": 18124,
-      "lines": 393,
-      "sha256": "12104d8192b70d24f0161d431f07ada258db0f744ec8ea79661954cdd2289c87",
+      "bytes": 20061,
+      "lines": 437,
+      "sha256": "83f05014440312369198c08b21291cda2f2c5d65921bd066fda0534ae05b0b7c",
       "binary": false,
       "exports": [],
       "declarations": [
