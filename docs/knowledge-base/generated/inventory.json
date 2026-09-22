@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "9af844071c14e310df6703e0f825f2806166738c67a342a10db909f47e3804b4",
+  "inputTreeSha256": "59d7cb2699f9fd7287f5acb4c6fcc73521d650aa115b4d263e72345dc2998556",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -10161,9 +10161,9 @@
       "path": "app/(portal)/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 51408,
-      "lines": 1224,
-      "sha256": "539f0a89914a0678c5c4b8e82d32df57def59bde3b16042a32c6a2257970a983",
+      "bytes": 51353,
+      "lines": 1223,
+      "sha256": "254e2ec82e169517d65d6e7a2781efbe2ba91d4937203c3700c679c3e129c823",
       "binary": false,
       "exports": [
         {
@@ -12779,14 +12779,14 @@
       "path": "app/(portal)/leader/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 13641,
-      "lines": 366,
-      "sha256": "63c2e72a8699ff5be0ce872aafb6a517060058e6dbb4814b9622a5bb0790307a",
+      "bytes": 13620,
+      "lines": 375,
+      "sha256": "0617ae1b369d0ce1dad5d4fb444831549787efcb9efbd094d887aeb745561b41",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 95,
+          "line": 88,
           "kind": "FunctionDeclaration",
           "localName": "LeaderDashboardPage"
         }
@@ -12794,42 +12794,42 @@
       "declarations": [
         {
           "name": "Member",
-          "line": 15,
+          "line": 12,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "ChapterMemberRow",
-          "line": 25,
+          "line": 22,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "ChapterMeeting",
-          "line": 31,
+          "line": 28,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CurriculumItem",
-          "line": 39,
+          "line": 36,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "Chapter",
-          "line": 46,
+          "line": 43,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "EmptyPanel",
-          "line": 59,
+          "line": 56,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberStatusTone",
-          "line": 88,
+          "line": 81,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LeaderDashboardPage",
-          "line": 95,
+          "line": 88,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -44065,19 +44065,19 @@
       "path": "app/dev/member/home/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 6273,
-      "lines": 166,
-      "sha256": "469a72262f6092b576251f44013066ae2d1d73adbd2fc0fcb7cd45a09bd0deb3",
+      "bytes": 5751,
+      "lines": 157,
+      "sha256": "6f7bf7edd141ea98b0d2dc37e8449abbd02cc303c3dfc4957860cc259b16ecdc",
       "binary": false,
       "exports": [
         {
           "name": "dynamic",
-          "line": 22,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 46,
+          "line": 42,
           "kind": "FunctionDeclaration",
           "localName": "DevMemberHomePage"
         }
@@ -44085,17 +44085,17 @@
       "declarations": [
         {
           "name": "dynamic",
-          "line": 22,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "APPROVAL_FIXTURES",
-          "line": 24,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "DevMemberHomePage",
-          "line": 46,
+          "line": 42,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71067,9 +71067,9 @@
       "path": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 18157,
+      "bytes": 18135,
       "lines": 459,
-      "sha256": "dfe8f3bac620f687557eb2eef552f9ad96d201983b71172f75fd512eea99aaa8",
+      "sha256": "8c19c692cdde6ca5c9e3c5df97b0d6c83e4f23051720ce0524c90e1b36d0524f",
       "binary": false,
       "exports": [
         {
@@ -71860,9 +71860,9 @@
       "path": "components/portal/kit/pages/member/MemberHomeKit.test.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 6011,
-      "lines": 144,
-      "sha256": "3ac4535466bcf7c4405b3ad959062ae3c55488bbb79b912383d2bff81c4fb738",
+      "bytes": 3919,
+      "lines": 95,
+      "sha256": "38d2df7cf3247a4bcadb336943923c8ce889e3f4ea56b9e6207c4d8da278b82f",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -71883,9 +71883,9 @@
       "path": "components/portal/kit/pages/member/MemberHomeKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 41082,
-      "lines": 1033,
-      "sha256": "cc2f581a21c78feae77c2bcaec7a83ab0b9d07ade3a7315ddba101795887cb1f",
+      "bytes": 40479,
+      "lines": 1022,
+      "sha256": "3b7ad0057191e24faac982903e44c627256f63876318f269e44efc190b65b045",
       "binary": false,
       "exports": [
         {
@@ -71910,7 +71910,7 @@
         },
         {
           "name": "MemberHomeKit",
-          "line": 609,
+          "line": 602,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71952,77 +71952,77 @@
         },
         {
           "name": "clampPct",
-          "line": 208,
+          "line": 201,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultStageIndex",
-          "line": 212,
+          "line": 205,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LOGO_COLORS",
-          "line": 228,
+          "line": 221,
           "kind": "Variable"
         },
         {
           "name": "logoColorFor",
-          "line": 229,
+          "line": 222,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sparklinePoints",
-          "line": 235,
+          "line": 228,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HOME_TEXT_LINK",
-          "line": 256,
+          "line": 249,
           "kind": "Variable"
         },
         {
           "name": "KitCardHead",
-          "line": 269,
+          "line": 262,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DeltaChip",
-          "line": 291,
+          "line": 284,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StatSparkTile",
-          "line": 323,
+          "line": 316,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PipelineStageTrack",
-          "line": 383,
+          "line": 376,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SegmentedProgress",
-          "line": 407,
+          "line": 400,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WeeklyActivityChart",
-          "line": 447,
+          "line": 440,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pipelineColumns",
-          "line": 504,
+          "line": 497,
           "kind": "Variable"
         },
         {
           "name": "pipelineCard",
-          "line": 560,
+          "line": 553,
           "kind": "Variable"
         },
         {
           "name": "MemberHomeKit",
-          "line": 609,
+          "line": 602,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -76036,9 +76036,9 @@
       "path": "docs/HANDOFF.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 7480,
+      "bytes": 7496,
       "lines": 104,
-      "sha256": "89a2073d9d4595c4627d7543d7ee6d2164e74badb41e1e3f77789088044aa3f9",
+      "sha256": "bd1fb6433b0921e7edd638ebe717717a57aa718d1da2df69ff6c27ac33b82820",
       "binary": false
     },
     {
@@ -85167,9 +85167,9 @@
       "path": "lib/admin/commandCenterHelpers.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 8452,
-      "lines": 215,
-      "sha256": "603d25ac7abb48f59e25138189bb23c8e70b8f4b06ac4557c54273381b621d9e",
+      "bytes": 8334,
+      "lines": 213,
+      "sha256": "e7ea35d71acd7a84dac63f4d6901b740a456e3f35d70b4442045dea020a9bf0f",
       "binary": false,
       "exports": [
         {
@@ -85219,47 +85219,47 @@
         },
         {
           "name": "PROGRAM_HEALTH_CAPTION",
-          "line": 98,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "buildProgramHealthRows",
-          "line": 107,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ADMIN_QUEUE_KEYS",
-          "line": 128,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "AdminQueueKey",
-          "line": 129,
+          "line": 127,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "normalizeAdminQueueRequest",
-          "line": 130,
+          "line": 128,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "adminQueueHref",
-          "line": 137,
+          "line": 135,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminCommandCenter",
-          "line": 141,
+          "line": 139,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "buildApplicationEmailPacket",
-          "line": 151,
+          "line": 149,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketCommandCenterTotals",
-          "line": 200,
+          "line": 198,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85311,47 +85311,47 @@
         },
         {
           "name": "PROGRAM_HEALTH_CAPTION",
-          "line": 98,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "buildProgramHealthRows",
-          "line": 107,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ADMIN_QUEUE_KEYS",
-          "line": 128,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "AdminQueueKey",
-          "line": 129,
+          "line": 127,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "normalizeAdminQueueRequest",
-          "line": 130,
+          "line": 128,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "adminQueueHref",
-          "line": 137,
+          "line": 135,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminCommandCenter",
-          "line": 141,
+          "line": 139,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "buildApplicationEmailPacket",
-          "line": 151,
+          "line": 149,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketCommandCenterTotals",
-          "line": 200,
+          "line": 198,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -128286,9 +128286,9 @@
       "path": "lib/member/loadMemberDashboardHome.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 29703,
-      "lines": 773,
-      "sha256": "b05fa7d4927d411a17168e79ade1aa2bcff6647ac910a0414d635b66f988bbc7",
+      "bytes": 25741,
+      "lines": 665,
+      "sha256": "81d07acc52c0e97353ede16e2ca9ffaa0b5ee2d85f6a16d9a2bc58cc80a0a9d9",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -128316,26 +128316,6 @@
           "name": "mockDb",
           "line": 78,
           "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "DAY_MS",
-          "line": 672,
-          "kind": "Variable"
-        },
-        {
-          "name": "daysAgo",
-          "line": 673,
-          "kind": "Variable"
-        },
-        {
-          "name": "progressRow",
-          "line": 674,
-          "kind": "Variable"
-        },
-        {
-          "name": "staleFlagFor",
-          "line": 683,
-          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -128344,201 +128324,201 @@
       "path": "lib/member/loadMemberDashboardHome.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 27180,
-      "lines": 773,
-      "sha256": "c537ddea3e01ed096cdd03832a393c96eb9ec704b0dbc95ff003ff6963f6ccfc",
+      "bytes": 25655,
+      "lines": 742,
+      "sha256": "a092718202c27e756613bd4e9649cb9c5ba8086d4165378abb1620f33dc7e2d8",
       "binary": false,
       "exports": [
         {
           "name": "MEMBER_DASHBOARD_HOME_PRISMA_BUDGET",
-          "line": 46,
+          "line": 45,
           "kind": "Variable"
         },
         {
           "name": "DashboardPipelineRow",
-          "line": 52,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardGoalSummary",
-          "line": 62,
+          "line": 61,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardPointsLedgerEntry",
-          "line": 67,
+          "line": 66,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberDashboardHomeView",
-          "line": 73,
+          "line": 72,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LoadMemberDashboardHomeArgs",
-          "line": 130,
+          "line": 123,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "mapPipelineRows",
-          "line": 229,
+          "line": 217,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pointsLedgerColor",
-          "line": 246,
+          "line": 234,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapPointsLedger",
-          "line": 256,
+          "line": 244,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapGoalSummaries",
-          "line": 266,
+          "line": 254,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "deriveNextBadge",
-          "line": 288,
+          "line": 276,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadMemberDashboardHome",
-          "line": 751,
+          "line": 720,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MEMBER_DASHBOARD_HOME_PRISMA_BUDGET",
-          "line": 46,
+          "line": 45,
           "kind": "Variable"
         },
         {
           "name": "WEEK_MS",
-          "line": 48,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "PIPELINE_ROW_STATUSES_EXCLUDED",
-          "line": 50,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "DashboardPipelineRow",
-          "line": 52,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardGoalSummary",
-          "line": 62,
+          "line": 61,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardPointsLedgerEntry",
-          "line": 67,
+          "line": 66,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberDashboardHomeView",
-          "line": 73,
+          "line": 72,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LoadMemberDashboardHomeArgs",
-          "line": 130,
+          "line": 123,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardHomeTx",
-          "line": 137,
+          "line": 130,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardHomeDb",
-          "line": 143,
+          "line": 136,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DashboardUserRow",
-          "line": 147,
+          "line": 140,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STAGE_TONE_BY_STATUS",
-          "line": 218,
+          "line": 206,
           "kind": "Variable"
         },
         {
           "name": "mapPipelineRows",
-          "line": 229,
+          "line": 217,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pointsLedgerColor",
-          "line": 246,
+          "line": 234,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapPointsLedger",
-          "line": 256,
+          "line": 244,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapGoalSummaries",
-          "line": 266,
+          "line": 254,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "deriveNextBadge",
-          "line": 288,
+          "line": 276,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "displayFirstName",
-          "line": 317,
+          "line": 305,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dashboardHomeStateLetter",
-          "line": 330,
+          "line": 318,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fallbackDashboardHomeAction",
-          "line": 341,
+          "line": 329,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveDashboardHomeNextAction",
-          "line": 374,
+          "line": 362,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "emptyHome",
-          "line": 403,
+          "line": 391,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "shapeHome",
-          "line": 447,
+          "line": 434,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "userSelect",
-          "line": 605,
+          "line": 577,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchHomeRow",
-          "line": 720,
+          "line": 689,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadMemberDashboardHome",
-          "line": 751,
+          "line": 720,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -129128,46 +129108,51 @@
       "path": "lib/member/memberProgramTrainingView.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 9696,
-      "lines": 241,
-      "sha256": "9b21ec8bf2e5a3f0e84a27e45bf676f12813fcc62f627160e9ef0f00ec050aec",
+      "bytes": 9475,
+      "lines": 236,
+      "sha256": "e509a0cd359e4b9328341da69a1cc8a984ef74d4bd341c44cad4df8b3357e7be",
       "binary": false,
       "exports": [
         {
           "name": "STALE_TRAINING_ACTIVITY_DAYS",
-          "line": 21,
-          "kind": "ReExport"
+          "line": 16,
+          "kind": "Variable"
         },
         {
           "name": "MemberProgramTrainingView",
-          "line": 23,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadMemberProgramTrainingView",
-          "line": 66,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTrainingStaleForCounselorEscalation",
-          "line": 225,
+          "line": 220,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
+          "name": "STALE_TRAINING_ACTIVITY_DAYS",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
           "name": "MemberProgramTrainingView",
-          "line": 23,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadMemberProgramTrainingView",
-          "line": 66,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTrainingStaleForCounselorEscalation",
-          "line": 225,
+          "line": 220,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -131200,78 +131185,6 @@
           "name": "JOB_READY_TRAINING_PCT",
           "line": 175,
           "kind": "Variable"
-        }
-      ],
-      "directive": null
-    },
-    {
-      "path": "lib/member/trainingStaleness.test.ts",
-      "area": "libraries",
-      "domain": "member-counselor",
-      "bytes": 2643,
-      "lines": 60,
-      "sha256": "359704c9771f1e7f8370035bc1652d26d3838e031284d8a451a2c897ff568fed",
-      "binary": false,
-      "exports": [],
-      "declarations": [
-        {
-          "name": "NOW",
-          "line": 6,
-          "kind": "Variable"
-        },
-        {
-          "name": "daysAgo",
-          "line": 7,
-          "kind": "Variable"
-        }
-      ],
-      "directive": null
-    },
-    {
-      "path": "lib/member/trainingStaleness.ts",
-      "area": "libraries",
-      "domain": "member-counselor",
-      "bytes": 1746,
-      "lines": 39,
-      "sha256": "556e7ebe6ce70b70386ffc3ecc6c64d38195e909063df750335160fe5189a82f",
-      "binary": false,
-      "exports": [
-        {
-          "name": "STALE_TRAINING_ACTIVITY_DAYS",
-          "line": 12,
-          "kind": "Variable"
-        },
-        {
-          "name": "TrainingStalenessInput",
-          "line": 16,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "isTrainingActivityStale",
-          "line": 33,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "STALE_TRAINING_ACTIVITY_DAYS",
-          "line": 12,
-          "kind": "Variable"
-        },
-        {
-          "name": "STALE_TRAINING_ACTIVITY_MS",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "TrainingStalenessInput",
-          "line": 16,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "isTrainingActivityStale",
-          "line": 33,
-          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -156481,85 +156394,85 @@
       "path": "scripts/check-supabase-env.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 6048,
-      "lines": 133,
-      "sha256": "d1b822af16a2dcbeba630bad59fe78064f9e11d5ddb7fa3a3293e3128aff4d16",
+      "bytes": 6155,
+      "lines": 134,
+      "sha256": "1beba270f6d7ade4ed1187d1f94962acc1186b94de20453d90d39700208e5c32",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "POOL_CONTRACT_ENFORCED_VERCEL_ENVS",
-          "line": 46,
-          "kind": "Variable"
-        },
-        {
-          "name": "checkPoolContract",
           "line": 47,
           "kind": "Variable"
         },
         {
+          "name": "checkPoolContract",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
           "name": "DEMO_REF",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "PROD_REF",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "formatSupabaseEnvGuardFailure",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "inspectSupabaseEnvironment",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "projectForAnonKey",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "projectForUrl",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "env",
-          "line": 69,
+          "line": 70,
           "kind": "Variable"
         },
         {
           "name": "urls",
-          "line": 71,
+          "line": 72,
           "kind": "Variable"
         },
         {
           "name": "expected",
-          "line": 78,
-          "kind": "Variable"
-        },
-        {
-          "name": "errors",
           "line": 79,
           "kind": "Variable"
         },
         {
-          "name": "seen",
+          "name": "errors",
           "line": 80,
           "kind": "Variable"
         },
         {
+          "name": "seen",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
           "name": "onVercel",
-          "line": 103,
+          "line": 104,
           "kind": "Variable"
         },
         {
           "name": "enforcePoolContract",
-          "line": 104,
+          "line": 105,
           "kind": "Variable"
         }
       ],
@@ -170323,9 +170236,9 @@
       "path": "tests/components/admin-command-center-presentation.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4022,
+      "bytes": 4026,
       "lines": 55,
-      "sha256": "abba126486208b9d386b3cbe3222e95b52adf5d720446c1a5c9dc3fe17d02ac0",
+      "sha256": "daf0bb9b914aa6e6babdf2fab9634e4d70ce1e87d9244b8785ed05169b69720a",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -172022,39 +171935,6 @@
       "directive": null
     },
     {
-      "path": "tests/components/leader-dashboard-status-tones.spec.tsx",
-      "area": "tests",
-      "domain": "tests",
-      "bytes": 4132,
-      "lines": 106,
-      "sha256": "c3a1b9ce5891331677862cea7977a35f369d382bcf013fc39df8d05fc11919f6",
-      "binary": false,
-      "exports": [],
-      "declarations": [
-        {
-          "name": "member",
-          "line": 21,
-          "kind": "Variable"
-        },
-        {
-          "name": "EXPECTED",
-          "line": 37,
-          "kind": "Variable"
-        },
-        {
-          "name": "chapter",
-          "line": 44,
-          "kind": "Variable"
-        },
-        {
-          "name": "renderLeaderDashboard",
-          "line": 63,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": null
-    },
-    {
       "path": "tests/components/member-approval-status.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -172502,9 +172382,9 @@
       "path": "tests/components/number-audit-followon-captions.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 10871,
-      "lines": 225,
-      "sha256": "1493be2dc8d3f61d1a4979755a17af12ccbf4494c1b576edf98479faf9b99942",
+      "bytes": 10497,
+      "lines": 219,
+      "sha256": "9cb346e1f555e047374e5ba9f5f8ac562e2b6aad03bbd1d9718ad24c52ebf645",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -172771,20 +172651,20 @@
       "path": "tests/components/program-health-tone.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5397,
-      "lines": 126,
-      "sha256": "04444bdca9bab46c8572393340b253016fa7b615f323e0ecaed069a559e8f395",
+      "bytes": 5340,
+      "lines": 125,
+      "sha256": "cf616ef1ce8467a6eda13eca52ef16ed92cb1d1bffeaf470e38766e33d4e3ada",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "barFills",
-          "line": 28,
+          "line": 27,
           "kind": "Variable"
         },
         {
           "name": "ROWS",
-          "line": 31,
+          "line": 30,
           "kind": "Variable"
         }
       ],
@@ -180098,9 +179978,9 @@
       "path": "tests/tours/admin-overview-anchors.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4472,
+      "bytes": 4459,
       "lines": 102,
-      "sha256": "3e02d6cfd84fcc14cc88328859773a19dfa6e05b00a6038c4fae7ae30ece9879",
+      "sha256": "7cf4d1ee36cd402751cc1f8c555b0cc85be47cbdd009044b00db787b7b6fd2c2",
       "binary": false,
       "exports": [],
       "declarations": [
