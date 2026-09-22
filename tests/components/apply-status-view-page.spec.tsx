@@ -87,14 +87,16 @@ afterEach(() => {
 });
 
 describe('/apply/status/view', () => {
-  it('renders a pending application with the dashboard label, next step, counselor and program', async () => {
+  it('renders a pending application with the dashboard label, next step, counselor first name and program', async () => {
     const app = application();
     vi.mocked(loadApplicationForStatusLink).mockResolvedValue(app);
     await mount(tokenFor(app));
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Applied');
     expect(screen.getByText(/Our team is reviewing your application\. Watch your email for next steps from a counselor\./)).toBeInTheDocument();
-    expect(screen.getByText('Casey Counselor')).toBeInTheDocument();
+    // Unauthenticated link holder: first name only (the logged-in view keeps the full name, #2488).
+    expect(screen.getByText('Casey')).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/Casey Counselor/);
     expect(screen.getByText('IT Support')).toBeInTheDocument();
     expect(screen.getByText('September 15, 2026')).toBeInTheDocument();
     expect(screen.getByRole('list', { name: 'Application progress' })).toBeInTheDocument();

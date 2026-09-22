@@ -126,8 +126,13 @@ export async function loadApplicationForStatusLink(
   return application;
 }
 
-/** Name of the active counselor, when one is assigned. */
+/**
+ * FIRST name of the active counselor, when one is assigned. A 30-minute
+ * link holder is not an authenticated member: the logged-in dashboard shows
+ * the full name (#2488), this public page shows only the first name.
+ */
 export function counselorNameForStatusLink(application: Pick<StatusLinkApplication, 'user'>): string | null {
   const name = application.user.counselorAssignments[0]?.counselor?.user?.fullName?.trim();
-  return name ? name : null;
+  if (!name) return null;
+  return name.split(/\s+/)[0] || null;
 }

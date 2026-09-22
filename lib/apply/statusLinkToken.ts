@@ -44,18 +44,20 @@ type ApplicationStatusLinkPayload = {
 };
 
 /**
- * Optional explicit secret first, then the existing server secrets already
- * required in production. Links live 30 minutes, so rotating the borrowed
- * secret only invalidates links that are about to expire anyway (unlike the
- * unsubscribe tokens in WAP-177).
+ * Optional explicit secret first, then AUTH_TRUST_COOKIE_SECRET, which is
+ * already required in production (lib/auth/mfaTrust.ts). Deliberately NOT
+ * CRON_SECRET: a cron-secret holder must not be able to mint status links.
+ * Links live 30 minutes, so rotating the borrowed secret only invalidates
+ * links that are about to expire anyway (unlike the unsubscribe tokens in
+ * WAP-177).
  */
 function secret(env: NodeJS.ProcessEnv = process.env): string {
   const explicit = env.APPLICATION_STATUS_LINK_SECRET?.trim();
   if (explicit) return explicit;
-  const borrowed = env.AUTH_TRUST_COOKIE_SECRET?.trim() || env.CRON_SECRET?.trim();
+  const borrowed = env.AUTH_TRUST_COOKIE_SECRET?.trim();
   if (!borrowed) {
     throw new Error(
-      'No secret available for application status links: set APPLICATION_STATUS_LINK_SECRET, AUTH_TRUST_COOKIE_SECRET or CRON_SECRET',
+      'No secret available for application status links: set APPLICATION_STATUS_LINK_SECRET or AUTH_TRUST_COOKIE_SECRET',
     );
   }
   return borrowed;

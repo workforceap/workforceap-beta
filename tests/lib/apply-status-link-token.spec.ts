@@ -24,7 +24,6 @@ const args = {
 beforeEach(() => {
   vi.stubEnv('AUTH_TRUST_COOKIE_SECRET', 'unit-test-trust-secret');
   vi.stubEnv('APPLICATION_STATUS_LINK_SECRET', '');
-  vi.stubEnv('CRON_SECRET', '');
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -100,8 +99,15 @@ describe('application status link token', () => {
 
     vi.stubEnv('APPLICATION_STATUS_LINK_SECRET', '');
     vi.stubEnv('AUTH_TRUST_COOKIE_SECRET', '');
-    vi.stubEnv('CRON_SECRET', '');
     expect(() => issueApplicationStatusLinkToken(args)).toThrow(/APPLICATION_STATUS_LINK_SECRET/);
+  });
+
+  it('never falls back to CRON_SECRET: a cron-secret holder cannot mint or verify links', () => {
+    vi.stubEnv('APPLICATION_STATUS_LINK_SECRET', '');
+    vi.stubEnv('AUTH_TRUST_COOKIE_SECRET', '');
+    vi.stubEnv('CRON_SECRET', 'a-cron-secret');
+    expect(() => issueApplicationStatusLinkToken(args)).toThrow(/AUTH_TRUST_COOKIE_SECRET/);
+    expect(() => verifyApplicationStatusLinkToken('abc.def', NOW)).toThrow(/AUTH_TRUST_COOKIE_SECRET/);
   });
 
   it('refuses to mint without the binding fields', () => {

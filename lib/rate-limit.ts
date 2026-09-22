@@ -632,17 +632,19 @@ export async function checkForgotPasswordEmailRateLimit(email: string): Promise<
   return { success: r.success };
 }
 
-/** Public GET /api/careers/* (occupation detail, program matches) — per IP; fail-open without Redis. */
+/** Public application-status link (28a) per-IP cap — 10 requests per IP per hour; fail-closed in production. */
 export async function checkApplyStatusLookupRateLimit(ip: string): Promise<{ success: boolean }> {
   const r = await failClosedLimit(applyStatusLookupRateLimiter, 'apply-status-lookup', ip);
   return { success: r.success };
 }
 
+/** Public application-status link (28a) per-email cap — 3 requests per email per hour; fail-closed in production. */
 export async function checkApplyStatusLookupEmailRateLimit(email: string): Promise<{ success: boolean }> {
   const r = await failClosedLimit(applyStatusLookupEmailRateLimiter, 'apply-status-lookup-email', email.toLowerCase());
   return { success: r.success };
 }
 
+/** Public GET /api/careers/* (occupation detail, program matches) — per IP; fail-open without Redis. */
 export async function checkPublicCareersGetRateLimit(ip: string): Promise<{ success: boolean }> {
   if (!publicCareersGetRateLimiter) return { success: true };
   const result = await publicCareersGetRateLimiter.limit(ip);
