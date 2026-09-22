@@ -13,13 +13,28 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: db }));
 import { loadCourseraEnrollmentPipeline } from './courseraEnrollmentPipeline';
 import { countHiddenTestAccountUnmatchedLearners, countUnmatchedLearners, loadUnmatchedLearners } from '@/lib/coursera/progressQueries';
 
+const XAPI_TABLE_PROBE = /to_regclass\('public\.coursera_xapi_events'\)/;
+const isXapiTableProbe = (call: unknown[]) => XAPI_TABLE_PROBE.test((call[0] as TemplateStringsArray).join(''));
+
+/** Raw queries other than the once-per-process `coursera_xapi_events` probe, in call order. */
+function rawQueryCalls(): Array<[TemplateStringsArray, ...unknown[]]> {
+  return (db.$queryRaw.mock.calls as Array<[TemplateStringsArray, ...unknown[]]>).filter((call) => !isXapiTableProbe(call));
+}
+
+/** Probe answers `xapiTablePresent`; other raw queries are served from `results` in order, then []. */
+function mockRawQueries(xapiTablePresent: boolean, results: unknown[][] = []): void {
+  const queue = [...results];
+  db.$queryRaw.mockImplementation(async (strings: TemplateStringsArray) =>
+    XAPI_TABLE_PROBE.test(strings.join('')) ? [{ present: xapiTablePresent }] : queue.shift() ?? []);
+}
+
 beforeEach(() => {
   vi.resetAllMocks();
   db.user.findMany.mockResolvedValue([]);
   db.courseProgress.groupBy.mockResolvedValue([]);
   db.courseraCourseProgress.groupBy.mockResolvedValue([]);
   db.auditLog.groupBy.mockResolvedValue([]);
-  db.$queryRaw.mockResolvedValue([]);
+  mockRawQueries(true);
 });
 
 describe('operational enrollment cohort', () => {
@@ -46,19 +61,18 @@ describe('operational enrollment cohort', () => {
       courseEnrollments: [], coursesCompleted: [], courseraEnrollmentApproved: false,
       courseraEnrollmentApprovedAt: null, courseraEnrollmentApprovedById: null, memberProgramProgress: [],
     }]);
-    db.$queryRaw.mockResolvedValueOnce([{ userId: 'member-2' }])
-      .mockResolvedValueOnce([{ userId: 'member-2', count: BigInt(2) }]);
+    mockRawQueries(true, [[{ userId: 'member-2' }], [{ userId: 'member-2', count: BigInt(2) }]]);
     const result = await loadCourseraEnrollmentPipeline('org-A');
     expect(result.rows[0]).toMatchObject({ programSlug: '', programTitle: 'No active program assignment', signal: 'activity_unknown' });
     expect(result.summary.notApproved).toBe(1);
     expect(result.summary.stalled).toBe(0);
     expect(db.user.findMany.mock.calls[0][0].where.OR).toContainEqual({ id: { in: ['member-2'] } });
-    const candidatesQuery = db.$queryRaw.mock.calls[0];
+    const candidatesQuery = rawQueryCalls()[0];
     expect(candidatesQuery[0].join('')).toMatch(/WHERE u\.organization_id = .* AND u\.deleted_at IS NULL/);
     expect(candidatesQuery[0].join('')).toMatch(/cxe\.matched_user_id = u\.id AND cxe\.organization_id =/);
     expect(candidatesQuery[0].join('')).toMatch(/ORDER BY u\.full_name ASC, u\.id ASC\s+LIMIT 2001/);
     expect(candidatesQuery.slice(1)).toEqual(['org-A', 'org-A']);
-    expect(db.$queryRaw.mock.calls[0][0].join('')).not.toMatch(/MAX\(.*(?:created_at|received_at)/);
+    expect(rawQueryCalls()[0][0].join('')).not.toMatch(/MAX\(.*(?:created_at|received_at)/);
   });
 
   it('a completion imported today does not make old or undated learning recently active', async () => {
@@ -79,6 +93,28 @@ describe('operational enrollment cohort', () => {
     expect(result.summary.activeLast30Days).toBe(0);
     expect(db.courseProgress.groupBy.mock.calls[0][0]._max).toEqual({ lastActivityAt: true });
     expect(db.courseraCourseProgress.groupBy.mock.calls[0][0]._max).toEqual({ lastActivityTime: true });
+  });
+
+  it('degrades instead of failing when coursera_xapi_events is absent (db push databases): no xAPI reads, cohort still loads', async () => {
+    vi.resetModules();
+    const { loadCourseraEnrollmentPipeline: freshLoad } = await import('./courseraEnrollmentPipeline');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      mockRawQueries(false, [[{ userId: 'member-9' }]]);
+      db.user.findMany.mockResolvedValueOnce([{
+        id: 'member-4', fullName: 'Fixture Member', email: 'fixture@example.invalid', enrolledProgram: null,
+        courseEnrollments: [], coursesCompleted: [], courseraEnrollmentApproved: true,
+        courseraEnrollmentApprovedAt: null, courseraEnrollmentApprovedById: null, memberProgramProgress: [],
+      }]);
+      const result = await freshLoad('org-A');
+      expect(result.rows).toHaveLength(1);
+      expect(result.rows[0]).toMatchObject({ memberId: 'member-4', signal: 'approved_not_started' });
+      expect(rawQueryCalls()).toEqual([]);
+      expect(db.user.findMany.mock.calls[0][0].where.OR).toContainEqual({ id: { in: [] } });
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
 

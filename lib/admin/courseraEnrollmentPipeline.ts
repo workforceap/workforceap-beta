@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/db/prisma';
+import { courseraXapiEventsTablePresent } from '@/lib/coursera/progressQueries';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { memberProgramCompleted } from '@/lib/partner/memberProgress';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
@@ -68,7 +69,10 @@ export async function loadCourseraEnrollmentPipeline(organizationId: string): Pr
   // Match the final user ordering and bound IDs before moving them into Prisma.
   // The earliest 2,001 xAPI candidates are sufficient for the first 2,001 of
   // the union, even when the other cohort branches admit additional users.
-  const xapiCandidates = await prisma.$queryRaw<Array<{ userId: string }>>`
+  // `coursera_xapi_events` is created at runtime, not by db push; skip the
+  // xAPI evidence instead of failing the page where the table is absent.
+  const xapiPresent = await courseraXapiEventsTablePresent();
+  const xapiCandidates = !xapiPresent ? [] : await prisma.$queryRaw<Array<{ userId: string }>>`
     SELECT u.id AS "userId"
     FROM users u
     WHERE u.organization_id = ${organizationId} AND u.deleted_at IS NULL
@@ -132,7 +136,7 @@ export async function loadCourseraEnrollmentPipeline(organizationId: string): Pr
       _count: { _all: true },
       _max: { lastActivityAt: true },
     }),
-    prisma.$queryRaw<Array<{ userId: string; count: bigint }>>`
+    !xapiPresent ? Promise.resolve([] as Array<{ userId: string; count: bigint }>) : prisma.$queryRaw<Array<{ userId: string; count: bigint }>>`
       SELECT cxe.matched_user_id AS "userId", COUNT(*)::bigint AS count
       FROM coursera_xapi_events cxe
       JOIN users u ON u.id = cxe.matched_user_id

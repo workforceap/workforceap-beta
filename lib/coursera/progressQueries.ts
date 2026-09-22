@@ -166,6 +166,74 @@ const TEST_ACCOUNT_EXCLUSION_WHERE = Prisma.sql`AND email NOT LIKE '%test%'
   AND email NOT LIKE '%@example.org'`;
 
 /**
+ * `coursera_xapi_events` has no Prisma model and no CREATE migration: only
+ * `ensureCourseraMappingTables()` (lib/xapi/mappings.ts) creates it, at
+ * runtime, on the xAPI ingest / CSV import / identity-mapping paths. A
+ * database built with `prisma db push` (local dev, the CI database-contract
+ * lane, possibly a preview sharing the demo DB) never gets it, so the UNIONs
+ * below raised 42P01 on every /admin/students and training-roster load and
+ * the catch returned []/0 — unmatched Coursera learners silently vanished.
+ *
+ * Probe the catalog first (same idiom as lib/retention/cleanup.ts) and leave
+ * the xAPI branch out of the UNION when the table is absent. Only a `true`
+ * answer is memoised: the runtime creator can add the table later in the
+ * same process, and the catalog lookup is sub-millisecond, so `false` is
+ * re-checked on the next call. Warns once per process, not once per load.
+ */
+let courseraXapiEventsTableKnownPresent = false;
+let warnedCourseraXapiEventsTableMissing = false;
+
+export async function courseraXapiEventsTablePresent(): Promise<boolean> {
+  if (courseraXapiEventsTableKnownPresent) return true;
+  const rows = await prisma.$queryRaw<Array<{ present: boolean }>>`
+    SELECT to_regclass('public.coursera_xapi_events') IS NOT NULL AS present
+  `;
+  if (rows[0]?.present === true) {
+    courseraXapiEventsTableKnownPresent = true;
+    return true;
+  }
+  if (!warnedCourseraXapiEventsTableMissing) {
+    warnedCourseraXapiEventsTableMissing = true;
+    console.warn('[admin/coursera] coursera_xapi_events not present; xAPI learners skipped');
+  }
+  return false;
+}
+
+// The two fragments below are indented to the column of the enclosing
+// queries so the rendered SQL stays byte-identical to the previous inline
+// UNION branch (see lib/coursera/progressQueries.xapiTableProbe.test.ts).
+
+/** Unresolved xAPI actors as a third `UNION ALL` source for `loadUnmatchedLearners`. */
+function xapiUnmatchedLearnerBranch(organizationId: string): Prisma.Sql {
+  return Prisma.sql`UNION ALL
+        SELECT
+          LOWER(COALESCE(actor_email, actor_identifier)) AS email,
+          NULL::text AS name,
+          MAX(received_at) AS last_activity_time,
+          0::bigint AS course_count,
+          0::bigint AS badge_count,
+          COUNT(*) AS xapi_count,
+          MAX(actor_identifier) AS actor_identifier,
+          MAX(actor_home_page) AS actor_home_page
+        FROM coursera_xapi_events
+        WHERE completion_status IN ('unmatched', 'error')
+          AND COALESCE(actor_email, actor_identifier) IS NOT NULL
+          AND organization_id = ${organizationId}
+        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))`;
+}
+
+/** Unresolved xAPI actor emails as a third `UNION` source for the two count queries. */
+function xapiUnmatchedEmailBranch(organizationId: string): Prisma.Sql {
+  return Prisma.sql`UNION
+        SELECT LOWER(COALESCE(actor_email, actor_identifier)) AS email
+        FROM coursera_xapi_events
+        WHERE completion_status IN ('unmatched', 'error')
+          AND COALESCE(actor_email, actor_identifier) IS NOT NULL
+          AND organization_id = ${organizationId}
+        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))`;
+}
+
+/**
  * Distinct externalEmail across coursera_course_progress + coursera_badge_progress
  * where userId IS NULL — i.e. learners on Coursera that we have not bound to a
  * WAP user yet.
@@ -204,6 +272,7 @@ export async function loadUnmatchedLearners(
     // learner finishes everything) is not a course. Counting it doubled the
     // course count and halved the average for every unmatched learner.
     const learningPathIds = [...KNOWN_LEARNING_PATH_IDS];
+    const xapiBranch = (await courseraXapiEventsTablePresent()) ? xapiUnmatchedLearnerBranch(organizationId) : Prisma.empty;
 
     const learners = await prisma.$queryRaw<Row[]>`
       WITH unioned AS (
@@ -235,21 +304,7 @@ export async function loadUnmatchedLearners(
         WHERE user_id IS NULL
           AND organization_id = ${organizationId}
         GROUP BY LOWER(external_email)
-        UNION ALL
-        SELECT
-          LOWER(COALESCE(actor_email, actor_identifier)) AS email,
-          NULL::text AS name,
-          MAX(received_at) AS last_activity_time,
-          0::bigint AS course_count,
-          0::bigint AS badge_count,
-          COUNT(*) AS xapi_count,
-          MAX(actor_identifier) AS actor_identifier,
-          MAX(actor_home_page) AS actor_home_page
-        FROM coursera_xapi_events
-        WHERE completion_status IN ('unmatched', 'error')
-          AND COALESCE(actor_email, actor_identifier) IS NOT NULL
-          AND organization_id = ${organizationId}
-        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))
+        ${xapiBranch}
       )
       SELECT
         email AS "externalEmail",
@@ -385,6 +440,7 @@ export async function loadUnmatchedLearners(
  */
 export async function countHiddenTestAccountUnmatchedLearners(organizationId: string, options: { strict?: boolean } = {}): Promise<number> {
   try {
+    const xapiBranch = (await courseraXapiEventsTablePresent()) ? xapiUnmatchedEmailBranch(organizationId) : Prisma.empty;
     const rows = await prisma.$queryRaw<Array<{ count: bigint | number }>>`
       WITH unioned AS (
         SELECT LOWER(external_email) AS email
@@ -398,13 +454,7 @@ export async function countHiddenTestAccountUnmatchedLearners(organizationId: st
         WHERE user_id IS NULL
           AND organization_id = ${organizationId}
         GROUP BY LOWER(external_email)
-        UNION
-        SELECT LOWER(COALESCE(actor_email, actor_identifier)) AS email
-        FROM coursera_xapi_events
-        WHERE completion_status IN ('unmatched', 'error')
-          AND COALESCE(actor_email, actor_identifier) IS NOT NULL
-          AND organization_id = ${organizationId}
-        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))
+        ${xapiBranch}
       )
       SELECT COUNT(DISTINCT email)::bigint AS count
       FROM unioned
@@ -437,6 +487,7 @@ export async function countUnmatchedLearners(
 ): Promise<number> {
   try {
     const exclusion = options.includeTestAccounts ? Prisma.empty : TEST_ACCOUNT_EXCLUSION_WHERE;
+    const xapiBranch = (await courseraXapiEventsTablePresent()) ? xapiUnmatchedEmailBranch(organizationId) : Prisma.empty;
     const rows = await prisma.$queryRaw<Array<{ count: bigint | number }>>`
       WITH unioned AS (
         SELECT LOWER(external_email) AS email
@@ -450,13 +501,7 @@ export async function countUnmatchedLearners(
         WHERE user_id IS NULL
           AND organization_id = ${organizationId}
         GROUP BY LOWER(external_email)
-        UNION
-        SELECT LOWER(COALESCE(actor_email, actor_identifier)) AS email
-        FROM coursera_xapi_events
-        WHERE completion_status IN ('unmatched', 'error')
-          AND COALESCE(actor_email, actor_identifier) IS NOT NULL
-          AND organization_id = ${organizationId}
-        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))
+        ${xapiBranch}
       )
       SELECT COUNT(DISTINCT email)::bigint AS count
       FROM unioned
