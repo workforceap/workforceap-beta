@@ -20,7 +20,8 @@ const KEPT = new Set(['marketing.accessibility.helpCopy', 'apply.confirmationHel
 /**
  * Real promises the guard now catches but this lane could not rewrite:
  * `messages/{en,es,fr,pt}.json` are owned by the empty-state PR while it is open.
- * Each entry is a follow-up, not a policy line; delete the entry when the value
+ * Each entry is a follow-up, not a policy line, and the staleness case below fails
+ * once no catalogue still carries the promise: delete the entry when the value
  * (and its `marketing/src/**` mirrors plus the hardcoded copy in
  * `marketing/src/pages/mentor.astro` and `marketing/src/pages/partners.astro`)
  * is rewritten in the measured-wait / "we'll email you when" voice:
@@ -45,14 +46,17 @@ const DEFERRED = new Set(['marketing.mentor.waitlistCopy', 'marketing.partners.h
  *    days", "past 2 business days", "more than", "last", "de/après/após ...");
  *  - an hour range ("24–48 hours", "24 horas") or "within N hours";
  *  - a wait in weeks: "within/inside/in under N weeks" or "N–M weeks after you apply"
- *    (a program length, "complete the program in 4–8 weeks", is not a wait).
+ *    (a program length, "complete the program in 4–8 weeks", is not a wait; a member's
+ *    own action window, "practice within a week of certifying", would match, but it
+ *    lives in emails/, which this spec does not scan).
  * The range dash may be –, —, -, "to"/"a"/"à"/"or"/"ou", or the HTML entities
  * &ndash; / &mdash; / &#8211;.
  */
 const DASH = String.raw`(?:–|—|-|&ndash;|&mdash;|&#8211;|to|a|à|ou|or)`;
 const NUM = String.raw`(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|a few|several|a couple of|un|una|uno|unos|unas|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|algunos|algunas|une|deux|trois|quatre|cinq|sept|huit|neuf|dix|quelques|um|uma|dois|duas|três|quatro|sete|oito|nove|dez|alguns|algumas)`;
 const THRESHOLD_EN = String.raw`(?<!\b(?:after|past|than|over|least|beyond|every|for|of|last|previous|prior)\s+(?:about\s+|roughly\s+|around\s+)?)`;
-const THRESHOLD_ROM = String.raw`(?<!\b(?:de|tras|après|après|após|depuis|há|últimos|últimas|derniers|dernières)\s+)`;
+// `últim[oa]s` sits in its own lookbehind: without the `u` flag `\b` never matches before `ú`.
+const THRESHOLD_ROM = String.raw`(?<!\b(?:de|tras|après|após|depuis|há|derniers|dernières)\s+)(?<!últim[oa]s\s+)`;
 const PROMISE = new RegExp(
   [
     String.raw`\b(?:within|in|en|dentro de|sous|dans|em)\s+(?:about\s+|around\s+|unos\s+|environ\s+|cerca de\s+)?(?:\d+(?:\s*${DASH}\s*\d+)?|one|two|three|a few|un|una|dos|deux|um|uma|dois)\s+(?:business|working)\s+days?\b`,
@@ -61,7 +65,7 @@ const PROMISE = new RegExp(
     String.raw`${THRESHOLD_ROM}\b${NUM}(?:\s*${DASH}\s*${NUM})?\s+(?:d[ií]as?\s+h[áa]bil(?:es)?|dias?\s+[úu]t(?:il|eis)|jours?\s+ouvr\w*)`,
     String.raw`\d+\s*${DASH}\s*\d+\s*(?:hours|horas|heures)\b(?!\s+(?:per|par|por)\b)`,
     String.raw`\b(?:within|in|en|dentro de|sous|dans|em)\s+\d+\s+(?:hours|horas|heures)\b`,
-    String.raw`\b(?:within|inside|in under|in less than|dentro de|en menos de|em menos de|en moins d[e']\s*|sous|em até)\s*(?:about\s+|around\s+|unos\s+|environ\s+|cerca de\s+)?${NUM}(?:\s*${DASH}\s*${NUM})?\s+(?:weeks?|semanas?|semaines?)\b(?!\s+(?:of|de|d')\b)`,
+    String.raw`\b(?:within|inside|in under|in less than|dentro de|en menos de|em menos de|en moins d[e']\s*|sous|em até)\s*(?:about\s+|around\s+|unos\s+|environ\s+|cerca de\s+)?${NUM}(?:\s*${DASH}\s*${NUM})?\s+(?:weeks?|semanas?|semaines?)\b`,
     String.raw`\b${NUM}(?:\s*${DASH}\s*${NUM})?\s+(?:weeks?|semanas?|semaines?)\s+(?:after|from|después de|tras|après|após|depois de)\b`,
   ].join('|'),
   'i',
@@ -108,6 +112,8 @@ describe('message catalogues carry no fixed review-wait promise', () => {
     'Most orgs are referring inside a week.',
     'La mayoría de las organizaciones refieren en menos de una semana.',
     "La plupart des organisations réfèrent en moins d'une semaine.",
+    "You'll hear from us within a week of applying.",
+    'Te responderemos dentro de una semana de aplicar.',
   ])('the guard recognises %s', (value) => {
     expect(PROMISE.test(value)).toBe(true);
   });
@@ -129,9 +135,18 @@ describe('message catalogues carry no fixed review-wait promise', () => {
     "It's been two weeks — let's get you back on track with your training.",
     'No course progress in 3 weeks',
     'Try again in an hour.',
-    'Members who practice within a week of certifying place faster.',
+    'Guardamos los registros de los últimos 30 días hábiles.',
+    'Il a été très actif ces derniers dix jours ouvrés.',
   ])('the guard ignores a threshold, a staff SLA tile, a study-time estimate or the measured median: %s', (value) => {
     expect(PROMISE.test(value)).toBe(false);
+  });
+
+  it.each([...DEFERRED])('%s is still a promise in at least one catalogue (delete the DEFERRED entry once the copy is rewritten)', (key) => {
+    const stillPromised = CATALOGUES.some((relPath) => {
+      const catalogue = JSON.parse(readFileSync(path.join(process.cwd(), relPath), 'utf8')) as unknown;
+      return flatten(catalogue).some(([k, value]) => k === key && PROMISE.test(value));
+    });
+    expect(stillPromised).toBe(true);
   });
 
   it('translates the employer and partner thank-you leads instead of leaving English fallbacks', () => {
