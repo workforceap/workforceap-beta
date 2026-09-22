@@ -227,6 +227,13 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
   const lastWeekStart = addDays(weekStart, -7);
   const trailingFourWeekStart = addDays(weekStart, -28);
   const staleCutoff = addDays(now, -14);
+  // Organisation predicates for the rows that reach the scoreboard through a
+  // relation (#2467 follow-up). `orgId` null / undefined is the super-admin
+  // platform-wide view, the same convention as every other query here.
+  const orgUser = orgId ? { organizationId: orgId } : {};
+  const viaUser = orgId ? { user: orgUser } : {};
+  const viaAuthor = orgId ? { author: orgUser } : {};
+  const viaActor = orgId ? { actor: orgUser } : {};
 
   const [
     applications,
@@ -244,7 +251,7 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
     atRiskMembers,
   ] = await Promise.all([
     prisma.application.findMany({
-      where: { updatedAt: { gte: trailingFourWeekStart, lt: weekEndExclusive } },
+      where: { updatedAt: { gte: trailingFourWeekStart, lt: weekEndExclusive }, ...viaUser },
       select: { status: true, submittedAt: true, createdAt: true, updatedAt: true },
       take: ANALYTICS_COHORT_DETAIL_CAP,
       orderBy: { updatedAt: 'desc' },
@@ -263,10 +270,10 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
       take: ANALYTICS_COHORT_DETAIL_CAP,
       orderBy: { enrolledAt: 'desc' },
     }),
-    prisma.message.count({ where: { authorId: { not: null }, createdAt: { gte: weekStart, lt: weekEndExclusive } } }),
-    prisma.message.count({ where: { authorId: { not: null }, createdAt: { gte: lastWeekStart, lt: weekStart } } }),
-    prisma.applicationMessage.count({ where: { authorId: { not: null }, createdAt: { gte: weekStart, lt: weekEndExclusive } } }),
-    prisma.applicationMessage.count({ where: { authorId: { not: null }, createdAt: { gte: lastWeekStart, lt: weekStart } } }),
+    prisma.message.count({ where: { authorId: { not: null }, createdAt: { gte: weekStart, lt: weekEndExclusive }, ...viaAuthor } }),
+    prisma.message.count({ where: { authorId: { not: null }, createdAt: { gte: lastWeekStart, lt: weekStart }, ...viaAuthor } }),
+    prisma.applicationMessage.count({ where: { authorId: { not: null }, createdAt: { gte: weekStart, lt: weekEndExclusive }, ...viaAuthor } }),
+    prisma.applicationMessage.count({ where: { authorId: { not: null }, createdAt: { gte: lastWeekStart, lt: weekStart }, ...viaAuthor } }),
     prisma.user.count({
       where: {
         deletedAt: null,
@@ -293,6 +300,7 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
         eventName: 'ai_tool_run_completed',
         sessionId: { not: null },
         createdAt: { gte: weekStart, lt: weekEndExclusive },
+        ...viaUser,
       },
       select: { sessionId: true, metadata: true },
       take: ANALYTICS_COHORT_DETAIL_CAP,
@@ -303,6 +311,7 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
         action: 'application_status_change',
         targetType: 'application',
         createdAt: { gte: weekStart, lt: weekEndExclusive },
+        ...viaActor,
       },
       select: { actorUserId: true },
       take: ANALYTICS_COHORT_DETAIL_CAP,
@@ -313,6 +322,7 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
         authorId: { not: null },
         createdAt: { gte: weekStart, lt: weekEndExclusive },
         thread: { kind: 'member', memberId: { not: null } },
+        ...viaAuthor,
       },
       select: { authorId: true, thread: { select: { memberId: true } } },
       take: ANALYTICS_COHORT_DETAIL_CAP,
@@ -621,18 +631,24 @@ export type CertificationsCohortRow = {
   membersWithCert: number;
 };
 
-export async function getCertificationsCohortStats(): Promise<CertificationsCohortRow[]> {
+/**
+ * `orgId` null / undefined is the super-admin platform-wide view; an admin
+ * page passes its tenant (#2467 follow-up: this read had no org predicate).
+ */
+export async function getCertificationsCohortStats(orgId?: string | null): Promise<CertificationsCohortRow[]> {
+  const orgUser = orgId ? { organizationId: orgId } : {};
   const users = await prisma.user.findMany({
     take: 500,
     // Member accounts only, so "N of M members earned certs" is not diluted by
     // staff in M or credited a staff certification in N (number audit F7 class).
-    where: { deletedAt: null, ...MEMBER_ONLY_WHERE },
+    where: { deletedAt: null, ...MEMBER_ONLY_WHERE, ...orgUser },
     select: { id: true, enrolledProgram: true },
   });
   const byCohort = userIdsByCohort(users);
 
   const certs = await prisma.userCertification.findMany({
     take: 500,
+    where: orgId ? { user: orgUser } : {},
     select: { userId: true },
   });
 
