@@ -68,6 +68,10 @@ import GuardianConsentPage from '@/app/consent/[token]/page';
 import PublicQuestionnairePage from '@/app/q/[token]/page';
 import AdminCronsClient from '@/components/admin/AdminCronsClient';
 import AdminEmployersPage from '@/app/admin/employers/page';
+import MemberFeedbackModal from '@/components/portal/MemberFeedbackModal';
+import DeleteAccountButton from '@/components/portal/DeleteAccountButton';
+import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
+import AdminMemberQuickSummary from '@/components/admin/AdminMemberQuickSummary';
 
 /**
  * Review of #2478 (item 4) found eleven inline styles across seven portal/admin
@@ -324,6 +328,8 @@ const PORTAL_CHAIN_SHEETS = [
 const ROOT_CHAIN_SHEETS = ['css/main.css', 'css/marketing.css', 'css/marketing-depth.css', 'css/marketing-a11y.css', 'css/astryx-brand-bridge.css'];
 /** CSS modules that border from the token family (PortalShell role switcher; the root-layout cookie banner). */
 const BORDER_MODULE_SHEETS = ['components/portal/PortalRoleSwitcher.module.css', 'components/CookieConsentBanner.module.css'];
+/** CSS modules on the portal chain that fill from the tonal scale (member dashboard hero, coach chat, insight card). */
+const SURFACE_MODULE_SHEETS = ['components/portal/CoachChat.module.css', 'components/portal/TodayHero.module.css', 'components/portal/ProactiveInsightCard.module.css'];
 
 /** The root layout chain: css/main.css keeps dark defaults on :root and light overrides on html:not(.dark). */
 function rootChainTokens(scheme: 'light' | 'dark'): Map<string, string> {
@@ -348,6 +354,22 @@ describe('no stylesheet on either route chain carries a literal fallback on a su
     const css = readCss(sheet).replace(/\/\*[\s\S]*?\*\//g, '');
     const offenders = css.split('\n').filter((line) => SURFACE_LITERAL_FALLBACK.test(line));
     expect(offenders, `${sheet} literal surface fallbacks`).toEqual([]);
+  });
+});
+
+/*
+ * #2501's body named the sheet-level `var(--surface-container-*, <literal>)` fallbacks as a separate
+ * sweep. css/main.css defines the whole scale on `:root` and `html:not(.dark)` and loads on every
+ * route, so on the portal chain each literal was dead weight that read as a live colour; the portal
+ * sheets and the three portal CSS modules now read the token bare. css/main.css, css/marketing.css
+ * and css/enroll-school.css keep theirs (root-chain sweep, out of this lane), so only the portal
+ * chain is pinned here.
+ */
+describe('no stylesheet or CSS module on the portal chain carries a literal fallback on a surface-container token', () => {
+  it.each([...PORTAL_CHAIN_SHEETS, ...SURFACE_MODULE_SHEETS])('%s', (sheet) => {
+    const css = readCss(sheet).replace(/\/\*[\s\S]*?\*\//g, '');
+    const offenders = css.split('\n').filter((line) => SURFACE_CONTAINER_LITERAL_FALLBACK.test(line));
+    expect(offenders, `${sheet} literal surface-container fallbacks`).toEqual([]);
   });
 });
 
@@ -764,5 +786,55 @@ describe('tokenized public pages: borders read --outline-variant (root layout, n
     expect(submit).toBeDisabled();
     expect(backgroundOf(submit), 'disabled submit fill').toBe(ROOT_BORDER);
     expectNoLiteralTokenFallback(container);
+  });
+});
+
+/*
+ * ---------------------------------------------------------------------------
+ * Inline `var(--surface-container-*, <literal>)` sweep on the portal chain (#2501 inspection,
+ * note 3 follow-up). Same family as the tonal-scale guard above: the token is defined on every
+ * route, so the literal never painted; each site now reads it bare. The four surfaces below
+ * render here; the remaining sites (NotificationBell badge ring, InterestProfilerClient chip,
+ * MapToUserActions rows, the /admin/coursera notice and the AI-efficacy chart bar) are the same
+ * defined-token cleanup and are covered by the family regex whenever a spec renders them.
+ * ---------------------------------------------------------------------------
+ */
+describe('inline surface-container fills read the token bare (portal chain)', () => {
+  it('MemberFeedbackModal card paints --surface-container-lowest', () => {
+    const { container } = render(<MemberFeedbackModal open onClose={() => {}} />);
+    const card = screen.getByRole('dialog').firstElementChild as HTMLElement;
+    expect(backgroundOf(card), 'feedback modal card').toBe(PUBLIC_FILL);
+    expectNoLiteralTokenFallback(container);
+    expectNoLegacyName(container);
+  });
+
+  it('DeleteAccountButton confirm dialog paints --surface-container-low', () => {
+    const { container } = render(<DeleteAccountButton />);
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+    const card = screen.getByRole('heading', { name: 'Delete account permanently?' }).parentElement as HTMLElement;
+    expect(backgroundOf(card), 'delete confirm card').toBe('var(--surface-container-low)');
+    expectNoLiteralTokenFallback(container);
+    expectNoLegacyName(container);
+  });
+
+  it('MemberFirstCertProgressBar track paints --surface-container-high', () => {
+    const { container } = render(
+      <MemberFirstCertProgressBar progress={{ percent: 40, stageLabel: 'Midway', isComplete: false, stepsComplete: 2, stepsTotal: 5 }} />,
+    );
+    const track = screen.getByRole('progressbar');
+    expect(backgroundOf(track), 'progress track').toBe('var(--surface-container-high)');
+    expectNoLiteralTokenFallback(container);
+    expectNoLegacyName(container);
+  });
+
+  it('AdminMemberQuickSummary result box paints --surface-container-low', async () => {
+    fetchMock.mockResolvedValue(Response.json({ summary: 'Ada is on track: two courses done this month.' }));
+    const { container } = render(<AdminMemberQuickSummary memberId="member-1" />);
+    fireEvent.click(screen.getByRole('button'));
+    const text = await screen.findByText('Ada is on track: two courses done this month.');
+    const box = text.closest('div[style]') as HTMLElement;
+    expect(backgroundOf(box), 'quick summary box').toBe('var(--surface-container-low)');
+    expectNoLiteralTokenFallback(container);
+    expectNoLegacyName(container);
   });
 });

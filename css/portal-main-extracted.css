@@ -4293,7 +4293,7 @@ body:has(.dashboard-drawer-overlay.open) {
     line-height: 1.5;
 }
 .admin-super-messages-bubble.is-member {
-    background: var(--surface-container-high, #282a2c);
+    background: var(--surface-container-high);
     color: var(--color-on-surface);
     border-radius: 18px 18px 18px 4px;
     align-self: flex-start;
@@ -4318,7 +4318,7 @@ body:has(.dashboard-drawer-overlay.open) {
 }
 html.dark .admin-super-messages-sidebar,
 html.dark .admin-super-messages-detail {
-    background: var(--surface-container-lowest, #0c0e10);
+    background: var(--surface-container-lowest);
     border-color: rgba(255, 255, 255, 0.06);
 }
 html.dark .admin-super-messages-thread-btn {
@@ -5208,7 +5208,7 @@ html.dark .admin-super-messages-bubble.is-staff {
 }
 .training-course-progress__track {
     height: 6px;
-    background: var(--surface-container-highest, #e8e8e8);
+    background: var(--surface-container-highest);
     border-radius: var(--radius-full);
     overflow: hidden;
 }
@@ -5308,7 +5308,7 @@ html.dark .admin-super-messages-bubble.is-staff {
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-md);
     padding: var(--space-3) var(--space-4);
-    background: var(--surface-container-lowest, #fafafa);
+    background: var(--surface-container-lowest);
     min-width: 0;
     max-width: 200px;
 }
@@ -5358,7 +5358,7 @@ html.dark .admin-super-messages-bubble.is-staff {
     font-size: 0.85rem;
     padding: var(--space-3);
     border-radius: var(--radius-md);
-    background: var(--surface-container, #f5f5f5);
+    background: var(--surface-container);
     border: 1px solid var(--outline-variant);
     color: var(--color-on-surface-variant);
 }
@@ -5383,7 +5383,7 @@ html.dark .admin-super-messages-bubble.is-staff {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--color-on-surface-variant);
-    background: var(--surface-container-lowest, #fafafa);
+    background: var(--surface-container-lowest);
     position: sticky;
     top: 0;
     z-index: 1;
@@ -5402,7 +5402,7 @@ html.dark .admin-super-messages-bubble.is-staff {
 .coursera-unmatched-table .coursera-unmatched-actions {
     position: sticky;
     right: 0;
-    background: linear-gradient(90deg, transparent, var(--surface-container-lowest, #fff) 12%);
+    background: linear-gradient(90deg, transparent, var(--surface-container-lowest) 12%);
     box-shadow: -6px 0 8px -6px rgba(0, 0, 0, 0.08);
     z-index: 2;
     white-space: nowrap;
@@ -5434,7 +5434,7 @@ html.dark .admin-super-messages-bubble.is-staff {
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-md);
     padding: var(--space-4);
-    background: var(--surface-container-lowest, #fff);
+    background: var(--surface-container-lowest);
     /* Let the card grow to fit its contents. Explicit `overflow: visible`
        defends against any ancestor cascading `overflow: hidden` (e.g.
        from a future card-shell utility) which would otherwise clip the
@@ -6099,7 +6099,7 @@ html.dark .dashboard-program-badge.pending {
     gap: 0.65rem;
     padding: 0.85rem 1rem;
     border-radius: 0.65rem;
-    background: var(--surface-container-low, #f8f9fa);
+    background: var(--surface-container-low);
     border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.08));
 }
 
@@ -6135,13 +6135,13 @@ html.dark .admin-members-toolbar {
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
     border: 1px solid var(--outline-variant);
-    background: var(--surface-container-lowest, #fff);
+    background: var(--surface-container-lowest);
     color: var(--color-on-surface);
     font-size: 0.9rem;
 }
 
 html.dark .admin-members-search-input {
-    background: var(--surface-container-lowest, #121416);
+    background: var(--surface-container-lowest);
 }
 
 .admin-members-filter-toggle {
@@ -6203,13 +6203,13 @@ html.dark .admin-members-search-input {
     padding: 0.45rem 0.55rem;
     border-radius: 0.45rem;
     border: 1px solid var(--outline-variant);
-    background: var(--surface-container-lowest, #fff);
+    background: var(--surface-container-lowest);
     color: var(--color-on-surface);
     font-size: 0.875rem;
 }
 
 html.dark .admin-members-filter-select {
-    background: var(--surface-container-lowest, #121416);
+    background: var(--surface-container-lowest);
 }
 
 .admin-members-filter-actions {
@@ -9078,7 +9078,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
     border: 1px solid color-mix(in srgb, var(--color-accent, #8c0f37) 12%, var(--outline-variant, #e8e0dd));
     background: linear-gradient(
         165deg,
-        var(--surface-container-lowest, #fff) 0%,
+        var(--surface-container-lowest) 0%,
         color-mix(in srgb, var(--surface-container-low) 88%, transparent) 100%
     );
     box-shadow:

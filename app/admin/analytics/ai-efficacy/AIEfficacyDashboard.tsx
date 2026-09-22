@@ -366,7 +366,7 @@ export default function AIEfficacyDashboard({ orgId = null }: AIEfficacyDashboar
                     <Tooltip {...tooltipStyle} />
                     <Legend />
                     <Bar dataKey="placed" name="Placed %" stackId="a" fill={GREEN} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="notPlaced" name="Not Placed %" stackId="a" fill="var(--surface-container-highest, #282a2c)" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="notPlaced" name="Not Placed %" stackId="a" fill="var(--surface-container-highest)" radius={[0, 0, 4, 4]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

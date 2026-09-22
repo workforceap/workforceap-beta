@@ -1164,7 +1164,7 @@ export default async function AdminCourseraPage({
             style={{
               padding: '0.65rem 0.9rem',
               marginBottom: '0.6rem',
-              background: 'var(--surface-container-low, rgba(148, 163, 184, 0.08))',
+              background: 'var(--surface-container-low)',
               border: '1px dashed var(--outline-variant)',
               borderRadius: 8,
               fontSize: '0.85rem',

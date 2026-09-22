@@ -1,6 +1,7 @@
 import React from 'react';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readCss } from '@/lib/ui/cssTokenContrast.test-helpers';
 
 /**
  * #2497 follow-up (inspection finding 1): /api/admin/metrics reports
@@ -135,6 +136,12 @@ describe('/admin/dashboard threads the metrics payload through', () => {
     expect(tiles).toHaveLength(1);
     expect(tiles[0]).toHaveAttribute('href', '/admin/coursera');
     expect(notice.parentElement).toBe(tiles[0].parentElement);
+    // The notice spans the work-queue grid and leaves its margins to the kit rule: css/portal-kit.css
+    // sets `.wa-kit-training-notice { margin-block: … !important }`, which out-cascades any inline
+    // margin, and a <p> has no inline margin to reset, so an inline `margin: 0` was dead (#2503 inspection).
+    expect(notice.style.gridColumn).toBe('1 / -1');
+    expect(notice.style.margin).toBe('');
+    expect(readCss('css/portal-kit.css')).toMatch(/\.wa-kit-training-notice\s*\{[^}]*margin-block:\s*var\(--wa-pad-sm\)\s*!important/);
   });
 
   it.each([

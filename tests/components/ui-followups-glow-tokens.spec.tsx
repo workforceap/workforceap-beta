@@ -58,6 +58,10 @@ vi.mock('@/components/admin/BulkEmailModal', () => ({ default: () => null }));
 vi.mock('@/components/admin/BulkUpdateModal', () => ({ default: () => null }));
 vi.mock('@/components/admin/ConfirmDialog', () => ({ default: () => null }));
 vi.mock('@elevenlabs/client', () => ({ Conversation: { startSession: vi.fn() } }));
+// §3e renders the In-office sessions index (an async server component whose one read is mocked)
+// and /find-your-path (whose funnel tracker is mocked).
+vi.mock('@/lib/db/prisma', () => ({ prisma: { memberEvent: { findMany: vi.fn(async () => []) } } }));
+vi.mock('@/lib/analytics/events', () => ({ trackFunnelEvent: vi.fn() }));
 
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
 import VoiceCoachLauncherCard from '@/components/portal/VoiceCoachLauncherCard';
@@ -72,6 +76,12 @@ import {
 import {
   adminMessagingSurface, counselorStaffMessagingSurface, employerMessagingSurface, memberMessagingSurface, partnerMessagingSurface,
 } from '@/lib/portal/messagingSurfaces';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
+import MotivatingRecapClient from '@/app/(portal)/dashboard/weekly-recap/MotivatingRecapClient';
+import FindYourPathClient from '@/app/(decision-journey)/find-your-path/FindYourPathClient';
+import SessionsIndexBody from '@/components/portal/sessions/SessionsIndexBody';
 
 const SCHEMES: readonly Scheme[] = ['light', 'dark'];
 const AA = 4.5;
@@ -607,4 +617,103 @@ describe('css/portal.css accent shadows and gradient stops are color-mixes of --
     expect(declarations.length).toBeGreaterThan(10);
     for (const decl of declarations) expect(decl.replace(/\s+/g, ' ')).not.toMatch(ACCENT_LITERAL);
   });
+});
+
+// ── 3e. the last five accent shadow / gradient literals (#2503 inspection, §2 leftovers) ──
+// Four render here; app/(portal)/partner/page.tsx:968 (the "next step" guidance card, ?ui=legacy only)
+// needs the whole partner data layer mocked and is the same color-mix, reviewed by hand.
+describe('the leftover accent shadow / gradient literals are color-mixes of --color-accent (and --wa-gold)', () => {
+  const SEEDED = '#ad2c4d';
+  const OTHER_ORG = '#1d4ed8';
+  /** The portal token chain with OrgBrandingStyle's `:root { --org-accent; --color-accent }` override modelled. */
+  const withOrg = (scheme: Scheme, accent: string) => new Map(tokensFor(scheme)).set('--org-accent', accent).set('--color-accent', 'var(--org-accent)');
+  /** The root-layout chain (/find-your-path): css/main.css + wa-brand-tokens, dark defaults on :root, light on html:not(.dark). */
+  function rootChain(scheme: Scheme): Map<string, string> {
+    const main = readCss('css/main.css');
+    const tokens = loadRootTokens(readCss('css/wa-brand-tokens.css'), main);
+    for (const [k, v] of loadBlockTokens(main, scheme === 'light' ? 'html:not(.dark)' : 'html.dark')) tokens.set(k, v);
+    return tokens;
+  }
+  /** A gradient stop without its trailing `0%` / `100%` position. */
+  const stopColour = (stop: string) => stop.replace(/\s+\d+%$/, '');
+  /**
+   * `color-mix(in srgb, var(--color-accent) N%, transparent)`: the seeded org paints the exact rgba the
+   * literal did, another org's accent follows, and without an org override the tint flips with the scheme.
+   */
+  function expectAccentTint(mix: string, pct: number, label: string) {
+    expect(mix, label).toBe(`color-mix(in srgb, var(--color-accent) ${pct}%, transparent)`);
+    for (const scheme of SCHEMES) {
+      expect(parseColor(resolve(mix, withOrg(scheme, SEEDED), scheme)), `${label}: ${scheme} seeded org`).toEqual({ r: 173, g: 44, b: 77, a: pct / 100 });
+      expect(parseColor(resolve(mix, withOrg(scheme, OTHER_ORG), scheme)), `${label}: ${scheme} other org`).toEqual({ r: 29, g: 78, b: 216, a: pct / 100 });
+    }
+    expect(resolve(mix, tokensFor('light'), 'light'), `${label}: flips without an org override`).not.toBe(resolve(mix, tokensFor('dark'), 'dark'));
+  }
+  const STORED_RESULTS = {
+    version: 1,
+    programSlugs: ['it-support-professional-certificate-ibm', 'it-support-and-entry-level-cyber-security-certificate', 'ai-practitioner-professional-certificate-aws'],
+    careerMatch: null,
+  };
+  afterEach(() => { localStorage.clear(); });
+
+  for (const scheme of SCHEMES) {
+    it(`${scheme}: YouthDashboardNotice band runs --wa-gold 15% → --color-accent 8% (was rgba(240,205,131,.15) → rgba(173,44,77,.08))`, () => {
+      const { container } = renderIn(scheme, <YouthDashboardNotice age={17} />);
+      const band = container.firstElementChild as HTMLElement;
+      const gradient = computed(band, 'background');
+      expectNoLiteral(gradient, `${scheme} youth notice "${gradient}"`);
+      expect(gradient).toBe('linear-gradient(135deg, color-mix(in srgb, var(--wa-gold) 15%, transparent) 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 100%)');
+      expectTokensResolve(gradient, scheme, 'youth notice');
+      const [gold, accent] = gradientStops(gradient).map(stopColour);
+      const tokens = tokensFor(scheme);
+      const hue = colorOf('var(--wa-gold)', tokens, scheme);
+      expect(parseColor(resolve(gold, tokens, scheme))).toEqual({ r: hue.r, g: hue.g, b: hue.b, a: 0.15 });
+      // Brand gold is a light-dark() pair, so the gold stop follows the theme (the pale literal never did).
+      expect(resolve(gold, tokensFor('light'), 'light')).not.toBe(resolve(gold, tokensFor('dark'), 'dark'));
+      expectAccentTint(accent, 8, 'youth notice accent stop');
+    });
+
+    it(`${scheme}: MotivatingRecapClient hero tints --color-accent 10% → 2% (was rgba(173,44,77,.10) → .02)`, () => {
+      const { container } = renderIn(
+        scheme,
+        <MotivatingRecapClient recap={{ id: 'recap-1', readinessScoreSnapshot: 42 }} recapData={{ wins: [{ label: 'Applied to two roles' }] }} weekStart="2026-09-14" />,
+      );
+      const hero = container.querySelector('.portal-card') as HTMLElement;
+      const gradient = computed(hero, 'background');
+      expectNoLiteral(gradient, `${scheme} recap hero "${gradient}"`);
+      expect(gradient).toBe('linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 10%, transparent), color-mix(in srgb, var(--color-accent) 2%, transparent))');
+      const [start, end] = gradientStops(gradient);
+      expectAccentTint(start, 10, 'recap hero start stop');
+      expectAccentTint(end, 2, 'recap hero end stop');
+    });
+
+    it(`${scheme}: the /find-your-path Career Wrapped card ends on --color-accent 8% over --surface-container-low (root chain, was rgba(173, 44, 77, 0.08))`, async () => {
+      localStorage.setItem('find_your_path_results', JSON.stringify(STORED_RESULTS));
+      renderIn(scheme, <NextIntlClientProvider locale="en" messages={en}><FindYourPathClient /></NextIntlClientProvider>);
+      const heading = await screen.findByRole('heading', { name: 'Three story slides you can share' });
+      const card = heading.closest('section') as HTMLElement;
+      const gradient = computed(card, 'background');
+      expectNoLiteral(gradient, `${scheme} career wrapped "${gradient}"`);
+      expect(gradient).toBe('linear-gradient(135deg, var(--surface-container-low), color-mix(in srgb, var(--color-accent) 8%, transparent))');
+      const [canvas, end] = gradientStops(gradient);
+      // /find-your-path sits under app/(decision-journey), which imports no portal sheet: only css/main.css
+      // (+ wa-brand-tokens) resolve here, where --color-accent is the constant #ad2c4d on :root.
+      const root = rootChain(scheme);
+      expect(root.has('--wa-surface'), 'portal neutral must not leak onto the root chain').toBe(false);
+      expect(colorOf(canvas, root, scheme).a).toBe(1);
+      expect(parseColor(resolve(end, root, scheme))).toEqual({ r: 173, g: 44, b: 77, a: 0.08 });
+      expectAccentTint(end, 8, 'career wrapped end stop');
+    });
+
+    it(`${scheme}: the In-office sessions "Walk-in" card casts --color-accent 12% under its --color-accent border (was rgba(173,44,77,0.12))`, async () => {
+      const body = await SessionsIndexBody({ actor: 'counselor', actorUserId: 'counselor-1' });
+      const { container } = renderIn(scheme, body);
+      const card = screen.getByRole('heading', { name: 'Walk-in' }).closest('a') as HTMLElement;
+      expect(inline(card, 'border')).toBe('2px solid var(--color-accent)');
+      const shadow = computed(card, 'box-shadow');
+      expectNoLiteral(shadow, `${scheme} walk-in shadow "${shadow}"`);
+      expect(shadow).toBe('0 8px 24px color-mix(in srgb, var(--color-accent) 12%, transparent)');
+      expectAccentTint(shadow.slice('0 8px 24px '.length), 12, 'walk-in shadow');
+      expectNoLiteralShadows(container, `${scheme} sessions index`);
+    });
+  }
 });

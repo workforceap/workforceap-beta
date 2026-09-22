@@ -965,7 +965,7 @@ export default async function PartnerDashboardPage({
           <div
             className="active:wa-scale-[0.98] wa-transition-all"
             style={{
-              background: 'linear-gradient(135deg, rgba(173,44,77,0.1) 0%, rgba(173,44,77,0.03) 100%)',
+              background: 'linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 10%, transparent) 0%, color-mix(in srgb, var(--color-accent) 3%, transparent) 100%)',
               border: '1px solid rgba(173,44,77,0.18)',
               borderRadius: '0.875rem',
               padding: '1rem 1.125rem',

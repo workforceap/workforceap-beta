@@ -310,7 +310,7 @@ function QuizResultsView({
             padding: '1.25rem',
             borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--outline-variant)',
-            background: 'linear-gradient(135deg, var(--surface-container-low), rgba(173, 44, 77, 0.08))',
+            background: 'linear-gradient(135deg, var(--surface-container-low), color-mix(in srgb, var(--color-accent) 8%, transparent))',
           }}
         >
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', color: 'var(--color-accent)' }}>

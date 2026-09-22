@@ -113,7 +113,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
         style={{
           padding: '1.5rem 1.5rem 1.6rem',
           marginBottom: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(173,44,77,0.10), rgba(173,44,77,0.02))',
+          background: 'linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 10%, transparent), color-mix(in srgb, var(--color-accent) 2%, transparent))',
           border: '1px solid rgba(173,44,77,0.15)',
         }}
       >

@@ -100,7 +100,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
     >
       <div
         style={{
-          background: 'var(--surface-container-lowest, #fff)',
+          background: 'var(--surface-container-lowest)',
           borderRadius: '1rem',
           width: '100%',
           maxWidth: '420px',

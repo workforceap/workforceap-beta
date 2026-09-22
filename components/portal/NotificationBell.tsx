@@ -367,7 +367,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
       >
         <LegacyGlyph name="notifications" size={20} strokeWidth={totalUnread > 0 ? 2.5 : 2} />
         {totalUnread > 0 && (
-          <span style={{ position: 'absolute', top: '-2px', right: '-2px', minWidth: '1.125rem', height: '1.125rem', borderRadius: '9999px', background: 'var(--color-accent)', color: '#fff', fontSize: '0.8125rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 0.25rem', lineHeight: 1, border: '2px solid var(--surface-container-low, #1a1c1e)' }}>
+          <span style={{ position: 'absolute', top: '-2px', right: '-2px', minWidth: '1.125rem', height: '1.125rem', borderRadius: '9999px', background: 'var(--color-accent)', color: '#fff', fontSize: '0.8125rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 0.25rem', lineHeight: 1, border: '2px solid var(--surface-container-low)' }}>
             {totalUnread > 9 ? '9+' : totalUnread}
           </span>
         )}
