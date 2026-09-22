@@ -79,7 +79,8 @@ describe('the Points stat tile renders the weekly series the loader computes', (
     const spark = memberPointsSpark(buildMemberPointsTrend({ transactions: LEDGER }));
     const { container } = renderHome({ pointsSpark: spark });
 
-    const tiles = [...container.querySelectorAll('.wa-kit-card')].filter((card) =>
+    // The home tiles are the kit StatSparkTile (an Astryx Card, not `.wa-kit-card`).
+    const tiles = [...container.querySelectorAll('[data-testid="stat-spark-tile"]')].filter((card) =>
       card.querySelector('polyline'),
     );
     expect(tiles).toHaveLength(1);
@@ -113,7 +114,7 @@ describe('the Points stat tile renders the weekly series the loader computes', (
     expect(placeholders.length).toBeGreaterThan(0);
     for (const placeholder of placeholders) {
       expect(placeholder.textContent).toBe('No trend yet');
-      expect(placeholder.closest('.wa-kit-card')?.textContent).not.toContain('Points');
+      expect(placeholder.closest('[data-testid="stat-spark-tile"]')?.textContent).not.toContain('Points');
     }
     expect(sparklines(container)).toHaveLength(1);
   });

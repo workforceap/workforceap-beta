@@ -114,7 +114,6 @@ export function buildEnrollmentOutcomesPanel(source: EnrollmentOutcomesSource): 
       label: row.program,
       value: `${fmt(row.count)} · ${enrolledTotal > 0 ? Math.round((row.count / enrolledTotal) * 100) : 0}%`,
       pct: enrolledTotal > 0 ? Math.round((row.count / enrolledTotal) * 100) : 0,
-      color: 'info',
     }));
 
   return {

@@ -166,7 +166,6 @@ export async function getEngagementData(orgId?: string): Promise<EngagementData>
     label: TOOL_LABELS[t.toolType] ?? t.toolType,
     value: t.count,
     pct: Math.round((t.count / toolMax) * 100),
-    color: 'accent',
   }));
 
   // Weekly active by program — dedupe events to distinct (user) then bucket by
@@ -189,7 +188,6 @@ export async function getEngagementData(orgId?: string): Promise<EngagementData>
         label: programDisplayTitle(slug),
         value: count,
         pct: Math.round((count / progMax) * 100),
-        color: 'info',
       });
     }
   }

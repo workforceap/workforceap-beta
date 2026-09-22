@@ -39,11 +39,13 @@ export function toneClass(tone: KitTone | undefined): string | undefined {
 }
 
 /**
- * Fill / stroke for a component that takes `tone?: KitTone` (preferred) and a
- * deprecated `color?: KitColor`: the tone hook variable when a tone is set
- * (pair it with `toneClass(tone)` on the container), the legacy colour var
- * when only `color` is set, else `undefined` so the component's CSS default
- * (`--wa-accent`) paints.
+ * Fill / stroke for a component that takes `tone?: KitTone`: the tone hook
+ * variable when a tone is set (pair it with `toneClass(tone)` on the
+ * container), else `undefined` so the component's CSS default (`--wa-accent`)
+ * paints. The kit progress / rank primitives (ProgressBar, ProgressRing,
+ * StageTrack, SegmentedProgress, RankBars) take no colour prop any more; the
+ * optional legacy `color` remains only for the member points ledger, whose dot
+ * is a category (job / study / other), not a state.
  */
 export function tonePaint(tone: KitTone | undefined, color?: KitColor): string | undefined {
   if (tone) return 'var(--wa-kit-tone)';
