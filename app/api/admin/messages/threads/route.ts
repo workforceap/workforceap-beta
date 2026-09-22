@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_ROLE_NOT } from '@/lib/admin/memberOnlyWhere';
 import { getOrCreateMemberCounselorThread } from '@/lib/messages/counselorThread';
 import { getSlaStatusForThreads, getThreadIdsBreachingSla } from '@/lib/messages/superAdminMessageQueries';
 import type { MessageThreadKind, Prisma } from '@prisma/client';
@@ -319,7 +320,9 @@ function mapThreadRow(
       where: {
         id: memberId,
         deletedAt: null,
-        profile: { role: 'member' },
+        // Who can be messaged as a member is the one definition of "a member"
+        // (lib/admin/memberOnlyWhere.ts); role half only, so QA accounts still can.
+        NOT: MEMBER_ONLY_ROLE_NOT,
       },
       select: { id: true, fullName: true },
     }));

@@ -37,7 +37,8 @@ import AdminMembersPage from '@/app/admin/members/page';
 import AdminUsersPage from '@/app/admin/users/page';
 import { GET as exportMembers } from '@/app/api/admin/members/export/route';
 import AdminUsersManager from '@/components/admin/AdminUsersManager';
-import { normalizeDirectorySearch, buildDirectorySearchWhere } from '@/lib/admin/directorySearch';
+import { normalizeDirectorySearch, buildDirectorySearchWhere, buildUserDirectoryWhere } from '@/lib/admin/directorySearch';
+import { MEMBER_DEFINITION_ROSTER, MEMBER_ONLY_IDS, admittedIds } from '@/tests/helpers/prismaWhereMatches';
 
 type RecordValue = Record<string, unknown>;
 /** Evaluate the Prisma filter subset used by these directory fixture queries. */
@@ -168,6 +169,26 @@ describe('admin directory query composition', () => {
     const where = mocks.findMany.mock.calls[0][0].where;
     expect(matches(user('1'), where)).toBe(true);
     expect(matches(user('2', { profile: { role: 'member' } }), where)).toBe(false);
+  });
+
+  it('filters the legacy directory to members by the one member definition', async () => {
+    // #2457 follow-up: the "Member" filter used to be `profile.role = 'member'
+    // OR no profile`, its own definition. It is now the role half of the
+    // shared one, so the directory's members are /admin/members' members.
+    const where = buildUserDirectoryWhere({ searchQuery: '', roleFilter: 'member', staffOnly: false });
+    expect(admittedIds(where)).toEqual([...MEMBER_ONLY_IDS]);
+    expect(matches(MEMBER_DEFINITION_ROSTER.counselorWithBaselineRow, where)).toBe(false);
+    expect(matches(MEMBER_DEFINITION_ROSTER.roleless, where)).toBe(false);
+    expect(matches({ ...MEMBER_DEFINITION_ROSTER.rowOnlyMember, deletedAt: new Date() }, where)).toBe(false);
+
+    // The page passes that filter through to the query it issues.
+    await AdminUsersPage({ searchParams: Promise.resolve({ ui: 'legacy', role: 'member' }) });
+    const issued = mocks.findMany.mock.calls[0][0].where;
+    expect(admittedIds(issued, { organizationId: 'org-a' })).toEqual([...MEMBER_ONLY_IDS]);
+    expect(matches({ ...MEMBER_DEFINITION_ROSTER.employerWithBaselineRow, organizationId: 'org-a' }, issued)).toBe(false);
+    expect(matches({ ...MEMBER_DEFINITION_ROSTER.rowOnlyMember, organizationId: 'org-b' }, issued)).toBe(false);
+    // The legacy manager counts deleted accounts first, then the filtered directory.
+    expect(mocks.count.mock.calls[1][0].where).toEqual(issued);
   });
 
   it('redirects non-admins before directory queries', async () => {

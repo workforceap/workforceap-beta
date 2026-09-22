@@ -174,7 +174,8 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-.wizard-toggle-row label { font-size: 0.9rem; margin: 0; }
+.wizard-toggle-row label,
+.wizard-toggle-row .wizard-toggle-label { font-size: 0.9rem; margin: 0; }
 .wizard-toggle {
   display: flex;
   gap: 0;

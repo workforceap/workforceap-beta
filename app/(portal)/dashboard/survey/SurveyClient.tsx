@@ -503,29 +503,29 @@ export default function SurveyClient({ userId, placementId }: SurveyClientProps)
               flexShrink: 0,
             }}
           />
-          <div>
-            <p
+          <span
+            style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              color: 'var(--color-on-surface)',
+            }}
+          >
+            Share my feedback as a testimonial
+            <span
               style={{
-                margin: 0,
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                color: 'var(--color-on-surface)',
-              }}
-            >
-              Share my feedback as a testimonial
-            </p>
-            <p
-              style={{
-                margin: '0.2rem 0 0',
+                display: 'block',
+                marginTop: '0.2rem',
                 fontSize: '0.8125rem',
+                fontWeight: 400,
                 color: 'var(--color-on-surface-variant)',
                 lineHeight: 1.5,
               }}
             >
               I agree that WorkforceAP may use my anonymized responses in grant
               reports and promotional materials.
-            </p>
-          </div>
+            </span>
+          </span>
         </label>
       </div>
 

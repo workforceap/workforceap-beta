@@ -172,7 +172,7 @@ export default function MemberMergeClient() {
       <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
         {/* Primary selector */}
         <div style={{ position: 'relative' }}>
-          <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Primary (keep this record)</label>
+          <label htmlFor="member-merge-primary-search" style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Primary (keep this record)</label>
           {primary ? (
             <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
               <div>
@@ -191,6 +191,7 @@ export default function MemberMergeClient() {
             <>
               <input
                 ref={primaryRef}
+                id="member-merge-primary-search"
                 type="text"
                 value={primaryQuery}
                 onChange={(e) => setPrimaryQuery(e.target.value)}
@@ -219,7 +220,7 @@ export default function MemberMergeClient() {
 
         {/* Secondary selector */}
         <div style={{ position: 'relative' }}>
-          <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Duplicate (merge into primary)</label>
+          <label htmlFor="member-merge-secondary-search" style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Duplicate (merge into primary)</label>
           {secondary ? (
             <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
               <div>
@@ -238,6 +239,7 @@ export default function MemberMergeClient() {
             <>
               <input
                 ref={secondaryRef}
+                id="member-merge-secondary-search"
                 type="text"
                 value={secondaryQuery}
                 onChange={(e) => setSecondaryQuery(e.target.value)}
