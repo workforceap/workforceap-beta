@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Prisma } from '@prisma/client';
 import { getAdminMetrics } from './metrics';
+import { prisma } from '@/lib/db/prisma';
+import { SYSTEM_GENERATED_MEMBER_EVENTS } from './healthScore';
 
 const mockCache = {
   getCache: vi.fn(),
@@ -84,6 +87,42 @@ describe('admin metrics caching', () => {
     expect(result.degradedSlices.length).toBeGreaterThan(0);
     expect(mockCache.getCache).toHaveBeenCalledWith('admin:metrics:org-456');
     expect(mockCache.setCache).not.toHaveBeenCalled();
+  });
+
+  it('weekly active and inactive members count only events the member caused, never platform mail', async () => {
+    mockCache.getCache.mockResolvedValue(null);
+    // A tiny member_events table: two members who signed in, plus three
+    // members who only ever received a nudge mail. Mike's activity rule
+    // (2026-09-20): mail the platform sent *to* a member is not activity.
+    const events = [
+      { userId: 'm1', eventName: 'login' },
+      { userId: 'm2', eventName: 'login' },
+      { userId: 'm3', eventName: 'inactive_nudge_sent' },
+      { userId: 'm4', eventName: 'weekly_recap_generated' },
+      { userId: 'm5', eventName: 'application_reminder_sent' },
+    ];
+    vi.mocked(prisma.$queryRaw).mockImplementation((async (strings: TemplateStringsArray, ...values: unknown[]) => {
+      const q = Prisma.sql(strings, ...values);
+      if (!q.sql.includes('COUNT(DISTINCT me.user_id)')) return [];
+      // Evaluate the query's own exclusion list against the table.
+      const excludedSlot = q.sql.replace(/\s+/g, ' ').match(/me\.event_name NOT IN \(((?:\?,?)+)\)/);
+      const excluded = new Set<string>();
+      if (excludedSlot) {
+        const placeholders = excludedSlot[1].split(',').length;
+        const bound = q.values.filter((v): v is string => typeof v === 'string');
+        // The exclusion values are the trailing string params of the query.
+        for (const name of bound.slice(bound.length - placeholders)) excluded.add(name);
+      }
+      const active = new Set(events.filter((e) => !excluded.has(e.eventName)).map((e) => e.userId));
+      return [{ count: BigInt(active.size) }];
+    }) as never);
+    vi.mocked(prisma.memberEvent.findMany).mockResolvedValue([]);
+
+    const result = await getAdminMetrics('org-activity');
+
+    expect(SYSTEM_GENERATED_MEMBER_EVENTS).toEqual(expect.arrayContaining(['inactive_nudge_sent', 'weekly_recap_generated', 'application_reminder_sent']));
+    // 2 members signed in; the 3 who were only mailed are not "weekly active".
+    expect(result.weeklyActiveMembers).toBe(2);
   });
 
   it('bypasses shared cache during a read-only audit', async () => {

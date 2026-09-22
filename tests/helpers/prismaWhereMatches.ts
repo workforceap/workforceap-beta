@@ -3,14 +3,38 @@
  * produce against a plain fixture row, so a spec can assert on who a query
  * admits instead of on the wording of the filter. Handles scalars, `in` /
  * `notIn` / `not` / `equals`, string `contains` / `startsWith` / `endsWith`,
- * to-one relations (`is`, `null`), to-many relations (`some` / `none`) and
- * the `AND` / `OR` / `NOT` combinators (`NOT` as a list or a single filter).
+ * to-one relations (`is`, `null`), to-many relations (`some` / `none`),
+ * range filters on dates and numbers (`gt` / `gte` / `lt` / `lte`) and the
+ * `AND` / `OR` / `NOT` combinators (`NOT` as a list or a single filter).
  */
 type RecordValue = Record<string, unknown>;
 
+const RANGE_KEYS = ['gt', 'gte', 'lt', 'lte'] as const;
+
+function ordinal(value: unknown): number | null {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'number') return value;
+  return null;
+}
+
 export function matchesWhere(value: unknown, where: unknown): boolean {
   if (where === null || typeof where !== 'object') return value === where;
+  if (where instanceof Date) return value instanceof Date && value.getTime() === where.getTime();
   const filters = where as RecordValue;
+  if (RANGE_KEYS.some((key) => key in filters)) {
+    const v = ordinal(value);
+    if (v === null) return false;
+    for (const key of RANGE_KEYS) {
+      if (!(key in filters)) continue;
+      const bound = ordinal(filters[key]);
+      if (bound === null) return false;
+      if (key === 'gt' && !(v > bound)) return false;
+      if (key === 'gte' && !(v >= bound)) return false;
+      if (key === 'lt' && !(v < bound)) return false;
+      if (key === 'lte' && !(v <= bound)) return false;
+    }
+    return true;
+  }
   if ('equals' in filters) return value === filters.equals;
   if ('contains' in filters) return typeof value === 'string' && value.toLowerCase().includes(String(filters.contains).toLowerCase());
   if ('in' in filters) return (filters.in as unknown[]).includes(value);
