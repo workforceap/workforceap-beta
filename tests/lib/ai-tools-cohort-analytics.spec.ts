@@ -14,6 +14,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
 }));
 
 import { getAiToolsCohortStats, getAiToolUsageCounts } from '@/lib/admin/cohortAnalytics';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { ANALYTICS_COHORT_DETAIL_CAP } from '@/lib/db/scanCaps';
 import { prisma } from '@/lib/db/prisma';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
@@ -34,7 +35,7 @@ describe('AI tools raw voice analytics tenant scope', () => {
     await getAiToolsCohortStats('org-a');
 
     expect(prisma.user.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { deletedAt: null, organizationId: 'org-a' } }),
+      expect.objectContaining({ where: { deletedAt: null, ...MEMBER_ONLY_WHERE, organizationId: 'org-a' } }),
     );
     expect(prisma.aIToolResult.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { user: { organizationId: 'org-a' } } }),
@@ -83,7 +84,7 @@ describe('AI tools raw voice analytics tenant scope', () => {
       expect(sql).not.toContain('organization_id');
       expect(values.some((value) => typeof value === 'string' && value.startsWith('org-'))).toBe(false);
     }
-    expect(prisma.user.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { deletedAt: null } }));
+    expect(prisma.user.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { deletedAt: null, ...MEMBER_ONLY_WHERE } }));
     expect(prisma.aIToolResult.groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: {} }));
   });
 });

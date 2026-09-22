@@ -5,6 +5,7 @@ import { CAREER_OS_WORKFLOW } from '@/lib/workflows/careerOS';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getCache, setCache } from '@/lib/cache';
 import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ACTIVITY_EVENT_WHERE, SYSTEM_GENERATED_MEMBER_EVENTS } from '@/lib/admin/healthScore';
 
 /**
  * Every figure in this module counts member-role accounts only
@@ -270,6 +271,7 @@ async function countDistinctActiveUsers(orgId: string, since: Date): Promise<num
     INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
     ${memberOnlySqlJoin()}
     WHERE me.created_at >= ${since}
+      AND me.event_name NOT IN (${Prisma.join([...SYSTEM_GENERATED_MEMBER_EVENTS])})
   `;
   return sqlCount(rows[0]?.count);
 }
@@ -494,7 +496,7 @@ async function _getAdminMetricsUncached(orgId: string) {
 
   const inactiveSampleResult = await withTenantScope(orgId, (db) =>
     db.user.findMany({
-      where: { deletedAt: null, ...MEMBER_ONLY_WHERE, memberEvents: { none: { createdAt: { gte: fourteenDaysAgo } } } },
+      where: { deletedAt: null, ...MEMBER_ONLY_WHERE, memberEvents: { none: { createdAt: { gte: fourteenDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE } } },
       select: { id: true },
       orderBy: { updatedAt: 'asc' },
       take: 50,
