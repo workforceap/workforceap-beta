@@ -2645,6 +2645,10 @@
       {
         "file": "lib/admin/memberOnlyWhere.ts",
         "line": 3
+      },
+      {
+        "file": "lib/auth/roleAccess.ts",
+        "line": 19
       }
     ],
     "kind": "test-candidate",
@@ -11993,12 +11997,16 @@
     ],
     "localReferences": [
       {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 2
+      },
+      {
         "file": "lib/db/prisma.ts",
-        "line": 27
+        "line": 28
       },
       {
         "file": "app/api/admin/members/export/route.ts",
-        "line": 37
+        "line": 38
       }
     ],
     "kind": "test-candidate",
@@ -14554,40 +14562,44 @@
     ],
     "localReferences": [
       {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 2
+      },
+      {
         "file": "lib/db/prisma.ts",
-        "line": 15
+        "line": 16
       },
       {
         "file": "app/api/cron/inactive-nudge/route.ts",
-        "line": 52
-      },
-      {
-        "file": "app/api/cron/inactivity-nudge/route.ts",
         "line": 53
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "app/api/cron/inactivity-nudge/route.ts",
         "line": 54
       },
       {
-        "file": "lib/email.ts",
+        "file": "lib/db/prisma.ts",
         "line": 55
       },
       {
-        "file": "lib/admin/logCronRun.ts",
+        "file": "lib/email.ts",
         "line": 56
       },
       {
-        "file": "lib/cron/cronExecution.ts",
+        "file": "lib/admin/logCronRun.ts",
         "line": 57
       },
       {
-        "file": "lib/cron/cronCaps.ts",
+        "file": "lib/cron/cronExecution.ts",
         "line": 58
       },
       {
-        "file": "lib/notifications/create.ts",
+        "file": "lib/cron/cronCaps.ts",
         "line": 59
+      },
+      {
+        "file": "lib/notifications/create.ts",
+        "line": 60
       }
     ],
     "kind": "test-candidate",
@@ -17414,56 +17426,60 @@
     ],
     "localReferences": [
       {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 2
+      },
+      {
         "file": "lib/db/prisma.ts",
-        "line": 79
+        "line": 80
       },
       {
         "file": "app/api/partner/dashboard/route.ts",
-        "line": 93
-      },
-      {
-        "file": "app/api/partner/referrals/route.ts",
         "line": 94
       },
       {
-        "file": "app/api/partner/earnings/route.ts",
+        "file": "app/api/partner/referrals/route.ts",
         "line": 95
       },
       {
-        "file": "app/api/partner/members/route.ts",
+        "file": "app/api/partner/earnings/route.ts",
         "line": 96
       },
       {
-        "file": "app/api/partner/payout/route.ts",
+        "file": "app/api/partner/members/route.ts",
         "line": 97
       },
       {
-        "file": "lib/auth/server.ts",
+        "file": "app/api/partner/payout/route.ts",
         "line": 98
       },
       {
-        "file": "lib/auth/roles.ts",
+        "file": "lib/auth/server.ts",
         "line": 99
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/roles.ts",
         "line": 100
       },
       {
-        "file": "lib/partner/referralBundle.ts",
+        "file": "lib/db/prisma.ts",
         "line": 101
       },
       {
-        "file": "lib/partner/partnerPayout.ts",
+        "file": "lib/partner/referralBundle.ts",
         "line": 102
       },
       {
-        "file": "lib/stripe/connect.ts",
+        "file": "lib/partner/partnerPayout.ts",
         "line": 103
       },
       {
-        "file": "lib/tenant/organization.ts",
+        "file": "lib/stripe/connect.ts",
         "line": 104
+      },
+      {
+        "file": "lib/tenant/organization.ts",
+        "line": 105
       }
     ],
     "kind": "test-candidate",
@@ -19536,16 +19552,20 @@
     ],
     "localReferences": [
       {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 2
+      },
+      {
         "file": "lib/db/prisma.ts",
-        "line": 25
+        "line": 26
       },
       {
         "file": "app/admin/members/page.tsx",
-        "line": 54
+        "line": 55
       },
       {
         "file": "components/admin/MembersTable.tsx",
-        "line": 55
+        "line": 56
       }
     ],
     "kind": "test-candidate",
@@ -20764,24 +20784,28 @@
     ],
     "localReferences": [
       {
-        "file": "app/(portal)/partner/messages/page.tsx",
-        "line": 60
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 3
       },
       {
-        "file": "lib/auth/server.ts",
+        "file": "app/(portal)/partner/messages/page.tsx",
         "line": 61
       },
       {
-        "file": "lib/auth/roles.ts",
+        "file": "lib/auth/server.ts",
         "line": 62
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/roles.ts",
         "line": 63
       },
       {
-        "file": "lib/messages/portalThreads.ts",
+        "file": "lib/db/prisma.ts",
         "line": 64
+      },
+      {
+        "file": "lib/messages/portalThreads.ts",
+        "line": 65
       }
     ],
     "kind": "test-candidate",
@@ -28146,8 +28170,12 @@
     ],
     "localReferences": [
       {
-        "file": "lib/marketing/googleItSupportLanding.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 4
+      },
+      {
+        "file": "lib/marketing/googleItSupportLanding.ts",
+        "line": 6
       }
     ],
     "kind": "test-candidate",
@@ -28523,16 +28551,20 @@
     ],
     "localReferences": [
       {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 3
+      },
+      {
         "file": "lib/admin/boardOutcomes.ts",
-        "line": 203
+        "line": 264
       },
       {
         "file": "lib/admin/memberOutcomesSummary.ts",
-        "line": 204
+        "line": 265
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 205
+        "line": 266
       }
     ],
     "kind": "test-candidate",
@@ -29224,12 +29256,16 @@
     ],
     "localReferences": [
       {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 2
+      },
+      {
         "file": "lib/partner/attentionQueue.ts",
-        "line": 7
+        "line": 8
       },
       {
         "file": "lib/partner/attentionPagination.ts",
-        "line": 8
+        "line": 9
       }
     ],
     "kind": "test-candidate",
@@ -29252,16 +29288,20 @@
     ],
     "localReferences": [
       {
-        "file": "lib/partner/attentionQueue.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 12
       },
       {
-        "file": "lib/partner/attentionPagination.ts",
+        "file": "lib/partner/attentionQueue.ts",
         "line": 13
       },
       {
+        "file": "lib/partner/attentionPagination.ts",
+        "line": 14
+      },
+      {
         "file": "lib/content/programTitle.ts",
-        "line": 16
+        "line": 17
       }
     ],
     "kind": "test-candidate",

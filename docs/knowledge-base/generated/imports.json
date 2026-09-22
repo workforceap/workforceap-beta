@@ -41441,8 +41441,16 @@
   },
   {
     "from": "app/api/admin/reports/wioa/route.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "app/api/admin/reports/wioa/route.ts",
     "specifier": "@/lib/audit",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -41450,7 +41458,7 @@
   {
     "from": "app/api/admin/reports/wioa/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -41458,7 +41466,7 @@
   {
     "from": "app/api/admin/reports/wioa/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -46528,6 +46536,14 @@
     "package": "@prisma/client"
   },
   {
+    "from": "app/api/counselor/inactive-members/_inactiveMembersQuery.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
     "from": "app/api/counselor/inactive-members/route.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -49441,8 +49457,16 @@
   },
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "app/api/cron/inactive-nudge/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -49450,7 +49474,7 @@
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -95400,6 +95424,14 @@
     "target": "lib/admin/memberOnlyWhere.ts"
   },
   {
+    "from": "lib/admin/memberOnlyWhere.test.ts",
+    "specifier": "@/lib/auth/roleAccess",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roleAccess.ts"
+  },
+  {
     "from": "lib/admin/memberOnlyWhere.ts",
     "specifier": "@prisma/client",
     "line": 1,
@@ -122545,8 +122577,16 @@
   },
   {
     "from": "tests/api/admin-members-export-columns.spec.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/api/admin-members-export-columns.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 27,
+    "line": 28,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -122554,7 +122594,7 @@
   {
     "from": "tests/api/admin-members-export-columns.spec.ts",
     "specifier": "@/app/api/admin/members/export/route",
-    "line": 37,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/export/route.ts"
@@ -125953,8 +125993,16 @@
   },
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 15,
+    "line": 16,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -125962,7 +126010,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/app/api/cron/inactive-nudge/route",
-    "line": 52,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/inactive-nudge/route.ts"
@@ -125970,7 +126018,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/app/api/cron/inactivity-nudge/route",
-    "line": 53,
+    "line": 54,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/inactivity-nudge/route.ts"
@@ -125978,7 +126026,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 54,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -125986,7 +126034,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/lib/email",
-    "line": 55,
+    "line": 56,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -125994,7 +126042,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 56,
+    "line": 57,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -126002,7 +126050,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 57,
+    "line": 58,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -126010,7 +126058,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/lib/cron/cronCaps",
-    "line": 58,
+    "line": 59,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronCaps.ts"
@@ -126018,7 +126066,7 @@
   {
     "from": "tests/api/cron-inactive-nudge.spec.ts",
     "specifier": "@/lib/notifications/create",
-    "line": 59,
+    "line": 60,
     "kind": "import",
     "external": false,
     "target": "lib/notifications/create.ts"
@@ -129801,8 +129849,16 @@
   },
   {
     "from": "tests/api/partner-routes.spec.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 79,
+    "line": 80,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -129810,7 +129866,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/app/api/partner/dashboard/route",
-    "line": 93,
+    "line": 94,
     "kind": "import",
     "external": false,
     "target": "app/api/partner/dashboard/route.ts"
@@ -129818,7 +129874,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/app/api/partner/referrals/route",
-    "line": 94,
+    "line": 95,
     "kind": "import",
     "external": false,
     "target": "app/api/partner/referrals/route.ts"
@@ -129826,7 +129882,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/app/api/partner/earnings/route",
-    "line": 95,
+    "line": 96,
     "kind": "import",
     "external": false,
     "target": "app/api/partner/earnings/route.ts"
@@ -129834,7 +129890,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/app/api/partner/members/route",
-    "line": 96,
+    "line": 97,
     "kind": "import",
     "external": false,
     "target": "app/api/partner/members/route.ts"
@@ -129842,7 +129898,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/app/api/partner/payout/route",
-    "line": 97,
+    "line": 98,
     "kind": "import",
     "external": false,
     "target": "app/api/partner/payout/route.ts"
@@ -129850,7 +129906,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 98,
+    "line": 99,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -129858,7 +129914,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 99,
+    "line": 100,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -129866,7 +129922,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 100,
+    "line": 101,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -129874,7 +129930,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/partner/referralBundle",
-    "line": 101,
+    "line": 102,
     "kind": "import",
     "external": false,
     "target": "lib/partner/referralBundle.ts"
@@ -129882,7 +129938,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/partner/partnerPayout",
-    "line": 102,
+    "line": 103,
     "kind": "import",
     "external": false,
     "target": "lib/partner/partnerPayout.ts"
@@ -129890,7 +129946,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/stripe/connect",
-    "line": 103,
+    "line": 104,
     "kind": "import",
     "external": false,
     "target": "lib/stripe/connect.ts"
@@ -129898,7 +129954,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 104,
+    "line": 105,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -129906,7 +129962,7 @@
   {
     "from": "tests/api/partner-routes.spec.ts",
     "specifier": "next/server",
-    "line": 105,
+    "line": 106,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -132929,8 +132985,16 @@
   },
   {
     "from": "tests/app/admin-members-roster-numbers.spec.tsx",
-    "specifier": "react",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/app/admin-members-roster-numbers.spec.tsx",
+    "specifier": "react",
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -132938,7 +133002,7 @@
   {
     "from": "tests/app/admin-members-roster-numbers.spec.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 25,
+    "line": 26,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -132946,7 +133010,7 @@
   {
     "from": "tests/app/admin-members-roster-numbers.spec.tsx",
     "specifier": "@/app/admin/members/page",
-    "line": 54,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "app/admin/members/page.tsx"
@@ -132954,7 +133018,7 @@
   {
     "from": "tests/app/admin-members-roster-numbers.spec.tsx",
     "specifier": "@/components/admin/MembersTable",
-    "line": 55,
+    "line": 56,
     "kind": "import",
     "external": false,
     "target": "components/admin/MembersTable.tsx"
@@ -134577,8 +134641,16 @@
   },
   {
     "from": "tests/app/partner-contextual-messages.spec.tsx",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/app/partner-contextual-messages.spec.tsx",
     "specifier": "@/app/(portal)/partner/messages/page",
-    "line": 60,
+    "line": 61,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/partner/messages/page.tsx"
@@ -134586,7 +134658,7 @@
   {
     "from": "tests/app/partner-contextual-messages.spec.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 61,
+    "line": 62,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -134594,7 +134666,7 @@
   {
     "from": "tests/app/partner-contextual-messages.spec.tsx",
     "specifier": "@/lib/auth/roles",
-    "line": 62,
+    "line": 63,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -134602,7 +134674,7 @@
   {
     "from": "tests/app/partner-contextual-messages.spec.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 63,
+    "line": 64,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -134610,7 +134682,7 @@
   {
     "from": "tests/app/partner-contextual-messages.spec.tsx",
     "specifier": "@/lib/messages/portalThreads",
-    "line": 64,
+    "line": 65,
     "kind": "import",
     "external": false,
     "target": "lib/messages/portalThreads.ts"
@@ -143323,7 +143395,7 @@
     "from": "tests/lib/google-it-support-completion.spec.ts",
     "specifier": "@prisma/client",
     "line": 1,
-    "kind": "type",
+    "kind": "import",
     "external": true,
     "package": "@prisma/client"
   },
@@ -143337,8 +143409,16 @@
   },
   {
     "from": "tests/lib/google-it-support-completion.spec.ts",
-    "specifier": "@/lib/marketing/googleItSupportLanding",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/lib/google-it-support-completion.spec.ts",
+    "specifier": "@/lib/marketing/googleItSupportLanding",
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/googleItSupportLanding.ts"
@@ -143737,8 +143817,16 @@
   },
   {
     "from": "tests/lib/member-only-outcomes-population.spec.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/lib/member-only-outcomes-population.spec.ts",
     "specifier": "@/lib/admin/boardOutcomes",
-    "line": 203,
+    "line": 264,
     "kind": "import",
     "external": false,
     "target": "lib/admin/boardOutcomes.ts"
@@ -143746,7 +143834,7 @@
   {
     "from": "tests/lib/member-only-outcomes-population.spec.ts",
     "specifier": "@/lib/admin/memberOutcomesSummary",
-    "line": 204,
+    "line": 265,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOutcomesSummary.ts"
@@ -143754,7 +143842,7 @@
   {
     "from": "tests/lib/member-only-outcomes-population.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 205,
+    "line": 266,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -144537,8 +144625,16 @@
   },
   {
     "from": "tests/lib/partner-attention-page-loader.spec.ts",
-    "specifier": "@prisma/client",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/lib/partner-attention-page-loader.spec.ts",
+    "specifier": "@prisma/client",
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -144546,7 +144642,7 @@
   {
     "from": "tests/lib/partner-attention-page-loader.spec.ts",
     "specifier": "@/lib/partner/attentionQueue",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/partner/attentionQueue.ts"
@@ -144554,7 +144650,7 @@
   {
     "from": "tests/lib/partner-attention-page-loader.spec.ts",
     "specifier": "@/lib/partner/attentionPagination",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/partner/attentionPagination.ts"
@@ -144569,8 +144665,16 @@
   },
   {
     "from": "tests/lib/partner-attention-queue.spec.ts",
-    "specifier": "@/lib/partner/attentionQueue",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/lib/partner-attention-queue.spec.ts",
+    "specifier": "@/lib/partner/attentionQueue",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/partner/attentionQueue.ts"
@@ -144578,7 +144682,7 @@
   {
     "from": "tests/lib/partner-attention-queue.spec.ts",
     "specifier": "@/lib/partner/attentionPagination",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/partner/attentionPagination.ts"
@@ -144586,7 +144690,7 @@
   {
     "from": "tests/lib/partner-attention-queue.spec.ts",
     "specifier": "@/lib/content/programTitle",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"

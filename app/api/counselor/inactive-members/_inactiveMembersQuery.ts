@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 
 export function buildInactiveMembersQuery(orgId: string | null, counselorId: string | null, cutoffDate: Date) {
   const assignmentScope = counselorId
@@ -22,9 +23,9 @@ export function buildInactiveMembersQuery(orgId: string | null, counselorId: str
       p.profile_phone,
       MAX(me.created_at) as last_active_at
     FROM users u
-    JOIN profiles p ON p.user_id = u.id
+    LEFT JOIN profiles p ON p.user_id = u.id
     LEFT JOIN member_events me ON me.user_id = u.id
-    WHERE p.role = 'member'
+    WHERE ${memberOnlyRoleSql('u')}
     AND u.organization_id = ${orgId}
     ${assignmentScope}
     GROUP BY u.id, u.email, u.created_at, p.role, p.profile_phone

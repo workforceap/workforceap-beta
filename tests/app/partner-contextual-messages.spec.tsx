@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => {
@@ -101,7 +102,8 @@ describe('partner contextual messages page', () => {
         where: {
           partnerId: 'partner-1',
           partner: { organizationId: 'org-1' },
-          member: expect.objectContaining({ organizationId: 'org-1', deletedAt: null, profile: { role: 'member' } }),
+          // One definition of "a member" (WAP-182 item 3).
+          member: expect.objectContaining({ organizationId: 'org-1', deletedAt: null, ...MEMBER_ONLY_WHERE }),
         },
       }),
     );

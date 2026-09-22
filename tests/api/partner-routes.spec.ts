@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 // ─── Mocks ───
 vi.mock('next/server', () => {
@@ -418,10 +419,11 @@ describe('POST /api/partner/referrals', () => {
           partnerId: UUIDS.partner,
           memberId: UUIDS.member,
           partner: { organizationId: UUIDS.org, active: true },
+          // One definition of "a member" (WAP-182 item 3).
           member: expect.objectContaining({
             organizationId: UUIDS.org,
             deletedAt: null,
-            profile: { role: 'member' },
+            ...MEMBER_ONLY_WHERE,
           }),
         }),
       })
@@ -434,6 +436,32 @@ describe('POST /api/partner/referrals', () => {
     expect(await retry.json()).toEqual(body);
     expect(prisma.partnerReferral.create).not.toHaveBeenCalled();
   });
+
+  /**
+   * Would the route's member predicate admit a synthetic account whose
+   * `profiles.role` is `profileRole` and which holds no `user_roles` rows?
+   *
+   * The predicate is `MEMBER_ONLY_WHERE`'s role half (WAP-182 item 3), which
+   * rides in the single `NOT` list: "no member row AND the profile does not
+   * say member" excludes, and a staff/partner profile role excludes outright.
+   * A `where` carrying no role predicate at all admits everything, so
+   * dropping the filter fails these cases rather than passing them.
+   */
+  function memberPredicateAdmits(filter: Record<string, any>, profileRole: string): boolean {
+    const clauses = (filter.NOT ?? []) as Array<Record<string, any>>;
+    if (!clauses.some((clause) => clause.profile || clause.userRoles)) return true;
+    return !clauses.some((clause) => {
+      if (clause.email) return false;
+      if (clause.profile?.role?.in) return clause.profile.role.in.includes(profileRole);
+      if (clause.userRoles?.none) {
+        // No rows, so `none` matches; the nested OR decides on the profile role.
+        return (clause.OR as Array<Record<string, any>>).some(
+          (branch) => branch.profile?.role?.notIn && !branch.profile.role.notIn.includes(profileRole),
+        );
+      }
+      return false;
+    });
+  }
 
   it.each([
     { label: 'an unrelated same-org member', memberOrg: UUIDS.org, deletedAt: null, role: 'member', linked: false },
@@ -448,7 +476,10 @@ describe('POST /api/partner/referrals', () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: UUIDS.member, organizationId: memberOrg } as any);
     vi.mocked(prisma.partnerReferral.findFirst).mockImplementation(((args: any) => {
       const filter = args.where.member;
-      const authorized = linked && filter.organizationId === memberOrg && filter.deletedAt === deletedAt && filter.profile.role === role;
+      const authorized = linked
+        && filter.organizationId === memberOrg
+        && filter.deletedAt === deletedAt
+        && memberPredicateAdmits(filter, role);
       return Promise.resolve(authorized ? { id: 'unexpected-access' } : null);
     }) as typeof prisma.partnerReferral.findFirst);
 

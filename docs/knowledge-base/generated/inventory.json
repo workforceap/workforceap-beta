@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "65793d672f84ce644a353c29a444fd16d9322cb9d67825fa72d7ea21e64f1c4f",
+  "inputTreeSha256": "4ddfe12b5b6e37fd7326cafb1db3b6dbd52ccc6d4c30cca9a699ea8cc34b0e72",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -28722,36 +28722,36 @@
       "path": "app/api/admin/reports/wioa/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 5426,
-      "lines": 146,
-      "sha256": "00122b982acc67207fa68869e8ed88b52389309d4bc6fb913db4de0a942941f8",
+      "bytes": 5806,
+      "lines": 152,
+      "sha256": "b85f5a128b957d21304f3b8fa745aac1ad144ee0ad9f0621aa65aa6d60ffd413",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 146,
+          "line": 152,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "_GET",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getQuarterRange",
-          "line": 125,
+          "line": 131,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "aggregateDemographics",
-          "line": 132,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 146,
+          "line": 152,
           "kind": "Variable"
         }
       ],
@@ -31067,21 +31067,21 @@
       "path": "app/api/counselor/inactive-members/_inactiveMembersQuery.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 1052,
-      "lines": 37,
-      "sha256": "3740274d7ba992b83eaee8999259ea7bfa617f4ccc1b4a48352a7aca7137f6fd",
+      "bytes": 1130,
+      "lines": 38,
+      "sha256": "2e981c47340a89104e80a092af63acbbd3cef2199ecbdd87011e6389cc86601c",
       "binary": false,
       "exports": [
         {
           "name": "buildInactiveMembersQuery",
-          "line": 3,
+          "line": 4,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "buildInactiveMembersQuery",
-          "line": 3,
+          "line": 4,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -32766,46 +32766,46 @@
       "path": "app/api/cron/inactive-nudge/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 4876,
-      "lines": 123,
-      "sha256": "7313f6d56c0cea166cfef9f5e0a2ea9490d0a1e8f2ec3ed28f21239b032bda83",
+      "bytes": 5138,
+      "lines": 127,
+      "sha256": "f7378d8e22899ad7d33db668cfeb89675cf7a6f7e431e6e6f932ddad7f1982c6",
       "binary": false,
       "exports": [
         {
           "name": "maxDuration",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 122,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 123,
+          "line": 127,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "maxDuration",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "handle",
-          "line": 28,
+          "line": 29,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 122,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 123,
+          "line": 127,
           "kind": "Variable"
         }
       ],
@@ -86756,9 +86756,9 @@
       "path": "lib/admin/funderProgramMetrics.ts",
       "area": "libraries",
       "domain": "partners-funding",
-      "bytes": 5277,
+      "bytes": 5264,
       "lines": 154,
-      "sha256": "977d8482aee0427d74892eebc37bb0aa5b57e54c35664bfe31676bfe9e950c51",
+      "sha256": "d835766d0deeb44839510b497a7efa3b9d54298f5294ae029358167d31cbce80",
       "binary": false,
       "exports": [
         {
@@ -87528,66 +87528,76 @@
       "path": "lib/admin/memberOnlyWhere.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 9457,
-      "lines": 198,
-      "sha256": "5b3feb83bd625721598dda8520371be37ee809ed8e8b2dd6c9f8ffb813ba597b",
+      "bytes": 18727,
+      "lines": 404,
+      "sha256": "c80cf059b0b69a54a413ac5e605f82d5ce051fba2cab43feef4388d26eb2447e",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "SeededUser",
-          "line": 21,
+          "line": 28,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "member",
-          "line": 23,
+          "line": 37,
           "kind": "Variable"
         },
         {
           "name": "staff",
-          "line": 24,
+          "line": 49,
           "kind": "Variable"
         },
         {
-          "name": "RoleFilter",
-          "line": 32,
+          "name": "Filter",
+          "line": 59,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "EmailFilter",
-          "line": 33,
-          "kind": "TypeAliasDeclaration"
+          "name": "matchScalar",
+          "line": 61,
+          "kind": "FunctionDeclaration"
         },
         {
-          "name": "UserWhere",
-          "line": 34,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "emailMatches",
-          "line": 41,
+          "name": "clauseList",
+          "line": 75,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matches",
-          "line": 49,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "matchesProfile",
+          "line": 123,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "count",
+          "line": 146,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "MEMBER_ONLY",
+          "line": 150,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_OR_DOGFOOD",
+          "line": 151,
+          "kind": "Variable"
+        },
+        {
           "name": "seededTestMembers",
-          "line": 72,
+          "line": 158,
           "kind": "Variable"
         },
         {
           "name": "lookalikeRealMembers",
-          "line": 86,
+          "line": 172,
           "kind": "Variable"
-        },
-        {
-          "name": "count",
-          "line": 98,
-          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -87596,9 +87606,9 @@
       "path": "lib/admin/memberOnlyWhere.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 6599,
-      "lines": 150,
-      "sha256": "c7041a1f1701a91ce8ab21df0e7e17ea6205ff2bab57acdd52ee3578c6ae7333",
+      "bytes": 13499,
+      "lines": 285,
+      "sha256": "c01ea1a167fce26598a5f5e530de1473935da18daa976bc991d708a4cf13e7c5",
       "binary": false,
       "exports": [
         {
@@ -87627,28 +87637,58 @@
           "kind": "Variable"
         },
         {
+          "name": "MEMBER_ROLE_NAME",
+          "line": 67,
+          "kind": "Variable"
+        },
+        {
+          "name": "DOGFOOD_PROFILE_ROLES",
+          "line": 70,
+          "kind": "Variable"
+        },
+        {
+          "name": "NON_MEMBER_PROFILE_ROLES",
+          "line": 85,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_ROLE_NOT",
+          "line": 148,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_OR_DOGFOOD_ROLE_NOT",
+          "line": 151,
+          "kind": "Variable"
+        },
+        {
           "name": "MEMBER_ONLY_WHERE",
-          "line": 79,
+          "line": 169,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_OR_DOGFOOD_WHERE",
-          "line": 94,
+          "line": 186,
           "kind": "Variable"
         },
         {
           "name": "memberOnlyProfileWhere",
-          "line": 105,
+          "line": 201,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberOnlyEmailSql",
-          "line": 126,
+          "line": 241,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberOnlyRoleSql",
+          "line": 258,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberOnlySqlJoin",
-          "line": 146,
+          "line": 281,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87684,38 +87724,83 @@
           "kind": "Variable"
         },
         {
-          "name": "MEMBER_ONLY_WHERE",
-          "line": 79,
+          "name": "MEMBER_ROLE_NAME",
+          "line": 67,
           "kind": "Variable"
         },
         {
-          "name": "MEMBER_OR_DOGFOOD_WHERE",
+          "name": "DOGFOOD_PROFILE_ROLES",
+          "line": 70,
+          "kind": "Variable"
+        },
+        {
+          "name": "NON_MEMBER_PROFILE_ROLES",
+          "line": 85,
+          "kind": "Variable"
+        },
+        {
+          "name": "DOGFOOD_EXCLUDED_PROFILE_ROLES",
           "line": 94,
           "kind": "Variable"
         },
         {
+          "name": "memberRoleNotEntries",
+          "line": 131,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "MEMBER_ONLY_ROLE_NOT",
+          "line": 148,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_OR_DOGFOOD_ROLE_NOT",
+          "line": 151,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_WHERE",
+          "line": 169,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_OR_DOGFOOD_WHERE",
+          "line": 186,
+          "kind": "Variable"
+        },
+        {
           "name": "memberOnlyProfileWhere",
-          "line": 105,
+          "line": 201,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SQL_IDENTIFIER",
-          "line": 112,
+          "line": 212,
           "kind": "Variable"
         },
         {
           "name": "sqlIdentifier",
-          "line": 114,
+          "line": 214,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sqlRoleLiteralList",
+          "line": 225,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberOnlyEmailSql",
-          "line": 126,
+          "line": 241,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberOnlyRoleSql",
+          "line": 258,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberOnlySqlJoin",
-          "line": 146,
+          "line": 281,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -107522,9 +107607,9 @@
       "path": "lib/counselor/adminMemberScope.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 683,
-      "lines": 18,
-      "sha256": "ed9388527eb9a4c903b59c660953375ffb8a0b97c94417e5bc76af2c7616cae5",
+      "bytes": 1052,
+      "lines": 24,
+      "sha256": "3f51cea010f8cd0bc0e45a069ae0d131a894d681ccc2aed3b7875e7941bd1ff2",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -107534,9 +107619,9 @@
       "path": "lib/counselor/adminMemberScope.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 953,
+      "bytes": 985,
       "lines": 30,
-      "sha256": "a1c3e71884db4dd29a497a1d38f988ca5f0cb740b26fd65f45adac23d70bcfff",
+      "sha256": "acba95dc18f86cfbb4a7f5d83919cbcfea906e1fa82cd1b3d8fc4a4fa165852a",
       "binary": false,
       "exports": [
         {
@@ -124963,9 +125048,9 @@
       "path": "lib/marketing/googleItSupportLanding.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 7031,
-      "lines": 199,
-      "sha256": "f43cb98f28a77433c69702cb60048da6d289fd589ceec1219949fae8ec657983",
+      "bytes": 7006,
+      "lines": 198,
+      "sha256": "56229e02957f2ecb1f8a3189fdc711cdd07e864fe087a6d252527b5f9d51136b",
       "binary": false,
       "exports": [
         {
@@ -125015,7 +125100,7 @@
         },
         {
           "name": "loadGoogleItLandingMetrics",
-          "line": 190,
+          "line": 189,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -125092,7 +125177,7 @@
         },
         {
           "name": "loadGoogleItLandingMetrics",
-          "line": 190,
+          "line": 189,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -125261,9 +125346,9 @@
       "path": "lib/marketing/publicImpactStats.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 13645,
-      "lines": 400,
-      "sha256": "535651a94708fb31ab6b86aa2b4d338f6f5b791690233a328cb26387e42a8c28",
+      "bytes": 13581,
+      "lines": 398,
+      "sha256": "b0946ccc61e35ef012cc93be920e3b6ed4989841a717ff64f32290480a247e6e",
       "binary": false,
       "exports": [
         {
@@ -136231,9 +136316,9 @@
       "path": "lib/partner/attentionPagination.ts",
       "area": "libraries",
       "domain": "partners-funding",
-      "bytes": 6148,
+      "bytes": 6121,
       "lines": 97,
-      "sha256": "46ea57af27428f5729dfb05c0632f9dbe955e00c869434d0ce54091eb7fc227f",
+      "sha256": "52a2598154a46a8f745c11d497f9617c17b6ca81c25db78d8bae5483c4698ae4",
       "binary": false,
       "exports": [
         {
@@ -163984,45 +164069,45 @@
       "path": "tests/api/admin-members-export-columns.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 9011,
-      "lines": 222,
-      "sha256": "d6aab1a664537c2c188bd1c642777d60624713bbc681a2ac5cebb37ff4d4dcb3",
+      "bytes": 9268,
+      "lines": 226,
+      "sha256": "df97f5a5a8a53d61bea1fcf90b2c28dad4a8699d91a46a2b6f09a2cbfdc2f905",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "mocks",
-          "line": 10,
+          "line": 11,
           "kind": "Variable"
         },
         {
           "name": "DAY",
-          "line": 39,
-          "kind": "Variable"
-        },
-        {
-          "name": "daysAgo",
           "line": 40,
           "kind": "Variable"
         },
         {
-          "name": "MEMBER_ID",
+          "name": "daysAgo",
           "line": 41,
           "kind": "Variable"
         },
         {
+          "name": "MEMBER_ID",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
           "name": "RecordValue",
-          "line": 43,
+          "line": 44,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "member",
-          "line": 45,
+          "line": 46,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runExport",
-          "line": 69,
+          "line": 70,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -165987,9 +166072,9 @@
       "path": "tests/api/cron-inactive-nudge.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 9049,
-      "lines": 216,
-      "sha256": "15cfff41928b806cdcd2a469a7c0bc4f78dd0d40ab31b12fa9ec484a5e6c249b",
+      "bytes": 9223,
+      "lines": 219,
+      "sha256": "8444a54346171a18d016958ed4aa763bdd5d843e05504868ddb62d894f916c98",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -166736,9 +166821,9 @@
       "path": "tests/api/impact-page.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 17798,
-      "lines": 487,
-      "sha256": "e2846be319af305daef1b49d7f0b3ab57ddefa3cd78764d2ee884422a8dd4962",
+      "bytes": 18080,
+      "lines": 490,
+      "sha256": "904f36f3348d8274a3aa10436c4c17fe25e4afa725609d8538456ece7b5f06ff",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -167844,25 +167929,25 @@
       "path": "tests/api/partner-routes.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 28215,
-      "lines": 718,
-      "sha256": "dc907bce0dddeb31147e73887e8902e32577fceb07c9bb30e7411d6269a77f0f",
+      "bytes": 29653,
+      "lines": 749,
+      "sha256": "5013183eb4cbd3aea43863469676b73ed7c552992b19a889a9ff1eb020d3365a",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "UUIDS",
-          "line": 107,
+          "line": 108,
           "kind": "Variable"
         },
         {
           "name": "partnerCtx",
-          "line": 116,
+          "line": 117,
           "kind": "Variable"
         },
         {
           "name": "makeMember",
-          "line": 130,
+          "line": 131,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -169057,40 +169142,40 @@
       "path": "tests/app/admin-members-roster-numbers.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 11637,
-      "lines": 254,
-      "sha256": "51c520981f9969d1034669c68b5f027ac92d22d83c138e46e02d10e0522365ca",
+      "bytes": 11803,
+      "lines": 257,
+      "sha256": "1d858e31d2600b692a5f24730dd55aeec4e08a22c92c7fa1dfebbcb076ff827c",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "mocks",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "RecordValue",
-          "line": 57,
+          "line": 58,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "propsFor",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MEMBER_ID",
-          "line": 71,
-          "kind": "Variable"
-        },
-        {
-          "name": "PROGRAM",
           "line": 72,
           "kind": "Variable"
         },
         {
+          "name": "PROGRAM",
+          "line": 73,
+          "kind": "Variable"
+        },
+        {
           "name": "member",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -169929,9 +170014,9 @@
       "path": "tests/app/partner-contextual-messages.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5588,
-      "lines": 139,
-      "sha256": "dee2eed3ba3dee416f3bb3376b2e99ee4ac72c2b690320c0192fa5ce2f19dedb",
+      "bytes": 5706,
+      "lines": 141,
+      "sha256": "f0983317a9326b5766a5f616538ea059215717dcc11ef59bc1d94ec6290b5149",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -175438,25 +175523,25 @@
       "path": "tests/lib/board-outcomes-official-totals.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8179,
-      "lines": 163,
-      "sha256": "735bcbf21fab5628edc0e3b3d4fbafa81dfe72c67e2d499b18c089d10ec6de35",
+      "bytes": 8601,
+      "lines": 171,
+      "sha256": "ed6bc3bccdb6e9792421c496049d393b153e291bff6a5bd8dcb2f838179ffa43",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "MEMBER_JOIN",
-          "line": 31,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "flatten",
-          "line": 33,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "rawQueries",
-          "line": 39,
+          "line": 41,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -176474,9 +176559,9 @@
       "path": "tests/lib/google-it-support-completion.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 1943,
-      "lines": 49,
-      "sha256": "1177128bff688198c52adaa09b0df965d11d528f3833ed96528a0ae0e8cf826f",
+      "bytes": 2294,
+      "lines": 54,
+      "sha256": "203f98ad79bd8a622bcf10acec5ac3162f0d2a0b69a1bbe2fdcfb619deae8382",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -176815,65 +176900,80 @@
       "path": "tests/lib/member-only-outcomes-population.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 11782,
-      "lines": 262,
-      "sha256": "8a8739838a08f763b1fdedeb08d89a1636389a3680912c428c2870a3d07fb979",
+      "bytes": 15253,
+      "lines": 345,
+      "sha256": "f2f2f13585d24ab427cc503b250448bf7eb210893b35f0dce07aea5b97e2014b",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "SeededUser",
-          "line": 15,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ORG",
-          "line": 26,
+          "line": 29,
           "kind": "Variable"
         },
         {
           "name": "enrolledAt",
-          "line": 27,
-          "kind": "Variable"
-        },
-        {
-          "name": "placedAt",
-          "line": 28,
-          "kind": "Variable"
-        },
-        {
-          "name": "roster",
           "line": 30,
           "kind": "Variable"
         },
         {
+          "name": "placedAt",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "rowOnlyMember",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "staffWithBaselineRow",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "roster",
+          "line": 57,
+          "kind": "Variable"
+        },
+        {
           "name": "UserWhere",
-          "line": 89,
+          "line": 128,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "matchScalar",
-          "line": 91,
+          "line": 130,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesUser",
-          "line": 111,
+          "line": 150,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesPlacement",
-          "line": 138,
+          "line": 192,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "ProfileWhere",
+          "line": 206,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "matchesProfile",
-          "line": 152,
+          "line": 208,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "rawIsMemberOnly",
-          "line": 160,
+          "line": 221,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -177504,35 +177604,35 @@
       "path": "tests/lib/partner-attention-page-loader.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4125,
-      "lines": 57,
-      "sha256": "9932d8b5665e18fa529c8f708e19c22264a0f3b659c511adbc3354631b1c82cc",
+      "bytes": 4183,
+      "lines": 58,
+      "sha256": "7c01b94680acc7500abbdb047e565e155faed5ad04f06c068d5cb6f11b04d64b",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "h",
-          "line": 3,
+          "line": 4,
           "kind": "Variable"
         },
         {
           "name": "now",
-          "line": 9,
-          "kind": "Variable"
-        },
-        {
-          "name": "counts",
           "line": 10,
           "kind": "Variable"
         },
         {
-          "name": "key",
+          "name": "counts",
           "line": 11,
           "kind": "Variable"
         },
         {
-          "name": "referral",
+          "name": "key",
           "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "referral",
+          "line": 13,
           "kind": "Variable"
         }
       ],
@@ -177542,9 +177642,9 @@
       "path": "tests/lib/partner-attention-queue.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5957,
-      "lines": 127,
-      "sha256": "7b0afb97543288efc98f0bba9b6fca5751c86f64df9931f07e1fd2e0136e2729",
+      "bytes": 6153,
+      "lines": 130,
+      "sha256": "bca57524252a50f09e94d66bc5f72925975dbf0169d0de33f8b7130295ea6fb9",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -177555,22 +177655,22 @@
         },
         {
           "name": "loadFixtureRows",
-          "line": 15,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "programSlug",
-          "line": 18,
-          "kind": "Variable"
-        },
-        {
-          "name": "now",
           "line": 19,
           "kind": "Variable"
         },
         {
-          "name": "referral",
+          "name": "now",
           "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "referral",
+          "line": 21,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -177714,9 +177814,9 @@
       "path": "tests/lib/persisted-risk-command-center.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8592,
+      "bytes": 8414,
       "lines": 130,
-      "sha256": "63394aec7ba32a1e4ea2655b3ce037f52125ef79d6d4c7283130d75a4d117d8f",
+      "sha256": "c09c68de10ffa9fdd2c4657d573f210192d7e7871adf00e9b2665b852b79656e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -178119,9 +178219,9 @@
       "path": "tests/lib/staff-reporting-efficiency.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7455,
+      "bytes": 7514,
       "lines": 97,
-      "sha256": "7c294d496656f8dca61f25feaf6bff7bcae756138905358ae58797885d7d282f",
+      "sha256": "753e242dad3c455b564deba4d9a94f6f79cb8cec321333cc675b1c930ade6433",
       "binary": false,
       "exports": [],
       "declarations": [

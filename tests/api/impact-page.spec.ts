@@ -47,7 +47,7 @@ import {
   type PublicImpactStats,
 } from '@/lib/marketing/publicImpactStats';
 import { prisma } from '@/lib/db/prisma';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_NOT } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_NOT, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
 import { getProgramBySlug } from '@/lib/content/programs';
 
@@ -304,10 +304,13 @@ describe('Impact Page — getPublicImpactStats', () => {
       expect(countCall.where).toMatchObject({
         organizationId: ORG_ID,
         deletedAt: null,
-        profile: { role: 'member' },
-        email: { notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] },
-        NOT: MEMBER_ONLY_EXCLUDED_EMAIL_NOT,
+        // One definition of "a member" (WAP-182 item 3): email exclusion plus
+        // the role predicate, both carried in the helper's single `NOT`.
+        ...MEMBER_ONLY_WHERE,
       });
+      expect(countCall.where.email).toEqual({ notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] });
+      expect(countCall.where.NOT.slice(0, MEMBER_ONLY_EXCLUDED_EMAIL_NOT.length))
+        .toEqual(MEMBER_ONLY_EXCLUDED_EMAIL_NOT);
     });
 
     it('placement count matches prisma.placementRecord.count', async () => {

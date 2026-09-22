@@ -24,11 +24,13 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 
 import { getBoardOutcomes } from '@/lib/admin/boardOutcomes';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_EMAIL_WHERE, MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, MEMBER_ONLY_WHERE, memberOnlyProfileWhere, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { REPORT_SAMPLE_CAP, UNBOUNDED_SCAN_TAKE_FLOOR } from '@/lib/db/scanCaps';
 import { prisma } from '@/lib/db/prisma';
 
-const MEMBER_JOIN = "INNER JOIN profiles member_profile ON member_profile.user_id = u.id AND member_profile.role = 'member' AND u.email NOT IN (?,?,?,?) AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ?";
+// One definition of "a member" (WAP-182 item 3): read the join off the
+// shared helper so this pins "every headline total uses it", not its text.
+const MEMBER_JOIN = memberOnlySqlJoin().sql.replace(/\s+/g, ' ').trim();
 
 function flatten(call: unknown[]): { sql: string; values: unknown[] } {
   const [strings, ...values] = call as [TemplateStringsArray, ...unknown[]];
@@ -139,13 +141,19 @@ describe('getBoardOutcomes official totals', () => {
       for (const pattern of MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS) expect(q.values).toContain(pattern);
     }
 
-    // Demographics run on prisma.profile with the role predicate on the profile row itself.
+    // Demographics run on prisma.profile, where the profile row's own `role`
+    // and the `user_roles` rows behind the `user` relation are the two halves
+    // of the one member definition (WAP-182 item 3).
     expect(prisma.profile.groupBy).toHaveBeenCalledTimes(5);
+    const memberProfile = memberOnlyProfileWhere();
     for (const call of vi.mocked(prisma.profile.groupBy).mock.calls) {
-      const [args] = call as unknown as [{ where: { role?: string; user?: { email?: unknown; NOT?: unknown; enrolledProgram?: unknown } } }];
-      expect(args.where.role).toBe('member');
+      const [args] = call as unknown as [{ where: { OR?: unknown; NOT?: unknown; user?: { email?: unknown; NOT?: unknown; enrolledProgram?: unknown } } }];
+      expect(args.where.OR).toEqual(memberProfile.OR);
+      expect(args.where.NOT).toEqual(memberProfile.NOT);
       expect(args.where.user?.email).toEqual({ notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] });
-      expect(args.where.user?.NOT).toEqual(MEMBER_ONLY_WHERE.NOT);
+      // On `prisma.profile` the role predicate sits on the profile row, so the
+      // `user` relation carries the fixture-email exclusion only.
+      expect(args.where.user?.NOT).toEqual(MEMBER_ONLY_EMAIL_WHERE.NOT);
       expect(args.where.user?.enrolledProgram).toEqual({ not: null });
     }
 

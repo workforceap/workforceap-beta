@@ -1,5 +1,7 @@
-import type { PrismaClient } from '@prisma/client';
+import { Prisma, type PrismaClient } from '@prisma/client';
 import { describe, expect, it, vi } from 'vitest';
+
+import { memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 
 import { getGoogleItLandingMetrics } from '@/lib/marketing/googleItSupportLanding';
 
@@ -38,11 +40,14 @@ describe('getGoogleItLandingMetrics completion truth', () => {
       },
     });
 
-    const sqlTemplate = queryRaw.mock.calls[0]?.[0] as TemplateStringsArray;
-    const sqlText = Array.from(sqlTemplate).join(' ');
+    const [sqlTemplate, ...sqlValues] = queryRaw.mock.calls[0] as [TemplateStringsArray, ...unknown[]];
+    // Flattened, not the raw template: the member predicate arrives as an
+    // interpolated `Prisma.Sql` fragment, so joining the strings would hide it.
+    const sqlText = Prisma.sql(sqlTemplate, ...sqlValues).sql;
     expect(sqlText).toContain('COUNT(DISTINCT (mpp.user_id, progress_program.canonical_slug))');
     expect(sqlText).toContain('u.organization_id =');
-    expect(sqlText).toContain("p.role = 'member'");
+    // One definition of "a member" (WAP-182 item 3), not a hand-written join.
+    expect(sqlText).toContain(memberOnlyRoleSql('u').sql);
     expect(sqlText).toContain('mpp.courses_completed = progress_program.total_courses');
     expect(sqlText).not.toContain('average_percent');
   });

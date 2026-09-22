@@ -191,7 +191,7 @@
 | [app/api/admin/programs/export-twc/route.ts](../../../app/api/admin/programs/export-twc/route.ts) | 104 | administration | GET:104 |
 | [app/api/admin/reports/quarterly-outcomes/route.ts](../../../app/api/admin/reports/quarterly-outcomes/route.ts) | 57 | administration | GET:26 |
 | [app/api/admin/reports/wioa/generate/route.ts](../../../app/api/admin/reports/wioa/generate/route.ts) | 46 | partners-funding | POST:46 |
-| [app/api/admin/reports/wioa/route.ts](../../../app/api/admin/reports/wioa/route.ts) | 146 | partners-funding | GET:146 |
+| [app/api/admin/reports/wioa/route.ts](../../../app/api/admin/reports/wioa/route.ts) | 152 | partners-funding | GET:152 |
 | [app/api/admin/search/route.ts](../../../app/api/admin/search/route.ts) | 121 | administration | GET:10 |
 | [app/api/admin/settings/organization/route.ts](../../../app/api/admin/settings/organization/route.ts) | 94 | administration | GET:51, PATCH:93 |
 | [app/api/admin/subgroups/\[id\]/members/route.ts](../../../app/api/admin/subgroups/%5Bid%5D/members/route.ts) | 137 | administration | GET:12 |
@@ -257,7 +257,7 @@
 | [app/api/counselor/counselors/route.ts](../../../app/api/counselor/counselors/route.ts) | 49 | member-counselor | GET:12 |
 | [app/api/counselor/dashboard/route.ts](../../../app/api/counselor/dashboard/route.ts) | 143 | member-counselor | GET:8 |
 | [app/api/counselor/feedback/route.ts](../../../app/api/counselor/feedback/route.ts) | 192 | member-counselor | POST:85 |
-| [app/api/counselor/inactive-members/_inactiveMembersQuery.ts](../../../app/api/counselor/inactive-members/_inactiveMembersQuery.ts) | 37 | member-counselor | buildInactiveMembersQuery:3 |
+| [app/api/counselor/inactive-members/_inactiveMembersQuery.ts](../../../app/api/counselor/inactive-members/_inactiveMembersQuery.ts) | 38 | member-counselor | buildInactiveMembersQuery:4 |
 | [app/api/counselor/inactive-members/route.test.ts](../../../app/api/counselor/inactive-members/route.test.ts) | 16 | member-counselor |  |
 | [app/api/counselor/inactive-members/route.ts](../../../app/api/counselor/inactive-members/route.ts) | 72 | member-counselor | GET:10 |
 | [app/api/counselor/inbox-zero/bulk/route.ts](../../../app/api/counselor/inbox-zero/bulk/route.ts) | 364 | member-counselor | POST:67 |
@@ -295,7 +295,7 @@
 | [app/api/cron/data-cleanup/route.ts](../../../app/api/cron/data-cleanup/route.ts) | 67 | communications | maxDuration:9, GET:66, POST:67 |
 | [app/api/cron/deploy-health/route.ts](../../../app/api/cron/deploy-health/route.ts) | 81 | communications | maxDuration:7, GET:80, POST:81 |
 | [app/api/cron/employer-pending-applicants/route.ts](../../../app/api/cron/employer-pending-applicants/route.ts) | 172 | communications | maxDuration:12, GET:171, POST:172 |
-| [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 123 | communications | maxDuration:16, GET:122, POST:123 |
+| [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 127 | communications | maxDuration:17, GET:126, POST:127 |
 | [app/api/cron/inactivity-nudge/route.ts](../../../app/api/cron/inactivity-nudge/route.ts) | 111 | communications | maxDuration:15, GET:110, POST:111 |
 | [app/api/cron/interview-reminders/route.ts](../../../app/api/cron/interview-reminders/route.ts) | 98 | communications | maxDuration:11, GET:98 |
 | [app/api/cron/job-alerts/route.ts](../../../app/api/cron/job-alerts/route.ts) | 145 | communications | maxDuration:13, GET:144, POST:145 |
