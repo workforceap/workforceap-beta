@@ -121,10 +121,10 @@ export default function TestimonialsAdminClient() {
 
   const statusBadge = (status: Testimonial['status']) => {
     const styles: Record<string, React.CSSProperties> = {
-      PENDING: { background: 'rgba(245,158,11,0.12)', color: '#b45309' },
-      APPROVED: { background: 'rgba(74,155,79,0.12)', color: '#2f7a33' },
-      REJECTED: { background: 'rgba(173,44,77,0.12)', color: '#ad2c4d' },
-      PUBLISHED: { background: 'rgba(59,130,246,0.12)', color: '#1d4ed8' },
+      PENDING: { background: 'var(--wa-gold-soft)', color: 'var(--wa-gold-dark)' },
+      APPROVED: { background: 'var(--wa-success-soft)', color: 'var(--wa-success-dark)' },
+      REJECTED: { background: 'var(--wa-accent-soft)', color: 'var(--wa-accent-text)' },
+      PUBLISHED: { background: 'var(--wa-info-soft)', color: 'var(--wa-info-dark)' },
     };
     const icons: Record<string, React.ReactNode> = {
       PENDING: <Clock className="w-3 h-3" />,
@@ -188,9 +188,9 @@ export default function TestimonialsAdminClient() {
             key={s.label}
             onClick={() => setStatusFilter(statusFilter === s.label.toUpperCase() ? '' : s.label.toUpperCase())}
             style={{
-              background: statusFilter === s.label.toUpperCase() ? 'var(--color-dark)' : '#fff',
-              color: statusFilter === s.label.toUpperCase() ? '#fff' : 'inherit',
-              border: '1px solid var(--color-outline, #d4d4d8)',
+              background: statusFilter === s.label.toUpperCase() ? 'var(--wa-sidebar-bg)' : 'var(--wa-surface)',
+              color: statusFilter === s.label.toUpperCase() ? 'var(--wa-sidebar-text)' : 'inherit',
+              border: '1px solid var(--wa-border)',
               borderRadius: '0.625rem',
               padding: '0.875rem 1rem',
               textAlign: 'left',
@@ -229,7 +229,7 @@ export default function TestimonialsAdminClient() {
           style={{
             padding: '3rem 1.5rem',
             textAlign: 'center',
-            background: 'var(--surface-container-low, #f8f5f3)',
+            background: 'var(--wa-surface-2)',
             borderRadius: 'var(--radius-lg, 0.75rem)',
             color: 'var(--color-on-surface-variant)',
           }}
@@ -244,12 +244,12 @@ export default function TestimonialsAdminClient() {
         </div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse', background: '#fff', borderRadius: '0.625rem', overflow: 'hidden' }}>
+          <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse', background: 'var(--wa-surface)', borderRadius: '0.625rem', overflow: 'hidden' }}>
             <caption className="sr-only">
               Member testimonials with content, rating, publication status, source, and moderation actions.
             </caption>
             <thead>
-              <tr style={{ background: 'var(--surface-container-low, #f8f5f3)' }}>
+              <tr style={{ background: 'var(--wa-surface-2)' }}>
                 <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Member</th>
                 <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Content</th>
                 <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Rating</th>
@@ -260,7 +260,7 @@ export default function TestimonialsAdminClient() {
             </thead>
             <tbody>
               {rows.map((t) => (
-                <tr key={t.id} style={{ borderTop: '1px solid var(--color-outline, #eee)' }}>
+                <tr key={t.id} style={{ borderTop: '1px solid var(--wa-border)' }}>
                   <td style={{ padding: '0.75rem 1rem' }}>
                     <div style={{ fontWeight: 600 }}>{t.member.fullName}</div>
                     <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{t.member.email}</div>
@@ -275,7 +275,7 @@ export default function TestimonialsAdminClient() {
                       {t.content}
                     </div>
                     {t.rejectionReason && (
-                      <div style={{ fontSize: '0.8125rem', color: '#ad2c4d', marginTop: '0.25rem' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', marginTop: '0.25rem' }}>
                         <AlertCircle className="w-3 h-3" style={{ display: 'inline', verticalAlign: 'text-bottom' }} /> {t.rejectionReason}
                       </div>
                     )}
@@ -379,11 +379,11 @@ export default function TestimonialsAdminClient() {
 
 function actionBtnStyle(color: 'green' | 'red' | 'blue' | 'amber' | 'gray'): React.CSSProperties {
   const colors: Record<string, string> = {
-    green: '#4a9b4f',
-    red: '#ad2c4d',
-    blue: '#3b82f6',
-    amber: '#b45309',
-    gray: '#6b7280',
+    green: 'var(--wa-success-dark)',
+    red: 'var(--wa-accent-text)',
+    blue: 'var(--wa-info-dark)',
+    amber: 'var(--wa-gold-dark)',
+    gray: 'var(--wa-muted-strong)',
   };
   return {
     padding: '0.375rem',

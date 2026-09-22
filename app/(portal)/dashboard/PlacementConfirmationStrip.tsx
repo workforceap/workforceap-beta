@@ -36,22 +36,22 @@ export default function PlacementConfirmationStrip({ offers }: { offers: any[] }
   return (
     <section style={{ padding: '0 1.25rem', marginBottom: '1.25rem' }} aria-live="polite">
       {activeOffers.map(offer => (
-        <div key={offer.id} style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--color-green, #4a9b4f)', boxShadow: '0 6px 24px rgba(74,155,79,0.3)', marginBottom: '1rem' }}>
+        <div key={offer.id} style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--wa-success-dark)', boxShadow: '0 6px 24px color-mix(in srgb, var(--wa-success) 30%, transparent)', marginBottom: '1rem' }}>
           <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#fff', margin: '0 0 0.35rem' }}>Job Offer</p>
-                <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.3 }}>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--wa-on-success)', margin: '0 0 0.35rem' }}>Job Offer</p>
+                <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: 'var(--wa-on-success)', margin: 0, lineHeight: 1.3 }}>
                   Did you accept the role at {offer.company}?
                 </h2>
               </div>
-              <span className="material-symbols-outlined" style={{ color: '#fff', fontVariationSettings: "'FILL' 1", flexShrink: 0, marginLeft: '0.5rem' }} aria-hidden>work</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-success)', fontVariationSettings: "'FILL' 1", flexShrink: 0, marginLeft: '0.5rem' }} aria-hidden>work</span>
             </div>
-            <p style={{ fontSize: '0.8125rem', color: '#fff', margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--wa-on-success)', margin: 0, lineHeight: 1.5 }}>
               Let WorkforceAP know you accepted the offer. This does not change your support, access, or placement status on its own — it just alerts the team to review and follow up.
             </p>
             {errors[offer.id] ? (
-              <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>
+              <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-on-success)', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>
                 {errors[offer.id]}
               </p>
             ) : null}
@@ -59,14 +59,14 @@ export default function PlacementConfirmationStrip({ offers }: { offers: any[] }
               <button type="button"
                 onClick={() => handleConfirm(offer.id)}
                 disabled={loading[offer.id]}
-                style={{ flex: 1, display: 'block', width: '100%', background: '#fff', color: 'var(--color-green, #4a9b4f)', padding: '0.75rem', borderRadius: '0.625rem', textDecoration: 'none', textAlign: 'center', fontWeight: 700, fontSize: '0.875rem', boxSizing: 'border-box', border: 'none', cursor: 'pointer' }}
+                style={{ flex: 1, display: 'block', width: '100%', background: 'var(--wa-on-success)', color: 'var(--wa-success-dark)', padding: '0.75rem', borderRadius: '0.625rem', textDecoration: 'none', textAlign: 'center', fontWeight: 700, fontSize: '0.875rem', boxSizing: 'border-box', border: 'none', cursor: 'pointer' }}
               >
                 {loading[offer.id] ? 'Sending update...' : 'Yes — notify my team'}
               </button>
               <button type="button"
                 onClick={() => handleDismiss(offer.id)}
                 disabled={loading[offer.id]}
-                style={{ flex: 1, display: 'block', width: '100%', background: 'transparent', color: '#fff', padding: '0.75rem', borderRadius: '0.625rem', textDecoration: 'none', textAlign: 'center', fontWeight: 700, fontSize: '0.875rem', boxSizing: 'border-box', border: '1.5px solid #fff', cursor: 'pointer' }}
+                style={{ flex: 1, display: 'block', width: '100%', background: 'transparent', color: 'var(--wa-on-success)', padding: '0.75rem', borderRadius: '0.625rem', textDecoration: 'none', textAlign: 'center', fontWeight: 700, fontSize: '0.875rem', boxSizing: 'border-box', border: '1.5px solid var(--wa-on-success)', cursor: 'pointer' }}
               >
                 Not right now
               </button>

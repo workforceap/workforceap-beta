@@ -457,23 +457,23 @@ export default async function EmployerDashboardPage({
         <div className="employer-quick-actions" style={{ marginLeft:"1.5rem", marginRight:"1.5rem", marginTop:"1rem", display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:"0.75rem" }}>
           {totalApplications > 0 ? (
             <Link href="/employer/applications"
-              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', boxShadow: '0 4px 16px rgba(173,44,77,0.3)' }}>
+              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', boxShadow: '0 4px 16px color-mix(in srgb, var(--wa-accent) 30%, transparent)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span className="material-symbols-outlined" style={{ color: '#fff', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">grading</span>
-                <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-hero)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">grading</span>
+                <span style={{ fontWeight: 700, color: 'var(--wa-on-hero)', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>
                   {t('reviewCandidates', { count: totalApplications })}
                 </span>
               </div>
-              <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.7)' }} aria-hidden="true">arrow_forward</span>
+              <span className="material-symbols-outlined" style={{ color: 'color-mix(in srgb, var(--wa-on-hero) 70%, transparent)' }} aria-hidden="true">arrow_forward</span>
             </Link>
           ) : (
             <Link href="/employer/jobs/new"
-              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', boxShadow: '0 4px 16px rgba(173,44,77,0.3)' }}>
+              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', boxShadow: '0 4px 16px color-mix(in srgb, var(--wa-accent) 30%, transparent)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span className="material-symbols-outlined" style={{ color: '#fff', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">add_circle</span>
-                <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>{t('postYourFirstRole')}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-hero)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">add_circle</span>
+                <span style={{ fontWeight: 700, color: 'var(--wa-on-hero)', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>{t('postYourFirstRole')}</span>
               </div>
-              <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.7)' }} aria-hidden="true">arrow_forward</span>
+              <span className="material-symbols-outlined" style={{ color: 'color-mix(in srgb, var(--wa-on-hero) 70%, transparent)' }} aria-hidden="true">arrow_forward</span>
             </Link>
           )}
           <Link href="/employer/jobs/new"
@@ -669,13 +669,13 @@ export default async function EmployerDashboardPage({
           </div>
 
           <div className="portal-card portal-card--flat" style={{ background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', padding: '1.5rem', overflow: 'hidden', position: 'relative' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', bottom: '-1rem', right: '-1rem', fontSize: '6rem', opacity: 0.08, color: '#fff' }} aria-hidden="true">school</span>
+            <span className="material-symbols-outlined" style={{ position: 'absolute', bottom: '-1rem', right: '-1rem', fontSize: '6rem', opacity: 0.08, color: 'var(--wa-on-hero)' }} aria-hidden="true">school</span>
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{t('workforceAdvancement')}</h3>
-              <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--wa-on-hero)', marginBottom: '0.5rem' }}>{t('workforceAdvancement')}</h3>
+              <p style={{ fontSize: '0.8125rem', color: 'color-mix(in srgb, var(--wa-on-hero) 85%, transparent)', marginBottom: '1rem', lineHeight: 1.5 }}>
                 {t('accessCredentialedGraduates')}
               </p>
-              <Link href="/employer/jobs/new" style={{ display: 'inline-block', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.9)', color: 'var(--color-accent)', borderRadius: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none' }}>
+              <Link href="/employer/jobs/new" style={{ display: 'inline-block', padding: '0.5rem 1rem', background: 'var(--wa-hero-action-bg)', color: 'var(--wa-hero-action-text)', borderRadius: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none' }}>
                 {t('postAJob')}
               </Link>
             </div>

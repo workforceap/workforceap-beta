@@ -5,14 +5,17 @@ import { useTranslations } from 'next-intl';
 import StaleApplicationsBanner from './StaleApplicationsBanner';
 import PageHeader from '@/components/portal/PageHeader';
 
+/* `color` paints the card's left border and the stacked bar (fill hues);
+   `text` is the matching text-safe ramp for the stage label (4.5:1 on the
+   card surface in both modes). Training Complete keeps the brand gold. */
 const STAGES = [
-  { key: 'holding', label: 'Holding Room', color: '#6b7280', desc: 'Invited, not yet in Coursera' },
-  { key: 'funding', label: 'Funding Evaluated', color: '#f59e0b', desc: 'WIOA/qualification complete' },
-  { key: 'coursera', label: 'Coursera Enrolled', color: '#3b82f6', desc: 'In training' },
-  { key: 'paid', label: 'Payment Received', color: '#10b981', desc: 'Funding secured' },
-  { key: 'complete', label: 'Training Complete', color: '#a47f38', desc: 'Certificates earned' },
-  { key: 'ready', label: 'Workforce Ready', color: '#06b6d4', desc: 'Resume, interview, job match' },
-  { key: 'placed', label: 'Placed', color: '#f59e0b', desc: 'Employed' },
+  { key: 'holding', label: 'Holding Room', color: 'var(--wa-muted)', text: 'var(--wa-muted-strong)', desc: 'Invited, not yet in Coursera' },
+  { key: 'funding', label: 'Funding Evaluated', color: 'var(--wa-gold)', text: 'var(--wa-gold-dark)', desc: 'WIOA/qualification complete' },
+  { key: 'coursera', label: 'Coursera Enrolled', color: 'var(--wa-info)', text: 'var(--wa-info-dark)', desc: 'In training' },
+  { key: 'paid', label: 'Payment Received', color: 'var(--wa-success)', text: 'var(--wa-success-dark)', desc: 'Funding secured' },
+  { key: 'complete', label: 'Training Complete', color: 'var(--wa-accent)', text: 'var(--wa-accent-text)', desc: 'Certificates earned' },
+  { key: 'ready', label: 'Workforce Ready', color: 'color-mix(in srgb, var(--wa-info) 55%, var(--wa-success))', text: 'color-mix(in srgb, var(--wa-info-dark) 55%, var(--wa-success-dark))', desc: 'Resume, interview, job match' },
+  { key: 'placed', label: 'Placed', color: 'var(--wa-gold)', text: 'var(--wa-gold-dark)', desc: 'Employed' },
 ];
 
 type AtRiskStats = {
@@ -76,9 +79,9 @@ export default function PipelineLegacyView() {
             padding: '0.75rem 1rem',
             marginBottom: '1.5rem',
             borderRadius: '0.5rem',
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#b91c1c',
+            background: 'var(--wa-danger-soft)',
+            border: '1px solid color-mix(in srgb, var(--wa-danger) 35%, transparent)',
+            color: 'var(--wa-danger-text)',
             fontSize: '0.875rem',
           }}
         >
@@ -89,7 +92,7 @@ export default function PipelineLegacyView() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         {STAGES.map((stage) => (
           <div key={stage.key} className="portal-card portal-card--flat" style={{ borderLeft: `4px solid ${stage.color}`, padding: '1.25rem' }}>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: stage.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: stage.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
               {t(stage.key === 'holding' ? 'holdingRoom' : stage.key === 'funding' ? 'fundingEvaluated' : stage.key === 'coursera' ? 'courseraEnrolled' : stage.key === 'paid' ? 'paymentReceived' : stage.key === 'complete' ? 'trainingComplete' : stage.key === 'ready' ? 'workforceReady' : stage.key === 'placed' ? 'placed' : stage.label)}
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>
@@ -112,19 +115,19 @@ export default function PipelineLegacyView() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-          <div style={{ textAlign: 'center', padding: '1rem', background: '#fef2f2', borderRadius: '0.5rem' }}>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ textAlign: 'center', padding: '1rem', background: 'var(--wa-danger-soft)', borderRadius: '0.5rem' }}>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-danger-text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {t('criticalMembers')}
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#dc2626' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--wa-danger-text)' }}>
               {riskLoading ? '—' : (riskStats?.criticalCount ?? 0).toLocaleString()}
             </div>
           </div>
-          <div style={{ textAlign: 'center', padding: '1rem', background: '#f0fdf4', borderRadius: '0.5rem' }}>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ textAlign: 'center', padding: '1rem', background: 'var(--wa-success-soft)', borderRadius: '0.5rem' }}>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-success-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {t('alertsSentToday')}
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#16a34a' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--wa-success-dark)' }}>
               {riskLoading ? '—' : (riskStats?.alertsSentToday ?? 0).toLocaleString()}
             </div>
           </div>
@@ -137,7 +140,7 @@ export default function PipelineLegacyView() {
               {riskStats.counselorsWithPending.map((c) => (
                 <div key={c.email} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.625rem 0.875rem', background: 'var(--surface-container)', borderRadius: '0.375rem' }}>
                   <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{c.name}</span>
-                  <span style={{ fontSize: '0.8125rem', color: '#dc2626', fontWeight: 700 }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--wa-danger-text)', fontWeight: 700 }}>
                     {t('memberCount', { count: c.memberCount })}
                   </span>
                 </div>
