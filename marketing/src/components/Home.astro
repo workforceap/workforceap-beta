@@ -11,6 +11,12 @@ const p = lang === 'en' ? '' : `/${lang}`; // locale-prefixed internal links
   <div>
     <span class="eyebrow"><span class="dot"></span>{t('marketing.home.programsEyebrow')} · 501(c)(3)</span>
     <h1>{t('marketing.home.heroTagline')}<br><span class="grad-text">{t('marketing.home.heroTaglineAccent')}</span></h1>
+    <!-- Banner statement (marketing.home.missionStatement): en is Mike Brown's verbatim text (#2473);
+         es/fr/pt are machine translations pending native-speaker review — 2026-09-22. -->
+    <div class="mission">
+      <span class="mission__label">{t('marketing.home.heroBrandLine')}</span>
+      <p>{t('marketing.home.missionStatement')}</p>
+    </div>
     <p class="sub">{t('marketing.home.memberPromiseTitle')} — {t('marketing.home.trustYears')}.</p>
     <div class="cta">
       <a class="btn btn--primary" href={`${p}/apply`}>{t('marketing.home.ctaApply')} →</a>
