@@ -74,7 +74,8 @@
     "kb:generate": "node scripts/knowledge-index.mjs",
     "kb:query": "node scripts/knowledge-query.mjs",
     "kb:test": "node --test scripts/knowledge-index.test.mjs && python3 scripts/knowledge-links.test.py",
-    "kb:check": "node scripts/knowledge-index.mjs --check && python3 scripts/knowledge-links.py"
+    "kb:check": "node scripts/knowledge-index.mjs --check && python3 scripts/knowledge-links.py",
+    "kb:verify": "npm run kb:generate && npm run kb:check"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
