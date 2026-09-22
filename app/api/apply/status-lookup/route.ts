@@ -1,39 +1,48 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from 'zod';
-import { checkAuthRateLimit } from '@/lib/rate-limit';
+import { checkApplyStatusLookupEmailRateLimit, checkApplyStatusLookupRateLimit } from '@/lib/rate-limit';
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { captureApiError } from '@/lib/observability/captureApiError';
-
-import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { withApiGuc, withSystemGuc } from '@/lib/db/withRequestGuc';
+import { APPLICATION_STATUS_LINK_TTL_MINUTES } from '@/lib/apply/statusLinkToken';
+import { processStatusLinkRequest } from '@/lib/apply/statusLinkRequest';
 
 const bodySchema = z.object({
-  email: z.string().email().max(320).toLowerCase().trim(),
+  email: z.string().trim().toLowerCase().email().max(320),
 });
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
-// This endpoint does not look up applications (anti-enumeration, AUDIT §H-S4),
-// so the copy must not imply one happened. There is no SMS sender in this
-// codebase; decisions go out by email only.
-const genericMessage =
-  'This page cannot look up application status. If you applied, your decision will be sent by email to the address you applied with. To ask about your application now, contact the team at workforceap.org/contact, or submit a new application at workforceap.org/apply.';
+/**
+ * Product call 28a (Mike Brown, "Do it", 2026-09-22 15:57 UTC): a visitor
+ * enters the email they applied with; if an application exists we email a
+ * signed 30-minute link to its real status. There is no SMS sender in this
+ * codebase, so the copy promises email only, and no reply time is promised.
+ *
+ * Anti-enumeration (AUDIT §H-S4): the response below is the only 200 body
+ * this route can produce. The lookup and the send run in `after()`, once the
+ * response has gone out, so neither wording nor timing tells a caller
+ * whether the address is on file. Per-IP and per-email limits are counted
+ * for every address, known or not.
+ */
+const STATUS_LOOKUP_MESSAGE =
+  `If we have an application under that address, we've emailed you a link. It expires in ${APPLICATION_STATUS_LINK_TTL_MINUTES} minutes.`;
 
 const genericResponse = {
-  found: false,
-  message: genericMessage,
+  ok: true,
+  message: STATUS_LOOKUP_MESSAGE,
+  expiresInMinutes: APPLICATION_STATUS_LINK_TTL_MINUTES,
 };
+
+const NO_STORE = { 'Cache-Control': 'no-store' };
 
 export const POST = withApiGuc(async (request: NextRequest) => {
   try {
-    const ip = getClientIp(request);
-    const { success: rateOk } = await checkAuthRateLimit(`apply-status:${ip}`);
-    if (!rateOk) {
-      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    const ip = getClientIpFromRequest(request);
+    const { success: withinIpLimit } = await checkApplyStatusLookupRateLimit(ip);
+    if (!withinIpLimit) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': '3600', ...NO_STORE } },
+      );
     }
 
     let body: unknown;
@@ -47,10 +56,30 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     if (!parsed.success) {
       return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
     }
+    const email = parsed.data.email;
 
-    // Anti-enumeration: return identical generic response regardless of
-    // whether the email exists or has an application (AUDIT §H-S4).
-    return NextResponse.json(genericResponse);
+    const { success: withinEmailLimit } = await checkApplyStatusLookupEmailRateLimit(email);
+    if (!withinEmailLimit) {
+      // Counted for every address, so this 429 says nothing about whether an
+      // application exists; it only tells the caller to wait.
+      return NextResponse.json(
+        { error: 'Too many requests for this email. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': '3600', ...NO_STORE } },
+      );
+    }
+
+    // Everything that depends on whether the address is on file happens after
+    // the response is sent. `after()` callbacks do not inherit the request's
+    // GUC context, so the work runs under the system context explicitly.
+    after(async () => {
+      try {
+        await withSystemGuc(() => processStatusLinkRequest(email));
+      } catch (err) {
+        captureApiError(err, { route: 'apply/status-lookup/after' });
+      }
+    });
+
+    return NextResponse.json(genericResponse, { headers: NO_STORE });
   } catch (err) {
     captureApiError(err, { route: 'apply/status-lookup' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
