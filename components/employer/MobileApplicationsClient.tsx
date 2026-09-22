@@ -3,19 +3,14 @@
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
-import { statusLabel } from '@/lib/employer/statusLabel';
+import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
 import { StatusTag, type KitTone } from '@/components/portal/kit';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 
 const STATUS_CHIP_FILTERS = [
   { label: 'All', value: 'all' },
-  { label: 'New', value: 'pending' },
-  { label: 'Under Review', value: 'reviewing' },
-  { label: 'Interview', value: 'interview' },
-  { label: 'Offer', value: 'offered' },
-  { label: 'Hired', value: 'hired' },
-  { label: 'Declined', value: 'rejected' },
+  ...JOB_APPLICATION_STATUS_KEYS.map((value) => ({ label: jobApplicationStatusLabel(value, 'employer'), value })),
 ];
 
 const STATUS_ACTIONS: Record<string, string[]> = {
@@ -37,16 +32,9 @@ function statusTone(status: string): KitTone {
   return 'muted';
 }
 
+/** Employer words from the one job-application vocabulary; also labels the move-to buttons. */
 function applicationStatusLabel(status: string): string {
-  const map: Record<string, string> = {
-    pending: 'New',
-    reviewing: 'Under Review',
-    interview: 'Interview',
-    offered: 'Offer',
-    hired: 'Hired',
-    rejected: 'Declined',
-  };
-  return map[status] ?? statusLabel(status);
+  return jobApplicationStatusLabel(status, 'employer');
 }
 
 function initials(name: string | null): string {
