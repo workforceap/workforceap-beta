@@ -336,7 +336,7 @@ export default async function AdminEmployersPage({
                 <div key={e.id} className="portal-activity-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.75rem' }}>
                   {/* Header row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-                    <div style={{ width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--wa-on-hero)', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
+                    <div style={{ width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem', background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--wa-on-hero)', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
                       {initials}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>

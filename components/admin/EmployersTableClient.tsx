@@ -223,7 +223,7 @@ export default function EmployersTableClient({
               width: '2rem',
               height: '2rem',
               borderRadius: '0.5rem',
-              background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
+              background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

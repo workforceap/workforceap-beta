@@ -338,6 +338,17 @@ describe('the text tokens this sweep introduced clear WCAG AA in both themes', (
     expect(contrast(on, fill), `${scheme} --wa-on-success on --wa-success-dark`).toBeGreaterThanOrEqual(4.5);
   });
 
+  it.each(['light', 'dark'] as const)('%s: --wa-on-hero text reads on both stops of the employer hero gradient', (scheme) => {
+    // The employer quick actions, Workforce Advancement card and employer
+    // initials tiles paint white text on a crimson gradient; the gradient is
+    // pinned to the mode-neutral hero pair, not --wa-accent (which lightens
+    // to #e0658a in dark and would drop white to 3.3:1).
+    const on = colorOf('var(--wa-on-hero)', tokens, scheme);
+    for (const stop of ['var(--wa-hero-crimson-dark)', 'var(--wa-hero-crimson)']) {
+      expect(contrast(on, colorOf(stop, tokens, scheme)), `${scheme} --wa-on-hero on ${stop}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it('the seven job-application accents stay distinguishable from each other', () => {
     for (const scheme of ['light', 'dark'] as const) {
       const rgb = Object.values(JOB_APPLICATION_STATUS_ACCENT).map((a) => colorOf(a, tokens, scheme));
