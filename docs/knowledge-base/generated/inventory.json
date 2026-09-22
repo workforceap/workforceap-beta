@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "a37d93030224139c2805bf3db1fa1eb784ef62c043d3bacb6592d49617447ec1",
+  "inputTreeSha256": "59d7cb2699f9fd7287f5acb4c6fcc73521d650aa115b4d263e72345dc2998556",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -44065,9 +44065,9 @@
       "path": "app/dev/member/home/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 5912,
-      "lines": 159,
-      "sha256": "8e30e9e372280e67fd0bcd9224e6726b6d89cf096ea9409a4abe3211c21bf9e4",
+      "bytes": 5751,
+      "lines": 157,
+      "sha256": "6f7bf7edd141ea98b0d2dc37e8449abbd02cc303c3dfc4957860cc259b16ecdc",
       "binary": false,
       "exports": [
         {
@@ -44077,7 +44077,7 @@
         },
         {
           "name": "default",
-          "line": 44,
+          "line": 42,
           "kind": "FunctionDeclaration",
           "localName": "DevMemberHomePage"
         }
@@ -44095,7 +44095,7 @@
         },
         {
           "name": "DevMemberHomePage",
-          "line": 44,
+          "line": 42,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -76036,9 +76036,9 @@
       "path": "docs/HANDOFF.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 7480,
+      "bytes": 7496,
       "lines": 104,
-      "sha256": "89a2073d9d4595c4627d7543d7ee6d2164e74badb41e1e3f77789088044aa3f9",
+      "sha256": "bd1fb6433b0921e7edd638ebe717717a57aa718d1da2df69ff6c27ac33b82820",
       "binary": false
     },
     {
@@ -83905,9 +83905,9 @@
       "path": "lib/admin/applicationReview.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 9999,
-      "lines": 230,
-      "sha256": "f2dde171c140bdbeb5ada27e4ff24c22d432129f13b2a4ed628ac0968623e0b6",
+      "bytes": 7416,
+      "lines": 170,
+      "sha256": "cdf03ca5905568611eb09c2f16cd1580a91fe3a84b3702d9f0bcefe91949ea7c",
       "binary": false,
       "exports": [
         {
@@ -83917,7 +83917,7 @@
         },
         {
           "name": "changeApplicationStatus",
-          "line": 87,
+          "line": 34,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83933,18 +83933,8 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "ReviewTx",
-          "line": 34,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "clearTrainingApprovalOnClose",
-          "line": 55,
-          "kind": "FunctionDeclaration"
-        },
-        {
           "name": "changeApplicationStatus",
-          "line": 87,
+          "line": 34,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156404,85 +156394,85 @@
       "path": "scripts/check-supabase-env.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 6048,
-      "lines": 133,
-      "sha256": "d1b822af16a2dcbeba630bad59fe78064f9e11d5ddb7fa3a3293e3128aff4d16",
+      "bytes": 6155,
+      "lines": 134,
+      "sha256": "1beba270f6d7ade4ed1187d1f94962acc1186b94de20453d90d39700208e5c32",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "POOL_CONTRACT_ENFORCED_VERCEL_ENVS",
-          "line": 46,
-          "kind": "Variable"
-        },
-        {
-          "name": "checkPoolContract",
           "line": 47,
           "kind": "Variable"
         },
         {
+          "name": "checkPoolContract",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
           "name": "DEMO_REF",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "PROD_REF",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "formatSupabaseEnvGuardFailure",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "inspectSupabaseEnvironment",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "projectForAnonKey",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "projectForUrl",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "env",
-          "line": 69,
+          "line": 70,
           "kind": "Variable"
         },
         {
           "name": "urls",
-          "line": 71,
+          "line": 72,
           "kind": "Variable"
         },
         {
           "name": "expected",
-          "line": 78,
-          "kind": "Variable"
-        },
-        {
-          "name": "errors",
           "line": 79,
           "kind": "Variable"
         },
         {
-          "name": "seen",
+          "name": "errors",
           "line": 80,
           "kind": "Variable"
         },
         {
+          "name": "seen",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
           "name": "onVercel",
-          "line": 103,
+          "line": 104,
           "kind": "Variable"
         },
         {
           "name": "enforcePoolContract",
-          "line": 104,
+          "line": 105,
           "kind": "Variable"
         }
       ],
@@ -175040,9 +175030,9 @@
       "path": "tests/lib/application-review-atomic.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 16266,
-      "lines": 290,
-      "sha256": "4a071e059f51403dded8942b356eb5b762f99206b4cdfc1d3fa8f6a912196148",
+      "bytes": 11107,
+      "lines": 178,
+      "sha256": "b551c397fe073472738f9024580767ecbc60b98c1993fb2f39291b83fad7b6d3",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -175053,7 +175043,7 @@
         },
         {
           "name": "args",
-          "line": 70,
+          "line": 49,
           "kind": "Variable"
         }
       ],

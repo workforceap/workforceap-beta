@@ -38,11 +38,12 @@ import poolContract from './lib/runtime-pool-contract.cjs';
 // the first production build after #2424 — Vercel deployment
 // dpl_FmbefGN4GHD8z2qvUEMfRiV5EQmB, commit 87e60a12 — logged, verbatim:
 //   [supabase-env-guard] runtime pool parameters: { port: 6543, connectionLimit: 1, poolTimeout: 10, pgbouncer: true }
-// with no off-runbook WARNING. Preview stays report-only: the contract wants
-// four params (port, connection_limit, pool_timeout, pgbouncer) and the
-// runbook shape in docs/HANDOFF.md:40 names three, so nothing yet shows
-// preview's URL carries all four. Add 'preview' after one preview build has
-// logged the parameters line below and they match (WAP-17).
+// with no off-runbook WARNING. Preview stays report-only, but not for want of
+// evidence: the preview build for ad64081 logged, verbatim:
+//   [supabase-env-guard] runtime pool parameters: { port: 6543, connectionLimit: 1, poolTimeout: null, pgbouncer: true }
+// and warned off-runbook, so the preview POSTGRES_PRISMA_URL is missing
+// pool_timeout outright. Add 'preview' only once that variable carries all
+// four params and a preview build reports them (WAP-17).
 const POOL_CONTRACT_ENFORCED_VERCEL_ENVS = new Set(['production']);
 const checkPoolContract = process.argv.includes('--check-pool-contract');
 
