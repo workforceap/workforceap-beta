@@ -248,7 +248,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
               className="markdown-body"
               style={{
                 padding: '1.25rem',
-                background: 'var(--color-surface)',
+                background: 'var(--wa-surface)',
                 fontSize: '0.9375rem',
                 lineHeight: 1.65,
                 maxHeight: 'min(55vh, 560px)',

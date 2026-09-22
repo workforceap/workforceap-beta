@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
-import { DataTable, Avatar, type Column, type KitColor } from '@/components/portal/kit';
+import { DataTable, Avatar, textColorVar, type Column, type KitColor } from '@/components/portal/kit';
 import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 export type EmployerMatchHistoryRow = {
@@ -53,8 +53,9 @@ function fitScoreColor(pct: number): KitColor {
 
 function FitBadge({ pct }: { pct: number }) {
   const color = fitScoreColor(pct);
-  const varName =
-    color === 'success' ? 'var(--wa-success)' : color === 'gold' ? 'var(--wa-gold)' : color === 'accent' ? 'var(--wa-accent)' : 'var(--wa-muted)';
+  // Text twin of the band colour: --wa-success / --wa-gold are fill hues
+  // (3.45:1 / 3.7:1 for 13px text on white, scout M7).
+  const varName = textColorVar(color);
   if (pct < 60) {
     return <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-muted)' }}>Possible fit</span>;
   }
