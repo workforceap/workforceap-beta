@@ -220,7 +220,9 @@ export default function WebhookEventsClient({
             fontSize: '0.875rem',
             borderRadius: 'var(--radius-md)',
             background: 'var(--color-accent)',
-            color: 'var(--wa-on-accent-control)',
+            // --color-accent is the org accent and does not follow dark mode, so
+            // its foreground is the constant --wa-on-accent (white), like .btn-primary.
+            color: 'var(--wa-on-accent)',
             border: 'none',
             cursor: 'pointer',
           }}

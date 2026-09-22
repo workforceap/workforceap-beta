@@ -200,6 +200,13 @@ const PULSE_STYLE = `
  * dark panel reads the same in both modes.
  */
 const PANEL_BG = 'var(--wa-sidebar-bg)';
+/**
+ * Panel elevation: the panel's own chrome at 25% alpha (was rgba(0,0,0,0.25)).
+ * A color-mix over --wa-sidebar-bg, like the wells and tints, so it resolves
+ * wherever the sidebar tokens do — including the public WIOA route, which
+ * loads the brand tokens and a local bridge but not portal-tokens.css.
+ */
+const PANEL_SHADOW = '0 20px 25px -5px color-mix(in srgb, var(--wa-sidebar-bg) 25%, transparent)';
 /** The inset transcript / suggestion wells: one step darker than the panel. */
 const PANEL_WELL = 'color-mix(in srgb, var(--wa-sidebar-bg) 70%, black)';
 const PANEL_BORDER = 'var(--wa-sidebar-border)';
@@ -838,7 +845,7 @@ export default function PortalVoiceSession({
           background: PANEL_BG,
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 32px)',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
+          boxShadow: PANEL_SHADOW,
           animation: 'pvs-fade-in 0.4s ease both',
         }}
       >
@@ -933,7 +940,7 @@ export default function PortalVoiceSession({
           background: PANEL_BG,
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 32px)',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
+          boxShadow: PANEL_SHADOW,
           animation: 'pvs-fade-in 0.35s ease both',
         }}
       >
@@ -960,7 +967,7 @@ export default function PortalVoiceSession({
           background: PANEL_BG,
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 32px)',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
+          boxShadow: PANEL_SHADOW,
           animation: 'pvs-fade-in 0.35s ease both',
         }}
       >
@@ -1142,7 +1149,7 @@ export default function PortalVoiceSession({
         background: PANEL_BG,
         borderRadius: 24,
         padding: 'clamp(20px, 5vw, 32px)',
-        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.25)',
+        boxShadow: PANEL_SHADOW,
         animation: 'pvs-fade-in 0.4s ease both',
       }}
     >

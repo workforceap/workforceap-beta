@@ -21,7 +21,14 @@ type Surface = {
  */
 const CRIMSON = 'var(--wa-hero-crimson)';
 const CRIMSON_DARK = 'var(--wa-hero-crimson-dark)';
-const GOLD = '#a47f38';
+/**
+ * Badge copy on the crimson surfaces sits on the card, where the constant hero
+ * crimson (#ad2c4d) is 2.99:1 on the dark card (scout M10). `--wa-accent-text`
+ * is the text-on-surface accent (#8c0f37 light / #f39ab5 dark).
+ */
+const CRIMSON_TEXT = 'var(--wa-accent-text)';
+/** Glow / icon-tile hue; brand gold that follows light-dark() (#a47f38 → #d4ad5a). */
+const GOLD = 'var(--wa-gold)';
 /**
  * Badge copy on the gold surfaces sits on the card surface, where brand gold is
  * 3.7:1 on white. `--wa-gold-dark` is the text-on-gold token (#7d5f26 / #e0b062:
@@ -34,8 +41,20 @@ const GOLD_TEXT = 'var(--wa-gold-dark)';
  * 3.7:1). `--wa-gold` stays a fill/stroke colour (WAP-100).
  */
 export const GOLD_TEXT_GRADIENT = 'linear-gradient(135deg, var(--wa-hero-gold), var(--wa-hero-gold-dark))';
+/**
+ * The blue gradients carry white CTA copy, so their stops stay constant in
+ * both themes (like the hero pair). The glow and the badge follow the info
+ * tone tokens instead: the glow is color-mixed and the badge is 13px text on
+ * the card, where a constant #2b7bb9 sits at 4.53:1 light and under AA dark.
+ */
 const BLUE = '#2b7bb9';
 const BLUE_DARK = '#1f5a87';
+const BLUE_GLOW = 'var(--wa-info)';
+const BLUE_TEXT = 'var(--wa-info-dark)';
+/** CTA shadows: a color-mix of the surface hue, never an rgba() literal, so they follow the theme. */
+const GOLD_CTA_SHADOW = `0 8px 24px color-mix(in srgb, ${GOLD} 24%, transparent)`;
+const CRIMSON_CTA_SHADOW = `0 8px 24px color-mix(in srgb, ${CRIMSON} 20%, transparent)`;
+const BLUE_CTA_SHADOW = `0 8px 24px color-mix(in srgb, ${BLUE_GLOW} 20%, transparent)`;
 
 /**
  * PortalVoiceSession accent props for the employer voice card (scout M8). The
@@ -64,7 +83,7 @@ export const readinessVoiceSurface: Surface = {
   badgeColor: GOLD_TEXT,
   gradient: GOLD_TEXT_GRADIENT,
   ctaGradient: GOLD_TEXT_GRADIENT,
-  ctaShadow: '0 8px 24px rgba(164,127,56,0.24)',
+  ctaShadow: GOLD_CTA_SHADOW,
 };
 
 export const resumeCoachVoiceSurface: Surface = {
@@ -73,29 +92,32 @@ export const resumeCoachVoiceSurface: Surface = {
     'Reads your uploaded resume or live draft and coaches you line by line on bullets, framing, and gaps.',
   icon: icon(Sparkles),
   glowColor: CRIMSON,
+  badgeColor: CRIMSON_TEXT,
   gradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
   ctaGradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
-  ctaShadow: '0 8px 24px rgba(173,44,77,0.2)',
+  ctaShadow: CRIMSON_CTA_SHADOW,
 };
 
 export const counselorStaffVoiceSurface: Surface = {
   badge: 'COUNSELOR',
   subtext: 'Member support, outreach, and how to use this workspace.',
   icon: icon(MessageSquare),
-  glowColor: BLUE,
+  glowColor: BLUE_GLOW,
+  badgeColor: BLUE_TEXT,
   gradient: `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})`,
   ctaGradient: `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})`,
-  ctaShadow: '0 8px 24px rgba(43,123,185,0.2)',
+  ctaShadow: BLUE_CTA_SHADOW,
 };
 
 export const studentCounselorVoiceSurface: Surface = {
   badge: 'LILLEY',
   subtext: 'Knows your WorkforceAP plan and progress — then your saved action plan.',
   icon: icon(Headphones),
-  glowColor: BLUE,
+  glowColor: BLUE_GLOW,
+  badgeColor: BLUE_TEXT,
   gradient: `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})`,
   ctaGradient: `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})`,
-  ctaShadow: '0 8px 24px rgba(43,123,185,0.2)',
+  ctaShadow: BLUE_CTA_SHADOW,
 };
 
 export const employerVoiceSurface: Surface = {
@@ -103,12 +125,10 @@ export const employerVoiceSurface: Surface = {
   subtext: 'Postings, applicants, and navigating the employer portal.',
   icon: icon(Building2),
   glowColor: CRIMSON,
-  // Hero crimson stays #ad2c4d in dark: 2.99:1 on the dark card. --wa-accent-text
-  // is the text-on-surface accent (#8c0f37 light / #f39ab5 dark).
-  badgeColor: 'var(--wa-accent-text)',
+  badgeColor: CRIMSON_TEXT,
   gradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
   ctaGradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
-  ctaShadow: '0 8px 24px rgba(173,44,77,0.2)',
+  ctaShadow: CRIMSON_CTA_SHADOW,
 };
 
 export const partnerVoiceSurface: Surface = {
@@ -119,7 +139,7 @@ export const partnerVoiceSurface: Surface = {
   badgeColor: GOLD_TEXT,
   gradient: GOLD_TEXT_GRADIENT,
   ctaGradient: GOLD_TEXT_GRADIENT,
-  ctaShadow: '0 8px 24px rgba(164,127,56,0.24)',
+  ctaShadow: GOLD_CTA_SHADOW,
 };
 
 export const mockInterviewVoiceSurface: Surface = {
@@ -127,9 +147,10 @@ export const mockInterviewVoiceSurface: Surface = {
   subtext: 'A realistic interviewer for the role you name — optional camera recording for review.',
   icon: icon(AudioLines),
   glowColor: CRIMSON,
+  badgeColor: CRIMSON_TEXT,
   gradient: `linear-gradient(135deg, ${CRIMSON_DARK}, #5e1426)`,
   ctaGradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
-  ctaShadow: '0 8px 24px rgba(173,44,77,0.2)',
+  ctaShadow: CRIMSON_CTA_SHADOW,
 };
 
 export const careerBusinessVoiceSurface: Surface = {
@@ -137,7 +158,8 @@ export const careerBusinessVoiceSurface: Surface = {
   subtext: 'Lilley in a wider lane: project management, sales, marketing, and business questions.',
   icon: icon(Briefcase),
   glowColor: CRIMSON,
+  badgeColor: CRIMSON_TEXT,
   gradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
   ctaGradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
-  ctaShadow: '0 8px 24px rgba(173,44,77,0.2)',
+  ctaShadow: CRIMSON_CTA_SHADOW,
 };

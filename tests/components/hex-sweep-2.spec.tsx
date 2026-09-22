@@ -213,7 +213,7 @@ describe('webhook events paint from --wa-* tokens (D11)', () => {
     expect(screen.getAllByText('Upstream 500').length).toBeGreaterThan(0);
     expect(unexpectedHex(container)).toEqual([]);
     const styles = paintedValues(container).join('\n');
-    for (const t of ['var(--wa-success-dark)', 'var(--wa-danger-text)', 'var(--wa-info-dark)', 'var(--wa-muted-strong)', 'var(--wa-on-accent-control)']) expect(styles).toContain(t);
+    for (const t of ['var(--wa-success-dark)', 'var(--wa-danger-text)', 'var(--wa-info-dark)', 'var(--wa-muted-strong)', 'var(--wa-on-accent)']) expect(styles).toContain(t);
   });
 });
 

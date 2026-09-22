@@ -51,7 +51,8 @@ export default function VoiceCoachesPromo() {
           <VoiceCoachLauncherCard
             badge="10–20 SEC"
             icon={<Zap size={22} aria-hidden />}
-            glowColor="#a47f38"
+            glowColor="var(--wa-gold)"
+            badgeColor="var(--wa-gold-dark)"
             gradient={GOLD_TEXT_GRADIENT}
             title="Elevator Introduction"
             description="Not a voice coach: writes a 10 to 20 second intro from your profile, saves it, and emails it to you to rehearse."

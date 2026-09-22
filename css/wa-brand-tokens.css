@@ -67,4 +67,17 @@
   --wa-gold-soft: light-dark(#fef3c7, rgba(212, 173, 90, 0.2));
   --wa-info-soft: light-dark(#eef5fb, rgba(119, 173, 230, 0.18));
   --wa-success-soft: light-dark(#eef6ee, rgba(111, 201, 154, 0.18));
+
+  /* Glow hues for the VoiceAgentSurface ring / icon tile / CTA shadow on the
+     messaging surfaces whose hue has no brand token (partnership desk,
+     employer messages, staff member thread, admin member messages). The
+     surface color-mixes them to 15–25% alpha, and a surface with no
+     `badgeColor` paints its 13px eyebrow in the glow hue, so each dark value
+     is the lighter step of the same hue: it clears AA on the dark card
+     (--surface-container-lowest #0c0e10) where the light value would not.
+     Brand-hued surfaces glow from --wa-gold / --wa-info / --wa-accent-text. */
+  --wa-glow-ember: light-dark(#ea580c, #fb923c);
+  --wa-glow-indigo: light-dark(#4f46e5, #818cf8);
+  --wa-glow-fuchsia: light-dark(#c026d3, #e879f9);
+  --wa-glow-slate: light-dark(#475569, #94a3b8);
 }

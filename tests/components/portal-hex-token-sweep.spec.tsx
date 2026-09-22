@@ -420,7 +420,8 @@ describe('voiceAgentSurfaces crimson surfaces paint from the hero tokens', () =>
     const ring = styleOf(container.firstElementChild);
     expect(ring).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson-dark), #5e1426)');
     expect(ring).toContain('box-shadow: 0 16px 48px color-mix(in srgb, var(--wa-hero-crimson) 16%, transparent)');
-    expect(styleOf(screen.getByText(surface.badge))).toContain('color: var(--wa-hero-crimson)');
+    // The badge sits on the card: the tone text token, since the constant hero crimson is 2.99:1 on the dark card.
+    expect(styleOf(screen.getByText(surface.badge))).toContain('color: var(--wa-accent-text)');
     expect(surface.ctaGradient).toBe('linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
     expect(surface.glowColor).toBe('var(--wa-hero-crimson)');
   });
