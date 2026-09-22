@@ -41,7 +41,7 @@ describe('compact admin command-center presentation', () => {
     rerender(<CommandCenterKit {...base} />);
     expect(screen.queryByRole('region', { name: 'Placements trend' })).not.toBeInTheDocument();
     expect(screen.queryByText('No placements recorded for this period.')).not.toBeInTheDocument();
-    expect(screen.getByText('No program health data available.')).toBeInTheDocument();
+    expect(screen.getByText('No enrollment data available.')).toBeInTheDocument();
   });
 
   it('retains callback actions and supplied real metric delta text', () => {

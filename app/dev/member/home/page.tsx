@@ -14,6 +14,10 @@ import { buildMemberApprovalStatus, type MemberApprovalFacts } from '@/lib/membe
  * application) keeps the full card above the dashboard, `closed` and
  * `complete` collapse it below the content. Same composition as
  * app/(portal)/dashboard/page.tsx.
+ *
+ * `?course=zero|zero-stale` drops the Course tile to 0% so the two
+ * not-started states can be reviewed: a member who just enrolled (no warning)
+ * and one whose training has been quiet past the staleness threshold (gold).
  */
 export const dynamic = 'force-dynamic';
 
@@ -23,12 +27,14 @@ const APPROVAL_FIXTURES: Record<string, MemberApprovalFacts> = {
     wioaReviewStatus: null,
     courseraEnrollmentApproved: false,
   },
+  // A denied application clears `courseraEnrollmentApproved` at the write
+  // (lib/admin/applicationReview.ts), so the training step reads pending here
+  // rather than telling a turned-down member their training is approved.
   closed: {
     applications: [{ status: 'DENIED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
     wioaReviewStatus: 'verified',
     wioaReviewedAt: new Date('2026-08-28T15:00:00Z'),
-    courseraEnrollmentApproved: true,
-    courseraEnrollmentApprovedAt: new Date('2026-09-02T15:00:00Z'),
+    courseraEnrollmentApproved: false,
   },
   complete: {
     applications: [{ status: 'APPROVED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
@@ -42,11 +48,15 @@ const APPROVAL_FIXTURES: Record<string, MemberApprovalFacts> = {
 export default async function DevMemberHomePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ approval?: string }>;
+  searchParams?: Promise<{ approval?: string; course?: string }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
-  const requested = (await searchParams)?.approval ?? 'live';
+  const params = await searchParams;
+  const requested = params?.approval ?? 'live';
+  const courseFixture = params?.course;
+  const coursePercent = courseFixture === 'zero' || courseFixture === 'zero-stale' ? 0 : 78;
+  const courseProgressStale = courseFixture === 'zero-stale';
   const fixture = APPROVAL_FIXTURES[requested];
   const status = fixture ? buildMemberApprovalStatus(fixture) : null;
   const placement = status ? memberApprovalCardPlacement(status) : null;
@@ -59,7 +69,8 @@ export default async function DevMemberHomePage({
     {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
       firstName="Mike"
-      coursePercent={78}
+      coursePercent={coursePercent}
+      courseProgressStale={courseProgressStale}
       activeJobs={4}
       certs={2}
       points={1240}

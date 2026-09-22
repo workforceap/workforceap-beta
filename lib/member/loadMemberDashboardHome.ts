@@ -10,6 +10,7 @@ import {
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { effectiveStreak } from '@/lib/member/streakDisplay';
+import { isTrainingActivityStale, trainingEligibleSince } from '@/lib/member/trainingStaleness';
 import { ACTIVE_APPLICATION_STATUSES } from '@/lib/member/jobPipelineDisplay';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import { EVENT_LABELS, getLevelForPoints, getNextLevel } from '@/lib/member/pointsConfig';
@@ -93,6 +94,12 @@ export type MemberDashboardHomeView = {
   approvalStatus: MemberApprovalStatus;
   firstName: string;
   coursePercent: number;
+  /**
+   * Training has gone quiet for longer than `STALE_TRAINING_ACTIVITY_DAYS`
+   * (or the stale-training cron has already flagged it). The Course stat tile
+   * only warns when this is true — being newly enrolled at 0% is not a fault.
+   */
+  courseProgressStale: boolean;
   programTitle?: string;
   /** Coursera progress exists, but no WAP program is assigned yet. */
   noProgram?: boolean;
@@ -175,6 +182,12 @@ type DashboardUserRow = MemberApprovalFacts & {
   fullName: string | null;
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
+  /** Program enrolment date — half of the training-eligibility baseline. */
+  enrolledAt?: Date | null;
+  /** Preassessment completion — the other half; training cannot start before it. */
+  assessmentCompletedAt?: Date | null;
+  /** Written by the stale-training cron once it has flagged this member. */
+  staleTrainingDetectedAt?: Date | null;
   organization: {
     courses: Array<{
       programSlug: string;
@@ -185,13 +198,14 @@ type DashboardUserRow = MemberApprovalFacts & {
       courseraSlug: string | null;
     }>;
   };
-  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string; enrolledByAdminId?: string | null }>;
+  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string; enrolledByAdminId?: string | null; enrolledAt?: Date | null }>;
   courseProgress: Array<{
     programSlug: string;
     courseSlug: string;
     courseId: string | null;
     percentComplete: number;
     status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+    lastActivityAt?: Date | null;
   }>;
   memberProgramProgress: Array<{
     programSlug: string;
@@ -436,6 +450,7 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
   return {
     firstName,
     coursePercent: 0,
+    courseProgressStale: false,
     approvalStatus: buildMemberApprovalStatus({}),
     activeJobs: 0,
     certs: 0,
@@ -572,9 +587,40 @@ function shapeHome(args: {
     certCount: args.row._count.userCertifications,
   });
 
+  // Newest saved training activity across every course. `courseProgress` is
+  // ordered by `lastActivityAt` desc, but Postgres sorts NULLs first on a
+  // descending sort, so take the max rather than trusting row 0.
+  //
+  // Bounded by the same `take: 500` the progress maths already uses. A member
+  // with more than 500 null-dated progress rows would have their real
+  // activity fall outside the window and read as stale; that needs 500+
+  // course rows on one member, which the catalog does not produce. Worth
+  // knowing if the denominator ever grows.
+  const lastTrainingActivityAt = args.row.courseProgress.reduce<Date | null>((latest, row) => {
+    const at = row.lastActivityAt ?? null;
+    if (!at) return latest;
+    return !latest || at.getTime() > latest.getTime() ? at : latest;
+  }, null);
+  // The same baseline the member program page uses for
+  // `isTrainingStaleForCounselorEscalation`: the later of enrolment and
+  // finishing the preassessment, and only once both are true. Using the
+  // program-enrolment date alone would call a member stale on their first day
+  // of actually being able to start, and would disagree with that page.
+  const courseProgressStale = isTrainingActivityStale({
+    lastActivityAt: lastTrainingActivityAt,
+    eligibleSince: trainingEligibleSince({
+      enrolledProgram: assignedSlug,
+      assessmentCompleted: args.row.assessmentCompleted,
+      enrolledAt: args.row.enrolledAt,
+      assessmentCompletedAt: args.row.assessmentCompletedAt,
+    }),
+    staleDetectedAt: args.row.staleTrainingDetectedAt ?? null,
+  });
+
   return {
     firstName,
     coursePercent: pct,
+    courseProgressStale,
     approvalStatus: buildMemberApprovalStatus(args.row),
     programTitle: program?.title ?? undefined,
     noProgram: Boolean(program && !assignedSlug),
@@ -630,6 +676,9 @@ function userSelect() {
     },
     enrolledProgram: true,
     assessmentCompleted: true,
+    enrolledAt: true,
+    assessmentCompletedAt: true,
+    staleTrainingDetectedAt: true,
     organization: {
       select: {
         courses: {
@@ -649,7 +698,7 @@ function userSelect() {
     courseEnrollments: {
       where: { isPrimary: true },
       take: 1,
-      select: { programSlug: true, curriculumVersion: true, enrolledByAdminId: true },
+      select: { programSlug: true, curriculumVersion: true, enrolledByAdminId: true, enrolledAt: true },
     },
     courseProgress: {
       orderBy: [{ lastActivityAt: 'desc' as const }, { lastUpdatedAt: 'desc' as const }],
@@ -660,6 +709,7 @@ function userSelect() {
         courseId: true,
         percentComplete: true,
         status: true,
+        lastActivityAt: true,
       },
     },
     memberProgramProgress: {
