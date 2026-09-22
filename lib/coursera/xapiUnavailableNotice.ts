@@ -14,6 +14,22 @@
 export const COURSERA_XAPI_UNAVAILABLE_NOTICE =
   'Coursera unmatched-learner data is unavailable in this environment; the roster below excludes those rows.';
 
+/**
+ * Same gap, for the Coursera surfaces (reporting Coursera tab, legacy
+ * /admin/coursera) whose unmatched section is an activity backlog and says so
+ * ("not a provider membership roster") one line above the notice — so the
+ * notice says "list", not "roster".
+ */
+export const COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE =
+  'Coursera unmatched-learner data is unavailable in this environment; the list below excludes those rows.';
+
+/**
+ * Same gap beside a bare count (the admin dashboard's "Unmatched Coursera"
+ * work-queue tile): nothing is listed there, so the clause names the count.
+ */
+export const COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE =
+  'Coursera unmatched-learner data is unavailable in this environment; this count excludes those rows.';
+
 /** Machine-readable form of the same gap (API payloads, loader flags). */
 export const COURSERA_XAPI_UNAVAILABLE = 'coursera-xapi-unavailable' as const;
 export type CourseraXapiDegradation = typeof COURSERA_XAPI_UNAVAILABLE;

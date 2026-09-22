@@ -27,7 +27,7 @@ import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
 import { getActorOrganizationId } from '@/lib/tenant/organization';
-import { COURSERA_XAPI_UNAVAILABLE_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
+import { COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
 import { getDiscoveredProgram, getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
@@ -1156,7 +1156,7 @@ export default async function AdminCourseraPage({
         <div style={collapsibleBodyStyle}>
         {xapiUnavailable ? (
           <p role="status" className="wa-kit-training-notice" data-testid="coursera-xapi-notice">
-            {COURSERA_XAPI_UNAVAILABLE_NOTICE}
+            {COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE}
           </p>
         ) : null}
         {hiddenTestAccountCount > 0 ? (
