@@ -175,7 +175,41 @@ describe('upsertMergedCourseProgress atomic merge ladder', () => {
 
     expect(result).toEqual({ newlyCompleted: true });
     expect(order.indexOf('commit')).toBeLessThan(order.indexOf('certificate'));
-    expect(certificateMocks.ensurePending).toHaveBeenCalledWith(expect.objectContaining({ courseraCourseId: null, completedAt: null }));
+    expect(certificateMocks.ensurePending).toHaveBeenCalledWith(expect.objectContaining({ courseraCourseId: null, completedAt: null }), {});
+  });
+
+  it('hands the certificate step the same client it wrote with, so a caller transaction covers both', async () => {
+    const completedRow = async (statement: { sql: string }) => {
+      if (statement.sql.includes('SELECT status')) return [];
+      return [{ status: CourseProgressStatus.COMPLETED, inserted: true }];
+    };
+    const args = {
+      userId: 'user-1',
+      programSlug: 'program-one',
+      courseSlug: 'course-one',
+      courseId: 'provider-course-1',
+      merged: { status: CourseProgressStatus.COMPLETED, percentComplete: 100, lastActivityAt: null },
+      existing: null,
+      completedAt: null,
+    };
+
+    // b4bSync passes its per-row transaction client: no $transaction, but the
+    // model delegates are there. The helper must run on it.
+    const tx = { $executeRaw: vi.fn(async () => 1), $queryRaw: vi.fn(completedRow), userCertification: {}, user: {}, auditLog: {} };
+    await upsertMergedCourseProgress(tx as never, args);
+    expect(certificateMocks.ensurePending).toHaveBeenLastCalledWith(expect.objectContaining({ source: 'coursera-progress-merge' }), { db: tx });
+
+    // The root client (has $transaction and the delegates) is passed too: the
+    // helper then opens its own transaction after ours committed.
+    const root = { ...tx, $transaction: vi.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)) };
+    await upsertMergedCourseProgress(root as never, args);
+    expect(certificateMocks.ensurePending).toHaveBeenLastCalledWith(expect.anything(), { db: root });
+
+    // A bare raw-SQL client (the ladder tests' shape) cannot carry the
+    // certificate write; the helper falls back to the shared client.
+    const bare = { $executeRaw: vi.fn(async () => 1), $queryRaw: vi.fn(completedRow) };
+    await upsertMergedCourseProgress(bare as never, args);
+    expect(certificateMocks.ensurePending).toHaveBeenLastCalledWith(expect.anything(), {});
   });
 
   it('bounds malformed provider percentages before insert and at the conflict ladder', async () => {

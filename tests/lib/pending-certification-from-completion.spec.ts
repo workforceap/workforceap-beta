@@ -35,8 +35,10 @@ import {
   PENDING_CERTIFICATION_FROM_COMPLETION_ACTION,
   ensurePendingCertificationForCompletion,
   ensurePendingCertificationForCompletionSafely,
+  humaniseCourseSlug,
   resolveCertificationNameForCourse,
 } from '@/lib/certifications/pendingFromCompletion';
+import { PROGRAMS, getProgramDisplayTitle } from '@/lib/content/programs';
 
 const PROGRAM = 'it-support-professional-certificate-ibm';
 const COURSE = 'introduction-to-technical-support';
@@ -63,11 +65,59 @@ describe('resolveCertificationNameForCourse', () => {
       .toBe(CATALOG_NAME);
   });
 
-  it('falls back to the provider name, then the slug, for a course the catalog does not know', () => {
+  it('a name unique to one program stays unqualified', () => {
+    const carriers = PROGRAMS.filter((p) => p.courses.some((c) => c.name.trim() === CATALOG_NAME));
+    expect(carriers.map((p) => p.slug)).toEqual([PROGRAM]);
+    expect(resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: COURSE })).toBe(CATALOG_NAME);
+    expect(resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: COURSE })).not.toContain(' — ');
+  });
+
+  it('a name the catalog carries in more than one program is qualified with the program title, per program', () => {
+    // Every duplicated catalog name, not one hand-picked example.
+    const byName = new Map<string, Array<{ programSlug: string; courseSlug: string }>>();
+    for (const program of PROGRAMS) {
+      for (const course of program.courses) {
+        const list = byName.get(course.name.trim()) ?? [];
+        list.push({ programSlug: program.slug, courseSlug: course.slug });
+        byName.set(course.name.trim(), list);
+      }
+    }
+    const shared = [...byName.entries()].filter(([, hits]) => new Set(hits.map((h) => h.programSlug)).size > 1);
+    expect(shared.length).toBeGreaterThan(0);
+    expect(shared.map(([name]) => name)).toContain('Lab, Project, and Test Preparation');
+
+    for (const [name, hits] of shared) {
+      const names = hits.map((hit) => resolveCertificationNameForCourse(hit));
+      for (const [i, hit] of hits.entries()) {
+        expect(names[i]).toBe(`${name} — ${getProgramDisplayTitle(PROGRAMS.find((p) => p.slug === hit.programSlug)!)}`);
+      }
+      // One certificate per (program, course): the qualified names are distinct across programs.
+      expect(new Set(names).size).toBe(new Set(hits.map((h) => h.programSlug)).size);
+    }
+  });
+
+  it('a multi-program member completing the same-named course twice gets two rows, not a silent skip', async () => {
+    const lab = PROGRAMS.flatMap((p) => p.courses.filter((c) => c.name === 'Lab, Project, and Test Preparation').map((c) => ({ programSlug: p.slug, courseSlug: c.slug }))).slice(0, 2);
+    expect(lab).toHaveLength(2);
+    mocks.findUnique.mockResolvedValue(null);
+    mocks.create.mockImplementation(async ({ data }: { data: { certName: string } }) => ({ id: `cert-${data.certName}`, status: 'pending' }));
+
+    const first = await ensurePendingCertificationForCompletion({ ...completion, ...lab[0] });
+    const second = await ensurePendingCertificationForCompletion({ ...completion, ...lab[1] });
+
+    expect(first.created).toBe(true);
+    expect(second.created).toBe(true);
+    expect(first.certName).not.toBe(second.certName);
+    expect(mocks.create).toHaveBeenCalledTimes(2);
+  });
+
+  it('falls back to the provider name, then a humanised slug, for a course neither catalog knows', () => {
     expect(resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: 'not-in-catalog', courseName: '  Provider Course  ' }))
       .toBe('Provider Course');
-    expect(resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: 'not-in-catalog', courseName: null }))
-      .toBe('not-in-catalog');
+    expect(resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: 'cloud-security-basics', courseName: null }))
+      .toBe('Cloud Security Basics');
+    expect(humaniseCourseSlug('some-program-slug-course-17')).toBe('Some Program Slug');
+    expect(humaniseCourseSlug('---')).toBe('---');
   });
 });
 
@@ -185,6 +235,28 @@ describe('ensurePendingCertificationForCompletion', () => {
     expect(result.created).toBe(true);
     expect(error).toHaveBeenCalledTimes(1);
     error.mockRestore();
+  });
+
+  it('runs inside a transaction client a writer hands in, with no transaction of its own', async () => {
+    const writerTx = {
+      userCertification: {
+        findUnique: vi.fn(async () => null),
+        create: vi.fn(async () => ({ id: 'cert-in-tx', status: 'pending' })),
+      },
+      user: {},
+      auditLog: {},
+    };
+
+    const result = await ensurePendingCertificationForCompletion(
+      { ...completion, source: 'coursera-progress-merge' },
+      { db: writerTx as never },
+    );
+
+    expect(result).toMatchObject({ created: true, id: 'cert-in-tx' });
+    expect(writerTx.userCertification.create).toHaveBeenCalledTimes(1);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    // The provenance row is written through the same transaction client.
+    expect(mocks.auditLog.mock.calls[0][1]).toBe(writerTx);
   });
 
   it('uses the client a script passes in instead of the shared one', async () => {

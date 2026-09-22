@@ -81,6 +81,11 @@ describe('/dashboard/certifications with pending and approved rows', () => {
     expect(screen.getAllByLabelText('Verified')).toHaveLength(1);
     expect(approvedTitle.parentElement).toContainElement(screen.getByLabelText('Verified'));
 
+    // KPI strip: Earned and Verified both count staff-approved rows only; the
+    // pending row is listed but not yet counted. In progress is 0 here (no
+    // training view, no pathway).
+    expect(Array.from(document.querySelectorAll('.wa-kit-stat-value')).map((el) => el.textContent)).toEqual(['1', '0', '1']);
+
     expect(document.body).not.toHaveTextContent(/Issued Sep 20, 2026/);
     expect(document.body).not.toHaveTextContent(/sync automatically/i);
   });

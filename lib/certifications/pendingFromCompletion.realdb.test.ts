@@ -18,8 +18,11 @@ import { randomUUID } from 'node:crypto';
 import {
   PENDING_CERTIFICATION_FROM_COMPLETION_ACTION,
   ensurePendingCertificationForCompletion,
+  resolveCertificationNameForCourse,
 } from './pendingFromCompletion';
 import { prisma } from '../db/prisma';
+import { PROGRAMS, getProgramDisplayTitle } from '../content/programs';
+import { backfillPendingCertificationsFromCompletions } from '../../scripts/backfill-pending-certifications-from-completions';
 
 const LOCAL_DB_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
 
@@ -47,7 +50,11 @@ const PROGRAM = 'it-support-professional-certificate-ibm';
 const COURSE = 'introduction-to-technical-support';
 const CATALOG_NAME = 'Introduction to Technical Support';
 
-const seeded = { orgId: '', userId: '' };
+/** A catalog course whose name repeats across programs, so the backfill case also proves qualification end to end. */
+const SHARED_COURSE = 'introduction-to-networking-and-storage';
+const SHARED_NAME = 'Introduction to Networking and Storage';
+
+const seeded = { orgId: '', userId: '', staffUserId: '' };
 
 before(async () => {
   assertDisposableDatabase();
@@ -65,13 +72,30 @@ before(async () => {
     select: { id: true },
   });
   seeded.userId = user.id;
+  // A member by the one definition (lib/admin/memberOnlyWhere.ts): a bare
+  // account with no profile row is not one, and the backfill must skip it.
+  await prisma.profile.create({ data: { userId: user.id, role: 'member' } });
+  // A staff account (admin profile) with the same completion: the backfill's
+  // member predicate must leave it out of the review queue.
+  const staff = await prisma.user.create({
+    data: {
+      organizationId: org.id,
+      email: `pending-cert-staff-${runId}@example.test`,
+      fullName: `Pending cert contract staff ${runId}`,
+    },
+    select: { id: true },
+  });
+  seeded.staffUserId = staff.id;
+  await prisma.profile.create({ data: { userId: staff.id, role: 'admin' } });
 });
 
 after(async () => {
-  if (seeded.userId) {
-    await prisma.auditLog.deleteMany({ where: { action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION, metadata: { path: ['userId'], equals: seeded.userId } } });
-    await prisma.userCertification.deleteMany({ where: { userId: seeded.userId } });
-    await prisma.user.delete({ where: { id: seeded.userId } });
+  for (const userId of [seeded.userId, seeded.staffUserId].filter(Boolean)) {
+    await prisma.auditLog.deleteMany({ where: { action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION, metadata: { path: ['userId'], equals: userId } } });
+    await prisma.courseraCourseProgress.deleteMany({ where: { userId } });
+    await prisma.profile.deleteMany({ where: { userId } });
+    await prisma.userCertification.deleteMany({ where: { userId } });
+    await prisma.user.delete({ where: { id: userId } });
   }
   if (seeded.orgId) await prisma.organization.delete({ where: { id: seeded.orgId } });
   await prisma.$disconnect();
@@ -154,10 +178,11 @@ test('never downgrades a certificate staff approved', async () => {
 
 test('respects a certificate the member added under the same name for another course', async () => {
   // Second catalog course of the same program; the member typed it in first.
+  const memberCertName = resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: 'introduction-to-hardware-and-operating-systems' });
   const memberRow = await prisma.userCertification.create({
     data: {
       userId: seeded.userId,
-      certName: 'Introduction to Hardware and Operating Systems',
+      certName: memberCertName,
       earnedAt: new Date('2026-07-04T00:00:00.000Z'),
       status: 'pending',
       submittedAt: new Date('2026-07-05T00:00:00.000Z'),
@@ -181,4 +206,52 @@ test('respects a certificate the member added under the same name for another co
     where: { action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION, targetId: memberRow.id },
   });
   assert.equal(audits, 0);
+});
+
+test('backfill: only members get a certificate, and a shared catalog name comes out qualified', async () => {
+  const program = PROGRAMS.find((p) => p.slug === PROGRAM)!;
+  const course = program.courses.find((c) => c.slug === SHARED_COURSE)!;
+  assert.equal(course.name, SHARED_NAME);
+  assert.ok(PROGRAMS.filter((p) => p.courses.some((c) => c.name === SHARED_NAME)).length > 1, 'fixture name is shared across programs');
+  const courseraCourseId = course.courseraCourseId ?? `fixture-${runId}`;
+
+  // Identical completion evidence for the member and the staff account.
+  for (const [userId, email] of [[seeded.userId, `pending-cert-${runId}@example.test`], [seeded.staffUserId, `pending-cert-staff-${runId}@example.test`]] as const) {
+    await prisma.courseProgress.create({
+      data: {
+        userId, programSlug: PROGRAM, courseSlug: SHARED_COURSE, courseId: courseraCourseId,
+        status: 'COMPLETED', percentComplete: 100, progressPct: 100, completedAt: new Date('2026-09-10T00:00:00.000Z'),
+      },
+    });
+    await prisma.courseraCourseProgress.create({
+      data: {
+        userId, organizationId: seeded.orgId, externalEmail: email, courseraCourseId, courseName: SHARED_NAME,
+        programSlug: PROGRAM, overallProgress: 100, learningHours: 10, isCompleted: true,
+      },
+    });
+  }
+
+  const dry = await backfillPendingCertificationsFromCompletions(prisma, { apply: false, organizationId: seeded.orgId, userId: null, allCompleted: false });
+  assert.equal(dry.scanned, 1, 'member row only: the staff row is not even read');
+  assert.equal(dry.missing, 1);
+  assert.equal(dry.created, 0);
+  assert.equal(await prisma.userCertification.count({ where: { userId: { in: [seeded.userId, seeded.staffUserId] }, certName: { startsWith: SHARED_NAME } } }), 0, 'dry run writes nothing');
+
+  const applied = await backfillPendingCertificationsFromCompletions(prisma, { apply: true, organizationId: seeded.orgId, userId: null, allCompleted: false });
+  assert.equal(applied.created, 1);
+  assert.equal(applied.failed, 0);
+
+  const expectedName = `${SHARED_NAME} — ${getProgramDisplayTitle(program)}`;
+  assert.equal(resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: SHARED_COURSE }), expectedName);
+  const memberRows = await prisma.userCertification.findMany({ where: { userId: seeded.userId, certName: { startsWith: SHARED_NAME } } });
+  assert.equal(memberRows.length, 1);
+  assert.equal(memberRows[0].certName, expectedName);
+  assert.equal(memberRows[0].status, 'pending');
+  assert.equal(memberRows[0].earnedAt.toISOString(), '2026-09-10T00:00:00.000Z');
+  assert.equal(await prisma.userCertification.count({ where: { userId: seeded.staffUserId } }), 0, 'staff account gets no certificate');
+  assert.equal(await prisma.auditLog.count({ where: { action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION, metadata: { path: ['userId'], equals: seeded.staffUserId } } }), 0);
+
+  const again = await backfillPendingCertificationsFromCompletions(prisma, { apply: true, organizationId: seeded.orgId, userId: null, allCompleted: false });
+  assert.equal(again.created, 0);
+  assert.equal(again.missing, 0, 're-run is a no-op');
 });

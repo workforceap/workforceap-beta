@@ -17,14 +17,25 @@
  *                     completions with no B4B/CSV row). Default: only rows a
  *                     linked `coursera_course_progress` row confirms complete.
  *
+ * Only members get certificates: the owning user must satisfy
+ * `MEMBER_ONLY_WHERE` (lib/admin/memberOnlyWhere.ts), so staff, dogfood and
+ * fixture accounts with course progress never land in the admin review queue.
+ *
  * Every created row goes through the same helper the live paths use, so it
  * is `pending`, idempotent on (user, certificate name), never overwrites a
  * row the member or staff already own, and leaves an audit row with
  * source `backfill-script`. Re-running is safe.
+ *
+ * The runner is exported so the database-contract lane can prove the member
+ * predicate against PostgreSQL (lib/certifications/pendingFromCompletion.realdb.test.ts).
  */
+
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { CourseProgressStatus, PrismaClient } from '@prisma/client';
 
+import { MEMBER_ONLY_WHERE } from '../lib/admin/memberOnlyWhere';
 import {
   ensurePendingCertificationForCompletion,
   resolveCertificationNameForCourse,
@@ -32,15 +43,25 @@ import {
 
 const BATCH_SIZE = 500;
 
-type Options = {
+export type BackfillOptions = {
   apply: boolean;
   organizationId: string | null;
   userId: string | null;
   allCompleted: boolean;
 };
 
-function parseArgs(argv: string[]): Options {
-  const options: Options = { apply: false, organizationId: null, userId: null, allCompleted: false };
+export type BackfillSummary = {
+  scanned: number;
+  withoutCourseraEvidence: number;
+  alreadyRecorded: number;
+  missing: number;
+  created: number;
+  failed: number;
+  byProgram: Record<string, number>;
+};
+
+export function parseBackfillArgs(argv: string[]): BackfillOptions {
+  const options: BackfillOptions = { apply: false, organizationId: null, userId: null, allCompleted: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--apply') options.apply = true;
@@ -57,28 +78,111 @@ function parseArgs(argv: string[]): Options {
   return options;
 }
 
-type Summary = {
-  scanned: number;
-  withoutCourseraEvidence: number;
-  alreadyRecorded: number;
-  missing: number;
-  created: number;
-  failed: number;
-  byProgram: Map<string, number>;
-};
-
-async function main(): Promise<void> {
-  const options = parseArgs(process.argv.slice(2));
-  const prisma = new PrismaClient();
-  const summary: Summary = {
+export async function backfillPendingCertificationsFromCompletions(
+  prisma: PrismaClient,
+  options: BackfillOptions,
+  log: (line: string) => void = () => {},
+): Promise<BackfillSummary> {
+  const summary: BackfillSummary = {
     scanned: 0,
     withoutCourseraEvidence: 0,
     alreadyRecorded: 0,
     missing: 0,
     created: 0,
     failed: 0,
-    byProgram: new Map(),
+    byProgram: {},
   };
+
+  let cursor: string | null = null;
+  for (;;) {
+    // Tenant scoping: CourseProgress has no organization column; scope
+    // through the owning user like the admin loaders do. The member
+    // predicate keeps staff / dogfood / fixture accounts out; soft-deleted
+    // members are never read.
+    const rows: Array<{
+      id: string;
+      userId: string;
+      programSlug: string;
+      courseSlug: string;
+      courseId: string | null;
+      completedAt: Date | null;
+    }> = await prisma.courseProgress.findMany({
+      take: BATCH_SIZE,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      where: {
+        status: CourseProgressStatus.COMPLETED,
+        ...(options.userId ? { userId: options.userId } : {}),
+        user: {
+          ...MEMBER_ONLY_WHERE,
+          deletedAt: null,
+          ...(options.organizationId ? { organizationId: options.organizationId } : {}),
+        },
+      },
+      orderBy: { id: 'asc' },
+      select: { id: true, userId: true, programSlug: true, courseSlug: true, courseId: true, completedAt: true },
+    });
+    if (rows.length === 0) break;
+    cursor = rows[rows.length - 1].id;
+    summary.scanned += rows.length;
+
+    const userIds = Array.from(new Set(rows.map((row) => row.userId)));
+    const evidence = new Set<string>();
+    if (!options.allCompleted) {
+      const rawRows = await prisma.courseraCourseProgress.findMany({
+        where: { userId: { in: userIds }, isCompleted: true },
+        select: { userId: true, courseraCourseId: true },
+      });
+      for (const raw of rawRows) {
+        if (raw.userId) evidence.add(`${raw.userId}|${raw.courseraCourseId}`);
+      }
+    }
+
+    for (const row of rows) {
+      if (!options.allCompleted && !(row.courseId && evidence.has(`${row.userId}|${row.courseId}`))) {
+        summary.withoutCourseraEvidence += 1;
+        continue;
+      }
+      const certName = resolveCertificationNameForCourse(row);
+      const existing = await prisma.userCertification.findUnique({
+        where: { userId_certName: { userId: row.userId, certName } },
+        select: { id: true },
+      });
+      if (existing) {
+        summary.alreadyRecorded += 1;
+        continue;
+      }
+      summary.missing += 1;
+      summary.byProgram[row.programSlug] = (summary.byProgram[row.programSlug] ?? 0) + 1;
+      if (!options.apply) continue;
+      try {
+        const result = await ensurePendingCertificationForCompletion(
+          {
+            userId: row.userId,
+            programSlug: row.programSlug,
+            courseSlug: row.courseSlug,
+            courseraCourseId: row.courseId,
+            completedAt: row.completedAt,
+            source: 'backfill-script',
+          },
+          { db: prisma },
+        );
+        if (result.created) summary.created += 1;
+        else summary.alreadyRecorded += 1;
+      } catch (error) {
+        summary.failed += 1;
+        log(`  failed user=${row.userId} course=${row.programSlug}/${row.courseSlug}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    if (rows.length < BATCH_SIZE) break;
+  }
+
+  return summary;
+}
+
+async function main(): Promise<void> {
+  const options = parseBackfillArgs(process.argv.slice(2));
+  const prisma = new PrismaClient();
 
   console.log(
     `${options.apply ? 'APPLY' : 'DRY RUN'}: pending certificates for completed courses`
@@ -87,110 +191,37 @@ async function main(): Promise<void> {
       + (options.allCompleted ? ' including rows without Coursera raw evidence' : ''),
   );
 
+  let summary: BackfillSummary;
   try {
-    let cursor: string | null = null;
-    for (;;) {
-      // Tenant scoping: CourseProgress has no organization column; scope
-      // through the owning user like the admin loaders do, and never read
-      // soft-deleted members.
-      const rows: Array<{
-        id: string;
-        userId: string;
-        programSlug: string;
-        courseSlug: string;
-        courseId: string | null;
-        completedAt: Date | null;
-      }> = await prisma.courseProgress.findMany({
-        take: BATCH_SIZE,
-        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-        where: {
-          status: CourseProgressStatus.COMPLETED,
-          ...(options.userId ? { userId: options.userId } : {}),
-          user: {
-            deletedAt: null,
-            ...(options.organizationId ? { organizationId: options.organizationId } : {}),
-          },
-        },
-        orderBy: { id: 'asc' },
-        select: { id: true, userId: true, programSlug: true, courseSlug: true, courseId: true, completedAt: true },
-      });
-      if (rows.length === 0) break;
-      cursor = rows[rows.length - 1].id;
-      summary.scanned += rows.length;
-
-      const userIds = Array.from(new Set(rows.map((row) => row.userId)));
-      const evidence = new Set<string>();
-      if (!options.allCompleted) {
-        const rawRows = await prisma.courseraCourseProgress.findMany({
-          where: { userId: { in: userIds }, isCompleted: true },
-          select: { userId: true, courseraCourseId: true },
-        });
-        for (const raw of rawRows) {
-          if (raw.userId) evidence.add(`${raw.userId}|${raw.courseraCourseId}`);
-        }
-      }
-
-      for (const row of rows) {
-        if (!options.allCompleted && !(row.courseId && evidence.has(`${row.userId}|${row.courseId}`))) {
-          summary.withoutCourseraEvidence += 1;
-          continue;
-        }
-        const certName = resolveCertificationNameForCourse(row);
-        const existing = await prisma.userCertification.findUnique({
-          where: { userId_certName: { userId: row.userId, certName } },
-          select: { id: true },
-        });
-        if (existing) {
-          summary.alreadyRecorded += 1;
-          continue;
-        }
-        summary.missing += 1;
-        summary.byProgram.set(row.programSlug, (summary.byProgram.get(row.programSlug) ?? 0) + 1);
-        if (!options.apply) continue;
-        try {
-          const result = await ensurePendingCertificationForCompletion(
-            {
-              userId: row.userId,
-              programSlug: row.programSlug,
-              courseSlug: row.courseSlug,
-              courseraCourseId: row.courseId,
-              completedAt: row.completedAt,
-              source: 'backfill-script',
-            },
-            { db: prisma },
-          );
-          if (result.created) summary.created += 1;
-          else summary.alreadyRecorded += 1;
-        } catch (error) {
-          summary.failed += 1;
-          console.error(`  failed user=${row.userId} course=${row.programSlug}/${row.courseSlug}:`, error instanceof Error ? error.message : error);
-        }
-      }
-
-      if (rows.length < BATCH_SIZE) break;
-    }
+    summary = await backfillPendingCertificationsFromCompletions(prisma, options, (line) => console.error(line));
   } finally {
     await prisma.$disconnect();
   }
 
-  console.log(`completed course rows scanned: ${summary.scanned}`);
+  console.log(`completed course rows scanned (members only): ${summary.scanned}`);
   if (!options.allCompleted) {
     console.log(`skipped, no linked Coursera raw completion (use --all-completed to include): ${summary.withoutCourseraEvidence}`);
   }
   console.log(`already have a certificate row: ${summary.alreadyRecorded}`);
   console.log(`${options.apply ? 'pending certificates created' : 'pending certificates that --apply would create'}: ${options.apply ? summary.created : summary.missing}`);
   if (options.apply && summary.failed > 0) console.log(`failed: ${summary.failed}`);
-  if (summary.byProgram.size > 0) {
+  const byProgram = Object.entries(summary.byProgram).sort((a, b) => b[1] - a[1]);
+  if (byProgram.length > 0) {
     console.log('by program:');
-    for (const [programSlug, count] of Array.from(summary.byProgram.entries()).sort((a, b) => b[1] - a[1])) {
-      console.log(`  ${programSlug}: ${count}`);
-    }
+    for (const [programSlug, count] of byProgram) console.log(`  ${programSlug}: ${count}`);
   }
   if (!options.apply) console.log('Dry run only. Re-run with --apply to write these rows.');
   if (summary.failed > 0) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+function isDirectInvocation(): boolean {
+  const entry = process.argv[1];
+  return Boolean(entry && pathToFileURL(path.resolve(entry)).href === import.meta.url);
+}
+
+if (isDirectInvocation()) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

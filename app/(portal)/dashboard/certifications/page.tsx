@@ -131,7 +131,10 @@ export default async function DashboardCertificationsPage({
         verified: c.status === 'approved',
       };
     });
-    const verifiedCount = earned.filter((cert) => cert.verified).length;
+    // "Earned" and "Verified" both mean staff-approved: a pending or rejected
+    // row is listed with its state but does not count until it is verified,
+    // which is what the empty-state copy promises.
+    const approvedCount = earned.filter((cert) => cert.verified).length;
 
     // In-progress cert = the member's current pathway milestone, surfaced as a
     // single in-progress card with the overall pathway completion percent.
@@ -165,9 +168,9 @@ export default async function DashboardCertificationsPage({
 
     return (
       <MemberCertificatesKit
-        earnedCount={certs.length}
+        earnedCount={approvedCount}
         inProgressCount={inProgress.length}
-        verifiedCount={verifiedCount}
+        verifiedCount={approvedCount}
         // Learning-hours isn't loaded on this route; pass 0 rather than let the
         // kit's fabricated default (86) show next to real counts.
         learningHours={0}
