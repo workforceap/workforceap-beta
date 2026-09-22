@@ -1,4 +1,12 @@
 import { buildMemberApprovalStatus, type MemberApprovalFacts, type MemberApprovalStatus } from './memberApprovalStatus';
+import {
+  EMPTY_COUNSELOR_CONTEXT,
+  awaitingStep,
+  counselorAssignmentSelect,
+  resolveAssignedCounselor,
+  type AssignedCounselorRow,
+  type MemberCounselorContext,
+} from './counselorContext';
 import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from './starterProfileReview';
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry } from '@/lib/db/withDbRetry';
@@ -92,6 +100,15 @@ export type DashboardPointsLedgerEntry = {
 
 export type MemberDashboardHomeView = {
   approvalStatus: MemberApprovalStatus;
+  /**
+   * Assigned counselor + the step the member is waiting on, resolved from the
+   * same user read as `approvalStatus.counselorName`. `waitEstimate` is always
+   * null here: the page adds it (`getApprovalWaitEstimate`) only while the
+   * application is under review, outside this loader's operation budget.
+   */
+  counselorContext: MemberCounselorContext;
+  /** The member's organisation, for the page-level wait estimate. */
+  organizationId: string | null;
   firstName: string;
   coursePercent: number;
   /**
@@ -177,6 +194,8 @@ type DashboardHomeDb = {
 };
 
 type DashboardUserRow = MemberApprovalFacts & {
+  organizationId?: string;
+  counselorAssignments?: AssignedCounselorRow[];
   phone?: string | null;
   profile?: { profilePhone: string | null; profileAddress: string | null; city: string | null; state: string | null; zip: string | null; referralSource: string | null } | null;
   fullName: string | null;
@@ -452,6 +471,8 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     coursePercent: 0,
     courseProgressStale: false,
     approvalStatus: buildMemberApprovalStatus({}),
+    counselorContext: EMPTY_COUNSELOR_CONTEXT,
+    organizationId: null,
     activeJobs: 0,
     certs: 0,
     points: 0,
@@ -617,11 +638,23 @@ function shapeHome(args: {
     staleDetectedAt: args.row.staleTrainingDetectedAt ?? null,
   });
 
+  // One resolver for "who is your counselor": the assignment is accepted only
+  // when the counselor is active and in this member's organisation, and the
+  // same name feeds the approval card's owner line and the reviewer line.
+  const counselor = args.row.organizationId
+    ? resolveAssignedCounselor({
+        organizationId: args.row.organizationId,
+        counselorAssignments: args.row.counselorAssignments ?? [],
+      })
+    : null;
+
   return {
     firstName,
     coursePercent: pct,
     courseProgressStale,
-    approvalStatus: buildMemberApprovalStatus(args.row),
+    approvalStatus: buildMemberApprovalStatus({ ...args.row, counselorName: counselor?.name ?? null }),
+    counselorContext: { counselor, waitEstimate: null, awaiting: awaitingStep(args.row) },
+    organizationId: args.row.organizationId ?? null,
     programTitle: program?.title ?? undefined,
     noProgram: Boolean(program && !assignedSlug),
     programStatus: program ? (allCoursesComplete ? 'Complete' : 'In progress') : undefined,
@@ -661,6 +694,7 @@ function userSelect() {
   return {
     fullName: true,
     phone: true,
+    organizationId: true,
     profile: { select: { profilePhone: true, profileAddress: true, city: true, state: true, zip: true, referralSource: true } },
     applications: { orderBy: { createdAt: 'desc' as const }, take: 1, select: { status: true, submittedAt: true } },
     wioaReviewStatus: true,
@@ -668,12 +702,9 @@ function userSelect() {
     courseraEnrollmentApproved: true,
     courseraEnrollmentApprovedAt: true,
     // WAP-91: names who owns the staff-side approval steps (same single query).
-    counselorAssignments: {
-      where: { active: true },
-      orderBy: { assignedAt: 'desc' as const },
-      take: 1,
-      select: { counselor: { select: { user: { select: { fullName: true } } } } },
-    },
+    // Shared with lib/member/counselorContext.ts so the card, the reviewer
+    // line and the messaging thread agree on who the counselor is.
+    counselorAssignments: counselorAssignmentSelect(),
     enrolledProgram: true,
     assessmentCompleted: true,
     enrolledAt: true,

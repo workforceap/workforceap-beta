@@ -17,6 +17,13 @@ export type MemberApprovalFacts = {
   counselorAssignments?: Array<{
     counselor: { user: { fullName: string | null } | null } | null;
   }>;
+  /**
+   * Counselor name already resolved by the caller (lib/member/counselorContext.ts
+   * `resolveAssignedCounselor`, which also checks the counselor is active and
+   * in the member's organisation). When present it wins over the raw
+   * assignment rows, so the card and the reviewer line agree on one person.
+   */
+  counselorName?: string | null;
 };
 
 export type ApprovalStageKey = 'application' | 'intake' | 'training';
@@ -54,6 +61,12 @@ const intakeStates = ['pending', 'in_review', 'verified', 'not_eligible', 'needs
 const INTAKE_PENDING_STATES: ReadonlySet<MemberApprovalStatus['intake']> = new Set(['pending', 'in_review', 'needs_info']);
 const INTAKE_DECIDED_STATES: ReadonlySet<MemberApprovalStatus['intake']> = new Set(['verified', 'not_eligible']);
 
+/** "Dana Whitfield" -> "Dana": the form the member-facing lines use for their counselor. */
+export function firstNameOf(fullName: string): string {
+  const trimmed = fullName.trim();
+  return trimmed.split(/\s+/)[0] || trimmed;
+}
+
 function iso(date: Date | null | undefined): string | null {
   return date ? date.toISOString() : null;
 }
@@ -79,7 +92,9 @@ export function buildMemberApprovalStatus(facts: MemberApprovalFacts): MemberApp
   const submittedAt = iso(application?.submittedAt);
   const reviewedAt = iso(facts.wioaReviewedAt);
   const approvedAt = training === 'approved' ? iso(facts.courseraEnrollmentApprovedAt) : null;
-  const counselorName = facts.counselorAssignments?.[0]?.counselor?.user?.fullName?.trim() || null;
+  const counselorName = facts.counselorName !== undefined
+    ? facts.counselorName?.trim() || null
+    : facts.counselorAssignments?.[0]?.counselor?.user?.fullName?.trim() || null;
 
   const applicationComplete = applicationState === 'approved';
   const intakeComplete = intake === 'verified';

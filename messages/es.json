@@ -3373,6 +3373,15 @@
     "ownerStaff": "Personal de WorkforceAP",
     "ownerCounselor": "Tu consejero(a), {name}",
     "whatsNext": "Siguiente: {text}",
+    "reviewer": {
+      "assignedApproval": "Tu consejero(a), {name}, revisará tu solicitud.",
+      "assignedIntake": "Tu consejero(a), {name}, completará tu revisión de admisión.",
+      "assignedNeedsInfo": "Tu consejero(a), {name}, continuará la revisión cuando envíes la información solicitada.",
+      "unassigned": "Se te asignará un(a) consejero(a); verás su nombre aquí.",
+      "message": "Enviar mensaje a {name}",
+      "decisionStep": "Revisamos tu solicitud; recibirás la decisión por correo electrónico y la verás aquí.",
+      "waitEstimate": "Las solicitudes recientes se aprobaron en unos {days, plural, one {# día} other {# días}} (según {count} aprobaciones en los últimos 30 días)."
+    },
     "next": {
       "application": {
         "not_submitted": "Envía tu solicitud para que el personal pueda comenzar la revisión.",
@@ -3380,7 +3389,7 @@
         "needs_info": "Envía la información que pidió tu equipo para que la revisión continúe.",
         "approved": "La revisión de admisión es el siguiente paso.",
         "denied": "Contacta a tu equipo para hablar de lo ocurrido o volver a solicitar.",
-        "unknown": "Pide a tu equipo que confirme el estado de tu solicitud."
+        "unknown": "El estado de tu solicitud aún no está registrado aquí."
       },
       "intake": {
         "upcoming": "Comienza después de que se apruebe tu solicitud.",
@@ -3389,13 +3398,13 @@
         "needs_info": "Envía los documentos que pidió tu equipo para terminar la revisión de admisión.",
         "verified": "La aprobación de capacitación es el siguiente paso.",
         "not_eligible": "Tu equipo te explicará las opciones disponibles.",
-        "unknown": "Pide a tu equipo que confirme el estado de la revisión de admisión."
+        "unknown": "Aún no hay una revisión de admisión registrada. El personal actualiza este paso cuando comienza la revisión."
       },
       "training": {
         "upcoming": "Comienza después de que se verifique la revisión de admisión.",
         "pending": "El personal aprueba tu inscripción en la capacitación y luego recibes una invitación de Coursera.",
         "approved": "Revisa tu correo para encontrar la invitación de Coursera y acéptala.",
-        "unknown": "Pide a tu equipo que confirme si la capacitación fue aprobada."
+        "unknown": "Aún no hay una aprobación de capacitación registrada. El personal actualiza este paso cuando se toma la decisión."
       }
     },
     "applicationStatus": {

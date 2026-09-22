@@ -3313,6 +3313,15 @@
     "ownerStaff": "Equipe da WorkforceAP",
     "ownerCounselor": "Seu(sua) conselheiro(a), {name}",
     "whatsNext": "Próximo: {text}",
+    "reviewer": {
+      "assignedApproval": "Seu(sua) conselheiro(a), {name}, analisará sua inscrição.",
+      "assignedIntake": "Seu(sua) conselheiro(a), {name}, concluirá sua análise de admissão.",
+      "assignedNeedsInfo": "Seu(sua) conselheiro(a), {name}, continuará a análise assim que você enviar as informações solicitadas.",
+      "unassigned": "Um(a) conselheiro(a) será designado(a) para você; o nome aparecerá aqui.",
+      "message": "Enviar mensagem para {name}",
+      "decisionStep": "Analisamos sua inscrição; você receberá a decisão por e-mail e a verá aqui.",
+      "waitEstimate": "As inscrições recentes foram aprovadas em cerca de {days, plural, one {# dia} other {# dias}} (com base em {count} aprovações nos últimos 30 dias)."
+    },
     "next": {
       "application": {
         "not_submitted": "Envie sua inscrição para que a equipe possa iniciar a análise.",
@@ -3320,7 +3329,7 @@
         "needs_info": "Envie as informações que sua equipe pediu para que a análise continue.",
         "approved": "A análise de admissão é a próxima etapa.",
         "denied": "Fale com sua equipe para entender o que aconteceu ou se inscrever novamente.",
-        "unknown": "Peça à sua equipe para confirmar a situação da sua inscrição."
+        "unknown": "A situação da sua inscrição ainda não está registrada aqui."
       },
       "intake": {
         "upcoming": "Começa depois que sua inscrição for aprovada.",
@@ -3329,13 +3338,13 @@
         "needs_info": "Envie os documentos que sua equipe pediu para concluir a análise de admissão.",
         "verified": "A aprovação do treinamento é a próxima etapa.",
         "not_eligible": "Sua equipe explicará as opções disponíveis para você.",
-        "unknown": "Peça à sua equipe para confirmar a situação da análise de admissão."
+        "unknown": "Ainda não há análise de admissão registrada. A equipe atualiza esta etapa quando a análise começa."
       },
       "training": {
         "upcoming": "Começa depois que a análise de admissão for verificada.",
         "pending": "A equipe aprova sua matrícula no treinamento e depois você recebe um convite da Coursera.",
         "approved": "Verifique seu e-mail para encontrar o convite da Coursera e aceite-o.",
-        "unknown": "Peça à sua equipe para confirmar se o treinamento foi aprovado."
+        "unknown": "Ainda não há aprovação de treinamento registrada. A equipe atualiza esta etapa quando a decisão é tomada."
       }
     },
     "applicationStatus": {

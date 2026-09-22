@@ -976,3 +976,74 @@ test('a full page that reaches back past the window still draws the line', async
     399 * 5,
   );
 });
+
+// ── Counselor context (owner call 2026-09-22, ts 1790092663.833649) ──
+// The assignment is read in the same user query and resolved once; the
+// approval card's owner line and the reviewer line therefore name one person.
+
+function pendingWithCounselor(counselor: {
+  active?: boolean;
+  fullName?: string | null;
+  organizationId?: string;
+  deletedAt?: Date | null;
+} = {}) {
+  return makeRow({
+    organizationId: 'org-1',
+    applications: [{ status: 'PENDING', submittedAt: new Date('2026-09-01T12:00:00Z') }],
+    wioaReviewStatus: null,
+    courseraEnrollmentApproved: false,
+    counselorAssignments: [{
+      counselor: {
+        active: counselor.active ?? true,
+        user: {
+          fullName: counselor.fullName === undefined ? 'Dana Whitfield' : counselor.fullName,
+          organizationId: counselor.organizationId ?? 'org-1',
+          deletedAt: counselor.deletedAt ?? null,
+        },
+      },
+    }],
+  });
+}
+
+test('the home view names the active counselor once, for the owner line and the reviewer line, in one operation', async () => {
+  const { db, counts } = mockDb({ row: pendingWithCounselor() });
+  const view = await loadMemberDashboardHome({ userId: 'u1', fallbackDisplayName: 'Pat' }, db);
+  assert.deepEqual(view.counselorContext, {
+    counselor: { name: 'Dana Whitfield', firstName: 'Dana', messagingHref: '/dashboard/messages' },
+    waitEstimate: null,
+    awaiting: 'approval',
+  });
+  assert.equal(view.approvalStatus.counselorName, 'Dana Whitfield');
+  assert.equal(view.approvalStatus.stages.application.owner, 'counselor');
+  assert.equal(view.organizationId, 'org-1');
+  assert.equal(view.prismaOpCount, 1);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+});
+
+test('a deactivated, deleted or cross-organisation counselor is dropped from both lines', async () => {
+  for (const variant of [{ active: false }, { deletedAt: new Date() }, { organizationId: 'org-2' }]) {
+    const { db } = mockDb({ row: pendingWithCounselor(variant) });
+    const view = await loadMemberDashboardHome({ userId: 'u1', fallbackDisplayName: 'Pat' }, db);
+    assert.equal(view.counselorContext.counselor, null, JSON.stringify(variant));
+    assert.equal(view.approvalStatus.counselorName, null, JSON.stringify(variant));
+    assert.equal(view.approvalStatus.stages.application.owner, 'staff', JSON.stringify(variant));
+    assert.equal(view.counselorContext.awaiting, 'approval');
+  }
+});
+
+test('the home view carries no wait estimate and names the awaited step from the saved statuses', async () => {
+  const intake = await loadMemberDashboardHome(
+    { userId: 'u1', fallbackDisplayName: 'Pat' },
+    mockDb({ row: makeRow({ organizationId: 'org-1', applications: [{ status: 'APPROVED', submittedAt: null }], wioaReviewStatus: 'pending' }) }).db,
+  );
+  assert.equal(intake.counselorContext.awaiting, 'intake');
+  assert.equal(intake.counselorContext.waitEstimate, null);
+  const done = await loadMemberDashboardHome(
+    { userId: 'u1', fallbackDisplayName: 'Pat' },
+    mockDb({ row: makeRow({ organizationId: 'org-1', applications: [{ status: 'APPROVED', submittedAt: null }], wioaReviewStatus: 'verified' }) }).db,
+  );
+  assert.equal(done.counselorContext.awaiting, null);
+  const missing = await loadMemberDashboardHome({ userId: 'ghost', fallbackDisplayName: 'Pat' }, mockDb({ row: null }).db);
+  assert.deepEqual(missing.counselorContext, { counselor: null, waitEstimate: null, awaiting: null });
+  assert.equal(missing.organizationId, null);
+});

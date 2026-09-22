@@ -13,13 +13,22 @@ import {
   approvalStatusSignature,
   type MemberApprovalCardPlacement,
 } from '@/lib/member/memberApprovalCardPlacement';
-import type {
-  ApprovalStageKey,
-  MemberApprovalStage,
-  MemberApprovalStatus,
+import {
+  firstNameOf,
+  type ApprovalStageKey,
+  type MemberApprovalStage,
+  type MemberApprovalStatus,
 } from '@/lib/member/memberApprovalStatus';
+import type { MemberCounselorContext } from '@/lib/member/counselorContext';
 
 const STAGE_ORDER: ApprovalStageKey[] = ['application', 'intake', 'training'];
+
+/** `memberApproval.reviewer.*` line per step the member is waiting on. */
+const REVIEWER_KEY = {
+  approval: 'reviewer.assignedApproval',
+  info: 'reviewer.assignedNeedsInfo',
+  intake: 'reviewer.assignedIntake',
+} as const;
 
 /**
  * Three-stage approval chain (application → intake review → training
@@ -34,16 +43,24 @@ const STAGE_ORDER: ApprovalStageKey[] = ['application', 'intake', 'training'];
  * finished or closed pathway. Either can be dismissed; the dismissal is
  * stored per member and per status, so it lasts until the status moves, and
  * a quiet link keeps the member's own status one click away.
+ *
+ * `counselorContext` (lib/member/counselorContext.ts) names the assigned
+ * counselor who reviews the step the member is waiting on, links to their
+ * thread, and quotes the recent median review time only when enough recent
+ * decisions exist. Without it the card states the saved steps and nothing
+ * about who or how long.
  */
 export default function MemberApprovalStatusCard({
   status,
   storageUserId,
   placement = 'primary',
+  counselorContext = null,
 }: {
   status: MemberApprovalStatus;
   /** Member id — scopes the dismissal so a shared device never hides someone else's status. */
   storageUserId: string;
   placement?: MemberApprovalCardPlacement;
+  counselorContext?: MemberCounselorContext | null;
 }) {
   const t = useTranslations('memberApproval');
   const locale = useLocale();
@@ -107,7 +124,8 @@ export default function MemberApprovalStatusCard({
       case 'member':
         return t('ownerMember');
       case 'counselor':
-        return t('ownerCounselor', { name: status.counselorName ?? '' });
+        // First name, like the reviewer line below: one person, one name form.
+        return t('ownerCounselor', { name: status.counselorName ? firstNameOf(status.counselorName) : '' });
       case 'staff':
         return t('ownerStaff');
       default:
@@ -179,9 +197,37 @@ export default function MemberApprovalStatusCard({
     </ol>
   );
 
+  // ── Who reviews the step in flight, and how long that has been taking ──
+  // Only while a staff-owned step is pending. The counselor's name comes from
+  // the saved assignment; the wait line only appears when the loader had at
+  // least five recent decisions to compute a median from.
+  const reviewer = counselorContext?.awaiting ? (
+    <div className="wa-text-sm" data-approval-reviewer={counselorContext.counselor ? 'assigned' : 'unassigned'}>
+      {counselorContext.counselor ? (
+        <p>
+          {t(REVIEWER_KEY[counselorContext.awaiting], { name: counselorContext.counselor.firstName })}{' '}
+          <Link href={counselorContext.counselor.messagingHref} className="wa-kit-focus wa-underline">
+            {t('reviewer.message', { name: counselorContext.counselor.firstName })}
+          </Link>
+        </p>
+      ) : (
+        <p>{t('reviewer.unassigned')}</p>
+      )}
+      {counselorContext.waitEstimate ? (
+        <p className="wa-text-[var(--wa-muted)]" data-approval-wait-estimate="">
+          {t('reviewer.waitEstimate', {
+            days: counselorContext.waitEstimate.medianDays,
+            count: counselorContext.waitEstimate.sampleSize,
+          })}
+        </p>
+      ) : null}
+    </div>
+  ) : null;
+
   const details = (
     <>
       {stageList}
+      {reviewer}
       <p className="wa-text-sm wa-text-[var(--wa-muted)]">{t('providerUnknown')}</p>
       <Link href="/dashboard/messages" className="wa-kit-focus wa-underline">{t('contact')}</Link>
     </>

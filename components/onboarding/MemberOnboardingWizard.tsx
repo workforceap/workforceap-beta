@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Sparkles } from 'lucide-react';
 import OnboardingWizard, { type OnboardingStep } from '@/components/onboarding/OnboardingWizard';
 import { PROGRAMS } from '@/lib/content/programs';
@@ -18,6 +20,14 @@ export type MemberOnboardingWizardProps = {
   initialProgramInterest: string;
   initialReferralSource: string;
   initialStep?: number;
+  /**
+   * The member's assigned counselor (lib/member/counselorContext.ts). Null
+   * when nobody is assigned yet: the closing step then says so instead of
+   * promising a follow-up window nobody measured.
+   */
+  counselor?: { firstName: string; messagingHref: string } | null;
+  /** Median recent review time; only supplied when at least five recent decisions exist. */
+  waitEstimate?: { medianDays: number; sampleSize: number } | null;
   onComplete?: () => void;
 };
 
@@ -31,9 +41,12 @@ export default function MemberOnboardingWizard({
   initialProgramInterest,
   initialReferralSource,
   initialStep = 0,
+  counselor = null,
+  waitEstimate = null,
   onComplete: onCompleteProp,
 }: MemberOnboardingWizardProps) {
   const router = useRouter();
+  const t = useTranslations('memberApproval');
   const onComplete = onCompleteProp ?? (() => router.refresh());
   const nameParts = initialFullName.trim().split(/\s+/);
   const [firstName, setFirstName] = useState(nameParts[0] ?? '');
@@ -320,15 +333,30 @@ export default function MemberOnboardingWizard({
     },
     {
       title: "You're all set",
-      subtitle: 'Your counselor will follow up with your next step in 1 to 2 business days.',
+      // Saved facts only: the assigned counselor by name, or that none is
+      // assigned yet. The old "1 to 2 business days" promise had no
+      // measurement behind it (owner call 2026-09-22).
+      subtitle: counselor
+        ? t('reviewer.assignedApproval', { name: counselor.firstName })
+        : t('reviewer.unassigned'),
       content: (
-        <div className="wa-space-y-3 wa-text-sm">
+        <div className="wa-space-y-3 wa-text-sm" data-onboarding-reviewer={counselor ? 'assigned' : 'unassigned'}>
           <p>What happens next:</p>
           <ul className="wa-list-disc wa-space-y-1 wa-pl-5 wa-text-slate-600">
-            <li>We review your application and follow up in 1 to 2 business days</li>
+            <li>{t('reviewer.decisionStep')}</li>
+            {waitEstimate ? (
+              <li data-onboarding-wait-estimate="">
+                {t('reviewer.waitEstimate', { days: waitEstimate.medianDays, count: waitEstimate.sampleSize })}
+              </li>
+            ) : null}
             <li>WIOA Qualification Assessment first, then a Training Preassessment for your chosen program</li>
             <li>Interview to confirm mutual fit, then start your program at no cost to members</li>
           </ul>
+          {counselor ? (
+            <Link href={counselor.messagingHref} className="wa-inline-block wa-underline wa-text-slate-700">
+              {t('reviewer.message', { name: counselor.firstName })}
+            </Link>
+          ) : null}
         </div>
       ),
     },

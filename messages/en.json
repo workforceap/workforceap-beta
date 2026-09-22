@@ -3373,6 +3373,15 @@
     "ownerStaff": "WorkforceAP staff",
     "ownerCounselor": "Your counselor, {name}",
     "whatsNext": "Next: {text}",
+    "reviewer": {
+      "assignedApproval": "Your counselor, {name}, will review your application.",
+      "assignedIntake": "Your counselor, {name}, will complete your intake review.",
+      "assignedNeedsInfo": "Your counselor, {name}, will continue the review once you send the information requested.",
+      "unassigned": "A counselor will be assigned to you; you'll see their name here.",
+      "message": "Message {name}",
+      "decisionStep": "We review your application; you'll hear by email and see the decision here.",
+      "waitEstimate": "Recent applications were approved in about {days, plural, one {# day} other {# days}} (based on {count} approvals in the last 30 days)."
+    },
     "next": {
       "application": {
         "not_submitted": "Submit your application so staff can start the review.",
@@ -3380,7 +3389,7 @@
         "needs_info": "Send the information your team asked for so the review can continue.",
         "approved": "Intake review is next.",
         "denied": "Contact your team to talk through what happened or to reapply.",
-        "unknown": "Ask your team to confirm where your application stands."
+        "unknown": "Your application status is not recorded here yet."
       },
       "intake": {
         "upcoming": "Begins after your application is approved.",
@@ -3389,13 +3398,13 @@
         "needs_info": "Send the documents your team asked for so intake review can finish.",
         "verified": "Training approval is next.",
         "not_eligible": "Your team will explain the options that are open to you.",
-        "unknown": "Ask your team to confirm where intake review stands."
+        "unknown": "No intake review is recorded yet. Staff update this step when the review begins."
       },
       "training": {
         "upcoming": "Begins after intake review is verified.",
         "pending": "Staff approve your training enrollment, then you receive a Coursera invitation.",
         "approved": "Check your email for the Coursera invitation and accept it.",
-        "unknown": "Ask your team to confirm whether training has been approved."
+        "unknown": "No training approval is recorded yet. Staff update this step once it is decided."
       }
     },
     "applicationStatus": {
