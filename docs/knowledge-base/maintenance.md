@@ -6,17 +6,22 @@ The knowledge base has two layers: human explanations and a deterministic source
 
 1. Update the relevant human guide when behavior, ownership, a data contract, a provider or a release path changes.
 2. Stage the intended source and documentation files. The generator reads `git ls-files`, so an untracked new file is deliberately not indexed until added to Git.
-3. Run `npm run kb:generate`, inspect the generated diff, then stage `docs/knowledge-base/generated/`.
-4. Run `npm run kb:test` and `npm run kb:check`. Rebase onto the current target branch and repeat generation if another change landed.
-5. Include the KB change in the same PR as the implementation. Record any new live acceptance separately from source facts.
+3. Run `npm run kb:generate`. The output lands in `docs/knowledge-base/generated/`, which is git-ignored: regenerate it, read it, but never stage it.
+4. Run `npm run kb:test` and `npm run kb:check`. Because the output is not committed, a change landing on the target branch no longer invalidates your branch's copy; you only regenerate when you want the index to reflect your own edits.
+5. Record any new live acceptance separately from source facts.
 
 ```bash
 git add path/to/intended/source path/to/relevant/document
-npm run kb:generate
-git add docs/knowledge-base/generated
+npm run kb:generate   # writes the git-ignored docs/knowledge-base/generated/
 npm run kb:test
 npm run kb:check
 ```
+
+`docs/knowledge-base/generated/` is build output, not source. It is not tracked, so
+a fresh clone does not have it: run `npm run kb:generate` once before `npm run kb:query`
+or before following a link into `generated/`. CI regenerates it from the checked-out
+source on every pull request and then verifies it, so the index the check validates is
+always derived from that commit's tree.
 
 These tools do not load application modules, contact providers or read private environment files. They require the repository's TypeScript development dependency. A normal frozen install supplies it. The index job can install with lifecycle scripts disabled because Prisma generation and database connectivity are unnecessary for this work.
 

@@ -119,3 +119,8 @@ __pycache__/
 # Merge/patch artifacts (never commit these)
 *.orig
 *.patch
+
+# Generated knowledge-base index. Build output, not source: run `npm run kb:generate`
+# to produce it locally; CI regenerates and verifies it on every pull request.
+# It was tracked until it became the dominant source of merge conflicts between PRs.
+docs/knowledge-base/generated/
