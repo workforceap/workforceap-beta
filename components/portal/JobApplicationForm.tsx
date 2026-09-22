@@ -227,7 +227,7 @@ export default function JobApplicationForm({ onSubmit, onClose }: JobApplication
               type="submit"
               disabled={isSubmitting}
               className="wa-flex-1 wa-px-4 wa-py-2 wa-text-white wa-font-medium wa-rounded-lg disabled:wa-opacity-50 disabled:wa-cursor-not-allowed wa-transition-colors focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[var(--color-accent)] focus-visible:wa-ring-offset-1"
-              style={{ background: "var(--color-accent-dark, #6b0c29)" }}
+              style={{ background: "var(--wa-hero-crimson-dark)" }}
             >
               {isSubmitting ? 'Adding...' : 'Add Application'}
             </button>

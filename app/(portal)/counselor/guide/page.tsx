@@ -142,7 +142,7 @@ export default async function CounselorGuidePage() {
               gap: '0.375rem',
               padding: '0.5625rem 1.125rem',
               background: 'var(--color-accent)',
-              color: '#fff',
+              color: 'var(--wa-on-accent-control)',
               borderRadius: '0.5rem',
               fontSize: '0.8125rem',
               fontWeight: 700,

@@ -248,7 +248,7 @@
 }
 .readiness-progress-value {
     background: var(--color-accent);
-    color: white;
+    color: var(--wa-on-accent-control);
     font-size: 0.8125rem;
     padding: 0.15rem 0.5rem;
     border-radius: var(--radius-full);
@@ -789,7 +789,7 @@
 .application-tracker-filter-chip.active {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: var(--color-white);
+    color: var(--wa-on-accent-control);
 }
 .application-tracker-search {
     flex: 1;
@@ -1410,7 +1410,7 @@ html.dark .workspace-shell-header,
     padding: 0.35rem 0.85rem;
     border-radius: var(--radius-sm);
     background: var(--color-accent);
-    color: #fff;
+    color: var(--wa-on-accent-control);
     font-weight: 700;
     font-size: 0.8125rem;
     text-decoration: none;
@@ -4272,7 +4272,7 @@ body:has(.dashboard-drawer-overlay.open) {
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 .admin-super-messages-bubble.is-staff {
-    background: linear-gradient(135deg, var(--color-accent-dark, #6b0c29), var(--color-accent));
+    background: linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson));
     color: #fff;
     border-radius: 18px 18px 4px 18px;
     align-self: flex-end;
@@ -6128,7 +6128,7 @@ html.dark .admin-members-search-input {
     font-size: 0.8125rem;
     font-weight: 800;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--wa-on-accent-control);
 }
 
 .admin-members-count-line {
@@ -9254,7 +9254,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
     display: inline-block;
     padding: 0.75rem 1.25rem;
     background: var(--color-accent);
-    color: white;
+    color: var(--wa-on-accent-control);
     border-radius: 6px;
     text-decoration: none;
     font-weight: 600;
@@ -9665,11 +9665,11 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
 /* Active = solid crimson fill + white (matches admin-full mockup) */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active {
   background: var(--wa-accent, #ad2c4d) !important;
-  color: #ffffff !important;
+  color: var(--wa-on-accent-control) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-sidebar-icon,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active svg {
-  color: #ffffff !important;
+  color: var(--wa-on-accent-control) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-group-label,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-label {
@@ -9700,17 +9700,18 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-nav-badge {
   background: var(--wa-accent, #ad2c4d) !important;
-  color: #ffffff !important;
+  color: var(--wa-on-accent-control) !important;
   border: none !important;
   font-size: 0.8125rem;
   font-weight: 700;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
 }
-/* On an active (crimson) row, keep the badge legible (translucent white). */
+/* On an active (accent) row the badge inverts: solid on-accent pill, accent text.
+   The old translucent white read 2.41:1 on the dark-mode accent. */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-nav-badge {
-  background: rgba(255, 255, 255, 0.25) !important;
-  color: #ffffff !important;
+  background: var(--wa-on-accent-control) !important;
+  color: var(--wa-accent, #ad2c4d) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-toolbar,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-inner {
@@ -10025,7 +10026,7 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     transform: none;
 }
 .workspace-shell-root[data-workspace-role] .marketing-bottom-nav__link--active {
-    color: var(--wa-on-accent);
+    color: var(--wa-on-accent-control);
     background: var(--wa-accent);
 }
 .workspace-shell-root[data-workspace-role] .marketing-bottom-nav__label {

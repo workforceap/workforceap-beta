@@ -263,7 +263,7 @@ function InterviewQARenderer({ raw }: { raw: string }) {
         return (
           <div key={i} style={{ padding: '1rem', background: 'var(--surface-container-low)', borderRadius: '0.875rem', border: '1px solid var(--outline-variant)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: tip || sample ? '0.625rem' : 0 }}>
-              <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: '#fff', background: 'var(--color-accent)', borderRadius: '9999px', width: '1.5rem', height: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--wa-on-accent-control)', background: 'var(--color-accent)', borderRadius: '9999px', width: '1.5rem', height: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.4 }}>{questionText}</p>
                 {type && <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{type}</p>}

@@ -258,7 +258,7 @@ export default async function MemberGuidePage() {
                       gap: '0.375rem',
                       padding: '0.625rem 1.25rem',
                       background: 'var(--color-accent)',
-                      color: 'var(--color-white)',
+                      color: 'var(--wa-on-accent-control)',
                       borderRadius: '0.5rem',
                       fontSize: '0.875rem',
                       fontWeight: 700,

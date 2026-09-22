@@ -1377,7 +1377,7 @@ a.home-program-card:active {
 
   .apply-mobile-step-nav__item--active .apply-mobile-step-nav__index {
     background: var(--color-accent);
-    color: var(--color-white);
+    color: var(--wa-on-accent-control);
   }
 
   .apply-mobile-step-nav__icon {

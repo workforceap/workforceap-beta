@@ -316,7 +316,7 @@ export default function AssessmentsTable({
                       width: '2rem',
                       height: '2rem',
                       borderRadius: '9999px',
-                      background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
+                      background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',

@@ -1283,7 +1283,7 @@ export default async function PartnerDashboardPage({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div style={{
                             width: '2.25rem', height: '2.25rem', borderRadius: '9999px',
-                            background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
+                            background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-accent)', flexShrink: 0,
                           }}>

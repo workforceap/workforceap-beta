@@ -40,7 +40,7 @@ export default function DeleteAccountButton() {
       <button
         type="button"
         className="btn"
-        style={{ background: 'var(--color-accent)', color: 'white' }}
+        style={{ background: 'var(--color-accent)', color: 'var(--wa-on-accent-control)' }}
         onClick={() => {
           setShowModal(true);
           setDeleteError(null);

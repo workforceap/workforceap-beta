@@ -107,7 +107,7 @@ async function LegacyPartnersTable({ userId, scope }: { userId: string; scope: i
             style={{
               padding: '0.5rem 1rem',
               background: 'var(--color-accent)',
-              color: 'white',
+              color: 'var(--wa-on-accent-control)',
               borderRadius: '6px',
               textDecoration: 'none',
               fontWeight: 600,

@@ -79,7 +79,7 @@ export default function EmployerJobQuickActions({
             textAlign: 'center',
             padding: '0.5rem',
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'var(--wa-on-accent-control)',
             borderRadius: '0.375rem',
             fontSize: '0.8125rem',
             fontWeight: 600,

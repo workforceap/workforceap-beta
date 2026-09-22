@@ -136,7 +136,7 @@ export default function AuditLogsClient({
             fontSize: '0.875rem',
             borderRadius: 'var(--radius-md)',
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'var(--wa-on-accent-control)',
             border: 'none',
             cursor: 'pointer',
           }}

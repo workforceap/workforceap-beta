@@ -109,7 +109,7 @@ export default function ElevatorPitchDeploymentLogger() {
             gap: '0.375rem',
             padding: '0.5rem 1.125rem',
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'var(--wa-on-accent-control)',
             border: 'none',
             borderRadius: '0.5rem',
             fontSize: '0.875rem',
@@ -306,7 +306,7 @@ export default function ElevatorPitchDeploymentLogger() {
                         borderRadius: '0.5rem',
                         fontSize: '0.875rem',
                         fontWeight: 700,
-                        color: '#fff',
+                        color: 'var(--wa-on-accent-control)',
                         cursor: submitting ? 'not-allowed' : 'pointer',
                         opacity: submitting ? 0.7 : 1,
                       }}

@@ -162,7 +162,7 @@ export default async function EmployerBillingPage({
                     padding: '0.25rem 0.5rem',
                     borderRadius: '9999px',
                     background: 'var(--color-accent)',
-                    color: '#fff',
+                    color: 'var(--wa-on-accent-control)',
                   }}
                 >
                   {t('current')}

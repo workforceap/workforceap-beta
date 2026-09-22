@@ -339,7 +339,7 @@ export default function BlogPostEditor({
                   style={{
                     padding: '0.35rem 0.75rem',
                     background: 'var(--color-accent)',
-                    color: 'white',
+                    color: 'var(--wa-on-accent-control)',
                     border: 'none',
                     borderRadius: '6px',
                     fontSize: '0.85rem',
@@ -433,7 +433,7 @@ export default function BlogPostEditor({
                 style={{
                   padding: '0.5rem 1rem',
                   background: 'var(--color-accent)',
-                  color: 'white',
+                  color: 'var(--wa-on-accent-control)',
                   border: 'none',
                   borderRadius: '6px',
                   fontWeight: 600,
@@ -596,7 +596,7 @@ export default function BlogPostEditor({
           style={{
             padding: '0.5rem 1.25rem',
             background: 'var(--color-accent)',
-            color: 'white',
+            color: 'var(--wa-on-accent-control)',
             border: 'none',
             borderRadius: '6px',
             fontWeight: 600,

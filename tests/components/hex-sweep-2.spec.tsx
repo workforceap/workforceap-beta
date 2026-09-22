@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { readCss, loadRootTokens, colorOf, contrast, over } from '@/lib/ui/cssTokenContrast.test-helpers';
+import { readCss, loadRootTokens, loadBlockTokens, colorOf, contrast, over } from '@/lib/ui/cssTokenContrast.test-helpers';
 import { JOB_APPLICATION_STATUS_ACCENT } from '@/lib/jobApplications/statusAccents';
 import { JOB_APPLICATION_STATUS } from '@/lib/jobApplications/constants';
 import { pickAdminClientMessages } from '@/lib/i18n/pickRootClientMessages';
@@ -358,5 +358,112 @@ describe('the text tokens this sweep introduced clear WCAG AA in both themes', (
         }
       });
     }
+  });
+});
+
+/**
+ * Mobile / dark scout 2026-09-22, M1 + M4 + M13 + M14 — text on the accent.
+ *
+ * In dark mode the solid accent lightens (--wa-accent #e0658a) and its
+ * foreground darkens (--wa-on-accent-control). The rail, the staff bottom nav,
+ * the count badges and the Astryx primary button kept a white literal on it
+ * (3.28:1), the badge on the active rail row a translucent white (2.41:1), and
+ * `--color-accent` never left its light literal because css/main.css's `:root`
+ * outranked the portal bridge by load order (2.78:1 as link text on dark).
+ * These render the surfaces and measure the rules that reach them from the
+ * real CSS, in both schemes. The cascade is modelled as it ships: main.css's
+ * `:root` last (the bug), then the portal `html.dark` block for dark.
+ */
+describe('accent controls and accent text clear WCAG AA in dark mode (M1 / M4 / M13 / M14)', () => {
+  const brand = readCss('css/wa-brand-tokens.css');
+  const portalTokens = readCss('css/portal-tokens.css');
+  const mainCss = readCss('css/main.css');
+  const rail = readCss('css/portal-main-extracted.css');
+  const light = loadRootTokens(brand, portalTokens, mainCss);
+  const dark = new Map(light);
+  for (const [k, v] of loadBlockTokens(portalTokens, "html.dark,\nhtml[data-theme='dark']")) dark.set(k, v);
+  const tokensFor = (scheme: 'light' | 'dark') => (scheme === 'light' ? light : dark);
+  const SHELL = ':is(html[data-portal-role], .workspace-shell-root[data-workspace-role])';
+
+  /** `prop: value` pairs of the first rule whose selector list is exactly `selector`, `!important` dropped. */
+  function declsOf(css: string, selector: string): Record<string, string> {
+    const src = css.replace(/\/\*[\s\S]*?\*\//g, '');
+    const start = src.indexOf(`${selector} {`);
+    if (start < 0) throw new Error(`rule not found: ${selector}`);
+    const body = src.slice(start + selector.length + 2, src.indexOf('}', start));
+    const out: Record<string, string> = {};
+    for (const m of body.matchAll(/([\w-]+)\s*:\s*([^;]+);/g)) out[m[1]] = m[2].replace(/\s*!important/, '').trim();
+    return out;
+  }
+  const ratio = (fg: string, bg: string, scheme: 'light' | 'dark') =>
+    contrast(colorOf(fg, tokensFor(scheme), scheme), colorOf(bg, tokensFor(scheme), scheme));
+
+  it('the light-mode accent is unchanged and the dark-mode alias follows --wa-accent', () => {
+    expect(colorOf('var(--color-accent)', light, 'light')).toEqual(colorOf('#ad2c4d', light, 'light'));
+    expect(colorOf('var(--color-accent-dark)', light, 'light')).toEqual(colorOf('#8c0f37', light, 'light'));
+    expect(colorOf('var(--color-accent)', dark, 'dark')).toEqual(colorOf('var(--wa-accent)', dark, 'dark'));
+    expect(colorOf('var(--color-accent-dark)', dark, 'dark')).toEqual(colorOf('var(--wa-accent-dark)', dark, 'dark'));
+    // A tenant accent (components/platform/OrgBrandingStyle.tsx) still wins in dark.
+    const branded = new Map(dark).set('--org-accent', '#2563eb');
+    expect(colorOf('var(--color-accent)', branded, 'dark')).toEqual(colorOf('#2563eb', branded, 'dark'));
+  });
+
+  it.each(['light', 'dark'] as const)('%s: the active rail row, its icon and both count badges read on the accent (M1, M13)', async (scheme) => {
+    const { default: WorkspaceSidebarSections } = await import('@/components/portal/WorkspaceSidebarSections');
+    const items = [
+      { href: '/partner', label: 'Overview', group: 'primary' as const, exact: true, badgeKey: 'jobs_pending' as const },
+      { href: '/partner/milestones', label: 'Milestones', group: 'primary' as const, badgeKey: 'jobs_live' as const },
+    ];
+    const { container } = render(
+      <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_live: 3 }}
+        translateLabel={(s) => s} childToggleLabel={() => 'toggle'} onNavigate={() => {}} storageKey={`m13-${scheme}`} forceExpanded />,
+    );
+    const active = container.querySelector<HTMLAnchorElement>('a.workspace-sidebar-link.active')!;
+    expect(active.textContent).toContain('Milestones');
+    expect(active.querySelector('.workspace-nav-badge')?.textContent).toBe('3');
+    expect(container.querySelector('a.workspace-sidebar-link:not(.active) .workspace-nav-badge')?.textContent).toBe('2');
+
+    const row = declsOf(rail, `${SHELL} .workspace-sidebar-link.active`);
+    expect(ratio(row.color, row.background, scheme), `${scheme} active row label`).toBeGreaterThanOrEqual(4.5);
+    const icon = declsOf(rail, `${SHELL} .workspace-sidebar-link.active .workspace-sidebar-icon,\n${SHELL} .workspace-sidebar-link.active svg`);
+    expect(ratio(icon.color, row.background, scheme), `${scheme} active row icon`).toBeGreaterThanOrEqual(4.5);
+    const badge = declsOf(rail, `${SHELL} .workspace-nav-badge`);
+    expect(ratio(badge.color, badge.background, scheme), `${scheme} count badge`).toBeGreaterThanOrEqual(4.5);
+    const activeBadge = declsOf(rail, `${SHELL} .workspace-sidebar-link.active .workspace-nav-badge`);
+    expect(ratio(activeBadge.color, activeBadge.background, scheme), `${scheme} badge on the active row`).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(activeBadge.background, row.background, scheme), `${scheme} badge pill against the active row`).toBeGreaterThanOrEqual(3);
+    // Staff bottom nav: the portal override of .marketing-bottom-nav__link--active (MobileBottomNav renders that class).
+    const tab = declsOf(rail, '.workspace-shell-root[data-workspace-role] .marketing-bottom-nav__link--active');
+    expect(ratio(tab.color, tab.background, scheme), `${scheme} bottom-nav active tab`).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(['light', 'dark'] as const)('%s: the Astryx primary button ("Add student") reads on the portal accent (M1)', async (scheme) => {
+    const { Button } = await import('@astryxdesign/core/Button');
+    const { container } = render(<Button label="Add student" variant="primary" size="md" />);
+    const button = container.querySelector('button')!;
+    expect(button.className.split(/\s+/)).toEqual(expect.arrayContaining(['astryx-button', 'primary']));
+    const hook = declsOf(portalTokens, '.astryx-button.primary');
+    expect(ratio(hook['--color-on-accent'], 'var(--color-accent)', scheme), `${scheme} Add student`).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(['light', 'dark'] as const)('%s: an admin link painted var(--color-accent) reads on the dark surfaces (M4)', async (scheme) => {
+    vi.stubGlobal('fetch', vi.fn(async () => json({}, 500)));
+    const { default: MfaStatusBanner } = await import('@/components/admin/MfaStatusBanner');
+    render(<MfaStatusBanner />);
+    const link = await screen.findByText('Set up now →');
+    expect(link.style.color).toBe('var(--color-accent)');
+    for (const surface of ['var(--wa-surface)', 'var(--wa-bg)', 'var(--surface-container-lowest)']) {
+      if (scheme === 'light' && surface === 'var(--surface-container-lowest)') continue; // main.css :root holds the dark value
+      expect(ratio(link.style.color, surface, scheme), `${scheme} link on ${surface}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it.each(['light', 'dark'] as const)('%s: the Delete account control pairs the accent fill with the adaptive foreground (M14)', async (scheme) => {
+    const { default: DeleteAccountButton } = await import('@/components/portal/DeleteAccountButton');
+    render(<DeleteAccountButton />);
+    const button = screen.getByRole('button', { name: /delete/i });
+    expect(button.style.background).toBe('var(--color-accent)');
+    expect(button.style.color).toBe('var(--wa-on-accent-control)');
+    expect(ratio(button.style.color, button.style.background, scheme), `${scheme} Delete account`).toBeGreaterThanOrEqual(4.5);
   });
 });

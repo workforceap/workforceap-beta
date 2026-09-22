@@ -390,7 +390,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       padding: '0.35rem 0.5rem',
                       borderRadius: '0.375rem',
                       background: 'var(--color-accent)',
-                      color: 'var(--wa-on-accent)',
+                      color: 'var(--wa-on-accent-control)',
                       fontSize: '0.8125rem',
                       fontWeight: 600,
                       textDecoration: 'none',

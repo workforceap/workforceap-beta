@@ -453,7 +453,7 @@ export default async function EmployerCandidateProfilePage({
                 textAlign: 'center',
                 padding: '0.8rem',
                 background: 'var(--color-accent)',
-                color: 'var(--color-on-accent)',
+                color: 'var(--wa-on-accent-control)',
                 borderRadius: '0.75rem',
                 fontWeight: 700,
                 textDecoration: 'none',

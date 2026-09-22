@@ -182,7 +182,7 @@ export default function EligibilityDatasheetPanel({ previewRows }: Props) {
           className="btn"
           style={{
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'var(--wa-on-accent-control)',
             border: 'none',
             cursor: isPending ? 'wait' : 'pointer',
           }}

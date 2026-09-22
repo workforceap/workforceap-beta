@@ -52,7 +52,7 @@ export default function AdminMemberQuickSummary({ memberId }: { memberId: string
           borderRadius: '0.45rem',
           border: '1px solid var(--color-accent, #ad2c4d)',
           background: 'var(--color-accent, #ad2c4d)',
-          color: '#fff',
+          color: 'var(--wa-on-accent-control)',
           cursor: isPending ? 'wait' : 'pointer',
         }}
       >

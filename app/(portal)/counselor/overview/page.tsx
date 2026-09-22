@@ -350,7 +350,7 @@ export default async function CounselorPortalPage({
         </div>
         {/* Stats grid */}
         <div className="portal-pad-x" style={{ marginTop:"1rem", display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:"1rem", marginBottom:"1.5rem" }}>
-          <div className="wa-text-white" style={{gridColumn:"span 2", borderRadius:"0.75rem", padding:"1.25rem", position:"relative", overflow:"hidden", background: 'var(--color-accent)'}}>
+          <div style={{gridColumn:"span 2", borderRadius:"0.75rem", padding:"1.25rem", position:"relative", overflow:"hidden", background: 'var(--color-accent)', color: 'var(--wa-on-accent-control)'}}>
             <div style={{ position:"relative", zIndex:10 }}>
               <p className="wa-text-[13px] wa-uppercase wa-tracking-widest" style={{ opacity:0.85, marginBottom:"0.25rem" }}>{t('yourMembers')}</p>
               <p className="wa-text-4xl wa-font-bold wa-tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{assignments.length}</p>
@@ -529,7 +529,7 @@ export default async function CounselorPortalPage({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <div style={{
                             width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem',
-                            background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
+                            background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '0.875rem', fontWeight: 700, color: '#fff', flexShrink: 0,
                           }}>

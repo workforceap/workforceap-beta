@@ -220,7 +220,7 @@ export default function MemberDuplicatesClient() {
                   padding: '0.5rem 1.125rem', borderRadius: '0.5rem',
                   border: 'none',
                   background: merging ? 'var(--surface-container-high)' : 'var(--color-accent)',
-                  color: '#fff', fontWeight: 700, fontSize: '0.875rem',
+                  color: merging ? 'var(--color-on-surface)' : 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: '0.875rem',
                   cursor: merging || sel.primary === sel.secondary ? 'default' : 'pointer',
                   opacity: merging || sel.primary === sel.secondary ? 0.6 : 1,
                 }}

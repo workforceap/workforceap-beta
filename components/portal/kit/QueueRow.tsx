@@ -72,7 +72,7 @@ export function QueueRow({ tone, icon, title, meta, flag, action, onClick }: Que
               height: 38,
               borderRadius: 12,
               background: tone === 'red' ? 'var(--color-accent)' : tone === 'yellow' ? 'var(--wa-gold)' : 'var(--wa-info)',
-              color: 'var(--wa-on-accent)',
+              color: 'var(--wa-on-accent-control)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

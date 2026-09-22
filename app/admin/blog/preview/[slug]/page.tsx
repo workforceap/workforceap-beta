@@ -129,7 +129,7 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
                 display: 'inline-block',
                 padding: '0.75rem 1.5rem',
                 background: 'var(--color-accent)',
-                color: 'white',
+                color: 'var(--wa-on-accent-control)',
                 borderRadius: '6px',
                 textDecoration: 'none',
                 fontWeight: 600,

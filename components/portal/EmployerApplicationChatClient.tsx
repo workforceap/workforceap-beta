@@ -103,7 +103,7 @@ export default function EmployerApplicationChatClient({
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: 700,
-            color: '#fff',
+            color: 'var(--wa-on-accent-control)',
             fontSize: '0.8125rem',
             flexShrink: 0,
           }}

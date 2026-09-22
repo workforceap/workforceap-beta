@@ -246,7 +246,7 @@ export default async function LearningPage() {
       {/* Current module card */}
       {ACTIVE_PATHWAY && (
       <section style={{ margin: '0 1.5rem 1.5rem' }}>
-        <div className="wa-bg-gradient-to-br from-[var(--color-accent-dark)] to-[var(--color-accent)] wa-text-white" style={{ padding: '1.25rem', borderRadius: '0.75rem' }}>
+        <div className="wa-bg-gradient-to-br from-[var(--wa-hero-crimson-dark)] to-[var(--wa-hero-crimson)] wa-text-white" style={{ padding: '1.25rem', borderRadius: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
             <span className="bg-white/20 wa-text-[13px] wa-font-bold wa-tracking-wider wa-uppercase" style={{ padding: '0.125rem 0.5rem', borderRadius: '0.25rem' }}>{overallPct > 0 ? 'Active' : 'Next up'}</span>
             <span className="material-symbols-outlined wa-text-sm" style={{ '--ms-fill': 1 }}>timer</span>

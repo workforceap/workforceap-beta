@@ -387,7 +387,7 @@ function CascadeCard({
             borderRadius: 'var(--radius-sm)',
             border: 'none',
             background: 'var(--color-accent, #1565c0)',
-            color: 'white',
+            color: 'var(--wa-on-accent-control)',
             cursor: busy ? 'wait' : 'pointer',
             fontSize: '0.9rem',
             fontWeight: 600,
