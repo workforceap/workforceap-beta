@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import EmployerJobsBoard, { type EmployerJobBoardItem } from '@/components/employer/EmployerJobsBoard';
+import { jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
 
 /**
  * Storybook-lite showcase — the employer "My Jobs" board in the Command
@@ -29,7 +30,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 5,
     suggestedProgramsCount: 2,
     status: 'live',
-    statusLabel: 'Live',
+    statusLabel: jobPostingStatusLabel('live', 'employer'),
     applicationsCount: 14,
     updatedAt: daysAgo(1),
     readinessLevel: 'solid',
@@ -48,7 +49,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 4,
     suggestedProgramsCount: 1,
     status: 'live',
-    statusLabel: 'Live',
+    statusLabel: jobPostingStatusLabel('live', 'employer'),
     applicationsCount: 9,
     updatedAt: daysAgo(3),
     readinessLevel: 'solid',
@@ -67,7 +68,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 3,
     suggestedProgramsCount: 1,
     status: 'approved',
-    statusLabel: 'Approved',
+    statusLabel: jobPostingStatusLabel('approved', 'employer'),
     applicationsCount: 2,
     updatedAt: daysAgo(2),
     readinessLevel: 'solid',
@@ -86,7 +87,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 3,
     suggestedProgramsCount: 1,
     status: 'pending',
-    statusLabel: 'Pending review',
+    statusLabel: jobPostingStatusLabel('pending', 'employer'),
     applicationsCount: 0,
     updatedAt: daysAgo(1),
     readinessLevel: 'solid',
@@ -105,7 +106,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 0,
     suggestedProgramsCount: 0,
     status: 'draft',
-    statusLabel: 'Draft',
+    statusLabel: jobPostingStatusLabel('draft', 'employer'),
     applicationsCount: 0,
     updatedAt: daysAgo(6),
     readinessLevel: 'thin',
@@ -127,7 +128,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 4,
     suggestedProgramsCount: 2,
     status: 'draft',
-    statusLabel: 'Draft',
+    statusLabel: jobPostingStatusLabel('draft', 'employer'),
     applicationsCount: 0,
     updatedAt: daysAgo(4),
     readinessLevel: 'usable',
@@ -148,7 +149,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 2,
     suggestedProgramsCount: 0,
     status: 'filled',
-    statusLabel: 'Filled',
+    statusLabel: jobPostingStatusLabel('filled', 'employer'),
     applicationsCount: 11,
     updatedAt: daysAgo(20),
     readinessLevel: 'solid',
@@ -167,7 +168,7 @@ const JOBS: EmployerJobBoardItem[] = [
     requirementsCount: 4,
     suggestedProgramsCount: 1,
     status: 'expired',
-    statusLabel: 'Expired',
+    statusLabel: jobPostingStatusLabel('expired', 'employer'),
     applicationsCount: 6,
     updatedAt: daysAgo(45),
     readinessLevel: 'solid',
