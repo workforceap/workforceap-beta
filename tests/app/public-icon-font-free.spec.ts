@@ -16,7 +16,6 @@ const PUBLIC_TREES = [
   'app/(auth)',
   'app/(decision-journey)',
   'app/apply',
-  'app/careers',
   'app/consent',
   'app/employer',
   'app/employers',
@@ -33,7 +32,6 @@ const PUBLIC_TREES = [
   'components/error',
   'components/forms',
   'components/marketing',
-  'components/public',
 ];
 
 const PUBLIC_FILES = [
