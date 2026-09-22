@@ -55,8 +55,10 @@ const makeRequest = (body: Record<string, unknown>): any =>
 
 const genericBody = {
   found: false,
+  // Review 2026-09-22: no SMS sender exists and this route never looks an
+  // application up, so the public sentence must not claim either.
   message:
-    'If we have an application on file for that email, you will receive status updates by email and SMS. Otherwise, you can submit a new application at workforceap.org/apply.',
+    'This page cannot look up application status. If you applied, your decision will be sent by email to the address you applied with. To ask about your application now, contact the team at workforceap.org/contact, or submit a new application at workforceap.org/apply.',
 };
 
 describe('POST /api/apply/status-lookup', () => {
@@ -107,6 +109,10 @@ describe('POST /api/apply/status-lookup', () => {
     }
 
     expect(bodies).toEqual(lookups.map(() => genericBody));
+    for (const body of bodies) {
+      expect(body.message).not.toMatch(/SMS/i);
+      expect(body.message).not.toMatch(/text message/i);
+    }
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
     expect(prisma.application.findFirst).not.toHaveBeenCalled();
     expect(applicationStatusForPublicLookup).not.toHaveBeenCalled();
