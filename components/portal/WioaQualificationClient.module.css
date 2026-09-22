@@ -1,10 +1,10 @@
 .root { display: grid; gap: 24px; min-width: 0; color: var(--wa-text); font-size: 16px; line-height: 1.6; }
 /* Local bridge for the public Next route; never import portal tokens globally.
    The voice panel (PortalVoiceSession) paints its dark session chrome and suggestion cards from the
-   portal-only neutrals --wa-sidebar-bg / --wa-sidebar-text / --wa-sidebar-border / --wa-surface-2 /
+   portal-only neutrals --wa-sidebar-bg / --wa-sidebar-text / --wa-sidebar-border / --wa-sidebar-muted (VoiceOrb muted) / --wa-surface-2 /
    --wa-muted; the public route loads css/wa-brand-tokens.css but not css/portal-tokens.css, so their
    values are copied from portal-tokens.css verbatim (pinned by tests/components/wioa-public-voice-tokens.spec.tsx). */
-.public { --wa-text: var(--color-on-surface, #262326); --wa-surface: var(--surface-container-lowest, #fff); --wa-border: var(--outline-variant, #e0dce0); --wa-control-border: #858585; --wa-type-body: 16px; --wa-radius-sm: 8px; --wa-sidebar-bg: #161616; --wa-sidebar-text: #ffffff; --wa-sidebar-border: #2a2a2a; --wa-surface-2: light-dark(#f4f4f5, #25181c); --wa-muted: light-dark(#6b6b6b, #b39ea4); max-width: 960px; margin: 0 auto; padding: 32px 16px 48px; }
+.public { --wa-text: var(--color-on-surface, #262326); --wa-surface: var(--surface-container-lowest, #fff); --wa-border: var(--outline-variant, #e0dce0); --wa-control-border: #858585; --wa-type-body: 16px; --wa-radius-sm: 8px; --wa-sidebar-bg: #161616; --wa-sidebar-text: #ffffff; --wa-sidebar-border: #2a2a2a; --wa-sidebar-muted: #cfcfcf; --wa-surface-2: light-dark(#f4f4f5, #25181c); --wa-muted: light-dark(#6b6b6b, #b39ea4); max-width: 960px; margin: 0 auto; padding: 32px 16px 48px; }
 :global(.dark) .public, :global([data-theme='dark']) .public { --wa-control-border: #aa808d; }
 .root h1 { font-size: clamp(26px, 6vw, 36px); line-height: 1.2; }
 .root h2 { font-size: 20px; line-height: 1.35; font-weight: 700; }

@@ -29,8 +29,10 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-on-accent-container);
-  background: var(--color-accent-container);
+  /* Soft accent chip pairing (css/wa-brand-tokens.css): the former
+     --color-on-accent-container / --color-accent-container names are defined nowhere. */
+  color: var(--wa-accent-text);
+  background: var(--wa-accent-soft);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-sm);
   border: none;
