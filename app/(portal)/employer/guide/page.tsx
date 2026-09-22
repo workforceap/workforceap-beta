@@ -47,7 +47,7 @@ const FAQS = [
   },
   {
     q: 'How long until I see candidates?',
-    a: 'You can start seeing matched candidates within 1–2 business days of posting a role, depending on your location and requirements.',
+    a: 'Our team reviews each new posting before matching begins, and you get an email when candidates are ready. Timing depends on your location and requirements.',
   },
   {
     q: 'What industries do you serve?',

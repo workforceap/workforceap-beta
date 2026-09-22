@@ -52,7 +52,7 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
   const steps = [
     { num: '1', icon: 'search', title: 'Review the programs', desc: `Browse the certificate tracks below and pick the one that fits your interests.` },
     { num: '2', icon: 'file-text', title: 'Apply in about 10 minutes', desc: 'One short online application. No payment information is ever requested.' },
-    { num: '3', icon: 'check-circle', title: 'We enroll you in your program', desc: `Allow 24–48 hours for WorkforceAP to enroll you into your chosen program — it's a manual setup process.` },
+    { num: '3', icon: 'check-circle', title: 'We enroll you in your program', desc: `Our team enrolls you into your chosen program by hand and emails you when it's done.` },
     { num: '4', icon: 'rocket_launch', title: 'Start training', desc: 'Self-paced and flexible — built to fit around your class schedule and activities.' },
   ];
 
@@ -105,7 +105,7 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
               <Link className="dbtn dbtn--solid" href={applyBase}>Start your application <span>→</span></Link>
               <a className="dbtn dbtn--glass" href="#school-programs">See the programs</a>
             </div>
-            <p className="meta-note">About 10 minutes to apply • Program enrollment setup takes 24–48 hours • No payment information requested</p>
+            <p className="meta-note">About 10 minutes to apply • Our team enrolls you by hand and emails you when it's done • No payment information requested</p>
           </div>
 
           <div className="hero-glass">

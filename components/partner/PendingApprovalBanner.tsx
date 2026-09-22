@@ -25,7 +25,7 @@ export default function PendingApprovalBanner() {
             Your account is pending approval
           </p>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.55 }}>
-            You can explore onboarding materials and set up your profile. Referral tools will unlock once our team reviews and approves your organization — usually within 1 business day.
+            You can explore onboarding materials and set up your profile. Referral tools will unlock once our team reviews and approves your organization — you&rsquo;ll get an email when that happens.
           </p>
         </div>
       </div>

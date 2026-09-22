@@ -89,7 +89,7 @@ export default async function DashboardHelpPage() {
                   with your name and the benefit you&rsquo;d like to request.
                 </p>
                 <p style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', lineHeight: 1.5, margin: 0 }}>
-                  We&rsquo;ll process your request and follow up within 2–3 business days.
+                  We&rsquo;ll review your request and follow up by email.
                 </p>
               </div>
             </div>

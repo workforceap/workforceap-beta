@@ -148,7 +148,7 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
               messages: serializedMessages,
               portalUserId: user.id,
             }}
-            subtitle="We typically reply within one business day."
+            subtitle="Our team reads every message and replies here."
             emptyHint="No messages yet. Reach out about referrals, milestones, or program questions."
             contextLabel={selectedMember ? `Regarding ${selectedMember.fullName}` : undefined}
             initialDraft={selectedMember ? `Regarding ${selectedMember.fullName}: ` : undefined}

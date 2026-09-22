@@ -74,7 +74,7 @@ export default function MentorApplyForm() {
           <h2>Application Received!</h2>
           <p>
             Thanks for applying to mentor with WorkforceAP. We&rsquo;ll review your application
-            and reach out within a few business days.
+            and reach out by email.
           </p>
           <LocalizedLink href="/" className="btn btn-primary">
             Back to Home
