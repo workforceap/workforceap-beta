@@ -1477,11 +1477,8 @@
     "appliedViaYourLink": "Solicitudes recibidas con tu enlace: {count}",
     "enrollmentAndPlacementDates": "Las fechas de inscripción y colocación reflejan los registros de WorkforceAP.",
     "viewAll": "Ver todos",
-    "noReferredMembersYet": "Aún no hay miembros referidos",
     "shareReferralLink": "Comparte tu enlace de referido para que los solicitantes se inscriban con tu organización atribuida.",
     "referralGuide": "Guía de referidos",
-    "sendApplicantsTo": "Envía solicitantes a workforceap.org/apply y pídeles que indiquen {partnerName} cuando se les pregunte cómo se enteraron de WorkforceAP.",
-    "openReferralGuide": "Abrir guía de referidos",
     "partnerAssistant": "Asistente del socio",
     "askAboutReferrals": "Pregunta sobre referidos, progreso de miembros o cómo usar el portal del socio.",
     "quickActions": "Acciones rápidas",
@@ -1555,12 +1552,6 @@
     "messagesMetaDescription": "Envía un mensaje al equipo de WorkforceAP.",
     "noMessagesYetTitle": "Aún no hay mensajes",
     "messagesAuditPaused": "El acceso a mensajes está disponible. El contenido, los acuses de lectura y la sincronización en tiempo real están en pausa para esta auditoría.",
-    "noMilestonesYet": "Aún no hay hitos",
-    "noMilestonesYetDescription": "Los hitos aparecerán aquí a medida que tus miembros avancen en la capacitación.",
-    "noMembersYet": "Aún no hay miembros",
-    "noMembersYetDescription": "Aún no has referido a ningún miembro. Toca Invitar miembro arriba para empezar a armar tu pipeline.",
-    "noMembersMatchFilter": "Ningún miembro coincide con este filtro. Prueba otra opción.",
-    "noMembersInFilter": "No hay miembros en este filtro. Prueba “Todos” o vuelve más tarde.",
     "exportsTitle": "Exportaciones",
     "exportsGoal": "Descarga un CSV de cada miembro referido, etapa, progreso y última actualización — solo de tu organización. Ábrelo en Excel o Google Sheets.",
     "resourcesTitle": "Recursos",
@@ -4053,6 +4044,58 @@
         "title": "Ninguna conversación coincide",
         "body": "Borra el filtro o la búsqueda para ver todas las conversaciones.",
         "action": "Borrar filtros"
+      }
+    },
+    "partner": {
+      "referrals": {
+        "title": "Aún no hay miembros referidos",
+        "body": "Los miembros que se postulan con tu enlace de referencia o una invitación aparecen aquí con sus fechas de inscripción y colocación.",
+        "action": "Abrir la guía de referencias",
+        "secondary": "Miembros referidos"
+      },
+      "referralsFiltered": {
+        "title": "Ningún miembro coincide con este filtro",
+        "body": "Borra la búsqueda y el filtro de etapa para ver a todos los miembros referidos.",
+        "action": "Borrar filtros"
+      },
+      "payouts": {
+        "title": "Aún no hay pagos",
+        "body": "Un pago se registra aquí después de que WorkforceAP verifica una colocación de un miembro que referiste.",
+        "action": "Miembros referidos"
+      },
+      "pendingReviewsClear": {
+        "title": "No hay revisiones de colocación pendientes",
+        "body": "Ningún miembro que referiste ha reportado en los últimos 90 días una colocación que siga esperando revisión.",
+        "action": "Miembros referidos"
+      },
+      "attentionClear": {
+        "title": "Ningún miembro necesita atención",
+        "body": "El registro de ningún miembro referido lleva tanto tiempo sin actualizarse como para entrar en esta cola.",
+        "action": "Miembros referidos"
+      },
+      "attentionFiltered": {
+        "title": "No hay miembros en esta urgencia",
+        "body": "Los miembros de los otros niveles siguen listados en Todos.",
+        "action": "Mostrar todos los niveles"
+      },
+      "attentionUnavailable": {
+        "title": "No se pudo cargar la cola de atención",
+        "body": "La cola no respondió. Intenta de nuevo.",
+        "action": "Intentar de nuevo"
+      },
+      "milestones": {
+        "title": "Aún no hay hitos",
+        "body": "Las certificaciones, colocaciones y actividad de los miembros que referiste se registran aquí a medida que ocurren.",
+        "action": "Miembros referidos"
+      },
+      "milestonesPendingClear": {
+        "title": "No hay hitos pendientes de revisión",
+        "body": "Aún no hay ninguna certificación ni colocación registrada para tus miembros; la actividad aparece en Completados."
+      },
+      "milestonesUnavailable": {
+        "title": "No se pudieron cargar los hitos",
+        "body": "La lista de hitos no respondió. Intenta de nuevo.",
+        "action": "Intentar de nuevo"
       }
     }
   }

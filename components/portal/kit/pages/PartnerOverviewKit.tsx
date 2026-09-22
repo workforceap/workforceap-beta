@@ -30,6 +30,7 @@ import {
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import styles from './PartnerOverviewKit.module.css';
 
 // ── KPI grid: StatSparkTile (icon + delta chip + optional sparkline) ──────────
@@ -111,6 +112,9 @@ export interface PartnerPayoutLedgerRow {
 }
 
 export function PartnerPayoutLedger({ rows }: { rows: PartnerPayoutLedgerRow[] }) {
+  // Rows are `partner_payout_sent` events for this partner; none yet means no
+  // verified placement has paid out, not that the ledger failed to load.
+  if (rows.length === 0) return <PartnerEmptyState variant="payouts" framed />;
   return (
     <DataTable<PartnerPayoutLedgerRow>
       columns={[
@@ -132,8 +136,6 @@ export function PartnerPayoutLedger({ rows }: { rows: PartnerPayoutLedgerRow[] }
       rows={rows}
       rowKey={(r) => r.id}
       mobile="scroll"
-      emptyTitle="No payouts yet"
-      emptyDescription="Verified placements that generate a payout will appear here."
     />
   );
 }

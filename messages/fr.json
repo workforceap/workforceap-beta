@@ -1420,11 +1420,8 @@
     "appliedViaYourLink": "Candidatures via votre lien : {count}",
     "enrollmentAndPlacementDates": "Les dates d'inscription et de placement reflètent les données WorkforceAP.",
     "viewAll": "Tout voir",
-    "noReferredMembersYet": "Aucun membre recommandé pour l'instant",
     "shareReferralLink": "Partagez votre lien de recommandation pour que les candidats puissent s'inscrire avec votre organisation attribuée.",
     "referralGuide": "Guide de recommandation",
-    "sendApplicantsTo": "Envoyez les candidats sur workforceap.org/apply et demandez-leur de mentionner {partnerName} quand on leur demande comment ils ont connu WorkforceAP.",
-    "openReferralGuide": "Ouvrir le guide de recommandation",
     "partnerAssistant": "Assistant partenaire",
     "askAboutReferrals": "Demandez des informations sur les recommandations, la progression des membres ou l'utilisation du portail partenaire.",
     "quickActions": "Actions rapides",
@@ -1498,12 +1495,6 @@
     "messagesMetaDescription": "Envoyez un message à l’équipe WorkforceAP.",
     "noMessagesYetTitle": "Pas encore de messages",
     "messagesAuditPaused": "L’accès à la messagerie est disponible. Le contenu, les accusés de lecture et la sync temps réel sont en pause pour cet audit.",
-    "noMilestonesYet": "Pas encore d’étapes",
-    "noMilestonesYetDescription": "Les étapes apparaîtront ici à mesure que vos membres progressent dans la formation.",
-    "noMembersYet": "Pas encore de membres",
-    "noMembersYetDescription": "Vous n’avez encore parrainé aucun membre. Appuyez sur Inviter un membre ci-dessus pour démarrer votre pipeline.",
-    "noMembersMatchFilter": "Aucun membre ne correspond à ce filtre. Essayez une autre option.",
-    "noMembersInFilter": "Aucun membre dans ce filtre. Essayez « Tous » ou revenez plus tard.",
     "exportsTitle": "Exports",
     "exportsGoal": "Téléchargez un CSV de chaque membre parrainé, étape, progression et dernière mise à jour — limité à votre organisation. Ouvrez-le dans Excel ou Google Sheets.",
     "resourcesTitle": "Ressources",
@@ -3993,6 +3984,58 @@
         "title": "Aucune conversation ne correspond",
         "body": "Effacez le filtre ou la recherche pour voir toutes les conversations.",
         "action": "Effacer les filtres"
+      }
+    },
+    "partner": {
+      "referrals": {
+        "title": "Aucun membre orienté pour le moment",
+        "body": "Les membres qui postulent avec votre lien d'orientation ou une invitation apparaissent ici avec leurs dates d'inscription et de placement.",
+        "action": "Ouvrir le guide d'orientation",
+        "secondary": "Membres orientés"
+      },
+      "referralsFiltered": {
+        "title": "Aucun membre ne correspond à ce filtre",
+        "body": "Effacez la recherche et le filtre d'étape pour voir tous les membres orientés.",
+        "action": "Effacer les filtres"
+      },
+      "payouts": {
+        "title": "Aucun versement pour le moment",
+        "body": "Un versement est enregistré ici après que WorkforceAP a vérifié le placement d’un membre que vous avez orienté.",
+        "action": "Membres orientés"
+      },
+      "pendingReviewsClear": {
+        "title": "Aucune vérification de placement en attente",
+        "body": "Aucun membre que vous avez orienté n'a signalé, au cours des 90 derniers jours, un placement encore en attente de vérification.",
+        "action": "Membres orientés"
+      },
+      "attentionClear": {
+        "title": "Aucun membre n'a besoin d'attention",
+        "body": "Le dossier d'aucun membre orienté n'est resté assez longtemps sans mise à jour pour entrer dans cette file.",
+        "action": "Membres orientés"
+      },
+      "attentionFiltered": {
+        "title": "Aucun membre à ce niveau d’urgence",
+        "body": "Les membres des autres niveaux restent listés sous Tous.",
+        "action": "Afficher tous les niveaux"
+      },
+      "attentionUnavailable": {
+        "title": "Impossible de charger la file d'attention",
+        "body": "La file n'a pas répondu. Réessayez.",
+        "action": "Réessayer"
+      },
+      "milestones": {
+        "title": "Aucun jalon pour le moment",
+        "body": "Les certifications, placements et activités des membres que vous avez orientés sont enregistrés ici au fil de l'eau.",
+        "action": "Membres orientés"
+      },
+      "milestonesPendingClear": {
+        "title": "Aucun jalon en attente de vérification",
+        "body": "Aucune certification ni aucun placement n'est encore enregistré pour vos membres ; l'activité figure sous Terminés."
+      },
+      "milestonesUnavailable": {
+        "title": "Impossible de charger les jalons",
+        "body": "La liste des jalons n'a pas répondu. Réessayez.",
+        "action": "Réessayer"
       }
     }
   }

@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle, Bell, Clock, Eye, MessageSquare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { CardHead, FormField, KitEmptyState, QueueRow, StatusTag, type QueueTone } from '@/components/portal/kit';
+import { CardHead, FormField, QueueRow, StatusTag, type QueueTone } from '@/components/portal/kit';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
+import { partnerAttentionEmptyVariant } from '@/lib/partner/emptyState';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 
@@ -85,7 +87,6 @@ function mergeRecentLogs(fetched: LogRow[], current: LogRow[]): LogRow[] {
 const ASSIGN_FAILED = 'Could not change the owner. Please try again.';
 
 export default function PartnerAttentionClient({ initialTier = 'high' as TierFilter }) {
-  const t = useTranslations('partner');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -334,16 +335,19 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
           </p>
         ) : null}
         {loadError ? (
-          <div role="alert" className="wa-kit-card wa-kit-card--sm">
-            <p style={{ color: 'var(--wa-muted)', marginBottom: 12 }}>{loadError}</p>
-            <button type="button" className="btn btn-outline btn-sm" onClick={refreshQueue}>
-              Retry
-            </button>
-          </div>
+          /* The needs-attention GET failed or answered with an unconfirmed shape:
+             a failed read, never "nobody needs attention". */
+          <PartnerEmptyState variant="attentionUnavailable" framed onPrimary={refreshQueue} />
         ) : queueLoading ? (
           <p style={{ color: 'var(--wa-muted)' }}>Loading…</p>
         ) : filtered.length === 0 ? (
-          <KitEmptyState title={t('attentionQueue')} description={t('noMembersInFilter')} />
+          /* The API already applied the tier chip: zero rows under All is the goal,
+             zero rows under one tier is a filter miss. */
+          tierFilter === 'all' ? (
+            <PartnerEmptyState variant={partnerAttentionEmptyVariant(tierFilter)} framed />
+          ) : (
+            <PartnerEmptyState variant={partnerAttentionEmptyVariant(tierFilter)} framed onPrimary={() => pushTierRoute('all')} />
+          )
         ) : (
           <div className="wa-flex wa-flex-col wa-gap-3">
             {filtered.map((m) => {
