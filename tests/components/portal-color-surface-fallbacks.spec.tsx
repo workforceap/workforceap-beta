@@ -24,15 +24,17 @@ import AdminMemberSkillCheckpointPanel from '@/components/admin/AdminMemberSkill
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 
 /**
- * Review of #2478 (item 4) found nine portal/admin sites still painting from
- * `--color-surface`, a custom property no stylesheet on those routes defines
+ * Review of #2478 (item 4) found eleven inline styles across seven portal/admin
+ * files still painting from `--color-surface`, a custom property no stylesheet on those routes defines
  * (css/main.css, css/wa-brand-tokens.css, css/portal-tokens.css and the rest
  * of the (portal)/admin chain only declare `--color-surface-*` siblings, never
  * the bare name). Used without a fallback, the declaration is invalid at
  * computed-value time and the fill renders transparent: inputs, a modal, a
  * popover and history rows all showed whatever sat behind them.
  *
- * Those sites now read `--wa-surface`, the kit's plain surface token. This spec
+ * Those sites now read `--wa-surface`, the kit's plain surface token (the /coach
+ * page canvas reads `--wa-bg`, since its header band already sits on the
+ * surface token). This spec
  * renders the real components, collects the inline styles that reach the DOM,
  * and resolves the fill through the stylesheets the (portal) and /admin
  * layouts actually load (css/portal.css @imports css/portal-tokens.css, which
