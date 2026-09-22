@@ -209,9 +209,9 @@ function MapThisAction({
         flexDirection: 'column',
         gap: '0.35rem',
         padding: '0.5rem',
-        border: '1px solid var(--color-outline-variant, #d8d6d2)',
+        border: '1px solid var(--wa-border)',
         borderRadius: '0.4rem',
-        background: 'var(--surface-container-low, #fafafa)',
+        background: 'var(--surface-container-low)',
         minWidth: 240,
       }}
     >
@@ -725,7 +725,7 @@ export default function TrainingProgressClient({
           flexWrap: 'wrap',
           padding: '0.75rem',
           background: 'var(--wa-surface)',
-          border: '1px solid var(--color-outline-variant, #ededed)',
+          border: '1px solid var(--wa-border)',
           borderRadius: '0.5rem',
         }}
       >
@@ -765,7 +765,7 @@ export default function TrainingProgressClient({
             minWidth: 180,
             padding: '0.4rem 0.6rem',
             borderRadius: '0.4rem',
-            border: '1px solid var(--color-outline-variant, #d8d6d2)',
+            border: '1px solid var(--wa-control-border)',
             fontSize: '0.85rem',
           }}
         />

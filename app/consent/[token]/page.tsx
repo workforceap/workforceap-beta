@@ -15,7 +15,7 @@ function MessageCard({ title, body }: { title: string; body: string }) {
     <main style={PAGE_WRAP}>
       <div
         style={{
-          border: '1px solid var(--color-outline, #e2e2e2)',
+          border: '1px solid var(--outline-variant)',
           borderRadius: '0.75rem',
           padding: '2rem',
           textAlign: 'center',

@@ -7038,7 +7038,7 @@ img.img-fade.loaded { opacity: 1; }
     }
     .mobile-nav-toggle:hover {
         background: var(--surface-container-high, rgba(0,0,0,0.12));
-        border-color: var(--outline, rgba(0,0,0,0.2));
+        border-color: var(--color-on-surface-variant);
         transform: translateY(-1px);
     }
     .mobile-nav-toggle:active { 

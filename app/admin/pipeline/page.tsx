@@ -128,7 +128,7 @@ export default async function PipelinePage({
               fontWeight: 700,
               textDecoration: 'none',
               color: 'var(--wa-text)',
-              border: '1px solid var(--wa-border, rgba(0,0,0,0.12))',
+              border: '1px solid var(--wa-border)',
             }}
           >
             Stale applications

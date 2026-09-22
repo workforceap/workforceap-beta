@@ -59,7 +59,7 @@ const labelStyle: React.CSSProperties = { fontWeight: 600, fontSize: '0.9rem' };
 const inputStyle: React.CSSProperties = {
   padding: '0.6rem 0.7rem',
   borderRadius: '0.45rem',
-  border: '1px solid var(--color-outline, #cbcbcb)',
+  border: '1px solid var(--outline-variant)',
   fontSize: '1rem',
 };
 
@@ -398,7 +398,7 @@ export default function PublicEligibilityForm({
           padding: '0.7rem 1.1rem',
           borderRadius: '0.5rem',
           border: '1px solid var(--color-accent, #ad2c4d)',
-          background: canSubmit ? 'var(--color-accent, #ad2c4d)' : 'var(--color-outline, #c9c9c9)',
+          background: canSubmit ? 'var(--color-accent, #ad2c4d)' : 'var(--outline-variant)',
           color: '#fff',
           fontWeight: 600,
           cursor: canSubmit ? 'pointer' : 'not-allowed',
