@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { ANALYTICS_COHORT_DETAIL_CAP, LOOKUP_CATALOG_CAP, REPORT_SAMPLE_CAP } from '@/lib/db/scanCaps';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 
 const VOICE_TOOL_TYPES = [
   'readiness_voice_session',
@@ -45,7 +47,10 @@ export async function getWeeklyRecapCohortStats(orgId?: string | null): Promise<
   const now = new Date();
   const sevenDaysAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 7));
 
-  const userWhere: Prisma.UserWhereInput = { deletedAt: null, ...(orgId ? { organizationId: orgId } : {}) };
+  // Member accounts only: the recap cron writes weekly_recaps for enrolled
+  // staff too, so both the "Members" column and the recap aggregate read the
+  // same population (lib/admin/memberOnlyWhere.ts; number audit F2 / F7).
+  const userWhere: Prisma.UserWhereInput = { deletedAt: null, ...MEMBER_ONLY_WHERE, ...(orgId ? { organizationId: orgId } : {}) };
 
   // PERF: cohort membership counts and recap rollups are both pushed into
   // Postgres (groupBy / a joined aggregate query) instead of materializing
@@ -75,6 +80,7 @@ export async function getWeeklyRecapCohortStats(orgId?: string | null): Promise<
         AVG(wr.readiness_score_snapshot) FILTER (WHERE wr.readiness_score_snapshot IS NOT NULL) AS "avgReadinessScore"
       FROM weekly_recaps wr
       JOIN users u ON u.id = wr.user_id
+      ${memberOnlySqlJoin()}
       WHERE u.deleted_at IS NULL
         ${orgId ? Prisma.sql`AND u.organization_id = ${orgId}` : Prisma.empty}
       GROUP BY u.enrolled_program
@@ -244,7 +250,7 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
       orderBy: { updatedAt: 'desc' },
     }),
     prisma.user.findMany({
-      where: { deletedAt: null, enrolledAt: { gte: lastWeekStart, lt: weekEndExclusive }, ...(orgId ? { organizationId: orgId } : {}) },
+      where: { deletedAt: null, ...MEMBER_ONLY_WHERE, enrolledAt: { gte: lastWeekStart, lt: weekEndExclusive }, ...(orgId ? { organizationId: orgId } : {}) },
       select: { id: true, enrolledAt: true },
       take: ANALYTICS_COHORT_DETAIL_CAP,
       orderBy: { enrolledAt: 'desc' },
@@ -262,8 +268,10 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
     prisma.user.count({
       where: {
         deletedAt: null,
+        ...MEMBER_ONLY_WHERE,
         ...(orgId ? { organizationId: orgId } : {}),
-        memberEvents: { none: { createdAt: { gte: staleCutoff } } },
+        // Activity the member did; platform mail to the member is not (S1).
+        memberEvents: { none: { createdAt: { gte: staleCutoff }, ...MEMBER_ACTIVITY_EVENT_WHERE } },
         OR: [
           { courseraEnrollmentApproved: true },
           { enrolledAt: { not: null } },
@@ -311,8 +319,10 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
     prisma.user.findMany({
       where: {
         deletedAt: null,
+        ...MEMBER_ONLY_WHERE,
         ...(orgId ? { organizationId: orgId } : {}),
-        memberEvents: { none: { createdAt: { gte: staleCutoff } } },
+        // Activity the member did; platform mail to the member is not (S1).
+        memberEvents: { none: { createdAt: { gte: staleCutoff }, ...MEMBER_ACTIVITY_EVENT_WHERE } },
         OR: [
           { courseraEnrollmentApproved: true },
           { enrolledAt: { not: null } },
@@ -325,7 +335,7 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
         fullName: true,
         email: true,
         enrolledProgram: true,
-        memberEvents: { orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true } },
+        memberEvents: { where: MEMBER_ACTIVITY_EVENT_WHERE, orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true } },
       },
       orderBy: { updatedAt: 'asc' },
       take: REPORT_SAMPLE_CAP,
@@ -457,6 +467,9 @@ export type AiToolsCohortRow = {
 export function aiToolsUserScope(orgId?: string | null): Prisma.UserWhereInput {
   return {
     deletedAt: null,
+    // Member accounts only: staff dogfooding the tools inflated every cohort's
+    // "Members" and "Members using tools" (number audit 2026-09-20, S22 class).
+    ...MEMBER_ONLY_WHERE,
     ...(orgId ? { organizationId: orgId } : {}),
   };
 }
@@ -609,7 +622,9 @@ export type CertificationsCohortRow = {
 export async function getCertificationsCohortStats(): Promise<CertificationsCohortRow[]> {
   const users = await prisma.user.findMany({
     take: 500,
-    where: { deletedAt: null },
+    // Member accounts only, so "N of M members earned certs" is not diluted by
+    // staff in M or credited a staff certification in N (number audit F7 class).
+    where: { deletedAt: null, ...MEMBER_ONLY_WHERE },
     select: { id: true, enrolledProgram: true },
   });
   const byCohort = userIdsByCohort(users);
