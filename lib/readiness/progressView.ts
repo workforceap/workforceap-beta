@@ -50,8 +50,17 @@ export type ReadinessProgressView = {
   weekStats: ReadinessWeekStat[];
   milestones: ReadinessMilestone[];
   priorityAction: ReadinessPriorityAction | null;
+  /** Lowest-percent incomplete area — what the coach note and primary CTA follow. */
+  weakestCategory: ReadinessCategoryKey | null;
   readinessNote: string;
 };
+
+/**
+ * Count goals behind the partial-credit items, matching `lib/readiness/score.ts`
+ * (`done` at 2 resources, 3 pathway steps, 3 applications). Exported so the
+ * recap grounding gate can allow these small numbers in the coach note.
+ */
+export const READINESS_GOAL_COUNTS = { resources: 2, pathwaySteps: 3, applications: 3 } as const;
 
 /** Member-facing labels for the ten weighted score items. */
 export const SCORE_ITEM_LABELS: Record<ScoreBreakdownKey, string> = {
@@ -68,9 +77,12 @@ export const SCORE_ITEM_LABELS: Record<ScoreBreakdownKey, string> = {
 };
 
 /**
- * Highest-impact incomplete item first. Weights match `lib/readiness/score.ts`.
- * Destinations stay on existing member routes — do not retarget training
- * continue-links owned by other in-flight work.
+ * One action per scored item. `getPriorityAction` picks from the weakest
+ * area first (most remaining points wins inside it); this list order only
+ * breaks ties. Weights match `lib/readiness/score.ts`. Training items go to
+ * /dashboard/program ("My Program"), which lists the member's modules —
+ * /dashboard/training is a redirect stub to it, and /dashboard would loop
+ * the member back to the page they clicked from.
  */
 const PRIORITY_ACTIONS: {
   key: ScoreBreakdownKey;
@@ -99,8 +111,8 @@ const PRIORITY_ACTIONS: {
   {
     key: 'completePathwaySteps',
     label: 'Complete more pathway steps in your training program.',
-    href: '/dashboard',
-    ctaLabel: 'View dashboard',
+    href: '/dashboard/program',
+    ctaLabel: 'Continue training',
   },
   {
     key: 'setGoals',
@@ -129,8 +141,8 @@ const PRIORITY_ACTIONS: {
   {
     key: 'startPathway',
     label: 'Start a training pathway to earn readiness points.',
-    href: '/dashboard',
-    ctaLabel: 'View dashboard',
+    href: '/dashboard/program',
+    ctaLabel: 'Start training',
   },
   {
     key: 'weeklyConsistency',
@@ -202,15 +214,42 @@ export function buildReadinessCategories(breakdown: ScoreBreakdown): ReadinessCa
   });
 }
 
+/**
+ * Lowest-percent incomplete area, ties broken by display order. `null` when
+ * every area is at 100%.
+ */
+export function weakestReadinessCategory(categories: ReadinessCategory[]): ReadinessCategory | null {
+  let weakest: ReadinessCategory | null = null;
+  for (const cat of categories) {
+    if (cat.pct >= 100) continue;
+    if (!weakest || cat.pct < weakest.pct) weakest = cat;
+  }
+  return weakest;
+}
+
+/**
+ * The one next step the whole readiness page agrees on: the weakest area's
+ * unfinished item with the most points left (ties keep PRIORITY_ACTIONS
+ * order). An area whose items all read `done` but still sits under 100%
+ * (pathway steps keep scoring past the 3-step goal) yields to the next
+ * weakest area, so the CTA always names something the member can still do.
+ */
 export function getPriorityAction(breakdown: ScoreBreakdown): ReadinessPriorityAction | null {
-  for (const action of PRIORITY_ACTIONS) {
-    if (!breakdown[action.key].done) {
-      return {
-        key: action.key,
-        label: action.label,
-        href: action.href,
-        ctaLabel: action.ctaLabel,
-      };
+  const ranked = [...buildReadinessCategories(breakdown)].sort((a, b) => a.pct - b.pct);
+  for (const cat of ranked) {
+    let best: (typeof PRIORITY_ACTIONS)[number] | null = null;
+    let bestRemaining = -1;
+    for (const action of PRIORITY_ACTIONS) {
+      const item = breakdown[action.key];
+      if (item.done || !cat.items.some((i) => i.key === action.key)) continue;
+      const remaining = item.max - item.earned;
+      if (remaining > bestRemaining) {
+        best = action;
+        bestRemaining = remaining;
+      }
+    }
+    if (best) {
+      return { key: best.key, label: best.label, href: best.href, ctaLabel: best.ctaLabel };
     }
   }
   return null;
@@ -262,6 +301,7 @@ export function buildReadinessProgressView(breakdown: ScoreBreakdown): Readiness
     weekStats,
     milestones: buildReadinessMilestones(categories),
     priorityAction,
+    weakestCategory: weakestReadinessCategory(categories)?.key ?? null,
     readinessNote: priorityAction
       ? `Next: ${priorityAction.label}`
       : 'Every category is complete.',

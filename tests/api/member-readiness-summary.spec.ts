@@ -83,8 +83,9 @@ describe('POST /api/member/readiness/summary', () => {
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.source).toBe('factual');
-    expect(body.summary).toContain('86%');
-    expect(body.summary).toContain('Apply to at least 3 jobs');
+    expect(body.summary).toContain('Training & Certs is your lowest area');
+    expect(body.summary).toContain('Next: Complete more pathway steps');
+    expect(body.summary).not.toContain('86');
     expect(chatCompletion).not.toHaveBeenCalled();
   });
 
@@ -95,14 +96,36 @@ describe('POST /api/member/readiness/summary', () => {
       loadFailed: false,
     });
     vi.mocked(chatCompletion).mockResolvedValue(
-      'Your readiness score is 86%. Resume and engagement are complete. Training is 60% and interviews are 83% because applications are still short of three. Next: apply to at least 3 jobs.',
+      '**Training & Certs is your lowest area** because no certificate is tracked yet and only two pathway steps are logged.\n\nNext, complete more pathway steps in your training program.',
     );
 
     const res = await POST(new Request('http://localhost/api/member/readiness/summary', { method: 'POST' }));
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.source).toBe('ai');
-    expect(body.summary).toContain('86%');
+    // markdown stripped, blank line collapsed to a single paragraph break
+    expect(body.summary).toBe(
+      'Training & Certs is your lowest area because no certificate is tracked yet and only two pathway steps are logged.\nNext, complete more pathway steps in your training program.',
+    );
+  });
+
+  it('falls back to factual recap when the model restates the numbers (the production garble)', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as never);
+    vi.mocked(getScoreBreakdownSafeResult).mockResolvedValue({
+      breakdown: SCREENSHOT_86_BREAKDOWN,
+      loadFailed: false,
+    });
+    vi.mocked(chatCompletion).mockResolvedValue(
+      'Your overall score is 86 out of 105, which is a great achievement! 1. Resume & Profile: 100% (100% completed) 2. Training & Certs: 60% (15 out of 35 earned) 3. Interview & Jobs: 83% (25 out of 30 earned) 4. Engagement: 100% (15 out of 15 earned) To improve, focus on the Training & Certs category by starting the pathway and earning the remaining points (15 out of 35).',
+    );
+
+    const res = await POST(new Request('http://localhost/api/member/readiness/summary', { method: 'POST' }));
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.source).toBe('factual');
+    expect(body.summary).not.toContain('15 out of 35');
+    expect(body.summary).not.toContain('great achievement');
+    expect(body.summary).toContain('Next: Complete more pathway steps');
   });
 
   it('falls back to factual recap when the model invents a score', async () => {
@@ -117,7 +140,8 @@ describe('POST /api/member/readiness/summary', () => {
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.source).toBe('factual');
-    expect(body.summary).toContain('86 of 105 weighted points');
+    expect(body.summary).toContain('Training & Certs is your lowest area');
     expect(body.summary).not.toContain('Acme');
+    expect(body.summary).not.toContain('99');
   });
 });
