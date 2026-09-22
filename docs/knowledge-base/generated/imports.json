@@ -9361,8 +9361,16 @@
   },
   {
     "from": "app/(portal)/dashboard/page.tsx",
-    "specifier": "@/components/error/ErrorBoundary",
+    "specifier": "@/lib/member/trainingStaleness",
     "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingStaleness.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/page.tsx",
+    "specifier": "@/components/error/ErrorBoundary",
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "components/error/ErrorBoundary.tsx"
@@ -9370,7 +9378,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/error/DashboardErrorFallback",
-    "line": 51,
+    "line": 52,
     "kind": "import",
     "external": false,
     "target": "components/error/DashboardErrorFallback.tsx"
@@ -9378,7 +9386,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/points",
-    "line": 52,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "lib/member/points.ts"
@@ -9386,7 +9394,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/loadMemberDashboardHome",
-    "line": 53,
+    "line": 54,
     "kind": "import",
     "external": false,
     "target": "lib/member/loadMemberDashboardHome.ts"
@@ -9394,7 +9402,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/First90DaysCard",
-    "line": 54,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "components/portal/First90DaysCard.tsx"
@@ -9402,7 +9410,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/first90Days",
-    "line": 55,
+    "line": 56,
     "kind": "import",
     "external": false,
     "target": "lib/member/first90Days.ts"
@@ -9410,7 +9418,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/starterProfileReview",
-    "line": 62,
+    "line": 63,
     "kind": "import",
     "external": false,
     "target": "lib/member/starterProfileReview.ts"
@@ -9418,7 +9426,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "next-intl/server",
-    "line": 63,
+    "line": 64,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -9426,7 +9434,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobileProgramTrainingCard",
-    "line": 64,
+    "line": 65,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobileProgramTrainingCard.tsx"
@@ -9434,7 +9442,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobileStateANextStepCard",
-    "line": 65,
+    "line": 66,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobileStateANextStepCard.tsx"
@@ -9442,7 +9450,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobilePriorityActionCard",
-    "line": 66,
+    "line": 67,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobilePriorityActionCard.tsx"
@@ -9450,7 +9458,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobileJourneyTimeline",
-    "line": 67,
+    "line": 68,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobileJourneyTimeline.tsx"
@@ -9458,7 +9466,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobilePointsSection",
-    "line": 68,
+    "line": 69,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobilePointsSection.tsx"
@@ -9466,7 +9474,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobileDiscoverSection",
-    "line": 69,
+    "line": 70,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobileDiscoverSection.tsx"
@@ -9474,7 +9482,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobileQuickActions",
-    "line": 70,
+    "line": 71,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobileQuickActions.tsx"
@@ -9482,7 +9490,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/MobileRecentActivity",
-    "line": 71,
+    "line": 72,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/MobileRecentActivity.tsx"
@@ -9490,7 +9498,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./_components/DesktopDashboard",
-    "line": 72,
+    "line": 73,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/_components/DesktopDashboard.tsx"
@@ -9498,7 +9506,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 73,
+    "line": 74,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -9506,7 +9514,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/MemberApprovalStatusCard",
-    "line": 74,
+    "line": 75,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberApprovalStatusCard.tsx"
@@ -9514,7 +9522,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/memberApprovalCardPlacement",
-    "line": 75,
+    "line": 76,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberApprovalCardPlacement.ts"
@@ -9522,7 +9530,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
-    "line": 76,
+    "line": 77,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
@@ -9530,7 +9538,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/SkillMissionTeaserCard",
-    "line": 77,
+    "line": 78,
     "kind": "import",
     "external": false,
     "target": "components/portal/SkillMissionTeaserCard.tsx"
@@ -9538,7 +9546,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/skillMissions",
-    "line": 80,
+    "line": 81,
     "kind": "import",
     "external": false,
     "target": "lib/member/skillMissions.ts"
@@ -9546,7 +9554,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 81,
+    "line": 82,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -9554,7 +9562,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/MemberCareerPathSection",
-    "line": 84,
+    "line": 85,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/MemberCareerPathSection.tsx"
@@ -9562,7 +9570,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./LogCertificationModal",
-    "line": 87,
+    "line": 88,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/LogCertificationModal.tsx"
@@ -9570,7 +9578,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./PlacementConfirmationStrip",
-    "line": 90,
+    "line": 91,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/PlacementConfirmationStrip.tsx"
@@ -9578,7 +9586,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/pwa/PWAInstallPrompt",
-    "line": 93,
+    "line": 94,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/pwa/PWAInstallPrompt.tsx"
@@ -96129,8 +96137,16 @@
   },
   {
     "from": "lib/admin/trainingDashboard.ts",
-    "specifier": "@/lib/admin/memberOnlyWhere",
+    "specifier": "@/lib/member/trainingStaleness",
     "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingStaleness.ts"
+  },
+  {
+    "from": "lib/admin/trainingDashboard.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
@@ -96138,7 +96154,7 @@
   {
     "from": "lib/admin/trainingDashboard.ts",
     "specifier": "@/lib/admin/careerPlanSignal",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/admin/careerPlanSignal.ts"
@@ -96146,7 +96162,7 @@
   {
     "from": "lib/admin/trainingDashboard.ts",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"

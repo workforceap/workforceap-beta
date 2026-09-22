@@ -4402,17 +4402,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 100,
+        "line": 101,
         "kind": "Variable"
       },
       {
         "name": "generateMetadata",
-        "line": 102,
+        "line": 103,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 111,
+        "line": 112,
         "kind": "FunctionDeclaration",
         "localName": "DashboardPage"
       }
