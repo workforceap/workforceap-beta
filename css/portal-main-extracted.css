@@ -1267,6 +1267,35 @@ html {
         display: none;
     }
 }
+/* Staff shells at phone width (scout M2, 2026-09-22). WorkspaceShell adds
+   --minimal-mobile to every non-member header below 769px: the brand column
+   keeps room for the wordmark + current page instead of shrinking to a few
+   pixels, and the tier badge, attribution and impersonation chip leave the
+   meta row (the badge is repeated in the drawer, the banner already says
+   "Viewing as"). Only the role / super-admin switcher and the bell stay. */
+@media (max-width: 768px) {
+    .workspace-shell-root:not([data-workspace-role='member']) .workspace-shell-header--minimal-mobile .workspace-shell-header__brand {
+        flex: 0 1 auto;
+        min-width: 9.5rem;
+    }
+    /* The wordmark keeps a 24px target (the 44px tap-target rule would make
+       the brand column 66px tall); the current page name sits under it. */
+    .workspace-shell-root:not([data-workspace-role='member']) .workspace-shell-header--minimal-mobile .workspace-shell-brand {
+        display: inline-flex;
+        align-items: center;
+        min-height: 1.5rem;
+        padding-block: 0.1875rem;
+        white-space: nowrap;
+    }
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .super-admin-view-switcher--with-badge {
+        padding-block: 0;
+    }
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-tier-badge,
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-attribution,
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-impersonating-chip {
+        display: none;
+    }
+}
 @media (max-width: 768px) and (prefers-reduced-motion: no-preference) {
     .workspace-shell-header {
         transition: padding 0.2s ease, box-shadow 0.2s ease, gap 0.2s ease;

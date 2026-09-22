@@ -61,6 +61,8 @@ vi.mock('@/components/portal/PageHeader', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalPageFrame', () => ({
   default: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
 }));
+// The phone-width card list is a client component with its own translations; the desktop kit table is what these specs read.
+vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({ default: () => null }));
 vi.mock('@/components/portal/kit', () => ({
   CardHead: ({ title }: { title: string }) => <h2>{title}</h2>,
   DesignSurface: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,

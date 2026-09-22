@@ -14,6 +14,8 @@ vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
+// The phone-width card list is a client component with its own translations; the desktop kit table is what these specs read.
+vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({ default: () => null }));
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.user }));
