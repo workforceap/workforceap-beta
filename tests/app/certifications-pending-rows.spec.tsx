@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 
 /**
- * Review 2026-09-22: both empty states on /dashboard/certifications?ui=legacy
- * (mobile row, desktop records panel, desktop PortalEmptyState) said Coursera
- * certificates "sync automatically" when nothing wrote one. Item 4 of the
- * same review then made a Coursera-reported completion create a `pending`
- * UserCertification, so the page must now say exactly that: pending on
- * report, verified by the team before it counts, self-add still available.
+ * Review 2026-09-22, item 4: a Coursera-reported completion now creates a
+ * `pending` UserCertification, so pending rows reach My Certificates before
+ * staff verify them. The default (kit) view must say which rows are still
+ * pending and count only staff-approved rows as verified, instead of dating
+ * every row as issued. Rendered through the real kit; only the route's data
+ * loaders and unrelated sections are stubbed.
  */
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => {
@@ -43,15 +43,15 @@ vi.mock('@/components/portal/CertificationVaultActions', () => ({
   DownloadAllCertificatesButton: () => <button type="button">Download all fixture</button>,
   CertificationViewButton: () => <button type="button">View fixture</button>,
 }));
-vi.mock('@/components/portal/kit/pages/member/MemberCertificatesKit', () => ({
-  MemberCertificatesKit: () => <div>Kit fixture</div>,
+vi.mock('@/components/ui/ShareButton', () => ({
+  ShareButton: ({ label }: { label?: string }) => <button type="button">{label ?? 'Share fixture'}</button>,
 }));
 
 import DashboardCertificationsPage from '@/app/(portal)/dashboard/certifications/page';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 
-describe('/dashboard/certifications?ui=legacy empty states', () => {
+describe('/dashboard/certifications with pending and approved rows', () => {
   beforeEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -61,23 +61,37 @@ describe('/dashboard/certifications?ui=legacy empty states', () => {
       organizationId: 'org-1',
       courseEnrollments: [],
     } as never);
-    vi.mocked(prisma.userCertification.findMany).mockResolvedValue([] as never);
     vi.mocked(prisma.pathwayStepProgress.findMany).mockResolvedValue([] as never);
   });
 
-  it('tells a member with no certificates how records are actually created, in every layout', async () => {
-    render(await DashboardCertificationsPage({ searchParams: Promise.resolve({ ui: 'legacy' }) }));
+  it('labels a completion-created row as pending verification and counts only approved rows as verified', async () => {
+    vi.mocked(prisma.userCertification.findMany).mockResolvedValue([
+      { id: 'cert-pending', certName: 'Introduction to Technical Support', earnedAt: new Date('2026-09-20T15:00:00.000Z'), status: 'pending' },
+      { id: 'cert-approved', certName: 'Networking Basics', earnedAt: new Date('2026-08-01T12:00:00.000Z'), status: 'approved' },
+    ] as never);
 
-    const notices = screen.getAllByText(/No certificates are recorded yet/);
-    expect(notices).toHaveLength(3);
-    for (const notice of notices) {
-      expect(notice).toHaveTextContent(/When Coursera reports a completed course we add it here as a pending certificate/);
-      expect(notice).toHaveTextContent(/our team verifies it before it counts as earned/);
-      expect(notice).toHaveTextContent(/you can also add a certificate you earned elsewhere/);
-      expect(notice).not.toHaveTextContent(/automatically/i);
-    }
+    render(await DashboardCertificationsPage({ searchParams: Promise.resolve({}) }));
+
+    const pendingTitle = screen.getByRole('heading', { name: 'Introduction to Technical Support' });
+    expect(pendingTitle.closest('div[style]')?.parentElement).toHaveTextContent(/Pending verification · completed Sep 20, 2026/);
+    const approvedTitle = screen.getByRole('heading', { name: 'Networking Basics' });
+    expect(approvedTitle.closest('div[style]')?.parentElement).toHaveTextContent(/Issued Aug 1, 2026/);
+
+    // The verified check mark belongs to the approved row only.
+    expect(screen.getAllByLabelText('Verified')).toHaveLength(1);
+    expect(approvedTitle.parentElement).toContainElement(screen.getByLabelText('Verified'));
+
+    expect(document.body).not.toHaveTextContent(/Issued Sep 20, 2026/);
     expect(document.body).not.toHaveTextContent(/sync automatically/i);
-    expect(document.body).not.toHaveTextContent(/not added here automatically/i);
-    expect(screen.getByRole('link', { name: 'My program' })).toHaveAttribute('href', '/dashboard/program');
+  });
+
+  it('reads the status column so the page can tell the two apart', async () => {
+    vi.mocked(prisma.userCertification.findMany).mockResolvedValue([] as never);
+
+    render(await DashboardCertificationsPage({ searchParams: Promise.resolve({}) }));
+
+    const select = vi.mocked(prisma.userCertification.findMany).mock.calls[0][0]?.select;
+    expect(select).toMatchObject({ status: true, certName: true, earnedAt: true });
+    expect(document.body).toHaveTextContent(/appears here as a pending certificate; our team verifies it before it counts as earned/);
   });
 });

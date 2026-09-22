@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/db/prisma';
+import { ensurePendingCertificationForCompletionSafely } from '@/lib/certifications/pendingFromCompletion';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { getProgramBySlug, getDiscoveredProgram } from '@/lib/content/programs';
 import {
@@ -134,6 +135,23 @@ export async function completeMemberCourse(args: {
     courseId,
     ...(args.source === 'member' ? {} : { learnerActivityAt: args.learnerActivityAt ?? null }),
   });
+
+  // Coursera reported this completion (REST webhook, xAPI, enterprise sync):
+  // the member gets a pending certificate for it right away instead of a
+  // zero on My Certificates while staff verify. A member's own "mark
+  // complete" is not a provider report and still goes through the
+  // self-report certificate form. Idempotent; never touches an existing row.
+  if (args.source !== 'member') {
+    await ensurePendingCertificationForCompletionSafely({
+      userId: args.userId,
+      programSlug,
+      courseSlug: matchedCourse.slug,
+      courseName: matchedCourse.name,
+      courseraCourseId: courseId,
+      completedAt: args.learnerActivityAt ?? null,
+      source: args.source,
+    });
+  }
 
   const rowsAtObservation = completionWrite.previousRows;
   const nextCompletedSlugs = Array.from(

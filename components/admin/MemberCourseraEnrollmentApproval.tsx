@@ -63,7 +63,7 @@ export default function MemberCourseraEnrollmentApproval({
           ? `Coursera invite sent — ${memberName} will get an email to join, then courses unlock.`
           : payload.status === 'already-enrolled'
             ? `Already enrolled${payload.courseName ? ` in ${payload.courseName}` : ''} — nothing to do.`
-            : `Enrolled${payload.courseName ? ` in ${payload.courseName}` : ''}. Certificates are not recorded automatically — the member adds each one under My Certificates and staff verify it.`;
+            : `Enrolled${payload.courseName ? ` in ${payload.courseName}` : ''}. When Coursera reports a completed course a pending certificate is created for the member; staff verify it under Certifications before it counts as earned.`;
       setEnrollResult({ ok: true, text });
       router.refresh();
     } catch {

@@ -1,7 +1,19 @@
 import { CourseProgressStatus } from '@prisma/client';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Review 2026-09-22 item 4: a completed row written here (B4B cron, per-user
+// sync, CSV promotion, xAPI detail) creates a pending certificate. Mocked so
+// the ladder tests stay database-free; the calls are asserted below.
+const certificateMocks = vi.hoisted(() => ({ ensurePending: vi.fn(async () => null) }));
+vi.mock('@/lib/certifications/pendingFromCompletion', () => ({
+  ensurePendingCertificationForCompletionSafely: certificateMocks.ensurePending,
+}));
 
 import { upsertMergedCourseProgress } from '@/lib/coursera/upsertMergedCourseProgress';
+
+beforeEach(() => {
+  certificateMocks.ensurePending.mockClear();
+});
 
 describe('upsertMergedCourseProgress atomic merge ladder', () => {
   it('keeps COMPLETED at the database conflict point during concurrent stale writes', async () => {
@@ -85,6 +97,85 @@ describe('upsertMergedCourseProgress atomic merge ladder', () => {
       expect(sql).toContain('GREATEST(course_progress.score_raw, EXCLUDED.score_raw)');
       expect(sql).toContain('statement_count = course_progress.statement_count +');
     }
+
+    // Both writes left the row COMPLETED, so both hand the completion to the
+    // certificate helper (idempotent there), after their own write returned.
+    expect(certificateMocks.ensurePending).toHaveBeenCalledTimes(2);
+    for (const call of certificateMocks.ensurePending.mock.calls as unknown as Array<[Record<string, unknown>]>) {
+      expect(call[0]).toMatchObject({
+        userId: 'user-1',
+        programSlug: 'program-one',
+        courseSlug: 'course-one',
+        courseraCourseId: 'provider-course-1',
+        source: 'coursera-progress-merge',
+      });
+    }
+    expect((certificateMocks.ensurePending.mock.calls as unknown as Array<[{ completedAt: Date | null }]>)[0][0].completedAt)
+      .toEqual(new Date('2026-08-29T12:00:00.000Z'));
+    const lastWrite = Math.max(...statements.map((_, index) => index));
+    expect(lastWrite).toBeGreaterThanOrEqual(0);
+    expect(certificateMocks.ensurePending.mock.invocationCallOrder[0])
+      .toBeGreaterThan(db.$queryRaw.mock.invocationCallOrder[0]);
+  });
+
+  it('a row that stays IN_PROGRESS creates no certificate', async () => {
+    const db = {
+      $executeRaw: vi.fn(async () => 1),
+      $queryRaw: vi.fn(async (statement: { sql: string }) => {
+        if (statement.sql.includes('SELECT status')) return [];
+        return [{ status: CourseProgressStatus.IN_PROGRESS, inserted: true }];
+      }),
+    };
+
+    await upsertMergedCourseProgress(db as never, {
+      userId: 'user-1',
+      programSlug: 'program-one',
+      courseSlug: 'course-one',
+      courseId: 'provider-course-1',
+      merged: { status: CourseProgressStatus.IN_PROGRESS, percentComplete: 40, lastActivityAt: null },
+      existing: null,
+      completedAt: null,
+    });
+
+    expect(certificateMocks.ensurePending).not.toHaveBeenCalled();
+  });
+
+  it('runs the certificate step after the transaction commits when given the root client', async () => {
+    const order: string[] = [];
+    const tx = {
+      $executeRaw: vi.fn(async () => 1),
+      $queryRaw: vi.fn(async (statement: { sql: string }) => {
+        order.push('query');
+        if (statement.sql.includes('SELECT status')) return [];
+        return [{ status: CourseProgressStatus.COMPLETED, inserted: true }];
+      }),
+    };
+    const db = {
+      ...tx,
+      $transaction: vi.fn(async (fn: (client: typeof tx) => Promise<unknown>) => {
+        const result = await fn(tx);
+        order.push('commit');
+        return result;
+      }),
+    };
+    certificateMocks.ensurePending.mockImplementation(async () => {
+      order.push('certificate');
+      return null;
+    });
+
+    const result = await upsertMergedCourseProgress(db as never, {
+      userId: 'user-1',
+      programSlug: 'program-one',
+      courseSlug: 'course-one',
+      courseId: null,
+      merged: { status: CourseProgressStatus.COMPLETED, percentComplete: 100, lastActivityAt: null },
+      existing: null,
+      completedAt: null,
+    });
+
+    expect(result).toEqual({ newlyCompleted: true });
+    expect(order.indexOf('commit')).toBeLessThan(order.indexOf('certificate'));
+    expect(certificateMocks.ensurePending).toHaveBeenCalledWith(expect.objectContaining({ courseraCourseId: null, completedAt: null }));
   });
 
   it('bounds malformed provider percentages before insert and at the conflict ladder', async () => {
