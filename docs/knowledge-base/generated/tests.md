@@ -52,7 +52,7 @@
 | [tests/api/api-error-echo-sweep.spec.ts](../../../tests/api/api-error-echo-sweep.spec.ts) | 411 | tests |  |
 | [tests/api/api-error-reporting.spec.ts](../../../tests/api/api-error-reporting.spec.ts) | 113 | tests |  |
 | [tests/api/application-messages.spec.ts](../../../tests/api/application-messages.spec.ts) | 179 | tests |  |
-| [tests/api/application-status-events.spec.ts](../../../tests/api/application-status-events.spec.ts) | 287 | tests |  |
+| [tests/api/application-status-events.spec.ts](../../../tests/api/application-status-events.spec.ts) | 358 | tests |  |
 | [tests/api/apply-confirmation-clarity.spec.ts](../../../tests/api/apply-confirmation-clarity.spec.ts) | 66 | tests |  |
 | [tests/api/apply-status-lookup.spec.ts](../../../tests/api/apply-status-lookup.spec.ts) | 164 | tests |  |
 | [tests/api/assessment.spec.ts](../../../tests/api/assessment.spec.ts) | 589 | tests |  |

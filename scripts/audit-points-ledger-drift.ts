@@ -40,13 +40,27 @@ function parseLimit(): number {
 async function main() {
   const limit = parseLimit();
 
+  // Soft-deleted members are merged-away accounts. They keep their counter and
+  // any ledger rows that could not move, so counting them would report a
+  // spurious drifted pair for every merge — noise about an account nobody can
+  // see, on top of the real finding for the surviving member.
+  const liveUsers = await prisma.user.findMany({
+    where: { deletedAt: null },
+    select: { id: true },
+  });
+  const liveUserIds = liveUsers.map((user) => user.id);
+
   const [ledgerRows, counters] = await Promise.all([
     prisma.pointsTransaction.groupBy({
       by: ['userId'],
+      where: { userId: { in: liveUserIds } },
       _sum: { points: true },
       _count: { _all: true },
     }),
-    prisma.memberPoints.findMany({ select: { userId: true, totalPoints: true } }),
+    prisma.memberPoints.findMany({
+      where: { userId: { in: liveUserIds } },
+      select: { userId: true, totalPoints: true },
+    }),
   ]);
 
   const ledgerByUser = new Map(
@@ -82,15 +96,15 @@ async function main() {
 
   drifted.sort((a, b) => Math.abs(b.drift) - Math.abs(a.drift));
 
-  console.log('points ledger vs member_points.total_points');
+  console.log('points ledger vs member_points.total_points (live members only)');
   console.log(`  members with points          ${userIds.size}`);
   console.log(`  reconciled exactly           ${reconciled}`);
   console.log(`  drifted                      ${drifted.length}`);
   console.log(
-    `  counter ahead of the ledger  ${drifted.filter((row) => row.drift > 0).length} (a merge, or points awarded without a transaction row)`,
+    `  counter ahead of the ledger  ${drifted.filter((row) => row.drift > 0).length} (points added without a transaction row, or ledger rows deleted)`,
   );
   console.log(
-    `  counter behind the ledger    ${drifted.filter((row) => row.drift < 0).length} (a transaction whose increment never landed)`,
+    `  counter behind the ledger    ${drifted.filter((row) => row.drift < 0).length} (a merge moved the ledger and left the counter, or an increment never landed)`,
   );
   console.log(
     `  ledger rows with no counter  ${[...ledgerByUser.keys()].filter((id) => !counterByUser.has(id)).length}`,

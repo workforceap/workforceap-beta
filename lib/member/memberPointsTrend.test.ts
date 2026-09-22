@@ -161,14 +161,50 @@ test('a truncated page that cannot prove the old weeks draws nothing, but still 
   assert.deepEqual(complete.series, [0, 0, 0, 0, 0, 0, 20, 10]);
 
   // A capped page that did reach back past the window start has nothing hidden
-  // inside it, so it draws.
+  // inside it, so it draws. The proving row is GENUINELY OLDER than the window,
+  // not sitting exactly on its edge: an earlier version of this test used the
+  // boundary timestamp, the one value at which a broken guard still passes.
+  const olderThanWindow = at(MEMBER_TREND_WEEKS * MEMBER_TREND_WEEK_MS + 3 * DAY_MS, 999);
   const reachesBack = buildMemberPointsTrend({
+    transactions: [...transactions, olderThanWindow],
+    now: NOW,
+    truncated: true,
+  });
+  assert.equal(reachesBack.series.length, MEMBER_TREND_WEEKS, 'an out-of-window row proves the page reached back');
+  assert.deepEqual(reachesBack.series, [0, 0, 0, 0, 0, 0, 20, 10]);
+  assert.equal(
+    reachesBack.series.reduce((sum, value) => sum + value, 0),
+    30,
+    'the proving row is outside the window, so it must not be added to any bucket',
+  );
+
+  // And the boundary itself still counts as reaching back.
+  const onTheBoundary = buildMemberPointsTrend({
     transactions: [...transactions, at(MEMBER_TREND_WEEKS * MEMBER_TREND_WEEK_MS, 1)],
     now: NOW,
     truncated: true,
   });
-  assert.equal(reachesBack.series.length, MEMBER_TREND_WEEKS);
-  assert.equal(reachesBack.series[0], 1);
+  assert.equal(onTheBoundary.series.length, MEMBER_TREND_WEEKS);
+  assert.equal(onTheBoundary.series[0], 1);
+});
+
+test('a capped page of nothing but recent rows is the only case that hides the line', () => {
+  // 400 rows, every one inside the window: the page may be hiding older rows
+  // from inside it, so the shape is unproven.
+  const dense = Array.from({ length: 400 }, (_, index) => at((index % 50) * 60 * 60 * 1000, 5));
+  const hidden = buildMemberPointsTrend({ transactions: dense, now: NOW, truncated: true });
+  assert.deepEqual(hidden.series, []);
+  assert.ok(hidden.thisWeek > 0, 'the chip still works: the newest rows are always present');
+
+  // The same 400 rows plus one older than the window: now the page demonstrably
+  // spans it, so the line is drawn.
+  const proven = buildMemberPointsTrend({
+    transactions: [...dense, at(100 * DAY_MS, 7)],
+    now: NOW,
+    truncated: true,
+  });
+  assert.equal(proven.series.length, MEMBER_TREND_WEEKS);
+  assert.equal(proven.thisWeek, hidden.thisWeek);
 });
 
 test('the delta chip reports the change against last week, and claims no direction when flat', () => {

@@ -45,7 +45,7 @@
 | [knip.json](../../../knip.json) | 61 | root |  |
 | [middleware.ts](../../../middleware.ts) | 504 | identity-tenancy | middleware:158, config:500 |
 | [next.config.ts](../../../next.config.ts) | 404 | root | default:402 |
-| [package.json](../../../package.json) | 151 | root |  |
+| [package.json](../../../package.json) | 152 | root |  |
 | [playwright.config.ts](../../../playwright.config.ts) | 80 | root | default:56 |
 | [pnpm-lock.yaml](../../../pnpm-lock.yaml) | 12644 | root |  |
 | [pnpm-workspace.yaml](../../../pnpm-workspace.yaml) | 13 | root |  |

@@ -58,9 +58,18 @@ export async function syncCuratedJobToTracker(
     return updated;
   }
 
-  // A newly created row has no previous status, so it is a creation, not a
-  // transition; `application_added` on the apply route is that event. Emitting
-  // a status change from a status to itself here would only add noise.
+  // A newly created row has no previous status, so it is a creation rather
+  // than a transition, and emitting a status change from a status to itself
+  // would be noise.
+  //
+  // It is NOT covered by an existing event, though, and this comment used to
+  // claim it was: the apply route's `application_added` carries the
+  // `job_postings_applications` id, which is a different table from this
+  // tracker row, and `track-curated/route.ts` emits nothing at all. So a
+  // tracker row still has no creation event under its own id. That is a real
+  // gap in the activity log, left for a follow-up rather than invented here,
+  // because it needs a `job_application_added` event name and a decision about
+  // the two routes that create these rows.
 
   return prisma.jobApplication.create({
     data: {

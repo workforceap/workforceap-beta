@@ -100,24 +100,32 @@ export function buildMemberPointsTrend(args: {
   const windows = memberTrendWindows(now, weeks);
   const series = new Array<number>(weeks).fill(0);
 
-  let oldestInWindow = Number.POSITIVE_INFINITY;
+  // Tracked for EVERY row, including rows that fall outside the window: a row
+  // older than the window start is exactly what proves the page reached back
+  // far enough, so it must be counted before the bucketing `continue` below.
+  // Recording only bucketed rows would make this value always inside the
+  // window, and the truncation check below would then be true for every capped
+  // page — permanently hiding the line from the members with the most history.
+  let oldestRowSeen = Number.POSITIVE_INFINITY;
   for (const tx of args.transactions) {
     const at = tx.createdAt.getTime();
     if (Number.isNaN(at)) continue;
+    if (at < oldestRowSeen) oldestRowSeen = at;
     const index = windows.findIndex((window) => at >= window.start && at < window.end);
     if (index === -1) continue;
     series[index] += tx.points;
-    if (at < oldestInWindow) oldestInWindow = at;
   }
 
   const thisWeek = series[weeks - 1] ?? 0;
   const previousWeek = weeks > 1 ? (series[weeks - 2] ?? 0) : 0;
 
-  // A capped page that never reached back past the first window's start may be
-  // missing older rows, so every bucket before the oldest row we did see is
-  // unproven. Report no series at all rather than a shape we cannot stand behind.
+  // A capped page whose oldest row is still inside the window may be missing
+  // older rows from it, so the early buckets are unproven. Report no series at
+  // all rather than a shape we cannot stand behind. Seeing even one row at or
+  // before the window start proves the opposite: everything newer than that
+  // row came back with it, which is the whole window.
   const windowStart = windows[0]?.start ?? now;
-  const incomplete = Boolean(args.truncated) && oldestInWindow > windowStart;
+  const incomplete = Boolean(args.truncated) && oldestRowSeen > windowStart;
 
   return { series: incomplete ? [] : series, thisWeek, previousWeek };
 }

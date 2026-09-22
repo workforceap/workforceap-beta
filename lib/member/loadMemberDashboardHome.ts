@@ -55,10 +55,14 @@ export const MEMBER_DASHBOARD_HOME_PRISMA_BUDGET = 2;
  * Points rows read with the member (newest first).
  *
  * Sized for the eight rolling weeks the Points sparkline buckets into, not for
- * the three-row ledger: 56 days of awards is far under this for a member who
- * earns something every day, and `buildMemberPointsTrend` drops the series
- * rather than draw a short one if a member ever does hit the cap. Widening
- * this costs no extra Prisma operation — it is the same nested read.
+ * the three-row ledger. There is no natural ceiling to appeal to — `daily_study`
+ * alone reaches 400 rows in 400 days, and job applications, counselor sessions
+ * and counselor bonuses are unbounded — so this number is not a proof that
+ * truncation cannot happen. It is a cheap headroom figure (the busiest member
+ * in production history holds 54 rows in total), and correctness comes from
+ * `buildMemberPointsTrend`, which drops the series rather than draw a
+ * truncated one. Widening this costs no extra Prisma operation: it is the same
+ * nested read.
  */
 const POINTS_TRANSACTION_TAKE = 400;
 /** Recent pipeline rows shown on the home card: anything not yet closed. */

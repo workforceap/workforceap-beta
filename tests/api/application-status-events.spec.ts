@@ -54,6 +54,8 @@ import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { persistEvent, trackEvent } from '@/lib/events/track';
+import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
+import { revalidatePath } from 'next/cache';
 
 const MEMBER_ID = 'member-abc';
 const APPLICATION_ID = 'app-123';
@@ -77,6 +79,17 @@ function emitted(): EventParams[] {
 
 function statusEvents(): EventParams[] {
   return emitted().filter((event) => event.eventName === 'application_status_changed');
+}
+
+/** Asserts the named steps happened, in this relative order. */
+function assertOrdered(actual: string[], expected: string[]) {
+  expect(actual.length).toBeGreaterThan(0);
+  const positions = expected.map((step) => {
+    const index = actual.indexOf(step);
+    expect(index, `${step} never happened (saw: ${actual.join(' -> ')})`).toBeGreaterThanOrEqual(0);
+    return index;
+  });
+  expect(positions).toEqual([...positions].sort((a, b) => a - b));
 }
 
 beforeEach(() => {
@@ -245,6 +258,64 @@ describe('syncCuratedJobToTracker — the job board path', () => {
 });
 
 describe('confirmPlacement — the path that forced ACCEPTED under a differently named event', () => {
+  it('a failing status log cannot destroy the placement event or the partner notification', async () => {
+    // withUserGuc is AsyncLocalStorage, not a transaction: the status update
+    // has already committed, so a throw here rolls nothing back and only
+    // discards the work that has not run yet. The status log is therefore the
+    // LAST thing the action does, and it swallows its own errors.
+    vi.mocked(prisma.jobApplication.findUnique).mockResolvedValue({
+      id: APPLICATION_ID,
+      userId: MEMBER_ID,
+      status: 'OFFER',
+      company: 'Acme',
+      role: 'Help Desk Tech',
+    } as never);
+    vi.mocked(prisma.jobApplication.update).mockResolvedValue({ id: APPLICATION_ID } as never);
+    vi.mocked(prisma.partnerReferral.findFirst).mockResolvedValue({ partnerId: 'partner-1' } as never);
+    vi.mocked(trackEvent).mockRejectedValueOnce(new Error('member_events write failed'));
+
+    await expect(confirmPlacement(APPLICATION_ID)).resolves.not.toThrow();
+
+    // The placement claim and the partner notification both survived.
+    const names = vi.mocked(persistEvent).mock.calls.map((call) => (call[0] as { eventName: string }).eventName);
+    expect(names).toContain('placement_confirmation_submitted');
+    expect(recordPartnerWorkflowEvent).toHaveBeenCalledTimes(1);
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+  });
+
+  it('emits the status change only after the placement event and the partner notification', async () => {
+    // Ordering is the durable protection: nothing downstream may depend on the
+    // status log, so it runs last. This fails if it is moved back above them.
+    const order: string[] = [];
+    vi.mocked(prisma.jobApplication.findUnique).mockResolvedValue({
+      id: APPLICATION_ID,
+      userId: MEMBER_ID,
+      status: 'OFFER',
+      company: 'Acme',
+      role: 'Help Desk Tech',
+    } as never);
+    vi.mocked(prisma.jobApplication.update).mockResolvedValue({ id: APPLICATION_ID } as never);
+    vi.mocked(prisma.partnerReferral.findFirst).mockResolvedValue({ partnerId: 'partner-1' } as never);
+    vi.mocked(persistEvent).mockImplementation(async (params) => {
+      order.push(`persist:${(params as { eventName: string }).eventName}`);
+      return {} as never;
+    });
+    vi.mocked(recordPartnerWorkflowEvent).mockImplementation(async () => {
+      order.push('partner');
+    });
+    vi.mocked(trackEvent).mockImplementation(async (params) => {
+      order.push(`track:${(params as { eventName: string }).eventName}`);
+    });
+
+    await confirmPlacement(APPLICATION_ID);
+
+    assertOrdered(order, [
+      'persist:placement_confirmation_submitted',
+      'partner',
+      'track:application_status_changed',
+    ]);
+  });
+
   it('logs the status move alongside the placement claim', async () => {
     vi.mocked(prisma.jobApplication.findUnique).mockResolvedValue({
       id: APPLICATION_ID,

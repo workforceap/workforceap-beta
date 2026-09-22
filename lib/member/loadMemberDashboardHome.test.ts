@@ -743,3 +743,50 @@ test('points older than the eight-week window do not inflate the first bucket', 
     5,
   );
 });
+
+
+test('a member whose newest 400 rows are all recent loses the line, not the number', async () => {
+  // The loader reads the newest 400 points rows. When every one of them is
+  // inside the eight-week window, older rows from inside it may have been cut
+  // off, so the shape is unproven and the tile shows no line.
+  const dense = Array.from({ length: 400 }, (_, index) => ({
+    event: 'daily_study',
+    points: 5,
+    createdAt: new Date(Date.now() - (index % 40) * 60 * 60 * 1000),
+  }));
+  const { db } = mockDb({ row: makeRow({ pointsTransactions: dense }) });
+  const view = await loadMemberDashboardHome({ userId: 'heavy', fallbackDisplayName: 'Pat' }, db);
+
+  assert.equal(view.pointsSpark, undefined, 'an unprovable shape must not be drawn');
+  assert.ok((view.pointsThisWeek ?? 0) > 0, 'the chip still works: the newest rows are always present');
+});
+
+test('a full page that reaches back past the window still draws the line', async () => {
+  // Same 400-row page, but one row is older than the eight-week window, which
+  // proves nothing inside it was cut off. This is the regression that matters:
+  // treating a full page as unprovable would hide the line permanently from
+  // every member with enough history, since the ledger only ever grows.
+  const dense = Array.from({ length: 399 }, (_, index) => ({
+    event: 'daily_study',
+    points: 5,
+    createdAt: new Date(Date.now() - (index % 40) * 60 * 60 * 1000),
+  }));
+  const withOldRow = [
+    ...dense,
+    { event: 'program_enrolled', points: 150, createdAt: new Date(Date.now() - 100 * DAY_MS) },
+  ];
+  assert.equal(withOldRow.length, 400, 'the page must be full for the truncation guard to engage');
+
+  const { db } = mockDb({ row: makeRow({ pointsTransactions: withOldRow }) });
+  const view = await loadMemberDashboardHome({ userId: 'heavy', fallbackDisplayName: 'Pat' }, db);
+
+  const series = view.pointsSpark?.series;
+  assert.ok(series, 'a page that spans the window must draw');
+  assert.equal(series.length, 8);
+  assert.equal(series[series.length - 1], view.pointsThisWeek);
+  // The out-of-window row proved the reach-back without joining a bucket.
+  assert.equal(
+    series.reduce((sum, value) => sum + value, 0),
+    399 * 5,
+  );
+});

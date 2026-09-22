@@ -34,26 +34,15 @@ export async function confirmPlacement(jobApplicationId: string) {
       data: { status: 'ACCEPTED', updatedAt: now },
     });
 
-    // This forces the row to ACCEPTED, which is a status change like any
-    // other; `placement_confirmation_submitted` below records the placement
-    // claim, not the transition, so the activity log had no record that the
-    // application moved. Durable writer (same client as the event below) so a
-    // failed log fails the action rather than silently losing the move. No-ops
-    // when the row was already ACCEPTED.
-    await recordApplicationStatusChange(
-      {
-        userId: user.id,
-        applicationId: application.id,
-        previousStatus: application.status,
-        nextStatus: 'ACCEPTED',
-        sourcePage: '/dashboard',
-      },
-      prisma,
-    );
-
     await persistEvent({
       userId: user.id,
       eventName: 'placement_confirmation_submitted',
+      // 'JobApplication' here and 'job_application' on the status event below
+      // are the same row spelled two ways. Neither is changed: each matches the
+      // rows its own event has already written (this one since it shipped, the
+      // status event since `/api/member/job-applications/[id]`), so
+      // normalising either would make new rows disagree with that event's
+      // history. Worth settling repo-wide with a backfill, not here.
       entityType: 'JobApplication',
       entityId: application.id,
       metadata: {
@@ -83,6 +72,28 @@ export async function confirmPlacement(jobApplicationId: string) {
         entityId: application.id,
       });
     }
+
+    // Forcing the row to ACCEPTED is a status change like any other, and
+    // `placement_confirmation_submitted` above records the placement claim,
+    // not the transition — so the activity log had no record that the
+    // application moved. No-ops when the row was already ACCEPTED.
+    //
+    // LAST, and best-effort, deliberately. `withUserGuc` is AsyncLocalStorage,
+    // not a transaction: the status update at the top has already committed by
+    // the time anything here runs, so a throw cannot roll it back — it can only
+    // destroy the work that has not happened yet. Written earlier with the
+    // durable writer, a failed status log left the row ACCEPTED while losing
+    // the placement event, the partner notification and every revalidation
+    // below, on the highest-value action in the product. Nothing may depend on
+    // this line, so it goes at the end and swallows its own errors, exactly
+    // like the other two callers.
+    await recordApplicationStatusChange({
+      userId: user.id,
+      applicationId: application.id,
+      previousStatus: application.status,
+      nextStatus: 'ACCEPTED',
+      sourcePage: '/dashboard',
+    });
   });
 
   revalidatePath('/dashboard');

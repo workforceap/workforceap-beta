@@ -82,5 +82,9 @@ export async function recordApplicationStatusChange(
     await persistEvent(params, db);
     return;
   }
-  await trackEvent(params);
+  // Best-effort means best-effort at THIS boundary, not "trackEvent promises
+  // not to throw". Callers place this after the work that matters precisely so
+  // a failed log cannot take anything else down; depending on another module's
+  // internal error handling to keep that promise is how it stops being true.
+  await trackEvent(params).catch(() => {});
 }
