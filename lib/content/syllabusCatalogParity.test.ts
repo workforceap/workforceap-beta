@@ -52,11 +52,50 @@ const UNBOUND_PROVIDER_ROWS: ReadonlyArray<{ program: string; name: string; reas
     name: 'Business Analysis: Preparation Exam for ECBA Certification',
     reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
+  // ---------------------------------------------------------------------
+  // Dropping a courseraCourseId is not a catalog-only edit. The id is a join
+  // key in five places, and `course_progress` is only one of them. Before
+  // removing another one, run all four queries -- the first alone cannot tell
+  // "nobody took this course" apart from "rows exist upstream and are being
+  // silently dropped", which is the mistake this entry was first written on.
+  //
+  //   -- 1. Already-credited progress. (Necessary, NOT sufficient.)
+  //   SELECT count(*) FILTER (WHERE course_slug = :slug) AS on_slug,
+  //          count(*) FILTER (WHERE course_slug <> :slug) AS other_slug
+  //     FROM course_progress WHERE course_id = :id;
+  //
+  //   -- 2. Raw provider rows awaiting promotion. THE DECISIVE ONE: rows here
+  //   --    with no row from query 3 are promoted via the static fallback that
+  //   --    getStaticMappingsByCourseId() builds from DISCOVERED_COURSERA_PROGRAMS.
+  //   --    Delete the catalog entry and promoteCsvProgressToCanonical counts
+  //   --    them `unmapped` and drops them (csvImport.server.ts:1247).
+  //   SELECT count(*) FROM coursera_course_progress
+  //    WHERE replace(coursera_course_id, 'Course~', '') = :id;
+  //
+  //   -- 3. Does the id resolve through the database instead? Only a CANONICAL
+  //   --    row makes the static fallback redundant: indexCanonicalMappingRows
+  //   --    reads coursera_canonical_course_mappings and nothing else
+  //   --    (canonicalMapping.ts:131). A curriculum row does NOT help this path.
+  //   --    Query both anyway -- confusing the two is how a load-bearing
+  //   --    fallback gets deleted as "redundant".
+  //   SELECT 'canonical' AS src, count(*) FROM coursera_canonical_course_mappings
+  //     WHERE replace(coursera_course_id, 'Course~', '') = :id
+  //   UNION ALL SELECT 'curriculum', count(*) FROM coursera_curriculum_course_mappings
+  //     WHERE replace(coursera_course_id, 'Course~', '') = :id;
+  //
+  //   -- 4. The catalog table, the other id source for the validated list.
+  //   SELECT count(*) FROM courses
+  //    WHERE replace(coursera_course_id, 'Course~', '') = :id;
+  //
+  // A fifth surface has no table: the live B4B feed can still report the
+  // course for a member already enrolled in it, so "Coursera dropped it from
+  // the collection" does not prove no future row can arrive.
+  // ---------------------------------------------------------------------
   {
     program: 'ux-design-professional-certificate-google',
     name: 'Build Dynamic User Interfaces (UI) for Websites',
     reason:
-      'Coursera dropped it from the org curriculum: the 2026-09-17 Curriculum download\'s UX Design collection (h0Rk9) carries six courses and no longer lists it (WAP-76), so there is no id left to bind. The WAP course key and the eight-course denominator are unchanged -- the regulated syllabus still names the course and keeps its own courseraSlug -- and progress stored on responsive-web-design-adobe-xd still credits by slug. Why that was not sufficient on its own: reconcileProgramProgress credits a course on a slug match OR a course-id match, so a stored row carrying course_id YLwdQgp-Eeu0VAqNda9Xjw under any OTHER course_slug used to credit by id and would silently stop. Measured before landing (2026-09-21, read-only via the Supabase management API): zero rows carry that course_id at all, zero carry it under a different slug, and a full GROUP BY course_id, course_slug over course_progress returns 18 pairs, none of them that id or slug. Blast radius is zero, not merely small. Anyone dropping another course id must run the same check rather than assume it.',
+      'Coursera dropped it from the org curriculum: the 2026-09-17 Curriculum download\'s UX Design collection (h0Rk9) carries six courses and no longer lists it (WAP-76). The catalog therefore no longer carries an id for this row and the legacy-v1 shape has no other id source -- but the approved-v2 manifest still binds it (programCurriculumManifest.ts, courseraCourseId YLwdQgp-Eeu0VAqNda9Xjw), first in the precedence chain for 2026-approved-v2 members, so the id is not gone from the repo. Course key and the eight-course denominator are unchanged (verified across all 206 program course keys); progress stored on responsive-web-design-adobe-xd still credits by slug. WHY THIS IS SAFE, AND WHY NOT: removing the catalog id also removes this id from getStaticMappingsByCourseId(), the CSV-to-canonical promotion fallback built from this same constant (csvImport.server.ts:1247). Measured read-only against production 2026-09-21/22: coursera_course_progress holds ZERO rows for this id, course_progress zero on any slug, courses no row. It is safe because there is nothing there to lose -- NOT because the fallback is redundant. coursera_canonical_course_mappings, the only table the promotion index reads, also holds zero rows for this id, so for this id the static fallback is that path\'s ONLY resolver. The single row that does exist is in coursera_curriculum_course_mappings (2026-approved-v2, created 2026-08-30), which that path never consults. Do not generalise this entry into "the static fallback is vestigial": 8 of the 22 distinct course ids in coursera_course_progress have no row in either mapping table and resolve only through it. Run all four queries above before dropping another id.',
   },
   {
     program: 'data-science-professional-certificate-ibm',

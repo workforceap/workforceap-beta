@@ -338,7 +338,7 @@
 | [lib/content/courseSkillMap.ts](../../../lib/content/courseSkillMap.ts) | 2521 | public-experience | CourseSkillContribution:13, CourseSkillMapping:19, ALL_COURSE_MAPPINGS:2313, getCoursesForProgram:2342, getCoursesByAxis:2349, calculateProgramAxisScores:2358, findCoursesForGap:2387, buildCoursePathForGaps:2434, getFallbackDesignScore:2489, isDesignRelatedOccupation:2511 |
 | [lib/content/coursera/README.md](../../../lib/content/coursera/README.md) | 59 | learning-coursera |  |
 | [lib/content/coursera/catalog.json](../../../lib/content/coursera/catalog.json) | 769 | learning-coursera |  |
-| [lib/content/coursera/catalogCoverage.test.ts](../../../lib/content/coursera/catalogCoverage.test.ts) | 108 | learning-coursera |  |
+| [lib/content/coursera/catalogCoverage.test.ts](../../../lib/content/coursera/catalogCoverage.test.ts) | 119 | learning-coursera |  |
 | [lib/content/coursera/catalogCoverage.ts](../../../lib/content/coursera/catalogCoverage.ts) | 167 | learning-coursera | CatalogCoverageIssue:19, CatalogCoverageRow:26, CatalogCoverageSummary:38, CatalogCoverageReport:46, buildCatalogCoverageRow:79, buildCatalogCoverageReport:117, catalogCoverageIssueLabel:150 |
 | [lib/content/coursera/courseSlugRemap.test.ts](../../../lib/content/coursera/courseSlugRemap.test.ts) | 117 | learning-coursera |  |
 | [lib/content/coursera/courseSlugRemap.ts](../../../lib/content/coursera/courseSlugRemap.ts) | 106 | learning-coursera | CourseSlugRemapEntry:36, COURSE_SLUG_REMAP:72, REMAPPED_SOURCE_SLUGS:96, remapCourseSlug:101 |
@@ -386,7 +386,7 @@
 | [lib/content/quizScoring.ts](../../../lib/content/quizScoring.ts) | 177 | public-experience | CATEGORY_KEYS:6, CategoryKey:16, CategoryWeights:18, createEmptyWeights:20, QuizAnswers:39, QUIZ_SHORT_FORM_DEFAULTS:49, mergeQuizShortAnswers:55, scoreQuiz:59 |
 | [lib/content/readinessChecklist.ts](../../../lib/content/readinessChecklist.ts) | 206 | public-experience | ReadinessItem:6, ReadinessSection:15, READINESS_SECTIONS:21, getCheckboxItemKeys:175, getJobSiteItemKey:189, getAllItemKeys:194 |
 | [lib/content/skillMissionCatalog.ts](../../../lib/content/skillMissionCatalog.ts) | 7173 | public-experience | QuizQuestion:3, SkillMissionDefinition:10, getSkillMissionDefinitionsForProgram:7167, getSkillMissionDefinition:7171 |
-| [lib/content/syllabusCatalogParity.test.ts](../../../lib/content/syllabusCatalogParity.test.ts) | 190 | public-experience |  |
+| [lib/content/syllabusCatalogParity.test.ts](../../../lib/content/syllabusCatalogParity.test.ts) | 229 | public-experience |  |
 | [lib/content/trainingBridge.ts](../../../lib/content/trainingBridge.ts) | 360 | public-experience | BridgeSkill:18, BridgeOccupation:28, TRAINING_BRIDGE_OCCUPATIONS:51, MemberSkill:289, findBridgeOccupation:295, getBridgeOccupationById:316, BridgeGapResult:320, computeBridgeGap:331, getBridgeProgram:358 |
 | [lib/content/workforceApModule.test.ts](../../../lib/content/workforceApModule.test.ts) | 107 | public-experience |  |
 | [lib/content/workforceApModule.ts](../../../lib/content/workforceApModule.ts) | 18 | public-experience | resolveWorkforceApModule:6 |

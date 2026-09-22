@@ -70,9 +70,11 @@ const DELIBERATELY_UNREFRESHED: ReadonlyMap<string, string> = new Map([
 test('every refreshed program matches its curated collection exactly', () => {
   const report = buildCatalogCoverageReport();
   const drifted: string[] = [];
+  let compared = 0;
   for (const row of report.rows) {
     if (row.discoveredCourseCount === null) continue;
     if (DELIBERATELY_UNREFRESHED.has(row.collectionId)) continue;
+    compared += 1;
     if (row.curatedOnlyCourseIds.length > 0 || row.discoveredOnlyCourseIds.length > 0) {
       drifted.push(
         `${row.collectionId} (${row.programSlug}): ` +
@@ -82,6 +84,15 @@ test('every refreshed program matches its curated collection exactly', () => {
     }
   }
   assert.deepEqual(drifted, [], `catalog has drifted from the Curriculum download:\n  ${drifted.join('\n  ')}`);
+  // An empty drift list proves nothing about an empty input. There are 16
+  // registered Learning Paths and two documented exceptions, so this loop must
+  // have actually compared the other fourteen.
+  assert.equal(
+    compared,
+    report.summary.pathCount - DELIBERATELY_UNREFRESHED.size,
+    'the drift loop skipped programs it should have compared',
+  );
+  assert.ok(compared >= 14, `only ${compared} programs were compared against the download`);
 });
 
 test('the two deliberately unrefreshed programs are still the only exceptions', () => {
