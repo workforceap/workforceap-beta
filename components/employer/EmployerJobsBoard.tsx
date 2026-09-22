@@ -18,6 +18,7 @@ import {
 } from '@/lib/employer/employerJobsListQuery';
 import { EMPLOYER_JOB_SUBMIT_REVIEW_DRAFT_FLASH } from '@/lib/employer/employerJobFormFlash';
 import { employerJobPortalBadgeVariant, employerJobPortalStatusLabel } from '@/lib/employer/jobStatusDisplay';
+import { JOB_POSTING_STATUS_WORDS } from '@/lib/status/jobPostingStatusVocabulary';
 import { DesignSurface, StatusTag, StatSparkTile, type KitTone } from '@/components/portal/kit';
 import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
@@ -58,7 +59,7 @@ export type EmployerJobBoardItem = {
 const FILTERS: { value: EmployerJobListFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'draft', label: 'Drafts' },
-  { value: 'review', label: 'In review' },
+  { value: 'review', label: JOB_POSTING_STATUS_WORDS.employer.pending },
   { value: 'live', label: 'Live' },
   { value: 'filled', label: 'Filled' },
   { value: 'expired', label: 'Expired' },
@@ -1155,7 +1156,7 @@ export default function EmployerJobsBoard({
             {confirmMode === 'delete' && bulkDeleteIncludesPendingReview && (
               <p id={modalPendingNoteId} role="note" style={{ margin: '0 0 12px' }}>
                 <Banner tone="gold" icon={<Info size={14} aria-hidden />}>
-                  <strong>In review:</strong> at least one selected posting is waiting on WorkforceAP. Removing it
+                  <strong>{JOB_POSTING_STATUS_WORDS.employer.pending}:</strong> at least one selected posting is waiting on WorkforceAP. Removing it
                   pulls it from our review queue. You can still continue.
                 </Banner>
               </p>

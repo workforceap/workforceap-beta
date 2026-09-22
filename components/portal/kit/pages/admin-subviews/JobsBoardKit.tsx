@@ -16,6 +16,7 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
+import { JOB_POSTING_STATUS_WORDS } from '@/lib/status/jobPostingStatusVocabulary';
 import {
   DEFAULT_JOB_SORT_DIRECTION,
   DEFAULT_JOB_SORT_KEY,
@@ -33,7 +34,11 @@ import {
  * collapses to stacked cards on mobile via DataTable mobile="cards".
  */
 
-/** Display status mapped from the underlying JobStatusEnum. */
+/**
+ * Display status mapped from the underlying JobStatusEnum. These are keys,
+ * not the rendered words: `STATUS_LABEL` below turns them into text, and
+ * `Pending` reads with the admin vocabulary word ("Awaiting review").
+ */
 export type JobDisplayStatus =
   | 'Open'
   | 'Closing'
@@ -99,6 +104,16 @@ const STATUS_TONE: Record<JobDisplayStatus, KitTone> = {
   Draft: 'muted',
   Filled: 'ok',
   Closed: 'muted',
+};
+
+/** Rendered word per display status (lib/status/jobPostingStatusVocabulary.ts for the shared ones). */
+const STATUS_LABEL: Record<JobDisplayStatus, string> = {
+  Open: 'Open',
+  Closing: 'Closing',
+  Pending: JOB_POSTING_STATUS_WORDS.admin.pending,
+  Draft: JOB_POSTING_STATUS_WORDS.admin.draft,
+  Filled: JOB_POSTING_STATUS_WORDS.admin.filled,
+  Closed: JOB_POSTING_STATUS_WORDS.admin.closed,
 };
 
 export function JobsBoardKit({
@@ -174,7 +189,7 @@ export function JobsBoardKit({
       header: sortHeader('status', 'Status'),
       minWidth: 96,
       ariaSort: ariaSortForColumn('status', sortKey, sortDirection),
-      render: (row) => <StatusTag tone={STATUS_TONE[row.status]}>{row.status}</StatusTag>,
+      render: (row) => <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>,
     },
   ];
 
@@ -237,7 +252,7 @@ export function JobsBoardKit({
                 </div>
               </div>
               <div style={{ flexShrink: 0 }}>
-                <StatusTag tone={STATUS_TONE[row.status]}>{row.status}</StatusTag>
+                <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>
               </div>
             </div>
             <div
