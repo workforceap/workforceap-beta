@@ -340,6 +340,8 @@
 | [lib/content/coursera/catalog.json](../../../lib/content/coursera/catalog.json) | 769 | learning-coursera |  |
 | [lib/content/coursera/catalogCoverage.test.ts](../../../lib/content/coursera/catalogCoverage.test.ts) | 53 | learning-coursera |  |
 | [lib/content/coursera/catalogCoverage.ts](../../../lib/content/coursera/catalogCoverage.ts) | 167 | learning-coursera | CatalogCoverageIssue:19, CatalogCoverageRow:26, CatalogCoverageSummary:38, CatalogCoverageReport:46, buildCatalogCoverageRow:79, buildCatalogCoverageReport:117, catalogCoverageIssueLabel:150 |
+| [lib/content/coursera/courseSlugRemap.test.ts](../../../lib/content/coursera/courseSlugRemap.test.ts) | 117 | learning-coursera |  |
+| [lib/content/coursera/courseSlugRemap.ts](../../../lib/content/coursera/courseSlugRemap.ts) | 106 | learning-coursera | CourseSlugRemapEntry:36, COURSE_SLUG_REMAP:72, REMAPPED_SOURCE_SLUGS:96, remapCourseSlug:101 |
 | [lib/content/coursera/curatedCollections.generated.ts](../../../lib/content/coursera/curatedCollections.generated.ts) | 285 | learning-coursera | CURATED_COLLECTIONS_SOURCE:7, CURATED_COLLECTIONS:16 |
 | [lib/content/coursera/curatedCollections.test.ts](../../../lib/content/coursera/curatedCollections.test.ts) | 67 | learning-coursera |  |
 | [lib/content/coursera/curatedCollections.ts](../../../lib/content/coursera/curatedCollections.ts) | 64 | learning-coursera | CURATED_COLLECTIONS:15, CURATED_COLLECTIONS_SOURCE:15, CuratedCollection:16, CuratedCourse:16, findCuratedCollection:34, curatedCollectionsForCourse:40, uniqueCuratedCollectionForCourse:46, isCuratedCourseInCollection:51, SHARED_CURATED_COURSE_IDS:60 |
@@ -763,6 +765,8 @@
 | [lib/member/proactiveInsights.ts](../../../lib/member/proactiveInsights.ts) | 236 | member-counselor | ProactiveInsightTone:21, ProactiveInsight:23, ProactiveInsightsInput:39, buildProactiveInsights:70, buildInsightNotificationPayload:214 |
 | [lib/member/programCourseMatch.ts](../../../lib/member/programCourseMatch.ts) | 292 | member-counselor | CanonicalMappingHit:22, CanonicalMappingIndex:22, findCanonicalMappingForCourseraCourse:24, loadCanonicalMappingsForCourseraIds:25, resolveProgramCourse:51, resolveProgramCourseWithCatalogFallback:149 |
 | [lib/member/programCourseResolution.test.ts](../../../lib/member/programCourseResolution.test.ts) | 69 | member-counselor |  |
+| [lib/member/programProgressRepair.test.ts](../../../lib/member/programProgressRepair.test.ts) | 179 | member-counselor |  |
+| [lib/member/programProgressRepair.ts](../../../lib/member/programProgressRepair.ts) | 301 | member-counselor | StoredRollup:29, ProgramRecompute:39, RepairReason:52, RollupRepairAction:58, UnexplainedRollup:84, RollupRepairPlan:92, AVERAGE_PERCENT_TOLERANCE:114, recomputeKey:116, planProgramProgressRepair:141, formatRepairPlan:258 |
 | [lib/member/programStartEnrollment.test.ts](../../../lib/member/programStartEnrollment.test.ts) | 68 | member-counselor |  |
 | [lib/member/programStartEnrollment.ts](../../../lib/member/programStartEnrollment.ts) | 40 | member-counselor | ProgramStartAccess:6, resolveProgramStartAccess:19, programStartAccessFromDashboardView:32 |
 | [lib/member/recommendPrograms.ts](../../../lib/member/recommendPrograms.ts) | 54 | member-counselor | DEFAULT_RECOMMENDED_PROGRAM_SLUGS:6, RecommendedProgramSummary:8, resolveRecommendedProgramSlugs:19, resolveRecommendedProgramSummaries:35 |
