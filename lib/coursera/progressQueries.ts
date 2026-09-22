@@ -138,6 +138,12 @@ export type LoadUnmatchedLearnersOptions = {
   strict?: boolean;
   /** Default false. When true, emails matching `isLikelyTestAccount` are returned alongside real learners. */
   includeTestAccounts?: boolean;
+  /**
+   * Called when the `coursera_xapi_events` probe (below) says the table is
+   * absent and the xAPI branch was left out of the UNION. Lets a caller
+   * surface the degraded result (rows silently missing) without re-probing.
+   */
+  onXapiTableMissing?: () => void;
 };
 
 /**
@@ -272,7 +278,9 @@ export async function loadUnmatchedLearners(
     // learner finishes everything) is not a course. Counting it doubled the
     // course count and halved the average for every unmatched learner.
     const learningPathIds = [...KNOWN_LEARNING_PATH_IDS];
-    const xapiBranch = (await courseraXapiEventsTablePresent()) ? xapiUnmatchedLearnerBranch(organizationId) : Prisma.empty;
+    const xapiPresent = await courseraXapiEventsTablePresent();
+    if (!xapiPresent) options.onXapiTableMissing?.();
+    const xapiBranch = xapiPresent ? xapiUnmatchedLearnerBranch(organizationId) : Prisma.empty;
 
     const learners = await prisma.$queryRaw<Row[]>`
       WITH unioned AS (
@@ -487,7 +495,9 @@ export async function countUnmatchedLearners(
 ): Promise<number> {
   try {
     const exclusion = options.includeTestAccounts ? Prisma.empty : TEST_ACCOUNT_EXCLUSION_WHERE;
-    const xapiBranch = (await courseraXapiEventsTablePresent()) ? xapiUnmatchedEmailBranch(organizationId) : Prisma.empty;
+    const xapiPresent = await courseraXapiEventsTablePresent();
+    if (!xapiPresent) options.onXapiTableMissing?.();
+    const xapiBranch = xapiPresent ? xapiUnmatchedEmailBranch(organizationId) : Prisma.empty;
     const rows = await prisma.$queryRaw<Array<{ count: bigint | number }>>`
       WITH unioned AS (
         SELECT LOWER(external_email) AS email
