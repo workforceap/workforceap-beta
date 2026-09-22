@@ -27,8 +27,13 @@ type Fixture = {
 };
 
 async function organizationId(): Promise<string> {
-  const existing = await prisma.organization.findFirst({ select: { id: true } });
-  if (existing) return existing.id;
+  // Always create our own organization. `node --test` runs the contract
+  // suites' files in parallel against one shared contract database, and
+  // `findFirst` here adopted whichever organization another suite had just
+  // created (roles.test.ts, memberOnlyWhere.realdb.test.ts), seeding the
+  // merge fixtures into it; that suite's teardown then failed on
+  // users_organization_id_fkey. The lane was a ~50/50 race on master
+  // because of it (three clean runs: fail / pass / fail).
   const created = await prisma.organization.create({
     data: { name: `merge-proof-${randomUUID()}`, slug: `merge-proof-${randomUUID()}` },
     select: { id: true },
