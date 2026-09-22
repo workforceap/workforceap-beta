@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "f9a1dcf043a2fc13d50f89c44080453a5af3be9ceb3290feee7384770348be6c",
+  "inputTreeSha256": "ed05a30a6d6ded50a0e883ddc39d7f08ccaa8b0a1427bb94dab0ed6f57443ff6",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -107330,9 +107330,9 @@
       "path": "lib/content/syllabusCatalogParity.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 11422,
+      "bytes": 11641,
       "lines": 190,
-      "sha256": "392d27155d5e22a7a14c0e7ca4cc6b4ede91661b0490caf2c6e5e772b8c64f76",
+      "sha256": "e20a86a819478640c9d281112291ecf7972a5ee5c8ec421050e9a002e0105d64",
       "binary": false,
       "exports": [],
       "declarations": [
