@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "4ddfe12b5b6e37fd7326cafb1db3b6dbd52ccc6d4c30cca9a699ea8cc34b0e72",
+  "inputTreeSha256": "5696ab1d90bcee156bb386bfe185074b15227c61ccd4e39d41a62480b1c07a78",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -87525,6 +87525,59 @@
       "directive": null
     },
     {
+      "path": "lib/admin/memberOnlyWhere.realdb.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 11019,
+      "lines": 223,
+      "sha256": "57477f35b14c9448a344ffcda655767866952d1059cc4655c73a0487ffb898d7",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "runId",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "CASES",
+          "line": 38,
+          "kind": "Variable"
+        },
+        {
+          "name": "FIXTURE_CASES",
+          "line": 57,
+          "kind": "Variable"
+        },
+        {
+          "name": "EXPECTED_MEMBERS",
+          "line": 62,
+          "kind": "Variable"
+        },
+        {
+          "name": "EXPECTED_DOGFOOD",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "seeded",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "seedUser",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "scope",
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/admin/memberOnlyWhere.test.ts",
       "area": "libraries",
       "domain": "administration",
@@ -161348,9 +161401,9 @@
       "path": "scripts/run-db-contract-tests.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 4370,
+      "bytes": 4414,
       "lines": 89,
-      "sha256": "728f0073617cf0bf07d5e513849a3a1f01d2d3ee3882b458d73d2df065f04298",
+      "sha256": "0485b6910ed114cc4e9388f2464bf4e52b56ece06066995608125fcf3957f875",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -161696,9 +161749,9 @@
       "path": "scripts/test-unit.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 7341,
-      "lines": 201,
-      "sha256": "790514d815de8f88fb6eb76b0b081e07dfd590c9fa9bddbd22139f9c8368ecbb",
+      "bytes": 7837,
+      "lines": 209,
+      "sha256": "322bc3d6396f353968fa69c53ad43067d4b794698e4934bd99d1b61caf98cecc",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -161749,7 +161802,7 @@
         },
         {
           "name": "main",
-          "line": 111,
+          "line": 119,
           "kind": "FunctionDeclaration"
         }
       ],
