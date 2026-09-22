@@ -3393,22 +3393,6 @@
         "unknown": "No training approval is recorded yet. Staff update this step once it is decided."
       }
     },
-    "applicationStatus": {
-      "not_submitted": "No application on file",
-      "pending": "Pending review",
-      "needs_info": "More information requested",
-      "approved": "Application approved",
-      "denied": "Application closed",
-      "unknown": "Status not recorded"
-    },
-    "intakeStatus": {
-      "pending": "Review pending",
-      "in_review": "In review",
-      "verified": "Intake verified by staff",
-      "not_eligible": "Staff recorded not eligible",
-      "needs_info": "More information requested",
-      "unknown": "Status not recorded"
-    },
     "trainingStatus": {
       "approved": "Training approved",
       "pending": "Not yet approved",

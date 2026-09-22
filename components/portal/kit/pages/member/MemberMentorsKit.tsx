@@ -63,7 +63,6 @@ export function MemberMentorsKit({ mentors }: MemberMentorsKitProps) {
           <div className="wa-kit-card">
             <KitEmptyState
               kind={MENTORS_MEMBER_EMPTY.kind}
-              tone={MENTORS_MEMBER_EMPTY.statusTone}
               title={MENTORS_MEMBER_EMPTY.title}
               description={MENTORS_MEMBER_EMPTY.description}
               primaryAction={MENTORS_MEMBER_EMPTY.primaryCta}

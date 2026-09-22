@@ -14,6 +14,8 @@ import {
 import { formatPortalDate } from '@/lib/formatDate';
 import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import es from '@/messages/es.json';
+import fr from '@/messages/fr.json';
+import pt from '@/messages/pt.json';
 
 const MEMBER_ID = 'member-1';
 
@@ -103,9 +105,12 @@ describe('truthful member status surfaces', () => {
   // Regression: /dashboard showed "MEMBERAPPROVAL.TITLE", "memberApproval.intro",
   // "memberApproval.applicationStatus.unknown" and "memberApproval.contact" because the
   // portal layout's client payload (pickPortalClientMessages) omitted the namespace.
-  it.each([['en', messages], ['es', es]] as const)('renders from the sliced %s portal payload without leaking memberApproval.* keys', (locale, catalog) => {
+  // The application / intake words now come from the shared `status` vocabulary
+  // (`status.application.member.*`, `status.intake.member.*`), which the same
+  // payload has to carry, in every shipped locale.
+  it.each([['en', messages], ['es', es], ['fr', fr], ['pt', pt]] as const)('renders from the sliced %s portal payload without leaking memberApproval.* or status.* keys', (locale, catalog) => {
     const text = catalog.memberApproval;
-    const view = render(<NextIntlClientProvider locale={locale} messages={pickPortalClientMessages(catalog)}>
+    const { container } = render(<NextIntlClientProvider locale={locale} messages={pickPortalClientMessages(catalog)}>
       <MemberApprovalStatusCard
         status={buildMemberApprovalStatus({ applications: [], wioaReviewStatus: null })}
         storageUserId={MEMBER_ID}
@@ -114,8 +119,10 @@ describe('truthful member status surfaces', () => {
     expect(screen.getByRole('heading', { name: text.title })).toBeInTheDocument();
     expect(screen.getByText(text.intro)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: text.contact })).toBeInTheDocument();
-    expect(view.container.textContent).not.toMatch(/memberApproval\./i);
-    view.unmount();
+    expect(within(stage(container, 'application')).getByText(catalog.status.application.member.not_submitted)).toBeInTheDocument();
+    expect(within(stage(container, 'intake')).getByText(catalog.status.intake.member.unknown)).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/memberApproval\./i);
+    expect(container.textContent).not.toMatch(/status\.(application|intake)\./i);
   });
 
   it('labels recorded course progress without claiming a certificate', () => {
@@ -154,11 +161,11 @@ describe('approval card placement and dismissal', () => {
     expect(container.querySelector('[data-approval-card]')).toHaveAttribute('data-approval-card', 'demoted');
     expect(screen.getByRole('heading', { name: messages.memberApproval.title })).toBeInTheDocument();
     expect(container.querySelector('[data-approval-summary]')?.textContent)
-      .toBe(messages.memberApproval.applicationStatus.denied);
+      .toBe(messages.status.application.member.denied);
     // Collapsed, not gone: the three saved steps sit inside the disclosure.
     const disclosure = container.querySelector('details') as HTMLDetailsElement;
     expect(disclosure.open).toBe(false);
-    expect(within(stage(container, 'application')).getByText(messages.memberApproval.applicationStatus.denied)).toBeInTheDocument();
+    expect(within(stage(container, 'application')).getByText(messages.status.application.member.denied)).toBeInTheDocument();
     expect(within(stage(container, 'training')).getByText(messages.memberApproval.trainingStatus.approved)).toBeInTheDocument();
     expect(disclosure.contains(stage(container, 'application'))).toBe(true);
   });
@@ -168,7 +175,7 @@ describe('approval card placement and dismissal', () => {
   it('names the member-owned next step on the collapsed line', () => {
     const { container: closedLine } = show(closed, 'demoted');
     expect(closedLine.querySelector('[data-approval-summary]')?.textContent)
-      .toBe(messages.memberApproval.applicationStatus.denied);
+      .toBe(messages.status.application.member.denied);
     expect(closedLine.querySelector('[data-approval-summary-action]')?.textContent)
       .toBe(`Next: ${messages.memberApproval.next.application.denied}`);
     // Visible without expanding the disclosure.
@@ -204,7 +211,7 @@ describe('approval card placement and dismissal', () => {
     expect(memberApprovalCardPlacement(notEligible)).toBe('demoted');
     const { container } = show(notEligible, 'demoted');
     expect(container.querySelector('[data-approval-summary]')?.textContent)
-      .toBe(messages.memberApproval.intakeStatus.not_eligible);
+      .toBe(messages.status.intake.member.not_eligible);
     expect(container.querySelector('[data-approval-summary-action]')).toBeNull();
   });
 

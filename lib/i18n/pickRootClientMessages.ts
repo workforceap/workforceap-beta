@@ -34,6 +34,9 @@ export const PORTAL_CLIENT_NAMESPACES = [
   'wioa',
   // components/portal/MemberApprovalStatusCard — the /dashboard approval card.
   'memberApproval',
+  // lib/status/applicationStatusVocabulary — the application / intake status
+  // words the approval card renders (`status.application.member.*`, `status.intake.member.*`).
+  'status',
   // components/portal/kit/GuidedTour — tour chrome + step copy (lib/tours/registry.ts).
   'tours',
   // KitEmptyState copy (docs/KIT_GUIDE.md §6) read by client surfaces: the home

@@ -94,21 +94,18 @@ describe('application status vocabulary — every value × audience × locale re
     }
   });
 
-  it.each(Object.keys(LOCALES) as Locale[])('%s: member words are exactly the memberApproval card words (WAP-91 / #2471 / #2488)', (locale) => {
-    const catalog = LOCALES[locale] as unknown as {
-      memberApproval: { applicationStatus: Record<string, string>; intakeStatus: Record<string, string> };
-    };
+  // The memberApproval card's own `applicationStatus.*` / `intakeStatus.*` keys
+  // are retired: the card renders these member words (WAP-91 / #2471 / #2488),
+  // pinned by render in tests/components/member-approval-status.spec.tsx. What
+  // stays pinned here is the one mapping the card established that the
+  // vocabulary widened: an intake nobody has reviewed reads as "nothing recorded".
+  it.each(Object.keys(LOCALES) as Locale[])('%s: an unreviewed intake reads as the unrecorded word, as the member card established', (locale) => {
     const { container } = renderWords(locale, 'member');
     const byKey = new Map(
       Array.from(container.querySelectorAll<HTMLLIElement>('li')).map((li) => [li.dataset.message!, li.textContent]),
     );
-    for (const key of APPLICATION_STATUS_KEYS) {
-      expect(byKey.get(`application.member.${key}`), `${locale} ${key}`).toBe(catalog.memberApproval.applicationStatus[key]);
-    }
-    for (const key of INTAKE_STATUS_KEYS) {
-      const established = key === 'not_reviewed' ? catalog.memberApproval.intakeStatus.unknown : catalog.memberApproval.intakeStatus[key];
-      expect(byKey.get(`intake.member.${key}`), `${locale} ${key}`).toBe(established);
-    }
+    expect(byKey.get('intake.member.not_reviewed'), locale).toBe(byKey.get('intake.member.unknown'));
+    expect(byKey.get('intake.member.not_reviewed'), locale).toBe(byKey.get('application.member.unknown'));
   });
 });
 
