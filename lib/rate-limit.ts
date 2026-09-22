@@ -106,6 +106,11 @@ let careersRecommendRateLimiter: Ratelimit | null = null;
 let interestProfilerRateLimiter: Ratelimit | null = null;
 let forgotPasswordRateLimiter: Ratelimit | null = null;
 let forgotPasswordEmailRateLimiter: Ratelimit | null = null;
+// Public application-status link (28a). Same two-bucket shape as forgot-
+// password: per-IP against scripted probing, per-email so an IP-rotating
+// spray cannot bomb one inbox with our branded "your status link" mail.
+let applyStatusLookupRateLimiter: Ratelimit | null = null;
+let applyStatusLookupEmailRateLimiter: Ratelimit | null = null;
 let publicCareersGetRateLimiter: Ratelimit | null = null;
 let publicVoiceSessionRateLimiter: Ratelimit | null = null;
 // Per-authenticated-user limiter for any ElevenLabs voice session mint
@@ -354,6 +359,18 @@ if (redisUrl && redisToken) {
     // slow to arrive was silently locked out for a day (9/2/26 ops report).
     limiter: Ratelimit.slidingWindow(5, '1 h'),
     prefix: 'ratelimit:forgot-password-email',
+  });
+  applyStatusLookupRateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, '1 h'),
+    prefix: 'ratelimit:apply-status-lookup',
+  });
+  applyStatusLookupEmailRateLimiter = new Ratelimit({
+    redis,
+    // Links live 30 minutes; three per hour covers "it hasn't arrived yet"
+    // retries without turning the route into a mail cannon for one address.
+    limiter: Ratelimit.slidingWindow(3, '1 h'),
+    prefix: 'ratelimit:apply-status-lookup-email',
   });
   publicCareersGetRateLimiter = new Ratelimit({
     redis,
@@ -612,6 +629,18 @@ export async function checkForgotPasswordRateLimit(ip: string): Promise<{ succes
 /** Forgot-password per-email cap — 5 requests per email per hour; fail-closed in production. */
 export async function checkForgotPasswordEmailRateLimit(email: string): Promise<{ success: boolean }> {
   const r = await failClosedLimit(forgotPasswordEmailRateLimiter, 'forgot-password-email', email.toLowerCase());
+  return { success: r.success };
+}
+
+/** Public application-status link (28a) per-IP cap — 10 requests per IP per hour; fail-closed in production. */
+export async function checkApplyStatusLookupRateLimit(ip: string): Promise<{ success: boolean }> {
+  const r = await failClosedLimit(applyStatusLookupRateLimiter, 'apply-status-lookup', ip);
+  return { success: r.success };
+}
+
+/** Public application-status link (28a) per-email cap — 3 requests per email per hour; fail-closed in production. */
+export async function checkApplyStatusLookupEmailRateLimit(email: string): Promise<{ success: boolean }> {
+  const r = await failClosedLimit(applyStatusLookupEmailRateLimiter, 'apply-status-lookup-email', email.toLowerCase());
   return { success: r.success };
 }
 

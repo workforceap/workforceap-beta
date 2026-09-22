@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import LocalizedLink from '@/components/LocalizedLink';
+import { APPLICATION_STATUS_LINK_TTL_MINUTES } from '@/lib/apply/statusLinkConstants';
+
+type LookupResponse = { error?: string; ok?: boolean; expiresInMinutes?: number };
 
 export default function ApplyStatusClient() {
   const t = useTranslations('apply');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ found: boolean; message: string; email: string } | null>(null);
+  const [result, setResult] = useState<{ email: string; minutes: number } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +25,16 @@ export default function ApplyStatusClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
       });
-      const data = (await r.json()) as { error?: string; found?: boolean; message?: string };
+      const data = (await r.json()) as LookupResponse;
       if (!r.ok) {
         setError(data.error ?? t('statusErrorGeneric'));
         return;
       }
-      if (typeof data.found === 'boolean' && data.message) {
-        setResult({ found: data.found, message: data.message, email: email.trim() });
+      if (data.ok === true) {
+        setResult({
+          email: email.trim(),
+          minutes: typeof data.expiresInMinutes === 'number' ? data.expiresInMinutes : APPLICATION_STATUS_LINK_TTL_MINUTES,
+        });
       } else {
         setError(t('statusErrorUnexpected'));
       }
@@ -42,7 +48,7 @@ export default function ApplyStatusClient() {
   return (
     <div className="apply-status-card">
       <p className="apply-status-lead">
-        {t('statusLead')}
+        {t('statusLead', { minutes: APPLICATION_STATUS_LINK_TTL_MINUTES })}
       </p>
       <form onSubmit={handleSubmit} className="apply-status-form">
         <div className="form-group">
@@ -65,23 +71,17 @@ export default function ApplyStatusClient() {
       </form>
       {error ? <p className="apply-status-error" role="alert">{error}</p> : null}
       {result ? (
-        <div
-          className={`apply-status-result${result.found ? ' apply-status-result--found' : ''}`}
-          role="status"
-        >
-          {result.found ? (
-            <p style={{ margin: 0 }}>{result.message}</p>
-          ) : (
-            <>
-              <p style={{ margin: 0, fontWeight: 600 }}>{t('statusNotFoundTitle', { email: result.email })}</p>
-              <p style={{ margin: '0.5rem 0 0' }}>{t('statusNotFoundBody')}</p>
-              <p style={{ margin: '0.5rem 0 0' }}>
-                {t('statusNotFoundContactBefore')}{' '}
-                <LocalizedLink href="/contact">{t('statusNotFoundContactLink')}</LocalizedLink>{' '}
-                {t('statusNotFoundContactAfter')}
-              </p>
-            </>
-          )}
+        <div className="apply-status-result" role="status">
+          <p style={{ margin: 0, fontWeight: 600 }}>{t('statusSentTitle')}</p>
+          <p style={{ margin: '0.5rem 0 0' }}>
+            {t('statusSentBody', { email: result.email, minutes: result.minutes })}
+          </p>
+          <p style={{ margin: '0.5rem 0 0' }}>{t('statusSentHelp')}</p>
+          <p style={{ margin: '0.5rem 0 0' }}>
+            {t('statusContactBefore')}{' '}
+            <LocalizedLink href="/contact">{t('statusContactLink')}</LocalizedLink>{' '}
+            {t('statusContactAfter')}
+          </p>
           <p style={{ margin: '0.75rem 0 0.5rem' }}>{t('statusLoginCtaLead')}</p>
           <LocalizedLink href="/login?redirectTo=/dashboard" className="btn btn-primary">
             {t('statusLoginCta')}

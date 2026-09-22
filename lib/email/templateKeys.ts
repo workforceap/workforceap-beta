@@ -48,6 +48,7 @@ export const EMAIL_TEMPLATE_KEYS = {
   partner_referral_invite: 'partner_referral_invite',
   // Account security
   password_reset: 'password_reset',
+  application_status_link: 'application_status_link',
 } as const;
 
 export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[keyof typeof EMAIL_TEMPLATE_KEYS];
