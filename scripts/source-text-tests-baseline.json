@@ -69,7 +69,6 @@
     "tests/lib/coursera-stage-a-legacy-writer.spec.ts",
     "tests/lib/coursera-tenant-index-migration.spec.ts",
     "tests/lib/curriculum-versioned-read-surfaces.spec.ts",
-    "tests/lib/dashboard-white-pill-contrast.spec.tsx",
     "tests/lib/focus-ring-recipe.spec.ts",
     "tests/lib/live-smoke-regressions.spec.ts",
     "tests/lib/login-redirect-contract.spec.ts",

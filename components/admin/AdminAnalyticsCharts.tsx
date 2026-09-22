@@ -20,13 +20,21 @@ type Props = {
   };
 };
 
-const ACCENT = '#ad2c4d';
-const BLUE = '#2b7bb9';
-const GOLD = '#a47f38';
-const GREEN = '#4a9b4f';
-const MUTED = '#584144';
+// Series colours read the `--wa-*` tokens directly. Recharts writes these
+// into SVG presentation attributes (fill / stroke / stop-color), which take
+// `var()` and `color-mix()` like any CSS colour, so the charts follow the
+// theme with no getComputedStyle pass. Teal and orange are mixed from brand
+// hues rather than added as new literals so they adapt in dark mode too.
+const ACCENT = 'var(--wa-accent)';
+const BLUE = 'var(--wa-info)';
+const GOLD = 'var(--wa-gold)';
+const GREEN = 'var(--wa-success)';
+const VIOLET = 'var(--wa-violet)';
+const TEAL = 'color-mix(in srgb, var(--wa-info) 50%, var(--wa-success))';
+const ORANGE = 'color-mix(in srgb, var(--wa-gold) 45%, var(--wa-danger))';
+const MUTED = 'var(--wa-muted)';
 
-const PROGRAM_COLORS = [ACCENT, BLUE, GOLD, GREEN, '#c4456a', '#0d9488', '#ea580c', MUTED];
+const PROGRAM_COLORS = [ACCENT, BLUE, GOLD, GREEN, VIOLET, TEAL, ORANGE, MUTED];
 
 function SectionLabel({ title, sub }: { title: string; sub?: string }) {
   return (
@@ -198,9 +206,9 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
                 <Pie data={[
                   { name: 'Placed', value: placementStats.placed },
                   { name: 'In Progress', value: Math.max(0, placementStats.enrolled - placementStats.placed) },
-                ]} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0}>
+                ]} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0} stroke="none">
                   <Cell fill={GREEN} />
-                  <Cell fill="var(--surface-container-highest, #282a2c)" />
+                  <Cell fill="var(--wa-track)" />
                 </Pie>
                 <text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" fill={GREEN} fontSize={20} fontWeight={800}>
                   {placementStats.placementRate}%
