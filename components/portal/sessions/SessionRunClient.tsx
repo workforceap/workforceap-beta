@@ -37,17 +37,17 @@ const initialToolState: ToolState = { status: 'idle', error: null, output: null,
 
 /**
  * Colour vocabulary for the tool cards and the tool grid. Everything reads the
- * `--wa-*` tokens (css/wa-brand-tokens.css) so both themes resolve; the two
- * hex literals that remain each have a reason:
+ * `--wa-*` tokens (css/wa-brand-tokens.css) so both themes resolve; the one
+ * hex literal that remains has a reason:
  *  - LinkedIn's brand blue is a third-party identity colour with no token.
- *  - PortalVoiceSession builds `${accent}44` / `${accent}88` alpha strings from
- *    its `accent` prop, so it needs a 6-digit hex rather than a `var()`. The
- *    card chrome around it (SectionCard, grid) reads the tokens.
+ * The voice accents used to be a hex pair because PortalVoiceSession built
+ * `${accent}44` / `${accent}88` alpha strings; its alpha steps are color-mix
+ * now, so the info pair resolves in both themes as a `var()`.
  */
 const TOOL_TEAL = 'color-mix(in srgb, var(--wa-info) 50%, var(--wa-success))';
 const LINKEDIN_BRAND_BLUE = '#0077b5';
-const VOICE_ACCENT = '#2563eb';
-const VOICE_ACCENT_DARK = '#1e40af';
+const VOICE_ACCENT = 'var(--wa-info)';
+const VOICE_ACCENT_DARK = 'var(--wa-info-dark)';
 
 interface Props {
   memberId: string;

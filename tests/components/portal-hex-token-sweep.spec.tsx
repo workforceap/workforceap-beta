@@ -13,14 +13,12 @@ import { readCss, loadRootTokens, colorOf, contrast } from '@/lib/ui/cssTokenCon
  * reaches the DOM (inline styles and SVG fill / stroke / stop-color), so a
  * literal creeping back in through any prop path fails here.
  *
- * Allowlist (each a deliberate keep, see the constants in SessionRunClient):
+ * Allowlist (a deliberate keep, see the constants in SessionRunClient):
  *  - #0077b5: LinkedIn's brand blue — a third-party identity colour.
- *  - #2563eb / #1e40af: SessionRunClient's VOICE_ACCENT / VOICE_ACCENT_DARK
- *    constants. PortalVoiceSession no longer needs a hex (its alpha steps are
- *    color-mix, see the PortalVoiceSession describe below), so these can flip
- *    to var(--wa-info) / var(--wa-info-dark) in that file and leave this list.
+ * The former VOICE_ACCENT / VOICE_ACCENT_DARK pair (#2563eb / #1e40af) is now
+ * var(--wa-info) / var(--wa-info-dark) and is asserted below, not allowed.
  */
-const ALLOWED_HEX = new Set(['#0077b5', '#2563eb', '#1e40af']);
+const ALLOWED_HEX = new Set(['#0077b5']);
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;
 // jsdom normalises a bare hex in an inline style to `rgb(r, g, b)`, so an
 // alpha-less rgb() in a style attribute is also a literal that bypassed the
@@ -29,9 +27,9 @@ const BARE_RGB = /\brgb\(\d+,\s*\d+,\s*\d+\)/g;
 const ALLOWED_RGB = new Set(['rgb(0, 119, 181)']);
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }) }));
-// VoiceAgentSurface paints from lib/portal/voiceAgentSurfaces.ts, a separate
-// surface outside this sweep (its CRIMSON literal is a follow-up); stub it so
-// the assertion covers SessionRunClient's own chrome (children still render).
+// VoiceAgentSurface paints from lib/portal/voiceAgentSurfaces.ts and has its
+// own describe below (rendered through vi.importActual); stub it here so this
+// assertion covers SessionRunClient's own chrome (children still render).
 vi.mock('@/components/portal/VoiceAgentSurface', () => ({ default: ({ children }: { children?: React.ReactNode }) => <>{children}</> }));
 // PortalVoiceSession is owned by the portal-ui-refine branch; record the accent
 // props it is handed instead of rendering it.
@@ -150,15 +148,29 @@ describe('SessionRunClient paints from --wa-* tokens', () => {
     expect(styles).toContain('var(--wa-success)');
     // The LinkedIn tiles keep the brand blue, deliberately (jsdom renders it as rgb).
     expect(styles).toContain('rgb(0, 119, 181)');
-    // The voice sessions are handed the documented hex pair, nothing else.
-    for (const btn of screen.getAllByRole('button', { name: /use voice/i })) fireEvent.click(btn);
-    const voice = screen.getAllByTestId('voice-session');
-    expect(voice.length).toBeGreaterThan(0);
-    // (The interview card passes the gold token pair; PortalVoiceSession mixes
-    // its alpha steps with color-mix, so either form is a valid accent.)
-    for (const v of voice) {
-      expect(['#2563eb', 'var(--wa-gold)']).toContain(v.getAttribute('data-accent'));
-      expect(['#1e40af', 'var(--wa-gold-dark)']).toContain(v.getAttribute('data-accent-dark'));
+    // The voice sessions are handed token pairs only: the info pair on the
+    // walk-through / resume / cover cards, the gold pair on the interview card.
+    // PortalVoiceSession mixes its alpha steps with color-mix, so a var() is
+    // a valid accent and no hex may be handed down any more. Only one card is
+    // in voice mode at a time (the walk-through starts there on a fresh
+    // walk-in), so record that mount, then open the other three one by one.
+    const pairOf = (el: HTMLElement) => [el.getAttribute('data-accent'), el.getAttribute('data-accent-dark')] as const;
+    const accents: Array<readonly [string | null, string | null]> = [pairOf(screen.getByTestId('voice-session'))];
+    const useVoice = screen.getAllByRole('button', { name: /^use voice$/i });
+    expect(useVoice.length).toBe(3);
+    for (const btn of useVoice) {
+      fireEvent.click(btn);
+      accents.push(pairOf(screen.getByTestId('voice-session')));
+    }
+    expect(accents).toEqual([
+      ['var(--wa-info)', 'var(--wa-info-dark)'],
+      ['var(--wa-info)', 'var(--wa-info-dark)'],
+      ['var(--wa-info)', 'var(--wa-info-dark)'],
+      ['var(--wa-gold)', 'var(--wa-gold-dark)'],
+    ]);
+    for (const [accent, dark] of accents) {
+      expect(accent).not.toMatch(HEX);
+      expect(dark).not.toMatch(HEX);
     }
     // No legacy var(--color-green|error, #hex) fallbacks survive.
     expect(styles).not.toMatch(/var\(--color-(green|error|gold)/);
@@ -353,6 +365,73 @@ describe('PortalVoiceSession paints from --wa-* tokens with a token accent', () 
     expect(styleOf(screen.getByRole('button', { name: /approve/i }))).toContain('background: var(--wa-gold)');
     vi.unstubAllGlobals();
     startVoiceSession.mockClear();
+  });
+});
+
+/**
+ * Follow-up to #2463: lib/portal/voiceAgentSurfaces.ts painted its crimson
+ * ring, glow and CTA gradient from `#ad2c4d` / `#8c0f37`. They now read the
+ * `--wa-hero-crimson` pair (the same one CertificationsEarnMoreCard uses), so
+ * white badge copy over the ring stays dark in both themes. Render the real
+ * VoiceAgentSurface (the module is stubbed above for the SessionRunClient
+ * sweep) with each surface that consumes the crimson constants.
+ */
+describe('voiceAgentSurfaces crimson surfaces paint from the hero tokens', () => {
+  async function renderSurface(name: 'resumeCoachVoiceSurface' | 'employerVoiceSurface' | 'careerBusinessVoiceSurface' | 'mockInterviewVoiceSurface') {
+    const { default: Surface } = await vi.importActual<typeof import('@/components/portal/VoiceAgentSurface')>('@/components/portal/VoiceAgentSurface');
+    const surfaces = await import('@/lib/portal/voice');
+    const surface = surfaces[name];
+    const { container } = render(<Surface {...surface}><p>panel</p></Surface>);
+    return { container, surface };
+  }
+
+  it.each(['resumeCoachVoiceSurface', 'employerVoiceSurface', 'careerBusinessVoiceSurface'] as const)(
+    '%s: ring, glow, icon tile and badge carry no literal and read --wa-hero-crimson',
+    async (name) => {
+      const { container, surface } = await renderSurface(name);
+      expect(allLiterals(container)).toEqual([]);
+      const ring = styleOf(container.firstElementChild);
+      expect(ring).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
+      expect(ring).toContain('box-shadow: 0 16px 48px color-mix(in srgb, var(--wa-hero-crimson) 16%, transparent)');
+      expect(styleOf(screen.getByText(surface.badge))).toContain('color: var(--wa-hero-crimson)');
+      // The CTA gradient callers paint from is the same token pair.
+      expect(surface.ctaGradient).toBe('linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
+      expect(surface.ctaGradient).not.toMatch(HEX);
+      expect(surface.glowColor).toBe('var(--wa-hero-crimson)');
+    },
+  );
+
+  it('mockInterviewVoiceSurface: glow and CTA read the hero tokens; the ring keeps only its plum stop', async () => {
+    const { container, surface } = await renderSurface('mockInterviewVoiceSurface');
+    // The ring's deep-plum end stop (#5e1426) has no `--wa-*` token yet and is
+    // the one literal left on this surface; the crimson-dark start stop and
+    // everything else read the tokens.
+    expect(new Set(allLiterals(container))).toEqual(new Set(['#5e1426']));
+    const ring = styleOf(container.firstElementChild);
+    expect(ring).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson-dark), #5e1426)');
+    expect(ring).toContain('box-shadow: 0 16px 48px color-mix(in srgb, var(--wa-hero-crimson) 16%, transparent)');
+    expect(styleOf(screen.getByText(surface.badge))).toContain('color: var(--wa-hero-crimson)');
+    expect(surface.ctaGradient).toBe('linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
+    expect(surface.glowColor).toBe('var(--wa-hero-crimson)');
+  });
+});
+
+describe('VoiceCoachLauncherCard CTA shadow', () => {
+  it('falls back to a color-mix of the glow colour when no ctaShadow is passed, never a hex-alpha suffix', async () => {
+    const { default: Card } = await import('@/components/portal/VoiceCoachLauncherCard');
+    const { ctaShadow: _omitted, ...surface } = (await import('@/lib/portal/voice')).resumeCoachVoiceSurface;
+    void _omitted;
+    const { container } = render(
+      <Card {...surface} title="Resume coach" description="Line by line." href="/dashboard/resume-coach" ctaLabel="Open" />,
+    );
+    const cta = screen.getByRole('link', { name: /open/i });
+    const style = styleOf(cta);
+    expect(style).toContain('box-shadow: 0 8px 24px color-mix(in srgb, var(--wa-hero-crimson) 20%, transparent)');
+    expect(style).not.toMatch(/\)33\b/);
+    expect(style).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))');
+    // The white CTA text on the hero gradient is the one deliberate literal
+    // here (jsdom normalises `#fff` to rgb); the shadow contributes none.
+    expect(allLiterals(container)).toEqual(['rgb(255, 255, 255)']);
   });
 });
 
