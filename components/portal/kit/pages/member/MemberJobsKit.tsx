@@ -1,8 +1,9 @@
 import { Compass } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { DesignSurface, KpiStrip, DataTable, StatusTag, PageOpener, JobListingRow, KitEmptyState, type Column, type KitTone } from '@/components/portal/kit';
-import { JOBS_BOARD_EMPTY, JOBS_EMPTY_RECOMMENDATIONS } from '@/lib/member/jobPipelineDisplay';
+import { JOBS_BOARD_EMPTY } from '@/lib/member/jobPipelineDisplay';
 
 /**
  * Member Portal — JOB PIPELINE view.
@@ -14,7 +15,8 @@ import { JOBS_BOARD_EMPTY, JOBS_EMPTY_RECOMMENDATIONS } from '@/lib/member/jobPi
  * `/dashboard/jobs/<id>`), so the page is never a dead end: "Browse openings"
  * and "Browse jobs" jump to that list instead of round-tripping through
  * `?ui=legacy` (member audit 7b). An empty list is the honest
- * `JOBS_BOARD_EMPTY` state, not a hidden section.
+ * `empty.openings` unavailable state (copy in messages/*.json, hrefs in
+ * `JOBS_BOARD_EMPTY`), not a hidden section.
  *
  * Defaults are empty. Proofs and the live route pass real rows — never invent
  * a Deloitte/Accenture pipeline when the caller omits data.
@@ -109,6 +111,7 @@ export function MemberJobsKit({
   openRoles = [],
   openRolesTotal,
 }: MemberJobsKitProps) {
+  const t = useTranslations('empty');
   const openRolesCount = Math.max(openRolesTotal ?? 0, openRoles.length);
   const columns: Column<ApplicationRow>[] = [
     { key: 'role', header: 'Role', render: (r) => <span style={{ fontWeight: 700 }}>{r.role}</span> },
@@ -164,9 +167,10 @@ export function MemberJobsKit({
           </div>
           {applications.length === 0 ? (
             <KitEmptyState
-              title="No applications yet"
-              description="Track jobs you apply to. They appear here."
-              action={<JobsCta href={browseHref}>Browse openings</JobsCta>}
+              kind="first"
+              title={t('applications.title')}
+              description={t('applications.body')}
+              primaryAction={{ label: t('applications.action'), href: browseHref }}
             />
           ) : (
             <DataTable<ApplicationRow>
@@ -176,8 +180,12 @@ export function MemberJobsKit({
               mobile="cards"
               cardRender={applicationCard}
               minWidth={560}
-              emptyTitle="No applications yet"
-              emptyDescription="Track jobs you apply to. They appear here."
+              empty={{
+                kind: 'first',
+                title: t('applications.title'),
+                description: t('applications.body'),
+                primaryAction: { label: t('applications.action'), href: browseHref },
+              }}
             />
           )}
         </div>
@@ -196,16 +204,11 @@ export function MemberJobsKit({
           {openRoles.length === 0 ? (
             <div className="wa-kit-card">
               <KitEmptyState
-                title={JOBS_BOARD_EMPTY.title}
-                description={JOBS_BOARD_EMPTY.description}
-                action={
-                  <div className="wa-flex wa-flex-wrap wa-gap-2">
-                    <JobsCta href={JOBS_BOARD_EMPTY.primaryHref}>{JOBS_BOARD_EMPTY.primaryCta}</JobsCta>
-                    <JobsCta href={JOBS_BOARD_EMPTY.secondaryHref} variant="secondary">
-                      {JOBS_BOARD_EMPTY.secondaryCta}
-                    </JobsCta>
-                  </div>
-                }
+                kind={JOBS_BOARD_EMPTY.kind}
+                title={t('openings.title')}
+                description={t('openings.body')}
+                primaryAction={{ label: t('openings.action'), href: JOBS_BOARD_EMPTY.primaryHref }}
+                secondaryAction={{ label: t('openings.secondary'), href: JOBS_BOARD_EMPTY.secondaryHref }}
               />
             </div>
           ) : (
@@ -234,18 +237,11 @@ export function MemberJobsKit({
           {recommended.length === 0 ? (
             <div className="wa-kit-card">
               <KitEmptyState
-                title={JOBS_EMPTY_RECOMMENDATIONS.title}
-                description={JOBS_EMPTY_RECOMMENDATIONS.description}
-                action={
-                  <div className="wa-flex wa-flex-wrap wa-gap-2">
-                    <JobsCta href={profileHref}>{JOBS_EMPTY_RECOMMENDATIONS.primaryCta}</JobsCta>
-                    {applications.length === 0 ? (
-                      <JobsCta href={browseHref} variant="secondary">
-                        {JOBS_EMPTY_RECOMMENDATIONS.secondaryCta}
-                      </JobsCta>
-                    ) : null}
-                  </div>
-                }
+                kind="first"
+                title={t('matches.title')}
+                description={t('matches.body')}
+                primaryAction={{ label: t('matches.action'), href: profileHref }}
+                secondaryAction={applications.length === 0 ? { label: t('matches.secondary'), href: browseHref } : undefined}
               />
             </div>
           ) : (

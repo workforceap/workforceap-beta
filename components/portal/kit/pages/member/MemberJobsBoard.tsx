@@ -1,6 +1,7 @@
 import { Briefcase } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { DesignSurface, JobListingRow, KitEmptyState, PageOpener } from '@/components/portal/kit';
 import LogExternalApplicationButton from '@/components/portal/jobs/LogExternalApplicationButton';
 import { JOBS_BOARD_EMPTY } from '@/lib/member/jobPipelineDisplay';
@@ -64,6 +65,7 @@ export function MemberJobsBoard({
   profileHref = JOBS_BOARD_EMPTY.primaryHref,
   messagesHref = JOBS_BOARD_EMPTY.secondaryHref,
 }: MemberJobsBoardProps) {
+  const t = useTranslations('empty');
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
@@ -77,18 +79,11 @@ export function MemberJobsBoard({
         <div className="wa-kit-card" style={{ padding: jobs.length === 0 ? undefined : 0, overflow: 'hidden' }}>
           {jobs.length === 0 ? (
             <KitEmptyState
-              title={JOBS_BOARD_EMPTY.title}
-              description={JOBS_BOARD_EMPTY.description}
-              action={
-                <div className="wa-flex wa-flex-wrap wa-items-center" style={{ gap: 8 }}>
-                  <BoardCta href={profileHref} variant="kit">
-                    {JOBS_BOARD_EMPTY.primaryCta}
-                  </BoardCta>
-                  <BoardCta href={messagesHref} variant="kit">
-                    {JOBS_BOARD_EMPTY.secondaryCta}
-                  </BoardCta>
-                </div>
-              }
+              kind={JOBS_BOARD_EMPTY.kind}
+              title={t('openings.title')}
+              description={t('openings.body')}
+              primaryAction={{ label: t('openings.action'), href: profileHref }}
+              secondaryAction={{ label: t('openings.secondary'), href: messagesHref }}
             />
           ) : (
             jobs.map((job, i) => (

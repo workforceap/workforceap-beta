@@ -6,7 +6,8 @@ import en from '@/messages/en.json';
 /**
  * /dashboard/job-applications renders inside the warm DesignSurface with the
  * i18n PageHeader title and kit tokens only. Formerly asserted by reading the
- * page source in lib/member/jobApplicationsEmptyState.test.ts.
+ * page source in the retired lib/member/jobApplicationsEmptyState.test.ts
+ * (its copy rules now live in tests/lib/empty-copy.spec.ts).
  */
 const mocks = vi.hoisted(() => ({ tracker: vi.fn() }));
 

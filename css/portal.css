@@ -1617,29 +1617,6 @@ html.dark .portal-kanban-column--rejected {
   margin-bottom: 0.25rem;
 }
 
-.portal-kanban-empty {
-  padding: 1rem;
-  text-align: center;
-  font-size: 0.875rem;
-  color: var(--color-on-surface-variant);
-  border: 1px dashed rgba(222, 191, 194, 0.45);
-  border-radius: var(--radius-md);
-  background: color-mix(
-    in srgb,
-    var(--surface-container-lowest) 70%,
-    transparent
-  );
-}
-
-.portal-kanban-mobile-empty {
-  text-align: center;
-  padding: 3rem 1rem;
-  border: 2px dashed rgba(222, 191, 194, 0.35);
-  border-radius: var(--radius-lg);
-  color: var(--color-on-surface-variant);
-  background: var(--surface-container-low);
-}
-
 .job-app-card {
   cursor: pointer;
   transition:

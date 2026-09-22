@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import type { CSSProperties } from "react";
+import { useTranslations } from "next-intl";
 import type { JobApplication } from "@/types/job-application";
+import { KitEmptyState } from "@/components/portal/kit";
 import {
   // Kanban columns are the full pipeline, in Prisma enum order.
   JOB_APPLICATION_STATUS as JOB_APPLICATION_PIPELINE_COLUMNS,
@@ -182,6 +184,7 @@ export default function JobApplicationKanban({
   applications,
   onStatusChange,
 }: JobApplicationKanbanProps) {
+  const t = useTranslations("empty");
   const grouped = JOB_APPLICATION_PIPELINE_COLUMNS.reduce(
     (acc, status) => {
       acc[status] = applications.filter((app) => app.status === status);
@@ -195,9 +198,7 @@ export default function JobApplicationKanban({
       {/* Mobile card list — hidden on md+ */}
       <div className="wa-block md:wa-hidden">
         {applications.length === 0 ? (
-          <div className="portal-kanban-mobile-empty">
-            <p style={{ margin: 0 }}>No applications yet.</p>
-          </div>
+          <KitEmptyState kind="first" framed title={t("applications.title")} description={t("applications.body")} />
         ) : (
           <div>
             {JOB_APPLICATION_PIPELINE_COLUMNS.map((status) => {
@@ -254,7 +255,7 @@ export default function JobApplicationKanban({
 
               <div className="wa-space-y-3">
                 {grouped[status].length === 0 ? (
-                  <div className="portal-kanban-empty">No applications</div>
+                  <KitEmptyState kind="first" framed headingAs="h4" title={t("stage.title")} />
                 ) : (
                   grouped[status].map((app) => (
                     <JobApplicationCard

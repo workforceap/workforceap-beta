@@ -1,12 +1,17 @@
 import test, { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   ACTIVE_APPLICATION_STATUSES,
   displayJobLocation,
   isActiveApplicationStatus,
   JOBS_BOARD_EMPTY,
-  JOBS_EMPTY_RECOMMENDATIONS,
 } from './jobPipelineDisplay';
+
+/** Empty-state copy lives in messages/*.json (`empty.*`, KIT_GUIDE §6). */
+const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8')) as {
+  empty: Record<string, Record<string, string>>;
+};
 
 test('displayJobLocation uses a readable fallback instead of an em dash', () => {
   assert.equal(displayJobLocation(null), 'Location not listed');
@@ -18,21 +23,19 @@ test('displayJobLocation uses a readable fallback instead of an em dash', () => 
 });
 
 test('empty recommendations copy is a short next step, not a truncated paragraph', () => {
-  assert.equal(JOBS_EMPTY_RECOMMENDATIONS.title, 'No matching roles yet');
-  assert.ok(JOBS_EMPTY_RECOMMENDATIONS.description.length <= 72);
-  assert.doesNotMatch(
-    JOBS_EMPTY_RECOMMENDATIONS.description,
-    /Keep your profile and certifications up to date and/,
-  );
-  assert.equal(JOBS_EMPTY_RECOMMENDATIONS.primaryCta, 'Update profile');
+  assert.equal(en.empty.matches.title, 'No matched roles yet');
+  assert.ok(en.empty.matches.body.length <= 96);
+  assert.doesNotMatch(en.empty.matches.body, /Keep your profile and certifications up to date and/);
+  assert.equal(en.empty.matches.action, 'Update profile');
 });
 
 test('board inventory empty names next steps without promising seeded jobs', () => {
-  assert.equal(JOBS_BOARD_EMPTY.title, 'No live openings right now');
-  assert.match(JOBS_BOARD_EMPTY.description, /check back after new postings go live/i);
-  assert.doesNotMatch(JOBS_BOARD_EMPTY.description, /\[Demo\]|seed|Capital Area/i);
-  assert.equal(JOBS_BOARD_EMPTY.primaryCta, 'Update profile');
-  assert.equal(JOBS_BOARD_EMPTY.secondaryCta, 'Message your counselor');
+  assert.equal(JOBS_BOARD_EMPTY.kind, 'unavailable');
+  assert.equal(en.empty.openings.title, 'No live openings right now');
+  assert.match(en.empty.openings.body, /have not posted live roles yet/i);
+  assert.doesNotMatch(en.empty.openings.body, /\[Demo\]|seed|Capital Area/i);
+  assert.equal(en.empty.openings.action, 'Update profile');
+  assert.equal(en.empty.openings.secondary, 'Message your counselor');
   assert.equal(JOBS_BOARD_EMPTY.primaryHref, '/dashboard/profile');
   assert.equal(JOBS_BOARD_EMPTY.secondaryHref, '/dashboard/messages');
 });

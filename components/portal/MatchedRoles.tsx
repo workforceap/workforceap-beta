@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit';
 
 type MatchedJob = {
   id: string;
@@ -14,9 +15,17 @@ type MatchedJob = {
 };
 
 export default function MatchedRoles() {
+  const t = useTranslations('empty');
   const [jobs, setJobs] = useState<MatchedJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  // Bumped by "Try again" on the failed-load state; the effect re-runs the fetch.
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
+    setAttempt((n) => n + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -40,7 +49,7 @@ export default function MatchedRoles() {
       clearTimeout(timeout);
       controller.abort();
     };
-  }, []);
+  }, [attempt]);
 
   if (loading) {
     return (
@@ -73,12 +82,20 @@ export default function MatchedRoles() {
   }
 
   if (loadError) {
+    // A failed load is never a confirmed empty result (KIT_GUIDE §4): danger
+    // tone, role="alert" from the kit, and a real retry.
     return (
-      <section className="dashboard-matched-roles" style={{ marginTop: '1.5rem' }} role="alert">
+      <section className="dashboard-matched-roles" style={{ marginTop: '1.5rem' }}>
         <h2 className="dashboard-today-label">Roles that match you</h2>
-        <p style={{ color: 'var(--color-error)', fontSize: '0.9rem' }}>
-          Couldn’t load matched roles right now. Try refreshing, or browse the <Link href="/dashboard/jobs" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>job board</Link>.
-        </p>
+        <KitEmptyState
+          kind="unavailable"
+          tone="danger"
+          framed
+          title={t('matchesUnavailable.title')}
+          description={t('matchesUnavailable.body')}
+          primaryAction={{ label: t('matchesUnavailable.action'), onClick: retry }}
+          secondaryAction={{ label: t('matchesUnavailable.secondary'), href: '/dashboard/jobs' }}
+        />
       </section>
     );
   }
@@ -87,11 +104,14 @@ export default function MatchedRoles() {
     return (
       <section className="dashboard-matched-roles" style={{ marginTop: '1.5rem' }}>
         <h2 className="dashboard-today-label">Roles that match you</h2>
-        <PortalEmptyState
-          title="No matched jobs yet"
-          description="Check back soon as we add new employer opportunities, or browse the job board to see all openings."
-          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">work_outline</span>}
-          primaryAction={{ label: 'Browse job board', href: '/dashboard/jobs' }}
+        <KitEmptyState
+          kind="first"
+          framed
+          title={t('matches.title')}
+          description={t('matches.body')}
+          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">work_outline</span>}
+          primaryAction={{ label: t('matches.action'), href: '/dashboard/profile' }}
+          secondaryAction={{ label: t('matches.secondary'), href: '/dashboard/jobs' }}
         />
       </section>
     );

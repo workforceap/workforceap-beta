@@ -3839,5 +3839,50 @@
         "unknown": "Status not recorded"
       }
     }
+  },
+  "empty": {
+    "activeApplications": {
+      "title": "No active applications",
+      "body": "Jobs you apply to appear here until the employer closes them. Browse openings to add your first one.",
+      "action": "Browse openings"
+    },
+    "applications": {
+      "title": "No applications yet",
+      "body": "Jobs you save or apply to appear here. Add one, or browse openings.",
+      "action": "Browse openings",
+      "add": "Add application"
+    },
+    "matches": {
+      "title": "No matched roles yet",
+      "body": "Roles that fit your profile appear here. Update your profile so we can match you.",
+      "action": "Update profile",
+      "secondary": "Browse jobs"
+    },
+    "openings": {
+      "title": "No live openings right now",
+      "body": "Employer partners have not posted live roles yet. Update your profile so you are ready when they do, or message your counselor for leads.",
+      "action": "Update profile",
+      "secondary": "Message your counselor"
+    },
+    "openingsPublic": {
+      "title": "No live openings right now",
+      "body": "Employer partners have not posted live roles yet. Explore training programs while you wait.",
+      "action": "Browse programs",
+      "secondary": "Apply for training"
+    },
+    "jobsFiltered": {
+      "title": "No jobs match these filters",
+      "body": "Clear the filters to see every live opening.",
+      "action": "Clear filters"
+    },
+    "matchesUnavailable": {
+      "title": "Matched roles could not load",
+      "body": "Try again, or browse the job board to see every opening.",
+      "action": "Try again",
+      "secondary": "Browse jobs"
+    },
+    "stage": {
+      "title": "Nothing in this stage"
+    }
   }
 }

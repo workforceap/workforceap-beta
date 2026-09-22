@@ -1573,26 +1573,6 @@ html.dark .jobs-listing .job-card:hover {
 html.dark .jobs-listing .job-card__logo {
     background: var(--color-gray-100);
 }
-html.dark .jobs-empty-state {
-    background: var(--color-gray-50);
-    border-color: var(--color-gray-300);
-}
-html.dark .jobs-empty-state__title {
-    color: var(--color-gray-800);
-}
-html.dark .jobs-empty-state__text {
-    color: var(--color-on-surface-variant);
-}
-html.dark .jobs-empty-state .btn.btn-ghost,
-html.dark .jobs-empty-state a.btn.btn-ghost {
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #f9fafb;
-}
-html.dark .jobs-empty-state .btn.btn-ghost:hover,
-html.dark .jobs-empty-state a.btn.btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-}
 .jobs-public-cta {
     background: var(--color-gray-50);
     border: 1px solid var(--color-gray-200);

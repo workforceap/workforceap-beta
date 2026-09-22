@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { JobApplication } from '@/types/job-application';
@@ -10,7 +9,6 @@ import ApplicationAiFeedbackPrompt from '@/components/portal/ApplicationAiFeedba
 import type { RecentToolOption } from '@/components/portal/ApplicationAiFeedbackPrompt';
 import { KitEmptyState } from '@/components/portal/kit';
 import { getErrorMessageFromResponse } from '@/lib/fetchWithTimeout';
-import { JOB_APPLICATIONS_EMPTY } from '@/lib/member/jobApplicationsEmptyState';
 
 interface JobApplicationsTrackerProps {
   userId: string;
@@ -19,6 +17,7 @@ interface JobApplicationsTrackerProps {
 export default function JobApplicationsTracker({ userId }: JobApplicationsTrackerProps) {
   void userId;
   const t = useTranslations('dashboard');
+  const te = useTranslations('empty');
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -180,25 +179,11 @@ export default function JobApplicationsTracker({ userId }: JobApplicationsTracke
       {applications.length === 0 ? (
         <div className="wa-kit-card">
           <KitEmptyState
-            title={t('jobApplicationsEmptyTitle')}
-            description={t('jobApplicationsEmptyDesc')}
-            action={
-              <div className="wa-flex wa-flex-wrap wa-gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(true)}
-                  className="wa-kit-cta wa-kit-focus hover:wa-opacity-90"
-                >
-                  {t('addApplication')}
-                </button>
-                <Link
-                  href={JOB_APPLICATIONS_EMPTY.secondaryCta.href}
-                  className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus hover:wa-opacity-90"
-                >
-                  {t('browseJobs')}
-                </Link>
-              </div>
-            }
+            kind="first"
+            title={te('applications.title')}
+            description={te('applications.body')}
+            primaryAction={{ label: te('applications.add'), onClick: () => setIsModalOpen(true) }}
+            secondaryAction={{ label: te('applications.action'), href: '/dashboard/jobs' }}
           />
         </div>
       ) : (

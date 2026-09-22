@@ -3779,5 +3779,50 @@
         "unknown": "État non enregistré"
       }
     }
+  },
+  "empty": {
+    "activeApplications": {
+      "title": "Aucune candidature active",
+      "body": "Les emplois auxquels vous postulez apparaissent ici jusqu’à ce que l’employeur les clôture. Parcourez les offres pour ajouter la première.",
+      "action": "Parcourir les offres"
+    },
+    "applications": {
+      "title": "Aucune candidature pour l’instant",
+      "body": "Les emplois que vous enregistrez ou auxquels vous postulez apparaissent ici. Ajoutez-en une ou parcourez les offres.",
+      "action": "Parcourir les offres",
+      "add": "Ajouter une candidature"
+    },
+    "matches": {
+      "title": "Aucun poste correspondant pour l’instant",
+      "body": "Les postes qui correspondent à votre profil apparaissent ici. Mettez votre profil à jour pour que nous puissions vous en proposer.",
+      "action": "Mettre à jour le profil",
+      "secondary": "Parcourir les emplois"
+    },
+    "openings": {
+      "title": "Aucune offre active pour le moment",
+      "body": "Les employeurs partenaires n’ont pas encore publié de postes actifs. Mettez votre profil à jour pour être prêt quand ils le feront, ou écrivez à votre conseiller pour obtenir des pistes.",
+      "action": "Mettre à jour le profil",
+      "secondary": "Écrire à votre conseiller"
+    },
+    "openingsPublic": {
+      "title": "Aucune offre active pour le moment",
+      "body": "Les employeurs partenaires n’ont pas encore publié de postes actifs. Explorez les programmes de formation en attendant.",
+      "action": "Parcourir les programmes",
+      "secondary": "Postuler à une formation"
+    },
+    "jobsFiltered": {
+      "title": "Aucun emploi ne correspond à ces filtres",
+      "body": "Effacez les filtres pour voir toutes les offres actives.",
+      "action": "Effacer les filtres"
+    },
+    "matchesUnavailable": {
+      "title": "Impossible de charger les postes correspondants",
+      "body": "Réessayez ou parcourez le tableau des emplois pour voir toutes les offres.",
+      "action": "Réessayer",
+      "secondary": "Parcourir les emplois"
+    },
+    "stage": {
+      "title": "Rien à cette étape"
+    }
   }
 }
