@@ -3772,5 +3772,45 @@
         }
       }
     }
+  },
+  "status": {
+    "application": {
+      "member": {
+        "not_submitted": "No application on file",
+        "pending": "Pending review",
+        "needs_info": "More information requested",
+        "approved": "Application approved",
+        "denied": "Application closed",
+        "unknown": "Status not recorded"
+      },
+      "staff": {
+        "not_submitted": "No application on file",
+        "pending": "Awaiting decision",
+        "needs_info": "Waiting on applicant",
+        "approved": "Approved",
+        "denied": "Denied",
+        "unknown": "Status not recorded"
+      }
+    },
+    "intake": {
+      "member": {
+        "not_reviewed": "Status not recorded",
+        "pending": "Review pending",
+        "in_review": "In review",
+        "needs_info": "More information requested",
+        "verified": "Intake verified by staff",
+        "not_eligible": "Staff recorded not eligible",
+        "unknown": "Status not recorded"
+      },
+      "staff": {
+        "not_reviewed": "Not reviewed",
+        "pending": "Awaiting review",
+        "in_review": "In review",
+        "needs_info": "Needs more information",
+        "verified": "Intake verified",
+        "not_eligible": "Not eligible",
+        "unknown": "Status not recorded"
+      }
+    }
   }
 }

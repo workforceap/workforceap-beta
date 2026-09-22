@@ -3712,5 +3712,45 @@
         }
       }
     }
+  },
+  "status": {
+    "application": {
+      "member": {
+        "not_submitted": "Nenhuma inscrição registrada",
+        "pending": "Análise pendente",
+        "needs_info": "Mais informações solicitadas",
+        "approved": "Inscrição aprovada",
+        "denied": "Inscrição encerrada",
+        "unknown": "Status não registrado"
+      },
+      "staff": {
+        "not_submitted": "Nenhuma inscrição registrada",
+        "pending": "Aguardando decisão",
+        "needs_info": "Aguardando o candidato",
+        "approved": "Aprovada",
+        "denied": "Negada",
+        "unknown": "Status não registrado"
+      }
+    },
+    "intake": {
+      "member": {
+        "not_reviewed": "Status não registrado",
+        "pending": "Análise pendente",
+        "in_review": "Em análise",
+        "needs_info": "Mais informações solicitadas",
+        "verified": "Admissão verificada pela equipe",
+        "not_eligible": "A equipe registrou que não atende aos requisitos",
+        "unknown": "Status não registrado"
+      },
+      "staff": {
+        "not_reviewed": "Não analisado",
+        "pending": "Aguardando análise",
+        "in_review": "Em análise",
+        "needs_info": "Precisa de mais informações",
+        "verified": "Admissão verificada",
+        "not_eligible": "Não atende aos requisitos",
+        "unknown": "Status não registrado"
+      }
+    }
   }
 }

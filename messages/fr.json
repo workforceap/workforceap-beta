@@ -3712,5 +3712,45 @@
         }
       }
     }
+  },
+  "status": {
+    "application": {
+      "member": {
+        "not_submitted": "Aucune candidature enregistrée",
+        "pending": "En attente d’examen",
+        "needs_info": "Informations supplémentaires demandées",
+        "approved": "Candidature approuvée",
+        "denied": "Candidature close",
+        "unknown": "État non enregistré"
+      },
+      "staff": {
+        "not_submitted": "Aucune candidature enregistrée",
+        "pending": "En attente de décision",
+        "needs_info": "En attente du candidat",
+        "approved": "Approuvée",
+        "denied": "Refusée",
+        "unknown": "État non enregistré"
+      }
+    },
+    "intake": {
+      "member": {
+        "not_reviewed": "État non enregistré",
+        "pending": "Examen en attente",
+        "in_review": "En cours d’examen",
+        "needs_info": "Informations supplémentaires demandées",
+        "verified": "Dossier d’admission vérifié par le personnel",
+        "not_eligible": "Le personnel a enregistré une non-admissibilité",
+        "unknown": "État non enregistré"
+      },
+      "staff": {
+        "not_reviewed": "Non examiné",
+        "pending": "En attente d’examen",
+        "in_review": "En cours d’examen",
+        "needs_info": "Informations supplémentaires requises",
+        "verified": "Dossier d’admission vérifié",
+        "not_eligible": "Non admissible",
+        "unknown": "État non enregistré"
+      }
+    }
   }
 }

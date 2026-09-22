@@ -433,8 +433,43 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const doc = await renderPage();
     const chips = Array.from(panel(doc, 'overview').querySelectorAll('.wa-kit-tag')).map((el) => el.textContent);
     expect(chips).toEqual(
-      expect.arrayContaining(['No program enrolled', 'WIOA · not reviewed', 'Application · pending', 'No counselor assigned', 'Super admin']),
+      expect.arrayContaining(['No program enrolled', 'WIOA · Not reviewed', 'Application · Awaiting decision', 'No counselor assigned', 'Super admin']),
     );
+  });
+
+  it('paints a denied application and a not-eligible intake as danger, with the staff vocabulary words', async () => {
+    // Before: the tone checks compared REJECTED/WITHDRAWN (never DENIED) and
+    // 'NOT_ELIGIBLE' (uppercase) against the lowercase column, so both painted muted / warn.
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async () => ({
+      ...(await baseUser({}) as object),
+      applications: [{ status: 'DENIED', submittedAt: INSTANT, recommendedCareerTitle: null, programRankedSlugs: [] }],
+      wioaReviewStatus: 'not_eligible',
+    });
+    const doc = await renderPage();
+    const chips = Array.from(panel(doc, 'overview').querySelectorAll<HTMLElement>('.wa-kit-tag'));
+    const application = chips.find((el) => el.textContent === 'Application · Denied');
+    const wioa = chips.find((el) => el.textContent === 'WIOA · Not eligible');
+    expect(application?.className).toContain('wa-kit-tag--danger');
+    expect(wioa?.className).toContain('wa-kit-tag--danger');
+    expect(chips.map((el) => el.textContent)).not.toContain('Application · denied');
+    const eligibility = panel(doc, 'eligibility');
+    const eligibilityTag = eligibility.querySelector('#admin-member-application-status-title ~ .wa-kit-tag') as HTMLElement | null;
+    expect(eligibilityTag?.textContent).toBe('Denied');
+    expect(eligibilityTag?.className).toContain('wa-kit-tag--danger');
+  });
+
+  it('labels the waiting-on-applicant application with the staff word and the alert tone', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async () => ({
+      ...(await baseUser({}) as object),
+      applications: [{ status: 'NEEDS_INFO', submittedAt: INSTANT, recommendedCareerTitle: null, programRankedSlugs: [] }],
+      wioaReviewStatus: 'needs_info',
+    });
+    const doc = await renderPage();
+    const chips = Array.from(panel(doc, 'overview').querySelectorAll<HTMLElement>('.wa-kit-tag'));
+    expect(chips.find((el) => el.textContent === 'Application · Waiting on applicant')?.className).toContain('wa-kit-tag--alert');
+    expect(chips.find((el) => el.textContent === 'WIOA · Needs more information')?.className).toContain('wa-kit-tag--alert');
   });
 });
 

@@ -13,6 +13,13 @@ import {
   type KpiItem,
 } from '@/components/portal/kit';
 import { WIOA_QUEUE_AGE_ALERT_DAYS } from '@/lib/wioa/wioaQueueAge';
+import {
+  INTAKE_STATUS_WORDS,
+  intakeStatusLabel,
+  intakeStatusTone,
+  type IntakeStatusKey,
+} from '@/lib/status/applicationStatusVocabulary';
+import { toneToTokenColor } from '../../astryxMap';
 
 /**
  * WIOA funding eligibility — screening & compliance (dense).
@@ -30,8 +37,16 @@ import { WIOA_QUEUE_AGE_ALERT_DAYS } from '@/lib/wioa/wioaQueueAge';
  * that default order.
  */
 
-/** Determination drives the Token color + label in the table. */
-export type WioaDetermination = 'Eligible' | 'Pending' | 'Needs docs' | 'Not eligible' | 'Unreviewed';
+/**
+ * The staff review column speaks the shared intake vocabulary
+ * (lib/status/applicationStatusVocabulary.ts): "Intake verified", never
+ * "Eligible" — staff verification is not a legal WIOA eligibility
+ * determination (lib/wioa/wioaReview.ts). Token colour follows the tone
+ * (KIT_GUIDE §4: not eligible = red, needs more information = brand pink).
+ */
+function wioaReviewToken(key: IntakeStatusKey): { label: string; color: TokenColor } {
+  return { label: intakeStatusLabel(key, 'staff'), color: toneToTokenColor(intakeStatusTone(key)) };
+}
 
 export interface WioaScreeningRow {
   id: string;
@@ -44,8 +59,8 @@ export interface WioaScreeningRow {
   docs: string;
   /** Whether docs are outstanding (drives the docs cell color). */
   docsComplete: boolean;
-  /** Staff determination → Token color. */
-  determination: WioaDetermination;
+  /** Staff intake review status (vocabulary key) → word + Token color via `wioaReviewToken`. */
+  reviewStatus: IntakeStatusKey;
   /** Reviewing staff name or "—". */
   reviewer: string;
   /** Still waiting on a staff decision (`pending` / `in_review`). */
@@ -64,13 +79,13 @@ export interface WioaScreeningKitProps {
   rows: WioaScreeningRow[];
   /** Total screenings submitted (table footer). */
   total: number;
-  /** KPI: verified-eligible (staff). */
-  eligible: number;
+  /** KPI: intake verified by staff. */
+  verified: number;
   /** KPI: pending + in-review. */
   pendingReview: number;
   /** KPI: needs more information / outstanding docs. */
   needDocs: number;
-  /** KPI: determined not eligible (staff). */
+  /** KPI: staff recorded not eligible. */
   notEligible: number;
 }
 
@@ -80,27 +95,19 @@ function daysWaitingLabel(row: Pick<WioaScreeningRow, 'awaitingReview' | 'daysWa
   return String(row.daysWaiting);
 }
 
-const DETERMINATION_COLOR: Record<WioaDetermination, TokenColor> = {
-  Eligible: 'green',
-  Pending: 'yellow',
-  'Needs docs': 'pink',
-  'Not eligible': 'gray',
-  Unreviewed: 'blue',
-};
-
 export function WioaScreeningKit({
   rows,
   total,
-  eligible,
+  verified,
   pendingReview,
   needDocs,
   notEligible,
 }: WioaScreeningKitProps) {
   const kpis: KpiItem[] = [
-    { label: 'Eligible', value: eligible },
-    { label: 'Pending Review', value: pendingReview, tone: pendingReview > 0 ? 'warn' : undefined },
-    { label: 'Need Docs', value: needDocs, tone: needDocs > 0 ? 'alert' : undefined },
-    { label: 'Not Eligible', value: notEligible },
+    { label: INTAKE_STATUS_WORDS.staff.verified, value: verified },
+    { label: INTAKE_STATUS_WORDS.staff.pending, value: pendingReview, tone: pendingReview > 0 ? 'warn' : undefined },
+    { label: INTAKE_STATUS_WORDS.staff.needs_info, value: needDocs, tone: needDocs > 0 ? 'alert' : undefined },
+    { label: INTAKE_STATUS_WORDS.staff.not_eligible, value: notEligible },
   ];
 
   const StudentCell = ({ row }: { row: WioaScreeningRow }) => (
@@ -142,11 +149,9 @@ export function WioaScreeningKit({
       ),
     },
     {
-      key: 'determination',
-      header: 'Determination',
-      render: (row) => (
-        <Token label={row.determination} size="sm" color={DETERMINATION_COLOR[row.determination]} />
-      ),
+      key: 'review',
+      header: 'Staff review',
+      render: (row) => <Token {...wioaReviewToken(row.reviewStatus)} size="sm" />,
     },
     {
       key: 'daysWaiting',
@@ -219,7 +224,7 @@ export function WioaScreeningKit({
                 <StudentCell row={row} />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <Token label={row.determination} size="sm" color={DETERMINATION_COLOR[row.determination]} />
+                <Token {...wioaReviewToken(row.reviewStatus)} size="sm" />
                 <AstryxLink href={`/admin/members/${row.id}`} as={Link as never} isStandalone>
                   <Button label="Open" variant="secondary" size="sm" />
                 </AstryxLink>

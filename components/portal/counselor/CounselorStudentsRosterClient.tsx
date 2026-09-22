@@ -8,6 +8,7 @@ import { MessageSquare } from 'lucide-react';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import type { BadgeVariant } from '@/components/portal/StatusBadge';
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
+import { intakeStatusKey, intakeStatusLabel, intakeStatusTone, type IntakeStatusKey } from '@/lib/status/applicationStatusVocabulary';
 import { computeTrainingProgress, type LiveTrainingProgressSummary } from '@/lib/member/trainingProgress';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
@@ -107,19 +108,24 @@ function formatLastActivity(iso: string | null): string {
   return `${diffD}d ago`;
 }
 
-function wioaBadgeProps(status: string | null | undefined): { label: string; variant: BadgeVariant; tooltip: string } {
-  switch (status) {
-    case 'verified':
-      return { label: 'WIOA Verified', variant: 'success', tooltip: 'Member is WIOA-verified and eligible to enroll in training' };
-    case 'pending':
-    case 'in_review':
-      return { label: 'WIOA Pending', variant: 'info', tooltip: 'Member submitted WIOA screening — awaiting counselor review' };
-    case 'not_eligible':
-    case 'needs_info':
-      return { label: 'Not Eligible', variant: 'error', tooltip: 'Member is not eligible for training enrollment until WorkforceAP resolves their WIOA status' };
-    default:
-      return { label: 'WIOA: Not Started', variant: 'info', tooltip: "Member hasn't submitted WIOA screening" };
-  }
+/**
+ * Why each intake state matters to a counselor. The pill's word and tone come
+ * from the shared staff vocabulary (lib/status/applicationStatusVocabulary.ts),
+ * so `needs_info` reads "Needs more information" (alert), never "Not eligible".
+ */
+const WIOA_TOOLTIP: Record<IntakeStatusKey, string> = {
+  not_reviewed: "Member hasn't submitted WIOA screening",
+  pending: 'Member submitted WIOA screening — awaiting staff review',
+  in_review: 'Staff are reviewing the WIOA screening',
+  needs_info: 'Staff asked the member for more information before intake can be verified',
+  verified: 'Intake verified by staff — the member can enroll in training',
+  not_eligible: 'Staff recorded this member as not eligible; training enrollment stays gated',
+  unknown: 'WIOA review status is not recognised — check the member record',
+};
+
+function wioaBadgeProps(status: string | null | undefined): { label: string; tone: KitTone; tooltip: string } {
+  const key = intakeStatusKey(status);
+  return { label: intakeStatusLabel(key, 'staff'), tone: intakeStatusTone(key), tooltip: WIOA_TOOLTIP[key] };
 }
 
 function getInitials(name: string): string {
@@ -302,7 +308,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
         const wioa = wioaBadgeProps(row.wioaReviewStatus);
         return (
           <span title={wioa.tooltip}>
-            <StatusTag tone={variantToTone(wioa.variant)}>{wioa.label}</StatusTag>
+            <StatusTag tone={wioa.tone}>{wioa.label}</StatusTag>
           </span>
         );
       },
@@ -412,7 +418,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
                   <span style={{ minWidth: 0 }}>{getProgramLabel(row.enrolledProgram, row.programInterest)}</span>
                   <span style={{ whiteSpace: 'nowrap' }} title={wioa.tooltip}>
-                    <StatusTag tone={variantToTone(wioa.variant)}>{wioa.label}</StatusTag>
+                    WIOA · <StatusTag tone={wioa.tone}>{wioa.label}</StatusTag>
                   </span>
                 </div>
                 {pct !== null ? (

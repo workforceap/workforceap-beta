@@ -270,10 +270,37 @@ reachable path (kit default and `?ui=legacy`), not `StatusBadge`. Do not infer a
 | neutral | neutral | muted | gray |
 | no equivalent | no equivalent | danger | red |
 
-Legacy `PortalEmptyState` delegates its content to `KitEmptyState`. Set `headingAs="h2"`
+**Application / intake status words** (`lib/status/applicationStatusVocabulary.ts`) — one
+vocabulary for `Application.status` and `users.wioaReviewStatus`, two audiences, one tone per
+value. Never keep a local `{ PENDING: 'Pending' }` map; call `applicationStatusLabel(key, audience)`
+/ `intakeStatusLabel(key, audience)` (English) or pass the `status`-scoped translator for a
+localized surface, and paint `StatusTag` with `applicationStatusTone(key)` / `intakeStatusTone(key)`.
+Keys come from `applicationStatusKey(enum)` / `intakeStatusKey(column)`; messages live under
+`status.application.<audience>.*` and `status.intake.<audience>.*` in all four locales.
+
+| value | member word | staff word | tone |
+|---|---|---|---|
+| no application | No application on file | No application on file | muted |
+| `PENDING` | Pending review | Awaiting decision | warn |
+| `NEEDS_INFO` | More information requested | Waiting on applicant | alert |
+| `APPROVED` | Application approved | Approved | ok |
+| `DENIED` | Application closed | Denied | danger |
+| intake `null` | Status not recorded | Not reviewed | muted |
+| intake `pending` | Review pending | Awaiting review | warn |
+| intake `in_review` | In review | In review | info |
+| intake `needs_info` | More information requested | Needs more information | alert |
+| intake `verified` | Intake verified by staff | Intake verified | ok |
+| intake `not_eligible` | Staff recorded not eligible | Not eligible | danger |
+
+Staff intake verification is not a legal WIOA eligibility determination (`lib/wioa/wioaReview.ts`),
+so no surface says "Eligible". Action buttons keep their verbs (Approve / Deny / Request info,
+admin "Not a fit"); the #2486 queue title "Waiting on your decision" is a title, not a status word.
+
+Legacy `PortalEmptyState` is `KitEmptyState` with `framed`. Set `headingAs="h2"`
 when an empty section directly follows the page h1; the default h3 is retained for
 empties inside an existing h2 section. Preserve the distinction between a failed load
-and a confirmed empty result. Keep existing directory empties on `KitEmptyState`.
+and a confirmed empty result (`kind="unavailable" tone="danger"` + a Reload action, never
+`first`). Keep existing directory empties on `KitEmptyState`.
 
 ---
 
@@ -313,12 +340,12 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `StatSparkTile` | icon-chip stat with optional delta chip + sparkline; same `tone` gate — the chip and trend line paint, the value never does |
 | `StatusTag` | semantic status pill (every table status column, risk tiers) |
 | `JobListingRow` | member open-role listing row (live `/dashboard/jobs` + board proof — not `.job-card` mosaics). `MemberJobsKit` lists the live openings itself under `#open-roles` (`openRoles`, each linking to `/dashboard/jobs/<id>`); "Browse openings" / "Browse jobs" jump to that list, never to `?ui=legacy`. An empty list is the honest `JOBS_BOARD_EMPTY` state. |
-| `KitEmptyState` | titled empty placeholder for listing and table shells (optional `action` = real next step). Admin directory empties (`MentorsDirectoryKit`, `PartnersDirectoryKit`, `EmployersDirectoryKit`, `SubgroupsDirectoryKit`) use this + sentence-case CTA copy from `lib/member/mentorsEmptyState.ts` / `lib/admin/directoryEmptyState.ts` — not Astryx `EmptyState`. |
+| `KitEmptyState` | the one empty state for listing and table shells. `kind` names the situation and is emitted as `data-kind`: `first` (nothing yet → the first action), `filtered` (rows exist, none match → "Clear filters"), `unavailable` (not available to this viewer / not loaded / not in this period / failed — `tone="danger"` + Reload for a failure), `clear` (zero is the goal — staff queues, alerts). Tone defaults by kind (muted / muted / warn / ok) and paints the optional `icon` chip and the edge through the §4 hooks. `primaryAction` (`href` or `onClick`) and `secondaryAction` render as `.wa-kit-cta` / `--ghost`; `framed` draws the standalone box (what `PortalEmptyState` is). Inline value fallbacks in a cell ("No program", "—") are not empty states — use `StatusTag` muted or `—`. Admin directory empties (`MentorsDirectoryKit`, `PartnersDirectoryKit`, `EmployersDirectoryKit`, `SubgroupsDirectoryKit`) use this + sentence-case CTA copy from `lib/member/mentorsEmptyState.ts` / `lib/admin/directoryEmptyState.ts` — not Astryx `EmptyState`. The deprecated `action` slot stays until the last caller migrates. |
 | `SectionHeader` | titled section starts |
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
 | `ProgressRing`, `ProgressBar` | completion / capacity |
 | `Avatar` | people |
-| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
+| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Empty rows render `KitEmptyState` from the `empty` prop (`DataTableEmpty`: `kind`, `title` — default "No rows yet" — `description`, actions, icon); the legacy `emptyTitle` / `emptyDescription` pair still works. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
 | `KitTableToolbar` (+ `KitTableViewChip`; import from `kit/KitTableToolbar`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`; import from `kit/kitTableUrlState`). |
 | `KitRowMenu` (+ `KitRowMenuItem`; import from `kit/KitRowMenu`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
@@ -474,8 +501,9 @@ Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCa
   optionally controlled through `selectedKeys`.
 - **Mobile**: `mobile="cards"` with one card template — identity, one `StatusTag`, two facts, the same
   row menu — and the pager under the cards. Horizontal scroll only for diagnostic tables.
-- **Empty / loading / error**: empty = `KitEmptyState` with a real next step (`emptyTitle` /
-  `emptyDescription`); route loading = `app/admin/loading.tsx`, in-table refresh = `loading`
+- **Empty / loading / error**: empty = `KitEmptyState` with a real next step (`empty={{ kind, title,
+  description, primaryAction }}`; `kind: 'filtered'` while a search / filter is active, the legacy
+  `emptyTitle` / `emptyDescription` pair still works); route loading = `app/admin/loading.tsx`, in-table refresh = `loading`
   (`aria-busy` + skeleton rows while there are no rows yet); hard failure =
   `components/admin/AdminDataLoadError.tsx` (kit card, single h1, Admin home / Jobs); soft failure =
   `errorNotice` (an alert row above the data, the rows stay).

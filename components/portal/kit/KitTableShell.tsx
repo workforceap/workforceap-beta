@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, ty
 import { ChevronDown } from 'lucide-react';
 import { Pagination } from '@astryxdesign/core/Pagination';
 import { cx, type KitDataAttrs } from './base';
-import { KitEmptyState } from './KitEmptyState';
+import { KitEmptyState, type KitEmptyStateProps } from './KitEmptyState';
 
 export type KitTableShellColumn = {
   key: string;
@@ -46,8 +46,8 @@ interface KitTableShellProps extends KitDataAttrs {
   columns: KitTableShellColumn[];
   rows: KitTableShellRow[];
   minWidth?: number;
-  emptyTitle: string;
-  emptyDescription?: string;
+  /** Rendered in a full-width cell when there are no rows (DataTable resolves the defaults). */
+  empty: KitEmptyStateProps;
   onRowKeyClick?: (key: string) => void;
   /** Override surface-driven density. Warm → balanced, dense → compact. */
   density?: 'compact' | 'balanced' | 'spacious';
@@ -94,8 +94,7 @@ export function KitTableShell({
   columns,
   rows,
   minWidth = 600,
-  emptyTitle,
-  emptyDescription,
+  empty,
   onRowKeyClick,
   density,
   stickyHeader = false,
@@ -268,7 +267,7 @@ export function KitTableShell({
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={colSpan}>
-                  <KitEmptyState title={emptyTitle} description={emptyDescription} />
+                  <KitEmptyState {...empty} />
                 </td>
               </tr>
             ) : (
