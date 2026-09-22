@@ -3779,5 +3779,50 @@
         "unknown": "Status não registrado"
       }
     }
+  },
+  "empty": {
+    "activeApplications": {
+      "title": "Nenhuma candidatura ativa",
+      "body": "As vagas que você salva ou às quais se candidata aparecem aqui até você marcá-las como aceitas ou encerradas. Veja as vagas abertas para adicionar a primeira.",
+      "action": "Ver vagas abertas"
+    },
+    "applications": {
+      "title": "Nenhuma candidatura ainda",
+      "body": "As vagas que você salva ou às quais se candidata aparecem aqui. Adicione uma ou veja as vagas abertas.",
+      "action": "Ver vagas abertas",
+      "add": "Adicionar candidatura"
+    },
+    "matches": {
+      "title": "Nenhuma vaga compatível ainda",
+      "body": "As vagas que combinam com seu perfil aparecem aqui. Atualize seu perfil para que possamos encontrar correspondências.",
+      "browse": "Ver vagas",
+      "profile": "Atualizar perfil"
+    },
+    "openings": {
+      "title": "Nenhuma vaga ativa no momento",
+      "body": "Os empregadores parceiros ainda não publicaram vagas ativas. Atualize seu perfil para estar pronto quando publicarem, ou fale com seu orientador para pedir indicações.",
+      "action": "Atualizar perfil",
+      "secondary": "Falar com seu orientador"
+    },
+    "openingsPublic": {
+      "title": "Nenhuma vaga ativa no momento",
+      "body": "Os empregadores parceiros ainda não publicaram vagas ativas. Explore os programas de formação enquanto espera.",
+      "action": "Ver programas",
+      "secondary": "Candidatar-se à formação"
+    },
+    "jobsFiltered": {
+      "title": "Nenhuma vaga corresponde a estes filtros",
+      "body": "Limpe os filtros para ver todas as vagas ativas.",
+      "action": "Limpar filtros"
+    },
+    "matchesUnavailable": {
+      "title": "Não foi possível carregar as vagas compatíveis",
+      "body": "Tente novamente ou veja o quadro de vagas para conferir todas as oportunidades.",
+      "action": "Tentar novamente",
+      "secondary": "Ver vagas"
+    },
+    "stage": {
+      "title": "Nada nesta etapa"
+    }
   }
 }

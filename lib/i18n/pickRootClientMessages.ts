@@ -36,6 +36,9 @@ export const PORTAL_CLIENT_NAMESPACES = [
   'memberApproval',
   // components/portal/kit/GuidedTour — tour chrome + step copy (lib/tours/registry.ts).
   'tours',
+  // KitEmptyState copy (docs/KIT_GUIDE.md §6) read by client surfaces: the home
+  // pipeline table and MatchedRoles, the jobs listing, the application tracker.
+  'empty',
 ] as const;
 
 /**

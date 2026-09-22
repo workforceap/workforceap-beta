@@ -3839,5 +3839,50 @@
         "unknown": "Estado no registrado"
       }
     }
+  },
+  "empty": {
+    "activeApplications": {
+      "title": "No hay solicitudes activas",
+      "body": "Los empleos que guardas o a los que postulas aparecen aquí hasta que los marques como aceptados o cerrados. Explora las ofertas para agregar la primera.",
+      "action": "Ver ofertas"
+    },
+    "applications": {
+      "title": "Aún no hay solicitudes",
+      "body": "Los empleos que guardas o a los que postulas aparecen aquí. Agrega uno o explora las ofertas.",
+      "action": "Ver ofertas",
+      "add": "Agregar solicitud"
+    },
+    "matches": {
+      "title": "Aún no hay roles compatibles",
+      "body": "Los roles que encajan con tu perfil aparecen aquí. Actualiza tu perfil para que podamos emparejarte.",
+      "browse": "Ver empleos",
+      "profile": "Actualizar perfil"
+    },
+    "openings": {
+      "title": "No hay ofertas activas ahora",
+      "body": "Los empleadores asociados aún no han publicado roles activos. Actualiza tu perfil para estar listo cuando lo hagan, o escribe a tu consejero para pedir pistas.",
+      "action": "Actualizar perfil",
+      "secondary": "Escribir a tu consejero"
+    },
+    "openingsPublic": {
+      "title": "No hay ofertas activas ahora",
+      "body": "Los empleadores asociados aún no han publicado roles activos. Explora los programas de formación mientras esperas.",
+      "action": "Ver programas",
+      "secondary": "Solicitar formación"
+    },
+    "jobsFiltered": {
+      "title": "Ningún empleo coincide con estos filtros",
+      "body": "Limpia los filtros para ver todas las ofertas activas.",
+      "action": "Limpiar filtros"
+    },
+    "matchesUnavailable": {
+      "title": "No se pudieron cargar los roles compatibles",
+      "body": "Inténtalo de nuevo o explora el tablero de empleos para ver todas las ofertas.",
+      "action": "Intentar de nuevo",
+      "secondary": "Ver empleos"
+    },
+    "stage": {
+      "title": "Nada en esta etapa"
+    }
   }
 }

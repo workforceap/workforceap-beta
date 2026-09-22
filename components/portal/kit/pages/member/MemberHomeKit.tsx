@@ -537,6 +537,7 @@ export function MemberHomeKit({
   pointsLedger = [],
 }: MemberHomeKitProps) {
   const t = useTranslations('dashboard');
+  const te = useTranslations('empty');
   const pct = clampPct(coursePercent);
 
   /**
@@ -841,8 +842,12 @@ export function MemberHomeKit({
               mobile="cards"
               cardRender={pipelineCard}
               minWidth={560}
-              emptyTitle="No active applications"
-              emptyDescription="Saved and submitted jobs will appear here."
+              empty={{
+                kind: 'first',
+                title: te('activeApplications.title'),
+                description: te('activeApplications.body'),
+                primaryAction: { label: te('activeApplications.action'), href: jobsHref },
+              }}
             />
           </div>
 
