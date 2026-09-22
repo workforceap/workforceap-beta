@@ -2454,11 +2454,6 @@
     "draft": "Rascunho",
     "filled": "Preenchida",
     "expired": "Expirada",
-    "nothingInThisView": "Nada nesta visualização",
-    "tryAnotherFilter": "Tente outro filtro ou veja todas as publicações.",
-    "showAllPostings": "Mostrar todas as publicações",
-    "noJobsYet": "Nenhuma vaga ainda",
-    "postFirstRole": "Publique seu primeiro cargo para começar a receber candidatos correspondentes.",
     "postAJobBtn": "Publicar uma vaga",
     "applications": "candidatura{count, plural, =1 {} other {s}}",
     "postAJobTitle": "Publicar uma vaga",
@@ -2544,8 +2539,6 @@
     "matchHistorySubtitleMobile": "Candidatos sugeridos para suas vagas",
     "matchHistorySubtitleDesktop": "Acompanhe membros sugeridos e atualize o status do pipeline conforme avança.",
     "allRoles": "Todos os cargos",
-    "noMatchesYet": "Ainda não há correspondências",
-    "noMatchesDesc": "As correspondências de candidatos por IA aparecerão aqui assim que suas vagas estiverem ativas.",
     "match": "correspondência",
     "possibleFit": "Ajuste possível",
     "viewProfile": "Ver perfil",
@@ -3993,6 +3986,72 @@
         "title": "Nenhuma conversa corresponde",
         "body": "Limpe o filtro ou a busca para ver todas as conversas.",
         "action": "Limpar filtros"
+      }
+    },
+    "employer": {
+      "postings": {
+        "title": "Ainda não há vagas",
+        "body": "Crie uma vaga para começar a contratar. Ela fica privada até você enviá-la para revisão da WorkforceAP, e os candidatos são sugeridos quando ela entra no ar.",
+        "action": "Publicar vaga",
+        "secondary": "Importar vagas"
+      },
+      "postingsFiltered": {
+        "title": "Nenhuma vaga corresponde a este filtro",
+        "body": "Limpe o filtro para ver todas as vagas.",
+        "action": "Mostrar todas as vagas"
+      },
+      "pipelineNotLive": {
+        "title": "Ainda não há vagas no ar",
+        "body": "Os candidatos são sugeridos para uma vaga quando a WorkforceAP a aprova e ela entra no ar. Nenhuma das suas vagas está no ar agora.",
+        "action": "Ver suas vagas"
+      },
+      "pipelineNoMatches": {
+        "title": "Ainda não há candidatos sugeridos",
+        "body": "Quando uma vaga entra no ar, a WorkforceAP sugere membros cujo perfil combina com ela. Nenhuma das suas vagas no ar tem um candidato sugerido ainda.",
+        "action": "Ver suas vagas"
+      },
+      "applications": {
+        "title": "Ainda não há candidaturas",
+        "body": "Os membros se candidatam às suas vagas no ar; cada candidatura aparece aqui com sua etapa e mensagens.",
+        "action": "Publicar vaga",
+        "secondary": "Ver suas vagas"
+      },
+      "applicationsFiltered": {
+        "title": "Nenhum candidato na etapa {stage}",
+        "body": "Limpe o filtro de etapa para ver todos os candidatos.",
+        "action": "Mostrar todos os candidatos"
+      },
+      "applicationsPage": {
+        "title": "Nenhum candidato nesta página",
+        "body": "Esta página está além do último candidato. Comece de novo pela primeira página.",
+        "action": "Mostrar todos os candidatos"
+      },
+      "homeCandidates": {
+        "title": "Ainda não há candidatos",
+        "body": "Os membros que se candidatam às suas vagas no ar aparecem aqui com pontuação de compatibilidade e etapa.",
+        "action": "Publicar cargo"
+      },
+      "homeOpenRoles": {
+        "title": "Nenhuma vaga no ar",
+        "body": "Publique um cargo; ele aparece aqui quando a WorkforceAP o aprovar.",
+        "action": "Publicar cargo"
+      },
+      "workQueueReviewClear": {
+        "title": "Nada para revisar hoje",
+        "body": "Nenhuma candidatura nova de hoje está aguardando e nenhuma das suas vagas aguarda aprovação ou publicação."
+      },
+      "workQueueStaleClear": {
+        "title": "Nenhuma candidatura parada",
+        "body": "Toda candidatura na etapa {newStage} ou {reviewingStage} teve atividade nos últimos dois dias."
+      },
+      "workQueueInterviewClear": {
+        "title": "Nenhuma entrevista pendente",
+        "body": "Nenhuma candidatura está na etapa {stage}."
+      },
+      "workQueueUnavailable": {
+        "title": "Não foi possível carregar a fila de trabalho",
+        "body": "A fila não respondeu. Tente novamente.",
+        "action": "Tentar novamente"
       }
     }
   }

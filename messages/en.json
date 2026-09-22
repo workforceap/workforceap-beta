@@ -2514,11 +2514,6 @@
     "draft": "Draft",
     "filled": "Filled",
     "expired": "Expired",
-    "nothingInThisView": "Nothing in this view",
-    "tryAnotherFilter": "Try another filter or see all postings.",
-    "showAllPostings": "Show all postings",
-    "noJobsYet": "No jobs yet",
-    "postFirstRole": "Post your first role to start receiving matched candidates.",
     "postAJobBtn": "Post a Job",
     "applications": "application{count, plural, =1 {} other {s}}",
     "postAJobTitle": "Post a Job",
@@ -2606,8 +2601,6 @@
     "matchHistorySubtitleMobile": "Suggested candidates for your roles",
     "matchHistorySubtitleDesktop": "Track suggested members and update your pipeline status as you move from outreach to hire.",
     "allRoles": "All Roles",
-    "noMatchesYet": "No matches yet",
-    "noMatchesDesc": "AI candidate matches will appear here once your jobs are live.",
     "match": "match",
     "possibleFit": "Possible fit",
     "viewProfile": "View Profile",
@@ -4053,6 +4046,72 @@
         "title": "No conversations match",
         "body": "Clear the filter or search to see every conversation.",
         "action": "Clear filters"
+      }
+    },
+    "employer": {
+      "postings": {
+        "title": "No postings yet",
+        "body": "Create a posting to start hiring. It stays private until you submit it for WorkforceAP review, and candidates are matched once it goes live.",
+        "action": "Post a job",
+        "secondary": "Import jobs"
+      },
+      "postingsFiltered": {
+        "title": "No postings match this filter",
+        "body": "Clear the filter to see every posting.",
+        "action": "Show all postings"
+      },
+      "pipelineNotLive": {
+        "title": "No live postings yet",
+        "body": "Candidates are matched to a posting once WorkforceAP approves it and it goes live. None of your postings is live right now.",
+        "action": "View your postings"
+      },
+      "pipelineNoMatches": {
+        "title": "No suggested candidates yet",
+        "body": "When a posting goes live, WorkforceAP suggests members whose profile fits it. None of your live postings has a suggested candidate yet.",
+        "action": "View your postings"
+      },
+      "applications": {
+        "title": "No applications yet",
+        "body": "Members apply to your live postings; each application appears here with its stage and messaging.",
+        "action": "Post a job",
+        "secondary": "View your postings"
+      },
+      "applicationsFiltered": {
+        "title": "No applicants at the {stage} stage",
+        "body": "Clear the stage filter to see every applicant.",
+        "action": "Show all applicants"
+      },
+      "applicationsPage": {
+        "title": "No applicants on this page",
+        "body": "This page is past the last applicant. Start again from the first page.",
+        "action": "Show all applicants"
+      },
+      "homeCandidates": {
+        "title": "No candidates yet",
+        "body": "Members who apply to your live postings appear here with fit score and stage.",
+        "action": "Post a role"
+      },
+      "homeOpenRoles": {
+        "title": "No live postings",
+        "body": "Post a role; it is listed here once WorkforceAP approves it.",
+        "action": "Post a role"
+      },
+      "workQueueReviewClear": {
+        "title": "Nothing to review today",
+        "body": "No new application is waiting from today and none of your postings is awaiting approval or go-live."
+      },
+      "workQueueStaleClear": {
+        "title": "No stale applications",
+        "body": "Every application at the {newStage} or {reviewingStage} stage has had activity in the last two days."
+      },
+      "workQueueInterviewClear": {
+        "title": "No interviews pending",
+        "body": "No application is at the {stage} stage."
+      },
+      "workQueueUnavailable": {
+        "title": "Couldn't load the work queue",
+        "body": "The queue did not answer. Try again.",
+        "action": "Try again"
       }
     }
   }

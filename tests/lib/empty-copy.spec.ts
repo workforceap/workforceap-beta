@@ -169,6 +169,43 @@ describe('empty.* copy', () => {
     expect(en.empty.readinessUnavailable.title).toBe("Couldn't load your readiness score");
   });
 
+  it('employer: first states end on posting, filtered states clear to the full list, pipeline states say when matching runs, queue zeros restate the rule', () => {
+    const e = en.empty.employer;
+    // First: the thing, what makes it appear, the first action (a route that exists).
+    expect(e.postings.title).toBe('No postings yet');
+    expect(e.postings.body).toMatch(/goes live/);
+    expect(e.postings.action).toBe('Post a job');
+    expect(e.postings.secondary).toBe('Import jobs');
+    expect(e.applications.title).toBe('No applications yet');
+    expect(e.applications.body).toMatch(/live postings/);
+    expect(e.applications.body).toMatch(/appears here/);
+    expect(e.homeCandidates.title).toBe('No candidates yet');
+    expect(e.homeOpenRoles.body).toMatch(/approves/);
+    // Filtered: the rule, then the whole list back.
+    expect(e.postingsFiltered.title).toBe('No postings match this filter');
+    expect(e.postingsFiltered.action).toBe('Show all postings');
+    expect(e.applicationsFiltered.title).toMatch(/\{stage\} stage$/);
+    expect(e.applicationsFiltered.action).toBe('Show all applicants');
+    expect(e.applicationsPage.action).toBe('Show all applicants');
+    // Unavailable (matching is WorkforceAP's step): say when it runs, never "AI will match" or "will appear".
+    for (const group of [e.pipelineNotLive, e.pipelineNoMatches]) {
+      expect(group.body).toMatch(/goes live/);
+      expect(group.body).not.toMatch(/will appear|AI will|admin runs/i);
+      expect(group.action).toBe('View your postings');
+    }
+    // Clear: zero is the goal; the body is the loader's rule with the vocabulary stage words interpolated.
+    expect(e.workQueueReviewClear.body).toMatch(/today/);
+    expect(e.workQueueStaleClear.body).toMatch(/\{newStage\}.*\{reviewingStage\}/);
+    expect(e.workQueueStaleClear.body).toMatch(/two days/);
+    expect(e.workQueueInterviewClear.body).toMatch(/\{stage\}/);
+    // Failed: what did not load + a retry verb.
+    expect(e.workQueueUnavailable.title).toMatch(/load/i);
+    expect(e.workQueueUnavailable.action).toBe('Try again');
+    for (const [locale, ns] of Object.entries(LOCALES)) {
+      expect(JSON.stringify((ns as { employer: Tree }).employer), locale).not.toMatch(/Nothing in this (queue|stage|view)|No pipeline yet/i);
+    }
+  });
+
   it('never promises a reply time', () => {
     for (const [locale, ns] of Object.entries(LOCALES)) {
       expect(JSON.stringify(ns), locale).not.toMatch(/business day|día(s)? hábil|jour(s)? ouvr|dia(s)? útei|dia útil|within \d|\d+ ?(hours|horas|heures)/i);
