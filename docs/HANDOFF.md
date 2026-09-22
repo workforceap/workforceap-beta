@@ -37,7 +37,7 @@ Merge to master → Vercel Production → PROD Supabase (jqddnyuszufndwwezdwp)
 
 | Var | Value |
 |---|---|
-| `POSTGRES_PRISMA_URL` | `…@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true&connection_limit=1` (**transaction** pooler — serverless-safe) |
+| `POSTGRES_PRISMA_URL` | `…@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true&connection_limit=1&pool_timeout=10` (**transaction** pooler — serverless-safe) |
 | `POSTGRES_URL_NON_POOLING` | `…@aws-1-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require` (**session** pooler — migrations only) |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://esbdrgaonplpvzmtrdhw.supabase.co` |
 | `connection_limit` | **1** on 6543 (per-lambda). Do NOT use 5432 at runtime — it caps at 15 sessions and serverless exhausts it. |
