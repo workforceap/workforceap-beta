@@ -19,7 +19,7 @@ function MessageCard({ title, body }: { title: string; body: string }) {
           borderRadius: '0.75rem',
           padding: '2rem',
           textAlign: 'center',
-          background: 'var(--color-surface, #fff)',
+          background: 'var(--surface-container-lowest)',
         }}
       >
         <h1 style={{ fontSize: '1.4rem', margin: '0 0 0.75rem' }}>{title}</h1>

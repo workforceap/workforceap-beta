@@ -97,7 +97,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
         marginTop: '0.5rem',
         padding: '0.75rem',
         borderRadius: 8,
-        background: 'var(--color-surface-container, #f5f5f5)',
+        background: 'var(--wa-surface-2)',
         border: '1px solid var(--color-outline-variant, #e0e0e0)',
         display: 'grid',
         gap: '0.5rem',

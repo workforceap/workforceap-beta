@@ -724,7 +724,7 @@ export default function TrainingProgressClient({
           alignItems: 'center',
           flexWrap: 'wrap',
           padding: '0.75rem',
-          background: 'var(--color-surface, #fff)',
+          background: 'var(--wa-surface)',
           border: '1px solid var(--color-outline-variant, #ededed)',
           borderRadius: '0.5rem',
         }}
