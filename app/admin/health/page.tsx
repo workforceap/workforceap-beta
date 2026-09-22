@@ -60,7 +60,7 @@ function statusColor(status: HealthStatus | 'ok' | 'degraded' | 'fail'): string 
       return 'var(--wa-gold-dark)';
     case 'unhealthy':
     case 'fail':
-      return 'var(--color-accent, #ad2c4d)';
+      return 'var(--color-accent)';
     default:
       return 'var(--color-on-surface-variant)';
   }

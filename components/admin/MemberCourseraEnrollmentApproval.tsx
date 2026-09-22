@@ -63,7 +63,7 @@ export default function MemberCourseraEnrollmentApproval({
           ? `Coursera invite sent — ${memberName} will get an email to join, then courses unlock.`
           : payload.status === 'already-enrolled'
             ? `Already enrolled${payload.courseName ? ` in ${payload.courseName}` : ''} — nothing to do.`
-            : `Enrolled${payload.courseName ? ` in ${payload.courseName}` : ''}. Progress will sync automatically.`;
+            : `Enrolled${payload.courseName ? ` in ${payload.courseName}` : ''}. Certificates are not recorded automatically — the member adds each one under My Certificates and staff verify it.`;
       setEnrollResult({ ok: true, text });
       router.refresh();
     } catch {
