@@ -1132,7 +1132,7 @@ html.dark .admin-table tbody tr:hover {
 }
 .admin-jobs-filter-tabs .btn.btn-ghost:hover {
     background: var(--surface-container);
-    border-color: var(--outline);
+    border-color: var(--color-on-surface-variant);
 }
 .admin-jobs-filter-tabs .btn.btn-ghost.active {
     background: color-mix(in srgb, var(--color-accent) 14%, transparent);

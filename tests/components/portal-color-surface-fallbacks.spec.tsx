@@ -16,7 +16,30 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), prefetch: vi.fn() }),
   usePathname: () => '/admin',
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn(),
 }));
+
+// /admin/employers?ui=legacy is an async server component: the session, tenant
+// scope and the two employer reads are mocked so the tabs row renders here.
+const adminPageMocks = vi.hoisted(() => ({
+  getUser: vi.fn(async () => ({ id: 'admin-1' })),
+  isSuperAdmin: vi.fn(async () => false),
+  resolveAdminPageTenant: vi.fn(async () => ({ ok: true, isSuperAdmin: false, orgIds: ['org-1'], filters: {} })),
+  withAdminPageScope: vi.fn(async (_scope: unknown, fn: (db: unknown) => unknown) =>
+    fn({ employer: { findMany: async () => [], count: async () => 0 } }),
+  ),
+}));
+vi.mock('@/lib/auth/server', () => ({ getUser: adminPageMocks.getUser }));
+vi.mock('@/lib/auth/roles', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  isSuperAdmin: adminPageMocks.isSuperAdmin,
+}));
+vi.mock('@/lib/tenant/adminPageScope', () => ({
+  inheritJobOrg: () => ({}),
+  resolveAdminPageTenant: adminPageMocks.resolveAdminPageTenant,
+  withAdminPageScope: adminPageMocks.withAdminPageScope,
+}));
+vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn(async () => ({})) }));
 
 import MentorSessionForm from '@/components/portal/MentorSessionForm';
 import ElevatorPitchDeploymentLogger from '@/components/portal/tools/ElevatorPitchDeploymentLogger';
@@ -43,6 +66,8 @@ import PublicEligibilityForm from '@/app/q/[token]/PublicEligibilityForm';
 import GoalsModule from '@/components/portal/GoalsModule';
 import GuardianConsentPage from '@/app/consent/[token]/page';
 import PublicQuestionnairePage from '@/app/q/[token]/page';
+import AdminCronsClient from '@/components/admin/AdminCronsClient';
+import AdminEmployersPage from '@/app/admin/employers/page';
 
 /**
  * Review of #2478 (item 4) found eleven inline styles across seven portal/admin
@@ -297,6 +322,8 @@ const PORTAL_CHAIN_SHEETS = [
   'css/mobile-dashboard-fixes.css',
 ];
 const ROOT_CHAIN_SHEETS = ['css/main.css', 'css/marketing.css', 'css/marketing-depth.css', 'css/marketing-a11y.css', 'css/astryx-brand-bridge.css'];
+/** CSS modules that border from the token family (PortalShell role switcher; the root-layout cookie banner). */
+const BORDER_MODULE_SHEETS = ['components/portal/PortalRoleSwitcher.module.css', 'components/CookieConsentBanner.module.css'];
 
 /** The root layout chain: css/main.css keeps dark defaults on :root and light overrides on html:not(.dark). */
 function rootChainTokens(scheme: 'light' | 'dark'): Map<string, string> {
@@ -486,6 +513,14 @@ describe('tokenized public pages (root layout, no portal tokens)', () => {
 const BORDER_LITERAL_FALLBACK =
   /var\(\s*--(?:color-outline(?:-variant)?|outline|border-color|color-divider|wa-border|wa-control-border)\s*,(?!\s*var\()\s*[^)]+\)/i;
 const NEVER_DEFINED_BORDER_TOKENS = ['--color-outline', '--color-outline-variant', '--outline'];
+/**
+ * A bare read of a never-defined border token, `var(--outline)` with no
+ * fallback, is worse than a literal fallback: the declaration is invalid at
+ * computed-value time, so a `border` shorthand unsets and the edge vanishes
+ * (inspection of #2501, finding 1: the /admin/crons filter selects and the
+ * /admin/employers?ui=legacy tabs underline painted no border at all).
+ */
+const NEVER_DEFINED_BORDER_READ = /var\(\s*--(?:color-outline(?:-variant)?|outline)\s*[,)]/i;
 const PORTAL_BORDER = 'var(--wa-border)';
 const PORTAL_CONTROL_BORDER = 'var(--wa-control-border)';
 const ROOT_BORDER = 'var(--outline-variant)';
@@ -501,9 +536,7 @@ function expectNoLiteralBorderFallback(container: HTMLElement) {
   expect(styles.length).toBeGreaterThan(0);
   for (const style of styles) {
     expect(style, `literal fallback on a border token: ${style}`).not.toMatch(BORDER_LITERAL_FALLBACK);
-    for (const name of NEVER_DEFINED_BORDER_TOKENS) {
-      expect(style, `${name} is defined nowhere: ${style}`).not.toMatch(new RegExp(`var\\(\\s*${name}\\s*[,)]`));
-    }
+    expect(style, `bare read of a border token defined nowhere: ${style}`).not.toMatch(NEVER_DEFINED_BORDER_READ);
   }
 }
 
@@ -580,10 +613,40 @@ describe('border tokens resolve per scheme on the chains that load them', () => 
 });
 
 describe('no stylesheet on either route chain carries a literal fallback on a border token', () => {
-  it.each([...PORTAL_CHAIN_SHEETS, ...ROOT_CHAIN_SHEETS])('%s', (sheet) => {
+  it.each([...PORTAL_CHAIN_SHEETS, ...ROOT_CHAIN_SHEETS, ...BORDER_MODULE_SHEETS])('%s', (sheet) => {
     const css = readCss(sheet).replace(/\/\*[\s\S]*?\*\//g, '');
     const offenders = css.split('\n').filter((line) => BORDER_LITERAL_FALLBACK.test(line));
     expect(offenders, `${sheet} literal border fallbacks`).toEqual([]);
+  });
+});
+
+describe('no stylesheet on either route chain reads a border token that is defined nowhere', () => {
+  it.each([...PORTAL_CHAIN_SHEETS, ...ROOT_CHAIN_SHEETS, ...BORDER_MODULE_SHEETS])('%s', (sheet) => {
+    const css = readCss(sheet).replace(/\/\*[\s\S]*?\*\//g, '');
+    const offenders = css.split('\n').filter((line) => NEVER_DEFINED_BORDER_READ.test(line));
+    expect(offenders, `${sheet} bare reads of --outline / --color-outline(-variant)`).toEqual([]);
+  });
+});
+
+describe('AdminCronsClient filters', () => {
+  it('edges both filter selects with --wa-control-border, not the undefined --outline', () => {
+    const { container } = render(<AdminCronsClient initialExecutions={[]} jobNames={['nightly-sync']} />);
+    const selects = screen.getAllByRole('combobox');
+    expect(selects).toHaveLength(2);
+    for (const select of selects) expect(borderOf(select), 'crons filter select border').toBe(HAIRLINE(PORTAL_CONTROL_BORDER));
+    expectNoLiteralTokenFallback(container);
+  });
+});
+
+describe('AdminEmployersPage ?ui=legacy tabs', () => {
+  it('underlines the tabs row with --wa-border, not the undefined --color-outline-variant', async () => {
+    const { container } = render(
+      await AdminEmployersPage({ searchParams: Promise.resolve({ ui: 'legacy' }) }),
+    );
+    const tabsRow = screen.getByRole('link', { name: 'All' }).parentElement as HTMLElement;
+    expect(within(tabsRow).getAllByRole('link')).toHaveLength(4);
+    expect(tabsRow.style.borderBottom, 'employers tabs underline').toBe(HAIRLINE(PORTAL_BORDER));
+    expectNoLiteralTokenFallback(container);
   });
 });
 

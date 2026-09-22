@@ -77,7 +77,7 @@ export default function AdminCronsClient({
           style={{
             padding: '0.5rem 0.75rem',
             borderRadius: '0.375rem',
-            border: '1px solid var(--outline)',
+            border: '1px solid var(--wa-control-border)',
             background: 'var(--surface-container)',
             color: 'var(--color-on-surface)',
             fontSize: '0.875rem',
@@ -97,7 +97,7 @@ export default function AdminCronsClient({
           style={{
             padding: '0.5rem 0.75rem',
             borderRadius: '0.375rem',
-            border: '1px solid var(--outline)',
+            border: '1px solid var(--wa-control-border)',
             background: 'var(--surface-container)',
             color: 'var(--color-on-surface)',
             fontSize: '0.875rem',

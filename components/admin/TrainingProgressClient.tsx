@@ -401,7 +401,7 @@ function PerItemSubRow({
   }
 
   return (
-    <div style={{ padding: '0.5rem 0.6rem', background: 'var(--surface-container-low, #fafafa)' }}>
+    <div style={{ padding: '0.5rem 0.6rem', background: 'var(--surface-container-low)' }}>
       <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem' }}>
         {state.rows.length} item{state.rows.length === 1 ? '' : 's'} from xapi_statements (item-level only).
       </div>

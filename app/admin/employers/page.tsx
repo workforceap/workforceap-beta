@@ -302,7 +302,7 @@ export default async function AdminEmployersPage({
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem', borderBottom: '1px solid var(--color-outline-variant)', paddingBottom: '0.25rem' }}>
+      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem', borderBottom: '1px solid var(--wa-border)', paddingBottom: '0.25rem' }}>
         {tabs.map((tab) => (
           <Link
             key={tab.key}
