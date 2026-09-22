@@ -188,6 +188,9 @@ export async function getEngagementData(orgId?: string): Promise<EngagementData>
         label: programDisplayTitle(slug),
         value: count,
         pct: Math.round((count / progMax) * 100),
+        // Per-program rows keep the `info` blue they always had, so the block
+        // still reads apart from the accent tool bars above it.
+        tone: 'info',
       });
     }
   }
