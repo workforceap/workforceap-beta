@@ -1,10 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { NextIntlClientProvider } from 'next-intl';
 import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/MemberCertificatesKit';
+import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
+import CourseraProgressCoverageNotice from '@/components/portal/CourseraProgressCoverageNotice';
+import AddMemberWizard from '@/app/admin/members/new/AddMemberWizard';
 import { COUNSELOR_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
 import en from '@/messages/en.json';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/dashboard',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+afterEach(cleanup);
 
 const root = path.resolve(__dirname, '../..');
 
@@ -61,14 +74,26 @@ describe('member copy', () => {
   });
 
   it('home h1 falls back to "Welcome back, <name>" instead of a bare first name', () => {
-    const src = readFileSync(path.join(root, 'components/portal/kit/pages/member/MemberHomeKit.tsx'), 'utf8');
-    expect(src).toContain('firstName ? `Welcome back, ${firstName}` : \'Home\'');
+    const renderHome = (props: { firstName?: string; greeting?: string }) =>
+      render(
+        <NextIntlClientProvider locale="en" messages={en}>
+          <MemberHomeKit coursePercent={0} activeJobs={0} certs={0} points={0} {...props} />
+        </NextIntlClientProvider>,
+      );
+
+    renderHome({ firstName: 'Maya' });
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Welcome back, Maya');
+    cleanup();
+
+    renderHome({});
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Home');
   });
 
   it('Coursera coverage notice speaks to members', () => {
-    const src = readFileSync(path.join(root, 'components/portal/CourseraProgressCoverageNotice.tsx'), 'utf8');
-    expect(src).toContain('Progress may be a few hours behind.');
-    expect(src).not.toContain('could not be fully refreshed');
+    render(<CourseraProgressCoverageNotice coverage="unavailable" />);
+    const notice = screen.getByRole('status');
+    expect(notice).toHaveTextContent('Progress may be a few hours behind.');
+    expect(notice).not.toHaveTextContent(/could not be fully refreshed/);
   });
 });
 
@@ -129,10 +154,33 @@ describe('counselor home queue', () => {
 });
 
 describe('admin add-member wizard', () => {
-  it('starts eligibility answers unanswered instead of defaulting to "No"', () => {
-    const src = readFileSync(path.join(root, 'app/admin/members/new/AddMemberWizard.tsx'), 'utf8');
-    expect(src).toContain('usCitizen: null,\n  authorizedToWork: null,');
-    expect(src).toContain('form.usCitizen === true && form.authorizedToWork === true');
+  it('starts eligibility answers unanswered instead of defaulting to "No"', async () => {
+    const user = userEvent.setup();
+    render(<AddMemberWizard programs={[]} partners={[]} subgroups={[]} />);
+
+    const citizen = screen.getByRole('group', { name: 'US Citizen or Permanent Resident? *' });
+    const authorized = screen.getByRole('group', { name: 'Authorized to work in US? *' });
+    for (const group of [citizen, authorized]) {
+      expect(within(group).getByRole('button', { name: 'Yes' })).toHaveAttribute('aria-pressed', 'false');
+      expect(within(group).getByRole('button', { name: 'No' })).toHaveAttribute('aria-pressed', 'false');
+    }
+
+    // Fill every other required step-1 field; only the two unanswered
+    // eligibility questions should keep the step closed.
+    await user.type(screen.getByLabelText('First Name *'), 'Maya');
+    await user.type(screen.getByLabelText('Email *'), 'maya@example.com');
+    const employment = screen.getByLabelText('Employment Status *') as HTMLSelectElement;
+    await user.selectOptions(employment, within(employment).getAllByRole('option')[1]);
+    const education = screen.getByLabelText('Education Level *') as HTMLSelectElement;
+    await user.selectOptions(education, within(education).getAllByRole('option')[1]);
+
+    const next = screen.getByRole('button', { name: 'Continue to Step 2' });
+    expect(next).toBeDisabled();
+
+    await user.click(within(citizen).getByRole('button', { name: 'Yes' }));
+    expect(next).toBeDisabled();
+    await user.click(within(authorized).getByRole('button', { name: 'Yes' }));
+    expect(next).toBeEnabled();
   });
 });
 

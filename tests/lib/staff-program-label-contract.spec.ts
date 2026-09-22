@@ -11,7 +11,6 @@ const STAFF_PROGRAM_SURFACES = [
   'components/portal/counselor/CounselorPriorityQueue.tsx',
   'components/portal/counselor/CounselorStudentsRosterClient.tsx',
   'components/admin/AdminCommandCenterClient.tsx',
-  'components/admin/AdminPipelineKanban.tsx',
 ] as const;
 
 describe('staff-facing program labels', () => {

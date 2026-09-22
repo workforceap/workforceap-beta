@@ -585,6 +585,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }} aria-busy={saving}>
               <div>
                 <label
+                  htmlFor="email-template-name"
                   style={{
                     fontSize: '0.8125rem',
                     fontWeight: 600,
@@ -595,6 +596,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                   Name
                 </label>
                 <input
+                  id="email-template-name"
                   type="text"
                   value={editForm.name ?? ''}
                   onChange={(e) =>
@@ -614,6 +616,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
 
               <div>
                 <label
+                  htmlFor="email-template-subject"
                   style={{
                     fontSize: '0.8125rem',
                     fontWeight: 600,
@@ -624,6 +627,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                   Subject
                 </label>
                 <input
+                  id="email-template-subject"
                   type="text"
                   value={editForm.subject ?? ''}
                   onChange={(e) =>
@@ -643,6 +647,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
 
               <div>
                 <label
+                  htmlFor="email-template-body"
                   style={{
                     fontSize: '0.8125rem',
                     fontWeight: 600,
@@ -653,6 +658,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                   Body (HTML)
                 </label>
                 <textarea
+                  id="email-template-body"
                   value={editForm.body ?? ''}
                   onChange={(e) =>
                     setEditForm((f) => ({ ...f, body: e.target.value }))
@@ -674,6 +680,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
 
               <div>
                 <label
+                  htmlFor="email-template-variables"
                   style={{
                     fontSize: '0.8125rem',
                     fontWeight: 600,
@@ -684,6 +691,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                   Variables (comma-separated)
                 </label>
                 <input
+                  id="email-template-variables"
                   type="text"
                   value={(editForm.variables ?? []).join(', ')}
                   onChange={(e) =>
