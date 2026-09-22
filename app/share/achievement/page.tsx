@@ -89,8 +89,11 @@ export default async function ShareAchievementPage({
   const course = first(sp.course);
   const score = first(sp.score);
 
+  // Page canvas + icon tint read tokens this root-only route defines: main.css's
+  // surface scale and the global brand tints (css/wa-brand-tokens.css). The former
+  // --color-surface / --color-accent-container names exist in no stylesheet.
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--color-surface)', padding: '4rem 1rem' }}>
+    <main style={{ minHeight: '100vh', background: 'var(--surface-container-low)', padding: '4rem 1rem' }}>
       <section
         className="portal-card"
         style={{
@@ -110,8 +113,8 @@ export default async function ShareAchievementPage({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'var(--color-accent-container)',
-            color: 'var(--color-accent)',
+            background: 'var(--wa-accent-soft)',
+            color: 'var(--wa-accent-text)',
           }}
         >
           {isCertificate ? <Award size={36} aria-hidden="true" /> : <BadgeCheck size={36} aria-hidden="true" />}
