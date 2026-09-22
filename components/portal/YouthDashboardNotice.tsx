@@ -37,7 +37,7 @@ export default function YouthDashboardNotice({ age }: { age: number }) {
             borderRadius: '8px',
             flexShrink: 0
           }}>
-            <GraduationCap size={20} style={{ color: 'var(--color-accent)' }} aria-hidden />
+            <GraduationCap size={20} style={{ color: 'var(--wa-accent-text)' }} aria-hidden />
           </div>
           <div>
             <strong style={{ fontSize: '0.95rem' }}>Training & Courses</strong>
@@ -71,7 +71,7 @@ export default function YouthDashboardNotice({ age }: { age: number }) {
             borderRadius: '8px',
             flexShrink: 0
           }}>
-            <Sparkles size={20} style={{ color: 'var(--color-accent)' }} aria-hidden />
+            <Sparkles size={20} style={{ color: 'var(--wa-accent-text)' }} aria-hidden />
           </div>
           <div>
             <strong style={{ fontSize: '0.95rem' }}>AI Career Tools</strong>

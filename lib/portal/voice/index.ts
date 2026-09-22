@@ -5,6 +5,7 @@ export {
   counselorStaffVoiceSurface,
   studentCounselorVoiceSurface,
   employerVoiceSurface,
+  employerVoiceSessionAccent,
   partnerVoiceSurface,
   mockInterviewVoiceSurface,
   careerBusinessVoiceSurface,

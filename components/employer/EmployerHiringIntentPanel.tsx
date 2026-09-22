@@ -83,7 +83,7 @@ export default function EmployerHiringIntentPanel({ initialIntents }: { initialI
           {message ? (
             <p
               role={message.startsWith('Saved') ? 'status' : 'alert'}
-              style={{ margin: 0, fontSize: '0.85rem', color: message.startsWith('Saved') ? 'var(--color-green)' : 'var(--color-accent)' }}
+              style={{ margin: 0, fontSize: '0.85rem', color: message.startsWith('Saved') ? 'var(--color-green)' : 'var(--wa-accent-text)' }}
             >
               {message}
             </p>

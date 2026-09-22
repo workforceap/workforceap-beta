@@ -79,7 +79,7 @@ export default async function WeeklyRecapPage() {
           >
             <PortalEmptyState
               icon={
-                <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
+                <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">
                   calendar_month
                 </span>
               }

@@ -105,7 +105,7 @@ function DiagnosticsCards({ rows, emptyText }: { rows: DiagnosticRow[]; emptyTex
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem', lineHeight: 1.45 }}>{row.summary}</p>
                 )}
                 {(row.fallbackPath || row.failureReason) && (
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', margin: '0 0 0.25rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', margin: '0 0 0.25rem' }}>
                     {[row.fallbackPath, row.failureReason].filter(Boolean).join(' · ')}
                   </p>
                 )}
@@ -286,7 +286,7 @@ export default async function AdminDiagnosticsPage({
             <div className="portal-metric-card__icon-wrap portal-metric-card__icon-wrap--accent">
               <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }}>error</span>
             </div>
-            <p className="portal-metric-card__value" style={{ color: errorCount > 0 ? 'var(--color-accent)' : undefined }}>{errorCount}</p>
+            <p className="portal-metric-card__value" style={{ color: errorCount > 0 ? 'var(--wa-accent-text)' : undefined }}>{errorCount}</p>
             <p className="portal-metric-card__label">Errors</p>
           </div>
           <div className="portal-metric-card">
@@ -307,7 +307,7 @@ export default async function AdminDiagnosticsPage({
             <div className="portal-metric-card__icon-wrap portal-metric-card__icon-wrap--blue">
               <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }}>sync_problem</span>
             </div>
-            <p className="portal-metric-card__value" style={{ color: driftRecords.length > 0 ? 'var(--color-accent)' : undefined }}>{driftRecords.length}</p>
+            <p className="portal-metric-card__value" style={{ color: driftRecords.length > 0 ? 'var(--wa-accent-text)' : undefined }}>{driftRecords.length}</p>
             <p className="portal-metric-card__label">Drift Issues</p>
           </div>
         </div>
@@ -316,8 +316,8 @@ export default async function AdminDiagnosticsPage({
         {errorCount > 0 ? (
           <section style={{ marginBottom: '1.5rem' }}>
             <div className="portal-dash-section-header">
-              <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0, color: 'var(--color-accent)' }}>
-                Recent errors <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>({errorCount})</span>
+              <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0, color: 'var(--wa-accent-text)' }}>
+                Recent errors <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>({errorCount})</span>
               </h2>
             </div>
             <DiagnosticsCards
@@ -333,7 +333,7 @@ export default async function AdminDiagnosticsPage({
         <section style={{ marginBottom: '1.5rem' }}>
           <div className="portal-dash-section-header">
             <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
-              Enrollment Drift {driftRecords.length > 0 ? <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>({driftRecords.length} issues)</span> : null}
+              Enrollment Drift {driftRecords.length > 0 ? <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>({driftRecords.length} issues)</span> : null}
             </h2>
           </div>
           {driftRecords.length === 0 ? (
@@ -358,7 +358,7 @@ export default async function AdminDiagnosticsPage({
                     cell: (u) => (
                       <a
                         href={`/admin/members/${u.id}?tab=activity`}
-                        style={{ color: 'var(--color-accent)', textDecoration: 'none', fontWeight: 600 }}
+                        style={{ color: 'var(--wa-accent-text)', textDecoration: 'none', fontWeight: 600 }}
                       >
                         {u.fullName ?? u.id}
                       </a>
@@ -391,7 +391,7 @@ export default async function AdminDiagnosticsPage({
                           padding: '0.15rem 0.5rem',
                           borderRadius: '9999px',
                           background: 'rgba(173,44,77,0.1)',
-                          color: 'var(--color-accent)',
+                          color: 'var(--wa-accent-text)',
                         }}
                       >
                         {!u.courseEnrollments[0] ? 'No primary record' : 'Slug mismatch'}
@@ -403,7 +403,7 @@ export default async function AdminDiagnosticsPage({
               {driftRecords.length > 25 ? (
                 <p style={{ margin: '0.75rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   Showing 25 of {driftRecords.length} drift issues.{' '}
-                  <a href="/api/admin/lifecycle/drift" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+                  <a href="/api/admin/lifecycle/drift" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
                     View full results (JSON)
                   </a>
                 </p>
@@ -416,14 +416,14 @@ export default async function AdminDiagnosticsPage({
         <section style={{ marginBottom: '1.5rem' }}>
           <details>
             <summary style={{ cursor: 'pointer', padding: '0.875rem 0', fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>funnel</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>funnel</span>
               Key Funnels &amp; Signals
             </summary>
             <div style={{ display: 'grid', gap: '0.625rem', marginTop: '0.75rem' }}>
               {FUNNEL_DEFINITIONS.map((funnel) => (
                 <div key={funnel.funnel} className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                    <div style={{ padding: '0.2rem 0.5rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--color-accent)', flexShrink: 0 }}>
+                    <div style={{ padding: '0.2rem 0.5rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--wa-accent-text)', flexShrink: 0 }}>
                       {funnel.audience}
                     </div>
                     <div style={{ minWidth: 0 }}>
@@ -435,7 +435,7 @@ export default async function AdminDiagnosticsPage({
                         <strong style={{ color: 'var(--color-on-surface)' }}>Outcomes:</strong> {funnel.outcomes.join(' · ')}
                       </p>
                       <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
-                        <strong style={{ color: 'var(--color-accent)' }}>⚠ Signals:</strong> {funnel.confusionSignals.join(' · ')}
+                        <strong style={{ color: 'var(--wa-accent-text)' }}>⚠ Signals:</strong> {funnel.confusionSignals.join(' · ')}
                       </p>
                     </div>
                   </div>

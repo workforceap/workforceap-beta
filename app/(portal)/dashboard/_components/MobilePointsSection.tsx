@@ -46,7 +46,7 @@ export default function MobilePointsSection({
                   marginTop: '0.75rem',
                   fontSize: '0.8125rem',
                   fontWeight: 700,
-                  color: 'var(--color-accent)',
+                  color: 'var(--wa-accent-text)',
                   textDecoration: 'none',
                 }}
               >

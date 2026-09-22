@@ -108,6 +108,15 @@ export type PortalVoiceSessionProps = {
   dataUseNotice?: string;
   accent?: string;
   accentDark?: string;
+  /**
+   * Solid fill / label pair for the Start, End and Accept buttons. Defaults to
+   * `accent` under the panel's white text, which only works while the accent
+   * stays dark in both modes (the hero crimson does). Pass an adaptive pair
+   * (e.g. --wa-info-dark / --wa-on-accent-control) for accents that lighten
+   * in dark mode.
+   */
+  ctaBackground?: string;
+  ctaColor?: string;
   speakingLabel?: string;
   listeningLabel?: string;
   /** If set, transcript will be parsed for suggestions after session ends */
@@ -225,6 +234,8 @@ export default function PortalVoiceSession({
   dataUseNotice = 'By starting, you send microphone audio, the live transcript, and this tool\'s session context to ElevenLabs, our voice provider. Do not share passwords, Social Security numbers, or financial account details.',
   accent = 'var(--wa-hero-crimson)',
   accentDark = 'var(--wa-hero-crimson-dark)',
+  ctaBackground = accent,
+  ctaColor = PANEL_TEXT,
   speakingLabel = 'Assistant is speaking…',
   listeningLabel = 'Listening — speak when ready',
   suggestionsEndpoint,
@@ -895,8 +906,8 @@ export default function PortalVoiceSession({
           style={{
             display: 'block',
             width: '100%',
-            background: accent,
-            color: PANEL_TEXT,
+            background: ctaBackground,
+            color: ctaColor,
             border: 0,
             borderRadius: 12,
             padding: '0.875rem',
@@ -1106,8 +1117,8 @@ export default function PortalVoiceSession({
           onClick={endSession}
           style={{
             width: '100%',
-            background: accent,
-            color: PANEL_TEXT,
+            background: ctaBackground,
+            color: ctaColor,
             border: 0,
             borderRadius: 12,
             padding: '0.75rem',
@@ -1286,8 +1297,8 @@ export default function PortalVoiceSession({
                       setDismissed((prev) => new Set(prev).add(i));
                     }}
                     style={{
-                      background: accent,
-                      color: PANEL_TEXT,
+                      background: ctaBackground,
+                      color: ctaColor,
                       border: 0,
                       borderRadius: 8,
                       padding: '0.45rem 1rem',

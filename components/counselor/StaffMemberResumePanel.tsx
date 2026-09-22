@@ -201,7 +201,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}
+                style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}
               >
                 Download ↗
               </a>
@@ -248,7 +248,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
               className="markdown-body"
               style={{
                 padding: '1.25rem',
-                background: 'var(--color-surface)',
+                background: 'var(--wa-surface)',
                 fontSize: '0.9375rem',
                 lineHeight: 1.65,
                 maxHeight: 'min(55vh, 560px)',

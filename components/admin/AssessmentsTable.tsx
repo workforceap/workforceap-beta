@@ -226,8 +226,8 @@ export default function AssessmentsTable({
                       const correct = correctnessByUserId[u.id]?.[q.id] === true;
                       return (
                         <div key={q.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.375rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
-                          <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>{correct ? 'check_circle' : 'cancel'}</span>
+                          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: correct ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
+                          <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: correct ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>{correct ? 'check_circle' : 'cancel'}</span>
                           <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.4 }}>{ans ?? '—'}</span>
                         </div>
                       );

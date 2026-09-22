@@ -153,7 +153,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
-            <p style={{ margin: 0, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, color: 'var(--color-accent)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, color: 'var(--wa-accent-text)' }}>
               Today&apos;s walk-in plan
             </p>
             <h2 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.35rem, 4vw, 2rem)', lineHeight: 1.1 }}>
@@ -171,7 +171,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
           </div>
         </div>
         {oldest != null ? (
-          <p style={{ margin: '1rem 0 0', fontSize: '0.9rem', color: oldest >= 7 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: oldest >= 7 ? 700 : 500 }}>
+          <p style={{ margin: '1rem 0 0', fontSize: '0.9rem', color: oldest >= 7 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', fontWeight: oldest >= 7 ? 700 : 500 }}>
             Oldest pending application: {oldest === 0 ? 'submitted today' : `${oldest} ${oldest === 1 ? 'day' : 'days'} old`}.
           </p>
         ) : null}
@@ -323,7 +323,7 @@ function Metric({ label, value, accent }: { label: string; value: number; accent
   return (
     <div style={{ borderRadius: '0.75rem', background: 'var(--wa-surface)', border: '1px solid var(--outline-variant)', padding: '0.75rem' }}>
       <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>{label}</p>
-      <p style={{ margin: '0.1rem 0 0', fontSize: '1.45rem', fontWeight: 800, color: accent ? 'var(--color-accent)' : 'var(--color-on-surface)' }}>
+      <p style={{ margin: '0.1rem 0 0', fontSize: '1.45rem', fontWeight: 800, color: accent ? 'var(--wa-accent-text)' : 'var(--color-on-surface)' }}>
         {value}
       </p>
     </div>
@@ -338,7 +338,7 @@ function Bucket({ title, count, icon, empty, children, queue, pagination }: {
   return (
     <section className="portal-card portal-card--flat" style={{ padding: '1rem', minHeight: '14rem' }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.9rem' }}>
-        <span className="material-symbols-outlined" aria-hidden style={{ color: 'var(--color-accent)' }}>{icon}</span>
+        <span className="material-symbols-outlined" aria-hidden style={{ color: 'var(--wa-accent-text)' }}>{icon}</span>
         <h2 style={{ flex: 1, margin: 0, fontSize: '1rem', fontWeight: 800 }}>{title}</h2>
         <span aria-label={pluralCount(count, 'item')} style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
       </header>
@@ -427,7 +427,7 @@ function ApplicationCard({
                 <ApplicantTriageChip bucket={row.triage.bucket} label={row.triage.label} reasons={row.triage.reasons} />
               </p>
             ) : null}
-            <p style={{ margin: '0.2rem 0 0', color: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontSize: '0.82rem', fontWeight: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 700 : 500 }}>
+            <p style={{ margin: '0.2rem 0 0', color: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', fontSize: '0.82rem', fontWeight: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 700 : 500 }}>
               {row.submittedDaysAgo == null ? 'Submitted recently' : row.submittedDaysAgo === 0 ? 'Submitted today' : `Submitted ${row.submittedDaysAgo}d ago`}
             </p>
           </div>
@@ -530,10 +530,10 @@ function ActionCard({ name, meta, detail, href, action, urgent }: { name: string
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
         <div style={{ minWidth: 0 }}>
           <p style={{ margin: 0, fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</p>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: urgent ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 700 : 500 }}>{meta}</p>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: urgent ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 700 : 500 }}>{meta}</p>
           {detail ? <p style={{ margin: '0.25rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail}</p> : null}
         </div>
-        <span style={{ flexShrink: 0, color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 800 }}>{action} →</span>
+        <span style={{ flexShrink: 0, color: 'var(--wa-accent-text)', fontSize: '0.8125rem', fontWeight: 800 }}>{action} →</span>
       </div>
     </Link>
   );

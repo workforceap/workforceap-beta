@@ -79,7 +79,7 @@ export default function DashboardProgramSelector({
         <span
           aria-hidden
           className="material-symbols-outlined"
-          style={{ fontSize: '0.95rem', color: 'var(--color-accent)' }}
+          style={{ fontSize: '0.95rem', color: 'var(--wa-accent-text)' }}
         >
           school
         </span>
@@ -157,7 +157,7 @@ export default function DashboardProgramSelector({
                         padding: '0.125rem 0.4rem',
                         borderRadius: '999px',
                         background: 'rgba(173,44,77,0.12)',
-                        color: 'var(--color-accent)',
+                        color: 'var(--wa-accent-text)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',
                         flexShrink: 0,

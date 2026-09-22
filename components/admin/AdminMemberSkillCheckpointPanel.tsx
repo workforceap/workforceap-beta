@@ -96,7 +96,7 @@ function StarStoryToggle({ starStory }: { starStory: string }) {
           padding: 0,
           cursor: 'pointer',
           fontSize: '0.8125rem',
-          color: 'var(--color-accent)',
+          color: 'var(--wa-accent-text)',
           fontWeight: 600,
         }}
       >
@@ -190,7 +190,7 @@ function OverrideDropdown({
             right: 0,
             top: '110%',
             zIndex: 20,
-            background: 'var(--color-surface)',
+            background: 'var(--wa-surface)',
             border: '1px solid var(--outline-variant)',
             borderRadius: '0.5rem',
             padding: '0.5rem',
@@ -254,7 +254,7 @@ function MissionCard({
       style={{
         borderRadius: '0.75rem',
         border: '1px solid var(--outline-variant)',
-        background: isLocked ? 'var(--surface-container-highest)' : 'var(--color-surface)',
+        background: isLocked ? 'var(--surface-container-highest)' : 'var(--wa-surface)',
         padding: '0.95rem',
         opacity: isLocked ? 0.55 : 1,
       }}
@@ -406,7 +406,7 @@ export default function AdminMemberSkillCheckpointPanel({
             style={{
               fontSize: '1.25rem',
               fontWeight: 800,
-              color: summary.careerReadinessPct >= 80 ? 'var(--wa-success-dark)' : summary.careerReadinessPct >= 40 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+              color: summary.careerReadinessPct >= 80 ? 'var(--wa-success-dark)' : summary.careerReadinessPct >= 40 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
             }}
           >
             {summary.careerReadinessPct}% of missions passed

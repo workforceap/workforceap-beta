@@ -216,7 +216,7 @@ export default function MobileApplicationsClient({
                   </div>
                   <span
                     className="material-symbols-outlined text-[18px] flex-shrink-0 mt-1 transition-transform"
-                    style={{ color: 'var(--color-accent)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    style={{ color: 'var(--wa-accent-text)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                    aria-hidden="true">
                     expand_more
                   </span>
@@ -247,7 +247,7 @@ export default function MobileApplicationsClient({
                           border: 'none',
                           cursor: isChatLoading ? 'default' : 'pointer',
                           background: isChatOpen ? 'rgba(173,44,77,0.12)' : 'rgba(173,44,77,0.08)',
-                          color: 'var(--color-accent)',
+                          color: 'var(--wa-accent-text)',
                         }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">forum</span>

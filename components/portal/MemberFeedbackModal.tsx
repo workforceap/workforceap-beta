@@ -143,7 +143,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
                   padding: '0.625rem 0.875rem',
                   borderRadius: '0.625rem',
                   background: 'rgba(173,44,77,0.1)',
-                  color: 'var(--color-accent)',
+                  color: 'var(--wa-accent-text)',
                   fontSize: '0.875rem',
                 }}
               >

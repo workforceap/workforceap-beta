@@ -45,7 +45,7 @@ export default async function OutcomesMethodologyPage() {
       />
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
         <p style={{ marginBottom: '1rem', fontSize: '0.875rem' }}>
-          <Link href="/admin/outcomes" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+          <Link href="/admin/outcomes" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
             ← Back to outcomes truth-set
           </Link>
         </p>

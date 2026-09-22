@@ -363,7 +363,7 @@ function ExecutiveDashboardContent() {
                   style={{
                     fontSize: '1.25rem',
                     fontWeight: 800,
-                    color: f.rate >= 50 ? 'var(--wa-success-dark)' : f.rate >= 25 ? 'var(--wa-gold-dark)' : 'var(--color-accent)',
+                    color: f.rate >= 50 ? 'var(--wa-success-dark)' : f.rate >= 25 ? 'var(--wa-gold-dark)' : 'var(--wa-accent-text)',
                   }}
                 >
                   {f.rate}%
