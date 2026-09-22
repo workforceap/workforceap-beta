@@ -222,8 +222,11 @@ describe('training approval when an application closes', () => {
     // The boolean and nothing else: whether the approved-at / approved-by
     // columns move with it is still Mike's call, so the write must not touch
     // them. This asserts the exact payload, so adding a column fails here.
+    // Exact payload: the boolean and nothing else in `data`, and the write is
+    // pinned to the reviewing org (belt-and-braces under the transaction's
+    // org-filtered lookup + member lock) so it can never cross a tenant.
     expect(fixture.tx.user.updateMany).toHaveBeenCalledWith({
-      where: { id: 'member-a', courseraEnrollmentApproved: true },
+      where: { id: 'member-a', organizationId: 'org-a', courseraEnrollmentApproved: true },
       data: { courseraEnrollmentApproved: false },
     });
     const revokeCalls = vi.mocked(auditLog).mock.calls.filter(([entry]) => entry.action === 'coursera_enrollment_revoked');
@@ -264,7 +267,7 @@ describe('training approval when an application closes', () => {
     expect(fixture.state.application.status).toBe('DENIED');
     expect(fixture.state.member.courseraEnrollmentApproved).toBe(true);
     expect(fixture.tx.application.count).toHaveBeenCalledWith({
-      where: { userId: 'member-a', status: 'APPROVED', id: { not: 'app-a' } },
+      where: { userId: 'member-a', status: 'APPROVED', id: { not: 'app-a' }, user: { organizationId: 'org-a' } },
     });
     expect(fixture.tx.user.updateMany).not.toHaveBeenCalled();
   });

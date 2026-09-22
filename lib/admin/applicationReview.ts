@@ -54,10 +54,15 @@ type ReviewTx = Prisma.TransactionClient;
  */
 async function clearTrainingApprovalOnClose(
   tx: ReviewTx,
-  args: { userId: string; closedApplicationId: string; actorUserId: string },
+  args: { userId: string; orgId: string; closedApplicationId: string; actorUserId: string },
 ): Promise<boolean> {
   const stillAccepted = await tx.application.count({
-    where: { userId: args.userId, status: 'APPROVED', id: { not: args.closedApplicationId } },
+    where: {
+      userId: args.userId,
+      status: 'APPROVED',
+      id: { not: args.closedApplicationId },
+      user: { organizationId: args.orgId },
+    },
   });
   if (stillAccepted > 0) return false;
 
@@ -68,8 +73,18 @@ async function clearTrainingApprovalOnClose(
   // approval timestamp and actor exactly as the last real approval wrote them.
   // Guarded on the current value so an already-cleared member is not touched,
   // and so `count` reports a real state change.
+  //
+  // Tenant scoping — an atomicity exception, the same shape as the user write
+  // in app/api/admin/users/[id]/route.ts. This must land in the review
+  // transaction with the decision, so it cannot go through `withTenantScope`
+  // (the scoped proxy cannot be inserted inside an outer $transaction). The
+  // primary tenant gate is upstream in that transaction: the application
+  // lookup filters on `user.organizationId` and `lockMemberForReview` locks
+  // the member `WHERE organization_id = orgId FOR UPDATE`. The explicit
+  // `organizationId` here is belt-and-braces so this write can never cross a
+  // tenant even if that gate is refactored.
   const cleared = await tx.user.updateMany({
-    where: { id: args.userId, courseraEnrollmentApproved: true },
+    where: { id: args.userId, organizationId: args.orgId, courseraEnrollmentApproved: true },
     data: { courseraEnrollmentApproved: false },
   });
   if (cleared.count === 0) return false;
@@ -130,6 +145,7 @@ export async function changeApplicationStatus(args: {
     if (statusChanged && status === 'DENIED') {
       await clearTrainingApprovalOnClose(tx, {
         userId: application.userId,
+        orgId,
         closedApplicationId: id,
         actorUserId,
       });
