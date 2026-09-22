@@ -102,14 +102,21 @@ const DOGFOOD_EXCLUDED_PROFILE_ROLES = NON_MEMBER_PROFILE_ROLES.filter(
  * (`getProfileRole` -> `resolveEffectiveRole`), while every member *count*
  * still filtered on `profiles.role = 'member'`. Two live definitions
  * disagree, so funder-facing and board-facing figures drift depending on
- * which path produced them. This is the resolver's rule as a predicate:
+ * which path produced them. The one definition is "a member per either
+ * store, minus staff-by-profile":
  *
  *  - a `member` row in `user_roles`, OR `profiles.role = 'member'` as the
  *    fallback for accounts the backfill has not reached yet
  *    (`scripts/backfill-user-roles-from-profile.ts`), AND
- *  - no staff / partner-side `profiles.role`, which outranks a baseline
- *    `member` row exactly as `resolveEffectiveRole` does (every account gets
- *    a `member` row from `ensureAppUser`, so the row alone proves nothing).
+ *  - no staff / partner-side `profiles.role`. Every account gets a `member`
+ *    row from `ensureAppUser`, so the row alone proves nothing.
+ *
+ * This is deliberately *not* `resolveEffectiveRole` reproduced. The resolver
+ * lets a non-member `user_roles` row outrank `profiles.role`; this predicate
+ * never consults non-member rows, so an account whose profile says `member`
+ * while its rows name a real role still counts as a member here. That is the
+ * intended behaviour: those accounts are WAP-182 item 2, Mike's call about
+ * which portal is right, and this change must not decide it for him.
  *
  * Deliberately a fallback and not a hard flip to `user_roles` only: the
  * fallback is correct both before and after the production backfill runs,
@@ -197,6 +204,19 @@ export const MEMBER_OR_DOGFOOD_WHERE = {
  *
  * Callers pass the result straight in as `where` (they never spread it), so
  * this one can use `OR` / `NOT` directly.
+ *
+ * ## Known narrower than {@link MEMBER_ONLY_WHERE}
+ *
+ * A query on `prisma.profile` can only ever see accounts that have a profile
+ * row, so a member named only by a `user_roles` row is invisible here while
+ * {@link MEMBER_ONLY_WHERE} counts them. `lib/admin/boardOutcomes.ts` pairs
+ * the two: `membersServed` (:185) can exceed the demographics denominator
+ * (:206) by exactly that many accounts. The set is empty in production today
+ * (`profiles.role` defaults to `member`, so an account with a profile row
+ * already satisfies the fallback, and `ensureAppUser` creates both), and it
+ * closes for good once the backfill runs. If it ever stops being empty,
+ * bucket those accounts as "unknown" in the demographics breakdown rather
+ * than letting the two figures drift.
  */
 export function memberOnlyProfileWhere(user: Prisma.UserWhereInput = {}): Prisma.ProfileWhereInput {
   return {

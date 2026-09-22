@@ -47,7 +47,8 @@ import {
   type PublicImpactStats,
 } from '@/lib/marketing/publicImpactStats';
 import { prisma } from '@/lib/db/prisma';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_NOT, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { Prisma } from '@prisma/client';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_NOT, MEMBER_ONLY_WHERE, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
 import { getProgramBySlug } from '@/lib/content/programs';
 
@@ -311,6 +312,25 @@ describe('Impact Page — getPublicImpactStats', () => {
       expect(countCall.where.email).toEqual({ notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] });
       expect(countCall.where.NOT.slice(0, MEMBER_ONLY_EXCLUDED_EMAIL_NOT.length))
         .toEqual(MEMBER_ONLY_EXCLUDED_EMAIL_NOT);
+    });
+
+    it('every raw impact aggregate carries the one member definition', async () => {
+      // Both raw aggregates used to hand-roll `p.role = 'member'`, so a
+      // revert to that leaves the public numbers on the old definition while
+      // the Prisma counts next to them move (WAP-182 item 3).
+      mockImpactQueries({ membersServed: 10 });
+      await getPublicImpactStats(ORG_ID);
+
+      const calls = vi.mocked(prisma.$queryRaw).mock.calls as unknown as Array<[TemplateStringsArray, ...unknown[]]>;
+      expect(calls.length).toBeGreaterThanOrEqual(2);
+      const predicate = memberOnlyRoleSql('u').sql;
+      for (const [strings, ...values] of calls) {
+        expect(Prisma.sql(strings, ...values).sql).toContain(predicate);
+      }
+      // Nothing may hand-roll the old join alongside it.
+      for (const [strings, ...values] of calls) {
+        expect(Prisma.sql(strings, ...values).sql).not.toContain("p.role = 'member'");
+      }
     });
 
     it('placement count matches prisma.placementRecord.count', async () => {

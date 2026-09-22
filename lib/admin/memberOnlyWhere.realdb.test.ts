@@ -27,7 +27,37 @@ import {
 } from './memberOnlyWhere';
 import { prisma } from '../db/prisma';
 
+/**
+ * This suite writes and deletes rows, and one of its cases must use the
+ * exact address `MEMBER_ONLY_EXCLUDED_EMAILS` names, which is a real account
+ * in production. `scripts/run-db-contract-tests.mjs` pins the URL to
+ * localhost, but running the lane by hand
+ * (`TEST_REAL_DB=1 node scripts/test-unit.mjs --only …`) bypasses that guard,
+ * so the suite refuses to touch a non-local database itself.
+ */
+const LOCAL_DB_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
+
+function assertDisposableDatabase(): void {
+  const raw = process.env.POSTGRES_PRISMA_URL ?? process.env.DATABASE_URL ?? '';
+  if (!raw.trim()) {
+    throw new Error('memberOnlyWhere.realdb: no database URL; this suite runs only in the database-contract lane.');
+  }
+  let host: string;
+  try {
+    host = new URL(raw).hostname;
+  } catch {
+    throw new Error('memberOnlyWhere.realdb: could not parse the database URL; refusing to run.');
+  }
+  if (!LOCAL_DB_HOSTS.has(host)) {
+    throw new Error(
+      `memberOnlyWhere.realdb: refusing to seed and delete rows on ${host}. `
+        + 'This suite is for a disposable local PostgreSQL only.',
+    );
+  }
+}
+
 const runId = randomUUID().slice(0, 8);
+const CONTRACT_ORG_PREFIX = 'Member-only contract ';
 
 /**
  * One account per branch of the definition. `member` says whether
@@ -46,6 +76,12 @@ const CASES = [
   { key: 'case_manager profile with the baseline member row', profileRole: 'case_manager', rows: ['member'], member: false, dogfood: false },
   { key: 'employer profile with the baseline member row', profileRole: 'employer', rows: ['member'], member: false, dogfood: false },
   { key: 'no profile row and no rows at all', profileRole: null, rows: [], member: false, dogfood: false },
+  // A profile row whose `role` is blank or outside the vocabulary, with a
+  // member row: the resolver calls these members, and they are the only
+  // shape that exercises `memberOnlyProfileWhere`'s `user_roles` branch —
+  // a profile-less member cannot appear in a `prisma.profile` query at all.
+  { key: 'blank profile role with a member row', profileRole: '', rows: ['member'], member: true, dogfood: true },
+  { key: 'out-of-vocabulary profile role with a member row', profileRole: 'volunteer', rows: ['member'], member: true, dogfood: true },
 ] as const;
 
 /**
@@ -93,15 +129,28 @@ function scope() {
 }
 
 before(async () => {
+  assertDisposableDatabase();
   const org = await prisma.organization.create({
-    data: { slug: `member-only-contract-${runId}`, name: `Member-only contract ${runId}` },
+    data: { slug: `member-only-contract-${runId}`, name: `${CONTRACT_ORG_PREFIX}${runId}` },
     select: { id: true },
   });
   seeded.orgId = org.id;
   // The named fixture address is fixed, so a previous run of this lane can
-  // have left it behind. In a disposable contract database that row is test
-  // residue and nothing else.
-  await prisma.user.deleteMany({ where: { email: { in: FIXTURE_CASES.map((c) => c.email) } } });
+  // have left it behind. Clear only rows this suite itself created: anything
+  // else carrying that address is not ours to delete, even here.
+  const residue = await prisma.user.findMany({
+    where: { email: { in: FIXTURE_CASES.map((c) => c.email) } },
+    select: { id: true, organization: { select: { name: true } } },
+  });
+  for (const row of residue) {
+    if (!row.organization.name.startsWith(CONTRACT_ORG_PREFIX)) {
+      throw new Error(
+        'memberOnlyWhere.realdb: a fixture address already exists outside this suite\'s own organization '
+          + `(${row.organization.name}). Refusing to delete a row this suite did not create.`,
+      );
+    }
+  }
+  await prisma.user.deleteMany({ where: { id: { in: residue.map((r) => r.id) } } });
   for (const name of ['member', 'admin', 'super_admin', 'counselor', 'case_manager', 'employer', 'partner']) {
     const role = await prisma.role.upsert({ where: { name }, create: { name }, update: {}, select: { id: true } });
     seeded.roleIds[name] = role.id;
@@ -110,7 +159,7 @@ before(async () => {
   for (const seed of FIXTURE_CASES) await seedUser(seed.key, seed.profileRole, seed.rows, seed.email);
   // The fixtures must all exist, or every loop below would pass on nothing.
   assert.equal(seeded.userIds.length, CASES.length + FIXTURE_CASES.length);
-  assert.equal(seeded.userIds.length, 12);
+  assert.equal(seeded.userIds.length, 14);
 });
 
 after(async () => {
@@ -120,13 +169,13 @@ after(async () => {
 });
 
 test('MEMBER_ONLY_WHERE keeps a member named by either store and no staff account', async () => {
-  assert.equal(CASES.length, 10);
+  assert.equal(CASES.length, 12);
   for (const seed of CASES) {
     const hit = await prisma.user.count({ where: { ...scope(), id: seeded.ids.get(seed.key), ...MEMBER_ONLY_WHERE } });
     assert.equal(hit === 1, seed.member, `${seed.key} should ${seed.member ? '' : 'not '}count as a member`);
   }
   assert.equal(await prisma.user.count({ where: { ...scope(), ...MEMBER_ONLY_WHERE } }), EXPECTED_MEMBERS);
-  assert.equal(EXPECTED_MEMBERS, 3);
+  assert.equal(EXPECTED_MEMBERS, 5);
 });
 
 test('the fixture-email exclusion still outranks a member role in either store', async () => {
@@ -144,7 +193,7 @@ test('MEMBER_OR_DOGFOOD_WHERE adds admin dogfooders and nobody else', async () =
     assert.equal(hit === 1, seed.dogfood, `${seed.key} should ${seed.dogfood ? '' : 'not '}show on /admin/members`);
   }
   assert.equal(await prisma.user.count({ where: { ...scope(), ...MEMBER_OR_DOGFOOD_WHERE } }), EXPECTED_DOGFOOD);
-  assert.equal(EXPECTED_DOGFOOD, 6);
+  assert.equal(EXPECTED_DOGFOOD, 8);
 });
 
 test("a caller's own top-level AND or OR survives the spread", async () => {
@@ -169,18 +218,23 @@ test("a caller's own top-level AND or OR survives the spread", async () => {
   assert.equal(withOr, 1, 'the caller OR must narrow the member set, not replace it');
 });
 
-test('memberOnlyProfileWhere selects the member profile rows, staff excluded', async () => {
-  // Runs on `prisma.profile`, so a member with no profile row cannot appear.
-  const expected = CASES.filter((c) => c.member && c.profileRole !== null).length;
-  assert.equal(expected, 2);
-  assert.equal(await prisma.profile.count({ where: memberOnlyProfileWhere(scope()) }), expected);
+test('memberOnlyProfileWhere asks both stores, and is knowingly blind to profile-less members', async () => {
+  // Runs on `prisma.profile`, so a member with no profile row cannot appear —
+  // the documented gap against MEMBER_ONLY_WHERE.
+  const withProfile = CASES.filter((c) => c.member && c.profileRole !== null);
+  assert.equal(withProfile.length, 4);
+  assert.equal(await prisma.profile.count({ where: memberOnlyProfileWhere(scope()) }), withProfile.length);
+  assert.equal(EXPECTED_MEMBERS - withProfile.length, 1, 'exactly one seeded member has no profile row');
+
+  // The blank and out-of-vocabulary rows are reached only through the
+  // `user_roles` half; dropping it takes them out of the demographics.
   const groups = await prisma.profile.groupBy({
     by: ['role'],
     where: memberOnlyProfileWhere(scope()),
     _count: { _all: true },
   });
-  assert.deepEqual(groups.map((g) => g.role), ['member']);
-  assert.deepEqual(groups.map((g) => g._count._all), [expected]);
+  assert.deepEqual(groups.map((g) => g.role).sort(), ['', 'member', 'volunteer']);
+  assert.equal(groups.reduce((total, g) => total + g._count._all, 0), withProfile.length);
 });
 
 test('memberOnlySqlJoin counts the same population in raw SQL', async () => {
@@ -215,9 +269,9 @@ test('the two definitions this converges really do disagree on this roster', asy
   // profiles.role = 'member': the 2 member profiles plus the named fixture —
   // it never sees the user_roles-only member.
   assert.equal(byProfile, 3);
-  // A bare member row: 7 of the seeded cases (staff baseline rows included)
+  // A bare member row: 9 of the seeded cases (staff baseline rows included)
   // plus both fixtures.
-  assert.equal(byRows, 9);
+  assert.equal(byRows, 11);
   assert.notEqual(byProfile, byRows);
   assert.equal(await prisma.user.count({ where: { ...scope(), ...MEMBER_ONLY_WHERE } }), EXPECTED_MEMBERS);
 });
