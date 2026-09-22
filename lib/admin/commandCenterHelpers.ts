@@ -80,9 +80,26 @@ export type AdminProgramHealthRow = {
   shareLabel: typeof PROGRAM_HEALTH_SHARE_LABEL;
   /** "8 enrolled · 100% of enrolled students". */
   caption: string;
+  /**
+   * Set on the one {@link PROGRAM_HEALTH_OTHER_SLUG} row only: how many
+   * programs past the limit it folds together. Named program rows omit it.
+   */
+  hiddenPrograms?: number;
 };
 
 export const PROGRAM_HEALTH_SHARE_LABEL = 'share of enrolled students' as const;
+
+/**
+ * `programSlug` of the fold row {@link buildProgramHealthRows} appends when
+ * the org runs more programs than the breakdown lists. Not a catalog slug:
+ * `labelFor` is never asked for it, and nothing links to it.
+ */
+export const PROGRAM_HEALTH_OTHER_SLUG = 'other-programs' as const;
+
+/** "Other (2 programs)": the label of the fold row. */
+export function programHealthOtherLabel(hiddenPrograms: number): string {
+  return `Other (${hiddenPrograms} ${hiddenPrograms === 1 ? 'program' : 'programs'})`;
+}
 
 /**
  * The definition printed under the Command Center's "Enrollment share by
@@ -100,9 +117,15 @@ export const PROGRAM_HEALTH_CAPTION =
 
 /**
  * Pure projection of a per-program groupBy onto `AdminProgramHealthRow`s.
- * Sorted by count desc, cut to `limit`; the share denominator is the total
- * over EVERY group (not only the listed ones), so a long tail of small
- * programs still counts against the leaders. Zero totals give 0%.
+ * Sorted by count desc; the top `limit` programs are named and every program
+ * past the limit is folded into one trailing "Other (N programs)" row
+ * ({@link PROGRAM_HEALTH_OTHER_SLUG}), so the listed counts always add up to
+ * the org's active-student total and the bars agree with the "Active
+ * Students" tile above them (scout D2 2026-09-22: 8 active, five bars
+ * summing to 6). When exactly one program would be folded it is named
+ * instead — an "Other (1 program)" row costs the same space and says less.
+ * The share denominator is the total over EVERY group either way; zero
+ * totals give 0%.
  */
 export function buildProgramHealthRows(
   grouped: ReadonlyArray<{ programSlug: string | null; count: number }>,
@@ -112,17 +135,29 @@ export function buildProgramHealthRows(
     .flatMap((group) => (group.programSlug ? [{ programSlug: group.programSlug, count: group.count }] : []))
     .sort((a, b) => b.count - a.count || a.programSlug.localeCompare(b.programSlug));
   const enrolledTotal = rows.reduce((sum, row) => sum + row.count, 0);
-  return rows.slice(0, Math.max(0, options.limit)).map((row) => {
+  const limit = Math.max(0, options.limit);
+  const hidden = rows.length > limit + 1 ? rows.slice(limit) : [];
+  const named = hidden.length > 0 ? rows.slice(0, limit) : rows;
+  const project = (row: { programSlug: string; count: number; label: string }): AdminProgramHealthRow => {
     const pct = enrolledTotal > 0 ? Math.round((row.count / enrolledTotal) * 100) : 0;
     return {
       ...row,
-      label: options.labelFor(row.programSlug),
       pct,
       enrolledTotal,
       shareLabel: PROGRAM_HEALTH_SHARE_LABEL,
       caption: `${row.count} enrolled · ${pct}% of enrolled students`,
     };
-  });
+  };
+  const projected = named.map((row) => project({ ...row, label: options.labelFor(row.programSlug) }));
+  if (hidden.length === 0) return projected;
+  const hiddenCount = hidden.reduce((sum, row) => sum + row.count, 0);
+  return [
+    ...projected,
+    {
+      ...project({ programSlug: PROGRAM_HEALTH_OTHER_SLUG, count: hiddenCount, label: programHealthOtherLabel(hidden.length) }),
+      hiddenPrograms: hidden.length,
+    },
+  ];
 }
 
 export const ADMIN_QUEUE_KEYS = ['needs-reply', 'at-risk', 'interviewing', 'applications'] as const;

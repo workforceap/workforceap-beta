@@ -5,6 +5,7 @@ import {
   buildApplicationEmailPacket,
   buildProgramHealthRows,
   bucketCommandCenterTotals,
+  PROGRAM_HEALTH_OTHER_SLUG,
   PROGRAM_HEALTH_SHARE_LABEL,
   type AdminCommandCenter,
 } from './commandCenterHelpers';
@@ -171,9 +172,58 @@ describe('program health rows', () => {
       ],
       { limit: 2, labelFor },
     );
-    assert.deepEqual(rows.map((row) => row.programSlug), ['a', 'b']);
+    assert.deepEqual(rows.map((row) => row.programSlug), ['a', 'b', PROGRAM_HEALTH_OTHER_SLUG]);
     assert.equal(rows[0].enrolledTotal, 10);
-    assert.deepEqual(rows.map((row) => row.pct), [60, 20]);
+    assert.deepEqual(rows.map((row) => row.pct), [60, 20, 20]);
+    assert.deepEqual(rows.map((row) => row.count), [6, 2, 2]);
+  });
+
+  it('folds the programs past the limit into one "Other" bucket so the bars sum to every active student', () => {
+    // Scout D2 (2026-09-22): 8 enrolled members over 7 programs, limit 5 —
+    // the tile said 8 while the five bars summed to 6.
+    const rows = buildProgramHealthRows(
+      [
+        { programSlug: 'cloud-it', count: 2 },
+        { programSlug: 'cyber', count: 1 },
+        { programSlug: 'data', count: 1 },
+        { programSlug: 'health', count: 1 },
+        { programSlug: 'trades', count: 1 },
+        { programSlug: 'welding', count: 1 },
+        { programSlug: 'hvac', count: 1 },
+      ],
+      { limit: 5, labelFor },
+    );
+
+    const activeStudents = 8;
+    assert.equal(rows.length, 6);
+    assert.equal(rows.reduce((sum, row) => sum + row.count, 0), activeStudents);
+    for (const row of rows) assert.equal(row.enrolledTotal, activeStudents);
+
+    const other = rows[rows.length - 1];
+    assert.equal(other.programSlug, PROGRAM_HEALTH_OTHER_SLUG);
+    assert.equal(other.label, 'Other (2 programs)');
+    assert.equal(other.count, 2);
+    assert.equal(other.hiddenPrograms, 2);
+    assert.equal(other.pct, 25);
+    assert.equal(other.caption, '2 enrolled · 25% of enrolled students');
+    // The named rows are still the top five by count (ties alphabetical), in order.
+    assert.deepEqual(rows.slice(0, 5).map((row) => row.programSlug), ['cloud-it', 'cyber', 'data', 'health', 'hvac']);
+    // Every enrolled student is in some bar: no share is lost to the cut.
+    assert.ok(rows.reduce((sum, row) => sum + row.pct, 0) >= 100);
+  });
+
+  it('names a lone program past the limit instead of hiding it behind an "Other" bucket', () => {
+    const rows = buildProgramHealthRows(
+      [
+        { programSlug: 'a', count: 3 },
+        { programSlug: 'b', count: 2 },
+        { programSlug: 'c', count: 1 },
+      ],
+      { limit: 2, labelFor },
+    );
+    assert.deepEqual(rows.map((row) => [row.programSlug, row.count]), [['a', 3], ['b', 2], ['c', 1]]);
+    assert.equal(rows.reduce((sum, row) => sum + row.count, 0), 6);
+    assert.ok(rows.every((row) => row.hiddenPrograms === undefined));
   });
 
   it('gives a lone program 100% and an empty roster no rows', () => {
