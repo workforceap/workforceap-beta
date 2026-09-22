@@ -337,7 +337,8 @@
 }
 
 .afd-confirm__step--done .afd-confirm__step-state {
-  color: var(--wa-success);
+  /* The base success hue is 3.45:1 on the white card; the dark ramp clears AA at meta size. */
+  color: var(--wa-success-dark);
 }
 
 .afd-confirm__trust-grid {

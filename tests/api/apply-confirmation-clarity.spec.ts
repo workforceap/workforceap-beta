@@ -47,6 +47,11 @@ describe('apply confirmation clarity', () => {
     expect(cssSource).toContain('.afd-confirm__recommend');
     expect(cssSource).toContain('.afd-confirm__share-btn');
     expect(cssSource).not.toMatch(/#[0-9a-fA-F]{3,8}/);
+    // The completed-step label is 13px uppercase on the white card: the base
+    // success hue is 3.45:1 there, so it must read through the dark ramp.
+    expect(cssSource).toMatch(
+      /\.afd-confirm__step--done \.afd-confirm__step-state \{[^}]*color:\s*var\(--wa-success-dark\)/,
+    );
     expect(pageSource).not.toContain('var(--color-accent)');
     expect(ctaSource).not.toContain('var(--color-accent)');
     expect(ctaSource).toContain('afd-confirm__recommend');
