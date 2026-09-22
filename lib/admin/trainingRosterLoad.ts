@@ -21,6 +21,7 @@ import {
   relativeLastActiveCaption,
 } from '@/lib/admin/trainingProgressRoster';
 import { initialsFrom, toTrainingRosterRow } from '@/lib/admin/studentsRosterView';
+import type { StudentsRosterDegradation } from '@/lib/admin/studentsRosterLoad';
 import type { StudentRow } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
 import { withAdminPageScope, type AdminPageTenantOk } from '@/lib/tenant/adminPageScope';
 
@@ -49,6 +50,8 @@ export type TrainingRosterLoad =
       total: number;
       /** True when a secondary source (enrollments, progress, Coursera) failed soft. */
       secondaryLoadFailed: boolean;
+      /** Set when a source is absent in this environment, so the roster is knowingly incomplete. */
+      degraded: StudentsRosterDegradation | null;
       /** Coverage + cap disclosure for the kit footer. */
       showingLabel: string;
     };
@@ -312,15 +315,21 @@ export async function loadTrainingRoster(
     }
   }
 
+  // Same probe-driven degradation as the Students roster: an absent
+  // coursera_xapi_events table (db:push environments) drops the xAPI branch
+  // without throwing, so the page needs the flag to say rows are missing.
+  let degraded: StudentsRosterDegradation | null = null;
+  const onXapiTableMissing = () => { degraded = 'coursera-xapi-unavailable'; };
   const [unmatchedLearners, unmatchedLearnerTotal] = await Promise.all([
     loadUnmatchedLearners(scope.orgId, ADMIN_SSR_LIST_CAP, {
       includeTestAccounts: false,
+      onXapiTableMissing,
     }).catch((reason: unknown) => {
       secondaryLoadFailed = true;
       console.error('[admin/training-progress] unmatched Coursera learners failed', reason);
       return [];
     }),
-    countUnmatchedLearners(scope.orgId, { includeTestAccounts: false }).catch(
+    countUnmatchedLearners(scope.orgId, { includeTestAccounts: false, onXapiTableMissing }).catch(
       (reason: unknown) => {
         secondaryLoadFailed = true;
         console.error('[admin/training-progress] unmatched Coursera count failed', reason);
@@ -379,6 +388,7 @@ export async function loadTrainingRoster(
     students: rows,
     total: rows.length,
     secondaryLoadFailed,
+    degraded,
     showingLabel: [
       coverageLabel,
       showingFirstLabel(learners.length, learnerTotal, 'member records'),

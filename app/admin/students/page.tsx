@@ -7,10 +7,7 @@ import { getTranslations } from 'next-intl/server';
 import { resolveAdminPageTenant } from '@/lib/tenant/adminPageScope';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { StudentsRosterKit } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
-import {
-  STUDENTS_SECONDARY_LOAD_NOTICE,
-  loadStudentsRoster,
-} from '@/lib/admin/studentsRosterLoad';
+import { loadStudentsRoster, studentsRosterNotice } from '@/lib/admin/studentsRosterLoad';
 import { loadTrainingRoster } from '@/lib/admin/trainingRosterLoad';
 import {
   STUDENTS_NEEDS_PARAM,
@@ -79,7 +76,7 @@ export default async function AdminStudentsPage({
           total={training.total}
           showingLabel={training.showingLabel}
           initialChip={initialChip}
-          notice={training.secondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
+          notice={studentsRosterNotice(training)}
         />
       </>
     );
@@ -100,7 +97,7 @@ export default async function AdminStudentsPage({
         students={roster.students}
         total={roster.total}
         initialChip={initialChip}
-        notice={roster.secondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
+        notice={studentsRosterNotice(roster)}
       />
     </>
   );
