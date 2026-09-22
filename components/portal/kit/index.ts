@@ -37,7 +37,7 @@ export { FeatureTile } from './FeatureTile';
 export { QueueRow, type QueueTone } from './QueueRow';
 export { WorkQueueItem } from './WorkQueueItem';
 export { KanbanBoard, type KanbanColumnData, type KanbanCardData } from './Kanban';
-export { BarChartMini, RankBars, TrendPlaceholder, AreaChartMini, type ChartDatum, type RankDatum } from './Charts';
+export { BarChartMini, RankBars, AreaChartMini, type ChartDatum, type RankDatum } from './Charts';
 export {
   CardHead,
   StatSparkTile,

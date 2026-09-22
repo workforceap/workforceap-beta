@@ -1,5 +1,5 @@
 import { cx, type KitBaseProps, type KitDataAttrs } from './base';
-import { toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
+import { toneClass, tonePaint, type KitTone } from './tokens';
 
 interface ProgressRingProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
   /** 0–100. */
@@ -7,8 +7,6 @@ interface ProgressRingProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
   size?: number;
   /** Semantic state the ring paints (`ok`, `warn`, …) via the tone hook; omit for the accent ring. */
   tone?: KitTone;
-  /** @deprecated Categorical stroke — use `tone`. Ignored when `tone` is set. */
-  color?: KitColor;
   /** Use on a colored/gradient background (track becomes translucent white). */
   onDark?: boolean;
   /** Show the % label in the center (default true). */
@@ -24,10 +22,10 @@ const CIRC = 2 * Math.PI * R; // 326.7
  * SVG progress ring. Member program/readiness + the Bold concept hero.
  * Pure SVG, no deps. Pass onDark for the gradient-hero variant.
  */
-export function ProgressRing({ pct, size = 120, tone, color, onDark = false, showLabel = true, label, className, style, ref, ...rest }: ProgressRingProps) {
+export function ProgressRing({ pct, size = 120, tone, onDark = false, showLabel = true, label, className, style, ref, ...rest }: ProgressRingProps) {
   const clamped = Math.max(0, Math.min(100, pct));
   const offset = CIRC * (1 - clamped / 100);
-  const stroke = onDark ? 'var(--wa-on-accent)' : (tonePaint(tone, color) ?? 'var(--wa-accent)');
+  const stroke = onDark ? 'var(--wa-on-accent)' : (tonePaint(tone) ?? 'var(--wa-accent)');
   const track = onDark ? 'rgba(255,255,255,0.2)' : 'var(--wa-track)';
   return (
     <div

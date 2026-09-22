@@ -47,7 +47,7 @@ describe('AnalyticsKit empty panels', () => {
   });
 
   it('renders the rankings, not the empty states, when data exists', () => {
-    render(<AnalyticsKit kpis={[]} topTools={[{ label: 'Resume Studio', value: 4, pct: 100, color: 'accent' }]} />);
+    render(<AnalyticsKit kpis={[]} topTools={[{ label: 'Resume Studio', value: 4, pct: 100 }]} />);
     expect(screen.getByText('Resume Studio')).toBeInTheDocument();
     expect(screen.queryByText(/No AI tool results/)).toBeNull();
     expect(screen.getByText(/No weekly activity by program yet/)).toBeInTheDocument();

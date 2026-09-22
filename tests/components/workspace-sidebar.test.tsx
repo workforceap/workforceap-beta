@@ -164,6 +164,32 @@ describe('workspace navigation', () => {
     expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(1);
   });
 
+  // Scout 2026-09-22 D16: Home's href `/dashboard` prefix-matched every member
+  // route, so pages with no rail item of their own showed Home as current.
+  it.each(['/dashboard/eligibility', '/dashboard/points', '/dashboard/account', '/dashboard/coursera', '/en/dashboard/eligibility'])(
+    'marks nothing current on %s, which has no rail item',
+    (pathname) => {
+      location.pathname = pathname;
+      const { container } = show();
+      expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(0);
+      expect(container.querySelector('.workspace-sidebar a[href="/dashboard"]')).not.toHaveAttribute('aria-current');
+    },
+  );
+
+  it('marks Home current on exactly /dashboard and not on its children', () => {
+    location.pathname = '/dashboard';
+    const { container } = show();
+    const active = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
+    expect(active).toHaveLength(1);
+    expect(active[0]).toHaveAttribute('href', '/dashboard');
+  });
+
+  it('leaves the employer Overview quiet on an employer route without a rail item', () => {
+    location.pathname = '/employer/reports';
+    const { container } = show('employer');
+    expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(0);
+  });
+
   it('keeps Jobs, Training progress, and AI Career Tools visible without opening a group', () => {
     const { container } = show();
     const primary = container.querySelector('.workspace-sidebar-list--root > .workspace-sidebar-group');
@@ -286,6 +312,13 @@ describe('active-route specificity', () => {
   it('matches full path segments and leaves unrelated routes unselected', () => {
     expect(getBestActiveHref('/dashboard/programming', [{ href: '/dashboard/program' }])).toBeNull();
   });
+  it('an exact root link wins only on its own pathname; longest prefix wins elsewhere', () => {
+    const links = [{ href: '/dashboard', exact: true }, { href: '/dashboard/program' }, { href: '/dashboard/program/start' }];
+    expect(getBestActiveHref('/dashboard', links)).toBe('/dashboard');
+    expect(getBestActiveHref('/dashboard/eligibility', links)).toBeNull();
+    expect(getBestActiveHref('/dashboard/program/start/step-2', links)).toBe('/dashboard/program/start');
+    expect(getBestActiveHref('/dashboard/program', links)).toBe('/dashboard/program');
+  });
 });
 
 describe('admin workspace with the production translation slice', () => {
@@ -311,6 +344,20 @@ describe('admin workspace with the production translation slice', () => {
     expect(current).toHaveLength(1);
     expect(current[0]).toHaveAttribute('href', activeHref);
     expect(container.querySelectorAll('.workspace-sidebar-link.active')).toHaveLength(1);
+  });
+
+  it('leaves Command Center quiet on an admin route without a rail item', () => {
+    location.pathname = '/admin/testimonials';
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
+        <WorkspaceShell portalRole="admin" navItems={ADMIN_PORTAL_NAV_ITEMS}
+          workspaceLabel="Admin workspace" contextLabel="Administrator" readOnlyAudit>
+          <h1>Admin content</h1>
+        </WorkspaceShell>
+      </NextIntlClientProvider>,
+    );
+    expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(0);
+    expect(container.querySelector('.workspace-sidebar a[href="/admin"]')).not.toHaveAttribute('aria-current');
   });
 
   it('uses the selected locale for the admin shell labels', () => {

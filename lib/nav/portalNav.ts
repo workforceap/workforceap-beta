@@ -95,6 +95,13 @@ export type PortalNavItem = {
   tab?: NavTab;
   Icon?: LucideIcon;
   aliases?: string[];
+  /**
+   * Portal root rows (`/dashboard`, `/employer`, `/partner`, `/admin`): the
+   * row is current only on exactly that pathname. Without it the root href
+   * prefix-matches every route in the portal and pages with no rail item of
+   * their own would show the root as the current page (lib/nav/activeRoute.ts).
+   */
+  exact?: boolean;
   /** `data-tour` id for first-login tooltip tour (Sprint 8c) */
   tourTarget?: string;
   /** Single badge key from server map */
@@ -175,7 +182,7 @@ const WIOA_AVAILABLE = isWioaPortalAvailable(process.env.NEXT_PUBLIC_WIOA_ENABLE
 
 export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // ── Home tab ──
-  { href: '/dashboard', label: 'Home', group: 'primary', tab: 'journey', Icon: Home, tourTarget: 'tour-dashboard' },
+  { href: '/dashboard', label: 'Home', group: 'primary', tab: 'journey', Icon: Home, exact: true, tourTarget: 'tour-dashboard' },
   // ── Program tab ──
   { href: '/dashboard/program', label: 'My program', group: 'primary', tab: 'program', Icon: BookOpen, tourTarget: 'tour-programs' },
   {
@@ -282,11 +289,11 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // "My Account" is the member's home base — it lands on the dashboard, not on
   // the profile/settings page (which surprised members). Account settings stay
   // reachable via "Profile & settings" above (/dashboard/profile #settings).
-  { href: '/dashboard', label: 'My account', group: 'manage', tab: 'me', Icon: Home },
+  { href: '/dashboard', label: 'My account', group: 'manage', tab: 'me', Icon: Home, exact: true },
 ];
 
 export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
-  { href: '/employer', label: 'Overview', group: 'primary', Icon: LayoutDashboard, tourTarget: 'tour-overview' },
+  { href: '/employer', label: 'Overview', group: 'primary', Icon: LayoutDashboard, exact: true, tourTarget: 'tour-overview' },
   {
     href: '/employer/work-queue',
     label: 'Work queue',
@@ -328,7 +335,7 @@ export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
 ];
 
 export const PARTNER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
-  { href: '/partner', label: 'Overview', group: 'primary', Icon: LayoutDashboard, tourTarget: 'tour-overview' },
+  { href: '/partner', label: 'Overview', group: 'primary', Icon: LayoutDashboard, exact: true, tourTarget: 'tour-overview' },
   {
     href: '/partner/referred-members',
     label: 'Referred members',
@@ -395,7 +402,7 @@ export const GROUP_PORTAL_NAV_ITEMS: PortalNavItem[] = [];
  */
 export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // ── Run the org — "who needs you today" ──
-  { href: '/admin', label: 'Command Center', group: 'runTheOrg', Icon: Zap, tourTarget: 'tour-command-center' },
+  { href: '/admin', label: 'Command Center', group: 'runTheOrg', Icon: Zap, exact: true, tourTarget: 'tour-command-center' },
   { href: '/admin/overview', label: 'Detailed overview', group: 'runTheOrg', Icon: BarChart3, tourTarget: 'tour-overview' },
   {
     href: '/admin/messages',
@@ -503,8 +510,8 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavItem[]> = {
   counselor: COUNSELOR_PORTAL_NAV_ITEMS,
 };
 
-export function navItemsForActiveRoute(items: PortalNavItem[]): { href: string; aliases?: string[] }[] {
-  return items.map(({ href, aliases }) => ({ href, aliases }));
+export function navItemsForActiveRoute(items: PortalNavItem[]): { href: string; aliases?: string[]; exact?: boolean }[] {
+  return items.map(({ href, aliases, exact }) => ({ href, aliases, exact }));
 }
 
 /** Given a pathname, determine which tab is active. Falls back to 'journey'. */

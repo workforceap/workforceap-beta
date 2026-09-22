@@ -26,7 +26,11 @@ const HEX = /#[0-9a-fA-F]{3,8}\b/g;
 const BARE_RGB = /\brgb\(\d+,\s*\d+,\s*\d+\)/g;
 const ALLOWED_RGB = new Set(['rgb(0, 119, 181)']);
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }) }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
+  usePathname: () => '/dashboard',
+  useSearchParams: () => new URLSearchParams(),
+}));
 // VoiceAgentSurface paints from lib/portal/voiceAgentSurfaces.ts and has its
 // own describe below (rendered through vi.importActual); stub it here so this
 // assertion covers SessionRunClient's own chrome (children still render).

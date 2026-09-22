@@ -133,7 +133,7 @@ export default function PartnerMilestonesView() {
         <SegmentedProgress
           pct={counts?.pct ?? 0}
           segments={10}
-          color="success"
+          tone="ok"
           label="Share of recent milestones that are certifications or placements"
         />
         <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 8 }}>

@@ -8,7 +8,7 @@ import PageHeader from '@/components/portal/PageHeader';
 import type { HealthResponse, HealthStatus, SubsystemCheck } from '@/app/api/admin/health/route';
 import {
   SystemHealthKit,
-  statusToKitColor,
+  statusToKitTone,
   type HealthTile,
   type TileStatus,
 } from '@/components/portal/kit/pages/admin-subviews/SystemHealthKit';
@@ -373,31 +373,31 @@ function HealthKitView({
   // "Integration uptime (30d)" — there is NO 30-day uptime store, so we do not
   // fabricate 99.9%-style figures. Instead each bar reflects the CURRENT health
   // of an integration subsystem we actually check, with its status note as the
-  // value and a status-derived fill. Bars are colored by status.
+  // value and a status-derived tone. Bars paint by status through the kit tone hook.
   const uptime: RankDatum[] = [
     {
       label: 'Webhooks',
       value: statusText(toTileStatus(checks.webhooks.status), 'OK'),
       pct: statusPct(checks.webhooks.status),
-      color: statusToKitColor(toTileStatus(checks.webhooks.status)),
+      tone: statusToKitTone(toTileStatus(checks.webhooks.status)),
     },
     {
       label: 'xAPI ingestion',
       value: statusText(toTileStatus(checks.xapi.status), 'OK'),
       pct: statusPct(checks.xapi.status),
-      color: statusToKitColor(toTileStatus(checks.xapi.status)),
+      tone: statusToKitTone(toTileStatus(checks.xapi.status)),
     },
     {
       label: 'AI tools',
       value: statusText(toTileStatus(checks.aiTools.status), 'OK'),
       pct: statusPct(checks.aiTools.status),
-      color: statusToKitColor(toTileStatus(checks.aiTools.status)),
+      tone: statusToKitTone(toTileStatus(checks.aiTools.status)),
     },
     {
       label: 'Redis cache',
       value: statusText(toTileStatus(checks.redis.status), 'OK'),
       pct: statusPct(checks.redis.status),
-      color: statusToKitColor(toTileStatus(checks.redis.status)),
+      tone: statusToKitTone(toTileStatus(checks.redis.status)),
     },
   ];
 
