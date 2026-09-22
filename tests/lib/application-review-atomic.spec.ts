@@ -2,7 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fixture = vi.hoisted(() => {
   const initial = () => ({ id: 'app-a', userId: 'member-a', status: 'PENDING', notes: null as string | null, programInterest: null, user: { email: 'member@example.invalid', fullName: 'Fixture', programInterest: null } });
-  const state = { application: initial(), snapshotFails: false, updates: 1, snapshots: [] as unknown[] };
+  const member = () => ({ courseraEnrollmentApproved: true });
+  const state = {
+    application: initial(),
+    snapshotFails: false,
+    updates: 1,
+    snapshots: [] as unknown[],
+    member: member(),
+    /** Other applications belonging to this member that are still APPROVED. */
+    otherApprovedApplications: 0,
+  };
   const tx = {
     $queryRaw: vi.fn(async () => [{ id: 'member-a' }]),
     application: {
@@ -11,19 +20,31 @@ const fixture = vi.hoisted(() => {
         if (state.updates === 1) Object.assign(state.application, args.data);
         return { count: state.updates };
       }),
+      count: vi.fn(async () => state.otherApprovedApplications),
+    },
+    user: {
+      updateMany: vi.fn(async (args: { where: { courseraEnrollmentApproved?: boolean }; data: { courseraEnrollmentApproved: boolean } }) => {
+        // Mirrors the guarded write: no row matches once the flag is already
+        // false, so the caller sees count 0 and logs nothing.
+        if (args.where.courseraEnrollmentApproved === true && !state.member.courseraEnrollmentApproved) return { count: 0 };
+        state.member.courseraEnrollmentApproved = args.data.courseraEnrollmentApproved;
+        return { count: 1 };
+      }),
     },
     counselorAssignment: { findFirst: vi.fn(async () => null) },
   };
   const transaction = vi.fn(async (callback: (db: typeof tx) => Promise<unknown>) => {
     const preimage = structuredClone(state.application);
     const priorSnapshots = [...state.snapshots];
+    const memberPreimage = structuredClone(state.member);
     try { return await callback(tx); } catch (error) {
       state.application = preimage;
       state.snapshots = priorSnapshots;
+      state.member = memberPreimage;
       throw error;
     }
   });
-  return { state, tx, transaction, initial };
+  return { state, tx, transaction, initial, member };
 });
 vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: fixture.transaction } }));
 vi.mock('@/lib/db/transactionPolicy', () => ({ interactiveTransactionsGuaranteed: vi.fn(() => true) }));
@@ -54,7 +75,10 @@ beforeEach(() => {
   fixture.state.snapshotFails = false;
   fixture.state.updates = 1;
   fixture.state.snapshots = [];
+  fixture.state.member = fixture.member();
+  fixture.state.otherApprovedApplications = 0;
   fixture.tx.application.findFirst.mockImplementation(async () => ({ ...fixture.state.application }));
+  fixture.tx.application.count.mockImplementation(async () => fixture.state.otherApprovedApplications);
   fixture.tx.counselorAssignment.findFirst.mockResolvedValue(null);
   vi.mocked(interactiveTransactionsGuaranteed).mockReturnValue(true);
   vi.mocked(auditLog).mockResolvedValue();
@@ -175,4 +199,92 @@ it('does not write if the subject leaves the tenant before the member lock', asy
   const result = await changeApplicationStatus(args);
   expect(result.ok).toBe(false);
   expect(fixture.tx.application.updateMany).not.toHaveBeenCalled();
+});
+
+/**
+ * A denied application used to leave `User.courseraEnrollmentApproved` set, so
+ * the dashboard approval card kept showing "Training approved" to a member who
+ * had just been turned down. `DENIED` is the only closing state in
+ * `ApplicationStatus`; `APPROVED` is the accepted outcome and must keep the
+ * flag.
+ */
+describe('training approval when an application closes', () => {
+  const denial = { ...args, status: 'DENIED' as const, notes: 'Did not meet eligibility.' };
+
+  it('clears the training flag and audits it when the application is denied', async () => {
+    expect(fixture.state.member.courseraEnrollmentApproved).toBe(true);
+
+    const result = await changeApplicationStatus(denial);
+
+    expect(result.ok).toBe(true);
+    expect(fixture.state.application.status).toBe('DENIED');
+    expect(fixture.state.member.courseraEnrollmentApproved).toBe(false);
+    // The boolean and nothing else: whether the approved-at / approved-by
+    // columns move with it is still Mike's call, so the write must not touch
+    // them. This asserts the exact payload, so adding a column fails here.
+    expect(fixture.tx.user.updateMany).toHaveBeenCalledWith({
+      where: { id: 'member-a', courseraEnrollmentApproved: true },
+      data: { courseraEnrollmentApproved: false },
+    });
+    const revokeCalls = vi.mocked(auditLog).mock.calls.filter(([entry]) => entry.action === 'coursera_enrollment_revoked');
+    expect(revokeCalls).toHaveLength(1);
+    expect(revokeCalls[0][0]).toMatchObject({
+      targetType: 'User',
+      targetId: 'member-a',
+      metadata: { source: 'application_denied', applicationId: 'app-a' },
+    });
+    expect(revokeCalls[0][1]).toBe(fixture.tx);
+  });
+
+  it('keeps the training flag when the application is approved', async () => {
+    const result = await changeApplicationStatus(args);
+
+    expect(result.ok).toBe(true);
+    expect(fixture.state.application.status).toBe('APPROVED');
+    expect(fixture.state.member.courseraEnrollmentApproved).toBe(true);
+    expect(fixture.tx.user.updateMany).not.toHaveBeenCalled();
+    expect(vi.mocked(auditLog).mock.calls.filter(([entry]) => entry.action === 'coursera_enrollment_revoked')).toHaveLength(0);
+  });
+
+  it.each(['NEEDS_INFO', 'PENDING'] as const)('keeps the training flag for the open state %s', async (status) => {
+    fixture.state.application.status = 'APPROVED';
+    const result = await changeApplicationStatus({ ...args, status });
+
+    expect(result.ok).toBe(true);
+    expect(fixture.state.member.courseraEnrollmentApproved).toBe(true);
+    expect(fixture.tx.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('keeps the training flag when the member still holds another approved application', async () => {
+    fixture.state.otherApprovedApplications = 1;
+
+    const result = await changeApplicationStatus(denial);
+
+    expect(result.ok).toBe(true);
+    expect(fixture.state.application.status).toBe('DENIED');
+    expect(fixture.state.member.courseraEnrollmentApproved).toBe(true);
+    expect(fixture.tx.application.count).toHaveBeenCalledWith({
+      where: { userId: 'member-a', status: 'APPROVED', id: { not: 'app-a' } },
+    });
+    expect(fixture.tx.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('audits nothing when the member had no training approval to clear', async () => {
+    fixture.state.member.courseraEnrollmentApproved = false;
+
+    const result = await changeApplicationStatus(denial);
+
+    expect(result.ok).toBe(true);
+    expect(fixture.tx.user.updateMany).toHaveBeenCalledOnce();
+    expect(vi.mocked(auditLog).mock.calls.filter(([entry]) => entry.action === 'coursera_enrollment_revoked')).toHaveLength(0);
+  });
+
+  it('rolls the cleared flag back with the decision when the evidence write fails', async () => {
+    fixture.state.snapshotFails = true;
+
+    await expect(changeApplicationStatus(denial)).rejects.toThrow('snapshot unavailable');
+
+    expect(fixture.state.application.status).toBe('PENDING');
+    expect(fixture.state.member.courseraEnrollmentApproved).toBe(true);
+  });
 });
