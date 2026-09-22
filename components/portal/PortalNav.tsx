@@ -21,8 +21,8 @@ export default function PortalNav({ className, currentRole, currentPath }: { cla
     <nav className={`portal-nav${className ? ` ${className}` : ''}`} aria-label={`${workspaceLabel} navigation`}>
       <div className="portal-nav-inner">
         <ul className="portal-nav-links">
-          {navItems.map(({ href, label, aliases }) => {
-            const isActive = isActiveRoute(pathname, href, aliases);
+          {navItems.map(({ href, label, aliases, exact }) => {
+            const isActive = isActiveRoute(pathname, href, aliases, exact);
             return (
               <li key={href}>
                 <Link href={href} prefetch={false} className={isActive ? 'active' : undefined}>
