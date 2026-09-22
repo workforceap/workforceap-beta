@@ -386,7 +386,7 @@
 | [lib/content/quizScoring.ts](../../../lib/content/quizScoring.ts) | 177 | public-experience | CATEGORY_KEYS:6, CategoryKey:16, CategoryWeights:18, createEmptyWeights:20, QuizAnswers:39, QUIZ_SHORT_FORM_DEFAULTS:49, mergeQuizShortAnswers:55, scoreQuiz:59 |
 | [lib/content/readinessChecklist.ts](../../../lib/content/readinessChecklist.ts) | 206 | public-experience | ReadinessItem:6, ReadinessSection:15, READINESS_SECTIONS:21, getCheckboxItemKeys:175, getJobSiteItemKey:189, getAllItemKeys:194 |
 | [lib/content/skillMissionCatalog.ts](../../../lib/content/skillMissionCatalog.ts) | 7173 | public-experience | QuizQuestion:3, SkillMissionDefinition:10, getSkillMissionDefinitionsForProgram:7167, getSkillMissionDefinition:7171 |
-| [lib/content/syllabusCatalogParity.test.ts](../../../lib/content/syllabusCatalogParity.test.ts) | 229 | public-experience |  |
+| [lib/content/syllabusCatalogParity.test.ts](../../../lib/content/syllabusCatalogParity.test.ts) | 234 | public-experience |  |
 | [lib/content/trainingBridge.ts](../../../lib/content/trainingBridge.ts) | 360 | public-experience | BridgeSkill:18, BridgeOccupation:28, TRAINING_BRIDGE_OCCUPATIONS:51, MemberSkill:289, findBridgeOccupation:295, getBridgeOccupationById:316, BridgeGapResult:320, computeBridgeGap:331, getBridgeProgram:358 |
 | [lib/content/workforceApModule.test.ts](../../../lib/content/workforceApModule.test.ts) | 107 | public-experience |  |
 | [lib/content/workforceApModule.ts](../../../lib/content/workforceApModule.ts) | 18 | public-experience | resolveWorkforceApModule:6 |
