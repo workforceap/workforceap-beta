@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import DataTable from '@/components/portal/ui/DataTable';
 import PortalPagination from '@/components/portal/PortalPagination';
 import { statusColor } from '@/lib/ui/statusColors';
+import { jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
 
 export type JobTableRow = {
   id: string;
@@ -31,15 +32,6 @@ function pendingAgeBadgeStyle(days: number): { background: string; color: string
   const tone = days < 3 ? statusColor('success') : days <= 7 ? statusColor('warning') : statusColor('danger');
   return { background: tone.bg, color: tone.fg };
 }
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'Draft',
-  pending: 'Pending',
-  approved: 'Approved',
-  live: 'Live',
-  filled: 'Filled',
-  closed: 'Closed',
-};
 
 function getJobStatusPillClass(status: string): string {
   if (status === 'live') return 'admin-job-status-pill admin-job-status-pill--live';
@@ -198,7 +190,7 @@ export default function JobsTableClient({
               key: 'status',
               header: header('Status', 'status'),
               cell: (j) => (
-                <span className={getJobStatusPillClass(j.status)}>{STATUS_LABELS[j.status] ?? j.status}</span>
+                <span className={getJobStatusPillClass(j.status)}>{jobPostingStatusLabel(j.status, 'admin')}</span>
               ),
             },
             {
@@ -212,7 +204,7 @@ export default function JobsTableClient({
             },
             {
               key: 'age',
-              header: header('Pending', 'age'),
+              header: header(jobPostingStatusLabel('pending', 'admin'), 'age'),
               cell: (j) => {
                 if (j.status !== 'pending') return <span style={{ color: 'var(--color-on-surface-variant)' }}>—</span>;
                 const days = daysSince(j.updatedAt);

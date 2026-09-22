@@ -1,17 +1,9 @@
 import type { BadgeVariant } from '@/components/portal/StatusBadge';
+import { jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
 
-const LABELS: Record<string, string> = {
-  draft: 'Draft',
-  pending: 'In review',
-  approved: 'Approved',
-  live: 'Live',
-  filled: 'Filled',
-  closed: 'Closed',
-  expired: 'Expired',
-};
-
+/** The employer's word for a posting status (lib/status/jobPostingStatusVocabulary.ts). */
 export function employerJobStatusLabel(status: string): string {
-  return LABELS[status] ?? status;
+  return jobPostingStatusLabel(status, 'employer');
 }
 
 export function employerJobPortalStatusLabel(status: string): string {
