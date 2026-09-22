@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { MEMBER_ONLY_ROLE_NOT } from '@/lib/admin/memberOnlyWhere';
 
 /** Share normalized name/email matching between full directories and quick search. */
 export function normalizeDirectorySearch(value: string): string {
@@ -29,8 +30,11 @@ export function buildUserDirectoryWhere(options: {
   const allowedRoles: readonly string[] = options.staffOnly ? STAFF_DIRECTORY_ROLES : USER_DIRECTORY_ROLES;
   const role = allowedRoles.includes(options.roleFilter) ? options.roleFilter : '';
   const roleWhere: Prisma.UserWhereInput = role === 'member'
-    // The existing full manager displays accounts without a profile as members.
-    ? { OR: [{ profile: { role: 'member' } }, { profile: { is: null } }] }
+    // "Member" is the one definition (lib/admin/memberOnlyWhere.ts): a member
+    // row in user_roles or profiles.role = 'member', minus staff-by-profile —
+    // the same people /admin/members lists. Role half only: this is a
+    // directory, so QA accounts stay findable.
+    ? { NOT: MEMBER_ONLY_ROLE_NOT }
     : role
       ? { profile: { role } }
       : options.staffOnly

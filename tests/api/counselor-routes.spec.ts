@@ -227,6 +227,8 @@ import {
 import { POST as postNudge } from '@/app/api/counselor/nudge/route';
 import { POST as postRemind } from '@/app/api/counselor/remind-member/route';
 import { GET as getPlacements, POST as postPlacement } from '@/app/api/counselor/placements/route';
+import { MEMBER_ONLY_ROLE_NOT } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_IDS, admittedIds } from '@/tests/helpers/prismaWhereMatches';
 import { GET as getPipelineAtRiskStats } from '@/app/api/admin/pipeline/at-risk-stats/route';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor, isSuperAdmin } from '@/lib/auth/roles';
@@ -1451,10 +1453,16 @@ describe('GET /api/counselor/placements', () => {
         where: expect.objectContaining({
           organizationId: UUIDS.orgId,
           deletedAt: null,
-          profile: { role: 'member' },
+          NOT: MEMBER_ONLY_ROLE_NOT,
         }),
       }),
     );
+    // Eligibility is the one member definition (#2457 follow-up): a
+    // user_roles-only member the funder counts include can be placed, and a
+    // counselor holding the baseline member row cannot.
+    const where = vi.mocked(prisma.user.findMany).mock.calls[0][0]!.where;
+    expect(where).not.toHaveProperty('profile');
+    expect(admittedIds(where, { organizationId: UUIDS.orgId })).toEqual([...MEMBER_ONLY_IDS]);
   });
 
   it('keeps the member selector cross-tenant for super-admin support', async () => {
@@ -1473,7 +1481,7 @@ describe('GET /api/counselor/placements', () => {
       expect.objectContaining({
         where: {
           deletedAt: null,
-          profile: { role: 'member' },
+          NOT: MEMBER_ONLY_ROLE_NOT,
         },
       }),
     );
@@ -1592,10 +1600,15 @@ describe('POST /api/counselor/placements', () => {
         where: expect.objectContaining({
           id: UUIDS.memberUser,
           deletedAt: null,
-          profile: { role: 'member' },
+          NOT: MEMBER_ONLY_ROLE_NOT,
         }),
       }),
     );
+    // The member being placed is checked against the one member definition,
+    // not `profile.role = 'member'` alone (#2457 follow-up).
+    const memberWhere = vi.mocked(prisma.user.findFirst).mock.calls[0][0]!.where;
+    expect(memberWhere).not.toHaveProperty('profile');
+    expect(admittedIds({ ...memberWhere, id: undefined })).toEqual([...MEMBER_ONLY_IDS]);
     const insertCall = vi.mocked(prisma.$queryRaw).mock.calls[0] ?? [];
     expect(insertCall).toContain('comptia-a-professional-certificate');
       expect(insertCall).not.toContain('attacker-controlled-program');
