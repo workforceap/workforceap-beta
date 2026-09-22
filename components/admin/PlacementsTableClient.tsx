@@ -10,6 +10,8 @@ export type PlacementTableRow = {
   jobTitle: string;
   startDate: Date | string | null;
   startDateVerified: boolean;
+  /** Unverified row the member created by confirming an offer themselves (see app/admin/placements/page.tsx). */
+  memberReported?: boolean;
   salaryOffered: number | null;
   placedAt: Date | string;
   user: { id: string; fullName: string | null; email: string; enrolledProgram: string | null } | null;
@@ -122,7 +124,7 @@ function buildPlacementsCsv(rows: PlacementTableRow[]): string {
       csvField(r.jobTitle),
       csvField(toIsoDate(r.startDate)),
       csvField(r.salaryOffered ?? ''),
-      r.startDateVerified ? 'verified' : 'pending_verification',
+      r.startDateVerified ? 'verified' : r.memberReported ? 'member_reported_unverified' : 'pending_verification',
       csvField(toIsoDate(r.placedAt)),
     ].join(',')
   );
@@ -216,12 +218,31 @@ export default function PlacementsTableClient({ placements }: { placements: Plac
           {
             key: 'status',
             header: header('Status', 'status'),
-            cell: (r) =>
-              r.startDateVerified ? (
-                <span style={{ color: '#16a34a', fontWeight: 600 }}>Verified</span>
-              ) : (
-                <span style={{ color: '#d97706', fontWeight: 600 }}>Pending verification</span>
-              ),
+            cell: (r) => {
+              // Same tone pairs as the partners table status pill: success on
+              // its soft fill once verified, gold (warning) on its soft fill
+              // while pending. The member-reported state is the pending row
+              // the member created themselves; it is spelled out so staff can
+              // tell it from an employer- or counselor-created pending row.
+              const verified = r.startDateVerified;
+              const label = verified ? 'Verified' : r.memberReported ? 'Member-reported, unverified' : 'Pending verification';
+              return (
+                <span
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    background: verified ? 'var(--wa-success-soft)' : 'var(--wa-gold-soft)',
+                    color: verified ? 'var(--wa-success-dark)' : 'var(--wa-gold-dark)',
+                  }}
+                >
+                  {label}
+                </span>
+              );
+            },
           },
         ]}
       />
