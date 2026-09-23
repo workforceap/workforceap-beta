@@ -5,11 +5,13 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import AssessmentForm from '@/components/portal/AssessmentForm';
+import MemberPreScreeningForm from '@/components/portal/MemberPreScreeningForm';
+import MemberInterviewRequestButton from '@/components/portal/MemberInterviewRequestButton';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import Link from 'next/link';
 import { ClipboardCheck } from 'lucide-react';
 import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from '@/lib/member/starterProfileReview';
-import { formatPortalDate } from '@/lib/formatDate';
+import { formatPortalDate, formatPortalDateTime } from '@/lib/formatDate';
 
 const PAGE_TITLE = 'Skills check';
 
@@ -44,6 +46,7 @@ export default async function AssessmentPage({
         select: { enrolledByAdminId: true },
         take: 1,
       },
+      preScreeningResponse: { select: { id: true } },
     },
   });
 
@@ -64,11 +67,19 @@ export default async function AssessmentPage({
         />
         <div style={{ maxWidth: 720 }}>
           {dbUser.assessmentCompleted ? (
-            <AssessmentCompletedCard
-              scorePct={dbUser.assessmentScorePct}
-              completedAt={dbUser.assessmentCompletedAt}
-              programInterest={dbUser.programInterest}
-            />
+            <>
+              <AssessmentCompletedCard
+                scorePct={dbUser.assessmentScorePct}
+                completedAt={dbUser.assessmentCompletedAt}
+                programInterest={dbUser.programInterest}
+              />
+              <InterviewSteps
+                preScreeningDone={!!dbUser.preScreeningResponse}
+                interviewEligible={dbUser.interviewEligible}
+                interviewRequestedAt={dbUser.interviewRequestedAt}
+                interviewCompletedAt={dbUser.interviewCompletedAt}
+              />
+            </>
           ) : (
             <AssessmentReady
               dbUser={dbUser}
@@ -78,6 +89,79 @@ export default async function AssessmentPage({
         </div>
       </div>
     </DesignSurface>
+  );
+}
+
+const STEP_HEADING_STYLE = {
+  margin: '0 0 0.35rem',
+  fontSize: 17,
+  fontWeight: 800,
+  letterSpacing: '-0.02em',
+} as const;
+
+const STEP_BODY_STYLE = {
+  color: 'var(--wa-muted)',
+  lineHeight: 1.5,
+  margin: 0,
+  fontSize: 'var(--wa-type-body)',
+} as const;
+
+/**
+ * The steps after the preassessment (WAP-197): pre-screening, then the
+ * interview request. They used to render only in the legacy home's
+ * never-shown block, so no member could reach /api/member/pre-screening or
+ * /api/member/interview-request. The member application status next steps
+ * ("Complete your pre-screening", "Request your interview") link here.
+ * Conditions mirror the legacy block and the two routes: pre-screening needs
+ * a completed preassessment and no saved response; the interview request
+ * needs staff to have marked the member interview eligible.
+ */
+function InterviewSteps({
+  preScreeningDone,
+  interviewEligible,
+  interviewRequestedAt,
+  interviewCompletedAt,
+}: {
+  preScreeningDone: boolean;
+  interviewEligible: boolean;
+  interviewRequestedAt: Date | null;
+  interviewCompletedAt: Date | null;
+}) {
+  if (!preScreeningDone) {
+    return (
+      <section id="pre-screening" aria-labelledby="pre-screening-heading" className="wa-kit-card" style={{ marginTop: 16 }}>
+        <h2 id="pre-screening-heading" style={STEP_HEADING_STYLE}>
+          Pre-screening
+        </h2>
+        <p style={{ ...STEP_BODY_STYLE, marginBottom: 16 }}>The step before your interview.</p>
+        <MemberPreScreeningForm />
+      </section>
+    );
+  }
+
+  if (interviewCompletedAt) return null;
+
+  return (
+    <section id="interview" aria-labelledby="interview-heading" className="wa-kit-card" style={{ marginTop: 16 }}>
+      <h2 id="interview-heading" style={STEP_HEADING_STYLE}>
+        Interview
+      </h2>
+      {interviewRequestedAt ? (
+        <p style={STEP_BODY_STYLE}>
+          We received your interview request on {formatPortalDateTime(interviewRequestedAt)}. A counselor will
+          reach out by email.
+        </p>
+      ) : interviewEligible ? (
+        <>
+          <p style={{ ...STEP_BODY_STYLE, marginBottom: 16 }}>You&rsquo;re interview eligible.</p>
+          <MemberInterviewRequestButton />
+        </>
+      ) : (
+        <p style={STEP_BODY_STYLE}>
+          Pre-screening submitted. A counselor will review it and reach out by email.
+        </p>
+      )}
+    </section>
   );
 }
 
