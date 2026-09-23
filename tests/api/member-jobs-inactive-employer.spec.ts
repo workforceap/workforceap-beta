@@ -36,7 +36,15 @@ function matchesField(value: unknown, cond: unknown): boolean {
       case 'mode':
         return true;
       case 'equals':
-        return value === arg;
+        return insensitive && typeof value === 'string'
+          ? value.toLowerCase() === String(arg).toLowerCase()
+          : value === arg;
+      case 'startsWith': {
+        if (typeof value !== 'string') return false;
+        return insensitive
+          ? value.toLowerCase().startsWith(String(arg).toLowerCase())
+          : value.startsWith(String(arg));
+      }
       case 'not':
         return isPlainObject(arg) ? !matchesField(value, arg) : value !== arg;
       case 'in':
@@ -178,6 +186,7 @@ vi.mock('@/lib/db/prisma', () => {
       findMany: vi.fn(async (args: any) => findAll(JOBS, args)),
       findFirst: vi.fn(async (args: any) => findAll(JOBS, args)[0] ?? null),
       findUnique: vi.fn(async (args: any) => findAll(JOBS, args)[0] ?? null),
+      count: vi.fn(async (args: any) => findAll(JOBS, args).length),
     },
     aIJobMatch: {
       findMany: vi.fn(async (args: any) => findAll(MATCHES, args)),
@@ -194,7 +203,7 @@ vi.mock('@/lib/db/prisma', () => {
       })),
     },
     profile: { findUnique: vi.fn(async () => null) },
-    jobApplication: { findMany: vi.fn(async () => []) },
+    jobApplication: { findMany: vi.fn(async () => []), groupBy: vi.fn(async () => []) },
     jobPostingApplication: { findUnique: vi.fn() },
     employer: {
       findFirst: vi.fn(),
@@ -402,6 +411,61 @@ describe('/dashboard/jobs passes load failures to the kit', () => {
     expect(props.pipelineLoadFailed).toBe(false);
     expect(props.openRolesLoadFailed).toBe(false);
     expect(props.recommendationsLoadFailed).toBe(false);
+  });
+});
+
+// WAP-261 items 2–3: the counts cover every matching row, not the rows fetched.
+describe('/dashboard/jobs counts every row, not the capped lists', () => {
+  const kitProps = async () => {
+    const page = (await JobsPage({ searchParams: Promise.resolve({}) })) as any;
+    return page.props.children.props;
+  };
+  const withJobs = (rows: Row[]) => {
+    vi.mocked(prisma.job.findMany).mockImplementationOnce(((args: any) => Promise.resolve(findAll(rows, args))) as any);
+    vi.mocked(prisma.job.count).mockImplementationOnce(((args: any) => Promise.resolve(findAll(rows, args).length)) as any);
+  };
+
+  it('25 live jobs list 20 and report 25 live openings', async () => {
+    const many = Array.from({ length: 25 }, (_, i) =>
+      makeJob(`77777777-7777-4777-8777-${String(i).padStart(12, '0')}`, `Employer ${i}`, 'active'),
+    );
+    withJobs(many);
+    const props = await kitProps();
+    expect(props.openRoles).toHaveLength(20);
+    expect(props.openRolesTotal).toBe(25);
+  });
+
+  it('the openings count leaves out QA employers and fixture titles, like the list', async () => {
+    const qaEmployer = makeJob('88888888-8888-4888-8888-000000000001', 'QA Employer Co', 'active');
+    const fixtureTitle = { ...makeJob('88888888-8888-4888-8888-000000000002', 'Real Co', 'active'), title: '[QA] Python Developer' };
+    withJobs([JOBS[0], qaEmployer, fixtureTitle]);
+    const props = await kitProps();
+    expect((props.openRoles as Array<{ id: string }>).map((r) => r.id)).toEqual([JOB_ACTIVE]);
+    expect(props.openRolesTotal).toBe(1);
+  });
+
+  it('the KPIs come from per-status counts, not from the 200 fetched rows', async () => {
+    vi.mocked(prisma.jobApplication.groupBy).mockResolvedValueOnce([
+      { status: 'SAVED', _count: { _all: 240 } },
+      { status: 'APPLIED', _count: { _all: 150 } },
+      { status: 'PHONE_SCREEN', _count: { _all: 60 } },
+      { status: 'INTERVIEWING', _count: { _all: 3 } },
+      { status: 'OFFER', _count: { _all: 1 } },
+      { status: 'REJECTED', _count: { _all: 9 } },
+    ] as any);
+    const props = await kitProps();
+    expect(props.saved).toBe(240);
+    expect(props.applied).toBe(210);
+    expect(props.interviewing).toBe(3);
+    expect(props.offers).toBe(1);
+    expect(props.syncedLabel).toBe('214 active applications');
+  });
+
+  it('a failed status count sets pipelineLoadFailed', async () => {
+    vi.mocked(prisma.jobApplication.groupBy).mockRejectedValueOnce(new Error('db down'));
+    const props = await kitProps();
+    expect(props.pipelineLoadFailed).toBe(true);
+    expect(props.saved).toBe(0);
   });
 });
 
