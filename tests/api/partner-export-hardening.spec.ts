@@ -189,6 +189,39 @@ describe('partner CSV formula neutralization (P02)', () => {
     expect(headerLine).toBe(HEADER_BASE);
     expect(rows).toHaveLength(1);
   });
+
+  // The partner name is partner-typed (signup, onboarding profile). A comma
+  // (or ';' where Excel's list separator is ';') in a '#' line starts a new
+  // cell, so a formula after it would be live even though the line starts '#'.
+  it.each([
+    'Acme,=HYPERLINK("http://evil.example/","Click")',
+    'Acme, +1+1',
+    'Acme,"=1+1"',
+    'Acme;@SUM(1+1)',
+    'Acme,\t=1+1',
+    'Acme,-2+3',
+  ])('no branding-line cell after a separator starts a formula (partner name %j)', async (name) => {
+    h.partners['user-a'] = { ...PARTNER_A, partner: { ...PARTNER_A.partner, name, logoUrl: `https://x.example/l.png?a=1,${name}` } };
+    const res = await exportAs('user-a');
+    const text = await res.text();
+    const branding = text.split('\r\n').filter((line) => line.startsWith('#'));
+    const partnerLine = branding.find((line) => line.startsWith('# Partner: '));
+    expect(partnerLine).toBeDefined();
+    for (const line of branding) {
+      for (const cell of line.split(/[,;]/).slice(1)) {
+        expect(cell, JSON.stringify(line)).not.toMatch(FORMULA_START);
+        expect(cell.replace(/^[ "]+/, ''), JSON.stringify(line)).not.toMatch(FORMULA_START);
+      }
+    }
+    // Ordinary text around the separator is kept.
+    expect(partnerLine).toContain('Acme');
+  });
+
+  it('keeps an ordinary partner name with a comma unchanged', async () => {
+    h.partners['user-a'] = { ...PARTNER_A, partner: { ...PARTNER_A.partner, name: 'Smith, Jones & Co' } };
+    const text = await (await exportAs('user-a')).text();
+    expect(text.split('\r\n')).toContain('# Partner: Smith, Jones & Co');
+  });
 });
 
 describe('partner CSV caching (P02)', () => {

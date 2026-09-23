@@ -12,9 +12,16 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 // not a live formula, when the partner opens the file in Excel/Sheets.
 import { csvEscape } from '@/lib/csv';
 
-/** A '#' branding line value on one line: a CR/LF could start an unescaped data row. */
+/**
+ * A '#' branding line value, kept on one line and formula-safe. A CR/LF could
+ * start an unescaped data row. A ',' (or ';', Excel's list separator in some
+ * locales) starts a new cell, so a formula trigger after it gets the same
+ * leading ' as csvEscape gives a data cell; other text is unchanged.
+ */
 function brandingValue(value: string): string {
-  return value.replace(/[\r\n]+/g, ' ');
+  return value
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/([,;])(?=[\s"]*[=+\-@\t])/g, "$1'");
 }
 
 export const GET = withApiGuc(async (request: NextRequest) => {
