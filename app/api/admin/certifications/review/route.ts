@@ -19,7 +19,9 @@ import { runCertificationApprovedEffects } from '@/lib/certifications/certificat
  * its status; the new file is audit-logged, WAP-197). The first approval of a
  * row fires the credential's downstream effects (lifecycle event, points,
  * notification, partner milestone); a re-approval after a proof upload does
- * not repeat them. Tenant-scoped
+ * not repeat them. The decision is a compare-and-set on `pending`: a second
+ * concurrent review gets 409 with the winning status and fires nothing.
+ * Tenant-scoped
  * via the owning user's organization so an admin from Org A cannot review an
  * Org B submission by guessing its UUID — same hardening as the jobs/approve
  * route. Auth mirrors the other admin POST routes (getUser + isAdmin, DB inside
@@ -70,14 +72,48 @@ export const POST = withApiGuc(async (request: NextRequest) => {
 
     const nextStatus = action === 'approve' ? 'approved' : 'rejected';
 
-    const updated = await withTenantScope(orgId, (db) =>
-      db.userCertification.update({
-        where: { id: certId },
+    // Compare-and-set (O02/M06): the write only lands while the row is still
+    // pending, so two admins (or a double-click) cannot both decide it, and an
+    // approve racing a reject cannot overwrite the first decision. A row we
+    // read as never-reviewed must still be never-reviewed, so a stale read
+    // cannot count as the first approval and repeat the credential effects.
+    const isFirstReview = cert.reviewedAt === null;
+    const { count } = await withTenantScope(orgId, (db) =>
+      db.userCertification.updateMany({
+        where: {
+          id: certId,
+          status: 'pending',
+          ...(isFirstReview ? { reviewedAt: null } : {}),
+          ...memberInOrg(orgId),
+        },
         data: {
           status: nextStatus,
           reviewedAt: new Date(),
           reviewedById: user.id,
         },
+      }),
+    );
+
+    if (count === 0) {
+      // Lost the race: report the decision that won. No effects, no audit.
+      const current = await withTenantScope(orgId, (db) =>
+        db.userCertification.findFirst({
+          where: { id: certId, ...memberInOrg(orgId) },
+          select: { status: true },
+        }),
+      );
+      if (!current) {
+        return NextResponse.json({ error: 'Certification not found' }, { status: 404 });
+      }
+      return NextResponse.json(
+        { error: 'Certification was already reviewed', status: current.status },
+        { status: 409 },
+      );
+    }
+
+    const updated = await withTenantScope(orgId, (db) =>
+      db.userCertification.findFirst({
+        where: { id: certId, ...memberInOrg(orgId) },
         select: {
           id: true,
           status: true,
@@ -87,7 +123,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       }),
     );
 
-    if (action === 'approve' && cert.reviewedAt === null) {
+    if (action === 'approve' && isFirstReview) {
       after(() => runCertificationApprovedEffects({ userId: cert.userId, certName: cert.certName }));
     }
 
