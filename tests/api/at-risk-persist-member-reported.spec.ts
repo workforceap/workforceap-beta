@@ -138,6 +138,55 @@ describe('persistAtRiskAlert keeps member-reported escalations', () => {
     expect(prisma.atRiskAlert.update).not.toHaveBeenCalled();
   });
 
+  it('skips the write when only the key order differs (jsonb read-back vs scorer-built factors)', async () => {
+    // Postgres jsonb returns keys as name, weight, description; the scorer
+    // builds factors as { ...FACTORS.X, name } = weight, description, name.
+    vi.mocked(prisma.atRiskAlert.findFirst).mockResolvedValue({
+      id: 'alert-1',
+      userId: 'user-1',
+      score: 75,
+      factors: [
+        { name: 'NO_LOGIN_14_DAYS', weight: 40, description: 'No login in 14 days' },
+        trouble,
+      ],
+      status: 'open',
+    } as any);
+
+    await persistAtRiskAlert(
+      score({
+        score: 40,
+        factors: [{ weight: 40, description: 'No login in 14 days', name: 'NO_LOGIN_14_DAYS' }],
+      }),
+    );
+
+    expect(prisma.atRiskAlert.update).not.toHaveBeenCalled();
+  });
+
+  it('still writes a preserved alert when a scorer factor value changed', async () => {
+    vi.mocked(prisma.atRiskAlert.findFirst).mockResolvedValue({
+      id: 'alert-1',
+      userId: 'user-1',
+      score: 75,
+      factors: [{ name: 'NO_LOGIN_7_DAYS', weight: 25, description: 'No login in 7 days' }, trouble],
+      status: 'open',
+    } as any);
+
+    await persistAtRiskAlert(
+      score({
+        score: 40,
+        factors: [{ weight: 40, description: 'No login in 14 days', name: 'NO_LOGIN_14_DAYS' }],
+      }),
+    );
+
+    expect(prisma.atRiskAlert.update).toHaveBeenCalledTimes(1);
+    const args = vi.mocked(prisma.atRiskAlert.update).mock.calls[0]![0] as any;
+    expect(args.data.score).toBe(75);
+    expect(args.data.factors).toEqual([
+      { weight: 40, description: 'No login in 14 days', name: 'NO_LOGIN_14_DAYS' },
+      trouble,
+    ]);
+  });
+
   it('create branch is unchanged', async () => {
     vi.mocked(prisma.atRiskAlert.findFirst).mockResolvedValue(null);
 
