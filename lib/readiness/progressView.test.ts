@@ -22,8 +22,8 @@ describe('buildReadinessProgressView', () => {
     // that used to put "Apply to jobs" first while the note talked training.
     expect(view.weakestCategory).toBe('training');
     expect(view.priorityAction?.key).toBe('completePathwaySteps');
-    expect(view.priorityAction?.href).toBe('/dashboard/program');
-    expect(view.priorityAction?.ctaLabel).toBe('Continue training');
+    expect(view.priorityAction?.href).toBe('/dashboard/learning');
+    expect(view.priorityAction?.ctaLabel).toBe('Open Learning Hub');
     expect(view.readinessNote).toContain('Complete more pathway steps');
 
     expect(view.milestones.map((m) => [m.label, m.when, m.state])).toEqual([
@@ -53,6 +53,31 @@ describe('buildReadinessProgressView', () => {
     expect(view.milestones[0]?.state).toBe('active');
   });
 
+  test('pathway and goal actions open the surfaces that render them', () => {
+    const only = (key: keyof ScoreBreakdown): ScoreBreakdown => {
+      const breakdown = zeroScoreBreakdown();
+      for (const k of Object.keys(breakdown) as (keyof ScoreBreakdown)[]) {
+        // "Open" is earned < max (see getPriorityAction), so only `key` is short.
+        breakdown[k] = { ...breakdown[k], earned: k === key ? 0 : breakdown[k].max, done: k !== key };
+      }
+      return breakdown;
+    };
+
+    // Pathway steps are completed on the Learning Hub's learning-path cards.
+    for (const key of ['completePathwaySteps', 'startPathway'] as const) {
+      const action = buildReadinessProgressView(only(key)).priorityAction;
+      expect(action?.key).toBe(key);
+      expect(action?.href).toBe('/dashboard/learning');
+      expect(action?.ctaLabel).toBe('Open Learning Hub');
+    }
+
+    // Goals are set in GoalsModule on My career plan (MemberHomeKit's goalsHref
+    // points at the same anchor).
+    const goals = buildReadinessProgressView(only('setGoals')).priorityAction;
+    expect(goals?.href).toBe('/dashboard/career-brief#goals');
+    expect(goals?.ctaLabel).toBe('Set goals');
+  });
+
   test('CTA follows the weakest area, then the most points left inside it', () => {
     const breakdown: ScoreBreakdown = {
       ...SCREENSHOT_MEMBER_BREAKDOWN,
@@ -79,8 +104,8 @@ describe('buildReadinessProgressView', () => {
     expect(view.overallScore).toBe(89);
     expect(view.weakestCategory).toBe('training');
     expect(view.priorityAction?.key).toBe('completePathwaySteps');
-    expect(view.priorityAction?.href).toBe('/dashboard/program');
-    expect(view.priorityAction?.ctaLabel).toBe('Continue training');
+    expect(view.priorityAction?.href).toBe('/dashboard/learning');
+    expect(view.priorityAction?.ctaLabel).toBe('Open Learning Hub');
   });
 
   test('94-point member: everything done, 3 pathway steps — still has a CTA, not "complete"', () => {
@@ -99,14 +124,14 @@ describe('buildReadinessProgressView', () => {
     expect(view.readinessNote).not.toContain('complete.');
   });
 
-  test('every training item routes to My Program, never back to /dashboard', () => {
+  test('pathway items route to the Learning Hub, never back to /dashboard', () => {
     const view = buildReadinessProgressView({
       ...SCREENSHOT_MEMBER_BREAKDOWN,
       startPathway: { earned: 0, max: 5, done: false },
       completePathwaySteps: { earned: 0, max: 14, done: false },
     });
     expect(view.priorityAction?.key).toBe('completePathwaySteps');
-    expect(view.priorityAction?.href).toBe('/dashboard/program');
+    expect(view.priorityAction?.href).toBe('/dashboard/learning');
   });
 
   test('all-complete member has no next action', () => {

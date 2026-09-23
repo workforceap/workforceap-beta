@@ -51,8 +51,8 @@ describe('ReadinessProgressSummary (coach note)', () => {
 
   it('primary CTA follows the weakest area and the coach link stays secondary', () => {
     renderCard();
-    const primary = screen.getByRole('link', { name: /Continue training/ });
-    expect(primary).toHaveAttribute('href', '/dashboard/program');
+    const primary = screen.getByRole('link', { name: /Open Learning Hub/ });
+    expect(primary).toHaveAttribute('href', '/dashboard/learning');
     expect(primary.className).toContain('wa-kit-cta');
     expect(primary.className).not.toContain('wa-kit-cta--ghost');
     const coach = screen.getByRole('link', { name: 'Open readiness coach' });
@@ -81,7 +81,7 @@ describe('ReadinessProgressSummary (coach note)', () => {
     expect(text.querySelectorAll('p')[0]).toHaveTextContent(/^Training & Certs is your lowest area because Complete pathway steps \(8\/14\) is still open\.$/);
     expect(text).toHaveTextContent('Next: Complete more pathway steps in your training program.');
     expect(text).not.toHaveTextContent('complete.');
-    expect(screen.getByRole('link', { name: /Continue training/ })).toHaveAttribute('href', '/dashboard/program');
+    expect(screen.getByRole('link', { name: /Open Learning Hub/ })).toHaveAttribute('href', '/dashboard/learning');
     expect(screen.queryByRole('link', { name: /Apply to jobs/ })).toBeNull();
   });
 

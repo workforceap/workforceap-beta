@@ -3,32 +3,71 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ADMIN_PORTAL_NAV_ITEMS, NAV_GROUP_COLLAPSED_BY_DEFAULT, navChildrenOf, navTopLevelItems } from './portalNav';
+import {
+  ADMIN_PORTAL_NAV_ITEMS,
+  GROUP_ORDER,
+  NAV_GROUP_ALWAYS_OPEN,
+  NAV_GROUP_COLLAPSED_BY_DEFAULT,
+  NAV_GROUP_LABELS,
+  navChildrenOf,
+  navItemsForActiveRoute,
+  navTopLevelItems,
+} from './portalNav';
+import { getBestActiveHref } from './activeRoute';
 import { MEMBER_PORTAL_NAV_ITEMS } from './portalNav';
 import { MEMBER_PORTAL_NAV_ITEMS_I18N } from './portalNav.i18n';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const source = (relativePath: string) => readFileSync(path.join(root, relativePath), 'utf8');
 
-test('Job board, Training progress, and AI Career Tools stay in the member primary rail', () => {
+// WAP-189 (owner-approved 2026-09-23): the always-visible member rail is exactly
+// these five rows, in this order. It supersedes the seven-row PR #2322 order.
+const MEMBER_PRIMARY_HREFS = [
+  '/dashboard',
+  '/dashboard/program',
+  '/dashboard/jobs',
+  '/dashboard/ai-tools',
+  '/dashboard/messages',
+];
+
+test('the member primary rail is exactly Home, My program, Job board, AI Career Tools, Messages', () => {
+  const primary = MEMBER_PORTAL_NAV_ITEMS.filter((entry) => entry.group === 'primary');
+  assert.deepEqual(primary.map((entry) => entry.href), MEMBER_PRIMARY_HREFS);
+  assert.deepEqual(primary.map((entry) => entry.label), ['Home', 'My program', 'Job board', 'AI Career Tools', 'Messages']);
+});
+
+test('Job board and AI Career Tools stay in the member primary rail', () => {
   const jobs = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/jobs');
-  const progress = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/readiness');
   const tools = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/ai-tools');
   assert.equal(jobs?.group, 'primary');
   assert.equal(jobs?.label, 'Job board');
-  assert.equal(progress?.group, 'primary');
-  assert.equal(progress?.label, 'My progress');
   assert.equal(tools?.group, 'primary');
   assert.equal(tools?.label, 'AI Career Tools');
 });
 
-test('i18n Job board, Training progress, and AI Career Tools stay in the member primary rail', () => {
+test('My progress and Skill missions live in the Training & progress group (WAP-189)', () => {
+  const progress = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/readiness');
+  const missions = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/missions');
+  assert.equal(progress?.group, 'insights');
+  assert.equal(progress?.label, 'My progress');
+  assert.equal(missions?.group, 'insights');
+  assert.equal(missions?.label, 'Skill missions');
+  // Never under Account & support: the e2e tab-order pin covers that group.
+  assert.notEqual(progress?.group, 'manage');
+  assert.notEqual(missions?.group, 'manage');
+});
+
+test('i18n Job board and AI Career Tools stay primary; My progress joins Training & progress', () => {
   const jobs = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/jobs');
   const progress = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/readiness');
   const tools = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/ai-tools');
   assert.equal(jobs?.group, 'primary');
-  assert.equal(progress?.group, 'primary');
+  assert.equal(progress?.group, 'insights');
   assert.equal(tools?.group, 'primary');
+  assert.deepEqual(
+    MEMBER_PORTAL_NAV_ITEMS_I18N.filter((entry) => entry.group === 'primary').map((entry) => entry.href),
+    MEMBER_PRIMARY_HREFS,
+  );
 });
 
 test('Training preassessment nav points at the assessment page, not AI tools', () => {
@@ -81,14 +120,26 @@ test('completed Skills check stays on the page instead of dumping home', () => {
   assert.doesNotMatch(page, /Skills snapshot/);
 });
 
-// ── Admin rail structure (sidebar consolidation, 2026-09-21) ──
+// ── Admin rail structure (sidebar consolidation, 2026-09-21; queue-first, WAP-190) ──
 
-test('admin rail: every destination has a unique href and the grouped rail keeps 15–20 top-level rows', () => {
+const DAILY_WORK = [
+  '/admin',
+  '/admin/command-center?queue=applications',
+  '/admin/wioa-screening',
+  '/admin/certifications',
+  '/admin/program-change-requests',
+  '/admin/students',
+  '/admin/messages',
+];
+
+test('admin rail: every destination has a unique href and the grouped rail keeps at most 22 top-level rows', () => {
   const hrefs = ADMIN_PORTAL_NAV_ITEMS.map((item) => item.href);
   assert.equal(new Set(hrefs).size, hrefs.length, 'duplicate admin href');
   const top = navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS);
-  assert.ok(top.length >= 15 && top.length <= 20, `expected 15–20 top-level rows, got ${top.length}`);
-  assert.ok(ADMIN_PORTAL_NAV_ITEMS.length >= 50, 'no destination was removed from the flat 50-row rail');
+  // 20 before WAP-190, plus Applications (new) and Funding eligibility / Certificates
+  // promoted into Daily work; every section but Daily work starts closed.
+  assert.ok(top.length >= 15 && top.length <= 22, `expected 15–22 top-level rows, got ${top.length}`);
+  assert.ok(ADMIN_PORTAL_NAV_ITEMS.length >= 52, 'no destination was removed; Applications was added');
 });
 
 test('admin rail: every pre-consolidation destination is still present', () => {
@@ -107,6 +158,48 @@ test('admin rail: every pre-consolidation destination is still present', () => {
   ];
   const hrefs = new Set(ADMIN_PORTAL_NAV_ITEMS.map((item) => item.href));
   for (const href of expected) assert.ok(hrefs.has(href), `missing admin destination ${href}`);
+});
+
+test('admin rail: Daily work is the first, always-open section and holds exactly the seven queue-clearing rows, top-level', () => {
+  assert.equal(ADMIN_PORTAL_NAV_ITEMS[0].group, 'dailyWork');
+  assert.equal(GROUP_ORDER.indexOf('dailyWork'), GROUP_ORDER.indexOf('runTheOrg') - 1, 'Daily work renders before every other admin section');
+  assert.equal(NAV_GROUP_LABELS.dailyWork, 'Daily work');
+  assert.ok(!NAV_GROUP_COLLAPSED_BY_DEFAULT.dailyWork, 'Daily work is open by default');
+  assert.deepEqual(NAV_GROUP_ALWAYS_OPEN, { dailyWork: true }, 'Daily work cannot be closed; no other section is pinned open');
+  const top = navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).filter((item) => item.group === 'dailyWork');
+  assert.deepEqual(top.map((item) => item.href), DAILY_WORK);
+  assert.deepEqual(top.map((item) => item.label), [
+    'Today', 'Applications', 'Funding eligibility', 'Certificates', 'Program requests', 'Students', 'Messages',
+  ]);
+});
+
+test('admin rail: Today keeps the home anchor; Applications opens the decision workbench and lights on its own queue only', () => {
+  const byHref = new Map(ADMIN_PORTAL_NAV_ITEMS.map((item) => [item.href, item]));
+  const today = byHref.get('/admin');
+  assert.equal(today?.label, 'Today');
+  assert.equal(today?.exact, true);
+  assert.equal(today?.tourTarget, 'tour-command-center');
+
+  const applications = byHref.get('/admin/command-center?queue=applications');
+  assert.ok(applications, 'Applications row');
+  assert.ok(!applications.requiresSuperAdminContext, 'org admins decide applications too');
+  assert.equal(applications.badgeKey, 'admin_applications_pending');
+  // No bare-pathname alias: it would light Applications on every workbench
+  // queue and on the metrics view "All queues" opens.
+  assert.equal(applications.aliases, undefined);
+  const links = navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS);
+  const at = (query: string) => getBestActiveHref('/admin/command-center', links, new URLSearchParams(query));
+  assert.equal(at('queue=applications'), '/admin/command-center?queue=applications');
+  assert.equal(at('queue=applications&page=2'), '/admin/command-center?queue=applications');
+  assert.equal(at('page=3&queue=applications&ui=legacy'), '/admin/command-center?queue=applications');
+  for (const query of ['queue=needs-reply', 'queue=at-risk', 'queue=interviewing', 'queue=interviewing&page=2', '', 'ui=legacy']) {
+    assert.equal(at(query), null, `?${query} marks no rail row`);
+  }
+  // Without the page's query (pathname-only callers) the query-string row never matches.
+  assert.equal(getBestActiveHref('/admin/command-center', links), null);
+  assert.equal(getBestActiveHref('/admin', links), '/admin');
+  assert.equal(getBestActiveHref('/admin/wioa-screening', links), '/admin/wioa-screening');
+  assert.equal(getBestActiveHref('/admin/certifications', links), '/admin/certifications');
 });
 
 test('admin rail: Reporting is one top-level hub row with the reporting pages nested under it', () => {
@@ -136,17 +229,21 @@ test('admin rail: role gates are unchanged per destination', () => {
   for (const href of ['/admin/messages', '/admin/settings', '/admin/users', '/admin/coursera', '/admin/metrics', '/admin/sessions', '/admin/pipeline', '/admin/members/duplicates', '/admin/feedback', '/admin/email-templates', '/admin/what-workforceap-does', '/admin/health', '/admin/agent-inbox', '/admin/csp-report']) {
     assert.ok(gated.has(href), `${href} must stay super-admin only`);
   }
-  for (const href of ['/admin', '/admin/students', '/admin/programs', '/admin/training-progress', '/admin/invites', '/admin/blog', '/admin/analytics', '/admin/outcomes', '/admin/board', '/admin/placements', '/admin/jobs', '/admin/subgroups', '/admin/reporting']) {
+  for (const href of ['/admin', '/admin/students', '/admin/programs', '/admin/training-progress', '/admin/invites', '/admin/blog', '/admin/analytics', '/admin/outcomes', '/admin/board', '/admin/placements', '/admin/jobs', '/admin/subgroups', '/admin/reporting', '/admin/command-center?queue=applications', '/admin/wioa-screening', '/admin/certifications', '/admin/program-change-requests']) {
     assert.ok(!gated.has(href), `${href} must stay open to org admins`);
   }
   assert.equal(gated.size, 26, 'the 26 super-admin gates from the flat rail carry over exactly');
 });
 
-test('admin rail: every guided-tour anchor sits on a top-level row, and only Security & system starts closed', () => {
+test('admin rail: every guided-tour anchor sits on a top-level row, and every section but Daily work starts closed', () => {
   for (const item of ADMIN_PORTAL_NAV_ITEMS) {
     if (item.tourTarget) assert.ok(!item.parentHref, `${item.href}: tour anchor must be top-level`);
   }
-  assert.deepEqual(Object.keys(NAV_GROUP_COLLAPSED_BY_DEFAULT), ['system']);
+  const adminSections = [...new Set(ADMIN_PORTAL_NAV_ITEMS.map((item) => item.group))];
+  assert.deepEqual(adminSections, ['dailyWork', 'runTheOrg', 'programs', 'partnersEmployers', 'reporting', 'content', 'system']);
+  for (const group of adminSections) {
+    assert.equal(Boolean(NAV_GROUP_COLLAPSED_BY_DEFAULT[group]), group !== 'dailyWork', `${group} default state`);
+  }
   for (const item of ADMIN_PORTAL_NAV_ITEMS.filter((entry) => entry.group === 'system')) {
     assert.ok(item.requiresSuperAdminContext, `${item.href}: Security & system is super-admin only`);
   }

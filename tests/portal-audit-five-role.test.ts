@@ -785,6 +785,21 @@ describe('read-only portal action contracts', () => {
     ).toBe(false);
   });
 
+  it('expects the training and Coursera stubs to land on My Program, where they redirect', () => {
+    for (const path of ['/dashboard/training', '/dashboard/coursera']) {
+      expect(REDIRECT_ONLY_PATHS.member).toContainEqual({
+        path,
+        target: '/dashboard/program',
+        reason: 'consolidated_experience',
+      });
+      const stub = readFileSync(
+        join(process.cwd(), 'app', '(portal)', ...path.slice(1).split('/'), 'page.tsx'),
+        'utf8',
+      );
+      expect(stub, path).toMatch(/redirect\('\/dashboard\/program'/);
+    }
+  });
+
   it('asserts the final target of the chained readiness legacy redirect', () => {
     expect(REDIRECT_ONLY_PATHS.member).toContainEqual({
       path: '/dashboard/ai-tools/readiness-coach',

@@ -46,7 +46,7 @@ export default async function ProgramStartPage() {
 
   const program = getProgramBySlug(enrolledSlug);
   // Multi-program: this page shows the user's primary enrollment workspace
-  // info. /dashboard is the unified training home with program switching.
+  // info. My Program (/dashboard/program) is where the courses open.
   const enrollment = await prisma.courseEnrollment.findFirst({
     where: { userId: user.id, programSlug: enrolledSlug },
     select: {
@@ -123,13 +123,13 @@ export default async function ProgramStartPage() {
             <PortalCard>
               <p style={{ fontWeight: 700, color: 'var(--wa-accent-text)', margin: '0 0 0.5rem' }}>You are on file for training access</p>
               <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
-                Your enrollment is connected. Continue in{' '}
-                <Link href="/dashboard" className="wa-text-[var(--color-accent-dark)] wa-font-semibold">
-                  My Classes
-                </Link>{' '}
-                or{' '}
+                Your enrollment is connected. Open your courses from{' '}
                 <Link href="/dashboard/program" className="wa-text-[var(--color-accent-dark)] wa-font-semibold">
                   My Program
+                </Link>
+                , or see your learning path in the{' '}
+                <Link href="/dashboard/learning" className="wa-text-[var(--color-accent-dark)] wa-font-semibold">
+                  Learning Hub
                 </Link>
                 .
               </p>
@@ -230,8 +230,8 @@ export default async function ProgramStartPage() {
                 <Link href="/dashboard/program" className="wa-kit-cta wa-kit-focus">
                   Back to My Program
                 </Link>
-                <Link href="/dashboard" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
-                  Open My Classes
+                <Link href="/dashboard/learning" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
+                  Open Learning Hub
                 </Link>
               </>
             )}

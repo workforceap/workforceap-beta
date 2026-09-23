@@ -76,6 +76,7 @@ import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCa
 import { getApprovalWaitEstimate, getMemberCounselorContext } from '@/lib/member/counselorContext';
 import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
+import { MemberHomeViewEvents } from '@/components/portal/kit/pages/member/MemberHomeViewEvents';
 import SkillMissionTeaserCard, {
   type SkillMissionTeaserData,
 } from '@/components/portal/SkillMissionTeaserCard';
@@ -200,6 +201,9 @@ async function renderMemberDashboard(
     );
     return (
       <>
+      {/* The dashboard view / activation events the admin metrics and health
+          score read; the legacy home wrote them from DashboardHomeClient. */}
+      {home.dashboardViewFacts ? <MemberHomeViewEvents {...home.dashboardViewFacts} /> : null}
       {approvalPlacement === 'primary' ? approvalCard : null}
       <MemberHomeKit
         firstName={home.firstName}
@@ -236,6 +240,9 @@ async function renderMemberDashboard(
         upNext={home.upNext}
         recommendedTool={home.recommendedTool}
         ungatedDigitalBasicsHref={home.programTitle ? null : home.ungatedDigitalBasicsHref}
+        jobOffers={home.jobOffers}
+        first90={home.first90}
+        youthNoticeAge={home.youthNoticeAge}
       />
       {approvalPlacement === 'demoted' ? approvalCard : null}
       </>

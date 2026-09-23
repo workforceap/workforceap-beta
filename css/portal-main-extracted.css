@@ -10096,6 +10096,18 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     flex: 1 1 auto;
     min-width: 0;
 }
+/* An always-open section (Daily work): the same box as a section button, no disclosure. */
+.workspace-sidebar-section-label {
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+    margin: 0 0 0.2rem;
+    padding: 0.35rem 0.6rem;
+    color: var(--wa-sidebar-label);
+    font-size: var(--wa-type-meta);
+    font-weight: 700;
+    line-height: 1.4;
+}
 .workspace-sidebar-section-btn__chevron,
 .workspace-sidebar-children-toggle > svg {
     flex-shrink: 0;

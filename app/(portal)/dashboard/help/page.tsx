@@ -3,11 +3,14 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
-import { Gift, GraduationCap, Headset, Sparkles, ArrowRight, MessageCircle } from 'lucide-react';
+import { Gift, GraduationCap, Headset, Sparkles, ArrowRight } from 'lucide-react';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import PageHeader from '@/components/portal/PageHeader';
 import { DesignSurface, CardHead } from '@/components/portal/kit';
+import type { HelpRequestAudience } from '@/lib/member/helpContactCopy';
+import { helpRequestAudienceOf, resolveHelpRequestRecipient } from '@/lib/member/helpRequestRecipient';
+import NeedAPersonCard from './NeedAPersonCard';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -18,31 +21,61 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const HELP_ITEMS: Array<{ icon: LucideIcon; title: string; body: string; href?: string; cta?: string }> = [
-  {
-    icon: GraduationCap,
-    title: 'Coursera Access',
-    body: 'Request access to professional certificate courses included through your WorkforceAP membership.',
-  },
-  {
-    icon: Headset,
-    title: 'Talk to your counselor',
-    body: 'Your counselor is your main point of contact. Message them directly from the Messages page for any support.',
-    href: '/dashboard/messages',
-    cta: 'Open messages',
-  },
-  {
-    icon: Sparkles,
-    title: 'AI Career Tools',
-    body: 'Use our suite of tools to build your resume, prep for interviews, and match to jobs.',
-    href: '/dashboard/ai-tools',
-    cta: 'Open AI Career Tools',
-  },
-];
+type HelpItem = { icon: LucideIcon; title: string; body: string; href?: string; cta?: string };
+
+/**
+ * Quick links. The Messages entry follows the same recipient the "Need a
+ * person?" card names: with no counselor, Messages reaches the WorkforceAP
+ * support team (the inbox labels it that way), so the link must not tell the
+ * member to message a counselor they do not have.
+ */
+function helpItems(audience: HelpRequestAudience | null): HelpItem[] {
+  const messages: HelpItem =
+    audience?.kind === 'team'
+      ? {
+          icon: Headset,
+          title: 'Message the WorkforceAP team',
+          body: 'You do not have a counselor yet. Message the WorkforceAP support team from the Messages page for any support.',
+          href: '/dashboard/messages',
+          cta: 'Open messages',
+        }
+      : {
+          icon: Headset,
+          title: 'Talk to your counselor',
+          body: 'Your counselor is your main point of contact. Message them directly from the Messages page for any support.',
+          href: '/dashboard/messages',
+          cta: 'Open messages',
+        };
+  return [
+    {
+      icon: GraduationCap,
+      title: 'Coursera Access',
+      body: 'Request access to professional certificate courses included through your WorkforceAP membership.',
+    },
+    messages,
+    {
+      icon: Sparkles,
+      title: 'AI Career Tools',
+      body: 'Use our suite of tools to build your resume, prep for interviews, and match to jobs.',
+      href: '/dashboard/ai-tools',
+      cta: 'Open AI Career Tools',
+    },
+  ];
+}
 
 export default async function DashboardHelpPage() {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/help');
+
+  // Same recipient POST /api/member/request-help emails, so "Need a person?"
+  // names the right person. A failed read must not take the help page down:
+  // the card then describes both possible recipients instead of guessing.
+  let audience: HelpRequestAudience | null = null;
+  try {
+    audience = helpRequestAudienceOf(await resolveHelpRequestRecipient(user.id));
+  } catch (error) {
+    console.error('[dashboard/help] help request recipient lookup failed', error);
+  }
 
   return (
     <DesignSurface surface="warm">
@@ -56,6 +89,11 @@ export default async function DashboardHelpPage() {
               { label: 'Help and support' },
             ]}
           />
+        </div>
+
+        {/* Need a person? — Request help + Share feedback (were legacy-home only, WAP-188) */}
+        <div style={{ marginBottom: '2rem' }}>
+          <NeedAPersonCard audience={audience} />
         </div>
 
         {/* Request benefit access */}
@@ -82,7 +120,11 @@ export default async function DashboardHelpPage() {
                   Request Benefit Access
                 </h2>
                 <p style={{ fontSize: '0.875rem', color: 'var(--wa-muted)', lineHeight: 1.6, marginBottom: '0.75rem' }}>
-                  To request access to Coursera or other member benefits, contact your WorkforceAP counselor or email{' '}
+                  To request access to Coursera or other member benefits,{' '}
+                  {audience?.kind === 'team'
+                    ? 'message the WorkforceAP team from the Messages page'
+                    : 'contact your WorkforceAP counselor'}{' '}
+                  or email{' '}
                   <a href="mailto:info@workforceap.org" style={{ color: 'var(--wa-accent)', fontWeight: 600, textDecoration: 'none' }}>
                     info@workforceap.org
                   </a>{' '}
@@ -100,7 +142,7 @@ export default async function DashboardHelpPage() {
         <section style={{ marginBottom: '2rem' }}>
           <CardHead title="Quick links" />
           <div className="wa-space-y-3">
-            {HELP_ITEMS.map((item) => {
+            {helpItems(audience).map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.title} className="wa-kit-card wa-kit-card--sm">
@@ -140,30 +182,6 @@ export default async function DashboardHelpPage() {
             })}
           </div>
         </section>
-
-        {/* Contact */}
-        <div
-          className="wa-kit-card wa-kit-card--sm"
-          style={{
-            background: 'var(--wa-accent-soft)',
-            border: '1px solid color-mix(in srgb, var(--wa-accent) 15%, transparent)',
-          }}
-        >
-          <div className="wa-flex wa-items-start wa-gap-3">
-            <MessageCircle size={18} style={{ color: 'var(--wa-accent)', flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
-            <div>
-              <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--wa-text)', marginBottom: '0.25rem' }}>
-                Still need help?
-              </p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--wa-muted)', lineHeight: 1.6, margin: 0 }}>
-                Message your counselor — they&rsquo;re your fastest path to answers.{' '}
-                <Link href="/dashboard/messages" className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600, textDecoration: 'none' }}>
-                  Send a message →
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </DesignSurface>
   );

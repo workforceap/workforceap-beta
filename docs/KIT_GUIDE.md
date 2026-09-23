@@ -76,9 +76,12 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   dashboard layout's existing user query; nothing is inferred beyond the
   email fallback.
   Member rails use a 232px budget (208px on smaller laptops, 72px collapsed),
-  with Home, My program, Job board, My progress, AI Career Tools, Messages,
-  and Skill missions visible and remaining Tools / Training / Account groups
-  disclosed on demand.
+  with five permanent rows — Home, My program, Job board, AI Career Tools
+  and Messages (WAP-189) — plus the single contextual tool row on
+  `/dashboard/ai-tools/*` pages, and the Tools & careers /
+  Training & progress / Account & support groups disclosed on demand.
+  My progress and Skill missions live in Training & progress. The
+  collapsed 72px rail has no disclosure: it lists every row as an icon.
   The current route opens its group and only the most specific destination
   receives `aria-current`. Staff rails use 240px and the shared desktop header
   uses a 68px minimum height. Destination lists scroll independently so appearance
@@ -614,6 +617,7 @@ section here in the same PR.*
 ### Stakeholder workflow contracts (2026-09-09)
 
 - Admin Command Center queue counts represent all matching active records in the actor's organization, independent of the eight-row overview. Focused `queue`/`page` URLs show 25 items, retain context, and recover from an emptied last page. Totals are items, and interview rows are opportunities; neither is a unique-person count. “Select this page” acts only on visible application IDs.
+- Admin Today (`/admin`, WAP-190) is `CommandCenterKit` with `title="Today"`, `queuesFirst` and a `lead`: the org-wide `CounselorApprovalQueue` (same builder, SLA and tones as the counselor Today; `rowHrefs` send each row to the admin screen that records the decision; `total` + `moreLinks` print "Showing the N oldest of M" instead of silently truncating). The queues precede the KPI strip, placements trend and program / system context; `/admin/command-center` keeps the metrics-first default. `CommandCenterQueueItem.links` names the people behind a count, each with a direct link (new applicants → the record's Counselor assignment card).
 - Command Center health accepts `unknown` in addition to `ok`/`warn`. Unmeasured or failed checks show a neutral dot and “Not verified,” never green. Failed core loaders render an explicit error state.
 - Partner application links carry the existing attribution token and appear on the default overview/guide. Share tools prepare user-reviewable text; copy or native-share failure stays visible. Attention keeps approved/observed training separate from approval/funding pending.
 - Counselor student summaries state funding source separately from the member-level Coursera approval flag. Neither asserts paid grants or working provider access. Member-context links, drafts, and message recipients must remain tied to the selected learner through async work.

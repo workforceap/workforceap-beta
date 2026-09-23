@@ -110,7 +110,7 @@ describe('/dashboard/program/start page', () => {
       expect(screen.queryByText('What happens next')).toBeNull();
       expect(screen.queryByText('You are on file for training access')).toBeNull();
       expect(screen.getByRole('link', { name: 'Open Job Board' })).toHaveAttribute('href', '/dashboard/jobs');
-      expect(screen.queryByRole('link', { name: 'Open My Classes' })).toBeNull();
+      expect(screen.queryByRole('link', { name: 'Open Learning Hub' })).toBeNull();
       // Every enrollment step is marked done rather than numbered as pending.
       const stepCount = getProgramEnrollmentSteps(DIGITAL_LITERACY_PROGRAM_SLUG).length;
       expect(screen.getAllByText('Done')).toHaveLength(stepCount);
@@ -129,7 +129,13 @@ describe('/dashboard/program/start page', () => {
       expect(screen.queryByText(/finished every course/i)).toBeNull();
       expect(screen.queryByText('Done')).toBeNull();
       expect(screen.getByText('1')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Open My Classes' })).toHaveAttribute('href', '/dashboard');
+      // The secondary CTA opens the Learning Hub; nothing on this page sends
+      // the member back to the member home to find their classes.
+      expect(screen.getByRole('link', { name: 'Open Learning Hub' })).toHaveAttribute('href', '/dashboard/learning');
+      expect(screen.getByRole('link', { name: 'Back to My Program' })).toHaveAttribute('href', '/dashboard/program');
+      expect(screen.queryByRole('link', { name: /My Classes/ })).toBeNull();
+      // The enrollment steps rendered here do not name the retired label either.
+      expect(screen.queryByText(/My Classes/)).toBeNull();
     });
 
     it('never treats an empty curriculum as complete', async () => {
@@ -153,6 +159,29 @@ describe('/dashboard/program/start page', () => {
       expect(screen.getByText('What happens next')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Back to My Program' })).toHaveAttribute('href', '/dashboard/program');
     });
+  });
+
+  it('sends a member with training access to My Program and the Learning Hub, not the member home', async () => {
+    vi.mocked(getActiveProgramForDashboard).mockResolvedValue(enrolledView());
+    vi.mocked(prisma.courseEnrollment.findFirst).mockResolvedValue({
+      workspaceEmail: 'sam@learn.workforceap.org',
+      workspaceEmailProvisioned: true,
+      enrolledAt: new Date('2026-09-01T00:00:00.000Z'),
+    } as never);
+
+    render(await ProgramStartPage());
+
+    expect(screen.getByText('You are on file for training access')).toBeInTheDocument();
+    // "My Program" is both the breadcrumb and the in-card link; both open My Program.
+    const programLinks = screen.getAllByRole('link', { name: 'My Program' });
+    expect(programLinks).toHaveLength(2);
+    for (const link of programLinks) {
+      expect(link).toHaveAttribute('href', '/dashboard/program');
+    }
+    expect(screen.getByRole('link', { name: 'Learning Hub' })).toHaveAttribute('href', '/dashboard/learning');
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
+    // The breadcrumb is the only link back to the member home.
+    expect(hrefs.filter((href) => href === '/dashboard')).toHaveLength(1);
   });
 
   it('redirects signed-out visitors to login before touching the database', async () => {

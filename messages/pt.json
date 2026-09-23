@@ -33,6 +33,9 @@
     "myAccount": "Minha Conta",
     "myProgram": "Meu Programa",
     "myCertificates": "Meus Certificados",
+    "pathToCertification": "Caminho para a certificação",
+    "myDocuments": "Meus documentos",
+    "inviteFriend": "Convidar um amigo",
     "wioaQualification": "Qualificação WIOA",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
@@ -92,7 +95,8 @@
       "admin": {
         "today": "Hoje",
         "students": "Estudantes",
-        "messages": "Mensagens"
+        "messages": "Mensagens",
+        "applications": "Candidaturas"
       }
     },
     "freeCareerQuiz": "Quiz de carreira grátis",
@@ -1512,6 +1516,9 @@
     "settingsGoal": "O perfil da sua organização e as preferências de notificação."
   },
   "group": {
+    "memberTools": "Ferramentas e carreiras",
+    "memberProgress": "Formação e progresso",
+    "memberAccount": "Conta e suporte",
     "workflows": "Fluxos de trabalho",
     "insights": "Informações",
     "manage": "Gerenciar"
@@ -2997,6 +3004,8 @@
       "adding": "Adicionando…"
     },
     "form": {
+      "typeLabel": "Tipo de meta",
+      "titleLabel": "Título da meta",
       "customPlaceholder": "Ou digite uma meta personalizada",
       "adding": "Adicionando…",
       "addGoal": "Adicionar meta",
@@ -3658,12 +3667,12 @@
           "body": "Veja quem precisa de você hoje, onde ficam seus estudantes e programas, como o progresso do treinamento é acompanhado e onde as mensagens dos membros aguardam resposta."
         },
         "commandCenter": {
-          "title": "Centro de comando",
-          "body": "Sua base. Estudantes ativos, colocações no ano e quem precisa de atenção ficam no topo; depois, O que precisa de você hoje: respostas pendentes, candidaturas e certificações aguardando análise, preparação de entrevistas. Cada linha leva à página onde agir."
+          "title": "Hoje",
+          "body": "Sua base. Primeiro, Aguardando sua decisão: cada candidatura e cada verificação de admissão da sua organização, da mais antiga para a mais recente, e cada uma abre a tela onde ela é decidida. Depois, O que precisa de você hoje (candidaturas, certificados, novos candidatos sem conselheiro, respostas pendentes, preparação de entrevistas) e, por fim, os números da organização."
         },
         "overview": {
           "title": "Visão detalhada",
-          "body": "O quadro completo por trás do Centro de comando: total de membros, avaliações concluídas, quem está ativo no treinamento, programas matriculados e concluídos, além de inscrições e colocações recentes. Venha aqui pelos números, não só pela fila."
+          "body": "O quadro completo por trás de Hoje: total de membros, avaliações concluídas, quem está ativo no treinamento, programas matriculados e concluídos, além de inscrições e colocações recentes. Venha aqui pelos números, não só pela fila."
         },
         "students": {
           "title": "Estudantes",
@@ -3675,11 +3684,11 @@
         },
         "programs": {
           "title": "Programas",
-          "body": "Os programas de treinamento que você oferece, um cartão por programa com alunos matriculados e conclusão. Solicitações de programa, estudantes pedindo para trocar, fica logo abaixo."
+          "body": "Os programas de treinamento que você oferece, um cartão por programa com alunos matriculados e conclusão. Trilhas de carreira abre logo abaixo; Solicitações de programa, estudantes pedindo para trocar, fica em Trabalho do dia, no topo do menu lateral."
         },
         "trainingProgress": {
           "title": "Progresso do treinamento",
-          "body": "Progresso curso a curso de cada estudante matriculado, ordenável, em todo o currículo e no Coursera. Avaliações e Certificados ficam no mesmo grupo."
+          "body": "Progresso curso a curso de cada estudante matriculado, ordenável, em todo o currículo e no Coursera. Avaliações abre logo abaixo; os Certificados aguardando análise ficam em Trabalho do dia."
         },
         "settings": {
           "title": "Configurações",

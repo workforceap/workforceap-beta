@@ -35,13 +35,25 @@ const RESPONSE_OPTIONS: Array<{ value: First90Response; icon: string }> = [
   { value: 'having_trouble', icon: 'support_agent' },
 ];
 
+/** Accent tint of the org accent: `--color-accent` is what OrgBrandingStyle overrides, so another org's accent reaches the card. */
+const accentTint = (pct: number) => `color-mix(in srgb, var(--color-accent) ${pct}%, transparent)`;
+const successTint = (pct: number) => `color-mix(in srgb, var(--wa-success) ${pct}%, transparent)`;
+
 export default function First90DaysCard({
   stage,
   daysSincePlacement,
   employerName,
   currentStageResponse,
   completedStages,
-}: First90DaysCardProps) {
+  variant = 'legacy',
+}: First90DaysCardProps & {
+  /**
+   * `legacy` (default, `?ui=legacy` home) keeps the section's own 1.25rem
+   * gutter and top padding. `kit` drops it: the kit home's column sets the
+   * inline edge and the gap between cards, so the card lines up with them.
+   */
+  variant?: 'legacy' | 'kit';
+}) {
   const t = useTranslations('first90');
   const [isPending, startTransition] = useTransition();
   const [savedResponse, setSavedResponse] = useState<First90Response | null>(currentStageResponse);
@@ -60,7 +72,7 @@ export default function First90DaysCard({
   };
 
   return (
-    <section style={{ padding: '1rem 1.25rem 0' }} aria-labelledby="first90-card-title">
+    <section style={variant === 'kit' ? undefined : { padding: '1rem 1.25rem 0' }} aria-labelledby="first90-card-title">
       <div
         className="portal-card portal-card--flat"
         style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
@@ -69,7 +81,7 @@ export default function First90DaysCard({
           <span
             aria-hidden
             style={{
-              background: 'rgba(173,44,77,0.14)',
+              background: accentTint(14),
               color: 'var(--wa-accent-text)',
               width: '2.5rem',
               height: '2.5rem',
@@ -136,15 +148,15 @@ export default function First90DaysCard({
                   fontWeight: 700,
                   padding: '0.25rem 0.6rem',
                   borderRadius: '999px',
-                  background: isCurrent ? 'rgba(173,44,77,0.1)' : 'transparent',
-                  border: `1px solid ${isCurrent ? 'rgba(173,44,77,0.3)' : 'var(--outline-variant, rgba(0,0,0,0.12))'}`,
+                  background: isCurrent ? accentTint(10) : 'transparent',
+                  border: `1px solid ${isCurrent ? accentTint(30) : 'var(--outline-variant)'}`,
                   color: isCurrent ? 'var(--color-accent-dark)' : 'var(--color-on-surface-variant)',
                 }}
               >
                 <span
                   className="material-symbols-outlined"
                   aria-hidden
-                  style={{ fontSize: '0.95rem', fontVariationSettings: done ? "'FILL' 1" : "'FILL' 0", color: done ? 'var(--color-green, #4a9b4f)' : 'inherit' }}
+                  style={{ fontSize: '0.95rem', fontVariationSettings: done ? "'FILL' 1" : "'FILL' 0", color: done ? 'var(--wa-success)' : 'inherit' }}
                 >
                   {done ? 'check_circle' : 'radio_button_unchecked'}
                 </span>
@@ -160,8 +172,8 @@ export default function First90DaysCard({
             style={{
               padding: '0.85rem 1rem',
               borderRadius: '0.75rem',
-              background: 'rgba(74,155,79,0.08)',
-              border: '1px solid rgba(74,155,79,0.2)',
+              background: successTint(8),
+              border: `1px solid ${successTint(20)}`,
             }}
           >
             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-on-surface)', lineHeight: 1.5 }}>
@@ -234,9 +246,9 @@ export default function First90DaysCard({
                 style={{
                   margin: 0,
                   padding: '0.65rem 0.85rem',
-                  borderLeft: '3px solid rgba(173,44,77,0.35)',
+                  borderLeft: `3px solid ${accentTint(35)}`,
                   borderRadius: '0 0.5rem 0.5rem 0',
-                  background: 'rgba(173,44,77,0.05)',
+                  background: accentTint(5),
                   fontSize: '0.88rem',
                   color: 'var(--color-on-surface)',
                   lineHeight: 1.5,

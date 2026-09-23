@@ -50,6 +50,9 @@ import { GET } from '@/app/api/cron/onboarding-stalls/route';
 import {
   MEMBER_STALL_NUDGES_FLAG,
   STALL_BUCKET_TEMPLATE,
+  STALL_CHECK_IN_CTA_TEXT,
+  STALL_CHECK_IN_LEAD_TEXT,
+  STALL_CHECK_IN_PATH,
   STALL_NUDGE_TIER,
   emptyMemberStallNudgeResult,
   memberStallNudgesEnabled,
@@ -59,6 +62,7 @@ import {
   type StallNudgeBuckets,
 } from '@/lib/cron/onboardingStallNudges';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_CHECK_IN_DEFAULT_CTA_TEXT, memberCheckInHtml } from '@/emails/member-check-in';
 import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   sendMemberCheckInEmail,
@@ -267,7 +271,15 @@ describe('bucket → template mapping', () => {
     });
     expect(sendMemberCheckInEmail).toHaveBeenCalledTimes(1);
     expect(sendMemberCheckInEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: 'bob@example.com', firstName: 'Bob', dashboardUrl: expect.stringMatching(/\/dashboard$/) }),
+      // no_program members land on My Program, where the program picker lives,
+      // and the button says so instead of the default "Open my dashboard".
+      expect.objectContaining({
+        to: 'bob@example.com',
+        firstName: 'Bob',
+        dashboardUrl: expect.stringMatching(/\/dashboard\/program$/),
+        ctaText: STALL_CHECK_IN_CTA_TEXT,
+        leadText: STALL_CHECK_IN_LEAD_TEXT,
+      }),
     );
 
     expect(prismaMock.memberNudgeLog.create).toHaveBeenCalledTimes(2);
@@ -283,6 +295,27 @@ describe('bucket → template mapping', () => {
     expect(result.sentTotal).toBe(2);
     expect(result.skippedNoTemplate).toBe(1);
     expect(result.failed).toBe(0);
+  });
+
+  it('the no_program check-in names My Program on its button, not the dashboard', () => {
+    const programUrl = `https://www.workforceap.org${STALL_CHECK_IN_PATH}`;
+    const html = memberCheckInHtml({
+      firstName: 'Bob',
+      dashboardUrl: programUrl,
+      ctaText: STALL_CHECK_IN_CTA_TEXT,
+      leadText: STALL_CHECK_IN_LEAD_TEXT,
+    });
+    const button = html.match(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/);
+    expect(button?.[1]).toBe(programUrl);
+    expect(button?.[2]).toBe('Choose my program');
+    expect(html).toContain('Pick your program in My Program when you are ready:');
+    expect(html).not.toContain(MEMBER_CHECK_IN_DEFAULT_CTA_TEXT);
+    expect(html).not.toMatch(/your dashboard is ready/i);
+
+    // The at-risk check-in still links /dashboard and keeps the default copy.
+    const atRisk = memberCheckInHtml({ firstName: 'Bob', dashboardUrl: 'https://www.workforceap.org/dashboard' });
+    expect(atRisk).toContain('>Open my dashboard</a>');
+    expect(atRisk).toContain('Your dashboard is ready when you are:');
   });
 
   it('falls back to a generic counselor name when the member has no active counselor', async () => {

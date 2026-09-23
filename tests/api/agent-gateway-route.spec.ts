@@ -53,7 +53,7 @@ describe('agent gateway provider route', () => {
       source: { system: 'workforceap', records: ['course_progress'], mode: 'read_only', freshThrough: null },
       data: { progressPercent: 25 },
       memberFacingMessage: 'Your training is 25% complete.',
-      handoff: { recommended: false, destination: 'portal', href: '/dashboard/training', reason: null },
+      handoff: { recommended: false, destination: 'portal', href: '/dashboard/program', reason: null },
     });
     mocks.createMemberAgentGatewayForPrincipal.mockResolvedValue({ invoke: mocks.invoke });
   });

@@ -8,7 +8,7 @@ import { brandedEmailLayout } from '@/lib/email/template';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { getResend } from '@/lib/email';
 import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
-import { sessionPacketHtml, type SessionPacketSection } from '@/emails/session-packet';
+import { SESSION_PACKET_PORTAL_PATH, sessionPacketHtml, type SessionPacketSection } from '@/emails/session-packet';
 import { resolveActOnBehalf } from '@/lib/auth/actAsSubject';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
@@ -346,11 +346,13 @@ async function generatePdfBuffer(title: string, text: string): Promise<Buffer> {
       ? orderedResults[0].createdAt.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
       : new Date().toLocaleDateString();
     const counselorName = onBehalf.actorName ?? 'your WorkforceAP counselor';
-    const portalUrl = `${SITE_URL}/dashboard`;
+    // The session's results live in the member's AI tool history, not on the
+    // member home, so the link opens that list directly.
+    const portalUrl = `${SITE_URL}${SESSION_PACKET_PORTAL_PATH}`;
 
     const subject = sanitizeEmailSubjectLine(`Your session packet from ${counselorName}`);
     const innerHtml = sessionPacketHtml({ firstName, counselorName, sessionDate, sections, portalUrl });
-    const html = brandedEmailLayout({ title: subject, bodyHtml: innerHtml, ctaText: 'Open my portal', ctaUrl: portalUrl });
+    const html = brandedEmailLayout({ title: subject, bodyHtml: innerHtml, ctaText: 'See what we built', ctaUrl: portalUrl });
 
     const resend = getResend();
     if (!resend) {

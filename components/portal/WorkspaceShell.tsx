@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback, startTransition } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Menu, ShieldHalf, X } from 'lucide-react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
@@ -195,7 +195,11 @@ export default function WorkspaceShell({
   // itself and on every non-toolkit route.
   const { items: railNavItems, toolItem: contextualToolItem } =
     portalRole === 'member' ? withContextualToolRow(navItems, pathname) : { items: navItems, toolItem: null };
-  const activeHref = getBestActiveHref(pathname, navItemsForActiveRoute(railNavItems));
+  // The query only matters to a row whose href carries one (admin
+  // Applications = `/admin/command-center?queue=applications`), so the other
+  // workbench queues on that pathname mark no row current.
+  const searchParams = useSearchParams();
+  const activeHref = getBestActiveHref(pathname, navItemsForActiveRoute(railNavItems), searchParams);
   const hasTabs = railNavItems.some((i) => i.tab);
   const activeTab = hasTabs ? getActiveTab(pathname, railNavItems) : null;
   // Members: left command-rail always visible from 769px up (laptops included —
@@ -251,12 +255,16 @@ export default function WorkspaceShell({
       'My program': tNav('myProgram'),
       'My Classes': tNav('training'),
       'My certificates': tNav('myCertificates'),
+      'Path to certification': tNav('pathToCertification'),
+      'My documents': tNav('myDocuments'),
+      'Invite a friend': tNav('inviteFriend'),
       'My career plan': tNav('careerPlan'),
       'WIOA Qualification': tNav('wioaQualification'),
       'Job board': tNav('jobBoard'),
       'Job applications': tNav('jobApplications'),
       'Resume': tNav('resume'),
       'My progress': tNav('myProgress'),
+      'Skill missions': tNav('skillMissions'),
       'Career Toolkit': tNav('careerToolkit'),
       'AI Career Tools': tNav('careerToolkit'),
       'AI Counselor': tNav('aiCounselor'),
@@ -845,9 +853,17 @@ export default function WorkspaceShell({
           </div>
         </div>
       </div>
-      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav. */}
+      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav.
+          `superAdmin` is the prop the admin rail is filtered on (AdminPortalShell),
+          so the admin tabs never offer a page the rail hides; `search` is the
+          query the rail matched on, so a tab and its rail row agree. */}
       {ROLE_TO_NAV_VARIANT[portalRole] ? (
-        <MobileBottomNav variant={ROLE_TO_NAV_VARIANT[portalRole]} badgeCounts={badges} />
+        <MobileBottomNav
+          variant={ROLE_TO_NAV_VARIANT[portalRole]}
+          badgeCounts={badges}
+          superAdmin={Boolean(superAdmin)}
+          search={searchParams}
+        />
       ) : null}
     </div>
   );

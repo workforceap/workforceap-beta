@@ -72,10 +72,11 @@ export const SCORE_ITEM_LABELS: Record<ScoreBreakdownKey, string> = {
 /**
  * One action per scored item. `getPriorityAction` picks from the weakest
  * area first (most remaining points wins inside it); this list order only
- * breaks ties. Weights match `lib/readiness/score.ts`. Training items go to
- * /dashboard/program ("My Program"), which lists the member's modules —
- * /dashboard/training is a redirect stub to it, and /dashboard would loop
- * the member back to the page they clicked from.
+ * breaks ties. Weights match `lib/readiness/score.ts`. Pathway items go to
+ * /dashboard/learning, the only page that mounts the learning-path cards that
+ * start a path and complete its steps (LearningPathCard); goals go to the
+ * goals section on /dashboard/career-brief. None points at /dashboard, which
+ * would loop the member back to the page they clicked from.
  */
 const PRIORITY_ACTIONS: {
   key: ScoreBreakdownKey;
@@ -104,13 +105,15 @@ const PRIORITY_ACTIONS: {
   {
     key: 'completePathwaySteps',
     label: 'Complete more pathway steps in your training program.',
-    href: '/dashboard/program',
-    ctaLabel: 'Continue training',
+    href: '/dashboard/learning',
+    ctaLabel: 'Open Learning Hub',
   },
   {
     key: 'setGoals',
     label: 'Set career goals to stay on track.',
-    href: '/dashboard/career-brief',
+    // GoalsModule's default home is the goals section on My career plan (the
+    // same target as MemberHomeKit's goalsHref).
+    href: '/dashboard/career-brief#goals',
     ctaLabel: 'Set goals',
   },
   {
@@ -133,9 +136,9 @@ const PRIORITY_ACTIONS: {
   },
   {
     key: 'startPathway',
-    label: 'Start a training pathway to earn readiness points.',
-    href: '/dashboard/program',
-    ctaLabel: 'Start training',
+    label: 'Start a learning path to earn readiness points.',
+    href: '/dashboard/learning',
+    ctaLabel: 'Open Learning Hub',
   },
   {
     key: 'weeklyConsistency',

@@ -56,7 +56,11 @@ export { employerSignupAdminAlertHtml } from './employer-signup-admin-alert';
 export { employerApprovedHtml } from './employer-approved';
 export { employerRejectedHtml } from './employer-rejected';
 export { wioaReportHtml } from './wioa-report';
-export { memberCheckInHtml, memberCheckInSubject } from './member-check-in';
+export {
+  MEMBER_CHECK_IN_DEFAULT_CTA_TEXT,
+  memberCheckInHtml,
+  memberCheckInSubject,
+} from './member-check-in';
 export { memberComeBackHtml, memberComeBackSubject } from './member-come-back';
 export { memberStuckHtml, memberStuckSubject } from './member-stuck';
 export { jobAlertDigestHtml } from './job-alert-digest';

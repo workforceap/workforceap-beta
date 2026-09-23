@@ -3,6 +3,9 @@ import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKi
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
 import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
 import { buildMemberApprovalStatus, type MemberApprovalFacts } from '@/lib/member/memberApprovalStatus';
+import { STALE_TRAINING_COUNSELOR_ACTION, buildFirst90Card } from '@/lib/member/loadMemberDashboardHome';
+import { isFirst90Stage, type First90Stage } from '@/lib/member/first90Days';
+import type { NextBestAction } from '@/lib/member/nextBestActions';
 
 /**
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
@@ -17,7 +20,19 @@ import { buildMemberApprovalStatus, type MemberApprovalFacts } from '@/lib/membe
  *
  * `?course=zero|zero-stale` drops the Course tile to 0% so the two
  * not-started states can be reviewed: a member who just enrolled (no warning)
- * and one whose training has been quiet past the staleness threshold (gold).
+ * and one whose training has been quiet past the staleness threshold (gold,
+ * plus the counselor row the loader adds to "Up next").
+ *
+ * The pieces moved over from the `?ui=legacy` home (WAP-188) are on by
+ * default so the populated page shows them; each has a switch:
+ *   `?offer=off` hides the placement confirmation strip (one OFFER fixture).
+ *   `?first90=week_1|day_30|day_60|day_90|off` picks the First 90 Days stage
+ *     (default day_30, with the week 1 check-in answered). Built with the
+ *     loader's own `buildFirst90Card`.
+ *   `?youth=<age>` shows the youth notice for a member of that age (under 18).
+ *   `?goals=none` empties the goals so the Next badge tile shows "Set a goal".
+ * The strip and the check-in call real server actions, which refuse without a
+ * signed-in member: a click here shows their error state.
  */
 export const dynamic = 'force-dynamic';
 
@@ -45,10 +60,43 @@ const APPROVAL_FIXTURES: Record<string, MemberApprovalFacts> = {
   },
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Days since placement that land inside each First 90 Days stage (lib/member/first90Days.ts). */
+const FIRST90_FIXTURE_DAYS: Record<First90Stage, number> = { week_1: 5, day_30: 30, day_60: 60, day_90: 88 };
+
+const UP_NEXT_FIXTURE: NextBestAction[] = [
+  {
+    id: 'interview_practice',
+    title: 'Practice your interview answers',
+    body: 'Use guided interview practice to prepare for recruiter screens and counselor interviews.',
+    href: '/dev/member/interview-practice',
+    cta: 'Practice interviews',
+    variant: 'default',
+    weight: 72,
+  },
+  {
+    id: 'career_readiness',
+    title: 'Build your job readiness plan',
+    body: 'Review your readiness checklist so applications, interview prep, and counselor guidance stay in sync.',
+    href: '/dev/member/progress',
+    cta: 'Open readiness',
+    variant: 'default',
+    weight: 68,
+  },
+];
+
 export default async function DevMemberHomePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ approval?: string; course?: string }>;
+  searchParams?: Promise<{
+    approval?: string;
+    course?: string;
+    offer?: string;
+    first90?: string;
+    youth?: string;
+    goals?: string;
+  }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
@@ -57,6 +105,25 @@ export default async function DevMemberHomePage({
   const courseFixture = params?.course;
   const coursePercent = courseFixture === 'zero' || courseFixture === 'zero-stale' ? 0 : 78;
   const courseProgressStale = courseFixture === 'zero-stale';
+  const jobOffers = params?.offer === 'off'
+    ? []
+    : [{ id: 'dev-offer-1', role: 'Cloud Support Associate', company: 'Indeed · Austin, TX' }];
+  const first90Stage: First90Stage | null =
+    params?.first90 === 'off' ? null : params?.first90 && isFirst90Stage(params.first90) ? params.first90 : 'day_30';
+  const first90 = first90Stage
+    ? buildFirst90Card(
+        { placedAt: new Date(Date.now() - FIRST90_FIXTURE_DAYS[first90Stage] * DAY_MS), employerName: 'Deloitte' },
+        first90Stage === 'week_1'
+          ? []
+          : [{ entityId: 'week_1', metadata: { response: 'going_well' }, createdAt: new Date(Date.now() - 20 * DAY_MS) }],
+      )
+    : null;
+  const youthAge = params?.youth ? Number.parseInt(params.youth, 10) : NaN;
+  const youthNoticeAge = Number.isInteger(youthAge) && youthAge >= 0 && youthAge < 18 ? youthAge : null;
+  const upNext: NextBestAction[] = [
+    ...(courseProgressStale ? [STALE_TRAINING_COUNSELOR_ACTION] : []),
+    ...UP_NEXT_FIXTURE,
+  ].slice(0, 3);
   const fixture = APPROVAL_FIXTURES[requested];
   const status = fixture ? buildMemberApprovalStatus(fixture) : null;
   const placement = status ? memberApprovalCardPlacement(status) : null;
@@ -86,6 +153,9 @@ export default async function DevMemberHomePage({
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
       goalsHref="/dev/member/progress"
+      jobOffers={jobOffers}
+      first90={first90}
+      youthNoticeAge={youthNoticeAge}
       doThisNext={{
         id: 'resume-module',
         title: 'Shared Responsibility Model',
@@ -95,26 +165,7 @@ export default async function DevMemberHomePage({
         variant: 'urgent',
         weight: 100,
       }}
-      upNext={[
-        {
-          id: 'interview_practice',
-          title: 'Practice your interview answers',
-          body: 'Use guided interview practice to prepare for recruiter screens and counselor interviews.',
-          href: '/dev/member/interview-practice',
-          cta: 'Practice interviews',
-          variant: 'default',
-          weight: 72,
-        },
-        {
-          id: 'career_readiness',
-          title: 'Build your job readiness plan',
-          body: 'Review your readiness checklist so applications, interview prep, and counselor guidance stay in sync.',
-          href: '/dev/member/progress',
-          cta: 'Open readiness',
-          variant: 'default',
-          weight: 68,
-        },
-      ]}
+      upNext={upNext}
       recommendedTool={{
         slug: 'interview-prep',
         title: 'Get ready for your interview',
@@ -146,7 +197,7 @@ export default async function DevMemberHomePage({
         { label: 'Application sent', amount: 25, color: 'info' },
         { label: '12-day streak', amount: 20, color: 'gold' },
       ]}
-      goals={[
+      goals={params?.goals === 'none' ? [] : [
         { title: 'Finish AWS Cloud Practitioner', percent: 78 },
         { title: 'Apply to 5 cloud roles', percent: 80 },
       ]}

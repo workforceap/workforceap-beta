@@ -17,6 +17,14 @@ test('skill assessment routes into training follow-through', () => {
   assert.equal(result.href, '/dashboard/program');
 });
 
+test('gap and skill-map tools open My Program, not the member home', () => {
+  for (const toolType of ['job_match_scorer', 'gap_analyzer', 'skill_mapper']) {
+    const result = getAIToolFollowThrough({ toolType });
+    assert.equal(result.href, '/dashboard/program', toolType);
+    assert.equal(result.cta, 'Open My Program', toolType);
+  }
+});
+
 test('career counselor elevator pitch routes into voice interview practice', () => {
   const result = getAIToolFollowThrough({
     toolType: 'career_counselor',

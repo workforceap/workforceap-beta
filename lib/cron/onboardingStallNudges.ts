@@ -59,8 +59,8 @@ export const STALL_BUCKETS: readonly StallBucket[] = ['interview', 'no_program',
  *    the blocker is on their side, so offer the counselor ("Let's get
  *    unstuck", booking link or the counselor inbox).
  *  - no_program: signed up 7+ days ago, no program and no counselor — a
- *    friendly check-in pointing back at the dashboard where the program
- *    picker lives.
+ *    friendly check-in pointing at My Program (/dashboard/program), where
+ *    the program picker lives.
  *  - wioa: the screening is waiting on STAFF review (pending/in_review),
  *    and its 5-day proxy is `users.updatedAt`, not a submission timestamp.
  *    Emailing the member for our own review backlog would be misdirected,
@@ -71,6 +71,15 @@ export const STALL_BUCKET_TEMPLATE: Readonly<Record<StallBucket, StallNudgeTempl
   no_program: 'check_in',
   wioa: null,
 };
+
+/**
+ * The check-in template's button and lead line, relabelled for the
+ * no_program nudge: it links My Program's program picker, not the member
+ * home, so the default "Open my dashboard" wording would misname the page.
+ */
+export const STALL_CHECK_IN_PATH = '/dashboard/program';
+export const STALL_CHECK_IN_CTA_TEXT = 'Choose my program';
+export const STALL_CHECK_IN_LEAD_TEXT = 'Pick your program in My Program when you are ready:';
 
 /** `MemberNudgeLog.tier` for every row this module writes. */
 export const STALL_NUDGE_TIER = 'onboarding_stall';
@@ -352,7 +361,13 @@ export async function sendMemberStallNudges(
               firstName,
               counselorName: counselorNames.get(member.id) ?? FALLBACK_COUNSELOR_NAME,
             })
-          : sendMemberCheckInEmail({ to, firstName, dashboardUrl: `${SITE_URL}/dashboard` }),
+          : sendMemberCheckInEmail({
+              to,
+              firstName,
+              dashboardUrl: `${SITE_URL}${STALL_CHECK_IN_PATH}`,
+              ctaText: STALL_CHECK_IN_CTA_TEXT,
+              leadText: STALL_CHECK_IN_LEAD_TEXT,
+            }),
       );
       if (sendResult.skipped) {
         if (isRecipientSkipReason(sendResult.error)) result.skippedRecipient++;

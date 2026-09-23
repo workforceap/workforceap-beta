@@ -26,7 +26,7 @@ const DEFAULT_STEPS: ProgramEnrollmentStep[] = [
     id: 'first_class',
     title: 'Start your first class in Training',
     description:
-      'From My Program or My Classes, open your current course and work through modules at the pace your counselor recommends.',
+      'From My Program, open your current course and work through modules at the pace your counselor recommends.',
   },
   {
     id: 'exam',

@@ -711,7 +711,10 @@ describe('TriageNudgePanel borders', () => {
 });
 
 describe('GoalsModule active goal card', () => {
-  it('edges each goal with --wa-border over the --surface-container-lowest fill, no literal fallback on either', async () => {
+  // WAP-188 moved the module onto /dashboard/career-brief#goals and restyled it to
+  // the kit: the goal card fills from --wa-surface (the portal chain's own card fill,
+  // not the root-chain --surface-container-lowest bridge) and nothing reads --color-*.
+  it('edges each goal with --wa-border over the --wa-surface fill, no literal fallback on either', async () => {
     fetchMock.mockResolvedValue(
       Response.json({
         goals: [
@@ -734,8 +737,21 @@ describe('GoalsModule active goal card', () => {
     const card = title.closest('li') as HTMLElement;
     expect(card).not.toBeNull();
     expect(borderOf(card), 'goal card border').toBe(HAIRLINE(PORTAL_BORDER));
-    expect(backgroundOf(card), 'goal card fill').toBe(PUBLIC_FILL);
+    expectSurfaceFill(card, 'goal card');
     expectNoLiteralTokenFallback(container);
+    for (const style of paintedStyles(container)) {
+      expect(style, `legacy token family still painted: ${style}`).not.toMatch(/var\(\s*--(?:color-|surface-container)/);
+    }
+    expect(container.querySelector('.material-symbols-outlined'), 'Material Symbols ligature').toBeNull();
+  });
+
+  it('paints the load-failure notice from the danger tokens, not a literal tint', async () => {
+    fetchMock.mockRejectedValue(new TypeError('offline'));
+    const { container } = render(<GoalsModule />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.style.background).toBe('var(--wa-danger-soft)');
+    expect(alert.style.color).toBe('var(--wa-danger-text)');
+    for (const style of paintedStyles(container)) expect(style).not.toMatch(/rgba?\(/);
   });
 });
 
@@ -819,10 +835,10 @@ describe('tokenized public pages: borders read --outline-variant (root layout, n
  * ---------------------------------------------------------------------------
  */
 describe('inline surface-container fills read the token bare (portal chain)', () => {
-  it('MemberFeedbackModal card paints --surface-container-lowest', () => {
+  it('MemberFeedbackModal card paints the kit surface (WAP-188: it now opens from the default /dashboard/help)', () => {
     const { container } = render(<MemberFeedbackModal open onClose={() => {}} />);
     const card = screen.getByRole('dialog').firstElementChild as HTMLElement;
-    expect(backgroundOf(card), 'feedback modal card').toBe(PUBLIC_FILL);
+    expectSurfaceFill(card, 'feedback modal card');
     expectNoLiteralTokenFallback(container);
     expectNoLegacyName(container);
   });
