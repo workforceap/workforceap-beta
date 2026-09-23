@@ -94,7 +94,8 @@ export function buildMemberApplicationStatusView(
     if (intake.interviewEligible) {
       return {
         text: "You're interview eligible. Request your interview or attend a scheduled session.",
-        href: '/dashboard',
+        // WAP-197: the interview request lives on the Skills check page.
+        href: '/dashboard/assessment#interview',
       };
     }
     if (intake.preScreeningDone) {
@@ -105,7 +106,8 @@ export function buildMemberApplicationStatusView(
     }
     return {
       text: 'Complete your pre-screening to become interview eligible.',
-      href: '/dashboard',
+      // WAP-197: the pre-screening form lives on the Skills check page.
+      href: '/dashboard/assessment#pre-screening',
     };
   })();
 

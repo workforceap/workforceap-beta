@@ -81,7 +81,14 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, rating, comment: comment.trim() || undefined }),
+          // sourcePage: the member page the dialog was opened from (home,
+          // help, profile), recorded on the feedback_submitted event.
+          body: JSON.stringify({
+            type,
+            rating,
+            comment: comment.trim() || undefined,
+            sourcePage: window.location.pathname,
+          }),
         },
         MEMBER_REQUEST_TIMEOUT_MS,
       );

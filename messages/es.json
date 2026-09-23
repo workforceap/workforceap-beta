@@ -39,6 +39,7 @@
     "wioaQualification": "Calificación WIOA",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
+    "aiAdvisor": "Asesor de IA",
     "trainingPreassessment": "Pre-evaluación de Capacitación",
     "counselorChat": "Mensajes",
     "aboutUs": "Acerca de Nosotros",
@@ -505,6 +506,15 @@
     "voiceInterviewMetaDesc": "Practice a live voice mock interview for a specific job or role, with optional camera recording and real-time coaching feedback.",
     "assessmentMetaTitle": "Pre-evaluación de Capacitación",
     "assessmentMetaDesc": "Una revisión breve de habilidades que ayuda a ubicarte. Completarla no desbloquea Coursera.",
+    "interviewSteps": {
+      "preScreeningTitle": "Preselección",
+      "preScreeningLede": "El paso antes de tu entrevista.",
+      "interviewTitle": "Entrevista",
+      "eligible": "Ya puedes solicitar tu entrevista.",
+      "submitted": "Preselección enviada. Un consejero la revisará y se comunicará contigo por correo electrónico.",
+      "requested": "Recibimos tu solicitud de entrevista el {date}. Un consejero se comunicará contigo por correo electrónico."
+    },
+    "weeklyRecapOpenGoals": "Abrir tus metas",
     "programMetaTitle": "My Program",
     "programMetaDesc": "View or select your enrolled program.",
     "mentorMetaTitle": "Mentor Dashboard",
