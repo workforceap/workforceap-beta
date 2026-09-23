@@ -13,7 +13,9 @@ export const maxDuration = 300;
 
 const JOB_NAME = 'cron_applicant_aging_digest';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
-const QUEUE_LINK = '/admin/command-center';
+// The Applications workbench itself, not the Command Center overview: sign-in
+// keeps this deep link for every admin role (lib/auth/postLoginRedirect.ts).
+const QUEUE_LINK = '/admin/command-center?queue=applications';
 const MEMBER_ADMIN_BASE = '/admin/members';
 
 /**

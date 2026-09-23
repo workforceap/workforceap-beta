@@ -13,14 +13,20 @@ import { pickAdminClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import messages from '@/messages/en.json';
 import spanishMessages from '@/messages/es.json';
 
-const location = vi.hoisted(() => ({ pathname: '/dashboard/program', wide: true }));
-vi.mock('next/navigation', () => ({ usePathname: () => location.pathname }));
+const location = vi.hoisted(() => ({ pathname: '/dashboard/program', search: '', wide: true }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => location.pathname,
+  useSearchParams: () => new URLSearchParams(location.search),
+}));
 vi.mock('@/components/super-admin-view-switcher', () => ({ default: () => null, useIsSuperAdmin: () => false }));
 vi.mock('@/components/portal/PortalHeaderActions', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalRoleSwitcher', () => ({ default: () => null }));
 vi.mock('@/components/portal/MemberPortalTopNav', () => ({ default: () => null }));
 vi.mock('@/components/portal/GlobalSearch', () => ({ default: () => null }));
-vi.mock('@/components/MobileBottomNav', () => ({ default: () => null }));
+const bottomNav = vi.hoisted(() => ({ props: null as null | { search?: { get(key: string): string | null } | null } }));
+vi.mock('@/components/MobileBottomNav', () => ({
+  default: (props: { search?: { get(key: string): string | null } | null }) => { bottomNav.props = props; return null; },
+}));
 vi.mock('@/components/portal/LanguageToggle', () => ({ default: () => <span>Language</span> }));
 vi.mock('@/components/theme/ThemeSelector', () => ({
   default: () => <div role="radiogroup" aria-label="Appearance">
@@ -40,6 +46,7 @@ vi.mock('@/hooks/useWorkspaceMobileScrollChrome', () => ({ useWorkspaceMobileScr
 
 beforeEach(() => {
   location.pathname = '/dashboard/program';
+  location.search = '';
   location.wide = true;
   localStorage.clear();
   vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -423,7 +430,7 @@ describe('admin workspace with the production translation slice', () => {
     expect(container.querySelectorAll('.workspace-sidebar-link.active')).toHaveLength(1);
   });
 
-  it('leaves Command Center quiet on an admin route without a rail item', () => {
+  it('leaves Today quiet on an admin route without a rail item', () => {
     location.pathname = '/admin/testimonials';
     const { container } = render(
       <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
@@ -697,11 +704,15 @@ describe('admin grouped rail (sidebar consolidation)', () => {
 
   beforeEach(() => { location.pathname = '/admin'; });
 
-  it('renders seven collapsible sections as buttons with aria-expanded and keeps every destination in the DOM', () => {
+  it('renders Daily work as an always-open section and the other six as collapsible buttons, keeping every destination in the DOM', () => {
     const { container } = showAdmin();
+    const daily = container.querySelector('.workspace-sidebar-section-label[data-section="dailyWork"]')!;
+    expect(daily).toHaveTextContent('Daily work');
+    expect(daily.closest('button')).toBeNull();
+    expect(screen.getByRole('list', { name: 'Daily work' })).not.toHaveAttribute('hidden');
     const buttons = sectionButtons(container);
     expect(buttons.map((b) => b.textContent)).toEqual([
-      'Run the org', 'Students', 'Programs', 'Partners & Employers', 'Reporting', 'Content', 'Security & system',
+      'Run the org', 'Programs', 'Partners & Employers', 'Reporting', 'Content', 'Security & system',
     ]);
     for (const b of buttons) {
       expect(b).toHaveAttribute('aria-expanded');
@@ -712,17 +723,27 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(hrefs).toHaveLength(new Set(hrefs).size);
   });
 
-  it('shows only top-level rows by default, at most 20, with Security & system closed and the rest open', () => {
+  it('opens only Daily work by default: the seven queue-clearing rows show, every other section starts closed (WAP-190)', () => {
     const { container } = showAdmin();
     const rows = visibleRows(container).map((a) => a.getAttribute('href'));
-    const openTopLevel = navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).filter((item) => item.group !== 'system').map((item) => item.href);
-    expect(rows).toEqual(openTopLevel);
-    expect(rows.length).toBeLessThanOrEqual(20);
-    const system = sectionButtons(container).find((b) => b.textContent === 'Security & system')!;
-    expect(system).toHaveAttribute('aria-expanded', 'false');
+    const dailyWork = navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).filter((item) => item.group === 'dailyWork').map((item) => item.href);
+    expect(rows).toEqual(dailyWork);
+    expect(rows).toEqual([
+      '/admin', '/admin/command-center?queue=applications', '/admin/wioa-screening', '/admin/certifications',
+      '/admin/program-change-requests', '/admin/students', '/admin/messages',
+    ]);
+    expect(visibleRows(container).map((a) => a.textContent)).toEqual([
+      'Today', 'Applications', 'Funding eligibility', 'Certificates', 'Program requests', 'Students', 'Messages',
+    ]);
+    for (const button of sectionButtons(container)) {
+      expect(button, button.textContent ?? '').toHaveAttribute('aria-expanded', 'false');
+    }
     expect(container.querySelector('a[href="/admin/settings"]')?.closest('[hidden]')).not.toBeNull();
+    expect(container.querySelector('a[href="/admin/overview"]')?.closest('[hidden]')).not.toBeNull();
     // Nested rows are closed until opened.
     expect(container.querySelector('a[href="/admin/analytics"]')?.closest('[hidden]')).not.toBeNull();
+    expect(container.querySelector('a[href="/admin/invites"]')?.closest('[hidden]')).not.toBeNull();
+    // Collapsed rows stay in the DOM, so every tour anchor is still there.
     expect(document.querySelectorAll('[data-tour]')).toHaveLength(7);
   });
 
@@ -731,9 +752,53 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(sectionButtons(container).map((b) => b.textContent)).not.toContain('Security & system');
     expect(container.querySelector('a[href="/admin/settings"]')).toBeNull();
     expect(container.querySelector('a[href="/admin/coursera"]')).toBeNull();
+    expect(container.querySelector('a[href="/admin/messages"]')).toBeNull();
     expect(container.querySelector('a[href="/admin/reporting"]')).not.toBeNull();
-    expect(visibleRows(container).length).toBeLessThanOrEqual(20);
+    expect(visibleRows(container).map((a) => a.getAttribute('href'))).toEqual([
+      '/admin', '/admin/command-center?queue=applications', '/admin/wioa-screening', '/admin/certifications',
+      '/admin/program-change-requests', '/admin/students',
+    ]);
   });
+
+  it('keeps Daily work open on every page, whatever an old saved preference says', () => {
+    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({ 'section:dailyWork': false }));
+    location.pathname = '/admin/programs';
+    const { container } = showAdmin();
+    expect(container.querySelector('a[href="/admin/command-center?queue=applications"]')?.closest('[hidden]')).toBeNull();
+    expect(container.querySelector('a[href="/admin/wioa-screening"]')?.closest('[hidden]')).toBeNull();
+    expect(container.querySelector('button[data-section="dailyWork"]')).toBeNull();
+  });
+
+  it.each(['queue=applications', 'queue=applications&page=2', 'page=3&queue=applications'])(
+    'marks Applications current on the Applications workbench (?%s) and names it in the phone header',
+    (search) => {
+      location.pathname = '/en/admin/command-center';
+      location.search = search;
+      const { container } = showAdmin(false);
+      const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
+      expect(current).toHaveLength(1);
+      expect(current[0]).toHaveAttribute('href', '/admin/command-center?queue=applications');
+      expect(current[0]).toHaveTextContent('Applications');
+      expect(current[0].closest('[hidden]')).toBeNull();
+      expect(container.querySelector('.workspace-shell-current-page')).toHaveTextContent('Applications');
+      // The phone tab bar matches on the same query as the rail.
+      expect(bottomNav.props?.search?.get('queue')).toBe('applications');
+    },
+  );
+
+  // Today's "conversations need a reply" / "interview prep" / risk rows and
+  // the workbench's "All queues" link open these URLs: none is Applications.
+  it.each(['queue=needs-reply', 'queue=at-risk', 'queue=interviewing', 'queue=interviewing&page=2', ''])(
+    'marks nothing current on the other workbench views (?%s)',
+    (search) => {
+      location.pathname = '/en/admin/command-center';
+      location.search = search;
+      const { container } = showAdmin(false);
+      expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(0);
+      expect(container.querySelectorAll('.workspace-sidebar-link.active')).toHaveLength(0);
+      expect(container.querySelector('.workspace-shell-current-page')).toBeNull();
+    },
+  );
 
   it('toggles a section by click, Enter and arrow keys, and persists the choice in localStorage', async () => {
     const user = userEvent.setup();
@@ -754,12 +819,16 @@ describe('admin grouped rail (sidebar consolidation)', () => {
   });
 
   it('restores persisted state on mount', () => {
-    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({ 'section:programs': false, 'item:/admin/reporting': true }));
+    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({
+      'section:programs': true, 'section:reporting': true, 'item:/admin/reporting': true,
+    }));
     const { container } = showAdmin();
     const programs = sectionButtons(container).find((b) => b.textContent === 'Programs')!;
-    expect(programs).toHaveAttribute('aria-expanded', 'false');
-    expect(container.querySelector('a[href="/admin/programs"]')?.closest('[hidden]')).not.toBeNull();
+    expect(programs).toHaveAttribute('aria-expanded', 'true');
+    expect(container.querySelector('a[href="/admin/programs"]')?.closest('[hidden]')).toBeNull();
     expect(container.querySelector('a[href="/admin/analytics"]')?.closest('[hidden]')).toBeNull();
+    // Untouched sections keep their default.
+    expect(sectionButtons(container).find((b) => b.textContent === 'Content')).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('opens the section and parent holding the current page even when they were closed', () => {
@@ -779,6 +848,8 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     const { container } = showAdmin();
     const hub = container.querySelector('a[href="/admin/reporting"]')!;
     expect(hub).toHaveTextContent('Reporting');
+    expect(hub.closest('[hidden]')).not.toBeNull();
+    await user.click(sectionButtons(container).find((b) => b.textContent === 'Reporting')!);
     expect(hub.closest('[hidden]')).toBeNull();
     const toggle = container.querySelector<HTMLButtonElement>('[data-testid="sidebar-children-toggle"][data-parent="/admin/reporting"]')!;
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -788,7 +859,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     const children = [...container.querySelectorAll(`#${toggle.getAttribute('aria-controls')} a`)].map((a) => a.getAttribute('href'));
     expect(children).toEqual(expect.arrayContaining(['/admin/analytics', '/admin/outcomes', '/admin/board']));
     expect(children).toHaveLength(8);
-    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'item:/admin/reporting': true });
+    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'section:reporting': true, 'item:/admin/reporting': true });
   });
 
   it('the collapsed icon rail lists every destination flat and marks one current page', async () => {
@@ -807,7 +878,8 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     const user = userEvent.setup();
     const { container } = showAdmin();
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
-    expect(sectionButtons(container)).toHaveLength(7);
+    expect(sectionButtons(container)).toHaveLength(6);
+    expect(container.querySelector('.workspace-sidebar-section-label[data-section="dailyWork"]')).not.toBeNull();
     expect(visibleRows(container).length).toBeLessThanOrEqual(20);
   });
 });

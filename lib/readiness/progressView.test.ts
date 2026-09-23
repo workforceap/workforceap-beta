@@ -1,26 +1,30 @@
 import { describe, expect, test } from 'vitest';
-import { SCREENSHOT_86_BREAKDOWN, zeroScoreBreakdown } from './progressView.fixtures';
+import { SCREENSHOT_MEMBER_BREAKDOWN, zeroScoreBreakdown } from './progressView.fixtures';
 import { buildReadinessProgressView } from './progressView';
 import type { ScoreBreakdown } from './score';
 
 describe('buildReadinessProgressView', () => {
-  test('maps the 86% dashboard screenshot to real weighted sources', () => {
-    const view = buildReadinessProgressView(SCREENSHOT_86_BREAKDOWN);
+  test('maps the production screenshot member to real weighted sources out of 100', () => {
+    const view = buildReadinessProgressView(SCREENSHOT_MEMBER_BREAKDOWN);
 
-    expect(view.overallScore).toBe(86);
-    expect(view.overallEarned).toBe(86);
-    expect(view.overallMax).toBe(105);
+    expect(view.overallScore).toBe(82);
+    expect(view.overallEarned).toBe(82);
+    expect(view.overallMax).toBe(100);
 
-    expect(view.categories.map((c) => [c.label, c.pct])).toEqual([
-      ['Resume & Profile', 100],
-      ['Training & Certs', 60],
-      ['Interview & Jobs', 83],
-      ['Engagement', 100],
+    expect(view.categories.map((c) => [c.label, c.earned, c.max, c.pct])).toEqual([
+      ['Resume & Profile', 24, 24, 100],
+      ['Training & Certs', 20, 33, 61],
+      ['Interview & Jobs', 24, 29, 83],
+      ['Engagement', 14, 14, 100],
     ]);
 
-    expect(view.priorityAction?.key).toBe('addApplications');
-    expect(view.priorityAction?.href).toBe('/dashboard/jobs');
-    expect(view.readinessNote).toContain('Apply to at least 3 jobs');
+    // Weakest area (Training & Certs, 60%) drives the CTA, not the hand order
+    // that used to put "Apply to jobs" first while the note talked training.
+    expect(view.weakestCategory).toBe('training');
+    expect(view.priorityAction?.key).toBe('completePathwaySteps');
+    expect(view.priorityAction?.href).toBe('/dashboard/learning');
+    expect(view.priorityAction?.ctaLabel).toBe('Open Learning Hub');
+    expect(view.readinessNote).toContain('Complete more pathway steps');
 
     expect(view.milestones.map((m) => [m.label, m.when, m.state])).toEqual([
       ['Resume & Profile', 'Complete', 'done'],
@@ -30,20 +34,21 @@ describe('buildReadinessProgressView', () => {
     ]);
   });
 
-  test('overall is the capped point total, not the mean of area percents', () => {
-    const view = buildReadinessProgressView(SCREENSHOT_86_BREAKDOWN);
+  test('overall is the point total out of 100 (no cap), not the mean of area percents', () => {
+    const view = buildReadinessProgressView(SCREENSHOT_MEMBER_BREAKDOWN);
     const average =
       view.categories.reduce((sum, cat) => sum + cat.pct, 0) / view.categories.length;
-    expect(view.overallScore).toBe(86);
-    expect(view.overallEarned).toBe(86);
-    expect(view.overallMax).toBe(105);
-    expect(average).toBe(85.75);
+    expect(view.overallScore).toBe(view.overallEarned);
+    expect(view.overallMax).toBe(100);
+    expect(average).toBe(86);
+    expect(view.overallScore).toBe(82);
   });
 
   test('empty member is an honest zero, not a fabricated score', () => {
     const view = buildReadinessProgressView(zeroScoreBreakdown());
     expect(view.overallScore).toBe(0);
     expect(view.categories.every((cat) => cat.pct === 0)).toBe(true);
+    expect(view.weakestCategory).toBe('resume');
     expect(view.priorityAction?.key).toBe('buildResume');
     expect(view.milestones[0]?.state).toBe('active');
   });
@@ -52,7 +57,8 @@ describe('buildReadinessProgressView', () => {
     const only = (key: keyof ScoreBreakdown): ScoreBreakdown => {
       const breakdown = zeroScoreBreakdown();
       for (const k of Object.keys(breakdown) as (keyof ScoreBreakdown)[]) {
-        breakdown[k] = { ...breakdown[k], earned: breakdown[k].max, done: k !== key };
+        // "Open" is earned < max (see getPriorityAction), so only `key` is short.
+        breakdown[k] = { ...breakdown[k], earned: k === key ? 0 : breakdown[k].max, done: k !== key };
       }
       return breakdown;
     };
@@ -65,29 +71,87 @@ describe('buildReadinessProgressView', () => {
       expect(action?.ctaLabel).toBe('Open Learning Hub');
     }
 
-    // Goals are set in GoalsModule, which only the legacy home's learning tab
-    // renders (MemberHomeKit's goalsHref points at the same anchor).
+    // Goals are set in GoalsModule on My career plan (MemberHomeKit's goalsHref
+    // points at the same anchor).
     const goals = buildReadinessProgressView(only('setGoals')).priorityAction;
-    expect(goals?.href).toBe('/dashboard?ui=legacy&tab=learning#goals');
+    expect(goals?.href).toBe('/dashboard/career-brief#goals');
     expect(goals?.ctaLabel).toBe('Set goals');
+  });
+
+  test('CTA follows the weakest area, then the most points left inside it', () => {
+    const breakdown: ScoreBreakdown = {
+      ...SCREENSHOT_MEMBER_BREAKDOWN,
+      // Training back to 100%; Interview & Jobs (24/29 = 83%) is now the lowest area.
+      completePathwaySteps: { earned: 14, max: 14, done: true },
+      trackCertifications: { earned: 5, max: 5, done: true },
+    };
+    const view = buildReadinessProgressView(breakdown);
+    expect(view.weakestCategory).toBe('interview');
+    expect(view.priorityAction?.key).toBe('addApplications');
+    expect(view.priorityAction?.href).toBe('/dashboard/jobs');
+    expect(view.priorityAction?.ctaLabel).toBe('Apply to jobs');
+  });
+
+  test('89-point member: 3 pathway steps (done, 8/14) + 2 applications — CTA stays in the Lowest area', () => {
+    // Inspector reproduction: Training 27/33 = 82% with every item `done`, Interview 24/29 = 83%.
+    // `done` skipping used to send the CTA to "Apply to jobs" under a Training LOWEST tag.
+    const breakdown: ScoreBreakdown = {
+      ...SCREENSHOT_MEMBER_BREAKDOWN,
+      completePathwaySteps: { earned: 8, max: 14, done: true },
+      trackCertifications: { earned: 5, max: 5, done: true },
+    };
+    const view = buildReadinessProgressView(breakdown);
+    expect(view.overallScore).toBe(89);
+    expect(view.weakestCategory).toBe('training');
+    expect(view.priorityAction?.key).toBe('completePathwaySteps');
+    expect(view.priorityAction?.href).toBe('/dashboard/learning');
+    expect(view.priorityAction?.ctaLabel).toBe('Open Learning Hub');
+  });
+
+  test('94-point member: everything done, 3 pathway steps — still has a CTA, not "complete"', () => {
+    // Inspector reproduction: only completePathwaySteps (8/14, done) is short; score 94.
+    const breakdown: ScoreBreakdown = {
+      ...SCREENSHOT_MEMBER_BREAKDOWN,
+      completePathwaySteps: { earned: 8, max: 14, done: true },
+      trackCertifications: { earned: 5, max: 5, done: true },
+      addApplications: { earned: 15, max: 15, done: true },
+    };
+    const view = buildReadinessProgressView(breakdown);
+    expect(view.overallScore).toBe(94);
+    expect(view.weakestCategory).toBe('training');
+    expect(view.priorityAction?.key).toBe('completePathwaySteps');
+    expect(view.readinessNote).toContain('Complete more pathway steps');
+    expect(view.readinessNote).not.toContain('complete.');
+  });
+
+  test('pathway items route to the Learning Hub, never back to /dashboard', () => {
+    const view = buildReadinessProgressView({
+      ...SCREENSHOT_MEMBER_BREAKDOWN,
+      startPathway: { earned: 0, max: 5, done: false },
+      completePathwaySteps: { earned: 0, max: 14, done: false },
+    });
+    expect(view.priorityAction?.key).toBe('completePathwaySteps');
+    expect(view.priorityAction?.href).toBe('/dashboard/learning');
   });
 
   test('all-complete member has no next action', () => {
     const done: ScoreBreakdown = {
       completeProfile: { earned: 5, max: 5, done: true },
-      setGoals: { earned: 10, max: 10, done: true },
-      buildResume: { earned: 20, max: 20, done: true },
-      complete2Resources: { earned: 10, max: 10, done: true },
-      practiceInterview: { earned: 15, max: 15, done: true },
+      setGoals: { earned: 9, max: 9, done: true },
+      buildResume: { earned: 19, max: 19, done: true },
+      complete2Resources: { earned: 9, max: 9, done: true },
+      practiceInterview: { earned: 14, max: 14, done: true },
       startPathway: { earned: 5, max: 5, done: true },
-      completePathwaySteps: { earned: 15, max: 15, done: true },
+      completePathwaySteps: { earned: 14, max: 14, done: true },
       addApplications: { earned: 15, max: 15, done: true },
       trackCertifications: { earned: 5, max: 5, done: true },
       weeklyConsistency: { earned: 5, max: 5, done: true },
     };
     const view = buildReadinessProgressView(done);
     expect(view.overallScore).toBe(100);
+    expect(view.overallMax).toBe(100);
     expect(view.priorityAction).toBeNull();
+    expect(view.weakestCategory).toBeNull();
     expect(view.readinessNote).toBe('Every category is complete.');
     expect(view.milestones.every((m) => m.state === 'done')).toBe(true);
   });
