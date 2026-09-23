@@ -42,6 +42,11 @@ interface AddResult {
   status: SavedStatus;
   /** Set when the certificate saved but its file did not attach. */
   fileError: string | null;
+  /**
+   * The route left a verified certificate as it was (`verifiedUnchanged`) and
+   * no file was saved to it either, so nothing the member entered was kept.
+   */
+  verifiedUnchanged: boolean;
 }
 
 /**
@@ -49,9 +54,18 @@ interface AddResult {
  * creates a self-reported row as `pending` (staff review in /admin/certifications)
  * and re-adding an existing name only refreshes its date, leaving the review
  * state alone — so the confirmation follows the status the route returns
- * instead of calling every save "added".
+ * instead of calling every save "added". A verified certificate is never
+ * changed by a re-add (#2541); when nothing at all was saved (no file went
+ * through), the member is told so rather than left thinking the date stuck.
  */
-export function certificationAddedNotice(name: string, status: SavedStatus): string {
+export function certificationAddedNotice(
+  name: string,
+  status: SavedStatus,
+  { verifiedUnchanged = false }: { verifiedUnchanged?: boolean } = {},
+): string {
+  if (status === 'approved' && verifiedUnchanged) {
+    return `${name} is already verified by staff, so the details you entered were not saved. Message your counselor if something needs to change.`;
+  }
   if (status === 'approved') return `${name} is already on your list and verified.`;
   if (status === 'rejected') {
     return `${name} is already on your list. Staff could not verify it. Message your counselor if you have questions.`;
@@ -169,9 +183,12 @@ export default function CertificationAddForm() {
         MEMBER_REQUEST_TIMEOUT_MS,
       );
       if (!res.ok) { setError(await readMemberRequestFailure(res)); return; }
-      const data = (await res.json().catch(() => null)) as { status?: unknown } | null;
+      const data = (await res.json().catch(() => null)) as { status?: unknown; verifiedUnchanged?: unknown } | null;
       let status: SavedStatus =
         data?.status === 'pending' || data?.status === 'approved' || data?.status === 'rejected' ? data.status : null;
+      // A verified certificate is left as it was (#2541). A file that uploads
+      // below is still saved to it, so this only holds if no file goes through.
+      let verifiedUnchanged = data?.verifiedUnchanged === true;
 
       // Optional file. The certificate is already saved, so a failed upload is
       // reported next to the confirmation rather than as a failed save.
@@ -192,6 +209,7 @@ export default function CertificationAddForm() {
             // a verified one stays verified (WAP-197). The route says which.
             const uploaded = (await uploadRes.json().catch(() => null)) as { status?: unknown } | null;
             status = uploaded?.status === 'approved' ? 'approved' : 'pending';
+            verifiedUnchanged = false;
           } else {
             fileError = await readMemberRequestFailure(uploadRes);
           }
@@ -200,8 +218,8 @@ export default function CertificationAddForm() {
         }
       }
 
-      setResult({ name: finalName, status, fileError });
-      const notice = certificationAddedNotice(finalName, status);
+      setResult({ name: finalName, status, fileError, verifiedUnchanged });
+      const notice = certificationAddedNotice(finalName, status, { verifiedUnchanged });
       announce(fileError ? `${notice} The file was not attached: ${fileError}` : notice);
       resetForm();
       setOpen(false);
@@ -231,7 +249,7 @@ export default function CertificationAddForm() {
             <CheckCircle2 size={18} aria-hidden="true" style={{ color: 'var(--wa-success-dark)', flexShrink: 0, marginTop: 2 }} />
             <div>
               <p style={{ margin: 0, fontWeight: 600, fontSize: 'var(--wa-type-body)' }}>
-                {certificationAddedNotice(result.name, result.status)}
+                {certificationAddedNotice(result.name, result.status, { verifiedUnchanged: result.verifiedUnchanged })}
               </p>
               {result.fileError ? (
                 <p className="wa-kit-meta" style={{ margin: '0.25rem 0 0', color: 'var(--wa-danger-text)', fontWeight: 600 }}>
