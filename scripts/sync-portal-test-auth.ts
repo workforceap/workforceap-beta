@@ -14,13 +14,13 @@ import { randomUUID } from 'crypto';
 import { pathToFileURL } from 'node:url';
 import { PrismaClient, ApplicationStatus, type Prisma } from '@prisma/client';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { readPortalQaConfig, assertPortalQaOrganization } from './lib/portal-qa-guard.cjs';
+import { QA_ROLES, readPortalQaConfig, assertPortalQaOrganization } from './lib/portal-qa-guard.cjs';
+
+type QaRole = 'member' | 'partner' | 'employer' | 'admin' | 'counselor';
+const QA_AUTH_ROLES = QA_ROLES as readonly QaRole[];
 
 const QA_EMAILS = [
-  'member-test@workforceap.org',
-  'partner-test@workforceap.org',
-  'employer-test@workforceap.org',
-  'admin-test@workforceap.org',
+  ...QA_AUTH_ROLES.map(role => `${role}-test@workforceap.org`),
   'referral-member-a@workforceap.org',
   'referral-member-b@workforceap.org',
   'match-candidate@workforceap.org',
@@ -59,17 +59,13 @@ async function assertAuthFixturesAbsent(supabase: SupabaseClient) {
 async function seedQaWithAuthIds(
   prisma: Prisma.TransactionClient,
   orgId: string,
-  ids: {
-    member: string;
-    partner: string;
-    employer: string;
-    admin: string;
-  }
+  ids: Record<QaRole, string>
 ) {
   const memberRole = await prisma.role.findUniqueOrThrow({ where: { name: 'member' } });
   const partnerRole = await prisma.role.findUniqueOrThrow({ where: { name: 'partner' } });
   const employerRole = await prisma.role.findUniqueOrThrow({ where: { name: 'employer' } });
   const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'admin' } });
+  const counselorRole = await prisma.role.findUniqueOrThrow({ where: { name: 'counselor' } });
 
   const partnerOrg = await prisma.partner.create({
     data: {
@@ -230,6 +226,18 @@ async function seedQaWithAuthIds(
     },
   });
 
+  await prisma.user.create({
+    data: {
+      id: ids.counselor,
+      organizationId: orgId,
+      email: 'counselor-test@workforceap.org',
+      fullName: 'Portal QA Counselor',
+      userRoles: { create: { roleId: counselorRole.id } },
+      profile: { create: { consentTerms: true, role: 'counselor' } },
+      counselorProfile: { create: { affiliation: 'wap_staff', active: true } },
+    },
+  });
+
 }
 
 export async function syncPortalTestAuth(env: NodeJS.ProcessEnv = process.env) {
@@ -250,12 +258,12 @@ export async function syncPortalTestAuth(env: NodeJS.ProcessEnv = process.env) {
       throw new Error('Portal QA rows already exist. Automatic replacement is disabled.');
     }
     // Preflight role configuration before creating any Auth accounts.
-    for (const name of ['member', 'partner', 'employer', 'admin']) {
+    for (const name of QA_AUTH_ROLES) {
       await prisma.role.findUniqueOrThrow({ where: { name } });
     }
     await assertAuthFixturesAbsent(supabase);
-    const ids = {} as { member: string; partner: string; employer: string; admin: string };
-    for (const role of ['member', 'partner', 'employer', 'admin'] as const) {
+    const ids = {} as Record<QaRole, string>;
+    for (const role of QA_AUTH_ROLES) {
       ids[role] = await createFreshAuthUser(supabase, `${role}-test@workforceap.org`, `Portal QA ${role}`, config.passwords[role], config.organizationId);
       createdAuthIds.push(ids[role]);
     }

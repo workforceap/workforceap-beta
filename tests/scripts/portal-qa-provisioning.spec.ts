@@ -29,7 +29,7 @@ function env(): NodeJS.ProcessEnv {
     POSTGRES_PRISMA_URL: 'postgresql://postgres:example@db.esbdrgaonplpvzmtrdhw.supabase.co:5432/postgres',
     SUPABASE_SERVICE_ROLE_KEY: 'mock-demo-admin-key',
     PORTAL_QA_ORGANIZATION_ID: 'qa-org', PORTAL_QA_ORGANIZATION_SLUG: 'portal-qa-test',
-    ...Object.fromEntries(['member', 'partner', 'employer', 'admin'].map(role => [
+    ...Object.fromEntries(['member', 'partner', 'employer', 'admin', 'counselor'].map(role => [
       `PORTAL_QA_${role.toUpperCase()}_PASSWORD`, `${role}-unique-fixture-secret-123456`,
     ])),
   };
@@ -40,7 +40,7 @@ describe('portal fixture provisioning boundaries', () => {
     vi.resetAllMocks();
     mocks.db.organization.findUnique.mockResolvedValue({ id: 'qa-org', slug: 'portal-qa-test', active: true });
     mocks.db.user.count.mockResolvedValue(0);
-    mocks.db.role.findUniqueOrThrow.mockResolvedValue({ id: 'role-id' });
+    mocks.db.role.findUniqueOrThrow.mockImplementation(async ({ where }: { where: { name: string } }) => ({ id: `role-${where.name}` }));
     mocks.db.partner.create.mockResolvedValue({ id: 'fixture-partner' });
     mocks.db.employer.findUniqueOrThrow.mockResolvedValue({ jobs: [] });
     mocks.auth.listUsers.mockResolvedValue({ data: { users: [] }, error: null });
@@ -67,6 +67,7 @@ describe('portal fixture provisioning boundaries', () => {
   it('refuses existing rows instead of deleting/replacing them', async () => {
     mocks.db.user.count.mockResolvedValue(1);
     await expect(syncPortalTestAuth(env())).rejects.toThrow('provisioning stopped');
+    expect(mocks.db.user.count).toHaveBeenCalledWith({ where: { email: { in: expect.arrayContaining(['counselor-test@workforceap.org']), mode: 'insensitive' } } });
     expect(mocks.auth.listUsers).not.toHaveBeenCalled();
     expect(mocks.auth.createUser).not.toHaveBeenCalled();
   });
@@ -88,16 +89,77 @@ describe('portal fixture provisioning boundaries', () => {
     expect(mocks.auth.createUser).not.toHaveBeenCalled();
   });
 
-  it('binds the validated database, creates distinct credentials and commits fixtures in one transaction', async () => {
+  it('refuses an existing counselor Auth account before creating any fixture', async () => {
+    mocks.auth.listUsers.mockResolvedValue({ data: { users: [{ email: 'COUNSELOR-TEST@WORKFORCEAP.ORG' }] }, error: null });
+    await expect(syncPortalTestAuth(env())).rejects.toThrow('provisioning stopped');
+    expect(mocks.auth.createUser).not.toHaveBeenCalled();
+    expect(mocks.db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('requires the counselor role before creating any Auth account', async () => {
+    mocks.db.role.findUniqueOrThrow.mockImplementation(async ({ where }: { where: { name: string } }) => {
+      if (where.name === 'counselor') throw new Error('missing counselor role');
+      return { id: `role-${where.name}` };
+    });
+    await expect(syncPortalTestAuth(env())).rejects.toThrow('provisioning stopped');
+    expect(mocks.auth.listUsers).not.toHaveBeenCalled();
+    expect(mocks.auth.createUser).not.toHaveBeenCalled();
+    expect(mocks.db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('binds the validated database and creates a distinct, org-scoped counselor with the Auth ID', async () => {
     const config = env();
     await syncPortalTestAuth(config);
     expect(mocks.prismaConstructor).toHaveBeenCalledWith({ datasourceUrl: config.POSTGRES_PRISMA_URL });
-    expect(new Set(mocks.auth.createUser.mock.calls.map(([call]) => call.password)).size).toBe(4);
+    expect(mocks.auth.createUser.mock.calls.map(([call]) => call.email)).toEqual([
+      'member-test@workforceap.org', 'partner-test@workforceap.org',
+      'employer-test@workforceap.org', 'admin-test@workforceap.org',
+      'counselor-test@workforceap.org',
+    ]);
+    expect(new Set(mocks.auth.createUser.mock.calls.map(([call]) => call.password)).size).toBe(5);
+    expect(mocks.db.role.findUniqueOrThrow).toHaveBeenCalledWith({ where: { name: 'counselor' } });
     expect(mocks.db.$transaction).toHaveBeenCalledOnce();
     expect(mocks.db.partner.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ organizationId: 'qa-org', notifyOnEnrollment: false }) }));
     for (const [call] of mocks.db.user.create.mock.calls) expect(call.data.organizationId).toBe('qa-org');
+    expect(mocks.db.user.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        id: 'auth-counselor-test@workforceap.org',
+        organizationId: 'qa-org',
+        email: 'counselor-test@workforceap.org',
+        userRoles: { create: { roleId: 'role-counselor' } },
+        profile: { create: { consentTerms: true, role: 'counselor' } },
+        counselorProfile: { create: { affiliation: 'wap_staff', active: true } },
+      }),
+    });
     const output = JSON.stringify(vi.mocked(console.log).mock.calls);
     for (const [key, value] of Object.entries(config)) if (key.endsWith('_PASSWORD')) expect(output).not.toContain(value);
+  });
+
+  it('reports only the four newly created Auth IDs if counselor Auth creation fails', async () => {
+    mocks.auth.createUser.mockImplementation(async ({ email }: { email: string }) => email.startsWith('counselor-')
+      ? { data: { user: null }, error: { message: 'SENSITIVE_PROVIDER_CONTEXT' } }
+      : { data: { user: { id: `auth-${email}` } }, error: null });
+    await expect(syncPortalTestAuth(env())).rejects.toThrow('provisioning stopped');
+    expect(mocks.auth.createUser).toHaveBeenCalledTimes(5);
+    expect(mocks.db.$transaction).not.toHaveBeenCalled();
+    expect(mocks.auth.updateUserById).not.toHaveBeenCalled();
+    expect(mocks.auth.deleteUser).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith('New fixture Auth IDs requiring inspection:', [
+      'auth-member-test@workforceap.org', 'auth-partner-test@workforceap.org',
+      'auth-employer-test@workforceap.org', 'auth-admin-test@workforceap.org',
+    ].join(', '));
+    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain('SENSITIVE_PROVIDER_CONTEXT');
+  });
+
+  it('rechecks the exact organization inside the Prisma transaction after Auth creation', async () => {
+    mocks.db.organization.findUnique
+      .mockResolvedValueOnce({ id: 'qa-org', slug: 'portal-qa-test', active: true })
+      .mockResolvedValueOnce({ id: 'qa-org', slug: 'other-org', active: true });
+    await expect(syncPortalTestAuth(env())).rejects.toThrow('provisioning stopped');
+    expect(mocks.auth.createUser).toHaveBeenCalledTimes(5);
+    expect(mocks.db.user.create).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith('New fixture Auth IDs requiring inspection:', expect.stringContaining('auth-counselor-test@workforceap.org'));
+    expect(mocks.auth.deleteUser).not.toHaveBeenCalled();
   });
 
   it('does not dump provider errors or undo unrelated accounts after partial creation', async () => {
