@@ -36,6 +36,7 @@ import {
 } from '@/components/portal/kit';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
+import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 
 /**
@@ -45,7 +46,10 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  * kit (warm surface + --wa-* tokens + wa-kit-* classes + lucide icons). Layout
  * order, top to bottom:
  *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`.
- *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard, kit variant).
+ *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard, kit variant),
+ *      then an "Up next" list of the following steps beside one AI Career
+ *      Tools pick for the member's stage (both from the loader; either may be
+ *      empty, and the row disappears when both are).
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
  *   4. A mixed row: certification progress ring, weekly-activity area chart,
@@ -175,6 +179,10 @@ export interface MemberHomeKitProps {
   goalsHref?: string;
   /** Dominant next-best-action banner rendered above the bento grid. `null`/omitted renders nothing (no empty shell). */
   doThisNext?: NextBestAction | null;
+  /** The steps after `doThisNext`, most important first. Empty renders nothing. */
+  upNext?: NextBestAction[];
+  /** One AI Career Tools pick for the member's stage. `null` renders nothing. */
+  recommendedTool?: MemberToolRecommendation | null;
   /** Ungated Digital Literacy lesson 1. Shown when the member has no enrolled program. */
   ungatedDigitalBasicsHref?: string | null;
   /** Sparkline + delta chip for the course-progress stat tile. Omit to hide both. */
@@ -250,6 +258,20 @@ const HOME_TEXT_LINK: CSSProperties = {
   textDecoration: 'none',
   flexShrink: 0,
   gap: 6,
+};
+
+/** One "Up next" row: title + reason on the left, the action on the right; the whole row is the link. */
+const UP_NEXT_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: '4px 12px',
+  minHeight: 44,
+  padding: '10px 0',
+  borderTop: '1px solid var(--wa-border)',
+  textDecoration: 'none',
+  color: 'inherit',
 };
 
 function KitCardHead({ title, linkLabel, linkHref }: { title: string; linkLabel?: string; linkHref?: string }) {
@@ -523,6 +545,8 @@ export function MemberHomeKit({
   goals = [],
   goalsHref = '/dashboard?ui=legacy&tab=learning#goals',
   doThisNext = null,
+  upNext = [],
+  recommendedTool = null,
   ungatedDigitalBasicsHref = null,
   courseSpark,
   activeJobsSpark,
@@ -636,6 +660,73 @@ export function MemberHomeKit({
             >
               Start this lesson
             </Link>
+          </div>
+        ) : null}
+
+        {upNext.length > 0 || recommendedTool ? (
+          <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
+            {upNext.length > 0 ? (
+              <div className={cx('wa-kit-card', recommendedTool ? 'lg:wa-col-span-7' : 'lg:wa-col-span-12')}>
+                <KitCardHead title="Up next" />
+                <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }} aria-label="Up next">
+                  {upNext.map((action) => (
+                    <li key={action.id}>
+                      <Link
+                        href={resolveMemberProgramHref(action.href)}
+                        className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                        style={UP_NEXT_ROW}
+                      >
+                        <span style={{ minWidth: 0 }}>
+                          <span style={{ display: 'block', fontWeight: 700, color: 'var(--wa-text)' }}>{action.title}</span>
+                          <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>
+                            {action.body}
+                          </span>
+                        </span>
+                        <span style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}>
+                          {action.cta} <ArrowRight size={13} aria-hidden />
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ) : null}
+            {recommendedTool ? (
+              <div
+                className={cx('wa-kit-card', upNext.length > 0 ? 'lg:wa-col-span-5' : 'lg:wa-col-span-12')}
+                style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+                data-testid="recommended-tool"
+                data-tool={recommendedTool.slug}
+              >
+                <p
+                  className="wa-kit-meta wa-flex wa-items-center wa-gap-2"
+                  style={{ margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}
+                >
+                  <Wand2 size={13} aria-hidden /> Recommended tool
+                </p>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', textWrap: 'balance' }}>
+                  {recommendedTool.title}
+                </h3>
+                <p className="wa-kit-lede" style={{ margin: 0 }}>
+                  {recommendedTool.body}
+                </p>
+                <div className="wa-flex wa-items-center wa-gap-4 wa-flex-wrap" style={{ marginTop: 'auto' }}>
+                  <Link
+                    href={recommendedTool.href}
+                    className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+                  >
+                    {recommendedTool.cta} <ArrowRight size={13} aria-hidden />
+                  </Link>
+                  <a
+                    href={toolkitHref}
+                    className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                    style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}
+                  >
+                    All AI Career Tools
+                  </a>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

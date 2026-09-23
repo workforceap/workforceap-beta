@@ -233,6 +233,8 @@ async function renderMemberDashboard(
         toolkitHref={home.toolkitHref}
         jobsHref={home.jobsHref}
         doThisNext={home.doThisNext}
+        upNext={home.upNext}
+        recommendedTool={home.recommendedTool}
         ungatedDigitalBasicsHref={home.programTitle ? null : home.ungatedDigitalBasicsHref}
       />
       {approvalPlacement === 'demoted' ? approvalCard : null}
