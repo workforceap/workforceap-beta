@@ -5,19 +5,21 @@
  * Keep this list narrow (exact names + clear prefixes). Over-broad matches
  * can hide real employers; under-matching can leak QA/seed fixtures to members.
  */
+const EXCLUDED_EMPLOYER_NAMES = [
+  'test',
+  'test students',
+  'capital area employer network',
+  'qa employer co',
+  'demo employer',
+  'workforceap example employer',
+];
+const EXCLUDED_EMPLOYER_PREFIXES = ['test ', 'qa '];
+const EXCLUDED_TITLE_PREFIXES = ['[qa]', '[test]', '[demo]', '[preview]'];
+
 export function isExcludedPublicEmployerName(companyName: string | null | undefined): boolean {
   const n = companyName?.trim().toLowerCase() ?? '';
   if (!n) return false;
-  return (
-    n === 'test' ||
-    n === 'test students' ||
-    n === 'capital area employer network' ||
-    n === 'qa employer co' ||
-    n === 'demo employer' ||
-    n === 'workforceap example employer' ||
-    n.startsWith('test ') ||
-    n.startsWith('qa ')
-  );
+  return EXCLUDED_EMPLOYER_NAMES.includes(n) || EXCLUDED_EMPLOYER_PREFIXES.some((p) => n.startsWith(p));
 }
 
 /**
@@ -27,10 +29,24 @@ export function isExcludedPublicEmployerName(companyName: string | null | undefi
 export function isExcludedPublicJobTitle(title: string | null | undefined): boolean {
   const t = title?.trim().toLowerCase() ?? '';
   if (!t) return false;
-  return (
-    t.startsWith('[qa]') ||
-    t.startsWith('[test]') ||
-    t.startsWith('[demo]') ||
-    t.startsWith('[preview]')
-  );
+  return EXCLUDED_TITLE_PREFIXES.some((p) => t.startsWith(p));
 }
+
+/**
+ * The same exclusions as a Prisma `where`, so a `count()` agrees with the
+ * filtered list (WAP-261). Keep the JS predicates on the list as well: they
+ * also trim whitespace, which the database filter does not.
+ */
+export const PUBLIC_JOB_EXCLUSION_WHERE = {
+  NOT: [
+    ...EXCLUDED_EMPLOYER_NAMES.map((name) => ({
+      employer: { companyName: { equals: name, mode: 'insensitive' as const } },
+    })),
+    ...EXCLUDED_EMPLOYER_PREFIXES.map((prefix) => ({
+      employer: { companyName: { startsWith: prefix, mode: 'insensitive' as const } },
+    })),
+    ...EXCLUDED_TITLE_PREFIXES.map((prefix) => ({
+      title: { startsWith: prefix, mode: 'insensitive' as const },
+    })),
+  ],
+};
