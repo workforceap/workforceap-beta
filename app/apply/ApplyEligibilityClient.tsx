@@ -585,7 +585,7 @@ export default function ApplyEligibilityClient({
             <p className="apply-step-desc">{t('step1Lead')}</p>
             <p className="apply-step-desc apply-eligibility-exception-note">
               {t('eligibilityExceptionLead')}{' '}
-              <LocalizedLink href="/faq" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+              <LocalizedLink href="/faq" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
                 FAQ
               </LocalizedLink>
               {t('eligibilityExceptionSuffix')}

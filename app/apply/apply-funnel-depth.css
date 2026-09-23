@@ -74,6 +74,15 @@
   text-align: center;
 }
 
+/* WAP-192: --mdx-muted is light-only and too pale on the grey form-kicker
+   box (4.41:1), and html.dark paints the funnel dark, so the muted
+   kicker/footnote fell to ~3.2:1 there. Use the site's theme-aware muted text. */
+.afd-kicker.apply-funnel-form-kicker,
+html.dark .afd-kicker,
+html.dark .afd-footnote {
+  color: var(--color-on-surface-variant);
+}
+
 /* Footnote / helper links under the form */
 .afd-footnote {
   margin-top: 1.5rem;
@@ -83,7 +92,7 @@
 }
 
 .afd-footnote a {
-  color: var(--mdx-crimson);
+  color: var(--wa-accent-text);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
