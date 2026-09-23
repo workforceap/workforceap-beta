@@ -1,5 +1,5 @@
 import type { AnchorHTMLAttributes } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 
 /**
@@ -210,6 +210,9 @@ describe('Need a person? actions', () => {
 
   it('feedback submits to the existing route, confirms it was saved and keeps focus in the dialog', async () => {
     fetchMock.mockResolvedValueOnce(json({ feedback: { id: 'fb-1' } }));
+    const previousPath = window.location.pathname;
+    window.history.pushState({}, '', '/dashboard/help');
+    onTestFinished(() => window.history.replaceState({}, '', previousPath));
     render(<NeedAPersonCard audience={{ kind: 'team' }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Share feedback' }));
     fireEvent.click(screen.getByRole('radio', { name: 'Rate 4 out of 5' }));
@@ -220,6 +223,7 @@ describe('Need a person? actions', () => {
     expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/member/feedback');
-    expect(JSON.parse(String(init?.body))).toEqual({ type: 'general', rating: 4 });
+    // WAP-197: the event records the page the feedback came from.
+    expect(JSON.parse(String(init?.body))).toEqual({ type: 'general', rating: 4, sourcePage: '/dashboard/help' });
   });
 });

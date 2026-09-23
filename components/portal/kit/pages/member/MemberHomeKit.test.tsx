@@ -71,6 +71,17 @@ describe('MemberHomeKit certification-path card', () => {
     renderKit(<MemberHomeKit {...base} />);
     expect(screen.getByText('No next module on file.')).toBeTruthy();
   });
+
+  // Dashboard progress semantics (PRODUCT_STAKES, Approval Required): partial
+  // course progress reads as progress, never as an earned certificate. This
+  // pinned the legacy home's first-cert bar until WAP-195 retired it; the kit
+  // certification-path card is the one surface that shows it now.
+  it('shows recorded course progress without claiming a certificate', () => {
+    renderKit(<MemberHomeKit {...base} coursePercent={50} certModulesDone={1} certModulesTotal={2} />);
+    expect(screen.getByRole('progressbar', { name: 'Certification module progress' })).toHaveAttribute('aria-valuenow', '50');
+    expect(screen.getByText('In progress')).toBeTruthy();
+    expect(screen.queryByText(/certifi(ed|cation earned)|certificate earned/i)).toBeNull();
+  });
 });
 
 describe('MemberHomeKit resume module CTA', () => {

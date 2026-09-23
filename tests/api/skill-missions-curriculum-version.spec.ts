@@ -258,16 +258,11 @@ describe('Skill Mission curriculum-version mutation gates', () => {
     );
   });
 
-  it('expands canonical slugs on the legacy dashboard mission teaser read', () => {
+  // The legacy home's mission-teaser read went with the retired ?ui=legacy
+  // home (WAP-195); the missions page read above is the live one. The alias
+  // expansion every canonical read relies on stays pinned here.
+  it('expands a canonical program slug to its historical aliases for mission reads', () => {
     expect(programSlugReadCandidates(PROGRAM)).toContain(PROGRAM_ALIAS);
-
-    const dashboardSource = readFileSync(resolve(
-      process.cwd(),
-      'app/(portal)/dashboard/page.tsx',
-    ), 'utf8');
-    expect(dashboardSource).toMatch(
-      /programSlug:\s*\{\s*in:\s*programSlugReadCandidates\(enrolledProgram\)\s*\}/,
-    );
   });
 
   it('does not disclose quiz answers for a removed v2 mission', async () => {

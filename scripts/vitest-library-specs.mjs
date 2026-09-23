@@ -24,7 +24,7 @@ export const VITEST_LIBRARY_SPECS = Object.freeze([
   'lib/messages/counselorInbox.test.ts',
   'lib/member/atRiskScoring.test.ts',
   'lib/member/nextBestActions.test.ts',
-  'lib/member/dashboardTabs.test.ts',
+  'lib/member/dashboardLegacyRedirect.test.ts',
   'lib/member/getMemberState.test.ts',
   'lib/member/streaks.test.ts',
   'lib/member/xapiVerbProgress.test.ts',

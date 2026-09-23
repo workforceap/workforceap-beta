@@ -128,12 +128,11 @@ async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
 }
 
 async function getEmployerBadgeCounts(employerId: string): Promise<NavBadgeCounts> {
-  const [draft, pendingReview, live, newApplications, queueBadges, employerRow, thread] = await Promise.all([
+  const [draft, pendingReview, newApplications, queueBadges, employerRow, thread] = await Promise.all([
     prisma.job.count({ where: { employerId, status: 'draft' } }),
     prisma.job.count({
       where: { employerId, status: { in: ['pending', 'approved'] } },
     }),
-    prisma.job.count({ where: { employerId, status: 'live' } }),
     prisma.jobPostingApplication.count({
       where: {
         job: { employerId },
@@ -168,7 +167,6 @@ async function getEmployerBadgeCounts(employerId: string): Promise<NavBadgeCount
   return {
     jobs_draft: draft,
     jobs_pending: pendingReview,
-    jobs_live: live,
     applications_new: newApplications,
     employer_messages_unread,
     ...queueBadges,

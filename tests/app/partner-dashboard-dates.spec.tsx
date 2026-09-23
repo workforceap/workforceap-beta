@@ -3,7 +3,7 @@ process.env.TZ = 'UTC';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
@@ -18,7 +18,8 @@ vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader:
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   partner: { findUnique: mocks.partner },
   partnerReferral: { count: mocks.count, findMany: mocks.referrals },
-  placementRecord: { count: mocks.count },
+  // findMany: the Payout due tile's verified-unpaid placements (WAP-213).
+  placementRecord: { count: mocks.count, findMany: mocks.placements },
   memberEvent: { findMany: mocks.events },
 } }));
 vi.mock('@/components/portal/kit/pages/PartnerOverviewKit', () => ({
@@ -59,6 +60,7 @@ beforeEach(() => {
   });
   mocks.partner.mockResolvedValue({ name: 'Synthetic Community', slug: 'community-slug', referralCode: 'community-code', status: 'active' });
   mocks.count.mockResolvedValue(1);
+  mocks.placements.mockResolvedValue([]);
   mocks.referrals.mockResolvedValue([
     { id: 'ref-1', referredAt: INSTANT, member: { id: 'member-1', fullName: 'Fixture Member', enrolledAt: null } },
   ]);
