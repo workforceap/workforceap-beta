@@ -55,13 +55,6 @@ export type ReadinessProgressView = {
   readinessNote: string;
 };
 
-/**
- * Count goals behind the partial-credit items, matching `lib/readiness/score.ts`
- * (`done` at 2 resources, 3 pathway steps, 3 applications; full points at 2 / 5 / 3). Exported so the
- * recap grounding gate can allow these small numbers in the coach note.
- */
-export const READINESS_GOAL_COUNTS = { resources: 2, pathwaySteps: 3, applications: 3 } as const;
-
 /** Member-facing labels for the ten weighted score items. */
 export const SCORE_ITEM_LABELS: Record<ScoreBreakdownKey, string> = {
   completeProfile: 'Complete profile',
@@ -229,10 +222,12 @@ export function weakestReadinessCategory(categories: ReadinessCategory[]): Readi
 
 /**
  * The one next step the whole readiness page agrees on: the weakest area's
- * unfinished item with the most points left (ties keep PRIORITY_ACTIONS
- * order). An area whose items all read `done` but still sits under 100%
- * (pathway steps keep scoring past the 3-step goal) yields to the next
- * weakest area, so the CTA always names something the member can still do.
+ * item with the most points still unearned (ties keep PRIORITY_ACTIONS
+ * order). "Open" means `earned < max` — the same rule the coach note uses —
+ * not `!done`: pathway steps keep scoring past the 3-step `done` goal
+ * (3 steps = 8/14), so an area can be under 100% with every item `done`.
+ * Using `done` here left such members with no CTA, or a CTA from a
+ * different area than the one tagged Lowest. `null` only at 100/100.
  */
 export function getPriorityAction(breakdown: ScoreBreakdown): ReadinessPriorityAction | null {
   const ranked = [...buildReadinessCategories(breakdown)].sort((a, b) => a.pct - b.pct);
@@ -241,7 +236,7 @@ export function getPriorityAction(breakdown: ScoreBreakdown): ReadinessPriorityA
     let bestRemaining = -1;
     for (const action of PRIORITY_ACTIONS) {
       const item = breakdown[action.key];
-      if (item.done || !cat.items.some((i) => i.key === action.key)) continue;
+      if (item.earned >= item.max || !cat.items.some((i) => i.key === action.key)) continue;
       const remaining = item.max - item.earned;
       if (remaining > bestRemaining) {
         best = action;

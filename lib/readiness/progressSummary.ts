@@ -1,8 +1,7 @@
 import { sanitizeAIOutput } from '@/lib/ai/postProcess';
-import {
-  READINESS_GOAL_COUNTS,
-  type ReadinessCategoryKey,
-  type ReadinessProgressView,
+import type {
+  ReadinessCategoryKey,
+  ReadinessProgressView,
 } from '@/lib/readiness/progressView';
 
 export type ReadinessSummarySource = 'factual' | 'ai' | 'error';
@@ -138,49 +137,27 @@ Write 2-3 short sentences in second person as one paragraph. If you need a secon
   };
 }
 
-/** Every integer the model may mention — drawn from the same view the card prints. */
-export function allowedReadinessNumbers(view: ReadinessProgressView): Set<number> {
-  const allowed = new Set<number>([
-    0,
-    100,
-    view.overallScore,
-    view.overallMax,
-    ...Object.values(READINESS_GOAL_COUNTS),
-  ]);
-  for (const cat of view.categories) {
-    allowed.add(cat.pct);
-    allowed.add(cat.earned);
-    allowed.add(cat.max);
-    allowed.add(cat.max - cat.earned);
-    for (const item of cat.items) {
-      allowed.add(item.earned);
-      allowed.add(item.max);
-      allowed.add(item.max - item.earned);
-      if (item.max > 0) allowed.add(Math.round((item.earned / item.max) * 100));
-    }
-  }
-  for (const match of (view.priorityAction?.label ?? '').matchAll(/\d+/g)) {
-    allowed.add(Number(match[0]));
-  }
-  return allowed;
-}
-
 const RESTATED_TOTAL = /\d+\s*(?:out\s+)?of\s*\d+/i;
 const LIST_MARKER = /(?:^|\s)(?:\d+\.|[-•*])\s+\S/g;
 
+/** Digits the note may contain: only those in the fixed next-step sentence (e.g. "3 jobs"). */
+function allowedDigitRuns(view: ReadinessProgressView): Set<string> {
+  return new Set([...(view.priorityAction?.label ?? '').matchAll(/\d+/g)].map((m) => m[0]));
+}
+
 /**
- * Grounding gate for the model text. Rejects: any integer the view does not
- * contain, any percent or "N of M" restatement (the card prints those), and
- * list-shaped output (two or more "1. " / "- " markers).
+ * Grounding gate for the model text. The card prints every number, so the
+ * prose may not contain any digits except those in the next-step sentence
+ * it is told to end with. Also rejects "%", "N of M", exclamation marks
+ * (praise) and list-shaped output (two or more "1. " / "- " markers).
  */
 export function readinessSummaryLooksGrounded(text: string, view: ReadinessProgressView): boolean {
   const trimmed = text.trim();
   if (trimmed.length < 40 || trimmed.length > 900) return false;
-  if (trimmed.includes('%') || RESTATED_TOTAL.test(trimmed)) return false;
+  if (trimmed.includes('%') || trimmed.includes('!') || RESTATED_TOTAL.test(trimmed)) return false;
   if ([...trimmed.matchAll(LIST_MARKER)].length >= 2) return false;
-  const allowed = allowedReadinessNumbers(view);
-  const claimed = [...trimmed.matchAll(/\d+/g)].map((match) => Number(match[0]));
-  return claimed.every((n) => allowed.has(n));
+  const allowed = allowedDigitRuns(view);
+  return [...trimmed.matchAll(/\d+/g)].every((m) => allowed.has(m[0]));
 }
 
 /** Strip markdown, collapse horizontal whitespace, keep single newlines as paragraph breaks. */

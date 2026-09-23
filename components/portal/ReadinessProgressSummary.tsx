@@ -96,7 +96,7 @@ function RecapBreakdown({ breakdown }: { breakdown: ReadinessRecapBreakdown }) {
               >
                 {cat.earned}/{cat.max}
                 <span aria-hidden="true"> · </span>
-                <span style={{ color: cat.pct >= 100 ? 'var(--wa-success)' : 'var(--wa-text)', fontWeight: 600 }}>
+                <span style={{ color: cat.pct >= 100 ? 'var(--wa-success-dark)' : 'var(--wa-text)', fontWeight: 600 }}>
                   {cat.pct}%
                 </span>
               </span>

@@ -3,7 +3,6 @@ import { SCREENSHOT_MEMBER_BREAKDOWN, zeroScoreBreakdown } from './progressView.
 import { buildReadinessProgressView } from './progressView';
 import {
   READINESS_EMPTY_RECAP,
-  allowedReadinessNumbers,
   buildFactualReadinessRecap,
   buildReadinessRecapBreakdown,
   buildReadinessSummaryPrompt,
@@ -63,10 +62,40 @@ describe('readinessSummaryLooksGrounded', () => {
     expect(readinessSummaryLooksGrounded(text, view82)).toBe(true);
   });
 
-  test('accepts integers the view contains (the 3 in "apply to at least 3 jobs")', () => {
+  test('digits are allowed only when they appear in the fixed next-step sentence', () => {
     const text =
       'Your training area is still open on pathway steps and certificates. Keep going on your pathway, then apply to at least 3 jobs.';
-    expect(readinessSummaryLooksGrounded(text, view82)).toBe(true);
+    // view82's next step is "Complete more pathway steps…" — no digits allowed at all
+    expect(readinessSummaryLooksGrounded(text, view82)).toBe(false);
+    // a member whose next step IS "Apply to at least 3 jobs…" may say "3 jobs"
+    const applyView = buildReadinessProgressView({
+      ...SCREENSHOT_MEMBER_BREAKDOWN,
+      completePathwaySteps: { earned: 14, max: 14, done: true },
+      trackCertifications: { earned: 5, max: 5, done: true },
+    });
+    expect(applyView.priorityAction?.key).toBe('addApplications');
+    expect(readinessSummaryLooksGrounded(text, applyView)).toBe(true);
+  });
+
+  test('rejects true-but-restated or misattributed numbers, and praise', () => {
+    expect(
+      readinessSummaryLooksGrounded(
+        'Training is your lowest area and you have 14 pathway points left there. Next, complete more pathway steps in your training program.',
+        view82,
+      ),
+    ).toBe(false);
+    expect(
+      readinessSummaryLooksGrounded(
+        'Great job! Training is your lowest area because certificates and pathway steps are still open. Next, complete more pathway steps in your training program.',
+        view82,
+      ),
+    ).toBe(false);
+    expect(
+      readinessSummaryLooksGrounded(
+        'Your score is 82 and your resume area is at 24 while training is at 20. Next, complete more pathway steps in your training program.',
+        view82,
+      ),
+    ).toBe(false);
   });
 
   test('rejects the production garble: wrong point totals and percent restatements', () => {
@@ -108,17 +137,6 @@ describe('readinessSummaryLooksGrounded', () => {
 
   test('rejects empty or tiny model output', () => {
     expect(readinessSummaryLooksGrounded('Looks good.', view82)).toBe(false);
-  });
-
-  test('allowed numbers cover totals, per-area and per-item points, and remaining points', () => {
-    const allowed = allowedReadinessNumbers(view82);
-    for (const n of [0, 100, 82, 24, 20, 33, 13, 61, 29, 14, 6, 8, 10, 15, 5, 83, 2, 3]) {
-      expect(allowed.has(n)).toBe(true);
-    }
-    expect(allowed.has(105)).toBe(false);
-    expect(allowed.has(86)).toBe(false);
-    expect(allowed.has(7)).toBe(false);
-    expect(allowed.has(92)).toBe(false);
   });
 });
 

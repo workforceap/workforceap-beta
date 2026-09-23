@@ -60,6 +60,31 @@ describe('ReadinessProgressSummary (coach note)', () => {
     expect(screen.queryByRole('link', { name: /Apply to jobs/ })).toBeNull();
   });
 
+  it.each([
+    ['94', { addApplications: { earned: 15, max: 15, done: true } }],
+    ['89', {}],
+  ])('%s-point member with 3 pathway steps (done, 8/14): Lowest tag, note and CTA all point at Training', (_score, extra) => {
+    const v = buildReadinessProgressView({
+      ...SCREENSHOT_MEMBER_BREAKDOWN,
+      completePathwaySteps: { earned: 8, max: 14, done: true },
+      trackCertifications: { earned: 5, max: 5, done: true },
+      ...extra,
+    });
+    renderCard({
+      factualSummary: buildFactualReadinessRecap(v),
+      nextAction: v.priorityAction,
+      breakdown: buildReadinessRecapBreakdown(v),
+    });
+    const lowest = screen.getByTestId('readiness-recap-breakdown').querySelector('[data-lowest="true"]');
+    expect(lowest).toHaveTextContent('Training & Certs');
+    const text = screen.getByTestId('readiness-progress-summary-text');
+    expect(text.querySelectorAll('p')[0]).toHaveTextContent(/^Training & Certs is your lowest area because Complete pathway steps \(8\/14\) is still open\.$/);
+    expect(text).toHaveTextContent('Next: Complete more pathway steps in your training program.');
+    expect(text).not.toHaveTextContent('complete.');
+    expect(screen.getByRole('link', { name: /Continue training/ })).toHaveAttribute('href', '/dashboard/program');
+    expect(screen.queryByRole('link', { name: /Apply to jobs/ })).toBeNull();
+  });
+
   it('starts from the factual source tag when generation is off', () => {
     renderCard();
     expect(screen.getByText('From your numbers')).toBeInTheDocument();

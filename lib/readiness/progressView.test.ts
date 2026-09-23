@@ -67,17 +67,36 @@ describe('buildReadinessProgressView', () => {
     expect(view.priorityAction?.ctaLabel).toBe('Apply to jobs');
   });
 
-  test('an under-100% area with every item already done yields to the next weakest area', () => {
+  test('89-point member: 3 pathway steps (done, 8/14) + 2 applications — CTA stays in the Lowest area', () => {
+    // Inspector reproduction: Training 27/33 = 82% with every item `done`, Interview 24/29 = 83%.
+    // `done` skipping used to send the CTA to "Apply to jobs" under a Training LOWEST tag.
     const breakdown: ScoreBreakdown = {
       ...SCREENSHOT_MEMBER_BREAKDOWN,
-      // 3 steps = goal met (done) but only 8/14 points; certs done too → training 27/33 = 82%, all items done.
       completePathwaySteps: { earned: 8, max: 14, done: true },
       trackCertifications: { earned: 5, max: 5, done: true },
-      // Interview & Jobs 24/29 = 83% with applications still open.
     };
     const view = buildReadinessProgressView(breakdown);
+    expect(view.overallScore).toBe(89);
     expect(view.weakestCategory).toBe('training');
-    expect(view.priorityAction?.key).toBe('addApplications');
+    expect(view.priorityAction?.key).toBe('completePathwaySteps');
+    expect(view.priorityAction?.href).toBe('/dashboard/program');
+    expect(view.priorityAction?.ctaLabel).toBe('Continue training');
+  });
+
+  test('94-point member: everything done, 3 pathway steps — still has a CTA, not "complete"', () => {
+    // Inspector reproduction: only completePathwaySteps (8/14, done) is short; score 94.
+    const breakdown: ScoreBreakdown = {
+      ...SCREENSHOT_MEMBER_BREAKDOWN,
+      completePathwaySteps: { earned: 8, max: 14, done: true },
+      trackCertifications: { earned: 5, max: 5, done: true },
+      addApplications: { earned: 15, max: 15, done: true },
+    };
+    const view = buildReadinessProgressView(breakdown);
+    expect(view.overallScore).toBe(94);
+    expect(view.weakestCategory).toBe('training');
+    expect(view.priorityAction?.key).toBe('completePathwaySteps');
+    expect(view.readinessNote).toContain('Complete more pathway steps');
+    expect(view.readinessNote).not.toContain('complete.');
   });
 
   test('every training item routes to My Program, never back to /dashboard', () => {
