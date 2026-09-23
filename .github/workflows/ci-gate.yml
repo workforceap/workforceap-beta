@@ -7,15 +7,32 @@ on:
     branches: [master]
   workflow_dispatch:
 
+# Superseded PR pushes are cancelled. Pushes to master each get their own group
+# so a later merge never cancels an earlier master run halfway (before WAP-200,
+# 21 of the last 30 master runs were cancelled and left those commits with no
+# verdict).
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# WAP-200: the gate used to be one serial ~20-minute job. It is now four
+# parallel jobs (static-gates, unit, vitest shards, build) plus the
+# "Typecheck & Build" aggregator at the bottom, which keeps the check name
+# branch protection and reviewers look for. Every command the serial job ran
+# still runs on every PR and every push to master; only the order and the
+# parallelism changed. Each job repeats the same stub env block below.
 jobs:
-  ci:
-    name: Typecheck & Build
+  # Cheap static gates first, so a scoping, audit or migration-history mistake
+  # goes red in about a minute instead of 10-20 minutes in. The node-only
+  # guards run before `pnpm install` because they need nothing from it.
+  static-gates:
+    name: Static gates (guards, typecheck, lint, knip)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
 
     env:
       # Stub values so Next.js/Prisma don't crash at build time in CI.
@@ -25,9 +42,6 @@ jobs:
       NEXTAUTH_URL: "http://localhost:3000"
       NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder"
-      # GitHub runners have 16GB; the cold production build (no cache) was
-      # riding the 4GB ceiling and OOM'd (exit 134) as the app grew. 8GB gives
-      # headroom without approaching the runner limit.
       NODE_OPTIONS: "--max-old-space-size=8192"
       RATE_LIMIT_ALLOW_MISSING_UPSTASH: "1"
 
@@ -47,72 +61,13 @@ jobs:
       - name: Verify migration timestamp history
         run: node scripts/check-duplicate-migrations.mjs
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # Vercel builds the separate Astro package before Next.js. Use the same
-      # npm lockfile and commands so a marketing failure blocks this gate too.
-      - name: Install marketing dependencies
-        working-directory: marketing
-        run: npm ci --no-audit --no-fund
-
-      - name: Build marketing
-        working-directory: marketing
-        run: npm run build
-        timeout-minutes: 5
-
-      - name: Stage marketing output for Next.js
-        run: node -e "require('./scripts/vercel-build.cjs').copyMarketingBuild(process.cwd())"
-
-      - name: Generate Prisma client
-        run: node scripts/prisma-env.js prisma generate
-
-      - name: Typecheck
-        run: pnpm exec tsc --noEmit
-
       # Icon font coverage — fails if source uses a Material Symbols icon
       # missing from the committed subset (would render as raw ligature
       # text like FLIGHT_TAKEOFF in production). The `npm run build`
-      # script runs this on Vercel and in the Build step below; gate it
-      # explicitly here for faster feedback before the remaining checks.
+      # script runs this on Vercel and in the build job's Build step; gate
+      # it explicitly here for faster feedback before the remaining checks.
       - name: Verify Material Symbols subset
         run: node scripts/verify-material-symbols-font-size.mjs
-
-      # Unit tests (Node's built-in test runner via the `test:unit`
-      # script, which uses tsx). 499 specs run deterministically without
-      # external services; the small set that needs vitest, server-only,
-      # a live postgres, or a stale-assertion review is filtered in
-      # `scripts/test-unit.mjs` with the reason logged at startup.
-      # Required gate — failures block the PR.
-      - name: Unit tests
-        run: pnpm run test:unit
-
-      # Lint is release-blocking so Vercel cannot strand production on an
-      # ESLint error after GitHub CI has already reported success.
-      - name: Lint
-        run: pnpm run lint
-        timeout-minutes: 5
-
-      # Vitest is release-blocking. Playwright e2e and node:test files are
-      # excluded by vitest.config.ts and run in their own lanes.
-      # Wall-clock guard: measured 2026-09-22 over the last 20 green runs the
-      # step took median 442 s / max 477 s on the hosted 4-vCPU runner, and
-      # PR #2498 was killed by `timeout 480` at exactly 480 s (exit 124) with
-      # no failing test. 570 s keeps ~90 s of headroom over the slow-runner
-      # cluster while staying inside the 10-minute step ceiling below.
-      - name: Vitest
-        run: timeout 570 pnpm run test:vitest
-        timeout-minutes: 10
-
-      # Dead-code detection — required gate (WAP-37). `knip.json` tunes the
-      # entry points (route handlers, scripts, emails, marketing/) and
-      # silences the FlatCompat / dynamic-import false positives. Unused
-      # dependencies, unlisted imports, unresolved specifiers and duplicate
-      # exports fail the build; unused files / exports / types are still
-      # reported as warnings while the reviewed deletion batches land.
-      - name: Dead code (knip)
-        run: pnpm run deadcode
-        timeout-minutes: 5
 
       # Audit coverage (WAP-18): every app/api/admin/**/route.ts exporting a
       # mutating method must call auditLog/logAuditEvent (directly or via a
@@ -143,6 +98,274 @@ jobs:
       - name: Verify no new source-text tests
         run: node scripts/verify-no-source-text-tests.mjs
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: node scripts/prisma-env.js prisma generate
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      # Lint is release-blocking so Vercel cannot strand production on an
+      # ESLint error after GitHub CI has already reported success.
+      - name: Lint
+        run: pnpm run lint
+        timeout-minutes: 5
+
+      # Dead-code detection — required gate (WAP-37). `knip.json` tunes the
+      # entry points (route handlers, scripts, emails, marketing/) and
+      # silences the FlatCompat / dynamic-import false positives. Unused
+      # dependencies, unlisted imports, unresolved specifiers and duplicate
+      # exports fail the build; unused files / exports / types are still
+      # reported as warnings while the reviewed deletion batches land.
+      - name: Dead code (knip)
+        run: pnpm run deadcode
+        timeout-minutes: 5
+
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
+  unit:
+    name: Unit tests (node:test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
+
+    env:
+      # Stub values so Next.js/Prisma don't crash at build time in CI.
+      # Real secrets are never needed for a typecheck+build gate.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
+      NEXTAUTH_SECRET: "ci-secret-placeholder"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder"
+      NODE_OPTIONS: "--max-old-space-size=8192"
+      RATE_LIMIT_ALLOW_MISSING_UPSTASH: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: node scripts/prisma-env.js prisma generate
+
+      # Unit tests (Node's built-in test runner via the `test:unit`
+      # script, which uses tsx). 499 specs run deterministically without
+      # external services; the small set that needs vitest, server-only,
+      # a live postgres, or a stale-assertion review is filtered in
+      # `scripts/test-unit.mjs` with the reason logged at startup.
+      # Required gate — failures block the PR.
+      - name: Unit tests
+        run: pnpm run test:unit
+
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
+  # Vitest is release-blocking. Playwright e2e and node:test files are
+  # excluded by vitest.config.ts and run in their own lanes. The suite is split
+  # into two shards (`vitest run --shard=N/2`): every test file lands in exactly
+  # one shard, so the two jobs together run the same files the single step did.
+  vitest:
+    name: Vitest (shard ${{ matrix.shard }}/2)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+
+    env:
+      # Stub values so Next.js/Prisma don't crash at build time in CI.
+      # Real secrets are never needed for a typecheck+build gate.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
+      NEXTAUTH_SECRET: "ci-secret-placeholder"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder"
+      NODE_OPTIONS: "--max-old-space-size=8192"
+      RATE_LIMIT_ALLOW_MISSING_UPSTASH: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The serial job ran Vitest after staging the marketing build into
+      # public/, and tests/next-config-redirect-destinations.spec.ts accepts
+      # marketing/dist pages as redirect targets. Stage it here too so the
+      # suite sees the same tree it always did.
+      - name: Install marketing dependencies
+        working-directory: marketing
+        run: npm ci --no-audit --no-fund
+
+      - name: Build marketing
+        working-directory: marketing
+        run: npm run build
+        timeout-minutes: 5
+
+      - name: Stage marketing output for Next.js
+        run: node -e "require('./scripts/vercel-build.cjs').copyMarketingBuild(process.cwd())"
+
+      - name: Generate Prisma client
+        run: node scripts/prisma-env.js prisma generate
+
+      # Wall-clock guard: measured 2026-09-22 over the last 20 green runs the
+      # unsharded step took median 442 s / max 477 s on the hosted 4-vCPU
+      # runner, and PR #2498 was killed by `timeout 480` at exactly 480 s
+      # (exit 124) with no failing test. The unsharded guard was 570 s, ~90 s
+      # of headroom over the slow-runner cluster. Sharded in two (WAP-200),
+      # each shard carries about half the files; vitest splits by file count,
+      # not duration, so one shard can be heavier. 420 s is half the old
+      # guard plus room for that imbalance and the slow-runner cluster, and
+      # still catches a hung run long before the 8-minute step ceiling.
+      - name: Vitest
+        run: timeout 420 pnpm run test:vitest --shard=${{ matrix.shard }}/2
+        timeout-minutes: 8
+
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
+  build:
+    name: Next build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
+
+    env:
+      # Stub values so Next.js/Prisma don't crash at build time in CI.
+      # Real secrets are never needed for a typecheck+build gate.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
+      NEXTAUTH_SECRET: "ci-secret-placeholder"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder"
+      # GitHub runners have 16GB; the cold production build (no cache) was
+      # riding the 4GB ceiling and OOM'd (exit 134) as the app grew. 8GB gives
+      # headroom without approaching the runner limit.
+      NODE_OPTIONS: "--max-old-space-size=8192"
+      RATE_LIMIT_ALLOW_MISSING_UPSTASH: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Vercel builds the separate Astro package before Next.js. Use the same
+      # npm lockfile and commands so a marketing failure blocks this gate too.
+      - name: Install marketing dependencies
+        working-directory: marketing
+        run: npm ci --no-audit --no-fund
+
+      - name: Build marketing
+        working-directory: marketing
+        run: npm run build
+        timeout-minutes: 5
+
+      - name: Stage marketing output for Next.js
+        run: node -e "require('./scripts/vercel-build.cjs').copyMarketingBuild(process.cwd())"
+
+      - name: Generate Prisma client
+        run: node scripts/prisma-env.js prisma generate
+
+      # Next.js build cache (webpack cache, plus the incremental tsbuildinfo
+      # and ESLint cache `next build` keeps under .next/cache). This is the
+      # cache Vercel restores on every deploy; Next validates it against its
+      # own version, config and dependency hashes, so a stale entry only costs
+      # speed, never correctness. Restored on every run; saved only from
+      # pushes to master, so PRs start from master's latest build and the
+      # repository's 10 GB cache quota isn't churned by every PR push.
+      - name: Restore Next.js build cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Build
         run: pnpm run build
         env:
@@ -155,6 +378,53 @@ jobs:
       - name: Verify deployed PDF parser assets
         run: node scripts/verify-pdf-deployment.mjs
         timeout-minutes: 2
+
+      - name: Save Next.js build cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/cache/save@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
+  # Required check. Branch protection and reviewers match the check by this
+  # exact name, so it stays "Typecheck & Build" and passes only when every
+  # gate job above succeeded. `if: always()` makes it report red (never
+  # "skipped", which protection treats as passing) when a needed job fails or
+  # is cancelled.
+  ci:
+    name: Typecheck & Build
+    if: always()
+    needs: [static-gates, unit, vitest, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every gate job to succeed
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS_JSON" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          failed=$(echo "$NEEDS_JSON" | jq -r '[to_entries[] | select(.value.result != "success") | .key] | join(", ")')
+          if [ -n "$failed" ]; then
+            echo "::error title=Typecheck & Build::Gate job(s) did not succeed: $failed"
+            exit 1
+          fi
+          echo "All gate jobs succeeded."
 
   # Real PostgreSQL contract (WAP-175 lever 1). The typecheck/build job above
   # has no database, so migrations, RLS policies and role queries were never
