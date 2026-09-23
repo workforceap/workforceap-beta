@@ -122,8 +122,21 @@ function isAdminApiPath(pathname: string) {
   return ADMIN_API_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+/**
+ * Admin-only APIs that live outside /api/admin but still need the staff MFA
+ * gate: a real Stripe Connect transfer and org settings (custom domain).
+ * Keep these exact; /api/partner/* as a whole is the partner portal.
+ */
+const STAFF_MFA_EXACT_API_PATHS = new Set(['/api/partner/payout']);
+const STAFF_MFA_API_PATTERNS = [/^\/api\/org\/[^/]+\/settings$/];
+
+function isStaffOnlyApiPath(pathname: string) {
+  return STAFF_MFA_EXACT_API_PATHS.has(pathname) ||
+    STAFF_MFA_API_PATTERNS.some((pattern) => pattern.test(pathname));
+}
+
 function isStaffMfaPath(pathname: string) {
-  return isAdminPath(pathname) || isAdminApiPath(pathname) ||
+  return isAdminPath(pathname) || isAdminApiPath(pathname) || isStaffOnlyApiPath(pathname) ||
     pathname === '/counselor' || pathname.startsWith('/counselor/') ||
     pathname === '/api/counselor' || pathname.startsWith('/api/counselor/');
 }
@@ -333,7 +346,7 @@ export async function middleware(request: NextRequest) {
     isProtectedPath(effectivePath) ||
     isTenantApiPath(effectivePath) ||
     (isStaffMfaEnforcementEnabled() &&
-      (isAdminPath(effectivePath) || isAdminApiPath(effectivePath)));
+      isStaffMfaPath(effectivePath));
   const hasAuthCookie = hasSupabaseAuthCookies(request.cookies);
 
   // Anonymous public HTML must not construct a GoTrue client. Protected /

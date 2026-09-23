@@ -1,6 +1,6 @@
 // @vitest-environment node
 // Real auth boundary handlers; only provider, cookies, and database are synthetic.
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   jar: new Map<string, string>(),
   signOut: vi.fn(),
@@ -212,5 +212,59 @@ it.each(['/setup-mfa', '/verify-mfa', '/en/reset-password', '/api/auth/setup-mfa
 it('respects an explicitly disabled MFA rollout without changing the environment', async () => {
   vi.stubEnv('STAFF_MFA_ENFORCEMENT', '0');
   expect((await middleware(staffRequest('/api/admin/members'))).status).toBe(200);
+  expect(mocks.aal).not.toHaveBeenCalled();
+});
+
+function staffApiRequest(method: string, path: string, trust?: string) {
+  const request = staffRequest(path, trust);
+  return new NextRequest(request, { method });
+}
+
+// Admin-only APIs outside /api/admin: a Stripe Connect transfer and org
+// settings (custom domain) must carry the same staff MFA gate.
+describe.each([
+  ['POST', '/api/partner/payout'],
+  ['PUT', '/api/org/acme/settings'],
+  ['GET', '/api/org/acme/settings'],
+])('staff MFA on admin-only API %s %s', (method, path) => {
+  it('rejects an AAL1 session before factor enrollment', async () => {
+    const response = await middleware(staffApiRequest(method, path));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'MFA_SETUP_REQUIRED' });
+    expect(response.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('rejects an enrolled AAL1 session without device trust', async () => {
+    mocks.aal.mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null });
+    const response = await middleware(staffApiRequest(method, path));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'MFA_REQUIRED' });
+  });
+
+  it('passes an AAL2 session', async () => {
+    mocks.aal.mockResolvedValue({ data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null });
+    expect((await middleware(staffApiRequest(method, path))).status).toBe(200);
+    expect(mocks.aal).toHaveBeenCalledOnce();
+    // The gate runs on a provider-validated user, as it does for /api/admin.
+    expect(mocks.getProviderUser).toHaveBeenCalled();
+    expect(mocks.getProviderSession).not.toHaveBeenCalled();
+  });
+
+  it('passes an enrolled session with a valid device-trust cookie', async () => {
+    mocks.aal.mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null });
+    const token = await issueAdminMfaTrustToken({ userId: 'synthetic-user', userAgent: 'synthetic-audit', ip: '192.0.2.1' });
+    expect((await middleware(staffApiRequest(method, path, token))).status).toBe(200);
+  });
+});
+
+it.each([
+  ['GET', '/api/partner/referrals'],
+  ['POST', '/api/partner/payouts'],
+  ['GET', '/api/partner/payout/history'],
+  ['GET', '/api/org/acme/outcomes'],
+  ['PUT', '/api/org/acme/settings/extra'],
+])('does not challenge non-admin partner and org APIs: %s %s', async (method, path) => {
+  const response = await middleware(staffApiRequest(method, path));
+  expect(response.status).toBe(200);
   expect(mocks.aal).not.toHaveBeenCalled();
 });
