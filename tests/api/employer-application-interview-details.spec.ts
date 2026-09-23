@@ -8,8 +8,6 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-process.env.TZ = 'UTC';
-
 // Work scheduled with next/server `after()`; patch() waits for it to settle.
 const pendingAfter: Promise<unknown>[] = [];
 
