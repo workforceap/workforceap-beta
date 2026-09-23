@@ -18,6 +18,9 @@ name: Nightly E2E
 # Not a PR check. See docs/SLO-AND-STATUS.md, "Nightly heavy suites".
 
 on:
+  # TEMPORARY (proof run before merge; removed in the next commit).
+  push:
+    branches: [claude/wap-204-nightly-heavy]
   schedule:
     # 08:47 UTC: off the :00 minute and clear of the 06:17 FORCE RLS rehearsal
     # and the 07:37 portal smoke (at most 55 minutes). GitHub delays
@@ -110,10 +113,12 @@ jobs:
   report:
     name: Nightly failure issue
     needs: e2e
-    if: always() && github.event_name == 'schedule' && github.repository == 'workforceap/workforceap-beta'
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'push') && github.repository == 'workforceap/workforceap-beta'
     permissions:
       issues: write
     uses: ./.github/workflows/nightly-failure-issue.yml
     with:
       suite: Public E2E
-      result: ${{ needs.e2e.result }}
+      # TEMPORARY: exercise the lookup on the proof run with an assumed failure, write nothing.
+      result: ${{ github.event_name == 'push' && 'failure' || needs.e2e.result }}
+      dry_run: ${{ github.event_name == 'push' }}
