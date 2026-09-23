@@ -53,6 +53,15 @@ export default function ApplyEligibilityClient({
 }) {
   const isPaid = variant === 'paid';
   const t = useTranslations('apply');
+  // Option labels come from the locale catalog (WAP-242); stored values stay
+  // the same. An unknown value falls back to its English label.
+  const optionLabel = (
+    group: 'ageGroupOptions' | 'gradeLevelOptions' | 'barrierOptions',
+    option: { value: string; label: string },
+  ): string => {
+    const key = `${group}.${option.value}` as Parameters<typeof t>[0];
+    return t.has(key) ? t(key) : option.label;
+  };
   const tForm = useTranslations('form');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -901,7 +910,7 @@ export default function ApplyEligibilityClient({
               >
                 <option value="">{t('ageGroupPlaceholder')}</option>
                 {ageOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                  <option key={option.value} value={option.value}>{optionLabel('ageGroupOptions', option)}</option>
                 ))}
               </select>
             </div>
@@ -918,7 +927,7 @@ export default function ApplyEligibilityClient({
                 >
                   <option value="">{t('schoolGradePlaceholder')}</option>
                   {SCHOOL_GRADE_LEVELS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                    <option key={option.value} value={option.value}>{optionLabel('gradeLevelOptions', option)}</option>
                   ))}
                 </select>
               </div>
@@ -1040,7 +1049,7 @@ export default function ApplyEligibilityClient({
                           disabled={fixed}
                           onChange={() => toggleBarrier(option.value)}
                         />
-                        <span className="apply-barrier-option__label">{option.label}</span>
+                        <span className="apply-barrier-option__label">{optionLabel('barrierOptions', option)}</span>
                       </label>
                     );
                   })}
