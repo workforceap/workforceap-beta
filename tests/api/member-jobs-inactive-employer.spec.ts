@@ -288,6 +288,7 @@ import { POST as trackCurated } from '@/app/api/member/job-applications/track-cu
 import { POST as tailorJob } from '@/app/api/ai/job-tailor/[jobId]/route';
 import { POST as deactivateEmployer } from '@/app/api/admin/employers/[id]/deactivate/route';
 import { POST as rejectEmployer } from '@/app/api/admin/employers/[id]/reject/route';
+import { POST as reactivateEmployer } from '@/app/api/admin/employers/[id]/reactivate/route';
 import JobsPage from '@/app/(portal)/dashboard/jobs/page';
 import JobDetailPage, { generateMetadata as jobDetailMetadata } from '@/app/(portal)/dashboard/jobs/[id]/page';
 import { findBestEmployerMatch } from '@/lib/ai/proactiveJobMatcher';
@@ -389,7 +390,7 @@ describe('direct links to an inactive employer job behave as not found', () => {
   });
 });
 
-describe('deactivating or rejecting an employer flushes the cached member job list', () => {
+describe('changing an employer to or from inactive flushes the cached member job list', () => {
   it('deactivate invalidates jobs:list:*', async () => {
     vi.mocked(prisma.employer.findFirst).mockResolvedValue({ id: EMPLOYER_ID, status: 'active' } as any);
     vi.mocked(prisma.employer.update).mockResolvedValue({ id: EMPLOYER_ID, status: 'inactive' } as any);
@@ -411,6 +412,14 @@ describe('deactivating or rejecting an employer flushes the cached member job li
       new Request('http://localhost', { method: 'POST', body: '{}' }) as any,
       params(EMPLOYER_ID),
     );
+    expect(res.status).toBe(200);
+    expect(invalidateCache).toHaveBeenCalledWith('jobs:list:*');
+  });
+
+  it('reactivate invalidates jobs:list:* so the jobs return right away', async () => {
+    vi.mocked(prisma.employer.findFirst).mockResolvedValue({ id: EMPLOYER_ID, status: 'inactive' } as any);
+    vi.mocked(prisma.employer.update).mockResolvedValue({ id: EMPLOYER_ID, status: 'active' } as any);
+    const res = await reactivateEmployer(new Request('http://localhost', { method: 'POST' }), params(EMPLOYER_ID));
     expect(res.status).toBe(200);
     expect(invalidateCache).toHaveBeenCalledWith('jobs:list:*');
   });
