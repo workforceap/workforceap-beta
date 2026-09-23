@@ -22,7 +22,7 @@ import {
   getActiveTab,
 } from '@/lib/nav/portalNav';
 import { withContextualToolRow } from '@/lib/nav/memberToolRoutes';
-import WorkspaceSidebarSections from './WorkspaceSidebarSections';
+import WorkspaceSidebarSections, { navSectionsStorageKey } from './WorkspaceSidebarSections';
 import { useTour } from '@/components/onboarding/TourContext';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import SuperAdminViewSwitcher, { useIsSuperAdmin } from '@/components/super-admin-view-switcher';
@@ -722,7 +722,7 @@ export default function WorkspaceShell({
                       tNav(open ? 'hideMoreUnder' : 'showMoreUnder', { count, label })
                     }
                     onNavigate={closeDrawer}
-                    storageKey={`wa_nav_sections_${portalRole}`}
+                    storageKey={navSectionsStorageKey(portalRole)}
                     forceExpanded={tourOpen}
                   />
                 ) : GROUP_ORDER.map((group) => {
