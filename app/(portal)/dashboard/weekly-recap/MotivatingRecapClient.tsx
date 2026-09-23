@@ -89,6 +89,20 @@ function goalPercent(g: RecapGoalProgress): number {
   return 0;
 }
 
+const CAREER_BRIEF_PATH = '/dashboard/career-brief';
+const GOALS_HREF = `${CAREER_BRIEF_PATH}#goals`;
+
+/**
+ * Where a plan item links. Recaps are stored when they are generated, and
+ * those written before WAP-188 sent goal steps to the bare career brief. The
+ * goals now live in its #goals section, so a goal step that points at the
+ * page itself lands on the section (WAP-197). Other hrefs are unchanged.
+ */
+function planItemHref(p: Pick<RecapPlanItem, 'href' | 'source'>): string {
+  const href = p.href ?? '/dashboard';
+  return p.source === 'goal' && href === CAREER_BRIEF_PATH ? GOALS_HREF : href;
+}
+
 export default function MotivatingRecapClient({ recap, recapData, weekStart }: Props) {
   const weekLabel = formatRecapWeekLabel(weekStart);
 
@@ -229,6 +243,13 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>flag</span>
             <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>Progress toward your goals</h2>
+            <Link
+              href={GOALS_HREF}
+              className="wa-kit-focus"
+              style={{ marginLeft: 'auto', fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
+            >
+              Open your goals →
+            </Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {goals.map((g, i) => {
@@ -282,7 +303,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
             {plan.map((p, i) => (
               <Link
                 key={p.key ?? i}
-                href={p.href ?? '/dashboard'}
+                href={planItemHref(p)}
                 className="portal-card portal-card--flat"
                 style={{
                   padding: '1.1rem',

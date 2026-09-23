@@ -136,6 +136,8 @@ describe('/dashboard/program/start page', () => {
       expect(screen.queryByRole('link', { name: /My Classes/ })).toBeNull();
       // The enrollment steps rendered here do not name the retired label either.
       expect(screen.queryByText(/My Classes/)).toBeNull();
+      // WAP-197: the first-class step names the two places a member opens courses.
+      expect(screen.getByText(/From My Program or the Learning Hub, open your current course/)).toBeInTheDocument();
     });
 
     it('never treats an empty curriculum as complete', async () => {
