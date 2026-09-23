@@ -132,6 +132,25 @@ describe('admin queue navigation', () => {
   });
 });
 
+describe('Applications workbench split (WAP-190)', () => {
+  it('names the badge number, the applicant number and whatever staff or test accounts add', async () => {
+    const { adminWorkbenchApplicationsSplitCopy } = await import('./commandCenterHelpers');
+    assert.equal(
+      adminWorkbenchApplicationsSplitCopy(7, { decision: 3, applicant: 2 }),
+      '3 waiting on your decision · 2 waiting on the applicant · 2 from staff or test accounts',
+    );
+    assert.equal(
+      adminWorkbenchApplicationsSplitCopy(5, { decision: 3, applicant: 2 }),
+      '3 waiting on your decision · 2 waiting on the applicant',
+    );
+    // A count that straddles a write never prints a negative remainder.
+    assert.equal(
+      adminWorkbenchApplicationsSplitCopy(4, { decision: 3, applicant: 2 }),
+      '3 waiting on your decision · 2 waiting on the applicant',
+    );
+  });
+});
+
 describe('program health rows', () => {
   const labelFor = (slug: string) => `Title of ${slug}`;
 

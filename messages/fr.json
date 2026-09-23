@@ -95,7 +95,8 @@
       "admin": {
         "today": "Aujourd'hui",
         "students": "Étudiants",
-        "messages": "Messages"
+        "messages": "Messages",
+        "applications": "Candidatures"
       }
     },
     "freeCareerQuiz": "Quiz de carrière gratuit",
@@ -3666,12 +3667,12 @@
           "body": "Découvrez qui a besoin de vous aujourd'hui, où se trouvent vos étudiants et vos programmes, comment la progression de la formation est suivie et où les messages des membres attendent une réponse."
         },
         "commandCenter": {
-          "title": "Centre de commandement",
-          "body": "Votre point de départ. Étudiants actifs, placements de l'année et qui a besoin d'attention en haut, puis Ce qui vous attend aujourd'hui : réponses dues, candidatures et certifications à examiner, préparation d'entretiens. Chaque ligne renvoie à la page où agir."
+          "title": "Aujourd'hui",
+          "body": "Votre point de départ. D'abord, En attente de votre décision : chaque candidature et chaque vérification d'admission de votre organisation, de la plus ancienne à la plus récente, chacune ouvrant l'écran où elle se décide. Ensuite, Ce qui vous attend aujourd'hui (candidatures, certificats, nouveaux candidats sans conseiller, réponses dues, préparation d'entretiens), puis les chiffres de l'organisation."
         },
         "overview": {
           "title": "Vue détaillée",
-          "body": "Le tableau complet derrière le Centre de commandement : total des membres, évaluations terminées, qui est actif en formation, programmes suivis et terminés, plus les inscriptions et placements récents. Venez ici pour les chiffres, pas seulement pour la file."
+          "body": "Le tableau complet derrière Aujourd'hui : total des membres, évaluations terminées, qui est actif en formation, programmes suivis et terminés, plus les inscriptions et placements récents. Venez ici pour les chiffres, pas seulement pour la file."
         },
         "students": {
           "title": "Étudiants",
@@ -3683,11 +3684,11 @@
         },
         "programs": {
           "title": "Programmes",
-          "body": "Les programmes de formation que vous proposez, une carte par programme avec les apprenants inscrits et le taux d'achèvement. Demandes de programme, les étudiants qui souhaitent changer, se trouve juste en dessous."
+          "body": "Les programmes de formation que vous proposez, une carte par programme avec les apprenants inscrits et le taux d'achèvement. Parcours professionnels s'ouvre juste en dessous ; Demandes de programme, les étudiants qui souhaitent changer, se trouve dans Travail du jour, en haut du menu latéral."
         },
         "trainingProgress": {
           "title": "Progression de la formation",
-          "body": "La progression cours par cours de chaque étudiant inscrit, triable, sur l'ensemble du cursus et de Coursera. Évaluations et Certificats sont dans le même groupe."
+          "body": "La progression cours par cours de chaque étudiant inscrit, triable, sur l'ensemble du cursus et de Coursera. Évaluations s'ouvre juste en dessous ; les Certificats à examiner sont dans Travail du jour."
         },
         "settings": {
           "title": "Paramètres",

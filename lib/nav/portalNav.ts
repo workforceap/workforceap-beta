@@ -57,6 +57,7 @@ export type NavGroup =
   | 'insights'
   | 'manage'
   // Admin-first, plain-language groups (non-technical owner view)
+  | 'dailyWork'
   | 'runTheOrg'
   | 'students'
   | 'programs'
@@ -81,6 +82,8 @@ export type NavBadgeKey =
   | 'counselor_sla_breach_48h'
   /** Member threads whose latest message has no staff reply yet (any age). */
   | 'member_messages_unanswered'
+  /** Admin: applications in the actor's org waiting on a staff decision (PENDING, members only). */
+  | 'admin_applications_pending'
   | 'employer_queue_review_today'
   | 'employer_queue_stale_48h'
   | 'employer_queue_interview'
@@ -141,6 +144,7 @@ export const NAV_GROUP_LABELS: Record<NavGroup, string | null> = {
   insights: 'Insights',
   manage: 'Manage',
   // Admin-first, plain-language groups
+  dailyWork: 'Daily work',
   runTheOrg: 'Run the org',
   students: 'Students',
   programs: 'Programs',
@@ -152,15 +156,31 @@ export const NAV_GROUP_LABELS: Record<NavGroup, string | null> = {
 
 /**
  * Sections the admin rail renders closed until opened (the current page's
- * section always opens). Everything else opens by default.
+ * section always opens, and a running guided tour opens them all). Every
+ * admin section except the first, Daily work — the queue-clearing rows —
+ * starts closed (WAP-190).
  */
 export const NAV_GROUP_COLLAPSED_BY_DEFAULT: Partial<Record<NavGroup, true>> = {
+  runTheOrg: true,
+  programs: true,
+  partnersEmployers: true,
+  reporting: true,
+  content: true,
   system: true,
+};
+
+/**
+ * Admin sections that cannot be closed: the header is a plain label, not a
+ * disclosure, so the queue-clearing rows are always on screen (WAP-190).
+ */
+export const NAV_GROUP_ALWAYS_OPEN: Partial<Record<NavGroup, true>> = {
+  dailyWork: true,
 };
 
 export const GROUP_ORDER: NavGroup[] = [
   'primary',
   // Admin daily-first groups (rendered only when items use them)
+  'dailyWork',
   'runTheOrg',
   'students',
   'programs',
@@ -383,35 +403,65 @@ export const GROUP_PORTAL_NAV_ITEMS: PortalNavItem[] = [];
 
 /**
  * Admin command rail — grouped sections for a NON-technical owner (admin
- * audit 2026-09-19 §6.4; sidebar consolidation PR, 2026-09-21).
+ * audit 2026-09-19 §6.4; sidebar consolidation PR, 2026-09-21; queue-first
+ * rail, WAP-190).
  *
- * Shape: seven sections, each a collapsible disclosure in `WorkspaceShell`
- * (persisted per browser, the current page's section always opens). Daily
- * pages are top-level rows; related, rarer pages nest under a top-level row via
- * `parentHref` and open on demand (or when one of them is the current page).
- * Every destination that was in the flat 50-row rail is still here — this is a
- * re-grouping, not a removal — and every row keeps its own role gate
- * (`requiresSuperAdminContext`), so a nested super-admin page never appears for
- * an org admin even when its parent does. A child always shares its parent's
- * section, and a gated parent never hides an ungated child (lib/nav/portalNav.test.ts).
+ * Shape: seven sections in `WorkspaceShell`. The first, Daily work, holds the
+ * queue-clearing rows and is always open (`NAV_GROUP_ALWAYS_OPEN`: a plain
+ * label, no disclosure); the other six are collapsible disclosures, closed by
+ * default (`NAV_GROUP_COLLAPSED_BY_DEFAULT`), persisted per browser, and the
+ * current page's section always opens. Daily work: Today, Applications (the
+ * only admin screen that approves / asks for info / declines applications),
+ * Funding eligibility, Certificates, Program requests, Students and
+ * Messages. Rarer pages nest under a top-level row via `parentHref` and open
+ * on demand (or when one of them is the current page). Every destination is
+ * still here — this is a re-grouping, not a removal — and every row keeps its
+ * own role gate (`requiresSuperAdminContext`), so a nested super-admin page
+ * never appears for an org admin even when its parent does. A child always
+ * shares its parent's section, and a gated parent never hides an ungated child
+ * (lib/nav/portalNav.test.ts).
  *
- * `/admin` IS the Command Center (renders CommandCenterKit); the separate
- * `/admin/command-center` route still exists and is reachable directly.
- * `tourTarget`s are the admin.home guided-tour anchors (lib/tours/registry.ts);
- * all seven sit on top-level rows.
+ * `/admin` IS the admin home, "Today" (renders CommandCenterKit with the
+ * org-wide decision list on top). Applications points at the workbench
+ * `/admin/command-center?queue=applications` and is current only while the
+ * URL carries `queue=applications` (lib/nav/activeRoute.ts reads the query of
+ * a query-string href), so the needs-reply / at-risk / interviewing queues and
+ * the bare metrics view mark no row. `tourTarget`s are the admin.home
+ * guided-tour anchors (lib/tours/registry.ts); all seven sit on top-level rows.
  *
  * Reporting: ONE row points at the reporting hub `/admin/reporting` (built by the
  * sibling reporting PR); the analytics / outcomes / board / metrics pages it
  * absorbs stay reachable as its children.
  */
 export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
-  // ── Run the org — "who needs you today" ──
-  { href: '/admin', label: 'Command Center', group: 'runTheOrg', Icon: Zap, exact: true, tourTarget: 'tour-command-center' },
-  { href: '/admin/overview', label: 'Detailed overview', group: 'runTheOrg', Icon: BarChart3, tourTarget: 'tour-overview' },
+  // ── Daily work — the queues that wait on a staff decision (always open) ──
+  { href: '/admin', label: 'Today', group: 'dailyWork', Icon: Zap, exact: true, tourTarget: 'tour-command-center' },
+  {
+    href: '/admin/command-center?queue=applications',
+    label: 'Applications',
+    group: 'dailyWork',
+    Icon: ClipboardCheck,
+    // No pathname alias: the row is current on `?queue=applications` (any
+    // page) only, never on the other workbench queues or the bare metrics view.
+    // Badge: PENDING applications in the org, the "waiting on your decision" number on Today.
+    badgeKey: 'admin_applications_pending',
+  },
+  { href: '/admin/wioa-screening', label: 'Funding eligibility', group: 'dailyWork', Icon: ClipboardList },
+  { href: '/admin/certifications', label: 'Certificates', group: 'dailyWork', Icon: Award },
+  { href: '/admin/program-change-requests', label: 'Program requests', group: 'dailyWork', Icon: ArrowLeftRight },
+  // Single entry → the full-kit roster (StudentsRosterKit). The legacy hub
+  // (/admin/members) remains reachable via /admin/students?ui=legacy; the
+  // flavored student lists and Invites nest under Students.
+  { href: '/admin/students', label: 'Students', group: 'dailyWork', Icon: Users, tourTarget: 'tour-students' },
+  { href: '/admin/subgroups', label: 'Subgroups', group: 'dailyWork', Icon: UsersRound, parentHref: '/admin/students' },
+  { href: '/admin/sessions', label: 'In-office sessions', group: 'dailyWork', Icon: Sparkles, requiresSuperAdminContext: true, parentHref: '/admin/students' },
+  { href: '/admin/pipeline', label: 'Applications funnel', group: 'dailyWork', Icon: GitBranch, requiresSuperAdminContext: true, parentHref: '/admin/students' },
+  { href: '/admin/members/duplicates', label: 'Find duplicate students', group: 'dailyWork', Icon: AlertTriangle, requiresSuperAdminContext: true, parentHref: '/admin/students' },
+  { href: '/admin/invites', label: 'Invites', group: 'dailyWork', Icon: MessageSquare, parentHref: '/admin/students' },
   {
     href: '/admin/messages',
     label: 'Messages',
-    group: 'runTheOrg',
+    group: 'dailyWork',
     Icon: MessageSquare,
     requiresSuperAdminContext: true,
     // WAP-168: the badge is every member message awaiting a staff reply, not
@@ -419,27 +469,16 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     badgeKey: 'member_messages_unanswered',
     tourTarget: 'tour-messages',
   },
-  { href: '/admin/feedback', label: 'Feedback', group: 'runTheOrg', Icon: MessageSquare, requiresSuperAdminContext: true, parentHref: '/admin/messages' },
+  { href: '/admin/feedback', label: 'Feedback', group: 'dailyWork', Icon: MessageSquare, requiresSuperAdminContext: true, parentHref: '/admin/messages' },
 
-  // ── Students — the people you manage day to day ──
-  // Single top-level entry → the full-kit roster (StudentsRosterKit). The legacy
-  // hub (/admin/members) remains reachable via /admin/students?ui=legacy; the
-  // flavored student lists nest under Students.
-  { href: '/admin/students', label: 'Students', group: 'students', Icon: Users, tourTarget: 'tour-students' },
-  { href: '/admin/subgroups', label: 'Subgroups', group: 'students', Icon: UsersRound, parentHref: '/admin/students' },
-  { href: '/admin/sessions', label: 'In-office sessions', group: 'students', Icon: Sparkles, requiresSuperAdminContext: true, parentHref: '/admin/students' },
-  { href: '/admin/pipeline', label: 'Applications funnel', group: 'students', Icon: GitBranch, requiresSuperAdminContext: true, parentHref: '/admin/students' },
-  { href: '/admin/members/duplicates', label: 'Find duplicate students', group: 'students', Icon: AlertTriangle, requiresSuperAdminContext: true, parentHref: '/admin/students' },
-  { href: '/admin/invites', label: 'Invites', group: 'students', Icon: MessageSquare },
+  // ── Run the org — the numbers behind Today ──
+  { href: '/admin/overview', label: 'Detailed overview', group: 'runTheOrg', Icon: BarChart3, tourTarget: 'tour-overview' },
 
   // ── Programs & training ──
   { href: '/admin/programs', label: 'Programs', group: 'programs', Icon: BookOpen, tourTarget: 'tour-programs' },
   { href: '/admin/career-mappings', label: 'Career paths', group: 'programs', Icon: Target, parentHref: '/admin/programs' },
-  { href: '/admin/wioa-screening', label: 'Funding eligibility', group: 'programs', Icon: ClipboardList, parentHref: '/admin/programs' },
-  { href: '/admin/program-change-requests', label: 'Program requests', group: 'programs', Icon: ArrowLeftRight },
   { href: '/admin/training-progress', label: 'Training progress', group: 'programs', Icon: Table2, tourTarget: 'tour-training-progress' },
   { href: '/admin/assessments', label: 'Assessments', group: 'programs', Icon: ClipboardCheck, parentHref: '/admin/training-progress' },
-  { href: '/admin/certifications', label: 'Certificates', group: 'programs', Icon: Award, parentHref: '/admin/training-progress' },
   { href: '/admin/coursera', label: 'Coursera', group: 'programs', Icon: Library, requiresSuperAdminContext: true, parentHref: '/admin/training-progress' },
 
   // ── Partners & Employers ──

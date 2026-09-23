@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { ApplicationStatus, JobApplicationStatus, Prisma } from '@prisma/client';
+import { JobApplicationStatus, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -8,9 +8,16 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { loadPersistedAtRiskMembers, persistedRiskCommandRow } from '@/lib/member/persistedAtRisk';
 import { APPLICANT_TRIAGE_BUCKET_RANK, APPLICANT_TRIAGE_BUCKET_TEXT } from '@/lib/admin/applicantTriage';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import {
+  adminApplicationsAwaitingApplicantWhere,
+  adminApplicationsAwaitingDecisionWhere,
+} from '@/lib/admin/adminApprovalQueue';
 import { loadApplicantTriageByUserIds, type ApplicantTriageLoaded } from '@/lib/admin/applicantTriageLoad';
 import { applicationStatusKey, applicationStatusLabel } from '@/lib/status/applicationStatusVocabulary';
 import {
+  ADMIN_QUEUE_PAGE_SIZE,
+  adminWorkbenchApplicationsOrderBy,
+  adminWorkbenchApplicationsWhere,
   buildApplicationEmailPacket,
   buildProgramHealthRows,
   normalizeAdminQueueRequest,
@@ -51,7 +58,7 @@ export async function getAdminCommandCenter(
 ): Promise<AdminCommandCenter> {
   const orgId = await getActorOrganizationId(actorUserId);
   const { queue, page } = normalizeAdminQueueRequest(options?.queue, options?.page);
-  const limit = queue ? 25 : Math.max(1, Math.min(50, Math.floor(options?.perSectionLimit || DEFAULT_LIMIT)));
+  const limit = queue ? ADMIN_QUEUE_PAGE_SIZE : Math.max(1, Math.min(50, Math.floor(options?.perSectionLimit || DEFAULT_LIMIT)));
   const offset = (page - 1) * limit;
   const skipFor = (key: AdminQueueKey) => queue === key ? offset : 0;
   const now = options?.now ?? new Date();
@@ -82,6 +89,7 @@ export async function getAdminCommandCenter(
       applicationsPendingCount: applicationsPending.total,
       certificationsPendingCount,
       oldestPendingApplicationDays: applicationsPending.oldestDays,
+      applicationsWaitingOn: applicationsPending.waitingOn,
     },
   };
 }
@@ -161,13 +169,13 @@ async function loadApplicationsPending(
   limit: number,
   offset: number,
 ) {
-  const where: Prisma.ApplicationWhereInput = {
-    status: { in: [ApplicationStatus.PENDING, ApplicationStatus.NEEDS_INFO] },
-    user: { organizationId: orgId, deletedAt: null },
-  };
-  const [rows, total, oldest] = await prisma.$transaction([prisma.application.findMany({
+  const where = adminWorkbenchApplicationsWhere(orgId);
+  // The last two counts are the member-only split the Applications badge and
+  // the admin Today use, read in the same snapshot as `total` so the line
+  // under the workbench count adds up (WAP-190).
+  const [rows, total, oldest, waitingOnDecision, waitingOnApplicant] = await prisma.$transaction([prisma.application.findMany({
     take: limit, skip: offset, where,
-    orderBy: [{ submittedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }, { id: 'asc' }],
+    orderBy: adminWorkbenchApplicationsOrderBy(),
     select: {
       id: true,
       status: true,
@@ -181,7 +189,8 @@ async function loadApplicationsPending(
     SELECT MIN(COALESCE(a.submitted_at, a.created_at)) AS oldest FROM applications a
     JOIN users u ON u.id = a.user_id
     WHERE u.organization_id = ${orgId} AND u.deleted_at IS NULL AND a.status IN ('PENDING', 'NEEDS_INFO')
-  `)],
+  `), prisma.application.count({ where: adminApplicationsAwaitingDecisionWhere(orgId) }),
+  prisma.application.count({ where: adminApplicationsAwaitingApplicantWhere(orgId) })],
     { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
 
   // Applicant intake triage (read-only pre-sort). A failure here must not hide
@@ -231,7 +240,12 @@ async function loadApplicationsPending(
     .sort(([a, ia], [b, ib]) => rank(a) - rank(b) || ia - ib)
     .map(([row]) => row);
 
-  return { total, oldestDays: oldest[0]?.oldest ? Math.max(0, Math.floor((now.getTime() - oldest[0]?.oldest.getTime()) / DAY_MS)) : null, rows: sorted };
+  return {
+    total,
+    oldestDays: oldest[0]?.oldest ? Math.max(0, Math.floor((now.getTime() - oldest[0]?.oldest.getTime()) / DAY_MS)) : null,
+    rows: sorted,
+    waitingOn: { decision: waitingOnDecision, applicant: waitingOnApplicant },
+  };
 }
 
 /**

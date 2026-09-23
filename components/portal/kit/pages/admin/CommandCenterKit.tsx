@@ -63,6 +63,12 @@ export interface CommandCenterQueueItem {
   tone?: QueueTone;
   /** Full count; shown before the title when the title does not already include it. */
   count?: number;
+  /**
+   * Named people behind the count, each linking to where the row's action is
+   * taken (e.g. "Assign a counselor: Ada, Ben and 3 more" on the admin
+   * Today). `more` is how many the count holds beyond the listed links.
+   */
+  links?: { label: string; items: ReadonlyArray<{ label: string; href: string }>; more?: number };
 }
 
 /**
@@ -119,8 +125,22 @@ export interface CommandCenterMemberRow {
 }
 
 export interface CommandCenterKitProps {
+  /** Page heading (the one `h1`). Defaults to "Command Center"; the admin home passes "Today". */
+  title?: string;
   /** Date/time shown in the header, e.g. "Tue, Jun 21 · 9:42 AM". */
   dateLabel?: string;
+  /**
+   * Rendered directly under the header, above everything else — the admin
+   * Today puts its org-wide "Waiting on your decision" list here.
+   */
+  lead?: ReactNode;
+  /**
+   * Queues before numbers: the work queue runs full width right after the
+   * header (and `lead`), and the KPI strip, placements trend and program /
+   * system context follow below it. Default false keeps the metrics-first
+   * overview layout `/admin/command-center` renders.
+   */
+  queuesFirst?: boolean;
   /** KPI cards across the top. */
   kpis?: CommandCenterKpiItem[];
   /** Prioritized work-queue rows ("What needs you today"). */
@@ -242,15 +262,16 @@ function clampPct(n: number): number {
 /* ---- Header and work queue ------------------------------------------------ */
 
 interface HeaderProps {
+  title: string;
   dateLabel: string;
   onAddStudent?: () => void;
   addStudentHref?: string;
 }
 
-function CommandCenterHeader({ dateLabel, onAddStudent, addStudentHref }: HeaderProps) {
+function CommandCenterHeader({ title, dateLabel, onAddStudent, addStudentHref }: HeaderProps) {
   return (
     <header className={styles.header}>
-      <h1 className="h-font">Command Center</h1>
+      <h1 className="h-font">{title}</h1>
       <span className={styles.date}>{dateLabel}</span>
       {addStudentHref ? (
         <AstryxLink href={addStudentHref} as={NextLink as never} color="inherit" isStandalone className={styles.addStudent}>
@@ -275,6 +296,18 @@ function WorkQueueRow({ item, onAction }: { item: CommandCenterQueueItem; onActi
           {item.title}
         </span>
         <span className={styles.meta}>{item.detail}</span>
+        {item.links && item.links.items.length > 0 ? (
+          <span className={styles.meta} data-queue-links={item.id}>
+            {item.links.label}{' '}
+            {item.links.items.map((link, index) => (
+              <span key={link.href}>
+                {index > 0 ? (index === item.links!.items.length - 1 && !item.links!.more ? ' and ' : ', ') : null}
+                <NextLink href={link.href} className={`${styles.queueLink} wa-kit-focus`}>{link.label}</NextLink>
+              </span>
+            ))}
+            {item.links.more ? ` and ${item.links.more} more` : null}
+          </span>
+        ) : null}
       </span>
       {item.href ? (
         <AstryxLink href={item.href} as={NextLink as never} color="inherit" isStandalone className={styles.queueAction}>
@@ -335,7 +368,10 @@ const memberColumns: Column<CommandCenterMemberRow>[] = [
 /* ---- Main ----------------------------------------------------------------- */
 
 export function CommandCenterKit({
+  title = 'Command Center',
   dateLabel = 'Tue, Jun 21 · 9:42 AM',
+  lead,
+  queuesFirst = false,
   kpis = DEFAULT_KPIS,
   queueItems = DEFAULT_QUEUE,
   programHealth = DEFAULT_PROGRAM_HEALTH,
@@ -358,28 +394,35 @@ export function CommandCenterKit({
     deltaTone: item.deltaTone,
   }));
 
+  const metricsStrip = kpis.length > 0 ? (
+    <KpiStrip items={metricItems} cols={kpis.length === 5 ? 5 : kpis.length === 6 ? 6 : 4} className={styles.metrics} />
+  ) : null;
+  const workQueue = (
+    <section aria-labelledby="admin-work-queue-title" className={queuesFirst ? `${styles.section} ${styles.queueBlock}` : styles.section}>
+      <header className={styles.sectionHeading}>
+        <h2 id="admin-work-queue-title">What needs you today</h2>
+        <span className={styles.meta}>{queueItems.length} queues</span>
+      </header>
+      {queueItems.length > 0 ? (
+        <ul className={styles.queueList}>
+          {queueItems.map((item) => (
+            <WorkQueueRow key={item.id} item={item} onAction={onQueueAction ? () => onQueueAction(item.id) : undefined} />
+          ))}
+        </ul>
+      ) : <p className={styles.meta}>No work queues to display.</p>}
+    </section>
+  );
+
   return (
     <DesignSurface surface="dense" className={styles.commandCenter}>
-      <CommandCenterHeader dateLabel={dateLabel} onAddStudent={onAddStudent} addStudentHref={addStudentHref} />
-      {kpis.length > 0 ? (
-        <KpiStrip items={metricItems} cols={kpis.length === 5 ? 5 : kpis.length === 6 ? 6 : 4} className={styles.metrics} />
-      ) : null}
+      <CommandCenterHeader title={title} dateLabel={dateLabel} onAddStudent={onAddStudent} addStudentHref={addStudentHref} />
+      {lead ? <div className={styles.lead}>{lead}</div> : null}
+      {queuesFirst ? workQueue : metricsStrip}
+      {queuesFirst ? metricsStrip : null}
 
       <div className={styles.workspace}>
         <div className={styles.primary}>
-          <section aria-labelledby="admin-work-queue-title" className={styles.section}>
-            <header className={styles.sectionHeading}>
-              <h2 id="admin-work-queue-title">What needs you today</h2>
-              <span className={styles.meta}>{queueItems.length} queues</span>
-            </header>
-            {queueItems.length > 0 ? (
-              <ul className={styles.queueList}>
-                {queueItems.map((item) => (
-                  <WorkQueueRow key={item.id} item={item} onAction={onQueueAction ? () => onQueueAction(item.id) : undefined} />
-                ))}
-              </ul>
-            ) : <p className={styles.meta}>No work queues to display.</p>}
-          </section>
+          {queuesFirst ? null : workQueue}
 
           {placementsByMonth.length > 0 ? (
             <section aria-labelledby="admin-placements-title" className={styles.section}>

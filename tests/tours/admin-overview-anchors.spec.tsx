@@ -45,6 +45,10 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 vi.mock('@/lib/admin/triageDigest', () => ({ getTriageDigest: vi.fn() }));
 vi.mock('@/lib/admin/commandCenter', () => ({ getAdminCommandCenter: vi.fn() }));
+vi.mock('@/lib/admin/loadAdminApprovalQueue', async () => {
+  const { emptyAdminApprovalQueue } = await import('@/lib/admin/adminApprovalQueue');
+  return { loadAdminApprovalQueue: vi.fn(async () => emptyAdminApprovalQueue()) };
+});
 vi.mock('@/lib/attention/admin', () => ({ getAdminAttention: vi.fn() }));
 vi.mock('@/lib/messages/superAdminMessageQueries', () => ({ countThreadsWithSlaBreach: vi.fn(async () => 0) }));
 
@@ -60,7 +64,7 @@ function anchors(html: string, target: string): number {
   return (html.match(new RegExp(`data-tour="${target}"`, 'g')) ?? []).length;
 }
 
-describe('admin Command Center leaves every guided-tour anchor to the shell', () => {
+describe('admin Today leaves every guided-tour anchor to the shell', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({ id: 'admin-user-1', email: 'owner@example.org' } as never);
@@ -83,14 +87,15 @@ describe('admin Command Center leaves every guided-tour anchor to the shell', ()
     } as never);
   });
 
-  it('the default (kit) home renders the real Command Center and zero tour anchors of its own', async () => {
+  it('the default (kit) home renders the real Today and zero tour anchors of its own', async () => {
     const html = renderToStaticMarkup(
       <NextIntlClientProvider locale="en" messages={en}>
         {await AdminTodayPage({ searchParams: Promise.resolve({}) })}
       </NextIntlClientProvider>,
     );
     expect(getAdminCommandCenter).toHaveBeenCalledTimes(1);
-    expect(html).toContain('Command Center');
+    expect(html).toContain('<h1 class="h-font">Today</h1>');
+    expect(html).toContain('Waiting on your decision');
     expect(html).toContain('What needs you today');
     expect(html).toContain('Enrollment share by program');
     expect(html).not.toContain('data-portal-error-state');

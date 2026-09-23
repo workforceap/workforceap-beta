@@ -95,24 +95,26 @@ The pre-kit mobile/desktop home (`DesktopDashboard`, the `Mobile*` sections, `Da
 
 ## Admin Portal (`/admin/*`)
 
-### Sidebar sections (2026-09-21 consolidation)
+### Sidebar sections (2026-09-21 consolidation; queue-first, WAP-190)
 
 The admin rail (`lib/nav/portalNav.ts` → `ADMIN_PORTAL_NAV_ITEMS`, rendered by
 `components/portal/WorkspaceSidebarSections.tsx` inside `WorkspaceShell`) groups every admin
-destination into seven collapsible sections. Daily pages are top-level rows; related pages nest
-under a top-level row (`parentHref`) and open on demand or when one of them is the current page.
-Section and nested-row open state persists per browser (`localStorage` `wa_nav_sections_admin`);
-the current page's section always opens on arrival. Rows marked ⚿ are `requiresSuperAdminContext`.
+destination into seven sections. Daily work, the queue-clearing rows, comes first and is always open
+(a plain label, not a disclosure); the other six are collapsible and start closed. Related pages nest under a
+top-level row (`parentHref`) and open on demand or when one of them is the current page. Section and
+nested-row open state persists per browser (`localStorage` `wa_nav_sections_admin`); the current
+page's section always opens on arrival, and a running guided tour opens them all. Rows marked ⚿ are
+`requiresSuperAdminContext`.
 
 | Section | Top-level rows (nested rows) |
 |---|---|
-| Run the org | Command Center · Detailed overview · Messages ⚿ (Feedback ⚿) |
-| Students | Students (Subgroups · In-office sessions ⚿ · Applications funnel ⚿ · Find duplicate students ⚿) · Invites |
-| Programs | Programs (Career paths · Funding eligibility) · Program requests · Training progress (Assessments · Certificates · Coursera ⚿) |
+| Daily work (always open) | Today → `/admin` · Applications → `/admin/command-center?queue=applications` (pending-applications badge) · Funding eligibility · Certificates · Program requests · Students (Subgroups · In-office sessions ⚿ · Applications funnel ⚿ · Find duplicate students ⚿ · Invites) · Messages ⚿ (Feedback ⚿) |
+| Run the org | Detailed overview |
+| Programs | Programs (Career paths) · Training progress (Assessments · Coursera ⚿) |
 | Partners & Employers | Employers (Jobs · Employer screening) · Partners · Placements (Placement surveys) · Counselors · Mentors |
 | Reporting | Reporting → `/admin/reporting` hub (Analytics · Placement outcomes · Board outcomes · Metrics ⚿ · Weekly recap ⚿ · Growth ⚿ · AI tools ⚿ · AI Efficacy ⚿) |
 | Content | Blog (Email templates ⚿ · What WorkforceAP does ⚿) |
-| Security & system ⚿ (closed by default) | Settings (Feature flags · Data retention) · Users · Audit logs (CSP reports) · Exports · System Health (Diagnostics · Cron Monitor · Email & Crons · Webhook events · Agent inbox) |
+| Security & system ⚿ | Settings (Feature flags · Data retention) · Users · Audit logs (CSP reports) · Exports · System Health (Diagnostics · Cron Monitor · Email & Crons · Webhook events · Agent inbox) |
 
 The collapsed icon rail lists every row flat. `/dev/staff/admin-shell` renders this chrome without
 auth or a database for screenshots.
