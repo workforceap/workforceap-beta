@@ -35,6 +35,10 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
+import First90DaysCard, { type First90DaysCardProps } from '@/components/portal/First90DaysCard';
+import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+import PlacementConfirmationStrip from '@/app/(portal)/dashboard/PlacementConfirmationStrip';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
@@ -45,17 +49,23 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  * Faithful port of the approved Command Center mockup onto the portal design
  * kit (warm surface + --wa-* tokens + wa-kit-* classes + lucide icons). Layout
  * order, top to bottom:
- *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`.
- *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard, kit variant),
- *      then an "Up next" list of the following steps beside one AI Career
- *      Tools pick for the member's stage (both from the loader; either may be
+ *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`,
+ *      then the youth notice for a member under 18 (`youthNoticeAge`).
+ *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard, kit variant).
+ *      Under it, only when they apply: the placement confirmation strip for
+ *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
+ *      while a placement is inside its window (`first90`) — the two
+ *      post-offer surfaces the `?ui=legacy` home used to own (WAP-188). Then
+ *      an "Up next" list of the following steps beside one AI Career Tools
+ *      pick for the member's stage (both from the loader; either may be
  *      empty, and the row disappears when both are).
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
  *   4. A mixed row: certification progress ring, weekly-activity area chart,
  *      and a points ledger.
  *   5. The application pipeline table + a Next Badge tile with segmented
- *      progress.
+ *      progress. Goals fold into that tile and link to the goals section on
+ *      the career brief; with none, a quiet "Set a goal" link goes there.
  * A quiet "quick links" row (Learning Hub / AI Career Tools) closes out the
  * page — those destinations also live in the primary portal nav, so they get
  * a low-key footer instead of competing bento tiles.
@@ -176,7 +186,18 @@ export interface MemberHomeKitProps {
   longestStreak?: number;
   /** Up to a few active goals, folded into the Next Badge tile. */
   goals?: GoalSummary[];
+  /** Where "Open goals" / "Set a goal" go: the goals section of the career brief (kit page, not `?ui=legacy`). */
   goalsHref?: string;
+  /**
+   * OFFER applications for the placement confirmation strip — the one
+   * member-initiated path to a (member-reported) placement record. Empty
+   * renders nothing.
+   */
+  jobOffers?: Array<{ id: string; role: string; company: string }>;
+  /** First 90 Days check-in card props while a placement is inside its window. `null` renders nothing. */
+  first90?: First90DaysCardProps | null;
+  /** The member's age when under 18 (from `profile.dob`); shows the youth notice. `null` renders nothing. */
+  youthNoticeAge?: number | null;
   /** Dominant next-best-action banner rendered above the bento grid. `null`/omitted renders nothing (no empty shell). */
   doThisNext?: NextBestAction | null;
   /** The steps after `doThisNext`, most important first. Empty renders nothing. */
@@ -543,7 +564,10 @@ export function MemberHomeKit({
   currentStreak = 0,
   longestStreak = 0,
   goals = [],
-  goalsHref = '/dashboard?ui=legacy&tab=learning#goals',
+  goalsHref = '/dashboard/career-brief#goals',
+  jobOffers = [],
+  first90 = null,
+  youthNoticeAge = null,
   doThisNext = null,
   upNext = [],
   recommendedTool = null,
@@ -641,9 +665,26 @@ export function MemberHomeKit({
           </div>
         ) : null}
 
+        {youthNoticeAge !== null && youthNoticeAge < 18 ? <YouthDashboardNotice age={youthNoticeAge} /> : null}
+
         {/* 2. Dominant next-best-action banner. Renders nothing when there's no
             pending action (see MemberDoThisNextCard). */}
         <MemberDoThisNextCard action={doThisNext} variant="kit" paddingX="0" />
+
+        {/* Post-offer surfaces, each only when it applies: confirm an accepted
+            offer (writes a member-reported placement and alerts the
+            counselor), then the First 90 Days check-in (a trouble report
+            escalates to the counselor). Both call their own server actions. */}
+        {jobOffers.length > 0 ? (
+          <ErrorBoundary>
+            <PlacementConfirmationStrip offers={jobOffers} />
+          </ErrorBoundary>
+        ) : null}
+        {first90 ? (
+          <ErrorBoundary>
+            <First90DaysCard {...first90} />
+          </ErrorBoundary>
+        ) : null}
 
         {!programTitle && ungatedDigitalBasicsHref ? (
           <div className="wa-kit-card" style={{ display: 'grid', gap: 10 }}>
@@ -1001,7 +1042,16 @@ export function MemberHomeKit({
                   Open goals
                 </a>
               </div>
-            ) : null}
+            ) : (
+              // No active goal: one quiet way to set one, not an empty goals block.
+              <a
+                href={goalsHref}
+                className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                style={{ ...HOME_TEXT_LINK, alignSelf: 'flex-start', fontSize: 'var(--wa-type-meta)' }}
+              >
+                <Target size={14} aria-hidden /> Set a goal
+              </a>
+            )}
           </div>
         </div>
 

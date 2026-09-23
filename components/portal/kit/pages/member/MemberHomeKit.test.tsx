@@ -11,6 +11,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
   useSearchParams: () => new URLSearchParams(),
 }));
+// The placement strip and the First 90 Days card call server actions; the
+// render tests never click them.
+vi.mock('@/app/(portal)/dashboard/placementAction', () => ({ confirmPlacement: vi.fn() }));
+vi.mock('@/app/(portal)/dashboard/first90DaysAction', () => ({ submitFirst90DaysCheckIn: vi.fn() }));
 
 function renderKit(ui: ReactElement) {
   return render(<NextIntlClientProvider locale="en" messages={messages}>{ui}</NextIntlClientProvider>);
@@ -201,5 +205,63 @@ describe('MemberHomeKit up next + recommended tool', () => {
     renderKit(<MemberHomeKit {...base} />);
     expect(screen.queryByRole('list', { name: 'Up next' })).toBeNull();
     expect(screen.queryByTestId('recommended-tool')).toBeNull();
+  });
+});
+
+/**
+ * WAP-188 Phase A: what only the `?ui=legacy` home showed now renders on the
+ * kit home, each piece only for the members it applies to, and the goals
+ * links stay on kit pages.
+ */
+describe('MemberHomeKit pieces moved over from the legacy home', () => {
+  const first90 = {
+    stage: 'day_30' as const,
+    daysSincePlacement: 20,
+    employerName: 'Acme Health',
+    currentStageResponse: null,
+    completedStages: ['week_1' as const],
+  };
+
+  it('asks about each OFFER application, below the hero', () => {
+    renderKit(<MemberHomeKit {...base} jobOffers={[{ id: 'o1', role: 'IT Support Specialist', company: 'Acme Health' }]} />);
+    const question = screen.getByRole('heading', { name: 'Did you accept the role at Acme Health?' });
+    expect(screen.getByRole('button', { name: /notify my team/ })).toBeTruthy();
+    const hero = screen.getByRole('link', { name: /Start preassessment/ });
+    expect(hero.compareDocumentPosition(question) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows the First 90 Days check-in for a placed member', () => {
+    renderKit(<MemberHomeKit {...base} first90={first90} />);
+    expect(screen.getByText('Your new job at Acme Health')).toBeTruthy();
+    expect(screen.getByText("How's the job going?")).toBeTruthy();
+  });
+
+  it('shows the youth notice for a member under 18', () => {
+    renderKit(<MemberHomeKit {...base} youthNoticeAge={16} />);
+    const notice = screen.getByRole('region', { name: 'Youth Member Portal (Age 16)' });
+    expect(notice.textContent).toContain('Full job board access and applications become available when you turn 18');
+  });
+
+  it('renders none of them for a member they do not apply to', () => {
+    renderKit(<MemberHomeKit {...base} />);
+    expect(screen.queryByText(/Did you accept the role/)).toBeNull();
+    expect(screen.queryByText('First 90 Days')).toBeNull();
+    expect(screen.queryByText(/Youth Member Portal/)).toBeNull();
+  });
+
+  it('sends "Open goals" to the goals section on the career brief, never into ?ui=legacy', () => {
+    const { container } = renderKit(<MemberHomeKit {...base} goals={[{ title: 'Apply to 5 roles', percent: 40 }]} />);
+    expect(screen.getByRole('link', { name: 'Open goals' }).getAttribute('href')).toBe('/dashboard/career-brief#goals');
+    expect(screen.queryByRole('link', { name: /Set a goal/ })).toBeNull();
+    expect(container.querySelector('a[href*="ui=legacy"]')).toBeNull();
+  });
+
+  it('offers a quiet "Set a goal" link in the Next badge tile when there are no goals', () => {
+    const { container } = renderKit(<MemberHomeKit {...base} goals={[]} />);
+    const link = screen.getByRole('link', { name: /Set a goal/ });
+    expect(link.getAttribute('href')).toBe('/dashboard/career-brief#goals');
+    expect(link.closest('.wa-kit-card')?.textContent).toContain('Next badge');
+    expect(screen.queryByRole('link', { name: 'Open goals' })).toBeNull();
+    expect(container.querySelector('a[href*="ui=legacy"]')).toBeNull();
   });
 });
