@@ -669,7 +669,10 @@ test('the dashboard page (one implementation since WAP-195) calls the loader and
   // The whole page is the kit home now, so the whole file is the block that
   // must stay lean: every read goes through loadMemberDashboardHome (plus the
   // approval-wait estimate), never a direct prisma read, B4B or getMemberState.
-  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
+  // Code only: the page's comments may name what it deliberately does not call.
+  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
   assert.match(src, /await loadMemberDashboardHome\(/);
   assert.doesNotMatch(src, /prisma\./);
   assert.doesNotMatch(src, /from '@\/lib\/db\/prisma'/);
