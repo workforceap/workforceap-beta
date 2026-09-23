@@ -76,10 +76,14 @@ export default function ApplyEligibilityClient({
   const [zip, setZip] = useState('');
   const [county, setCounty] = useState('');
   const [primaryBarriers, setPrimaryBarriers] = useState<string[]>([DEFAULT_PRIMARY_BARRIER.value]);
-  const toggleBarrier = (v: string) =>
+  // The default barrier is always included (normalizePrimaryBarriers seeds it),
+  // so it is shown fixed and checked instead of refusing a click.
+  const toggleBarrier = (v: string) => {
+    if (v === DEFAULT_PRIMARY_BARRIER.value) return;
     setPrimaryBarriers((cur) =>
       normalizePrimaryBarriers(cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v])
     );
+  };
 
   const [q1, setQ1] = useState<YesNo | null>(null);
   const [gradeLevel, setGradeLevel] = useState('');
@@ -455,6 +459,9 @@ export default function ApplyEligibilityClient({
           margin-top: 0;
         }
         .apply-flow--step1 .apply-barrier-option__label { line-height: 1.3; }
+        .apply-barrier-option--fixed,
+        .apply-barrier-option--fixed input { cursor: default; }
+        .apply-barrier-option--fixed:hover { background: rgba(173, 44, 77, 0.04); }
         .apply-flow--step1 .funding-questions {
           display: flex;
           flex-direction: column;
@@ -1021,18 +1028,22 @@ export default function ApplyEligibilityClient({
               <div className="form-group apply-form-group--full">
                 <label>{t('primaryBarriersLabel')}</label>
                 <div className="apply-barrier-options" role="group" aria-label={t('primaryBarriersAria')}>
-                  {PRIMARY_BARRIER_OPTIONS.map((option) => (
-                    <label key={option.value} className="apply-barrier-option">
-                      <input
-                        type="checkbox"
-                        name="primaryBarriers"
-                        value={option.value}
-                        checked={primaryBarriers.includes(option.value)}
-                        onChange={() => toggleBarrier(option.value)}
-                      />
-                      <span className="apply-barrier-option__label">{option.label}</span>
-                    </label>
-                  ))}
+                  {PRIMARY_BARRIER_OPTIONS.map((option) => {
+                    const fixed = option.value === DEFAULT_PRIMARY_BARRIER.value;
+                    return (
+                      <label key={option.value} className={`apply-barrier-option${fixed ? ' apply-barrier-option--fixed' : ''}`}>
+                        <input
+                          type="checkbox"
+                          name="primaryBarriers"
+                          value={option.value}
+                          checked={fixed || primaryBarriers.includes(option.value)}
+                          disabled={fixed}
+                          onChange={() => toggleBarrier(option.value)}
+                        />
+                        <span className="apply-barrier-option__label">{option.label}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
