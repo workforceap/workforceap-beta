@@ -264,6 +264,9 @@ export default function WorkspaceShell({
       'Career Toolkit': tNav('careerToolkit'),
       'AI Career Tools': tNav('careerToolkit'),
       'AI Counselor': tNav('aiCounselor'),
+      // /dashboard/counselor rail row. Its label stays "AI Advisor" (Mike, WAP-197);
+      // nav.aiCounselor is the assistant's name ("Lilley"), not this row's label.
+      'AI Advisor': tNav('aiAdvisor'),
       'Learning Hub': tNav('learningHub'),
       'Find your career': tNav('findYourCareer'),
       'Training preassessment': tNav('trainingPreassessment'),
