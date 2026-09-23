@@ -45,6 +45,20 @@ export type WorkspaceSidebarSectionsProps = {
   forceExpanded?: boolean;
 };
 
+/**
+ * Per-browser key for the rail's open/closed sections. The version is part of
+ * the key: bump it when the default layout changes, so section state saved
+ * against the old layout stops overriding the new defaults. v2 (WAP-198):
+ * WAP-190 added the always-open Daily work section and collapsed the rest by
+ * default; admins who had toggled sections before kept their old layout.
+ * The v1 key (`wa_nav_sections_<role>`) is no longer read.
+ */
+const NAV_SECTIONS_STORAGE_VERSION = 2;
+
+export function navSectionsStorageKey(portalRole: string): string {
+  return `wa_nav_sections_v${NAV_SECTIONS_STORAGE_VERSION}_${portalRole}`;
+}
+
 const sectionId = (group: string) => `section:${group}`;
 const parentId = (href: string) => `item:${href}`;
 const domId = (id: string) => `wa-nav-${id.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase()}`;
