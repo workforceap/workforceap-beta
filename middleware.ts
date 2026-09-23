@@ -124,11 +124,16 @@ function isAdminApiPath(pathname: string) {
 
 /**
  * Admin-only APIs that live outside /api/admin but still need the staff MFA
- * gate: a real Stripe Connect transfer and org settings (custom domain).
- * Keep these exact; /api/partner/* as a whole is the partner portal.
+ * gate: a real Stripe Connect transfer, org settings (custom domain), the
+ * billing-packet send (emails member documents) and the admin SLO report.
+ * Keep these exact; /api/partner/* as a whole is the partner portal, and
+ * /api/billing-packets/[id]/pdf is the member/counselor download.
  */
-const STAFF_MFA_EXACT_API_PATHS = new Set(['/api/partner/payout']);
-const STAFF_MFA_API_PATTERNS = [/^\/api\/org\/[^/]+\/settings$/];
+const STAFF_MFA_EXACT_API_PATHS = new Set(['/api/partner/payout', '/api/health/slo']);
+const STAFF_MFA_API_PATTERNS = [
+  /^\/api\/org\/[^/]+\/settings$/,
+  /^\/api\/billing-packets\/[^/]+\/send$/,
+];
 
 function isStaffOnlyApiPath(pathname: string) {
   return STAFF_MFA_EXACT_API_PATHS.has(pathname) ||

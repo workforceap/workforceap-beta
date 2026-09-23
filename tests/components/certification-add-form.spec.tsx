@@ -153,6 +153,76 @@ describe('CertificationAddForm', () => {
     expect(fetchMock.mock.calls[1][0]).toBe('/api/member/certifications/upload');
   });
 
+  // Follow-up to #2541: re-adding a verified certificate writes nothing and the
+  // route says so with `verifiedUnchanged: true`. The member is told their
+  // details were not saved, unless a file went through: the upload route does
+  // save a file to a verified certificate, so that save keeps the usual copy.
+  const VERIFIED_UNCHANGED =
+    'OSHA 10 is already verified by staff, so the details you entered were not saved. Message your counselor if something needs to change.';
+
+  it('a verified certificate re-added without a file says the details were not saved', async () => {
+    fetchMock.mockResolvedValueOnce(json({ success: true, status: 'approved', verifiedUnchanged: true }));
+    render(<CertificationAddForm />);
+    openAndPick('OSHA 10');
+    fireEvent.change(screen.getByLabelText(/date earned/i), { target: { value: '2026-05-04' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save certificate' }));
+
+    const status = await notice();
+    expect(status).toHaveTextContent(VERIFIED_UNCHANGED);
+    expect(status).not.toHaveTextContent(/added|pending/i);
+    expect(announceMock).toHaveBeenCalledWith(VERIFIED_UNCHANGED);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Add another certificate' })).toHaveFocus();
+  });
+
+  it('a verified certificate re-added with a file that uploaded keeps the "already verified" copy', async () => {
+    fetchMock
+      .mockResolvedValueOnce(json({ success: true, status: 'approved', verifiedUnchanged: true }))
+      .mockResolvedValueOnce(json({ success: true, storagePath: 'cert-files/u/c-1.pdf', status: 'approved' }));
+    render(<CertificationAddForm />);
+    openAndPick('OSHA 10');
+    const file = new File(['%PDF-1.4'], 'osha.pdf', { type: 'application/pdf' });
+    fireEvent.change(screen.getByLabelText(/certificate file/i), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save certificate' }));
+
+    const status = await notice();
+    expect(status).toHaveTextContent('OSHA 10 is already on your list and verified.');
+    expect(status).not.toHaveTextContent(/not saved/);
+    expect(announceMock).toHaveBeenCalledWith('OSHA 10 is already on your list and verified.');
+  });
+
+  it('a verified certificate re-added with a file that failed to upload says nothing was saved, and why', async () => {
+    fetchMock
+      .mockResolvedValueOnce(json({ success: true, status: 'approved', verifiedUnchanged: true }))
+      .mockResolvedValueOnce(json({ error: 'Only PDF and image files are accepted' }, 400));
+    render(<CertificationAddForm />);
+    openAndPick('OSHA 10');
+    const file = new File(['%PDF-1.4'], 'osha.pdf', { type: 'application/pdf' });
+    fireEvent.change(screen.getByLabelText(/certificate file/i), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save certificate' }));
+
+    const status = await notice();
+    expect(status).toHaveTextContent(VERIFIED_UNCHANGED);
+    expect(status).toHaveTextContent('The file was not attached: Only PDF and image files are accepted');
+    expect(announceMock).toHaveBeenCalledWith(
+      `${VERIFIED_UNCHANGED} The file was not attached: Only PDF and image files are accepted`,
+    );
+  });
+
+  it('a verified certificate whose review changed before the file landed follows the upload status', async () => {
+    // The upload route sends the file to review when staff changed the row in between (WAP-220).
+    fetchMock
+      .mockResolvedValueOnce(json({ success: true, status: 'approved', verifiedUnchanged: true }))
+      .mockResolvedValueOnce(json({ success: true, storagePath: 'cert-files/u/c.pdf', status: 'pending' }));
+    render(<CertificationAddForm />);
+    openAndPick('OSHA 10');
+    const file = new File(['%PDF-1.4'], 'osha.pdf', { type: 'application/pdf' });
+    fireEvent.change(screen.getByLabelText(/certificate file/i), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save certificate' }));
+
+    expect(await notice()).toHaveTextContent('OSHA 10 added. It shows as pending until our staff check it.');
+  });
+
   it('a file on an unverified certificate still shows it as pending', async () => {
     fetchMock
       .mockResolvedValueOnce(json({ success: true, status: 'rejected' }))
@@ -221,5 +291,14 @@ describe('certificationAddedNotice', () => {
     expect(certificationAddedNotice('OSHA 10', null)).toBe('OSHA 10 added. It shows as pending until our staff check it.');
     expect(certificationAddedNotice('OSHA 10', 'approved')).toBe('OSHA 10 is already on your list and verified.');
     expect(certificationAddedNotice('OSHA 10', 'rejected')).toMatch(/^OSHA 10 is already on your list\. Staff could not verify it\./);
+  });
+
+  it('says a verified certificate was left unchanged only when the route reports it', () => {
+    expect(certificationAddedNotice('OSHA 10', 'approved', { verifiedUnchanged: true })).toBe(
+      'OSHA 10 is already verified by staff, so the details you entered were not saved. Message your counselor if something needs to change.',
+    );
+    expect(certificationAddedNotice('OSHA 10', 'approved', { verifiedUnchanged: false })).toBe('OSHA 10 is already on your list and verified.');
+    // The flag only means something on a verified row.
+    expect(certificationAddedNotice('OSHA 10', 'pending', { verifiedUnchanged: true })).toBe('OSHA 10 added. It shows as pending until our staff check it.');
   });
 });
