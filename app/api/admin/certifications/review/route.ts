@@ -15,7 +15,8 @@ import { runCertificationApprovedEffects } from '@/lib/certifications/certificat
  *
  * Approves or rejects a member-submitted certification. Only certs in
  * `pending` status are reviewable: every self-report starts there (WAP-20) and
- * a proof upload moves an existing row back there. The first approval of a
+ * a proof upload moves an unverified row back there (an `approved` row keeps
+ * its status; the new file is audit-logged, WAP-197). The first approval of a
  * row fires the credential's downstream effects (lifecycle event, points,
  * notification, partner milestone); a re-approval after a proof upload does
  * not repeat them. Tenant-scoped

@@ -1,0 +1,118 @@
+name: Nightly E2E
+
+# WAP-204: the Playwright suites under tests/e2e/ ran in no scheduled lane, so
+# they ran only when someone remembered to. This runs the credential-free,
+# read-only public specs against production (or any deployed origin) with the
+# stock Playwright Chromium and uploads the HTML report. It is dispatch-only
+# until WAP-66 lands (see `on:`); once scheduled, a failed scheduled run opens
+# or refreshes one issue, "Nightly: Public E2E failing"
+# (nightly-failure-issue.yml).
+#
+# Scope: page loads and navigation only. No spec in this lane signs in,
+# submits a form or creates data, which is what makes it safe to point at
+# production. Signed-in coverage runs in Authenticated Portal Smoke
+# (the five-role audit) against the DEMO-database preview. Specs that create
+# accounts (for example member-signup.spec.ts) must never target production
+# and are not scheduled.
+# Add a spec to E2E_SPECS only if it is credential-free and read-only.
+#
+# Not a PR check. See docs/SLO-AND-STATUS.md, "Nightly heavy suites".
+
+on:
+  # Schedule gated on WAP-66 (authenticated fresh preview): once it lands, add
+  # `schedule: - cron: "47 8 * * *"` here (08:47 UTC, after the portal smoke).
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Deployed origin to test (https://...). Read-only specs only."
+        required: true
+        default: https://www.workforceap.org
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-e2e
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    name: Public Playwright specs (credential-free)
+    if: github.repository == 'workforceap/workforceap-beta'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      PLAYWRIGHT_BASE_URL: ${{ inputs.base_url || 'https://www.workforceap.org' }}
+      # Credential-free, read-only specs. See the header before adding one.
+      E2E_SPECS: >-
+        tests/e2e/smoke
+        tests/e2e/partner-signup-viewports.spec.ts
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate target origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$PLAYWRIGHT_BASE_URL" in
+            https://*) ;;
+            *) echo "::error::base_url must be an https:// origin"; exit 2 ;;
+          esac
+          echo "Target: ${PLAYWRIGHT_BASE_URL}"
+          echo "Specs: ${E2E_SPECS}"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      # Lifecycle scripts are skipped: the lane needs @playwright/test, not
+      # Prisma generate or the app build.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The `github` reporter turns each failure into a run annotation, so it
+      # is readable without downloading the report. playwright.config.ts: a
+      # remote base URL disables the local web server; CI=true gives 1 worker
+      # and 2 retries, so a pass-on-retry is reported as flaky, not a failure.
+      - name: Run public specs
+        shell: bash
+        # E2E_SPECS is a space-separated list; word splitting is intended.
+        run: |
+          # shellcheck disable=SC2086
+          pnpm exec playwright test $E2E_SPECS --project=chromium --reporter=list,html,github
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-e2e-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  report:
+    name: Nightly failure issue
+    needs: e2e
+    if: always() && github.event_name == 'schedule' && github.repository == 'workforceap/workforceap-beta'
+    permissions:
+      issues: write
+    uses: ./.github/workflows/nightly-failure-issue.yml
+    with:
+      suite: Public E2E
+      result: ${{ needs.e2e.result }}

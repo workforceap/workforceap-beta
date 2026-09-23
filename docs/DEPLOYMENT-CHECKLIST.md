@@ -1,6 +1,6 @@
 # WorkforceAP Production Deployment Checklist
 
-**Repo:** `workforceap-beta` | **Branch:** `master` | **Last Updated:** 2026-09-09
+**Repo:** `workforceap-beta` | **Branch:** `master` | **Last Updated:** 2026-09-23
 
 Use this checklist for every production deploy. Do not skip steps.
 
@@ -81,12 +81,24 @@ Use this checklist for every production deploy. Do not skip steps.
 
 ---
 
+## Merging a PR (merge queue)
+
+Several agents ship PRs in parallel, so two PRs that are each green can still break `master` together. With the merge queue on (WAP-201), a PR lands only after CI passes on a temporary commit of that PR on top of the latest `master` plus every PR queued ahead of it.
+
+- **Nobody merges directly or pushes to `master`.** When a PR is approved and ready, enable auto-merge with squash instead of clicking Merge: `gh pr merge <number> --auto --squash`, or the GitHub MCP `enable_pr_auto_merge` with merge method `SQUASH`. GitHub queues the PR once its required checks pass on the PR, reruns the required checks on the queue commit (`merge_group` event) and merges it only if they are green.
+- **Squash only.** The `master` ruleset enforces linear history, so the queue must use squash (or rebase) merges, never merge commits.
+- **A red queue run removes the PR from the queue.** The PR itself is untouched. Rebase on `master` or fix the clash, push, and enable auto-merge again.
+- **Workflows that report a required check must also trigger on `merge_group`**, or the queue waits for a check that never arrives. `ci-gate.yml` ("Typecheck & Build", "Database contract (PostgreSQL 16)"), `locked-product-stakes.yml` (passes on the queue commit because it already ran against the PR's files and labels), `coursera-catalog-placeholders.yml` and `knowledge-base.yml` do. Checks posted by outside apps (Vercel, Supabase) or by `deployment_status` workflows do not run on the queue commit, so don't make them required while the queue is on.
+- The queue is a GitHub setting Mike turns on (branch protection or ruleset for `master` → **Require merge queue**, with **Typecheck & Build** as a required check). Until it is on, `--auto --squash` merges as soon as the PR's checks pass, so agents can use it now.
+
+---
+
 ## Deploy
 
 - [ ] **Push to production branch**
   ```bash
   git push origin master
-  # or via PR: merge to master, Vercel auto-deploys
+  # or via PR through the merge queue (see "Merging a PR" above); Vercel auto-deploys
   ```
 
 - [ ] **Verify the production migration stage**

@@ -26,7 +26,9 @@ const MARKETING_TABS = [
 const EMPLOYER_TABS = [
   { href: '/employer', labelKey: 'employer.overview', icon: 'dashboard' },
   { href: '/employer/jobs', labelKey: 'employer.jobs', icon: 'work' },
-  { href: '/employer/pipeline', labelKey: 'employer.pipeline', icon: 'account_tree' },
+  // Work queue, not Pipeline (WAP-211): the phone tabs lead with what is
+  // waiting (applied today, stale 48h+, interviews), like the rail badge.
+  { href: '/employer/work-queue', labelKey: 'employer.workQueue', icon: 'assignment' },
   { href: '/employer/messages', labelKey: 'employer.messages', icon: 'chat' },
 ];
 
