@@ -117,6 +117,34 @@ export function pendingPlacementWindowStart(now: number = Date.now()): Date {
   return new Date(now - PENDING_PLACEMENT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 }
 
+/** Most referral rows `loadPartnerReferralBundle` loads (newest first). */
+export const PARTNER_REFERRAL_BUNDLE_CAP = 500;
+
+/**
+ * The referral scope every partner surface reads: this partner's rows, in its
+ * own org, for non-deleted member accounts (staff/test accounts excluded).
+ * Shared by the bundle load and `countPartnerReferrals`, so a count and a
+ * load can never disagree about which referrals are in scope.
+ */
+export function partnerReferralScopeWhere(partnerId: string, tenantOrganizationId: string) {
+  return {
+    partnerId,
+    partner: { organizationId: tenantOrganizationId },
+    member: {
+      deletedAt: null,
+      organizationId: tenantOrganizationId,
+      ...MEMBER_ONLY_WHERE,
+    },
+  };
+}
+
+/** Uncapped count of the referrals `loadPartnerReferralBundle` would load. */
+export async function countPartnerReferrals(partnerId: string, tenantOrganizationId: string): Promise<number> {
+  return prisma.partnerReferral.count({
+    where: partnerReferralScopeWhere(partnerId, tenantOrganizationId),
+  });
+}
+
 /**
  * @param tenantOrganizationId — Partner portal tenant boundary: partner row
  *   and referred members must belong to this org (defense against orphaned /
@@ -124,16 +152,8 @@ export function pendingPlacementWindowStart(now: number = Date.now()): Date {
  */
 export async function loadPartnerReferralBundle(partnerId: string, tenantOrganizationId: string) {
   const referrals = await prisma.partnerReferral.findMany({
-    take: 500,
-    where: {
-      partnerId,
-      partner: { organizationId: tenantOrganizationId },
-      member: {
-        deletedAt: null,
-        organizationId: tenantOrganizationId,
-        ...MEMBER_ONLY_WHERE,
-      },
-    },
+    take: PARTNER_REFERRAL_BUNDLE_CAP,
+    where: partnerReferralScopeWhere(partnerId, tenantOrganizationId),
     include: {
       member: { select: referralMemberSelect },
     },

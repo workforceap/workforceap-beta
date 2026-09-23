@@ -125,6 +125,36 @@ There is no fallback number. If no verified placement exists, the placement figu
 
 Not yet covered: the partner quarterly outcomes page (`/org/[slug]/outcomes`, `generatePartnerQuarterlyOutcomes()`) still counts every placement row, verified or not. That is a follow-up.
 
+### 9. Partner outcome packet
+
+An authenticated partner can download one packet that reconciles its referrals to outcomes: the **Outcome packet** section on `/partner/exports` and `GET /api/partner/export/referrals?preset=packet` (CSV). Both render one `buildPartnerOutcomePacket()` output (`lib/partner/outcomePacket.ts`, definitions version `partner-packet-v1`), so the page and the download show the same numbers.
+
+**Scope.** Only the signed-in partner's own `partner_referrals` rows, in the partner's organization, for non-deleted member accounts (staff and test accounts excluded by `MEMBER_ONLY_WHERE`). The partner comes from the session, never from the request. The shared filter is `partnerReferralScopeWhere()` in `lib/partner/referralBundle.ts`; the capped load and the uncapped count both use it. Period: all referrals to date, ordered by referral date.
+
+The packet adds **no new metric definition and no rate**. Each line maps to a definition above:
+
+| Packet line | Definition it reuses | Denominator |
+|---|---|---|
+| Referred members | §7 *Partner referrals*: distinct non-deleted members with a referral from this partner (uncapped count) | itself |
+| Enrolled | §2 *Members served / enrolled*: `enrolled_program` is set | referrals in the packet |
+| Training completed | §2 *Training completed*: completed-course rollup equals the required count for the assigned curriculum; not a credential verification | referrals in the packet |
+| Credential records (member-reported) | §4 *Unique members with credential records*: at least one `user_certifications` row. Member-reported; never presented as verified | referrals in the packet |
+| Placement records | §2 *Placed*: every `placement_records` row, verified or not | referrals in the packet |
+| Placement start date verified | §7 *Partner placements* / §8: `start_date_verified = true`. A **subset** of placement records | referrals in the packet |
+| Placement start date not yet verified | Placement records minus the verified subset | referrals in the packet |
+
+Rules:
+
+- **X of N only.** Every line is printed as `X of N`. No percentage or rate is shown, whatever N is, so the packet does not choose between the all-records (§2) and verified-only (§7/§8) placement definitions; it shows both, with the verified line as a subset. `smallSample` is set when fewer than `SMALL_SAMPLE_THRESHOLD` referrals are in the packet.
+- **Cap and truncation.** The member rows come from `loadPartnerReferralBundle()`, which loads at most 500 referrals (newest first). *Referred members* is the uncapped `countPartnerReferrals()`. When it is larger than the rows loaded, the packet is marked `truncated`, the CSV prints a `# WARNING` line and the page shows a banner; every other line then covers only the loaded rows.
+- **Provenance.** The CSV header carries `generated_at=<ISO 8601>`, the period, `definitions_version`, the source (this file, §2/§4/§7), one definition line per packet line, the unknowns and the exclusions. Then a `metric,count,denominator,display` block, a blank line, and one row per referral.
+- **Unknowns.** Enrolled members with no `enrolled_at` (§6), and placement records without a verified start date.
+- **Rows.** Member name, referral date, stage, program, yes/no for enrolled, training completed and credential record, placement status (`start_date_verified`, `recorded_start_not_verified` or `none`), and the employer and job title **only** when the start date is verified. No email, story text, salary or demographic fields. Every line except *Referred members* equals an aggregate over these rows.
+- **Not counted.** Member-submitted placement confirmations awaiting staff review are not placement records.
+- **No certification.** The packet is an operational report generated from live records. It is not a regulatory, WIOA or audited certification of outcomes.
+
+The existing `default`, `outcomes` and `demographics` presets of the same route are unchanged.
+
 
 ## Demographic breakdowns
 
@@ -174,6 +204,7 @@ If a funder asks for one of the above, the answer is: *"We have the schema field
 | 2026-06-15 | Added flagged public social-proof methodology for placement story cards, partner snapshots, and referral badges. |
 | 2026-09-23 | Documented the public partner quarterly outcomes page: counts only, small-N drop-off rate suppressed, no salary or days-to-placement. |
 | 2026-09-23 | public placed counts are verified-only (Mike, Slack 05:08 UTC) |
+| 2026-09-23 | Added §9 *Partner outcome packet*: maps each packet line to its existing §2/§4/§7 definition, scoped to the partner's own referrals; X of N only; cap and truncation rule (Vision C4, pending Mike's review). |
 
 ---
 
