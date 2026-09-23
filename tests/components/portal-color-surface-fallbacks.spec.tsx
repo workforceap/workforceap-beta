@@ -422,7 +422,7 @@ describe('--surface-container-lowest is the opaque card fill on the root-layout 
 });
 
 describe('DashboardProgramSelector popover', () => {
-  it('paints the listbox from --wa-surface with no literal fallback', () => {
+  it('paints the program menu from --wa-surface with no literal fallback', () => {
     const { container } = render(
       <DashboardProgramSelector
         activeProgramSlug="it-support"
@@ -433,8 +433,7 @@ describe('DashboardProgramSelector popover', () => {
       />,
     );
     fireEvent.click(screen.getByTestId('dashboard-program-selector'));
-    const listbox = screen.getByRole('listbox');
-    expectSurfaceFill(listbox, 'program popover');
+    expectSurfaceFill(screen.getByTestId('dashboard-program-selector-menu'), 'program popover');
     expectNoLiteralSurfaceFallback(container);
     expectNoLegacyName(container);
   });
