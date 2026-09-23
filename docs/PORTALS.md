@@ -241,11 +241,12 @@ auth or a database for screenshots.
 
 ## Counselor Portal (`/counselor/*`)
 
+- `today` — Landing page (`/counselor` redirects here): the attention queue plus approvals. Rail badge: caseload threads with a member message unanswered 48h+
 - `dashboard` — Counselor dashboard with queue
 - `students` — Student list
 - `students/[memberId]` — Student detail with notes
 - `inbox` — Message inbox
-- `messages` — Messages
+- `messages` — Messages. Rail badge: caseload threads with unread member messages
 - `placements` — Placement tracking
 - `queue` — Student queue
 - `triage` — Student triage
