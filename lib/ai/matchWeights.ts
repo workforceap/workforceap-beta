@@ -41,15 +41,21 @@ export function scoreProgramAlignment(
   return { score: 0.33, reason: `Enrolled in ${enrolledProgram}` };
 }
 
-/** Raw score 0–1 for assessment readiness */
+/**
+ * Raw score 0–1 for assessment readiness.
+ *
+ * Gives no reason text: match reasons are stored on `AIJobMatch` and shown
+ * to employers, and the assessment score is staff-only
+ * (lib/employer/matchReasons.ts). The score and its weight are unchanged.
+ */
 export function scoreAssessmentReadiness(assessmentScorePct: number | null): {
   score: number;
-  reason: string | null;
+  reason: null;
 } {
   if (assessmentScorePct == null) return { score: 0, reason: null };
-  if (assessmentScorePct >= 70) return { score: 1, reason: `Assessment score ${assessmentScorePct}%` };
-  if (assessmentScorePct >= 50) return { score: 0.5, reason: `Assessment score ${assessmentScorePct}%` };
-  return { score: 0.2, reason: `Assessment score ${assessmentScorePct}%` };
+  if (assessmentScorePct >= 70) return { score: 1, reason: null };
+  if (assessmentScorePct >= 50) return { score: 0.5, reason: null };
+  return { score: 0.2, reason: null };
 }
 
 /** Raw score 0–1 for certifications match */

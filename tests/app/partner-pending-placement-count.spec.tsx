@@ -1,13 +1,17 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn(), unpaid: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), eventCount: vi.fn(), placements: vi.fn(), unpaid: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
-vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
+// Keys with their values, so the heading's count is visible in the markup.
+vi.mock('next-intl/server', () => ({
+  getTranslations: async () => (key: string, values?: Record<string, unknown>) =>
+    values ? `${key}(${JSON.stringify(values)})` : key,
+}));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.user }));
 vi.mock('@/lib/auth/roles', () => ({ getPartnerForUser: mocks.context, isSuperAdmin: async () => false }));
@@ -16,9 +20,8 @@ vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader:
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   partner: { findUnique: mocks.partner },
   partnerReferral: { count: mocks.count, findMany: mocks.referrals },
-  // findMany: the Payout due tile's verified-unpaid placements (WAP-213).
   placementRecord: { count: mocks.count, findMany: mocks.placements },
-  memberEvent: { findMany: mocks.events, count: async () => 0 },
+  memberEvent: { findMany: mocks.events, count: mocks.eventCount },
 } }));
 vi.mock('@/components/portal/kit/pages/PartnerOverviewKit', () => ({
   PartnerKpiGrid: ({ items }: { items: Array<{ label: string; value: string | number; subtitle?: string }> }) => (
@@ -50,8 +53,9 @@ vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({ default: (
 import PartnerDashboardPage from '@/app/(portal)/partner/page';
 
 /**
- * WAP-213: "Payout due" is what POST /api/partner/payout would pay now —
- * verified, unpaid placements × the rate — not every placement ever × $500.
+ * WAP-214: the overview lists the latest 8 pending placement confirmations,
+ * but its heading counts all of them, with the same 90-day window and member
+ * population as /partner/outcomes.
  */
 beforeEach(() => {
   vi.resetAllMocks();
@@ -59,41 +63,44 @@ beforeEach(() => {
   mocks.user.mockResolvedValue({ id: 'partner-user' });
   mocks.context.mockResolvedValue({
     partnerId: 'partner-1',
-    partner: { name: 'Synthetic Community', slug: 'community-slug', partnerType: 'referral', organizationId: 'org-1' },
+    partner: { name: 'Synthetic Community', slug: 'community-slug', partnerType: 'community', organizationId: 'org-1' },
   });
   mocks.partner.mockResolvedValue({ name: 'Synthetic Community', slug: 'community-slug', referralCode: 'community-code', status: 'active' });
-  // 9 placements recorded in total — the old tile multiplied this by the rate.
-  mocks.count.mockResolvedValue(9);
+  mocks.count.mockResolvedValue(0);
   mocks.referrals.mockResolvedValue([]);
-  mocks.events.mockResolvedValue([]);
   mocks.placements.mockResolvedValue([]);
-  mocks.unpaid.mockResolvedValue(2);
+  mocks.unpaid.mockResolvedValue(0);
+  const pending = Array.from({ length: 8 }, (_, i) => ({
+    id: `ev-${i}`,
+    userId: `member-${i}`,
+    metadata: { employerName: `Employer ${i}`, jobTitle: 'Analyst' },
+    createdAt: new Date('2026-09-20T12:00:00Z'),
+  }));
+  mocks.events.mockImplementation(async (args: { take?: number }) => (args.take === 8 ? pending : []));
+  mocks.eventCount.mockResolvedValue(23);
 });
 afterEach(() => vi.unstubAllEnvs());
 
-async function payoutTile() {
-  const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
-  const match = html.match(/<div data-kpi="Payout due">(.*?)<\/div>/);
-  if (!match) throw new Error('no Payout due tile');
-  return match[1];
-}
-
-describe('partner overview Payout due (WAP-213)', () => {
-  it('multiplies verified unpaid placements, not every placement, by the configured rate', async () => {
-    vi.stubEnv('PARTNER_PLACEMENT_PAYOUT_USD', '300');
-    const tile = await payoutTile();
-    expect(tile).toContain('$600');
-    expect(tile).not.toContain('$2,700');
-    expect(tile).toContain('2 verified placements not yet paid');
-    expect(tile).not.toContain('estimated rate');
-    expect(mocks.unpaid).toHaveBeenCalledWith('partner-1', 'org-1');
+describe('partner overview pending placement count (WAP-214)', () => {
+  it('heads the 8 listed rows with the real total, not the page size', async () => {
+    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain('nextActionReviewPlacements({&quot;count&quot;:23})');
+    expect(html).not.toContain('nextActionReviewPlacements({&quot;count&quot;:8})');
   });
 
-  it('says the rate is estimated when it is the built-in fallback', async () => {
-    vi.stubEnv('PARTNER_PLACEMENT_PAYOUT_USD', '');
-    vi.stubEnv('NEXT_PUBLIC_PARTNER_PLACEMENT_PAYOUT_USD', '');
-    const tile = await payoutTile();
-    expect(tile).toContain('$1,000');
-    expect(tile).toContain('estimated rate');
+  it('counts and lists with one filter: the 90-day window and this org\'s referred members', async () => {
+    const before = Date.now();
+    await PartnerDashboardPage({ searchParams: Promise.resolve({}) });
+    const where = mocks.eventCount.mock.calls[0][0].where;
+    const listCall = mocks.events.mock.calls.find(([args]) => args.take === 8);
+    expect(listCall?.[0].where).toEqual(where);
+
+    const days = (before - where.createdAt.gte.getTime()) / 86_400_000;
+    expect(Math.round(days)).toBe(90);
+    expect(where.user).toMatchObject({
+      deletedAt: null,
+      organizationId: 'org-1',
+      partnerReferrals: { some: { partnerId: 'partner-1', partner: { organizationId: 'org-1' } } },
+    });
   });
 });
