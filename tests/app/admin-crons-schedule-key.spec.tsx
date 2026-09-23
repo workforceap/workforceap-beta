@@ -47,7 +47,12 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     cronExecution: {
       groupBy: vi.fn(async () =>
-        h.jobNames.map((jobName, i) => ({ jobName, _max: { startedAt: new Date(Date.UTC(2026, 8, 23, 12, 0, i)) } })),
+        // The page groups by (jobName, status); every job here last ran successfully.
+        h.jobNames.map((jobName, i) => ({
+          jobName,
+          status: 'SUCCESS',
+          _max: { startedAt: new Date(Date.UTC(2026, 8, 23, 12, 0, i)) },
+        })),
       ),
       findMany: vi.fn(async () =>
         h.jobNames.map((jobName, i) => ({
