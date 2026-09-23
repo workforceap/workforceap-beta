@@ -34,6 +34,7 @@ import {Divider} from '@astryxdesign/core/Divider';
 import {MetadataList, MetadataListItem} from '@astryxdesign/core/MetadataList';
 import {
   Table,
+  TableBody,
   TableRow,
   TableCell,
   proportional,
@@ -968,6 +969,8 @@ export default function DataTableTemplate() {
                   />
                 ))}
               </colgroup>
+              {/* Rows sit in a <tbody>: a bare <tr> under <table> is a hydration error (WAP-209). */}
+              <TableBody>
               {groupKeys.map(key => {
                 const tasks = grouped.get(key);
                 if (!tasks || tasks.length === 0) {
@@ -1123,6 +1126,7 @@ export default function DataTableTemplate() {
                   </React.Fragment>
                 );
               })}
+              </TableBody>
             </Table>
           </LayoutContent>
         }

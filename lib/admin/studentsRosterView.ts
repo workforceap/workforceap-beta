@@ -193,6 +193,48 @@ export function toTrainingRosterRow(row: StudentRow): RosterRow {
   };
 }
 
+/**
+ * Program-column words the roster loader prints when a member has no program
+ * to name (lib/admin/studentsRosterLoad.ts). They are not program titles, so
+ * they never take the "(inferred)" suffix below.
+ */
+export const ROSTER_PROGRAM_PLACEHOLDERS = {
+  unavailable: 'Program unavailable',
+  needsReview: 'Assignment needs review',
+  unassigned: 'Unassigned',
+} as const;
+
+const PLACEHOLDER_PROGRAM_TITLES: ReadonlySet<string> = new Set(Object.values(ROSTER_PROGRAM_PLACEHOLDERS));
+
+/**
+ * The program as the roster prints it, in every view and on the phone card.
+ *
+ * A row flagged `noProgram` (a WAP member with no assigned program) whose
+ * title still names a program is showing a program inferred from Coursera or
+ * course activity, so it says "(inferred)". Without the suffix the row read
+ * "No program" beside a title that looks assigned (WAP-209). Placeholder words
+ * like "Unassigned" and unmatched Coursera rows print as they are.
+ */
+export function rosterProgramLabel(row: Pick<StudentRow, 'program' | 'noProgram' | 'inWap'>): string {
+  const inferred = row.inWap !== false && row.noProgram === true && !PLACEHOLDER_PROGRAM_TITLES.has(row.program);
+  return inferred ? `${row.program} (inferred)` : row.program;
+}
+
+/**
+ * An email split where a phone-width card may wrap it: after each dot of the
+ * name part and before the "@", never inside the domain. The kit renders a
+ * <wbr> between the parts so "avery@example.test" wraps as "avery" /
+ * "@example.test", not "avery@example." / "test" (WAP-209). A part that still
+ * cannot fit falls back to the browser's overflow-wrap break.
+ */
+export function emailWrapParts(email: string): string[] {
+  const at = email.lastIndexOf('@');
+  if (at <= 0) return [email];
+  const local = email.slice(0, at);
+  const parts = local.split(/(?<=\.)/).filter(Boolean);
+  return [...parts, email.slice(at)];
+}
+
 /** Build initials from a full name (e.g. "Jasmine Davis" → "JD"). */
 export function initialsFrom(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
