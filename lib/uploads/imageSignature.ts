@@ -1,8 +1,10 @@
 /**
  * Identify an image by its leading bytes ("magic numbers"), not its name.
  *
- * Only the three formats member uploads accept are recognised. Pass at least
- * the first 12 bytes of the file; a shorter or unrecognised header is `null`.
+ * `detectImageSignature` recognises only the three formats profile photos
+ * accept; `detectUploadSignature` below adds PDF and GIF for certificate
+ * proofs and logos. Pass at least the first 12 bytes of the file; a shorter or
+ * unrecognised header is `null`.
  */
 type SniffedImageType = 'image/jpeg' | 'image/png' | 'image/webp';
 
@@ -27,4 +29,30 @@ export function detectImageSignature(bytes: Uint8Array): SniffedImageType | null
     return 'image/webp';
   }
   return null;
+}
+
+/** Every type an upload route can sniff: the three images above, plus PDF and GIF. */
+export type SniffedUploadType = SniffedImageType | 'application/pdf' | 'image/gif';
+
+/**
+ * Identify a certificate proof or a logo by its leading bytes. Pass at least
+ * the first 12 bytes; a shorter or unrecognised header is `null`.
+ *
+ * PDF must start with `%PDF-` at offset 0 (a file with junk before the header
+ * is refused, not searched), GIF with `GIF87a` or `GIF89a`.
+ */
+export function detectUploadSignature(bytes: Uint8Array): SniffedUploadType | null {
+  if (asciiAt(bytes, 0, '%PDF-')) return 'application/pdf';
+  if (asciiAt(bytes, 0, 'GIF87a') || asciiAt(bytes, 0, 'GIF89a')) return 'image/gif';
+  return detectImageSignature(bytes);
+}
+
+/**
+ * True when the file's first bytes are the type its extension claims (so a
+ * `.png` holding JPEG bytes, or a `.pdf` holding HTML, is false). Reads only
+ * the header, never the whole file.
+ */
+export async function fileMatchesContentType(file: Blob, contentType: string): Promise<boolean> {
+  const header = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  return detectUploadSignature(header) === contentType;
 }
