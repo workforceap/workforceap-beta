@@ -50,6 +50,8 @@ export type ReadinessProgressView = {
   weekStats: ReadinessWeekStat[];
   milestones: ReadinessMilestone[];
   priorityAction: ReadinessPriorityAction | null;
+  /** Lowest-percent incomplete area — what the coach note and primary CTA follow. */
+  weakestCategory: ReadinessCategoryKey | null;
   readinessNote: string;
 };
 
@@ -68,9 +70,13 @@ export const SCORE_ITEM_LABELS: Record<ScoreBreakdownKey, string> = {
 };
 
 /**
- * Highest-impact incomplete item first. Weights match `lib/readiness/score.ts`.
- * Destinations stay on existing member routes — do not retarget training
- * continue-links owned by other in-flight work.
+ * One action per scored item. `getPriorityAction` picks from the weakest
+ * area first (most remaining points wins inside it); this list order only
+ * breaks ties. Weights match `lib/readiness/score.ts`. Pathway items go to
+ * /dashboard/learning, the only page that mounts the learning-path cards that
+ * start a path and complete its steps (LearningPathCard); goals go to the
+ * goals section on /dashboard/career-brief. None points at /dashboard, which
+ * would loop the member back to the page they clicked from.
  */
 const PRIORITY_ACTIONS: {
   key: ScoreBreakdownKey;
@@ -98,17 +104,16 @@ const PRIORITY_ACTIONS: {
   },
   {
     key: 'completePathwaySteps',
-    label: 'Complete more steps on your learning path.',
+    label: 'Complete more pathway steps in your training program.',
     href: '/dashboard/learning',
     ctaLabel: 'Open Learning Hub',
   },
   {
     key: 'setGoals',
     label: 'Set career goals to stay on track.',
-    // Goals have no default-view home yet: GoalsModule renders only on the
-    // legacy member home's learning tab (same target as MemberHomeKit's
-    // goalsHref), so link there rather than to a page without goal-setting.
-    href: '/dashboard?ui=legacy&tab=learning#goals',
+    // GoalsModule's default home is the goals section on My career plan (the
+    // same target as MemberHomeKit's goalsHref).
+    href: '/dashboard/career-brief#goals',
     ctaLabel: 'Set goals',
   },
   {
@@ -205,15 +210,44 @@ export function buildReadinessCategories(breakdown: ScoreBreakdown): ReadinessCa
   });
 }
 
+/**
+ * Lowest-percent incomplete area, ties broken by display order. `null` when
+ * every area is at 100%.
+ */
+export function weakestReadinessCategory(categories: ReadinessCategory[]): ReadinessCategory | null {
+  let weakest: ReadinessCategory | null = null;
+  for (const cat of categories) {
+    if (cat.pct >= 100) continue;
+    if (!weakest || cat.pct < weakest.pct) weakest = cat;
+  }
+  return weakest;
+}
+
+/**
+ * The one next step the whole readiness page agrees on: the weakest area's
+ * item with the most points still unearned (ties keep PRIORITY_ACTIONS
+ * order). "Open" means `earned < max` — the same rule the coach note uses —
+ * not `!done`: pathway steps keep scoring past the 3-step `done` goal
+ * (3 steps = 8/14), so an area can be under 100% with every item `done`.
+ * Using `done` here left such members with no CTA, or a CTA from a
+ * different area than the one tagged Lowest. `null` only at 100/100.
+ */
 export function getPriorityAction(breakdown: ScoreBreakdown): ReadinessPriorityAction | null {
-  for (const action of PRIORITY_ACTIONS) {
-    if (!breakdown[action.key].done) {
-      return {
-        key: action.key,
-        label: action.label,
-        href: action.href,
-        ctaLabel: action.ctaLabel,
-      };
+  const ranked = [...buildReadinessCategories(breakdown)].sort((a, b) => a.pct - b.pct);
+  for (const cat of ranked) {
+    let best: (typeof PRIORITY_ACTIONS)[number] | null = null;
+    let bestRemaining = -1;
+    for (const action of PRIORITY_ACTIONS) {
+      const item = breakdown[action.key];
+      if (item.earned >= item.max || !cat.items.some((i) => i.key === action.key)) continue;
+      const remaining = item.max - item.earned;
+      if (remaining > bestRemaining) {
+        best = action;
+        bestRemaining = remaining;
+      }
+    }
+    if (best) {
+      return { key: best.key, label: best.label, href: best.href, ctaLabel: best.ctaLabel };
     }
   }
   return null;
@@ -240,11 +274,8 @@ export function overallReadinessScore(breakdown: ScoreBreakdown): {
   const values = Object.values(breakdown);
   const earned = values.reduce((sum, item) => sum + item.earned, 0);
   const max = values.reduce((sum, item) => sum + item.max, 0);
-  return {
-    earned,
-    max,
-    displayed: Math.min(100, earned),
-  };
+  // Weights sum to 100, so the displayed score is the points earned — no cap.
+  return { earned, max, displayed: earned };
 }
 
 export function buildReadinessProgressView(breakdown: ScoreBreakdown): ReadinessProgressView {
@@ -265,6 +296,7 @@ export function buildReadinessProgressView(breakdown: ScoreBreakdown): Readiness
     weekStats,
     milestones: buildReadinessMilestones(categories),
     priorityAction,
+    weakestCategory: weakestReadinessCategory(categories)?.key ?? null,
     readinessNote: priorityAction
       ? `Next: ${priorityAction.label}`
       : 'Every category is complete.',

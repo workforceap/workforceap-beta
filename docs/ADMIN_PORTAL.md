@@ -85,8 +85,10 @@ Rules:
 | `colorVar(KitColor)` | maps semantic color → `var(--wa-*)`. `KitColor = accent\|accentDark\|gold\|info\|success\|text\|muted` |
 
 **Page subviews** (`components/portal/kit/pages/`):
-- `admin/CommandCenterKit` (the `/admin` home), `admin/AdminSidebarNav` (a standalone rail — **unused**;
-  the live rail is `WorkspaceShell` + CSS, see §5).
+- `admin/CommandCenterKit` (the `/admin` home, titled **Today**: `title="Today"`, `queuesFirst`, and the
+  org-wide `CounselorApprovalQueue` in its `lead` slot — see §4a; `/admin/command-center` keeps the default
+  metrics-first layout), `admin/AdminSidebarNav` (a standalone rail — **unused**; the live rail is
+  `WorkspaceShell` + CSS, see §5).
 - `admin-subviews/`: one `*Kit.tsx` per admin view — `StudentsRosterKit`, `BoardOutcomesKit`,
   `MessagesKit`, `CertificationsQueueKit`, `EmployersDirectoryKit`, `PartnersDirectoryKit`,
   `CounselorsRosterKit`, `MentorsDirectoryKit`, `SubgroupsDirectoryKit`, `ProgramsCatalogKit`,
@@ -110,18 +112,51 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
   `{ href, label, group: NavGroup, Icon?, badgeKey?/badgeKeys?, requiresSuperAdminContext?, parentHref? }`.
   `parentHref` nests the row under a top-level row in the same group (see docs/PORTALS.md, "Sidebar
   sections", for the full table). `navTopLevelItems()` / `navChildrenOf()` read that structure.
-- `NavGroup` taxonomy is shared; **admin-only groups** = `runTheOrg, students, programs,
+- `NavGroup` taxonomy is shared; **admin-only groups** = `dailyWork, runTheOrg, students, programs,
   partnersEmployers, reporting, system` (relabel/reorder these freely without touching other portals;
-  `content` is admin-only in practice, `outcomes` is also used by the counselor rail).
+  `content` is admin-only in practice, `outcomes` is also used by the counselor rail; `students` has no
+  admin rows since WAP-190).
 - `NAV_GROUP_LABELS` (group → header text), `GROUP_ORDER` (render order; a group renders only if it
-  has items) and `NAV_GROUP_COLLAPSED_BY_DEFAULT` (sections that start closed — `system`). Admin
-  sections (2026-09-21 consolidation): Run the org · Students · Programs · Partners & Employers ·
-  Reporting · Content · Security & system. Reporting is one row → `/admin/reporting` with the
-  analytics/outcomes/board pages as children.
+  has items), `NAV_GROUP_COLLAPSED_BY_DEFAULT` (sections that start closed — every admin section except
+  Daily work) and `NAV_GROUP_ALWAYS_OPEN` (sections with a plain label instead of a disclosure — Daily work).
+  Admin sections (queue-first rail, WAP-190): **Daily work** (always open) · Run the org · Programs ·
+  Partners & Employers · Reporting · Content · Security & system. Daily work holds the queue-clearing rows:
+  Today (`/admin`, exact, `tour-command-center`) · Applications (`/admin/command-center?queue=applications`,
+  no alias, badge `admin_applications_pending`) · Funding eligibility · Certificates ·
+  Program requests · Students (`tour-students`; Subgroups, In-office sessions ⚿, Applications funnel ⚿,
+  Find duplicate students ⚿ and Invites nest under it) · Messages ⚿ (Feedback ⚿). Run the org keeps
+  Detailed overview. Reporting is one row → `/admin/reporting` with the analytics/outcomes/board pages
+  as children. A running guided tour opens every section, so collapsed tour anchors still light.
 - `requiresSuperAdminContext: true` items are filtered out for non-super-admins in `AdminPortalShell`.
 - Active-route: `lib/nav/activeRoute.ts` (`isActiveRoute`, `getBestActiveHref` = longest matching
   prefix). **WorkspaceShell strips the locale prefix** (`/en`) off `usePathname()` before matching —
-  without that, nothing highlights (hrefs are locale-less).
+  without that, nothing highlights (hrefs are locale-less). A query-string href (Applications) also
+  matches the page query: it is current only while the URL carries every parameter it names
+  (`queue=applications`, any `page`), so the needs-reply / at-risk / interviewing queues and the bare
+  metrics view mark no row. WorkspaceShell passes `useSearchParams()` to `getBestActiveHref` and on to
+  `MobileBottomNav` (`search`), so the rail, the phone header's page name and the phone tab agree.
+
+### 4a. The admin home, Today (`/admin`)
+
+- Kit default, top to bottom (WAP-190): **Waiting on your decision** — every PENDING application and
+  every WIOA intake in `pending` / `in_review` with a screening on file, in the actor's org, members only
+  (`MEMBER_ONLY_WHERE`), oldest first, the 50 oldest shown with "Showing the 50 oldest of N" and links to
+  the rest (`lib/admin/adminApprovalQueue.ts` + `loadAdminApprovalQueue.ts`, same builder and SLA as the
+  counselor Today). No `enrolledProgram` condition: applicants are not enrolled yet. Application rows open
+  their card on the Applications workbench page they sit on (`?queue=applications&page=N#application-<id>`);
+  intake rows open the member record's Eligibility tab (WIOA review panel).
+- Then **What needs you today**: applications (waiting on your decision vs waiting on the applicant, the
+  oldest age, urgent past the SLA), certificates, new applicants with no counselor (named, each linking to
+  the record's Counselor assignment card), replies owed, risk alerts, quiet 30+ days, interview prep.
+- Then the KPI strip, placements trend and program / system context. `?ui=legacy` is unchanged.
+- The Applications workbench's own count (`getAdminCommandCenter`) is not member-filtered, so it can be
+  higher than Today's by the staff / QA accounts with open applications. The line under it reads the
+  badge's split in the same snapshot: "N waiting on your decision · M waiting on the applicant · K from
+  staff or test accounts" (`totals.applicationsWaitingOn`, `adminWorkbenchApplicationsSplitCopy`).
+- Landing: super_admin sign-in keeps `/admin/*` deep links (`lib/auth/postLoginRedirect.ts`); the weekly
+  applicant-aging digest links `/admin/command-center?queue=applications`. `/pwa-start` (the installed
+  app's `start_url`) is unchanged: it still checks counselor before admin. Phone tabs: Today · Students · Messages for super-admins, Today · Students · Applications for
+  org admins (`components/MobileBottomNav.tsx`).
 
 ---
 
@@ -133,7 +168,8 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
   `.workspace-sidebar-footer`.
 - **Admin sections** (`components/portal/WorkspaceSidebarSections.tsx`, mounted by WorkspaceShell for
   `portalRole === 'admin'` when the desktop rail is not collapsed): each group header is a
-  `<button.workspace-sidebar-section-btn aria-expanded>`; rows with children get a
+  `<button.workspace-sidebar-section-btn aria-expanded>` (an always-open group gets a plain
+  `.workspace-sidebar-section-label` and its list is never hidden); rows with children get a
   `.workspace-sidebar-children-toggle` that opens `.workspace-sidebar-list--children`. Collapsed lists
   stay in the DOM under `[hidden]` (tour anchors and hrefs are always present). State persists in
   `localStorage` (`wa_nav_sections_admin`); the current page's section/parent opens on arrival; every
@@ -157,6 +193,8 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
 - **`GET /api/portal/nav-badges?role=<role>`** → `Partial<Record<NavBadgeKey, number>>`. WorkspaceShell
   fetches it on mount + on a `wa-nav-badges-refresh` window event; `badgeTotalForItem()` sums an item's
   `badgeKey`/`badgeKeys` to the pill count. Badges are **real counts** (0 ⇒ hidden) — do not hardcode.
+  `admin_applications_pending` (Applications row) is the PENDING count Today prints, for an admin of the
+  actor's org (or a super-admin) only.
 - **`GlobalSearch`** (`components/portal/GlobalSearch.tsx`) — command-palette over members/employers/
   partners/jobs; rendered in the admin rail.
 - **Per-page data** comes straight from `lib/db/prisma` in each page's loader (lean queries). A few pages

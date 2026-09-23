@@ -81,18 +81,27 @@ test('decision journey and marketing mobile chrome use the canonical pathfinder'
   assert.match(programsPage, /href="\/find-your-path">Find Your Path/);
 });
 
-test('admin mobile bottom tabs match Command Center / Students / Messages', () => {
+test('admin mobile bottom tabs: Today / Students, then Messages for super-admins and Applications for org admins', () => {
   const mobileNav = source('components/MobileBottomNav.tsx');
-  const adminBlock = mobileNav.slice(
-    mobileNav.indexOf('const ADMIN_TABS'),
+  const superBlock = mobileNav.slice(
+    mobileNav.indexOf('const ADMIN_SUPER_TABS'),
+    mobileNav.indexOf('const ADMIN_ORG_TABS'),
+  );
+  const orgBlock = mobileNav.slice(
+    mobileNav.indexOf('const ADMIN_ORG_TABS'),
     mobileNav.indexOf('interface MobileBottomNavProps'),
   );
 
-  assert.match(adminBlock, /href: '\/admin'/);
-  assert.match(adminBlock, /href: '\/admin\/students'/);
-  assert.match(adminBlock, /href: '\/admin\/messages'/);
-  assert.doesNotMatch(adminBlock, /command-center/);
-  assert.doesNotMatch(adminBlock, /\/admin\/members'/);
+  for (const block of [superBlock, orgBlock]) {
+    assert.match(block, /href: '\/admin'/);
+    assert.match(block, /href: '\/admin\/students'/);
+    assert.doesNotMatch(block, /\/admin\/members'/);
+  }
+  assert.match(superBlock, /href: '\/admin\/messages'/);
+  assert.doesNotMatch(superBlock, /command-center/);
+  // /admin/messages redirects non-super-admins back to /admin (WAP-190): org admins get the decision workbench instead.
+  assert.doesNotMatch(orgBlock, /\/admin\/messages/);
+  assert.match(orgBlock, /href: '\/admin\/command-center\?queue=applications'/);
 });
 
 test('counselor mobile bottom tabs lead with Today, then Inbox, members and messages', () => {

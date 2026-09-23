@@ -4,6 +4,7 @@ import LocalizedLink from '@/components/LocalizedLink';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { NavBadgeKey } from '@/lib/nav/portalNav';
+import { isActiveRoute, type ActiveNavSearch } from '@/lib/nav/activeRoute';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 /**
@@ -44,15 +45,45 @@ const PARTNER_TABS = [
   { href: '/partner/outcomes', labelKey: 'partner.outcomes', icon: 'bar_chart' },
 ];
 
-const ADMIN_TABS = [
+type BottomTab = {
+  href: string;
+  labelKey: string;
+  icon: string;
+  tourTarget?: string;
+};
+
+/**
+ * Admin tabs follow the rail's role gate (lib/nav/portalNav.ts): /admin/messages
+ * is super-admin only and redirects an org admin back to /admin, so an org admin
+ * gets Applications — the decision workbench — in that slot instead (WAP-190).
+ * Like the rail row, Applications is current on `?queue=applications` only,
+ * not on the workbench's other queues or its bare metrics view.
+ */
+const ADMIN_SUPER_TABS: BottomTab[] = [
   { href: '/admin', labelKey: 'admin.today', icon: 'home' },
   { href: '/admin/students', labelKey: 'admin.students', icon: 'groups' },
   { href: '/admin/messages', labelKey: 'admin.messages', icon: 'chat' },
 ];
 
+const ADMIN_ORG_TABS: BottomTab[] = [
+  { href: '/admin', labelKey: 'admin.today', icon: 'home' },
+  { href: '/admin/students', labelKey: 'admin.students', icon: 'groups' },
+  { href: '/admin/command-center?queue=applications', labelKey: 'admin.applications', icon: 'assignment_turned_in' },
+];
+
 interface MobileBottomNavProps {
   variant?: 'marketing' | 'portal' | 'employer' | 'counselor' | 'partner' | 'admin';
   badgeCounts?: Partial<Record<NavBadgeKey, number>>;
+  /** Admin variant only: the same super-admin context the admin rail filters on. */
+  superAdmin?: boolean;
+  /**
+   * The page's query string (`useSearchParams()`), passed by the portal shell
+   * so a tab whose href carries a query (admin Applications) is matched the
+   * way the rail matches it (lib/nav/activeRoute.ts). Without it such a tab is
+   * never current. Read here as a prop, not a hook, so the marketing bar never
+   * depends on search params.
+   */
+  search?: ActiveNavSearch;
 }
 
 function prefetchForBottomTab(variant: MobileBottomNavProps['variant'], href: string): boolean {
@@ -62,7 +93,7 @@ function prefetchForBottomTab(variant: MobileBottomNavProps['variant'], href: st
   return false;
 }
 
-export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: MobileBottomNavProps) {
+export default function MobileBottomNav({ variant = 'marketing', badgeCounts, superAdmin = false, search }: MobileBottomNavProps) {
   const pathname = usePathname() ?? '';
   const t = useTranslations('nav.mobileBottomNav');
   const tNav = useTranslations('nav');
@@ -71,11 +102,11 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: 
   // WorkspaceShell. Pages that still call <MobileBottomNav variant="portal"/>
   // become no-ops so the change ships without touching 40+ page files.
   if (variant === 'portal') return null;
-  const tabs =
+  const tabs: BottomTab[] =
     variant === 'employer' ? EMPLOYER_TABS
     : variant === 'counselor' ? COUNSELOR_TABS
     : variant === 'partner' ? PARTNER_TABS
-    : variant === 'admin' ? ADMIN_TABS
+    : variant === 'admin' ? (superAdmin ? ADMIN_SUPER_TABS : ADMIN_ORG_TABS)
     : MARKETING_TABS;
   return (
     <>
@@ -118,11 +149,13 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: 
       {tabs.map((tab) => {
         const { href, labelKey, icon } = tab;
         const label = t(labelKey);
-        const tourTarget = 'tourTarget' in tab ? tab.tourTarget : undefined;
+        const tourTarget = tab.tourTarget;
         const exactMatch = ['/', '/dashboard', '/admin', '/employer', '/counselor', '/partner'];
-        const isActive = exactMatch.includes(href)
-          ? pathname === href
-          : pathname.startsWith(href);
+        const isActive = href.includes('?')
+          ? isActiveRoute(pathname, href, [], false, search)
+          : exactMatch.includes(href)
+            ? pathname === href
+            : pathname.startsWith(href);
         // Member badge logic moved to MemberPortalTopNav. Other variants do not
         // surface unread-message badges in the bottom nav today.
         const b = 0;
