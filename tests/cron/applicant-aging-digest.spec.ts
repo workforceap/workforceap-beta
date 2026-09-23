@@ -119,7 +119,8 @@ describe('GET /api/cron/applicant-aging-digest', () => {
     expect(params.enrolledButPending).toBe(1);
     expect(params.buckets.map((b) => b.count)).toEqual([1, 1, 0, 1]);
     expect(params.oldest[0]).toMatchObject({ memberId: 'user-old', fullName: 'Grace Hopper', daysWaiting: 100 });
-    expect(params.queueLink).toMatch(/\/admin\/command-center$/);
+    // The Applications workbench itself (WAP-190), a deep link sign-in keeps for every admin role.
+    expect(params.queueLink).toMatch(/\/admin\/command-center\?queue=applications$/);
     expect(params.memberAdminBaseUrl).toMatch(/\/admin\/members$/);
 
     expect(body).toMatchObject({
@@ -156,7 +157,7 @@ describe('applicantAgingDigestHtml', () => {
       { memberId: 'm-2', fullName: null, email: 'anon@example.org', daysWaiting: 95, status: 'NEEDS_INFO', alreadyEnrolled: true },
     ],
     enrolledButPending: 1,
-    queueLink: 'https://www.workforceap.org/admin/command-center',
+    queueLink: 'https://www.workforceap.org/admin/command-center?queue=applications',
     memberAdminBaseUrl: 'https://www.workforceap.org/admin/members',
   };
 
@@ -171,7 +172,7 @@ describe('applicantAgingDigestHtml', () => {
     expect(html).toContain('needs info');
     expect(html).toContain('(already enrolled)');
     expect(html).toContain('1 of these applicants has already enrolled');
-    expect(html).toContain('href="https://www.workforceap.org/admin/command-center"');
+    expect(html).toContain('href="https://www.workforceap.org/admin/command-center?queue=applications"');
   });
 
   it('omits the enrolled note when nobody is double-counted and escapes names', () => {

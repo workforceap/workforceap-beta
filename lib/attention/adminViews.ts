@@ -68,7 +68,22 @@ export type AdminAttentionQueueItem = {
   actionLabel: string;
   href: string;
   urgent: boolean;
+  /**
+   * The first members behind the count, each linking to the place the row's
+   * action is taken (new applicants: the Counselor assignment card on their
+   * record). `more` is how many the count holds beyond them.
+   */
+  members?: { label: string; items: Array<{ id: string; name: string; href: string }>; more: number };
 };
+
+/**
+ * The Counselor assignment card on the admin member record (Overview tab,
+ * the default). The kit Tabs island opens the panel holding an in-page
+ * anchor and scrolls to it.
+ */
+export function adminCounselorAssignHref(memberId: string): string {
+  return `/admin/members/${encodeURIComponent(memberId)}#admin-member-counselor-title`;
+}
 
 function plural(n: number, one: string, many: string): string {
   return n === 1 ? one : many;
@@ -77,6 +92,9 @@ function plural(n: number, one: string, many: string): string {
 export function buildCommandCenterAttentionRows(queue: AttentionQueue): AdminAttentionQueueItem[] {
   const risk = queue.totals.byReason.risk_alert;
   const quiet = queue.totals.byReason.no_activity_30d;
+  const newcomers = selectByReason(queue, 'new_no_counselor');
+  const fresh = queue.totals.byReason.new_no_counselor;
+  const listed = newcomers.slice(0, TOP_N);
   return [
     {
       id: 'risk_alert',
@@ -95,6 +113,23 @@ export function buildCommandCenterAttentionRows(queue: AttentionQueue): AdminAtt
       actionLabel: `${quiet} ${plural(quiet, 'item', 'items')}`,
       href: ADMIN_ATTENTION_HREF.no_activity_30d,
       urgent: quiet > 0,
+    },
+    // Restored on the admin Today (WAP-190): the rule is a `warning`, so the
+    // row is listed but never marked urgent. Assignment happens per member,
+    // on their record, so the row names the first few with a direct link.
+    {
+      id: 'new_no_counselor',
+      count: fresh,
+      title: `${fresh} new ${plural(fresh, 'applicant has', 'applicants have')} no counselor`,
+      detail: ATTENTION_REASON_META.new_no_counselor.definition,
+      actionLabel: `${fresh} ${plural(fresh, 'item', 'items')}`,
+      href: ADMIN_ATTENTION_HREF.new_no_counselor,
+      urgent: false,
+      members: {
+        label: 'Assign a counselor:',
+        items: listed.map((row) => ({ id: row.memberId, name: row.memberName, href: adminCounselorAssignHref(row.memberId) })),
+        more: Math.max(0, fresh - listed.length),
+      },
     },
   ];
 }

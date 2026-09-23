@@ -144,10 +144,12 @@ portals.**
 | Employer | Overview · Jobs · Pipeline · Messages |
 | Counselor | Overview · Inbox · Members · Messages |
 | Partner | Overview · Members · Messages · Milestones · Outcomes |
-| Admin | Command Center (`/admin`) · Students · Messages |
+| Admin (super-admin) | Today (`/admin`) · Students · Messages |
+| Admin (org admin) | Today (`/admin`) · Students · Applications (`/admin/command-center?queue=applications`) |
 
 Admin and counselor mobile destinations must stay aligned with rail hrefs when labels
-rename (e.g. Command Center, Students, Inbox zero).
+rename (e.g. Today, Students, Inbox zero). Admin tabs follow the rail's role gate: `/admin/messages`
+is super-admin only, so an org admin gets the Applications workbench in that slot (WAP-190).
 
 ---
 

@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import type { ApplicantTriageBucket } from '@/lib/admin/applicantTriage';
 
 export type AdminCommandCenterBaseRow = {
@@ -162,6 +163,34 @@ export function buildProgramHealthRows(
 
 export const ADMIN_QUEUE_KEYS = ['needs-reply', 'at-risk', 'interviewing', 'applications'] as const;
 export type AdminQueueKey = typeof ADMIN_QUEUE_KEYS[number];
+
+/** Rows per page on a focused `/admin/command-center?queue=…` workbench. */
+export const ADMIN_QUEUE_PAGE_SIZE = 25;
+
+/**
+ * The Applications workbench population (`?queue=applications`): every open
+ * application (PENDING + NEEDS_INFO) of a live account in the org. Shared by
+ * the workbench loader (lib/admin/commandCenter.ts) and the admin Today queue,
+ * which uses it only to work out which workbench page an application sits on.
+ */
+export function adminWorkbenchApplicationsWhere(orgId: string): Prisma.ApplicationWhereInput {
+  return {
+    status: { in: ['PENDING', 'NEEDS_INFO'] },
+    user: { organizationId: orgId, deletedAt: null },
+  };
+}
+
+/** Workbench order: oldest submission first (undated first), then creation, then id. */
+export function adminWorkbenchApplicationsOrderBy(): Prisma.ApplicationOrderByWithRelationInput[] {
+  return [{ submittedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }, { id: 'asc' }];
+}
+
+/** `id` prefix of each application card on the workbench, so a link can land on one card. */
+export const ADMIN_APPLICATION_CARD_ID_PREFIX = 'application-';
+
+export function adminApplicationCardId(applicationId: string): string {
+  return `${ADMIN_APPLICATION_CARD_ID_PREFIX}${applicationId}`;
+}
 export function normalizeAdminQueueRequest(queue: unknown, page: unknown) {
   const parsedQueue = typeof queue === 'string' && ADMIN_QUEUE_KEYS.includes(queue as AdminQueueKey)
     ? queue as AdminQueueKey : undefined;

@@ -9,6 +9,12 @@ import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getTriageDigest, type TriageDigest } from '@/lib/admin/triageDigest';
 import { getAdminCommandCenter, type AdminCommandCenter } from '@/lib/admin/commandCenter';
+import { loadAdminApprovalQueue } from '@/lib/admin/loadAdminApprovalQueue';
+import {
+  adminApplicationsQueueCopy,
+  emptyAdminApprovalQueue,
+  type AdminApprovalQueue,
+} from '@/lib/admin/adminApprovalQueue';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { getAdminAttention } from '@/lib/attention/admin';
 import { buildAdminAttentionTiles, buildCommandCenterAttentionRows } from '@/lib/attention/adminViews';
@@ -26,6 +32,7 @@ import {
   type ProgramHealthDatum,
 } from '@/components/portal/kit/pages/admin/CommandCenterKit';
 import type { ChartDatum } from '@/components/portal/kit';
+import { CounselorApprovalQueue } from '@/components/portal/kit/pages/counselor/CounselorApprovalQueue';
 import { pluralCount } from '@/lib/i18n/pluralCount';
 import { buildCommandCenterSystemHealth, COMMAND_CENTER_CRON_ROWS, type CronRunSnapshot } from '@/lib/admin/commandCenterHealth';
 import { PROGRAM_HEALTH_CAPTION } from '@/lib/admin/commandCenterHelpers';
@@ -40,10 +47,18 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Today screen — the admin home for a non-technical workforce-development
- * operator. Surfaces ONLY the "who needs you today" triage, today's in-office
- * session count, and three big primary actions. Everything else (metric
- * cards, alerts, recent tables, super-admin views, quick links) lives one
- * click away at /admin/overview.
+ * operator.
+ *
+ * Default (kit) view, top to bottom (WAP-190): the org-wide "Waiting on your
+ * decision" list (every PENDING application and every WIOA intake waiting on
+ * staff, oldest first, each row opening the screen where it is decided),
+ * then "What needs you today" (applications split into waiting on your
+ * decision / waiting on the applicant, certificates, new applicants with no
+ * counselor, replies owed, risk, quiet, interview prep), and only then the
+ * KPI strip, placements trend and program / system context.
+ *
+ * `?ui=legacy` keeps the older Today (triage digest, today's in-office
+ * session count, three primary actions).
  */
 export default async function AdminTodayPage({
   searchParams,
@@ -59,12 +74,12 @@ export default async function AdminTodayPage({
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
 
-  // ?ui=kit DEFAULT PATH — the admin HOME now renders the Command Center look
-  // (KPI strip + "What needs you today" work queue + Program Health + Placements
-  // by month), matching docs/mockups/workforceap-admin-full.html. Fed by the
-  // real command-center loader plus a few cheap org-scoped counts — no
-  // fabricated numbers. Runs AFTER the auth/role guard (access control preserved).
-  // Legacy "Today" view via ?ui=legacy.
+  // ?ui=kit DEFAULT PATH — the admin HOME renders the Command Center kit in
+  // its queues-first layout: the org-wide decision list, then the "What needs
+  // you today" work queue, then the KPI strip, Program Health and Placements by
+  // month (WAP-190). Fed by the real loaders plus a few cheap org-scoped counts
+  // — no fabricated numbers. Runs AFTER the auth/role guard (access control
+  // preserved). Legacy "Today" view via ?ui=legacy.
   if (requestedUi !== 'legacy') {
     const yearStart = new Date(new Date().getUTCFullYear(), 0, 1);
     let adminHomeLoadFailed = false;
@@ -72,7 +87,7 @@ export default async function AdminTodayPage({
 
     const { data, headline } = await withAuthGuc(async () => {
       const orgId = await getActorOrganizationId(user.id);
-      const [center, attention, placementRows, recentCronErrors, slaBreaches48h, cronRuns] = await Promise.all([
+      const [center, attention, placementRows, recentCronErrors, slaBreaches48h, cronRuns, approvals] = await Promise.all([
         getAdminCommandCenter(user.id, { perSectionLimit: 8 }).catch((error): AdminCommandCenter => {
           adminHomeLoadFailed = true;
           console.error('[admin/page] command center load failed', error);
@@ -147,8 +162,17 @@ export default async function AdminTodayPage({
               return null;
             })
           : Promise.resolve<CronRunSnapshot[] | null>(null),
+        // "Waiting on your decision": every decision waiting in the org, not
+        // the enrolled-only admin caseload (lib/admin/adminApprovalQueue.ts).
+        // A core loader like the others: a failure shows the error state
+        // rather than a list that reads as "nothing is waiting".
+        loadAdminApprovalQueue(scope).catch((error): AdminApprovalQueue => {
+          adminHomeLoadFailed = true;
+          console.error('[admin/page] approval queue load failed', error);
+          return emptyAdminApprovalQueue();
+        }),
       ]);
-      return { data: center, headline: { attention, placementRows, recentCronErrors, slaBreaches48h, cronRuns } };
+      return { data: center, headline: { attention, placementRows, recentCronErrors, slaBreaches48h, cronRuns, approvals } };
     }).catch((error) => {
       adminHomeLoadFailed = true;
       console.error('[admin/page] scoped command center load failed', error);
@@ -174,6 +198,7 @@ export default async function AdminTodayPage({
           recentCronErrors: 0,
           slaBreaches48h: 0,
           cronRuns: null as CronRunSnapshot[] | null,
+          approvals: emptyAdminApprovalQueue(),
         },
       };
     });
@@ -230,40 +255,48 @@ export default async function AdminTodayPage({
         })),
     ];
 
+    const attentionItems = attentionRows.map((row): CommandCenterQueueItem => {
+      const Icon = attentionIcon[row.id];
+      return {
+        id: row.id,
+        icon: <Icon size={14} aria-hidden />,
+        iconColor: 'var(--wa-accent)',
+        title: row.title,
+        detail: row.detail,
+        actionLabel: row.actionLabel,
+        urgent: row.urgent,
+        href: row.href,
+        count: row.count,
+        links: row.members
+          ? {
+              label: row.members.label,
+              items: row.members.items.map((member) => ({ label: member.name, href: member.href })),
+              more: row.members.more,
+            }
+          : undefined,
+      };
+    });
+    const attentionItem = (id: (typeof attentionRows)[number]['id']) => attentionItems.filter((item) => item.id === id);
+
+    // Applications from the same loader as the list above it, so the row and
+    // the list count the same applications: waiting on your decision
+    // (PENDING) and waiting on the applicant (NEEDS_INFO) are two numbers.
+    const approvals = headline.approvals;
+    const applicationsWaiting = approvals.applications.waiting;
+    const applicationsCopy = adminApplicationsQueueCopy(approvals);
+
+    // Decisions first, then people who need a person, then prep.
     const queueItems: CommandCenterQueueItem[] = [
-      ...attentionRows.map((row): CommandCenterQueueItem => {
-        const Icon = attentionIcon[row.id];
-        return {
-          id: row.id,
-          icon: <Icon size={14} aria-hidden />,
-          iconColor: 'var(--wa-accent)',
-          title: row.title,
-          detail: row.detail,
-          actionLabel: row.actionLabel,
-          urgent: row.urgent,
-          href: row.href,
-          count: row.count,
-        };
-      }),
-      {
-        id: 'needs-reply',
-        icon: <Bell size={14} aria-hidden />,
-        iconColor: 'var(--wa-info)',
-        title: `${totals.needsReplyCount} ${totals.needsReplyCount === 1 ? 'conversation needs' : 'conversations need'} a reply`,
-        detail: 'Members are waiting on a response',
-        actionLabel: pluralCount(totals.needsReplyCount, 'item'),
-        href: '/admin/command-center?queue=needs-reply',
-        count: totals.needsReplyCount,
-      },
       {
         id: 'applications',
         icon: <UserPlus size={14} aria-hidden />,
         iconColor: 'var(--wa-gold)',
-        title: `${totals.applicationsPendingCount} ${totals.applicationsPendingCount === 1 ? 'application needs' : 'applications need'} review`,
-        detail: 'Eligibility + program-fit review pending',
-        actionLabel: pluralCount(totals.applicationsPendingCount, 'item'),
+        title: applicationsCopy.title,
+        detail: applicationsCopy.detail,
+        actionLabel: pluralCount(applicationsWaiting, 'item'),
+        urgent: applicationsCopy.urgent,
         href: '/admin/command-center?queue=applications',
-        count: totals.applicationsPendingCount,
+        count: applicationsWaiting,
       },
       {
         id: 'certifications',
@@ -276,6 +309,19 @@ export default async function AdminTodayPage({
         href: '/admin/certifications',
         count: totals.certificationsPendingCount,
       },
+      ...attentionItem('new_no_counselor'),
+      {
+        id: 'needs-reply',
+        icon: <Bell size={14} aria-hidden />,
+        iconColor: 'var(--wa-info)',
+        title: `${totals.needsReplyCount} ${totals.needsReplyCount === 1 ? 'conversation needs' : 'conversations need'} a reply`,
+        detail: 'Members are waiting on a response',
+        actionLabel: pluralCount(totals.needsReplyCount, 'item'),
+        href: '/admin/command-center?queue=needs-reply',
+        count: totals.needsReplyCount,
+      },
+      ...attentionItem('risk_alert'),
+      ...attentionItem('no_activity_30d'),
       {
         id: 'interviewing',
         icon: <Briefcase size={14} aria-hidden />,
@@ -323,7 +369,23 @@ export default async function AdminTodayPage({
       <>
         {adminHomeLoadFailed ? <span hidden data-portal-error-state="admin-command-center-load" /> : null}
         <CommandCenterKit
+          title="Today"
           dateLabel={dateLabel}
+          queuesFirst
+          lead={
+            <CounselorApprovalQueue
+              queue={approvals.queue}
+              total={approvals.total}
+              rowHrefs={approvals.rowHrefs}
+              retryHref="/admin"
+              description="Every application and intake check in your organization that is waiting on a staff decision, oldest first. Each row opens the screen where you decide it."
+              emptyDescription="No application or intake check in your organization is waiting on a staff decision."
+              moreLinks={[
+                { label: 'Applications', href: '/admin/command-center?queue=applications' },
+                { label: 'Funding eligibility', href: '/admin/wioa-screening' },
+              ]}
+            />
+          }
           kpis={kpis}
           queueItems={queueItems}
           programHealth={programHealth}

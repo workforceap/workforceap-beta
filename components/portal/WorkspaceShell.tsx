@@ -849,9 +849,11 @@ export default function WorkspaceShell({
           </div>
         </div>
       </div>
-      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav. */}
+      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav.
+          `superAdmin` is the prop the admin rail is filtered on (AdminPortalShell),
+          so the admin tabs never offer a page the rail hides. */}
       {ROLE_TO_NAV_VARIANT[portalRole] ? (
-        <MobileBottomNav variant={ROLE_TO_NAV_VARIANT[portalRole]} badgeCounts={badges} />
+        <MobileBottomNav variant={ROLE_TO_NAV_VARIANT[portalRole]} badgeCounts={badges} superAdmin={Boolean(superAdmin)} />
       ) : null}
     </div>
   );

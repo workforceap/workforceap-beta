@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { Pagination } from '@astryxdesign/core/Pagination';
-import { adminQueueHref, type AdminQueueKey } from '@/lib/admin/commandCenterHelpers';
+import { adminApplicationCardId, adminQueueHref, type AdminQueueKey } from '@/lib/admin/commandCenterHelpers';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import ApplicantTriageChip from '@/components/admin/ApplicantTriageChip';
 import type {
@@ -405,7 +405,11 @@ function ApplicationCard({
   onToggleSelect: () => void;
 }) {
   return (
-    <article style={{ border: '1px solid var(--outline-variant)', borderRadius: '0.75rem', padding: '0.85rem', background: 'var(--surface-container-low)' }}>
+    // The id lets the admin Today's "Waiting on your decision" rows land on this card.
+    <article
+      id={adminApplicationCardId(row.applicationId)}
+      style={{ border: '1px solid var(--outline-variant)', borderRadius: '0.75rem', padding: '0.85rem', background: 'var(--surface-container-low)', scrollMarginTop: 'calc(var(--wa-pad) * 3)' }}
+    >
       <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', minWidth: 0 }}>
           <input

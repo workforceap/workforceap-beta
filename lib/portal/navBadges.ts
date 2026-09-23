@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
-import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
+import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { adminApplicationsAwaitingDecisionWhere } from '@/lib/admin/adminApprovalQueue';
 import { countThreadsWithSlaBreach, countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
 import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
 import { memberUnreadStaffMessagesWhere } from '@/lib/messages/memberUnread';
@@ -27,14 +29,15 @@ export async function getNavBadgeCountsForUser(
     // failure doesn't break the whole nav.
     const scope = await resolveCascadeScope(userId).catch(() => ({ kind: 'deny' as const }));
     const milestones_awaiting_approval = await countAwaitingApprovalCascades({ scope }).catch(() => 0);
+    const applications = await countAdminApplicationsPending(userId);
     if (await isSuperAdmin(userId)) {
       const [counselor_sla_breach_48h, member_messages_unanswered] = await Promise.all([
         countThreadsWithSlaBreach(48),
         countUnansweredMemberThreads(),
       ]);
-      return { counselor_sla_breach_48h, member_messages_unanswered, milestones_awaiting_approval };
+      return { counselor_sla_breach_48h, member_messages_unanswered, milestones_awaiting_approval, ...applications };
     }
-    return { milestones_awaiting_approval };
+    return { milestones_awaiting_approval, ...applications };
   }
 
   if (role === 'member' || role === 'group') {
@@ -69,6 +72,22 @@ export async function getNavBadgeCountsForUser(
   }
 
   return {};
+}
+
+/**
+ * The Applications rail row's badge (WAP-190): PENDING applications in the
+ * actor's own organization — the same where, and so the same number, as
+ * "waiting on your decision" on the admin Today (lib/admin/adminApprovalQueue.ts).
+ * Scoped to the actor's org for super-admins too, like the workbench it opens.
+ * Only an admin of that org (or a super-admin) gets it: `?role=admin` is a
+ * query parameter anyone signed in can send. A failed count throws, so the
+ * route answers 503 instead of a false zero.
+ */
+async function countAdminApplicationsPending(userId: string): Promise<Pick<NavBadgeCounts, 'admin_applications_pending'>> {
+  const orgId = await getActorOrganizationId(userId);
+  if (!(await isAdminInOrg(userId, orgId))) return {};
+  const admin_applications_pending = await prisma.application.count({ where: adminApplicationsAwaitingDecisionWhere(orgId) });
+  return { admin_applications_pending };
 }
 
 async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {

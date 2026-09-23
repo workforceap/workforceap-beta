@@ -51,9 +51,11 @@ describe('pluralCount', () => {
     expect(client).toContain("View all {pluralCount(count, 'item')}</Link>");
     expect(client).not.toMatch(/\$\{count\} items/);
     const home = read('app/admin/page.tsx');
-    for (const key of ['needsReplyCount', 'applicationsPendingCount', 'certificationsPendingCount', 'interviewingCount']) {
+    for (const key of ['needsReplyCount', 'certificationsPendingCount', 'interviewingCount']) {
       expect(home).toContain(`actionLabel: pluralCount(totals.${key}, 'item'),`);
     }
+    // Applications count what the "Waiting on your decision" list counts (WAP-190).
+    expect(home).toContain(`actionLabel: pluralCount(applicationsWaiting, 'item'),`);
   });
 });
 

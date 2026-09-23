@@ -12,6 +12,11 @@ export const metadata: Metadata = {
 /**
  * PWA `start_url` target: sends signed-in users to the right portal so the generic
  * web app manifest (`/manifest.json`) is safe for counselors/staff despite a single manifest link tag.
+ *
+ * Admin wins over counselor, the same precedence sign-in uses
+ * (lib/auth/postLoginRedirect.ts), so an admin who also holds a counselor
+ * row opens the app on the admin Today, not the counselor caseload (WAP-190).
+ * Employer and partner order is unchanged.
  */
 export default async function PwaStartPage() {
   const user = await getUser();
@@ -24,8 +29,8 @@ export default async function PwaStartPage() {
     prisma.partnerUser.findUnique({ where: { userId: user.id }, select: { userId: true } }),
   ]);
 
-  if (counselor) redirect('/counselor');
   if (admin) redirect('/admin');
+  if (counselor) redirect('/counselor');
   if (employer) redirect('/employer');
   if (partnerRow) redirect('/partner');
   redirect('/dashboard');

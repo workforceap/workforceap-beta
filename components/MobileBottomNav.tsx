@@ -44,15 +44,42 @@ const PARTNER_TABS = [
   { href: '/partner/outcomes', labelKey: 'partner.outcomes', icon: 'bar_chart' },
 ];
 
-const ADMIN_TABS = [
+type BottomTab = {
+  href: string;
+  labelKey: string;
+  icon: string;
+  /** Pathname that marks the tab current when `href` carries a query string. */
+  activePath?: string;
+  tourTarget?: string;
+};
+
+/**
+ * Admin tabs follow the rail's role gate (lib/nav/portalNav.ts): /admin/messages
+ * is super-admin only and redirects an org admin back to /admin, so an org admin
+ * gets Applications — the decision workbench — in that slot instead (WAP-190).
+ */
+const ADMIN_SUPER_TABS: BottomTab[] = [
   { href: '/admin', labelKey: 'admin.today', icon: 'home' },
   { href: '/admin/students', labelKey: 'admin.students', icon: 'groups' },
   { href: '/admin/messages', labelKey: 'admin.messages', icon: 'chat' },
 ];
 
+const ADMIN_ORG_TABS: BottomTab[] = [
+  { href: '/admin', labelKey: 'admin.today', icon: 'home' },
+  { href: '/admin/students', labelKey: 'admin.students', icon: 'groups' },
+  {
+    href: '/admin/command-center?queue=applications',
+    labelKey: 'admin.applications',
+    icon: 'assignment_turned_in',
+    activePath: '/admin/command-center',
+  },
+];
+
 interface MobileBottomNavProps {
   variant?: 'marketing' | 'portal' | 'employer' | 'counselor' | 'partner' | 'admin';
   badgeCounts?: Partial<Record<NavBadgeKey, number>>;
+  /** Admin variant only: the same super-admin context the admin rail filters on. */
+  superAdmin?: boolean;
 }
 
 function prefetchForBottomTab(variant: MobileBottomNavProps['variant'], href: string): boolean {
@@ -62,7 +89,7 @@ function prefetchForBottomTab(variant: MobileBottomNavProps['variant'], href: st
   return false;
 }
 
-export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: MobileBottomNavProps) {
+export default function MobileBottomNav({ variant = 'marketing', badgeCounts, superAdmin = false }: MobileBottomNavProps) {
   const pathname = usePathname() ?? '';
   const t = useTranslations('nav.mobileBottomNav');
   const tNav = useTranslations('nav');
@@ -71,11 +98,11 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: 
   // WorkspaceShell. Pages that still call <MobileBottomNav variant="portal"/>
   // become no-ops so the change ships without touching 40+ page files.
   if (variant === 'portal') return null;
-  const tabs =
+  const tabs: BottomTab[] =
     variant === 'employer' ? EMPLOYER_TABS
     : variant === 'counselor' ? COUNSELOR_TABS
     : variant === 'partner' ? PARTNER_TABS
-    : variant === 'admin' ? ADMIN_TABS
+    : variant === 'admin' ? (superAdmin ? ADMIN_SUPER_TABS : ADMIN_ORG_TABS)
     : MARKETING_TABS;
   return (
     <>
@@ -118,11 +145,12 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: 
       {tabs.map((tab) => {
         const { href, labelKey, icon } = tab;
         const label = t(labelKey);
-        const tourTarget = 'tourTarget' in tab ? tab.tourTarget : undefined;
+        const tourTarget = tab.tourTarget;
         const exactMatch = ['/', '/dashboard', '/admin', '/employer', '/counselor', '/partner'];
-        const isActive = exactMatch.includes(href)
-          ? pathname === href
-          : pathname.startsWith(href);
+        const matchPath = tab.activePath ?? href;
+        const isActive = exactMatch.includes(matchPath)
+          ? pathname === matchPath
+          : pathname.startsWith(matchPath);
         // Member badge logic moved to MemberPortalTopNav. Other variants do not
         // surface unread-message badges in the bottom nav today.
         const b = 0;

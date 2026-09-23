@@ -271,7 +271,7 @@ test('employer and partner step copy names the surfaces the steps point at', () 
   assert.match(resolve(en, 'partner.home.help.body') as string, /reopens this tour/);
 });
 
-test('admin.home (wave 4) is written for the /admin Command Center and walks command center → overview → students → messages → programs → training progress → settings → help', () => {
+test('admin.home (wave 4) is written for the /admin home (Today) and walks today → overview → students → messages → programs → training progress → settings → help', () => {
   const tour = TOUR_REGISTRY['admin.home'];
   assert.equal(tour.role, 'admin');
   assert.equal(tour.route, '/admin');
@@ -312,12 +312,16 @@ for (const locale of TOUR_LOCALES) {
 
 test('admin step copy names the surfaces the steps point at', () => {
   const en = loadTours('en');
+  // The first step lights the rail row "Today" (/admin, WAP-190): the decision list leads, the numbers follow.
+  assert.equal(resolve(en, 'admin.home.commandCenter.title'), 'Today');
+  assert.match(resolve(en, 'admin.home.commandCenter.body') as string, /Waiting on your decision comes first/);
   assert.match(resolve(en, 'admin.home.commandCenter.body') as string, /What needs you today/);
-  assert.match(resolve(en, 'admin.home.overview.body') as string, /Command Center/);
+  assert.match(resolve(en, 'admin.home.overview.body') as string, /behind Today/);
   assert.match(resolve(en, 'admin.home.students.body') as string, /roster/i);
   assert.match(resolve(en, 'admin.home.messages.body') as string, /reply/);
-  assert.match(resolve(en, 'admin.home.programs.body') as string, /Program requests/);
+  assert.match(resolve(en, 'admin.home.programs.body') as string, /Program requests, students asking to switch, sit in Daily work/);
   assert.match(resolve(en, 'admin.home.trainingProgress.body') as string, /Coursera/);
+  assert.match(resolve(en, 'admin.home.trainingProgress.body') as string, /Certificates waiting on review sit in Daily work/);
   assert.match(resolve(en, 'admin.home.settings.body') as string, /under Security & system,/);
   assert.match(resolve(en, 'admin.home.help.body') as string, /reopens this tour/);
 });

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { ApplicationStatus, JobApplicationStatus, Prisma } from '@prisma/client';
+import { JobApplicationStatus, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -11,6 +11,9 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { loadApplicantTriageByUserIds, type ApplicantTriageLoaded } from '@/lib/admin/applicantTriageLoad';
 import { applicationStatusKey, applicationStatusLabel } from '@/lib/status/applicationStatusVocabulary';
 import {
+  ADMIN_QUEUE_PAGE_SIZE,
+  adminWorkbenchApplicationsOrderBy,
+  adminWorkbenchApplicationsWhere,
   buildApplicationEmailPacket,
   buildProgramHealthRows,
   normalizeAdminQueueRequest,
@@ -51,7 +54,7 @@ export async function getAdminCommandCenter(
 ): Promise<AdminCommandCenter> {
   const orgId = await getActorOrganizationId(actorUserId);
   const { queue, page } = normalizeAdminQueueRequest(options?.queue, options?.page);
-  const limit = queue ? 25 : Math.max(1, Math.min(50, Math.floor(options?.perSectionLimit || DEFAULT_LIMIT)));
+  const limit = queue ? ADMIN_QUEUE_PAGE_SIZE : Math.max(1, Math.min(50, Math.floor(options?.perSectionLimit || DEFAULT_LIMIT)));
   const offset = (page - 1) * limit;
   const skipFor = (key: AdminQueueKey) => queue === key ? offset : 0;
   const now = options?.now ?? new Date();
@@ -161,13 +164,10 @@ async function loadApplicationsPending(
   limit: number,
   offset: number,
 ) {
-  const where: Prisma.ApplicationWhereInput = {
-    status: { in: [ApplicationStatus.PENDING, ApplicationStatus.NEEDS_INFO] },
-    user: { organizationId: orgId, deletedAt: null },
-  };
+  const where = adminWorkbenchApplicationsWhere(orgId);
   const [rows, total, oldest] = await prisma.$transaction([prisma.application.findMany({
     take: limit, skip: offset, where,
-    orderBy: [{ submittedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }, { id: 'asc' }],
+    orderBy: adminWorkbenchApplicationsOrderBy(),
     select: {
       id: true,
       status: true,
