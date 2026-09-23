@@ -525,13 +525,17 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
 
 export const COUNSELOR_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // Today is the landing page: one attention list from lib/attention. `/counselor` redirects here.
-  { href: '/counselor/today', label: 'Today', group: 'primary', Icon: CalendarCheck, aliases: ['/counselor'] },
+  // Badge (WAP-205): caseload threads with a member message unanswered 48h+,
+  // which Today lists as its top attention reason (sla_breach_48h).
+  { href: '/counselor/today', label: 'Today', group: 'primary', Icon: CalendarCheck, aliases: ['/counselor'], badgeKey: 'counselor_sla_breach_48h' },
   { href: '/counselor/overview', label: 'Overview', group: 'primary', Icon: Home },
   { href: '/counselor/inbox', label: 'Inbox zero', group: 'workflows', Icon: ListChecks },
   { href: '/counselor/sessions', label: 'In-office sessions', group: 'workflows', Icon: Sparkles },
   { href: '/counselor/students', label: 'My members', group: 'workflows', Icon: Users, tourTarget: 'tour-nav-members' },
   { href: '/counselor/lab-reviews', label: 'Lab reviews', group: 'workflows', Icon: ClipboardCheck },
-  { href: '/counselor/messages', label: 'Messages', group: 'workflows', Icon: MessageSquare, tourTarget: 'tour-nav-messages' },
+  // Badge (WAP-205): caseload threads with unread member messages, the same
+  // count the counselor inbox uses (countUnreadMemberMessagesByThread).
+  { href: '/counselor/messages', label: 'Messages', group: 'workflows', Icon: MessageSquare, tourTarget: 'tour-nav-messages', badgeKey: 'counselor_messages_unread' },
   // Every reachable counselor route has a rail row; none is link-only (audit 2026-09-20).
   { href: '/counselor/queue', label: 'Work queue', group: 'workflows', Icon: ListChecks },
   { href: '/counselor/triage', label: 'Triage queue', group: 'workflows', Icon: AlertTriangle },
