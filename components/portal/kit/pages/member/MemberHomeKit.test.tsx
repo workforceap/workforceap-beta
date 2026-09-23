@@ -284,3 +284,68 @@ describe('MemberHomeKit pieces moved over from the legacy home', () => {
     expect(container.querySelector('a[href*="ui=legacy"]')).toBeNull();
   });
 });
+
+// ── WAP-194: the staff-view banner and the view-only program switch ─────────
+const TWO_PROGRAMS = {
+  options: [
+    { id: 'enr-1', programSlug: 'aws-cloud-technology-amazon', programTitle: 'AWS Cloud Technology Certificate', isPrimary: true },
+    { id: 'enr-2', programSlug: 'comptia-a-professional-certificate', programTitle: 'CompTIA A+ Professional Certificate (CompTIA A+)', isPrimary: false },
+  ],
+  activeProgramSlug: 'aws-cloud-technology-amazon',
+  viewingSecondary: false,
+};
+
+describe('MemberHomeKit staff-view banner', () => {
+  it('shows StaffViewBanner only for a staff viewer', () => {
+    const { container, unmount } = renderKit(<MemberHomeKit {...base} showStaffViewBanner />);
+    const banner = container.querySelector('[data-staff-view-banner="dashboard"]');
+    expect(banner).not.toBeNull();
+    expect(banner?.textContent).toMatch(/viewing this as a super-admin/);
+    // Kit paint: lucide icons, no Material Symbols, no legacy --color-* chain.
+    expect(banner?.querySelector('.material-symbols-outlined')).toBeNull();
+    expect(banner?.querySelectorAll('svg.lucide').length).toBe(2);
+    expect(banner?.getAttribute('style') ?? '').not.toMatch(/--color-|rgba?\(/);
+    unmount();
+
+    const member = renderKit(<MemberHomeKit {...base} />);
+    expect(member.container.querySelector('[data-staff-view-banner]')).toBeNull();
+  });
+});
+
+describe('MemberHomeKit enrolled-program switch (view only)', () => {
+  it('puts DashboardProgramSelector on the Certification path card when there are two or more enrollments', () => {
+    renderKit(<MemberHomeKit {...base} programSwitch={TWO_PROGRAMS} />);
+    const wrap = screen.getByTestId('home-program-switch');
+    const card = wrap.closest('.wa-kit-cert-path');
+    expect(card, 'the switch sits on the Certification path card').not.toBeNull();
+    const chip = screen.getByTestId('dashboard-program-selector');
+    expect(chip).toHaveTextContent('1 of 2 programs');
+    expect(chip.querySelector('.material-symbols-outlined')).toBeNull();
+    expect(chip.getAttribute('style') ?? '').not.toMatch(/--color-|rgba?\(/);
+    // The primary view says nothing about Learning hub links.
+    expect(screen.queryByText(/My Program shows your primary program/)).toBeNull();
+  });
+
+  it('says why the links change while a secondary program is shown', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        programHref="/dashboard/learning"
+        programSwitch={{ ...TWO_PROGRAMS, activeProgramSlug: 'comptia-a-professional-certificate', viewingSecondary: true }}
+      />,
+    );
+    expect(screen.getByTestId('dashboard-program-selector')).toHaveTextContent('2 of 2 programs');
+    expect(screen.getByText(/My Program shows your primary program/)).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Open plan' }).getAttribute('href')).toBe('/dashboard/learning');
+  });
+
+  it('renders no switch for one enrollment or none', () => {
+    const { unmount } = renderKit(
+      <MemberHomeKit {...base} programSwitch={{ ...TWO_PROGRAMS, options: TWO_PROGRAMS.options.slice(0, 1) }} />,
+    );
+    expect(screen.queryByTestId('home-program-switch')).toBeNull();
+    unmount();
+    renderKit(<MemberHomeKit {...base} programSwitch={null} />);
+    expect(screen.queryByTestId('dashboard-program-selector')).toBeNull();
+  });
+});

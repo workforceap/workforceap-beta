@@ -12,10 +12,12 @@ import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from '
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { getProgramBySlug } from '@/lib/content/programs';
+import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
   canonicalizeProgramSlug,
   programSlugsEquivalent,
 } from '@/lib/content/programSlug';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { effectiveStreak } from '@/lib/member/streakDisplay';
@@ -62,7 +64,9 @@ import {
  * sparkline adds no Prisma operation and no second round trip. The pieces the
  * retired legacy home read separately (OFFER rows for the placement confirmation
  * strip, First 90 Days check-ins, the youth notice's date of birth, every
- * persisted next-best action) ride on the same read too.
+ * persisted next-best action) ride on the same read too, and so do the
+ * first-login wizard's intake fields and every `CourseEnrollment` the
+ * `?program=` switch chooses between (WAP-194).
  *
  * Coursera B4B + `maybeAutoSyncCourseraOnDashboard` stay **off this path**.
  * Hourly `coursera-training-sync` owns seeding. `getMemberState` (Redis
@@ -107,6 +111,12 @@ const PIPELINE_ROW_LIMIT = 4;
 const OPEN_APPLICATION_TAKE = 200;
 /** First 90 Days check-ins read with the member; the legacy home read the same 12. */
 const FIRST90_EVENT_TAKE = 12;
+/**
+ * Enrollments read with the member, primary first. `(userId, programSlug)` is
+ * unique, so this is a ceiling on programs, not rows: the whole catalog is a
+ * few dozen programs and staff enrol a member in one or two.
+ */
+const COURSE_ENROLLMENT_TAKE = 25;
 /** Written by the interview practice flow; counted, not listed. */
 const INTERVIEW_PRACTICE_COMPLETED_EVENT = 'career_os.interview_practice_completed';
 
@@ -165,6 +175,61 @@ export type DashboardViewFacts = {
   /** Completed courses in the assigned program; 0 without one. */
   completedCount: number;
   programTitle?: string;
+};
+
+/** One of the member's own enrollments, for the view-only program switch (`DashboardProgramSelector`). */
+export type DashboardProgramOption = {
+  id: string;
+  programSlug: string;
+  programTitle: string;
+  isPrimary: boolean;
+};
+
+/**
+ * The view-only enrolled-program switch (WAP-194). Present only when the
+ * member has more than one `CourseEnrollment`; choosing an option reloads
+ * `/dashboard?program=<slug>`, which changes what the home describes and
+ * never an enrollment (locked stake: members do not change programs).
+ */
+export type DashboardProgramSwitch = {
+  options: DashboardProgramOption[];
+  /** The option the home describes, spelled exactly as that option's `programSlug`. */
+  activeProgramSlug: string;
+  /**
+   * The home describes a non-primary enrollment. My Program
+   * (`/dashboard/program`) and the Coursera launch still open the primary
+   * program (WAP-196), so the program links on this view go to the Learning
+   * hub instead of deep-linking a course My Program cannot open.
+   */
+  viewingSecondary: boolean;
+};
+
+/**
+ * What the first-login guidance needs (`PortalEntryClient portal="member"`):
+ * whether to open the onboarding wizard or auto-start the first-visit tour,
+ * and the intake fields the wizard is pre-filled with. Read from the same
+ * nested user read; the legacy home issued a separate intake query.
+ */
+export type DashboardOnboarding = {
+  /** `onboardingCompletedAt` is not set: open the wizard. */
+  showWizard: boolean;
+  /**
+   * Onboarding is done but `tourCompletedAt` is not set: the legacy 1.5 s
+   * tour auto-start applies. The page still turns it off when the
+   * `guided_tours_v2` flag is on (the shell owns the tour then).
+   */
+  showTour: boolean;
+  wizard: {
+    initialFullName: string;
+    initialPhone: string;
+    initialAddress: string;
+    initialCity: string;
+    initialState: string;
+    initialZip: string;
+    initialProgramInterest: string;
+    initialReferralSource: string;
+    initialStep: number;
+  };
 };
 
 export type MemberDashboardHomeView = {
@@ -259,6 +324,10 @@ export type MemberDashboardHomeView = {
   youthNoticeAge: number | null;
   /** Facts for the dashboard view / activation events; null when there is no member row to write them for. */
   dashboardViewFacts: DashboardViewFacts | null;
+  /** First-login wizard / tour state; null when there is no member row. */
+  onboarding: DashboardOnboarding | null;
+  /** The enrolled-program switch; null unless the member has more than one enrollment. */
+  programSwitch: DashboardProgramSwitch | null;
   /** Prisma client operations issued by this call (happy path ≤ budget). */
   prismaOpCount: number;
 };
@@ -266,6 +335,13 @@ export type MemberDashboardHomeView = {
 export type LoadMemberDashboardHomeArgs = {
   userId: string;
   fallbackDisplayName?: string | null;
+  /**
+   * `/dashboard?program=<slug>`: which of the member's own enrollments the
+   * home describes. Honoured only when it names one of their enrollments;
+   * anything else (unknown, someone else's, blank) falls back to the primary,
+   * exactly as `getActiveProgramForDashboard` resolves it.
+   */
+  requestedProgramSlug?: string | null;
   /** Orphan auth user: provision then the loader re-reads. */
   provisionIfMissing?: () => Promise<void>;
 };
@@ -280,7 +356,9 @@ type DashboardHomeDb = {
   $transaction: <T>(fn: (tx: DashboardHomeTx) => Promise<T>) => Promise<T>;
 };
 
-type DashboardUserRow = MemberApprovalFacts & {
+type DashboardUserRow = Omit<MemberApprovalFacts, 'applications'> & {
+  /** Newest application; `programInterest` pre-fills the first-login wizard. */
+  applications?: Array<{ status: string; submittedAt: Date | null; programInterest?: string | null }>;
   organizationId?: string;
   counselorAssignments?: AssignedCounselorRow[];
   phone?: string | null;
@@ -311,6 +389,12 @@ type DashboardUserRow = MemberApprovalFacts & {
     employerName?: string | null;
   } | null;
   fullName: string | null;
+  /** First-login wizard / tour state (`/api/onboarding/*` writes these). */
+  onboardingCompletedAt?: Date | null;
+  onboardingCurrentStep?: number | null;
+  tourCompletedAt?: Date | null;
+  /** Intake program interest, the wizard's fallback when the application has none. */
+  programInterest?: string | null;
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
   /** Program enrolment date — half of the training-eligibility baseline. */
@@ -329,7 +413,15 @@ type DashboardUserRow = MemberApprovalFacts & {
       courseraSlug: string | null;
     }>;
   };
-  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string; enrolledByAdminId?: string | null; enrolledAt?: Date | null }>;
+  /** Every enrollment, primary first then newest (at most {@link COURSE_ENROLLMENT_TAKE}). */
+  courseEnrollments: Array<{
+    id?: string;
+    programSlug: string;
+    curriculumVersion?: string;
+    isPrimary?: boolean;
+    enrolledByAdminId?: string | null;
+    enrolledAt?: Date | null;
+  }>;
   courseProgress: Array<{
     programSlug: string;
     courseSlug: string;
@@ -599,6 +691,27 @@ function persistedAction(row: DashboardUserRow['nextBestActions'][number]): Next
   };
 }
 
+/** Where program links go while the home describes a non-primary enrollment. */
+export const SECONDARY_PROGRAM_HREF = '/dashboard/learning';
+
+/**
+ * A computed training step ("Continue training: …", "Launch your first
+ * course") opens My Program, which shows the primary program whatever
+ * `?program=` says (WAP-196). On a secondary program's view it would name
+ * this program's course and open another program's page, so it points at the
+ * Learning hub instead, and says so. Every other step is about the member,
+ * not the program, and is left alone; so are persisted (staff-written) rows.
+ */
+export function secondaryProgramAction(action: NextBestAction): NextBestAction {
+  if (hrefPath(action.href) !== MEMBER_PROGRAM_HREF) return action;
+  return {
+    ...action,
+    href: SECONDARY_PROGRAM_HREF,
+    body: 'Open the Learning hub for learning pathways and program tools.',
+    cta: 'Open Learning hub',
+  };
+}
+
 /**
  * Hero + "Up next" from one ranked list. The first persisted (staff- or
  * cron-written) action still wins the hero, and the other persisted rows lead
@@ -614,9 +727,14 @@ function resolveDashboardHomeActions(
     persisted: DashboardUserRow['nextBestActions'];
     /** Enrolled training has gone quiet (see `shapeHome`); offers the counselor row. */
     trainingStalled?: boolean;
+    /** The home describes a non-primary enrollment (see {@link secondaryProgramAction}). */
+    viewingSecondaryProgram?: boolean;
   },
 ): { doThisNext: NextBestAction; upNext: NextBestAction[] } {
-  const computed = computeDashboardHomeActions(args);
+  const heuristicActions = computeDashboardHomeActions(args);
+  const computed = args.viewingSecondaryProgram
+    ? heuristicActions.map(secondaryProgramAction)
+    : heuristicActions;
   const [firstPersisted, ...otherPersisted] = args.persisted.map(persistedAction);
   const doThisNext: NextBestAction = firstPersisted ?? computed[0]!;
   const heuristics = computed.filter(
@@ -784,16 +902,93 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     // No member row to attach an event to (the retired legacy home redirected
     // such sessions away; the kit home renders the empty shape instead).
     dashboardViewFacts: null,
+    // No member row for the wizard to write to, and no enrollment to switch.
+    onboarding: null,
+    programSwitch: null,
     prismaOpCount: 1,
+  };
+}
+
+/**
+ * Which enrollment the home describes, with `getActiveProgramForDashboard`'s
+ * semantics (`resolveActiveDashboardProgram`): the primary enrollment (or the
+ * legacy `User.enrolledProgram`), unless `requestedProgramSlug` names one of
+ * the member's own enrollments. With no request this is exactly the slug the
+ * loader used before it read every enrollment.
+ */
+export function resolveHomeEnrollment(
+  row: Pick<DashboardUserRow, 'courseEnrollments' | 'enrolledProgram'>,
+  requestedProgramSlug: string | null | undefined,
+) {
+  const enrollments = row.courseEnrollments;
+  const primaryEnrollment = enrollments.find((enrollment) => enrollment.isPrimary === true) ?? null;
+  const resolved = resolveActiveDashboardProgram({
+    enrollments: enrollments.map((enrollment, index) => ({
+      id: enrollment.id ?? `enrollment-${index}`,
+      programSlug: enrollment.programSlug,
+      isPrimary: enrollment.isPrimary === true,
+      enrolledAt: enrollment.enrolledAt ?? new Date(0),
+    })),
+    legacyEnrolledProgram: row.enrolledProgram,
+    requestedProgramSlug,
+  });
+  const activeSlug = resolved.activeProgramSlug;
+  const viewingSecondary = Boolean(
+    activeSlug &&
+      resolved.primaryProgramSlug &&
+      !programSlugsEquivalent(activeSlug, resolved.primaryProgramSlug),
+  );
+  const activeEnrollment = activeSlug
+    ? enrollments.find((enrollment) => programSlugsEquivalent(enrollment.programSlug, activeSlug)) ?? null
+    : null;
+  // The primary view keeps reading the primary row exactly as before (its
+  // curriculum pin, "is there an enrollment"); a secondary view reads its own.
+  const pinnedEnrollment = viewingSecondary ? activeEnrollment : primaryEnrollment;
+  const programSwitch: DashboardProgramSwitch | null =
+    enrollments.length > 1 && activeSlug
+      ? {
+          options: enrollments.map((enrollment, index) => ({
+            id: enrollment.id ?? `enrollment-${index}`,
+            programSlug: enrollment.programSlug,
+            programTitle: programDisplayTitle(enrollment.programSlug),
+            isPrimary: enrollment.isPrimary === true,
+          })),
+          activeProgramSlug: activeEnrollment?.programSlug ?? activeSlug,
+          viewingSecondary,
+        }
+      : null;
+  return { activeSlug, primaryEnrollment, pinnedEnrollment, activeEnrollment, viewingSecondary, programSwitch };
+}
+
+/** The wizard / tour gate and the wizard's pre-filled intake, as the legacy home built them. */
+export function buildDashboardOnboarding(row: DashboardUserRow): DashboardOnboarding {
+  const onboardingDone = row.onboardingCompletedAt != null;
+  return {
+    showWizard: !onboardingDone,
+    showTour: onboardingDone && row.tourCompletedAt == null,
+    wizard: {
+      initialFullName: row.fullName ?? '',
+      initialPhone: row.profile?.profilePhone ?? row.phone ?? '',
+      initialAddress: row.profile?.profileAddress ?? '',
+      initialCity: row.profile?.city ?? '',
+      initialState: row.profile?.state ?? '',
+      initialZip: row.profile?.zip ?? '',
+      initialProgramInterest: row.applications?.[0]?.programInterest ?? row.programInterest ?? '',
+      initialReferralSource: row.profile?.referralSource ?? '',
+      initialStep: row.onboardingCurrentStep ?? 0,
+    },
   };
 }
 
 function shapeHome(args: {
   row: DashboardUserRow;
   fallbackDisplayName: string | null | undefined;
+  requestedProgramSlug?: string | null;
   prismaOpCount: number;
 }): MemberDashboardHomeView {
-  const assignedSlug = args.row.courseEnrollments[0]?.programSlug ?? args.row.enrolledProgram ?? null;
+  const home = resolveHomeEnrollment(args.row, args.requestedProgramSlug);
+  const { viewingSecondary } = home;
+  const assignedSlug = home.activeSlug;
   const inferredSlug =
     args.row.memberProgramProgress[0]?.programSlug ??
     args.row.courseProgress[0]?.programSlug ??
@@ -806,7 +1001,7 @@ function shapeHome(args: {
         programSlugsEquivalent(course.programSlug, slug),
       )
     : [];
-  const pinnedCurriculumVersion = args.row.courseEnrollments[0]?.curriculumVersion;
+  const pinnedCurriculumVersion = home.pinnedEnrollment?.curriculumVersion;
   const validatedCourses = program && pinnedCurriculumVersion
     ? getProgramCoursesForCurriculumVersion(program, pinnedCurriculumVersion)
     : program?.syllabus && !program.curriculumMigrationPending
@@ -849,21 +1044,30 @@ function shapeHome(args: {
   // The cert-path card must name a module, not the hero action: when the top
   // next-best action is the preassessment (or a guide), the program still has a
   // first / next incomplete module to show. `doThisNext` keeps the hero as is.
+  // A WorkforceAP module page opens any of the member's enrollments by its
+  // stored slug (`?program=`). My Program's `?course=` does not: it always
+  // shows the primary program (WAP-196), so a secondary program's Coursera
+  // module goes to the Learning hub rather than to a page that cannot open it.
   const nextModule = program && slug && nextIncompleteCourse
     ? {
         title: nextIncompleteCourse.name,
         href: isWorkforceApCourse(nextIncompleteCourse)
-          ? workforceApCourseHref(nextIncompleteCourse.slug, slug)
-          : `${MEMBER_PROGRAM_HREF}?course=${encodeURIComponent(nextIncompleteCourse.slug)}`,
+          ? workforceApCourseHref(
+              nextIncompleteCourse.slug,
+              viewingSecondary ? home.activeEnrollment?.programSlug ?? slug : slug,
+            )
+          : viewingSecondary
+            ? SECONDARY_PROGRAM_HREF
+            : `${MEMBER_PROGRAM_HREF}?course=${encodeURIComponent(nextIncompleteCourse.slug)}`,
       }
     : null;
 
-  const programHref = MEMBER_PROGRAM_HREF;
+  const programHref = viewingSecondary ? SECONDARY_PROGRAM_HREF : MEMBER_PROGRAM_HREF;
   // /dashboard/training only redirects back to /dashboard, so enrolled members
   // must resume on My Program — otherwise Continue/Resume is a do-loop.
   const resumeHref = programHref;
   const starterReview = getCounselorStarterProfileReview({
-    wasCounselorCreated: !!args.row.courseEnrollments[0]?.enrolledByAdminId,
+    wasCounselorCreated: !!home.primaryEnrollment?.enrolledByAdminId,
     phone: args.row.phone,
     ...args.row.profile,
   });
@@ -922,9 +1126,10 @@ function shapeHome(args: {
     starterProfileMissingFields: getStarterProfileFieldLabels(starterReview.missing),
     persisted: args.row.nextBestActions,
     trainingStalled,
+    viewingSecondaryProgram: viewingSecondary,
     enrolledProgram: assignedSlug,
     assessmentCompleted: args.row.assessmentCompleted,
-    courseEnrollmentActive: args.row.courseEnrollments.length > 0,
+    courseEnrollmentActive: Boolean(home.pinnedEnrollment),
     completedCourseCount: completedCount,
     jobApplicationCount: args.row._count.jobApplications,
     trainingCoursesIncomplete: Boolean(program) && !allCoursesComplete,
@@ -1024,6 +1229,8 @@ function shapeHome(args: {
       completedCount,
       programTitle: program?.title,
     }),
+    onboarding: buildDashboardOnboarding(args.row),
+    programSwitch: home.programSwitch,
     prismaOpCount: args.prismaOpCount,
   };
 }
@@ -1041,6 +1248,12 @@ function userSelect(userId: string) {
     fullName: true,
     phone: true,
     organizationId: true,
+    // First-login wizard / tour gate and the wizard's program fallback
+    // (the legacy home's separate intake read, folded in here).
+    onboardingCompletedAt: true,
+    onboardingCurrentStep: true,
+    tourCompletedAt: true,
+    programInterest: true,
     profile: {
       select: {
         profilePhone: true,
@@ -1082,7 +1295,11 @@ function userSelect(userId: string) {
     placementRecord: {
       select: { placedAt: true, retentionDecision: true, retentionStatus: true, employerName: true },
     },
-    applications: { orderBy: { createdAt: 'desc' as const }, take: 1, select: { status: true, submittedAt: true } },
+    applications: {
+      orderBy: { createdAt: 'desc' as const },
+      take: 1,
+      select: { status: true, submittedAt: true, programInterest: true },
+    },
     wioaReviewStatus: true,
     wioaReviewedAt: true,
     courseraEnrollmentApproved: true,
@@ -1112,10 +1329,20 @@ function userSelect(userId: string) {
         },
       },
     },
+    // Every enrollment, primary first (the order `getActiveProgramForDashboard`
+    // reads), so `?program=` can pick a secondary one and the switch can list
+    // them all without a second read.
     courseEnrollments: {
-      where: { isPrimary: true },
-      take: 1,
-      select: { programSlug: true, curriculumVersion: true, enrolledByAdminId: true, enrolledAt: true },
+      orderBy: [{ isPrimary: 'desc' as const }, { enrolledAt: 'desc' as const }],
+      take: COURSE_ENROLLMENT_TAKE,
+      select: {
+        id: true,
+        programSlug: true,
+        curriculumVersion: true,
+        isPrimary: true,
+        enrolledByAdminId: true,
+        enrolledAt: true,
+      },
     },
     courseProgress: {
       orderBy: [{ lastActivityAt: 'desc' as const }, { lastUpdatedAt: 'desc' as const }],
@@ -1248,6 +1475,7 @@ export async function loadMemberDashboardHome(
   return shapeHome({
     row,
     fallbackDisplayName: args.fallbackDisplayName,
+    requestedProgramSlug: args.requestedProgramSlug,
     prismaOpCount,
   });
 }

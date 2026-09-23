@@ -1,18 +1,28 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { redirect, unstable_rethrow } from 'next/navigation';
 import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
+import { canBypassMemberAssessment, isSuperAdmin } from '@/lib/auth/roles';
 import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { loadMemberDashboardHome } from '@/lib/member/loadMemberDashboardHome';
 import { getTranslations } from 'next-intl/server';
+import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBoundary';
+import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
+import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
 import { getApprovalWaitEstimate } from '@/lib/member/counselorContext';
 import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
 import { legacyDashboardRedirectTarget } from '@/lib/member/dashboardLegacyRedirect';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { MemberHomeViewEvents } from '@/components/portal/kit/pages/member/MemberHomeViewEvents';
+
+const PWAInstallPrompt = dynamic(() => import('@/components/pwa/PWAInstallPrompt'), {
+  loading: () => null,
+});
 
 // The member home is one implementation: the kit home, fed by the 1-2 op
 // loadMemberDashboardHome. The retired `?ui=legacy` home (WAP-195) and its
@@ -43,9 +53,14 @@ export default async function DashboardPage({
   const legacyRedirect = legacyDashboardRedirectTarget(params);
   if (legacyRedirect) redirect(legacyRedirect);
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
+  // Multi-program, view only (WAP-194): `?program=<slug>` picks which of the
+  // member's own enrollments the home describes; the loader validates it and
+  // falls back to the primary.
+  const rawProgram = Array.isArray(params?.program) ? params.program[0] : params?.program;
+  const requestedProgramSlug = typeof rawProgram === 'string' ? rawProgram.trim() || null : null;
 
   try {
-    return await renderMemberDashboard(user, { readOnlyAudit });
+    return await renderMemberDashboard(user, { requestedProgramSlug, readOnlyAudit });
   } catch (err) {
     // redirect()/notFound() work by throwing — rethrow them so they keep
     // navigating instead of being logged and rendered as the error fallback.
@@ -76,13 +91,16 @@ export default async function DashboardPage({
 
 async function renderMemberDashboard(
   user: NonNullable<Awaited<ReturnType<typeof getUser>>>,
-  args: { readOnlyAudit?: boolean } = { readOnlyAudit: false },
+  args: { requestedProgramSlug: string | null; readOnlyAudit?: boolean } = { requestedProgramSlug: null, readOnlyAudit: false },
 ) {
   // Query budget lives in loadMemberDashboardHome (1-2 Prisma ops in one
-  // $transaction). Coursera/B4B + getMemberState stay off this path.
+  // $transaction). Coursera/B4B and the member-state pipeline stay off this path.
   const home = await loadMemberDashboardHome({
     userId: user.id,
     fallbackDisplayName: user.email,
+    // View-only: picks which of the member's own enrollments the home
+    // describes (validated in the loader); it never changes an enrollment.
+    requestedProgramSlug: args.requestedProgramSlug,
     provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
   });
   // Presentation only: a pathway with a live next step keeps the approval
@@ -104,13 +122,67 @@ async function renderMemberDashboard(
       counselorContext={counselorContext}
     />
   );
+  // Staff looking at a member home see the same notice My Program shows
+  // (the retired legacy home showed it too). Role reads are request-cached (the layout already
+  // resolved them), so this is not a new round trip on a member's visit.
+  let staffViewer = false;
+  try {
+    staffViewer = await canBypassMemberAssessment(user.id);
+  } catch (e) {
+    console.error('[dashboard] canBypassMemberAssessment failed', e);
+  }
+  // First-login guidance (WAP-194): the wizard while onboarding is not done,
+  // then the first-visit tour once. Never two tours: with `guided_tours_v2`
+  // on, the shell's first-login strip and Help menu own the tour, so the
+  // legacy auto-start stays off. The flag is read only when the auto-start
+  // could apply at all.
+  const onboarding = home.onboarding;
+  const tourAutoStart = onboarding?.showTour
+    ? (await getTourOffer(user.id, 'member.home'))?.enabled !== true
+    : false;
+  let superAdmin = false;
+  if (onboarding && (onboarding.showWizard || tourAutoStart)) {
+    try {
+      superAdmin = await isSuperAdmin(user.id);
+    } catch (e) {
+      console.error('[dashboard] isSuperAdmin failed', e);
+    }
+  }
   return (
     <>
     {/* The dashboard view / activation events the admin metrics and health
         score read (moved here from the retired legacy home, WAP-188). */}
     {home.dashboardViewFacts ? <MemberHomeViewEvents {...home.dashboardViewFacts} /> : null}
+    <PWAInstallPrompt />
+    {onboarding && (onboarding.showWizard || tourAutoStart) ? (
+      // A sibling, not a wrapper: if the wizard or tour throws, the boundary
+      // keeps the home itself on screen. Phone and desktop alike.
+      <PortalEntryErrorBoundary>
+        <PortalEntryClient
+          portal="member"
+          tourStorageUserId={user.id}
+          showOnboardingWizard={onboarding.showWizard}
+          showTour={tourAutoStart}
+          readOnlyAudit={Boolean(args.readOnlyAudit)}
+          isSuperAdmin={superAdmin}
+          tourSteps={MEMBER_PORTAL_TOUR_STEPS}
+          wizardProps={{
+            ...onboarding.wizard,
+            // Same counselor and measured wait as the approval card above.
+            counselor: counselorContext?.counselor
+              ? { firstName: counselorContext.counselor.firstName, messagingHref: counselorContext.counselor.messagingHref }
+              : null,
+            waitEstimate: counselorContext?.awaiting === 'approval' ? counselorContext.waitEstimate : null,
+          }}
+        >
+          {null}
+        </PortalEntryClient>
+      </PortalEntryErrorBoundary>
+    ) : null}
     {approvalPlacement === 'primary' ? approvalCard : null}
     <MemberHomeKit
+      showStaffViewBanner={staffViewer}
+      programSwitch={home.programSwitch}
       firstName={home.firstName}
       coursePercent={home.coursePercent}
       courseProgressStale={home.courseProgressStale}

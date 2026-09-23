@@ -6,7 +6,9 @@ import path from 'node:path';
 
 import {
   MEMBER_DASHBOARD_HOME_PRISMA_BUDGET,
+  SECONDARY_PROGRAM_HREF,
   STALE_TRAINING_COUNSELOR_ACTION,
+  secondaryProgramAction,
   buildFirst90Card,
   dashboardViewFacts,
   deriveNextBadge,
@@ -38,7 +40,7 @@ function makeRow(overrides: Record<string, unknown> = {}) {
     enrolledProgram: null,
     assessmentCompleted: false,
     organization: { courses: [] },
-    courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+    courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', isPrimary: true }],
     courseProgress: [],
     memberProgramProgress: [],
     // A live streak: the last activity is today, so the stored counter holds.
@@ -334,7 +336,7 @@ test('a completion recorded under a Coursera id counts, and "Next:" skips it', a
       row: makeRow({
         nextBestActions: [],
         assessmentCompleted: true,
-        courseEnrollments: [{ programSlug: slug }],
+        courseEnrollments: [{ programSlug: slug, isPrimary: true }],
         courseProgress: [
           row('introduction-to-software-engineering', 'FkAMrrwEEey8ogoy0lwspQ', 'COMPLETED', 100),
           // Written before the id binding existed: synthetic slug, real Coursera id.
@@ -405,7 +407,7 @@ test('loadMemberDashboardHome shows saved progress when the member has no assign
 test('loadMemberDashboardHome never reports 100% from one completed alias row in a multi-course program', async () => {
   const { db } = mockDb({
     row: makeRow({
-      courseEnrollments: [{ programSlug: 'comptia-a-professional-certificate' }],
+      courseEnrollments: [{ programSlug: 'comptia-a-professional-certificate', isPrimary: true }],
       enrolledProgram: null,
       memberProgramProgress: [{
         programSlug: 'comptia-a-plus',
@@ -688,7 +690,7 @@ test('the dashboard page (one implementation since WAP-195) calls the loader and
 test('lean loader uses real starter-profile gaps and keeps the one-operation budget', async () => {
   const { db, counts } = mockDb({ row: makeRow({ nextBestActions: [],
     applications: [{ status: 'APPROVED', submittedAt: new Date('2026-09-01T12:00:00Z') }],
-    courseEnrollments: [{ programSlug: FIXTURE_PROGRAM_SLUG, enrolledByAdminId: 'staff' }],
+    courseEnrollments: [{ programSlug: FIXTURE_PROGRAM_SLUG, isPrimary: true, enrolledByAdminId: 'staff' }],
     wioaReviewStatus: 'verified', wioaReviewedAt: new Date('2026-09-03T12:00:00Z'),
     courseraEnrollmentApproved: false,
   }) });
@@ -737,7 +739,7 @@ const ableToStart = (enrolledDaysAgo: number, assessedDaysAgo: number) => ({
   assessmentCompleted: true,
   enrolledAt: daysAgo(enrolledDaysAgo),
   assessmentCompletedAt: daysAgo(assessedDaysAgo),
-  courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+  courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', isPrimary: true }],
 });
 
 async function staleFlagFor(overrides: Record<string, unknown>) {
@@ -772,7 +774,7 @@ test('courseProgressStale: nothing is claimed before the member can start', asyn
       assessmentCompleted: false,
       enrolledAt: daysAgo(120),
       assessmentCompletedAt: null,
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', isPrimary: true }],
       courseProgress: [],
     }),
     false,
@@ -1458,4 +1460,224 @@ test('up next: no counselor row when Messages is already on screen, training is 
   assert.equal(finished.courseProgressStale, true, 'the flag alone still says stale');
   assert.equal(finished.programStatus, 'Complete');
   assert.ok(!finished.upNext.some((action) => action.id === STALE_TRAINING_COUNSELOR_ACTION.id));
+});
+
+// ── WAP-194: every enrollment, `?program=`, and the first-login wizard, all on the one read ──
+
+const SECONDARY_PROGRAM_SLUG = 'comptia-a-professional-certificate';
+
+/** A member with two enrollments, primary first (the order the loader asks Postgres for). */
+function twoProgramRow(overrides: Record<string, unknown> = {}) {
+  return makeRow({
+    assessmentCompleted: true,
+    nextBestActions: [],
+    courseEnrollments: [
+      { id: 'enr-primary', programSlug: FIXTURE_PROGRAM_SLUG, isPrimary: true, curriculumVersion: 'legacy-v1', enrolledAt: new Date('2026-08-01T00:00:00Z') },
+      { id: 'enr-second', programSlug: SECONDARY_PROGRAM_SLUG, isPrimary: false, curriculumVersion: 'legacy-v1', enrolledAt: new Date('2026-09-01T00:00:00Z') },
+    ],
+    ...overrides,
+  });
+}
+
+test('WAP-194: the loader reads every enrollment inside the same nested read, still one Prisma operation', async () => {
+  const { db, counts, select } = mockDb({ row: twoProgramRow() });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+  assert.equal(view.prismaOpCount, 1);
+  assert.ok(view.prismaOpCount <= MEMBER_DASHBOARD_HOME_PRISMA_BUDGET);
+  assert.equal(MEMBER_DASHBOARD_HOME_PRISMA_BUDGET, 2);
+
+  const enrollments = select()?.courseEnrollments as { where?: unknown; take?: number; orderBy?: unknown; select?: Record<string, unknown> };
+  assert.equal(enrollments.where, undefined, 'no isPrimary filter: the switch needs every enrollment');
+  assert.deepEqual(enrollments.orderBy, [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }]);
+  assert.ok((enrollments.take ?? 0) >= 2);
+  for (const column of ['id', 'programSlug', 'curriculumVersion', 'isPrimary', 'enrolledByAdminId', 'enrolledAt']) {
+    assert.equal(enrollments.select?.[column], true, `courseEnrollments must select ${column}`);
+  }
+
+  // Both enrollments reach the switch, primary first, titled as the catalog titles them.
+  assert.ok(view.programSwitch);
+  assert.deepEqual(view.programSwitch.options.map((option) => [option.id, option.programSlug, option.isPrimary]), [
+    ['enr-primary', FIXTURE_PROGRAM_SLUG, true],
+    ['enr-second', SECONDARY_PROGRAM_SLUG, false],
+  ]);
+  assert.match(view.programSwitch.options[1]!.programTitle, /CompTIA A\+/);
+  // No request: the home describes the primary program, exactly as before.
+  assert.equal(view.programSwitch.activeProgramSlug, FIXTURE_PROGRAM_SLUG);
+  assert.equal(view.programSwitch.viewingSecondary, false);
+  assert.equal(view.programHref, '/dashboard/program');
+  assert.equal(view.resumeHref, '/dashboard/program');
+  assert.match(view.nextLessonHref ?? '', /^\/dashboard\/program\?course=/);
+});
+
+test('WAP-194: ?program= names one of the member\'s own enrollments and the home describes it', async () => {
+  const { db, counts } = mockDb({ row: twoProgramRow() });
+  const view = await loadMemberDashboardHome({ userId: 'member-1', requestedProgramSlug: SECONDARY_PROGRAM_SLUG }, db);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+  assert.equal(view.prismaOpCount, 1);
+  assert.match(view.programTitle ?? '', /CompTIA A\+/);
+  assert.equal(view.programSwitch?.activeProgramSlug, SECONDARY_PROGRAM_SLUG);
+  assert.equal(view.programSwitch?.viewingSecondary, true);
+  const secondary = getProgramBySlug(canonicalizeProgramSlug(SECONDARY_PROGRAM_SLUG));
+  assert.ok(secondary);
+  assert.equal(view.certModulesTotal, secondary.courses.length);
+  assert.equal(view.nextLesson, secondary.courses[0]!.name);
+
+  // My Program and its ?course= only open the primary program (WAP-196), so
+  // a secondary view never deep-links there: every program link is the Learning hub.
+  assert.equal(view.nextLessonHref, '/dashboard/learning');
+  assert.equal(view.programHref, '/dashboard/learning');
+  assert.equal(view.resumeHref, '/dashboard/learning');
+  for (const action of [view.doThisNext, ...view.upNext]) {
+    if (!action) continue;
+    assert.notEqual(action.href.split(/[?#]/)[0], '/dashboard/program', `${action.id} must not open My Program on a secondary view`);
+  }
+  const training = [view.doThisNext, ...view.upNext].find((action) => action?.id === 'continue_training');
+  assert.ok(training, 'the next-course step is still offered');
+  assert.equal(training.href, '/dashboard/learning');
+  assert.equal(training.cta, 'Open Learning hub');
+  assert.match(training.title, new RegExp(secondary.courses[0]!.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});
+
+test('WAP-194: ?program= validation falls back to the primary for an unknown, foreign or blank slug', async () => {
+  for (const requestedProgramSlug of ['not-a-program', 'ux-design-professional-certificate-google', '', '   ', null, undefined]) {
+    const view = await loadMemberDashboardHome({ userId: 'member-1', requestedProgramSlug }, mockDb({ row: twoProgramRow() }).db);
+    assert.equal(view.programSwitch?.activeProgramSlug, FIXTURE_PROGRAM_SLUG, `"${String(requestedProgramSlug)}" falls back to the primary`);
+    assert.equal(view.programSwitch?.viewingSecondary, false);
+    assert.equal(view.programHref, '/dashboard/program');
+    assert.doesNotMatch(view.programTitle ?? '', /CompTIA/);
+  }
+  // Asking for the primary by name is the primary view.
+  const primary = await loadMemberDashboardHome({ userId: 'member-1', requestedProgramSlug: FIXTURE_PROGRAM_SLUG }, mockDb({ row: twoProgramRow() }).db);
+  assert.equal(primary.programSwitch?.viewingSecondary, false);
+});
+
+test('WAP-194: one enrollment shows no switch, and a request cannot conjure a program the member is not in', async () => {
+  const single = await loadMemberDashboardHome(
+    { userId: 'member-1', requestedProgramSlug: SECONDARY_PROGRAM_SLUG },
+    mockDb({ row: makeRow() }).db,
+  );
+  assert.equal(single.programSwitch, null);
+  assert.doesNotMatch(single.programTitle ?? '', /CompTIA/);
+  assert.equal(single.programHref, '/dashboard/program');
+
+  // No enrollment and no legacy program: nothing to switch to, nothing chosen.
+  const none = await loadMemberDashboardHome(
+    { userId: 'member-1', requestedProgramSlug: SECONDARY_PROGRAM_SLUG },
+    mockDb({ row: makeRow({ courseEnrollments: [], enrolledProgram: null }) }).db,
+  );
+  assert.equal(none.programSwitch, null);
+  assert.equal(none.programTitle, undefined);
+});
+
+test('WAP-194: a secondary WorkforceAP module links to its own module page with the stored program slug', async () => {
+  const { DIGITAL_LITERACY_PROGRAM_SLUG } = await import('@/shared/digitalLiteracyPathway');
+  const view = await loadMemberDashboardHome(
+    { userId: 'member-1', requestedProgramSlug: DIGITAL_LITERACY_PROGRAM_SLUG },
+    mockDb({
+      row: twoProgramRow({
+        courseEnrollments: [
+          { id: 'enr-primary', programSlug: FIXTURE_PROGRAM_SLUG, isPrimary: true, curriculumVersion: 'legacy-v1' },
+          { id: 'enr-dl', programSlug: DIGITAL_LITERACY_PROGRAM_SLUG, isPrimary: false, curriculumVersion: 'legacy-v1' },
+        ],
+      }),
+    }).db,
+  );
+  assert.equal(view.programSwitch?.viewingSecondary, true);
+  assert.match(view.nextLessonHref ?? '', /^\/dashboard\/learning\/modules\//);
+  assert.ok(
+    (view.nextLessonHref ?? '').endsWith(`?program=${encodeURIComponent(DIGITAL_LITERACY_PROGRAM_SLUG)}`),
+    'the module page resolves the enrollment from this slug',
+  );
+});
+
+test('WAP-194: the first-login wizard and tour gate come from the same read', async () => {
+  const intake = {
+    fullName: 'Alex Rivera',
+    phone: '5125550100',
+    programInterest: 'Intake interest',
+    onboardingCurrentStep: 2,
+    profile: {
+      profilePhone: null,
+      profileAddress: '1 Main St',
+      city: 'Austin',
+      state: 'TX',
+      zip: '78701',
+      referralSource: 'Friend',
+    },
+    applications: [{ status: 'PENDING', submittedAt: new Date('2026-09-10T00:00:00Z'), programInterest: 'Application interest' }],
+  };
+  const { db, select } = mockDb({ row: makeRow({ ...intake, onboardingCompletedAt: null, tourCompletedAt: null }) });
+  const fresh = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(fresh.prismaOpCount, 1);
+  for (const column of ['onboardingCompletedAt', 'onboardingCurrentStep', 'tourCompletedAt', 'programInterest']) {
+    assert.equal(select()?.[column], true, `userSelect() must ask for ${column}`);
+  }
+  assert.deepEqual(fresh.onboarding, {
+    showWizard: true,
+    showTour: false,
+    wizard: {
+      initialFullName: 'Alex Rivera',
+      // No profile phone: the account phone, as the legacy home read it.
+      initialPhone: '5125550100',
+      initialAddress: '1 Main St',
+      initialCity: 'Austin',
+      initialState: 'TX',
+      initialZip: '78701',
+      initialProgramInterest: 'Application interest',
+      initialReferralSource: 'Friend',
+      initialStep: 2,
+    },
+  });
+
+  const noApplicationInterest = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({ row: makeRow({ ...intake, applications: [], onboardingCompletedAt: null }) }).db,
+  );
+  assert.equal(noApplicationInterest.onboarding?.wizard.initialProgramInterest, 'Intake interest');
+
+  const tour = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({ row: makeRow({ ...intake, onboardingCompletedAt: new Date(), tourCompletedAt: null }) }).db,
+  );
+  assert.equal(tour.onboarding?.showWizard, false);
+  assert.equal(tour.onboarding?.showTour, true);
+
+  const done = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({ row: makeRow({ ...intake, onboardingCompletedAt: new Date(), tourCompletedAt: new Date() }) }).db,
+  );
+  assert.equal(done.onboarding?.showWizard, false);
+  assert.equal(done.onboarding?.showTour, false);
+
+  // No member row: nothing for the wizard to write to and nothing to switch.
+  const empty = await loadMemberDashboardHome({ userId: 'ghost' }, mockDb({ row: null }).db);
+  assert.equal(empty.onboarding, null);
+  assert.equal(empty.programSwitch, null);
+});
+
+test('WAP-194: secondaryProgramAction rewrites only My Program steps', () => {
+  const myProgram = { id: 'continue_training', title: 'Continue training: X', body: 'Open My Program', href: '/dashboard/program', cta: 'Open My Program', variant: 'urgent' as const, weight: 86 };
+  const rewritten = secondaryProgramAction(myProgram);
+  assert.equal(rewritten.href, SECONDARY_PROGRAM_HREF);
+  assert.equal(rewritten.title, myProgram.title);
+  assert.equal(rewritten.cta, 'Open Learning hub');
+  assert.doesNotMatch(rewritten.body, /My Program/);
+  for (const href of ['/dashboard/program/start', '/dashboard/messages', '/dashboard/assessment']) {
+    const action = { ...myProgram, href };
+    assert.equal(secondaryProgramAction(action), action, `${href} is not a program link`);
+  }
+});
+
+test('WAP-194: the dashboard page passes ?program= to the loader and mounts the four pieces on the kit home', () => {
+  // Since WAP-195 the whole page is the kit home, so the whole file is the block.
+  const kitBlock = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
+  assert.match(kitBlock, /requestedProgramSlug: args\.requestedProgramSlug/);
+  assert.match(kitBlock, /<PWAInstallPrompt \/>/);
+  assert.match(kitBlock, /<PortalEntryClient[\s\S]*portal="member"/);
+  assert.match(kitBlock, /showStaffViewBanner=\{staffViewer\}/);
+  assert.match(kitBlock, /programSwitch=\{home\.programSwitch\}/);
+  assert.match(kitBlock, /getTourOffer\(user\.id, 'member\.home'\)/);
+  // My Program stays untouched (locked stake; WAP-196 is separate).
+  assert.doesNotMatch(kitBlock, /dashboard\/program\/page/);
 });

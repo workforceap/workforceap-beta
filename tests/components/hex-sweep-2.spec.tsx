@@ -218,16 +218,19 @@ describe('webhook events paint from --wa-* tokens (D11)', () => {
 });
 
 describe('placement confirmation strip paints from --wa-* tokens (D13)', () => {
-  it('banner copy, buttons and the error alert read --wa-on-success on the success fill', async () => {
+  // WAP-194 moved the strip off the solid success fill onto a kit card (the
+  // success tone edge), so the D13 contract is now "--wa-* only, no hex".
+  it('banner copy, buttons and the error alert read --wa-* tokens on a kit card', async () => {
     const { default: Strip } = await import('@/app/(portal)/dashboard/PlacementConfirmationStrip');
     const { container } = render(<Strip offers={[{ id: 'o1', company: 'Acme' }]} />);
     fireEvent.click(screen.getByRole('button', { name: /notify my team/ }));
     await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
     expect(unexpectedHex(container)).toEqual([]);
     const styles = paintedValues(container).join('\n');
-    expect(styles).toContain('background: var(--wa-success-dark)');
-    expect((styles.match(/var\(--wa-on-success\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
+    expect(styles).toContain('color: var(--wa-success-dark)');
+    expect(styles).toContain('color: var(--wa-danger-text)');
     expect(styles).not.toMatch(/var\(--color-green/);
+    expect(container.querySelector('.wa-kit-card.wa-kit-tone--ok')).not.toBeNull();
   });
 });
 

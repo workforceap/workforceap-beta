@@ -701,12 +701,15 @@ describe('the leftover accent shadow / gradient literals are color-mixes of --co
       expectNoLiteralShadows(container, `${scheme} sessions index`);
     });
   }
+});
 
-  // WAP-188: the First 90 Days card now renders on the kit member home, not only ?ui=legacy. Its icon
-  // tile, current-stage chip and supervisor-script quotes carried the seeded crimson as
-  // rgba(173,44,77, .14 / .1 / .3 / .35 / .05), and the done tick and "thanks" box a constant green
-  // (var(--color-green, #4a9b4f), rgba(74,155,79, .08 / .2)). The tints now follow the org accent and
-  // the success tone. (Its text still reads the legacy --color-* chain; the kit-card restyle is a follow-up.)
+// ── 3e'. First90DaysCard on the kit home (WAP-188, restyled WAP-194) ──────────
+// WAP-188 took the seeded-crimson rgba() literals and the constant green off
+// the card. WAP-194 finishes the move onto a kit card: `wa-kit-card`, lucide
+// icons instead of Material Symbols, and `--wa-*` tokens for every paint (no
+// `--color-*`), with its tints mixed from `--wa-accent` like the rest of the
+// kit column. Copy and the check-in action are unchanged.
+describe('First90DaysCard is a kit card on --wa-* tokens only', () => {
   const first90 = (currentStageResponse: 'going_well' | null) => (
     <NextIntlClientProvider locale="en" messages={en}>
       <First90DaysCard stage="day_30" daysSincePlacement={20} employerName="Acme Health" currentStageResponse={currentStageResponse} completedStages={['week_1']} variant="kit" />
@@ -714,30 +717,48 @@ describe('the leftover accent shadow / gradient literals are color-mixes of --co
   );
   const styleProp = (el: Element, prop: string) =>
     (el.getAttribute('style') ?? '').match(new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`))?.[1]?.trim() ?? '';
+  const waAccentTint = (pct: number) => `color-mix(in srgb, var(--wa-accent) ${pct}%, transparent)`;
 
   for (const scheme of SCHEMES) {
-    it(`${scheme}: First90DaysCard tints --color-accent (was rgba(173,44,77, …)) and --wa-success (was #4a9b4f / rgba(74,155,79, …))`, () => {
+    it(`${scheme}: kit card, lucide icons, every paint a defined --wa-* token (tints of --wa-accent / --wa-success)`, () => {
       const { container, unmount } = renderIn(scheme, first90(null));
+      const section = container.querySelector('section') as HTMLElement;
+      expect(section.getAttribute('style'), 'kit variant: no outer padding of its own').toBeNull();
+      const card = section.firstElementChild as HTMLElement;
+      expect(card.className).toContain('wa-kit-card');
+      expect(card.className).not.toMatch(/portal-card/);
+      expect(container.querySelector('.material-symbols-outlined'), 'no Material Symbols ligatures').toBeNull();
+      expect(container.querySelectorAll('svg.lucide').length).toBeGreaterThanOrEqual(5);
+
       const styles = Array.from(container.querySelectorAll<HTMLElement>('[style]')).map((el) => el.getAttribute('style') ?? '');
       expect(styles.length).toBeGreaterThan(5);
-      for (const style of styles) expectNoLiteral(style, `${scheme} first 90 "${style}"`);
+      for (const style of styles) {
+        expectNoLiteral(style, `${scheme} first 90 "${style}"`);
+        expect(style, `${scheme} first 90 "${style}"`).not.toMatch(/var\(--(?:color|surface-container|outline)-?/);
+        if (style.includes('var(--wa-')) expectTokensResolve(style, scheme, `first 90 "${style}"`);
+      }
 
       const tile = container.querySelector('section span[aria-hidden]') as HTMLElement;
-      expectAccentTint(styleProp(tile, 'background'), 14, 'first 90 icon tile');
-
+      expect(styleProp(tile, 'background')).toBe(waAccentTint(14));
       const chips = screen.getAllByRole('listitem');
       const current = chips.find((li) => li.textContent?.includes('Day 30')) as HTMLElement;
-      expectAccentTint(styleProp(current, 'background'), 10, 'first 90 current-stage chip');
-      expect(styleProp(current, 'border')).toBe('1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)');
-      const doneTick = chips.find((li) => li.textContent?.includes('Week 1'))?.querySelector('span') as HTMLElement;
+      expect(styleProp(current, 'background')).toBe(waAccentTint(10));
+      expect(styleProp(current, 'border')).toBe(`1px solid ${waAccentTint(30)}`);
+      const doneTick = chips.find((li) => li.textContent?.includes('Week 1'))?.querySelector('svg') as SVGElement;
       expect(styleProp(doneTick, 'color')).toBe('var(--wa-success)');
-      expectTokensResolve(styleProp(doneTick, 'color'), scheme, 'first 90 done tick');
+
+      // The answers are the kit's 44px ghost pills.
+      for (const name of [en.first90.responses.going_well, en.first90.responses.have_questions, en.first90.responses.having_trouble]) {
+        const button = screen.getByRole('button', { name });
+        expect(button.className).toContain('wa-kit-cta');
+        expect(button.className).toContain('wa-kit-cta--ghost');
+      }
 
       const quotes = Array.from(container.querySelectorAll('blockquote'));
       expect(quotes).toHaveLength(2);
       for (const quote of quotes) {
-        expectAccentTint(styleProp(quote, 'background'), 5, 'first 90 script quote');
-        expect(styleProp(quote, 'border-left')).toBe('3px solid color-mix(in srgb, var(--color-accent) 35%, transparent)');
+        expect(styleProp(quote, 'background')).toBe(waAccentTint(5));
+        expect(styleProp(quote, 'border-left')).toBe(`3px solid ${waAccentTint(35)}`);
       }
       unmount();
 
@@ -749,6 +770,17 @@ describe('the leftover accent shadow / gradient literals are color-mixes of --co
       for (const el of Array.from(thanks.container.querySelectorAll<HTMLElement>('[style]'))) expectNoLiteral(el.getAttribute('style') ?? '', `${scheme} first 90 thanks`);
     });
   }
+
+  it('legacy variant keeps its section gutter; the card inside is the same kit card', () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <First90DaysCard stage="week_1" daysSincePlacement={3} employerName="Acme" currentStageResponse={null} completedStages={[]} />
+      </NextIntlClientProvider>,
+    );
+    const section = container.querySelector('section') as HTMLElement;
+    expect(section.style.padding).toBe('1rem 1.25rem 0px');
+    expect((section.firstElementChild as HTMLElement).className).toContain('wa-kit-card');
+  });
 });
 
 // ── 3f. YouthDashboardNotice on the kit home (WAP-188) ─────────────────────

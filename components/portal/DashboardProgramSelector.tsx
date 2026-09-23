@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { ChevronDown, ChevronUp, GraduationCap } from 'lucide-react';
 
 /**
  * Compact multi-program selector for the home `/dashboard` hero. Mirrors the
@@ -11,6 +12,11 @@ import { useState, useTransition } from 'react';
  * Renders only when the member has 2+ `CourseEnrollment` rows. Selecting
  * a different program reloads the page with `?program=<slug>` so the
  * server component re-fetches the hero copy and progress for that program.
+ * It is a view switch only: it never writes an enrollment (locked stake
+ * "Public members do not freely change programs/classes").
+ *
+ * Painted from `--wa-*` tokens with lucide icons (WAP-194), since it now sits
+ * inside the kit home's Certification path card.
  */
 export type DashboardProgramOption = {
   id: string;
@@ -60,39 +66,32 @@ export default function DashboardProgramSelector({
         aria-expanded={open}
         disabled={isPending}
         data-testid="dashboard-program-selector"
+        className="wa-kit-focus"
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.5rem 0.875rem',
-          borderRadius: '999px',
-          border: '1px solid color-mix(in srgb, var(--color-accent) 14%, var(--outline-variant))',
-          background: 'rgba(255,255,255,0.92)',
-          color: 'var(--color-on-surface)',
-          fontSize: '0.8125rem',
+          gap: 6,
+          padding: '8px 14px',
+          borderRadius: 999,
+          border: '1px solid var(--wa-control-border)',
+          background: 'var(--wa-surface)',
+          color: 'var(--wa-text)',
+          fontSize: 'var(--wa-type-meta)',
           fontWeight: 700,
           cursor: isPending ? 'wait' : 'pointer',
           letterSpacing: '0.02em',
-          minHeight: '44px',
+          minHeight: 44,
         }}
       >
-        <span
-          aria-hidden
-          className="material-symbols-outlined"
-          style={{ fontSize: '0.95rem', color: 'var(--wa-accent-text)' }}
-        >
-          school
-        </span>
+        <GraduationCap size={16} aria-hidden style={{ color: 'var(--wa-accent-text)' }} />
         <span>
           {ordinal} of {totalPrograms} programs
         </span>
-        <span
-          aria-hidden
-          className="material-symbols-outlined"
-          style={{ fontSize: '0.95rem', color: 'var(--color-on-surface-variant)' }}
-        >
-          {open ? 'expand_less' : 'expand_more'}
-        </span>
+        {open ? (
+          <ChevronUp size={16} aria-hidden style={{ color: 'var(--wa-muted)' }} />
+        ) : (
+          <ChevronDown size={16} aria-hidden style={{ color: 'var(--wa-muted)' }} />
+        )}
       </button>
 
       {open && (
@@ -101,18 +100,18 @@ export default function DashboardProgramSelector({
           aria-label="Switch active program"
           style={{
             position: 'absolute',
-            top: 'calc(100% + 0.35rem)',
+            top: 'calc(100% + 6px)',
             left: 0,
-            zIndex: 30,
+            zIndex: 'var(--z-sticky)',
             margin: 0,
-            padding: '0.35rem',
+            padding: 6,
             minWidth: '14rem',
             maxWidth: '18rem',
             listStyle: 'none',
             background: 'var(--wa-surface)',
-            border: '1px solid var(--outline-variant, rgba(0,0,0,0.12))',
-            borderRadius: '0.6rem',
-            boxShadow: '0 12px 28px rgba(17, 24, 39, 0.12)',
+            border: '1px solid var(--wa-border)',
+            borderRadius: 'var(--wa-radius-sm)',
+            boxShadow: 'var(--wa-shadow-lg)',
           }}
         >
           {options.map((opt) => {
@@ -124,20 +123,19 @@ export default function DashboardProgramSelector({
                   role="option"
                   aria-selected={isActive}
                   onClick={() => selectProgram(opt.programSlug)}
+                  className="wa-kit-focus"
                   style={{
                     width: '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '0.5rem',
-                    padding: '0.65rem 0.75rem',
-                    borderRadius: '0.4rem',
+                    gap: 8,
+                    padding: '10px 12px',
+                    borderRadius: 'var(--wa-radius-sm)',
                     border: 'none',
-                    background: isActive
-                      ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)'
-                      : 'transparent',
-                    color: 'var(--color-on-surface)',
-                    fontSize: '0.8125rem',
+                    background: isActive ? 'var(--wa-accent-soft)' : 'transparent',
+                    color: 'var(--wa-text)',
+                    fontSize: 'var(--wa-type-meta)',
                     fontWeight: isActive ? 700 : 500,
                     cursor: 'pointer',
                     textAlign: 'left',
@@ -152,11 +150,11 @@ export default function DashboardProgramSelector({
                       aria-label="Primary program"
                       title="Primary program"
                       style={{
-                        fontSize: '0.8125rem',
+                        fontSize: 'var(--wa-type-meta)',
                         fontWeight: 700,
-                        padding: '0.125rem 0.4rem',
-                        borderRadius: '999px',
-                        background: 'rgba(173,44,77,0.12)',
+                        padding: '2px 6px',
+                        borderRadius: 999,
+                        background: 'var(--wa-accent-soft)',
                         color: 'var(--wa-accent-text)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',

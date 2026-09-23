@@ -39,6 +39,8 @@ import First90DaysCard, { type First90DaysCardProps } from '@/components/portal/
 import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import PlacementConfirmationStrip from '@/app/(portal)/dashboard/PlacementConfirmationStrip';
+import StaffViewBanner from '@/components/portal/StaffViewBanner';
+import DashboardProgramSelector, { type DashboardProgramOption } from '@/components/portal/DashboardProgramSelector';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
@@ -50,7 +52,9 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  * kit (warm surface + --wa-* tokens + wa-kit-* classes + lucide icons). Layout
  * order, top to bottom:
  *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`,
- *      then the youth notice for a member under 18 (`youthNoticeAge`).
+ *      then, for staff viewing a member home, the staff-view notice
+ *      (`showStaffViewBanner`), then the youth notice for a member under 18
+ *      (`youthNoticeAge`).
  *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard).
  *      Under it, only when they apply: the placement confirmation strip for
  *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
@@ -62,7 +66,9 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
  *   4. A mixed row: certification progress ring, weekly-activity area chart,
- *      and a points ledger.
+ *      and a points ledger. With more than one enrollment the certification
+ *      card carries the view-only program switch (`programSwitch`), which
+ *      reloads `/dashboard?program=<slug>` and never changes an enrollment.
  *   5. The application pipeline table + a Next Badge tile with segmented
  *      progress. Goals fold into that tile and link to the goals section on
  *      the career brief; with none, a quiet "Set a goal" link goes there.
@@ -198,6 +204,25 @@ export interface MemberHomeKitProps {
   first90?: First90DaysCardProps | null;
   /** The member's age when under 18 (from `profile.dob`); shows the youth notice. `null` renders nothing. */
   youthNoticeAge?: number | null;
+  /**
+   * The viewer is staff (`canBypassMemberAssessment`) looking at a member
+   * home: shows `StaffViewBanner`, as the legacy home and My Program do.
+   */
+  showStaffViewBanner?: boolean;
+  /**
+   * View-only enrolled-program switch (`DashboardProgramSelector`) for a
+   * member with more than one enrollment. `null` or a single option renders
+   * nothing. `viewingSecondary` adds one line saying My Program shows the
+   * primary program (WAP-196), which is why this view's program links open
+   * the Learning hub.
+   */
+  programSwitch?: {
+    options: DashboardProgramOption[];
+    activeProgramSlug: string;
+    viewingSecondary?: boolean;
+    /** Page the switch reloads with `?program=`; defaults to `/dashboard` (the dev showcase passes its own). */
+    pathname?: string;
+  } | null;
   /** Dominant next-best-action banner rendered above the bento grid. `null`/omitted renders nothing (no empty shell). */
   doThisNext?: NextBestAction | null;
   /** The steps after `doThisNext`, most important first. Empty renders nothing. */
@@ -568,6 +593,8 @@ export function MemberHomeKit({
   jobOffers = [],
   first90 = null,
   youthNoticeAge = null,
+  showStaffViewBanner = false,
+  programSwitch = null,
   doThisNext = null,
   upNext = [],
   recommendedTool = null,
@@ -629,6 +656,7 @@ export function MemberHomeKit({
     { key: 'points', icon: Star, label: 'Points', value: points.toLocaleString(), spark: pointsSpark },
   ];
 
+  const showProgramSwitch = Boolean(programSwitch && programSwitch.options.length > 1 && programSwitch.activeProgramSlug);
   const hasModuleRow = typeof certModulesDone === 'number' && typeof certModulesTotal === 'number' && certModulesTotal > 0;
 
   return (
@@ -651,6 +679,8 @@ export function MemberHomeKit({
             ) : null
           }
         />
+
+        {showStaffViewBanner ? <StaffViewBanner page="dashboard" /> : null}
 
         {noProgram ? (
           <div
@@ -796,6 +826,20 @@ export function MemberHomeKit({
           <div className="lg:wa-col-span-4 wa-min-w-0">
           <div className="wa-kit-card wa-kit-cert-path">
             <KitCardHead title="Certification path" linkLabel="Open plan" linkHref={programHref} />
+            {showProgramSwitch && programSwitch ? (
+              <div data-testid="home-program-switch" style={{ display: 'grid', gap: 6, marginBottom: 14 }}>
+                <DashboardProgramSelector
+                  options={programSwitch.options}
+                  activeProgramSlug={programSwitch.activeProgramSlug}
+                  pathname={programSwitch.pathname}
+                />
+                {programSwitch.viewingSecondary ? (
+                  <p className="wa-kit-meta" style={{ margin: 0 }}>
+                    My Program shows your primary program. This program&apos;s links open the Learning hub.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="wa-kit-cert-path-body">
               <ProgressRing pct={pct} size={112} tone={pct >= 100 ? 'ok' : undefined} label="Course completion" />
               <div className="wa-kit-cert-path-copy">
