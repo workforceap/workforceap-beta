@@ -488,9 +488,13 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         schoolSignup &&
         eligibilityPayload?.ageGroup === 'under_18' &&
         eligibilityPayload?.parentGuardianEmail?.trim();
-      const confirmationPath = schoolSignup
-        ? `/apply/confirmation?school=1${schoolMinor ? '&minor=1' : ''}`
-        : '/apply/confirmation';
+      // `receipt=0` only when the server's awaited receipt send failed: the
+      // confirmation page then retries it. A sent receipt is never sent twice (WAP-240).
+      const receiptQuery = data.receiptSent === false ? 'receipt=0' : '';
+      const confirmationQuery = [schoolSignup ? 'school=1' : '', schoolMinor ? 'minor=1' : '', receiptQuery]
+        .filter(Boolean)
+        .join('&');
+      const confirmationPath = `/apply/confirmation${confirmationQuery ? `?${confirmationQuery}` : ''}`;
       trackApplyFunnel(3, 'account_created', {
         program_slugs: programRankedSlugs,
         redirect_to: confirmationPath,

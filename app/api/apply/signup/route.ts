@@ -577,6 +577,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     })));
 
     let createdApplicationId: string | null = null;
+    // Whether the awaited applicant receipt below went out. Reported to the
+    // client so the confirmation page retries the receipt only when this send
+    // failed, instead of sending a second copy on every signup (WAP-240).
+    let receiptSent = false;
     /**
      * Set inside the transaction when the sponsoring partner has no funded
      * seats left. Soft cap: the student still enrolls, we just skip the
@@ -862,6 +866,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         if (!result.ok) {
           throw new Error(result.error ?? 'Application confirmation email failed');
         }
+        receiptSent = true;
       } catch (err) {
         logger.error('Member application confirmation email failed', { err });
         captureApiError(err, {
@@ -1069,6 +1074,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         success: true,
         redirectTo: `/apply/confirmation${schoolQuery}${minorQuery}`,
         curriculumAssignmentPending,
+        receiptSent,
       });
     }
   
@@ -1077,6 +1083,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       message: 'Please verify your email, then log in to view your dashboard and next steps.',
       redirectTo: '/login',
       curriculumAssignmentPending,
+      receiptSent,
     });
   } catch (error) {
     logger.error('/apply/signup', { err: error });
