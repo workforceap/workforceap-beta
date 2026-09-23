@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
 import { SMALL_SAMPLE_THRESHOLD } from '@/lib/admin/boardOutcomes';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { VERIFIED_PLACEMENT_WHERE } from '@/lib/placement/verifiedPlacement';
 
 export type OutcomesSocialProofRate = { label: string; suppressed: boolean };
 
@@ -110,15 +111,17 @@ export async function getOutcomesSocialProof(
 
     // Public outcomes count member-role accounts only (`MEMBER_ONLY_WHERE`):
     // a staff dogfood placement is never a public story or a partner
-    // placement rate (number audit 2026-09-20, F1).
+    // placement rate (number audit 2026-09-20, F1). Placements, partner
+    // placements and story cards are staff-verified rows only
+    // (docs/OUTCOMES-METHODOLOGY.md, "Public placement counts").
     const [enrolled, placed, referrals, placements, activePartners] = await Promise.all([
       db.user.count({ where: { deletedAt: null, enrolledProgram: { not: null }, ...MEMBER_ONLY_WHERE } }),
-      db.placementRecord.count({ where: { user: { deletedAt: null, ...MEMBER_ONLY_WHERE } } }),
+      db.placementRecord.count({ where: { ...VERIFIED_PLACEMENT_WHERE, user: { deletedAt: null, ...MEMBER_ONLY_WHERE } } }),
       db.user.count({
         where: { deletedAt: null, partnerReferrals: { some: {} }, ...MEMBER_ONLY_WHERE },
       }),
       db.placementRecord.count({
-        where: { user: { deletedAt: null, partnerReferrals: { some: {} }, ...MEMBER_ONLY_WHERE } },
+        where: { ...VERIFIED_PLACEMENT_WHERE, user: { deletedAt: null, partnerReferrals: { some: {} }, ...MEMBER_ONLY_WHERE } },
       }),
       db.partner.count({ where: { active: true, status: 'active', referrals: { some: { member: { deletedAt: null } } } } }),
     ]);
@@ -127,7 +130,7 @@ export async function getOutcomesSocialProof(
 
     const storyCards: PlacementStoryCard[] = enrolled >= SMALL_SAMPLE_THRESHOLD
       ? (await db.placementRecord.findMany({
-          where: { jobTitle: { not: '' }, placedAt: { gte: twoYearsAgo }, user: { deletedAt: null, ...MEMBER_ONLY_WHERE } },
+          where: { ...VERIFIED_PLACEMENT_WHERE, jobTitle: { not: '' }, placedAt: { gte: twoYearsAgo }, user: { deletedAt: null, ...MEMBER_ONLY_WHERE } },
           orderBy: { placedAt: 'desc' },
           take: 6,
           select: { id: true, jobTitle: true, programSlug: true, placedAt: true },
