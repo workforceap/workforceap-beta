@@ -105,6 +105,7 @@ When `WORKFORCEAP_PUBLIC_OUTCOMES_SOCIAL_PROOF` is true, `/outcomes` may render 
 | Partner referrals | Distinct non-deleted users from `partner_referrals` | Count only; no rate claim by itself |
 | Partner placements | Distinct `placement_records.user_id` for non-deleted users with partner referrals | Count only; no fake/seeded rows |
 | Partner placement rate | `partner placements / distinct referred members` | Suppressed when referrals `< SMALL_SAMPLE_THRESHOLD` and shown as `X of N` instead |
+| Partner quarterly outcomes page (`/org/[slug]/outcomes`, `GET /api/org/[slug]/outcomes`; not flag-gated) | `generatePartnerQuarterlyOutcomes()` in `lib/analytics/partnerQuarterlyOutcomes.ts`, projected by `toPublicPartnerOutcomes()` in `lib/outcomes/publicPartnerOutcomes.ts` | Allowlist of counts only: referred, enrolled, completions, placements, active, drop-offs, program breakdown and 90/180-day retention counts. Drop-off rate (`drop-offs / referred`) is suppressed when referrals `< SMALL_SAMPLE_THRESHOLD` and shown as `N=<referred> · sample too small for a reliable rate`. No member rows, no salary values and no days-to-placement |
 | Referral badge link/embed | Generated from the authenticated partner's real referral code as `/apply?ref=<code>` | Tracking utility only; hidden unless the feature flag is enabled; does not make an outcome claim |
 
 These public surfaces are designed to stay dark in production until enough verified placements exist to support real social proof.
@@ -156,6 +157,7 @@ If a funder asks for one of the above, the answer is: *"We have the schema field
 |---|---|
 | 2026-05-07 | Initial methodology doc; `getBoardSnapshot()` shipped on branch `claude/workforce-app-stakeholder-alignment-S52it`. |
 | 2026-06-15 | Added flagged public social-proof methodology for placement story cards, partner snapshots, and referral badges. |
+| 2026-09-23 | Documented the public partner quarterly outcomes page: counts only, small-N drop-off rate suppressed, no salary or days-to-placement. |
 
 ---
 
