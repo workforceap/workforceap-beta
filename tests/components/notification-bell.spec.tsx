@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { usePathname } from 'next/navigation';
 import NotificationBell from '@/components/portal/NotificationBell';
 
 // Mock next/navigation usePathname
@@ -196,6 +197,61 @@ describe('NotificationBell', () => {
 
     await waitFor(() => {
       expect(screen.getByText('All caught up')).toBeInTheDocument();
+    });
+  });
+  describe('message links without data.link (rows written before links existed)', () => {
+    async function renderWithMessage(pathname: string, data: Record<string, unknown>) {
+      vi.mocked(usePathname).mockReturnValue(pathname);
+      vi.mocked(global.fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          notifications: [
+            {
+              id: 'n1',
+              type: 'message',
+              title: 'New message from Jane',
+              body: 'Hello',
+              data,
+              readAt: null,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+          unreadCount: 1,
+        }),
+      } as Response);
+      render(<NotificationBell badges={{}} />);
+      await waitFor(() => {
+        expect(screen.getByLabelText('1 notification')).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByLabelText('1 notification'));
+      const title = await screen.findByText('New message from Jane');
+      return title.closest('a')?.getAttribute('href');
+    }
+
+    it('sends a counselor to the member thread in the counselor inbox, never the member inbox', async () => {
+      const href = await renderWithMessage('/counselor', { threadId: 't1', memberId: 'member-1' });
+      expect(href).toBe('/counselor/messages?memberId=member-1');
+      expect(href).not.toContain('/dashboard/messages');
+    });
+
+    it('sends a counselor to the counselor inbox for a threadId-only row', async () => {
+      const href = await renderWithMessage('/counselor/students', { threadId: 't1' });
+      expect(href).toBe('/counselor/messages');
+    });
+
+    it('sends an admin to the admin messages inbox', async () => {
+      const href = await renderWithMessage('/admin', { threadId: 't1', memberId: 'member-1' });
+      expect(href).toBe('/admin/messages');
+    });
+
+    it('keeps a member on the member inbox', async () => {
+      const href = await renderWithMessage('/dashboard', { threadId: 't1' });
+      expect(href).toBe('/dashboard/messages');
+    });
+
+    it('still prefers an explicit data.link', async () => {
+      const href = await renderWithMessage('/counselor', { threadId: 't1', link: '/counselor/messages?memberId=x' });
+      expect(href).toBe('/counselor/messages?memberId=x');
     });
   });
 });
