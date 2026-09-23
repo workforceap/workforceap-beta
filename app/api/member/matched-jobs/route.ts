@@ -32,7 +32,12 @@ export const GET = withApiGuc(async () => {
           where: { status: 'COMPLETED' },
           select: { programSlug: true, courseSlug: true },
         },
-        userCertifications: { select: { certName: true } },
+        // Same certification set as the employer-side matcher
+        // (lib/ai/matchStudents.ts): staff-rejected rows never count.
+        userCertifications: {
+          where: { status: { not: 'rejected' } },
+          select: { certName: true, status: true },
+        },
       },
     }));
   
@@ -60,7 +65,7 @@ export const GET = withApiGuc(async () => {
   
     const program = dbUser.enrolledProgram ? getProgramBySlug(dbUser.enrolledProgram) : null;
     const programSkills = program?.skills ?? [];
-    const certs = (dbUser.userCertifications ?? []).map((c) => c.certName);
+    const certs = dbUser.userCertifications ?? [];
     const courses = dbUser.enrolledProgram
       ? dbUser.courseProgress
           .filter((row) => row.programSlug === dbUser.enrolledProgram)
