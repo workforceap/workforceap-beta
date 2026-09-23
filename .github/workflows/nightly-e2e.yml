@@ -89,15 +89,16 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      # playwright.config.ts: a remote base URL disables the local web server;
-      # CI=true gives 1 worker and 2 retries, so a pass-on-retry is reported
-      # as flaky rather than failing the night.
+      # The `github` reporter turns each failure into a run annotation, so it
+      # is readable without downloading the report. playwright.config.ts: a
+      # remote base URL disables the local web server; CI=true gives 1 worker
+      # and 2 retries, so a pass-on-retry is reported as flaky, not a failure.
       - name: Run public specs
         shell: bash
         # E2E_SPECS is a space-separated list; word splitting is intended.
         run: |
           # shellcheck disable=SC2086
-          pnpm exec playwright test $E2E_SPECS --project=chromium --reporter=list,html
+          pnpm exec playwright test $E2E_SPECS --project=chromium --reporter=list,html,github
 
       - name: Upload Playwright report
         if: always()
