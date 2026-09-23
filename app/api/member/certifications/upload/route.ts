@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
+import { logAuditEvent } from '@/lib/audit/log';
 
 const BUCKET = 'member-files';
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -72,11 +74,40 @@ function storageErrorMessage(error: { message?: string } | null): string {
         return NextResponse.json({ error: storageErrorMessage(error) }, { status: 500 });
       }
 
-      // Proof submitted → enter the admin review queue. We persist the stable
-      // storage path (the `member-files` bucket is private) as `proofUrl`; the
-      // admin queue mints a short-lived signed URL from it at render time
-      // (same pattern as `/api/admin/members/[id]/resume-urls`). Flip status to
-      // `pending` and stamp `submittedAt` so the row surfaces for review.
+      // An already verified (`approved`) certificate stays verified (Mike,
+      // WAP-197): the file is saved as its proof, the review state and dates
+      // are left alone, and the change is recorded in the audit log so staff
+      // can see a new file arrived after verification.
+      if (cert.status === 'approved') {
+        await prisma.$transaction((tx) =>
+          tx.userCertification.update({
+            where: { id: cert.id },
+            data: { proofUrl: storagePath },
+          }),
+        );
+        const hadProof = !!cert.proofUrl;
+        void auditLog({
+          actorUserId: user.id,
+          action: 'member.certification.proof_attached_verified',
+          targetType: 'user_certification',
+          targetId: cert.id,
+          metadata: { certName: cert.certName, status: 'approved', replacedProof: hadProof },
+        }).catch(() => {});
+        void logAuditEvent({
+          user: { id: user.id, role: 'member' },
+          verb: 'update',
+          object: { type: 'UserCertification', id: cert.id },
+          result: { success: true, extensions: { field: 'proofUrl', status: 'approved', statusKept: true, replacedProof: hadProof } },
+        }).catch(() => {});
+        return NextResponse.json({ success: true, storagePath, status: 'approved' });
+      }
+
+      // Otherwise proof submitted → enter the admin review queue. We persist the
+      // stable storage path (the `member-files` bucket is private) as
+      // `proofUrl`; the admin queue mints a short-lived signed URL from it at
+      // render time (same pattern as `/api/admin/members/[id]/resume-urls`).
+      // Flip status to `pending` and stamp `submittedAt` so the row surfaces
+      // for review.
       await prisma.$transaction((tx) =>
         tx.userCertification.update({
           where: { id: cert.id },
@@ -88,7 +119,7 @@ function storageErrorMessage(error: { message?: string } | null): string {
         }),
       );
 
-      return NextResponse.json({ success: true, storagePath });
+      return NextResponse.json({ success: true, storagePath, status: 'pending' });
     } catch (e) {
       console.error('[cert-upload] storage upload failed', e);
       const error =
