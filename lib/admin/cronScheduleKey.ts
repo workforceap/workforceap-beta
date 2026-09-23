@@ -135,3 +135,15 @@ export const CRON_SCHEDULE_BY_JOB: Readonly<Record<string, string>> = buildCronS
   vercelConfig.crons,
   CRON_JOB_NAME_BY_PATH,
 );
+
+/**
+ * The raw vercel.json expression per `CronExecution.jobName`, for every
+ * scheduled path that records CronExecution rows. /admin/crons reads it for
+ * the expected run interval (lib/cron/cronFreshness.ts).
+ */
+export const CRON_EXPRESSION_BY_JOB: Readonly<Record<string, string>> = Object.fromEntries(
+  vercelConfig.crons.flatMap((cron) => {
+    const jobName = CRON_JOB_NAME_BY_PATH[cron.path];
+    return jobName ? [[jobName, cron.schedule]] : [];
+  }),
+);
