@@ -6,6 +6,7 @@ import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemb
 import PageHeader from '@/components/portal/PageHeader';
 import { prisma } from '@/lib/db/prisma';
 import AdminCronsClient from '@/components/admin/AdminCronsClient';
+import { CRON_SCHEDULE_BY_JOB } from '@/lib/admin/cronScheduleKey';
 import { DesignSurface } from '@/components/portal/kit';
 import {
   CronsMonitorKit,
@@ -23,39 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Most recent execution per distinct job we materialize for the dense board. */
 const BOARD_LIMIT = 50;
-
-/**
- * Human schedule captions keyed by the jobName recorded in CronExecution
- * (withCronLogging(name) — the route segment with hyphens → underscores).
- * Derived from the committed vercel.json `crons` registry. Any jobName not
- * listed renders "—" (schedule not tracked for that job).
- */
-const SCHEDULE_BY_JOB: Record<string, string> = {
-  applicant_followup: 'Every 3 days, 11 AM',
-  at_risk_alerts: 'Mon 1 PM',
-  at_risk_check: 'Daily 6 AM',
-  coursera_auto_heal: 'Hourly :15',
-  coursera_b4b_sync: 'Every 6 hours',
-  coursera_sync: 'Every 6 hours',
-  coursera_training_sync: 'Hourly',
-  course_accountability: 'Daily 3 PM',
-  data_cleanup: 'Daily 7:30 AM',
-  deploy_health: 'Hourly',
-  inactive_nudge: 'Mon 10 AM',
-  inactivity_nudge: 'Wed 10 AM',
-  interview_reminders: 'Daily 2:30 PM',
-  milestone_cascade_draft: 'Hourly',
-  milestone_cascade_expire: 'Daily 9 AM',
-  milestone_celebration: 'Daily 11 AM',
-  partner_outcome_digest: 'Mon 1 PM',
-  placement_survey: 'Daily 2 PM',
-  smoke_test: 'Hourly',
-  stale_training_check: 'Daily 12:30 PM',
-  verification: 'Daily 11 AM',
-  weekly_recap: 'Sun 6 PM',
-  weekly_recap_email: 'Fri 10 PM',
-  wioa_report: 'Monthly (1st, 2 PM)',
-};
 
 const DISPLAY_STATUS: Record<string, CronDisplayStatus> = {
   SUCCESS: 'Success',
@@ -149,7 +117,9 @@ async function renderKit() {
     return {
       id: g.jobName,
       job: g.jobName,
-      schedule: SCHEDULE_BY_JOB[g.jobName] ?? '—',
+      // Captions come from vercel.json, keyed by the recorded jobName; a job
+      // with no declared schedule (a manual run, a retired job) shows "—".
+      schedule: CRON_SCHEDULE_BY_JOB[g.jobName] ?? '—',
       lastRun: relativeTime(latest?.startedAt ?? g._max.startedAt ?? null),
       duration: formatDuration(latest?.durationMs ?? null),
       status,
