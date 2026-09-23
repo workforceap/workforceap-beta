@@ -3822,6 +3822,17 @@
       "action": "Tentar novamente",
       "secondary": "Ver vagas"
     },
+    "applicationsUnavailable": {
+      "title": "Não foi possível carregar suas candidaturas",
+      "body": "Seus totais são desconhecidos, não zero. Tente novamente em instantes.",
+      "action": "Tentar novamente",
+      "kpiCaption": "Não foi possível carregar"
+    },
+    "openingsUnavailable": {
+      "title": "Não foi possível carregar as vagas",
+      "body": "É um problema de carregamento, não um quadro vazio. Tente novamente em instantes.",
+      "action": "Tentar novamente"
+    },
     "stage": {
       "title": "Nada nesta etapa"
     },

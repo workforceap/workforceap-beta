@@ -3879,6 +3879,17 @@
       "action": "Intentar de nuevo",
       "secondary": "Ver empleos"
     },
+    "applicationsUnavailable": {
+      "title": "No se pudieron cargar tus solicitudes",
+      "body": "Tus totales son desconocidos, no cero. Inténtalo de nuevo en un momento.",
+      "action": "Intentar de nuevo",
+      "kpiCaption": "No se pudo cargar"
+    },
+    "openingsUnavailable": {
+      "title": "No se pudieron cargar los empleos disponibles",
+      "body": "Es un problema de carga, no un tablero vacío. Inténtalo de nuevo en un momento.",
+      "action": "Intentar de nuevo"
+    },
     "stage": {
       "title": "Nada en esta etapa"
     },
