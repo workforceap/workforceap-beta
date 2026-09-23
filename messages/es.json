@@ -76,6 +76,7 @@
         "overview": "Resumen",
         "jobs": "Empleos",
         "pipeline": "Proceso",
+        "workQueue": "Pendientes",
         "messages": "Mensajes"
       },
       "counselor": {

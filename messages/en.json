@@ -76,6 +76,7 @@
         "overview": "Overview",
         "jobs": "Jobs",
         "pipeline": "Pipeline",
+        "workQueue": "Queue",
         "messages": "Messages"
       },
       "counselor": {

@@ -425,10 +425,10 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     const { default: WorkspaceSidebarSections } = await import('@/components/portal/WorkspaceSidebarSections');
     const items = [
       { href: '/partner', label: 'Overview', group: 'primary' as const, exact: true, badgeKey: 'jobs_pending' as const },
-      { href: '/partner/milestones', label: 'Milestones', group: 'primary' as const, badgeKey: 'jobs_live' as const },
+      { href: '/partner/milestones', label: 'Milestones', group: 'primary' as const, badgeKey: 'jobs_draft' as const },
     ];
     const { container } = render(
-      <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_live: 3 }}
+      <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_draft: 3 }}
         translateLabel={(s) => s} childToggleLabel={() => 'toggle'} onNavigate={() => {}} storageKey={`m13-${scheme}`} forceExpanded />,
     );
     const active = container.querySelector<HTMLAnchorElement>('a.workspace-sidebar-link.active')!;
