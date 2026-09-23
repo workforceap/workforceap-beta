@@ -31,7 +31,7 @@ vi.mock('@/lib/db/prisma', () => ({
     partner: { findUnique: vi.fn(async () => ({ name: 'Synthetic Community', slug: 'community-slug', referralCode: 'code', status: 'active' })) },
     partnerReferral: { count: vi.fn(async () => 2), findMany: mocks.referrals },
     placementRecord: { count: vi.fn(async () => 1) },
-    memberEvent: { findMany: vi.fn(async () => []) },
+    memberEvent: { findMany: vi.fn(async () => []), count: vi.fn(async () => 0) },
   },
 }));
 vi.mock('@/components/portal/kit/pages/PartnerOverviewKit', () => ({
