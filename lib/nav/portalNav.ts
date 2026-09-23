@@ -193,9 +193,13 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     Icon: Briefcase,
     tourTarget: 'tour-jobs',
   },
-  { href: '/dashboard/readiness', label: 'My progress', group: 'primary', tab: 'jobs', Icon: CheckCircle },
+  // WAP-189: My progress and Skill missions live in Training & progress
+  // ('insights'), which opens on its own when the member is on either page.
+  // The always-visible rail is exactly Home, My program, Job board,
+  // AI Career Tools and Messages.
+  { href: '/dashboard/readiness', label: 'My progress', group: 'insights', tab: 'jobs', Icon: CheckCircle },
   { href: '/dashboard/ai-tools', label: 'AI Career Tools', group: 'primary', tab: 'me', Icon: Sparkles, aliases: ['/dashboard/toolkit', '/dashboard/ai-tools/studio'], tourTarget: 'tour-ai-tools' },
-  { href: '/dashboard/missions', label: 'Skill missions', group: 'primary', tab: 'program', Icon: Target },
+  { href: '/dashboard/missions', label: 'Skill missions', group: 'insights', tab: 'program', Icon: Target },
   {
     href: '/dashboard/program/start',
     label: 'Path to certification',
@@ -217,7 +221,7 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
         } as PortalNavItem,
       ]
     : []),
-  // ── Jobs tab (board + progress sit in primary; apply/resume stay grouped) ──
+  // ── Jobs tab (the board sits in primary; progress, apply and resume stay grouped) ──
   {
     href: '/dashboard/job-applications',
     label: 'Job applications',

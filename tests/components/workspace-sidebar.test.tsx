@@ -190,20 +190,77 @@ describe('workspace navigation', () => {
     expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(0);
   });
 
-  it('keeps Jobs, Training progress, and AI Career Tools visible without opening a group', () => {
+  it('keeps Home, My program, Job board, AI Career Tools, and Messages visible without opening a group', () => {
     const { container } = show();
     const primary = container.querySelector('.workspace-sidebar-list--root > .workspace-sidebar-group');
     expect(primary).not.toBeNull();
     expect(primary?.querySelector('details')).toBeNull();
+    expect(within(primary as HTMLElement).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/dashboard');
+    expect(within(primary as HTMLElement).getByRole('link', { name: 'My program' })).toHaveAttribute('href', '/dashboard/program');
     expect(within(primary as HTMLElement).getByRole('link', { name: 'Job board' })).toHaveAttribute('href', '/dashboard/jobs');
-    expect(within(primary as HTMLElement).getByRole('link', { name: 'My progress' })).toHaveAttribute('href', '/dashboard/readiness');
     expect(within(primary as HTMLElement).getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
     expect(within(primary as HTMLElement).getByRole('link', { name: 'Messages' })).toHaveAttribute('href', '/dashboard/messages');
+    expect(within(primary as HTMLElement).queryByRole('link', { name: 'My progress' })).toBeNull();
+    expect(within(primary as HTMLElement).queryByRole('link', { name: 'Skill missions' })).toBeNull();
     const groupedHrefs = [...container.querySelectorAll('.workspace-sidebar details a')].map((link) => link.getAttribute('href'));
     expect(groupedHrefs).not.toContain('/dashboard/jobs');
-    expect(groupedHrefs).not.toContain('/dashboard/readiness');
     expect(groupedHrefs).not.toContain('/dashboard/ai-tools');
     expect(groupedHrefs).not.toContain('/dashboard/messages');
+    // WAP-189: My progress and Skill missions moved behind Training & progress.
+    expect(groupedHrefs).toContain('/dashboard/readiness');
+    expect(groupedHrefs).toContain('/dashboard/missions');
+  });
+
+  // WAP-189: My progress and Skill missions sit in Training & progress, which
+  // opens on its own whenever the member is on one of them.
+  const trainingAndProgress = (container: HTMLElement) =>
+    [...container.querySelectorAll<HTMLDetailsElement>('.workspace-sidebar details')].filter(
+      (group) => group.querySelector('summary')?.textContent?.includes('Training & progress'),
+    );
+
+  it.each([
+    ['/dashboard/readiness', 'My progress'],
+    ['/dashboard/missions', 'Skill missions'],
+  ])('opens Training & progress and marks one current row on %s', (pathname, label) => {
+    location.pathname = pathname;
+    const { container } = show();
+    const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]).toHaveAttribute('href', pathname);
+    expect(current[0]).toHaveTextContent(label);
+    const open = [...container.querySelectorAll<HTMLDetailsElement>('.workspace-sidebar details')].filter((group) => group.open);
+    expect(open).toHaveLength(1);
+    expect(open[0].contains(current[0])).toBe(true);
+    expect(open[0].querySelector('summary')).toHaveTextContent('Training & progress');
+    expect(trainingAndProgress(container)).toEqual(open);
+  });
+
+  it('keeps My progress and Skill missions inside a closed Training & progress group on /dashboard', () => {
+    location.pathname = '/dashboard';
+    const { container } = show();
+    const groups = trainingAndProgress(container);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].open).toBe(false);
+    for (const href of ['/dashboard/readiness', '/dashboard/missions']) {
+      const row = container.querySelector(`.workspace-sidebar a[href="${href}"]`);
+      expect(row, href).not.toBeNull();
+      expect(row?.closest('details'), href).toBe(groups[0]);
+      expect(row, href).not.toHaveAttribute('aria-current');
+    }
+    expect(container.querySelector('.workspace-sidebar details[open]')).toBeNull();
+  });
+
+  it('names Skill missions and My progress in the member locale', () => {
+    location.pathname = '/es/dashboard/missions';
+    const { container } = render(<NextIntlClientProvider locale="es" messages={spanishMessages}>
+      <WorkspaceShell portalRole="member" navItems={MEMBER_PORTAL_NAV_ITEMS}
+        workspaceLabel="Member portal" contextLabel="Account" readOnlyAudit>
+        <h1>Misiones</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>);
+    expect(container.querySelector('.workspace-sidebar a[href="/dashboard/missions"]')).toHaveTextContent(spanishMessages.nav.skillMissions);
+    expect(container.querySelector('.workspace-sidebar a[href="/dashboard/readiness"]')).toHaveTextContent(spanishMessages.nav.myProgress);
+    expect(container.querySelector('.workspace-sidebar a[href="/dashboard/missions"]')).not.toHaveTextContent('Skill missions');
   });
 
   it('opens the section containing the active route and keeps other groups quiet', () => {
@@ -525,14 +582,13 @@ describe('AI Career Tools contextual tool row', () => {
     expect(current[0]).toHaveAttribute('href', '/dashboard/job-applications');
   });
 
-  it('keeps the PR #2322 primary ordering byte-for-byte on a tool page', () => {
+  // WAP-189 (owner-approved) supersedes the seven-row PR #2322 order.
+  it('keeps the WAP-189 five-row primary ordering byte-for-byte on a tool page', () => {
     const expected = [
       '/dashboard',
       '/dashboard/program',
       '/dashboard/jobs',
-      '/dashboard/readiness',
       '/dashboard/ai-tools',
-      '/dashboard/missions',
       '/dashboard/messages',
     ];
     const primaryHrefs = (container: HTMLElement) =>
@@ -550,10 +606,8 @@ describe('AI Career Tools contextual tool row', () => {
       '/dashboard',
       '/dashboard/program',
       '/dashboard/jobs',
-      '/dashboard/readiness',
       '/dashboard/ai-tools',
       '/dashboard/ai-tools/gap-analyzer',
-      '/dashboard/missions',
       '/dashboard/messages',
     ]);
   });
@@ -583,10 +637,11 @@ describe('AI Career Tools contextual tool row', () => {
       '| all rows incl. collapsed groups:',
       JSON.stringify(totals),
     );
-    expect(counts.hub).toBe(7);
-    expect(counts.dashboard).toBe(7);
+    // WAP-189: five always-visible rows (was seven under PR #2322).
+    expect(counts.hub).toBe(5);
+    expect(counts.dashboard).toBe(5);
     // One extra row on a tool page — not 18.
-    expect(counts.tool).toBe(8);
+    expect(counts.tool).toBe(6);
   });
 
   it('names the current page in the mobile header band', () => {

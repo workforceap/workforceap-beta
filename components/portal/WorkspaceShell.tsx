@@ -257,6 +257,7 @@ export default function WorkspaceShell({
       'Job applications': tNav('jobApplications'),
       'Resume': tNav('resume'),
       'My progress': tNav('myProgress'),
+      'Skill missions': tNav('skillMissions'),
       'Career Toolkit': tNav('careerToolkit'),
       'AI Career Tools': tNav('careerToolkit'),
       'AI Counselor': tNav('aiCounselor'),

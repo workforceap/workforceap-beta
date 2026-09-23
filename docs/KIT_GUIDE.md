@@ -76,9 +76,10 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   dashboard layout's existing user query; nothing is inferred beyond the
   email fallback.
   Member rails use a 232px budget (208px on smaller laptops, 72px collapsed),
-  with Home, My program, Job board, My progress, AI Career Tools, Messages,
-  and Skill missions visible and remaining Tools / Training / Account groups
-  disclosed on demand.
+  with exactly five rows always visible — Home, My program, Job board,
+  AI Career Tools and Messages (WAP-189) — and the Tools & careers /
+  Training & progress / Account & support groups disclosed on demand.
+  My progress and Skill missions live in Training & progress.
   The current route opens its group and only the most specific destination
   receives `aria-current`. Staff rails use 240px and the shared desktop header
   uses a 68px minimum height. Destination lists scroll independently so appearance

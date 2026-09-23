@@ -1,13 +1,14 @@
 # Portal Nav Spec — Live IA + Reachability
 
-**Status (2026-09-18):** Document the **live** member + staff navigation. Do not “restore”
+**Status (2026-09-23):** Document the **live** member + staff navigation. Do not “restore”
 a flat-only member shell from older #2069 notes — that claim drifted from production.
 
-**Naming:** the member toolkit hub is **Career Studio** everywhere — rail, mobile tab
-strip, mobile header band and on-page chrome. That is the name live product copy already
-uses (`ToolkitToolChrome` kicker + “Back to Career Studio” on all 15 tool Kits,
-`MemberHomeKit` CTA and lede), so the nav moved onto it rather than the other way round.
-“AI Career Tools” and “Career toolkit” are retired as nav labels.
+**Naming:** the member toolkit hub (`/dashboard/ai-tools`) is **AI Career Tools**
+everywhere — rail (`MEMBER_TOOLKIT_HUB_LABEL`), mobile tab strip (`nav.careerToolkit`),
+mobile header band, page `<title>`, `PageOpener`, the `ToolkitToolChrome` kicker and
+“Back to AI Career Tools” link, and the `public/manifest.json` shortcut. This follows the
+one-name rule in `docs/KIT_GUIDE.md` (WAP-102): do not reintroduce “Career Studio”,
+“Career Toolkit” or “AI Tools” as names for that route.
 
 **Design references:** `docs/mockups/wa-v2-member.html` (aspirational flat top-nav),
 `docs/mockups/workforceap-admin-full.html` (staff). **Live code** wins over mockups when
@@ -24,29 +25,43 @@ staff = dense left sidebar (+ role mobile bottom tabs).**
 ### Desktop (≥769px)
 
 `WorkspaceShell` with `portalRole="member"` renders the full `MEMBER_PORTAL_NAV_ITEMS`
-command rail. ICP daily destinations stay visible without opening a group: **Home**,
-**My program**, **Job board**, **My progress**, **Career Studio**, **Skill missions**,
-and **Messages**. Job applications, resume, AI Advisor, and remaining
-training/account links stay in disclosed Tools / Training / Account groups. Kit tokens: warm surface, ~232px rail
-(208 laptop / 72 collapsed), sentence-case labels, 16px / 44px targets, `aria-current`
-on the most specific destination only.
+command rail. Exactly five destinations stay visible without opening a group: **Home**,
+**My program**, **Job board**, **AI Career Tools** and **Messages**. Everything else sits
+in the disclosed **Tools & careers** (`workflows`), **Training & progress** (`insights`)
+and **Account & support** (`manage`) groups — including **My progress**
+(`/dashboard/readiness`) and **Skill missions** (`/dashboard/missions`), which live in
+Training & progress. A group opens by itself when the current route is one of its rows,
+so a member on My progress or Skill missions still sees that row, marked current. Kit
+tokens: warm surface, ~232px rail (208 laptop / 72 collapsed), sentence-case labels,
+16px / 44px targets, `aria-current` on the most specific destination only.
 
-Primary order is fixed by PR #2322 (`lib/nav/portalNav.ts`) and must not be changed:
-`/dashboard` · `/dashboard/program` · `/dashboard/jobs` · `/dashboard/readiness` ·
-`/dashboard/ai-tools` · `/dashboard/missions` · `/dashboard/messages`.
+Primary order (`lib/nav/portalNav.ts`, pinned by `lib/nav/portalNav.test.ts`,
+`lib/nav/memberToolRoutes.test.ts` and `tests/components/workspace-sidebar.test.tsx`):
+`/dashboard` · `/dashboard/program` · `/dashboard/jobs` · `/dashboard/ai-tools` ·
+`/dashboard/messages`.
 
-#### Contextual Career Studio tool row
+> **Superseded 2026-09-23 by WAP-189 with owner approval.** The earlier rule — “Primary
+> order is fixed by PR #2322 and must not be changed” (seven rows, with
+> `/dashboard/readiness` after Job board and `/dashboard/missions` after the hub) — no
+> longer applies. The five-row order above is the new baseline; change it only with the
+> same owner sign-off. Keep AI Career Tools in primary (the member tour anchors
+> `tour-ai-tools` on it), and do not move My progress or Skill missions into Account &
+> support (the e2e tab-order pin in `tests/e2e/workspace-shell-layout.spec.ts` covers that
+> group). The mobile `MemberPortalTopNav` order is unchanged and still pinned by
+> `lib/marketing-public-ui-regressions.test.ts`.
 
-Career Studio has ~22 tool routes under `/dashboard/ai-tools/*` and none of them owns a
+#### Contextual AI Career Tools tool row
+
+AI Career Tools has ~22 tool routes under `/dashboard/ai-tools/*` and none of them owns a
 permanent rail entry. Before this change the rail highlighted the hub — or nothing — on
 every one of them (16 of 28 member routes marked the wrong page).
 
 The rail now grows **exactly one** extra row: the tool the member is currently inside,
-nested under the Career Studio entry and marked `aria-current="page"`. It disappears
+nested under the AI Career Tools entry and marked `aria-current="page"`. It disappears
 again the moment they leave.
 
-- **On a tool page:** 8 rows visible without opening a group (7 + the tool).
-- **On the hub (`/dashboard/ai-tools`) and everywhere else:** 7 rows, zero tool rows.
+- **On a tool page:** 6 rows visible without opening a group (5 + the tool).
+- **On the hub (`/dashboard/ai-tools`) and everywhere else:** 5 rows, zero tool rows.
 - **Never** more than one tool row, whatever the route depth
   (`/dashboard/ai-tools/interview-practice/session/42` still shows one).
 
@@ -74,7 +89,7 @@ The strip carries **12** destinations (was 7, of which only ~3 fit on a phone):
 | Job board | `/dashboard/jobs` |
 | My progress | `/dashboard/readiness` |
 | Messages | `/dashboard/messages` |
-| Career Studio | `/dashboard/ai-tools` |
+| AI Career Tools | `/dashboard/ai-tools` |
 | Skill missions | `/dashboard/missions` |
 | Job applications | `/dashboard/job-applications` |
 | Resume | `/dashboard/resume` |
@@ -82,17 +97,17 @@ The strip carries **12** destinations (was 7, of which only ~3 fit on a phone):
 | My certificates | `/dashboard/certifications` |
 | Profile | `/dashboard/profile` |
 
-Profile replaced a duplicate Lilley/AI Advisor tab (AI Advisor stays under Career Studio
+Profile replaced a duplicate Lilley/AI Advisor tab (AI Advisor stays under Tools & careers
 in the rail/drawer).
 
 Because 12 tabs no longer fit, `MemberPortalTopNav` **scrolls the current tab into the
 centre of the strip** on every navigation. It scrolls the list element, not the page, so
 the document never jumps. Only the longest-matching tab reads as current, so a tool route
-lights Career Studio and nothing else.
+lights AI Career Tools and nothing else.
 
 **Mobile header band.** Below 769px the member tagline is hidden, which left the header
 band empty. `WorkspaceShell` now renders the resolved current-page name there
-(`.workspace-shell-current-page`) — including the Career Studio tool you are inside, e.g.
+(`.workspace-shell-current-page`) — including the AI Career Tools tool you are inside, e.g.
 “Salary negotiation”.
 
 ### Historical flat-nav target (not live)
@@ -108,7 +123,7 @@ orphaned destinations and was reverted.
 
 Secondary member routes must stay reachable from the rail/drawer or an in-page home.
 Examples: certificates, career brief, job applications, resume, readiness, weekly recap,
-missions, learning hub, help, guide, Lilley (`/dashboard/counselor`), Career Studio.
+missions, learning hub, help, guide, Lilley (`/dashboard/counselor`), AI Career Tools.
 
 **Acceptance:** every `MEMBER_PORTAL_NAV_ITEMS` href is either a top tab or one click from
 the rail/drawer (or a documented in-page link). QA = signed-in member session.
@@ -148,9 +163,8 @@ rename (e.g. Command Center, Students, Inbox zero).
 
 ## 5. Out of scope here
 
-- Full Career Studio consolidation / rail rewrite. The contextual row above is **nav
-  only** — the hub page's own `<title>` / `PageOpener` title and the
-  `public/manifest.json` shortcut still read “AI Career Tools”
+- Full AI Career Tools consolidation / rail rewrite. The contextual row above is **nav
+  only**; tool pages keep their own titles and chrome.
 - The separate “Job board” / “Job search” / “Pipeline” naming inconsistency
 - New public `/membership` page (Membership noun currently → `/apply` in About)
 - Merging Astro vs Next dual public renderers

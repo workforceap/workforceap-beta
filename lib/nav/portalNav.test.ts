@@ -10,25 +10,54 @@ import { MEMBER_PORTAL_NAV_ITEMS_I18N } from './portalNav.i18n';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const source = (relativePath: string) => readFileSync(path.join(root, relativePath), 'utf8');
 
-test('Job board, Training progress, and AI Career Tools stay in the member primary rail', () => {
+// WAP-189 (owner-approved 2026-09-23): the always-visible member rail is exactly
+// these five rows, in this order. It supersedes the seven-row PR #2322 order.
+const MEMBER_PRIMARY_HREFS = [
+  '/dashboard',
+  '/dashboard/program',
+  '/dashboard/jobs',
+  '/dashboard/ai-tools',
+  '/dashboard/messages',
+];
+
+test('the member primary rail is exactly Home, My program, Job board, AI Career Tools, Messages', () => {
+  const primary = MEMBER_PORTAL_NAV_ITEMS.filter((entry) => entry.group === 'primary');
+  assert.deepEqual(primary.map((entry) => entry.href), MEMBER_PRIMARY_HREFS);
+  assert.deepEqual(primary.map((entry) => entry.label), ['Home', 'My program', 'Job board', 'AI Career Tools', 'Messages']);
+});
+
+test('Job board and AI Career Tools stay in the member primary rail', () => {
   const jobs = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/jobs');
-  const progress = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/readiness');
   const tools = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/ai-tools');
   assert.equal(jobs?.group, 'primary');
   assert.equal(jobs?.label, 'Job board');
-  assert.equal(progress?.group, 'primary');
-  assert.equal(progress?.label, 'My progress');
   assert.equal(tools?.group, 'primary');
   assert.equal(tools?.label, 'AI Career Tools');
 });
 
-test('i18n Job board, Training progress, and AI Career Tools stay in the member primary rail', () => {
+test('My progress and Skill missions live in the Training & progress group (WAP-189)', () => {
+  const progress = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/readiness');
+  const missions = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/missions');
+  assert.equal(progress?.group, 'insights');
+  assert.equal(progress?.label, 'My progress');
+  assert.equal(missions?.group, 'insights');
+  assert.equal(missions?.label, 'Skill missions');
+  // Never under Account & support: the e2e tab-order pin covers that group.
+  assert.notEqual(progress?.group, 'manage');
+  assert.notEqual(missions?.group, 'manage');
+});
+
+test('i18n Job board and AI Career Tools stay primary; My progress joins Training & progress', () => {
   const jobs = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/jobs');
   const progress = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/readiness');
   const tools = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/ai-tools');
   assert.equal(jobs?.group, 'primary');
-  assert.equal(progress?.group, 'primary');
+  assert.equal(progress?.group, 'insights');
   assert.equal(tools?.group, 'primary');
+  assert.deepEqual(
+    MEMBER_PORTAL_NAV_ITEMS_I18N.filter((entry) => entry.group === 'primary').map((entry) => entry.href),
+    MEMBER_PRIMARY_HREFS,
+  );
 });
 
 test('Training preassessment nav points at the assessment page, not AI tools', () => {
