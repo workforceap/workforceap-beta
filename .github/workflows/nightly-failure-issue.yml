@@ -1,0 +1,116 @@
+name: Nightly failure issue
+
+# WAP-204: the one place that turns a failed scheduled heavy suite into a
+# GitHub issue. Called (workflow_call) by authenticated-portal-smoke.yml and
+# nightly-e2e.yml after their main job.
+#
+# De-duplication: at most one OPEN issue per suite, found by its exact title
+# "Nightly: <suite> failing" and the `nightly-failure` label.
+#   - result `failure` / `cancelled`, no open issue  -> open one with the run link
+#   - result `failure` / `cancelled`, open issue     -> comment the new run link
+#   - result `success`, open issue                   -> comment that it passed
+#     (the issue is left open for a human to close; it may be mirrored to Linear)
+#   - anything else                                  -> nothing
+# `dry_run: true` performs the lookup and prints the action without writing.
+
+on:
+  workflow_call:
+    inputs:
+      suite:
+        description: "Suite name used in the issue title (Nightly: <suite> failing)"
+        required: true
+        type: string
+      result:
+        description: "needs.<job>.result of the suite job"
+        required: true
+        type: string
+      detail:
+        description: "Optional one-line detail for the issue body"
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "Look up and log, but do not write"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+
+jobs:
+  issue:
+    name: Open or refresh the nightly issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SUITE: ${{ inputs.suite }}
+      RESULT: ${{ inputs.result }}
+      DETAIL: ${{ inputs.detail }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      WORKFLOW: ${{ github.workflow }}
+      EVENT: ${{ github.event_name }}
+      LABEL: nightly-failure
+    steps:
+      - name: Open, refresh or note recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="Nightly: ${SUITE} failing"
+          stamp="$(date -u +%FT%TZ)"
+          sha="${GITHUB_SHA:0:9}"
+
+          # Idempotent: the label must exist before the filtered lookup below.
+          if [ "$DRY_RUN" != "true" ]; then
+            gh label create "$LABEL" --color B60205 \
+              --description "A scheduled heavy suite is failing (WAP-204)" 2>/dev/null || true
+          fi
+
+          # Exact-title match among open issues carrying the label; oldest wins
+          # so a duplicate created by a race is never the one refreshed. A
+          # failed lookup fails the job rather than risk a duplicate issue.
+          existing="$(gh issue list --state open --label "$LABEL" --limit 100 \
+            --json number,title --jq "[.[] | select(.title == \"${title}\")] | sort_by(.number) | .[0].number // empty")"
+          echo "open issue for \"${title}\": ${existing:-none}"
+
+          case "$RESULT" in
+            failure|cancelled) want=report ;;
+            success) want=recover ;;
+            *) echo "result=${RESULT}: nothing to report"; exit 0 ;;
+          esac
+
+          if [ "$want" = recover ]; then
+            if [ -z "$existing" ]; then echo "passing and no open issue: nothing to do"; exit 0; fi
+            body="Passed again in [run ${GITHUB_RUN_ID}](${RUN_URL}) at ${stamp} (\`${sha}\`, ${EVENT}). Close this issue if the failure is understood."
+            if [ "$DRY_RUN" = "true" ]; then echo "dry run: would comment recovery on #${existing}"; exit 0; fi
+            gh issue comment "$existing" --body "$body"
+            echo "noted recovery on #${existing}"
+            exit 0
+          fi
+
+          line="- ${stamp}: **${RESULT}** in [run ${GITHUB_RUN_ID}](${RUN_URL}) (\`${sha}\`, ${EVENT})"
+          if [ -n "$DETAIL" ]; then line="${line}: ${DETAIL}"; fi
+
+          if [ -n "$existing" ]; then
+            if [ "$DRY_RUN" = "true" ]; then echo "dry run: would comment on #${existing}: ${line}"; exit 0; fi
+            gh issue comment "$existing" --body "$(printf 'Failed again.\n\n%s\n' "$line")"
+            echo "refreshed #${existing}"
+            echo "### Nightly issue: refreshed #${existing}" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          body="$(cat <<EOF
+          The scheduled **${WORKFLOW}** suite failed. This issue is opened and refreshed automatically by \`.github/workflows/nightly-failure-issue.yml\` (WAP-204); each later failure adds a comment instead of a new issue.
+
+          ${line}
+
+          See \`docs/SLO-AND-STATUS.md\`, "Nightly heavy suites", for what the suite covers and how to rerun it.
+          EOF
+          )"
+          if [ "$DRY_RUN" = "true" ]; then echo "dry run: would open \"${title}\""; printf '%s\n' "$body"; exit 0; fi
+          url="$(gh issue create --title "$title" --label "$LABEL" --body "$body")"
+          echo "opened ${url}"
+          echo "### Nightly issue: opened ${url}" >> "$GITHUB_STEP_SUMMARY"

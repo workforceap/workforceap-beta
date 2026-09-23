@@ -64,6 +64,8 @@ PLAYWRIGHT_BASE_URL=https://www.workforceap.org npx playwright test tests/e2e/sm
 
 In CI, the config disables the local web server, runs with 1 worker, and retries 2×.
 
+`.github/workflows/nightly-e2e.yml` (manual dispatch today; nightly once WAP-66 lands) runs the credential-free, read-only specs (`tests/e2e/smoke/**` and `partner-signup-viewports.spec.ts`) against production, and once scheduled opens a `Nightly: Public E2E failing` issue when a scheduled run fails (WAP-204; see `docs/SLO-AND-STATUS.md`, "Nightly heavy suites"). Only add a spec there if it signs in to nothing and creates no data.
+
 ## Troubleshooting
 
 | Issue | Fix |
