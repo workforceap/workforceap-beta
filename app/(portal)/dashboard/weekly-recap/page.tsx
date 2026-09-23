@@ -36,6 +36,7 @@ export default async function WeeklyRecapPage() {
 
   const weekStart = getWeekStart(new Date());
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
+  const t = await getTranslations('dashboard');
   const { generateWeeklyRecap } = await import('@/lib/recap/generate');
   let recap: Awaited<ReturnType<typeof generateWeeklyRecap>> | null = null;
   let generationError = false;
@@ -97,6 +98,7 @@ export default async function WeeklyRecapPage() {
             recap={recap}
             recapData={recapData}
             weekStart={recapCalendarDateKey(weekStart)}
+            openGoalsLabel={t('weeklyRecapOpenGoals')}
           />
         )}
       </div>    </>
