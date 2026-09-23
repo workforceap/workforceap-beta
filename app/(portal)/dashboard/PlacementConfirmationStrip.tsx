@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { Briefcase, CheckCircle2, CircleCheckBig, Flag } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { cx, toneClass } from '@/components/portal/kit';
 import { confirmPlacement, type ConfirmPlacementResult } from './placementAction';
 
 type PlacementOutcome = ConfirmPlacementResult['placementOutcome'];
@@ -10,35 +13,56 @@ type PlacementOutcome = ConfirmPlacementResult['placementOutcome'];
  * outcome: a first confirmation logs a member-reported placement and alerts
  * the counselor; a repeat finds the placement already on record and sends
  * nothing new; a failed record write keeps the confirmation itself (the claim
- * event still reaches staff) but logs no placement.
+ * event still reaches staff) but logs no placement. The tone says the same
+ * thing: `ok` when a placement is on record, `warn` when it waits on staff.
  */
-const ACKNOWLEDGEMENT: Record<PlacementOutcome, { heading: string; body: string; icon: string }> = {
+const ACKNOWLEDGEMENT: Record<PlacementOutcome, { heading: string; body: string; icon: LucideIcon; tone: 'ok' | 'warn' }> = {
   created: {
     heading: 'Placement logged',
     body: 'Logged as a placement you reported. Your counselor has been alerted to confirm the start date and pay.',
-    icon: 'check_circle',
+    icon: CheckCircle2,
+    tone: 'ok',
   },
   corroborated: {
     heading: 'Placement logged',
     body: 'Logged as a placement you reported. Your counselor has been alerted to confirm the start date and pay.',
-    icon: 'check_circle',
+    icon: CheckCircle2,
+    tone: 'ok',
   },
   unchanged: {
     heading: 'Already on record',
     body: 'Your placement is already on record from an earlier confirmation, so nothing new was sent to your counselor. Let them know if the details have changed.',
-    icon: 'task_alt',
+    icon: CircleCheckBig,
+    tone: 'ok',
   },
   failed: {
     heading: 'Saved for review',
     body: 'We saved your confirmation, but the placement could not be logged automatically. It is flagged for your team to review.',
-    icon: 'flag',
+    icon: Flag,
+    tone: 'warn',
   },
 };
+
+/**
+ * Kicker line above a card's heading. Text-on-surface uses the `-dark` text
+ * token of the card's tone (`--wa-success` itself is a fill colour, 3.5:1 on
+ * white); the warn acknowledgement swaps in `--wa-gold-dark`.
+ */
+const KICKER = {
+  fontSize: 'var(--wa-type-meta)',
+  fontWeight: 800,
+  textTransform: 'uppercase',
+  letterSpacing: '0.12em',
+  color: 'var(--wa-success-dark)',
+  margin: 0,
+} as const;
 
 type PlacementConfirmationStripProps = {
   offers: any[];
   /**
-   * Where the strip sits. `legacy` (the default, `?ui=legacy` home) keeps its
+   * Where the strip sits. Both variants draw the same kit cards (WAP-194:
+   * `--wa-*` tokens, lucide icons, the success tone edge); only the outer
+   * spacing differs. `legacy` (the default, `?ui=legacy` home) keeps its
    * own 1.25rem gutter and bottom margin. `kit` drops both: the kit home's
    * column already sets the inline edge and the gap between cards
    * (`wa-space-y-6`), so the offer card lines up with the kit cards around it
@@ -90,57 +114,80 @@ export default function PlacementConfirmationStrip({ offers, variant = 'legacy' 
         const outcome = acknowledged[offer.id];
         if (outcome) {
           const ack = ACKNOWLEDGEMENT[outcome];
+          const AckIcon = ack.icon;
           return (
-            <div key={offer.id} role="status" style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--wa-success-dark)', boxShadow: '0 6px 24px color-mix(in srgb, var(--wa-success) 30%, transparent)', marginBottom: cardMarginBottom }}>
-              <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-success)', fontVariationSettings: "'FILL' 1", flexShrink: 0 }} aria-hidden>{ack.icon}</span>
-                <div>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--wa-on-success)', margin: '0 0 0.25rem' }}>
-                    {ack.heading} — {offer.company}
-                  </p>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--wa-on-success)', margin: 0, lineHeight: 1.5 }}>{ack.body}</p>
-                </div>
+            <div
+              key={offer.id}
+              role="status"
+              className={cx('wa-kit-card wa-kit-tone-edge', toneClass(ack.tone))}
+              style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: cardMarginBottom }}
+            >
+              <span className="wa-kit-tone-icon" aria-hidden>
+                <AckIcon size={18} />
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ ...KICKER, color: ack.tone === 'warn' ? 'var(--wa-gold-dark)' : KICKER.color, marginBottom: 4 }}>
+                  {ack.heading} — {offer.company}
+                </p>
+                <p className="wa-kit-lede" style={{ margin: 0, color: 'var(--wa-text)' }}>{ack.body}</p>
               </div>
             </div>
           );
         }
         return (
-        <div key={offer.id} style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--wa-success-dark)', boxShadow: '0 6px 24px color-mix(in srgb, var(--wa-success) 30%, transparent)', marginBottom: cardMarginBottom }}>
-          <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--wa-on-success)', margin: '0 0 0.35rem' }}>Job Offer</p>
-                <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: 'var(--wa-on-success)', margin: 0, lineHeight: 1.3 }}>
+        <div
+          key={offer.id}
+          className={cx('wa-kit-card wa-kit-tone-edge', toneClass('ok'))}
+          style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: cardMarginBottom }}
+        >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ ...KICKER, marginBottom: 4 }}>Job Offer</p>
+                <h2 style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--wa-text)', margin: 0, lineHeight: 1.3 }}>
                   Did you accept the role at {offer.company}?
                 </h2>
               </div>
-              <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-success)', fontVariationSettings: "'FILL' 1", flexShrink: 0, marginLeft: '0.5rem' }} aria-hidden>work</span>
+              <span className="wa-kit-tone-icon" aria-hidden>
+                <Briefcase size={18} />
+              </span>
             </div>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--wa-on-success)', margin: 0, lineHeight: 1.5 }}>
+            <p className="wa-kit-lede" style={{ margin: 0 }}>
               Let WorkforceAP know you accepted the offer. We log it as a placement you reported and alert your counselor to confirm the start date and pay — your support and access do not change.
             </p>
             {errors[offer.id] ? (
-              <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-on-success)', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>
+              <p
+                role="alert"
+                style={{
+                  margin: 0,
+                  fontSize: 'var(--wa-type-meta)',
+                  fontWeight: 700,
+                  color: 'var(--wa-danger-text)',
+                  background: 'var(--wa-danger-soft)',
+                  borderRadius: 'var(--wa-radius-sm)',
+                  padding: '8px 12px',
+                }}
+              >
                 {errors[offer.id]}
               </p>
             ) : null}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="button"
                 onClick={() => handleConfirm(offer.id)}
                 disabled={loading[offer.id]}
-                style={{ flex: 1, display: 'block', width: '100%', background: 'var(--wa-on-success)', color: 'var(--wa-success-dark)', padding: '0.75rem', borderRadius: '0.625rem', textDecoration: 'none', textAlign: 'center', fontWeight: 700, fontSize: '0.875rem', boxSizing: 'border-box', border: 'none', cursor: 'pointer' }}
+                className="wa-kit-cta wa-kit-focus"
+                style={{ flex: '1 1 12rem' }}
               >
                 {loading[offer.id] ? 'Sending update...' : 'Yes — notify my team'}
               </button>
               <button type="button"
                 onClick={() => handleDismiss(offer.id)}
                 disabled={loading[offer.id]}
-                style={{ flex: 1, display: 'block', width: '100%', background: 'transparent', color: 'var(--wa-on-success)', padding: '0.75rem', borderRadius: '0.625rem', textDecoration: 'none', textAlign: 'center', fontWeight: 700, fontSize: '0.875rem', boxSizing: 'border-box', border: '1.5px solid var(--wa-on-success)', cursor: 'pointer' }}
+                className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+                style={{ flex: '1 1 12rem' }}
               >
                 Not right now
               </button>
             </div>
-          </div>
         </div>
         );
       })}

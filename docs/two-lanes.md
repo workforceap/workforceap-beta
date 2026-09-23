@@ -4,7 +4,10 @@
 
 Application source, tests, database migrations and deployment configuration belong
 in `mabrown040/workforceap-beta`. Follow that repository's AGENTS.md. Use a feature
-branch/worktree and PR per task. Verify in development/preview before the authorized
+branch/worktree and PR per task. Run `npm run prepush` before every push; it runs the
+same static gates as CI's `static-gates` job (see AGENTS.md "Lint / Test / Build"), and
+`git config core.hooksPath .githooks` makes `git push` run it automatically (opt-in).
+Verify in development/preview before the authorized
 production release. Development Supabase project: `esbdrgaonplpvzmtrdhw`;
 production: `jqddnyuszufndwwezdwp`. Never substitute production for missing dev access.
 Sentry observes faults; it is not permission to alter production data.

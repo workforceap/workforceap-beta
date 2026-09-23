@@ -17,6 +17,11 @@ on:
 # 21 of the last 30 master runs were cancelled and left those commits with no
 # verdict). Merge-queue runs are never cancelled here: each queue entry has
 # its own gh-readonly-queue/... ref, and the queue cancels its own entries.
+# Read-only by default; the four gate jobs add `actions: write` for the
+# fail-fast cancel step.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -29,8 +34,7 @@ concurrency:
 # parallelism changed. Each job repeats the same stub env block below.
 jobs:
   # Cheap static gates first, so a scoping, audit or migration-history mistake
-  # goes red in about a minute instead of 10-20 minutes in. The node-only
-  # guards run before `pnpm install` because they need nothing from it.
+  # goes red in about a minute instead of 10-20 minutes in.
   static-gates:
     name: Static gates (guards, typecheck, lint, knip)
     runs-on: ubuntu-latest
@@ -54,6 +58,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -64,70 +71,64 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
-      - name: Verify migration timestamp history
-        run: node scripts/check-duplicate-migrations.mjs
-
-      # Icon font coverage — fails if source uses a Material Symbols icon
-      # missing from the committed subset (would render as raw ligature
-      # text like FLIGHT_TAKEOFF in production). The `npm run build`
-      # script runs this on Vercel and in the build job's Build step; gate
-      # it explicitly here for faster feedback before the remaining checks.
-      - name: Verify Material Symbols subset
-        run: node scripts/verify-material-symbols-font-size.mjs
-
-      # Audit coverage (WAP-18): every app/api/admin/**/route.ts exporting a
-      # mutating method must call auditLog/logAuditEvent (directly or via a
-      # listed audited helper), or sit on the explicit non-persisting
-      # allowlist inside the script. Required gate.
-      - name: Verify admin mutation audit coverage
-        run: node scripts/verify-admin-mutation-audit.cjs
-
-      # Tenant-isolation guardrails. Static-grep check across high-risk
-      # routes — expanded in PR 2 of AUDIT-2026-05-16 to cover the
-      # cross-tenant cluster (§C-T1..§H-T4). Required gate.
-      - name: Verify high-risk tenant routes
-        run: node scripts/verify-high-risk-tenant-routes.cjs
-
-      # Tenant-scoping ratchet (WAP-24). scripts/audit-tenant-scoping.cjs
-      # counts Prisma call sites on tenant-scoped models that are neither
-      # inside withTenantScope nor marked crossTenantOK. The pin below is
-      # the exact count on the day this step landed (2026-09-21); the gate
-      # fails when a PR adds one, and asks for the pin to be lowered when a
-      # PR removes some. Never raise it. Required gate.
-      - name: Verify tenant-scoping ratchet
-        run: node scripts/audit-tenant-scoping.cjs --max-unscoped 679
-
-      # Source-text test retirement contract (WAP-175). A test that reads an
-      # application source file and asserts on its text proves nothing about
-      # behaviour. Today's inventory is frozen in
-      # scripts/source-text-tests-baseline.json; that list may only shrink.
-      - name: Verify no new source-text tests
-        run: node scripts/verify-no-source-text-tests.mjs
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
         run: node scripts/prisma-env.js prisma generate
 
-      - name: Typecheck
-        run: pnpm exec tsc --noEmit
-
+      # WAP-203: every static gate runs through scripts/prepush.mjs, the same
+      # script agents run locally with `npm run prepush`, so the local and CI
+      # lists can't drift. `--ci` runs the whole-repo scope: the guards below
+      # in this order, then `tsc --noEmit`, every part of `npm run lint` and
+      # knip. `node scripts/prepush.mjs --ci --list` prints the plan. Fails
+      # fast; the failing gate is named in the job annotations.
+      #
+      # Migration timestamp history: scripts/check-duplicate-migrations.mjs.
+      #
+      # Source-text test retirement contract (WAP-175). A test that reads an
+      # application source file and asserts on its text proves nothing about
+      # behaviour. Today's inventory is frozen in
+      # scripts/source-text-tests-baseline.json; that list may only shrink.
+      #
+      # Audit coverage (WAP-18): every app/api/admin/**/route.ts exporting a
+      # mutating method must call auditLog/logAuditEvent (directly or via a
+      # listed audited helper), or sit on the explicit non-persisting
+      # allowlist inside the script. Required gate.
+      #
+      # Tenant-isolation guardrails. Static-grep check across high-risk
+      # routes — expanded in PR 2 of AUDIT-2026-05-16 to cover the
+      # cross-tenant cluster (§C-T1..§H-T4). Required gate.
+      #
+      # Tenant-scoping ratchet (WAP-24). scripts/audit-tenant-scoping.cjs
+      # counts Prisma call sites on tenant-scoped models that are neither
+      # inside withTenantScope nor marked crossTenantOK. The pin below
+      # (TENANT_SCOPING_MAX_UNSCOPED) is the exact count on the day this step
+      # landed (2026-09-21); the gate fails when a PR adds one, and asks for
+      # the pin to be lowered when a PR removes some. Never raise it.
+      # scripts/prepush.mjs reads the pin from this line, locally and here.
+      # Required gate.
+      #
+      # Icon font coverage — fails if source uses a Material Symbols icon
+      # missing from the committed subset (would render as raw ligature
+      # text like FLIGHT_TAKEOFF in production). The `npm run build`
+      # script runs this on Vercel and in the build job's Build step; gate
+      # it explicitly here for faster feedback before the remaining checks.
+      #
       # Lint is release-blocking so Vercel cannot strand production on an
       # ESLint error after GitHub CI has already reported success.
-      - name: Lint
-        run: pnpm run lint
-        timeout-minutes: 5
-
+      #
       # Dead-code detection — required gate (WAP-37). `knip.json` tunes the
       # entry points (route handlers, scripts, emails, marketing/) and
       # silences the FlatCompat / dynamic-import false positives. Unused
       # dependencies, unlisted imports, unresolved specifiers and duplicate
       # exports fail the build; unused files / exports / types are still
       # reported as warnings while the reviewed deletion batches land.
-      - name: Dead code (knip)
-        run: pnpm run deadcode
-        timeout-minutes: 5
+      - name: Static gates (scripts/prepush.mjs --ci)
+        run: node scripts/prepush.mjs --ci
+        env:
+          TENANT_SCOPING_MAX_UNSCOPED: "679"
+        timeout-minutes: 12
 
       # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
       # "Typecheck & Build" can only report once every job it needs has
@@ -168,6 +169,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -240,6 +244,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -327,6 +334,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -474,6 +484,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
