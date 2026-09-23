@@ -23,10 +23,11 @@ vi.mock('next/link', () => ({
 
 import MobileBottomNav from '@/components/MobileBottomNav';
 
-function show(superAdmin?: boolean, messages: Record<string, unknown> = en, locale = 'en') {
+function show(superAdmin?: boolean, messages: Record<string, unknown> = en, locale = 'en', search?: string) {
   return render(
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <MobileBottomNav variant="admin" superAdmin={superAdmin} />
+      <MobileBottomNav variant="admin" superAdmin={superAdmin}
+        search={search === undefined ? undefined : new URLSearchParams(search)} />
     </NextIntlClientProvider>,
   );
 }
@@ -57,11 +58,29 @@ describe('admin mobile bottom nav', () => {
     expect(screen.getByRole('link', { name: 'Messages' }).getAttribute('href')).toMatch(/\/admin\/messages$/);
   });
 
-  it('marks Applications current on the workbench pathname, whatever the query string', () => {
+  it.each(['queue=applications', 'queue=applications&page=2'])(
+    'marks Applications current on the Applications workbench (?%s)',
+    (search) => {
+      location.pathname = '/admin/command-center';
+      show(false, en, 'en', search);
+      expect(screen.getByRole('link', { name: 'Applications' })).toHaveAttribute('aria-current', 'page');
+      expect(screen.getByRole('link', { name: 'Today' })).not.toHaveAttribute('aria-current');
+    },
+  );
+
+  it.each(['queue=needs-reply', 'queue=at-risk', 'queue=interviewing', ''])(
+    'marks no tab current on the other workbench views (?%s)',
+    (search) => {
+      location.pathname = '/admin/command-center';
+      show(false, en, 'en', search);
+      for (const link of tabs()) expect(link).not.toHaveAttribute('aria-current');
+    },
+  );
+
+  it('never marks the query-string tab current without the page query', () => {
     location.pathname = '/admin/command-center';
     show(false);
-    expect(screen.getByRole('link', { name: 'Applications' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Today' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Applications' })).not.toHaveAttribute('aria-current');
   });
 
   it.each([['es', es, 'Solicitudes'], ['fr', fr, 'Candidatures'], ['pt', pt, 'Candidaturas']] as const)(

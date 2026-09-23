@@ -13,14 +13,20 @@ import { pickAdminClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import messages from '@/messages/en.json';
 import spanishMessages from '@/messages/es.json';
 
-const location = vi.hoisted(() => ({ pathname: '/dashboard/program', wide: true }));
-vi.mock('next/navigation', () => ({ usePathname: () => location.pathname }));
+const location = vi.hoisted(() => ({ pathname: '/dashboard/program', search: '', wide: true }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => location.pathname,
+  useSearchParams: () => new URLSearchParams(location.search),
+}));
 vi.mock('@/components/super-admin-view-switcher', () => ({ default: () => null, useIsSuperAdmin: () => false }));
 vi.mock('@/components/portal/PortalHeaderActions', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalRoleSwitcher', () => ({ default: () => null }));
 vi.mock('@/components/portal/MemberPortalTopNav', () => ({ default: () => null }));
 vi.mock('@/components/portal/GlobalSearch', () => ({ default: () => null }));
-vi.mock('@/components/MobileBottomNav', () => ({ default: () => null }));
+const bottomNav = vi.hoisted(() => ({ props: null as null | { search?: { get(key: string): string | null } | null } }));
+vi.mock('@/components/MobileBottomNav', () => ({
+  default: (props: { search?: { get(key: string): string | null } | null }) => { bottomNav.props = props; return null; },
+}));
 vi.mock('@/components/portal/LanguageToggle', () => ({ default: () => <span>Language</span> }));
 vi.mock('@/components/theme/ThemeSelector', () => ({
   default: () => <div role="radiogroup" aria-label="Appearance">
@@ -40,6 +46,7 @@ vi.mock('@/hooks/useWorkspaceMobileScrollChrome', () => ({ useWorkspaceMobileScr
 
 beforeEach(() => {
   location.pathname = '/dashboard/program';
+  location.search = '';
   location.wide = true;
   localStorage.clear();
   vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -762,15 +769,36 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(container.querySelector('button[data-section="dailyWork"]')).toBeNull();
   });
 
-  it('marks Applications current on the workbench, whatever its query string, and opens Daily work there', () => {
-    location.pathname = '/en/admin/command-center';
-    const { container } = showAdmin(false);
-    const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
-    expect(current).toHaveLength(1);
-    expect(current[0]).toHaveAttribute('href', '/admin/command-center?queue=applications');
-    expect(current[0]).toHaveTextContent('Applications');
-    expect(current[0].closest('[hidden]')).toBeNull();
-  });
+  it.each(['queue=applications', 'queue=applications&page=2', 'page=3&queue=applications'])(
+    'marks Applications current on the Applications workbench (?%s) and names it in the phone header',
+    (search) => {
+      location.pathname = '/en/admin/command-center';
+      location.search = search;
+      const { container } = showAdmin(false);
+      const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
+      expect(current).toHaveLength(1);
+      expect(current[0]).toHaveAttribute('href', '/admin/command-center?queue=applications');
+      expect(current[0]).toHaveTextContent('Applications');
+      expect(current[0].closest('[hidden]')).toBeNull();
+      expect(container.querySelector('.workspace-shell-current-page')).toHaveTextContent('Applications');
+      // The phone tab bar matches on the same query as the rail.
+      expect(bottomNav.props?.search?.get('queue')).toBe('applications');
+    },
+  );
+
+  // Today's "conversations need a reply" / "interview prep" / risk rows and
+  // the workbench's "All queues" link open these URLs: none is Applications.
+  it.each(['queue=needs-reply', 'queue=at-risk', 'queue=interviewing', 'queue=interviewing&page=2', ''])(
+    'marks nothing current on the other workbench views (?%s)',
+    (search) => {
+      location.pathname = '/en/admin/command-center';
+      location.search = search;
+      const { container } = showAdmin(false);
+      expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(0);
+      expect(container.querySelectorAll('.workspace-sidebar-link.active')).toHaveLength(0);
+      expect(container.querySelector('.workspace-shell-current-page')).toBeNull();
+    },
+  );
 
   it('toggles a section by click, Enter and arrow keys, and persists the choice in localStorage', async () => {
     const user = userEvent.setup();

@@ -54,9 +54,18 @@ export type AdminCommandCenterTotals = {
   needsReplyCount: number;
   atRiskCount: number;
   interviewingCount: number;
+  /** The workbench population: PENDING + NEEDS_INFO, every live account ({@link adminWorkbenchApplicationsWhere}). */
   applicationsPendingCount: number;
   certificationsPendingCount: number;
   oldestPendingApplicationDays: number | null;
+  /**
+   * The same applications from member accounts only, split by who moves
+   * next: `decision` is PENDING, the Applications rail badge and the admin
+   * Today "waiting on your decision" number; `applicant` is NEEDS_INFO
+   * (lib/admin/adminApprovalQueue.ts where builders). Absent when the loader
+   * did not count them.
+   */
+  applicationsWaitingOn?: { decision: number; applicant: number };
 };
 
 /**
@@ -183,6 +192,26 @@ export function adminWorkbenchApplicationsWhere(orgId: string): Prisma.Applicati
 /** Workbench order: oldest submission first (undated first), then creation, then id. */
 export function adminWorkbenchApplicationsOrderBy(): Prisma.ApplicationOrderByWithRelationInput[] {
   return [{ submittedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }, { id: 'asc' }];
+}
+
+/**
+ * The line under the workbench's "Applications Pending" count (WAP-190), so
+ * the Applications badge an admin clicked is on the screen it opens:
+ * "3 waiting on your decision · 2 waiting on the applicant · 2 from staff or
+ * test accounts". The last part is whatever the member-only split leaves of
+ * the workbench total and is left out when that is zero.
+ */
+export function adminWorkbenchApplicationsSplitCopy(
+  workbenchTotal: number,
+  waitingOn: { decision: number; applicant: number },
+): string {
+  const parts = [
+    `${waitingOn.decision} waiting on your decision`,
+    `${waitingOn.applicant} waiting on the applicant`,
+  ];
+  const otherAccounts = workbenchTotal - waitingOn.decision - waitingOn.applicant;
+  if (otherAccounts > 0) parts.push(`${otherAccounts} from staff or test accounts`);
+  return parts.join(' · ');
 }
 
 /** `id` prefix of each application card on the workbench, so a link can land on one card. */

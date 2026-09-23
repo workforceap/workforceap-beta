@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { Pagination } from '@astryxdesign/core/Pagination';
-import { adminApplicationCardId, adminQueueHref, type AdminQueueKey } from '@/lib/admin/commandCenterHelpers';
+import {
+  adminApplicationCardId,
+  adminQueueHref,
+  adminWorkbenchApplicationsSplitCopy,
+  type AdminQueueKey,
+} from '@/lib/admin/commandCenterHelpers';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import ApplicantTriageChip from '@/components/admin/ApplicantTriageChip';
 import type {
@@ -191,7 +196,10 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
           {data.interviewing.map((row) => <InterviewingCard key={`${row.memberId}-${row.company}-${row.role}`} row={row} />)}
         </Bucket>}
 
-        {showQueue('applications') && <Bucket queue="applications" pagination={pagination} title="Applications Pending" count={data.totals.applicationsPendingCount} icon="assignment_ind" empty="No applications are waiting for review.">
+        {showQueue('applications') && <Bucket queue="applications" pagination={pagination} title="Applications Pending" count={data.totals.applicationsPendingCount} icon="assignment_ind" empty="No applications are waiting for review."
+          summary={data.totals.applicationsWaitingOn && data.totals.applicationsPendingCount > 0
+            ? adminWorkbenchApplicationsSplitCopy(data.totals.applicationsPendingCount, data.totals.applicationsWaitingOn)
+            : undefined}>
           {data.applicationsPending.length > 0 ? (
             <div
               style={{
@@ -330,9 +338,11 @@ function Metric({ label, value, accent }: { label: string; value: number; accent
   );
 }
 
-function Bucket({ title, count, icon, empty, children, queue, pagination }: {
+function Bucket({ title, count, icon, empty, children, queue, pagination, summary }: {
   title: string; count: number; icon: string; empty: string; children: React.ReactNode;
   queue: AdminQueueKey; pagination?: AdminCommandCenter['pagination'];
+  /** One line under the header that breaks `count` down (Applications: who moves next). */
+  summary?: string;
 }) {
   const router = useRouter();
   return (
@@ -342,6 +352,11 @@ function Bucket({ title, count, icon, empty, children, queue, pagination }: {
         <h2 style={{ flex: 1, margin: 0, fontSize: '1rem', fontWeight: 800 }}>{title}</h2>
         <span aria-label={pluralCount(count, 'item')} style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
       </header>
+      {summary ? (
+        <p data-testid={`bucket-summary-${queue}`} style={{ margin: '0 0 0.9rem', color: 'var(--color-on-surface-variant)', fontSize: '0.875rem' }}>
+          {summary}
+        </p>
+      ) : null}
       {count === 0 ? (
         <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>{empty}</p>
       ) : (

@@ -173,7 +173,7 @@ test('admin rail: Daily work is the first, always-open section and holds exactly
   ]);
 });
 
-test('admin rail: Today keeps the home anchor; Applications opens the decision workbench and lights on every workbench URL', () => {
+test('admin rail: Today keeps the home anchor; Applications opens the decision workbench and lights on its own queue only', () => {
   const byHref = new Map(ADMIN_PORTAL_NAV_ITEMS.map((item) => [item.href, item]));
   const today = byHref.get('/admin');
   assert.equal(today?.label, 'Today');
@@ -184,11 +184,19 @@ test('admin rail: Today keeps the home anchor; Applications opens the decision w
   assert.ok(applications, 'Applications row');
   assert.ok(!applications.requiresSuperAdminContext, 'org admins decide applications too');
   assert.equal(applications.badgeKey, 'admin_applications_pending');
-  assert.deepEqual(applications.aliases, ['/admin/command-center']);
-  // Active matching is pathname-only: the query-string href never matches a
-  // pathname, so the alias is what marks the row current.
+  // No bare-pathname alias: it would light Applications on every workbench
+  // queue and on the metrics view "All queues" opens.
+  assert.equal(applications.aliases, undefined);
   const links = navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS);
-  assert.equal(getBestActiveHref('/admin/command-center', links), '/admin/command-center?queue=applications');
+  const at = (query: string) => getBestActiveHref('/admin/command-center', links, new URLSearchParams(query));
+  assert.equal(at('queue=applications'), '/admin/command-center?queue=applications');
+  assert.equal(at('queue=applications&page=2'), '/admin/command-center?queue=applications');
+  assert.equal(at('page=3&queue=applications&ui=legacy'), '/admin/command-center?queue=applications');
+  for (const query of ['queue=needs-reply', 'queue=at-risk', 'queue=interviewing', 'queue=interviewing&page=2', '', 'ui=legacy']) {
+    assert.equal(at(query), null, `?${query} marks no rail row`);
+  }
+  // Without the page's query (pathname-only callers) the query-string row never matches.
+  assert.equal(getBestActiveHref('/admin/command-center', links), null);
   assert.equal(getBestActiveHref('/admin', links), '/admin');
   assert.equal(getBestActiveHref('/admin/wioa-screening', links), '/admin/wioa-screening');
   assert.equal(getBestActiveHref('/admin/certifications', links), '/admin/certifications');

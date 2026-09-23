@@ -423,9 +423,10 @@ export const GROUP_PORTAL_NAV_ITEMS: PortalNavItem[] = [];
  *
  * `/admin` IS the admin home, "Today" (renders CommandCenterKit with the
  * org-wide decision list on top). Applications points at the workbench
- * `/admin/command-center?queue=applications`; active matching is pathname
- * only (lib/nav/activeRoute.ts), so its `/admin/command-center` alias is what
- * lights it on every workbench URL. `tourTarget`s are the admin.home
+ * `/admin/command-center?queue=applications` and is current only while the
+ * URL carries `queue=applications` (lib/nav/activeRoute.ts reads the query of
+ * a query-string href), so the needs-reply / at-risk / interviewing queues and
+ * the bare metrics view mark no row. `tourTarget`s are the admin.home
  * guided-tour anchors (lib/tours/registry.ts); all seven sit on top-level rows.
  *
  * Reporting: ONE row points at the reporting hub `/admin/reporting` (built by the
@@ -440,8 +441,9 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     label: 'Applications',
     group: 'dailyWork',
     Icon: ClipboardCheck,
-    aliases: ['/admin/command-center'],
-    // PENDING applications in the org, the "waiting on your decision" number on Today.
+    // No pathname alias: the row is current on `?queue=applications` (any
+    // page) only, never on the other workbench queues or the bare metrics view.
+    // Badge: PENDING applications in the org, the "waiting on your decision" number on Today.
     badgeKey: 'admin_applications_pending',
   },
   { href: '/admin/wioa-screening', label: 'Funding eligibility', group: 'dailyWork', Icon: ClipboardList },

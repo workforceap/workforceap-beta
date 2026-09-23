@@ -122,7 +122,7 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
   Admin sections (queue-first rail, WAP-190): **Daily work** (always open) · Run the org · Programs ·
   Partners & Employers · Reporting · Content · Security & system. Daily work holds the queue-clearing rows:
   Today (`/admin`, exact, `tour-command-center`) · Applications (`/admin/command-center?queue=applications`,
-  alias `/admin/command-center`, badge `admin_applications_pending`) · Funding eligibility · Certificates ·
+  no alias, badge `admin_applications_pending`) · Funding eligibility · Certificates ·
   Program requests · Students (`tour-students`; Subgroups, In-office sessions ⚿, Applications funnel ⚿,
   Find duplicate students ⚿ and Invites nest under it) · Messages ⚿ (Feedback ⚿). Run the org keeps
   Detailed overview. Reporting is one row → `/admin/reporting` with the analytics/outcomes/board pages
@@ -130,8 +130,11 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
 - `requiresSuperAdminContext: true` items are filtered out for non-super-admins in `AdminPortalShell`.
 - Active-route: `lib/nav/activeRoute.ts` (`isActiveRoute`, `getBestActiveHref` = longest matching
   prefix). **WorkspaceShell strips the locale prefix** (`/en`) off `usePathname()` before matching —
-  without that, nothing highlights (hrefs are locale-less). Matching is pathname-only: a query-string
-  href (Applications) never matches by itself, so it carries a pathname alias.
+  without that, nothing highlights (hrefs are locale-less). A query-string href (Applications) also
+  matches the page query: it is current only while the URL carries every parameter it names
+  (`queue=applications`, any `page`), so the needs-reply / at-risk / interviewing queues and the bare
+  metrics view mark no row. WorkspaceShell passes `useSearchParams()` to `getBestActiveHref` and on to
+  `MobileBottomNav` (`search`), so the rail, the phone header's page name and the phone tab agree.
 
 ### 4a. The admin home, Today (`/admin`)
 
@@ -147,10 +150,12 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
   the record's Counselor assignment card), replies owed, risk alerts, quiet 30+ days, interview prep.
 - Then the KPI strip, placements trend and program / system context. `?ui=legacy` is unchanged.
 - The Applications workbench's own count (`getAdminCommandCenter`) is not member-filtered, so it can be
-  higher than Today's by the staff / QA accounts with open applications.
+  higher than Today's by the staff / QA accounts with open applications. The line under it reads the
+  badge's split in the same snapshot: "N waiting on your decision · M waiting on the applicant · K from
+  staff or test accounts" (`totals.applicationsWaitingOn`, `adminWorkbenchApplicationsSplitCopy`).
 - Landing: super_admin sign-in keeps `/admin/*` deep links (`lib/auth/postLoginRedirect.ts`); the weekly
-  applicant-aging digest links `/admin/command-center?queue=applications`; `/pwa-start` sends admin before
-  counselor. Phone tabs: Today · Students · Messages for super-admins, Today · Students · Applications for
+  applicant-aging digest links `/admin/command-center?queue=applications`. `/pwa-start` (the installed
+  app's `start_url`) is unchanged: it still checks counselor before admin. Phone tabs: Today · Students · Messages for super-admins, Today · Students · Applications for
   org admins (`components/MobileBottomNav.tsx`).
 
 ---
