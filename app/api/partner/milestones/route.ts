@@ -3,6 +3,7 @@ import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { loadPartnerReferralBundle } from '@/lib/partner/referralBundle';
+import { partnerMilestoneEventNameCandidates } from '@/lib/partner/milestoneEvents';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -83,8 +84,15 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       : members.map((m) => m.id);
   
     if (ids.length > 0) {
-      const eventWhere: { userId: { in: string[] }; createdAt?: { gte?: Date; lte?: Date } } = {
+      // Milestone events only (WAP-214): logins, page views and tool runs are
+      // not milestones, and the rail badge counts this same list.
+      const eventWhere: {
+        userId: { in: string[] };
+        eventName: { in: string[] };
+        createdAt?: { gte?: Date; lte?: Date };
+      } = {
         userId: { in: ids },
+        eventName: { in: partnerMilestoneEventNameCandidates() },
       };
       if (fromDate || toDate) {
         eventWhere.createdAt = {};
