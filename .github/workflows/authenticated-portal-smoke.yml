@@ -38,10 +38,10 @@ concurrency:
 
 jobs:
   demo_probe:
-    name: Classify stored DEMO credentials without exposing values
+    name: Classify DEMO and Vercel Preview credential targets
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
       inputs.audit_target == 'demo_probe'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -58,6 +58,9 @@ jobs:
           PREVIEW_POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
           PREVIEW_DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
           PREVIEW_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           node <<'NODE'
           const { projectForUrl } = require('./scripts/lib/supabase-project-guard.cjs');
@@ -71,7 +74,29 @@ jobs:
               headers: { apikey: key, Authorization: `Bearer ${key}` },
             });
             console.log(`DEMO Auth admin list status: ${response.status}`);
-          })().catch(() => { console.log('DEMO Auth admin list request failed.'); process.exitCode = 1; });
+            const { VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID } = process.env;
+            if (VERCEL_ORG_ID !== 'team_zTfMkbIIH6ADgy5Hy43MCM5K' ||
+                VERCEL_PROJECT_ID !== 'prj_pfOpwxedCID96oF2hlaE5J7kbNid' || !VERCEL_TOKEN) {
+              throw new Error('Vercel metadata scope preflight failed.');
+            }
+            const endpoint = new URL(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env`);
+            endpoint.searchParams.set('teamId', VERCEL_ORG_ID);
+            const varsResponse = await fetch(endpoint, { headers: { Authorization: `Bearer ${VERCEL_TOKEN}` } });
+            console.log(`Vercel Preview env metadata status: ${varsResponse.status}`);
+            if (!varsResponse.ok) return;
+            const body = await varsResponse.json();
+            const vars = Array.isArray(body) ? body : (body.envs ?? []);
+            const names = new Set(['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY',
+              'POSTGRES_PRISMA_URL', 'POSTGRES_URL_NON_POOLING', 'DATABASE_URL']);
+            for (const item of vars) {
+              if (!names.has(item.key) || !Array.isArray(item.target) || !item.target.includes('preview') ||
+                  (item.gitBranch && item.gitBranch !== 'preview')) continue;
+              const scope = item.gitBranch === 'preview' ? 'branch' : 'general';
+              const classification = item.key.includes('URL') || item.key === 'DATABASE_URL'
+                ? projectForUrl(item.value) : 'not-a-url';
+              console.log(`Vercel ${item.key}: ${scope} ${item.type}/${item.visibility ?? 'legacy'} ${classification}`);
+            }
+          })().catch(() => { console.log('DEMO credential metadata probe failed.'); process.exitCode = 1; });
           NODE
 
   # Temporary, tag-bound DEMO setup. This workflow path already exists on
@@ -81,7 +106,7 @@ jobs:
     name: Create guarded DEMO portal QA fixtures once
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
       inputs.audit_target == 'demo_provision'
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -131,7 +156,7 @@ jobs:
     name: Set Preview-branch audit token only
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
       inputs.audit_target == 'demo_env'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -178,7 +203,7 @@ jobs:
     name: Audit exact master SHA on DEMO Preview with isolated credentials
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
       inputs.audit_target == 'demo_audit'
     runs-on: ubuntu-latest
     timeout-minutes: 55
