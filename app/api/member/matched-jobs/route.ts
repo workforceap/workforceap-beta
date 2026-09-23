@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import {
   MATCH_WEIGHTS,
   scoreProgramAlignment,
@@ -42,6 +43,7 @@ export const GET = withApiGuc(async () => {
       where: {
         status: 'live',
         AND: [
+          ACTIVE_EMPLOYER_JOB_WHERE,
           {
             OR: [
               { expiresAt: null },

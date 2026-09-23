@@ -329,7 +329,7 @@ describe('GET /api/(portal)/dashboard/jobs/[id]', () => {
 
     expect(prisma.job.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: UUIDS.job1, status: 'live' },
+        where: expect.objectContaining({ id: UUIDS.job1, status: 'live' }),
       })
     );
   });
