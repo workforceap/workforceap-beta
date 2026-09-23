@@ -95,6 +95,33 @@ export default async function DevMemberHomePage({
         variant: 'urgent',
         weight: 100,
       }}
+      upNext={[
+        {
+          id: 'interview_practice',
+          title: 'Practice your interview answers',
+          body: 'Use guided interview practice to prepare for recruiter screens and counselor interviews.',
+          href: '/dev/member/interview-practice',
+          cta: 'Practice interviews',
+          variant: 'default',
+          weight: 72,
+        },
+        {
+          id: 'career_readiness',
+          title: 'Build your job readiness plan',
+          body: 'Review your readiness checklist so applications, interview prep, and counselor guidance stay in sync.',
+          href: '/dev/member/progress',
+          cta: 'Open readiness',
+          variant: 'default',
+          weight: 68,
+        },
+      ]}
+      recommendedTool={{
+        slug: 'interview-prep',
+        title: 'Get ready for your interview',
+        body: 'You have an interview or screening in your tracker. Pull your resume, pitch and practice answers into one page to review before it.',
+        href: '/dev/member/interview-prep',
+        cta: 'Open interview prep',
+      }}
       courseSpark={{ series: [70, 71, 72, 74, 74, 76, 78], delta: '4%', direction: 'up' }}
       activeJobsSpark={{ series: [2, 3, 3, 3, 4, 4, 4], delta: '1', direction: 'up' }}
       certsSpark={{ series: [1, 1, 1, 1, 1, 2, 2] }}

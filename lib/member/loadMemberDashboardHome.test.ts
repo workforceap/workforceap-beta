@@ -1047,3 +1047,122 @@ test('the home view carries no wait estimate and names the awaited step from the
   assert.deepEqual(missing.counselorContext, { counselor: null, waitEstimate: null, awaiting: null });
   assert.equal(missing.organizationId, null);
 });
+
+/**
+ * "Up next" + the recommended tool read real facts from the same user read
+ * (resume on file, unread counselor messages, interview practice, placement)
+ * instead of the constants the kit home used to pass. `mockDb` projects the
+ * fixture through the real `select`, so dropping any of those relations from
+ * `userSelect()` fails these.
+ */
+const readyToTrain = (overrides: Record<string, unknown> = {}) =>
+  makeRow({
+    nextBestActions: [],
+    assessmentCompleted: true,
+    applications: [{ status: 'APPROVED', submittedAt: null }],
+    jobApplications: [],
+    ...overrides,
+  });
+
+test('up next: a member with no resume and no practice sees both, never the hero or the counselor floor twice', async () => {
+  const { db, counts } = mockDb({ row: readyToTrain() });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.doThisNext?.id, 'continue_training');
+  const ids = view.upNext.map((action) => action.id);
+  assert.deepEqual(ids, ['upload_resume', 'interview_practice', 'career_readiness']);
+  assert.ok(!ids.includes(view.doThisNext!.id));
+  assert.ok(!ids.includes('default_counselor'));
+  const paths = [view.doThisNext!.href, ...view.upNext.map((a) => a.href)].map((href) => href.split('?')[0]);
+  assert.equal(new Set(paths).size, paths.length, 'no two rows open the same page');
+  // Both matching tools are already rows, so the tool card does not repeat them.
+  assert.equal(view.recommendedTool, null);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+});
+
+test('up next: a saved resume and a finished practice session retire those rows', async () => {
+  const { db } = mockDb({
+    row: readyToTrain({
+      profile: { resumeOriginalPath: 'member-files/u1/resume.pdf', resumeEnhancedPath: null },
+      memberEvents: [{ id: 'evt-1' }],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  const ids = view.upNext.map((action) => action.id);
+  assert.ok(!ids.includes('upload_resume'), ids.join(','));
+  assert.ok(!ids.includes('interview_practice'), ids.join(','));
+  assert.equal(view.recommendedTool?.slug, 'job-match-scorer');
+});
+
+test('up next: unread counselor messages count only what arrived after the member last read', async () => {
+  const { db } = mockDb({
+    row: readyToTrain({
+      messageThreadsAsMember: [
+        {
+          memberLastReadAt: daysAgo(2),
+          messages: [{ createdAt: daysAgo(0) }, { createdAt: daysAgo(1) }, { createdAt: daysAgo(3) }],
+        },
+      ],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  // Weight 88 outranks continuing training (86): a reply waiting is the next thing.
+  assert.equal(view.doThisNext?.id, 'counselor_messages');
+  assert.match(view.doThisNext?.body ?? '', /2 unread messages/);
+});
+
+test('up next: a thread with nothing unread adds no messages row', async () => {
+  const { db } = mockDb({
+    row: readyToTrain({
+      messageThreadsAsMember: [{ memberLastReadAt: daysAgo(0), messages: [{ createdAt: daysAgo(1) }] }],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.notEqual(view.doThisNext?.id, 'counselor_messages');
+  assert.ok(!view.upNext.some((action) => action.id === 'counselor_messages'));
+});
+
+test('recommended tool: an interview in the pipeline names interview prep', async () => {
+  const { db } = mockDb({ row: makeRow({ nextBestActions: [] }) });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.pipeline[0]?.stage, 'Interviewing');
+  assert.equal(view.recommendedTool?.slug, 'interview-prep');
+});
+
+test('placement: a separated member is steered back to jobs; a working one gets no tool', async () => {
+  const separated = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: readyToTrain({
+        placementRecord: { placedAt: daysAgo(120), retentionDecision: 'not_retained', retentionStatus: null },
+      }),
+    }).db,
+  );
+  assert.equal(separated.doThisNext?.id, 'placement_job_loss_reactivate');
+  assert.equal(separated.recommendedTool?.slug, 'job-match-scorer');
+
+  const working = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: readyToTrain({
+        placementRecord: { placedAt: daysAgo(10), retentionDecision: null, retentionStatus: null },
+      }),
+    }).db,
+  );
+  assert.equal(working.recommendedTool, null);
+});
+
+test('a persisted action keeps the hero and the heuristics fill the rows beneath it', async () => {
+  const { db } = mockDb({ row: makeRow({ assessmentCompleted: true, jobApplications: [] }) });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.doThisNext?.id, 'nba-1');
+  // The persisted hero already opens My Program, so continue_training is not repeated.
+  assert.ok(!view.upNext.some((action) => action.href.split('?')[0] === view.doThisNext!.href));
+  assert.ok(view.upNext.length > 0);
+});
+
+test('the zeroed view has no rows beyond the hero and names no tool', async () => {
+  const view = await loadMemberDashboardHome({ userId: 'ghost' }, mockDb({ row: null }).db);
+  assert.equal(view.doThisNext?.id, 'choose_program');
+  assert.equal(view.recommendedTool, null);
+  assert.ok(!view.upNext.some((action) => action.id === 'default_counselor'));
+});

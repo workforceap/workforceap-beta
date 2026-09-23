@@ -145,3 +145,61 @@ describe('MemberHomeKit Course tile warning', () => {
     expect(courseTileTone()).toBe('ok');
   });
 });
+
+describe('MemberHomeKit up next + recommended tool', () => {
+  const upNext = [
+    {
+      id: 'upload_resume',
+      title: 'Add your resume',
+      body: 'Upload a resume so employers and AI tools can tailor help to your background.',
+      href: '/dashboard/ai-tools/resume-studio?view=rewrite',
+      cta: 'Try resume rewriter',
+      variant: 'default' as const,
+      weight: 80,
+    },
+    {
+      id: 'career_readiness',
+      title: 'Build your job readiness plan',
+      body: 'Review your readiness checklist.',
+      href: '/dashboard/readiness',
+      cta: 'Open readiness',
+      variant: 'default' as const,
+      weight: 68,
+    },
+  ];
+  const recommendedTool = {
+    slug: 'interview-prep',
+    title: 'Get ready for your interview',
+    body: 'You have an interview or screening in your tracker.',
+    href: '/dashboard/ai-tools/interview-prep',
+    cta: 'Open interview prep',
+  };
+
+  it('lists each next step as one link to its page, in order', () => {
+    renderKit(<MemberHomeKit {...base} upNext={upNext} />);
+    const list = screen.getByRole('list', { name: 'Up next' });
+    const links = Array.from(list.querySelectorAll('a'));
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([
+      '/dashboard/ai-tools/resume-studio?view=rewrite',
+      '/dashboard/readiness',
+    ]);
+    expect(links[0]?.textContent).toContain('Add your resume');
+    expect(links[0]?.textContent).toContain('Try resume rewriter');
+  });
+
+  it('names the recommended tool and keeps the way to every tool', () => {
+    renderKit(<MemberHomeKit {...base} upNext={upNext} recommendedTool={recommendedTool} />);
+    const card = screen.getByTestId('recommended-tool');
+    expect(card.getAttribute('data-tool')).toBe('interview-prep');
+    expect(screen.getByRole('link', { name: /Open interview prep/ }).getAttribute('href')).toBe(
+      '/dashboard/ai-tools/interview-prep',
+    );
+    expect(screen.getByRole('link', { name: 'All AI Career Tools' }).getAttribute('href')).toBe('/dashboard/ai-tools');
+  });
+
+  it('renders neither block when the loader has nothing to add', () => {
+    renderKit(<MemberHomeKit {...base} />);
+    expect(screen.queryByRole('list', { name: 'Up next' })).toBeNull();
+    expect(screen.queryByTestId('recommended-tool')).toBeNull();
+  });
+});

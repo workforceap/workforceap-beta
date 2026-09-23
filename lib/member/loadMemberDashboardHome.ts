@@ -29,6 +29,7 @@ import {
 } from '@/lib/member/memberPointsTrend';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { buildNextBestActions, type NextBestAction } from '@/lib/member/nextBestActions';
+import { recommendMemberTool, type MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import {
   digitalLiteracyFirstModuleHref,
@@ -170,6 +171,14 @@ export type MemberDashboardHomeView = {
   toolkitHref: string;
   jobsHref: string;
   doThisNext: NextBestAction | null;
+  /**
+   * The next few steps after `doThisNext`, from the same heuristics, so the
+   * home says more than one true thing. Never repeats the hero, never the
+   * always-present "talk to your counselor" floor.
+   */
+  upNext: NextBestAction[];
+  /** One AI Career Tools pick for the member's stage; null when none fits. */
+  recommendedTool: MemberToolRecommendation | null;
   /** Always the Digital Literacy lesson-1 URL; the kit shows it when no program is enrolled. */
   ungatedDigitalBasicsHref: string;
   /** Prisma client operations issued by this call (happy path ≤ budget). */
@@ -197,7 +206,29 @@ type DashboardUserRow = MemberApprovalFacts & {
   organizationId?: string;
   counselorAssignments?: AssignedCounselorRow[];
   phone?: string | null;
-  profile?: { profilePhone: string | null; profileAddress: string | null; city: string | null; state: string | null; zip: string | null; referralSource: string | null } | null;
+  profile?: {
+    profilePhone: string | null;
+    profileAddress: string | null;
+    city: string | null;
+    state: string | null;
+    zip: string | null;
+    referralSource: string | null;
+    resumeOriginalPath?: string | null;
+    resumeEnhancedPath?: string | null;
+  } | null;
+  /** The member's own counselor thread (memberId is unique, so 0 or 1 rows). */
+  messageThreadsAsMember?: Array<{
+    memberLastReadAt: Date | null;
+    /** Newest messages written by someone other than the member. */
+    messages: Array<{ createdAt: Date }>;
+  }>;
+  /** 0 or 1 row: has the member ever finished an interview practice session. */
+  memberEvents?: Array<{ id: string }>;
+  placementRecord?: {
+    placedAt: Date | null;
+    retentionDecision: string | null;
+    retentionStatus: string | null;
+  } | null;
   fullName: string | null;
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
@@ -391,7 +422,7 @@ function dashboardHomeStateLetter(args: {
   return 'C';
 }
 
-function fallbackDashboardHomeAction(args: {
+type DashboardHomeActionFacts = {
   noApplicationOnFile?: boolean;
   starterProfileReviewRequired?: boolean;
   starterProfileMissingFields?: string[];
@@ -403,8 +434,22 @@ function fallbackDashboardHomeAction(args: {
   trainingCoursesIncomplete: boolean;
   nextIncompleteCourseName: string | null;
   allCoursesComplete: boolean;
-}): NextBestAction {
-  const actions = buildNextBestActions({
+  /**
+   * Real engagement facts from the same user read. Optional only for the
+   * zeroed view (no user row), where "nothing to nag about" is the honest
+   * default. Profile completeness and the weekly recap stay off this path:
+   * the first needs the full profile scorer, the second a week-bounds read.
+   */
+  hasResume?: boolean;
+  hasCompletedInterviewPractice?: boolean;
+  counselorUnreadCount?: number;
+  placementPlacedAt?: Date | null;
+  placementRetentionDecision?: string | null;
+  placementSeparated?: boolean;
+};
+
+function computeDashboardHomeActions(args: DashboardHomeActionFacts): NextBestAction[] {
+  return buildNextBestActions({
     state: dashboardHomeStateLetter(args),
     noApplicationOnFile: args.noApplicationOnFile ?? false,
     enrolledProgram: args.enrolledProgram,
@@ -412,51 +457,81 @@ function fallbackDashboardHomeAction(args: {
     completedCourseCount: args.completedCourseCount,
     starterProfileReviewRequired: args.starterProfileReviewRequired,
     starterProfileMissingFields: args.starterProfileMissingFields,
-    hasResume: true,
+    hasResume: args.hasResume ?? true,
+    hasCompletedInterviewPractice: args.hasCompletedInterviewPractice ?? true,
     profileCompletenessPct: 100,
     jobApplicationCount: args.jobApplicationCount,
-    counselorUnreadCount: 0,
+    counselorUnreadCount: args.counselorUnreadCount ?? 0,
     weeklyRecapUnopened: false,
     courseEnrollmentActive: args.courseEnrollmentActive,
     trainingCoursesIncomplete: args.trainingCoursesIncomplete,
     nextIncompleteCourseName: args.nextIncompleteCourseName,
+    placementPlacedAt: args.placementPlacedAt ?? null,
+    placementRetentionDecision: args.placementRetentionDecision ?? null,
+    placementSeparated: args.placementSeparated ?? false,
   });
-  return actions[0]!;
 }
 
-function resolveDashboardHomeNextAction(args: {
-  persisted: DashboardUserRow['nextBestActions'];
-  noApplicationOnFile?: boolean;
-  starterProfileReviewRequired?: boolean;
-  starterProfileMissingFields?: string[];
-  enrolledProgram: string | null;
-  assessmentCompleted: boolean;
-  courseEnrollmentActive: boolean;
-  completedCourseCount: number;
-  jobApplicationCount: number;
-  trainingCoursesIncomplete: boolean;
-  nextIncompleteCourseName: string | null;
-  allCoursesComplete: boolean;
-}): NextBestAction {
+/** Rows shown under the hero; the hero plus these make the four actions `buildNextBestActions` returns. */
+const UP_NEXT_LIMIT = 3;
+
+/** `/a/b?x=1#y` → `/a/b`: two rows that open the same page are one step. */
+function hrefPath(href: string): string {
+  return href.split(/[?#]/)[0] ?? href;
+}
+
+/**
+ * Hero + "Up next" from one ranked list. A persisted (staff- or cron-written)
+ * action still wins the hero; the heuristics then fill the rows beneath it.
+ * Rows never repeat a page already on screen, and never show the
+ * "talk to your counselor" floor — it exists so the hero is never blank, and
+ * Messages is one tap away in the rail.
+ */
+function resolveDashboardHomeActions(
+  args: DashboardHomeActionFacts & { persisted: DashboardUserRow['nextBestActions'] },
+): { doThisNext: NextBestAction; upNext: NextBestAction[] } {
+  const computed = computeDashboardHomeActions(args);
   const persisted = args.persisted[0];
-  if (persisted) {
-    return {
-      id: persisted.id,
-      title: persisted.title,
-      body: persisted.description,
-      href: resolveMemberProgramHref(persisted.ctaHref),
-      cta: persisted.ctaLabel,
-      variant: 'urgent',
-      weight: persisted.priority + 100,
-    };
+  const doThisNext: NextBestAction = persisted
+    ? {
+        id: persisted.id,
+        title: persisted.title,
+        body: persisted.description,
+        href: resolveMemberProgramHref(persisted.ctaHref),
+        cta: persisted.ctaLabel,
+        variant: 'urgent',
+        weight: persisted.priority + 100,
+      }
+    : computed[0]!;
+
+  const shownPaths = new Set([hrefPath(doThisNext.href)]);
+  const upNext: NextBestAction[] = [];
+  for (const action of computed) {
+    if (upNext.length >= UP_NEXT_LIMIT) break;
+    if (action.id === doThisNext.id || action.id === 'default_counselor') continue;
+    const path = hrefPath(action.href);
+    if (shownPaths.has(path)) continue;
+    shownPaths.add(path);
+    upNext.push(action);
   }
-  return fallbackDashboardHomeAction(args);
+  return { doThisNext, upNext };
+}
+
+/** Counselor-thread messages the member has not read, from the nested thread read. */
+export function countUnreadCounselorMessages(
+  thread: { memberLastReadAt: Date | null; messages: Array<{ createdAt: Date }> } | undefined,
+): number {
+  if (!thread) return 0;
+  const readAt = thread.memberLastReadAt?.getTime();
+  if (readAt === undefined) return thread.messages.length;
+  return thread.messages.filter((message) => message.createdAt.getTime() > readAt).length;
 }
 
 function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashboardHomeView {
   const firstName = displayFirstName(null, fallbackDisplayName);
   const badge = deriveNextBadge({ totalPoints: 0, certCount: 0 });
-  const doThisNext = fallbackDashboardHomeAction({
+  const { doThisNext, upNext } = resolveDashboardHomeActions({
+    persisted: [],
     enrolledProgram: null,
     assessmentCompleted: false,
     courseEnrollmentActive: false,
@@ -494,6 +569,9 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     toolkitHref: '/dashboard/ai-tools',
     jobsHref: '/dashboard/jobs',
     doThisNext,
+    upNext,
+    // No user row: nothing is known about the member's stage, so name no tool.
+    recommendedTool: null,
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
     prismaOpCount: 1,
   };
@@ -578,7 +656,20 @@ function shapeHome(args: {
     phone: args.row.phone,
     ...args.row.profile,
   });
-  const doThisNext = resolveDashboardHomeNextAction({
+  const hasResume = Boolean(args.row.profile?.resumeOriginalPath || args.row.profile?.resumeEnhancedPath);
+  const hasCompletedInterviewPractice = (args.row.memberEvents?.length ?? 0) > 0;
+  const placement = args.row.placementRecord ?? null;
+  const placementSeparated = Boolean(
+    placement &&
+      (placement.retentionDecision === 'not_retained' || placement.retentionStatus === 'separated'),
+  );
+  const { doThisNext, upNext } = resolveDashboardHomeActions({
+    hasResume,
+    hasCompletedInterviewPractice,
+    counselorUnreadCount: countUnreadCounselorMessages(args.row.messageThreadsAsMember?.[0]),
+    placementPlacedAt: placement?.placedAt ?? null,
+    placementRetentionDecision: placement?.retentionDecision ?? null,
+    placementSeparated,
     noApplicationOnFile: args.row.applications ? args.row.applications.length === 0 : false,
     starterProfileReviewRequired: starterReview.required,
     starterProfileMissingFields: getStarterProfileFieldLabels(starterReview.missing),
@@ -592,6 +683,19 @@ function shapeHome(args: {
     nextIncompleteCourseName: nextIncompleteCourse?.name ?? null,
     allCoursesComplete,
   });
+
+  const recommendedTool = recommendMemberTool(
+    {
+      enrolledProgram: assignedSlug,
+      assessmentCompleted: args.row.assessmentCompleted,
+      hasResume,
+      hasCompletedInterviewPractice,
+      openApplicationStatuses: args.row.jobApplications.map((job) => job.status),
+      placed: Boolean(placement?.placedAt) && !placementSeparated,
+      placementSeparated,
+    },
+    [doThisNext.href, ...upNext.map((action) => action.href)],
+  );
 
   // One rolling-7-day definition for both the "this week" chip and the last
   // point of the sparkline: same rows, same windows, computed once.
@@ -685,17 +789,57 @@ function shapeHome(args: {
     toolkitHref: '/dashboard/ai-tools',
     jobsHref: '/dashboard/jobs',
     doThisNext,
+    upNext,
+    recommendedTool,
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
     prismaOpCount: args.prismaOpCount,
   };
 }
 
-function userSelect() {
+/** Unread counselor messages counted per thread; beyond this the row reads "you have unread messages" either way. */
+const UNREAD_MESSAGE_TAKE = 50;
+
+function userSelect(userId: string) {
   return {
     fullName: true,
     phone: true,
     organizationId: true,
-    profile: { select: { profilePhone: true, profileAddress: true, city: true, state: true, zip: true, referralSource: true } },
+    profile: {
+      select: {
+        profilePhone: true,
+        profileAddress: true,
+        city: true,
+        state: true,
+        zip: true,
+        referralSource: true,
+        resumeOriginalPath: true,
+        resumeEnhancedPath: true,
+      },
+    },
+    // Same definition as `getMemberEngagementSignals`: messages in the
+    // member's thread written by anyone else, after `memberLastReadAt`. The
+    // read-time comparison is done in memory (a nested `_count` cannot
+    // reference a sibling column), so this stays one Prisma operation.
+    messageThreadsAsMember: {
+      take: 1,
+      select: {
+        memberLastReadAt: true,
+        messages: {
+          where: { authorId: { not: userId } },
+          orderBy: { createdAt: 'desc' as const },
+          take: UNREAD_MESSAGE_TAKE,
+          select: { createdAt: true },
+        },
+      },
+    },
+    memberEvents: {
+      where: { eventName: 'career_os.interview_practice_completed' },
+      take: 1,
+      select: { id: true },
+    },
+    placementRecord: {
+      select: { placedAt: true, retentionDecision: true, retentionStatus: true },
+    },
     applications: { orderBy: { createdAt: 'desc' as const }, take: 1, select: { status: true, submittedAt: true } },
     wioaReviewStatus: true,
     wioaReviewedAt: true,
@@ -814,7 +958,7 @@ async function fetchHomeRow(
   return db.$transaction(async (tx) => {
     const row = await tx.user.findUnique({
       where: { id: userId },
-      select: userSelect(),
+      select: userSelect(userId),
     });
     if (!row) {
       return { row: null, prismaOpCount: 1 };
