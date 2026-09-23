@@ -137,8 +137,9 @@ describe('empty.* copy', () => {
   });
 
   it('training surfaces: certificates keep the #2471 sentence; unpublished curricula are unavailable with a counselor route', () => {
-    // #2471 / item 4 words survive verbatim as the legacy body; the kit body
-    // drops only the self-add clause (the kit view has no add form).
+    // #2471 / item 4 words survive verbatim as the body (legacy view, and the
+    // default kit view since WAP-188 gave it the add form); `bodyKit` drops only
+    // the self-add clause for kit renders without the form (the /dev proofs).
     expect(en.empty.certificates.title).toBe('No certificates yet');
     expect(en.empty.certificates.body).toBe(
       'No certificates are recorded yet. When Coursera reports a completed course we add it here as a pending certificate; our team verifies it before it counts as earned. Completed Coursera courses show in My program, and you can also add a certificate you earned elsewhere below.',

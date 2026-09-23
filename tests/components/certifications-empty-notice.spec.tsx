@@ -9,7 +9,7 @@ vi.mock('next/link', () => ({
 
 import en from '@/messages/en.json';
 import CertificationsEmptyNotice, { CERTIFICATES_ADD_FORM_ID } from '@/components/portal/CertificationsEmptyNotice';
-import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/MemberCertificatesKit';
+import { MemberCertificatesKit, MEMBER_CERTIFICATES_ADD_FORM_ID } from '@/components/portal/kit/pages/member/MemberCertificatesKit';
 import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
 
 afterEach(cleanup);
@@ -57,7 +57,7 @@ describe('My Certificates empty state', () => {
     expect(screen.getByRole('link', { name: 'Add a certificate' })).toHaveAttribute('href', '#add-certificate-desktop');
   });
 
-  it('kit view uses the same pending-then-verified sentence without promising a self-add form it does not have', () => {
+  it('kit view without the form slot (proofs) uses the same pending-then-verified sentence without promising a self-add form', () => {
     intl(<MemberCertificatesKit earned={[]} inProgress={[]} />);
     const empty = document.querySelector<HTMLElement>('.wa-kit-empty')!;
     expect(empty.dataset.kind).toBe('first');
@@ -69,5 +69,49 @@ describe('My Certificates empty state', () => {
     expect(within(empty).getByRole('link', { name: 'Message counselor' })).toHaveAttribute('href', '/dashboard/messages');
     expect(within(empty).getByRole('link', { name: 'My program' })).toHaveAttribute('href', MEMBER_PROGRAM_HREF);
     expect(within(empty).queryByRole('link', { name: 'Add a certificate' })).toBeNull();
+  });
+
+  /**
+   * WAP-188 Phase A: the default route passes the self-report form, so the kit
+   * view may now say what the legacy notice says — "add a certificate you
+   * earned elsewhere below" — and jump to the form.
+   */
+  it('kit view with the self-report form uses the full sentence and jumps to the form', () => {
+    intl(<MemberCertificatesKit earned={[]} inProgress={[]} addCertificateForm={<form aria-label="Add certificate fixture" />} />);
+    const empty = document.querySelector<HTMLElement>('.wa-kit-empty')!;
+    const description = within(empty).getByText(/No certificates are recorded yet/);
+    expect(description).toHaveTextContent(/we add it here as a pending certificate; our team verifies it before it counts as earned/);
+    expect(description).toHaveTextContent(/you can also add a certificate you earned elsewhere below/);
+    const add = within(empty).getByRole('link', { name: 'Add a certificate' });
+    expect(add).toHaveAttribute('href', `#${MEMBER_CERTIFICATES_ADD_FORM_ID}`);
+    expect(add.className).not.toContain('wa-kit-cta--ghost');
+    expect(within(empty).getByRole('link', { name: 'My program' })).toHaveAttribute('href', MEMBER_PROGRAM_HREF);
+
+    const card = document.getElementById(MEMBER_CERTIFICATES_ADD_FORM_ID)!;
+    expect(card).toContainElement(screen.getByRole('form', { name: 'Add certificate fixture' }));
+    expect(within(card).getByRole('heading', { level: 2 })).toHaveTextContent('Add a certificate you earned elsewhere');
+    expect(card).toHaveTextContent(/Until they do, it shows as pending and does not count as earned/);
+  });
+
+  it('mid-course with the form: resume stays first, the form is the second action', () => {
+    intl(
+      <MemberCertificatesKit
+        earned={[]}
+        inProgress={[{ id: 'p', title: 'Networking Basics', percent: 40, note: '2 of 5 courses complete' }]}
+        continueHref={MEMBER_PROGRAM_HREF}
+        addCertificateForm={<form aria-label="Add certificate fixture" />}
+      />,
+    );
+    const empty = document.querySelector<HTMLElement>('.wa-kit-empty')!;
+    const [primary, secondary] = within(empty).getAllByRole('link');
+    expect(primary).toHaveTextContent('Continue course');
+    expect(secondary).toHaveTextContent('Add a certificate');
+    expect(secondary).toHaveAttribute('href', `#${MEMBER_CERTIFICATES_ADD_FORM_ID}`);
+  });
+
+  it('no form slot, no card: proofs never render a self-report card', () => {
+    intl(<MemberCertificatesKit earned={[]} inProgress={[]} />);
+    expect(document.getElementById(MEMBER_CERTIFICATES_ADD_FORM_ID)).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Add a certificate you earned elsewhere' })).toBeNull();
   });
 });

@@ -1,7 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { CheckCircle2, Loader2, Star } from 'lucide-react';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import {
+  MEMBER_REQUEST_TIMEOUT_MS,
+  describeMemberRequestException,
+  readMemberRequestFailure,
+} from '@/lib/portal/memberRequestFailure';
 
 const FEEDBACK_TYPES = [
   { value: 'training', label: 'Training / Courses' },
@@ -19,6 +26,14 @@ type Props = {
   defaultType?: FeedbackType;
 };
 
+/**
+ * Member feedback dialog (POST /api/member/feedback -> `MemberFeedback`). Painted
+ * on `--wa-*` tokens with Lucide icons so it opens cleanly from default kit
+ * pages. The dialog says what happens to a submission: it is saved with the
+ * member's account, staff and the assigned counselor can read it
+ * (/admin/feedback, counselor-scoped by app/api/admin/feedback/_feedbackScope.ts),
+ * and it is not a message, so nobody is asked to reply.
+ */
 export default function MemberFeedbackModal({ open, onClose, defaultType = 'general' }: Props) {
   const [type, setType] = useState<FeedbackType>(defaultType);
   const [rating, setRating] = useState<number>(0);
@@ -48,22 +63,25 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
     setSending(true);
     setError(null);
     try {
-      const res = await fetch('/api/member/feedback', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, rating, comment: comment.trim() || undefined }),
-      });
-      const data = await res.json().catch(() => ({}));
+      const res = await fetchWithTimeout(
+        '/api/member/feedback',
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, rating, comment: comment.trim() || undefined }),
+        },
+        MEMBER_REQUEST_TIMEOUT_MS,
+      );
       if (!res.ok) {
-        setError(typeof data.error === 'string' ? data.error : 'Something went wrong. Please try again.');
+        setError(await readMemberRequestFailure(res));
         return;
       }
       setSent(true);
       setRating(0);
       setComment('');
-    } catch {
-      setError('Network error. Please try again.');
+    } catch (err) {
+      setError(describeMemberRequestException(err));
     } finally {
       setSending(false);
     }
@@ -90,7 +108,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 100,
+        zIndex: 'var(--z-modal)',
         background: 'rgba(0,0,0,0.45)',
         display: 'flex',
         alignItems: 'center',
@@ -100,37 +118,35 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
     >
       <div
         style={{
-          background: 'var(--surface-container-lowest)',
-          borderRadius: '1rem',
+          background: 'var(--wa-surface)',
+          color: 'var(--wa-text)',
+          border: '1px solid var(--wa-border)',
+          borderRadius: 'var(--wa-radius-sm)',
           width: '100%',
           maxWidth: '420px',
           maxHeight: '90vh',
           overflowY: 'auto',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+          boxShadow: 'var(--wa-shadow-lg)',
         }}
       >
-        <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--outline-variant)' }}>
+        <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--wa-border)' }}>
           <h2 ref={titleRef} tabIndex={-1} id="feedback-title" style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800 }}>
-            Share Feedback
+            Share feedback
           </h2>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-            Help us improve WorkforceAP.
+          <p className="wa-kit-meta" style={{ margin: '0.25rem 0 0' }}>
+            Your feedback is saved with your account. WorkforceAP staff, and your counselor if you have one, can read
+            it. It is not a message, so it does not ask anyone to contact you.
           </p>
         </div>
 
         {sent ? (
-          <div style={{ padding: '2rem 1.25rem', textAlign: 'center' }}>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: '2.5rem', color: 'var(--color-green, #4a9b4f)', fontVariationSettings: "'FILL' 1" }}
-            >
-              check_circle
-            </span>
-            <h3 style={{ margin: '0.75rem 0 0.25rem', fontSize: '1rem', fontWeight: 700 }}>Thank you!</h3>
-            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-              Your feedback helps us serve members better.
+          <div role="status" style={{ padding: '2rem 1.25rem', textAlign: 'center' }}>
+            <CheckCircle2 size={40} aria-hidden="true" style={{ color: 'var(--wa-success-dark)', display: 'inline-block' }} />
+            <h3 style={{ margin: '0.75rem 0 0.25rem', fontSize: 'var(--wa-type-body)', fontWeight: 700 }}>Thank you</h3>
+            <p className="wa-kit-lede" style={{ margin: 0 }}>
+              We saved your feedback.
             </p>
-            <button onClick={handleClose} className="btn btn-primary" style={{ marginTop: '1.25rem' }}>
+            <button type="button" onClick={handleClose} className="wa-kit-cta wa-kit-focus" style={{ marginTop: '1.25rem' }}>
               Close
             </button>
           </div>
@@ -141,10 +157,11 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
                 role="alert"
                 style={{
                   padding: '0.625rem 0.875rem',
-                  borderRadius: '0.625rem',
-                  background: 'rgba(173,44,77,0.1)',
-                  color: 'var(--wa-accent-text)',
-                  fontSize: '0.875rem',
+                  borderRadius: 'var(--wa-radius-sm)',
+                  background: 'var(--wa-danger-soft)',
+                  color: 'var(--wa-danger-text)',
+                  fontSize: 'var(--wa-type-meta)',
+                  fontWeight: 600,
                 }}
               >
                 {error}
@@ -152,21 +169,13 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
             )}
 
             <div>
-              <label htmlFor="memberfeedbackmodal-what-is-this-about-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+              <label htmlFor="memberfeedbackmodal-what-is-this-about-field" className="wa-kit-field-label">
                 What is this about?
               </label>
               <select id="memberfeedbackmodal-what-is-this-about-field"
                 value={type}
                 onChange={(e) => setType(e.target.value as FeedbackType)}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid var(--outline-variant)',
-                  background: 'var(--surface-container)',
-                  color: 'var(--color-on-surface)',
-                  fontSize: '0.875rem',
-                }}
+                className="wa-kit-control wa-kit-focus"
               >
                 {FEEDBACK_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -177,7 +186,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
             </div>
 
             <div>
-              <span id="memberfeedbackmodal-rating-label" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+              <span id="memberfeedbackmodal-rating-label" className="wa-kit-field-label">
                 Rating
               </span>
               <div role="radiogroup" aria-labelledby="memberfeedbackmodal-rating-label" style={{ display: 'flex', gap: '0.25rem' }}>
@@ -189,27 +198,29 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
                     aria-checked={star === rating}
                     onClick={() => setRating(star)}
                     aria-label={`Rate ${star} out of 5`}
+                    className="wa-kit-focus"
                     style={{
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      padding: '0.25rem',
-                      fontSize: '1.5rem',
-                      lineHeight: 1,
-                      color: star <= rating ? 'var(--color-gold, #f5a623)' : 'var(--outline-variant)',
-                      transition: 'color 0.15s',
+                      minWidth: 44,
+                      minHeight: 44,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 'var(--wa-radius-sm)',
+                      color: star <= rating ? 'var(--wa-gold-dark)' : 'var(--wa-control-border)',
+                      transition: 'color var(--wa-dur-fast) var(--wa-ease)',
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      {star <= rating ? 'star' : 'star_outline'}
-                    </span>
+                    <Star size={26} aria-hidden="true" fill={star <= rating ? 'currentColor' : 'none'} />
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label htmlFor="memberfeedbackmodal-comments-optional-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+              <label htmlFor="memberfeedbackmodal-comments-optional-field" className="wa-kit-field-label">
                 Comments (optional)
               </label>
               <textarea id="memberfeedbackmodal-comments-optional-field"
@@ -218,36 +229,21 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
                 placeholder="Tell us more..."
                 rows={4}
                 maxLength={5000}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid var(--outline-variant)',
-                  background: 'var(--surface-container)',
-                  color: 'var(--color-on-surface)',
-                  fontSize: '0.875rem',
-                  resize: 'vertical',
-                  boxSizing: 'border-box',
-                }}
+                className="wa-kit-control wa-kit-focus"
+                style={{ resize: 'vertical', boxSizing: 'border-box' }}
               />
-              <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', marginTop: '0.25rem' }}>
+              <div className="wa-kit-meta" style={{ textAlign: 'right', marginTop: '0.25rem' }}>
                 {comment.length}/5000
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-              <button type="button" onClick={handleClose} className="btn btn-ghost" disabled={sending}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
+              <button type="button" onClick={handleClose} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" disabled={sending}>
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary" disabled={sending} aria-busy={sending}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  {sending && (
-                    <span className="material-symbols-outlined" style={{ fontSize: '1rem', animation: 'spin 1s linear infinite' }} aria-hidden="true">
-                      progress_activity
-                    </span>
-                  )}
-                  {sending ? 'Sending…' : 'Submit Feedback'}
-                </span>
+              <button type="submit" className="wa-kit-cta wa-kit-focus" disabled={sending} aria-busy={sending}>
+                {sending && <Loader2 size={16} aria-hidden="true" className="wa-animate-spin motion-reduce:wa-animate-none" />}
+                {sending ? 'Sending…' : 'Send feedback'}
               </button>
             </div>
           </form>

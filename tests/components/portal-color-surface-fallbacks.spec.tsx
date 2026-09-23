@@ -835,10 +835,10 @@ describe('tokenized public pages: borders read --outline-variant (root layout, n
  * ---------------------------------------------------------------------------
  */
 describe('inline surface-container fills read the token bare (portal chain)', () => {
-  it('MemberFeedbackModal card paints --surface-container-lowest', () => {
+  it('MemberFeedbackModal card paints the kit surface (WAP-188: it now opens from the default /dashboard/help)', () => {
     const { container } = render(<MemberFeedbackModal open onClose={() => {}} />);
     const card = screen.getByRole('dialog').firstElementChild as HTMLElement;
-    expect(backgroundOf(card), 'feedback modal card').toBe(PUBLIC_FILL);
+    expectSurfaceFill(card, 'feedback modal card');
     expectNoLiteralTokenFallback(container);
     expectNoLegacyName(container);
   });

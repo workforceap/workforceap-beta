@@ -6,11 +6,11 @@ import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { getResend } from '@/lib/email';
 import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { checkContactRateLimit } from '@/lib/rate-limit';
+import { resolveHelpRequestRecipient } from '@/lib/member/helpRequestRecipient';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
-const FALLBACK_EMAIL = 'info@workforceap.org';
 
 export const POST = withApiGuc(async (request: NextRequest) => {
   try {
@@ -31,26 +31,16 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         fullName: true,
         email: true,
         enrolledProgram: true,
+        organizationId: true,
       },
     }));
     if (!dbUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
   
-    // Find assigned counselor
-    const assignment = await prisma.$transaction((tx) => tx.counselorAssignment.findFirst({
-      where: { memberId: user.id, active: true },
-      include: {
-        counselor: {
-          select: {
-            user: { select: { email: true, fullName: true } },
-          },
-        },
-      },
-    }));
-  
-    const counselorEmail = assignment?.counselor?.user?.email ?? FALLBACK_EMAIL;
-    const counselorName = assignment?.counselor?.user?.fullName ?? 'Counselor';
+    // The assigned counselor, or the team inbox when there is none. Shared
+    // with /dashboard/help so the page names the same recipient it emails.
+    const recipient = await resolveHelpRequestRecipient(user.id, dbUser.organizationId);
   
     const resend = getResend();
     if (!resend) {
@@ -77,11 +67,13 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     try {
       await sendBrandedEmailOrThrowOnSkip(resend, {
         from,
-        to: counselorEmail,
+        to: recipient.email,
         subject: sanitizeEmailSubjectLine(`Help request from ${memberName}`),
         html,
       });
-      return NextResponse.json({ ok: true });
+      // `sentTo` lets the button confirm who was emailed even if the
+      // assignment changed after the page rendered.
+      return NextResponse.json({ ok: true, sentTo: recipient.kind });
     } catch (err) {
       console.error('request-help email failed:', err);
       return NextResponse.json({ error: 'Failed to send' }, { status: 500 });

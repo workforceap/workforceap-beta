@@ -3,11 +3,14 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
-import { Gift, GraduationCap, Headset, Sparkles, ArrowRight, MessageCircle } from 'lucide-react';
+import { Gift, GraduationCap, Headset, Sparkles, ArrowRight } from 'lucide-react';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import PageHeader from '@/components/portal/PageHeader';
 import { DesignSurface, CardHead } from '@/components/portal/kit';
+import type { HelpRequestAudience } from '@/lib/member/helpContactCopy';
+import { helpRequestAudienceOf, resolveHelpRequestRecipient } from '@/lib/member/helpRequestRecipient';
+import NeedAPersonCard from './NeedAPersonCard';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -44,6 +47,16 @@ export default async function DashboardHelpPage() {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/help');
 
+  // Same recipient POST /api/member/request-help emails, so "Need a person?"
+  // names the right person. A failed read must not take the help page down:
+  // the card then describes both possible recipients instead of guessing.
+  let audience: HelpRequestAudience | null = null;
+  try {
+    audience = helpRequestAudienceOf(await resolveHelpRequestRecipient(user.id));
+  } catch (error) {
+    console.error('[dashboard/help] help request recipient lookup failed', error);
+  }
+
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 'var(--max-width, 52rem)', margin: '0 auto', padding: '0 1rem 4rem' }}>
@@ -56,6 +69,11 @@ export default async function DashboardHelpPage() {
               { label: 'Help and support' },
             ]}
           />
+        </div>
+
+        {/* Need a person? — Request help + Share feedback (were legacy-home only, WAP-188) */}
+        <div style={{ marginBottom: '2rem' }}>
+          <NeedAPersonCard audience={audience} />
         </div>
 
         {/* Request benefit access */}
@@ -140,30 +158,6 @@ export default async function DashboardHelpPage() {
             })}
           </div>
         </section>
-
-        {/* Contact */}
-        <div
-          className="wa-kit-card wa-kit-card--sm"
-          style={{
-            background: 'var(--wa-accent-soft)',
-            border: '1px solid color-mix(in srgb, var(--wa-accent) 15%, transparent)',
-          }}
-        >
-          <div className="wa-flex wa-items-start wa-gap-3">
-            <MessageCircle size={18} style={{ color: 'var(--wa-accent)', flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
-            <div>
-              <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--wa-text)', marginBottom: '0.25rem' }}>
-                Still need help?
-              </p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--wa-muted)', lineHeight: 1.6, margin: 0 }}>
-                Message your counselor — they&rsquo;re your fastest path to answers.{' '}
-                <Link href="/dashboard/messages" className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600, textDecoration: 'none' }}>
-                  Send a message →
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </DesignSurface>
   );
