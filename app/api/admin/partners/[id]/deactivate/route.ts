@@ -27,10 +27,7 @@ const bodySchema = z.object({
   // cannot deactivate (or reassign referrals from) an Org B partner.
   const orgId = await getActorOrganizationId(user.id);
   const partner = await withTenantScope(orgId, (db) =>
-    db.partner.findFirst({
-      where: { id: partnerId },
-      include: { _count: { select: { referrals: true } } },
-    }),
+    db.partner.findFirst({ where: { id: partnerId } }),
   );
   if (!partner) return NextResponse.json({ error: 'Partner not found' }, { status: 404 });
 
@@ -55,33 +52,32 @@ const bodySchema = z.object({
     }
   }
 
-  await prisma.$transaction(async (tx) => {
-    if (reassignToPartnerId && partner._count.referrals > 0) {
-      const referrals = await tx.partnerReferral.findMany({
+  // Set-based move of EVERY referral, keeping each one's original referredAt.
+  // assignedPartnerUserId is not carried over: the old assignee belongs to the
+  // old partner. A member the target partner already has keeps that row.
+  const { moved, skippedExisting } = await prisma.$transaction(async (tx) => {
+    let moved = 0;
+    let skippedExisting = 0;
+    if (reassignToPartnerId) {
+      const src = await tx.partnerReferral.findMany({
         where: { partnerId },
-        select: { memberId: true },
-        take: 100,
+        select: { memberId: true, referredAt: true },
       });
-      for (const r of referrals) {
-        const existing = await tx.partnerReferral.findUnique({
-          where: {
-            partnerId_memberId: { partnerId: reassignToPartnerId, memberId: r.memberId },
-          },
+      if (src.length > 0) {
+        const { count } = await tx.partnerReferral.createMany({
+          data: src.map((r) => ({ partnerId: reassignToPartnerId, memberId: r.memberId, referredAt: r.referredAt })),
+          skipDuplicates: true,
         });
-        if (!existing) {
-          await tx.partnerReferral.create({
-            data: { partnerId: reassignToPartnerId, memberId: r.memberId },
-          });
-        }
-        await tx.partnerReferral.deleteMany({
-          where: { partnerId, memberId: r.memberId },
-        });
+        moved = count;
+        skippedExisting = src.length - count;
+        await tx.partnerReferral.deleteMany({ where: { partnerId } });
       }
     }
     await tx.partner.update({
       where: { id: partnerId, organizationId: orgId },
       data: { active: false },
     });
+    return { moved, skippedExisting };
   });
 
   await auditLog({
@@ -89,14 +85,14 @@ const bodySchema = z.object({
     action: 'partner_deactivate',
     targetType: 'partner',
     targetId: partnerId,
-    metadata: { orgId, reassignToPartnerId },
+    metadata: { orgId, reassignToPartnerId, moved, skippedExisting },
   });
   const actorRole = (await isSuperAdmin(user.id)) ? 'super_admin' : 'admin';
   await logAuditEvent({
     user: { id: user.id, role: actorRole },
     verb: 'voided',
     object: { type: 'Partner', id: partnerId },
-    result: { success: true, extensions: { reassignToPartnerId, orgId } },
+    result: { success: true, extensions: { reassignToPartnerId, orgId, moved, skippedExisting } },
     request: auditRequestMeta(request),
     orgId,
   }).catch((err) => console.error('[audit] partner deactivate:', err));
