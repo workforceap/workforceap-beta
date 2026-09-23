@@ -129,9 +129,12 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
     }
     return NextResponse.json({ success: true, status: outcome.status });
   } else {
-    await prisma.$transaction((tx) => tx.userCertification.deleteMany({
+    const { count } = await prisma.$transaction((tx) => tx.userCertification.deleteMany({
       where: { userId: user.id, certName },
     }));
+    if (count > 0) {
+      void auditLog({ actorUserId: user.id, action: 'member.certification.deleted', targetType: 'user_certification', metadata: { certName } }).catch(() => {});
+    }
   }
 
   return NextResponse.json({ success: true });

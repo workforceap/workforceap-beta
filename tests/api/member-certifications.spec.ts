@@ -225,6 +225,20 @@ describe('POST /api/member/certifications', () => {
     expect(prisma.userCertification.deleteMany).toHaveBeenCalledWith({
       where: { userId: 'u1', certName: 'AWS' },
     });
+    expect(auditLog).toHaveBeenCalledWith({
+      actorUserId: 'u1',
+      action: 'member.certification.deleted',
+      targetType: 'user_certification',
+      metadata: { certName: 'AWS' },
+    });
+  });
+
+  it('deleting a certification the member does not have writes no audit row', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+    vi.mocked(prisma.userCertification.deleteMany).mockResolvedValue({ count: 0 } as any);
+    const res = await POST(postReq({ certName: 'AWS', earned: false }));
+    expect(res.status).toBe(200);
+    expect(auditLog).not.toHaveBeenCalled();
   });
 
   it('returns 500 on db error', async () => {
