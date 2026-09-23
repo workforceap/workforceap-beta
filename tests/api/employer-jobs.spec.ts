@@ -16,6 +16,7 @@ vi.mock('next/server', () => {
           headers: { 'content-type': 'application/json', ...(init?.headers || {}) },
         }),
     },
+    after: (fn: () => unknown) => fn(),
   };
 });
 
@@ -48,6 +49,7 @@ vi.mock('@/lib/db/prisma', () => {
     findMany: vi.fn(),
     findFirst: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
   };
   const mockPrisma: any = {
     job,
@@ -90,6 +92,10 @@ vi.mock('@/lib/employer/jobCreate', () => ({
 
 vi.mock('@/lib/portal/workflowEvents', () => ({
   recordEmployerWorkflowEvent: vi.fn(),
+}));
+
+vi.mock('@/lib/employer/applicationStatusEffects', () => ({
+  notifyAndRecordPlacement: vi.fn(() => Promise.resolve()),
 }));
 
 // ─── Imports after mocks ───
@@ -784,11 +790,10 @@ describe('PATCH /api/employer/jobs/[id]/applicants', () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(getEmployerForUser).mockResolvedValue({ employerId: UUIDS.employer } as any);
     vi.mocked(prisma.job.findFirst).mockResolvedValue({ id: UUIDS.job1 } as any);
-    vi.mocked(prisma.jobPostingApplication.findFirst).mockResolvedValue({ id: 'app-1' } as any);
-    vi.mocked(prisma.jobPostingApplication.update).mockResolvedValue({
-      id: 'app-1',
-      status: 'reviewing',
-    } as any);
+    vi.mocked(prisma.jobPostingApplication.findFirst)
+      .mockResolvedValueOnce({ id: 'app-1', status: 'pending' } as any)
+      .mockResolvedValueOnce({ id: 'app-1', status: 'reviewing' } as any);
+    vi.mocked(prisma.jobPostingApplication.updateMany).mockResolvedValue({ count: 1 } as any);
 
     const res = await updateApplicant(
       makeApplicantPatchRequest(UUIDS.job1, 'app-1', { status: 'reviewing' }),
@@ -797,9 +802,11 @@ describe('PATCH /api/employer/jobs/[id]/applicants', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
-    expect(prisma.jobPostingApplication.update).toHaveBeenCalledWith(
+    expect(body.application.status).toBe('reviewing');
+    expect(prisma.jobPostingApplication.update).not.toHaveBeenCalled();
+    expect(prisma.jobPostingApplication.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'app-1' },
+        where: { id: 'app-1', jobId: UUIDS.job1, status: 'pending' },
         data: expect.objectContaining({ status: 'reviewing' }),
       })
     );

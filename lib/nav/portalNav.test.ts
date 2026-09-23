@@ -104,7 +104,10 @@ test('labeled preassessment CTAs use the assessment page', () => {
   assert.match(guide, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(guide, /href: '\/dashboard\/skills-assessment'/);
 
-  const home = source('components/portal/DashboardHomeClient.tsx');
+  // The member home's preassessment CTA comes from the next-best-action
+  // builder the kit home renders (the legacy DashboardHomeClient is gone, WAP-195).
+  const home = source('lib/member/nextBestActions.ts');
+  assert.match(home, /title: 'Complete your Training Preassessment'/);
   assert.match(home, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(home, /href: '\/dashboard\/skills-assessment'/);
 

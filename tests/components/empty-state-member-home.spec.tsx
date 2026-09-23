@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 
 import en from '@/messages/en.json';
@@ -9,8 +9,6 @@ import es from '@/messages/es.json';
 import fr from '@/messages/fr.json';
 import pt from '@/messages/pt.json';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
-import MatchedRoles from '@/components/portal/MatchedRoles';
-import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
@@ -22,7 +20,8 @@ vi.mock('next/navigation', () => ({
  * PR 2 of the empty-state consolidation (KIT_GUIDE §6): the member home
  * surfaces render their empty situations through KitEmptyState with a `kind`,
  * one primary action and `empty.*` copy in every locale — no hand-rolled
- * `<p>` and no raw message keys.
+ * `<p>` and no raw message keys. (The matched-roles panel went with the
+ * retired ?ui=legacy home, WAP-195.)
  */
 
 const LOCALES = { en, es, fr, pt } as const;
@@ -77,71 +76,5 @@ describe('member home: application pipeline table (kind first)', () => {
     expect(before).not.toMatch(/wa-kit-empty-actions|wa-kit-cta/);
     expect(card.outerHTML).toContain('wa-kit-empty-actions');
     expect(card.outerHTML).not.toContain('Saved and submitted jobs will appear here.');
-  });
-});
-
-describe('member home: matched roles', () => {
-  const fetchMock = vi.fn();
-  beforeEach(() => {
-    fetchMock.mockReset();
-    vi.stubGlobal('fetch', fetchMock);
-  });
-
-  function json(body: unknown, status = 200) {
-    return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
-  }
-
-  /** Rendered with exactly the messages the (portal) layout ships to the browser. */
-  function show(locale: Locale) {
-    return render(
-      <NextIntlClientProvider locale={locale} messages={pickClientMessageSlice(LOCALES[locale], 'portal')}>
-        <MatchedRoles />
-      </NextIntlClientProvider>,
-    );
-  }
-
-  it.each(Object.keys(LOCALES) as Locale[])('%s: no matches yet is a first state whose first action is the job board', async (locale) => {
-    const m = LOCALES[locale];
-    fetchMock.mockResolvedValue(json({ jobs: [] }));
-    const { container } = show(locale);
-
-    await screen.findByRole('heading', { level: 3, name: m.empty.matches.title });
-    const empty = emptyOf(container, 'first');
-    expect(empty.dataset.tone).toBe('muted');
-    expect(empty.className).toContain('wa-kit-empty--framed');
-    expect(within(empty).getByText(m.empty.matches.body)).toBeInTheDocument();
-    // Matching scores program / assessment / certifications / course completion,
-    // not profile fields, so the board is the first route and the profile the quiet one.
-    const primary = within(empty).getByRole('link', { name: m.empty.matches.browse });
-    expect(primary).toHaveAttribute('href', '/dashboard/jobs');
-    expect(primary.className).not.toContain('wa-kit-cta--ghost');
-    const secondary = within(empty).getByRole('link', { name: m.empty.matches.profile });
-    expect(secondary).toHaveAttribute('href', '/dashboard/profile');
-    expect(secondary.className).toContain('wa-kit-cta--ghost');
-    expect(empty.textContent).not.toMatch(RAW_KEY);
-    expect(screen.queryByText('No matched jobs yet')).toBeNull();
-  });
-
-  it.each(Object.keys(LOCALES) as Locale[])('%s: a failed load is an unavailable/danger alert whose Try again refetches', async (locale) => {
-    const m = LOCALES[locale];
-    fetchMock
-      .mockResolvedValueOnce(json({ error: 'nope' }, 500))
-      .mockResolvedValueOnce(json({ jobs: [{ id: 'j1', title: 'Help Desk Technician', company: 'Acme', location: 'Austin, TX', locationType: 'onsite', matchPct: 82 }] }));
-    const { container } = show(locale);
-
-    const alert = await screen.findByRole('alert');
-    expect(alert).toBe(emptyOf(container, 'unavailable'));
-    expect(alert.dataset.tone).toBe('danger');
-    expect(within(alert).getByRole('heading', { level: 3 })).toHaveTextContent(m.empty.matchesUnavailable.title);
-    expect(within(alert).getByText(m.empty.matchesUnavailable.body)).toBeInTheDocument();
-    expect(within(alert).getByRole('link', { name: m.empty.matchesUnavailable.secondary })).toHaveAttribute('href', '/dashboard/jobs');
-    expect(alert.textContent).not.toMatch(RAW_KEY);
-    // Never reads as a confirmed empty result.
-    expect(container.querySelector('[data-kind="first"]')).toBeNull();
-
-    fireEvent.click(within(alert).getByRole('button', { name: m.empty.matchesUnavailable.action }));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    await screen.findByText('Help Desk Technician');
-    expect(screen.queryByRole('alert')).toBeNull();
   });
 });

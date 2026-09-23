@@ -1,5 +1,6 @@
 import type { JobMatchInput } from '@/lib/admin/aiJobMatchCompute';
 import type { StudentMatch } from '@/lib/ai/matchStudents';
+import { employerVisibleMatchReasons, staffAssessmentReason } from '@/lib/employer/matchReasons';
 
 /** Row shape returned to the admin UI / API (matches Prisma include). */
 export type AdminJobMatchRow = {
@@ -36,11 +37,19 @@ export type RunAdminJobMatchesDeps = {
   }) => Promise<void>;
 };
 
+/**
+ * Admin payload row. `matchReasons` is the employer-visible list;
+ * `staffReasons` carries the staff-only assessment line
+ * (lib/employer/matchReasons.ts). Admin-only: never serialize this for an
+ * employer response.
+ */
 export function serializeAdminJobMatchRow(m: AdminJobMatchRow) {
+  const assessment = staffAssessmentReason(m.student.assessmentScorePct);
   return {
     studentId: m.studentId,
     matchScore: m.matchScore,
-    matchReasons: m.matchReasons,
+    matchReasons: employerVisibleMatchReasons(m.matchReasons),
+    staffReasons: assessment ? [assessment] : [],
     status: m.status,
     student: m.student,
   };

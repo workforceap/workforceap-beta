@@ -102,6 +102,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
     contactConsent?: string;
   }>({});
   const errorSummaryRef = useRef<HTMLDivElement | null>(null);
+  const verifyHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const completedRef = useRef(false);
   const dropoffRef = useRef({ startedFields: 0, smsOptIn: false, program_slugs: null as string[] | null });
   const passwordStrengthScore = getPasswordStrengthScore(password);
@@ -422,9 +423,11 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
           ...(CAPTCHA_ENABLED && turnstileToken ? { turnstileToken } : {}),
         }),
       });
-      const data = await res.json();
+      // An HTML 502/504 from the edge is not JSON; that is a failed account
+      // request, not a network error, so fall through to errAccountGeneric.
+      const data = await res.json().catch(() => null);
 
-      if (!res.ok) {
+      if (!res.ok || !data) {
         // Map common server-side errors to the specific field that produced
         // them so users can fix the issue inline instead of guessing.
         // WAP-26: a weak-password refusal is reported by reason so the copy
@@ -504,8 +507,19 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         });
       }
 
-      if (data.message) {
-        window.location.href = confirmationPath;
+      // M07: signup succeeded without a session (email confirmation required).
+      // Show the "Check your email" screen instead of a confirmation page that
+      // implies the applicant can already sign in.
+      const redirectTo = typeof data.redirectTo === 'string' ? data.redirectTo : '';
+      const needsEmailVerification =
+        redirectTo === '/login' || (Boolean(data.message) && !redirectTo.startsWith('/apply/confirmation'));
+      if (needsEmailVerification) {
+        setVerifyEmail(email.trim().toLowerCase());
+        setVerifyEmailMode(true);
+        setLoading(false);
+        requestAnimationFrame(() => {
+          verifyHeadingRef.current?.focus();
+        });
         return;
       }
 
@@ -525,7 +539,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
     return (
       <div className="apply-form" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
         <MailOpen size={56} aria-hidden="true" style={{ color: 'var(--color-accent)', display: 'block', margin: '0 auto 1rem' }} />
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--color-on-surface)' }}>{t('accountVerifyTitle')}</h2>
+        <h2 ref={verifyHeadingRef} tabIndex={-1} style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--color-on-surface)' }}>{t('accountVerifyTitle')}</h2>
         <p style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6, marginBottom: '0.5rem' }}>
           {t('accountVerifySentTo')}
         </p>

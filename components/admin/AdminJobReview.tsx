@@ -45,6 +45,8 @@ type MatchRow = {
   studentId: string;
   matchScore: number;
   matchReasons: string[];
+  /** Staff-only reasons (assessment score); not part of the employer-visible list. */
+  staffReasons?: string[];
   student: { fullName: string; email: string; enrolledProgram: string | null };
 };
 
@@ -237,7 +239,10 @@ export default function AdminJobReview({ job }: { job: Job }) {
     {
       key: 'reasons',
       header: 'Reasons',
-      render: (m) => (m.matchReasons.length > 0 ? m.matchReasons.join('; ') : '—'),
+      render: (m) => {
+        const reasons = [...(m.staffReasons ?? []), ...m.matchReasons];
+        return reasons.length > 0 ? reasons.join('; ') : '—';
+      },
     },
   ];
 

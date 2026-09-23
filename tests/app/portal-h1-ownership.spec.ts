@@ -71,7 +71,6 @@ const LEGACY_SR_ONLY_H1 = new Set([
   'app/(portal)/counselor/overview/page.tsx',
   'app/(portal)/dashboard/certifications/page.tsx',
   'app/(portal)/dashboard/learning/page.tsx',
-  'app/(portal)/dashboard/page.tsx',
   'app/(portal)/dashboard/profile/page.tsx',
   'app/(portal)/partner/page.tsx',
 ]);
@@ -125,6 +124,9 @@ describe('route-level kits own their h1 through PageOpener', () => {
   });
 
   it.each([
+    // The member home (one implementation since WAP-195) owns its h1 here,
+    // not through a hoisted sr-only h1 on the page.
+    'components/portal/kit/pages/member/MemberHomeKit.tsx',
     'components/portal/kit/pages/member/MemberCounselorKit.tsx',
     'components/portal/kit/pages/member/MemberMentorProfileKit.tsx',
     'components/portal/kit/pages/admin/CommandCenterKit.tsx',
