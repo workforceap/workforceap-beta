@@ -37,6 +37,9 @@ import { classifyMember } from '@/lib/member/atRiskScoring';
 import { buildProactiveInsights } from '@/lib/member/proactiveInsights';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBoundary';
+import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
+import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
 import { getMemberState } from '@/lib/member/getMemberState';
 import { getActiveProgramForDashboard } from '@/lib/member/getActiveProgramForDashboard';
 import { resolveMemberDashboardTabs } from '@/lib/member/dashboardTabs';
@@ -178,6 +181,9 @@ async function renderMemberDashboard(
     const home = await loadMemberDashboardHome({
       userId: user.id,
       fallbackDisplayName: user.email,
+      // View-only: picks which of the member's own enrollments the home
+      // describes (validated in the loader); it never changes an enrollment.
+      requestedProgramSlug: args.requestedProgramSlug,
       provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
     });
     // Presentation only: a pathway with a live next step keeps the approval
@@ -199,13 +205,67 @@ async function renderMemberDashboard(
         counselorContext={counselorContext}
       />
     );
+    // Staff looking at a member home see the same notice the legacy home and
+    // My Program show. Role reads are request-cached (the layout already
+    // resolved them), so this is not a new round trip on a member's visit.
+    let staffViewer = false;
+    try {
+      staffViewer = await canBypassMemberAssessment(user.id);
+    } catch (e) {
+      console.error('[dashboard] canBypassMemberAssessment failed', e);
+    }
+    // First-login guidance (WAP-194): the wizard while onboarding is not done,
+    // then the first-visit tour once. Never two tours: with `guided_tours_v2`
+    // on, the shell's first-login strip and Help menu own the tour, so the
+    // legacy auto-start stays off. The flag is read only when the auto-start
+    // could apply at all.
+    const onboarding = home.onboarding;
+    const tourAutoStart = onboarding?.showTour
+      ? (await getTourOffer(user.id, 'member.home'))?.enabled !== true
+      : false;
+    let superAdmin = false;
+    if (onboarding && (onboarding.showWizard || tourAutoStart)) {
+      try {
+        superAdmin = await isSuperAdmin(user.id);
+      } catch (e) {
+        console.error('[dashboard] isSuperAdmin failed', e);
+      }
+    }
     return (
       <>
       {/* The dashboard view / activation events the admin metrics and health
           score read; the legacy home wrote them from DashboardHomeClient. */}
       {home.dashboardViewFacts ? <MemberHomeViewEvents {...home.dashboardViewFacts} /> : null}
+      <PWAInstallPrompt />
+      {onboarding && (onboarding.showWizard || tourAutoStart) ? (
+        // A sibling, not a wrapper: if the wizard or tour throws, the boundary
+        // keeps the home itself on screen. Phone and desktop alike.
+        <PortalEntryErrorBoundary>
+          <PortalEntryClient
+            portal="member"
+            tourStorageUserId={user.id}
+            showOnboardingWizard={onboarding.showWizard}
+            showTour={tourAutoStart}
+            readOnlyAudit={Boolean(args.readOnlyAudit)}
+            isSuperAdmin={superAdmin}
+            tourSteps={MEMBER_PORTAL_TOUR_STEPS}
+            wizardProps={{
+              ...onboarding.wizard,
+              // Same counselor and measured wait as the approval card above.
+              counselor: counselorContext?.counselor
+                ? { firstName: counselorContext.counselor.firstName, messagingHref: counselorContext.counselor.messagingHref }
+                : null,
+              waitEstimate: counselorContext?.awaiting === 'approval' ? counselorContext.waitEstimate : null,
+            }}
+          >
+            {null}
+          </PortalEntryClient>
+        </PortalEntryErrorBoundary>
+      ) : null}
       {approvalPlacement === 'primary' ? approvalCard : null}
       <MemberHomeKit
+        showStaffViewBanner={staffViewer}
+        programSwitch={home.programSwitch}
         firstName={home.firstName}
         coursePercent={home.coursePercent}
         courseProgressStale={home.courseProgressStale}

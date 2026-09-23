@@ -44,6 +44,9 @@ vi.mock('@/components/portal/SignOutButton', () => ({
 }));
 vi.mock('@/hooks/useWorkspaceMobileScrollChrome', () => ({ useWorkspaceMobileScrollChrome: () => {} }));
 
+/** The admin rail's section state (v2 since WAP-198; the v1 key predates the WAP-190 layout). */
+const ADMIN_SECTIONS_KEY = 'wa_nav_sections_v2_admin';
+
 beforeEach(() => {
   location.pathname = '/dashboard/program';
   location.search = '';
@@ -761,7 +764,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
   });
 
   it('keeps Daily work open on every page, whatever an old saved preference says', () => {
-    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({ 'section:dailyWork': false }));
+    localStorage.setItem(ADMIN_SECTIONS_KEY, JSON.stringify({ 'section:dailyWork': false }));
     location.pathname = '/admin/programs';
     const { container } = showAdmin();
     expect(container.querySelector('a[href="/admin/command-center?queue=applications"]')?.closest('[hidden]')).toBeNull();
@@ -807,7 +810,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     await user.click(system());
     expect(system()).toHaveAttribute('aria-expanded', 'true');
     expect(container.querySelector('a[href="/admin/settings"]')?.closest('[hidden]')).toBeNull();
-    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'section:system': true });
+    expect(JSON.parse(localStorage.getItem(ADMIN_SECTIONS_KEY)!)).toEqual({ 'section:system': true });
     system().focus();
     await user.keyboard('{ArrowLeft}');
     expect(system()).toHaveAttribute('aria-expanded', 'false');
@@ -815,11 +818,11 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(system()).toHaveAttribute('aria-expanded', 'true');
     await user.keyboard('{Enter}');
     expect(system()).toHaveAttribute('aria-expanded', 'false');
-    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'section:system': false });
+    expect(JSON.parse(localStorage.getItem(ADMIN_SECTIONS_KEY)!)).toEqual({ 'section:system': false });
   });
 
   it('restores persisted state on mount', () => {
-    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({
+    localStorage.setItem(ADMIN_SECTIONS_KEY, JSON.stringify({
       'section:programs': true, 'section:reporting': true, 'item:/admin/reporting': true,
     }));
     const { container } = showAdmin();
@@ -831,8 +834,19 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(sectionButtons(container).find((b) => b.textContent === 'Content')).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('ignores section state saved before the WAP-190 layout (the v1 key), so the new defaults apply', () => {
+    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({
+      'section:programs': true, 'section:reporting': true, 'section:dailyWork': false,
+    }));
+    const { container } = showAdmin();
+    expect(sectionButtons(container).find((b) => b.textContent === 'Programs')).toHaveAttribute('aria-expanded', 'false');
+    expect(sectionButtons(container).find((b) => b.textContent === 'Reporting')).toHaveAttribute('aria-expanded', 'false');
+    expect(container.querySelector('a[href="/admin/command-center?queue=applications"]')?.closest('[hidden]')).toBeNull();
+    expect(localStorage.getItem(ADMIN_SECTIONS_KEY)).toBeNull();
+  });
+
   it('opens the section and parent holding the current page even when they were closed', () => {
-    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({ 'section:system': false, 'item:/admin/settings': false }));
+    localStorage.setItem(ADMIN_SECTIONS_KEY, JSON.stringify({ 'section:system': false, 'item:/admin/settings': false }));
     location.pathname = '/admin/feature-flags';
     const { container } = showAdmin();
     const flags = container.querySelector('a[href="/admin/feature-flags"]')!;
@@ -859,7 +873,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     const children = [...container.querySelectorAll(`#${toggle.getAttribute('aria-controls')} a`)].map((a) => a.getAttribute('href'));
     expect(children).toEqual(expect.arrayContaining(['/admin/analytics', '/admin/outcomes', '/admin/board']));
     expect(children).toHaveLength(8);
-    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'section:reporting': true, 'item:/admin/reporting': true });
+    expect(JSON.parse(localStorage.getItem(ADMIN_SECTIONS_KEY)!)).toEqual({ 'section:reporting': true, 'item:/admin/reporting': true });
   });
 
   it('the collapsed icon rail lists every destination flat and marks one current page', async () => {

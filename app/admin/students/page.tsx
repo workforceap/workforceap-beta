@@ -9,6 +9,7 @@ import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { StudentsRosterKit } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
 import { loadStudentsRoster, studentsRosterNotice } from '@/lib/admin/studentsRosterLoad';
 import { loadTrainingRoster } from '@/lib/admin/trainingRosterLoad';
+import { loadStudentsRosterFocus, STUDENTS_FOCUS_UNAVAILABLE_NOTICE } from '@/lib/admin/studentsRosterFocus';
 import {
   STUDENTS_NEEDS_PARAM,
   STUDENTS_ROSTER_VIEW_HREFS,
@@ -30,8 +31,10 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * The one admin roster. `?view=training` swaps the column preset to training
  * progress (same kit, same member population); the default is the Students
- * roster. `?needs=at-risk|stalled|new-applicants` (the attention model's
- * links from the Command Center and overview) opens the nearest chip.
+ * roster. `?needs=at-risk|stalled` (the attention model's links from the
+ * Command Center and overview) opens the nearest chip; `?needs=new-applicants`
+ * opens the roster on exactly the members behind Today's "new applicants have
+ * no counselor" row (WAP-198).
  * `?ui=legacy` forwards to the management hub (/admin/members).
  */
 export default async function AdminStudentsPage({
@@ -59,7 +62,8 @@ export default async function AdminStudentsPage({
   }
 
   const view = parseStudentsRosterView(params.view);
-  const initialChip = chipForStudentsNeeds(parseStudentsNeeds(params[STUDENTS_NEEDS_PARAM]), view);
+  const needs = parseStudentsNeeds(params[STUDENTS_NEEDS_PARAM]);
+  const initialChip = chipForStudentsNeeds(needs, view);
 
   if (view === 'training') {
     const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
@@ -82,11 +86,18 @@ export default async function AdminStudentsPage({
     );
   }
 
-  const roster = await loadStudentsRoster(scope);
+  const [roster, focusLoad] = await Promise.all([
+    loadStudentsRoster(scope),
+    loadStudentsRosterFocus(scope, needs, view),
+  ]);
 
   // If the core roster query fails, fall back to the proven members workspace
   // rather than rendering a fabricated/empty kit.
   if (!roster.ok) redirect('/admin/members');
+
+  const notice = [studentsRosterNotice(roster), focusLoad.failed ? STUDENTS_FOCUS_UNAVAILABLE_NOTICE : null]
+    .filter(Boolean)
+    .join(' ') || undefined;
 
   return (
     <>
@@ -97,7 +108,8 @@ export default async function AdminStudentsPage({
         students={roster.students}
         total={roster.total}
         initialChip={initialChip}
-        notice={studentsRosterNotice(roster)}
+        focus={focusLoad.focus ?? undefined}
+        notice={notice}
       />
     </>
   );
