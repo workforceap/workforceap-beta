@@ -12,6 +12,7 @@ Pixel captures for layout, typography, and spacing—not accessibility tree dump
 | `counselor-mobile-390.png` | 390×844 | `/counselor` hub |
 | `subpages-desktop/employer-applications.png` | 1280×800 | `/employer/applications` |
 | `subpages-desktop/employer-guide.png` | 1280×800 | `/employer/guide` |
+| `member-<screen>-<light\|dark>.png` (22 files) | 390 wide, full page | Member journey at phone width: apply → programs → create account, home, program, eligibility, first lesson, jobs, messages, AI Career Tools, resume studio. Findings: [`member-phone-sweep.md`](member-phone-sweep.md) (WAP-192) |
 
 **Next captures (see [`PORTAL-UI-ONE-SHOT-TASK.md`](../PORTAL-UI-ONE-SHOT-TASK.md)):** `/employer/jobs` after the unified-header build is live; then remaining static paths under employer/partner/counselor.
 

@@ -304,7 +304,7 @@ export default function ApplyResultsClient({
         </div>
 
         <p className="apply-results-program-hint">
-          <LocalizedLink href="/salary-guide">{tCta('viewSalaryGuide')}</LocalizedLink>
+          <LocalizedLink href="/salary-guide" style={{ display: 'inline-flex', alignItems: 'center', minHeight: '44px' }}>{tCta('viewSalaryGuide')}</LocalizedLink>
         </p>
         <div
           className="apply-results-program-grid"
@@ -371,7 +371,7 @@ export default function ApplyResultsClient({
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.04em',
-                      color: 'var(--color-accent)',
+                      color: 'var(--wa-accent-text)',
                     }}
                   >
                     {rank}
