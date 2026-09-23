@@ -35,6 +35,10 @@ jobs:
     name: Static gates (guards, typecheck, lint, knip)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
 
     env:
       # Stub values so Next.js/Prisma don't crash at build time in CI.
@@ -125,10 +129,30 @@ jobs:
         run: pnpm run deadcode
         timeout-minutes: 5
 
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
   unit:
     name: Unit tests (node:test)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
 
     env:
       # Stub values so Next.js/Prisma don't crash at build time in CI.
@@ -169,6 +193,22 @@ jobs:
       - name: Unit tests
         run: pnpm run test:unit
 
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
   # Vitest is release-blocking. Playwright e2e and node:test files are
   # excluded by vitest.config.ts and run in their own lanes. The suite is split
   # into two shards (`vitest run --shard=N/2`): every test file lands in exactly
@@ -177,6 +217,10 @@ jobs:
     name: Vitest (shard ${{ matrix.shard }}/2)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -241,10 +285,30 @@ jobs:
         run: timeout 420 pnpm run test:vitest --shard=${{ matrix.shard }}/2
         timeout-minutes: 8
 
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
   build:
     name: Next build
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
 
     env:
       # Stub values so Next.js/Prisma don't crash at build time in CI.
@@ -327,6 +391,22 @@ jobs:
         with:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
 
   # Required check. Branch protection and reviewers match the check by this
   # exact name, so it stays "Typecheck & Build" and passes only when every
