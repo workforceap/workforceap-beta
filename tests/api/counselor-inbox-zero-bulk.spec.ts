@@ -48,7 +48,7 @@ vi.mock('@/lib/db/prisma', () => {
     user: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
     message: { create: vi.fn().mockResolvedValue({ id: 'msg-1' }) },
     counselor: { findFirst: vi.fn() },
-    counselorAssignment: { findUnique: vi.fn(), updateMany: vi.fn(), update: vi.fn(), create: vi.fn() },
+    counselorAssignment: { findFirst: vi.fn().mockResolvedValue(null), findUnique: vi.fn(), updateMany: vi.fn(), update: vi.fn(), create: vi.fn() },
     messageThread: { update: vi.fn(), upsert: vi.fn().mockResolvedValue({ id: 'thread-1' }) },
     memberEvent: { create: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) },
     $executeRaw: vi.fn().mockResolvedValue(1),
@@ -70,11 +70,13 @@ import { auditLog } from '@/lib/audit';
 import { logInboxZeroBulkAuditEvent } from '@/lib/counselor/inboxZeroAudit';
 import { assertStaffCanPost, getOrCreateMemberCounselorThread } from '@/lib/messages/counselorThread';
 import { prisma } from '@/lib/db/prisma';
+import { createNotification } from '@/lib/notifications/create';
 import { POST } from '@/app/api/counselor/inbox-zero/bulk/route';
 
 const MEMBER_ID = '11111111-1111-1111-1111-111111111111';
 const COUNSELOR_ID = '22222222-2222-2222-2222-222222222222';
 const TARGET_COUNSELOR_USER = '33333333-3333-3333-3333-333333333333';
+const PREVIOUS_COUNSELOR_USER = '44444444-4444-4444-4444-444444444444';
 
 function makeRequest(body: unknown) {
   return new Request('http://localhost/api/counselor/inbox-zero/bulk', {
@@ -185,5 +187,52 @@ describe('POST /api/counselor/inbox-zero/bulk', () => {
     });
     expect(auditLog).not.toHaveBeenCalled();
     expect(logInboxZeroBulkAuditEvent).not.toHaveBeenCalled();
+  });
+  describe('reassign handoff', () => {
+    const arrangeTarget = () => {
+      vi.mocked(prisma.counselor.findFirst).mockResolvedValue({
+        id: 'counselor-row', userId: TARGET_COUNSELOR_USER,
+        user: { id: TARGET_COUNSELOR_USER, fullName: 'Pat Advisor' },
+      } as never);
+      vi.mocked(prisma.counselorAssignment.findUnique).mockResolvedValue(null);
+    };
+
+    it('audits the counselor the member moved from and notifies the receiving counselor once', async () => {
+      arrangeTarget();
+      vi.mocked((prisma.counselorAssignment as any).findFirst).mockResolvedValueOnce({
+        counselor: { userId: PREVIOUS_COUNSELOR_USER, user: { fullName: 'Sam Previous' } },
+      });
+
+      const res = await POST(makeRequest({ action: 'reassign', memberIds: [MEMBER_ID], counselorUserId: TARGET_COUNSELOR_USER }));
+      expect(res.status).toBe(200);
+
+      expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'counselor.inbox_zero.reassign',
+        metadata: expect.objectContaining({
+          counselorUserId: TARGET_COUNSELOR_USER,
+          previousCounselorUserId: PREVIOUS_COUNSELOR_USER,
+          previousCounselorName: 'Sam Previous',
+        }),
+      }));
+      expect(logInboxZeroBulkAuditEvent).toHaveBeenCalledWith(expect.objectContaining({
+        extensions: expect.objectContaining({ previousCounselorUserId: PREVIOUS_COUNSELOR_USER }),
+      }));
+      expect(vi.mocked(createNotification).mock.calls.map(([input]) => input)).toEqual([
+        expect.objectContaining({
+          userId: TARGET_COUNSELOR_USER,
+          type: 'task_assigned',
+          title: 'A member was assigned to you',
+          data: expect.objectContaining({ link: `/counselor/students/${MEMBER_ID}` }),
+        }),
+      ]);
+    });
+
+    it('does not notify a counselor who reassigns a member to themselves', async () => {
+      arrangeTarget();
+      vi.mocked(getUser).mockResolvedValue({ id: TARGET_COUNSELOR_USER, email: 'pat@wap.org' } as never);
+      const res = await POST(makeRequest({ action: 'reassign', memberIds: [MEMBER_ID], counselorUserId: TARGET_COUNSELOR_USER }));
+      expect(res.status).toBe(200);
+      expect(createNotification).not.toHaveBeenCalled();
+    });
   });
 });

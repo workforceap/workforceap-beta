@@ -5,6 +5,7 @@ import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { auditLog } from '@/lib/audit';
 import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { notifyCounselorOfStaffAssignment, type StaffAssignedMember } from '@/lib/counselor/staffAssignmentNotify';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
@@ -258,6 +259,7 @@ export const POST = withApiGuc(async (request: Request) => {
         return NextResponse.json({ error: 'Counselor not found or inactive' }, { status: 400 });
       }
 
+      const assignedToCounselor: StaffAssignedMember[] = [];
       for (const memberId of memberIds) {
         try {
           if (!(await assertStaffCanAccessMemberRecord(user.id, memberId))) {
@@ -268,7 +270,7 @@ export const POST = withApiGuc(async (request: Request) => {
           const member = await withTenantScope(orgId, (db) =>
             db.user.findFirst({
               where: { id: memberId, deletedAt: null },
-              select: { id: true },
+              select: { id: true, fullName: true },
             }),
           );
           if (!member) {
@@ -277,9 +279,10 @@ export const POST = withApiGuc(async (request: Request) => {
             continue;
           }
 
-          await prisma.$transaction((tx) => assignMemberCounselor(tx, {
+          const { previousCounselorUserId, previousCounselorName } = await prisma.$transaction((tx) => assignMemberCounselor(tx, {
             memberId, organizationId: orgId, counselorUserId: targetCounselor.userId,
           }));
+          assignedToCounselor.push({ memberId, memberName: member.fullName, previousCounselorUserId });
 
           const auditResults = await Promise.allSettled([auditLog({
             actorUserId: user.id,
@@ -290,6 +293,8 @@ export const POST = withApiGuc(async (request: Request) => {
               memberId,
               counselorUserId: targetCounselor.userId,
               counselorName: targetCounselor.user.fullName,
+              previousCounselorUserId,
+              previousCounselorName,
             },
           }), logInboxZeroBulkAuditEvent({
             actorUserId: user.id,
@@ -297,7 +302,7 @@ export const POST = withApiGuc(async (request: Request) => {
             verb: 'completed',
             action: INBOX_ZERO_REASSIGN_ACTION,
             request,
-            extensions: { counselorUserId: targetCounselor.userId, batchSize: memberIds.length },
+            extensions: { counselorUserId: targetCounselor.userId, previousCounselorUserId, batchSize: memberIds.length },
           })]);
 
           const auditFailed = auditResults.some((result) => result.status === 'rejected');
@@ -313,6 +318,13 @@ export const POST = withApiGuc(async (request: Request) => {
           failed += 1;
         }
       }
+
+      await notifyCounselorOfStaffAssignment({
+        counselorUserId: targetCounselor.userId,
+        actorUserId: user.id,
+        members: assignedToCounselor,
+        logPrefix: '[bulk reassign]',
+      });
 
       return NextResponse.json({
         ok: true,
