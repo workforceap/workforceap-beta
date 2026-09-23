@@ -4,12 +4,29 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
-import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
+import type { JobPostingApplicationStatus } from '@prisma/client';
+import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusKey, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
+import { allowedNextJobApplicationStatuses } from '@/lib/employer/applicationStatus';
 
-const STATUS_OPTIONS = JOB_APPLICATION_STATUS_KEYS.map((value) => ({
-  value,
-  label: jobApplicationStatusLabel(value, 'employer'),
-}));
+const FALLBACK_ERROR = 'Failed to update status. Try again.';
+const HIRE_CONFIRM_TEXT =
+  "Mark as hired? This tells the candidate and sends the hire to WorkforceAP staff to verify. You can't change it here afterwards.";
+
+/** The current stage plus the moves the server accepts from it, in pipeline order. */
+function statusOptions(current: string) {
+  const key = jobApplicationStatusKey(current);
+  const offered = new Set<string>([current, ...(key ? allowedNextJobApplicationStatuses(key as JobPostingApplicationStatus) : [])]);
+  return JOB_APPLICATION_STATUS_KEYS.filter((value) => offered.has(value)).map((value) => ({
+    value,
+    label: jobApplicationStatusLabel(value, 'employer'),
+  }));
+}
+
+async function errorFrom(res: Response): Promise<string> {
+  const data: unknown = await res.json().catch(() => null);
+  const message = data && typeof data === 'object' ? (data as { error?: unknown }).error : undefined;
+  return typeof message === 'string' && message.trim() ? message : FALLBACK_ERROR;
+}
 
 export default function ApplicationStatusUpdater({
   applicationId,
@@ -23,9 +40,21 @@ export default function ApplicationStatusUpdater({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingHire, setConfirmingHire] = useState(false);
+
+  function chooseStatus(newStatus: string) {
+    if (newStatus === status) return;
+    setError(null);
+    if (newStatus === 'hired') {
+      setConfirmingHire(true);
+      return;
+    }
+    void updateStatus(newStatus);
+  }
 
   async function updateStatus(newStatus: string) {
     if (newStatus === status) return;
+    setConfirmingHire(false);
     setSaving(true);
     setError(null);
     try {
@@ -40,10 +69,10 @@ export default function ApplicationStatusUpdater({
         setTimeout(() => setSaved(false), 2000);
         router.refresh();
       } else {
-        setError('Failed to update status. Try again.');
+        setError(await errorFrom(res));
       }
     } catch {
-      setError('Failed to update status. Try again.');
+      setError(FALLBACK_ERROR);
     } finally {
       setSaving(false);
     }
@@ -53,8 +82,8 @@ export default function ApplicationStatusUpdater({
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
       <select
         value={status}
-        onChange={(e) => updateStatus(e.target.value)}
-        disabled={saving}
+        onChange={(e) => chooseStatus(e.target.value)}
+        disabled={saving || confirmingHire}
         style={{
           padding: '0.5rem 0.75rem',
           borderRadius: '0.5rem',
@@ -66,12 +95,23 @@ export default function ApplicationStatusUpdater({
           cursor: saving ? 'wait' : 'pointer',
         }}
       >
-        {STATUS_OPTIONS.map((opt) => (
+        {statusOptions(status).map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
         ))}
       </select>
+      {confirmingHire && (
+        <div role="group" aria-label="Confirm hire" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', flexBasis: '100%' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface)' }}>{HIRE_CONFIRM_TEXT}</span>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => void updateStatus('hired')}>
+            Confirm
+          </button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfirmingHire(false)}>
+            Cancel
+          </button>
+        </div>
+      )}
       {saving && <PortalInlineSpinner size={16} />}
       {saved && (
         <span style={{ fontSize: '0.8125rem', color: 'var(--color-green)', fontWeight: 700 }} aria-live="polite">Saved</span>
