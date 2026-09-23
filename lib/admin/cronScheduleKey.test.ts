@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CRON_REGISTRY } from './cronRegistry';
 import {
+  CRON_EXPRESSION_BY_JOB,
   CRON_JOB_NAME_BY_PATH,
   CRON_SCHEDULE_BY_JOB,
   buildCronScheduleKey,
@@ -47,6 +48,15 @@ test('the /admin/crons schedule key covers every job that records CronExecution 
     const jobName = CRON_JOB_NAME_BY_PATH[cron.path];
     if (jobName === null) continue;
     assert.equal(CRON_SCHEDULE_BY_JOB[jobName], formatCronSchedule(cron.schedule), cron.path);
+  }
+});
+
+test('CRON_EXPRESSION_BY_JOB is the raw vercel.json expression, keyed like the caption map', () => {
+  assert.deepEqual(Object.keys(CRON_EXPRESSION_BY_JOB).sort(), Object.keys(CRON_SCHEDULE_BY_JOB).sort());
+  for (const cron of vercelCrons) {
+    const jobName = CRON_JOB_NAME_BY_PATH[cron.path];
+    if (jobName === null) continue;
+    assert.equal(CRON_EXPRESSION_BY_JOB[jobName], cron.schedule, cron.path);
   }
 });
 
