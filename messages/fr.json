@@ -3003,6 +3003,8 @@
       "adding": "Ajout…"
     },
     "form": {
+      "typeLabel": "Type d'objectif",
+      "titleLabel": "Intitulé de l'objectif",
       "customPlaceholder": "Ou saisissez un objectif personnalisé",
       "adding": "Ajout…",
       "addGoal": "Ajouter un objectif",

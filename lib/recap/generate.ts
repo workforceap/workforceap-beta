@@ -216,7 +216,8 @@ const GOAL_TYPE_TO_PLAN_HREF: Record<string, { href: string; cta: string; icon: 
   finish_pathway: { href: '/dashboard/resources', cta: 'Open pathway', icon: 'menu_book' },
   linkedin_profile: { href: '/dashboard/profile', cta: 'Update profile', icon: 'badge' },
   tech_readiness: { href: '/dashboard/program', cta: 'Open training', icon: 'school' },
-  career_pivot: { href: '/dashboard/career-brief', cta: 'Open career brief', icon: 'insights' },
+  // The career brief has no pivot tool of its own: land on the goal, where the step is ticked off.
+  career_pivot: { href: '/dashboard/career-brief#goals', cta: 'Open career brief', icon: 'insights' },
 };
 
 /**

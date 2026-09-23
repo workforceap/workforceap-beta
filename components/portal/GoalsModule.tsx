@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId } from 'react';
 import { useTranslations } from 'next-intl';
 import { CircleAlert, CirclePlus, Flag, Sparkles } from 'lucide-react';
 import { colorVar } from '@/components/portal/kit/tokens';
@@ -54,6 +54,8 @@ const CTA = 'wa-kit-cta wa-kit-focus disabled:wa-opacity-50 disabled:wa-cursor-n
 const GHOST_CTA = `${CTA} wa-kit-cta--ghost`;
 /** `.wa-kit-control` edges with the decorative hairline; form fields take the 3:1 control border. */
 const CONTROL_STYLE = { marginTop: 0, borderColor: 'var(--wa-control-border)' } as const;
+/** A visible `.wa-kit-field-label` sits closer to its own control than to the field above. */
+const FIELD_STYLE = { display: 'flex', flexDirection: 'column', gap: '0.3rem' } as const;
 
 function progressFor(goal: Goal): { done: number; total: number; pct: number } {
   const total = goal.steps.length;
@@ -76,6 +78,9 @@ type GoalsModuleProps = {
 export default function GoalsModule({ headingLevel = 3, headingId }: GoalsModuleProps = {}) {
   const t = useTranslations('goals');
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
+  const formId = useId();
+  const typeFieldId = `${formId}-type`;
+  const titleFieldId = `${formId}-title`;
   const [goals, setGoals] = useState<Goal[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -372,14 +377,16 @@ export default function GoalsModule({ headingLevel = 3, headingId }: GoalsModule
                 )}
 
                 {total > 0 ? (
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0.7rem 0 0', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0.7rem 0 0', display: 'flex', flexDirection: 'column' }}>
                     {goal.steps.map((step) => (
                       <li key={step.id}>
+                        {/* The whole row is the 44px target (the kit's pill and toggle height), not the 1rem box. */}
                         <label
                           style={{
                             display: 'flex',
-                            alignItems: 'flex-start',
+                            alignItems: 'center',
                             gap: '0.55rem',
+                            minHeight: 44,
                             cursor: 'pointer',
                             fontSize: 'var(--wa-type-body)',
                             lineHeight: 1.4,
@@ -390,7 +397,7 @@ export default function GoalsModule({ headingLevel = 3, headingId }: GoalsModule
                             type="checkbox"
                             checked={step.done}
                             onChange={() => handleToggleStep(goal.id, step)}
-                            style={{ marginTop: '0.15rem', accentColor: ACCENT, width: '1rem', height: '1rem', flexShrink: 0 }}
+                            style={{ margin: 0, accentColor: ACCENT, width: '1rem', height: '1rem', flexShrink: 0 }}
                           />
                           <span style={{ textDecoration: step.done ? 'line-through' : 'none' }}>{step.text}</span>
                         </label>
@@ -462,30 +469,42 @@ export default function GoalsModule({ headingLevel = 3, headingId }: GoalsModule
       {activeGoals.length < 3 && (
         <div>
           {showForm ? (
-            <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <select
-                value={goalType}
-                onChange={(e) => {
-                  setGoalType(e.target.value);
-                  setTitle(templateLabel(e.target.value));
-                }}
-                className="wa-kit-control wa-kit-focus"
-                style={CONTROL_STYLE}
-              >
-                {GOAL_TEMPLATE_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {templateLabel(type)}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t('form.customPlaceholder')}
-                className="wa-kit-control wa-kit-focus"
-                style={CONTROL_STYLE}
-              />
+            <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={FIELD_STYLE}>
+                <label htmlFor={typeFieldId} className="wa-kit-field-label">
+                  {t('form.typeLabel')}
+                </label>
+                <select
+                  id={typeFieldId}
+                  value={goalType}
+                  onChange={(e) => {
+                    setGoalType(e.target.value);
+                    setTitle(templateLabel(e.target.value));
+                  }}
+                  className="wa-kit-control wa-kit-focus"
+                  style={CONTROL_STYLE}
+                >
+                  {GOAL_TEMPLATE_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {templateLabel(type)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={FIELD_STYLE}>
+                <label htmlFor={titleFieldId} className="wa-kit-field-label">
+                  {t('form.titleLabel')}
+                </label>
+                <input
+                  id={titleFieldId}
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={t('form.customPlaceholder')}
+                  className="wa-kit-control wa-kit-focus"
+                  style={CONTROL_STYLE}
+                />
+              </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <button type="submit" className={CTA} disabled={saving}>
                   {saving ? t('form.adding') : t('form.addGoal')}

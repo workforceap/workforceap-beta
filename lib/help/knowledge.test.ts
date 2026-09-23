@@ -88,6 +88,17 @@ test('goal questions point members at the goals section of My career plan', () =
   assert.equal(currentFeature('member', '/dashboard/career-brief')?.route, '/dashboard/career-brief');
 });
 
+test('target-role questions go to Find your career, never to My career plan', () => {
+  // The career brief shows no target roles; Find your career is where a member
+  // picks one (interest profiler) or maps the skills one needs (skill mapping).
+  const features = findRelevantFeatures('member', 'Where do I see my target role?');
+  assert.equal(features[0]?.route, '/dashboard/learning/find-your-career');
+  assert.ok(!features.some((f) => f.route.startsWith('/dashboard/career-brief')), features.map((f) => f.route).join(', '));
+  const plan = HELP_KNOWLEDGE.member.features.find((f) => f.route === '/dashboard/career-brief');
+  assert.ok(!plan?.keywords.includes('target role'));
+  assert.doesNotMatch(plan?.summary ?? '', /target role/i);
+});
+
 test('findRelevantFeatures never returns another persona\'s pages', () => {
   const features = findRelevantFeatures('member', 'approve applicants in the admin command center');
   for (const f of features) assert.ok(f.route.startsWith('/dashboard'), f.route);

@@ -3060,6 +3060,8 @@
       "adding": "Adding…"
     },
     "form": {
+      "typeLabel": "Goal type",
+      "titleLabel": "Goal title",
       "customPlaceholder": "Or type a custom goal",
       "adding": "Adding…",
       "addGoal": "Add goal",

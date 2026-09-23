@@ -3003,6 +3003,8 @@
       "adding": "Adicionando…"
     },
     "form": {
+      "typeLabel": "Tipo de meta",
+      "titleLabel": "Título da meta",
       "customPlaceholder": "Ou digite uma meta personalizada",
       "adding": "Adicionando…",
       "addGoal": "Adicionar meta",

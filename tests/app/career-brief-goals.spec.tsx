@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 
@@ -123,6 +123,22 @@ describe('/dashboard/career-brief goals section (WAP-188)', () => {
     const { container } = await renderPage();
     const section = container.querySelector<HTMLElement>('#goals') as HTMLElement;
     expect(await within(section).findByText('Finish the resume draft')).toBeInTheDocument();
-    expect(within(section).getByRole('checkbox', { name: 'Add the last role' })).not.toBeChecked();
+    const step = within(section).getByRole('checkbox', { name: 'Add the last role' });
+    expect(step).not.toBeChecked();
+    // The whole labelled row is the 44px target, not just the 1rem box.
+    expect(step.closest('label')).toHaveStyle({ minHeight: '44px' });
+  });
+
+  it('names the add-goal fields with visible labels, not placeholders', async () => {
+    const { container } = await renderPage();
+    const section = container.querySelector<HTMLElement>('#goals') as HTMLElement;
+    fireEvent.click(await within(section).findByRole('button', { name: en.goals.form.addCta }));
+
+    const type = within(section).getByRole('combobox', { name: en.goals.form.typeLabel });
+    const title = within(section).getByRole('textbox', { name: en.goals.form.titleLabel });
+    expect(within(section).getByText(en.goals.form.typeLabel).tagName).toBe('LABEL');
+    expect(within(section).getByText(en.goals.form.titleLabel).tagName).toBe('LABEL');
+    expect(title).toHaveAttribute('placeholder', en.goals.form.customPlaceholder);
+    expect(type.id).not.toBe(title.id);
   });
 });
