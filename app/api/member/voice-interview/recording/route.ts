@@ -5,6 +5,7 @@ import { isMissingPrismaEnumValue } from '@/lib/db/prismaEnumFallback';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { saveAIToolResult } from '@/lib/ai/saveResult';
 import { trackEvent } from '@/lib/events/track';
+import { checkResumeUploadRateLimit } from '@/lib/rate-limit';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -12,6 +13,17 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 const BUCKET = 'member-resumes';
 
 const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+
+const RECORDING_MIME_TYPES = new Set(['video/webm', 'video/mp4']);
+
+/** `video/webm;codecs=vp9,opus` -> `video/webm`. */
+function baseMimeType(value: string): string {
+  return value.split(';')[0].trim().toLowerCase();
+}
+
+function isObjectNotFound(error: { message?: string; status?: number; statusCode?: string }): boolean {
+  return error.status === 404 || error.statusCode === '404' || /not.?found/i.test(error.message ?? '');
+}
 
 function isValidRecordingPath(userId: string, path: string): boolean {
   const prefix = `${userId}/voice-interview-recordings/`;
@@ -65,6 +77,13 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
     }
 
     if (body.action === 'prepare') {
+      const lim = await checkResumeUploadRateLimit(`voice-recording:${user.id}`);
+      if (!lim.success) {
+        return NextResponse.json(
+          { error: 'Too many recording uploads. Try again in a few minutes.' },
+          { status: 429 },
+        );
+      }
       const extRaw = typeof body.fileExt === 'string' ? body.fileExt.toLowerCase().replace(/^\./, '') : 'webm';
       const ext = extRaw === 'mp4' ? 'mp4' : 'webm';
       const supabase = getSupabaseAdmin();
@@ -91,14 +110,44 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
       const durationMs = typeof body.durationMs === 'number' ? body.durationMs : 0;
       const role = typeof body.role === 'string' ? body.role.trim() : '';
       const interviewType = typeof body.interviewType === 'string' ? body.interviewType.trim() : '';
-      const mimeType = typeof body.mimeType === 'string' ? body.mimeType : 'video/webm';
-      const byteSize = typeof body.byteSize === 'number' ? body.byteSize : 0;
 
       if (!path || !isValidRecordingPath(user.id, path)) {
         return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
       }
-      if (byteSize > MAX_VIDEO_BYTES) {
-        return NextResponse.json({ error: 'Recording too large' }, { status: 400 });
+
+      // The body's mimeType/byteSize are the client's claim. Read what storage
+      // actually holds and trust only that.
+      const supabase = getSupabaseAdmin();
+      const bucket = supabase.storage.from(BUCKET);
+      const { data: stored, error: infoError } = await bucket.info(path);
+      if (infoError || !stored) {
+        if (infoError && !isObjectNotFound(infoError)) {
+          console.error('[voice-interview/recording complete] info failed:', infoError);
+          return NextResponse.json({ error: 'Could not verify recording upload' }, { status: 502 });
+        }
+        return NextResponse.json({ error: 'Recording upload not found' }, { status: 409 });
+      }
+
+      const byteSize = stored.size ?? stored.metadata?.size;
+      const mimeType = stored.contentType ?? stored.metadata?.mimetype;
+      if (typeof byteSize !== 'number' || !Number.isFinite(byteSize) || typeof mimeType !== 'string') {
+        console.error('[voice-interview/recording complete] object info had no size or type');
+        return NextResponse.json({ error: 'Could not verify recording upload' }, { status: 502 });
+      }
+
+      const refusal =
+        byteSize <= 0
+          ? 'Recording is empty'
+          : byteSize > MAX_VIDEO_BYTES
+            ? 'Recording too large'
+            : !RECORDING_MIME_TYPES.has(baseMimeType(mimeType))
+              ? 'Unsupported recording type'
+              : null;
+      if (refusal) {
+        await bucket.remove([path]).catch((error: unknown) => {
+          console.error('[voice-interview/recording complete] removing refused object failed:', error);
+        });
+        return NextResponse.json({ error: refusal }, { status: 400 });
       }
 
       const inputSummary = [role || 'Role n/a', interviewType || 'General'].join(' · ').slice(0, 500);
@@ -134,8 +183,7 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
         }).catch(() => {});
       }
 
-      const supabase = getSupabaseAdmin();
-      const { data: signed, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
+      const { data: signed, error } = await bucket.createSignedUrl(path, 3600);
       if (error || !signed?.signedUrl) {
         console.error('[voice-interview/recording complete] createSignedUrl failed:', error);
         return NextResponse.json({ error: storageErrorMessage(error, 'sign') }, { status: 502 });
