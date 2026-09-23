@@ -64,6 +64,7 @@
     "collapseSidebar": "Réduire la barre latérale",
     "workspaceTabs": "Onglets de l'espace de travail",
     "unreadCount": "{count, plural, one {# non lu} other {# non lus}}",
+    "pendingApplicationsCount": "{count, plural, one {# en attente d’un employeur} other {# en attente d’employeurs}}",
     "mobileBottomNav": {
       "ariaLabel": "Navigation mobile principale",
       "marketing": {
@@ -670,6 +671,30 @@
     "screeningSectionTitle": "Détails du dépistage d'éligibilité",
     "ageGroupLabel": "Tranche d'âge *",
     "ageGroupPlaceholder": "Sélectionnez une tranche d'âge",
+    "ageGroupOptions": {
+      "under_18": "Moins de 18 ans",
+      "18_24": "18–24 ans",
+      "25_50": "25–50 ans",
+      "50_plus": "50 ans et plus"
+    },
+    "gradeLevelOptions": {
+      "9": "9e année",
+      "10": "10e année",
+      "11": "11e année",
+      "12": "12e année",
+      "other": "Autre / récemment diplômé"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Besoin d'une formation à un métier recherché ou d'un certificat",
+      "no_barrier": "Aucun obstacle pour l'instant",
+      "employment_gap": "Période sans emploi",
+      "limited_work_history": "Expérience professionnelle limitée",
+      "snap_tanf_wic": "SNAP / TANF / bons alimentaires / WIC",
+      "justice_involved": "Antécédents judiciaires",
+      "disability_health": "Handicap ou problème de santé",
+      "housing_instable": "Logement instable",
+      "other_barrier": "Autre obstacle"
+    },
     "countyLabel": "Comté *",
     "primaryBarriersLabel": "Obstacle(s) principal(aux) — cochez tout ce qui s'applique *",
     "primaryBarriersAria": "Obstacles principaux",
@@ -869,6 +894,15 @@
     "errSummaryGeneric": "Veuillez corriger les champs surlignés et réessayer.",
     "errProgramsNotSaved": "Vos sélections de programmes n'ont pas été enregistrées — veuillez retourner à l'étape 2 et choisir au moins un programme.",
     "errAccountGeneric": "Nous n'avons pas pu terminer la création de votre compte. Veuillez vérifier vos informations et réessayer, ou appelez le (512) 777-1808.",
+    "errEmailExists": "Un compte existe déjà avec cette adresse e-mail. Connectez-vous pour continuer, ou réinitialisez votre mot de passe si vous revenez.",
+    "errAccountRecovery": "Un compte existe déjà avec cette adresse e-mail. Si vous ne pouvez pas vous connecter, appelez WorkforceAP au (512) 777-1808 pour le récupérer.",
+    "errAlreadySignedIn": "Vous êtes déjà connecté à un autre compte. Déconnectez-vous d’abord, puis créez le nouveau compte.",
+    "errRateLimited": "Trop de tentatives d’inscription. Patientez quelques minutes, puis réessayez.",
+    "errRequestUnreadable": "Nous n’avons pas pu lire vos informations d’inscription. Actualisez la page et réessayez.",
+    "errServiceUnavailable": "L’inscription est temporairement indisponible. Réessayez bientôt ou appelez le (512) 777-1808.",
+    "errSecurityCheckRequired": "Veuillez effectuer la vérification de sécurité.",
+    "errSecurityCheckFailed": "La vérification de sécurité a échoué. Veuillez réessayer.",
+    "errProgramUnmatched": "Nous n’avons pas trouvé le programme choisi. Revenez à l’étape 2 et choisissez à nouveau votre programme.",
     "errNetwork": "Nous n'avons pas pu atteindre le serveur pour terminer la création de votre compte. Vérifiez votre connexion internet et réessayez, ou appelez le (512) 777-1808 si cela continue d'échouer.",
     "confirmationMetaTitle": "Vous êtes dans le système WorkforceAP",
     "confirmationMetaDescription": "Votre candidature est enregistrée. Consultez votre boîte de réception et vos courriers indésirables pour la confirmation et les prochaines étapes.",
@@ -3797,6 +3831,17 @@
       "body": "Réessayez ou parcourez le tableau des emplois pour voir toutes les offres.",
       "action": "Réessayer",
       "secondary": "Parcourir les emplois"
+    },
+    "applicationsUnavailable": {
+      "title": "Impossible de charger vos candidatures",
+      "body": "Vos totaux sont inconnus, pas nuls. Réessayez dans un instant.",
+      "action": "Réessayer",
+      "kpiCaption": "Chargement impossible"
+    },
+    "openingsUnavailable": {
+      "title": "Impossible de charger les offres",
+      "body": "C'est un problème de chargement, pas un tableau vide. Réessayez dans un instant.",
+      "action": "Réessayer"
     },
     "stage": {
       "title": "Rien à cette étape"

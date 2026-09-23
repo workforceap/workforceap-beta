@@ -220,12 +220,15 @@ function staffApiRequest(method: string, path: string, trust?: string) {
   return new NextRequest(request, { method });
 }
 
-// Admin-only APIs outside /api/admin: a Stripe Connect transfer and org
-// settings (custom domain) must carry the same staff MFA gate.
+// Admin-only APIs outside /api/admin: a Stripe Connect transfer, org
+// settings (custom domain), the billing-packet send (emails member documents)
+// and the admin SLO report must carry the same staff MFA gate.
 describe.each([
   ['POST', '/api/partner/payout'],
   ['PUT', '/api/org/acme/settings'],
   ['GET', '/api/org/acme/settings'],
+  ['POST', '/api/billing-packets/p1/send'],
+  ['GET', '/api/health/slo'],
 ])('staff MFA on admin-only API %s %s', (method, path) => {
   it('rejects an AAL1 session before factor enrollment', async () => {
     const response = await middleware(staffApiRequest(method, path));
@@ -263,7 +266,10 @@ it.each([
   ['GET', '/api/partner/payout/history'],
   ['GET', '/api/org/acme/outcomes'],
   ['PUT', '/api/org/acme/settings/extra'],
-])('does not challenge non-admin partner and org APIs: %s %s', async (method, path) => {
+  ['GET', '/api/billing-packets/p1/pdf'],
+  ['POST', '/api/billing-packets/p1/send/extra'],
+  ['GET', '/api/health'],
+])('does not challenge non-admin partner, org, billing-packet and health APIs: %s %s', async (method, path) => {
   const response = await middleware(staffApiRequest(method, path));
   expect(response.status).toBe(200);
   expect(mocks.aal).not.toHaveBeenCalled();

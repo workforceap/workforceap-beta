@@ -6,6 +6,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
 
 const BUCKET = 'member-files';
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -50,6 +51,11 @@ function storageErrorMessage(error: { message?: string } | null): string {
     }
     const MIME: Record<string, string> = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp' };
     const contentType = MIME[ext] ?? 'application/octet-stream';
+    // The bytes must be the type the name claims: staff review this file as
+    // proof, so HTML or a renamed file never gets stored as `application/pdf`.
+    if (!(await fileMatchesContentType(file, contentType))) {
+      return NextResponse.json({ error: 'Only PDF and image files are accepted' }, { status: 400 });
+    }
   
     // Verify the cert exists for this user
     const cert = await prisma.$transaction((tx) => tx.userCertification.findUnique({

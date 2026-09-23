@@ -1,7 +1,4 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
-import { Button } from '@astryxdesign/core/Button';
 import {
   DesignSurface,
   PageOpener,
@@ -12,6 +9,7 @@ import {
   type KpiItem,
 } from '@/components/portal/kit';
 import FeatureFlagToggle from './FeatureFlagToggle';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Feature flags — admin rollout registry rendered as a dense table.
@@ -145,9 +143,7 @@ export function FeatureFlagsKit({
         kicker="Platform"
         lede="Gradual rollout & role-gating of platform features"
         action={
-          <AstryxLink href="/admin/feature-flags?ui=legacy" as={Link as never} isStandalone>
-            <Button label="Manage" variant="primary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton href="/admin/feature-flags?ui=legacy" label="Manage" variant="primary" size="sm" />
         }
       />
 
@@ -164,9 +160,7 @@ export function FeatureFlagsKit({
             title="No feature flags yet"
             description="Create a flag to start rolling out features gradually. Flags apply to every member, counselor, employer and partner portal in this organization."
             action={
-              <AstryxLink href="/admin/feature-flags?ui=legacy" as={Link as never} isStandalone>
-                <Button label="Create a flag" variant="primary" size="sm" />
-              </AstryxLink>
+              <KitLinkButton href="/admin/feature-flags?ui=legacy" label="Create a flag" variant="primary" size="sm" />
             }
           />
         </section>

@@ -6,6 +6,7 @@ import LocalizedLink from '@/components/LocalizedLink';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { WEAK_PASSWORD_REASON } from '@/lib/auth/authProviderError';
+import { isSignupErrorReason } from '@/lib/apply/signupErrorReason';
 import { trackApplyFunnel } from '@/lib/analytics/events';
 import { isValidPostalCode } from '@/lib/validation/postalCode';
 import { trackConversionWithValue } from '@/lib/analytics/conversionValue';
@@ -430,35 +431,72 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
       if (!res.ok || !data) {
         // Map common server-side errors to the specific field that produced
         // them so users can fix the issue inline instead of guessing.
-        // WAP-26: a weak-password refusal is reported by reason so the copy
-        // stays localised (the message text alone need not mention "password").
+        // WAP-26 / WAP-242: the server reports a stable `reason`, so the copy
+        // stays localised and the field is chosen by code, never by matching
+        // the English `error` text. Responses without a known reason (older
+        // deploys, unexpected failures) keep the text-based fallback.
         const weakPassword = data?.reason === WEAK_PASSWORD_REASON;
-        const serverMessage: string = weakPassword
-          ? t('errPasswordWeak')
-          : typeof data?.error === 'string' ? data.error : '';
-        const lower = serverMessage.toLowerCase();
+        const reason = isSignupErrorReason(data?.reason) ? data.reason : null;
         const serverFieldErrors: typeof fieldErrors = {};
+        let serverMessage: string;
         if (weakPassword) {
+          serverMessage = t('errPasswordWeak');
           serverFieldErrors.password = serverMessage;
-        } else if (lower.includes('already exists') || lower.includes('already registered')) {
-          serverFieldErrors.email = serverMessage;
-        } else if (lower.includes('password')) {
-          serverFieldErrors.password = serverMessage;
-        } else if (lower.includes('phone')) {
-          serverFieldErrors.phone = serverMessage;
-        } else if (lower.includes('email')) {
-          serverFieldErrors.email = serverMessage;
-        } else if (lower.includes('first name')) {
-          serverFieldErrors.firstName = serverMessage;
-        } else if (lower.includes('last name')) {
-          serverFieldErrors.lastName = serverMessage;
+        } else if (reason === 'invalid_field') {
+          const INVALID_FIELD: Partial<Record<string, [keyof typeof fieldErrors, string]>> = {
+            firstName: ['firstName', t('errFirstName')],
+            lastName: ['lastName', t('errLastName')],
+            email: ['email', t('errEmailInvalid')],
+            phone: ['phone', t('errPhoneDigits')],
+            zip: ['zip', t('errZipFormat')],
+            password: ['password', t('errPasswordShort')],
+          };
+          const hit = typeof data?.field === 'string' ? INVALID_FIELD[data.field] : undefined;
+          serverMessage = hit ? hit[1] : t('errAccountGeneric');
+          if (hit) serverFieldErrors[hit[0]] = serverMessage;
+        } else if (reason) {
+          const REASON_MESSAGE: Record<Exclude<typeof reason, 'invalid_field'>, string> = {
+            rate_limited: t('errRateLimited'),
+            request_unreadable: t('errRequestUnreadable'),
+            service_unavailable: t('errServiceUnavailable'),
+            security_check_required: t('errSecurityCheckRequired'),
+            security_check_failed: t('errSecurityCheckFailed'),
+            program_unmatched: t('errProgramUnmatched'),
+            already_signed_in: t('errAlreadySignedIn'),
+            email_exists: t('errEmailExists'),
+            account_recovery_required: t('errAccountRecovery'),
+          };
+          serverMessage = REASON_MESSAGE[reason];
+          if (reason === 'email_exists' || reason === 'account_recovery_required') {
+            serverFieldErrors.email = serverMessage;
+          }
+        } else {
+          serverMessage = typeof data?.error === 'string' ? data.error : '';
+          const lower = serverMessage.toLowerCase();
+          if (lower.includes('already exists') || lower.includes('already registered')) {
+            serverFieldErrors.email = serverMessage;
+          } else if (lower.includes('password')) {
+            serverFieldErrors.password = serverMessage;
+          } else if (lower.includes('phone')) {
+            serverFieldErrors.phone = serverMessage;
+          } else if (lower.includes('email')) {
+            serverFieldErrors.email = serverMessage;
+          } else if (lower.includes('first name')) {
+            serverFieldErrors.firstName = serverMessage;
+          } else if (lower.includes('last name')) {
+            serverFieldErrors.lastName = serverMessage;
+          }
         }
         if (Object.keys(serverFieldErrors).length > 0) {
           setFieldErrors((prev) => ({ ...prev, ...serverFieldErrors }));
         }
         // The Turnstile token is single-use and expires quickly — a failed
         // server-side check needs a fresh token, not just a re-submit.
-        if (lower.includes('security check')) {
+        if (
+          reason === 'security_check_required' ||
+          reason === 'security_check_failed' ||
+          (!reason && serverMessage.toLowerCase().includes('security check'))
+        ) {
           setTurnstileToken(null);
           setTurnstileNotice('expired');
           turnstileRef.current?.reset();
@@ -466,7 +504,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         setError(serverMessage || t('errAccountGeneric'));
         trackApplyFunnel(3, 'account_create_error', {
           program_slugs: programRankedSlugs,
-          error_message: serverMessage || 'unknown_error',
+          error_message: (reason ?? (weakPassword ? WEAK_PASSWORD_REASON : serverMessage)) || 'unknown_error',
         });
         setLoading(false);
         requestAnimationFrame(() => {
@@ -488,9 +526,13 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         schoolSignup &&
         eligibilityPayload?.ageGroup === 'under_18' &&
         eligibilityPayload?.parentGuardianEmail?.trim();
-      const confirmationPath = schoolSignup
-        ? `/apply/confirmation?school=1${schoolMinor ? '&minor=1' : ''}`
-        : '/apply/confirmation';
+      // `receipt=0` only when the server's awaited receipt send failed: the
+      // confirmation page then retries it. A sent receipt is never sent twice (WAP-240).
+      const receiptQuery = data.receiptSent === false ? 'receipt=0' : '';
+      const confirmationQuery = [schoolSignup ? 'school=1' : '', schoolMinor ? 'minor=1' : '', receiptQuery]
+        .filter(Boolean)
+        .join('&');
+      const confirmationPath = `/apply/confirmation${confirmationQuery ? `?${confirmationQuery}` : ''}`;
       trackApplyFunnel(3, 'account_created', {
         program_slugs: programRankedSlugs,
         redirect_to: confirmationPath,

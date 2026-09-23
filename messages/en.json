@@ -65,6 +65,7 @@
     "collapseSidebar": "Collapse sidebar",
     "workspaceTabs": "Workspace tabs",
     "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "pendingApplicationsCount": "{count, plural, one {# waiting on an employer} other {# waiting on employers}}",
     "mobileBottomNav": {
       "ariaLabel": "Primary mobile navigation",
       "marketing": {
@@ -735,6 +736,30 @@
     "screeningSectionTitle": "Eligibility screening details",
     "ageGroupLabel": "Age group *",
     "ageGroupPlaceholder": "Select age group",
+    "ageGroupOptions": {
+      "under_18": "Under 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50+"
+    },
+    "gradeLevelOptions": {
+      "9": "9th grade",
+      "10": "10th grade",
+      "11": "11th grade",
+      "12": "12th grade",
+      "other": "Other / recent graduate"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Need in-demand occupation or certificate training",
+      "no_barrier": "No barrier right now",
+      "employment_gap": "Employment gap",
+      "limited_work_history": "Limited work history",
+      "snap_tanf_wic": "SNAP / TANF / Food Stamps / WIC",
+      "justice_involved": "Background / justice involvement",
+      "disability_health": "Disability or health barrier",
+      "housing_instable": "Housing instability",
+      "other_barrier": "Other barrier"
+    },
     "countyLabel": "County *",
     "primaryBarriersLabel": "Primary barrier(s) — check all that apply *",
     "primaryBarriersAria": "Primary barriers",
@@ -940,6 +965,15 @@
     "errSummaryGeneric": "Please fix the highlighted fields and try again.",
     "errProgramsNotSaved": "Your program selections weren't saved — please go back to step 2 and choose at least one program.",
     "errAccountGeneric": "We could not finish creating your account. Please review your information and try again, or call (512) 777-1808.",
+    "errEmailExists": "An account with this email already exists. Log in to continue, or reset your password if you are returning.",
+    "errAccountRecovery": "An account with this email already exists. If you cannot sign in, call WorkforceAP at (512) 777-1808 for help recovering it.",
+    "errAlreadySignedIn": "You are already signed in to another account. Sign out first, then create the new account.",
+    "errRateLimited": "Too many signup attempts. Please wait a few minutes and try again.",
+    "errRequestUnreadable": "We could not read your signup details. Refresh the page and try again.",
+    "errServiceUnavailable": "Signup is temporarily unavailable. Please try again shortly, or call (512) 777-1808.",
+    "errSecurityCheckRequired": "Please complete the security check.",
+    "errSecurityCheckFailed": "The security check did not pass. Please try it again.",
+    "errProgramUnmatched": "We could not match your program choice. Go back to step 2 and choose your program again.",
     "errNetwork": "We could not reach the server to finish creating your account. Check your internet connection and try again, or call (512) 777-1808 if it keeps failing.",
     "confirmationMetaTitle": "You're in the WorkforceAP system",
     "confirmationMetaDescription": "Your application is on file. Check your inbox and spam folder for confirmation and follow-up about next steps.",
@@ -3854,6 +3888,17 @@
       "body": "Try again, or browse the job board to see every opening.",
       "action": "Try again",
       "secondary": "Browse jobs"
+    },
+    "applicationsUnavailable": {
+      "title": "Couldn't load your applications",
+      "body": "Your counts are unknown, not zero. Try again in a moment.",
+      "action": "Try again",
+      "kpiCaption": "Couldn't load"
+    },
+    "openingsUnavailable": {
+      "title": "Couldn't load open roles",
+      "body": "This is a loading problem, not an empty board. Try again in a moment.",
+      "action": "Try again"
     },
     "stage": {
       "title": "Nothing in this stage"

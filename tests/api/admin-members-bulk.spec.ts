@@ -88,6 +88,7 @@ const mockTx = {
   messageThread: { update: vi.fn(), upsert: vi.fn().mockResolvedValue({ id: 'thread-1' }) },
   counselor: { findFirst: vi.fn() },
   counselorAssignment: {
+    findFirst: vi.fn(),
     updateMany: vi.fn(),
     update: vi.fn(),
     create: vi.fn(),
@@ -148,6 +149,7 @@ import { getResend } from '@/lib/email';
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
+import { auditLog } from '@/lib/audit';
 
 const uid = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, '0')}`;
 
@@ -167,6 +169,7 @@ describe('Bulk operations', () => {
     mockTx.courseEnrollment.findMany.mockResolvedValue([]);
     mockTx.courseEnrollment.upsert.mockResolvedValue({ id: 'enrollment-1' });
     mockTx.courseEnrollment.deleteMany.mockResolvedValue({ count: 1 });
+    mockTx.counselorAssignment.findFirst.mockResolvedValue(null);
     vi.mocked(invalidateMemberState).mockResolvedValue(undefined);
     vi.mocked(prisma.organizationProgramCatalog.count).mockResolvedValue(0);
     vi.mocked(prisma.organizationProgramCatalog.findFirst).mockResolvedValue(null);
@@ -525,6 +528,105 @@ describe('Bulk operations', () => {
       });
       expect(mockTx.counselorAssignment.create).not.toHaveBeenCalled();
       expect(mockTx.messageThread.upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { memberId: uid(1) }, update: { counselorUserId: null } }));
+    });
+
+    describe('counselor handoff and skipped members', () => {
+      const actorId = uid(99);
+      const newCounselorUserId = uid(88);
+      const arrangeAdmin = () => {
+        vi.mocked(getUser).mockResolvedValue({ id: actorId, email: 'admin@example.com' } as any);
+        vi.mocked(isAdmin).mockResolvedValue(true);
+        vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+      };
+      const inScope = (ids: number[]) => ids.map((n) => ({
+        id: uid(n), email: `m${n}@example.com`, fullName: `Member ${n}`, enrolledProgram: null, pipelineBoardStage: null,
+      }));
+      const arrangeCounselor = () => {
+        vi.mocked(prisma.counselor.findFirst).mockResolvedValue({
+          id: 'counselor-x', userId: newCounselorUserId, user: { id: newCounselorUserId, fullName: 'Counselor X' },
+        } as any);
+        mockTx.counselorAssignment.findUnique.mockResolvedValue(null);
+        mockTx.counselorAssignment.create.mockResolvedValue({ id: 'assignment-x' });
+      };
+
+      it('sends exactly one summary notification to the receiving counselor for a 3-member update', async () => {
+        arrangeAdmin();
+        arrangeCounselor();
+        vi.mocked(prisma.user.findMany).mockResolvedValue(inScope([1, 2, 3]) as any);
+        mockTx.counselorAssignment.findFirst.mockResolvedValue({ counselor: { userId: uid(77), user: { fullName: 'Counselor Previous' } } });
+
+        const res = await bulkUpdatePost(makeUpdateRequest({ memberIds: [uid(1), uid(2), uid(3)], counselorUserId: newCounselorUserId }));
+
+        expect(res.status).toBe(200);
+        expect(vi.mocked(createNotification).mock.calls.map(([input]) => input)).toEqual([
+          expect.objectContaining({
+            userId: newCounselorUserId,
+            type: 'task_assigned',
+            title: '3 members were assigned to you',
+            data: expect.objectContaining({ link: '/counselor/students' }),
+          }),
+        ]);
+      });
+
+      it('audits the previous counselor for each member', async () => {
+        arrangeAdmin();
+        arrangeCounselor();
+        vi.mocked(prisma.user.findMany).mockResolvedValue(inScope([1]) as any);
+        mockTx.counselorAssignment.findFirst.mockResolvedValue({ counselor: { userId: uid(77), user: { fullName: 'Counselor Previous' } } });
+
+        await bulkUpdatePost(makeUpdateRequest({ memberIds: [uid(1)], counselorUserId: newCounselorUserId }));
+
+        expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({
+          action: 'bulk_update_member',
+          targetId: uid(1),
+          metadata: expect.objectContaining({
+            counselorUserId: newCounselorUserId,
+            previousCounselorUserId: uid(77),
+            previousCounselorName: 'Counselor Previous',
+          }),
+        }));
+        expect(prisma.auditEvent.create).toHaveBeenCalledWith(expect.objectContaining({
+          data: expect.objectContaining({
+            statementJson: expect.objectContaining({
+              result: expect.objectContaining({
+                extensions: expect.objectContaining({ previousCounselorUserId: uid(77) }),
+              }),
+            }),
+          }),
+        }));
+      });
+
+      it('skips the counselor notification for members already on that caseload, for the actor, and for unassign', async () => {
+        arrangeAdmin();
+        arrangeCounselor();
+        vi.mocked(prisma.user.findMany).mockResolvedValue(inScope([1, 2]) as any);
+        mockTx.counselorAssignment.findFirst.mockResolvedValue({ counselor: { userId: newCounselorUserId, user: { fullName: 'Counselor X' } } });
+        await bulkUpdatePost(makeUpdateRequest({ memberIds: [uid(1), uid(2)], counselorUserId: newCounselorUserId }));
+        expect(createNotification).not.toHaveBeenCalled();
+
+        vi.mocked(getUser).mockResolvedValue({ id: newCounselorUserId, email: 'x@example.com' } as any);
+        mockTx.counselorAssignment.findFirst.mockResolvedValue(null);
+        await bulkUpdatePost(makeUpdateRequest({ memberIds: [uid(1), uid(2)], counselorUserId: newCounselorUserId }));
+        expect(createNotification).not.toHaveBeenCalled();
+
+        arrangeAdmin();
+        await bulkUpdatePost(makeUpdateRequest({ memberIds: [uid(1), uid(2)], counselorUserId: null }));
+        expect(createNotification).not.toHaveBeenCalled();
+      });
+
+      it('reports requested members outside scope as skipped instead of "N of N"', async () => {
+        arrangeAdmin();
+        const requested = Array.from({ length: 10 }, (_, i) => uid(i + 1));
+        vi.mocked(prisma.user.findMany).mockResolvedValue(inScope([1, 2, 3, 4, 5, 6, 7]) as any);
+
+        const res = await bulkUpdatePost(makeUpdateRequest({ memberIds: requested, pipelineStage: 'enrolled' }));
+        const body = await res.json();
+
+        expect(res.status).toBe(207);
+        expect(body).toMatchObject({ updated: 7, total: 10, skipped: 3 });
+        expect(body.errors).toEqual(['3 selected members were not found or are outside your organization.']);
+        expect(JSON.stringify(body)).not.toContain(uid(8));
+      });
     });
   });
 

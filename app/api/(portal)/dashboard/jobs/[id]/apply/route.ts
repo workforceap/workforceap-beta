@@ -5,6 +5,7 @@ import { sendNewJobApplicationEmail } from '@/lib/email';
 import { z } from 'zod';
 import { trackEvent } from '@/lib/events/track';
 import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import { awardPoints } from '@/lib/member/points';
 import { handleApiError, ApiError } from '@/lib/api/errors';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -51,6 +52,7 @@ async function _POST(
         id,
         status: 'live',
         AND: [
+          ACTIVE_EMPLOYER_JOB_WHERE,
           {
             OR: [
               { expiresAt: null },

@@ -6,6 +6,8 @@ import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemb
 import PageHeader from '@/components/portal/PageHeader';
 import { prisma } from '@/lib/db/prisma';
 import AdminCronsClient from '@/components/admin/AdminCronsClient';
+import { CRON_EXPRESSION_BY_JOB, CRON_SCHEDULE_BY_JOB } from '@/lib/admin/cronScheduleKey';
+import { cronFreshness } from '@/lib/cron/cronFreshness';
 import { DesignSurface } from '@/components/portal/kit';
 import {
   CronsMonitorKit,
@@ -23,39 +25,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Most recent execution per distinct job we materialize for the dense board. */
 const BOARD_LIMIT = 50;
-
-/**
- * Human schedule captions keyed by the jobName recorded in CronExecution
- * (withCronLogging(name) — the route segment with hyphens → underscores).
- * Derived from the committed vercel.json `crons` registry. Any jobName not
- * listed renders "—" (schedule not tracked for that job).
- */
-const SCHEDULE_BY_JOB: Record<string, string> = {
-  applicant_followup: 'Every 3 days, 11 AM',
-  at_risk_alerts: 'Mon 1 PM',
-  at_risk_check: 'Daily 6 AM',
-  coursera_auto_heal: 'Hourly :15',
-  coursera_b4b_sync: 'Every 6 hours',
-  coursera_sync: 'Every 6 hours',
-  coursera_training_sync: 'Hourly',
-  course_accountability: 'Daily 3 PM',
-  data_cleanup: 'Daily 7:30 AM',
-  deploy_health: 'Hourly',
-  inactive_nudge: 'Mon 10 AM',
-  inactivity_nudge: 'Wed 10 AM',
-  interview_reminders: 'Daily 2:30 PM',
-  milestone_cascade_draft: 'Hourly',
-  milestone_cascade_expire: 'Daily 9 AM',
-  milestone_celebration: 'Daily 11 AM',
-  partner_outcome_digest: 'Mon 1 PM',
-  placement_survey: 'Daily 2 PM',
-  smoke_test: 'Hourly',
-  stale_training_check: 'Daily 12:30 PM',
-  verification: 'Daily 11 AM',
-  weekly_recap: 'Sun 6 PM',
-  weekly_recap_email: 'Fri 10 PM',
-  wioa_report: 'Monthly (1st, 2 PM)',
-};
 
 const DISPLAY_STATUS: Record<string, CronDisplayStatus> = {
   SUCCESS: 'Success',
@@ -109,13 +78,13 @@ export default async function AdminCronsPage({
 
 /** Design-kit default: one row per distinct cron job (its latest execution). */
 async function renderKit() {
-  // Distinct jobs (with latest-run timestamp) + recent execution slice, in
-  // parallel and lean. We resolve each job's latest execution from the recent
-  // slice; jobs whose latest run is older than the slice still appear via the
-  // groupBy with last-run filled from _max.startedAt.
-  const [jobGroups, recent] = await Promise.all([
+  // One grouped read by (jobName, status) gives each job's latest run, its
+  // latest status and its last SUCCESS, however old; the recent slice only
+  // supplies the latest run's duration. Jobs vercel.json schedules that have
+  // no rows at all are merged in as "Never run".
+  const [statusGroups, recent] = await Promise.all([
     prisma.cronExecution.groupBy({
-      by: ['jobName'],
+      by: ['jobName', 'status'],
       _max: { startedAt: true },
     }),
     prisma.cronExecution.findMany({
@@ -130,36 +99,70 @@ async function renderKit() {
     }),
   ]);
 
-  // Latest execution row per job (from the recent slice).
+  type JobRuns = { lastRunAt: Date | null; lastStatus: string | null; lastSuccessAt: Date | null };
+  const runsByJob = new Map<string, JobRuns>();
+  for (const g of statusGroups) {
+    const at = g._max.startedAt;
+    const runs = runsByJob.get(g.jobName) ?? { lastRunAt: null, lastStatus: null, lastSuccessAt: null };
+    if (at && (!runs.lastRunAt || at > runs.lastRunAt)) {
+      runs.lastRunAt = at;
+      runs.lastStatus = g.status;
+    }
+    if (g.status === 'SUCCESS') runs.lastSuccessAt = at;
+    runsByJob.set(g.jobName, runs);
+  }
+  const jobsWithRuns = [...runsByJob.keys()];
+  const neverRunJobs = Object.keys(CRON_EXPRESSION_BY_JOB).filter((job) => !runsByJob.has(job));
+
+  // Latest execution row per job (from the recent slice), for its duration.
   const latestByJob = new Map<string, (typeof recent)[number]>();
   for (const exec of recent) {
     if (!latestByJob.has(exec.jobName)) latestByJob.set(exec.jobName, exec);
   }
 
-  // Most-recently-run jobs first (groupBy returns no guaranteed order).
-  const sortedGroups = [...jobGroups].sort(
-    (a, b) => (b._max.startedAt?.getTime() ?? 0) - (a._max.startedAt?.getTime() ?? 0),
-  );
-
-  const rows: CronJobRow[] = sortedGroups.slice(0, BOARD_LIMIT).map((g) => {
-    const latest = latestByJob.get(g.jobName);
-    const status: CronDisplayStatus = latest
-      ? DISPLAY_STATUS[latest.status] ?? 'Disabled'
-      : 'Disabled';
+  const now = new Date();
+  const allRows: CronJobRow[] = [...jobsWithRuns, ...neverRunJobs].map((job) => {
+    const runs = runsByJob.get(job) ?? { lastRunAt: null, lastStatus: null, lastSuccessAt: null };
+    const latest = latestByJob.get(job);
+    const status: CronDisplayStatus | null = runs.lastStatus ? DISPLAY_STATUS[runs.lastStatus] ?? 'Disabled' : null;
     return {
-      id: g.jobName,
-      job: g.jobName,
-      schedule: SCHEDULE_BY_JOB[g.jobName] ?? '—',
-      lastRun: relativeTime(latest?.startedAt ?? g._max.startedAt ?? null),
+      id: job,
+      job,
+      // Captions come from vercel.json, keyed by the recorded jobName; a job
+      // with no declared schedule (a manual run, a retired job) shows "—".
+      schedule: CRON_SCHEDULE_BY_JOB[job] ?? '—',
+      lastRun: relativeTime(runs.lastRunAt),
       duration: formatDuration(latest?.durationMs ?? null),
       status,
+      freshness: cronFreshness({
+        expr: CRON_EXPRESSION_BY_JOB[job] ?? null,
+        lastSuccessAt: runs.lastSuccessAt,
+        lastRunAt: runs.lastRunAt,
+        now,
+        // withCronLogging records SKIPPED when the job's toggle is off.
+        enabled: runs.lastStatus !== 'SKIPPED',
+      }),
+      lastSuccess: relativeTime(runs.lastSuccessAt),
     };
   });
 
-  const totalJobs = jobGroups.length;
-  const enabled = rows.filter((r) => r.status === 'Success').length;
-  const failing = rows.filter((r) => r.status === 'Failed').length;
-  const lastRun = relativeTime(sortedGroups[0]?._max.startedAt ?? null);
+  // Flagged jobs first so the board limit can never hide them, then the
+  // most recently run (groupBy returns no guaranteed order).
+  const flagged = (r: CronJobRow) => r.freshness === 'overdue' || r.freshness === 'never_run';
+  const lastRunMs = (r: CronJobRow) => runsByJob.get(r.job)?.lastRunAt?.getTime() ?? 0;
+  allRows.sort(
+    (a, b) => Number(flagged(b)) - Number(flagged(a)) || lastRunMs(b) - lastRunMs(a) || a.job.localeCompare(b.job),
+  );
+
+  const rows = allRows.slice(0, BOARD_LIMIT);
+
+  const totalJobs = allRows.length;
+  const enabled = allRows.filter((r) => r.status === 'Success').length;
+  const failing = allRows.filter((r) => r.status === 'Failed').length;
+  const overdue = allRows.filter((r) => r.freshness === 'overdue').length;
+  const neverRun = allRows.filter((r) => r.freshness === 'never_run').length;
+  const mostRecentRun = Math.max(0, ...allRows.map(lastRunMs));
+  const lastRun = relativeTime(mostRecentRun ? new Date(mostRecentRun) : null);
 
   return (
     <DesignSurface surface="dense">
@@ -167,6 +170,8 @@ async function renderKit() {
         jobs={rows}
         totalJobs={totalJobs}
         enabled={enabled}
+        overdue={overdue}
+        neverRun={neverRun}
         failing={failing}
         lastRun={lastRun}
       />
