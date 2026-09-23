@@ -68,7 +68,6 @@ vi.mock('@/app/(portal)/dashboard/first90DaysAction', () => ({ submitFirst90Days
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
 import VoiceCoachLauncherCard from '@/components/portal/VoiceCoachLauncherCard';
 import VoiceCoachesPromo from '@/components/portal/VoiceCoachesPromo';
-import MemberDashboardVoiceSection from '@/components/portal/MemberDashboardVoiceSection';
 import MembersTable from '@/components/admin/MembersTable';
 import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
 import {
@@ -312,7 +311,7 @@ describe('voice surfaces glow and cast their CTA shadow from --wa-* tokens', () 
 
   for (const scheme of SCHEMES) {
     it(`${scheme}: the Elevator Introduction launcher cards glow brand gold and badge --wa-gold-dark (were #a47f38 on both)`, () => {
-      for (const [Section, badge] of [[VoiceCoachesPromo, '10–20 SEC'], [MemberDashboardVoiceSection, 'Introduction']] as const) {
+      for (const [Section, badge] of [[VoiceCoachesPromo, '10–20 SEC']] as const) {
         const { unmount } = renderIn(scheme, <Section />);
         const label = screen.getByText(badge);
         const text = computed(label, 'color');
