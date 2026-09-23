@@ -538,7 +538,10 @@ const filterChips = [
   .searchbox:focus-within{border-color:var(--crimson);box-shadow:0 0 0 3px rgba(173,44,77,.1)}
   .searchbox input{flex:1;min-width:0;border:0;background:transparent;outline:none;font:inherit;font-size:15px;color:var(--text)}
   .searchbox input::placeholder{color:var(--muted)}
-  .chips{display:flex;flex-wrap:wrap;gap:10px}
+  /* Row gap 0 and a -5px block margin (WAP-209): the 44px chip boxes carry
+     5px of transparent hit area above and below each 34px pill, so wrapped
+     pills stay 10px apart and the group keeps its old outer spacing. */
+  .chips{display:flex;flex-wrap:wrap;gap:0 10px;margin-block:-5px}
   /* 44px tap target, 34px pill (WAP-209): the button is the full 44px hit
      area and stays transparent; the visible pill is its ::before, inset 5px
      top and bottom, so the chips look exactly as before. */
