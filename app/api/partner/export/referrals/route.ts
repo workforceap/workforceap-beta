@@ -7,11 +7,17 @@ import { prisma } from '@/lib/db/prisma';
 import { loadPartnerReferralBundle, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+// Shared escaper (P02): quotes like before and also neutralizes a leading
+// = + - @ TAB or CR, so a member-, employer- or partner-typed value is text,
+// not a live formula, when the partner opens the file in Excel/Sheets.
+import { csvEscape } from '@/lib/csv';
 
-function csvEscape(value: string): string {
-  if (/[",\n\r]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
-  return value;
-}export const GET = withApiGuc(async (request: NextRequest) => {
+/** A '#' branding line value on one line: a CR/LF could start an unescaped data row. */
+function brandingValue(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ');
+}
+
+export const GET = withApiGuc(async (request: NextRequest) => {
   try {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -113,9 +119,9 @@ function csvEscape(value: string): string {
       `# Workforce Advancement Project — Partner ${
         preset === 'outcomes' ? 'Outcomes' : preset === 'demographics' ? 'Demographics' : 'Referrals'
       } Export`,
-      `# Partner: ${ctx.partner.name}`,
+      `# Partner: ${brandingValue(ctx.partner.name)}`,
     ];
-    if (ctx.partner.logoUrl) brandingLines.push(`# Logo: ${ctx.partner.logoUrl}`);
+    if (ctx.partner.logoUrl) brandingLines.push(`# Logo: ${brandingValue(ctx.partner.logoUrl)}`);
     brandingLines.push(
       `# Generated: ${date}`,
       '# Powered by WorkforceAP — workforceap.org',
@@ -132,6 +138,8 @@ function csvEscape(value: string): string {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="workforceap-${suffix}-${ctx.partner.slug}.csv"`,
+        // Member PII: never kept by a browser, proxy or CDN cache.
+        'Cache-Control': 'no-store',
       },
     });
     } catch (err) {
