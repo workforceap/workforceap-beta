@@ -137,6 +137,35 @@ describe('CertificationAddForm', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
   });
 
+  it('a file on an already verified certificate keeps it verified (WAP-197)', async () => {
+    fetchMock
+      .mockResolvedValueOnce(json({ success: true, status: 'approved' }))
+      .mockResolvedValueOnce(json({ success: true, storagePath: 'cert-files/u/c.pdf', status: 'approved' }));
+    render(<CertificationAddForm />);
+    openAndPick('OSHA 10');
+    const file = new File(['%PDF-1.4'], 'osha.pdf', { type: 'application/pdf' });
+    fireEvent.change(screen.getByLabelText(/certificate file/i), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save certificate' }));
+
+    const status = await notice();
+    expect(status).toHaveTextContent('OSHA 10 is already on your list and verified.');
+    expect(status).not.toHaveTextContent(/pending/);
+    expect(fetchMock.mock.calls[1][0]).toBe('/api/member/certifications/upload');
+  });
+
+  it('a file on an unverified certificate still shows it as pending', async () => {
+    fetchMock
+      .mockResolvedValueOnce(json({ success: true, status: 'rejected' }))
+      .mockResolvedValueOnce(json({ success: true, storagePath: 'cert-files/u/c.pdf', status: 'pending' }));
+    render(<CertificationAddForm />);
+    openAndPick('OSHA 10');
+    const file = new File(['%PDF-1.4'], 'osha.pdf', { type: 'application/pdf' });
+    fireEvent.change(screen.getByLabelText(/certificate file/i), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save certificate' }));
+
+    expect(await notice()).toHaveTextContent('OSHA 10 added. It shows as pending until our staff check it.');
+  });
+
   it('defaults "Date earned" and its max to the local today', () => {
     render(<CertificationAddForm />);
     openAndPick('OSHA 10');

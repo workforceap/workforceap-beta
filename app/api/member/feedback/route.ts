@@ -17,6 +17,21 @@ const feedbackSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
+const DEFAULT_SOURCE_PAGE = '/dashboard';
+// Member portal paths only (e.g. /dashboard/help, /dashboard/profile): no
+// query, hash, host or dot segments, so analytics never stores arbitrary input.
+const SOURCE_PAGE_PATTERN = /^\/dashboard(?:\/[a-z0-9][a-z0-9-]*){0,4}$/;
+
+/**
+ * The member page the dialog was opened from. The body field is optional and
+ * client-supplied, so anything that is not a plain member portal path falls
+ * back to `/dashboard` instead of failing the submission.
+ */
+function resolveSourcePage(body: unknown): string {
+  const raw = body && typeof body === 'object' ? (body as { sourcePage?: unknown }).sourcePage : undefined;
+  return typeof raw === 'string' && raw.length <= 120 && SOURCE_PAGE_PATTERN.test(raw) ? raw : DEFAULT_SOURCE_PAGE;
+}
+
 async function _POST(request: NextRequest) {
   try {
     const user = await getUser();
@@ -54,7 +69,7 @@ async function _POST(request: NextRequest) {
         entityType: 'member_feedback',
         entityId: feedback.id,
         metadata: { type, rating },
-        sourcePage: '/dashboard',
+        sourcePage: resolveSourcePage(body),
       });
 
       auditLog({ actorUserId: user.id, action: 'member.feedback.submit', targetType: 'MemberFeedback', targetId: feedback.id }).catch(() => {});

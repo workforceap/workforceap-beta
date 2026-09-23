@@ -42,9 +42,9 @@ const GOAL_TEMPLATE_TYPES = [
 ] as const;
 
 // Kit tokens and classes only (docs/KIT_GUIDE.md §1, §7): no legacy `--color-*`
-// reads and none of the `.goals-module` / `.goals-form` hooks in
-// css/portal-main-extracted.css, which paint from that family. The card looks
-// the same on the retiring Learning tab and on /dashboard/career-brief#goals.
+// reads and no `.goals-*` class hooks (the legacy ones in
+// css/portal-main-extracted.css were removed with the legacy home, WAP-195).
+// The card mounts once, on /dashboard/career-brief#goals.
 const ACCENT = colorVar('accent');
 const ACCENT_DARK = colorVar('accentDark');
 const MUTED = colorVar('muted');

@@ -15,7 +15,7 @@ test.describe("Member login + dashboard", () => {
     await expect(page.getByRole("heading").first()).toBeVisible({ timeout: 15000 });
     await expect(page.getByText(/welcome back|welcome to workforceap/i)).toBeVisible();
     await expect(page.getByText(/training|progress|courses/i).first()).toBeVisible();
-    await expect(page.getByText(/next step|priority action|quick actions/i).first()).toBeVisible();
+    await expect(page.getByText('Certification path')).toBeVisible();
   });
 
   test("dashboard loads on mobile viewport", async ({ page }) => {
@@ -26,10 +26,12 @@ test.describe("Member login + dashboard", () => {
     await expect(page.getByText(/welcome back|welcome to workforceap/i)).toBeVisible();
   });
 
-  test("dashboard shows quick actions grid on mobile", async ({ page }) => {
+  // The mobile 2x2 quick-action grid went with the retired ?ui=legacy home
+  // (WAP-195); phone and desktop now share the kit home.
+  test("dashboard shows the kit home cards on mobile", async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await loginMemberPortal(page);
-    await expect(page.locator(".portal-quick-grid-2x2, .portal-quick-grid-item").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Certification path")).toBeVisible({ timeout: 10000 });
   });
 
   test("dashboard navigation links work", async ({ page }) => {
