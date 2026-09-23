@@ -5,6 +5,7 @@ import { PARTNER_MILESTONE_EVENT_NAMES } from '@/lib/partner/milestoneEvents';
 import {
   PARTNER_VISIBLE_EVENTS,
   partnerEventLabel,
+  partnerPlacementLabel,
   partnerVisibleEventNames,
 } from '@/lib/partner/partnerVisibleEvents';
 
@@ -69,5 +70,27 @@ describe('partner-visible event allowlist', () => {
     }
     for (const name of names) expect(partnerEventLabel(name), name).not.toBeNull();
     expect(names).not.toContain('member_logged_in');
+  });
+});
+
+/**
+ * A placement reads as confirmed to a partner only once staff verified its
+ * start date (the partner outcome packet's rule, #2570). A member
+ * self-report is recorded with startDateVerified=false.
+ */
+describe('partner placement label', () => {
+  const placement = { employerName: 'Acme', jobTitle: 'Help Desk Technician' };
+
+  it('names the employer and job for a verified placement', () => {
+    expect(partnerPlacementLabel({ ...placement, startDateVerified: true })).toBe(
+      'Placed at Acme — Help Desk Technician',
+    );
+  });
+
+  it.each([false, null])('shows a pending label with no employer or job when startDateVerified=%s', (startDateVerified) => {
+    const label = partnerPlacementLabel({ ...placement, startDateVerified });
+    expect(label).toBe('Placement reported, pending verification');
+    expect(label).not.toContain('Acme');
+    expect(label).not.toContain('Help Desk Technician');
   });
 });

@@ -3,7 +3,11 @@ import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { loadPartnerReferralBundle } from '@/lib/partner/referralBundle';
-import { partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
+import {
+  partnerEventLabel,
+  partnerPlacementLabel,
+  partnerVisibleEventNames,
+} from '@/lib/partner/partnerVisibleEvents';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -71,7 +75,9 @@ export const GET = withApiGuc(async (request: NextRequest) => {
         rows.push({
           id: `placement-${m.id}`,
           kind: 'placement',
-          label: `Placed at ${m.placementRecord!.employerName} — ${m.placementRecord!.jobTitle}`,
+          // Confirmed wording (employer, job) only once the start date is
+          // verified; a member self-report reads as pending (#2570 rule).
+          label: partnerPlacementLabel(m.placementRecord!),
           memberId: m.id,
           memberName: m.fullName,
           at: placedAt.toISOString(),

@@ -44,3 +44,27 @@ export function partnerEventLabel(name: string): string | null {
   if (!canonical || !Object.hasOwn(PARTNER_VISIBLE_EVENTS, canonical)) return null;
   return PARTNER_VISIBLE_EVENTS[canonical as PartnerMilestoneEventName];
 }
+
+/**
+ * Partner-facing placement wording (decision 19 on the open-decisions list;
+ * wording may still change, so it lives only here). A placement reads as
+ * confirmed only when staff verified its start date (`startDateVerified`,
+ * the same rule the partner outcome packet, #2570, uses). A member
+ * self-report (`app/(portal)/dashboard/placementAction.ts`) creates an
+ * unverified record; partners see that it was reported, never the employer,
+ * job or salary, until it is verified.
+ */
+export const PARTNER_PLACEMENT_LABELS = {
+  verified: (employerName: string, jobTitle: string) => `Placed at ${employerName} — ${jobTitle}`,
+  pendingVerification: 'Placement reported, pending verification',
+} as const;
+
+export function partnerPlacementLabel(placement: {
+  employerName: string;
+  jobTitle: string;
+  startDateVerified: boolean | null;
+}): string {
+  return placement.startDateVerified === true
+    ? PARTNER_PLACEMENT_LABELS.verified(placement.employerName, placement.jobTitle)
+    : PARTNER_PLACEMENT_LABELS.pendingVerification;
+}

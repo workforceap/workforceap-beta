@@ -19,6 +19,9 @@ const h = vi.hoisted(() => ({
     user: { fullName: string };
   }>,
   findMany: vi.fn(),
+  // Staff-verified unless a test says otherwise; a member self-report
+  // (placementAction.ts) is startDateVerified=false.
+  startDateVerified: true as boolean,
 }));
 
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (fn: unknown) => fn }));
@@ -36,6 +39,8 @@ vi.mock('@/lib/partner/referralBundle', () => ({
           placedAt: new Date('2026-09-10T15:00:00Z'),
           employerName: 'Acme Co',
           jobTitle: 'Help Desk Technician',
+          salaryOffered: 52000,
+          startDateVerified: h.startDateVerified,
         },
       },
     ],
@@ -54,6 +59,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   h.user = { id: 'partner-user' };
   h.partnerCtx = { partnerId: 'partner-1', partner: { organizationId: 'org-1' } };
+  h.startDateVerified = true;
   h.events = [
     {
       id: 'ev-1',
@@ -114,6 +120,28 @@ describe('partner milestones consent (Vision C3)', () => {
     for (const row of body.milestones) {
       expect(Object.keys(row).sort()).toEqual(['at', 'id', 'kind', 'label', 'memberId', 'memberName']);
     }
+  });
+
+  it('labels a verified placement with its employer and job', async () => {
+    h.startDateVerified = true;
+    const res = await GET(new NextRequest('http://localhost/api/partner/milestones'));
+    const body = (await res.json()) as Body;
+    const placement = body.milestones.find((m) => m.kind === 'placement');
+    expect(placement?.label).toBe('Placed at Acme Co — Help Desk Technician');
+  });
+
+  it('shows an unverified self-reported placement as pending, with no employer, job or salary', async () => {
+    h.startDateVerified = false;
+    const res = await GET(new NextRequest('http://localhost/api/partner/milestones'));
+    const body = (await res.json()) as Body;
+    const placement = body.milestones.find((m) => m.kind === 'placement');
+    expect(placement?.label).toBe('Placement reported, pending verification');
+    const text = JSON.stringify(body);
+    expect(text).not.toContain('Placed at');
+    expect(text).not.toContain('Acme');
+    expect(text).not.toContain('Help Desk Technician');
+    expect(text).not.toContain('52000');
+    expect(text).not.toContain('52,000');
   });
 
   it('returns 401 without a session', async () => {
