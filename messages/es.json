@@ -715,6 +715,30 @@
     "screeningSectionTitle": "Detalles de la evaluación de elegibilidad",
     "ageGroupLabel": "Grupo de edad *",
     "ageGroupPlaceholder": "Selecciona grupo de edad",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 o más"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º grado",
+      "10": "10.º grado",
+      "11": "11.º grado",
+      "12": "12.º grado",
+      "other": "Otro / recién graduado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Necesito capacitación en una ocupación demandada o un certificado",
+      "no_barrier": "Ninguna barrera por ahora",
+      "employment_gap": "Periodo sin empleo",
+      "limited_work_history": "Poca experiencia laboral",
+      "snap_tanf_wic": "SNAP / TANF / cupones de alimentos / WIC",
+      "justice_involved": "Antecedentes / involucramiento con la justicia",
+      "disability_health": "Discapacidad o problema de salud",
+      "housing_instable": "Inestabilidad de vivienda",
+      "other_barrier": "Otra barrera"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barrera(s) principal(es) — marca todas las que apliquen *",
     "primaryBarriersAria": "Barreras principales",

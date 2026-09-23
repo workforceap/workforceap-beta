@@ -735,6 +735,30 @@
     "screeningSectionTitle": "Eligibility screening details",
     "ageGroupLabel": "Age group *",
     "ageGroupPlaceholder": "Select age group",
+    "ageGroupOptions": {
+      "under_18": "Under 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50+"
+    },
+    "gradeLevelOptions": {
+      "9": "9th grade",
+      "10": "10th grade",
+      "11": "11th grade",
+      "12": "12th grade",
+      "other": "Other / recent graduate"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Need in-demand occupation or certificate training",
+      "no_barrier": "No barrier right now",
+      "employment_gap": "Employment gap",
+      "limited_work_history": "Limited work history",
+      "snap_tanf_wic": "SNAP / TANF / Food Stamps / WIC",
+      "justice_involved": "Background / justice involvement",
+      "disability_health": "Disability or health barrier",
+      "housing_instable": "Housing instability",
+      "other_barrier": "Other barrier"
+    },
     "countyLabel": "County *",
     "primaryBarriersLabel": "Primary barrier(s) — check all that apply *",
     "primaryBarriersAria": "Primary barriers",

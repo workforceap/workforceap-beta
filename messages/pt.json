@@ -670,6 +670,30 @@
     "screeningSectionTitle": "Detalhes da triagem de elegibilidade",
     "ageGroupLabel": "Faixa etária *",
     "ageGroupPlaceholder": "Selecione a faixa etária",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 ou mais"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º ano",
+      "10": "10.º ano",
+      "11": "11.º ano",
+      "12": "12.º ano",
+      "other": "Outro / recém-formado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Preciso de formação em uma ocupação em demanda ou de um certificado",
+      "no_barrier": "Nenhuma barreira no momento",
+      "employment_gap": "Período sem emprego",
+      "limited_work_history": "Pouca experiência de trabalho",
+      "snap_tanf_wic": "SNAP / TANF / vale-alimentação / WIC",
+      "justice_involved": "Antecedentes / envolvimento com a justiça",
+      "disability_health": "Deficiência ou problema de saúde",
+      "housing_instable": "Moradia instável",
+      "other_barrier": "Outra barreira"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barreira(s) principal(is) — marque todas que se aplicam *",
     "primaryBarriersAria": "Barreiras principais",
