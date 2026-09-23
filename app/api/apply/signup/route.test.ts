@@ -407,6 +407,14 @@ describe('POST /api/apply/signup ageGroup validation', () => {
     expect(state.applicationCreates).toHaveLength(0);
   });
 
+  // WAP-242 item 3: a validation failure names its field by code, so the form
+  // can localise it without reading the English message.
+  it('reports a validation failure as invalid_field with the field name', async () => {
+    const res = await POST(makeRequest({ email: 'not-an-email' }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ reason: 'invalid_field', field: 'email' });
+  });
+
   it('accepts a missing ageGroup (optional field)', async () => {
     const res = await POST(makeRequest());
     expect(res.status).toBe(200);
@@ -1205,6 +1213,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     const body = await res.json();
     expect(body.code).toBe('ALREADY_SIGNED_IN');
+    expect(body.reason).toBe('already_signed_in');
     expect(body.error).toContain('admin@example.com');
     expect(supabaseSignUp).not.toHaveBeenCalled();
   });
@@ -1215,6 +1224,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required',
       error: expect.stringContaining('staff-assisted account recovery'),
     });
     expect(state.emailLookups).toEqual([{
@@ -1255,6 +1265,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required',
       error: expect.stringContaining('staff-assisted account recovery'),
     });
     expect(supabaseSignUp).not.toHaveBeenCalled();
@@ -1273,7 +1284,9 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toMatch(/already exists/i);
+    const body = await res.json();
+    expect(body.error).toMatch(/already exists/i);
+    expect(body.reason).toBe('email_exists');
   });
 
   it('reports a weak password by reason with clear copy instead of the generic failure (WAP-26)', async () => {
@@ -1309,6 +1322,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required',
       error: expect.stringContaining('staff-assisted account recovery'),
     });
     expect(state.authAdminLookups).toEqual(['user-test-1']);
@@ -1344,6 +1358,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required',
       error: expect.stringContaining('staff-assisted account recovery'),
     });
     expect(state.authDeletes).toEqual(['user-test-1']);
