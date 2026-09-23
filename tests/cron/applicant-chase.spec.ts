@@ -275,6 +275,8 @@ describe('applicantChaseHtml', () => {
     const day20 = applicantChaseHtml({ firstName: 'Taylor', stage: 'day20', programUrl });
     expect(day10).toMatch(/still in our review queue/);
     expect(day10).toMatch(/Choose the career program/);
+    // Reads cleanly once rendered: no doubled preposition before "My Program".
+    expect(day10.replace(/<[^>]+>/g, '')).not.toMatch(/\bin in\b/);
     expect(day20).toMatch(/haven't forgotten you/);
     expect(day20).toMatch(/reply and let us know/);
     expect(day10).not.toBe(day20);

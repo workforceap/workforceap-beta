@@ -105,7 +105,10 @@ const PRIORITY_ACTIONS: {
   {
     key: 'setGoals',
     label: 'Set career goals to stay on track.',
-    href: '/dashboard/career-brief#goals',
+    // Goals have no default-view home yet: GoalsModule renders only on the
+    // legacy member home's learning tab (same target as MemberHomeKit's
+    // goalsHref), so link there rather than to a page without goal-setting.
+    href: '/dashboard?ui=legacy&tab=learning#goals',
     ctaLabel: 'Set goals',
   },
   {

@@ -39,7 +39,7 @@ export function applicantChaseHtml(params: { firstName: string; stage: Applicant
     <p>Your application to the Workforce Advancement Project is still in our review queue. We're sorry it is taking longer than you probably expected, and we wanted you to hear that from us rather than from silence.</p>
     <p>Two things help a counselor pick your application up faster:</p>
     <ul>
-      <li><a href="${program}">Choose the career program you're most interested in</a> in My Program, if you haven't yet.</li>
+      <li><a href="${program}">Choose the career program you want</a> in My Program, if you haven't yet.</li>
       <li>Make sure the phone number and email on your profile are ones you check.</li>
     </ul>
     <p>We'll email you as soon as a counselor has reviewed your application.</p>

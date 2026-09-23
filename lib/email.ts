@@ -65,6 +65,7 @@ import {
   employerApprovedHtml,
   employerRejectedHtml,
   wioaReportHtml,
+  MEMBER_CHECK_IN_DEFAULT_CTA_TEXT,
   memberCheckInHtml,
   memberCheckInSubject,
   memberComeBackHtml,
@@ -2720,19 +2721,26 @@ export async function sendMemberCheckInEmail(params: {
   to: string;
   firstName: string;
   dashboardUrl: string;
+  /** Button label for both CTAs; must name where `dashboardUrl` goes. */
+  ctaText?: string;
+  /** Line above the in-body button. */
+  leadText?: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
     console.warn('sendMemberCheckInEmail: RESEND_API_KEY not set');
     return { ok: false, error: 'Email not configured' };
   }
+  const ctaText = params.ctaText ?? MEMBER_CHECK_IN_DEFAULT_CTA_TEXT;
   const html = brandedEmailLayout({
     title: 'Quick check-in',
     bodyHtml: memberCheckInHtml({
       firstName: params.firstName,
       dashboardUrl: params.dashboardUrl,
+      ctaText,
+      leadText: params.leadText,
     }),
-    ctaText: 'Open my dashboard',
+    ctaText,
     ctaUrl: params.dashboardUrl,
   });
   try {

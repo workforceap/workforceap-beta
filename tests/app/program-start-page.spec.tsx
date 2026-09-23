@@ -134,6 +134,8 @@ describe('/dashboard/program/start page', () => {
       expect(screen.getByRole('link', { name: 'Open Learning Hub' })).toHaveAttribute('href', '/dashboard/learning');
       expect(screen.getByRole('link', { name: 'Back to My Program' })).toHaveAttribute('href', '/dashboard/program');
       expect(screen.queryByRole('link', { name: /My Classes/ })).toBeNull();
+      // The enrollment steps rendered here do not name the retired label either.
+      expect(screen.queryByText(/My Classes/)).toBeNull();
     });
 
     it('never treats an empty curriculum as complete', async () => {

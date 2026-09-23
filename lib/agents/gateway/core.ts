@@ -51,7 +51,21 @@ function safePortalHref(value: string): string {
   }
 }
 
-function trustedNextActionFromHref(value: string): NonNullable<MemberNextStepData['action']> {
+/**
+ * Trusted program facts from the scoped snapshot (never from stored action
+ * prose). A My Program link means different things depending on them: an
+ * unenrolled member is sent there to choose a program, an enrolled one to
+ * train.
+ */
+type ProgramActionState = Readonly<{
+  hasAssignedProgram: boolean;
+  trainingInProgress: boolean;
+}>;
+
+function trustedNextActionFromHref(
+  value: string,
+  program: ProgramActionState,
+): NonNullable<MemberNextStepData['action']> {
   const href = safePortalHref(value);
   const path = href.split(/[?#]/, 1)[0];
   if (path === '/dashboard/resume') {
@@ -81,16 +95,37 @@ function trustedNextActionFromHref(value: string): NonNullable<MemberNextStepDat
       ctaHref: href,
     };
   }
-  // My Program is where training lives. The old training stub only redirects
-  // there, so a stored stub link is rewritten to My Program directly, keeping
-  // its query and hash.
+  // My Program owns both the program picker and training. The old training
+  // stub only redirects there, so a stored stub link is rewritten to My
+  // Program directly, keeping its query and hash. The copy comes from the
+  // member's program state, so an unenrolled member is never told to continue
+  // training in an assigned program.
   if (path === MEMBER_PROGRAM_HREF || path === LEGACY_TRAINING_STUB_HREF) {
+    const ctaHref = `${MEMBER_PROGRAM_HREF}${href.slice(path.length)}`;
+    if (!program.hasAssignedProgram) {
+      return {
+        id: 'choose_program',
+        title: 'Choose your program',
+        description: 'Open My Program to pick the training program that fits your goals.',
+        ctaLabel: 'Open My Program',
+        ctaHref,
+      };
+    }
+    if (program.trainingInProgress) {
+      return {
+        id: 'continue_training',
+        title: 'Continue training',
+        description: 'Open My Program to review your assigned program and next course.',
+        ctaLabel: 'Open My Program',
+        ctaHref,
+      };
+    }
     return {
-      id: 'continue_training',
-      title: 'Continue training',
-      description: 'Open My Program to review your assigned program and next course.',
+      id: 'review_program',
+      title: 'Review My Program',
+      description: 'Open My Program to review your program details and next steps.',
       ctaLabel: 'Open My Program',
-      ctaHref: `${MEMBER_PROGRAM_HREF}${href.slice(path.length)}`,
+      ctaHref,
     };
   }
   return {
@@ -191,7 +226,15 @@ export function createMemberAgentGateway(args: {
       // Next-action prose can contain provider- or employer-sourced text. Do
       // not place it in the model-visible response. Only expose deterministic
       // copy for the small set of reviewed portal destinations.
-      const action = trustedNextActionFromHref(first.href);
+      const action = trustedNextActionFromHref(first.href, {
+        hasAssignedProgram: Boolean(snapshot.programSlug),
+        trainingInProgress: Boolean(
+          snapshot.programSlug &&
+            snapshot.training &&
+            !snapshot.training.allComplete &&
+            snapshot.training.totalCourses > 0,
+        ),
+      });
       return {
         status: 'ok',
         asOf: asOf(),

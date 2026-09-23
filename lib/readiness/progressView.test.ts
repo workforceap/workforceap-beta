@@ -48,7 +48,7 @@ describe('buildReadinessProgressView', () => {
     expect(view.milestones[0]?.state).toBe('active');
   });
 
-  test('pathway and goal actions open the pages that own them, not the member home', () => {
+  test('pathway and goal actions open the surfaces that render them', () => {
     const only = (key: keyof ScoreBreakdown): ScoreBreakdown => {
       const breakdown = zeroScoreBreakdown();
       for (const k of Object.keys(breakdown) as (keyof ScoreBreakdown)[]) {
@@ -65,8 +65,11 @@ describe('buildReadinessProgressView', () => {
       expect(action?.ctaLabel).toBe('Open Learning Hub');
     }
 
+    // Goals are set in GoalsModule, which only the legacy home's learning tab
+    // renders (MemberHomeKit's goalsHref points at the same anchor).
     const goals = buildReadinessProgressView(only('setGoals')).priorityAction;
-    expect(goals?.href).toBe('/dashboard/career-brief#goals');
+    expect(goals?.href).toBe('/dashboard?ui=legacy&tab=learning#goals');
+    expect(goals?.ctaLabel).toBe('Set goals');
   });
 
   test('all-complete member has no next action', () => {
