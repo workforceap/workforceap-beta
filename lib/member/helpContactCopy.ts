@@ -3,14 +3,15 @@
  * "Request help" (POST /api/member/request-help) and "Share feedback"
  * (POST /api/member/feedback).
  *
- * The help route emails the member's assigned counselor, or the WorkforceAP
- * team inbox when no active counselor is assigned (lib/member/helpRequestRecipient.ts
+ * The help route emails the counselor on the member's active assignment, or
+ * the WorkforceAP team inbox when there is none (lib/member/helpRequestRecipient.ts
  * decides which, for both the route and the page). The email carries the
  * member's name, email address and program plus a link to their record; it
  * does not carry a phone number or a message, and nothing replies on a
- * schedule. Feedback is a saved `MemberFeedback` row that staff, and the
- * assigned counselor through /admin/feedback's counselor scope, can read; it
- * is not a message. This copy says exactly that and never promises a reply time.
+ * schedule. Feedback is a saved `MemberFeedback` row that WorkforceAP staff
+ * read on the admin-only /admin/feedback page; no counselor-facing page shows
+ * it, so the copy does not name the counselor as a reader. It is not a message.
+ * This copy says exactly that and never promises a reply time.
  *
  * Client-safe: no Prisma, no server imports.
  */
@@ -24,8 +25,12 @@ export const HELP_REQUEST_TEAM_EMAIL = 'info@workforceap.org';
  */
 export type HelpRequestAudience = { kind: 'counselor'; name: string | null } | { kind: 'team' };
 
-/** What the route reports it emailed (`sentTo` in its JSON reply). */
-export type HelpRequestSentTo = HelpRequestAudience['kind'];
+/**
+ * What the route reports it emailed: `sentTo` (the kind) and `sentToName` (the
+ * counselor's saved name, `null` for the team or an unnamed counselor) in its
+ * JSON reply.
+ */
+export type HelpRequestSent = { to: HelpRequestAudience['kind']; name: string | null };
 
 const WHAT_WE_SEND = 'We email them your name, email address and program.';
 
@@ -46,25 +51,27 @@ export function helpRequestDescription(audience: HelpRequestAudience | null): st
 }
 
 /**
- * Confirmation after a successful send. The route's own `sentTo` wins over
- * what the page rendered with (an assignment can change between page load and
- * click); the page's saved counselor name is only reused when both agree.
+ * Confirmation after a successful send. The route's own report wins over what
+ * the page rendered with (an assignment can change between page load and
+ * click). A counselor is named only when the route's `sentToName` is the same
+ * name the page showed; any other counselor — or an older deploy that sends
+ * no name — is "your counselor", never a guess.
  */
-export function helpRequestSentNotice(sentTo: HelpRequestSentTo | null, audience: HelpRequestAudience | null): string {
-  if (sentTo === 'team') return 'Request sent. We emailed the WorkforceAP team.';
-  if (sentTo === 'counselor') {
-    const name = audience?.kind === 'counselor' ? audience.name : null;
-    return name ? `Request sent. We emailed ${name}.` : 'Request sent. We emailed your counselor.';
-  }
-  return 'Request sent.';
+export function helpRequestSentNotice(sent: HelpRequestSent | null, audience: HelpRequestAudience | null): string {
+  if (!sent) return 'Request sent.';
+  if (sent.to === 'team') return 'Request sent. We emailed the WorkforceAP team.';
+  const shown = audience?.kind === 'counselor' ? audience.name : null;
+  return shown && sent.name === shown ? `Request sent. We emailed ${shown}.` : 'Request sent. We emailed your counselor.';
 }
 
-/** Who can read a feedback submission, for the same three recipient states. */
-export function feedbackReadersSentence(audience: HelpRequestAudience | null): string {
-  if (audience?.kind === 'counselor') return 'WorkforceAP staff and your counselor can read what you send.';
-  if (audience?.kind === 'team') return 'WorkforceAP staff can read what you send.';
-  return 'WorkforceAP staff, and your counselor if you have one, can read what you send.';
-}
+/**
+ * Who can read a feedback submission. Only the admin-only /admin/feedback page
+ * shows `MemberFeedback`, so this names staff whatever the member's counselor
+ * state (no "only": counselors are staff too, and the raw admin API is
+ * counselor-scoped). Name the counselor only once a counselor-facing feedback
+ * view ships.
+ */
+export const FEEDBACK_READERS_SENTENCE = 'WorkforceAP staff can read what you send.';
 
 /** Failure copy that does not pretend a retry will work sooner than it will. */
 export const HELP_REQUEST_FAILURE = {

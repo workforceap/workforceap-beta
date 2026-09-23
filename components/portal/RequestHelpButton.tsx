@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, Headset } from 'lucide-react';
+import { useAnnounce } from '@/components/portal/kit/hooks/useAnnounce';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import {
   MEMBER_REQUEST_FAILURE,
@@ -13,7 +14,7 @@ import {
   HELP_REQUEST_FAILURE,
   helpRequestSentNotice,
   type HelpRequestAudience,
-  type HelpRequestSentTo,
+  type HelpRequestSent,
 } from '@/lib/member/helpContactCopy';
 
 interface RequestHelpButtonProps {
@@ -29,17 +30,26 @@ interface RequestHelpButtonProps {
 
 type State = 'idle' | 'sending' | 'sent' | 'error';
 
+/** Read `sentTo` / `sentToName` from the route's reply; anything unexpected is `null` (no name guessed). */
+function readSent(data: { sentTo?: unknown; sentToName?: unknown } | null): HelpRequestSent | null {
+  if (data?.sentTo !== 'counselor' && data?.sentTo !== 'team') return null;
+  return { to: data.sentTo, name: typeof data.sentToName === 'string' ? data.sentToName : null };
+}
+
 /**
  * "Request help": POST /api/member/request-help emails the assigned counselor
  * (or the team inbox) the member's name, email address and program. One send
  * per page view. A failure stays on screen with a Messages fallback instead of
  * resetting to the idle label, and a 429 from the shared contact limiter is
- * named as such rather than as "try again in a minute".
+ * named as such rather than as "try again in a minute". The confirmation is
+ * spoken through the kit announcer (KIT_GUIDE §8.9): a live region that mounts
+ * already filled is often not read.
  */
 export default function RequestHelpButton({ audience = null, tone = 'ghost' }: RequestHelpButtonProps) {
   const [state, setState] = useState<State>('idle');
-  const [sentTo, setSentTo] = useState<HelpRequestSentTo | null>(null);
+  const [sent, setSent] = useState<HelpRequestSent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const announce = useAnnounce();
 
   async function handleClick() {
     if (state === 'sending' || state === 'sent') return;
@@ -58,9 +68,10 @@ export default function RequestHelpButton({ audience = null, tone = 'ghost' }: R
         setState('error');
         return;
       }
-      const data = (await res.json().catch(() => null)) as { sentTo?: unknown } | null;
-      setSentTo(data?.sentTo === 'counselor' || data?.sentTo === 'team' ? data.sentTo : null);
+      const reported = readSent((await res.json().catch(() => null)) as { sentTo?: unknown; sentToName?: unknown } | null);
+      setSent(reported);
       setState('sent');
+      announce(helpRequestSentNotice(reported, audience));
     } catch (err) {
       setError(describeMemberRequestException(err));
       setState('error');
@@ -93,8 +104,8 @@ export default function RequestHelpButton({ audience = null, tone = 'ghost' }: R
         {label}
       </button>
       {state === 'sent' ? (
-        <p role="status" className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-success-dark)', fontWeight: 600 }}>
-          {helpRequestSentNotice(sentTo, audience)}
+        <p className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-success-dark)', fontWeight: 600 }}>
+          {helpRequestSentNotice(sent, audience)}
         </p>
       ) : null}
       {state === 'error' && error ? (

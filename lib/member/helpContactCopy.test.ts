@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  FEEDBACK_READERS_SENTENCE,
   HELP_REQUEST_FAILURE,
   HELP_REQUEST_TEAM_EMAIL,
-  feedbackReadersSentence,
   helpRequestDescription,
   helpRequestSentNotice,
 } from './helpContactCopy';
@@ -28,21 +28,28 @@ test('request-help description names the saved counselor, the team inbox, or bot
   assert.match(unknown, /If you do not have a counselor yet, the request goes to the WorkforceAP team instead\./);
 });
 
-test('sent notice follows what the route reports, reusing the page name only when both agree', () => {
+test('sent notice names a counselor only when the route emailed the one the page showed', () => {
   const dana = { kind: 'counselor', name: 'Dana Reyes' } as const;
-  assert.equal(helpRequestSentNotice('counselor', dana), 'Request sent. We emailed Dana Reyes.');
-  assert.equal(helpRequestSentNotice('counselor', { kind: 'counselor', name: null }), 'Request sent. We emailed your counselor.');
-  // The assignment changed after the page rendered: the route's answer wins.
-  assert.equal(helpRequestSentNotice('team', dana), 'Request sent. We emailed the WorkforceAP team.');
-  assert.equal(helpRequestSentNotice('counselor', { kind: 'team' }), 'Request sent. We emailed your counselor.');
-  // An older deploy that does not send `sentTo`: no name is guessed.
+  assert.equal(helpRequestSentNotice({ to: 'counselor', name: 'Dana Reyes' }, dana), 'Request sent. We emailed Dana Reyes.');
+  // Reassigned from Dana to Sam after the page loaded: never "We emailed Dana".
+  assert.equal(helpRequestSentNotice({ to: 'counselor', name: 'Sam Ortiz' }, dana), 'Request sent. We emailed your counselor.');
+  assert.equal(helpRequestSentNotice({ to: 'counselor', name: null }, dana), 'Request sent. We emailed your counselor.');
+  assert.equal(
+    helpRequestSentNotice({ to: 'counselor', name: null }, { kind: 'counselor', name: null }),
+    'Request sent. We emailed your counselor.',
+  );
+  // Assigned after the page rendered with no counselor.
+  assert.equal(helpRequestSentNotice({ to: 'counselor', name: 'Sam Ortiz' }, { kind: 'team' }), 'Request sent. We emailed your counselor.');
+  assert.equal(helpRequestSentNotice({ to: 'counselor', name: 'Sam Ortiz' }, null), 'Request sent. We emailed your counselor.');
+  // Unassigned after the page rendered: the route's answer wins.
+  assert.equal(helpRequestSentNotice({ to: 'team', name: null }, dana), 'Request sent. We emailed the WorkforceAP team.');
+  // A reply without `sentTo`: no recipient is guessed.
   assert.equal(helpRequestSentNotice(null, dana), 'Request sent.');
 });
 
-test('feedback readers match the recipient state', () => {
-  assert.equal(feedbackReadersSentence({ kind: 'counselor', name: 'Dana Reyes' }), 'WorkforceAP staff and your counselor can read what you send.');
-  assert.equal(feedbackReadersSentence({ kind: 'team' }), 'WorkforceAP staff can read what you send.');
-  assert.equal(feedbackReadersSentence(null), 'WorkforceAP staff, and your counselor if you have one, can read what you send.');
+test('feedback readers are staff only: no counselor-facing feedback view exists', () => {
+  assert.equal(FEEDBACK_READERS_SENTENCE, 'WorkforceAP staff can read what you send.');
+  assert.doesNotMatch(FEEDBACK_READERS_SENTENCE, /counselor/i);
 });
 
 test('no help or feedback sentence promises a reply time', () => {
@@ -50,9 +57,9 @@ test('no help or feedback sentence promises a reply time', () => {
     helpRequestDescription({ kind: 'counselor', name: 'Dana Reyes' }),
     helpRequestDescription({ kind: 'team' }),
     helpRequestDescription(null),
-    helpRequestSentNotice('counselor', null),
-    helpRequestSentNotice('team', null),
-    feedbackReadersSentence(null),
+    helpRequestSentNotice({ to: 'counselor', name: null }, null),
+    helpRequestSentNotice({ to: 'team', name: null }, null),
+    FEEDBACK_READERS_SENTENCE,
     ...Object.values(HELP_REQUEST_FAILURE),
   ];
   for (const sentence of sentences) assert.doesNotMatch(sentence, TIME_PROMISE, sentence);

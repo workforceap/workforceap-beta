@@ -21,27 +21,47 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const HELP_ITEMS: Array<{ icon: LucideIcon; title: string; body: string; href?: string; cta?: string }> = [
-  {
-    icon: GraduationCap,
-    title: 'Coursera Access',
-    body: 'Request access to professional certificate courses included through your WorkforceAP membership.',
-  },
-  {
-    icon: Headset,
-    title: 'Talk to your counselor',
-    body: 'Your counselor is your main point of contact. Message them directly from the Messages page for any support.',
-    href: '/dashboard/messages',
-    cta: 'Open messages',
-  },
-  {
-    icon: Sparkles,
-    title: 'AI Career Tools',
-    body: 'Use our suite of tools to build your resume, prep for interviews, and match to jobs.',
-    href: '/dashboard/ai-tools',
-    cta: 'Open AI Career Tools',
-  },
-];
+type HelpItem = { icon: LucideIcon; title: string; body: string; href?: string; cta?: string };
+
+/**
+ * Quick links. The Messages entry follows the same recipient the "Need a
+ * person?" card names: with no counselor, Messages reaches the WorkforceAP
+ * support team (the inbox labels it that way), so the link must not tell the
+ * member to message a counselor they do not have.
+ */
+function helpItems(audience: HelpRequestAudience | null): HelpItem[] {
+  const messages: HelpItem =
+    audience?.kind === 'team'
+      ? {
+          icon: Headset,
+          title: 'Message the WorkforceAP team',
+          body: 'You do not have a counselor yet. Message the WorkforceAP support team from the Messages page for any support.',
+          href: '/dashboard/messages',
+          cta: 'Open messages',
+        }
+      : {
+          icon: Headset,
+          title: 'Talk to your counselor',
+          body: 'Your counselor is your main point of contact. Message them directly from the Messages page for any support.',
+          href: '/dashboard/messages',
+          cta: 'Open messages',
+        };
+  return [
+    {
+      icon: GraduationCap,
+      title: 'Coursera Access',
+      body: 'Request access to professional certificate courses included through your WorkforceAP membership.',
+    },
+    messages,
+    {
+      icon: Sparkles,
+      title: 'AI Career Tools',
+      body: 'Use our suite of tools to build your resume, prep for interviews, and match to jobs.',
+      href: '/dashboard/ai-tools',
+      cta: 'Open AI Career Tools',
+    },
+  ];
+}
 
 export default async function DashboardHelpPage() {
   const user = await getUser();
@@ -100,7 +120,11 @@ export default async function DashboardHelpPage() {
                   Request Benefit Access
                 </h2>
                 <p style={{ fontSize: '0.875rem', color: 'var(--wa-muted)', lineHeight: 1.6, marginBottom: '0.75rem' }}>
-                  To request access to Coursera or other member benefits, contact your WorkforceAP counselor or email{' '}
+                  To request access to Coursera or other member benefits,{' '}
+                  {audience?.kind === 'team'
+                    ? 'message the WorkforceAP team from the Messages page'
+                    : 'contact your WorkforceAP counselor'}{' '}
+                  or email{' '}
                   <a href="mailto:info@workforceap.org" style={{ color: 'var(--wa-accent)', fontWeight: 600, textDecoration: 'none' }}>
                     info@workforceap.org
                   </a>{' '}
@@ -118,7 +142,7 @@ export default async function DashboardHelpPage() {
         <section style={{ marginBottom: '2rem' }}>
           <CardHead title="Quick links" />
           <div className="wa-space-y-3">
-            {HELP_ITEMS.map((item) => {
+            {helpItems(audience).map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.title} className="wa-kit-card wa-kit-card--sm">

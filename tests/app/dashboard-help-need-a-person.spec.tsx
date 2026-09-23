@@ -8,8 +8,16 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
  * now live in a "Need a person?" card on the default /dashboard/help, which
  * says who is emailed — the assigned counselor by saved name, or the team
  * inbox when there is none — what the email carries, and what feedback is
- * (saved, read by staff, not a message). No reply time is promised.
+ * (saved, read by WorkforceAP staff, not a message). No reply time is
+ * promised. Confirmations go through the kit announcer, not a live region that
+ * mounts already filled.
  */
+
+const { announceMock } = vi.hoisted(() => ({ announceMock: vi.fn() }));
+vi.mock('@/components/portal/kit/hooks/useAnnounce', () => ({
+  useAnnounce: () => announceMock,
+  announce: announceMock,
+}));
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => {
@@ -69,8 +77,13 @@ describe('/dashboard/help (default view)', () => {
     expect(within(region).getByRole('button', { name: 'Request help' })).toBeInTheDocument();
     expect(within(region).getByRole('link', { name: 'Send a message' })).toHaveAttribute('href', '/dashboard/messages');
     expect(within(region).getByRole('button', { name: 'Share feedback' })).toBeInTheDocument();
-    expect(region).toHaveTextContent('WorkforceAP staff and your counselor can read what you send.');
+    // Only the admin-only /admin/feedback page reads feedback: the counselor is not named as a reader.
+    expect(region).toHaveTextContent('WorkforceAP staff can read what you send.');
+    expect(region).not.toHaveTextContent(/counselor can read/i);
     expect(region).not.toHaveTextContent(TIME_PROMISE);
+    // With a counselor, the quick link and benefit copy still point at them.
+    expect(container).toHaveTextContent('Talk to your counselor');
+    expect(container).toHaveTextContent('contact your WorkforceAP counselor or email info@workforceap.org');
 
     // First section after the header; the old "Still need help?" footer is folded in.
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
@@ -80,15 +93,22 @@ describe('/dashboard/help (default view)', () => {
     expect(container.querySelector('.material-symbols-outlined')).toBeNull();
   });
 
-  it('with no counselor, says the team inbox gets the request', async () => {
+  it('with no counselor, the card, the quick link and the benefit copy all point at the team', async () => {
     vi.mocked(resolveHelpRequestRecipient).mockResolvedValue({ kind: 'team', email: 'info@workforceap.org', name: null });
 
-    render(await DashboardHelpPage());
+    const { container } = render(await DashboardHelpPage());
 
     expect(card()).toHaveTextContent(
       'You do not have a counselor yet, so the request goes to the WorkforceAP team at info@workforceap.org.',
     );
     expect(card()).toHaveTextContent('WorkforceAP staff can read what you send.');
+    // Nothing below the card tells the member to contact a counselor they do not have.
+    expect(screen.getByRole('heading', { level: 3, name: 'Message the WorkforceAP team' })).toBeInTheDocument();
+    expect(container).toHaveTextContent('Message the WorkforceAP support team from the Messages page for any support.');
+    expect(container).toHaveTextContent('message the WorkforceAP team from the Messages page or email info@workforceap.org');
+    expect(container).not.toHaveTextContent('Talk to your counselor');
+    expect(container).not.toHaveTextContent(/your counselor is your main point of contact/i);
+    expect(container).not.toHaveTextContent(/contact your WorkforceAP counselor/i);
   });
 
   it('a failed recipient lookup still renders the page and names both possibilities', async () => {
@@ -99,6 +119,7 @@ describe('/dashboard/help (default view)', () => {
 
     expect(card()).toHaveTextContent('If you do not have a counselor yet, the request goes to the WorkforceAP team instead.');
     expect(within(card()).getByRole('button', { name: 'Request help' })).toBeInTheDocument();
+    expect(screen.getByText('Talk to your counselor')).toBeInTheDocument();
     consoleError.mockRestore();
   });
 
@@ -111,7 +132,7 @@ describe('/dashboard/help (default view)', () => {
 
 describe('Need a person? actions', () => {
   it('Request help posts once, confirms who the route emailed and stays sent', async () => {
-    fetchMock.mockResolvedValueOnce(json({ ok: true, sentTo: 'counselor' }));
+    fetchMock.mockResolvedValueOnce(json({ ok: true, sentTo: 'counselor', sentToName: 'Dana Reyes' }));
     render(<NeedAPersonCard audience={{ kind: 'counselor', name: 'Dana Reyes' }} />);
 
     const button = screen.getByRole('button', { name: 'Request help' });
@@ -119,7 +140,10 @@ describe('Need a person? actions', () => {
     expect(button.className).not.toContain('wa-kit-cta--ghost');
     fireEvent.click(button);
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Request sent. We emailed Dana Reyes.');
+    expect(await screen.findByText('Request sent. We emailed Dana Reyes.')).toBeInTheDocument();
+    // Spoken through the kit announcer; the visible line is not its own live region.
+    expect(announceMock).toHaveBeenCalledWith('Request sent. We emailed Dana Reyes.');
+    expect(screen.queryByRole('status')).toBeNull();
     expect(fetchMock).toHaveBeenCalledWith('/api/member/request-help', expect.objectContaining({ method: 'POST' }));
     const sent = screen.getByRole('button', { name: 'Request sent' });
     expect(sent).toBeDisabled();
@@ -128,10 +152,19 @@ describe('Need a person? actions', () => {
   });
 
   it("the route's sentTo wins when the assignment changed after the page rendered", async () => {
-    fetchMock.mockResolvedValueOnce(json({ ok: true, sentTo: 'team' }));
+    fetchMock.mockResolvedValueOnce(json({ ok: true, sentTo: 'team', sentToName: null }));
     render(<NeedAPersonCard audience={{ kind: 'counselor', name: 'Dana Reyes' }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Request help' }));
-    expect(await screen.findByRole('status')).toHaveTextContent('Request sent. We emailed the WorkforceAP team.');
+    expect(await screen.findByText('Request sent. We emailed the WorkforceAP team.')).toBeInTheDocument();
+  });
+
+  it('reassigned to another counselor after the page rendered: does not name the old one', async () => {
+    fetchMock.mockResolvedValueOnce(json({ ok: true, sentTo: 'counselor', sentToName: 'Sam Ortiz' }));
+    render(<NeedAPersonCard audience={{ kind: 'counselor', name: 'Dana Reyes' }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Request help' }));
+    expect(await screen.findByText('Request sent. We emailed your counselor.')).toBeInTheDocument();
+    expect(screen.queryByText(/We emailed Dana Reyes/)).toBeNull();
+    expect(announceMock).toHaveBeenCalledWith('Request sent. We emailed your counselor.');
   });
 
   it('a 429 says why and offers Messages, without claiming a minute is enough', async () => {
@@ -168,12 +201,14 @@ describe('Need a person? actions', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Share feedback' });
     expect(dialog).toHaveTextContent('It is not a message, so it does not ask anyone to contact you.');
+    expect(dialog).toHaveTextContent('WorkforceAP staff can read it.');
+    expect(dialog).not.toHaveTextContent(/counselor .*can read/i);
     expect(within(dialog).getByRole('radiogroup', { name: 'Rating' })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Send feedback' }).className).toContain('wa-kit-cta');
     expect(container.ownerDocument.querySelector('.material-symbols-outlined')).toBeNull();
   });
 
-  it('feedback submits to the existing route and confirms it was saved', async () => {
+  it('feedback submits to the existing route, confirms it was saved and keeps focus in the dialog', async () => {
     fetchMock.mockResolvedValueOnce(json({ feedback: { id: 'fb-1' } }));
     render(<NeedAPersonCard audience={{ kind: 'team' }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Share feedback' }));
@@ -181,6 +216,8 @@ describe('Need a person? actions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
 
     expect(await screen.findByText('We saved your feedback.')).toBeInTheDocument();
+    expect(announceMock).toHaveBeenCalledWith('We saved your feedback.');
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/member/feedback');
     expect(JSON.parse(String(init?.body))).toEqual({ type: 'general', rating: 4 });

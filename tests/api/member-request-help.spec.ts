@@ -4,9 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  * WAP-188 Phase A: "Request help" moved from the legacy home to the default
  * /dashboard/help, which now names who gets the email. The route and the page
  * share lib/member/helpRequestRecipient.ts, so these cases pin what the page
- * promises: the assigned counselor (Messages' definition — active assignment,
- * active counselor, same organization, not deleted, newest first) or the team
- * inbox, with the route reporting which one it used as `sentTo`.
+ * promises: the counselor on the member's active assignment (the route's
+ * pre-WAP-188 rule, now newest first so the page and the route read the same
+ * row) or the team inbox, with the route reporting which one it used as
+ * `sentTo` and the counselor's saved name as `sentToName`. The stricter
+ * Messages rule (active, same-org, not-deleted counselor) is a routing change
+ * awaiting product-owner sign-off, so it is pinned as NOT applied here.
  */
 
 vi.mock('next/server', () => ({
@@ -52,7 +55,7 @@ import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 const request = () =>
   new Request('http://localhost:3000/api/member/request-help', { method: 'POST' }) as unknown as import('next/server').NextRequest;
 
-const member = { fullName: 'Alex Rivera', email: 'alex@example.org', enrolledProgram: 'it-support', organizationId: 'org-1' };
+const member = { fullName: 'Alex Rivera', email: 'alex@example.org', enrolledProgram: 'it-support' };
 
 describe('POST /api/member/request-help', () => {
   beforeEach(() => {
@@ -61,7 +64,7 @@ describe('POST /api/member/request-help', () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(member as never);
   });
 
-  it('emails the assigned counselor and reports sentTo: counselor', async () => {
+  it('emails the assigned counselor and reports who: sentTo counselor plus the saved name', async () => {
     vi.mocked(prisma.counselorAssignment.findFirst).mockResolvedValue({
       counselor: { user: { email: 'dana@workforceap.org', fullName: 'Dana Reyes' } },
     } as never);
@@ -69,17 +72,16 @@ describe('POST /api/member/request-help', () => {
     const res = await POST(request());
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, sentTo: 'counselor' });
+    const body = await res.json();
+    expect(body).toEqual({ ok: true, sentTo: 'counselor', sentToName: 'Dana Reyes' });
+    // The counselor's address stays on the server.
+    expect(JSON.stringify(body)).not.toContain('@');
     expect(vi.mocked(sendBrandedEmailOrThrowOnSkip).mock.calls[0][1]).toMatchObject({ to: 'dana@workforceap.org' });
-    // Messages' definition of "assigned": active counselor in the member's org, newest assignment first.
+    // The pre-WAP-188 rule: any active assignment. No counselor-active / org /
+    // deleted filter until the product owner signs off on that routing change.
     const query = vi.mocked(prisma.counselorAssignment.findFirst).mock.calls[0][0];
-    expect(query?.where).toEqual({
-      memberId: 'member-1',
-      active: true,
-      counselor: { active: true, user: { organizationId: 'org-1', deletedAt: null } },
-    });
+    expect(query?.where).toEqual({ memberId: 'member-1', active: true });
     expect(query?.orderBy).toEqual({ assignedAt: 'desc' });
-    // The route already loaded the member's organization; no second member read.
     expect(prisma.user.findFirst).not.toHaveBeenCalled();
   });
 
@@ -88,7 +90,7 @@ describe('POST /api/member/request-help', () => {
 
     const res = await POST(request());
 
-    expect(await res.json()).toEqual({ ok: true, sentTo: 'team' });
+    expect(await res.json()).toEqual({ ok: true, sentTo: 'team', sentToName: null });
     expect(vi.mocked(sendBrandedEmailOrThrowOnSkip).mock.calls[0][1]).toMatchObject({ to: 'info@workforceap.org' });
   });
 
@@ -99,7 +101,7 @@ describe('POST /api/member/request-help', () => {
 
     const res = await POST(request());
 
-    expect(await res.json()).toEqual({ ok: true, sentTo: 'team' });
+    expect(await res.json()).toEqual({ ok: true, sentTo: 'team', sentToName: null });
     expect(vi.mocked(sendBrandedEmailOrThrowOnSkip).mock.calls[0][1]).toMatchObject({ to: 'info@workforceap.org' });
   });
 

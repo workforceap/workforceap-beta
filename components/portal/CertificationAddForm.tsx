@@ -1,8 +1,9 @@
 'use client';
 
-import { useId, useState, useRef } from 'react';
+import { useEffect, useId, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Plus, X } from 'lucide-react';
+import { useAnnounce } from '@/components/portal/kit/hooks/useAnnounce';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import {
   MEMBER_REQUEST_TIMEOUT_MS,
@@ -58,14 +59,42 @@ export function certificationAddedNotice(name: string, status: SavedStatus): str
   return `${name} added. It shows as pending until our staff check it.`;
 }
 
-const todayIso = () => new Date().toISOString().split('T')[0];
+/**
+ * A date as the `YYYY-MM-DD` a date input uses, in the member's own time zone.
+ * `toISOString()` is UTC, which in the evening across the Americas is already
+ * tomorrow — the default "Date earned" and the input's `max` must be today.
+ */
+export function localDateInputValue(date: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+export const EARNED_DATE_REQUIRED = 'Enter the date you earned it.';
+export const EARNED_DATE_FUTURE = 'Enter a date that is not in the future.';
+
+/**
+ * Field error for "Date earned", or `null` when it can be sent. A cleared or
+ * half-typed date input reports `''`; a real calendar date must round-trip
+ * (`new Date('2026-02-30')` quietly becomes March 2). Checked before the
+ * request so a bad date is never reported as a connection failure.
+ */
+export function earnedDateError(value: string, today: string = localDateInputValue()): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return EARNED_DATE_REQUIRED;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return EARNED_DATE_REQUIRED;
+  if (value > today) return EARNED_DATE_FUTURE;
+  return null;
+}
 
 /**
  * Self-report form for a certificate earned outside WorkforceAP (My Certificates,
  * default kit view and `?ui=legacy`). Kit-native: `--wa-*` tokens, `.wa-kit-*`
  * controls, Lucide icons. Saving refreshes the server-rendered list in place
  * (`router.refresh()`), so the confirmation stays on screen next to the new
- * pending row instead of vanishing into a full page reload.
+ * pending row instead of vanishing into a full page reload. The form unmounts
+ * on save, so focus moves to "Add another certificate" and the confirmation is
+ * spoken through the kit announcer (KIT_GUIDE §8.9) rather than a live region
+ * that mounts already filled.
  */
 export default function CertificationAddForm() {
   const router = useRouter();
@@ -75,22 +104,34 @@ export default function CertificationAddForm() {
   const earnedDateId = `${idPrefix}-date-earned`;
   const certificateFileId = `${idPrefix}-certificate-file`;
   const fileHintId = `${idPrefix}-certificate-file-hint`;
+  const earnedDateErrorId = `${earnedDateId}-error`;
   const [open, setOpen] = useState(false);
   const [certName, setCertName] = useState('');
   const [customName, setCustomName] = useState('');
-  const [earnedDate, setEarnedDate] = useState(todayIso);
+  const [earnedDate, setEarnedDate] = useState(() => localDateInputValue());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
   const [result, setResult] = useState<AddResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const earnedDateRef = useRef<HTMLInputElement>(null);
+  const addAnotherRef = useRef<HTMLButtonElement>(null);
+  const announce = useAnnounce();
+
+  // The submit button unmounts with the form on save; land on the next action
+  // instead of <body>.
+  useEffect(() => {
+    if (result) addAnotherRef.current?.focus();
+  }, [result]);
 
   const finalName = certName === 'Other' ? customName.trim() : certName.trim();
 
   const resetForm = () => {
     setCertName('');
     setCustomName('');
-    setEarnedDate(todayIso());
+    setEarnedDate(localDateInputValue());
     setError(null);
+    setDateError(null);
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -107,7 +148,13 @@ export default function CertificationAddForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!finalName) { setError('Please enter a certificate name.'); return; }
-    setSaving(true); setError(null);
+    const badDate = earnedDateError(earnedDate);
+    if (badDate) {
+      setDateError(badDate);
+      earnedDateRef.current?.focus();
+      return;
+    }
+    setSaving(true); setError(null); setDateError(null);
     try {
       const res = await fetchWithTimeout(
         '/api/member/certifications',
@@ -150,6 +197,8 @@ export default function CertificationAddForm() {
       }
 
       setResult({ name: finalName, status, fileError });
+      const notice = certificationAddedNotice(finalName, status);
+      announce(fileError ? `${notice} The file was not attached: ${fileError}` : notice);
       resetForm();
       setOpen(false);
       // Re-render the server list so the new row appears with its review state.
@@ -166,7 +215,7 @@ export default function CertificationAddForm() {
       <div className="wa-space-y-3">
         {result ? (
           <div
-            role="status"
+            data-testid="certification-added-notice"
             className="wa-flex wa-items-start wa-gap-2"
             style={{
               padding: '0.75rem 1rem',
@@ -189,6 +238,7 @@ export default function CertificationAddForm() {
           </div>
         ) : null}
         <button
+          ref={addAnotherRef}
           type="button"
           onClick={openForm}
           className="wa-kit-cta wa-kit-cta--ghost wa-kit-cta--block wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
@@ -293,13 +343,25 @@ export default function CertificationAddForm() {
           Date earned
         </label>
         <input id={earnedDateId}
+          ref={earnedDateRef}
           type="date"
           value={earnedDate}
-          max={todayIso()}
-          onChange={(e) => setEarnedDate(e.target.value)}
+          max={localDateInputValue()}
+          onChange={(e) => {
+            setEarnedDate(e.target.value);
+            setDateError(null);
+          }}
+          aria-required="true"
+          aria-invalid={dateError ? true : undefined}
+          aria-describedby={dateError ? earnedDateErrorId : undefined}
           className="wa-kit-control wa-kit-focus"
           style={{ boxSizing: 'border-box' }}
         />
+        {dateError ? (
+          <p id={earnedDateErrorId} className="wa-kit-meta" style={{ margin: '0.25rem 0 0', color: 'var(--wa-danger-text)', fontWeight: 600 }}>
+            {dateError}
+          </p>
+        ) : null}
       </div>
 
       {/* Optional file upload */}

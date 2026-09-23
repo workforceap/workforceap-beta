@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import RequestHelpButton from '@/components/portal/RequestHelpButton';
 import MemberFeedbackButton from '@/components/portal/MemberFeedbackButton';
 import {
-  feedbackReadersSentence,
+  FEEDBACK_READERS_SENTENCE,
   helpRequestDescription,
   type HelpRequestAudience,
 } from '@/lib/member/helpContactCopy';
@@ -54,7 +54,7 @@ export default function NeedAPersonCard({ audience }: { audience: HelpRequestAud
           Tell us how it is going
         </h3>
         <p className="wa-kit-lede" style={{ margin: '0.25rem 0 0' }}>
-          Rate your training, counselor support or this website. {feedbackReadersSentence(audience)} Feedback is not a
+          Rate your training, counselor support or this website. {FEEDBACK_READERS_SENTENCE} Feedback is not a
           message, so it does not ask anyone to contact you.
         </p>
         <div style={{ marginTop: '0.75rem' }}>

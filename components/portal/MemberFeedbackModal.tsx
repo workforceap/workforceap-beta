@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Loader2, Star } from 'lucide-react';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import { useAnnounce } from '@/components/portal/kit/hooks/useAnnounce';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import {
   MEMBER_REQUEST_TIMEOUT_MS,
   describeMemberRequestException,
   readMemberRequestFailure,
 } from '@/lib/portal/memberRequestFailure';
+
+const SAVED_NOTICE = 'We saved your feedback.';
 
 const FEEDBACK_TYPES = [
   { value: 'training', label: 'Training / Courses' },
@@ -30,9 +33,11 @@ type Props = {
  * Member feedback dialog (POST /api/member/feedback -> `MemberFeedback`). Painted
  * on `--wa-*` tokens with Lucide icons so it opens cleanly from default kit
  * pages. The dialog says what happens to a submission: it is saved with the
- * member's account, staff and the assigned counselor can read it
- * (/admin/feedback, counselor-scoped by app/api/admin/feedback/_feedbackScope.ts),
- * and it is not a message, so nobody is asked to reply.
+ * member's account, WorkforceAP staff can read it (the admin-only
+ * /admin/feedback page; no counselor-facing page shows feedback, so the
+ * counselor is not named), and it is not a message, so nobody is asked to
+ * reply. After a send, focus moves to Close (the form it came from unmounts)
+ * and the confirmation is spoken through the kit announcer.
  */
 export default function MemberFeedbackModal({ open, onClose, defaultType = 'general' }: Props) {
   const [type, setType] = useState<FeedbackType>(defaultType);
@@ -42,6 +47,8 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const closeAfterSendRef = useRef<HTMLButtonElement>(null);
+  const announce = useAnnounce();
   // Kit trap: Tab containment + Escape (shared stack) + focus restore. Initial
   // focus stays on the title (below) so screen readers hear the dialog name.
   const dialogRef = useFocusTrap<HTMLDivElement>(open, { onEscape: handleClose, skipInitialFocus: true });
@@ -51,6 +58,11 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
   useEffect(() => {
     if (open) titleRef.current?.focus();
   }, [open]);
+
+  // The submit button unmounts with the form on success; keep focus inside the dialog.
+  useEffect(() => {
+    if (sent) closeAfterSendRef.current?.focus();
+  }, [sent]);
 
   if (!open) return null;
 
@@ -80,6 +92,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
       setSent(true);
       setRating(0);
       setComment('');
+      announce(SAVED_NOTICE);
     } catch (err) {
       setError(describeMemberRequestException(err));
     } finally {
@@ -134,19 +147,25 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
             Share feedback
           </h2>
           <p className="wa-kit-meta" style={{ margin: '0.25rem 0 0' }}>
-            Your feedback is saved with your account. WorkforceAP staff, and your counselor if you have one, can read
-            it. It is not a message, so it does not ask anyone to contact you.
+            Your feedback is saved with your account. WorkforceAP staff can read it. It is not a message, so it does not
+            ask anyone to contact you.
           </p>
         </div>
 
         {sent ? (
-          <div role="status" style={{ padding: '2rem 1.25rem', textAlign: 'center' }}>
+          <div style={{ padding: '2rem 1.25rem', textAlign: 'center' }}>
             <CheckCircle2 size={40} aria-hidden="true" style={{ color: 'var(--wa-success-dark)', display: 'inline-block' }} />
             <h3 style={{ margin: '0.75rem 0 0.25rem', fontSize: 'var(--wa-type-body)', fontWeight: 700 }}>Thank you</h3>
             <p className="wa-kit-lede" style={{ margin: 0 }}>
-              We saved your feedback.
+              {SAVED_NOTICE}
             </p>
-            <button type="button" onClick={handleClose} className="wa-kit-cta wa-kit-focus" style={{ marginTop: '1.25rem' }}>
+            <button
+              ref={closeAfterSendRef}
+              type="button"
+              onClick={handleClose}
+              className="wa-kit-cta wa-kit-focus"
+              style={{ marginTop: '1.25rem' }}
+            >
               Close
             </button>
           </div>

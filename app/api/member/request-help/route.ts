@@ -31,7 +31,6 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         fullName: true,
         email: true,
         enrolledProgram: true,
-        organizationId: true,
       },
     }));
     if (!dbUser) {
@@ -40,7 +39,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
   
     // The assigned counselor, or the team inbox when there is none. Shared
     // with /dashboard/help so the page names the same recipient it emails.
-    const recipient = await resolveHelpRequestRecipient(user.id, dbUser.organizationId);
+    const recipient = await resolveHelpRequestRecipient(user.id);
   
     const resend = getResend();
     if (!resend) {
@@ -71,9 +70,11 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         subject: sanitizeEmailSubjectLine(`Help request from ${memberName}`),
         html,
       });
-      // `sentTo` lets the button confirm who was emailed even if the
-      // assignment changed after the page rendered.
-      return NextResponse.json({ ok: true, sentTo: recipient.kind });
+      // `sentTo` + `sentToName` let the button confirm who was emailed even if
+      // the assignment changed after the page rendered. The name is the same
+      // saved counselor name /dashboard/help already shows this member; the
+      // counselor's address never leaves the server.
+      return NextResponse.json({ ok: true, sentTo: recipient.kind, sentToName: recipient.name });
     } catch (err) {
       console.error('request-help email failed:', err);
       return NextResponse.json({ error: 'Failed to send' }, { status: 500 });
