@@ -27,7 +27,7 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {
   partnerReferral: { count: mocks.count, findMany: mocks.referrals },
   // findMany: the Payout due tile's verified-unpaid placements (WAP-213).
   placementRecord: { count: mocks.count, findMany: mocks.placements },
-  memberEvent: { findMany: mocks.events },
+  memberEvent: { findMany: mocks.events, count: async () => 0 },
 } }));
 vi.mock('@/components/onboarding/PortalEntryClient', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalVoiceSessionLazy', () => ({ default: () => null }));
