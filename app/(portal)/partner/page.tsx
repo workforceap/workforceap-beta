@@ -37,7 +37,8 @@ import type { DataTableColumn } from '@/components/portal/ui/DataTable';
 import PartnerReferralResourcesSection from '@/components/partner/PartnerReferralResourcesSection';
 import PendingApprovalBanner from '@/components/partner/PendingApprovalBanner';
 import PartnerConnectPayoutButton from '@/components/partner/PartnerConnectPayoutButton';
-import { getPartnerPlacementPayoutUsd } from '@/lib/partner/partnerPayout';
+import { getPartnerPlacementPayoutUsd, isPartnerPlacementPayoutRateConfigured } from '@/lib/partner/partnerPayout';
+import { countUnpaidVerifiedPlacements } from '@/lib/partner/unpaidVerifiedPlacements';
 import { isReferralPartner } from '@/lib/partner/partnerType';
 import { buildPartnerReferralBadge, isOutcomesSocialProofEnabled } from '@/lib/outcomes/socialProof';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
@@ -376,10 +377,18 @@ export default async function PartnerDashboardPage({
       },
     ];
 
-    // "Payout due" KPI — same estimate formula as the legacy path's
-    // Estimated Payout card (placements × payout-per-placement), computed
-    // from counts already in hand. Referral-partner track only.
-    const payoutDueUsd = placedCount * getPartnerPlacementPayoutUsd();
+    // "Payout due" KPI (referral-partner track only): placements the payout
+    // route would pay now — verified and not yet paid — at the per-placement
+    // rate (WAP-213). It used to be every placement ever × the rate, paid and
+    // unverified ones included. The legacy ?ui=legacy estimate is unchanged
+    // (WAP-193 retires that branch).
+    const unpaidVerified = showPayouts
+      ? await countUnpaidVerifiedPlacements(ctx.partnerId, ctx.partner.organizationId)
+      : 0;
+    const payoutDueUsd = unpaidVerified * getPartnerPlacementPayoutUsd();
+    const payoutDueSubtitle = `${unpaidVerified} verified placement${unpaidVerified === 1 ? '' : 's'} not yet paid${
+      isPartnerPlacementPayoutRateConfigured() ? '' : ' · estimated rate'
+    }`;
     const fmtMoneyKit = (n: number) =>
       new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -423,7 +432,7 @@ export default async function PartnerDashboardPage({
                 ? {
                     label: 'Payout due',
                     value: fmtMoneyKit(payoutDueUsd),
-                    subtitle: t('placementEstimate'),
+                    subtitle: payoutDueSubtitle,
                     icon: <Wallet size={16} />,
                   }
                 : {

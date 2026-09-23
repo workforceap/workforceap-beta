@@ -40,12 +40,23 @@ export async function createMember(
   let referralPartnerId: string | null = null;
   let referralSource: string | null = null;
 
+  // Resolve the member's organization first so the partner lookup below is
+  // tenant-scoped, matching the /apply door: a ref code from another tenant
+  // must not attribute this member to that tenant's partner.
+  const organizationId = await withDbRetry(async () =>
+    resolveProvisionOrganizationId({
+      explicitOrganizationId: options.organizationId,
+      headers: options.headers ?? (await tryCurrentRequestHeaders()),
+    }),
+  );
+
   const refRaw = data.referralRef?.trim().toLowerCase();
   if (refRaw) {
     const partner = await withDbRetry(() =>
       prisma.partner.findFirst({
         where: {
           active: true,
+          organizationId,
           OR: [{ referralCode: refRaw }, { slug: refRaw }],
         },
         select: { id: true },
@@ -56,13 +67,6 @@ export async function createMember(
       referralSource = `partner_ref:${refRaw}`;
     }
   }
-
-  const organizationId = await withDbRetry(async () =>
-    resolveProvisionOrganizationId({
-      explicitOrganizationId: options.organizationId,
-      headers: options.headers ?? (await tryCurrentRequestHeaders()),
-    }),
-  );
 
   await withDbRetry(async () => {
     try {
@@ -107,6 +111,23 @@ export async function createMember(
             referralPartnerId,
           },
         });
+
+        // Create partner referral record so the member shows in partner's
+        // referred members list (every partner surface reads PartnerReferral,
+        // not Application.referralPartnerId). UPSERT, not create:
+        // `@@unique([partnerId, memberId])` means a re-submit by a returning
+        // member would raise P2002 and roll the whole transaction back.
+        // `update: {}` keeps the original `referredAt` and any admin-assigned
+        // partner user intact. Mirrors app/api/apply/signup/route.ts.
+        if (referralPartnerId) {
+          await tx.partnerReferral.upsert({
+            where: {
+              partnerId_memberId: { partnerId: referralPartnerId, memberId: userId },
+            },
+            create: { partnerId: referralPartnerId, memberId: userId },
+            update: {},
+          });
+        }
 
         // Best-effort: notify admins of new application (do not block signup)
         sendNewApplicationAdminEmail({
