@@ -380,23 +380,7 @@ export default function ApplyResultsClient({
                     {t('schoolResultsCatalogBadge')}
                   </span>
                 ) : null}
-                {rank && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '0.5rem',
-                      right: '0.5rem',
-                      fontSize: '0.8125rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: 'var(--wa-accent-text)',
-                    }}
-                  >
-                    {rank}
-                  </span>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                   <span
                     style={{
                       background: p.categoryColor,
@@ -409,7 +393,21 @@ export default function ApplyResultsClient({
                   >
                     {p.categoryLabel}
                   </span>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                  {/* The rank sits in the row, next to the icon, so it can't cover it (WAP-271). */}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
+                    {rank && (
+                      <span
+                        style={{
+                          fontSize: '0.8125rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                          color: 'var(--wa-accent-text)',
+                        }}
+                      >
+                        {rank}
+                      </span>
+                    )}
                     <ProgramIcon program={p} size={24} />
                   </span>
                 </div>
