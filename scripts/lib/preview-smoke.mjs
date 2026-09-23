@@ -39,6 +39,7 @@ const SITE_TITLE = /<title[^>]*>[^<]*(?:WorkforceAP|Workforce Advancement Projec
  * home (must carry the site title); `/en/program-comparison` is the page
  * AGENTS.md names as the credential-free smoke test.
  */
+/** @type {SmokeProbe[]} */
 export const PREVIEW_EXTRA_PROBES = [
   { path: '/en', name: 'home-en', kind: 'public-page', titleMarker: true },
   { path: '/en/program-comparison', name: 'program-comparison', kind: 'public-page' },
@@ -55,10 +56,14 @@ const TRANSIENT_STATUS = new Set([0, 502, 503, 504]);
 /**
  * Extract `PROBES` from the smoke-test route source. Returns
  * `{ ok: true, probes }` or `{ ok: false, reason }`; never guesses.
+ *
+ * @param {string} source
+ * @returns {{ ok: true, probes: SmokeProbe[] } | { ok: false, reason: string }}
  */
 export function parseRouteProbes(source) {
   const block = /const PROBES(?:\s*:\s*[\w[\]<>]+)?\s*=\s*\[([\s\S]*?)\n\];/.exec(source);
   if (!block) return { ok: false, reason: 'no `const PROBES = [ ... ];` array in the route source' };
+  /** @type {SmokeProbe[]} */
   const probes = [];
   for (const [, body] of block[1].matchAll(/\{([^{}]*)\}/g)) {
     const field = (key) => {
@@ -82,7 +87,12 @@ export function loadRouteProbes(file = ROUTE_PROBES_FILE) {
   return parseRouteProbes(readFileSync(file, 'utf8'));
 }
 
-/** Route probes first, then the preview extras whose path the route does not already cover. */
+/**
+ * Route probes first, then the preview extras whose path the route does not already cover.
+ *
+ * @param {SmokeProbe[]} routeProbes
+ * @returns {SmokeProbe[]}
+ */
 export function buildPreviewProbes(routeProbes) {
   const seen = new Set(routeProbes.map((p) => p.path));
   return [...routeProbes, ...PREVIEW_EXTRA_PROBES.filter((p) => !seen.has(p.path))];
@@ -253,15 +263,35 @@ function healthNotes(probe, chain, expectedSha) {
 }
 
 /**
+ * @typedef {{ status: number, headers: { get(name: string): string | null }, text(): Promise<string> }} SmokeResponse
+ * @typedef {(url: string, init: { method: string, redirect: string, headers: Record<string, string>, signal: AbortSignal }) => Promise<SmokeResponse>} SmokeFetch
+ * @typedef {{ path: string, name: string, kind: string, bodyMarker?: string, titleMarker?: boolean, requireRedisRateLimiter?: boolean }} SmokeProbe
+ * @typedef {SmokeProbe & { ok: boolean, status: number, reason?: string, chain?: string, durationMs?: number, attempts?: number, notes?: string[] }} SmokeResult
+ * @typedef {{ result: 'pass' | 'fail' | 'protected', checked: number, results: SmokeResult[] }} SmokeOutcome
+ */
+
+/**
  * Run every probe against `origin`. Resolves to
  * `{ result: 'pass' | 'fail' | 'protected', results, checked }`.
  * `protected` means Vercel Deployment Protection answered instead of the app
  * and no (or a wrong) bypass secret was supplied.
+ *
+ * @param {{
+ *   origin: string,
+ *   probes: SmokeProbe[],
+ *   fetchImpl?: SmokeFetch,
+ *   bypassSecret?: string,
+ *   expectedSha?: string,
+ *   timeoutMs?: number,
+ *   attempts?: number,
+ *   retryDelayMs?: number,
+ * }} options
+ * @returns {Promise<SmokeOutcome>}
  */
 export async function runPreviewSmoke({
   origin,
   probes,
-  fetchImpl = globalThis.fetch,
+  fetchImpl = /** @type {SmokeFetch} */ (/** @type {unknown} */ (globalThis.fetch)),
   bypassSecret = '',
   expectedSha = '',
   timeoutMs = DEFAULT_TIMEOUT_MS,
@@ -269,6 +299,7 @@ export async function runPreviewSmoke({
   retryDelayMs = DEFAULT_RETRY_DELAY_MS,
 }) {
   const ctx = { fetchImpl, bypassSecret, timeoutMs };
+  /** @type {SmokeResult[]} */
   const results = [];
   for (const probe of probes) {
     let chain;
@@ -303,6 +334,7 @@ export async function runPreviewSmoke({
       };
     }
 
+    /** @type {SmokeResult} */
     const entry = {
       ...probe,
       ok: !reason,
