@@ -13,7 +13,6 @@ import AtRiskSummaryWidget from '@/components/portal/counselor/AtRiskSummaryWidg
 import { getCounselorPriorityQueue } from '@/lib/counselor/priorityQueue';
 import { getCounselorAttention } from '@/lib/attention/counselor';
 import { toPriorityQueue } from '@/lib/attention/counselorViews';
-import { emptyAttentionQueue } from '@/lib/attention/evaluate';
 import CounselorPortalVoiceBlock from '@/components/portal/CounselorPortalVoiceBlock';
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
@@ -30,6 +29,7 @@ import {
 import PortalCard from '@/components/portal/ui/PortalCard';
 import {
   CounselorHomeKit,
+  type CounselorHomeLoadFailedCopy,
   type CounselorQueueRow,
   type CounselorSessionRow,
 } from '@/components/portal/kit/pages/counselor/CounselorHomeKit';
@@ -69,8 +69,8 @@ export default async function CounselorPortalPage({
   // heavy data pipeline (counselorAssignment.findMany + the message
   // reply-scan), which stalls on the demo DB. Renders the redesigned counselor
   // overview kit from a handful of cheap queries only: a single count for the
-  // assigned-members KPI, plus the already-try/catch-wrapped command center +
-  // priority queue helpers (which return safe empty shapes on failure). No
+  // assigned-members KPI, plus the command center and attention queue loaders,
+  // each in its own try/catch (a failure renders "Couldn't load", not 0). No
   // $transaction, no external calls, no unbounded scans.
   // v2 kit is the DEFAULT counselor overview; legacy via ?ui=legacy.
   if (requestedUi !== 'legacy') {
@@ -87,51 +87,68 @@ export default async function CounselorPortalPage({
         })
       : 0;
 
-    let kitCenter;
+    // Each load fails on its own (the Today pattern): a failed read hands the
+    // kit `null` for what it would have produced, and the kit shows "Couldn't
+    // load" with a retry. Never substitute zeros — "0 need reply" after a
+    // failure tells a counselor nobody is waiting when nobody knows (WAP-206).
+    let kitCenter: Awaited<ReturnType<typeof getCounselorCommandCenter>> | null = null;
     try {
       kitCenter = await getCounselorCommandCenter(user.id, {
         isAdmin: kitIsAdmin && !kitCounselor,
         perSectionLimit: 5,
       });
-    } catch {
+    } catch (err) {
+      console.error('[counselor:kit] command center failed:', err);
       kitLoadErrors.push('counselor-command-center-load-failed');
-      kitCenter = {
-        needsReply: [],
-        atRisk: [],
-        interviewing: [],
-        totals: { needsReplyCount: 0, atRiskCount: 0, interviewingCount: 0, slaBreachCount: 0 },
-      };
     }
 
     // One attention queue (lib/attention) feeds the "Needs attention" list,
     // the risk-alert tile and the on-track count, and is the same queue Inbox
     // zero, Triage and the Work queue render — so the four pages agree.
-    let kitAttention = emptyAttentionQueue();
+    let kitAttention: Awaited<ReturnType<typeof getCounselorAttention>> | null = null;
     try {
       kitAttention = await getCounselorAttention(user.id, { isAdmin: kitIsAdmin && !kitCounselor });
     } catch (err) {
       console.error('[counselor:kit] attention queue failed:', err);
       kitLoadErrors.push('counselor-priority-queue-load-failed');
     }
-    const kitQueue = toPriorityQueue(kitAttention);
+    const kitQueue = kitAttention ? toPriorityQueue(kitAttention) : null;
 
-    const kitQueueRows: CounselorQueueRow[] = selectNeedsAttentionRows(kitQueue.rows, 12).map((row) => ({
-      memberId: row.memberId,
-      memberName: row.memberName,
-      bucket: row.bucket,
-      blockerReason: row.blockerReason,
-      // The kit prints this verbatim in the row meta; hand it a title, not a slug.
-      enrolledProgram: row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : row.enrolledProgram,
-      daysSinceLogin: row.daysSinceLogin,
-      hoursWaitingReply: row.hoursWaitingReply,
-    }));
+    const kitQueueRows: CounselorQueueRow[] | null = kitQueue
+      ? selectNeedsAttentionRows(kitQueue.rows, 12).map((row) => ({
+          memberId: row.memberId,
+          memberName: row.memberName,
+          bucket: row.bucket,
+          blockerReason: row.blockerReason,
+          // The kit prints this verbatim in the row meta; hand it a title, not a slug.
+          enrolledProgram: row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : row.enrolledProgram,
+          daysSinceLogin: row.daysSinceLogin,
+          hoursWaitingReply: row.hoursWaitingReply,
+        }))
+      : null;
 
-    const kitSessions: CounselorSessionRow[] = kitCenter.interviewing.map((row) => ({
-      memberId: row.memberId,
-      memberName: row.memberName,
-      role: row.role,
-      lastRunAt: row.lastRunAt,
-    }));
+    // `interviewing` is interview-practice tool runs from the last 7 days, not
+    // scheduled in-office sessions; the kit card is labelled that way.
+    const kitSessions: CounselorSessionRow[] | null = kitCenter
+      ? kitCenter.interviewing.map((row) => ({
+          memberId: row.memberId,
+          memberName: row.memberName,
+          role: row.role,
+          lastRunAt: row.lastRunAt,
+        }))
+      : null;
+
+    const tEmpty = await getTranslations('empty');
+    const loadFailedCopy: CounselorHomeLoadFailedCopy = {
+      countsTitle: tEmpty('counselor.overviewUnavailable.countsTitle'),
+      countsBody: tEmpty('counselor.overviewUnavailable.countsBody'),
+      tileCaption: tEmpty('counselor.overviewUnavailable.tileCaption'),
+      queueTitle: tEmpty('counselor.overviewUnavailable.queueTitle'),
+      queueBody: tEmpty('counselor.overviewUnavailable.queueBody'),
+      sessions: tEmpty('counselor.overviewUnavailable.sessions'),
+      breakdown: tEmpty('counselor.overviewUnavailable.breakdown'),
+      action: tEmpty('counselor.overviewUnavailable.action'),
+    };
 
     return (
       <>
@@ -140,18 +157,20 @@ export default async function CounselorPortalPage({
         ))}
         <CounselorHomeKit
         assignedCount={assignedCount}
-        atRiskCount={kitAttention.totals.byReason.risk_alert}
-        needsReplyCount={kitCenter.totals.needsReplyCount}
-        onTrackCount={kitQueue.totals.ontrack}
-        slaBreachCount={kitCenter.totals.slaBreachCount}
+        atRiskCount={kitAttention ? kitAttention.totals.byReason.risk_alert : null}
+        needsReplyCount={kitCenter ? kitCenter.totals.needsReplyCount : null}
+        onTrackCount={kitQueue ? kitQueue.totals.ontrack : null}
+        slaBreachCount={kitCenter ? kitCenter.totals.slaBreachCount : null}
         queueRows={kitQueueRows}
-        queueTotal={countNeedsAttention(kitQueue.totals)}
+        queueTotal={kitQueue ? countNeedsAttention(kitQueue.totals) : undefined}
         sessions={kitSessions}
-        bucketCounts={{
-          critical: kitQueue.totals.critical,
-          warning: kitQueue.totals.warning,
-          ontrack: kitQueue.totals.ontrack,
-        }}
+        bucketCounts={
+          kitQueue
+            ? { critical: kitQueue.totals.critical, warning: kitQueue.totals.warning, ontrack: kitQueue.totals.ontrack }
+            : null
+        }
+        retryHref="/counselor/overview"
+        loadFailedCopy={loadFailedCopy}
         />
       </>
     );

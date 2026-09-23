@@ -4049,6 +4049,16 @@
         "body": "Algo salió mal al obtener la cola. Intenta de nuevo.",
         "action": "Reintentar"
       },
+      "overviewUnavailable": {
+        "countsTitle": "No se pudieron cargar algunos conteos del grupo de casos",
+        "countsBody": "Un recuadro con — es un dato desconocido, no cero. Intenta de nuevo; si sigue pasando, avisa a un administrador.",
+        "tileCaption": "No se pudo cargar",
+        "queueTitle": "No se pudo cargar la lista de atención",
+        "queueBody": "La lista no respondió, así que esto no es una cola vacía. Intenta de nuevo; si sigue pasando, avisa a un administrador.",
+        "sessions": "No se pudo cargar la práctica de entrevistas reciente.",
+        "breakdown": "No se pudo cargar el desglose del grupo de casos.",
+        "action": "Intentar de nuevo"
+      },
       "inbox": {
         "title": "Aún no hay miembros asignados",
         "body": "Las conversaciones aparecen aquí cuando un administrador te asigna miembros.",

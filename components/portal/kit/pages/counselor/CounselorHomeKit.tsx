@@ -16,6 +16,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
+  KitEmptyState,
   SectionHeader,
   PageOpener,
   QueueRow,
@@ -40,7 +41,7 @@ import {
  *      track), each an optional inline sparkline + delta chip.
  *   3. "Needs attention" — the priority queue as severity-coded QueueRows.
  *      This is the hero of the view; everything else is secondary.
- *   4. A side column: "Today / this week" (interview-prep touchpoints) +
+ *   4. A side column: "Interview practice · last 7 days" (interview-prep tool runs) +
  *      either a daily-activity area chart (when the caller has one) or a
  *      caseload-by-bucket RankBars fallback (always available — it's just
  *      the three queue totals already on hand).
@@ -101,17 +102,51 @@ const BUCKET_FLAG: Record<CounselorQueueBucket, string | undefined> = {
   ontrack: undefined,
 };
 
+/**
+ * Words for the failed-load states (WAP-206). The page passes them from
+ * `empty.counselor.overviewUnavailable` so they follow the viewer's locale;
+ * the English below is the fallback for the dev showcase and direct renders.
+ */
+export interface CounselorHomeLoadFailedCopy {
+  countsTitle: string;
+  countsBody: string;
+  tileCaption: string;
+  queueTitle: string;
+  queueBody: string;
+  sessions: string;
+  breakdown: string;
+  action: string;
+}
+
+const DEFAULT_LOAD_FAILED_COPY: CounselorHomeLoadFailedCopy = {
+  countsTitle: "Some caseload counts couldn't load",
+  countsBody: 'A tile showing — is unknown, not zero. Try again; if this keeps happening, tell an admin.',
+  tileCaption: "Couldn't load",
+  queueTitle: "Couldn't load the attention list",
+  queueBody: 'The list did not answer, so this is not an empty queue. Try again; if this keeps happening, tell an admin.',
+  sessions: "Couldn't load recent interview practice.",
+  breakdown: "Couldn't load the caseload breakdown.",
+  action: 'Try again',
+};
+
+/** The tile value for a count whose load failed: a dash, never a number. */
+const UNKNOWN_COUNT = '—';
+
 export interface CounselorHomeKitProps {
   firstName?: string;
   greeting?: string;
 
-  /** KPI counts — all cheap, always available from the default data path. */
-  assignedCount?: number;
-  atRiskCount?: number;
-  needsReplyCount?: number;
-  onTrackCount?: number;
+  /**
+   * KPI counts. `null` means the load behind it failed: the tile shows "—"
+   * with a "Couldn't load" caption and the page shows a retry, so a failure
+   * never reads as a real 0 (WAP-206). Omitted still means 0.
+   */
+  assignedCount?: number | null;
+  atRiskCount?: number | null;
+  needsReplyCount?: number | null;
+  onTrackCount?: number | null;
   /** Of `needsReplyCount`, how many breach the 48h SLA. Folded into the "Needs attention" goal caption. */
-  slaBreachCount?: number;
+  slaBreachCount?: number | null;
 
   /** Optional sparkline + delta chip per KPI tile. Omit any to hide that piece. */
   assignedSpark?: SparkStat;
@@ -119,8 +154,8 @@ export interface CounselorHomeKitProps {
   needsReplySpark?: SparkStat;
   onTrackSpark?: SparkStat;
 
-  /** Priority-queue rows — the hero. Empty renders a "caught up" state. */
-  queueRows?: CounselorQueueRow[];
+  /** Priority-queue rows — the hero. Empty renders a "caught up" state; `null` (failed load) renders the failed state with a retry. */
+  queueRows?: CounselorQueueRow[] | null;
   /** Total rows in the underlying queue (may exceed `queueRows.length` when truncated). */
   queueTotal?: number;
   /** Base path for a queue row's "View" action. */
@@ -128,15 +163,20 @@ export interface CounselorHomeKitProps {
   /** Roster link shown in the empty state. */
   rosterHref?: string;
 
-  /** "Today / this week" compact session list (interview-prep touchpoints). */
-  sessions?: CounselorSessionRow[];
+  /** Interview-practice runs in the last 7 days (AI tool runs, not scheduled in-office sessions). `null` = failed load. */
+  sessions?: CounselorSessionRow[] | null;
   sessionsHref?: string;
 
   /** Daily activity series (e.g. caseload touchpoints/day). 2+ points required; omit to fall back to the bucket breakdown below. */
   activity?: ChartDatum[];
   activityDeltaLabel?: string;
-  /** Caseload-by-bucket counts, used as the RankBars fallback when `activity` isn't available. */
-  bucketCounts?: { critical: number; warning: number; ontrack: number };
+  /** Caseload-by-bucket counts, used as the RankBars fallback when `activity` isn't available. `null` = failed load. */
+  bucketCounts?: { critical: number; warning: number; ontrack: number } | null;
+
+  /** Where "Try again" goes after a failed load (a fresh server render). */
+  retryHref?: string;
+  /** Translated failed-load copy; English fallback when omitted. */
+  loadFailedCopy?: CounselorHomeLoadFailedCopy;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -262,18 +302,27 @@ export function CounselorHomeKit({
   activity = [],
   activityDeltaLabel,
   bucketCounts,
+  retryHref = '/counselor/overview',
+  loadFailedCopy = DEFAULT_LOAD_FAILED_COPY,
 }: CounselorHomeKitProps) {
-  const total = queueTotal ?? queueRows.length;
+  const copy = loadFailedCopy;
+  const queueFailed = queueRows === null;
+  const rows = queueRows ?? [];
+  const total = queueTotal ?? rows.length;
+  const known = (n: number | null): n is number => n !== null;
+  const countsFailed = [assignedCount, atRiskCount, needsReplyCount, onTrackCount].some((n) => n === null);
 
   // Only a state paints a tile (WAP-99): risk / SLA counts carry a tone while above zero, totals stay neutral.
-  const kpis: Array<{ key: string; icon: LucideIcon; label: string; value: number; tone?: KitTone; spark?: SparkStat; caption?: string }> = [
+  // A failed count (null) is its own state: "—" + "Couldn't load" on the danger tone, never 0.
+  type Kpi = { key: string; icon: LucideIcon; label: string; value: number | null; tone?: KitTone; spark?: SparkStat; caption?: string };
+  const kpis: Kpi[] = [
     { key: 'assigned', icon: Users, label: 'Assigned members', value: assignedCount, spark: assignedSpark },
     {
       key: 'atRisk',
       icon: TriangleAlert,
       label: 'Members with risk alerts',
       value: atRiskCount,
-      tone: atRiskCount > 0 ? 'alert' : undefined,
+      tone: known(atRiskCount) && atRiskCount > 0 ? 'alert' : undefined,
       spark: atRiskSpark,
     },
     {
@@ -281,7 +330,7 @@ export function CounselorHomeKit({
       icon: MailWarning,
       label: 'Awaiting reply',
       value: needsReplyCount,
-      tone: slaBreachCount > 0 ? 'alert' : needsReplyCount > 0 ? 'info' : undefined,
+      tone: known(slaBreachCount) && slaBreachCount > 0 ? 'alert' : known(needsReplyCount) && needsReplyCount > 0 ? 'info' : undefined,
       spark: needsReplySpark,
     },
     {
@@ -302,6 +351,7 @@ export function CounselorHomeKit({
   ];
 
   const hasActivitySeries = activity.length > 1;
+  const breakdownFailed = bucketCounts === null;
   const bucketRankData: RankDatum[] | null = (() => {
     if (!bucketCounts) return null;
     const sum = bucketCounts.critical + bucketCounts.warning + bucketCounts.ontrack;
@@ -315,11 +365,17 @@ export function CounselorHomeKit({
 
   // Only flagged members sit under "Needs attention"; when nothing is flagged
   // the list is the caseload, and says so (counselor audit 2026-09-20, 4.1).
-  const nothingFlagged = queueRows.length === 0;
+  // A failed queue load claims neither: it keeps the "Needs attention" title
+  // and says it could not load (WAP-206).
+  const nothingFlagged = !queueFailed && rows.length === 0;
+  const onTrackKnown = known(onTrackCount) ? onTrackCount : 0;
+  const slaKnown = known(slaBreachCount) ? slaBreachCount : 0;
   const queueTitle = nothingFlagged ? 'Caseload' : 'Needs attention';
-  const goalCaption = nothingFlagged
-    ? `Nothing flagged${onTrackCount > 0 ? ` · ${onTrackCount} member${onTrackCount === 1 ? '' : 's'} on track` : ''}`
-    : `${total} member${total === 1 ? '' : 's'} in queue${slaBreachCount > 0 ? ` · ${slaBreachCount} past 48h SLA` : ''}`;
+  const goalCaption = queueFailed
+    ? copy.tileCaption
+    : nothingFlagged
+      ? `Nothing flagged${onTrackKnown > 0 ? ` · ${onTrackKnown} member${onTrackKnown === 1 ? '' : 's'} on track` : ''}`
+      : `${total} member${total === 1 ? '' : 's'} in queue${slaKnown > 0 ? ` · ${slaKnown} past 48h SLA` : ''}`;
 
   return (
     <DesignSurface surface="dense">
@@ -334,19 +390,47 @@ export function CounselorHomeKit({
 
         {/* 2. KPI row */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
-          {kpis.map((k) => (
-            <StatSparkTile key={k.key} icon={<k.icon size={16} />} label={k.label} value={k.value} tone={k.tone} spark={k.spark} caption={k.caption} />
-          ))}
+          {kpis.map((k) =>
+            k.value === null ? (
+              <StatSparkTile key={k.key} icon={<k.icon size={16} />} label={k.label} value={UNKNOWN_COUNT} tone="danger" caption={copy.tileCaption} />
+            ) : (
+              <StatSparkTile key={k.key} icon={<k.icon size={16} />} label={k.label} value={k.value} tone={k.tone} spark={k.spark} caption={k.caption} />
+            ),
+          )}
         </div>
+        {countsFailed ? (
+          <KitEmptyState
+            framed
+            kind="unavailable"
+            tone="danger"
+            headingAs="h2"
+            data-testid="counselor-overview-counts-load-failed"
+            icon={<TriangleAlert size={13} aria-hidden="true" />}
+            title={copy.countsTitle}
+            description={copy.countsBody}
+            primaryAction={{ label: copy.action, href: retryHref }}
+          />
+        ) : null}
 
         {/* 3 + 4. Hero queue (left) + side column (right). */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="lg:wa-col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
             <SectionHeader title={queueTitle} goal={goalCaption} />
-            {queueRows.length === 0 ? (
+            {queueFailed ? (
+              <KitEmptyState
+                framed
+                kind="unavailable"
+                tone="danger"
+                data-testid="counselor-overview-queue-load-failed"
+                icon={<TriangleAlert size={13} aria-hidden="true" />}
+                title={copy.queueTitle}
+                description={copy.queueBody}
+                primaryAction={{ label: copy.action, href: retryHref }}
+              />
+            ) : rows.length === 0 ? (
               <EmptyQueueState rosterHref={rosterHref} />
             ) : (
-              queueRows.map((row) => {
+              rows.map((row) => {
                 const Icon = BUCKET_ICON[row.bucket];
                 return (
                   <QueueRow
@@ -368,10 +452,10 @@ export function CounselorHomeKit({
           </div>
 
           <aside className="lg:wa-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
-            {/* Today / this week */}
+            {/* Interview practice, last 7 days (AI tool runs; the link goes to in-office sessions) */}
             <Card>
               <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 4 }}>
-                <SideCardHead title="Today / this week" />
+                <SideCardHead title="Interview practice · last 7 days" />
                 <Link
                   href={sessionsHref}
                   className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
@@ -380,9 +464,13 @@ export function CounselorHomeKit({
                   Sessions <ArrowRight size={11} aria-hidden />
                 </Link>
               </div>
-              {sessions.length === 0 ? (
+              {sessions === null ? (
+                <p data-testid="counselor-overview-sessions-load-failed" style={{ fontSize: 13, color: 'var(--wa-danger)', fontWeight: 600, margin: 0 }}>
+                  {copy.sessions}
+                </p>
+              ) : sessions.length === 0 ? (
                 <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
-                  No interview-prep sessions run this week.
+                  No member ran interview practice in the last 7 days.
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -410,6 +498,13 @@ export function CounselorHomeKit({
                       {activityDeltaLabel}
                     </p>
                   ) : null}
+                </>
+              ) : breakdownFailed ? (
+                <>
+                  <SideCardHead title="Caseload by bucket" />
+                  <p data-testid="counselor-overview-breakdown-load-failed" style={{ fontSize: 13, color: 'var(--wa-danger)', fontWeight: 600, margin: 0 }}>
+                    {copy.breakdown}
+                  </p>
                 </>
               ) : bucketRankData ? (
                 <>

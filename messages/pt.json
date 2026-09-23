@@ -3992,6 +3992,16 @@
         "body": "Algo deu errado ao buscar a fila. Tente novamente.",
         "action": "Tentar novamente"
       },
+      "overviewUnavailable": {
+        "countsTitle": "Não foi possível carregar algumas contagens da carteira",
+        "countsBody": "Um bloco com — é desconhecido, não zero. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "tileCaption": "Não foi possível carregar",
+        "queueTitle": "Não foi possível carregar a lista de atenção",
+        "queueBody": "A lista não respondeu, então isto não é uma fila vazia. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "sessions": "Não foi possível carregar a prática de entrevistas recente.",
+        "breakdown": "Não foi possível carregar a divisão da carteira.",
+        "action": "Tentar novamente"
+      },
       "inbox": {
         "title": "Ainda não há membros atribuídos",
         "body": "As conversas aparecem aqui quando um administrador atribui membros a você.",
