@@ -111,7 +111,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     const dbUser = await deps.findUser(user.id);
 
     // Use the same active-program resolution as `/dashboard/training` and
-    // the home dashboard so the launch button never disagrees with what the
+    // My Program (`getActiveProgramForDashboard`) so the launch button never disagrees with what the
     // member is looking at. Pre-fix this used `User.enrolledProgram` (legacy
     // single-program field) directly — when a member had multiple
     // CourseEnrollment rows with a primary that diverged from the legacy

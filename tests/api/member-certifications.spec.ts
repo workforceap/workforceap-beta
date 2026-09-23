@@ -34,10 +34,13 @@ vi.mock('@/lib/db/prisma', () => ({
       findMany: vi.fn(),
       findUnique: vi.fn(),
       upsert: vi.fn(),
+      updateMany: vi.fn(),
       deleteMany: vi.fn(),
     },
   },
 }));
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
+vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) }));
 
 import { GET, POST } from '@/app/api/member/certifications/route';
 import { getUser } from '@/lib/auth/server';
@@ -45,6 +48,8 @@ import { prisma } from '@/lib/db/prisma';
 import { trackEvent } from '@/lib/events/track';
 import { awardPoints } from '@/lib/member/points';
 import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
+import { auditLog } from '@/lib/audit';
+import { logAuditEvent } from '@/lib/audit/log';
 
 const postReq = (body: unknown) =>
   new Request('http://localhost:3000/api/member/certifications', {
@@ -85,7 +90,11 @@ describe('GET /api/member/certifications', () => {
 });
 
 describe('POST /api/member/certifications', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Default: the member has no certification of that name yet.
+    vi.mocked(prisma.userCertification.findUnique).mockResolvedValue(null);
+  });
 
   it('returns 401 when unauthenticated', async () => {
     vi.mocked(getUser).mockResolvedValue(null);
@@ -125,16 +134,86 @@ describe('POST /api/member/certifications', () => {
     expect(sendPartnerMilestoneEmail).not.toHaveBeenCalled();
   });
 
-  it('re-adding an existing certification refreshes only the date, not its review status', async () => {
+  it.each(['pending', 'rejected'] as const)(
+    're-adding a %s certification refreshes only the date, not its review status',
+    async (status) => {
+      vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+      vi.mocked(prisma.userCertification.findUnique).mockResolvedValue({
+        id: 'cert-1', certName: 'AWS', status, earnedAt: new Date('2026-01-01T00:00:00.000Z'),
+      } as any);
+      vi.mocked(prisma.userCertification.updateMany).mockResolvedValue({ count: 1 } as any);
+
+      const res = await POST(postReq({ certName: 'AWS', earned: true, earnedAt: '2026-02-01T00:00:00.000Z' }));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ success: true, status });
+      expect(prisma.userCertification.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { userId_certName: { userId: 'u1', certName: 'AWS' } } }),
+      );
+      // The write is guarded so a row approved in the meantime is never re-dated.
+      expect(prisma.userCertification.updateMany).toHaveBeenCalledWith({
+        where: { id: 'cert-1', userId: 'u1', status: { not: 'approved' } },
+        data: { earnedAt: new Date('2026-02-01T00:00:00.000Z') },
+      });
+      expect(auditLog).not.toHaveBeenCalled();
+    },
+  );
+
+  // Mike, 2026-09-23 02:39 UTC: "verified cert stays verified". Re-adding a
+  // verified (`approved`) certificate with a new manual date must not re-date
+  // it; the attempt is recorded in the audit log instead.
+  it('re-adding a verified certification with a new date changes nothing and is audited', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
-    vi.mocked(prisma.userCertification.upsert).mockResolvedValue({ status: 'approved' } as any);
+    vi.mocked(prisma.userCertification.findUnique).mockResolvedValue({
+      id: 'cert-1', certName: 'AWS', status: 'approved', earnedAt: new Date('2026-01-01T00:00:00.000Z'),
+    } as any);
 
     const res = await POST(postReq({ certName: 'AWS', earned: true, earnedAt: '2026-02-01T00:00:00.000Z' }));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ success: true, status: 'approved' });
-    const call = vi.mocked(prisma.userCertification.upsert).mock.calls[0][0] as { update: Record<string, unknown> };
-    expect(call.update).toEqual({ earnedAt: new Date('2026-02-01T00:00:00.000Z') });
-    expect(call.update).not.toHaveProperty('status');
+    expect(await res.json()).toEqual({ success: true, status: 'approved', verifiedUnchanged: true });
+    expect(prisma.userCertification.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId_certName: { userId: 'u1', certName: 'AWS' } } }),
+    );
+    expect(prisma.userCertification.upsert).not.toHaveBeenCalled();
+    expect(prisma.userCertification.updateMany).not.toHaveBeenCalled();
+
+    expect(auditLog).toHaveBeenCalledWith({
+      actorUserId: 'u1',
+      action: 'member.certification.redate_blocked_verified',
+      targetType: 'user_certification',
+      targetId: 'cert-1',
+      metadata: {
+        certName: 'AWS',
+        status: 'approved',
+        keptEarnedAt: '2026-01-01T00:00:00.000Z',
+        requestedEarnedAt: '2026-02-01T00:00:00.000Z',
+      },
+    });
+    expect(logAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user: { id: 'u1', role: 'member' },
+        verb: 'update',
+        object: { type: 'UserCertification', id: 'cert-1' },
+        result: expect.objectContaining({
+          success: false,
+          extensions: expect.objectContaining({ field: 'earnedAt', status: 'approved', statusKept: true }),
+        }),
+      }),
+    );
+  });
+
+  it('re-adding a verified certification with its own date is a quiet no-op', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+    vi.mocked(prisma.userCertification.findUnique).mockResolvedValue({
+      id: 'cert-1', certName: 'AWS', status: 'approved', earnedAt: new Date('2026-01-01T00:00:00.000Z'),
+    } as any);
+
+    const res = await POST(postReq({ certName: 'AWS', earned: true, earnedAt: '2026-01-01T00:00:00.000Z' }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ success: true, status: 'approved', verifiedUnchanged: true });
+    expect(prisma.userCertification.upsert).not.toHaveBeenCalled();
+    expect(prisma.userCertification.updateMany).not.toHaveBeenCalled();
+    expect(auditLog).not.toHaveBeenCalled();
+    expect(logAuditEvent).not.toHaveBeenCalled();
   });
 
   it('deletes certification when earned=false', async () => {
@@ -146,6 +225,20 @@ describe('POST /api/member/certifications', () => {
     expect(prisma.userCertification.deleteMany).toHaveBeenCalledWith({
       where: { userId: 'u1', certName: 'AWS' },
     });
+    expect(auditLog).toHaveBeenCalledWith({
+      actorUserId: 'u1',
+      action: 'member.certification.deleted',
+      targetType: 'user_certification',
+      metadata: { certName: 'AWS' },
+    });
+  });
+
+  it('deleting a certification the member does not have writes no audit row', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+    vi.mocked(prisma.userCertification.deleteMany).mockResolvedValue({ count: 0 } as any);
+    const res = await POST(postReq({ certName: 'AWS', earned: false }));
+    expect(res.status).toBe(200);
+    expect(auditLog).not.toHaveBeenCalled();
   });
 
   it('returns 500 on db error', async () => {

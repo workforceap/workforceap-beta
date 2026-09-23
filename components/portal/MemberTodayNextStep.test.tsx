@@ -4,7 +4,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
-import MemberNextStepsStrip from '@/components/portal/MemberNextStepsStrip';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 
 vi.mock('next/link', () => ({
@@ -71,7 +70,7 @@ describe('MemberDoThisNextCard', () => {
   });
 
   it('labels the primary CTA as Today', () => {
-    render(<MemberDoThisNextCard action={sampleAction} paddingX="0" />);
+    render(<MemberDoThisNextCard action={sampleAction} />);
     expect(screen.getByLabelText('Today')).toBeInTheDocument();
     expect(screen.getByText('Today')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open course' })).toHaveAttribute('href', '/dashboard/learning');
@@ -81,8 +80,6 @@ describe('MemberDoThisNextCard', () => {
     render(
       <MemberDoThisNextCard
         action={{ ...sampleAction, href: '/dashboard/training', cta: 'Resume module' }}
-        variant="kit"
-        paddingX="0"
       />,
     );
     expect(screen.getByRole('link', { name: /Resume module/ })).toHaveAttribute(
@@ -95,7 +92,7 @@ describe('MemberDoThisNextCard', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<MemberDoThisNextCard action={persistedAction} variant="kit" paddingX="0" />);
+    render(<MemberDoThisNextCard action={persistedAction} />);
     fireEvent.click(screen.getByRole('link', { name: /Open course/ }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -109,33 +106,10 @@ describe('MemberDoThisNextCard', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<MemberDoThisNextCard action={sampleAction} variant="kit" paddingX="0" />);
+    render(<MemberDoThisNextCard action={sampleAction} />);
     fireEvent.click(screen.getByRole('link', { name: /Open course/ }));
 
     await Promise.resolve();
     expect(fetchMock).not.toHaveBeenCalled();
-  });
-});
-
-describe('MemberNextStepsStrip', () => {
-  it('demotes secondary strip copy and CTA style', () => {
-    render(
-      <MemberNextStepsStrip
-        actions={[sampleAction]}
-        prominence="secondary"
-      />,
-    );
-    expect(screen.getByText('Also for you')).toBeInTheDocument();
-    expect(screen.getByText('Other helpful next steps')).toBeInTheDocument();
-    const cta = screen.getByRole('link', { name: 'Open course' });
-    expect(cta.className).toContain('btn-muted');
-    expect(cta.className).not.toContain('btn-primary');
-  });
-
-  it('keeps primary strip CTA emphasis when not demoted', () => {
-    render(<MemberNextStepsStrip actions={[sampleAction]} prominence="primary" />);
-    expect(screen.getByText('Your next steps')).toBeInTheDocument();
-    const cta = screen.getByRole('link', { name: 'Open course' });
-    expect(cta.className).toContain('btn-primary');
   });
 });
