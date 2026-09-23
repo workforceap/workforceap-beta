@@ -2,11 +2,8 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import NextLink from 'next/link';
 import { Plus } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
@@ -23,6 +20,7 @@ import {
   sortJobRows,
   type JobSortKey,
 } from '@/lib/admin/jobsBoardSort';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Jobs board — the admin job-posting queue rendered as a dense roster table.
@@ -200,14 +198,13 @@ export function JobsBoardKit({
         kicker="Employers"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/jobs?ui=legacy" as={NextLink as never} isStandalone>
-            <Button
-              label="Post Job"
-              variant="primary"
-              size="sm"
-              icon={<Plus size={14} aria-hidden="true" />}
-            />
-          </AstryxLink>
+          <KitLinkButton
+            href="/admin/jobs?ui=legacy"
+            label="Post Job"
+            variant="primary"
+            size="sm"
+            icon={<Plus size={14} aria-hidden="true" />}
+          />
         }
       />
 

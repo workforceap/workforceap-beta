@@ -598,6 +598,10 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   `SegmentedControl`, `Spinner`, `Pagination`, `EmptyState`, `StatusDot`, `ProgressBar`, `Link`
   wrapping Next's `Link` for navigational actions — see `VoiceStudioKit.tsx` /
   `member/MemberHomeKit.tsx`) — same brand-token bridge as everywhere else Astryx is used.
+  A navigational action that should look like a button is `KitLinkButton`
+  (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
+  kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
+  which is invalid and gives keyboard users two tab stops per action (WAP-252).
   WorkforceAP-specific composites that already encode real layout/business logic —
   `DataTable`, `StageTrack`, `SegmentedProgress`, `QueueRow`, `WorkQueueItem`, `ChatThread`,
   `KpiStrip`, `CardHead`, `Sparkline`/`AreaChartMini`, `ProgressRing`, `FeatureTile`,

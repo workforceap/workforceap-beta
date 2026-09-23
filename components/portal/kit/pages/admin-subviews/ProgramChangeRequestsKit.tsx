@@ -1,16 +1,14 @@
 'use client';
 
-import Link from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
   DataTable,
   type Column,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Program change requests — admin review queue rendered as a dense table.
@@ -125,9 +123,7 @@ export function ProgramChangeRequestsKit({
         kicker="Enrollment"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/program-change-requests?ui=legacy" as={Link as never} isStandalone>
-            <Button label="Review & decide" variant="secondary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton href="/admin/program-change-requests?ui=legacy" label="Review & decide" variant="secondary" size="sm" />
         }
       />
 

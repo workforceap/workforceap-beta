@@ -1,8 +1,5 @@
-import Link from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
@@ -20,6 +17,7 @@ import {
   type IntakeStatusKey,
 } from '@/lib/status/applicationStatusVocabulary';
 import { toneToTokenColor } from '../../astryxMap';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * WIOA funding eligibility — screening & compliance (dense).
@@ -180,9 +178,7 @@ export function WioaScreeningKit({
       header: '',
       align: 'right',
       render: (row) => (
-        <AstryxLink href={`/admin/members/${row.id}`} as={Link as never} isStandalone>
-          <Button label="Open" variant="secondary" size="sm" />
-        </AstryxLink>
+        <KitLinkButton href={`/admin/members/${row.id}`} label="Open" variant="secondary" size="sm" />
       ),
     },
   ];
@@ -194,9 +190,7 @@ export function WioaScreeningKit({
         kicker="Compliance"
         lede="WIOA screening & compliance"
         action={
-          <AstryxLink href="/admin/wioa-screening?ui=legacy" as={Link as never} isStandalone>
-            <Button label="Review queue" variant="secondary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton href="/admin/wioa-screening?ui=legacy" label="Review queue" variant="secondary" size="sm" />
         }
       />
 
@@ -225,9 +219,7 @@ export function WioaScreeningKit({
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <Token {...wioaReviewToken(row.reviewStatus)} size="sm" />
-                <AstryxLink href={`/admin/members/${row.id}`} as={Link as never} isStandalone>
-                  <Button label="Open" variant="secondary" size="sm" />
-                </AstryxLink>
+                <KitLinkButton href={`/admin/members/${row.id}`} label="Open" variant="secondary" size="sm" />
               </div>
             </div>
             <div

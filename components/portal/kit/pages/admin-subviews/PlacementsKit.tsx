@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
@@ -22,6 +21,7 @@ import {
   sortPlacementRows,
   type PlacementSortKey,
 } from '@/lib/admin/placementsRosterSort';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Placements — confirmed hires & wage data (dense).
@@ -213,15 +213,9 @@ export function PlacementsKit({
           // Wraps like UsersKit's action row: three nowrap buttons in a single
           // flex line pushed the shell to 415px at a 390px viewport.
           <div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
-            <AstryxLink href="/admin/placements/new" as={NextLink as never} isStandalone>
-              <Button label="Record placement" variant="primary" size="sm" />
-            </AstryxLink>
-            <AstryxLink href="/admin/placements/retention" as={NextLink as never} isStandalone>
-              <Button label="Retention decisions due" variant="secondary" size="sm" />
-            </AstryxLink>
-            <AstryxLink href="/admin/placements?ui=legacy" as={NextLink as never} isStandalone>
-              <Button label="Open table view" variant="secondary" size="sm" />
-            </AstryxLink>
+            <KitLinkButton href="/admin/placements/new" label="Record placement" variant="primary" size="sm" />
+            <KitLinkButton href="/admin/placements/retention" label="Retention decisions due" variant="secondary" size="sm" />
+            <KitLinkButton href="/admin/placements?ui=legacy" label="Open table view" variant="secondary" size="sm" />
           </div>
         }
       />

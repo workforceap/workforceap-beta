@@ -1,9 +1,6 @@
 'use client';
 
-import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Token } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
@@ -11,6 +8,7 @@ import {
   DataTable,
   type Column,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Employer screening packs — pre-built candidate screening packs per employer,
@@ -112,9 +110,7 @@ export function ScreeningPacksKit({
         kicker="Employers"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/employer-screening-packs?ui=legacy" as={NextLink as never} isStandalone>
-            <Button label="Manage packs" variant="secondary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton href="/admin/employer-screening-packs?ui=legacy" label="Manage packs" variant="secondary" size="sm" />
         }
       />
 
