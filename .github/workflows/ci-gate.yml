@@ -89,7 +89,7 @@ jobs:
       # fails when a PR adds one, and asks for the pin to be lowered when a
       # PR removes some. Never raise it. Required gate.
       - name: Verify tenant-scoping ratchet
-        run: node scripts/audit-tenant-scoping.cjs --max-unscoped 679
+        run: node scripts/audit-tenant-scoping.cjs --max-unscoped 678
 
       # Source-text test retirement contract (WAP-175). A test that reads an
       # application source file and asserts on its text proves nothing about
