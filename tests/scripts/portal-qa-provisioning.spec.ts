@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => {
     organization: { findUnique: vi.fn() }, user: { count: vi.fn(), create: vi.fn() },
     role: { findUniqueOrThrow: vi.fn() }, partner: { create: vi.fn() },
     partnerReferral: { createMany: vi.fn() }, employer: { findUniqueOrThrow: vi.fn() },
-    aIJobMatch: { createMany: vi.fn() }, $transaction: vi.fn(), $disconnect: vi.fn(),
+    aIJobMatch: { createMany: vi.fn() }, $queryRaw: vi.fn(), $transaction: vi.fn(), $disconnect: vi.fn(),
   };
   const auth = { listUsers: vi.fn(), createUser: vi.fn(), updateUserById: vi.fn(), deleteUser: vi.fn() };
   return { db, auth, prismaConstructor: vi.fn(), clientConstructor: vi.fn() };
@@ -41,6 +41,11 @@ describe('portal fixture provisioning boundaries', () => {
     mocks.db.organization.findUnique.mockResolvedValue({ id: 'qa-org', slug: 'portal-qa-test', active: true });
     mocks.db.user.count.mockResolvedValue(0);
     mocks.db.role.findUniqueOrThrow.mockImplementation(async ({ where }: { where: { name: string } }) => ({ id: `role-${where.name}` }));
+    mocks.db.$queryRaw.mockResolvedValue(Object.entries({
+      organizations: ['stripe_subscription_id', 'stripe_subscription_event_at', 'stripe_subscription_event_id', 'stripe_subscription_revision'],
+      employers: ['stripe_subscription_event_id', 'stripe_subscription_revision'],
+      profiles: ['profile_photo_path'],
+    }).flatMap(([table_name, names]) => names.map(column_name => ({ table_name, column_name }))));
     mocks.db.partner.create.mockResolvedValue({ id: 'fixture-partner' });
     mocks.db.employer.findUniqueOrThrow.mockResolvedValue({ jobs: [] });
     mocks.auth.listUsers.mockResolvedValue({ data: { users: [] }, error: null });
@@ -107,6 +112,14 @@ describe('portal fixture provisioning boundaries', () => {
     expect(mocks.db.$transaction).not.toHaveBeenCalled();
   });
 
+  it('stops before Auth creation when DEMO lacks columns needed by the Preview app', async () => {
+    mocks.db.$queryRaw.mockResolvedValue([{ table_name: 'organizations', column_name: 'stripe_subscription_id' }]);
+    await expect(syncPortalTestAuth(env())).rejects.toThrow('provisioning stopped');
+    expect(mocks.auth.listUsers).not.toHaveBeenCalled();
+    expect(mocks.auth.createUser).not.toHaveBeenCalled();
+    expect(mocks.db.$transaction).not.toHaveBeenCalled();
+  });
+
   it('binds the validated database and creates a distinct, org-scoped counselor with the Auth ID', async () => {
     const config = env();
     await syncPortalTestAuth(config);
@@ -119,6 +132,10 @@ describe('portal fixture provisioning boundaries', () => {
     expect(new Set(mocks.auth.createUser.mock.calls.map(([call]) => call.password)).size).toBe(5);
     expect(mocks.db.role.findUniqueOrThrow).toHaveBeenCalledWith({ where: { name: 'counselor' } });
     expect(mocks.db.$transaction).toHaveBeenCalledOnce();
+    expect(mocks.db.employer.findUniqueOrThrow).toHaveBeenCalledWith({
+      where: { userId: 'auth-employer-test@workforceap.org' },
+      select: { jobs: { select: { id: true, title: true } } },
+    });
     expect(mocks.db.partner.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ organizationId: 'qa-org', notifyOnEnrollment: false }) }));
     for (const [call] of mocks.db.user.create.mock.calls) expect(call.data.organizationId).toBe('qa-org');
     expect(mocks.db.user.create).toHaveBeenCalledWith({

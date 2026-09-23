@@ -26,6 +26,32 @@ const QA_EMAILS = [
   'match-candidate@workforceap.org',
 ];
 
+// The Preview app and this fixture use these scalar fields. A missing column
+// must stop provisioning before Supabase Auth creates users outside Prisma's
+// transaction. DEMO can lag the Prisma migration ledger, so migration names
+// alone are not a reliable compatibility check.
+const REQUIRED_DEMO_COLUMNS: Record<string, readonly string[]> = {
+  organizations: ['stripe_subscription_id', 'stripe_subscription_event_at', 'stripe_subscription_event_id', 'stripe_subscription_revision'],
+  employers: ['stripe_subscription_event_id', 'stripe_subscription_revision'],
+  profiles: ['profile_photo_path'],
+};
+
+async function assertDemoSchemaCompatible(prisma: PrismaClient) {
+  const columns = await prisma.$queryRaw<Array<{ table_name: string; column_name: string }>>`
+    SELECT table_name, column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name IN ('organizations', 'employers', 'profiles')
+  `;
+  const found = new Set(columns.map(({ table_name, column_name }) => `${table_name}.${column_name}`));
+  const missing = Object.entries(REQUIRED_DEMO_COLUMNS).flatMap(([table, names]) =>
+    names.filter(name => !found.has(`${table}.${name}`)).map(name => `${table}.${name}`)
+  );
+  if (missing.length) {
+    throw new Error(`Portal QA DEMO schema is missing required columns: ${missing.join(', ')}. No Auth accounts were created.`);
+  }
+}
+
 async function createFreshAuthUser(supabase: SupabaseClient, email: string, fullName: string, password: string, orgId: string): Promise<string> {
   const { data: created, error: createErr } = await supabase.auth.admin.createUser({
     email,
@@ -196,7 +222,7 @@ async function seedQaWithAuthIds(
 
   const emp = await prisma.employer.findUniqueOrThrow({
     where: { userId: ids.employer },
-    include: { jobs: true },
+    select: { jobs: { select: { id: true, title: true } } },
   });
   const jobs = emp.jobs.filter((j) => j.title.startsWith('[QA]'));
   for (const j of jobs) {
@@ -261,6 +287,7 @@ export async function syncPortalTestAuth(env: NodeJS.ProcessEnv = process.env) {
     for (const name of QA_AUTH_ROLES) {
       await prisma.role.findUniqueOrThrow({ where: { name } });
     }
+    await assertDemoSchemaCompatible(prisma);
     await assertAuthFixturesAbsent(supabase);
     const ids = {} as Record<QaRole, string>;
     for (const role of QA_AUTH_ROLES) {
