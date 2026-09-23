@@ -263,6 +263,26 @@ describe('workspace navigation', () => {
     expect(container.querySelector('.workspace-sidebar a[href="/dashboard/missions"]')).not.toHaveTextContent('Skill missions');
   });
 
+  it('names Path to certification, My documents and Invite a friend in the member locale', () => {
+    location.pathname = '/es/dashboard/documents';
+    const { container } = render(<NextIntlClientProvider locale="es" messages={spanishMessages}>
+      <WorkspaceShell portalRole="member" navItems={MEMBER_PORTAL_NAV_ITEMS}
+        workspaceLabel="Member portal" contextLabel="Account" readOnlyAudit>
+        <h1>Documentos</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>);
+    const rows: Array<[string, string, string]> = [
+      ['/dashboard/program/start', spanishMessages.nav.pathToCertification, 'Path to certification'],
+      ['/dashboard/documents', spanishMessages.nav.myDocuments, 'My documents'],
+      ['/dashboard/referrals', spanishMessages.nav.inviteFriend, 'Invite a friend'],
+    ];
+    for (const [href, translated, english] of rows) {
+      const row = container.querySelector(`.workspace-sidebar a[href="${href}"]`);
+      expect(row, href).toHaveTextContent(translated);
+      expect(row, href).not.toHaveTextContent(english);
+    }
+  });
+
   it('opens the section containing the active route and keeps other groups quiet', () => {
     location.pathname = '/dashboard/assessment';
     const { container } = show();
