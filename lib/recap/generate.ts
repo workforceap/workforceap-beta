@@ -220,6 +220,19 @@ const GOAL_TYPE_TO_PLAN_HREF: Record<string, { href: string; cta: string; icon: 
 };
 
 /**
+ * Plan route for a goal's next step. A goal type with no dedicated tool opens
+ * the goal itself: the goals section of the career plan page (WAP-188), where
+ * the member can tick the step off.
+ */
+export function planRouteForGoalType(goalType: string): { href: string; cta: string; icon: string } {
+  return GOAL_TYPE_TO_PLAN_HREF[goalType] ?? {
+    href: '/dashboard/career-brief#goals',
+    cta: 'View goal',
+    icon: 'flag',
+  };
+}
+
+/**
  * Build a concrete, encouraging 2–3 item plan for next week:
  * the next open step from each active goal first, then top recommended
  * actions to fill out the list.
@@ -235,11 +248,7 @@ function buildNextWeekPlan(
   for (const g of goalProgress) {
     if (isDoneStatus(g.status)) continue;
     if (!g.nextStep) continue;
-    const route = GOAL_TYPE_TO_PLAN_HREF[g.goalType] ?? {
-      href: '/dashboard/career-brief',
-      cta: 'View goal',
-      icon: 'flag',
-    };
+    const route = planRouteForGoalType(g.goalType);
     const key = `goal:${g.id}`;
     if (seen.has(key)) continue;
     seen.add(key);

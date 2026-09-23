@@ -3,7 +3,8 @@
  *
  * One entry per persona: what each portal surface is for and where it lives.
  * Routes are the checked-in audit manifest (`scripts/lib/portal-audit-paths.mjs`)
- * and the nav rails (`lib/nav/portalNav.ts`); the tour keys are
+ * and the nav rails (`lib/nav/portalNav.ts`); a route may add a `#fragment` for
+ * a section of an audited page (goals: `/dashboard/career-brief#goals`). The tour keys are
  * `lib/tours/registry.ts`. Nothing here is member data: it is product copy the
  * model is allowed to ground on, and the only routes it may point people to.
  *
@@ -62,7 +63,8 @@ const MEMBER: PersonaKnowledge = {
     { title: 'Skill missions', route: '/dashboard/missions', summary: 'Short skill-building missions and checkpoints tied to your program.', keywords: ['mission', 'missions', 'checkpoint', 'skill'] },
     { title: 'My certificates', route: '/dashboard/certifications', summary: 'Certificates you have earned or are working toward, with the reference roadmap.', keywords: ['certificate', 'certificates', 'certification', 'earned', 'vault'] },
     { title: 'My documents', route: '/dashboard/documents', summary: 'Files you have uploaded or generated, such as resumes and cover letters.', keywords: ['document', 'documents', 'file', 'download', 'upload'] },
-    { title: 'My career plan', route: '/dashboard/career-brief', summary: 'Your career brief: target roles, strengths, and the plan you built with your counselor.', keywords: ['career plan', 'brief', 'goal', 'goals', 'target role'] },
+    { title: 'My career plan', route: '/dashboard/career-brief', summary: 'Your career brief: training progress, skills score, resume and job-search status, and your goals.', keywords: ['career plan', 'brief', 'career brief', 'target role'] },
+    { title: 'Your goals', route: '/dashboard/career-brief#goals', summary: 'The goals section of My career plan: set up to three goals at a time, break each one into small steps, and check steps off as you finish them.', keywords: ['goal', 'goals', 'set goals', 'my goals', 'goal steps'] },
     { title: 'Career library', route: '/dashboard/career-library', summary: 'Explore careers, typical pay, and the skills they need.', keywords: ['career library', 'careers', 'explore', 'occupation', 'pay'] },
     { title: 'Find your career', route: '/dashboard/learning/find-your-career', summary: 'Interest profiler and career recommendations to help pick a direction.', keywords: ['interest', 'profiler', 'find your career', 'recommend', 'quiz'] },
     { title: 'Learning', route: '/dashboard/learning', summary: 'Learning hub: enrolled courses and the destinations they lead to.', keywords: ['learning', 'lesson', 'hub', 'enrolled'] },

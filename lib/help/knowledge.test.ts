@@ -22,7 +22,10 @@ test('every knowledge route is a checked-in portal audit path for that persona',
         feature.route.startsWith(knowledge.routePrefix),
         `${persona}: ${feature.route} is outside ${knowledge.routePrefix}`,
       );
-      assert.ok(auditManifest.includes(`'${feature.route}'`), `${persona}: ${feature.route} is not in portal-audit-paths.mjs`);
+      // A `#section` anchor lands on its page, so the page is what must be audited.
+      const [pagePath, fragment] = feature.route.split('#');
+      if (fragment !== undefined) assert.match(fragment, /^[a-z][a-z0-9-]*$/, `${persona}: ${feature.route} has a malformed fragment`);
+      assert.ok(auditManifest.includes(`'${pagePath}'`), `${persona}: ${pagePath} is not in portal-audit-paths.mjs`);
     }
     if (knowledge.guideHref) {
       assert.ok(auditManifest.includes(`'${knowledge.guideHref}'`), `${persona}: guide ${knowledge.guideHref} is not audited`);
@@ -70,6 +73,19 @@ test('findRelevantFeatures leads with the current page, then keyword matches', (
   assert.equal(features[0]?.route, '/dashboard/jobs');
   assert.ok(features.some((f) => f.route === '/dashboard/ai-tools/resume-studio'));
   assert.ok(features.length <= 4);
+});
+
+test('goal questions point members at the goals section of My career plan', () => {
+  // WAP-188: goals are created and edited on /dashboard/career-brief#goals, not the home dashboard.
+  const features = findRelevantFeatures('member', 'How do I set my goals?');
+  assert.equal(features[0]?.route, '/dashboard/career-brief#goals');
+  const goals = HELP_KNOWLEDGE.member.features.filter((f) => f.keywords.includes('goals'));
+  assert.deepEqual(goals.map((f) => f.route), ['/dashboard/career-brief#goals']);
+  assert.match(goals[0]!.summary, /goals/);
+  const plan = HELP_KNOWLEDGE.member.features.find((f) => f.route === '/dashboard/career-brief');
+  assert.match(plan?.summary ?? '', /goals/);
+  // The page itself still resolves to My career plan; the anchor entry never shadows it.
+  assert.equal(currentFeature('member', '/dashboard/career-brief')?.route, '/dashboard/career-brief');
 });
 
 test('findRelevantFeatures never returns another persona\'s pages', () => {

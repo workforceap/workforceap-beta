@@ -13,7 +13,11 @@ import {
   resolveTrainingProgressAssignment,
 } from '@/lib/member/trainingProgress';
 import PageHeader from '@/components/portal/PageHeader';
+import GoalsModule from '@/components/portal/GoalsModule';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+
+const GOALS_HEADING_ID = 'career-brief-goals-heading';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -363,6 +367,15 @@ export default async function CareerBriefPage() {
           </Link>
         </div>
       )}
+
+      {/* ── Goals ── the one place a member creates and works through goals
+          (WAP-188: moved here from the legacy home's Learning tab). Readiness
+          "Set goals", the weekly recap and the help assistant link to #goals. */}
+      <section id="goals" aria-labelledby={GOALS_HEADING_ID} style={{ marginTop: '1.5rem' }}>
+        <ErrorBoundary>
+          <GoalsModule headingLevel={2} headingId={GOALS_HEADING_ID} />
+        </ErrorBoundary>
+      </section>
 
       {/* ── Program Context ── */}
       {program && (

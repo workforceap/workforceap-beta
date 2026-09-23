@@ -198,7 +198,8 @@ export function assembleCareerBriefContext(
     recommendedActions.push({ label: 'Complete 2 resources', href: '/dashboard/career-library' });
   }
   if (!scoreBreakdown.setGoals.done) {
-    recommendedActions.push({ label: 'Set your goals', href: '/dashboard' });
+    // Goals live on the career plan page (WAP-188), not the home dashboard.
+    recommendedActions.push({ label: 'Set your goals', href: '/dashboard/career-brief#goals' });
   }
   if (recommendedActions.length === 0) {
     recommendedActions.push({ label: 'Add another application', href: '/dashboard/job-applications' });
