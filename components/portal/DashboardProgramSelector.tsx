@@ -169,6 +169,9 @@ export default function DashboardProgramSelector({
                   style={{
                     width: '100%',
                     display: 'flex',
+                    // WAP-253: the Primary badge drops under a long title
+                    // instead of squeezing it into a narrow column.
+                    flexWrap: 'wrap',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: 8,
@@ -184,7 +187,7 @@ export default function DashboardProgramSelector({
                     minHeight: '44px',
                   }}
                 >
-                  <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+                  <span style={{ flex: '1 1 10rem', minWidth: 0, overflowWrap: 'anywhere' }}>
                     {opt.programTitle}
                   </span>
                   {opt.isPrimary && (
