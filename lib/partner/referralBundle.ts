@@ -110,6 +110,13 @@ export type PipelineRow = {
   allProgramTitles: string[];
 };
 
+/** Pending placement confirmations older than this are not "to review" (outcomes and overview agree). */
+export const PENDING_PLACEMENT_WINDOW_DAYS = 90;
+
+export function pendingPlacementWindowStart(now: number = Date.now()): Date {
+  return new Date(now - PENDING_PLACEMENT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+}
+
 /**
  * @param tenantOrganizationId — Partner portal tenant boundary: partner row
  *   and referred members must belong to this org (defense against orphaned /
@@ -135,7 +142,7 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
 
   const memberIds = referrals.map((r) => r.member.id);
 
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+  const ninetyDaysAgo = pendingPlacementWindowStart();
 
   // Load pending placement confirmations (self-reported by members, not yet reviewed)
   const pendingPlacements =

@@ -186,8 +186,10 @@ export default function CertificationAddForm() {
             MEMBER_REQUEST_TIMEOUT_MS,
           );
           if (uploadRes.ok) {
-            // A file with the certificate sends it (back) to staff review.
-            status = 'pending';
+            // A file sends an unverified certificate (back) to staff review;
+            // a verified one stays verified (WAP-197). The route says which.
+            const uploaded = (await uploadRes.json().catch(() => null)) as { status?: unknown } | null;
+            status = uploaded?.status === 'approved' ? 'approved' : 'pending';
           } else {
             fileError = await readMemberRequestFailure(uploadRes);
           }

@@ -7,6 +7,8 @@ import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib
 import { memberUnreadStaffMessagesWhere } from '@/lib/messages/memberUnread';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
+import { partnerMilestoneEventNameCandidates } from '@/lib/partner/milestoneEvents';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   countAwaitingApprovalCascades,
   resolveCascadeScope,
@@ -128,12 +130,11 @@ async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
 }
 
 async function getEmployerBadgeCounts(employerId: string): Promise<NavBadgeCounts> {
-  const [draft, pendingReview, live, newApplications, queueBadges, employerRow, thread] = await Promise.all([
+  const [draft, pendingReview, newApplications, queueBadges, employerRow, thread] = await Promise.all([
     prisma.job.count({ where: { employerId, status: 'draft' } }),
     prisma.job.count({
       where: { employerId, status: { in: ['pending', 'approved'] } },
     }),
-    prisma.job.count({ where: { employerId, status: 'live' } }),
     prisma.jobPostingApplication.count({
       where: {
         job: { employerId },
@@ -168,7 +169,6 @@ async function getEmployerBadgeCounts(employerId: string): Promise<NavBadgeCount
   return {
     jobs_draft: draft,
     jobs_pending: pendingReview,
-    jobs_live: live,
     applications_new: newApplications,
     employer_messages_unread,
     ...queueBadges,
@@ -233,9 +233,15 @@ async function getPartnerBadgeCounts(partnerId: string, organizationId: string):
 
   const [attentionCount, referralIds, partnerUsers, thread] = await Promise.all([
     countPartnerAttention(partnerId, organizationId),
+    // Same population as the partner overview and milestones feed: referred
+    // members of this org who are members, not staff or seeded fixtures.
     prisma.partnerReferral.findMany({
       take: 500,
-      where: { partnerId, member: { deletedAt: null } },
+      where: {
+        partnerId,
+        partner: { organizationId },
+        member: { deletedAt: null, organizationId, ...MEMBER_ONLY_WHERE },
+      },
       select: { memberId: true },
     }),
     prisma.partnerUser.findMany({
@@ -252,9 +258,12 @@ async function getPartnerBadgeCounts(partnerId: string, organizationId: string):
   const memberIds = referralIds.map((r) => r.memberId);
   let milestonesNew = 0;
   if (memberIds.length > 0) {
+    // Milestones in the last 7 days, not "since last seen": partners have no
+    // read marker for the feed. Only the events the feed lists (WAP-214).
     milestonesNew = await prisma.memberEvent.count({
       where: {
         userId: { in: memberIds },
+        eventName: { in: partnerMilestoneEventNameCandidates() },
         createdAt: { gte: since },
       },
     });

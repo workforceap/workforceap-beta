@@ -9,28 +9,15 @@
 
 ### Dashboard Home
 
-The member dashboard is the primary experience for enrolled members. It adapts between desktop and mobile layouts.
+The member dashboard is the primary experience for enrolled members. It has one implementation, the kit home, and the same page serves phone and desktop inside the member workspace shell (left rail on desktop, top tabs on mobile).
 
-**Desktop Layout:**
-- Sidebar navigation with portal sections
-- Main content area with cards and widgets
-- Top bar with notifications, points, profile
+**Key files:**
+- `app/(portal)/dashboard/page.tsx` — renders the kit home; the retired `?ui=legacy` and `?tab=` switches redirect to `/dashboard`, keeping a well-formed `?program=<slug>` (`lib/member/dashboardLegacyRedirect.ts`)
+- `lib/member/loadMemberDashboardHome.ts` — the one loader (at most `MEMBER_DASHBOARD_HOME_PRISMA_BUDGET` Prisma operations)
+- `components/portal/kit/pages/member/MemberHomeKit.tsx` — the page: greeting, Today focus (`MemberDoThisNextCard`), placement confirmation and First 90 Days check-in when they apply, Up next, recommended AI tool, certification path, weekly activity, points, next badge, goals and the application pipeline
+- `components/portal/kit/pages/member/MemberHomeViewEvents.tsx` — the dashboard view / activation events the admin metrics read
 
-**Mobile Layout:**
-- Bottom navigation icon bar (Home, Education, Skills, Messages, Portfolio, Profile)
-- Scrollable card-based feed
-- Priority action cards at top
-
-**Key Components:**
-- `DesktopDashboard` — full desktop layout
-- `MobileDiscoverSection` — mobile feed
-- `MobileJourneyTimeline` — visual progress
-- `MobilePointsSection` — gamification
-- `MobilePriorityActionCard` — next recommended action
-- `MobileProgramTrainingCard` — active training
-- `MobileQuickActions` — quick buttons
-- `MobileRecentActivity` — activity feed
-- `MobileStateANextStepCard` — state-specific steps
+The pre-kit mobile/desktop home (`DesktopDashboard`, the `Mobile*` sections, `DashboardHomeClient`) was removed in WAP-195.
 
 ### AI Tools Suite (`/dashboard/ai-tools/*`)
 

@@ -10,7 +10,7 @@ import { prisma } from '@/lib/db/prisma';
 import { formatPortalDateTime } from '@/lib/formatDate';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 
-import { loadPartnerReferralBundle, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
+import { loadPartnerReferralBundle, pendingPlacementWindowStart, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
 import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/lib/pipeline/stage';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import PartnerReferredMembersMobile, { type PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
@@ -37,7 +37,8 @@ import type { DataTableColumn } from '@/components/portal/ui/DataTable';
 import PartnerReferralResourcesSection from '@/components/partner/PartnerReferralResourcesSection';
 import PendingApprovalBanner from '@/components/partner/PendingApprovalBanner';
 import PartnerConnectPayoutButton from '@/components/partner/PartnerConnectPayoutButton';
-import { getPartnerPlacementPayoutUsd } from '@/lib/partner/partnerPayout';
+import { getPartnerPlacementPayoutUsd, isPartnerPlacementPayoutRateConfigured } from '@/lib/partner/partnerPayout';
+import { countUnpaidVerifiedPlacements } from '@/lib/partner/unpaidVerifiedPlacements';
 import { isReferralPartner } from '@/lib/partner/partnerType';
 import { buildPartnerReferralBadge, isOutcomesSocialProofEnabled } from '@/lib/outcomes/socialProof';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
@@ -181,8 +182,27 @@ export default async function PartnerDashboardPage({
       organizationId: ctx.partner.organizationId,
       ...MEMBER_ONLY_WHERE,
     };
-    const [referredCount, enrolledCount, placedCount, pendingPlacementEvents, recentReferrals, payoutEvents] =
-      await Promise.all([
+    // Same filter and 90-day window as /partner/outcomes (WAP-214): the list
+    // shows the latest 8, the heading counts them all.
+    const pendingPlacementWhere = {
+      eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
+      createdAt: { gte: pendingPlacementWindowStart() },
+      user: {
+        ...memberFilter,
+        partnerReferrals: {
+          some: { partnerId: ctx.partnerId, partner: { organizationId: ctx.partner.organizationId } },
+        },
+      },
+    };
+    const [
+      referredCount,
+      enrolledCount,
+      placedCount,
+      pendingPlacementEvents,
+      recentReferrals,
+      payoutEvents,
+      pendingPlacementCount,
+    ] = await Promise.all([
         prisma.partnerReferral.count({
           where: {
             partnerId: ctx.partnerId,
@@ -206,10 +226,7 @@ export default async function PartnerDashboardPage({
           },
         }),
         prisma.memberEvent.findMany({
-          where: {
-            eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
-            user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
-          },
+          where: pendingPlacementWhere,
           orderBy: { createdAt: 'desc' },
           take: 8,
           select: { id: true, userId: true, metadata: true, createdAt: true },
@@ -254,6 +271,7 @@ export default async function PartnerDashboardPage({
             user: { select: { fullName: true } },
           },
         }),
+        prisma.memberEvent.count({ where: pendingPlacementWhere }),
       ]);
 
     const placementRate =
@@ -376,10 +394,18 @@ export default async function PartnerDashboardPage({
       },
     ];
 
-    // "Payout due" KPI — same estimate formula as the legacy path's
-    // Estimated Payout card (placements × payout-per-placement), computed
-    // from counts already in hand. Referral-partner track only.
-    const payoutDueUsd = placedCount * getPartnerPlacementPayoutUsd();
+    // "Payout due" KPI (referral-partner track only): placements the payout
+    // route would pay now — verified and not yet paid — at the per-placement
+    // rate (WAP-213). It used to be every placement ever × the rate, paid and
+    // unverified ones included. The legacy ?ui=legacy estimate is unchanged
+    // (WAP-193 retires that branch).
+    const unpaidVerified = showPayouts
+      ? await countUnpaidVerifiedPlacements(ctx.partnerId, ctx.partner.organizationId)
+      : 0;
+    const payoutDueUsd = unpaidVerified * getPartnerPlacementPayoutUsd();
+    const payoutDueSubtitle = `${unpaidVerified} verified placement${unpaidVerified === 1 ? '' : 's'} not yet paid${
+      isPartnerPlacementPayoutRateConfigured() ? '' : ' · estimated rate'
+    }`;
     const fmtMoneyKit = (n: number) =>
       new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -423,7 +449,7 @@ export default async function PartnerDashboardPage({
                 ? {
                     label: 'Payout due',
                     value: fmtMoneyKit(payoutDueUsd),
-                    subtitle: t('placementEstimate'),
+                    subtitle: payoutDueSubtitle,
                     icon: <Wallet size={16} />,
                   }
                 : {
@@ -460,7 +486,7 @@ export default async function PartnerDashboardPage({
           {pendingPlacementEvents.length > 0 ? (
             <div className="wa-flex wa-flex-col wa-gap-3">
               <KitSectionHeader
-                title={t('nextActionReviewPlacements', { count: pendingPlacementEvents.length })}
+                title={t('nextActionReviewPlacements', { count: pendingPlacementCount })}
                 goal={t('nextActionReviewPlacementsTip')}
                 action={
                   <Link href="/partner/outcomes" className="portal-section-action">

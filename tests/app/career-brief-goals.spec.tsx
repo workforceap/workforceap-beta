@@ -142,3 +142,75 @@ describe('/dashboard/career-brief goals section (WAP-188)', () => {
     expect(type.id).not.toBe(title.id);
   });
 });
+
+/**
+ * WAP-197 item 7: the rest of the page (metric tiles, next best action,
+ * program context, quick links) moved off Material Symbols and legacy
+ * `--color-*` refs onto the kit: PageOpener, StatSparkTile, kit rows and
+ * CTAs, Lucide icons. Destinations are unchanged.
+ */
+describe('/dashboard/career-brief kit restyle (WAP-197)', () => {
+  it('opens with the kit PageOpener h1 instead of PageHeader breadcrumbs', async () => {
+    const { container } = await renderPage();
+    expect(container.querySelector('.wa-page-opener')).not.toBeNull();
+    expect(screen.getByRole('heading', { level: 1, name: en.dashboard.careerBrief })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /breadcrumb/i })).toBeNull();
+  });
+
+  it('renders no Material Symbols ligature and no legacy --color-* reference', async () => {
+    const { prisma } = await import('@/lib/db/prisma');
+    vi.mocked(prisma.memberNextBestAction.findMany).mockResolvedValueOnce([
+      { id: 'nba-1', title: 'Finish module 2', description: 'Two lessons left', ctaHref: '/dashboard/program', ctaLabel: 'Open', priority: 5, icon: 'school' },
+    ] as never);
+    const { container } = await renderPage();
+    expect(container.querySelector('.material-symbols-outlined')).toBeNull();
+    expect(container.innerHTML).not.toMatch(/--color-/);
+    expect(container.innerHTML).not.toMatch(/portal-metric-card|portal-quick-action-item/);
+  });
+
+  it('keeps every metric tile and its destination', async () => {
+    const { container } = await renderPage();
+    const tiles = container.querySelector('[data-career-brief-metrics]') as HTMLElement;
+    expect(within(tiles).getAllByTestId('stat-spark-tile')).toHaveLength(6);
+    const hrefs = within(tiles).getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual([
+      '/dashboard/learning',
+      '/dashboard/ai-tools/skill-mapper',
+      '/dashboard/ai-tools/resume-studio?view=rewrite',
+      '/dashboard/jobs',
+      '/dashboard/job-applications',
+    ]);
+    expect(within(tiles).getByText(en.dashboard.missing)).toBeInTheDocument();
+    expect(within(tiles).getByText(en.dashboard.notPlacedYet)).toBeInTheDocument();
+  });
+
+  it('renders the persisted next best action as one kit row with its link', async () => {
+    const { prisma } = await import('@/lib/db/prisma');
+    vi.mocked(prisma.memberNextBestAction.findMany).mockResolvedValueOnce([
+      { id: 'nba-1', title: 'Finish module 2', description: 'Two lessons left', ctaHref: '/dashboard/program', ctaLabel: 'Open', priority: 5, icon: 'school' },
+    ] as never);
+    await renderPage();
+    const section = screen.getByRole('region', { name: en.dashboard.nextBestAction });
+    const row = within(section).getByRole('link', { name: /Finish module 2/ });
+    expect(row).toHaveAttribute('href', '/dashboard/program');
+    expect(row.className).toContain('wa-kit-toolkit-row');
+    expect(row).toHaveTextContent('Two lessons left');
+    // The stored ligature name draws as a Lucide svg, never as literal text.
+    expect(row.querySelector('svg')).not.toBeNull();
+    expect(row).not.toHaveTextContent('school');
+  });
+
+  it('quick links are kit ghost CTAs with the same destinations', async () => {
+    await renderPage();
+    const section = screen.getByRole('region', { name: en.dashboard.careerToolkit });
+    const links = within(section).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([
+      '/dashboard/ai-tools',
+      '/dashboard/ai-tools/skill-mapper',
+      '/dashboard/ai-tools/resume-studio?view=rewrite',
+      '/dashboard/jobs',
+      '/dashboard/readiness',
+    ]);
+    for (const link of links) expect(link.className).toContain('wa-kit-cta--ghost');
+  });
+});

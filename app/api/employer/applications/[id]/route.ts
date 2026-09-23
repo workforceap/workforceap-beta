@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { notifyAndRecordPlacement } from '@/lib/employer/applicationStatusEffects';
+import { allowedNextJobApplicationStatuses, canTransitionJobApplicationStatus } from '@/lib/employer/applicationStatus';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -42,6 +44,20 @@ const updateSchema = z.object({
     return NextResponse.json({ error: 'Invalid data', details: parsed.error.errors }, { status: 400 });
   }
 
+  // Only moves in the transition map; re-saving the current status (e.g. a
+  // notes-only save) is always allowed.
+  const previousStatus = application.status;
+  if (parsed.data.status !== previousStatus && !canTransitionJobApplicationStatus(previousStatus, parsed.data.status)) {
+    return NextResponse.json(
+      {
+        error: `That move isn't available from ${jobApplicationStatusLabel(previousStatus, 'employer')}.`,
+        code: 'invalid_transition',
+        allowed: allowedNextJobApplicationStatuses(previousStatus),
+      },
+      { status: 409 },
+    );
+  }
+
   const updates: {
     status?: typeof parsed.data.status;
     employerNotes?: string;
@@ -60,32 +76,50 @@ const updateSchema = z.object({
     updates.interviewScheduledAt = parsed.data.interviewScheduledAt ? new Date(parsed.data.interviewScheduledAt) : null;
   }
 
-  const updated = await prisma.$transaction((tx) => tx.jobPostingApplication.update({
-    where: { id },
-    data: updates,
-  }));
+  // Compare-and-swap on the status we read, so two people moving the same
+  // application at once cannot both win (and both notify the member).
+  const updated = await prisma.$transaction(async (tx) => {
+    const { count } = await tx.jobPostingApplication.updateMany({
+      where: { id, status: previousStatus, job: { employerId: ctx.employerId } },
+      data: updates,
+    });
+    if (count === 0) return null;
+    return tx.jobPostingApplication.findFirst({
+      where: { id, job: { employerId: ctx.employerId } },
+    });
+  });
+  if (!updated) {
+    return NextResponse.json(
+      { code: 'stale', error: 'This application was updated by someone else. Reload to see the latest.' },
+      { status: 409 },
+    );
+  }
 
   auditLog({
     actorUserId: user.id,
     action: 'employer_application_updated',
     targetType: 'User',
     targetId: updated.studentId,
-    metadata: { applicationId: id, previousStatus: application.status, nextStatus: updated.status, employerId: ctx.employerId },
+    metadata: { applicationId: id, previousStatus, nextStatus: updated.status, employerId: ctx.employerId },
   }).catch(() => {});
   logAuditEvent({
     user: { id: user.id, role: 'employer' },
     verb: 'updated',
     object: { type: 'JobApplication', id },
-    result: { success: true, extensions: { previousStatus: application.status, nextStatus: updated.status } },
+    result: { success: true, extensions: { previousStatus, nextStatus: updated.status } },
   }).catch(() => {});
 
-  if (updated.status !== application.status) {
-    void notifyAndRecordPlacement({
-      applicationId: id,
-      studentId: updated.studentId,
-      employerId: ctx.employerId,
-      nextStatus: updated.status,
-    });
+  if (updated.status !== previousStatus) {
+    // after(): runs once the response is sent, and the platform keeps the
+    // function alive until it settles (a bare `void` promise can be dropped).
+    after(() =>
+      notifyAndRecordPlacement({
+        applicationId: id,
+        studentId: updated.studentId,
+        employerId: ctx.employerId,
+        nextStatus: updated.status,
+      }),
+    );
   }
 
   return NextResponse.json({ ok: true, application: updated });

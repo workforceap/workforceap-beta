@@ -29,11 +29,20 @@ test.describe('Member Portal MVP', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('signed-in member sees dashboard Start Here card', async ({ context, page, baseURL }) => {
+  // The member home is the kit home (MemberHomeKit); the legacy "Start here"
+  // card went with the retired ?ui=legacy home (WAP-195).
+  test('signed-in member sees the kit home opener and certification path', async ({ context, page, baseURL }) => {
     await addAuthCookie(context, baseURL || 'http://localhost:3000');
     await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: /start here/i })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/your next steps to get job-ready/i)).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/welcome back|home/i, { timeout: 10000 });
+    await expect(page.getByText('Certification path')).toBeVisible();
+  });
+
+  test('signed-in member on a retired ?ui=legacy / ?tab= link lands on the one home', async ({ context, page, baseURL }) => {
+    await addAuthCookie(context, baseURL || 'http://localhost:3000');
+    await page.goto('/dashboard?ui=legacy&tab=learning');
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByText('Certification path')).toBeVisible({ timeout: 10000 });
   });
 
   test('signed-in member sees Resources page and filters', async ({ context, page, baseURL }) => {
@@ -51,12 +60,12 @@ test.describe('Member Portal MVP', () => {
     await expect(page.getByText(/resume rewriter/i)).toBeVisible();
   });
 
-  test('signed-in member sees benefit cards and request CTA', async ({ context, page, baseURL }) => {
+  // Member benefits and how to request them live on Help, not the home.
+  test('signed-in member sees benefit access on Help', async ({ context, page, baseURL }) => {
     await addAuthCookie(context, baseURL || 'http://localhost:3000');
-    await page.goto('/dashboard');
-    await expect(page.getByText(/linkedin premium/i)).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/coursera/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /request access/i }).first()).toBeVisible();
+    await page.goto('/dashboard/help');
+    await expect(page.getByRole('heading', { name: /request benefit access/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Coursera Access')).toBeVisible();
   });
 
   test('signed-in member sees Career Brief list with dated rows', async ({ context, page, baseURL }) => {
