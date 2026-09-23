@@ -601,7 +601,9 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   A navigational action that should look like a button is `KitLinkButton`
   (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
   kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
-  which is invalid and gives keyboard users two tab stops per action (WAP-252).
+  which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
+  `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on
+  a `Button` placed directly inside a `Link` or `AstryxLink` (WAP-268).
   WorkforceAP-specific composites that already encode real layout/business logic —
   `DataTable`, `StageTrack`, `SegmentedProgress`, `QueueRow`, `WorkQueueItem`, `ChatThread`,
   `KpiStrip`, `CardHead`, `Sparkline`/`AreaChartMini`, `ProgressRing`, `FeatureTile`,
