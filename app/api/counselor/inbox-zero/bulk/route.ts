@@ -31,6 +31,11 @@ import {
 } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { persistEvent } from '@/lib/events/track';
+import {
+  BULK_FOLLOW_UP_REPEAT_ERROR,
+  lockAndCheckRecentBulkFollowUp,
+  notifyMemberOfBulkFollowUp,
+} from '@/lib/counselor/bulkFollowUpGuard';
 
 const MAX_BATCH = 50;
 
@@ -62,7 +67,7 @@ const bodySchema = z.discriminatedUnion('action', [
   }),
 ]);
 
-type BulkResult = { memberId: string; ok: boolean; error?: string; warning?: string };
+type BulkResult = { memberId: string; ok: boolean; error?: string; warning?: string; skipped?: boolean };
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -87,6 +92,7 @@ export const POST = withApiGuc(async (request: Request) => {
     const results: BulkResult[] = [];
     let sent = 0;
     let failed = 0;
+    let skipped = 0;
 
     if (parsed.data.action === 'follow_up') {
       const template = getFollowUpTemplate(parsed.data.templateId as FollowUpTemplateId);
@@ -133,8 +139,11 @@ export const POST = withApiGuc(async (request: Request) => {
             continue;
           }
 
-          await prisma.$transaction(async (tx) => {
-            const message = await tx.message.create({
+          const message = await prisma.$transaction(async (tx) => {
+            if (await lockAndCheckRecentBulkFollowUp(tx, { memberId, templateId: template.id })) {
+              return null;
+            }
+            const created = await tx.message.create({
               data: { threadId: thread.id, authorId: user.id, body: normalized.body },
               select: { id: true },
             });
@@ -142,7 +151,7 @@ export const POST = withApiGuc(async (request: Request) => {
               userId: memberId,
               eventName: 'counselor_inbox_zero_follow_up_sent',
               entityType: 'message',
-              entityId: message.id,
+              entityId: created.id,
               metadata: {
                 templateId: template.id,
                 counselorUserId: user.id,
@@ -150,6 +159,20 @@ export const POST = withApiGuc(async (request: Request) => {
                 batchSize: memberIds.length,
               },
             }, tx);
+            return created;
+          });
+
+          if (!message) {
+            results.push({ memberId, ok: false, skipped: true, error: BULK_FOLLOW_UP_REPEAT_ERROR });
+            skipped += 1;
+            continue;
+          }
+
+          await notifyMemberOfBulkFollowUp({
+            memberId,
+            threadId: thread.id,
+            authorId: user.id,
+            body: normalized.body,
           });
 
           await auditLog({
@@ -177,7 +200,7 @@ export const POST = withApiGuc(async (request: Request) => {
           failed += 1;
         }
       }
-      return NextResponse.json({ ok: true, action: 'follow_up', sent, failed, results });
+      return NextResponse.json({ ok: true, action: 'follow_up', sent, skipped, failed, results });
     }
 
     if (parsed.data.action === 'mark_contacted') {

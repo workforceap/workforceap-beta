@@ -7,7 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
-import { formatPortalDate } from '@/lib/formatDate';
+import { formatPortalDate, formatPortalDateTime } from '@/lib/formatDate';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { StatusTag } from '@/components/portal/kit';
@@ -18,6 +18,7 @@ import {
 } from '@/lib/employer/jobPostingApplicationStatus';
 import PortalCard from '@/components/portal/ui/PortalCard';
 import ApplicationStatusUpdater from '@/components/employer/ApplicationStatusUpdater';
+import InterviewDetailsForm from '@/components/employer/InterviewDetailsForm';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -82,6 +83,9 @@ export default async function EmployerApplicationPage({
 
   const t = await getTranslations('employer');
   const candidateName = application.student.fullName ?? t('candidate');
+  // interviewNotes holds the candidate-visible where / format text.
+  const interviewAt = application.interviewScheduledAt;
+  const interviewWhere = application.interviewNotes?.trim() || null;
 
   return (
     <PortalPageFrame maxWidth="64rem">
@@ -113,6 +117,21 @@ export default async function EmployerApplicationPage({
             </div>
             <ApplicationStatusUpdater applicationId={application.id} currentStatus={application.status} />
           </div>
+          {interviewAt && (
+            <p style={{ fontSize: '0.875rem', margin: '0.75rem 0 0', overflowWrap: 'anywhere' }}>
+              <strong>Interview:</strong> {formatPortalDateTime(interviewAt)}
+              {interviewWhere ? ` · ${interviewWhere}` : ''}
+            </p>
+          )}
+          {application.status === 'interview' && (
+            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--outline-variant)' }}>
+              <InterviewDetailsForm
+                applicationId={application.id}
+                scheduledAt={interviewAt ? interviewAt.toISOString() : null}
+                location={application.interviewNotes ?? null}
+              />
+            </div>
+          )}
         </PortalCard>
 
         {/* Applicant Info */}
