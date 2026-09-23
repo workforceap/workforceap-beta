@@ -26,6 +26,7 @@ on:
           - demo_provision
           - demo_env
           - demo_audit
+          - demo_probe
 
 permissions:
   contents: read
@@ -36,6 +37,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  demo_probe:
+    name: Classify stored DEMO credentials without exposing values
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
+      inputs.audit_target == 'demo_probe'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check target classifications and DEMO Auth admin read access
+        shell: bash
+        env:
+          PREVIEW_POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          PREVIEW_DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+          PREVIEW_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node <<'NODE'
+          const { projectForUrl } = require('./scripts/lib/supabase-project-guard.cjs');
+          for (const name of ['PREVIEW_POSTGRES_PRISMA_URL', 'PREVIEW_DATABASE_URL']) {
+            console.log(`${name} classification: ${projectForUrl(process.env[name])}`);
+          }
+          (async () => {
+            const key = process.env.PREVIEW_SUPABASE_SERVICE_ROLE_KEY;
+            if (!key) throw new Error('Stored Preview Auth admin key is absent.');
+            const response = await fetch('https://esbdrgaonplpvzmtrdhw.supabase.co/auth/v1/admin/users?page=1&per_page=1', {
+              headers: { apikey: key, Authorization: `Bearer ${key}` },
+            });
+            console.log(`DEMO Auth admin list status: ${response.status}`);
+          })().catch(() => { console.log('DEMO Auth admin list request failed.'); process.exitCode = 1; });
+          NODE
+
   # Temporary, tag-bound DEMO setup. This workflow path already exists on
   # master, so its reviewed tag version can be dispatched without merging a
   # provisioning runner into master or triggering a production deployment.
@@ -43,7 +81,7 @@ jobs:
     name: Create guarded DEMO portal QA fixtures once
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v1' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
       inputs.audit_target == 'demo_provision'
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -93,7 +131,7 @@ jobs:
     name: Set Preview-branch audit token only
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v1' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
       inputs.audit_target == 'demo_env'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -140,7 +178,7 @@ jobs:
     name: Audit exact master SHA on DEMO Preview with isolated credentials
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v1' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v2' &&
       inputs.audit_target == 'demo_audit'
     runs-on: ubuntu-latest
     timeout-minutes: 55
