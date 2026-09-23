@@ -168,6 +168,7 @@ export default async function JobsPage({
     employer: { companyName: string; logoUrl: string | null };
   }> = [];
   let initialTotal = 0;
+  let openRolesLoadFailed = false;
 
   try {
     const jobs = await prisma.job.findMany({
@@ -210,10 +211,13 @@ export default async function JobsPage({
       }));
     initialJobs = visible;
     initialTotal = visible.length;
-  } catch {
-    // Fallback to empty state if query fails
+  } catch (err) {
+    // Unknown, not empty (WAP-261): the kit says "couldn't load" instead of
+    // "no live openings".
+    console.error('[dashboard/jobs] live openings unavailable', err);
     initialJobs = [];
     initialTotal = 0;
+    openRolesLoadFailed = true;
   }
 
   // ── v2 KIT is the DEFAULT member job-pipeline view (real data); legacy
@@ -360,6 +364,9 @@ export default async function JobsPage({
         recommended={recommended}
         openRoles={openRoles}
         openRolesTotal={initialTotal}
+        pipelineLoadFailed={pipelineLoadFailed}
+        openRolesLoadFailed={openRolesLoadFailed}
+        recommendationsLoadFailed={recommendationLoadFailed}
         />
       </div>
     );

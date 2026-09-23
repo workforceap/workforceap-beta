@@ -371,6 +371,40 @@ describe('/dashboard/jobs fails closed to the youth board', () => {
   });
 });
 
+// WAP-261: a rejected load reaches the kit as a failure flag, not as an empty list.
+describe('/dashboard/jobs passes load failures to the kit', () => {
+  const kitProps = async () => {
+    const page = (await JobsPage({ searchParams: Promise.resolve({}) })) as any;
+    return page.props.children.props;
+  };
+
+  it('a failed live-openings query sets openRolesLoadFailed', async () => {
+    vi.mocked(prisma.job.findMany).mockRejectedValueOnce(new Error('db down'));
+    const props = await kitProps();
+    expect(props.openRolesLoadFailed).toBe(true);
+    expect(props.openRoles).toEqual([]);
+  });
+
+  it('a failed pipeline query sets pipelineLoadFailed', async () => {
+    vi.mocked(prisma.jobApplication.findMany)
+      .mockResolvedValueOnce([] as any) // applied ids
+      .mockRejectedValueOnce(new Error('db down')); // pipeline
+    expect((await kitProps()).pipelineLoadFailed).toBe(true);
+  });
+
+  it('failed recommendations set recommendationsLoadFailed', async () => {
+    vi.mocked(prisma.aIJobMatch.findMany).mockRejectedValueOnce(new Error('db down'));
+    expect((await kitProps()).recommendationsLoadFailed).toBe(true);
+  });
+
+  it('a clean load sets no failure flag', async () => {
+    const props = await kitProps();
+    expect(props.pipelineLoadFailed).toBe(false);
+    expect(props.openRolesLoadFailed).toBe(false);
+    expect(props.recommendationsLoadFailed).toBe(false);
+  });
+});
+
 describe('direct links to an inactive employer job behave as not found', () => {
   it('GET /api/dashboard/jobs/[id] is 404 for inactive and 200 for active', async () => {
     const req = () => new Request('http://localhost/api/dashboard/jobs/x') as any;

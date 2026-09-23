@@ -3879,6 +3879,17 @@
       "action": "Try again",
       "secondary": "Browse jobs"
     },
+    "applicationsUnavailable": {
+      "title": "Couldn't load your applications",
+      "body": "Your counts are unknown, not zero. Try again in a moment.",
+      "action": "Try again",
+      "kpiCaption": "Couldn't load"
+    },
+    "openingsUnavailable": {
+      "title": "Couldn't load open roles",
+      "body": "This is a loading problem, not an empty board. Try again in a moment.",
+      "action": "Try again"
+    },
     "stage": {
       "title": "Nothing in this stage"
     },
