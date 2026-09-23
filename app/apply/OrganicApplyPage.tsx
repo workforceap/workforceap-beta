@@ -411,6 +411,10 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
         }
 
         .apply-hero-help-compact__link {
+          /* WAP-192: a call link is a real phone tap target; keep it 44px tall. */
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
           color: var(--color-on-accent);
           font-weight: 700;
           text-decoration: underline;

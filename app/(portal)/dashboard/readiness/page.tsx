@@ -16,6 +16,7 @@ import { buildReadinessProgressView } from '@/lib/readiness/progressView';
 import {
   READINESS_SCORE_LOAD_ERROR,
   buildFactualReadinessRecap,
+  buildReadinessRecapBreakdown,
 } from '@/lib/readiness/progressSummary';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -89,6 +90,7 @@ export default async function DashboardReadinessPage({
             <ReadinessProgressSummary
               factualSummary={factualSummary}
               nextAction={scoreLoadFailed ? null : view.priorityAction}
+              breakdown={scoreLoadFailed ? null : buildReadinessRecapBreakdown(view)}
               enableGeneration={!scoreLoadFailed}
               loadFailed={scoreLoadFailed}
             />

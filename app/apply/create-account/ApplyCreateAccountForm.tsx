@@ -529,7 +529,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         <p style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6, marginBottom: '0.5rem' }}>
           {t('accountVerifySentTo')}
         </p>
-        <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '1.25rem', wordBreak: 'break-all' }}>
+        <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--wa-accent-text)', marginBottom: '1.25rem', wordBreak: 'break-all' }}>
           {verifyEmail}
         </p>
         <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
@@ -540,7 +540,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         </LocalizedLink>
         <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', marginTop: '1rem' }}>
           {t('accountVerifySpam')}{' '}
-          <a href="tel:+15127771808" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+          <a href="tel:+15127771808" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
             (512) 777-1808
           </a>{' '}
           {t('accountVerifySpamSuffix')}
@@ -605,7 +605,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
                   fontWeight: 600,
                 }}
               >
-                <span style={{ color: 'var(--color-accent)', fontWeight: 800 }}>#{index + 1}</span>
+                <span style={{ color: 'var(--wa-accent-text)', fontWeight: 800 }}>#{index + 1}</span>
                 {label}
               </span>
             ))}
@@ -953,7 +953,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         </label>
         <p id="contact-consent-hint" className="apply-field-hint" style={{ margin: '0 0 0.5rem 0' }}>
           {t('accountConsentHint')}{' '}
-          <LocalizedLink href="/privacy" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>{t('privacyPolicy')}</LocalizedLink>.
+          <LocalizedLink href="/privacy" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>{t('privacyPolicy')}</LocalizedLink>.
         </p>
         {fieldErrors.contactConsent ? (
           <p id="contact-consent-error" className="form-error" role="alert" style={{ marginBottom: '0.5rem' }}>
