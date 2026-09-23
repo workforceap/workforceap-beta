@@ -22,6 +22,10 @@ on:
           - isolated_preview
           - production_canary
           - hub_smoke
+          # Temporary DEMO-only modes run only from the reviewed QA tag below.
+          - demo_provision
+          - demo_env
+          - demo_audit
 
 permissions:
   contents: read
@@ -32,6 +36,177 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Temporary, tag-bound DEMO setup. This workflow path already exists on
+  # master, so its reviewed tag version can be dispatched without merging a
+  # provisioning runner into master or triggering a production deployment.
+  demo_provision:
+    name: Create guarded DEMO portal QA fixtures once
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v1' &&
+      inputs.audit_target == 'demo_provision'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout reviewed QA tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify reviewed checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          remote="$(git remote get-url origin)"
+          test "$remote" = "https://github.com/workforceap/workforceap-beta" || \
+            test "$remote" = "https://github.com/workforceap/workforceap-beta.git"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Create fresh QA Auth and app users in DEMO
+        run: pnpm db:sync-test-auth
+        env:
+          PORTAL_QA_TARGET: demo
+          VERCEL_ENV: preview
+          PORTAL_QA_ORGANIZATION_ID: 008064ba-6be0-4d24-b1a5-87e4824204d3
+          PORTAL_QA_ORGANIZATION_SLUG: portal-qa-september-smoke
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+          PORTAL_QA_MEMBER_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          PORTAL_QA_PARTNER_PASSWORD: ${{ secrets.PREVIEW_E2E_PARTNER_PASSWORD }}
+          PORTAL_QA_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
+          PORTAL_QA_ADMIN_PASSWORD: ${{ secrets.PREVIEW_E2E_ADMIN_PASSWORD }}
+          PORTAL_QA_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+
+  demo_env:
+    name: Set Preview-branch audit token only
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v1' &&
+      inputs.audit_target == 'demo_env'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {}
+    steps:
+      - name: Create sensitive Vercel Preview variable
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          const { VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, PORTAL_AUDIT_READ_ONLY_TOKEN } = process.env;
+          if (VERCEL_ORG_ID !== 'team_zTfMkbIIH6ADgy5Hy43MCM5K' ||
+              VERCEL_PROJECT_ID !== 'prj_pfOpwxedCID96oF2hlaE5J7kbNid' ||
+              !VERCEL_TOKEN || !PORTAL_AUDIT_READ_ONLY_TOKEN || PORTAL_AUDIT_READ_ONLY_TOKEN.length < 32) {
+            throw new Error('Exact Vercel project/team or audit token preflight failed.');
+          }
+          const endpoint = new URL(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env`);
+          endpoint.searchParams.set('teamId', VERCEL_ORG_ID);
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              key: 'PORTAL_AUDIT_READ_ONLY_TOKEN', value: PORTAL_AUDIT_READ_ONLY_TOKEN,
+              type: 'sensitive', target: ['preview'], gitBranch: 'preview',
+              comment: 'WAP-66 DEMO Preview audit only',
+            }),
+          });
+          if (!response.ok) throw new Error(`Vercel Preview environment update failed (HTTP ${response.status}).`);
+          const body = await response.json();
+          const created = body.created ?? body;
+          if (created.key !== 'PORTAL_AUDIT_READ_ONLY_TOKEN' || created.type !== 'sensitive' ||
+              created.gitBranch !== 'preview' || !Array.isArray(created.target) ||
+              created.target.length !== 1 || created.target[0] !== 'preview') {
+            throw new Error('Vercel did not confirm the expected sensitive preview-branch variable.');
+          }
+          console.log('Sensitive audit token created for Vercel Preview branch.');
+          NODE
+
+  demo_audit:
+    name: Audit exact master SHA on DEMO Preview with isolated credentials
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260923-v1' &&
+      inputs.audit_target == 'demo_audit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    permissions:
+      contents: read
+    env:
+      PORTAL_AUDIT_MODE: isolated_preview
+      PORTAL_AUDIT_SECTION: all
+      PORTAL_AUDIT_OUTPUT: test-results/portal-audit-results.json
+    steps:
+      - name: Checkout reviewed QA tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify reviewed checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          remote="$(git remote get-url origin)"
+          test "$remote" = "https://github.com/workforceap/workforceap-beta" || \
+            test "$remote" = "https://github.com/workforceap/workforceap-beta.git"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Verify deployed master SHA and DEMO scope
+        id: verify
+        env:
+          PORTAL_AUDIT_TARGET_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_SHA: d6198910b988570fd77582bcd4473141eeeda3e7
+        run: node scripts/portal-audit-health-gate.mjs
+      - name: Run isolated five-role audit
+        run: pnpm audit:portal
+        env:
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+          PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
+          E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          E2E_MEMBER_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.PREVIEW_E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.PREVIEW_E2E_ADMIN_PASSWORD }}
+          E2E_EMPLOYER_EMAIL: ${{ secrets.PREVIEW_E2E_EMPLOYER_EMAIL }}
+          E2E_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
+          E2E_PARTNER_EMAIL: ${{ secrets.PREVIEW_E2E_PARTNER_EMAIL }}
+          E2E_PARTNER_PASSWORD: ${{ secrets.PREVIEW_E2E_PARTNER_PASSWORD }}
+          E2E_COUNSELOR_EMAIL: ${{ secrets.PREVIEW_E2E_COUNSELOR_EMAIL }}
+          E2E_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
+      - name: Upload audit artifact
+        if: always() && steps.verify.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-audit-results-demo-tag-${{ github.run_id }}
+          path: test-results/portal-audit-results.json
+          if-no-files-found: error
+          retention-days: 14
+
   # The preview policies need `preview` to serve master's exact commit. The
   # mirror no-ops when it already does; otherwise Vercel builds one Preview.
   mirror:
@@ -151,12 +326,12 @@ jobs:
         run: pnpm test:e2e:portal-hubs
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
-          E2E_MEMBER_EMAIL: ${{ secrets.E2E_MEMBER_EMAIL }}
-          E2E_MEMBER_PASSWORD: ${{ secrets.E2E_MEMBER_PASSWORD }}
-          E2E_COUNSELOR_EMAIL: ${{ secrets.E2E_COUNSELOR_EMAIL }}
-          E2E_COUNSELOR_PASSWORD: ${{ secrets.E2E_COUNSELOR_PASSWORD }}
-          E2E_EMPLOYER_EMAIL: ${{ secrets.E2E_EMPLOYER_EMAIL }}
-          E2E_EMPLOYER_PASSWORD: ${{ secrets.E2E_EMPLOYER_PASSWORD }}
+          E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          E2E_MEMBER_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          E2E_COUNSELOR_EMAIL: ${{ secrets.PREVIEW_E2E_COUNSELOR_EMAIL }}
+          E2E_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+          E2E_EMPLOYER_EMAIL: ${{ secrets.PREVIEW_E2E_EMPLOYER_EMAIL }}
+          E2E_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
 
       - name: Run full five-role isolated preview audit
         if: env.AUDIT_TARGET == 'isolated_preview'
@@ -164,17 +339,17 @@ jobs:
         env:
           PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
-          E2E_MEMBER_EMAIL: ${{ secrets.E2E_MEMBER_EMAIL }}
-          E2E_MEMBER_PASSWORD: ${{ secrets.E2E_MEMBER_PASSWORD }}
-          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-          E2E_EMPLOYER_EMAIL: ${{ secrets.E2E_EMPLOYER_EMAIL }}
-          E2E_EMPLOYER_PASSWORD: ${{ secrets.E2E_EMPLOYER_PASSWORD }}
-          E2E_PARTNER_EMAIL: ${{ secrets.E2E_PARTNER_EMAIL }}
-          E2E_PARTNER_PASSWORD: ${{ secrets.E2E_PARTNER_PASSWORD }}
-          E2E_COUNSELOR_EMAIL: ${{ secrets.E2E_COUNSELOR_EMAIL }}
-          E2E_COUNSELOR_PASSWORD: ${{ secrets.E2E_COUNSELOR_PASSWORD }}
-          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PORTAL_AUDIT_READ_ONLY_TOKEN }}
+          E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          E2E_MEMBER_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.PREVIEW_E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.PREVIEW_E2E_ADMIN_PASSWORD }}
+          E2E_EMPLOYER_EMAIL: ${{ secrets.PREVIEW_E2E_EMPLOYER_EMAIL }}
+          E2E_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
+          E2E_PARTNER_EMAIL: ${{ secrets.PREVIEW_E2E_PARTNER_EMAIL }}
+          E2E_PARTNER_PASSWORD: ${{ secrets.PREVIEW_E2E_PARTNER_PASSWORD }}
+          E2E_COUNSELOR_EMAIL: ${{ secrets.PREVIEW_E2E_COUNSELOR_EMAIL }}
+          E2E_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
 
       - name: Run non-staff production canary
         if: env.AUDIT_TARGET == 'production_canary'
