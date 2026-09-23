@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => {
     getOrg: vi.fn(), getSubjectOrg: vi.fn(), isSuperAdmin: vi.fn(), pageScope: vi.fn(),
     snapshot: vi.fn(), chat: vi.fn(), sendInterview: vi.fn(), sendEligibility: vi.fn(),
     sendSurvey: vi.fn(), prepareSurvey: vi.fn(), issueToken: vi.fn(), progress: vi.fn(),
-    audit: vi.fn(), auditEvent: vi.fn(), capture: vi.fn(),
+    audit: vi.fn(), auditEvent: vi.fn(), capture: vi.fn(), staffAccess: vi.fn(),
   };
 });
 vi.mock('@/lib/db/prisma', () => ({ prisma: mocks.db }));
@@ -32,6 +32,7 @@ vi.mock('@/lib/tenant/organization', () => ({
 }));
 vi.mock('@/lib/tenant/adminPageScope', () => ({ resolveAdminPageTenant: mocks.pageScope }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
+vi.mock('@/lib/counselor/staffMemberAccess', () => ({ assertStaffCanAccessMemberRecord: mocks.staffAccess }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.auditEvent, auditRequestMeta: () => ({}) }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: mocks.capture }));
 vi.mock('@/lib/ai/groq', () => ({ chatCompletion: mocks.chat, isAIConfigured: () => true }));
@@ -135,6 +136,7 @@ beforeEach(() => {
   mocks.getOrg.mockResolvedValue('org-1');
   mocks.getSubjectOrg.mockResolvedValue('org-1');
   mocks.isSuperAdmin.mockResolvedValue(false);
+  mocks.staffAccess.mockResolvedValue(true);
   mocks.pageScope.mockResolvedValue({ ok: true, orgId: 'org-1', superAdmin: false });
   mocks.snapshot.mockResolvedValue({ fixture: true });
   mocks.chat.mockResolvedValue('Fixture summary');

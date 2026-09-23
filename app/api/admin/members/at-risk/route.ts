@@ -7,6 +7,7 @@ import { loadPersistedAtRiskMembers } from '@/lib/member/persistedAtRisk';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
+import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 
 async function _GET(req: Request) {
   try {
@@ -78,9 +79,16 @@ async function _PATCH(req: Request) {
   
       const existing = await prisma.atRiskAlert.findFirst({
         where: { id: alertId, ...(patchOrgId ? { user: { organizationId: patchOrgId } } : {}) },
-        select: { id: true },
+        select: { id: true, userId: true },
       });
       if (!existing) return NextResponse.json({ error: 'Alert not found' }, { status: 404 });
+      // Same rule GET applies: a counselor may act only on members they are
+      // actively assigned to; admins in the member's org and super-admins keep
+      // full access. 404 (not 403) so an unassigned caller cannot confirm the
+      // alert exists.
+      if (!(await assertStaffCanAccessMemberRecord(auth.userId, existing.userId))) {
+        return NextResponse.json({ error: 'Alert not found' }, { status: 404 });
+      }
 
       const alert = await prisma.$transaction((tx) => tx.atRiskAlert.update({
         where: { id: alertId },
@@ -94,7 +102,7 @@ async function _PATCH(req: Request) {
         },
       }));
   
-      void auditLog({ actorUserId: auth.userId, action: 'admin_at_risk_alert_update', targetType: 'user', targetId: alertId, metadata: { status } }).catch(() => {});
+      void auditLog({ actorUserId: auth.userId, action: 'admin_at_risk_alert_update', targetType: 'user', targetId: alertId, metadata: { status, memberId: existing.userId } }).catch(() => {});
 
       return NextResponse.json({ success: true, alert });
     } catch (error) {
