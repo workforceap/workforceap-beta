@@ -16,7 +16,7 @@ This reference describes the checked-in operating paths reviewed on 2026-09-12. 
 
 ## Install and development
 
-The root is a Next.js application; `marketing/` is a separate Astro package whose output is included in the Vercel build. Root [package.json](../../package.json#L5) selects `pnpm@10.34.3`; [CI uses Node 22](../../.github/workflows/ci-gate.yml#L53). The root has no `engines` declaration. Use the CI major and the selected package manager when reproducing a failure. Marketing uses its own [package-lock.json](../../marketing/package-lock.json), React 18 and Astro; the root uses [pnpm-lock.yaml](../../pnpm-lock.yaml), React 19 and Next. A root install does not install marketing dependencies.
+The root is a Next.js application; `marketing/` is a separate Astro package whose output is included in the Vercel build. Root [package.json](../../package.json#L5) selects `pnpm@10.34.3`; [CI uses Node 22](../../.github/workflows/ci-gate.yml#L57). The root has no `engines` declaration. Use the CI major and the selected package manager when reproducing a failure. Marketing uses its own [package-lock.json](../../marketing/package-lock.json), React 18 and Astro; the root uses [pnpm-lock.yaml](../../pnpm-lock.yaml), React 19 and Next. A root install does not install marketing dependencies.
 
 ```bash
 # From the repository root; installs run the Prisma generation postinstall.
