@@ -75,6 +75,17 @@ describe('PartnerExportsPage outcome packet', () => {
     expect(html).toContain('Enrolled members with no enrolled date recorded: 1');
     expect(html).toContain('href="/api/partner/export/referrals?preset=packet"');
     expect(html).toMatch(/<time dateTime="\d{4}-\d{2}-\d{2}T[\d:.]+Z"/i);
+    // The generated-at time is shown, because the page and the CSV read live
+    // records at separate request times.
+    expect(html).toMatch(/Generated at <time dateTime="\d{4}-\d{2}-\d{2}T[\d:.]+Z" data-testid="partner-outcome-packet-generated-at">/i);
+    expect(html).toContain('The page and the CSV use the same definitions');
+    expect(html).not.toMatch(/always match|cannot drift/i);
+    // The unverified self-report counts as a placement record and is labelled pending.
+    expect(html).toContain('Placement reported, pending verification');
+    expect(html).toContain('recorded as an unverified placement record');
+    // Credential copy names every source and status, never "member-reported".
+    expect(html).toContain('Credential records (any source or review status)');
+    expect(html).not.toMatch(/member-reported/i);
     const packetHtml = html.slice(html.indexOf('data-testid="partner-outcome-packet"'), html.indexOf('Download outcome packet'));
     expect(packetHtml).not.toMatch(/\d+(\.\d+)?%/);
     expect(html).not.toContain('partner-outcome-packet-truncated');

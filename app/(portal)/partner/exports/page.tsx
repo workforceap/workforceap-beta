@@ -136,9 +136,10 @@ function ExportTile({ option }: { option: ExportOption }) {
 const PACKET_HREF = '/api/partner/export/referrals?preset=packet';
 
 /**
- * Outcome packet summary (V12). The numbers come from the same
- * `buildPartnerOutcomePacket` output the `?preset=packet` CSV prints, so the
- * page and the download reconcile. Counts only, shown as "X of N".
+ * Outcome packet summary (V12). Built by the same `buildPartnerOutcomePacket`
+ * the `?preset=packet` CSV prints, so both use the same definitions. Each
+ * reads live records at its own request time, so both show when they were
+ * generated. Counts only, shown as "X of N".
  */
 function OutcomePacketSection({ packet }: { packet: PartnerOutcomePacket }) {
   const warning = partnerPacketTruncationWarning(packet);
@@ -156,8 +157,10 @@ function OutcomePacketSection({ packet }: { packet: PartnerOutcomePacket }) {
             Outcome packet
           </h2>
           <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
-            {packet.period}. Generated{' '}
-            <time dateTime={packet.generatedAt}>{formatPortalDateTime(packet.generatedAt)}</time>.
+            {packet.period}. Generated at{' '}
+            <time dateTime={packet.generatedAt} data-testid="partner-outcome-packet-generated-at">
+              {formatPortalDateTime(packet.generatedAt)}
+            </time>.
             {' '}Definitions {packet.definitionsVersion}.
           </p>
         </div>
@@ -198,9 +201,15 @@ function OutcomePacketSection({ packet }: { packet: PartnerOutcomePacket }) {
         </div>
       ) : null}
 
+      <ul data-testid="partner-outcome-packet-notes" style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: 'var(--wa-muted)' }}>
+        {packet.notes.map((note) => (
+          <li key={note}>{note}</li>
+        ))}
+      </ul>
+
       <p style={{ margin: 0, fontSize: 13, color: 'var(--wa-muted)' }}>
-        Counts only, no percentages. Credential records are member-reported. {packet.exclusions[0]} Not a
-        regulatory certification.
+        Counts only, no percentages. Credential records include every source and review status, so they are not a
+        verified-credential count. {packet.exclusions[0]} Not a regulatory certification.
       </p>
 
       <a

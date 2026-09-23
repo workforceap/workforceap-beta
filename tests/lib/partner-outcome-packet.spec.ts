@@ -119,8 +119,7 @@ describe('buildPartnerOutcomePacket', () => {
     expect(lineOf(packet, 'referred')).toMatchObject({ count: 12, denominator: 12, display: '12 of 12', definitionRef: '§7 Partner referrals' });
     expect(lineOf(packet, 'enrolled')).toMatchObject({ count: 9, denominator: 12, display: '9 of 12' });
     expect(lineOf(packet, 'trainingCompleted')).toMatchObject({ count: 2, display: '2 of 12' });
-    expect(lineOf(packet, 'credentialRecordsMemberReported')).toMatchObject({ count: 4, display: '4 of 12' });
-    expect(lineOf(packet, 'credentialRecordsMemberReported').label).toMatch(/member-reported/i);
+    expect(lineOf(packet, 'credentialRecords')).toMatchObject({ count: 4, display: '4 of 12' });
     expect(lineOf(packet, 'placementRecords')).toMatchObject({ count: 5, display: '5 of 12' });
     expect(lineOf(packet, 'placementStartDateVerified')).toMatchObject({ count: 3, denominator: 12, display: '3 of 12' });
     expect(lineOf(packet, 'placementStartDateNotVerified')).toMatchObject({ count: 2, display: '2 of 12' });
@@ -157,7 +156,7 @@ describe('buildPartnerOutcomePacket', () => {
     const agg: Record<string, number> = {
       enrolled: rows.filter((r) => r.enrolled).length,
       trainingCompleted: rows.filter((r) => r.trainingCompleted).length,
-      credentialRecordsMemberReported: rows.filter((r) => r.credentialRecordMemberReported).length,
+      credentialRecords: rows.filter((r) => r.credentialRecord).length,
       placementRecords: rows.filter((r) => r.placementStatus !== 'none').length,
       placementStartDateVerified: rows.filter((r) => r.placementStatus === 'start_date_verified').length,
       placementStartDateNotVerified: rows.filter((r) => r.placementStatus === 'recorded_start_not_verified').length,
@@ -170,6 +169,55 @@ describe('buildPartnerOutcomePacket', () => {
     expect(lineOf(packet, 'placementStartDateVerified').count + lineOf(packet, 'placementStartDateNotVerified').count).toBe(
       lineOf(packet, 'placementRecords').count,
     );
+  });
+
+  it('an unverified self-reported placement counts in all placement records but not in the verified subset', () => {
+    // The shape confirmPlacement -> recordPlacementFromApplication writes for
+    // a member's own offer confirmation: a placement row, startDateVerified false.
+    const selfReport = member(1, { placement: 'unverified' });
+    const packet = build([selfReport, member(2)]);
+    expect(lineOf(packet, 'placementRecords')).toMatchObject({ count: 1, display: '1 of 2' });
+    expect(lineOf(packet, 'placementStartDateVerified')).toMatchObject({ count: 0, display: '0 of 2' });
+    expect(lineOf(packet, 'placementStartDateNotVerified')).toMatchObject({
+      count: 1,
+      label: 'Placement reported, pending verification',
+    });
+    expect(packet.rows[0]).toMatchObject({ placementStatus: 'recorded_start_not_verified', employerName: null, jobTitle: null });
+
+    // The copy says so, and never claims self-reports are left out.
+    const csv = partnerOutcomePacketCsv(packet);
+    expect(packet.notes.join(' ')).toMatch(/recorded as an unverified placement record/);
+    expect(csv).toContain('# note: A placement a member reports on their dashboard');
+    expect(csv).not.toMatch(/not placement records|are not counted/i);
+    for (const e of packet.exclusions) expect(e).not.toMatch(/placement/i);
+  });
+
+  it('labels credential records by every source and review status, not as member-reported', () => {
+    // A system-created pending row from a course completion counts the same
+    // as a member-entered one: the line has no source or status filter (§4).
+    const systemCompletion = member(1);
+    systemCompletion.member.userCertifications = [{ certName: 'Google IT Support — Course 1', earnedAt: new Date('2026-08-01T00:00:00Z') }];
+    const packet = build([systemCompletion, member(2)]);
+    const line = lineOf(packet, 'credentialRecords');
+    expect(line).toMatchObject({ count: 1, display: '1 of 2', label: 'Credential records (any source or review status)' });
+    expect(line.definition).toMatch(/member-entered/);
+    expect(line.definition).toMatch(/course completion/);
+    expect(line.definition).toMatch(/pending, approved or rejected/);
+    expect(line.definition).toMatch(/not a verified-credential count/);
+    expect(packet.rows[0].credentialRecord).toBe(true);
+
+    const csv = partnerOutcomePacketCsv(packet);
+    expect(csv).not.toMatch(/member-reported/i);
+    expect(csv).toContain('Credential record (any source or status)');
+    expect(csv).toContain('credentialRecords,1,2,1 of 2');
+  });
+
+  it('prints generated_at and the page/CSV timing note in the CSV header', () => {
+    const csv = partnerOutcomePacketCsv(build());
+    const lines = csv.split('\r\n');
+    expect(lines).toContain('# generated_at=2026-09-23T12:00:00.000Z');
+    expect(csv).toMatch(/# note: The page and the CSV use the same definitions, but each reads live records/);
+    expect(csv).not.toMatch(/always match|cannot drift|same numbers/i);
   });
 
   it('(c) is deterministic for the same input and generatedAt', () => {

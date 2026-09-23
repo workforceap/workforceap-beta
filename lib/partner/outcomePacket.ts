@@ -6,15 +6,21 @@
  * Pure: no database, no clock. The caller passes the partner bundle rows
  * (`loadPartnerReferralBundle`), the uncapped referral count
  * (`countPartnerReferrals`) and `generatedAt`. The /partner/exports page and
- * the `?preset=packet` CSV both render this one output, so their numbers
- * cannot drift.
+ * the `?preset=packet` CSV both render this builder, so they use the same
+ * definitions. Each one reads live records at its own request time, so a page
+ * view and a later download can differ if records changed in between; both
+ * print `generatedAt` so a reader can tell which moment each one reflects.
  *
  * Every line reuses an existing definition in docs/OUTCOMES-METHODOLOGY.md
  * (§2, §4, §7; see "Partner outcome packet" there). No new rate is defined:
  * every line is shown as "X of N", never as a percentage. Placement records
  * are reported both in full (§2 "Placed", which includes rows a counselor has
  * not verified) and split by `startDateVerified` (§7 "Partner placements"),
- * so the packet does not pick one placement definition over the other.
+ * so the packet does not pick one placement definition over the other. A
+ * member's own offer confirmation (dashboard/placementAction.ts ->
+ * recordPlacementFromApplication) creates a placement row with
+ * `startDateVerified: false`: it counts in "Placement records" and stays out
+ * of the verified subset until staff verify it.
  */
 import { SMALL_SAMPLE_THRESHOLD } from '@/lib/admin/boardOutcomes';
 import { csvEscape } from '@/lib/csv';
@@ -31,7 +37,7 @@ export type PartnerPacketLineKey =
   | 'referred'
   | 'enrolled'
   | 'trainingCompleted'
-  | 'credentialRecordsMemberReported'
+  | 'credentialRecords'
   | 'placementRecords'
   | 'placementStartDateVerified'
   | 'placementStartDateNotVerified';
@@ -58,8 +64,12 @@ export type PartnerPacketRow = {
   programTitle: string;
   enrolled: boolean;
   trainingCompleted: boolean;
-  /** At least one `user_certifications` row. Member-reported, not verified. */
-  credentialRecordMemberReported: boolean;
+  /**
+   * At least one `user_certifications` row of any source (member-entered or
+   * created from a recorded course completion) and any review status
+   * (pending, approved or rejected). Not a verified-credential flag.
+   */
+  credentialRecord: boolean;
   placementStatus: PartnerPacketPlacementStatus;
   /** Only when the placement start date is verified; otherwise null. */
   employerName: string | null;
@@ -91,6 +101,8 @@ export type PartnerOutcomePacket = {
   rows: PartnerPacketRow[];
   unknowns: PartnerPacketUnknown[];
   exclusions: string[];
+  /** How self-reported placements and the page/CSV timing are handled. */
+  notes: string[];
 };
 
 export type BuildPartnerOutcomePacketInput = {
@@ -103,7 +115,11 @@ export type BuildPartnerOutcomePacketInput = {
 export const PARTNER_PACKET_EXCLUSIONS = [
   'Deleted accounts and non-member (staff/test) accounts are excluded.',
   'Only this partner’s referrals in its own organization are included.',
-  'Member-submitted placement confirmations awaiting staff review are not placement records and are not counted.',
+] as const;
+
+export const PARTNER_PACKET_NOTES = [
+  'A placement a member reports on their dashboard, or an employer marks hired, is recorded as an unverified placement record: it counts in "Placement records" and in "Placement reported, pending verification", and not in "Placement start date verified" until staff verify it.',
+  'The page and the CSV use the same definitions, but each reads live records when it is generated, so figures can differ if records changed in between. Compare their generated-at times.',
 ] as const;
 
 function xOfN(count: number, denominator: number): string {
@@ -133,7 +149,7 @@ function toRow(p: PipelineRow): PartnerPacketRow {
     programTitle: p.programTitle,
     enrolled: Boolean(m.enrolledProgram),
     trainingCompleted,
-    credentialRecordMemberReported: m.userCertifications.length > 0,
+    credentialRecord: m.userCertifications.length > 0,
     placementStatus,
     employerName: verified ? verified.employerName : null,
     jobTitle: verified ? verified.jobTitle : null,
@@ -190,30 +206,30 @@ export function buildPartnerOutcomePacket({
       count((r) => r.trainingCompleted),
     ),
     line(
-      'credentialRecordsMemberReported',
-      'Credential records (member-reported)',
-      'Referred members with at least one credential record; member-reported, not verified',
+      'credentialRecords',
+      'Credential records (any source or review status)',
+      'Referred members with at least one credential record, whether member-entered or created from a recorded course completion, and whether pending, approved or rejected; not a verified-credential count',
       '§4 Credential records',
-      count((r) => r.credentialRecordMemberReported),
+      count((r) => r.credentialRecord),
     ),
     line(
       'placementRecords',
       'Placement records',
-      'Referred members with a placement record, verified or not',
+      'Referred members with a placement record, verified or not; includes member self-reports, which are recorded as unverified',
       '§2 Placed',
       placementRecords,
     ),
     line(
       'placementStartDateVerified',
       'Placement start date verified',
-      'Placement records whose start date staff verified; a subset of placement records',
+      'Placement records whose start date staff verified; a subset of placement records that excludes unverified self-reports',
       '§7 Partner placements',
       verified,
     ),
     line(
       'placementStartDateNotVerified',
-      'Placement start date not yet verified',
-      'Placement records whose start date staff have not verified yet',
+      'Placement reported, pending verification',
+      'Placement records whose start date staff have not verified yet, including member self-reports',
       'Partner outcome packet (placement records minus start date verified)',
       notVerified,
     ),
@@ -231,7 +247,7 @@ export function buildPartnerOutcomePacket({
     },
     {
       key: 'placementStartDateNotVerified',
-      label: 'Placement records without a verified start date',
+      label: 'Placement reported, pending verification',
       count: notVerified,
     },
   ];
@@ -250,6 +266,7 @@ export function buildPartnerOutcomePacket({
     rows,
     unknowns,
     exclusions: [...PARTNER_PACKET_EXCLUSIONS],
+    notes: [...PARTNER_PACKET_NOTES],
   };
 }
 
@@ -267,7 +284,7 @@ export const PARTNER_PACKET_ROW_HEADERS = [
   'Program',
   'Enrolled',
   'Training completed',
-  'Credential record (member-reported)',
+  'Credential record (any source or status)',
   'Placement status',
   'Placed employer (start date verified)',
   'Job title (start date verified)',
@@ -308,6 +325,7 @@ export function partnerOutcomePacketCsv(packet: PartnerOutcomePacket): string {
       : []),
     ...packet.unknowns.map((u) => `# unknown: ${u.label}: ${u.count}`),
     ...packet.exclusions.map((e) => `# exclusion: ${e}`),
+    ...packet.notes.map((n) => `# note: ${n}`),
   ];
   const warning = partnerPacketTruncationWarning(packet);
   if (warning) header.push(`# ${warning}`);
@@ -330,7 +348,7 @@ export function partnerOutcomePacketCsv(packet: PartnerOutcomePacket): string {
         csvEscape(r.programTitle),
         yesNo(r.enrolled),
         yesNo(r.trainingCompleted),
-        yesNo(r.credentialRecordMemberReported),
+        yesNo(r.credentialRecord),
         r.placementStatus,
         csvEscape(r.employerName ?? ''),
         csvEscape(r.jobTitle ?? ''),

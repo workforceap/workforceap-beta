@@ -82,7 +82,7 @@ describe('partner referrals export columns (WAP-171)', () => {
       'Program',
       'Enrolled',
       'Training completed',
-      'Credential record (member-reported)',
+      'Credential record (any source or status)',
       'Placement status',
       'Placed employer (start date verified)',
       'Job title (start date verified)',

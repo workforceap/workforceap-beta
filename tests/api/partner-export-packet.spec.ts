@@ -108,6 +108,8 @@ describe('partner export preset=packet', () => {
     expect(lines).toContain('# definitions_version=partner-packet-v1');
     expect(lines).toContain('# source: docs/OUTCOMES-METHODOLOGY.md §2/§4/§7');
     expect(text).not.toContain('WARNING');
+    expect(text).toContain('# note: The page and the CSV use the same definitions');
+    expect(text).not.toMatch(/member-reported|not placement records/i);
 
     const summaryStart = lines.indexOf('metric,count,denominator,display');
     expect(summaryStart).toBeGreaterThan(0);
@@ -115,7 +117,7 @@ describe('partner export preset=packet', () => {
       'referred,3,3,3 of 3',
       'enrolled,3,3,3 of 3',
       'trainingCompleted,0,3,0 of 3',
-      'credentialRecordsMemberReported,0,3,0 of 3',
+      'credentialRecords,0,3,0 of 3',
       'placementRecords,2,3,2 of 3',
       'placementStartDateVerified,1,3,1 of 3',
       'placementStartDateNotVerified,1,3,1 of 3',
