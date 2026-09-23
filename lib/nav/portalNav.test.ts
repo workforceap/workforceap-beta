@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   ADMIN_PORTAL_NAV_ITEMS,
+  COUNSELOR_PORTAL_NAV_ITEMS,
   GROUP_ORDER,
   NAV_GROUP_ALWAYS_OPEN,
   NAV_GROUP_COLLAPSED_BY_DEFAULT,
@@ -247,4 +248,12 @@ test('admin rail: every guided-tour anchor sits on a top-level row, and every se
   for (const item of ADMIN_PORTAL_NAV_ITEMS.filter((entry) => entry.group === 'system')) {
     assert.ok(item.requiresSuperAdminContext, `${item.href}: Security & system is super-admin only`);
   }
+});
+
+// WAP-205: counselor rail rows read the counts /api/portal/nav-badges?role=counselor serves.
+test('counselor Messages and Today carry their badge keys', () => {
+  const byHref = (href: string) => COUNSELOR_PORTAL_NAV_ITEMS.find((entry) => entry.href === href);
+  assert.equal(byHref('/counselor/messages')?.badgeKey, 'counselor_messages_unread');
+  assert.equal(byHref('/counselor/today')?.badgeKey, 'counselor_sla_breach_48h');
+  assert.equal(byHref('/counselor/notifications')?.badgeKey, 'counselor_notifications_unread');
 });
