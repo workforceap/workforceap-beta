@@ -267,7 +267,8 @@ describe('bucket → template mapping', () => {
     });
     expect(sendMemberCheckInEmail).toHaveBeenCalledTimes(1);
     expect(sendMemberCheckInEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: 'bob@example.com', firstName: 'Bob', dashboardUrl: expect.stringMatching(/\/dashboard$/) }),
+      // no_program members land on My Program, where the program picker lives.
+      expect.objectContaining({ to: 'bob@example.com', firstName: 'Bob', dashboardUrl: expect.stringMatching(/\/dashboard\/program$/) }),
     );
 
     expect(prismaMock.memberNudgeLog.create).toHaveBeenCalledTimes(2);

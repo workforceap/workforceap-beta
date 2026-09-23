@@ -98,14 +98,14 @@ const PRIORITY_ACTIONS: {
   },
   {
     key: 'completePathwaySteps',
-    label: 'Complete more pathway steps in your training program.',
-    href: '/dashboard',
-    ctaLabel: 'View dashboard',
+    label: 'Complete more steps on your learning path.',
+    href: '/dashboard/learning',
+    ctaLabel: 'Open Learning Hub',
   },
   {
     key: 'setGoals',
     label: 'Set career goals to stay on track.',
-    href: '/dashboard/career-brief',
+    href: '/dashboard/career-brief#goals',
     ctaLabel: 'Set goals',
   },
   {
@@ -128,9 +128,9 @@ const PRIORITY_ACTIONS: {
   },
   {
     key: 'startPathway',
-    label: 'Start a training pathway to earn readiness points.',
-    href: '/dashboard',
-    ctaLabel: 'View dashboard',
+    label: 'Start a learning path to earn readiness points.',
+    href: '/dashboard/learning',
+    ctaLabel: 'Open Learning Hub',
   },
   {
     key: 'weeklyConsistency',

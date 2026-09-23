@@ -25,8 +25,8 @@ function reader(overrides: Partial<MemberAgentGatewayReader> = {}): MemberAgentG
         id: 'continue_training',
         title: 'Continue training',
         body: 'Open the next course in your assigned program.',
-        href: '/dashboard/training',
-        cta: 'Open My Training',
+        href: '/dashboard/program',
+        cta: 'Open My Program',
       }],
       training: {
         completedCount: 2,
@@ -148,7 +148,9 @@ test('returns bounded next-step and training responses from the scoped member sn
   ]);
   assert.equal(next.status, 'ok');
   assert.equal(next.data.action?.id, 'continue_training');
-  assert.equal(next.data.action?.ctaHref, '/dashboard/training');
+  assert.equal(next.data.action?.ctaHref, '/dashboard/program');
+  assert.equal(next.data.action?.ctaLabel, 'Open My Program');
+  assert.equal(training.handoff.href, '/dashboard/program');
   assert.equal(training.status, 'ok');
   assert.equal(training.data.programName, 'IT Support Professional Certificate');
   assert.equal(training.data.progressPercent, 31);
@@ -215,15 +217,55 @@ test('treats stored next-action text as inert and exposes only reviewed copy', a
           title: injection,
           body: injection,
           cta: injection,
-          href: '/dashboard/training',
+          href: '/dashboard/program',
         }],
       };
     },
   }).getMyNextStep();
 
   assert.equal(result.data.action?.title, 'Continue training');
-  assert.equal(result.data.action?.ctaHref, '/dashboard/training');
+  assert.equal(result.data.action?.ctaHref, '/dashboard/program');
   assert.equal(JSON.stringify(result).includes(injection), false);
+});
+
+test('rewrites a stored /dashboard/training stub link onto My Program, keeping its query', async () => {
+  const baseReader = reader();
+  const result = await gateway({
+    loadMemberSnapshot: async (received) => {
+      const snapshot = await baseReader.loadMemberSnapshot(received);
+      assert.ok(snapshot);
+      return {
+        ...snapshot,
+        nextActions: [{
+          ...snapshot.nextActions[0]!,
+          href: '/dashboard/training?program=google-it-support',
+        }],
+      };
+    },
+  }).getMyNextStep();
+
+  assert.equal(result.data.action?.id, 'continue_training');
+  assert.equal(result.data.action?.ctaHref, '/dashboard/program?program=google-it-support');
+  assert.equal(result.data.action?.ctaLabel, 'Open My Program');
+});
+
+test('training and Coursera handoffs open My Program', async () => {
+  const unavailableTraining = await gateway({
+    loadMemberSnapshot: async (received) => {
+      const snapshot = await reader().loadMemberSnapshot(received);
+      assert.ok(snapshot);
+      return { ...snapshot, training: null };
+    },
+  }).getTrainingStatus();
+  assert.equal(unavailableTraining.status, 'unavailable');
+  assert.equal(unavailableTraining.handoff.href, '/dashboard/program');
+
+  const unlinked = await gateway({ loadCourseraSnapshot: async () => null }).getCourseraProgress();
+  assert.equal(unlinked.handoff.href, '/dashboard/program');
+  assert.match(unlinked.handoff.reason ?? '', /My Program/);
+
+  const linked = await gateway().getCourseraProgress();
+  assert.equal(linked.handoff.href, '/dashboard/program');
 });
 
 test('returns synchronized Coursera progress without member identifiers', async () => {

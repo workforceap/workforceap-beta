@@ -59,8 +59,8 @@ export const STALL_BUCKETS: readonly StallBucket[] = ['interview', 'no_program',
  *    the blocker is on their side, so offer the counselor ("Let's get
  *    unstuck", booking link or the counselor inbox).
  *  - no_program: signed up 7+ days ago, no program and no counselor — a
- *    friendly check-in pointing back at the dashboard where the program
- *    picker lives.
+ *    friendly check-in pointing at My Program (/dashboard/program), where
+ *    the program picker lives.
  *  - wioa: the screening is waiting on STAFF review (pending/in_review),
  *    and its 5-day proxy is `users.updatedAt`, not a submission timestamp.
  *    Emailing the member for our own review backlog would be misdirected,
@@ -352,7 +352,7 @@ export async function sendMemberStallNudges(
               firstName,
               counselorName: counselorNames.get(member.id) ?? FALLBACK_COUNSELOR_NAME,
             })
-          : sendMemberCheckInEmail({ to, firstName, dashboardUrl: `${SITE_URL}/dashboard` }),
+          : sendMemberCheckInEmail({ to, firstName, dashboardUrl: `${SITE_URL}/dashboard/program` }),
       );
       if (sendResult.skipped) {
         if (isRecipientSkipReason(sendResult.error)) result.skippedRecipient++;

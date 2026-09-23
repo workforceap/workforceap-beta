@@ -2002,7 +2002,7 @@ export async function sendApplicantChaseEmail(params: {
   const first = params.fullName.trim().split(/\s+/)[0] || 'there';
   const html = brandedEmailLayout({
     title: APPLICANT_CHASE_TITLE[params.stage],
-    bodyHtml: applicantChaseHtml({ firstName: first, stage: params.stage, dashboardUrl: `${SITE_URL}/dashboard` }),
+    bodyHtml: applicantChaseHtml({ firstName: first, stage: params.stage, programUrl: `${SITE_URL}/dashboard/program` }),
     ctaText: 'Open my dashboard',
     ctaUrl: `${SITE_URL}/dashboard`,
   });

@@ -422,7 +422,7 @@ export const REDIRECT_ONLY_PATHS = {
     },
     {
       path: '/dashboard/coursera',
-      target: '/dashboard',
+      target: '/dashboard/program',
       reason: 'consolidated_experience',
     },
     {
@@ -447,7 +447,7 @@ export const REDIRECT_ONLY_PATHS = {
     },
     {
       path: '/dashboard/training',
-      target: '/dashboard',
+      target: '/dashboard/program',
       reason: 'consolidated_experience',
     },
   ],

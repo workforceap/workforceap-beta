@@ -23,9 +23,14 @@ export const APPLICANT_CHASE_TITLE: Record<ApplicantChaseStage, string> = {
   day20: "We haven't forgotten you",
 };
 
-export function applicantChaseHtml(params: { firstName: string; stage: ApplicantChaseStage; dashboardUrl: string }): string {
+/**
+ * `programUrl` is My Program (/dashboard/program): the program picker lives
+ * there, so both program-choice links open it directly instead of sending the
+ * applicant to the member home to hunt for it.
+ */
+export function applicantChaseHtml(params: { firstName: string; stage: ApplicantChaseStage; programUrl: string }): string {
   const first = escapeHtml(params.firstName);
-  const dashboard = escapeHtml(params.dashboardUrl);
+  const program = escapeHtml(params.programUrl);
   const contact = `<p>Questions, or has your situation changed? Reply to this email, call <a href="tel:+15127771808">(512) 777-1808</a> or write to <a href="mailto:info@workforceap.org">info@workforceap.org</a>.</p>`;
 
   if (params.stage === 'day10') {
@@ -34,7 +39,7 @@ export function applicantChaseHtml(params: { firstName: string; stage: Applicant
     <p>Your application to the Workforce Advancement Project is still in our review queue. We're sorry it is taking longer than you probably expected, and we wanted you to hear that from us rather than from silence.</p>
     <p>Two things help a counselor pick your application up faster:</p>
     <ul>
-      <li><a href="${dashboard}">Choose the career program you're most interested in</a> from your dashboard, if you haven't yet.</li>
+      <li><a href="${program}">Choose the career program you're most interested in</a> in My Program, if you haven't yet.</li>
       <li>Make sure the phone number and email on your profile are ones you check.</li>
     </ul>
     <p>We'll email you as soon as a counselor has reviewed your application.</p>
@@ -45,7 +50,7 @@ export function applicantChaseHtml(params: { firstName: string; stage: Applicant
   return `
     <p>Hi ${first},</p>
     <p>It has been a few weeks since you applied to the Workforce Advancement Project, and your application is still waiting for a counselor. We haven't forgotten you, and we know the wait is frustrating.</p>
-    <p>If you're still interested, you don't need to do anything: your application stays in the queue and we'll email you when it has been reviewed. If you'd like to make sure it isn't missing anything, <a href="${dashboard}">open your dashboard</a> and confirm your program choice and contact details.</p>
+    <p>If you're still interested, you don't need to do anything: your application stays in the queue and we'll email you when it has been reviewed. If you'd like to make sure it isn't missing anything, <a href="${program}">confirm your program choice in My Program</a> and make sure the phone number and email on your profile are current.</p>
     <p>If you've found another path in the meantime, just reply and let us know so we can close your application.</p>
     ${contact}
   `.trim();

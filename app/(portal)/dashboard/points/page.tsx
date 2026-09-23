@@ -88,8 +88,8 @@ const EARN_ACTIONS: Array<{
   },
   {
     event: 'course_completed',
-    href: '/dashboard',
-    blurb: 'Mark a course complete in your training plan.',
+    href: '/dashboard/program',
+    blurb: 'Finish a course in My Program.',
   },
   {
     event: 'counselor_session',
@@ -108,8 +108,8 @@ const EARN_ACTIONS: Array<{
   },
   {
     event: 'pathway_step_completed',
-    href: '/dashboard',
-    blurb: 'Finish a learning step inside your pathway.',
+    href: '/dashboard/learning',
+    blurb: 'Finish a step on your learning path in the Learning Hub.',
   },
   {
     event: 'daily_study',

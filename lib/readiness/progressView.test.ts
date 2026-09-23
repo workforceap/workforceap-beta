@@ -48,6 +48,27 @@ describe('buildReadinessProgressView', () => {
     expect(view.milestones[0]?.state).toBe('active');
   });
 
+  test('pathway and goal actions open the pages that own them, not the member home', () => {
+    const only = (key: keyof ScoreBreakdown): ScoreBreakdown => {
+      const breakdown = zeroScoreBreakdown();
+      for (const k of Object.keys(breakdown) as (keyof ScoreBreakdown)[]) {
+        breakdown[k] = { ...breakdown[k], earned: breakdown[k].max, done: k !== key };
+      }
+      return breakdown;
+    };
+
+    // Pathway steps are completed on the Learning Hub's learning-path cards.
+    for (const key of ['completePathwaySteps', 'startPathway'] as const) {
+      const action = buildReadinessProgressView(only(key)).priorityAction;
+      expect(action?.key).toBe(key);
+      expect(action?.href).toBe('/dashboard/learning');
+      expect(action?.ctaLabel).toBe('Open Learning Hub');
+    }
+
+    const goals = buildReadinessProgressView(only('setGoals')).priorityAction;
+    expect(goals?.href).toBe('/dashboard/career-brief#goals');
+  });
+
   test('all-complete member has no next action', () => {
     const done: ScoreBreakdown = {
       completeProfile: { earned: 5, max: 5, done: true },
