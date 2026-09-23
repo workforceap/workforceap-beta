@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db/prisma';
 import MobileApplyFunnel from './MobileApplyFunnel';
 import JobTailorPanel from '@/components/portal/JobTailorPanel';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
 import { getProgramBySlug } from '@/lib/content/programs';
 import ReferralCopyButton from './ReferralCopyButton';
@@ -74,6 +75,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         id,
         status: 'live',
         AND: [
+          ACTIVE_EMPLOYER_JOB_WHERE,
           {
             OR: [
               { expiresAt: null },
@@ -102,6 +104,7 @@ async function getJob(id: string) {
         id,
         status: 'live',
         AND: [
+          ACTIVE_EMPLOYER_JOB_WHERE,
           {
             OR: [
               { expiresAt: null },

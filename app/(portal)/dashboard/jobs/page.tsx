@@ -21,6 +21,7 @@ import { displayJobLocation, isActiveApplicationStatus } from '@/lib/member/jobP
 import { buildExternalJobBoards, buildExternalJobSearchQuery } from '@/lib/member/externalJobSearchQuery';
 import type { CareerMatchResult } from '@/lib/onet/types';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -173,6 +174,7 @@ export default async function JobsPage({
       where: {
         status: 'live',
         AND: [
+          ACTIVE_EMPLOYER_JOB_WHERE,
           ...(ageGroup === 'under14' ? [{ id: 'impossible-match' }] : []),
           ...(ageGroup === 'youth14to17' ? [{
             youthAppropriate: true,
@@ -275,6 +277,7 @@ export default async function JobsPage({
         studentId: user!.id,
         job: {
           status: 'live',
+          AND: [ACTIVE_EMPLOYER_JOB_WHERE],
           OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
         },
       },

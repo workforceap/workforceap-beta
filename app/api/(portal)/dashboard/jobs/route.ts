@@ -6,6 +6,7 @@ import { handleApiError } from '@/lib/api/errors';
 import { isExcludedPublicEmployerName, isExcludedPublicJobTitle } from '@/lib/jobs/publicJobFilters';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
 import { getCacheOrFetch } from '@/lib/cache';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 
 /** Public jobs listing - only live jobs for students */
 async function _GET(request: NextRequest) {
@@ -87,6 +88,7 @@ async function _GET(request: NextRequest) {
     const where: Prisma.JobWhereInput = {
       status: 'live',
       AND: [
+        ACTIVE_EMPLOYER_JOB_WHERE,
         ...andConditions,
         {
           OR: [

@@ -9,6 +9,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { invalidateJobListings } from '@/lib/jobs/listingCache';
 
 export const POST = withApiGuc(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
@@ -61,6 +62,10 @@ export const POST = withApiGuc(async (request: NextRequest, { params }: { params
         select: { id: true, status: true, companyName: true, contactEmail: true, contactName: true },
       }),
     );
+
+    // Its jobs stay `live` but members no longer see them; drop the cached
+    // member job list so they disappear now, not after the cache TTL.
+    await invalidateJobListings().catch(() => {});
 
     // Best-effort rejection email via `after()` so Vercel does not freeze early.
     if (employer.contactEmail) {
