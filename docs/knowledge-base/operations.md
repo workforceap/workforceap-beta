@@ -7,7 +7,7 @@ This reference describes the checked-in operating paths reviewed on 2026-09-12. 
 | Task | Start here |
 | --- | --- |
 | Run a local checkout | [Install and development](#install-and-development) |
-| Diagnose a failing PR | [Checks and CI](#checks-and-ci), [CI workflow](../../.github/workflows/ci-gate.yml#L24) |
+| Diagnose a failing PR | [Checks and CI](#checks-and-ci), [CI workflow](../../.github/workflows/ci-gate.yml#L29) |
 | Prepare a preview or production release | [Build routing](#build-routing), [Supabase scoping](../STAGING_ENV.md) |
 | Investigate migration or rollback trouble | [Database and rollback](#database-and-rollback) |
 | Investigate missed scheduled work | [Scheduled work](#scheduled-work), [cron registry](../../lib/admin/cronRegistry.ts) |
@@ -16,7 +16,7 @@ This reference describes the checked-in operating paths reviewed on 2026-09-12. 
 
 ## Install and development
 
-The root is a Next.js application; `marketing/` is a separate Astro package whose output is included in the Vercel build. Root [package.json](../../package.json#L5) selects `pnpm@10.34.3`; [CI uses Node 22](../../.github/workflows/ci-gate.yml#L57). The root has no `engines` declaration. Use the CI major and the selected package manager when reproducing a failure. Marketing uses its own [package-lock.json](../../marketing/package-lock.json), React 18 and Astro; the root uses [pnpm-lock.yaml](../../pnpm-lock.yaml), React 19 and Next. A root install does not install marketing dependencies.
+The root is a Next.js application; `marketing/` is a separate Astro package whose output is included in the Vercel build. Root [package.json](../../package.json#L5) selects `pnpm@10.34.3`; [CI uses Node 22](../../.github/workflows/ci-gate.yml#L65). The root has no `engines` declaration. Use the CI major and the selected package manager when reproducing a failure. Marketing uses its own [package-lock.json](../../marketing/package-lock.json), React 18 and Astro; the root uses [pnpm-lock.yaml](../../pnpm-lock.yaml), React 19 and Next. A root install does not install marketing dependencies.
 
 ```bash
 # From the repository root; installs run the Prisma generation postinstall.

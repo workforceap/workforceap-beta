@@ -11,6 +11,11 @@ on:
 # so a later merge never cancels an earlier master run halfway (before WAP-200,
 # 21 of the last 30 master runs were cancelled and left those commits with no
 # verdict).
+# Read-only by default; the four gate jobs add `actions: write` for the
+# fail-fast cancel step.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -47,6 +52,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -155,6 +163,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -227,6 +238,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -314,6 +328,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -461,6 +478,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

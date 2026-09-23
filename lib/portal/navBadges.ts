@@ -23,13 +23,19 @@ export async function getNavBadgeCountsForUser(
   userId: string
 ): Promise<NavBadgeCounts> {
   if (role === 'admin') {
+    // `?role=admin` is a query parameter any signed-in account can send, so
+    // every admin count sits behind one gate (WAP-199): an admin of the
+    // actor's own org, or a super-admin. Everyone else gets an empty set,
+    // like the employer / partner / counselor branches with no portal context.
+    const orgId = await getActorOrganizationId(userId);
+    if (!(await isAdminInOrg(userId, orgId))) return {};
     // Admin gets the agent-inbox count, tenant-scoped to their org so the
     // badge number matches what they'll actually see in /admin/agent-inbox.
     // Super-admins get the unscoped count. Defensive .catch so a query
     // failure doesn't break the whole nav.
     const scope = await resolveCascadeScope(userId).catch(() => ({ kind: 'deny' as const }));
     const milestones_awaiting_approval = await countAwaitingApprovalCascades({ scope }).catch(() => 0);
-    const applications = await countAdminApplicationsPending(userId);
+    const applications = await countAdminApplicationsPending(orgId);
     if (await isSuperAdmin(userId)) {
       const [counselor_sla_breach_48h, member_messages_unanswered] = await Promise.all([
         countThreadsWithSlaBreach(48),
@@ -79,13 +85,11 @@ export async function getNavBadgeCountsForUser(
  * actor's own organization — the same where, and so the same number, as
  * "waiting on your decision" on the admin Today (lib/admin/adminApprovalQueue.ts).
  * Scoped to the actor's org for super-admins too, like the workbench it opens.
- * Only an admin of that org (or a super-admin) gets it: `?role=admin` is a
- * query parameter anyone signed in can send. A failed count throws, so the
- * route answers 503 instead of a false zero.
+ * The caller has already checked the actor is an admin of `orgId` (or a
+ * super-admin). A failed count throws, so the route answers 503 instead of a
+ * false zero.
  */
-async function countAdminApplicationsPending(userId: string): Promise<Pick<NavBadgeCounts, 'admin_applications_pending'>> {
-  const orgId = await getActorOrganizationId(userId);
-  if (!(await isAdminInOrg(userId, orgId))) return {};
+async function countAdminApplicationsPending(orgId: string): Promise<Pick<NavBadgeCounts, 'admin_applications_pending'>> {
   const admin_applications_pending = await prisma.application.count({ where: adminApplicationsAwaitingDecisionWhere(orgId) });
   return { admin_applications_pending };
 }
