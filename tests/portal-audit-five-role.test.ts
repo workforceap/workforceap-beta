@@ -855,7 +855,6 @@ describe('portal row quality signals', () => {
     for (const relativePath of [
       ['components', 'admin', 'AdminDataLoadError.tsx'],
       ['components', 'error', 'RouteErrorFallback.tsx'],
-      ['components', 'error', 'DashboardErrorFallback.tsx'],
       ['components', 'portal', 'PortalRouteFallback.tsx'],
     ]) {
       const source = readFileSync(join(process.cwd(), ...relativePath), 'utf8');

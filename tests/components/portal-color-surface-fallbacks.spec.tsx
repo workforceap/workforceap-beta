@@ -81,7 +81,6 @@ import AdminCronsClient from '@/components/admin/AdminCronsClient';
 import AdminEmployersPage from '@/app/admin/employers/page';
 import MemberFeedbackModal from '@/components/portal/MemberFeedbackModal';
 import DeleteAccountButton from '@/components/portal/DeleteAccountButton';
-import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
 import AdminMemberQuickSummary from '@/components/admin/AdminMemberQuickSummary';
 import Footer from '@/components/Footer';
 import RouteErrorFallback from '@/components/error/RouteErrorFallback';
@@ -344,8 +343,8 @@ const PORTAL_CHAIN_SHEETS = [
 const ROOT_CHAIN_SHEETS = ['css/main.css', 'css/marketing.css', 'css/marketing-depth.css', 'css/marketing-a11y.css', 'css/astryx-brand-bridge.css'];
 /** CSS modules that border from the token family (PortalShell role switcher; the root-layout cookie banner). */
 const BORDER_MODULE_SHEETS = ['components/portal/PortalRoleSwitcher.module.css', 'components/CookieConsentBanner.module.css'];
-/** CSS modules on the portal chain that fill from the tonal scale (member dashboard hero, coach chat, insight card). */
-const SURFACE_MODULE_SHEETS = ['components/portal/CoachChat.module.css', 'components/portal/TodayHero.module.css', 'components/portal/ProactiveInsightCard.module.css'];
+/** CSS modules on the portal chain that fill from the tonal scale (coach chat; the legacy home's hero and insight card went with it, WAP-195). */
+const SURFACE_MODULE_SHEETS = ['components/portal/CoachChat.module.css'];
 
 /** The root layout chain: css/main.css keeps dark defaults on :root and light overrides on html:not(.dark). */
 function rootChainTokens(scheme: 'light' | 'dark'): Map<string, string> {
@@ -847,16 +846,6 @@ describe('inline surface-container fills read the token bare (portal chain)', ()
     fireEvent.click(screen.getByRole('button', { name: /delete/i }));
     const card = screen.getByRole('heading', { name: 'Delete account permanently?' }).parentElement as HTMLElement;
     expect(backgroundOf(card), 'delete confirm card').toBe('var(--surface-container-low)');
-    expectNoLiteralTokenFallback(container);
-    expectNoLegacyName(container);
-  });
-
-  it('MemberFirstCertProgressBar track paints --surface-container-high', () => {
-    const { container } = render(
-      <MemberFirstCertProgressBar progress={{ percent: 40, stageLabel: 'Midway', isComplete: false, stepsComplete: 2, stepsTotal: 5 }} />,
-    );
-    const track = screen.getByRole('progressbar');
-    expect(backgroundOf(track), 'progress track').toBe('var(--surface-container-high)');
     expectNoLiteralTokenFallback(container);
     expectNoLegacyName(container);
   });
