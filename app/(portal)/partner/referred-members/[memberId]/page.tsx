@@ -25,6 +25,7 @@ import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAs
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { eventNameReadCandidates } from '@/lib/events/names';
+import { partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
 
 type Props = {
   params: Promise<{ memberId: string }>;
@@ -123,10 +124,13 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
   if (!member) notFound();
 
   const [recentEvents, outreachLogs, placementConfirmations] = await Promise.all([
+    // Partner-visible milestone events only (Vision C3, privacy §3.3); the
+    // metadata column is never read.
     prisma.memberEvent.findMany({
-      where: { userId: memberId },
+      where: { userId: memberId, eventName: { in: partnerVisibleEventNames() } },
       orderBy: { createdAt: 'desc' },
       take: 8,
+      select: { id: true, eventName: true, createdAt: true },
     }),
     prisma.partnerOutreachLog.findMany({
       where: { partnerId: ctx.partnerId, memberId },
@@ -204,7 +208,11 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
   const outreachCount = outreachLogs.length;
   const placed = !!member.placementRecord;
   const pendingPlacement = placementConfirmations[0] ?? null;
-  const recentEvent = recentEvents[0] ?? null;
+  const recentActivity = recentEvents.flatMap((event) => {
+    const label = partnerEventLabel(event.eventName);
+    return label ? [{ id: event.id, label, createdAt: event.createdAt }] : [];
+  });
+  const recentEvent = recentActivity[0] ?? null;
   const memberStatus = placed ? 'Placed' : pendingPlacement ? 'Offer reported — review pending' : progressPct >= 80 ? 'Course-complete' : 'In training';
 
   const lastCertAt = member.userCertifications[0]?.earnedAt ?? null;
@@ -254,13 +262,6 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
       done: !!(member.placementRecord?.retentionStatus || member.placementRecord?.retentionDecision),
     },
   ];
-
-  function formatEventLabel(event: (typeof recentEvents)[number]) {
-    if (event.metadata && typeof event.metadata === 'object' && event.metadata !== null && 'label' in event.metadata) {
-      return `${event.eventName} — ${String((event.metadata as { label?: string }).label)}`;
-    }
-    return event.eventName;
-  }
 
   return (
     <PortalPageFrame>
@@ -468,13 +469,13 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
 
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
               {sectionHeading('Recent activity')}
-              {recentEvents.length === 0 ? (
+              {recentActivity.length === 0 ? (
                 <p style={{ color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0' }}>No recent member activity recorded yet.</p>
               ) : (
                 <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
-                  {recentEvents.map((event) => (
+                  {recentActivity.map((event) => (
                     <div key={event.id} style={{ padding: '0.8rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}>
-                      <p style={{ margin: 0, fontWeight: 700 }}>{formatEventLabel(event)}</p>
+                      <p style={{ margin: 0, fontWeight: 700 }}>{event.label}</p>
                       <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{formatDateTime(event.createdAt)}</p>
                     </div>
                   ))}
@@ -512,7 +513,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Latest activity</p>
-                  <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{recentEvent ? formatEventLabel(recentEvent) : '—'}</p>
+                  <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{recentEvent ? recentEvent.label : '—'}</p>
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Latest outreach</p>

@@ -1,0 +1,73 @@
+import { describe, expect, it } from 'vitest';
+
+import { LEGACY_EVENT_NAME_ALIASES, isEventName } from '@/lib/events/names';
+import { PARTNER_MILESTONE_EVENT_NAMES } from '@/lib/partner/milestoneEvents';
+import {
+  PARTNER_VISIBLE_EVENTS,
+  partnerEventLabel,
+  partnerVisibleEventNames,
+} from '@/lib/partner/partnerVisibleEvents';
+
+/**
+ * Vision C3: a referring partner sees enrollment status, progress and
+ * outcomes (privacy §3.3), never behavioural or staff events, and never the
+ * free-form metadata an event writer attached.
+ */
+describe('partner-visible event allowlist', () => {
+  it('only contains taxonomy event names', () => {
+    for (const key of Object.keys(PARTNER_VISIBLE_EVENTS)) {
+      expect(isEventName(key), key).toBe(true);
+    }
+  });
+
+  it('labels exactly the milestone list the rail badge counts', () => {
+    expect(Object.keys(PARTNER_VISIBLE_EVENTS).sort()).toEqual([...PARTNER_MILESTONE_EVENT_NAMES].sort());
+  });
+
+  it('labels an allowlisted event in plain language, not its raw name', () => {
+    expect(partnerEventLabel('program_enrolled')).toBe('Enrolled in a program');
+    expect(partnerEventLabel('course_completed')).toBe('Completed a course');
+    expect(partnerEventLabel('program_completed')).toBe('Completed program training');
+    for (const key of Object.keys(PARTNER_VISIBLE_EVENTS)) {
+      const label = partnerEventLabel(key);
+      expect(label, key).toBeTruthy();
+      expect(label).not.toContain('_');
+    }
+  });
+
+  it.each([
+    'member_logged_in',
+    'ai_tool_run_started',
+    'feedback_submitted',
+    'counselor_followup_needed',
+    'counselor_nudge_sent',
+    'application_denied',
+    'first90_check_in_submitted',
+    'inactive_nudge_sent',
+    'account_deleted',
+    'LOGIN',
+    'constructor',
+    '__proto__',
+    '',
+  ])('hides %s from partners', (name) => {
+    expect(partnerEventLabel(name)).toBeNull();
+  });
+
+  it('resolves legacy spellings of an allowlisted event to the same label', () => {
+    expect(partnerEventLabel('PLACEMENT_CONFIRMATION_SUBMITTED')).toBe(
+      partnerEventLabel('placement_confirmation_submitted'),
+    );
+    expect(partnerEventLabel('PLACEMENT_CONFIRMATION_SUBMITTED')).not.toBeNull();
+  });
+
+  it('queries every stored spelling of the allowlist and nothing else', () => {
+    const names = partnerVisibleEventNames();
+    for (const key of Object.keys(PARTNER_VISIBLE_EVENTS)) expect(names).toContain(key);
+    for (const [alias, canonical] of Object.entries(LEGACY_EVENT_NAME_ALIASES)) {
+      if (canonical in PARTNER_VISIBLE_EVENTS) expect(names).toContain(alias);
+      else expect(names).not.toContain(alias);
+    }
+    for (const name of names) expect(partnerEventLabel(name), name).not.toBeNull();
+    expect(names).not.toContain('member_logged_in');
+  });
+});
