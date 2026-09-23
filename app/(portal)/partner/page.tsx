@@ -39,6 +39,7 @@ import PendingApprovalBanner from '@/components/partner/PendingApprovalBanner';
 import PartnerConnectPayoutButton from '@/components/partner/PartnerConnectPayoutButton';
 import { getPartnerPlacementPayoutUsd, isPartnerPlacementPayoutRateConfigured } from '@/lib/partner/partnerPayout';
 import { countUnpaidVerifiedPlacements } from '@/lib/partner/unpaidVerifiedPlacements';
+import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import { isReferralPartner } from '@/lib/partner/partnerType';
 import { buildPartnerReferralBadge, isOutcomesSocialProofEnabled } from '@/lib/outcomes/socialProof';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
@@ -202,6 +203,7 @@ export default async function PartnerDashboardPage({
       recentReferrals,
       payoutEvents,
       pendingPlacementCount,
+      attentionCount,
     ] = await Promise.all([
         prisma.partnerReferral.count({
           where: {
@@ -272,6 +274,12 @@ export default async function PartnerDashboardPage({
           },
         }),
         prisma.memberEvent.count({ where: pendingPlacementWhere }),
+        // The rail badge's number (one aggregate query). A failure is unknown,
+        // not zero, so the card says so instead of "no one" (WAP-215).
+        countPartnerAttention(ctx.partnerId, ctx.partner.organizationId).catch((err: unknown) => {
+          console.error('[partner overview] attention count failed', err);
+          return null;
+        }),
       ]);
 
     const placementRate =
@@ -464,9 +472,13 @@ export default async function PartnerDashboardPage({
           <PartnerReferralFunnel stages={funnelStages} />
 
           <PartnerAttentionCard
-            title={t('nextActionReviewProgress')}
-            body={t('nextActionReviewProgressTip')}
-            href="/partner/referred-members"
+            title={
+              attentionCount === null
+                ? t('nextActionAttentionUnavailable')
+                : t('nextActionAttention', { count: attentionCount })
+            }
+            body={attentionCount === null ? t('nextActionAttentionUnavailableTip') : t('nextActionAttentionTip')}
+            href="/partner/attention"
           />
 
           <PartnerAssistantAccordion title={t('partnerAssistant')} hint="(tap to open)">

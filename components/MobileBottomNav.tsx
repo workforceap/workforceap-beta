@@ -42,9 +42,11 @@ const COUNSELOR_TABS = [
 const PARTNER_TABS = [
   { href: '/partner', labelKey: 'partner.overview', icon: 'dashboard' },
   { href: '/partner/referred-members', labelKey: 'partner.members', icon: 'groups' },
+  // Attention, not Outcomes (WAP-215): the phone tabs lead with who needs a
+  // check-in, like the rail badge; Milestones already covers placements.
+  { href: '/partner/attention', labelKey: 'partner.attention', icon: 'error' },
   { href: '/partner/messages', labelKey: 'partner.messages', icon: 'chat' },
   { href: '/partner/milestones', labelKey: 'partner.milestones', icon: 'flag' },
-  { href: '/partner/outcomes', labelKey: 'partner.outcomes', icon: 'bar_chart' },
 ];
 
 type BottomTab = {
