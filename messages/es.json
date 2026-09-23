@@ -91,6 +91,7 @@
       "partner": {
         "overview": "Resumen",
         "members": "Miembros",
+        "attention": "Atención",
         "messages": "Mensajes",
         "milestones": "Hitos",
         "outcomes": "Resultados"
@@ -1550,6 +1551,10 @@
     "nextActionCelebrateTip": "Tus referencias están consiguiendo empleos. Mantén el flujo activo.",
     "nextActionReviewProgress": "Sigue el progreso de los miembros",
     "nextActionReviewProgressTip": "Los miembros avanzan en su trayectoria — sigue sus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Nadie necesita atención ahora} =1 {1 miembro necesita atención} other {# miembros necesitan atención}}",
+    "nextActionAttentionTip": "Miembros que se estancaron o dejaron de responder. Contáctalos antes de que abandonen.",
+    "nextActionAttentionUnavailable": "No se pudo cargar quién necesita atención",
+    "nextActionAttentionUnavailableTip": "El número es desconocido, no cero. Abre la cola para verlo.",
     "assistantSpeaking": "El asistente está hablando…",
     "assistantListening": "Escuchando — haz tu pregunta",
     "referredMembersTableSubtitle": "Nombre, estado del recorrido, fechas de inscripción y colocación, y la contribución de cada miembro a tu pago estimado.",

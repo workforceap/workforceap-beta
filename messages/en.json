@@ -91,6 +91,7 @@
       "partner": {
         "overview": "Overview",
         "members": "Members",
+        "attention": "Attention",
         "messages": "Messages",
         "milestones": "Milestones",
         "outcomes": "Outcomes"
@@ -1550,6 +1551,10 @@
     "nextActionCelebrateTip": "Your referrals are landing jobs. Keep the pipeline full.",
     "nextActionReviewProgress": "Track member progress",
     "nextActionReviewProgressTip": "Members are moving through their journey — follow their outcomes.",
+    "nextActionAttention": "{count, plural, =0 {No one needs attention right now} =1 {1 member needs attention} other {# members need attention}}",
+    "nextActionAttentionTip": "Members who stalled or went quiet. Check in before they drop off.",
+    "nextActionAttentionUnavailable": "Couldn't load who needs attention",
+    "nextActionAttentionUnavailableTip": "The count is unknown, not zero. Open the queue to see it.",
     "assistantSpeaking": "Assistant is speaking…",
     "assistantListening": "Listening — ask your question",
     "referredMembersTableSubtitle": "Name, journey status, enrollment and placement dates, and each member's contribution to your estimated payout.",

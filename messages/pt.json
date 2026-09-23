@@ -90,6 +90,7 @@
       "partner": {
         "overview": "Visão Geral",
         "members": "Membros",
+        "attention": "Atenção",
         "messages": "Mensagens",
         "milestones": "Marcos",
         "outcomes": "Resultados"
@@ -1495,6 +1496,10 @@
     "nextActionCelebrateTip": "Suas indicações estão resultando em empregos. Mantenha o pipeline cheio.",
     "nextActionReviewProgress": "Acompanhe o progresso dos membros",
     "nextActionReviewProgressTip": "Os membros estão avançando na jornada — acompanhe seus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Ninguém precisa de atenção agora} =1 {1 membro precisa de atenção} other {# membros precisam de atenção}}",
+    "nextActionAttentionTip": "Membros que pararam ou ficaram em silêncio. Entre em contato antes que desistam.",
+    "nextActionAttentionUnavailable": "Não foi possível carregar quem precisa de atenção",
+    "nextActionAttentionUnavailableTip": "O número é desconhecido, não zero. Abra a fila para vê-lo.",
     "partnerInsights": "Insights do parceiro",
     "assistantSpeaking": "O assistente está falando…",
     "assistantListening": "Ouvindo — faça sua pergunta",
