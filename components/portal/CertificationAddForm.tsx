@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useState, useRef } from 'react';
+import { useId, useLayoutEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Plus, X } from 'lucide-react';
 import { useAnnounce } from '@/components/portal/kit/hooks/useAnnounce';
@@ -119,10 +119,12 @@ export default function CertificationAddForm() {
   const announce = useAnnounce();
 
   // The submit button unmounts with the form on save; land on the next action
-  // instead of <body>.
-  useEffect(() => {
-    if (result) addAnotherRef.current?.focus();
-  }, [result]);
+  // instead of <body>. Keyed on `open` too and run at commit (WAP-236): if the
+  // commit that sets `result` lands before the form closes, the button is not
+  // mounted yet, and an effect on `result` alone would never run again.
+  useLayoutEffect(() => {
+    if (result && !open) addAnotherRef.current?.focus();
+  }, [result, open]);
 
   const finalName = certName === 'Other' ? customName.trim() : certName.trim();
 

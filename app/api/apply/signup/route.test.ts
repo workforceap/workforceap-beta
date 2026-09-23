@@ -1441,3 +1441,24 @@ describe('POST /api/apply/signup email lifetime', () => {
     expect(sendNewApplicationAdminEmail).toHaveBeenCalledTimes(1);
   });
 });
+
+// WAP-240: the response says whether the awaited receipt went out, so the
+// confirmation page retries only a failed send instead of emailing twice.
+describe('POST /api/apply/signup receiptSent', () => {
+  beforeEach(resetState);
+
+  it('reports receiptSent: true when the awaited receipt send succeeded', async () => {
+    vi.mocked(sendApplicationConfirmationEmail).mockResolvedValueOnce({ ok: true } as never);
+    const res = await POST(makeRequest());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ success: true, receiptSent: true });
+  });
+
+  it('reports receiptSent: false, and still creates the account, when the send failed', async () => {
+    vi.mocked(sendApplicationConfirmationEmail).mockResolvedValueOnce({ ok: false, error: 'resend down' } as never);
+    const res = await POST(makeRequest());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ success: true, receiptSent: false });
+    expect(state.applicationCreates).toHaveLength(1);
+  });
+});
