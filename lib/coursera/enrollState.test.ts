@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   EnrollStateError,
+  COURSERA_ROSTER_INCOMPLETE_VIEW,
+  enrollFailureView,
   runEnrollStateMachine,
   type B4BPort,
   type EnrollStateInput,
@@ -227,4 +229,37 @@ test('membership 400 "already a member" tolerated → falls through to enroll', 
   const result = await runEnrollStateMachine(port, BASE_INPUT);
   assert.equal(result.status, 'membership-created-and-enrolled');
   assert.deepEqual(calls, ['membership', 'enroll']);
+});
+
+test('enrollFailureView: transport failure (0) and 5xx map to fixed retry copy', () => {
+  for (const httpStatus of [0, 500, 502, 503]) {
+    const view = enrollFailureView({ step: 'enroll', httpStatus });
+    assert.equal(view.code, 'COURSERA_UNAVAILABLE');
+    assert.equal(view.step, 'enroll');
+    assert.match(view.error, /try again/i);
+  }
+});
+
+test('enrollFailureView: 4xx maps to fixed counselor copy that never claims staff were notified', () => {
+  for (const step of ['invite', 'membership', 'enroll'] as const) {
+    for (const httpStatus of [400, 403, 404, 422]) {
+      const view = enrollFailureView({ step, httpStatus });
+      assert.equal(view.code, 'COURSERA_ENROLL_REJECTED');
+      assert.equal(view.step, step);
+      assert.match(view.error, /counselor/i);
+      assert.doesNotMatch(view.error, /notified|alerted|we've told|we have told/i);
+    }
+  }
+});
+
+test('enrollFailureView: copy is fixed and independent of provider error text', () => {
+  const err = new EnrollStateError({ step: 'invite', httpStatus: 403, message: 'secret provider detail', events: [] });
+  const view = enrollFailureView({ step: err.step, httpStatus: err.httpStatus });
+  assert.doesNotMatch(JSON.stringify(view), /secret provider detail|\[enroll-state\]/);
+});
+
+test('COURSERA_ROSTER_INCOMPLETE_VIEW: says no invitation was sent and to retry later', () => {
+  assert.equal(COURSERA_ROSTER_INCOMPLETE_VIEW.code, 'COURSERA_ROSTER_INCOMPLETE');
+  assert.match(COURSERA_ROSTER_INCOMPLETE_VIEW.error, /no invitation was sent/i);
+  assert.match(COURSERA_ROSTER_INCOMPLETE_VIEW.error, /try again in a few minutes/i);
 });

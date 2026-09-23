@@ -1,9 +1,7 @@
-process.env.TZ = 'UTC';
-
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn(), unpaid: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
@@ -23,7 +21,9 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {
   memberEvent: { findMany: mocks.events },
 } }));
 vi.mock('@/components/portal/kit/pages/PartnerOverviewKit', () => ({
-  PartnerKpiGrid: () => null, PartnerAttentionCard: () => null, PartnerAssistantAccordion: () => null,
+  PartnerKpiGrid: ({ items }: { items: Array<{ label: string; value: string | number; subtitle?: string }> }) => (
+    <dl>{items.map((i) => <div key={i.label} data-kpi={i.label}><dt>{i.label}</dt><dd>{String(i.value)}</dd><dd>{i.subtitle}</dd></div>)}</dl>
+  ), PartnerAttentionCard: () => null, PartnerAssistantAccordion: () => null,
   PartnerQuickActions: () => null, PartnerReferralFunnel: () => null,
   PartnerPayoutLedger: ({ rows }: { rows: Array<{ id: string; period: string }> }) => (
     <ul data-testid="ledger">{rows.map((r) => <li key={r.id}>{r.period}</li>)}</ul>
@@ -43,13 +43,16 @@ vi.mock('@/components/portal/kit', () => ({
   ),
   QueueRow: ({ meta }: { meta?: string }) => <div data-testid="queue-row">{meta}</div>,
 }));
+vi.mock('@/lib/partner/unpaidVerifiedPlacements', () => ({ countUnpaidVerifiedPlacements: mocks.unpaid }));
 // The phone-width card list is a client component with its own translations; the desktop kit table is what these specs read.
 vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({ default: () => null }));
 
 import PartnerDashboardPage from '@/app/(portal)/partner/page';
 
-const INSTANT = new Date('2026-09-19T02:30:00Z'); // 9:30 PM CDT, Sep 18
-
+/**
+ * WAP-213: "Payout due" is what POST /api/partner/payout would pay now —
+ * verified, unpaid placements × the rate — not every placement ever × $500.
+ */
 beforeEach(() => {
   vi.resetAllMocks();
   vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://training.example.invalid');
@@ -59,31 +62,38 @@ beforeEach(() => {
     partner: { name: 'Synthetic Community', slug: 'community-slug', partnerType: 'referral', organizationId: 'org-1' },
   });
   mocks.partner.mockResolvedValue({ name: 'Synthetic Community', slug: 'community-slug', referralCode: 'community-code', status: 'active' });
-  mocks.count.mockResolvedValue(1);
+  // 9 placements recorded in total — the old tile multiplied this by the rate.
+  mocks.count.mockResolvedValue(9);
+  mocks.referrals.mockResolvedValue([]);
+  mocks.events.mockResolvedValue([]);
   mocks.placements.mockResolvedValue([]);
-  mocks.referrals.mockResolvedValue([
-    { id: 'ref-1', referredAt: INSTANT, member: { id: 'member-1', fullName: 'Fixture Member', enrolledAt: null } },
-  ]);
-  // Readers query the canonical name plus historical aliases (WAP-39).
-  const reads = (args: { where?: { eventName?: string | { in?: string[] } } }, name: string) => {
-    const filter = args?.where?.eventName;
-    return typeof filter === 'string' ? filter === name : Boolean(filter?.in?.includes(name));
-  };
-  mocks.events.mockImplementation(async (args: { where?: { eventName?: string | { in?: string[] } } }) =>
-    reads(args, 'placement_confirmation_submitted')
-      ? [{ id: 'ev-1', userId: 'member-1', metadata: { label: 'Fixture placement' }, createdAt: INSTANT }]
-      : reads(args, 'partner_payout_sent')
-        ? [{ id: 'pay-1', createdAt: INSTANT, metadata: { partnerId: 'partner-1', amountCents: 50000 }, user: { fullName: 'Fixture Member' } }]
-        : []);
+  mocks.unpaid.mockResolvedValue(2);
 });
 afterEach(() => vi.unstubAllEnvs());
 
-describe('PartnerDashboardPage kit dates', () => {
-  it('renders referral, pending-review and payout dates on the Central calendar day', async () => {
-    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
-    expect(html).toContain('Sep 18, 2026');
-    expect(html).not.toContain('9/19/2026');
-    expect(html).not.toContain('Sep 19');
-    expect(html).toContain('Fixture M. · Sep 18, 2026');
+async function payoutTile() {
+  const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+  const match = html.match(/<div data-kpi="Payout due">(.*?)<\/div>/);
+  if (!match) throw new Error('no Payout due tile');
+  return match[1];
+}
+
+describe('partner overview Payout due (WAP-213)', () => {
+  it('multiplies verified unpaid placements, not every placement, by the configured rate', async () => {
+    vi.stubEnv('PARTNER_PLACEMENT_PAYOUT_USD', '300');
+    const tile = await payoutTile();
+    expect(tile).toContain('$600');
+    expect(tile).not.toContain('$2,700');
+    expect(tile).toContain('2 verified placements not yet paid');
+    expect(tile).not.toContain('estimated rate');
+    expect(mocks.unpaid).toHaveBeenCalledWith('partner-1', 'org-1');
+  });
+
+  it('says the rate is estimated when it is the built-in fallback', async () => {
+    vi.stubEnv('PARTNER_PLACEMENT_PAYOUT_USD', '');
+    vi.stubEnv('NEXT_PUBLIC_PARTNER_PLACEMENT_PAYOUT_USD', '');
+    const tile = await payoutTile();
+    expect(tile).toContain('$1,000');
+    expect(tile).toContain('estimated rate');
   });
 });

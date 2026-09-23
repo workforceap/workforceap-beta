@@ -4060,6 +4060,17 @@
         "body": "Something went wrong fetching the queue. Try again.",
         "action": "Retry"
       },
+      "overviewUnavailable": {
+        "countsTitle": "Some caseload counts couldn't load",
+        "countsBody": "A tile showing — is unknown, not zero. Try again; if this keeps happening, tell an admin.",
+        "tileCaption": "Couldn't load",
+        "queueTitle": "Couldn't load who needs you",
+        "queueBody": "The list did not answer, so this is not an empty queue. Try again; if this keeps happening, tell an admin.",
+        "queueSecondary": "Open Today",
+        "sessions": "Couldn't load recent interview practice.",
+        "breakdown": "Couldn't load the caseload breakdown.",
+        "action": "Try again"
+      },
       "inbox": {
         "title": "No members assigned yet",
         "body": "Conversations appear here once an admin assigns members to you.",
