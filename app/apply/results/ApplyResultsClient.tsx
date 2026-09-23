@@ -16,6 +16,7 @@ import { trackApplyFunnel } from '@/lib/analytics/events';
 
 const FYP_RESULTS_KEY = 'find_your_path_results';
 const EMPTY_PROGRAMS: string[] = [];
+const MAX_PICKS = 3;
 
 type CareerMatchPayload = {
   version?: number;
@@ -63,6 +64,12 @@ export default function ApplyResultsClient({
   const continuedRef = useRef(false);
   const qualifiesRef = useRef<boolean | null>(null);
   const selectedSlugsRef = useRef<string[]>([]);
+  const firstCardRef = useRef<HTMLDivElement>(null);
+  // The "select a program" message is only an error once the applicant has
+  // tried to continue; before that it is a plain hint.
+  const [attemptedContinue, setAttemptedContinue] = useState(false);
+  // Polite announcement when a pick is refused because three are chosen.
+  const [limitNotice, setLimitNotice] = useState('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -148,9 +155,11 @@ export default function ApplyResultsClient({
 
   const [shareCopied, setShareCopied] = useState(false);
   const handleShareLink = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('program', selectedSlugs.join(','));
-    navigator.clipboard.writeText(url.toString()).then(() => {
+    // The recipient has no saved eligibility, so send them to the start of the
+    // application with the first choice pre-selected (/apply forwards a single
+    // ?program= to this step).
+    const url = window.location.origin + localizeHref('/apply?program=' + encodeURIComponent(selectedSlugs[0]), locale);
+    navigator.clipboard.writeText(url).then(() => {
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2000);
     });
@@ -159,6 +168,8 @@ export default function ApplyResultsClient({
   const handleContinue = () => {
     if (selectedSlugs.length === 0) {
       trackApplyFunnel(2, 'program_continue_blocked');
+      setAttemptedContinue(true);
+      firstCardRef.current?.focus();
       return;
     }
     if (!saveSelectedPrograms(selectedSlugs, eligibility)) {
@@ -199,6 +210,13 @@ export default function ApplyResultsClient({
       return 0;
     });
   }, [quizRecommendedSlugs, programParam, isSchool, schoolProgramSlugs]);
+
+  const pickProgram = (slug: string) => {
+    const atLimit = !selectedSlugs.includes(slug) && selectedSlugs.length >= MAX_PICKS;
+    setLimitNotice(atLimit ? t(qualifies ? 'resultsHintQualifies' : 'resultsHintNonQual') : '');
+    if (atLimit) return;
+    setSelectedSlugs((prev) => toggleSlug(prev, slug, MAX_PICKS));
+  };
 
   const rankLabel = (slug: string) => {
     const i = selectedSlugs.indexOf(slug);
@@ -316,20 +334,21 @@ export default function ApplyResultsClient({
             marginBottom: '1.5rem',
           }}
         >
-          {programsOrdered.map((p: Program) => {
+          {programsOrdered.map((p: Program, index: number) => {
             const rank = rankLabel(p.slug);
             const selected = rank !== null;
             return (
               <div
                 key={p.slug}
+                ref={index === 0 ? firstCardRef : undefined}
                 className="apply-results-program-card"
-                onClick={() => setSelectedSlugs((prev) => toggleSlug(prev, p.slug, 3))}
+                onClick={() => pickProgram(p.slug)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    setSelectedSlugs((prev) => toggleSlug(prev, p.slug, 3));
+                    pickProgram(p.slug);
                   }
                 }}
                 aria-pressed={selected}
@@ -406,13 +425,32 @@ export default function ApplyResultsClient({
           })}
         </div>
 
-        {selectedSlugs.length === 0 && (
-          <p className="apply-continue-hint" role="alert">
-            {t('resultsSelectProgramError')}
-          </p>
-        )}
+        <p
+          className={limitNotice ? 'apply-continue-hint' : undefined}
+          role="status"
+          aria-live="polite"
+          style={limitNotice ? { marginBottom: '0.75rem' } : { margin: 0 }}
+        >
+          {limitNotice}
+        </p>
 
-        <button type="button" className="btn btn-primary" disabled={selectedSlugs.length === 0} onClick={handleContinue}>
+        {selectedSlugs.length === 0 &&
+          (attemptedContinue ? (
+            <p id="apply-results-continue-hint" className="apply-continue-hint" role="alert">
+              {t('resultsSelectProgramError')}
+            </p>
+          ) : (
+            <p id="apply-results-continue-hint" className="apply-continue-hint">
+              {t('resultsSelectProgramError')}
+            </p>
+          ))}
+
+        <button
+          type="button"
+          className="btn btn-primary"
+          aria-describedby={selectedSlugs.length === 0 ? 'apply-results-continue-hint' : undefined}
+          onClick={handleContinue}
+        >
           {t('resultsContinueAccount')}
         </button>
         <button
