@@ -30,6 +30,12 @@ interface TourContextValue {
   start: (tourKey: string) => boolean;
   /** Dismiss: closes and persists DISMISSED with the step the person left on. */
   endTour: () => void;
+  /**
+   * Close without recording anything (WAP-228): the tour's anchors exist but
+   * none is reachable here (e.g. every nav row sits in the closed phone
+   * drawer), so the tour should still run on a device where they are visible.
+   */
+  abandonTour: () => void;
   completeTour: () => Promise<void>;
   nextStep: () => void;
   prevStep: () => void;
@@ -49,6 +55,7 @@ function noopTourValue(): TourContextValue {
     startTour: () => {},
     start: () => false,
     endTour: () => {},
+    abandonTour: () => {},
     completeTour: async () => {},
     nextStep: () => {},
     prevStep: () => {},
@@ -217,12 +224,13 @@ export function TourProvider({ children }: TourProviderProps) {
       startTour,
       start,
       endTour,
+      abandonTour: close,
       completeTour,
       nextStep,
       prevStep,
       goToStep,
     }),
-    [isOpen, currentStep, steps, portal, tourKey, startTour, start, endTour, completeTour, nextStep, prevStep, goToStep],
+    [isOpen, currentStep, steps, portal, tourKey, startTour, start, endTour, close, completeTour, nextStep, prevStep, goToStep],
   );
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
