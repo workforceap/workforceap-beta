@@ -674,15 +674,17 @@ export function MemberHomeKit({
         {/* Post-offer surfaces, each only when it applies: confirm an accepted
             offer (writes a member-reported placement and alerts the
             counselor), then the First 90 Days check-in (a trouble report
-            escalates to the counselor). Both call their own server actions. */}
+            escalates to the counselor). Both call their own server actions.
+            The kit variant drops their legacy gutter so they sit flush in
+            this column like the kit cards around them. */}
         {jobOffers.length > 0 ? (
           <ErrorBoundary>
-            <PlacementConfirmationStrip offers={jobOffers} />
+            <PlacementConfirmationStrip offers={jobOffers} variant="kit" />
           </ErrorBoundary>
         ) : null}
         {first90 ? (
           <ErrorBoundary>
-            <First90DaysCard {...first90} />
+            <First90DaysCard {...first90} variant="kit" />
           </ErrorBoundary>
         ) : null}
 

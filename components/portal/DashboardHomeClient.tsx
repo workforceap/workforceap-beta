@@ -290,7 +290,13 @@ export default function DashboardHomeClient({
 
   return (
     <div className="portal-member-dashboard-home">
-      {age !== null && age < 18 ? <YouthDashboardNotice age={age} /> : null}
+      {/* The notice is a kit card with no outer margin (the kit home spaces it);
+          this column has no gap, so the legacy 2rem stays at the call site. */}
+      {age !== null && age < 18 ? (
+        <div style={{ marginBottom: '2rem' }}>
+          <YouthDashboardNotice age={age} />
+        </div>
+      ) : null}
 
       {showFirstValuePanel && firstValueActions.length > 0 ? (
         <MemberFirstValuePanel

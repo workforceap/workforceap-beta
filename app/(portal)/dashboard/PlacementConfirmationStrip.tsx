@@ -35,7 +35,19 @@ const ACKNOWLEDGEMENT: Record<PlacementOutcome, { heading: string; body: string;
   },
 };
 
-export default function PlacementConfirmationStrip({ offers }: { offers: any[] }) {
+type PlacementConfirmationStripProps = {
+  offers: any[];
+  /**
+   * Where the strip sits. `legacy` (the default, `?ui=legacy` home) keeps its
+   * own 1.25rem gutter and bottom margin. `kit` drops both: the kit home's
+   * column already sets the inline edge and the gap between cards
+   * (`wa-space-y-6`), so the offer card lines up with the kit cards around it
+   * and stacked offers keep 1rem between them without a trailing margin.
+   */
+  variant?: 'legacy' | 'kit';
+};
+
+export default function PlacementConfirmationStrip({ offers, variant = 'legacy' }: PlacementConfirmationStripProps) {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [acknowledged, setAcknowledged] = useState<Record<string, PlacementOutcome>>({});
   const [dismissed, setDismissed] = useState<Record<string, boolean>>({});
@@ -62,18 +74,24 @@ export default function PlacementConfirmationStrip({ offers }: { offers: any[] }
     setLoading(prev => ({ ...prev, [offerId]: false }));
   };
 
+  // Legacy spaces stacked cards with a bottom margin; the kit section's grid gap does it instead.
+  const cardMarginBottom = variant === 'kit' ? undefined : '1rem';
+
   const handleDismiss = (offerId: string) => {
     setDismissed(prev => ({ ...prev, [offerId]: true }));
   };
 
   return (
-    <section style={{ padding: '0 1.25rem', marginBottom: '1.25rem' }} aria-live="polite">
+    <section
+      style={variant === 'kit' ? { display: 'grid', gap: '1rem' } : { padding: '0 1.25rem', marginBottom: '1.25rem' }}
+      aria-live="polite"
+    >
       {activeOffers.map(offer => {
         const outcome = acknowledged[offer.id];
         if (outcome) {
           const ack = ACKNOWLEDGEMENT[outcome];
           return (
-            <div key={offer.id} role="status" style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--wa-success-dark)', boxShadow: '0 6px 24px color-mix(in srgb, var(--wa-success) 30%, transparent)', marginBottom: '1rem' }}>
+            <div key={offer.id} role="status" style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--wa-success-dark)', boxShadow: '0 6px 24px color-mix(in srgb, var(--wa-success) 30%, transparent)', marginBottom: cardMarginBottom }}>
               <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                 <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-success)', fontVariationSettings: "'FILL' 1", flexShrink: 0 }} aria-hidden>{ack.icon}</span>
                 <div>
@@ -87,7 +105,7 @@ export default function PlacementConfirmationStrip({ offers }: { offers: any[] }
           );
         }
         return (
-        <div key={offer.id} style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--wa-success-dark)', boxShadow: '0 6px 24px color-mix(in srgb, var(--wa-success) 30%, transparent)', marginBottom: '1rem' }}>
+        <div key={offer.id} style={{ borderRadius: '1rem', overflow: 'hidden', background: 'var(--wa-success-dark)', boxShadow: '0 6px 24px color-mix(in srgb, var(--wa-success) 30%, transparent)', marginBottom: cardMarginBottom }}>
           <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>

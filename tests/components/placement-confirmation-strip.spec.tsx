@@ -69,4 +69,26 @@ describe('PlacementConfirmationStrip tells the member what the confirmation did'
     expect(styles).toContain('background: var(--wa-success-dark)');
     expect((styles.match(/var\(--wa-on-success\)/g) ?? []).length).toBeGreaterThanOrEqual(3);
   });
+
+  it('legacy (default) keeps its own gutter; kit sits flush in the kit column and spaces stacked offers with a gap', () => {
+    const offers = [{ id: 'o1', company: 'Acme' }, { id: 'o2', company: 'Beta' }];
+    const legacy = render(<Strip offers={offers} />);
+    const legacySection = legacy.container.querySelector('section') as HTMLElement;
+    expect(legacySection.style.padding).toBe('0px 1.25rem');
+    expect(legacySection.style.marginBottom).toBe('1.25rem');
+    for (const card of Array.from(legacySection.children) as HTMLElement[]) expect(card.style.marginBottom).toBe('1rem');
+    legacy.unmount();
+
+    // WAP-188: on the kit home the column (wa-space-y-6) owns the inline edge and the gap to its neighbours.
+    const kit = render(<Strip offers={offers} variant="kit" />);
+    const kitSection = kit.container.querySelector('section') as HTMLElement;
+    expect(kitSection.style.padding).toBe('');
+    expect(kitSection.style.margin).toBe('');
+    expect(kitSection.style.marginBottom).toBe('');
+    expect(kitSection.style.display).toBe('grid');
+    expect(kitSection.style.gap).toBe('1rem');
+    const cards = Array.from(kitSection.children) as HTMLElement[];
+    expect(cards).toHaveLength(2);
+    for (const card of cards) expect(card.style.marginBottom).toBe('');
+  });
 });

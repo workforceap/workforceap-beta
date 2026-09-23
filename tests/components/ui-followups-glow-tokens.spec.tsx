@@ -62,6 +62,8 @@ vi.mock('@elevenlabs/client', () => ({ Conversation: { startSession: vi.fn() } }
 // and /find-your-path (whose funnel tracker is mocked).
 vi.mock('@/lib/db/prisma', () => ({ prisma: { memberEvent: { findMany: vi.fn(async () => []) } } }));
 vi.mock('@/lib/analytics/events', () => ({ trackFunnelEvent: vi.fn() }));
+// §3e renders the First 90 Days card, whose check-in server action is never called here.
+vi.mock('@/app/(portal)/dashboard/first90DaysAction', () => ({ submitFirst90DaysCheckIn: vi.fn() }));
 
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
 import VoiceCoachLauncherCard from '@/components/portal/VoiceCoachLauncherCard';
@@ -82,6 +84,7 @@ import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
 import MotivatingRecapClient from '@/app/(portal)/dashboard/weekly-recap/MotivatingRecapClient';
 import FindYourPathClient from '@/app/(decision-journey)/find-your-path/FindYourPathClient';
 import SessionsIndexBody from '@/components/portal/sessions/SessionsIndexBody';
+import First90DaysCard from '@/components/portal/First90DaysCard';
 
 const SCHEMES: readonly Scheme[] = ['light', 'dark'];
 const AA = 4.5;
@@ -697,6 +700,54 @@ describe('the leftover accent shadow / gradient literals are color-mixes of --co
       expect(shadow).toBe('0 8px 24px color-mix(in srgb, var(--color-accent) 12%, transparent)');
       expectAccentTint(shadow.slice('0 8px 24px '.length), 12, 'walk-in shadow');
       expectNoLiteralShadows(container, `${scheme} sessions index`);
+    });
+  }
+
+  // WAP-188: the First 90 Days card now renders on the kit member home, not only ?ui=legacy. Its icon
+  // tile, current-stage chip and supervisor-script quotes carried the seeded crimson as
+  // rgba(173,44,77, .14 / .1 / .3 / .35 / .05), and the done tick and "thanks" box a constant green
+  // (var(--color-green, #4a9b4f), rgba(74,155,79, .08 / .2)). The tints now follow the org accent and
+  // the success tone. (Its text still reads the legacy --color-* chain; the kit-card restyle is a follow-up.)
+  const first90 = (currentStageResponse: 'going_well' | null) => (
+    <NextIntlClientProvider locale="en" messages={en}>
+      <First90DaysCard stage="day_30" daysSincePlacement={20} employerName="Acme Health" currentStageResponse={currentStageResponse} completedStages={['week_1']} variant="kit" />
+    </NextIntlClientProvider>
+  );
+  const styleProp = (el: Element, prop: string) =>
+    (el.getAttribute('style') ?? '').match(new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`))?.[1]?.trim() ?? '';
+
+  for (const scheme of SCHEMES) {
+    it(`${scheme}: First90DaysCard tints --color-accent (was rgba(173,44,77, …)) and --wa-success (was #4a9b4f / rgba(74,155,79, …))`, () => {
+      const { container, unmount } = renderIn(scheme, first90(null));
+      const styles = Array.from(container.querySelectorAll<HTMLElement>('[style]')).map((el) => el.getAttribute('style') ?? '');
+      expect(styles.length).toBeGreaterThan(5);
+      for (const style of styles) expectNoLiteral(style, `${scheme} first 90 "${style}"`);
+
+      const tile = container.querySelector('section span[aria-hidden]') as HTMLElement;
+      expectAccentTint(styleProp(tile, 'background'), 14, 'first 90 icon tile');
+
+      const chips = screen.getAllByRole('listitem');
+      const current = chips.find((li) => li.textContent?.includes('Day 30')) as HTMLElement;
+      expectAccentTint(styleProp(current, 'background'), 10, 'first 90 current-stage chip');
+      expect(styleProp(current, 'border')).toBe('1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)');
+      const doneTick = chips.find((li) => li.textContent?.includes('Week 1'))?.querySelector('span') as HTMLElement;
+      expect(styleProp(doneTick, 'color')).toBe('var(--wa-success)');
+      expectTokensResolve(styleProp(doneTick, 'color'), scheme, 'first 90 done tick');
+
+      const quotes = Array.from(container.querySelectorAll('blockquote'));
+      expect(quotes).toHaveLength(2);
+      for (const quote of quotes) {
+        expectAccentTint(styleProp(quote, 'background'), 5, 'first 90 script quote');
+        expect(styleProp(quote, 'border-left')).toBe('3px solid color-mix(in srgb, var(--color-accent) 35%, transparent)');
+      }
+      unmount();
+
+      const thanks = renderIn(scheme, first90('going_well'));
+      const box = screen.getByText(en.first90.thanks.going_well).parentElement as HTMLElement;
+      expect(styleProp(box, 'background')).toBe('color-mix(in srgb, var(--wa-success) 8%, transparent)');
+      expect(styleProp(box, 'border')).toBe('1px solid color-mix(in srgb, var(--wa-success) 20%, transparent)');
+      expectTokensResolve(styleProp(box, 'background'), scheme, 'first 90 thanks box');
+      for (const el of Array.from(thanks.container.querySelectorAll<HTMLElement>('[style]'))) expectNoLiteral(el.getAttribute('style') ?? '', `${scheme} first 90 thanks`);
     });
   }
 });

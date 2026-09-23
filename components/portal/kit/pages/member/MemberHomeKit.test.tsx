@@ -228,12 +228,20 @@ describe('MemberHomeKit pieces moved over from the legacy home', () => {
     expect(screen.getByRole('button', { name: /notify my team/ })).toBeTruthy();
     const hero = screen.getByRole('link', { name: /Start preassessment/ });
     expect(hero.compareDocumentPosition(question) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Flush in the kit column: no legacy 1.25rem gutter or trailing margin on the strip or its card.
+    const strip = question.closest('section') as HTMLElement;
+    expect(strip.style.padding).toBe('');
+    expect(strip.style.marginBottom).toBe('');
+    expect((strip.firstElementChild as HTMLElement).style.marginBottom).toBe('');
   });
 
   it('shows the First 90 Days check-in for a placed member', () => {
     renderKit(<MemberHomeKit {...base} first90={first90} />);
     expect(screen.getByText('Your new job at Acme Health')).toBeTruthy();
     expect(screen.getByText("How's the job going?")).toBeTruthy();
+    // Flush in the kit column: no legacy 1rem / 1.25rem section padding.
+    const card = screen.getByRole('region', { name: 'First 90 Days' });
+    expect(card.style.padding).toBe('');
   });
 
   it('shows the youth notice for a member under 18', () => {
