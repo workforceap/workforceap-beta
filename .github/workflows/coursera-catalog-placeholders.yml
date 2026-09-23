@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [master]
     types: [opened, synchronize, reopened, edited]
+  # Merge queue (WAP-201): report on the queue commit too, so this check can
+  # be required without stalling the queue.
+  merge_group:
 
 jobs:
   check-placeholders:

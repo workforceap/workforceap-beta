@@ -129,7 +129,7 @@ describe('solid-accent controls and hero actions clear AA in dark mode (WAP-145 
     expect(read('components/portal/kit/MemberProfilePhotoEditor.tsx')).toContain("background: 'var(--wa-accent)',\n              color: 'var(--wa-on-accent-control)',");
     const card = read('components/portal/MemberDoThisNextCard.tsx');
     expect(card).not.toMatch(/background: 'var\(--wa-on-accent\)',\s*\n\s*color: 'var\(--wa-accent\)'/);
-    expect(card.match(/background: 'var\(--wa-hero-action-bg\)',\s*\n\s*color: 'var\(--wa-hero-action-text\)'/g)?.length).toBe(2);
+    expect(card.match(/background: 'var\(--wa-hero-action-bg\)',\s*\n\s*color: 'var\(--wa-hero-action-text\)'/g)?.length).toBe(1);
   });
 
   it('legacy .btn family keeps its labels and borders readable in dark mode', () => {

@@ -12,6 +12,7 @@ import { updateCoachMemory, type CoachTurn } from '@/lib/coach/memory';
 import { getVoiceCoachTranscriptRecipients, sendVoiceCoachTranscriptEmail } from '@/lib/email';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { checkAIToolRateLimit } from '@/lib/rate-limit';
 
 const MAX_HISTORY_CHARS = 16000;
 
@@ -71,9 +72,14 @@ function buildHistoryOutput(transcript: ResumeTranscriptTurn[], suggestions: Arr
         role: turn.speaker === 'agent' ? 'agent' : 'user',
         text: turn.text,
       }));
-      void updateCoachMemory({ userId: user.id, recentTurns: coachTranscript }).catch((err) => {
-        console.error('[parse-suggestions] coach memory update failed:', err);
-      });
+      // The memory update is a paid model call on every POST. Meter it in its own
+      // bucket so it never spends the member's AI tool quota; skip it when over.
+      const lim = await checkAIToolRateLimit(`coach-memory:${user.id}`).catch(() => ({ success: false }));
+      if (lim.success) {
+        void updateCoachMemory({ userId: user.id, recentTurns: coachTranscript }).catch((err) => {
+          console.error('[parse-suggestions] coach memory update failed:', err);
+        });
+      }
 
       try {
         const dbUser = await prisma.$transaction((tx) => tx.user.findUnique({

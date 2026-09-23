@@ -27,7 +27,7 @@ const LINKS = [
   {
     href: '/en/dashboard',
     title: 'C — v2 is now the DEFAULT (login)',
-    body: 'The kit is live by default on the portal — no flag needed. Sign in: demo-member@workforceap.org / Demo2026! · Old UI: add ?ui=legacy.',
+    body: 'The kit is live by default on the portal — no flag needed. Sign in: demo-member@workforceap.org / Demo2026! · The member home has no old UI any more (?ui=legacy redirects to it).',
     cta: 'Open the live dashboard',
   },
 ] as const;
@@ -45,7 +45,7 @@ export default function DevComparePage() {
       </h1>
       <p style={{ color: '#555', lineHeight: 1.5, marginBottom: 28 }}>
         v2 is now the default across the portal on this preview (member, admin, employer, partner, counselor).
-        The legacy UI stays reachable per page via <code>?ui=legacy</code>. Full write-up: <code>docs/PORTAL_UI_DECISION_MOCKUP.md</code>
+        Some staff pages keep their legacy UI behind <code>?ui=legacy</code>; the member home does not. Full write-up: <code>docs/PORTAL_UI_DECISION_MOCKUP.md</code>
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
