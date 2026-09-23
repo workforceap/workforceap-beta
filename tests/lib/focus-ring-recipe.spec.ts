@@ -157,8 +157,6 @@ describe('focus ring recipe — portal CSS modules and inline styles', () => {
       'CounselorMessagesInboxClient.module.css',
       'InterestProfilerClient.module.css',
       'MemberLabWorkspace.module.css',
-      'ProactiveInsightCard.module.css',
-      'TodayHero.module.css',
       'WioaQualificationClient.module.css',
     ]) {
       expect(modules).toContain(rel);

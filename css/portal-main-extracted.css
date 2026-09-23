@@ -125,39 +125,6 @@
 .job-readiness-breakdown li { margin-bottom: 0.25rem; }
 .job-readiness-breakdown li.done { color: var(--color-green); }
 
-/* Goals module */
-.goals-module {
-    background: var(--color-light);
-    padding: 1.5rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-gray-200);
-}
-.goals-module-title { font-size: 1rem; margin: 0 0 1rem; font-weight: 600; }
-.goals-list { list-style: none; padding: 0; margin: 0 0 1rem; }
-.goals-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--color-gray-200);
-}
-.goals-item:last-child { border-bottom: none; }
-.goals-item-content { display: flex; gap: 0.5rem; align-items: center; }
-.goals-item-title { font-weight: 500; }
-.goals-item-progress { font-size: 0.85rem; color: var(--color-on-surface-variant); }
-.goals-empty { font-size: 0.9rem; color: var(--color-on-surface-variant); margin-bottom: 1rem; }
-.goals-form { margin-top: 0.5rem; }
-.goals-form .form-select, .goals-form .form-input {
-    display: block;
-    width: 100%;
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
-    border: 1px solid var(--color-gray-300);
-    border-radius: var(--radius-sm);
-}
-.goals-form-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-.goals-hint { font-size: 0.85rem; color: var(--color-on-surface-variant); margin-top: 0.5rem; }
-
 /* Resource progress */
 .resource-progress-summary, .weekly-recap-preview {
     background: var(--color-light);

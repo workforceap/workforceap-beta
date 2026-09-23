@@ -361,7 +361,7 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `AppShellMember` (+ `AppShellSidebar` from `kit/AppShellSidebar`) | shell chrome (member tabs / dense sidebar) |
 | `UniversalSearch` (`kit/UniversalSearch`, not in the barrel) | global search affordance |
 | `GuidedTour` | guided-tour engine: spotlight ring + step popover over `[data-tour]` anchors, steps from `lib/tours/registry.ts` through `TourContext`, copy from the `tours` i18n namespace, chrome on `--wa-*` and `--z-tour`. Not in the barrel (it depends on `components/onboarding/TourContext`) — import `@/components/portal/kit/GuidedTour` directly; `TourProviderWrapper` already mounts it for every portal. Reopen a tour from the header `PortalHelpMenu`; offer it once with `TourOfferStrip`. |
-| `MemberDashboardKit` | composed member dashboard |
+| `MemberHomeKit` (`kit/pages/member/MemberHomeKit`, not in the barrel) | the member home at `/dashboard`, its one implementation (fed by `lib/member/loadMemberDashboardHome.ts`; the old `MemberDashboardKit` and the `?ui=legacy` home were removed in WAP-195) |
 
 `ChatThread` accepts an optional editable `initialText` and `multiline` composer
 for server-validated context such as a course feedback request. It never sends

@@ -65,10 +65,10 @@ describe('buildReadinessProgressView', () => {
       expect(action?.ctaLabel).toBe('Open Learning Hub');
     }
 
-    // Goals are set in GoalsModule, which only the legacy home's learning tab
-    // renders (MemberHomeKit's goalsHref points at the same anchor).
+    // Goals are set in GoalsModule on the career brief (MemberHomeKit's
+    // goalsHref points at the same anchor), never through ?ui=legacy.
     const goals = buildReadinessProgressView(only('setGoals')).priorityAction;
-    expect(goals?.href).toBe('/dashboard?ui=legacy&tab=learning#goals');
+    expect(goals?.href).toBe('/dashboard/career-brief#goals');
     expect(goals?.ctaLabel).toBe('Set goals');
   });
 

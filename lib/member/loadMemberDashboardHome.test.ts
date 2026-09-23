@@ -665,18 +665,20 @@ test('loadMemberDashboardHome names the next incomplete course when NBA rows are
   assert.ok(view.nextLesson && view.nextLesson.length > 0);
 });
 
-test('kit-default dashboard page calls the loader and has no prisma. on that branch', () => {
+test('the dashboard page (one implementation since WAP-195) calls the loader and nothing fat', () => {
+  // The whole page is the kit home now, so the whole file is the block that
+  // must stay lean: every read goes through loadMemberDashboardHome (plus the
+  // approval-wait estimate), never a direct prisma read, B4B or getMemberState.
   const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
-  const kitStart = src.indexOf("if (args.requestedUi !== 'legacy')");
-  const legacyStart = src.indexOf('await loadMemberCareerBriefBundleSafe');
-  assert.ok(kitStart > 0, 'kit branch missing');
-  assert.ok(legacyStart > kitStart, 'legacy branch missing');
-  const kitBlock = src.slice(kitStart, legacyStart);
-  assert.match(kitBlock, /loadMemberDashboardHome/);
-  assert.doesNotMatch(kitBlock, /prisma\./);
-  assert.doesNotMatch(kitBlock, /maybeAutoSyncCourseraOnDashboard/);
-  assert.doesNotMatch(kitBlock, /fetchLearnerProgressFromB4B/);
-  assert.doesNotMatch(kitBlock, /getMemberState/);
+  assert.match(src, /await loadMemberDashboardHome\(/);
+  assert.doesNotMatch(src, /prisma\./);
+  assert.doesNotMatch(src, /from '@\/lib\/db\/prisma'/);
+  assert.doesNotMatch(src, /maybeAutoSyncCourseraOnDashboard/);
+  assert.doesNotMatch(src, /fetchLearnerProgressFromB4B/);
+  assert.doesNotMatch(src, /getMemberState/);
+  assert.doesNotMatch(src, /loadMemberCareerBriefBundleSafe/);
+  assert.doesNotMatch(src, /requestedUi|'legacy'/, 'no ?ui=legacy branch may come back');
+  assert.doesNotMatch(src, /export const maxDuration/, 'the 60s ceiling was only for the retired legacy fan-out');
 });
 
 

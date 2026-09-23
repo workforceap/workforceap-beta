@@ -810,54 +810,6 @@ html.dark [data-surface] .astryx-card,
 }
 
 /* ── Member dashboard (home) — gutters, empty states, loading ── */
-.portal-member-dashboard-home {
-  max-width: 1200px;
-  margin: 0 auto;
-  --portal-dash-inline: clamp(1.125rem, 3.6vw, 2rem);
-}
-
-.portal-dash-inset {
-  padding-left: var(--portal-dash-inline);
-  padding-right: var(--portal-dash-inline);
-}
-
-.portal-member-dashboard-home > .portal-bento-grid {
-  padding-left: var(--portal-dash-inline);
-  padding-right: var(--portal-dash-inline);
-}
-
-.portal-dash-header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--outline-variant) 55%, transparent);
-}
-
-@media (max-width: 640px) {
-  .portal-dash-header {
-    margin-bottom: 1.25rem;
-    padding-bottom: 1rem;
-  }
-}
-
-.portal-dashboard-help-strip {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  margin-left: var(--portal-dash-inline);
-  margin-right: var(--portal-dash-inline);
-  margin-bottom: 1.5rem;
-  padding: 1.125rem 1.375rem;
-  border-radius: var(--radius-xl, 16px);
-  border: 1px solid color-mix(in srgb, var(--outline-variant) 58%, transparent);
-  background: linear-gradient(
-    180deg,
-    var(--surface-container-lowest) 0%,
-    color-mix(in srgb, var(--surface-container-low) 40%, var(--surface-container-lowest)) 100%
-  );
-  box-shadow: 0 4px 20px rgba(17, 24, 39, 0.045);
-}
-
 .portal-member-dashboard-mobile {
   --portal-dash-gutter: clamp(1rem, 4.2vw, 1.375rem);
 }
@@ -1684,24 +1636,6 @@ html.dark .employer-applications-table.admin-table thead th {
    High-touch card variants, metric strip, bento
    ============================================= */
 
-/* ── Bento Grid (dashboard home layout) ── */
-.portal-bento-grid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 2rem;
-}
-
-@media (max-width: 900px) {
-  .portal-bento-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  .portal-bento-grid > * {
-    grid-column: span 1 !important;
-  }
-}
-
 /* ── Premium Portal Cards ── */
 
 /* Elevated card — subtle lift + stronger shadow */
@@ -2001,19 +1935,6 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 /* ── Quick-Action Item Grid ── */
-.portal-quick-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.625rem;
-}
-
-@media (max-width: 640px) {
-  .portal-quick-actions-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
-}
-
 .portal-quick-action-item {
   display: flex;
   align-items: flex-start;
@@ -2226,83 +2147,6 @@ html.dark .employer-applications-table.admin-table thead th {
   justify-content: center;
 }
 
-/* ── Journey timeline (mobile) ── */
-.portal-journey-timeline {
-  position: relative;
-  margin-left: 0.75rem;
-}
-
-.portal-journey-timeline::before {
-  content: "";
-  position: absolute;
-  left: 0.6875rem;
-  top: 0.75rem;
-  bottom: 0.75rem;
-  width: 2px;
-  background: linear-gradient(
-    to bottom,
-    var(--color-accent) 0%,
-    var(--surface-container-high) 100%
-  );
-  border-radius: 2px;
-}
-
-.portal-journey-step {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 1.125rem;
-  padding-bottom: 1.5rem;
-}
-
-.portal-journey-step__dot {
-  position: relative;
-  z-index: 10;
-  width: 1.375rem;
-  height: 1.375rem;
-  border-radius: 9999px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.portal-journey-step__dot--done {
-  background: var(--color-accent);
-}
-
-.portal-journey-step__dot--active {
-  background: var(--surface-container-lowest);
-  border: 2.5px solid var(--color-accent);
-}
-
-.portal-journey-step__dot--locked {
-  background: var(--surface-container-high);
-  border: 1.5px solid var(--outline-variant);
-}
-
-.portal-journey-step__content {
-  padding-top: 0.125rem;
-}
-
-.portal-journey-step__label {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--color-on-surface);
-  line-height: 1.3;
-  margin: 0 0 0.2rem;
-}
-
-.portal-journey-step__label--active {
-  color: var(--wa-accent-text);
-}
-
-.portal-journey-step__detail {
-  font-size: 0.875rem;
-  color: var(--color-on-surface-variant);
-  margin: 0;
-}
-
 /* ── Horizontal scroll card row ── */
 .portal-card-scroll-row {
   display: flex;
@@ -2345,58 +2189,6 @@ html.dark .employer-applications-table.admin-table thead th {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-}
-
-/* ── 2x2 Quick Action Grid (mobile) ── */
-.portal-quick-grid-2x2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.portal-quick-grid-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem 0.75rem;
-  background: var(--surface-container-lowest);
-  border-radius: 0.875rem;
-  border: 1px solid color-mix(in srgb, var(--outline-variant) 45%, transparent);
-  text-decoration: none;
-  transition:
-    transform 0.12s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-@media (hover: hover) {
-  .portal-quick-grid-item:hover {
-    border-color: color-mix(in srgb, var(--color-accent) 20%, var(--outline-variant));
-    box-shadow: 0 4px 16px rgba(17, 24, 39, 0.06);
-  }
-}
-.portal-quick-grid-item:active {
-  transform: scale(0.96);
-}
-
-.portal-quick-grid-item__icon {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.625rem;
-  background: rgba(173, 44, 77, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--wa-accent-text);
-}
-
-.portal-quick-grid-item__label {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--color-on-surface);
-  text-align: center;
-  letter-spacing: -0.01em;
 }
 
 /* ── Activity item (AI tools recent) ── */
@@ -2542,31 +2334,6 @@ html.dark .employer-applications-table.admin-table thead th {
   border-bottom: none;
 }
 
-/* ── Milestone dot track (horizontal) ── */
-.portal-milestone-track {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-}
-
-.portal-milestone-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 60px;
-}
-
-.portal-milestone-step__label {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  text-align: center;
-  margin-top: 0.375rem;
-}
-
 /* ── Section heading with border accent ── */
 .portal-heading-with-bar {
   display: flex;
@@ -2614,14 +2381,6 @@ html.dark .employer-applications-table.admin-table thead th {
   50% {
     opacity: 0.5;
   }
-}
-
-.portal-journey-step__dot--active .portal-dot-pulse {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 9999px;
-  background: var(--color-accent);
-  animation: portal-pulse 2s ease-in-out infinite;
 }
 
 /* Gradient hero backdrops for action cards */
