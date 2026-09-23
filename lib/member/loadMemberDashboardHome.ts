@@ -1085,11 +1085,10 @@ function shapeHome(args: {
     if (!at) return latest;
     return !latest || at.getTime() > latest.getTime() ? at : latest;
   }, null);
-  // The same baseline the member program page uses for
-  // `isTrainingStaleForCounselorEscalation`: the later of enrolment and
-  // finishing the preassessment, and only once both are true. Using the
-  // program-enrolment date alone would call a member stale on their first day
-  // of actually being able to start, and would disagree with that page.
+  // Baseline (`trainingEligibleSince`): the later of enrolment and finishing
+  // the preassessment, and only once both are true. Using the program-enrolment
+  // date alone would call a member stale on their first day of actually being
+  // able to start.
   const courseProgressStale = isTrainingActivityStale({
     lastActivityAt: lastTrainingActivityAt,
     eligibleSince: trainingEligibleSince({

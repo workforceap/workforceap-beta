@@ -42,4 +42,23 @@ describe('MemberProgressTimeline', () => {
     // stage line and the "Total:" line carry a day count, hence getAllByText.
     expect(screen.getAllByText(/2d/).length).toBeGreaterThanOrEqual(1);
   });
+  // C05: the placement stage carries a verification note from the staff
+  // placement record ("Start date not yet verified").
+  it('renders a stage note under the date', () => {
+    const events = [
+      {
+        stage: 'placement' as const,
+        label: 'Placement',
+        date: '2026-09-15T16:00:00Z',
+        durationDays: null,
+        status: 'completed' as const,
+        note: 'Start date not yet verified',
+      },
+    ];
+
+    const { container } = render(<MemberProgressTimeline events={events} />);
+    expect(screen.getByText('Start date not yet verified')).toBeInTheDocument();
+    const stage = container.querySelector('[data-timeline-stage="placement"]');
+    expect(stage?.getAttribute('data-timeline-status')).toBe('completed');
+  });
 });
