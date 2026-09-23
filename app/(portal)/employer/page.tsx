@@ -168,6 +168,7 @@ export default async function EmployerDashboardPage({
           interviews={kitInterviews}
           hires={kitHired}
           candidates={kitCandidates}
+          candidatesTotal={kitTotalCandidates}
           openRolesList={kitOpenRolesRows}
         />
       </>
