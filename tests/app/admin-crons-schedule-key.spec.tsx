@@ -65,8 +65,8 @@ import AdminCronsPage from '@/app/admin/crons/page';
 
 /**
  * The jobName each scheduled route records today (the first argument of its
- * `withCronLogging(...)` call), by vercel.json path. process-retries is not
- * wrapped in withCronLogging, so it never appears on this board.
+ * `withCronLogging(...)` call), by vercel.json path. The webhook retry job
+ * lives outside /api/cron and is checked on its own below.
  */
 const RECORDED_JOB_NAME_BY_PATH: Record<string, string> = {
   '/api/cron/applicant-followup': 'cron_applicant_followup',
@@ -140,6 +140,11 @@ describe('/admin/crons schedule key (X03)', () => {
     expect(board.get('cron_wioa_report')).toBe('Monthly on the 1st, 2:31 PM UTC');
     expect(board.get('cron_applicant_followup')).toBe('Every 3 days from the 1st of the month, 11:07 AM UTC');
     expect(board.get('data_cleanup')).toBe('Daily 7:30 AM UTC');
+  });
+
+  it('shows the webhook retry job with its 10-minute schedule (X03 part 2)', async () => {
+    const board = await renderBoard(['cron_webhook_process_retries']);
+    expect(board.get('cron_webhook_process_retries')).toBe('Every 10 minutes');
   });
 
   it('still renders "—" for a job name no schedule is declared for', async () => {

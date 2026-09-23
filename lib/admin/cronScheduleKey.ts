@@ -54,8 +54,8 @@ export const CRON_JOB_NAME_BY_PATH: Readonly<Record<string, string | null>> = {
   '/api/cron/weekly-recap': 'cron_weekly_recap',
   '/api/cron/weekly-recap-email': 'cron_weekly_recap_email',
   '/api/cron/wioa-report': 'cron_wioa_report',
-  // Not wrapped in withCronLogging: records no CronExecution rows.
-  '/api/admin/webhooks/process-retries': null,
+  // Outside /api/cron: GET is withCronLogging('cron_webhook_process_retries').
+  '/api/admin/webhooks/process-retries': 'cron_webhook_process_retries',
 };
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
