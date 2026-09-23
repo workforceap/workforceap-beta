@@ -1,20 +1,16 @@
 name: Authenticated Portal Smoke
 
-# WAP-204: nightly as well as on demand. The scheduled run uses the default
-# `isolated_preview` policy (the full five-role audit against the DEMO-database
-# preview), first refreshing the `preview` mirror to master and waiting for
-# Vercel to build it, because the SHA gate below refuses a stale target. A
-# failed scheduled run opens or refreshes one GitHub issue, "Nightly:
-# Authenticated Portal Smoke failing" (nightly-failure-issue.yml). Not a PR
-# check. See docs/SLO-AND-STATUS.md, "Nightly heavy suites".
+# WAP-204: nightly-ready, dispatch-only until WAP-66 lands (see `on:`). The
+# preview policies first refresh the `preview` mirror to master and wait for
+# Vercel to build it, because the SHA gate below refuses a stale target. Once
+# scheduled, a scheduled run uses the default `isolated_preview` policy and a
+# failure opens or refreshes one GitHub issue, "Nightly: Authenticated Portal
+# Smoke failing" (nightly-failure-issue.yml). Not a PR check. See
+# docs/SLO-AND-STATUS.md, "Nightly heavy suites".
 
 on:
-  schedule:
-    # 07:37 UTC: off the :00 minute, after the 06:17 FORCE RLS rehearsal
-    # (force-rls-shadow.yml) and before nightly-e2e.yml. GitHub delays
-    # scheduled runs under load, sometimes by hours, so this means "nightly",
-    # not "at 07:37".
-    - cron: "37 7 * * *"
+  # Schedule gated on WAP-66 (authenticated fresh preview): once it lands, add
+  # `schedule: - cron: "37 7 * * *"` here (07:37 UTC, after the 06:17 RLS job).
   workflow_dispatch:
     inputs:
       audit_target:
@@ -30,7 +26,7 @@ on:
 permissions:
   contents: read
 
-# A scheduled run has no inputs; it runs the default isolated_preview policy.
+# A scheduled run (once enabled) has no inputs; it runs the default isolated_preview policy.
 concurrency:
   group: authenticated-portal-smoke-${{ inputs.audit_target || 'isolated_preview' }}
   cancel-in-progress: false
@@ -218,6 +214,7 @@ jobs:
           retention-days: 14
 
   # WAP-204: a failed *scheduled* run opens (or comments on) one issue.
+  # Inert until the schedule is enabled (WAP-66); dispatches never report.
   report:
     name: Nightly failure issue
     needs: [mirror, smoke]

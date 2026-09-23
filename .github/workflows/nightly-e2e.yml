@@ -2,14 +2,15 @@ name: Nightly E2E
 
 # WAP-204: the Playwright suites under tests/e2e/ ran in no scheduled lane, so
 # they ran only when someone remembered to. This runs the credential-free,
-# read-only public specs every night against production (or, on dispatch, any
-# deployed origin) with the stock Playwright Chromium, uploads the HTML report,
-# and on a failed *scheduled* run opens or refreshes one issue, "Nightly:
-# Public E2E failing" (nightly-failure-issue.yml).
+# read-only public specs against production (or any deployed origin) with the
+# stock Playwright Chromium and uploads the HTML report. It is dispatch-only
+# until WAP-66 lands (see `on:`); once scheduled, a failed scheduled run opens
+# or refreshes one issue, "Nightly: Public E2E failing"
+# (nightly-failure-issue.yml).
 #
 # Scope: page loads and navigation only. No spec in this lane signs in,
 # submits a form or creates data, which is what makes it safe to point at
-# production. Signed-in coverage runs nightly in Authenticated Portal Smoke
+# production. Signed-in coverage runs in Authenticated Portal Smoke
 # (the five-role audit) against the DEMO-database preview. Specs that create
 # accounts (for example member-signup.spec.ts) must never target production
 # and are not scheduled.
@@ -18,11 +19,8 @@ name: Nightly E2E
 # Not a PR check. See docs/SLO-AND-STATUS.md, "Nightly heavy suites".
 
 on:
-  schedule:
-    # 08:47 UTC: off the :00 minute and clear of the 06:17 FORCE RLS rehearsal
-    # and the 07:37 portal smoke (at most 55 minutes). GitHub delays
-    # scheduled runs under load, sometimes by hours, so this means "nightly".
-    - cron: "47 8 * * *"
+  # Schedule gated on WAP-66 (authenticated fresh preview): once it lands, add
+  # `schedule: - cron: "47 8 * * *"` here (08:47 UTC, after the portal smoke).
   workflow_dispatch:
     inputs:
       base_url:
