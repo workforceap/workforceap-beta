@@ -25,13 +25,15 @@ staff = dense left sidebar (+ role mobile bottom tabs).**
 ### Desktop (≥769px)
 
 `WorkspaceShell` with `portalRole="member"` renders the full `MEMBER_PORTAL_NAV_ITEMS`
-command rail. Exactly five destinations stay visible without opening a group: **Home**,
-**My program**, **Job board**, **AI Career Tools** and **Messages**. Everything else sits
+command rail. Five permanent rows stay visible without opening a group: **Home**,
+**My program**, **Job board**, **AI Career Tools** and **Messages**, plus the single
+contextual tool row on `/dashboard/ai-tools/*` pages (see below). Everything else sits
 in the disclosed **Tools & careers** (`workflows`), **Training & progress** (`insights`)
 and **Account & support** (`manage`) groups — including **My progress**
 (`/dashboard/readiness`) and **Skill missions** (`/dashboard/missions`), which live in
 Training & progress. A group opens by itself when the current route is one of its rows,
-so a member on My progress or Skill missions still sees that row, marked current. Kit
+so a member on My progress or Skill missions still sees that row, marked current. The
+collapsed 72px rail has no disclosure: it lists every row as an icon. Kit
 tokens: warm surface, ~232px rail (208 laptop / 72 collapsed), sentence-case labels,
 16px / 44px targets, `aria-current` on the most specific destination only.
 
