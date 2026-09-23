@@ -33,6 +33,7 @@ function Trigger({ tourKey, legacy }: { tourKey: string; legacy?: boolean }) {
 
 function Harness({
   tourKey = 'member.home',
+  hiddenAnchors = [],
   anchors = MEMBER_ANCHORS,
   locale = 'en',
   legacy = false,
@@ -40,6 +41,8 @@ function Harness({
 }: {
   tourKey?: string;
   anchors?: string[];
+  /** Anchors rendered inside an inert, aria-hidden container, like the closed phone drawer. */
+  hiddenAnchors?: string[];
   locale?: 'en' | 'es';
   legacy?: boolean;
   Engine?: React.ComponentType;
@@ -54,6 +57,15 @@ function Harness({
             {a}
           </div>
         ))}
+        {hiddenAnchors.length > 0 ? (
+          <aside aria-hidden="true" inert data-testid="closed-drawer">
+            {hiddenAnchors.map((a) => (
+              <a key={a} href={`/dashboard/${a}`} data-tour={a}>
+                {a}
+              </a>
+            ))}
+          </aside>
+        ) : null}
         <Engine />
       </TourProvider>
     </NextIntlClientProvider>
@@ -216,6 +228,20 @@ describe('GuidedTour (kit engine)', () => {
     expect(dialog).toHaveTextContent('Step 3 of 7');
     const spotlight = screen.getByTestId('guided-tour-spotlight');
     expect(spotlight).toHaveAttribute('aria-hidden');
+  });
+
+  it('skips steps whose anchor sits in an inert, aria-hidden container (closed phone drawer, WAP-228)', async () => {
+    open({ anchors: ['tour-account'], hiddenAnchors: ['tour-dashboard', 'tour-programs', 'tour-jobs', 'tour-ai-tools', 'tour-messages'] });
+    const dialog = await screen.findByRole('dialog');
+    await waitFor(() => expect(dialog).toHaveTextContent('Step 6 of 7'));
+    expect(screen.getByRole('heading', { level: 2 })).not.toHaveTextContent('Find a job');
+  });
+
+  it('closes without recording anything when every anchor is hidden (WAP-228)', async () => {
+    open({ anchors: [], hiddenAnchors: ['tour-dashboard', 'tour-programs', 'tour-jobs', 'tour-ai-tools', 'tour-messages', 'tour-account', 'tour-help'] });
+    await waitFor(() => expect(posted().some((p) => p.body.status === 'STARTED')).toBe(true));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(posted().some((p) => p.body.status === 'COMPLETED' || p.body.status === 'DISMISSED')).toBe(false);
   });
 
   it('completes silently when no anchor on the page matches', async () => {
