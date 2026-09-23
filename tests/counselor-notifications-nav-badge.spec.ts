@@ -13,6 +13,7 @@ const db = vi.hoisted(() => ({
   messageThreadFindMany: vi.fn(),
   notificationCount: vi.fn(),
   queryRaw: vi.fn(),
+  getSlaStatusForThreads: vi.fn(),
 }));
 
 vi.mock('next/server', () => {
@@ -54,7 +55,7 @@ vi.mock('@/lib/auth/roles', () => ({
 vi.mock('@/lib/messages/superAdminMessageQueries', () => ({
   countThreadsWithSlaBreach: vi.fn(async () => 0),
   countUnansweredMemberThreads: vi.fn(async () => 0),
-  getSlaStatusForThreads: vi.fn(async () => new Map()),
+  getSlaStatusForThreads: db.getSlaStatusForThreads,
 }));
 vi.mock('@/lib/employer/workQueue', () => ({ countEmployerQueueBadges: vi.fn(async () => ({})) }));
 vi.mock('@/lib/partner/attentionQueue', () => ({ countPartnerAttention: vi.fn(async () => 0) }));
@@ -75,6 +76,7 @@ describe('counselor Notifications rail badge', () => {
     db.messageThreadFindMany.mockResolvedValue([]);
     db.queryRaw.mockResolvedValue([]);
     db.notificationCount.mockResolvedValue(3);
+    db.getSlaStatusForThreads.mockResolvedValue(new Map());
   });
 
   it('declares the badge key on the Notifications nav item only', () => {
@@ -126,5 +128,61 @@ describe('counselor Notifications rail badge', () => {
     const response = await GET(new NextRequest('http://localhost/api/portal/nav-badges?role=counselor') as never);
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ counselor_notifications_unread: 3 });
+  });
+});
+
+/**
+ * WAP-205: the counts the counselor branch already served now reach the rail.
+ * Messages shows caseload threads with unread member messages (the inbox's own
+ * count); Today shows threads unanswered 48h+, its top attention reason.
+ */
+describe('counselor Messages and Today rail badges', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    db.notificationCount.mockResolvedValue(0);
+    db.counselorAssignmentFindMany.mockResolvedValue([{ memberId: 'member-1' }, { memberId: 'member-2' }]);
+    db.messageThreadFindMany.mockResolvedValue([
+      { id: 'thread-1', memberId: 'member-1', counselorLastReadAt: new Date() },
+      { id: 'thread-2', memberId: 'member-2', counselorLastReadAt: new Date() },
+    ]);
+    db.queryRaw.mockResolvedValue([
+      { threadId: 'thread-1', unread: 2 },
+      { threadId: 'thread-2', unread: 1 },
+    ]);
+    db.getSlaStatusForThreads.mockResolvedValue(
+      new Map([
+        ['thread-1', { breached48h: true }],
+        ['thread-2', { breached48h: false }],
+      ]),
+    );
+  });
+
+  const row = (href: string) => {
+    const item = COUNSELOR_PORTAL_NAV_ITEMS.find((entry) => entry.href === href);
+    if (!item) throw new Error(`missing counselor rail row ${href}`);
+    return item;
+  };
+
+  it('puts the unread-thread count on Messages and the 48h breach count on Today', async () => {
+    const counts = await getNavBadgeCountsForUser('counselor', 'counselor-user-1');
+    expect(badgeTotalForItem(counts, row('/counselor/messages'))).toBe(2);
+    expect(badgeTotalForItem(counts, row('/counselor/today'))).toBe(1);
+  });
+
+  it('shows no number on either row when nothing is waiting', async () => {
+    db.queryRaw.mockResolvedValue([]);
+    db.getSlaStatusForThreads.mockResolvedValue(new Map());
+    const counts = await getNavBadgeCountsForUser('counselor', 'counselor-user-1');
+    expect(badgeTotalForItem(counts, row('/counselor/messages'))).toBe(0);
+    expect(badgeTotalForItem(counts, row('/counselor/today'))).toBe(0);
+  });
+
+  it('each count lands on exactly one counselor row', () => {
+    for (const key of ['counselor_messages_unread', 'counselor_sla_breach_48h'] as const) {
+      const rows = COUNSELOR_PORTAL_NAV_ITEMS.filter((entry) => badgeTotalForItem({ [key]: 3 }, entry) > 0);
+      expect(rows.map((entry) => entry.href)).toEqual([
+        key === 'counselor_messages_unread' ? '/counselor/messages' : '/counselor/today',
+      ]);
+    }
   });
 });
