@@ -1,6 +1,20 @@
 name: Authenticated Portal Smoke
 
+# WAP-204: nightly as well as on demand. The scheduled run uses the default
+# `isolated_preview` policy (the full five-role audit against the DEMO-database
+# preview), first refreshing the `preview` mirror to master and waiting for
+# Vercel to build it, because the SHA gate below refuses a stale target. A
+# failed scheduled run opens or refreshes one GitHub issue, "Nightly:
+# Authenticated Portal Smoke failing" (nightly-failure-issue.yml). Not a PR
+# check. See docs/SLO-AND-STATUS.md, "Nightly heavy suites".
+
 on:
+  schedule:
+    # 07:37 UTC: off the :00 minute, after the 06:17 FORCE RLS rehearsal
+    # (force-rls-shadow.yml) and before nightly-e2e.yml. GitHub delays
+    # scheduled runs under load, sometimes by hours, so this means "nightly",
+    # not "at 07:37".
+    - cron: "37 7 * * *"
   workflow_dispatch:
     inputs:
       audit_target:
@@ -16,20 +30,44 @@ on:
 permissions:
   contents: read
 
+# A scheduled run has no inputs; it runs the default isolated_preview policy.
 concurrency:
-  group: authenticated-portal-smoke-${{ inputs.audit_target }}
+  group: authenticated-portal-smoke-${{ inputs.audit_target || 'isolated_preview' }}
   cancel-in-progress: false
 
 jobs:
+  # The preview policies need `preview` to serve master's exact commit. The
+  # mirror no-ops when it already does; otherwise Vercel builds one Preview.
+  mirror:
+    name: Refresh the preview mirror
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      github.ref == 'refs/heads/master' &&
+      (inputs.audit_target || 'isolated_preview') != 'production_canary'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/mirror-master-to-preview.yml
+
   smoke:
     name: Run trusted authenticated portal audit
+    needs: mirror
     # Secrets are only exposed to the canonical repository's trusted master workflow.
     # Dispatching a feature-branch copy results in a skipped job.
-    if: github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
+    # `always()` so production_canary (mirror skipped) still runs; a failed
+    # mirror stops the audit.
+    if: >-
+      always() &&
+      github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master' &&
+      (needs.mirror.result == 'success' || needs.mirror.result == 'skipped')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Up to 25 minutes waiting for the Vercel Preview build, then the audit.
+    timeout-minutes: 55
+    permissions:
+      contents: read
+      deployments: read
     env:
-      PORTAL_AUDIT_MODE: ${{ inputs.audit_target == 'hub_smoke' && 'isolated_preview' || inputs.audit_target }}
+      AUDIT_TARGET: ${{ inputs.audit_target || 'isolated_preview' }}
+      PORTAL_AUDIT_MODE: ${{ inputs.audit_target == 'hub_smoke' && 'isolated_preview' || inputs.audit_target || 'isolated_preview' }}
       PORTAL_AUDIT_SECTION: all
       PORTAL_AUDIT_OUTPUT: test-results/portal-audit-results.json
 
@@ -48,6 +86,39 @@ jobs:
           remote="$(git remote get-url origin)"
           test "$remote" = "https://github.com/workforceap/workforceap-beta" || \
             test "$remote" = "https://github.com/workforceap/workforceap-beta.git"
+
+      # Fail fast, with Vercel's own reason, when the Preview build of the
+      # mirrored commit failed, instead of timing out in the SHA gate below.
+      # A missing or still-building deployment is waited for (25 minutes).
+      - name: Wait for the Vercel Preview build of this commit
+        if: env.AUDIT_TARGET != 'production_canary'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          deadline=$(( $(date +%s) + 1500 ))
+          while :; do
+            dep="$(gh api "repos/${GITHUB_REPOSITORY}/deployments?sha=${GITHUB_SHA}&environment=Preview&per_page=20" \
+              --jq '[.[] | select(.creator.login == "vercel[bot]")] | sort_by(.created_at) | last | .id // empty')"
+            state=none
+            if [ -n "$dep" ]; then
+              state="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=1" --jq '.[0].state // "none"')"
+            fi
+            echo "Vercel Preview deployment for ${GITHUB_SHA:0:9}: ${dep:-none} (${state})"
+            case "$state" in
+              success|inactive) break ;;
+              failure|error)
+                desc="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=1" --jq '.[0].description // ""')"
+                echo "::error::Vercel's Preview build of ${GITHUB_SHA:0:9} on the preview branch failed (deployment ${dep}): ${desc}. The Preview environment for the preview branch must build before this audit can run."
+                exit 1 ;;
+            esac
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::No successful Vercel Preview deployment of ${GITHUB_SHA:0:9} after 25 minutes. Check that vercel.json's ignoreCommand still builds the preview branch."
+              exit 1
+            fi
+            sleep 20
+          done
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -74,13 +145,13 @@ jobs:
         id: verify
         shell: bash
         env:
-          PORTAL_AUDIT_TARGET_ORIGIN: ${{ inputs.audit_target == 'production_canary' && 'https://www.workforceap.org' || secrets.PREVIEW_SITE_URL }}
-          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ inputs.audit_target != 'production_canary' && secrets.PREVIEW_SITE_URL || '' }}
+          PORTAL_AUDIT_TARGET_ORIGIN: ${{ env.AUDIT_TARGET == 'production_canary' && 'https://www.workforceap.org' || secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ env.AUDIT_TARGET != 'production_canary' && secrets.PREVIEW_SITE_URL || '' }}
           PORTAL_AUDIT_TRUSTED_SHA: ${{ github.sha }}
         run: node scripts/portal-audit-health-gate.mjs
 
       - name: Run narrow member/counselor/employer hub smoke
-        if: inputs.audit_target == 'hub_smoke'
+        if: env.AUDIT_TARGET == 'hub_smoke'
         run: pnpm test:e2e:portal-hubs
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
@@ -92,7 +163,7 @@ jobs:
           E2E_EMPLOYER_PASSWORD: ${{ secrets.E2E_EMPLOYER_PASSWORD }}
 
       - name: Run full five-role isolated preview audit
-        if: inputs.audit_target == 'isolated_preview'
+        if: env.AUDIT_TARGET == 'isolated_preview'
         run: pnpm audit:portal
         env:
           PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
@@ -110,7 +181,7 @@ jobs:
           PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PORTAL_AUDIT_READ_ONLY_TOKEN }}
 
       - name: Run non-staff production canary
-        if: inputs.audit_target == 'production_canary'
+        if: env.AUDIT_TARGET == 'production_canary'
         run: pnpm audit:portal
         env:
           PLAYWRIGHT_BASE_URL: https://www.workforceap.org
@@ -127,16 +198,16 @@ jobs:
       # wrote nothing", not "the target was never reached".
       # hub_smoke uses Playwright HTML/results instead of the audit JSON artifact.
       - name: Upload current audit artifact
-        if: always() && steps.verify.outcome == 'success' && inputs.audit_target != 'hub_smoke'
+        if: always() && steps.verify.outcome == 'success' && env.AUDIT_TARGET != 'hub_smoke'
         uses: actions/upload-artifact@v4
         with:
-          name: portal-audit-results-${{ inputs.audit_target }}-${{ github.run_id }}
+          name: portal-audit-results-${{ env.AUDIT_TARGET }}-${{ github.run_id }}
           path: test-results/portal-audit-results.json
           if-no-files-found: error
           retention-days: 14
 
       - name: Upload hub smoke Playwright report
-        if: always() && steps.verify.outcome == 'success' && inputs.audit_target == 'hub_smoke'
+        if: always() && steps.verify.outcome == 'success' && env.AUDIT_TARGET == 'hub_smoke'
         uses: actions/upload-artifact@v4
         with:
           name: portal-hub-smoke-${{ github.run_id }}
@@ -145,3 +216,16 @@ jobs:
             test-results/
           if-no-files-found: ignore
           retention-days: 14
+
+  # WAP-204: a failed *scheduled* run opens (or comments on) one issue.
+  report:
+    name: Nightly failure issue
+    needs: [mirror, smoke]
+    if: always() && github.event_name == 'schedule' && github.repository == 'workforceap/workforceap-beta'
+    permissions:
+      issues: write
+    uses: ./.github/workflows/nightly-failure-issue.yml
+    with:
+      suite: Authenticated Portal Smoke
+      result: ${{ contains(needs.*.result, 'failure') && 'failure' || needs.smoke.result }}
+      detail: ${{ needs.mirror.result == 'failure' && 'refreshing the preview mirror failed' || '' }}
