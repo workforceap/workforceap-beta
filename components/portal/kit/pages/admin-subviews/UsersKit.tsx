@@ -1,12 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { KeyRound, Plus, SquarePen, Trash2, UserCog } from 'lucide-react';
 import { Button } from '@astryxdesign/core/Button';
 import { Selector } from '@astryxdesign/core/Selector';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { DesignSurface } from '@/components/portal/kit/DesignSurface';
 import { PageOpener } from '@/components/portal/kit/PageOpener';
 import { DataTable, type Column } from '@/components/portal/kit/DataTable';
@@ -19,6 +17,7 @@ import { useDirectoryNavigation } from '@/components/admin/useDirectoryNavigatio
 import { directoryRoleLabel } from '@/lib/admin/roleLabels';
 import { ADMIN_USER_ROLES } from '@/lib/admin/adminUserProvisioning';
 import { isSelfRow, SELF_DELETE_BLOCKED_TITLE, SELF_ROLE_CHANGE_BLOCKED_TITLE } from '@/lib/admin/usersSelfGuard';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /** Staff roster: server search/pagination, with full readable identities on phones. */
 export interface UserRow {
@@ -253,8 +252,8 @@ export function UsersKit({
     <DesignSurface surface="dense" className="wa-kit-people-roster">
       <PageOpener className="wa-mb-5" title="Staff & admins" kicker="People" lede="Find a staff account and manage access."
         action={<div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
-          <AstryxLink href="/admin/users?ui=legacy" as={Link as never} isStandalone><Button label="All accounts" variant="secondary" /></AstryxLink>
-          <AstryxLink href="/admin/invites/new" as={Link as never} isStandalone><Button label="Invite staff" variant="primary" icon={<Plus size={16} aria-hidden />} /></AstryxLink>
+          <KitLinkButton href="/admin/users?ui=legacy" label="All accounts" variant="secondary" size="md" />
+          <KitLinkButton href="/admin/invites/new" label="Invite staff" variant="primary" size="md" icon={<Plus size={16} aria-hidden />} />
         </div>}
       />
       <KitTableToolbar

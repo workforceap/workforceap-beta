@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import {
   DesignSurface,
   PageOpener,
@@ -8,9 +7,8 @@ import {
   type Column,
 } from '@/components/portal/kit';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Duplicate students — likely-duplicate member accounts rendered as a dense
@@ -114,9 +112,7 @@ export function DuplicatesKit({ rows = DEFAULT_ROWS, groupCount }: DuplicatesKit
       header: 'Action',
       align: 'right',
       render: (row) => (
-        <AstryxLink href={row.mergeHref} as={Link as never} isStandalone>
-          <Button label="Review & merge" variant="secondary" size="sm" />
-        </AstryxLink>
+        <KitLinkButton href={row.mergeHref} label="Review & merge" variant="secondary" size="sm" />
       ),
     },
   ];
@@ -169,9 +165,7 @@ export function DuplicatesKit({ rows = DEFAULT_ROWS, groupCount }: DuplicatesKit
               </div>
             </div>
             <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-              <AstryxLink href={row.mergeHref} as={Link as never} isStandalone>
-                <Button label="Review & merge" variant="secondary" size="sm" />
-              </AstryxLink>
+              <KitLinkButton href={row.mergeHref} label="Review & merge" variant="secondary" size="sm" />
             </div>
           </Card>
         )}

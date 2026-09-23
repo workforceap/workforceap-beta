@@ -5,7 +5,6 @@ import { Users, Plus } from 'lucide-react';
 import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
@@ -15,6 +14,7 @@ import {
   type KpiItem,
 } from '@/components/portal/kit';
 import { SUBGROUPS_DIRECTORY_EMPTY } from '@/lib/admin/directoryEmptyState';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Subgroups directory — cohort / chapter / special-program card grid (dense).
@@ -148,14 +148,13 @@ export function SubgroupsDirectoryKit({
         kicker="People"
         lede="Cohorts, chapters & special programs"
         action={
-          <AstryxLink href="/admin/subgroups/new" as={Link as never} isStandalone>
-            <Button
-              label="New Subgroup"
-              variant="primary"
-              size="sm"
-              icon={<Plus className="h-4 w-4" aria-hidden />}
-            />
-          </AstryxLink>
+          <KitLinkButton
+            href="/admin/subgroups/new"
+            label="New Subgroup"
+            variant="primary"
+            size="sm"
+            icon={<Plus className="h-4 w-4" aria-hidden />}
+          />
         }
       />
 
