@@ -3,6 +3,7 @@ import 'server-only';
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { formatPortalDateTime } from '@/lib/formatDate';
 import { recordPlacementFromApplication } from '@/lib/placement/recordPlacementFromApplication';
 
 const APPLICATION_STATUS_MESSAGE: Record<string, { title: string; body: (jobTitle: string) => string }> = {
@@ -24,6 +25,22 @@ const APPLICATION_STATUS_MESSAGE: Record<string, { title: string; body: (jobTitl
   },
 };
 
+/** When and where an interview is, as the member reads it in a notification. */
+type InterviewDetails = { at: Date; location: string | null };
+
+/** ' Scheduled for Oct 2, 2026, 2:30 PM CDT · Zoom' — appended to a notification body. */
+function interviewScheduleText({ at, location }: InterviewDetails): string {
+  return ` Scheduled for ${formatPortalDateTime(at)}${location ? ` · ${location}` : ''}`;
+}
+
+async function jobTitleFor(applicationId: string): Promise<string> {
+  const application = await prisma.jobPostingApplication.findUnique({
+    where: { id: applicationId },
+    select: { job: { select: { title: true } } },
+  });
+  return application?.job.title ?? 'the role you applied to';
+}
+
 /**
  * Shared side-effects for every route that writes JobPostingApplication.status
  * (app/api/employer/applications/[id]/route.ts and
@@ -44,22 +61,20 @@ export async function notifyAndRecordPlacement(args: {
   studentId: string;
   employerId: string;
   nextStatus: string;
+  /** Set when the move into 'interview' also sets a time: one notification carries both. */
+  interview?: InterviewDetails;
 }): Promise<void> {
-  const { applicationId, studentId, employerId, nextStatus } = args;
+  const { applicationId, studentId, employerId, nextStatus, interview } = args;
   const copy = APPLICATION_STATUS_MESSAGE[nextStatus];
   if (!copy) return;
 
-  const application = await prisma.jobPostingApplication.findUnique({
-    where: { id: applicationId },
-    select: { job: { select: { title: true } } },
-  });
-  const jobTitle = application?.job.title ?? 'the role you applied to';
+  const jobTitle = await jobTitleFor(applicationId);
 
   await createNotification({
     userId: studentId,
     type: 'application_update',
     title: copy.title,
-    body: copy.body(jobTitle),
+    body: copy.body(jobTitle) + (nextStatus === 'interview' && interview ? interviewScheduleText(interview) : ''),
     data: { link: '/dashboard/jobs', applicationId },
   });
 
@@ -106,4 +121,25 @@ export async function notifyAndRecordPlacement(args: {
     // status update — the application PATCH already succeeded.
     captureApiError(err, { route: 'employer/applications-status-effects', extra: { studentId, stage: 'auto-placement' } });
   }
+}
+
+/**
+ * The employer set or changed the interview time on an application that was
+ * already at 'interview'. The caller sends this only when the time is a new,
+ * different, non-null value, so the member hears once per distinct time.
+ */
+export async function notifyInterviewTimeSet(args: {
+  applicationId: string;
+  studentId: string;
+  interview: InterviewDetails;
+}): Promise<void> {
+  const { applicationId, studentId, interview } = args;
+  const jobTitle = await jobTitleFor(applicationId);
+  await createNotification({
+    userId: studentId,
+    type: 'application_update',
+    title: 'Interview time set',
+    body: `The employer set your interview time for ${jobTitle}.${interviewScheduleText(interview)}`,
+    data: { link: '/dashboard/jobs', applicationId },
+  });
 }

@@ -19,6 +19,7 @@ vi.mock('@/lib/counselor/staffMemberAccess', () => ({
   assertStaffCanAccessMemberRecord: vi.fn(),
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn() }));
+vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn(async () => undefined) }));
 vi.mock('@/lib/counselor/inboxZeroAudit', () => ({ logInboxZeroBulkAuditEvent: vi.fn() }));
 vi.mock('@/lib/messages/counselorThread', () => ({
   getOrCreateMemberCounselorThread: vi.fn(),
@@ -49,7 +50,8 @@ vi.mock('@/lib/db/prisma', () => {
     counselor: { findFirst: vi.fn() },
     counselorAssignment: { findUnique: vi.fn(), updateMany: vi.fn(), update: vi.fn(), create: vi.fn() },
     messageThread: { update: vi.fn(), upsert: vi.fn().mockResolvedValue({ id: 'thread-1' }) },
-    memberEvent: { create: vi.fn() },
+    memberEvent: { create: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) },
+    $executeRaw: vi.fn().mockResolvedValue(1),
   };
   prisma.$transaction = vi.fn((arg: any) =>
     typeof arg === 'function' ? arg(prisma) : Promise.all(arg),

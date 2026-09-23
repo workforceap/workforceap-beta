@@ -56,6 +56,7 @@ import SkillsetProgressList from '@/components/portal/SkillsetProgressList';
 import { loadMemberSkillsetProgress } from '@/lib/coursera/memberSkillsetProgress';
 import MemberProgressTimeline from '@/components/portal/counselor/MemberProgressTimeline';
 import type { TimelineEvent } from '@/components/portal/counselor/MemberProgressTimeline';
+import { buildPlacementStage } from '@/lib/counselor/placementTimelineStage';
 import { getRiskLevel } from '@/lib/member/atRiskScoring';
 import type { CareerMatchResult } from '@/lib/onet/types';
 
@@ -158,9 +159,11 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   // below references it. The full `applications` array is still fetched
   // below for the actual UI display — this is just the 1-bit
   // "has the member applied yet?" signal that the timeline needs early.
-  const [memberEvents, applicationCount] = await Promise.all([
+  // The placement stage reads the staff placement record (C05), never the
+  // `placement_recorded` event: see lib/counselor/placementTimelineStage.ts.
+  const [memberEvents, applicationCount, placementRecord] = await Promise.all([
     prisma.memberEvent.findMany({
-      // Only the 5 milestone events below are ever read from this array, and
+      // Only the 4 milestone events below are ever read from this array, and
       // `metadata` is never inspected — narrowing both keeps this to a few
       // dozen rows off the existing @@index([userId, eventName, createdAt])
       // instead of the member's entire event history with JSON payloads.
@@ -172,7 +175,6 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
             'assessment_completed',
             'course_completed',
             'certification_earned',
-            'placement_recorded',
           ],
         },
       },
@@ -180,13 +182,17 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       select: { eventName: true, createdAt: true },
     }),
     prisma.jobPostingApplication.count({ where: { studentId: memberId } }),
+    prisma.placementRecord.findUnique({
+      where: { userId: memberId },
+      select: { placedAt: true, startDate: true, startDateVerified: true },
+    }),
   ]);
 
   const enrollmentEvent = memberEvents.find((e) => e.eventName === 'program_enrolled');
   const assessmentEvent = memberEvents.find((e) => e.eventName === 'assessment_completed');
   const firstCourseEvent = memberEvents.find((e) => e.eventName === 'course_completed');
   const certEvent = memberEvents.find((e) => e.eventName === 'certification_earned');
-  const placementEvent = memberEvents.find((e) => e.eventName === 'placement_recorded');
+  const placementStage = buildPlacementStage(placementRecord, applicationCount);
 
   function daysBetween(a: Date | null, b: Date | null): number | null {
     if (!a || !b) return null;
@@ -237,12 +243,13 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
     {
       stage: 'placement',
       label: 'Placement',
-      date: placementEvent?.createdAt.toISOString() ?? null,
+      date: placementStage.date,
       durationDays: daysBetween(
         certEvent?.createdAt ?? firstCourseEvent?.createdAt ?? assessmentEvent?.createdAt ?? member.courseEnrollments[0]?.enrolledAt ?? member.createdAt,
-        placementEvent?.createdAt ?? null,
+        placementRecord?.placedAt ?? null,
       ),
-      status: placementEvent ? 'completed' : applicationCount > 0 ? 'in_progress' : 'pending',
+      status: placementStage.status,
+      note: placementStage.note,
     },
   ];
 

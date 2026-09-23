@@ -4,6 +4,7 @@ import type { PrismaClient } from '@prisma/client';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { prisma } from '@/lib/db/prisma';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
+import { VERIFIED_PLACEMENT_WHERE } from '@/lib/placement/verifiedPlacement';
 import { getDefaultOrganizationId } from '@/lib/tenant/organization';
 
 export type TrustStripMetrics = {
@@ -62,11 +63,15 @@ export async function getTrustStripMetrics(
       ...MEMBER_ONLY_WHERE,
     };
 
+    // Public "members placed" and the wage beside it count staff-verified
+    // placements only: an employer "hired" click or a member self-report is
+    // not a public outcome until a counselor confirms it
+    // (docs/OUTCOMES-METHODOLOGY.md, "Public placement counts").
     const [membersPlaced, partnerCompanies, avgStarting] = await Promise.all([
-      db.placementRecord.count({ where: { user: memberWhere } }),
+      db.placementRecord.count({ where: { ...VERIFIED_PLACEMENT_WHERE, user: memberWhere } }),
       db.employer.count({ where: { organizationId: orgId, status: 'active' } }),
       db.placementRecord.aggregate({
-        where: { salaryOffered: { not: null }, user: memberWhere },
+        where: { ...VERIFIED_PLACEMENT_WHERE, salaryOffered: { not: null }, user: memberWhere },
         _avg: { salaryOffered: true },
       }),
     ]);
