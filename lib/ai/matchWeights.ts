@@ -58,28 +58,57 @@ export function scoreAssessmentReadiness(assessmentScorePct: number | null): {
   return { score: 0.2, reason: null };
 }
 
-/** Raw score 0–1 for certifications match */
+/** Review status of a member certification (prisma `CertStatus`, WAP-20). */
+export type CandidateCertStatus = 'pending' | 'approved' | 'rejected';
+
+/**
+ * A member certification as the matcher sees it. A plain string is a cert
+ * name with no known review status and is treated as member-reported.
+ */
+export type CandidateCert = string | { certName: string; status?: CandidateCertStatus };
+
+/**
+ * Raw score 0–1 for certifications match.
+ *
+ * Staff-rejected certifications never count. Only an `approved` row is a
+ * verified credential, so only approved matches are called "Verified" in the
+ * reason text (shown to employers); pending rows and plain strings are
+ * "Reported ..., not yet verified". Pending and approved count equally toward
+ * the score.
+ *
+ * TODO(V08): whether pending (unverified) certifications should count toward
+ * the score at all is a pending product decision (Mike). Until then the score
+ * formula is unchanged.
+ */
 export function scoreCertifications(
-  candidateCerts: string[],
+  candidateCerts: CandidateCert[],
   jobPreferredCerts: string[]
 ): { score: number; reason: string | null } {
   if (jobPreferredCerts.length === 0) return { score: 0, reason: null };
-  const certLower = candidateCerts.map((c) => c.toLowerCase());
+  const certs = candidateCerts
+    .map((c) => (typeof c === 'string' ? { certName: c, status: undefined } : c))
+    .filter((c) => c.status !== 'rejected')
+    .map((c) => ({ name: c.certName.toLowerCase(), verified: c.status === 'approved' }));
   let matched = 0;
-  const matchedNames: string[] = [];
+  const verifiedNames: string[] = [];
+  const reportedNames: string[] = [];
   for (const want of jobPreferredCerts) {
     const w = want.toLowerCase();
-    if (certLower.some((c) => c.includes(w) || w.includes(c))) {
+    const hits = certs.filter((c) => c.name.includes(w) || w.includes(c.name));
+    if (hits.length > 0) {
       matched++;
-      matchedNames.push(want);
+      if (hits.some((c) => c.verified)) verifiedNames.push(want);
+      else reportedNames.push(want);
     }
   }
   if (matched === 0) return { score: 0, reason: null };
   const score = matched / jobPreferredCerts.length;
-  return {
-    score,
-    reason: matchedNames.length > 0 ? `Has certification(s): ${matchedNames.join(', ')}` : null,
-  };
+  const parts: string[] = [];
+  if (verifiedNames.length > 0) parts.push(`Verified certification(s): ${verifiedNames.join(', ')}`);
+  if (reportedNames.length > 0) {
+    parts.push(`Reported certification(s), not yet verified: ${reportedNames.join(', ')}`);
+  }
+  return { score, reason: parts.join(' · ') };
 }
 
 /** Raw score 0–1 for course completion */

@@ -40,7 +40,12 @@ export async function matchStudentsForJob(organizationId: string, job: {
         where: { status: 'COMPLETED' },
         select: { programSlug: true, courseSlug: true },
       },
-      userCertifications: { select: { certName: true } },
+      // Staff-rejected certifications never count (V08); status drives the
+      // Verified vs Reported reason text in scoreCertifications.
+      userCertifications: {
+        where: { status: { not: 'rejected' } },
+        select: { certName: true, status: true },
+      },
       profile: { select: { city: true, state: true } },
     },
   });
@@ -66,8 +71,7 @@ export async function matchStudentsForJob(organizationId: string, job: {
     if (assessResult.reason) reasons.push(assessResult.reason);
     weightedSum += MATCH_WEIGHTS.assessmentReadiness * assessResult.score;
 
-    const certs = (s.userCertifications ?? []).map((c) => c.certName);
-    const certResult = scoreCertifications(certs, certLower);
+    const certResult = scoreCertifications(s.userCertifications ?? [], certLower);
     if (certResult.reason) reasons.push(certResult.reason);
     weightedSum += MATCH_WEIGHTS.certifications * certResult.score;
 
