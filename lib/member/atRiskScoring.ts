@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { memberReportedFactors } from '@/lib/member/counselorEscalation';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
 import { fetchLearnerProgressFromB4B } from '@/lib/coursera/learnerProgress';
 import { getMemberEngagementSignals } from '@/lib/member/memberEngagementSignals';
@@ -504,11 +505,32 @@ export async function persistAtRiskAlert(score: AtRiskScore): Promise<void> {
   if (existing) {
     // Update if score changed significantly (>10 points)
     if (Math.abs(existing.score - score.score) > 10) {
+      // A member-reported escalation (escalateToCounselor) survives a
+      // rescore: keep its factors next to the fresh scorer factors and never
+      // drop below the escalation's score floor. Without one, overwrite.
+      const kept = memberReportedFactors(existing.factors);
+      let factors: unknown[] = score.factors;
+      let nextScore = score.score;
+      if (kept.length > 0) {
+        const seen = new Set(score.factors.map((f) => f.name));
+        factors = [...score.factors];
+        for (const f of kept) {
+          if (seen.has(f.name)) continue;
+          seen.add(f.name);
+          factors.push(f);
+        }
+        nextScore = Math.max(score.score, existing.score);
+        // Nothing changed (same floor, same factors): skip the write so the
+        // nightly run does not bump updatedAt, which readers use as lastActivityAt.
+        if (nextScore === existing.score && JSON.stringify(factors) === JSON.stringify(existing.factors)) {
+          return;
+        }
+      }
       await prisma.atRiskAlert.update({
         where: { id: existing.id },
         data: {
-          score: score.score,
-          factors: score.factors as any,
+          score: nextScore,
+          factors: factors as any,
           updatedAt: new Date(),
         },
       });
