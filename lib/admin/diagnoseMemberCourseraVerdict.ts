@@ -118,6 +118,7 @@ export function freshnessVerdict(args: {
     title: 'Sync is current: program not yet complete',
     detail:
       `${provenance} Last learner activity: ${activity}. ` +
-      'The numbers are current; any gap is the learner not having finished, not a sync delay.',
+      'The sync is running, so unfinished courses point to the learner not having finished rather than a sync delay. ' +
+      'The sync pages through the roster in windows, so this learner\'s last row can trail the organization\'s latest write.',
   };
 }
