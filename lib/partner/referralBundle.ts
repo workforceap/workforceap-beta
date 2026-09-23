@@ -266,6 +266,25 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
   return { referrals, members, pipelineMembers, pendingPlacements };
 }
 
+/**
+ * Partner-facing placement story. Names the employer and job only once staff
+ * verified the start date; a self-reported or employer-marked hire is
+ * recorded with `startDateVerified: false` and reads as pending, with no
+ * employer, job or salary. Same wording as #2562's `partnerPlacementLabel`
+ * for the unverified case.
+ */
+export const PARTNER_PLACEMENT_PENDING_STORY = 'Placement reported, pending verification';
+
+export function partnerPlacementStory(placement: {
+  employerName: string;
+  jobTitle: string;
+  startDateVerified: boolean | null;
+}): string {
+  return placement.startDateVerified === true
+    ? `Placed at ${placement.employerName} as ${placement.jobTitle}`
+    : PARTNER_PLACEMENT_PENDING_STORY;
+}
+
 export function toPartnerMembersListRows(pipelineMembers: PipelineRow[]) {
   return pipelineMembers.map(
     ({ member: m, referredAt, stage, progress, programTitle, allProgramTitles }) => {
@@ -277,7 +296,7 @@ export function toPartnerMembersListRows(pipelineMembers: PipelineRow[]) {
       // the multi-program chip.
       const headlineTitle = allProgramTitles[0] ?? programTitle;
       const story = m.placementRecord
-        ? `Placed at ${m.placementRecord.employerName} as ${m.placementRecord.jobTitle}`
+        ? partnerPlacementStory(m.placementRecord)
         : progress >= 100
           ? `Completed ${headlineTitle}`
           : progress > 0

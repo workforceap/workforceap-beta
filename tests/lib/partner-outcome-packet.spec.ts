@@ -22,7 +22,12 @@ import {
   partnerOutcomePacketCsv,
   type PartnerOutcomePacket,
 } from '@/lib/partner/outcomePacket';
-import { countPartnerReferrals, loadPartnerReferralBundle, type PipelineRow } from '@/lib/partner/referralBundle';
+import {
+  countPartnerReferrals,
+  loadPartnerReferralBundle,
+  toPartnerMembersListRows,
+  type PipelineRow,
+} from '@/lib/partner/referralBundle';
 import { PROGRAMS } from '@/lib/content/programs';
 import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
@@ -243,6 +248,21 @@ describe('buildPartnerOutcomePacket', () => {
     expect(packet.truncated).toBe(false);
     expect(packet.smallSample).toBe(true);
     for (const line of packet.lines) expect(line.display).toBe('0 of 0');
+  });
+});
+
+describe('toPartnerMembersListRows placement story', () => {
+  it('names employer and job only for a verified start date; an unverified placement reads as pending', () => {
+    const [verified, unverified, none] = toPartnerMembersListRows([
+      member(1, { placement: 'verified' }),
+      member(2, { placement: 'unverified' }),
+      member(3),
+    ]);
+    expect(verified.story).toBe('Placed at Employer 1 as Job 1');
+    expect(unverified.story).toBe('Placement reported, pending verification');
+    expect(JSON.stringify(unverified)).not.toMatch(/Employer 2|Job 2|52000/);
+    expect(unverified.placementVerified).toBe(false);
+    expect(none.story).not.toMatch(/Placed at|Placement reported/);
   });
 });
 
