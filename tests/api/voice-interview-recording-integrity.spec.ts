@@ -79,7 +79,7 @@ function complete(overrides: Record<string, unknown> = {}) {
 
 function storedObject(size: number, contentType: string) {
   return {
-    data: { name: PATH, size, contentType, metadata: { size, mimetype: contentType } },
+    data: { name: PATH, size, contentType, metadata: {} },
     error: null,
   };
 }
@@ -190,6 +190,20 @@ describe('complete', () => {
       mimeType: 'video/webm;codecs=vp9,opus',
       durationMs: 42_000,
     });
+  });
+
+  it('does not fall back to uploader-set user metadata when storage reports no size or type', async () => {
+    // `info()` returns user_metadata as `metadata`; the uploader controls it.
+    storage.info.mockResolvedValue({
+      data: { name: PATH, size: null, contentType: null, metadata: { size: 1024, mimetype: 'video/webm' } },
+      error: null,
+    });
+
+    const res = await complete();
+
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: 'Could not verify recording upload' });
+    expect(saveAIToolResult).not.toHaveBeenCalled();
   });
 
   it('accepts an mp4 recording', async () => {

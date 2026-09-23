@@ -128,8 +128,11 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
         return NextResponse.json({ error: 'Recording upload not found' }, { status: 409 });
       }
 
-      const byteSize = stored.size ?? stored.metadata?.size;
-      const mimeType = stored.contentType ?? stored.metadata?.mimetype;
+      // Only the top-level size/contentType come from storage itself. `info()`
+      // returns the object's user_metadata as `metadata`, and the uploader
+      // can set that, so it is never a fallback.
+      const byteSize = stored.size;
+      const mimeType = stored.contentType;
       if (typeof byteSize !== 'number' || !Number.isFinite(byteSize) || typeof mimeType !== 'string') {
         console.error('[voice-interview/recording complete] object info had no size or type');
         return NextResponse.json({ error: 'Could not verify recording upload' }, { status: 502 });
