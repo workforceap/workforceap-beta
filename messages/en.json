@@ -65,6 +65,7 @@
     "collapseSidebar": "Collapse sidebar",
     "workspaceTabs": "Workspace tabs",
     "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "pendingApplicationsCount": "{count, plural, one {# waiting on an employer} other {# waiting on employers}}",
     "mobileBottomNav": {
       "ariaLabel": "Primary mobile navigation",
       "marketing": {

@@ -143,7 +143,13 @@ export default function MemberPortalTopNav({
                 <LegacyGlyph name={tab.icon} size={17} className="member-portal-top-nav__icon" />
                 <span className="member-portal-top-nav__label">{tab.label}</span>
                 {badge && badge > 0 ? (
-                  <span className="member-portal-top-nav__badge" aria-label={t('unreadCount', { count: badge })}>
+                  <span className="member-portal-top-nav__badge" aria-label={
+                    // The applications badge counts the member's own pending
+                    // applications, not unread items (WAP-263 item 3).
+                    tab.badgeKey === 'applications_new'
+                      ? t('pendingApplicationsCount', { count: badge })
+                      : t('unreadCount', { count: badge })
+                  }>
                     {badge > 9 ? '9+' : badge}
                   </span>
                 ) : null}

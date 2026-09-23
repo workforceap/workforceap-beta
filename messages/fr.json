@@ -64,6 +64,7 @@
     "collapseSidebar": "Réduire la barre latérale",
     "workspaceTabs": "Onglets de l'espace de travail",
     "unreadCount": "{count, plural, one {# non lu} other {# non lus}}",
+    "pendingApplicationsCount": "{count, plural, one {# en attente d’un employeur} other {# en attente d’employeurs}}",
     "mobileBottomNav": {
       "ariaLabel": "Navigation mobile principale",
       "marketing": {

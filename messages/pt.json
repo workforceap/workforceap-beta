@@ -64,6 +64,7 @@
     "collapseSidebar": "Recolher barra lateral",
     "workspaceTabs": "Abas do espaço de trabalho",
     "unreadCount": "{count, plural, one {# não lida} other {# não lidas}}",
+    "pendingApplicationsCount": "{count, plural, one {# aguardando o empregador} other {# aguardando empregadores}}",
     "mobileBottomNav": {
       "ariaLabel": "Navegação móvel principal",
       "marketing": {
