@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { SectionHeader, StatusTag, useAnnounce } from '@/components/portal/kit';
 import type { ReadinessPriorityAction } from '@/lib/readiness/progressView';
-import type { ReadinessSummarySource } from '@/lib/readiness/progressSummary';
+import {
+  splitReadinessSummary,
+  type ReadinessRecapBreakdown,
+  type ReadinessSummarySource,
+} from '@/lib/readiness/progressSummary';
 
 type SummaryResponse = {
   source?: ReadinessSummarySource;
@@ -44,19 +48,85 @@ function sourceLabel(source: ReadinessSummarySource, generating: boolean): strin
 }
 
 /**
+ * The numbers, printed by the card itself so no model can garble them:
+ * the score out of 100 and one row per scored area (points earned of max,
+ * percent) with the lowest area tagged. The AI text below only explains and points forward.
+ */
+function RecapBreakdown({ breakdown }: { breakdown: ReadinessRecapBreakdown }) {
+  return (
+    <div data-testid="readiness-recap-breakdown" className="wa-mb-3">
+      <p className="wa-kit-lede" style={{ color: 'var(--wa-text)' }}>
+        Your score is{' '}
+        <strong style={{ fontVariantNumeric: 'tabular-nums' }}>
+          {breakdown.overallScore} out of {breakdown.overallMax}
+        </strong>
+        .
+      </p>
+      <ul
+        aria-label="Points by area"
+        style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, display: 'grid', gap: 6 }}
+      >
+        {breakdown.categories.map((cat) => {
+          const lowest = cat.key === breakdown.weakestKey;
+          return (
+            <li
+              key={cat.key}
+              data-area={cat.key}
+              data-lowest={lowest ? 'true' : undefined}
+              className="wa-flex wa-items-center wa-justify-between wa-gap-3"
+              style={{
+                fontSize: 'var(--wa-type-body)',
+                lineHeight: 1.4,
+                padding: '6px 0',
+                borderTop: '1px solid var(--wa-border)',
+              }}
+            >
+              <span className="wa-flex wa-items-center wa-gap-2" style={{ minWidth: 0 }}>
+                <span style={{ color: 'var(--wa-text)', fontWeight: lowest ? 700 : 500 }}>{cat.label}</span>
+                {lowest ? (
+                  <>
+                    {' '}
+                    <StatusTag tone="warn">Lowest</StatusTag>
+                  </>
+                ) : null}
+              </span>
+              {' '}
+              <span
+                style={{ flexShrink: 0, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
+              >
+                {cat.earned}/{cat.max}
+                <span aria-hidden="true"> · </span>
+                <span style={{ color: cat.pct >= 100 ? 'var(--wa-success-dark)' : 'var(--wa-text)', fontWeight: 600 }}>
+                  {cat.pct}%
+                </span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/**
  * Kit-token progress recap for `/dashboard/readiness`.
- * Starts from the server-built factual recap; may replace it with an AI rewrite
- * of the same validated numbers. Never paints Astryx inside the kit page.
+ * Prints the breakdown from the score model, then the server-built factual
+ * note; may replace the note with an AI rewrite that passed the grounding
+ * check. The primary CTA is the same `priorityAction` the whole page uses
+ * (weakest area first), so text and button never disagree.
+ * Never paints Astryx inside the kit page.
  */
 export function ReadinessProgressSummary({
   factualSummary,
   nextAction,
+  breakdown = null,
   coachHref = '/dashboard/ai-tools/studio?tab=session&agent=readiness',
   enableGeneration = true,
   loadFailed = false,
 }: {
   factualSummary: string;
   nextAction: ReadinessPriorityAction | null;
+  breakdown?: ReadinessRecapBreakdown | null;
   coachHref?: string;
   enableGeneration?: boolean;
   loadFailed?: boolean;
@@ -121,9 +191,14 @@ export function ReadinessProgressSummary({
           </StatusTag>
         }
       />
-      <p className="wa-kit-lede">
-        {summary}
-      </p>
+      {breakdown && !loadFailed ? <RecapBreakdown breakdown={breakdown} /> : null}
+      <div data-testid="readiness-progress-summary-text" style={{ display: 'grid', gap: 8 }}>
+        {splitReadinessSummary(summary).map((paragraph, i) => (
+          <p key={i} className="wa-kit-lede">
+            {paragraph}
+          </p>
+        ))}
+      </div>
       <div className="wa-flex wa-flex-wrap wa-gap-3" style={{ marginTop: 16 }}>
         {nextAction ? (
           <a
