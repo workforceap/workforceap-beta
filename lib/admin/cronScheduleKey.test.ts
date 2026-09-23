@@ -54,12 +54,17 @@ test('buildCronScheduleKey skips paths that record no CronExecution and unknown 
   const key = buildCronScheduleKey(
     [
       { path: '/api/cron/at-risk-check', schedule: '11 6 * * *' },
-      { path: '/api/admin/webhooks/process-retries', schedule: '*/10 * * * *' },
+      { path: '/api/cron/unlogged', schedule: '*/10 * * * *' },
       { path: '/api/cron/not-mapped', schedule: '0 1 * * *' },
     ],
-    CRON_JOB_NAME_BY_PATH,
+    { ...CRON_JOB_NAME_BY_PATH, '/api/cron/unlogged': null },
   );
   assert.deepEqual(key, { cron_at_risk_check: 'Daily 6:11 AM UTC' });
+});
+
+test('the webhook retry job is on the /admin/crons schedule key (X03 part 2)', () => {
+  assert.equal(CRON_JOB_NAME_BY_PATH['/api/admin/webhooks/process-retries'], 'cron_webhook_process_retries');
+  assert.equal(CRON_SCHEDULE_BY_JOB.cron_webhook_process_retries, 'Every 10 minutes');
 });
 
 test('every registry scheduleLabel is the formatted schedule', () => {
