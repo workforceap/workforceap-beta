@@ -101,12 +101,27 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
   deps: CourseraLaunchDependencies<ResponseLike, ProgramType>,
 ) {
   return async function courseraLaunchGET(request: Request): Promise<ResponseLike> {
+    const requestedSlug = new URL(request.url).searchParams.get('course')?.trim() || '';
     const user = await deps.getUser();
     if (!user) {
+      // Come back to My Program with the course the member clicked, so login
+      // does not drop them on the default course.
       const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirectTo', '/dashboard/training');
+      const back = requestedSlug
+        ? `/dashboard/program?${new URLSearchParams({ course: requestedSlug })}`
+        : '/dashboard/program';
+      loginUrl.searchParams.set('redirectTo', back);
       return deps.redirect(loginUrl);
     }
+
+    // Failed launches return to My Program (via /dashboard/training), which
+    // turns `error` into a plain-language notice and keeps `course` selected.
+    const launchErrorRedirect = (code: 'curriculum_track_pending' | 'course_not_assigned' | 'launch_failed') => {
+      const errorUrl = new URL('/dashboard/training', request.url);
+      errorUrl.searchParams.set('error', code);
+      if (requestedSlug) errorUrl.searchParams.set('course', requestedSlug);
+      return deps.redirect(errorUrl);
+    };
 
     const dbUser = await deps.findUser(user.id);
 
@@ -121,7 +136,6 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
       user.id,
       dbUser?.enrolledProgram ?? null,
     );
-    const requestedSlug = new URL(request.url).searchParams.get('course')?.trim() || '';
     const curriculumVersion = enrolledProgram
       ? dbUser?.courseEnrollments?.find(
           (enrollment) => enrollment.programSlug === enrolledProgram,
@@ -143,18 +157,14 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     const approvedCollectionId = approvedTrack?.collectionId?.trim() || null;
     if (enrolledProgram && curriculumVersion === APPROVED_CURRICULUM_VERSION) {
       if (!isExternalCurriculumTrackReady(approvedTrack)) {
-        const errorUrl = new URL('/dashboard/training', request.url);
-        errorUrl.searchParams.set('error', 'curriculum_track_pending');
-        return deps.redirect(errorUrl);
+        return launchErrorRedirect('curriculum_track_pending');
       }
     }
 
     // A URL can be hand-edited. Never launch a Course DB/discovered entry that
     // is outside the learner's immutable curriculum assignment.
     if (requestedSlug && (!program || !program.courses.some((course) => course.slug === requestedSlug))) {
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'course_not_assigned');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('course_not_assigned');
     }
 
     const requestedCourse = requestedSlug
@@ -179,9 +189,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
         approvedCollectionId,
       );
       if (approvedCourseUrl) return deps.redirect(approvedCourseUrl);
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'launch_failed');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('launch_failed');
     }
 
     if (requestedSlug && enrolledProgram) {
@@ -263,9 +271,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
         if (orgScoped) return deps.redirect(orgScoped);
       }
 
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'launch_failed');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('launch_failed');
     }
 
     const orgScopedProgramUrl = enrolledProgram
@@ -303,9 +309,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     }
 
     if (!safeUrl) {
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'launch_failed');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('launch_failed');
     }
 
     return deps.redirect(safeUrl);
