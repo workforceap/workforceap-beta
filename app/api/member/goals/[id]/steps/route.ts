@@ -14,6 +14,7 @@ import {
 } from '@/lib/member/goalSteps';
 import { createApiErrorResponse, createNotFoundResponse, createUnauthorizedResponse } from '@/lib/api-utils';
 import { withIdempotency } from '@/lib/api-utils';
+import { checkAIToolRateLimit } from '@/lib/rate-limit';
 
 import { Prisma } from '@prisma/client';
 
@@ -87,12 +88,19 @@ async function _POST(_request: Request, { params }: { params: Promise<{ id: stri
       careerTitle = null;
     }
 
-    const stepTexts = await generateGoalSteps({
-      title: goal.title,
-      goalType: goal.goalType,
-      note: existing.note,
-      careerTitle,
-    });
+    // Each POST is a paid model call. Over the AI tool quota (or when the
+    // limiter errors) the member still gets the curated fallback steps.
+    const lim = await checkAIToolRateLimit(user.id).catch(() => ({ success: false }));
+
+    const stepTexts = await generateGoalSteps(
+      {
+        title: goal.title,
+        goalType: goal.goalType,
+        note: existing.note,
+        careerTitle,
+      },
+      { skipAI: !lim.success }
+    );
 
     const steps = buildSteps(stepTexts);
     const description = encodeGoalDescription({ note: existing.note, steps });

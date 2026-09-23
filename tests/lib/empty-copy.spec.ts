@@ -71,6 +71,13 @@ describe('empty.* copy', () => {
       expect(group.title).toMatch(/load/i);
       expect(group.action).toMatch(/^(Try again|Retry)$/);
     }
+    // Overview (WAP-206): a failed count is unknown, never zero, and every failure offers Try again.
+    for (const key of ['countsTitle', 'tileCaption', 'queueTitle', 'sessions', 'breakdown'] as const) {
+      expect(c.overviewUnavailable[key]).toMatch(/load/i);
+    }
+    expect(c.overviewUnavailable.countsBody).toMatch(/unknown, not zero/);
+    expect(c.overviewUnavailable.queueBody).toMatch(/not an empty queue/);
+    expect(c.overviewUnavailable.action).toBe('Try again');
     // First: the counselor's own first action lives on the page.
     expect(c.placements.title).toBe('No placements yet');
     expect(c.placements.action).toBe('Record placement');

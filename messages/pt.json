@@ -39,6 +39,7 @@
     "wioaQualification": "Qualificação WIOA",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
+    "aiAdvisor": "Consultor de IA",
     "trainingPreassessment": "Pré-avaliação de Treinamento",
     "counselorChat": "Mensagens",
     "aboutUs": "Sobre Nós",
@@ -75,6 +76,7 @@
         "overview": "Visão Geral",
         "jobs": "Vagas",
         "pipeline": "Processo",
+        "workQueue": "Fila",
         "messages": "Mensagens"
       },
       "counselor": {
@@ -503,6 +505,15 @@
     "voiceInterviewMetaDesc": "Practice a live voice mock interview for a specific job or role, with optional camera recording and real-time coaching feedback.",
     "assessmentMetaTitle": "Pré-avaliação de Treinamento",
     "assessmentMetaDesc": "Uma verificação rápida de habilidades que ajuda a posicionar você. Concluí-la não libera o Coursera.",
+    "interviewSteps": {
+      "preScreeningTitle": "Pré-triagem",
+      "preScreeningLede": "A etapa antes da sua entrevista.",
+      "interviewTitle": "Entrevista",
+      "eligible": "Você já pode solicitar sua entrevista.",
+      "submitted": "Pré-triagem enviada. Um orientador vai analisá-la e entrar em contato por e-mail.",
+      "requested": "Recebemos sua solicitação de entrevista em {date}. Um orientador entrará em contato por e-mail."
+    },
+    "weeklyRecapOpenGoals": "Abrir suas metas",
     "programMetaTitle": "My Program",
     "programMetaDesc": "View or select your enrolled program.",
     "mentorMetaTitle": "Mentor Dashboard",
@@ -3990,6 +4001,17 @@
       "workQueueUnavailable": {
         "title": "Não foi possível carregar a fila de trabalho",
         "body": "Algo deu errado ao buscar a fila. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Não foi possível carregar algumas contagens da carteira",
+        "countsBody": "Um bloco com — é desconhecido, não zero. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "tileCaption": "Não foi possível carregar",
+        "queueTitle": "Não foi possível carregar quem precisa de você",
+        "queueBody": "A lista não respondeu, então isto não é uma fila vazia. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "queueSecondary": "Abrir Hoje",
+        "sessions": "Não foi possível carregar a prática de entrevistas recente.",
+        "breakdown": "Não foi possível carregar a divisão da carteira.",
         "action": "Tentar novamente"
       },
       "inbox": {

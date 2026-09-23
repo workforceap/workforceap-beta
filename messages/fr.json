@@ -39,6 +39,7 @@
     "wioaQualification": "Qualification WIOA",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
+    "aiAdvisor": "Conseiller IA",
     "trainingPreassessment": "Pré-évaluation de formation",
     "counselorChat": "Messages",
     "aboutUs": "À propos",
@@ -75,6 +76,7 @@
         "overview": "Aperçu",
         "jobs": "Emplois",
         "pipeline": "Suivi",
+        "workQueue": "À traiter",
         "messages": "Messages"
       },
       "counselor": {
@@ -503,6 +505,15 @@
     "voiceInterviewMetaDesc": "Practice a live voice mock interview for a specific job or role, with optional camera recording and real-time coaching feedback.",
     "assessmentMetaTitle": "Pré-évaluation de formation",
     "assessmentMetaDesc": "Un court contrôle de compétences qui aide à vous orienter. Le terminer ne débloque pas Coursera.",
+    "interviewSteps": {
+      "preScreeningTitle": "Présélection",
+      "preScreeningLede": "L’étape avant votre entretien.",
+      "interviewTitle": "Entretien",
+      "eligible": "Vous pouvez demander votre entretien.",
+      "submitted": "Présélection envoyée. Un conseiller l’examinera et vous contactera par e-mail.",
+      "requested": "Nous avons reçu votre demande d’entretien le {date}. Un conseiller vous contactera par e-mail."
+    },
+    "weeklyRecapOpenGoals": "Ouvrir vos objectifs",
     "programMetaTitle": "My Program",
     "programMetaDesc": "View or select your enrolled program.",
     "mentorMetaTitle": "Mentor Dashboard",
@@ -3990,6 +4001,17 @@
       "workQueueUnavailable": {
         "title": "Impossible de charger la file de travail",
         "body": "Une erreur s'est produite lors du chargement de la file. Réessayez.",
+        "action": "Réessayer"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Certains totaux du portefeuille n'ont pas pu être chargés",
+        "countsBody": "Une tuile affichant — est inconnue, pas zéro. Réessayez ; si cela se reproduit, prévenez un administrateur.",
+        "tileCaption": "Chargement impossible",
+        "queueTitle": "Impossible de charger qui a besoin de vous",
+        "queueBody": "La liste n'a pas répondu : ce n'est donc pas une file vide. Réessayez ; si cela se reproduit, prévenez un administrateur.",
+        "queueSecondary": "Ouvrir Aujourd'hui",
+        "sessions": "Impossible de charger les entraînements d'entretien récents.",
+        "breakdown": "Impossible de charger la répartition du portefeuille.",
         "action": "Réessayer"
       },
       "inbox": {
