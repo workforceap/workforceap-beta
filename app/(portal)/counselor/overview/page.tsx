@@ -87,31 +87,30 @@ export default async function CounselorPortalPage({
         })
       : 0;
 
-    let kitCenter;
+    // A failed load is unknown, not zero (WAP-206): null reaches the kit,
+    // which says "Couldn't load" instead of "0 awaiting reply".
+    let kitCenter: Awaited<ReturnType<typeof getCounselorCommandCenter>> | null = null;
     try {
       kitCenter = await getCounselorCommandCenter(user.id, {
         isAdmin: kitIsAdmin && !kitCounselor,
         perSectionLimit: 5,
       });
-    } catch {
+    } catch (err) {
+      console.error('[counselor:kit] command center failed:', err);
       kitLoadErrors.push('counselor-command-center-load-failed');
-      kitCenter = {
-        needsReply: [],
-        atRisk: [],
-        interviewing: [],
-        totals: { needsReplyCount: 0, atRiskCount: 0, interviewingCount: 0, slaBreachCount: 0 },
-      };
     }
 
     // One attention queue (lib/attention) feeds the "Needs attention" list,
     // the risk-alert tile and the on-track count, and is the same queue Inbox
     // zero, Triage and the Work queue render — so the four pages agree.
     let kitAttention = emptyAttentionQueue();
+    let kitAttentionLoaded = true;
     try {
       kitAttention = await getCounselorAttention(user.id, { isAdmin: kitIsAdmin && !kitCounselor });
     } catch (err) {
       console.error('[counselor:kit] attention queue failed:', err);
       kitLoadErrors.push('counselor-priority-queue-load-failed');
+      kitAttentionLoaded = false;
     }
     const kitQueue = toPriorityQueue(kitAttention);
 
@@ -126,7 +125,7 @@ export default async function CounselorPortalPage({
       hoursWaitingReply: row.hoursWaitingReply,
     }));
 
-    const kitSessions: CounselorSessionRow[] = kitCenter.interviewing.map((row) => ({
+    const kitSessions: CounselorSessionRow[] | null = kitCenter && kitCenter.interviewing.map((row) => ({
       memberId: row.memberId,
       memberName: row.memberName,
       role: row.role,
@@ -140,18 +139,22 @@ export default async function CounselorPortalPage({
         ))}
         <CounselorHomeKit
         assignedCount={assignedCount}
-        atRiskCount={kitAttention.totals.byReason.risk_alert}
-        needsReplyCount={kitCenter.totals.needsReplyCount}
-        onTrackCount={kitQueue.totals.ontrack}
-        slaBreachCount={kitCenter.totals.slaBreachCount}
-        queueRows={kitQueueRows}
-        queueTotal={countNeedsAttention(kitQueue.totals)}
+        atRiskCount={kitAttentionLoaded ? kitAttention.totals.byReason.risk_alert : null}
+        needsReplyCount={kitCenter ? kitCenter.totals.needsReplyCount : null}
+        onTrackCount={kitAttentionLoaded ? kitQueue.totals.ontrack : null}
+        slaBreachCount={kitCenter ? kitCenter.totals.slaBreachCount : null}
+        queueRows={kitAttentionLoaded ? kitQueueRows : null}
+        queueTotal={kitAttentionLoaded ? countNeedsAttention(kitQueue.totals) : undefined}
         sessions={kitSessions}
-        bucketCounts={{
-          critical: kitQueue.totals.critical,
-          warning: kitQueue.totals.warning,
-          ontrack: kitQueue.totals.ontrack,
-        }}
+        bucketCounts={
+          kitAttentionLoaded
+            ? {
+                critical: kitQueue.totals.critical,
+                warning: kitQueue.totals.warning,
+                ontrack: kitQueue.totals.ontrack,
+              }
+            : null
+        }
         />
       </>
     );
