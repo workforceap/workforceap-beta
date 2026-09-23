@@ -15,7 +15,10 @@ import pt from '@/messages/pt.json';
  * its own nav.aiAdvisor key in every locale.
  */
 const location = vi.hoisted(() => ({ pathname: '/dashboard/counselor' }));
-vi.mock('next/navigation', () => ({ usePathname: () => location.pathname }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => location.pathname,
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock('@/components/super-admin-view-switcher', () => ({ default: () => null, useIsSuperAdmin: () => false }));
 vi.mock('@/components/portal/PortalHeaderActions', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalRoleSwitcher', () => ({ default: () => null }));
