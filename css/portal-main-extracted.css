@@ -1208,6 +1208,18 @@ html {
     z-index: 60;
     min-width: 0;
 }
+/* Base meta row. Declared BEFORE the phone block below on purpose (WAP-208):
+   the phone rules (flex: 1 1 auto, tighter gap, overflow-x: auto) have the
+   same specificity, so a base rule later in the file used to win and pinned
+   flex-shrink: 0 — the staff header ran 8px past a 390px screen and cut off
+   the bell. */
+.workspace-shell-header__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    flex-shrink: 0;
+    min-width: 0;
+}
 @media (max-width: 768px) {
     /* Single-row header: avoid wrapped meta/actions sandwiching the viewport */
     .workspace-shell-header {
@@ -1256,7 +1268,13 @@ html {
     }
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .super-admin-view-switcher--with-badge {
         padding-block: 0;
+        /* Even inline padding now that the "Admin" chip is hidden below. */
+        padding-inline: 0.25rem;
     }
+    /* The switcher's "Admin" chip goes too (WAP-208): its trigger already names
+       the view ("View: Member. Switch portal view"), and at 390px the chip
+       pushed the pill past the meta row's clip edge. */
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .super-admin-view-switcher__badge,
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-tier-badge,
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-attribution,
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-impersonating-chip {
@@ -1473,13 +1491,6 @@ html.dark .workspace-shell-header,
     }
 }
 
-.workspace-shell-header__meta {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem 0.75rem;
-    flex-shrink: 0;
-    min-width: 0;
-}
 .workspace-shell-header__meta .portal-shell-header__actions {
     gap: 0.5rem 0.75rem;
 }
