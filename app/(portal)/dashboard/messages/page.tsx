@@ -177,7 +177,6 @@ export default async function MemberMessagesPage({
         activeName={activeName}
         activeRole={activeRole}
         activeInitials={counselorInitials}
-        activeOnline={Boolean(thread.counselorUserId)}
         otherInitials={counselorInitials}
         messages={kitMessages}
         feedbackDraft={feedbackDraft}

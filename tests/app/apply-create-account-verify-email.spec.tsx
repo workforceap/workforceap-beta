@@ -78,6 +78,24 @@ describe('create-account result screens', () => {
     expect(screen.queryByRole('heading', { name: en.apply.accountVerifyTitle })).toBeNull();
   });
 
+  // WAP-240: signup already sent the receipt; the confirmation page retries it
+  // only when the server says that send failed.
+  it('asks the confirmation page to retry the receipt only when signup reports it was not sent', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ success: true, redirectTo: '/apply/confirmation', receiptSent: false }),
+    );
+    renderAndSubmit();
+    await waitFor(() => expect(window.location.href).toBe('/apply/confirmation?receipt=0'));
+  });
+
+  it('adds no retry flag when signup sent the receipt', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ success: true, redirectTo: '/apply/confirmation', receiptSent: true }),
+    );
+    renderAndSubmit();
+    await waitFor(() => expect(window.location.href).toBe('/apply/confirmation'));
+  });
+
   it('shows the generic account error, not the network error, for an HTML 502', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response('<html><body>502 Bad Gateway</body></html>', { status: 502, headers: { 'Content-Type': 'text/html' } }),

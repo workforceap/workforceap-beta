@@ -15,6 +15,16 @@ vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => {}) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
 vi.mock('@/lib/cron/authorizeCronRequest', () => ({ authorizeCronRequest: vi.fn(() => null) }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn(async () => {}) }));
+vi.mock('@/lib/cron/isCronEnabled', () => ({ isCronEnabled: vi.fn(async () => true) }));
+vi.mock('@/lib/cron/cronExecution', () => ({
+  startCronExecution: vi.fn(async () => 'exec-1'),
+  completeCronExecution: vi.fn(async () => {}),
+  runWithCronExecution: vi.fn((_id: string, fn: () => unknown) => fn()),
+  getCronRecordsProcessed: vi.fn(() => undefined),
+  hasCronDiagnosticBeenLogged: vi.fn(() => false),
+  setCronRecordsProcessed: vi.fn(async () => {}),
+}));
 
 import { GET, POST } from '@/app/api/admin/webhooks/process-retries/route';
 import { getUser } from '@/lib/auth/server';
@@ -24,6 +34,8 @@ import { processRetryEvent } from '@/app/api/admin/webhooks/process-retries/_pro
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
+import { startCronExecution, completeCronExecution } from '@/lib/cron/cronExecution';
+import { NextResponse } from 'next/server';
 
 const pendingEvent = (id: string) => ({ id, source: 'learning-completion' });
 
@@ -77,7 +89,7 @@ describe('process-retries audit noise', () => {
     vi.mocked(getPendingRetryEvents).mockResolvedValue([] as never);
 
     await GET(cronRequest());
-    await POST(cronRequest());
+    await GET(cronRequest());
     await GET(cronRequest());
 
     expect(getPendingRetryEvents).toHaveBeenCalledTimes(3);
@@ -104,5 +116,82 @@ describe('process-retries audit noise', () => {
         metadata: { processed: 1, triggeredBy: 'admin', summary: { success: 1 } },
       }),
     );
+  });
+});
+
+/**
+ * X03 part 2: the scheduled run (Vercel cron issues GET) records a
+ * CronExecution under `cron_webhook_process_retries`, so /admin/crons shows
+ * its last run and failures. A manual run is POST with an admin session.
+ */
+describe('process-retries cron visibility and auth', () => {
+  const unauthorized = () => NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getUser).mockResolvedValue(null as never);
+    vi.mocked(isAdmin).mockResolvedValue(false as never);
+    vi.mocked(authorizeCronRequest).mockReturnValue(null as never);
+    vi.mocked(processRetryEvent).mockImplementation(async (event: { id: string; source: string }) => ({
+      id: event.id,
+      source: event.source,
+      result: 'success' as const,
+    }));
+  });
+
+  it('GET with the cron secret records a CronExecution and processes the due retries', async () => {
+    vi.mocked(getPendingRetryEvents).mockResolvedValueOnce([pendingEvent('wh-1')] as never);
+
+    const res = await GET(cronRequest());
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).processed).toBe(1);
+    expect(startCronExecution).toHaveBeenCalledWith('cron_webhook_process_retries');
+    expect(completeCronExecution).toHaveBeenCalledWith('exec-1', 'SUCCESS');
+    expect(processRetryEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('GET records a FAILED CronExecution when the batch fails', async () => {
+    vi.mocked(getPendingRetryEvents).mockRejectedValueOnce(new Error('db down'));
+
+    const res = await GET(cronRequest());
+
+    expect(res.status).toBe(500);
+    expect(completeCronExecution).toHaveBeenCalledWith('exec-1', 'FAILED', 'Cron handler returned HTTP 500');
+  });
+
+  it('GET without the cron secret is 401 and processes nothing, even with an admin session', async () => {
+    vi.mocked(authorizeCronRequest).mockReturnValue(unauthorized() as never);
+    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as never);
+    vi.mocked(isAdmin).mockResolvedValue(true as never);
+
+    const res = await GET(new NextRequest('http://localhost/api/admin/webhooks/process-retries'));
+
+    expect(res.status).toBe(401);
+    expect(getPendingRetryEvents).not.toHaveBeenCalled();
+  });
+
+  it('POST with an admin session processes retries without a CronExecution', async () => {
+    vi.mocked(authorizeCronRequest).mockReturnValue(unauthorized() as never);
+    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as never);
+    vi.mocked(isAdmin).mockResolvedValue(true as never);
+    vi.mocked(getPendingRetryEvents).mockResolvedValueOnce([pendingEvent('wh-3')] as never);
+
+    const res = await POST(new NextRequest('http://localhost/api/admin/webhooks/process-retries', { method: 'POST' }));
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).processed).toBe(1);
+    expect(startCronExecution).not.toHaveBeenCalled();
+  });
+
+  it('POST with neither an admin session nor the cron path is 401 and processes nothing', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'member-1' } as never);
+    vi.mocked(isAdmin).mockResolvedValue(false as never);
+
+    const res = await POST(cronRequest());
+
+    expect(res.status).toBe(401);
+    expect(getPendingRetryEvents).not.toHaveBeenCalled();
+    expect(processRetryEvent).not.toHaveBeenCalled();
   });
 });

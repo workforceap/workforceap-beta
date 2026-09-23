@@ -13,6 +13,12 @@ import {
   reconcileProgramProgress,
   type CourseProgressReconcileRow,
 } from '@/lib/coursera/progressReconciliation';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
+import {
+  freshnessVerdict,
+  latestDate,
+  type CourseraFreshnessFacts,
+} from '@/lib/admin/diagnoseMemberCourseraVerdict';
 
 export type CourseraDiagnoseReport = {
   ok: true;
@@ -21,8 +27,12 @@ export type CourseraDiagnoseReport = {
     email: string;
     fullName: string | null;
     enrolledProgram: string | null;
+    /** Primary CourseEnrollment row, else the legacy pointer. */
+    canonicalProgram: string | null;
     courseraEnrollmentApproved: boolean;
   };
+  /** null when the freshness reads failed (unknown, not "never synced"). */
+  freshness: CourseraFreshnessFacts | null;
   identityMappings: Array<{
     courseraEmail: string | null;
     actorIdentifier: string | null;
@@ -80,6 +90,7 @@ type XapiAggRaw = {
   ignored: bigint | number;
   processed: bigint | number;
   errored: bigint | number;
+  latest_received?: Date | null;
 };
 
 type IgnoredXapiRaw = {
@@ -112,8 +123,12 @@ export async function diagnoseMemberCoursera(
   const enrollmentsRaw = await prisma.courseEnrollment.findMany({
     take: 500,
     where: { userId: memberId, organizationId: member.organizationId },
-    select: { programSlug: true, isPrimary: true, enrolledAt: true },
+    select: { id: true, programSlug: true, isPrimary: true, enrolledAt: true },
     orderBy: { enrolledAt: 'desc' },
+  });
+  const { primaryProgramSlug: canonicalProgram } = resolveActiveDashboardProgram({
+    enrollments: enrollmentsRaw,
+    legacyEnrolledProgram: member.enrolledProgram,
   });
 
   let identityMappings: IdentityMappingRaw[] = [];
@@ -147,7 +162,8 @@ export async function diagnoseMemberCoursera(
         COUNT(*) AS total,
         SUM(CASE WHEN completion_status = 'ignored' THEN 1 ELSE 0 END) AS ignored,
         SUM(CASE WHEN completion_status NOT IN ('ignored') AND error IS NULL THEN 1 ELSE 0 END) AS processed,
-        SUM(CASE WHEN error IS NOT NULL THEN 1 ELSE 0 END) AS errored
+        SUM(CASE WHEN error IS NOT NULL THEN 1 ELSE 0 END) AS errored,
+        MAX(received_at) AS latest_received
       FROM coursera_xapi_events
       WHERE organization_id = ${member.organizationId}
         AND (actor_email = ${member.email} OR matched_user_id = ${memberId})
@@ -187,6 +203,47 @@ export async function diagnoseMemberCoursera(
     }),
     prisma.courseraCanonicalCourseMapping.count(),
   ]);
+
+  // Freshness and provenance. Read separately so a failure reports
+  // "unknown" instead of a misleading "never synced".
+  const memberRawWhere = {
+    organizationId: member.organizationId,
+    OR: [{ userId: memberId }, { externalEmail: member.email }],
+  };
+  let freshness: CourseraFreshnessFacts | null = null;
+  try {
+    const [orgSync, memberLatestRow, memberActivity, localActivity] = await Promise.all([
+      prisma.courseraCourseProgress.aggregate({
+        where: { organizationId: member.organizationId, source: 'b4b_sync' },
+        _max: { lastSyncedAt: true },
+      }),
+      prisma.courseraCourseProgress.findFirst({
+        where: memberRawWhere,
+        orderBy: { lastSyncedAt: 'desc' },
+        select: { lastSyncedAt: true, source: true },
+      }),
+      prisma.courseraCourseProgress.aggregate({
+        where: memberRawWhere,
+        _max: { lastActivityTime: true },
+      }),
+      prisma.courseProgress.aggregate({
+        where: { userId: memberId },
+        _max: { lastActivityAt: true },
+      }),
+    ]);
+    freshness = {
+      orgLastB4BSyncAt: orgSync._max.lastSyncedAt ?? null,
+      memberLastSyncAt: memberLatestRow?.lastSyncedAt ?? null,
+      memberLastSyncSource: memberLatestRow?.source ?? null,
+      lastXapiReceivedAt: xapiAgg.latest_received ?? null,
+      lastLearnerActivityAt: latestDate(
+        memberActivity._max.lastActivityTime,
+        localActivity._max.lastActivityAt,
+      ),
+    };
+  } catch (err) {
+    console.error('[diagnoseMemberCoursera] freshness query failed:', err);
+  }
 
   const [localProgressFacts, b4bProgressFacts] = await Promise.all([
     prisma.courseProgress.findMany({
@@ -343,16 +400,26 @@ export async function diagnoseMemberCoursera(
     });
   }
 
-  if (courseraCourseProgressRows === 0 && enrollmentsRaw.length > 0) {
+  const hasCanonicalEnrollment = Boolean(canonicalProgram) || enrollmentsRaw.length > 0;
+  if (freshness) {
+    const item = freshnessVerdict({
+      facts: freshness,
+      hasCanonicalEnrollment,
+      allProgramsComplete:
+        reconciliation.length > 0 && reconciliation.every((program) => program.allComplete),
+      now: new Date(),
+    });
+    if (item) verdict.push({ status: item.status, title: item.title, detail: item.detail });
+  } else if (hasCanonicalEnrollment) {
     verdict.push({
       status: 'warn',
-      title: 'No Coursera B4B course rows',
+      title: 'Sync freshness unavailable',
       detail:
-        "The member is enrolled in WorkforceAP but the B4B sync hasn't pulled per-course progress. Either the cron hasn't run since enrollment, or the member's email isn't on the Coursera Enterprise roster yet. Trigger via /admin/coursera/inspect-by-email or /admin/coursera/csv-import.",
+        'The last-sync and last-activity reads failed, so this report cannot say whether the numbers are current. Re-run the diagnostic; if it keeps failing, check /admin/coursera/health.',
     });
   }
 
-  if (member.enrolledProgram && !member.courseraEnrollmentApproved) {
+  if (canonicalProgram && !member.courseraEnrollmentApproved) {
     verdict.push({
       status: 'warn',
       title: 'Coursera enrollment not yet approved',
@@ -368,10 +435,16 @@ export async function diagnoseMemberCoursera(
       email: member.email,
       fullName: member.fullName,
       enrolledProgram: member.enrolledProgram,
+      canonicalProgram,
       courseraEnrollmentApproved: member.courseraEnrollmentApproved,
     },
+    freshness,
     identityMappings,
-    enrollments: enrollmentsRaw,
+    enrollments: enrollmentsRaw.map(({ programSlug, isPrimary, enrolledAt }) => ({
+      programSlug,
+      isPrimary,
+      enrolledAt,
+    })),
     xapi: {
       totalForActor: xapiTotal,
       ignoredForActor: xapiIgnored,

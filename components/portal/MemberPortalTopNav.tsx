@@ -2,11 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useLayoutEffect, useRef } from 'react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
-import type { NavBadgeKey } from '@/lib/nav/portalNav';
+import { getBestActiveHref, type ActiveNavLink } from '@/lib/nav/activeRoute';
+import { MEMBER_PORTAL_NAV_ITEMS, navItemsForActiveRoute, type NavBadgeKey } from '@/lib/nav/portalNav';
+
+/**
+ * The rail's matching rule (href, aliases, `exact`) for each member route,
+ * keyed by href. `/dashboard` appears twice (Home and "My account"); both are
+ * `exact`, so the first row is kept.
+ */
+const RAIL_LINKS = new Map<string, ActiveNavLink>();
+for (const link of navItemsForActiveRoute(MEMBER_PORTAL_NAV_ITEMS)) {
+  if (!RAIL_LINKS.has(link.href)) RAIL_LINKS.set(link.href, link);
+}
 
 export default function MemberPortalTopNav({
   badgeCounts,
@@ -16,7 +27,17 @@ export default function MemberPortalTopNav({
   /** Rewrite canonical /dashboard hrefs (used by /dev/member proofs). */
   hrefMap?: Record<string, string>;
 }) {
-  const pathname = usePathname() ?? '/dashboard';
+  const locale = useLocale();
+  // usePathname() keeps the locale prefix (/es/dashboard/messages) while the
+  // tab hrefs are locale-less, so strip the active locale exactly as the rail
+  // does (WorkspaceShell); otherwise no tab is current on /es, /fr or /pt.
+  const rawPathname = usePathname() ?? '/dashboard';
+  const pathname =
+    rawPathname === `/${locale}`
+      ? '/'
+      : rawPathname.startsWith(`/${locale}/`)
+        ? rawPathname.slice(locale.length + 1)
+        : rawPathname;
   const t = useTranslations('nav');
   const navRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -58,13 +79,6 @@ export default function MemberPortalTopNav({
   }, [pathname]);
 
   const remap = (href: string) => hrefMap?.[href] ?? href;
-  const isActive = (canonical: string, href: string) => {
-    if (pathname === href || pathname === `${href}/`) return true;
-    if (canonical === '/dashboard') {
-      return pathname === '/dashboard' || pathname === '/dashboard/';
-    }
-    return pathname.startsWith(`${href}/`) || pathname.startsWith(`${canonical}/`) || pathname === canonical;
-  };
 
   /**
    * Mobile exposed only a handful of the member IA; the rest hid behind the
@@ -87,15 +101,25 @@ export default function MemberPortalTopNav({
   ].filter((tab) => !hrefMap || tab.canonical in hrefMap);
 
   /**
-   * Only the most specific tab may read as current — otherwise
-   * /dashboard/ai-tools/resume-studio would light up both Career Studio and
-   * nothing else would ever be right. Longest matching canonical wins.
+   * The current tab is chosen the way the rail chooses its row: the longest
+   * matching href or alias wins, an `exact` row (Home) only matches its own
+   * pathname, and a route with no tab marks nothing current. Each tab carries
+   * its rail row's aliases, so /dashboard/ai-tools/application-tracker is Job
+   * applications (not AI Career Tools) and /dashboard/settings is Profile.
+   * With hrefMap (dev proofs) the remapped href is matched as well.
    */
-  const activeCanonical = tabs.reduce<string | null>((best, tab) => {
-    if (!isActive(tab.canonical, remap(tab.canonical))) return best;
-    if (best && best.length >= tab.canonical.length) return best;
-    return tab.canonical;
-  }, null);
+  const activeCanonical = getBestActiveHref(
+    pathname,
+    tabs.map((tab) => {
+      const rail = RAIL_LINKS.get(tab.canonical);
+      const remapped = remap(tab.canonical);
+      return {
+        href: tab.canonical,
+        aliases: [...(remapped !== tab.canonical ? [remapped] : []), ...(rail?.aliases ?? [])],
+        exact: rail?.exact,
+      };
+    }),
+  );
 
   return (
     <nav ref={navRef} className="member-portal-top-nav" aria-label={t('memberPortal')}>
@@ -119,7 +143,13 @@ export default function MemberPortalTopNav({
                 <LegacyGlyph name={tab.icon} size={17} className="member-portal-top-nav__icon" />
                 <span className="member-portal-top-nav__label">{tab.label}</span>
                 {badge && badge > 0 ? (
-                  <span className="member-portal-top-nav__badge" aria-label={t('unreadCount', { count: badge })}>
+                  <span className="member-portal-top-nav__badge" aria-label={
+                    // The applications badge counts the member's own pending
+                    // applications, not unread items (WAP-263 item 3).
+                    tab.badgeKey === 'applications_new'
+                      ? t('pendingApplicationsCount', { count: badge })
+                      : t('unreadCount', { count: badge })
+                  }>
                     {badge > 9 ? '9+' : badge}
                   </span>
                 ) : null}

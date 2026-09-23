@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import DataTable from '@/components/portal/ui/DataTable';
+import { csvCell } from '@/lib/csv/cells';
 
 export type PlacementTableRow = {
   id: string;
@@ -108,24 +109,19 @@ function toIsoDate(value: Date | string | null): string {
   return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
 }
 
-function csvField(value: string | number | null | undefined): string {
-  const s = value == null ? '' : String(value);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
-function buildPlacementsCsv(rows: PlacementTableRow[]): string {
+export function buildPlacementsCsv(rows: PlacementTableRow[]): string {
   const header = ['Member', 'Email', 'Program', 'Employer', 'Role', 'Start date', 'Wage (USD)', 'Status', 'Placed at'];
   const lines = rows.map((r) =>
     [
-      csvField(r.user?.fullName ?? ''),
-      csvField(r.user?.email ?? ''),
-      csvField(r.user?.enrolledProgram ?? ''),
-      csvField(r.employerName),
-      csvField(r.jobTitle),
-      csvField(toIsoDate(r.startDate)),
-      csvField(r.salaryOffered ?? ''),
+      csvCell(r.user?.fullName ?? ''),
+      csvCell(r.user?.email ?? ''),
+      csvCell(r.user?.enrolledProgram ?? ''),
+      csvCell(r.employerName),
+      csvCell(r.jobTitle),
+      csvCell(toIsoDate(r.startDate)),
+      csvCell(r.salaryOffered ?? ''),
       r.startDateVerified ? 'verified' : r.memberReported ? 'member_reported_unverified' : 'pending_verification',
-      csvField(toIsoDate(r.placedAt)),
+      csvCell(toIsoDate(r.placedAt)),
     ].join(',')
   );
   return [header.join(','), ...lines].join('\n') + '\n';

@@ -5,6 +5,7 @@ import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { auditLog } from '@/lib/audit';
 import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { notifyCounselorOfStaffAssignment, type StaffAssignedMember } from '@/lib/counselor/staffAssignmentNotify';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
@@ -31,6 +32,11 @@ import {
 } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { persistEvent } from '@/lib/events/track';
+import {
+  BULK_FOLLOW_UP_REPEAT_ERROR,
+  lockAndCheckRecentBulkFollowUp,
+  notifyMemberOfBulkFollowUp,
+} from '@/lib/counselor/bulkFollowUpGuard';
 
 const MAX_BATCH = 50;
 
@@ -62,7 +68,7 @@ const bodySchema = z.discriminatedUnion('action', [
   }),
 ]);
 
-type BulkResult = { memberId: string; ok: boolean; error?: string; warning?: string };
+type BulkResult = { memberId: string; ok: boolean; error?: string; warning?: string; skipped?: boolean };
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -87,6 +93,7 @@ export const POST = withApiGuc(async (request: Request) => {
     const results: BulkResult[] = [];
     let sent = 0;
     let failed = 0;
+    let skipped = 0;
 
     if (parsed.data.action === 'follow_up') {
       const template = getFollowUpTemplate(parsed.data.templateId as FollowUpTemplateId);
@@ -133,8 +140,11 @@ export const POST = withApiGuc(async (request: Request) => {
             continue;
           }
 
-          await prisma.$transaction(async (tx) => {
-            const message = await tx.message.create({
+          const message = await prisma.$transaction(async (tx) => {
+            if (await lockAndCheckRecentBulkFollowUp(tx, { memberId, templateId: template.id })) {
+              return null;
+            }
+            const created = await tx.message.create({
               data: { threadId: thread.id, authorId: user.id, body: normalized.body },
               select: { id: true },
             });
@@ -142,7 +152,7 @@ export const POST = withApiGuc(async (request: Request) => {
               userId: memberId,
               eventName: 'counselor_inbox_zero_follow_up_sent',
               entityType: 'message',
-              entityId: message.id,
+              entityId: created.id,
               metadata: {
                 templateId: template.id,
                 counselorUserId: user.id,
@@ -150,6 +160,20 @@ export const POST = withApiGuc(async (request: Request) => {
                 batchSize: memberIds.length,
               },
             }, tx);
+            return created;
+          });
+
+          if (!message) {
+            results.push({ memberId, ok: false, skipped: true, error: BULK_FOLLOW_UP_REPEAT_ERROR });
+            skipped += 1;
+            continue;
+          }
+
+          await notifyMemberOfBulkFollowUp({
+            memberId,
+            threadId: thread.id,
+            authorId: user.id,
+            body: normalized.body,
           });
 
           await auditLog({
@@ -177,7 +201,7 @@ export const POST = withApiGuc(async (request: Request) => {
           failed += 1;
         }
       }
-      return NextResponse.json({ ok: true, action: 'follow_up', sent, failed, results });
+      return NextResponse.json({ ok: true, action: 'follow_up', sent, skipped, failed, results });
     }
 
     if (parsed.data.action === 'mark_contacted') {
@@ -235,6 +259,7 @@ export const POST = withApiGuc(async (request: Request) => {
         return NextResponse.json({ error: 'Counselor not found or inactive' }, { status: 400 });
       }
 
+      const assignedToCounselor: StaffAssignedMember[] = [];
       for (const memberId of memberIds) {
         try {
           if (!(await assertStaffCanAccessMemberRecord(user.id, memberId))) {
@@ -245,7 +270,7 @@ export const POST = withApiGuc(async (request: Request) => {
           const member = await withTenantScope(orgId, (db) =>
             db.user.findFirst({
               where: { id: memberId, deletedAt: null },
-              select: { id: true },
+              select: { id: true, fullName: true },
             }),
           );
           if (!member) {
@@ -254,9 +279,10 @@ export const POST = withApiGuc(async (request: Request) => {
             continue;
           }
 
-          await prisma.$transaction((tx) => assignMemberCounselor(tx, {
+          const { previousCounselorUserId, previousCounselorName } = await prisma.$transaction((tx) => assignMemberCounselor(tx, {
             memberId, organizationId: orgId, counselorUserId: targetCounselor.userId,
           }));
+          assignedToCounselor.push({ memberId, memberName: member.fullName, previousCounselorUserId });
 
           const auditResults = await Promise.allSettled([auditLog({
             actorUserId: user.id,
@@ -267,6 +293,8 @@ export const POST = withApiGuc(async (request: Request) => {
               memberId,
               counselorUserId: targetCounselor.userId,
               counselorName: targetCounselor.user.fullName,
+              previousCounselorUserId,
+              previousCounselorName,
             },
           }), logInboxZeroBulkAuditEvent({
             actorUserId: user.id,
@@ -274,7 +302,7 @@ export const POST = withApiGuc(async (request: Request) => {
             verb: 'completed',
             action: INBOX_ZERO_REASSIGN_ACTION,
             request,
-            extensions: { counselorUserId: targetCounselor.userId, batchSize: memberIds.length },
+            extensions: { counselorUserId: targetCounselor.userId, previousCounselorUserId, batchSize: memberIds.length },
           })]);
 
           const auditFailed = auditResults.some((result) => result.status === 'rejected');
@@ -290,6 +318,13 @@ export const POST = withApiGuc(async (request: Request) => {
           failed += 1;
         }
       }
+
+      await notifyCounselorOfStaffAssignment({
+        counselorUserId: targetCounselor.userId,
+        actorUserId: user.id,
+        members: assignedToCounselor,
+        logPrefix: '[bulk reassign]',
+      });
 
       return NextResponse.json({
         ok: true,

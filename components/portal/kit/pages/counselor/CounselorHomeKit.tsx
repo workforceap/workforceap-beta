@@ -13,8 +13,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   KitEmptyState,
@@ -30,6 +28,7 @@ import {
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Counselor Portal — HOME view ("Command Center" redesign).
@@ -456,9 +455,7 @@ export function CounselorHomeKit({
                     meta={queueRowMeta(row)}
                     flag={BUCKET_FLAG[row.bucket]}
                     action={
-                      <AstryxLink href={row.href ?? `${memberHrefBase}/${row.memberId}`} as={Link as never} isStandalone>
-                        <Button label="View" variant="secondary" size="sm" />
-                      </AstryxLink>
+                      <KitLinkButton href={row.href ?? `${memberHrefBase}/${row.memberId}`} label="View" variant="secondary" size="sm" />
                     }
                   />
                 );

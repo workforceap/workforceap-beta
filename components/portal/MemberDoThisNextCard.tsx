@@ -115,13 +115,9 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
           style={{
             color: 'color-mix(in srgb, var(--wa-on-accent) 90%, transparent)',
             margin: 0,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
           }}
         >
+          {/* WAP-253: no line clamp here; the body often ends with the due date. */}
           {action.body}
         </p>
         <Link

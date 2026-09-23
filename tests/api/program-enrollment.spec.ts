@@ -47,7 +47,8 @@ vi.mock('@/lib/db/prisma', () => {
     const { prisma } = await import('@/lib/db/prisma');
     return typeof arg === 'function' ? arg(prisma) : Promise.all(arg);
   });
-  return { prisma: { user, courseEnrollment, courseProgress, $transaction } };
+  const $executeRaw = vi.fn(async () => 0);
+  return { prisma: { user, courseEnrollment, courseProgress, $transaction, $executeRaw } };
 });
 
 vi.mock('@/lib/platform/programCatalog', () => ({
@@ -83,7 +84,8 @@ import { prisma } from '@/lib/db/prisma';
 import { getUser } from '@/lib/auth/server';
 import { getActivePrograms } from '@/lib/platform/programCatalog';
 import { isMemberWioaVerified } from '@/lib/platform/trainingEnrollmentGate';
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
+import { sendCourseEnrolledEmail } from '@/lib/email';
 
 const UUIDS = {
   user: '550e8400-e29b-41d4-a716-446655440001',
@@ -261,6 +263,203 @@ describe('POST /api/member/enroll', () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ code: 'WIOA_NOT_STARTED' });
     expect(isMemberWioaVerified).toHaveBeenCalled();
+  });
+
+  describe('idempotency and the NULL-pointer primary row (T02)', () => {
+    const PROGRAMS = [
+      { slug: 'tech-support', name: 'Tech Support', static: { title: 'Tech Support' } },
+      { slug: 'data-entry', name: 'Data Entry', static: { title: 'Data Entry' } },
+      {
+        slug: 'it-automation-with-python-google',
+        name: 'IT Automation with Python',
+        static: { title: 'IT Automation with Python' },
+      },
+    ];
+
+    function memberRow(args: { pointer: string | null; primarySlug?: string | null }) {
+      return {
+        id: UUIDS.user,
+        enrolledProgram: args.pointer,
+        wioaReviewStatus: 'verified',
+        courseEnrollments: args.primarySlug
+          ? [{ enrolledByAdminId: null, programSlug: args.primarySlug }]
+          : [],
+      } as any;
+    }
+
+    beforeEach(() => {
+      vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user, email: 'user@example.com' } as any);
+      vi.mocked(getActivePrograms).mockResolvedValue(PROGRAMS as any);
+      vi.mocked(isMemberWioaVerified).mockReturnValue({ ok: true } as any);
+      vi.mocked(prisma.user.update).mockResolvedValue({
+        email: 'user@example.com',
+        fullName: 'Test User',
+        organizationId: UUIDS.org,
+      } as any);
+      vi.mocked(prisma.courseEnrollment.upsert).mockResolvedValue({
+        id: UUIDS.enrollment,
+        userId: UUIDS.user,
+        programSlug: 'tech-support',
+        isPrimary: true,
+      } as any);
+    });
+
+    function expectNoWritesOrSideEffects() {
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(prisma.courseEnrollment.upsert).not.toHaveBeenCalled();
+      expect(after).not.toHaveBeenCalled();
+      expect(sendCourseEnrolledEmail).not.toHaveBeenCalled();
+    }
+
+    it('a retry of a successful enroll (pointer already on the same program) is a 200 no-op', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        memberRow({ pointer: 'tech-support', primarySlug: 'tech-support' }),
+      );
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({
+        ok: true,
+        programSlug: 'tech-support',
+        alreadyEnrolled: true,
+      });
+      expectNoWritesOrSideEffects();
+    });
+
+    it('a primary row with a NULL pointer on the same program is a 200 no-op: no re-stamped enrolledAt, no second email', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        memberRow({ pointer: null, primarySlug: 'tech-support' }),
+      );
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({
+        ok: true,
+        programSlug: 'tech-support',
+        alreadyEnrolled: true,
+      });
+      expectNoWritesOrSideEffects();
+    });
+
+    it('a primary row with a NULL pointer on a different program is the handled 400, never a second primary row or a 500', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        memberRow({ pointer: null, primarySlug: 'data-entry' }),
+      );
+      // What the partial unique index course_enrollments_user_primary_uidx
+      // does if the route ever reaches the write.
+      vi.mocked(prisma.courseEnrollment.upsert).mockRejectedValue(
+        Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }),
+      );
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({
+        error: 'Already enrolled in a program. Changes require admin.',
+        code: 'ALREADY_ENROLLED',
+      });
+      expectNoWritesOrSideEffects();
+    });
+
+    it('a pointer on a different program still refuses self-serve reassignment', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        memberRow({ pointer: 'data-entry', primarySlug: 'data-entry' }),
+      );
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ code: 'ALREADY_ENROLLED' });
+      expectNoWritesOrSideEffects();
+    });
+
+    it('the primary row wins over a drifted pointer: requesting the pointer program is not "already enrolled"', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        memberRow({ pointer: 'tech-support', primarySlug: 'data-entry' }),
+      );
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ code: 'ALREADY_ENROLLED' });
+      expectNoWritesOrSideEffects();
+    });
+
+    it('an assignment stored under a retired alias counts as the same program', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        memberRow({
+          pointer: 'it-automation-with-python-professional-certificate-google',
+          primarySlug: 'it-automation-with-python-professional-certificate-google',
+        }),
+      );
+
+      const res = await enrollPost(
+        makePostRequest({ programSlug: 'it-automation-with-python-google' }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({
+        ok: true,
+        programSlug: 'it-automation-with-python-google',
+        alreadyEnrolled: true,
+      });
+      expectNoWritesOrSideEffects();
+    });
+
+    it('takes a per-member advisory lock before reading the assignment, inside the write transaction', async () => {
+      const order: string[] = [];
+      vi.mocked(prisma.$executeRaw).mockImplementation((async (...args: any[]) => {
+        order.push(`lock:${JSON.stringify(args)}`);
+        return 0;
+      }) as any);
+      vi.mocked(prisma.user.findUnique).mockImplementation((async () => {
+        order.push('read');
+        return memberRow({ pointer: null });
+      }) as any);
+      vi.mocked(prisma.user.update).mockImplementation((async () => {
+        order.push('write');
+        return { email: 'user@example.com', fullName: 'Test User', organizationId: UUIDS.org };
+      }) as any);
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, programSlug: 'tech-support' });
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(order).toHaveLength(3);
+      expect(order[0]).toMatch(/^lock:.*pg_advisory_xact_lock/);
+      expect(order[0]).toContain(`member-program-enroll:${UUIDS.user}`);
+      expect(order.slice(1)).toEqual(['read', 'write']);
+    });
+
+    it('a double submit: the request that waited on the lock sees the winner\'s row and fires no second email', async () => {
+      // First request enrolled while this one waited on the lock; the read
+      // taken under the lock therefore sees the committed primary row.
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        memberRow({ pointer: 'tech-support', primarySlug: 'tech-support' }),
+      );
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ ok: true, alreadyEnrolled: true });
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
+      expectNoWritesOrSideEffects();
+    });
+
+    it('a first enroll still writes once and schedules the enrolled email', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(memberRow({ pointer: null }));
+
+      const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, programSlug: 'tech-support' });
+      expect(prisma.user.update).toHaveBeenCalledTimes(1);
+      expect(prisma.courseEnrollment.upsert).toHaveBeenCalledTimes(1);
+      expect(after).toHaveBeenCalled();
+    });
   });
 });
 
