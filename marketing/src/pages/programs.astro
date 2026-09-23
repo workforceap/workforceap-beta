@@ -234,7 +234,7 @@ const filterChips = [
       <span class="eyebrow">Quick start</span>
       <h2>Start with the lane that <span class="grad-text">fits you best.</span></h2>
     </div>
-    <a class="qs-link" href="/find-your-path">Not sure? Take the 2-minute pathfinder →</a>
+    <a class="qs-link" href="/find-your-path">Not sure? Take the 2-minute pathfinder&nbsp;→</a>
   </div>
   <div class="tri">
     {lanes.map((l) => (
@@ -501,7 +501,11 @@ const filterChips = [
   /* quick-start head row */
   .qs-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;text-align:left;flex-wrap:wrap;max-width:none}
   .qs-head h2{margin-top:6px}
+  /* Wraps on phones (WAP-208): nowrap ran the 45-character link 8px past a
+     390px screen, where body overflow-x:hidden clipped the arrow. The arrow
+     stays glued to "pathfinder" with a no-break space in the markup. */
   .qs-link{font-weight:700;color:var(--crimson);white-space:nowrap}
+  @media(max-width:620px){.qs-link{white-space:normal;max-width:100%}}
 
   /* shared tri-card grid (quick start lanes) */
   .tri{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
