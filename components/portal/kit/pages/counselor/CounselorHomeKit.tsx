@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
@@ -105,13 +106,16 @@ export interface CounselorHomeKitProps {
   firstName?: string;
   greeting?: string;
 
-  /** KPI counts — all cheap, always available from the default data path. */
-  assignedCount?: number;
-  atRiskCount?: number;
-  needsReplyCount?: number;
-  onTrackCount?: number;
+  /**
+   * KPI counts. `null` means the load behind it failed (WAP-206): the tile
+   * shows "—" and says it couldn't load, never a 0 that reads as "nothing to do".
+   */
+  assignedCount?: number | null;
+  atRiskCount?: number | null;
+  needsReplyCount?: number | null;
+  onTrackCount?: number | null;
   /** Of `needsReplyCount`, how many breach the 48h SLA. Folded into the "Needs attention" goal caption. */
-  slaBreachCount?: number;
+  slaBreachCount?: number | null;
 
   /** Optional sparkline + delta chip per KPI tile. Omit any to hide that piece. */
   assignedSpark?: SparkStat;
@@ -119,8 +123,8 @@ export interface CounselorHomeKitProps {
   needsReplySpark?: SparkStat;
   onTrackSpark?: SparkStat;
 
-  /** Priority-queue rows — the hero. Empty renders a "caught up" state. */
-  queueRows?: CounselorQueueRow[];
+  /** Priority-queue rows — the hero. Empty renders a "caught up" state; `null` (load failed) renders an error, not "caught up". */
+  queueRows?: CounselorQueueRow[] | null;
   /** Total rows in the underlying queue (may exceed `queueRows.length` when truncated). */
   queueTotal?: number;
   /** Base path for a queue row's "View" action. */
@@ -128,15 +132,15 @@ export interface CounselorHomeKitProps {
   /** Roster link shown in the empty state. */
   rosterHref?: string;
 
-  /** "Today / this week" compact session list (interview-prep touchpoints). */
-  sessions?: CounselorSessionRow[];
+  /** "Today / this week" compact session list (interview-prep touchpoints). `null` = load failed. */
+  sessions?: CounselorSessionRow[] | null;
   sessionsHref?: string;
 
   /** Daily activity series (e.g. caseload touchpoints/day). 2+ points required; omit to fall back to the bucket breakdown below. */
   activity?: ChartDatum[];
   activityDeltaLabel?: string;
-  /** Caseload-by-bucket counts, used as the RankBars fallback when `activity` isn't available. */
-  bucketCounts?: { critical: number; warning: number; ontrack: number };
+  /** Caseload-by-bucket counts, used as the RankBars fallback when `activity` isn't available. `null` = load failed. */
+  bucketCounts?: { critical: number; warning: number; ontrack: number } | null;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -186,6 +190,33 @@ function EmptyQueueState({ rosterHref }: { rosterHref: string }) {
           <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Nice work — no one&rsquo;s waiting on you right now.</p>
           <Link href={rosterHref} style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', textDecoration: 'none' }}>
             Browse your full roster
+          </Link>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+/** Visible, announced copy for a section whose load failed (WAP-206). */
+function LoadFailedNote({ children }: { children: ReactNode }) {
+  return (
+    <p role="status" style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
+      {children}
+    </p>
+  );
+}
+
+function QueueUnavailableState({ todayHref }: { todayHref: string }) {
+  return (
+    <Card>
+      <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <TriangleAlert size={18} aria-hidden style={{ color: 'var(--wa-danger)', flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>
+            We couldn&rsquo;t load who needs you. Reload the page to try again.
+          </p>
+          <Link href={todayHref} style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', textDecoration: 'none' }}>
+            Open Today
           </Link>
         </div>
       </div>
@@ -263,17 +294,21 @@ export function CounselorHomeKit({
   activityDeltaLabel,
   bucketCounts,
 }: CounselorHomeKitProps) {
-  const total = queueTotal ?? queueRows.length;
+  const queueUnavailable = queueRows === null;
+  const rows = queueRows ?? [];
+  const total = queueTotal ?? rows.length;
+  const slaBreaches = slaBreachCount ?? 0;
 
   // Only a state paints a tile (WAP-99): risk / SLA counts carry a tone while above zero, totals stay neutral.
-  const kpis: Array<{ key: string; icon: LucideIcon; label: string; value: number; tone?: KitTone; spark?: SparkStat; caption?: string }> = [
+  // A null count is unknown: no tone, "—", and a caption that says so.
+  const kpis: Array<{ key: string; icon: LucideIcon; label: string; value: number | null; tone?: KitTone; spark?: SparkStat; caption?: string }> = [
     { key: 'assigned', icon: Users, label: 'Assigned members', value: assignedCount, spark: assignedSpark },
     {
       key: 'atRisk',
       icon: TriangleAlert,
       label: 'Members with risk alerts',
       value: atRiskCount,
-      tone: atRiskCount > 0 ? 'alert' : undefined,
+      tone: (atRiskCount ?? 0) > 0 ? 'alert' : undefined,
       spark: atRiskSpark,
     },
     {
@@ -281,7 +316,7 @@ export function CounselorHomeKit({
       icon: MailWarning,
       label: 'Awaiting reply',
       value: needsReplyCount,
-      tone: slaBreachCount > 0 ? 'alert' : needsReplyCount > 0 ? 'info' : undefined,
+      tone: needsReplyCount === null ? undefined : slaBreaches > 0 ? 'alert' : needsReplyCount > 0 ? 'info' : undefined,
       spark: needsReplySpark,
     },
     {
@@ -289,7 +324,7 @@ export function CounselorHomeKit({
       icon: CheckCircle2,
       label: 'On track',
       value: onTrackCount,
-      tone: 'ok',
+      tone: onTrackCount === null ? undefined : 'ok',
       spark: onTrackSpark,
       // Says what the count is, so the tile does not read as "everyone else"
       // (counselor audit gap map, 1). Matches the rule in
@@ -302,6 +337,7 @@ export function CounselorHomeKit({
   ];
 
   const hasActivitySeries = activity.length > 1;
+  const bucketsUnavailable = bucketCounts === null;
   const bucketRankData: RankDatum[] | null = (() => {
     if (!bucketCounts) return null;
     const sum = bucketCounts.critical + bucketCounts.warning + bucketCounts.ontrack;
@@ -315,11 +351,14 @@ export function CounselorHomeKit({
 
   // Only flagged members sit under "Needs attention"; when nothing is flagged
   // the list is the caseload, and says so (counselor audit 2026-09-20, 4.1).
-  const nothingFlagged = queueRows.length === 0;
+  const nothingFlagged = !queueUnavailable && rows.length === 0;
   const queueTitle = nothingFlagged ? 'Caseload' : 'Needs attention';
-  const goalCaption = nothingFlagged
-    ? `Nothing flagged${onTrackCount > 0 ? ` · ${onTrackCount} member${onTrackCount === 1 ? '' : 's'} on track` : ''}`
-    : `${total} member${total === 1 ? '' : 's'} in queue${slaBreachCount > 0 ? ` · ${slaBreachCount} past 48h SLA` : ''}`;
+  const onTrack = onTrackCount ?? 0;
+  const goalCaption = queueUnavailable
+    ? "Couldn't load"
+    : nothingFlagged
+      ? `Nothing flagged${onTrack > 0 ? ` · ${onTrack} member${onTrack === 1 ? '' : 's'} on track` : ''}`
+      : `${total} member${total === 1 ? '' : 's'} in queue${slaBreaches > 0 ? ` · ${slaBreaches} past 48h SLA` : ''}`;
 
   return (
     <DesignSurface surface="dense">
@@ -335,7 +374,15 @@ export function CounselorHomeKit({
         {/* 2. KPI row */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
           {kpis.map((k) => (
-            <StatSparkTile key={k.key} icon={<k.icon size={16} />} label={k.label} value={k.value} tone={k.tone} spark={k.spark} caption={k.caption} />
+            <StatSparkTile
+              key={k.key}
+              icon={<k.icon size={16} />}
+              label={k.label}
+              value={k.value ?? '—'}
+              tone={k.tone}
+              spark={k.value === null ? undefined : k.spark}
+              caption={k.value === null ? "Couldn't load" : k.caption}
+            />
           ))}
         </div>
 
@@ -343,10 +390,12 @@ export function CounselorHomeKit({
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="lg:wa-col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
             <SectionHeader title={queueTitle} goal={goalCaption} />
-            {queueRows.length === 0 ? (
+            {queueUnavailable ? (
+              <QueueUnavailableState todayHref="/counselor/today" />
+            ) : rows.length === 0 ? (
               <EmptyQueueState rosterHref={rosterHref} />
             ) : (
-              queueRows.map((row) => {
+              rows.map((row) => {
                 const Icon = BUCKET_ICON[row.bucket];
                 return (
                   <QueueRow
@@ -380,7 +429,9 @@ export function CounselorHomeKit({
                   Sessions <ArrowRight size={11} aria-hidden />
                 </Link>
               </div>
-              {sessions.length === 0 ? (
+              {sessions === null ? (
+                <LoadFailedNote>Couldn&rsquo;t load recent interview-prep sessions.</LoadFailedNote>
+              ) : sessions.length === 0 ? (
                 <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
                   No interview-prep sessions run this week.
                 </p>
@@ -410,6 +461,11 @@ export function CounselorHomeKit({
                       {activityDeltaLabel}
                     </p>
                   ) : null}
+                </>
+              ) : bucketsUnavailable ? (
+                <>
+                  <SideCardHead title="Caseload by bucket" />
+                  <LoadFailedNote>Couldn&rsquo;t load the caseload breakdown.</LoadFailedNote>
                 </>
               ) : bucketRankData ? (
                 <>

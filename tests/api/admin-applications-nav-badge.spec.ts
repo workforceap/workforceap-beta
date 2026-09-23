@@ -74,7 +74,8 @@ describe('admin Applications rail badge', () => {
   it('never counts for an account that is not an admin of its org, even when it asks for role=admin', async () => {
     auth.adminInOrg = false;
     const counts = await getNavBadgeCountsForUser('admin', 'member-1');
-    expect(counts).not.toHaveProperty('admin_applications_pending');
+    // WAP-199: the whole admin set, not just this badge (tests/api/nav-badges-role-gate.spec.ts).
+    expect(counts).toEqual({});
     expect(db.applicationCount).not.toHaveBeenCalled();
   });
 
