@@ -1512,6 +1512,9 @@
     "settingsGoal": "Le profil de votre organisation et les préférences de notification."
   },
   "group": {
+    "memberTools": "Outils et carrières",
+    "memberProgress": "Formation et progression",
+    "memberAccount": "Compte et assistance",
     "workflows": "Flux de travail",
     "insights": "Informations",
     "manage": "Gérer"
