@@ -18,9 +18,9 @@ const db = vi.hoisted(() => ({
 }));
 const scopeCalls = vi.hoisted(() => [] as unknown[]);
 
-vi.mock('@/lib/tenant/adminPageScope', () => ({
-  withAdminPageScope: vi.fn(async (scope: unknown, fn: (client: unknown) => Promise<unknown>) => {
-    scopeCalls.push(scope);
+vi.mock('@/lib/tenant/withTenantScope', () => ({
+  withTenantScope: vi.fn(async (orgId: unknown, fn: (client: unknown) => Promise<unknown>) => {
+    scopeCalls.push(orgId);
     return fn({
       application: { findMany: db.applicationFindMany, count: db.applicationCount },
       user: { findMany: db.userFindMany, count: db.userCount },
@@ -79,7 +79,9 @@ describe('loadAdminApprovalQueue', () => {
   ])('scopes every query to the actor org for %s', async (_label, superAdmin) => {
     const scope = { ok: true as const, orgId: 'org-1', superAdmin };
     await loadAdminApprovalQueue(scope, { now: NOW });
-    expect(scopeCalls).toEqual([scope]);
+    // Every read gets a tenant-scoped client pinned to the actor org, whether or
+    // not the actor is a super-admin (six reads: 3 lists, 3 counts).
+    expect(scopeCalls).toEqual(Array(6).fill(scope.orgId));
 
     const [pending, workbench] = db.applicationFindMany.mock.calls.map((call) => call[0]);
     expect(pending.where).toEqual({

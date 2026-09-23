@@ -1,6 +1,7 @@
 import 'server-only';
 
-import { withAdminPageScope, type AdminPageTenantOk } from '@/lib/tenant/adminPageScope';
+import type { AdminPageTenantOk } from '@/lib/tenant/adminPageScope';
+import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { adminWorkbenchApplicationsOrderBy, adminWorkbenchApplicationsWhere } from '@/lib/admin/commandCenterHelpers';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import {
@@ -19,11 +20,14 @@ import {
  * Facts for the admin Today "Waiting on your decision" list
  * (lib/admin/adminApprovalQueue.ts).
  *
- * Tenant scope: every query runs inside `withAdminPageScope` AND filters on
- * the actor's organization explicitly (`scope.orgId`, through `user` for the
- * Application rows, which have no `organizationId` column). A super-admin is
- * therefore scoped to their own org here, the same org the Applications
- * workbench and the rest of the admin home (`getAdminCommandCenter`) read.
+ * Tenant scope: every query runs inside `withTenantScope(scope.orgId)` —
+ * for a super-admin too, not `withAdminPageScope`, which would hand a
+ * super-admin the unscoped client — AND filters on the actor's organization
+ * explicitly (`scope.orgId`, through `user` for the Application rows, which
+ * have no `organizationId` column). A super-admin is therefore scoped to
+ * their own org here, the same org the Applications workbench and the rest
+ * of the admin home (`getAdminCommandCenter`) read, and the tenant-scoping
+ * ratchet (scripts/audit-tenant-scoping.cjs) sees every call as scoped.
  *
  * Bounded: each kind is scanned oldest-first up to `ADMIN_APPROVAL_SCAN_CAP`,
  * totals come from `count` over the same where, and the workbench order is
@@ -39,9 +43,11 @@ export async function loadAdminApprovalQueue(
   const applicationsWhere = adminApplicationsAwaitingDecisionWhere(orgId);
   const intakesWhere = adminIntakesAwaitingDecisionWhere(orgId);
 
+  // Each read opens its own tenant-scoped client (a proxy, no transaction),
+  // so every call site is visibly scoped where it is written.
   const [applications, intakeRows, applicationsWaiting, applicationsWaitingOnApplicant, intakesWaiting, workbench] =
-    await withAdminPageScope(scope, (db) =>
-      Promise.all([
+    await Promise.all([
+      withTenantScope(orgId, (db) =>
         db.application.findMany({
           take: ADMIN_APPROVAL_SCAN_CAP,
           where: applicationsWhere,
@@ -55,6 +61,8 @@ export async function loadAdminApprovalQueue(
             user: { select: { id: true, fullName: true, email: true, enrolledProgram: true } },
           },
         }),
+      ),
+      withTenantScope(orgId, (db) =>
         db.user.findMany({
           take: ADMIN_APPROVAL_SCAN_CAP,
           where: intakesWhere,
@@ -71,17 +79,19 @@ export async function loadAdminApprovalQueue(
             wioaQualificationJson: true,
           },
         }),
-        db.application.count({ where: applicationsWhere }),
-        db.application.count({ where: adminApplicationsAwaitingApplicantWhere(orgId) }),
-        db.user.count({ where: intakesWhere }),
+      ),
+      withTenantScope(orgId, (db) => db.application.count({ where: applicationsWhere })),
+      withTenantScope(orgId, (db) => db.application.count({ where: adminApplicationsAwaitingApplicantWhere(orgId) })),
+      withTenantScope(orgId, (db) => db.user.count({ where: intakesWhere })),
+      withTenantScope(orgId, (db) =>
         db.application.findMany({
           take: ADMIN_WORKBENCH_ORDER_SCAN_CAP,
           where: adminWorkbenchApplicationsWhere(orgId),
           orderBy: adminWorkbenchApplicationsOrderBy(),
           select: { id: true },
         }),
-      ]),
-    );
+      ),
+    ]);
 
   const intakes = intakeRows.map((member): AdminApprovalIntakeRow => {
     const screening = parseWioaQualificationSnapshot(member.wioaQualificationJson);
