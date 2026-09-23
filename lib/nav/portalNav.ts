@@ -71,7 +71,6 @@ export type NavTab = 'journey' | 'program' | 'jobs' | 'me';
 export type NavBadgeKey =
   | 'jobs_draft'
   | 'jobs_pending'
-  | 'jobs_live'
   | 'applications_new'
   | 'partner_needs_attention'
   | 'milestones_new'
@@ -324,6 +323,8 @@ export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     group: 'workflows',
     Icon: ListChecks,
     tourTarget: 'tour-work-queue',
+    // Applications only: applied today, untouched 48h+, at interview. Disjoint
+    // slices, so each application counts once (WAP-211).
     badgeKeys: ['employer_queue_review_today', 'employer_queue_stale_48h', 'employer_queue_interview'],
   },
   {
@@ -342,7 +343,9 @@ export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     group: 'workflows',
     Icon: Users,
     tourTarget: 'tour-applicants',
-    badgeKey: 'applications_new',
+    // No badge (WAP-211): today's and 48h-stale pending applications already
+    // count on Work queue, so a badge here lit two rows for one application.
+    // The notification bell still lists "N new applicants" (all pending).
   },
   { href: '/employer/matches', label: 'Match history', group: 'workflows', Icon: Sparkles, tourTarget: 'tour-matches' },
   { href: '/employer/pipeline', label: 'Candidate pipeline', group: 'workflows', Icon: GitBranch, tourTarget: 'tour-pipeline' },

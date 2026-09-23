@@ -75,6 +75,7 @@
         "overview": "Aperçu",
         "jobs": "Emplois",
         "pipeline": "Suivi",
+        "workQueue": "À traiter",
         "messages": "Messages"
       },
       "counselor": {
