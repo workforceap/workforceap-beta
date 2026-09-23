@@ -18,6 +18,7 @@
     "lint": "eslint . && node scripts/lint/check-type-floor.mjs && node scripts/lint/verify-no-retired-groq-models.mjs && node scripts/lint/check-member-where-spread.mjs",
     "lint:fix": "eslint . --fix",
     "check": "npm run typecheck && npm run lint && node scripts/verify-material-symbols-font-size.mjs",
+    "prepush": "node scripts/prepush.mjs",
     "check:tenant-routes": "node scripts/verify-high-risk-tenant-routes.cjs",
     "check:source-text-tests": "node scripts/verify-no-source-text-tests.mjs",
     "check:audit-coverage": "node scripts/verify-admin-mutation-audit.cjs",

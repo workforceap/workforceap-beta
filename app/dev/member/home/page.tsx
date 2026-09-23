@@ -6,6 +6,11 @@ import { buildMemberApprovalStatus, type MemberApprovalFacts } from '@/lib/membe
 import { STALE_TRAINING_COUNSELOR_ACTION, buildFirst90Card } from '@/lib/member/loadMemberDashboardHome';
 import { isFirst90Stage, type First90Stage } from '@/lib/member/first90Days';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
+import { programDisplayTitle } from '@/lib/content/programTitle';
+import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
+import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
+import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBoundary';
+import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
 
 /**
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
@@ -31,8 +36,21 @@ import type { NextBestAction } from '@/lib/member/nextBestActions';
  *     loader's own `buildFirst90Card`.
  *   `?youth=<age>` shows the youth notice for a member of that age (under 18).
  *   `?goals=none` empties the goals so the Next badge tile shows "Set a goal".
+ * The four owner-approved pieces (WAP-194), each off by default:
+ *   `?onboarding=on` opens the first-login wizard (PortalEntryClient
+ *     portal="member", the same mount as the live home), pre-filled with a
+ *     half-finished intake. `?onboarding=tour` skips the wizard and runs the
+ *     first-visit tour auto-start instead.
+ *   `?programs=2` gives the member two enrollments, so the Certification path
+ *     card shows the view-only program switch; choosing the other program
+ *     reloads with `?program=<slug>`, which keeps the switch and shows the
+ *     secondary-program note. `?program=` alone implies two programs.
+ *   `?staff=1` shows the staff-view banner (as a staff viewer sees it).
+ *   The app-install prompt is always mounted; the browser only fires its
+ *     `beforeinstallprompt` from the second visit, so it rarely shows here.
  * The strip and the check-in call real server actions, which refuse without a
- * signed-in member: a click here shows their error state.
+ * signed-in member: a click here shows their error state. So do the wizard's
+ * `/api/onboarding/*` saves.
  */
 export const dynamic = 'force-dynamic';
 
@@ -65,6 +83,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** Days since placement that land inside each First 90 Days stage (lib/member/first90Days.ts). */
 const FIRST90_FIXTURE_DAYS: Record<First90Stage, number> = { week_1: 5, day_30: 30, day_60: 60, day_90: 88 };
 
+/** Two catalog programs for `?programs=2`, primary first (the loader's order). */
+const DEV_PROGRAM_SLUGS = ['aws-cloud-technology-amazon', 'comptia-a-professional-certificate'] as const;
+
 const UP_NEXT_FIXTURE: NextBestAction[] = [
   {
     id: 'interview_practice',
@@ -96,6 +117,10 @@ export default async function DevMemberHomePage({
     first90?: string;
     youth?: string;
     goals?: string;
+    onboarding?: string;
+    programs?: string;
+    program?: string;
+    staff?: string;
   }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
@@ -124,6 +149,24 @@ export default async function DevMemberHomePage({
     ...(courseProgressStale ? [STALE_TRAINING_COUNSELOR_ACTION] : []),
     ...UP_NEXT_FIXTURE,
   ].slice(0, 3);
+  const onboardingFixture = params?.onboarding === 'on' || params?.onboarding === 'tour' ? params.onboarding : null;
+  const requestedProgram = typeof params?.program === 'string' ? params.program.trim() : '';
+  const programSwitch = params?.programs === '2' || requestedProgram
+    ? (() => {
+        const options = DEV_PROGRAM_SLUGS.map((slug, index) => ({
+          id: `dev-enrollment-${index + 1}`,
+          programSlug: slug,
+          programTitle: programDisplayTitle(slug),
+          isPrimary: index === 0,
+        }));
+        // Same rule as the loader: only one of the member's own slugs is honoured.
+        const active = options.find((option) => option.programSlug === requestedProgram) ?? options[0]!;
+        return { options, activeProgramSlug: active.programSlug, viewingSecondary: !active.isPrimary, pathname: '/dev/member/home' };
+      })()
+    : null;
+  const activeProgramTitle = programSwitch
+    ? programSwitch.options.find((option) => option.programSlug === programSwitch.activeProgramSlug)?.programTitle
+    : undefined;
   const fixture = APPROVAL_FIXTURES[requested];
   const status = fixture ? buildMemberApprovalStatus(fixture) : null;
   const placement = status ? memberApprovalCardPlacement(status) : null;
@@ -133,15 +176,45 @@ export default async function DevMemberHomePage({
 
   return (
     <>
+    <PWAInstallPrompt />
+    {onboardingFixture ? (
+      <PortalEntryErrorBoundary>
+        <PortalEntryClient
+          portal="member"
+          tourStorageUserId={`dev-member-${Date.now()}`}
+          showOnboardingWizard={onboardingFixture === 'on'}
+          showTour={onboardingFixture === 'tour'}
+          isSuperAdmin={false}
+          tourSteps={MEMBER_PORTAL_TOUR_STEPS}
+          wizardProps={{
+            initialFullName: 'Mike Brown',
+            initialPhone: '',
+            initialAddress: '',
+            initialCity: 'Austin',
+            initialState: 'TX',
+            initialZip: '',
+            initialProgramInterest: 'AWS Cloud Technology Certificate',
+            initialReferralSource: '',
+            initialStep: 0,
+            counselor: { firstName: 'Dana', messagingHref: '/dev/member/messages' },
+            waitEstimate: null,
+          }}
+        >
+          {null}
+        </PortalEntryClient>
+      </PortalEntryErrorBoundary>
+    ) : null}
     {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
+      showStaffViewBanner={params?.staff === '1'}
+      programSwitch={programSwitch}
       firstName="Mike"
       coursePercent={coursePercent}
       courseProgressStale={courseProgressStale}
       activeJobs={4}
       certs={2}
       points={1240}
-      programTitle="AWS Certified Cloud Practitioner Certificate"
+      programTitle={activeProgramTitle ?? 'AWS Certified Cloud Practitioner Certificate'}
       programStatus="In progress"
       nextBadgePercent={60}
       nextBadgeName="Cloud Foundations"

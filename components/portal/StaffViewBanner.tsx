@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Settings, X } from 'lucide-react';
 
 const COOKIE_NAME = 'wa_staff_view_banner_dismissed';
 
@@ -14,7 +15,9 @@ const COOKIE_NAME = 'wa_staff_view_banner_dismissed';
  * next time the staff member opens a fresh browser session.
  *
  * Rendered conditionally by the page (only when the viewer is staff),
- * so this component doesn't re-check the role itself.
+ * so this component doesn't re-check the role itself. Shown on the kit
+ * member home (WAP-194) and My Program; painted from `--wa-*` tokens (info
+ * tone) with lucide icons and a 44px dismiss target.
  */
 export default function StaffViewBanner({ page }: { page?: string }) {
   const [dismissed, setDismissed] = useState<boolean | null>(null);
@@ -39,25 +42,20 @@ export default function StaffViewBanner({ page }: { page?: string }) {
       role="status"
       aria-label="Staff view notice"
       data-staff-view-banner={page ?? ''}
+      className="wa-kit-tone--info"
       style={{
-        background: 'rgba(43,123,185,0.06)',
-        border: '1px solid rgba(43,123,185,0.2)',
-        borderRadius: '0.5rem',
-        padding: '0.5rem 0.75rem',
+        background: 'var(--wa-kit-tone-soft)',
+        border: '1px solid color-mix(in srgb, var(--wa-kit-tone) 25%, transparent)',
+        borderRadius: 'var(--wa-radius-sm)',
+        padding: '4px 4px 4px 12px',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.625rem',
-        fontSize: '0.8125rem',
-        color: 'var(--color-on-surface-variant)',
+        gap: 10,
+        fontSize: 'var(--wa-type-meta)',
+        color: 'var(--wa-text)',
       }}
     >
-      <span
-        className="material-symbols-outlined"
-        aria-hidden="true"
-        style={{ fontSize: '1rem', color: 'var(--color-blue)' }}
-      >
-        settings
-      </span>
+      <Settings size={16} aria-hidden style={{ color: 'var(--wa-info-dark)', flexShrink: 0 }} />
       <span style={{ flex: 1, minWidth: 0 }}>
         You&apos;re viewing this as a super-admin. Some sections may be empty if you&apos;re not enrolled in a program.
       </span>
@@ -65,17 +63,22 @@ export default function StaffViewBanner({ page }: { page?: string }) {
         type="button"
         onClick={handleDismiss}
         aria-label="Dismiss staff-view notice"
+        className="wa-kit-focus"
         style={{
           background: 'transparent',
           border: 'none',
-          color: 'var(--color-on-surface-variant)',
+          color: 'var(--wa-muted)',
           cursor: 'pointer',
-          padding: '0.125rem 0.25rem',
-          fontSize: '0.875rem',
-          lineHeight: 1,
+          width: 44,
+          height: 44,
+          flexShrink: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 'var(--wa-radius-sm)',
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>close</span>
+        <X size={16} aria-hidden />
       </button>
     </div>
   );

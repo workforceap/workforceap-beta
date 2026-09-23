@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { Briefcase, CheckCircle2, Circle, CircleHelp, Headset, MessagesSquare } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { submitFirst90DaysCheckIn } from '@/app/(portal)/dashboard/first90DaysAction';
 import {
   FIRST90_STAGES,
@@ -18,6 +20,11 @@ import {
  * stage, a one-tap "How's the job going?" check-in, and short
  * "talk to your supervisor" scripts for the stage. A trouble report is
  * escalated to counselors through the existing at-risk pipeline.
+ *
+ * A kit card (WAP-194): `--wa-*` tokens only, lucide icons, the kit's 44px
+ * ghost pills for the answers. Copy, the check-in server action and the
+ * escalation are unchanged. Accent tints read `--wa-accent`, the same brand
+ * accent as every other card in the kit home's column.
  */
 export type First90DaysCardProps = {
   stage: First90Stage;
@@ -29,14 +36,14 @@ export type First90DaysCardProps = {
   completedStages: First90Stage[];
 };
 
-const RESPONSE_OPTIONS: Array<{ value: First90Response; icon: string }> = [
-  { value: 'going_well', icon: 'check_circle' },
-  { value: 'have_questions', icon: 'help' },
-  { value: 'having_trouble', icon: 'support_agent' },
+const RESPONSE_OPTIONS: Array<{ value: First90Response; icon: LucideIcon }> = [
+  { value: 'going_well', icon: CheckCircle2 },
+  { value: 'have_questions', icon: CircleHelp },
+  { value: 'having_trouble', icon: Headset },
 ];
 
-/** Accent tint of the org accent: `--color-accent` is what OrgBrandingStyle overrides, so another org's accent reaches the card. */
-const accentTint = (pct: number) => `color-mix(in srgb, var(--color-accent) ${pct}%, transparent)`;
+/** Tint of the brand accent (`--wa-accent` flips with the colour scheme). */
+const accentTint = (pct: number) => `color-mix(in srgb, var(--wa-accent) ${pct}%, transparent)`;
 const successTint = (pct: number) => `color-mix(in srgb, var(--wa-success) ${pct}%, transparent)`;
 
 export default function First90DaysCard({
@@ -73,69 +80,66 @@ export default function First90DaysCard({
 
   return (
     <section style={variant === 'kit' ? undefined : { padding: '1rem 1.25rem 0' }} aria-labelledby="first90-card-title">
-      <div
-        className="portal-card portal-card--flat"
-        style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
+      <div className="wa-kit-card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           <span
             aria-hidden
             style={{
               background: accentTint(14),
               color: 'var(--wa-accent-text)',
-              width: '2.5rem',
-              height: '2.5rem',
-              borderRadius: '999px',
+              width: 40,
+              height: 40,
+              borderRadius: 999,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.35rem', fontVariationSettings: "'FILL' 1" }}>
-              work
-            </span>
+            <Briefcase size={20} />
           </span>
           <div style={{ minWidth: 0, flex: 1 }}>
             <p
               id="first90-card-title"
               style={{
                 margin: 0,
-                fontSize: '0.8125rem',
+                fontSize: 'var(--wa-type-meta)',
                 fontWeight: 800,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--color-accent-dark)',
+                color: 'var(--wa-accent-text)',
               }}
             >
               {t('eyebrow')}
             </p>
             <h2
               style={{
-                margin: '0.15rem 0 0.25rem',
-                fontSize: '1.05rem',
-                fontWeight: 700,
-                color: 'var(--color-on-surface)',
+                margin: '2px 0 4px',
+                fontSize: 17,
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                color: 'var(--wa-text)',
                 lineHeight: 1.3,
               }}
             >
               {t('title', { employerName })}
             </h2>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
+            <p className="wa-kit-meta" style={{ margin: 0 }}>
               {t('dayCount', { days: Math.max(daysSincePlacement, 0) })} · {t(`stageLabel.${stage}`)}
             </p>
           </div>
         </div>
 
-        {/* Stage progress dots */}
+        {/* Stage progress chips */}
         <div
           role="list"
           aria-label={t('progressAria')}
-          style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}
+          style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
         >
           {FIRST90_STAGES.map((s) => {
             const done = completedStages.includes(s) || (s === stage && !!savedResponse);
             const isCurrent = s === stage;
+            const Icon = done ? CheckCircle2 : Circle;
             return (
               <span
                 role="listitem"
@@ -143,23 +147,17 @@ export default function First90DaysCard({
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.3rem',
-                  fontSize: '0.8125rem',
+                  gap: 5,
+                  fontSize: 'var(--wa-type-meta)',
                   fontWeight: 700,
-                  padding: '0.25rem 0.6rem',
-                  borderRadius: '999px',
+                  padding: '4px 10px',
+                  borderRadius: 999,
                   background: isCurrent ? accentTint(10) : 'transparent',
-                  border: `1px solid ${isCurrent ? accentTint(30) : 'var(--outline-variant)'}`,
-                  color: isCurrent ? 'var(--color-accent-dark)' : 'var(--color-on-surface-variant)',
+                  border: `1px solid ${isCurrent ? accentTint(30) : 'var(--wa-border)'}`,
+                  color: isCurrent ? 'var(--wa-accent-text)' : 'var(--wa-muted)',
                 }}
               >
-                <span
-                  className="material-symbols-outlined"
-                  aria-hidden
-                  style={{ fontSize: '0.95rem', fontVariationSettings: done ? "'FILL' 1" : "'FILL' 0", color: done ? 'var(--wa-success)' : 'inherit' }}
-                >
-                  {done ? 'check_circle' : 'radio_button_unchecked'}
-                </span>
+                <Icon size={15} aria-hidden style={{ color: done ? 'var(--wa-success)' : 'currentColor', flexShrink: 0 }} />
                 {t(`stageLabel.${s}`)}
               </span>
             );
@@ -170,19 +168,29 @@ export default function First90DaysCard({
         {savedResponse ? (
           <div
             style={{
-              padding: '0.85rem 1rem',
-              borderRadius: '0.75rem',
+              padding: 'var(--wa-pad-sm)',
+              borderRadius: 'var(--wa-radius-sm)',
               background: successTint(8),
               border: `1px solid ${successTint(20)}`,
             }}
           >
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-on-surface)', lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', lineHeight: 1.5 }}>
               {t(`thanks.${savedResponse}`)}
             </p>
             {savedResponse !== 'going_well' && (
               <Link
                 href="/dashboard/messages"
-                style={{ display: 'inline-block', marginTop: '0.5rem', fontSize: '0.85rem', fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
+                className="wa-kit-focus"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  minHeight: 44,
+                  marginTop: 4,
+                  fontSize: 'var(--wa-type-body)',
+                  fontWeight: 700,
+                  color: 'var(--wa-accent-text)',
+                  textDecoration: 'none',
+                }}
               >
                 {t('messageCounselor')}
               </Link>
@@ -190,29 +198,29 @@ export default function First90DaysCard({
           </div>
         ) : (
           <div>
-            <p style={{ margin: '0 0 0.6rem', fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+            <p style={{ margin: '0 0 10px', fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)' }}>
               {t('question')}
             </p>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {RESPONSE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className="btn btn-ghost btn-small"
-                  disabled={isPending}
-                  onClick={() => submit(opt.value)}
-                  aria-label={t(`responses.${opt.value}`)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                >
-                  <span className="material-symbols-outlined" aria-hidden style={{ fontSize: '1.05rem' }}>
-                    {opt.icon}
-                  </span>
-                  {t(`responses.${opt.value}`)}
-                </button>
-              ))}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {RESPONSE_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+                    disabled={isPending}
+                    onClick={() => submit(opt.value)}
+                    aria-label={t(`responses.${opt.value}`)}
+                  >
+                    <Icon size={16} aria-hidden />
+                    {t(`responses.${opt.value}`)}
+                  </button>
+                );
+              })}
             </div>
             {error && (
-              <p role="alert" style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>
+              <p role="alert" style={{ margin: '8px 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-accent-text)' }}>
                 {t('saveError')}
               </p>
             )}
@@ -222,35 +230,35 @@ export default function First90DaysCard({
         {/* Supervisor scripts for this stage */}
         <details>
           <summary
+            className="wa-kit-focus"
             style={{
               cursor: 'pointer',
-              fontSize: '0.85rem',
+              minHeight: 44,
+              fontSize: 'var(--wa-type-body)',
               fontWeight: 700,
               color: 'var(--wa-accent-text)',
               listStyle: 'none',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.35rem',
+              gap: 6,
             }}
           >
-            <span className="material-symbols-outlined" aria-hidden style={{ fontSize: '1.05rem' }}>
-              record_voice_over
-            </span>
+            <MessagesSquare size={16} aria-hidden />
             {t('scriptsTitle')}
           </summary>
-          <div style={{ marginTop: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{t('scriptsIntro')}</p>
+          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p className="wa-kit-meta" style={{ margin: 0 }}>{t('scriptsIntro')}</p>
             {(['s1', 's2'] as const).map((key) => (
               <blockquote
                 key={key}
                 style={{
                   margin: 0,
-                  padding: '0.65rem 0.85rem',
+                  padding: '10px 14px',
                   borderLeft: `3px solid ${accentTint(35)}`,
-                  borderRadius: '0 0.5rem 0.5rem 0',
+                  borderRadius: '0 var(--wa-radius-sm) var(--wa-radius-sm) 0',
                   background: accentTint(5),
-                  fontSize: '0.88rem',
-                  color: 'var(--color-on-surface)',
+                  fontSize: 'var(--wa-type-body)',
+                  color: 'var(--wa-text)',
                   lineHeight: 1.5,
                 }}
               >
@@ -260,7 +268,7 @@ export default function First90DaysCard({
           </div>
         </details>
 
-        <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{t('footerNote')}</p>
+        <p className="wa-kit-meta" style={{ margin: 0 }}>{t('footerNote')}</p>
       </div>
     </section>
   );
