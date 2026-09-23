@@ -117,6 +117,20 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     expect(h.auditLog).not.toHaveBeenCalled();
   });
 
+  it("a certificate name the caller doesn't own is a 404 and touches nothing", async () => {
+    // The lookup is keyed on the session user, so another member's
+    // certificate of the same name is never found.
+    h.prisma.userCertification.findUnique.mockResolvedValue(null);
+    const res = await POST(uploadRequest('Someone Elses Cert') as never);
+    expect(res.status).toBe(404);
+    expect(h.prisma.userCertification.findUnique).toHaveBeenCalledWith({
+      where: { userId_certName: { userId: 'user-1', certName: 'Someone Elses Cert' } },
+    });
+    expect(h.upload).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(h.auditLog).not.toHaveBeenCalled();
+  });
+
   it('a failed storage upload changes nothing on a verified certificate', async () => {
     h.prisma.userCertification.findUnique.mockResolvedValue(cert('approved'));
     h.upload.mockResolvedValueOnce({ data: null, error: { message: 'boom' } } as never);

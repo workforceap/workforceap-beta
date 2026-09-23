@@ -5,6 +5,8 @@ import { prisma } from '@/lib/db/prisma';
 import { z } from 'zod';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
+import { logAuditEvent } from '@/lib/audit/log';
 
 const toggleSchema = z.object({
   certName: z.string().min(1).max(200),
@@ -59,26 +61,73 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
     // review queue (/admin/certifications); the lifecycle event, points,
     // notification and partner milestone fire from the review route on
     // approval (lib/certifications/certificationApproved.ts), never here.
-    // Re-adding an existing cert only refreshes the date and leaves its
-    // review status alone.
-    const row = await prisma.$transaction((tx) => tx.userCertification.upsert({
-      where: {
-        userId_certName: { userId: user.id, certName },
-      },
-      create: {
-        userId: user.id,
-        certName,
-        earnedAt,
-        status: 'pending',
-        submittedAt: new Date(),
-      },
-      update: {
-        // Update earnedAt only when a specific date is provided (manual add)
-        ...(earnedAtStr ? { earnedAt } : {}),
-      },
-      select: { status: true },
-    }));
-    return NextResponse.json({ success: true, status: row?.status });
+    // Re-adding an existing pending or rejected cert only refreshes the date
+    // and leaves its review status alone.
+    //
+    // A verified (`approved`) cert stays verified (Mike, 2026-09-23 02:39
+    // UTC): re-adding it changes nothing (not the date, name, status or
+    // review fields), and an attempt to re-date it is recorded in the audit
+    // log. Same rule as the file-attach route (./upload/route.ts).
+    const outcome = await prisma.$transaction(async (tx) => {
+      const existing = await tx.userCertification.findUnique({
+        where: { userId_certName: { userId: user.id, certName } },
+        select: { id: true, certName: true, status: true, earnedAt: true },
+      });
+      if (existing?.status === 'approved') {
+        return { kind: 'verified' as const, cert: existing };
+      }
+      if (existing) {
+        if (earnedAtStr) {
+          // Guarded on status so a row approved in the meantime is not re-dated.
+          await tx.userCertification.updateMany({
+            where: { id: existing.id, userId: user.id, status: { not: 'approved' } },
+            data: { earnedAt },
+          });
+        }
+        return { kind: 'saved' as const, status: existing.status };
+      }
+      const row = await tx.userCertification.upsert({
+        where: {
+          userId_certName: { userId: user.id, certName },
+        },
+        create: {
+          userId: user.id,
+          certName,
+          earnedAt,
+          status: 'pending',
+          submittedAt: new Date(),
+        },
+        update: {},
+        select: { status: true },
+      });
+      return { kind: 'saved' as const, status: row?.status };
+    });
+
+    if (outcome.kind === 'verified') {
+      const { cert } = outcome;
+      if (earnedAtStr && earnedAt.getTime() !== cert.earnedAt.getTime()) {
+        const keptEarnedAt = cert.earnedAt.toISOString();
+        const requestedEarnedAt = earnedAt.toISOString();
+        void auditLog({
+          actorUserId: user.id,
+          action: 'member.certification.redate_blocked_verified',
+          targetType: 'user_certification',
+          targetId: cert.id,
+          metadata: { certName: cert.certName, status: 'approved', keptEarnedAt, requestedEarnedAt },
+        }).catch(() => {});
+        void logAuditEvent({
+          user: { id: user.id, role: 'member' },
+          verb: 'update',
+          object: { type: 'UserCertification', id: cert.id },
+          result: {
+            success: false,
+            extensions: { field: 'earnedAt', status: 'approved', statusKept: true, keptEarnedAt, requestedEarnedAt },
+          },
+        }).catch(() => {});
+      }
+      return NextResponse.json({ success: true, status: 'approved', verifiedUnchanged: true });
+    }
+    return NextResponse.json({ success: true, status: outcome.status });
   } else {
     await prisma.$transaction((tx) => tx.userCertification.deleteMany({
       where: { userId: user.id, certName },
