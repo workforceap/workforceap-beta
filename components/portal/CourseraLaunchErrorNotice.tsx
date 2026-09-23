@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 const LAUNCH_ERROR_COPY = {
   launch_failed: {
     title: "We couldn't open your course on Coursera.",
-    body: 'Try the launch button again in a few minutes. If it still does not open, message your counselor.',
+    body: 'Try again in a few minutes. If the course still does not open, message your counselor.',
   },
   course_not_assigned: {
     title: "That course isn't part of your program.",
