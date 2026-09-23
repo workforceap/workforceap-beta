@@ -5,7 +5,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { isExcludedPublicEmployerName, isExcludedPublicJobTitle } from '@/lib/jobs/publicJobFilters';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
-import { getAgeGroup } from '@/lib/util/ageCalculation';
+import { resolveJobBoardAgeGroup } from '@/lib/jobs/jobBoardAgeGroup';
 import { Briefcase } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
@@ -121,19 +121,19 @@ export default async function JobsPage({
         : Promise.resolve(pipelineRows),
     ]);
 
+    // Fails closed (WAP-260): a failed read or a minor with no date of birth
+    // gets the youth board, never the adult one.
+    ageGroup = resolveJobBoardAgeGroup(
+      profileResult.status === 'fulfilled' ? profileResult.value : 'failed',
+    );
     if (profileResult.status === 'fulfilled') {
       const profile = profileResult.value;
-      if (profile?.dob) {
-        ageGroup = getAgeGroup(profile.dob);
-      }
       profileCity = profile?.city?.trim() || null;
       profileState = profile?.state?.trim() || null;
       externalSearch = buildExternalJobSearchQuery({
         careerRecommendation: (profile?.user?.careerRecommendationJson ?? null) as CareerMatchResult | null,
         programSlug: profile?.user?.courseEnrollments[0]?.programSlug ?? profile?.user?.enrolledProgram ?? null,
       });
-    } else {
-      ageGroup = 'adult18plus';
     }
 
     if (appliedResult.status === 'fulfilled') {

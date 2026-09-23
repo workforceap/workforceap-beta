@@ -7,6 +7,9 @@ import { isExcludedPublicEmployerName, isExcludedPublicJobTitle } from '@/lib/jo
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
 import { getCacheOrFetch } from '@/lib/cache';
 import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
+import { getUser } from '@/lib/auth/server';
+import { isAgeGroup, resolveJobBoardAgeGroup, stricterAgeGroup } from '@/lib/jobs/jobBoardAgeGroup';
+import type { AgeGroup } from '@/lib/util/ageCalculation';
 
 /** Public jobs listing - only live jobs for students */
 async function _GET(request: NextRequest) {
@@ -19,7 +22,20 @@ async function _GET(request: NextRequest) {
     const salaryMinParam = searchParams.get('salaryMin');
     const salaryMaxParam = searchParams.get('salaryMax');
     const sort = searchParams.get('sort') || 'newest';
-    const ageGroup = searchParams.get('ageGroup') as 'under14' | 'youth14to17' | 'adult18plus' | null;
+    // A signed-in member's board comes from their own profile, not the query
+    // string (WAP-260): `?ageGroup=` may only tighten it, never loosen it, and
+    // a failed profile read fails closed. Signed-out visitors keep the public
+    // board, narrowed by the parameter if one is sent.
+    const requestedAgeGroup = searchParams.get('ageGroup');
+    const requested = isAgeGroup(requestedAgeGroup) ? requestedAgeGroup : null;
+    const user = await getUser();
+    let ageGroup: AgeGroup | null = requested;
+    if (user) {
+      const profile = await prisma.profile
+        .findUnique({ where: { userId: user.id }, select: { dob: true, isMinor: true } })
+        .catch(() => 'failed' as const);
+      ageGroup = stricterAgeGroup(resolveJobBoardAgeGroup(profile), requested);
+    }
 
     const andConditions: Prisma.JobWhereInput[] = [];
 

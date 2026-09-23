@@ -344,6 +344,33 @@ describe('member job list and matches exclude inactive employers', () => {
   });
 });
 
+// WAP-260: the page's live-jobs query must carry the youth restriction for a
+// member it cannot prove is an adult. One adult-only job (not youthAppropriate)
+// is added to the fixtures for these cases; the real `where` decides.
+describe('/dashboard/jobs fails closed to the youth board', () => {
+  const ADULT_ONLY = { ...JOBS[0], id: '66666666-6666-4666-8666-666666666666', youthAppropriate: false };
+  const openRoleIds = async () => {
+    vi.mocked(prisma.job.findMany).mockImplementationOnce(((args: any) => Promise.resolve(findAll([...JOBS, ADULT_ONLY], args))) as any);
+    const page = (await JobsPage({ searchParams: Promise.resolve({}) })) as any;
+    return (page.props.children.props.openRoles as Array<{ id: string }>).map((r) => r.id);
+  };
+
+  it('a failed profile read never shows the adult-only job', async () => {
+    vi.mocked(prisma.profile.findUnique).mockRejectedValueOnce(new Error('db down'));
+    expect(await openRoleIds()).not.toContain(ADULT_ONLY.id);
+  });
+
+  it('a minor with no date of birth does not see the adult-only job', async () => {
+    vi.mocked(prisma.profile.findUnique).mockResolvedValueOnce({ dob: null, isMinor: true } as any);
+    expect(await openRoleIds()).not.toContain(ADULT_ONLY.id);
+  });
+
+  it('an adult still sees it', async () => {
+    vi.mocked(prisma.profile.findUnique).mockResolvedValueOnce({ dob: new Date('1990-01-01'), isMinor: false } as any);
+    expect(await openRoleIds()).toContain(ADULT_ONLY.id);
+  });
+});
+
 describe('direct links to an inactive employer job behave as not found', () => {
   it('GET /api/dashboard/jobs/[id] is 404 for inactive and 200 for active', async () => {
     const req = () => new Request('http://localhost/api/dashboard/jobs/x') as any;
