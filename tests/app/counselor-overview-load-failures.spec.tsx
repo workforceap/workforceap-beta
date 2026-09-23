@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { emptyAttentionQueue } from '@/lib/attention/evaluate';
+import en from '@/messages/en.json';
 
 /**
  * WAP-206: a failed load on the counselor Overview is unknown, not zero.
@@ -20,7 +21,14 @@ vi.mock('next/navigation', () => ({
     throw new Error(`redirect:${to}`);
   }),
 }));
-vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
+// Real en.json copy, so the failed-load words the page passes to the kit are the shipped ones.
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn(async (ns: string) => (key: string) => {
+    let node: unknown = (en as Record<string, unknown>)[ns];
+    for (const part of key.split('.')) node = (node as Record<string, unknown> | undefined)?.[part];
+    return typeof node === 'string' ? node : `${ns}.${key}`;
+  }),
+}));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'counselor-user-1' })) }));
 vi.mock('@/lib/auth/roles', () => ({
   isCounselor: vi.fn(async () => true),
@@ -91,8 +99,8 @@ describe('counselor Overview load failures (WAP-206)', () => {
     expect(within(awaiting).queryByText('0')).toBeNull();
     expect(within(awaiting).getByText('—')).toBeInTheDocument();
     expect(within(awaiting).getByText("Couldn't load")).toBeInTheDocument();
-    expect(screen.getByText(/Couldn.t load recent interview-prep sessions/)).toBeInTheDocument();
-    expect(screen.queryByText(/No interview-prep sessions run this week/)).toBeNull();
+    expect(screen.getByText(/Couldn.t load recent interview practice/)).toBeInTheDocument();
+    expect(screen.queryByText(/No member ran interview practice/)).toBeNull();
 
     // The attention queue still loaded, so its tiles keep their numbers.
     expect(within(tile('Members with risk alerts')).getByText('2')).toBeInTheDocument();
@@ -114,5 +122,62 @@ describe('counselor Overview load failures (WAP-206)', () => {
 
     // The command center still loaded.
     expect(within(tile('Awaiting reply')).getByText('4')).toBeInTheDocument();
+  });
+});
+
+const copy = en.empty.counselor.overviewUnavailable;
+
+describe('counselor Overview failed-load states offer a retry (WAP-206 follow-up)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    loaders.commandCenter.mockResolvedValue(center);
+    loaders.attention.mockResolvedValue(attentionWith(2, 3));
+  });
+
+  it('command center fails: one danger alert under the tiles with Try again back to the Overview', async () => {
+    loaders.commandCenter.mockRejectedValue(new Error('db down'));
+    await renderPage();
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toBe(screen.getByTestId('counselor-overview-counts-load-failed'));
+    expect(alert.dataset.kind).toBe('unavailable');
+    expect(alert.dataset.tone).toBe('danger');
+    expect(alert).toHaveTextContent(copy.countsTitle);
+    expect(alert).toHaveTextContent(/unknown, not zero/);
+    expect(within(alert).getByRole('link', { name: copy.action })).toHaveAttribute('href', '/counselor/overview');
+  });
+
+  it('attention fails: the queue state is the one alert, with Try again and Open Today; the counts box is a warning', async () => {
+    loaders.attention.mockRejectedValue(new Error('db down'));
+    await renderPage();
+
+    const queue = screen.getByRole('alert');
+    expect(queue).toBe(screen.getByTestId('counselor-overview-queue-load-failed'));
+    expect(queue.dataset.kind).toBe('unavailable');
+    expect(queue.dataset.tone).toBe('danger');
+    expect(queue).toHaveTextContent(/not an empty queue/);
+    expect(within(queue).getByRole('link', { name: copy.action })).toHaveAttribute('href', '/counselor/overview');
+    expect(within(queue).getByRole('link', { name: 'Open Today' })).toHaveAttribute('href', '/counselor/today');
+
+    const counts = screen.getByTestId('counselor-overview-counts-load-failed');
+    expect(counts).not.toHaveAttribute('role');
+    expect(counts.dataset.tone).toBe('warn');
+    expect(within(counts).getByRole('link', { name: copy.action })).toHaveAttribute('href', '/counselor/overview');
+  });
+
+  it('both load with zero: honest zeros, no failed state, the relabelled practice card', async () => {
+    loaders.commandCenter.mockResolvedValue({ ...center, interviewing: [], totals: { ...center.totals, needsReplyCount: 0, slaBreachCount: 0, interviewingCount: 0 } });
+    loaders.attention.mockResolvedValue(attentionWith(0, 0));
+    await renderPage();
+
+    expect(within(tile('Awaiting reply')).getByText('0')).toBeInTheDocument();
+    expect(within(tile('Members with risk alerts')).getByText('0')).toBeInTheDocument();
+    expect(within(tile('On track')).getByText('0')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByTestId('counselor-overview-counts-load-failed')).toBeNull();
+    expect(screen.getByText('Interview practice · last 7 days')).toBeInTheDocument();
+    expect(screen.queryByText('Today / this week')).toBeNull();
+    expect(screen.getByText('No member ran interview practice in the last 7 days.')).toBeInTheDocument();
   });
 });
