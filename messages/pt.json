@@ -64,6 +64,7 @@
     "collapseSidebar": "Recolher barra lateral",
     "workspaceTabs": "Abas do espaço de trabalho",
     "unreadCount": "{count, plural, one {# não lida} other {# não lidas}}",
+    "pendingApplicationsCount": "{count, plural, one {# aguardando o empregador} other {# aguardando empregadores}}",
     "mobileBottomNav": {
       "ariaLabel": "Navegação móvel principal",
       "marketing": {
@@ -90,6 +91,7 @@
       "partner": {
         "overview": "Visão Geral",
         "members": "Membros",
+        "attention": "Atenção",
         "messages": "Mensagens",
         "milestones": "Marcos",
         "outcomes": "Resultados"
@@ -669,6 +671,30 @@
     "screeningSectionTitle": "Detalhes da triagem de elegibilidade",
     "ageGroupLabel": "Faixa etária *",
     "ageGroupPlaceholder": "Selecione a faixa etária",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 ou mais"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º ano",
+      "10": "10.º ano",
+      "11": "11.º ano",
+      "12": "12.º ano",
+      "other": "Outro / recém-formado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Preciso de formação em uma ocupação em demanda ou de um certificado",
+      "no_barrier": "Nenhuma barreira no momento",
+      "employment_gap": "Período sem emprego",
+      "limited_work_history": "Pouca experiência de trabalho",
+      "snap_tanf_wic": "SNAP / TANF / vale-alimentação / WIC",
+      "justice_involved": "Antecedentes / envolvimento com a justiça",
+      "disability_health": "Deficiência ou problema de saúde",
+      "housing_instable": "Moradia instável",
+      "other_barrier": "Outra barreira"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barreira(s) principal(is) — marque todas que se aplicam *",
     "primaryBarriersAria": "Barreiras principais",
@@ -1495,6 +1521,10 @@
     "nextActionCelebrateTip": "Suas indicações estão resultando em empregos. Mantenha o pipeline cheio.",
     "nextActionReviewProgress": "Acompanhe o progresso dos membros",
     "nextActionReviewProgressTip": "Os membros estão avançando na jornada — acompanhe seus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Ninguém precisa de atenção agora} =1 {1 membro precisa de atenção} other {# membros precisam de atenção}}",
+    "nextActionAttentionTip": "Membros que pararam ou ficaram em silêncio. Entre em contato antes que desistam.",
+    "nextActionAttentionUnavailable": "Não foi possível carregar quem precisa de atenção",
+    "nextActionAttentionUnavailableTip": "O número é desconhecido, não zero. Abra a fila para vê-lo.",
     "partnerInsights": "Insights do parceiro",
     "assistantSpeaking": "O assistente está falando…",
     "assistantListening": "Ouvindo — faça sua pergunta",
@@ -3793,6 +3823,17 @@
       "action": "Tentar novamente",
       "secondary": "Ver vagas"
     },
+    "applicationsUnavailable": {
+      "title": "Não foi possível carregar suas candidaturas",
+      "body": "Seus totais são desconhecidos, não zero. Tente novamente em instantes.",
+      "action": "Tentar novamente",
+      "kpiCaption": "Não foi possível carregar"
+    },
+    "openingsUnavailable": {
+      "title": "Não foi possível carregar as vagas",
+      "body": "É um problema de carregamento, não um quadro vazio. Tente novamente em instantes.",
+      "action": "Tentar novamente"
+    },
     "stage": {
       "title": "Nada nesta etapa"
     },
@@ -4001,6 +4042,17 @@
       "workQueueUnavailable": {
         "title": "Não foi possível carregar a fila de trabalho",
         "body": "Algo deu errado ao buscar a fila. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Não foi possível carregar algumas contagens da carteira",
+        "countsBody": "Um bloco com — é desconhecido, não zero. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "tileCaption": "Não foi possível carregar",
+        "queueTitle": "Não foi possível carregar quem precisa de você",
+        "queueBody": "A lista não respondeu, então isto não é uma fila vazia. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "queueSecondary": "Abrir Hoje",
+        "sessions": "Não foi possível carregar a prática de entrevistas recente.",
+        "breakdown": "Não foi possível carregar a divisão da carteira.",
         "action": "Tentar novamente"
       },
       "inbox": {

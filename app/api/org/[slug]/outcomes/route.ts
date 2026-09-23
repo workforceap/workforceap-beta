@@ -8,6 +8,7 @@ import {
   getDefaultQuarter,
   type QuarterSpec,
 } from '@/lib/analytics/partnerQuarterlyOutcomes';
+import { toPublicPartnerOutcomes } from '@/lib/outcomes/publicPartnerOutcomes';
 
 function parseQuarterParam(raw: string | null): QuarterSpec['quarter'] | null {
   if (!raw) return null;
@@ -52,13 +53,10 @@ async function _GET(req: NextRequest, { params }: { params: Promise<{ slug: stri
 
     const body = await generatePartnerQuarterlyOutcomes(partner.organizationId, partner.id, spec);
 
-    // Strip membersList from public response for privacy
-    const publicBody = {
-      ...body,
-      membersList: undefined,
-    };
-
-    return NextResponse.json(publicBody);
+    // Public, unauthenticated: an allowlist projection that follows the
+    // methodology's public rules (no member rows, no salary or days-to-place,
+    // small-N rates suppressed). See docs/OUTCOMES-METHODOLOGY.md section 7.
+    return NextResponse.json(toPublicPartnerOutcomes(body));
   } catch (error) {
     console.error('/api/org/[slug]/outcomes error:', error);
     return NextResponse.json(

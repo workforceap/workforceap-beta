@@ -10,6 +10,7 @@ import {
   NAV_GROUP_ALWAYS_OPEN,
   NAV_GROUP_COLLAPSED_BY_DEFAULT,
   NAV_GROUP_LABELS,
+  PARTNER_PORTAL_NAV_ITEMS,
   navChildrenOf,
   navItemsForActiveRoute,
   navTopLevelItems,
@@ -104,7 +105,10 @@ test('labeled preassessment CTAs use the assessment page', () => {
   assert.match(guide, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(guide, /href: '\/dashboard\/skills-assessment'/);
 
-  const home = source('components/portal/DashboardHomeClient.tsx');
+  // The member home's preassessment CTA comes from the next-best-action
+  // builder the kit home renders (the legacy DashboardHomeClient is gone, WAP-195).
+  const home = source('lib/member/nextBestActions.ts');
+  assert.match(home, /title: 'Complete your Training Preassessment'/);
   assert.match(home, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(home, /href: '\/dashboard\/skills-assessment'/);
 
@@ -256,4 +260,10 @@ test('counselor Messages and Today carry their badge keys', () => {
   assert.equal(byHref('/counselor/messages')?.badgeKey, 'counselor_messages_unread');
   assert.equal(byHref('/counselor/today')?.badgeKey, 'counselor_sla_breach_48h');
   assert.equal(byHref('/counselor/notifications')?.badgeKey, 'counselor_notifications_unread');
+});
+
+// WAP-215: the partner attention count is the Attention queue's, so it badges the queue row only.
+test('partner attention badge sits on the Attention queue, not Referred members', () => {
+  const badged = PARTNER_PORTAL_NAV_ITEMS.filter((entry) => entry.badgeKey === 'partner_needs_attention');
+  assert.deepEqual(badged.map((entry) => entry.href), ['/partner/attention']);
 });

@@ -305,6 +305,55 @@ async function enrollAndReport(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Member-facing failure copy                                         */
+/* ------------------------------------------------------------------ */
+
+type EnrollStep = 'invite' | 'membership' | 'enroll';
+
+type EnrollFailureView = {
+  code: 'COURSERA_UNAVAILABLE' | 'COURSERA_ENROLL_REJECTED';
+  error: string;
+  step: EnrollStep;
+};
+
+/**
+ * Fixed, actionable copy for a failed provider step. Built only from the
+ * step and HTTP status: the provider's error text (and therefore the
+ * `EnrollStateError.message`) can carry account or internal detail and must
+ * never reach the member. A 4xx is a Coursera rejection that will not fix
+ * itself, so the member is pointed at their counselor. Anything else (a
+ * transport failure, status 0, or a 5xx) is worth retrying. The copy never
+ * claims that staff were notified: nothing here notifies anyone.
+ */
+export function enrollFailureView(args: { step: EnrollStep; httpStatus: number }): EnrollFailureView {
+  const rejected = args.httpStatus >= 400 && args.httpStatus < 500;
+  if (!rejected) {
+    return {
+      code: 'COURSERA_UNAVAILABLE',
+      error: "We couldn't reach Coursera just now. Please try again in a few minutes.",
+      step: args.step,
+    };
+  }
+  return {
+    code: 'COURSERA_ENROLL_REJECTED',
+    error:
+      "Coursera couldn't complete this enrollment. Please message your counselor so they can sort it out with you.",
+    step: args.step,
+  };
+}
+
+/**
+ * Fixed copy for `CourseraRosterIncompleteError` (lib/coursera/enrollPort.ts):
+ * the roster scan did not finish, so the state machine stopped before any
+ * write. Nothing was sent; a later retry does a fresh scan.
+ */
+export const COURSERA_ROSTER_INCOMPLETE_VIEW = {
+  code: 'COURSERA_ROSTER_INCOMPLETE',
+  error:
+    "We couldn't finish checking your Coursera account, so no invitation was sent. Please try again in a few minutes.",
+} as const;
+
+/* ------------------------------------------------------------------ */
 /*  Error type                                                         */
 /* ------------------------------------------------------------------ */
 

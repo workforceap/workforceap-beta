@@ -1,6 +1,3 @@
-import NextLink from 'next/link';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
@@ -11,6 +8,7 @@ import {
   type KpiItem,
   type KitTone,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Agent Inbox — admin review queue for drafts and incomplete deliveries (dense, read-only).
@@ -144,9 +142,7 @@ export function AgentInboxKit({
         kicker="Agentforce"
         lede={goal}
         action={
-          <AstryxLink href="/admin/agent-inbox?ui=legacy" as={NextLink as never} isStandalone>
-            <Button label="Review & Send" variant="primary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton href="/admin/agent-inbox?ui=legacy" label="Review & Send" variant="primary" size="sm" />
         }
       />
 

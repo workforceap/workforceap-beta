@@ -65,6 +65,7 @@
     "collapseSidebar": "Collapse sidebar",
     "workspaceTabs": "Workspace tabs",
     "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "pendingApplicationsCount": "{count, plural, one {# waiting on an employer} other {# waiting on employers}}",
     "mobileBottomNav": {
       "ariaLabel": "Primary mobile navigation",
       "marketing": {
@@ -91,6 +92,7 @@
       "partner": {
         "overview": "Overview",
         "members": "Members",
+        "attention": "Attention",
         "messages": "Messages",
         "milestones": "Milestones",
         "outcomes": "Outcomes"
@@ -734,6 +736,30 @@
     "screeningSectionTitle": "Eligibility screening details",
     "ageGroupLabel": "Age group *",
     "ageGroupPlaceholder": "Select age group",
+    "ageGroupOptions": {
+      "under_18": "Under 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50+"
+    },
+    "gradeLevelOptions": {
+      "9": "9th grade",
+      "10": "10th grade",
+      "11": "11th grade",
+      "12": "12th grade",
+      "other": "Other / recent graduate"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Need in-demand occupation or certificate training",
+      "no_barrier": "No barrier right now",
+      "employment_gap": "Employment gap",
+      "limited_work_history": "Limited work history",
+      "snap_tanf_wic": "SNAP / TANF / Food Stamps / WIC",
+      "justice_involved": "Background / justice involvement",
+      "disability_health": "Disability or health barrier",
+      "housing_instable": "Housing instability",
+      "other_barrier": "Other barrier"
+    },
     "countyLabel": "County *",
     "primaryBarriersLabel": "Primary barrier(s) — check all that apply *",
     "primaryBarriersAria": "Primary barriers",
@@ -1550,6 +1576,10 @@
     "nextActionCelebrateTip": "Your referrals are landing jobs. Keep the pipeline full.",
     "nextActionReviewProgress": "Track member progress",
     "nextActionReviewProgressTip": "Members are moving through their journey — follow their outcomes.",
+    "nextActionAttention": "{count, plural, =0 {No one needs attention right now} =1 {1 member needs attention} other {# members need attention}}",
+    "nextActionAttentionTip": "Members who stalled or went quiet. Check in before they drop off.",
+    "nextActionAttentionUnavailable": "Couldn't load who needs attention",
+    "nextActionAttentionUnavailableTip": "The count is unknown, not zero. Open the queue to see it.",
     "assistantSpeaking": "Assistant is speaking…",
     "assistantListening": "Listening — ask your question",
     "referredMembersTableSubtitle": "Name, journey status, enrollment and placement dates, and each member's contribution to your estimated payout.",
@@ -3850,6 +3880,17 @@
       "action": "Try again",
       "secondary": "Browse jobs"
     },
+    "applicationsUnavailable": {
+      "title": "Couldn't load your applications",
+      "body": "Your counts are unknown, not zero. Try again in a moment.",
+      "action": "Try again",
+      "kpiCaption": "Couldn't load"
+    },
+    "openingsUnavailable": {
+      "title": "Couldn't load open roles",
+      "body": "This is a loading problem, not an empty board. Try again in a moment.",
+      "action": "Try again"
+    },
     "stage": {
       "title": "Nothing in this stage"
     },
@@ -4059,6 +4100,17 @@
         "title": "Could not load work queue",
         "body": "Something went wrong fetching the queue. Try again.",
         "action": "Retry"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Some caseload counts couldn't load",
+        "countsBody": "A tile showing — is unknown, not zero. Try again; if this keeps happening, tell an admin.",
+        "tileCaption": "Couldn't load",
+        "queueTitle": "Couldn't load who needs you",
+        "queueBody": "The list did not answer, so this is not an empty queue. Try again; if this keeps happening, tell an admin.",
+        "queueSecondary": "Open Today",
+        "sessions": "Couldn't load recent interview practice.",
+        "breakdown": "Couldn't load the caseload breakdown.",
+        "action": "Try again"
       },
       "inbox": {
         "title": "No members assigned yet",

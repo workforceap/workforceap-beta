@@ -14,7 +14,7 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {
   partner: { findUnique: mocks.partner },
   partnerReferral: { count: mocks.count, findMany: mocks.list },
   placementRecord: { count: mocks.count },
-  memberEvent: { findMany: mocks.list },
+  memberEvent: { findMany: mocks.list, count: mocks.count },
   application: { count: mocks.count },
   user: { count: mocks.count },
 } }));

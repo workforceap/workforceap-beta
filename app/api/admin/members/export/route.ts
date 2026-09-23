@@ -16,13 +16,17 @@ import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOn
 import { buildDirectorySearchWhere, normalizeDirectorySearch } from '@/lib/admin/directorySearch';
 import { buildStatusWhere, type StudentStatus } from '@/lib/admin/studentStatus';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { csvEscape } from '@/lib/csv';
 
 const MAX_EXPORT = 5000;
 
-function csvEscape(s: string | number | null | undefined): string {
-  const str = s == null ? '' : String(s);
-  if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
-  return str;
+/**
+ * One CSV cell through the shared `lib/csv.ts` escaper, which quotes and
+ * neutralises a leading `= + - @ TAB CR` so a member-typed value opens in
+ * Excel or Sheets as text, not a formula (S01/P02).
+ */
+function csvCell(value: string | number | null | undefined): string {
+  return csvEscape(String(value ?? ''));
 }
 
 function formatDate(value: Date | string | null | undefined): string {
@@ -249,7 +253,7 @@ async function _GET(request: NextRequest) {
       ];
     });
 
-    const lines = [headers.map(csvEscape).join(','), ...rows.map((r) => r.map(csvEscape).join(','))];
+    const lines = [headers.map(csvCell).join(','), ...rows.map((r) => r.map(csvCell).join(','))];
     const csv = lines.join('\n');
 
     await auditLog({
@@ -303,6 +307,7 @@ async function _GET(request: NextRequest) {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="members-export-${new Date().toISOString().slice(0, 10)}.csv"`,
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {

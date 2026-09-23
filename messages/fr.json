@@ -64,6 +64,7 @@
     "collapseSidebar": "Réduire la barre latérale",
     "workspaceTabs": "Onglets de l'espace de travail",
     "unreadCount": "{count, plural, one {# non lu} other {# non lus}}",
+    "pendingApplicationsCount": "{count, plural, one {# en attente d’un employeur} other {# en attente d’employeurs}}",
     "mobileBottomNav": {
       "ariaLabel": "Navigation mobile principale",
       "marketing": {
@@ -90,6 +91,7 @@
       "partner": {
         "overview": "Aperçu",
         "members": "Membres",
+        "attention": "Attention",
         "messages": "Messages",
         "milestones": "Étapes",
         "outcomes": "Résultats"
@@ -669,6 +671,30 @@
     "screeningSectionTitle": "Détails du dépistage d'éligibilité",
     "ageGroupLabel": "Tranche d'âge *",
     "ageGroupPlaceholder": "Sélectionnez une tranche d'âge",
+    "ageGroupOptions": {
+      "under_18": "Moins de 18 ans",
+      "18_24": "18–24 ans",
+      "25_50": "25–50 ans",
+      "50_plus": "50 ans et plus"
+    },
+    "gradeLevelOptions": {
+      "9": "9e année",
+      "10": "10e année",
+      "11": "11e année",
+      "12": "12e année",
+      "other": "Autre / récemment diplômé"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Besoin d'une formation à un métier recherché ou d'un certificat",
+      "no_barrier": "Aucun obstacle pour l'instant",
+      "employment_gap": "Période sans emploi",
+      "limited_work_history": "Expérience professionnelle limitée",
+      "snap_tanf_wic": "SNAP / TANF / bons alimentaires / WIC",
+      "justice_involved": "Antécédents judiciaires",
+      "disability_health": "Handicap ou problème de santé",
+      "housing_instable": "Logement instable",
+      "other_barrier": "Autre obstacle"
+    },
     "countyLabel": "Comté *",
     "primaryBarriersLabel": "Obstacle(s) principal(aux) — cochez tout ce qui s'applique *",
     "primaryBarriersAria": "Obstacles principaux",
@@ -1495,6 +1521,10 @@
     "nextActionCelebrateTip": "Vos recommandations débouchent sur des emplois. Gardez le pipeline plein.",
     "nextActionReviewProgress": "Suivez la progression des membres",
     "nextActionReviewProgressTip": "Les membres avancent dans leur parcours — suivez leurs résultats.",
+    "nextActionAttention": "{count, plural, =0 {Personne n'a besoin d'attention pour l'instant} =1 {1 membre a besoin d'attention} other {# membres ont besoin d'attention}}",
+    "nextActionAttentionTip": "Membres bloqués ou silencieux. Prenez contact avant qu'ils n'abandonnent.",
+    "nextActionAttentionUnavailable": "Impossible de charger qui a besoin d'attention",
+    "nextActionAttentionUnavailableTip": "Le nombre est inconnu, pas nul. Ouvrez la file pour le voir.",
     "partnerInsights": "Informations partenaire",
     "assistantSpeaking": "L'assistant parle…",
     "assistantListening": "À l'écoute — posez votre question",
@@ -3793,6 +3823,17 @@
       "action": "Réessayer",
       "secondary": "Parcourir les emplois"
     },
+    "applicationsUnavailable": {
+      "title": "Impossible de charger vos candidatures",
+      "body": "Vos totaux sont inconnus, pas nuls. Réessayez dans un instant.",
+      "action": "Réessayer",
+      "kpiCaption": "Chargement impossible"
+    },
+    "openingsUnavailable": {
+      "title": "Impossible de charger les offres",
+      "body": "C'est un problème de chargement, pas un tableau vide. Réessayez dans un instant.",
+      "action": "Réessayer"
+    },
     "stage": {
       "title": "Rien à cette étape"
     },
@@ -4001,6 +4042,17 @@
       "workQueueUnavailable": {
         "title": "Impossible de charger la file de travail",
         "body": "Une erreur s'est produite lors du chargement de la file. Réessayez.",
+        "action": "Réessayer"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Certains totaux du portefeuille n'ont pas pu être chargés",
+        "countsBody": "Une tuile affichant — est inconnue, pas zéro. Réessayez ; si cela se reproduit, prévenez un administrateur.",
+        "tileCaption": "Chargement impossible",
+        "queueTitle": "Impossible de charger qui a besoin de vous",
+        "queueBody": "La liste n'a pas répondu : ce n'est donc pas une file vide. Réessayez ; si cela se reproduit, prévenez un administrateur.",
+        "queueSecondary": "Ouvrir Aujourd'hui",
+        "sessions": "Impossible de charger les entraînements d'entretien récents.",
+        "breakdown": "Impossible de charger la répartition du portefeuille.",
         "action": "Réessayer"
       },
       "inbox": {

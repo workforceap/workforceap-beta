@@ -16,6 +16,13 @@ const mocks = vi.hoisted(() => ({
   mappings: vi.fn(),
   sync: vi.fn(),
   manifest: vi.fn(),
+  RosterIncompleteError: class CourseraRosterIncompleteError extends Error {
+    readonly code = 'COURSERA_ROSTER_INCOMPLETE';
+    constructor(readonly reason: string) {
+      super('Coursera roster lookup did not complete. No invitation was attempted.');
+      this.name = 'CourseraRosterIncompleteError';
+    }
+  },
 }));
 
 vi.mock('next/server', async (importOriginal) => ({
@@ -48,6 +55,7 @@ vi.mock('@/lib/coursera/enrollPort', () => ({
     enroll: mocks.enroll,
   }),
   writeEnrollAudit: mocks.audit,
+  CourseraRosterIncompleteError: mocks.RosterIncompleteError,
 }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: mocks.capture }));
 vi.mock('@/lib/xapi/mappings', () => ({ listCourseraIdentityMappingsForUser: mocks.mappings }));
@@ -148,7 +156,7 @@ describe('member Coursera enrollment and independent progress refresh', () => {
     mocks.enroll.mockResolvedValue({ ok: false, status: 503, error: 'provider unavailable' });
     const response = await POST(request());
     expect(response.status).toBe(502);
-    expect(await response.json()).toMatchObject({ code: 'B4B_FAILURE' });
+    expect(await response.json()).toMatchObject({ code: 'COURSERA_UNAVAILABLE' });
     expect(mocks.after).not.toHaveBeenCalled();
     expect(mocks.sync).not.toHaveBeenCalled();
   });
@@ -227,5 +235,52 @@ describe('member Coursera enrollment and independent progress refresh', () => {
     expect(await response.json()).toMatchObject({ code: 'CURRICULUM_TRACK_PENDING' });
     expect(mocks.listUsersByEmail).not.toHaveBeenCalled();
     expect(mocks.after).not.toHaveBeenCalled();
+  });
+
+  describe('failure responses are fixed, actionable and never echo provider text', () => {
+    const providerDetail = 'secret provider detail';
+
+    it('maps a Coursera 4xx rejection to fixed counselor copy without provider or internal text', async () => {
+      mocks.enroll.mockResolvedValue({ ok: false, status: 403, error: providerDetail });
+      const response = await POST(request());
+      expect(response.status).toBe(502);
+      const raw = await response.text();
+      expect(raw).not.toContain(providerDetail);
+      expect(raw).not.toContain('[enroll-state]');
+      const body = JSON.parse(raw);
+      expect(body).toMatchObject({ code: 'COURSERA_ENROLL_REJECTED', step: 'enroll' });
+      expect(body.error).toMatch(/counselor/i);
+      expect(body.error).not.toMatch(/notified/i);
+      expect(mocks.capture).toHaveBeenCalledTimes(1);
+      expect(mocks.after).not.toHaveBeenCalled();
+    });
+
+    it('maps a transport failure (status 0) to fixed retry copy', async () => {
+      mocks.listUsersByEmail.mockResolvedValue(null);
+      mocks.invite.mockResolvedValue({ ok: false, status: 0, error: `fetch failed: ${providerDetail}` });
+      const response = await POST(request());
+      expect(response.status).toBe(502);
+      const raw = await response.text();
+      expect(raw).not.toContain(providerDetail);
+      expect(raw).not.toContain('[enroll-state]');
+      const body = JSON.parse(raw);
+      expect(body).toMatchObject({ code: 'COURSERA_UNAVAILABLE', step: 'invite' });
+      expect(body.error).toMatch(/try again/i);
+    });
+
+    it('returns 503 COURSERA_ROSTER_INCOMPLETE and never invites when the roster scan is incomplete', async () => {
+      mocks.listUsersByEmail.mockRejectedValue(new mocks.RosterIncompleteError('page_limit'));
+      const response = await POST(request());
+      expect(response.status).toBe(503);
+      const body = await response.json();
+      expect(body).toMatchObject({ code: 'COURSERA_ROSTER_INCOMPLETE' });
+      expect(body.error).toMatch(/no invitation was sent/i);
+      expect(body.error).toMatch(/try again/i);
+      expect(mocks.invite).not.toHaveBeenCalled();
+      expect(mocks.createMembership).not.toHaveBeenCalled();
+      expect(mocks.enroll).not.toHaveBeenCalled();
+      expect(mocks.capture).toHaveBeenCalledTimes(1);
+      expect(mocks.after).not.toHaveBeenCalled();
+    });
   });
 });

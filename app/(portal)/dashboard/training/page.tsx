@@ -38,7 +38,10 @@ export default async function TrainingPage({
     : '';
 
   if (!user) {
-    redirect('/login?redirectTo=/dashboard/program' + search.replace(/^\?/, '&'));
+    // The query belongs to the post-login destination, not to /login itself,
+    // so ?program= / ?course= survive sign-in.
+    const back = '/dashboard/program' + (search === '?' ? '' : search);
+    redirect('/login?redirectTo=' + encodeURIComponent(back));
   }
 
   redirect('/dashboard/program' + search);

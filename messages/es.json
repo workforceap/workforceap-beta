@@ -65,6 +65,7 @@
     "collapseSidebar": "Contraer barra lateral",
     "workspaceTabs": "Pestañas del espacio de trabajo",
     "unreadCount": "{count, plural, one {# sin leer} other {# sin leer}}",
+    "pendingApplicationsCount": "{count, plural, one {# en espera del empleador} other {# en espera de empleadores}}",
     "mobileBottomNav": {
       "ariaLabel": "Navegación móvil principal",
       "marketing": {
@@ -91,6 +92,7 @@
       "partner": {
         "overview": "Resumen",
         "members": "Miembros",
+        "attention": "Atención",
         "messages": "Mensajes",
         "milestones": "Hitos",
         "outcomes": "Resultados"
@@ -714,6 +716,30 @@
     "screeningSectionTitle": "Detalles de la evaluación de elegibilidad",
     "ageGroupLabel": "Grupo de edad *",
     "ageGroupPlaceholder": "Selecciona grupo de edad",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 o más"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º grado",
+      "10": "10.º grado",
+      "11": "11.º grado",
+      "12": "12.º grado",
+      "other": "Otro / recién graduado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Necesito capacitación en una ocupación demandada o un certificado",
+      "no_barrier": "Ninguna barrera por ahora",
+      "employment_gap": "Periodo sin empleo",
+      "limited_work_history": "Poca experiencia laboral",
+      "snap_tanf_wic": "SNAP / TANF / cupones de alimentos / WIC",
+      "justice_involved": "Antecedentes / involucramiento con la justicia",
+      "disability_health": "Discapacidad o problema de salud",
+      "housing_instable": "Inestabilidad de vivienda",
+      "other_barrier": "Otra barrera"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barrera(s) principal(es) — marca todas las que apliquen *",
     "primaryBarriersAria": "Barreras principales",
@@ -1550,6 +1576,10 @@
     "nextActionCelebrateTip": "Tus referencias están consiguiendo empleos. Mantén el flujo activo.",
     "nextActionReviewProgress": "Sigue el progreso de los miembros",
     "nextActionReviewProgressTip": "Los miembros avanzan en su trayectoria — sigue sus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Nadie necesita atención ahora} =1 {1 miembro necesita atención} other {# miembros necesitan atención}}",
+    "nextActionAttentionTip": "Miembros que se estancaron o dejaron de responder. Contáctalos antes de que abandonen.",
+    "nextActionAttentionUnavailable": "No se pudo cargar quién necesita atención",
+    "nextActionAttentionUnavailableTip": "El número es desconocido, no cero. Abre la cola para verlo.",
     "assistantSpeaking": "El asistente está hablando…",
     "assistantListening": "Escuchando — haz tu pregunta",
     "referredMembersTableSubtitle": "Nombre, estado del recorrido, fechas de inscripción y colocación, y la contribución de cada miembro a tu pago estimado.",
@@ -3850,6 +3880,17 @@
       "action": "Intentar de nuevo",
       "secondary": "Ver empleos"
     },
+    "applicationsUnavailable": {
+      "title": "No se pudieron cargar tus solicitudes",
+      "body": "Tus totales son desconocidos, no cero. Inténtalo de nuevo en un momento.",
+      "action": "Intentar de nuevo",
+      "kpiCaption": "No se pudo cargar"
+    },
+    "openingsUnavailable": {
+      "title": "No se pudieron cargar los empleos disponibles",
+      "body": "Es un problema de carga, no un tablero vacío. Inténtalo de nuevo en un momento.",
+      "action": "Intentar de nuevo"
+    },
     "stage": {
       "title": "Nada en esta etapa"
     },
@@ -4059,6 +4100,17 @@
         "title": "No se pudo cargar la cola de trabajo",
         "body": "Algo salió mal al obtener la cola. Intenta de nuevo.",
         "action": "Reintentar"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "No se pudieron cargar algunos conteos del grupo de casos",
+        "countsBody": "Un recuadro con — es un dato desconocido, no cero. Intenta de nuevo; si sigue pasando, avisa a un administrador.",
+        "tileCaption": "No se pudo cargar",
+        "queueTitle": "No se pudo cargar quién te necesita",
+        "queueBody": "La lista no respondió, así que esto no es una cola vacía. Intenta de nuevo; si sigue pasando, avisa a un administrador.",
+        "queueSecondary": "Abrir Hoy",
+        "sessions": "No se pudo cargar la práctica de entrevistas reciente.",
+        "breakdown": "No se pudo cargar el desglose del grupo de casos.",
+        "action": "Intentar de nuevo"
       },
       "inbox": {
         "title": "Aún no hay miembros asignados",

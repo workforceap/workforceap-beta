@@ -30,6 +30,7 @@ import {
 import PortalCard from '@/components/portal/ui/PortalCard';
 import {
   CounselorHomeKit,
+  type CounselorHomeLoadFailedCopy,
   type CounselorQueueRow,
   type CounselorSessionRow,
 } from '@/components/portal/kit/pages/counselor/CounselorHomeKit';
@@ -132,6 +133,19 @@ export default async function CounselorPortalPage({
       lastRunAt: row.lastRunAt,
     }));
 
+    const tEmpty = await getTranslations('empty');
+    const loadFailedCopy: CounselorHomeLoadFailedCopy = {
+      countsTitle: tEmpty('counselor.overviewUnavailable.countsTitle'),
+      countsBody: tEmpty('counselor.overviewUnavailable.countsBody'),
+      tileCaption: tEmpty('counselor.overviewUnavailable.tileCaption'),
+      queueTitle: tEmpty('counselor.overviewUnavailable.queueTitle'),
+      queueBody: tEmpty('counselor.overviewUnavailable.queueBody'),
+      queueSecondary: tEmpty('counselor.overviewUnavailable.queueSecondary'),
+      sessions: tEmpty('counselor.overviewUnavailable.sessions'),
+      breakdown: tEmpty('counselor.overviewUnavailable.breakdown'),
+      action: tEmpty('counselor.overviewUnavailable.action'),
+    };
+
     return (
       <>
         {kitLoadErrors.map((state) => (
@@ -155,6 +169,9 @@ export default async function CounselorPortalPage({
               }
             : null
         }
+        retryHref="/counselor/overview"
+        todayHref="/counselor/today"
+        loadFailedCopy={loadFailedCopy}
         />
       </>
     );

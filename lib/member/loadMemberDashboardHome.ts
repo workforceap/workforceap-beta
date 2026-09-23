@@ -49,10 +49,11 @@ import {
 } from '@/lib/member/first90Days';
 
 /**
- * Kit-default `/dashboard` home loader (SCALE Phase 2).
+ * The `/dashboard` home loader (SCALE Phase 2) — the only one since the
+ * `?ui=legacy` home was retired (WAP-195).
  *
  * Combines the former page-level fan-out (12 Prisma client calls on the kit
- * path; 24 on `?ui=legacy`) into **one `$transaction`** of at most
+ * path; 24 on the retired `?ui=legacy` home) into **one `$transaction`** of at most
  * {@link MEMBER_DASHBOARD_HOME_PRISMA_BUDGET} operations:
  *
  *  1. `user.findUnique` with the nested relations / `_count`s the kit needs
@@ -61,7 +62,7 @@ import {
  * aggregate rollup. The Points tile's weekly trend is bucketed in memory from
  * the same nested `points_transactions` page (see `memberPointsTrend`), so the
  * sparkline adds no Prisma operation and no second round trip. The pieces the
- * legacy home read separately (OFFER rows for the placement confirmation
+ * retired legacy home read separately (OFFER rows for the placement confirmation
  * strip, First 90 Days check-ins, the youth notice's date of birth, every
  * persisted next-best action) ride on the same read too, and so do the
  * first-login wizard's intake fields and every `CourseEnrollment` the
@@ -71,7 +72,8 @@ import {
  * Hourly `coursera-training-sync` owns seeding. `getMemberState` (Redis
  * optional) is not called — the page still renders with no Upstash.
  *
- * `?ui=legacy` does not use this loader and may remain fat.
+ * `/dashboard?ui=legacy` and `?tab=` now redirect to the kit home, so there is
+ * no fat path left on this route (lib/member/dashboardLegacyRedirect.ts).
  */
 
 /** Prisma ops this loader issues on the happy path (1–2). Layout bootstrap is extra. */
@@ -763,8 +765,8 @@ function resolveDashboardHomeActions(
 }
 
 /**
- * First 90 Days card props, built exactly as the legacy branch of
- * `app/(portal)/dashboard/page.tsx` built them: a stage only inside the
+ * First 90 Days card props, built exactly as the retired legacy branch of
+ * `app/(portal)/dashboard/page.tsx` built them (WAP-188): a stage only inside the
  * placement's window (`getFirst90Stage`), the newest response per stage, and
  * every stage that has one.
  */
@@ -897,7 +899,8 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     jobOffers: [],
     first90: null,
     youthNoticeAge: null,
-    // No member row to attach an event to; the legacy home redirected here.
+    // No member row to attach an event to (the retired legacy home redirected
+    // such sessions away; the kit home renders the empty shape instead).
     dashboardViewFacts: null,
     // No member row for the wizard to write to, and no enrollment to switch.
     onboarding: null,
@@ -1082,11 +1085,10 @@ function shapeHome(args: {
     if (!at) return latest;
     return !latest || at.getTime() > latest.getTime() ? at : latest;
   }, null);
-  // The same baseline the member program page uses for
-  // `isTrainingStaleForCounselorEscalation`: the later of enrolment and
-  // finishing the preassessment, and only once both are true. Using the
-  // program-enrolment date alone would call a member stale on their first day
-  // of actually being able to start, and would disagree with that page.
+  // Baseline (`trainingEligibleSince`): the later of enrolment and finishing
+  // the preassessment, and only once both are true. Using the program-enrolment
+  // date alone would call a member stale on their first day of actually being
+  // able to start.
   const courseProgressStale = isTrainingActivityStale({
     lastActivityAt: lastTrainingActivityAt,
     eligibleSince: trainingEligibleSince({

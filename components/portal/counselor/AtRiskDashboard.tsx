@@ -952,7 +952,7 @@ function FilterChip({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 6,
-        minHeight: 40,
+        minHeight: 44,
         padding: '6px 12px',
         borderRadius: 999,
         fontSize: 13,

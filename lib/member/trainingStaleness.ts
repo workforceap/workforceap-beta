@@ -1,10 +1,9 @@
 /**
  * One staleness threshold for "this member's training has stalled".
  *
- * The number is not new: it is the 14 days
- * `isTrainingStaleForCounselorEscalation` already uses on the member program
- * page and `lib/admin/trainingDashboard.ts` uses for the staff training
- * roster. It lives here, in a dependency-free module, so the member dashboard
+ * The number is not new: it is the 14 days the retired legacy member home
+ * used for counselor escalation and `lib/admin/trainingDashboard.ts` uses for
+ * the staff training roster. It lives here, in a dependency-free module, so the member dashboard
  * home loader can reuse it without pulling in the `server-only` program view.
  */
 
@@ -19,9 +18,9 @@ const STALE_TRAINING_ACTIVITY_MS = STALE_TRAINING_ACTIVITY_DAYS * 24 * 60 * 60 *
  * true. Before that there is nothing to be late for, so there is no baseline
  * and nothing is stale.
  *
- * `app/(portal)/dashboard/page.tsx` computed this inline for
- * `isTrainingStaleForCounselorEscalation`. It lives here now because the
- * member dashboard home needs the identical answer — a member who enrolled
+ * The retired `?ui=legacy` branch of `app/(portal)/dashboard/page.tsx`
+ * computed this inline for its counselor-escalation check. It lives
+ * here because the member dashboard home needs the identical answer — a member who enrolled
  * 60 days ago but finished the assessment yesterday is on day one of being
  * able to start, and the two surfaces must not disagree about that.
  */

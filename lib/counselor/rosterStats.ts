@@ -8,8 +8,8 @@
  * acts on, and each carries a one-line "why" drawn from the attention model
  * (`lib/attention`) so the number and its rule never drift apart across pages.
  *
- * Pure: takes an evaluated `AttentionQueue` plus two event counts, returns
- * view data. No Prisma, no React.
+ * Pure: takes an evaluated `AttentionQueue` plus the completion and placement
+ * counts, returns view data. No Prisma, no React.
  */
 
 import { ATTENTION_REASON_META, ATTENTION_THRESHOLDS as T } from '@/lib/attention/reasons';
@@ -34,8 +34,14 @@ type CounselorRosterStatsInput = {
   queue: AttentionQueue;
   /** `course_completed` member events in the last 30 days across the roster. */
   recentCompletions: number;
-  /** `placement_recorded` member events in the last 30 days across the roster. */
+  /**
+   * Placement records (`PlacementRecord`, one per member) with `placedAt` in the
+   * last 30 days across the roster (C05). Every record counts, verified or not
+   * (docs/OUTCOMES-METHODOLOGY.md section 7).
+   */
   recentPlacements: number;
+  /** How many of `recentPlacements` still have `startDateVerified = false`. */
+  recentPlacementsUnverified?: number;
 };
 
 function plural(count: number, singular: string, pluralForm = `${singular}s`): string {
@@ -46,6 +52,7 @@ export function buildCounselorRosterStats({
   queue,
   recentCompletions,
   recentPlacements,
+  recentPlacementsUnverified = 0,
 }: CounselorRosterStatsInput): CounselorRosterStat[] {
   const { byReason } = queue.totals;
 
@@ -90,7 +97,10 @@ export function buildCounselorRosterStats({
       key: 'placements',
       label: `Placements, ${ROSTER_STAT_LOOKBACK_DAYS}d`,
       value: recentPlacements,
-      caption: `Placements recorded for your members in the last ${ROSTER_STAT_LOOKBACK_DAYS} days`,
+      caption:
+        recentPlacementsUnverified > 0
+          ? `${recentPlacementsUnverified} with start date not yet verified · Placements recorded for your members in the last ${ROSTER_STAT_LOOKBACK_DAYS} days`
+          : `Placements recorded for your members in the last ${ROSTER_STAT_LOOKBACK_DAYS} days`,
       href: '/counselor/placements',
     },
   ];

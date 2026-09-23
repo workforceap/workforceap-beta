@@ -13,10 +13,9 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
+  KitEmptyState,
   SectionHeader,
   PageOpener,
   QueueRow,
@@ -29,6 +28,7 @@ import {
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Counselor Portal — HOME view ("Command Center" redesign).
@@ -41,7 +41,7 @@ import {
  *      track), each an optional inline sparkline + delta chip.
  *   3. "Needs attention" — the priority queue as severity-coded QueueRows.
  *      This is the hero of the view; everything else is secondary.
- *   4. A side column: "Today / this week" (interview-prep touchpoints) +
+ *   4. A side column: "Interview practice · last 7 days" (interview-prep tool runs) +
  *      either a daily-activity area chart (when the caller has one) or a
  *      caseload-by-bucket RankBars fallback (always available — it's just
  *      the three queue totals already on hand).
@@ -102,6 +102,35 @@ const BUCKET_FLAG: Record<CounselorQueueBucket, string | undefined> = {
   ontrack: undefined,
 };
 
+/**
+ * Words for the failed-load states (WAP-206). The page passes them from
+ * `empty.counselor.overviewUnavailable` so they follow the viewer's locale;
+ * the English below is the fallback for the dev showcase and direct renders.
+ */
+export interface CounselorHomeLoadFailedCopy {
+  countsTitle: string;
+  countsBody: string;
+  tileCaption: string;
+  queueTitle: string;
+  queueBody: string;
+  queueSecondary: string;
+  sessions: string;
+  breakdown: string;
+  action: string;
+}
+
+const DEFAULT_LOAD_FAILED_COPY: CounselorHomeLoadFailedCopy = {
+  countsTitle: "Some caseload counts couldn't load",
+  countsBody: 'A tile showing — is unknown, not zero. Try again; if this keeps happening, tell an admin.',
+  tileCaption: "Couldn't load",
+  queueTitle: "Couldn't load who needs you",
+  queueBody: 'The list did not answer, so this is not an empty queue. Try again; if this keeps happening, tell an admin.',
+  queueSecondary: 'Open Today',
+  sessions: "Couldn't load recent interview practice.",
+  breakdown: "Couldn't load the caseload breakdown.",
+  action: 'Try again',
+};
+
 export interface CounselorHomeKitProps {
   firstName?: string;
   greeting?: string;
@@ -132,7 +161,7 @@ export interface CounselorHomeKitProps {
   /** Roster link shown in the empty state. */
   rosterHref?: string;
 
-  /** "Today / this week" compact session list (interview-prep touchpoints). `null` = load failed. */
+  /** Interview-practice tool runs from the last 7 days (not scheduled in-office sessions). `null` = load failed. */
   sessions?: CounselorSessionRow[] | null;
   sessionsHref?: string;
 
@@ -141,6 +170,13 @@ export interface CounselorHomeKitProps {
   activityDeltaLabel?: string;
   /** Caseload-by-bucket counts, used as the RankBars fallback when `activity` isn't available. `null` = load failed. */
   bucketCounts?: { critical: number; warning: number; ontrack: number } | null;
+
+  /** Where "Try again" goes after a failed load (a fresh server render). */
+  retryHref?: string;
+  /** Secondary route offered next to a failed queue. */
+  todayHref?: string;
+  /** Translated failed-load copy; English fallback when omitted. */
+  loadFailedCopy?: CounselorHomeLoadFailedCopy;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -203,24 +239,6 @@ function LoadFailedNote({ children }: { children: ReactNode }) {
     <p role="status" style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
       {children}
     </p>
-  );
-}
-
-function QueueUnavailableState({ todayHref }: { todayHref: string }) {
-  return (
-    <Card>
-      <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <TriangleAlert size={18} aria-hidden style={{ color: 'var(--wa-danger)', flexShrink: 0 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>
-            We couldn&rsquo;t load who needs you. Reload the page to try again.
-          </p>
-          <Link href={todayHref} style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', textDecoration: 'none' }}>
-            Open Today
-          </Link>
-        </div>
-      </div>
-    </Card>
   );
 }
 
@@ -293,7 +311,11 @@ export function CounselorHomeKit({
   activity = [],
   activityDeltaLabel,
   bucketCounts,
+  retryHref = '/counselor/overview',
+  todayHref = '/counselor/today',
+  loadFailedCopy = DEFAULT_LOAD_FAILED_COPY,
 }: CounselorHomeKitProps) {
+  const copy = loadFailedCopy;
   const queueUnavailable = queueRows === null;
   const rows = queueRows ?? [];
   const total = queueTotal ?? rows.length;
@@ -354,8 +376,9 @@ export function CounselorHomeKit({
   const nothingFlagged = !queueUnavailable && rows.length === 0;
   const queueTitle = nothingFlagged ? 'Caseload' : 'Needs attention';
   const onTrack = onTrackCount ?? 0;
+  const countsUnavailable = [assignedCount, atRiskCount, needsReplyCount, onTrackCount].some((n) => n === null);
   const goalCaption = queueUnavailable
-    ? "Couldn't load"
+    ? copy.tileCaption
     : nothingFlagged
       ? `Nothing flagged${onTrack > 0 ? ` · ${onTrack} member${onTrack === 1 ? '' : 's'} on track` : ''}`
       : `${total} member${total === 1 ? '' : 's'} in queue${slaBreaches > 0 ? ` · ${slaBreaches} past 48h SLA` : ''}`;
@@ -381,17 +404,43 @@ export function CounselorHomeKit({
               value={k.value ?? '—'}
               tone={k.tone}
               spark={k.value === null ? undefined : k.spark}
-              caption={k.value === null ? "Couldn't load" : k.caption}
+              caption={k.value === null ? copy.tileCaption : k.caption}
             />
           ))}
         </div>
+        {countsUnavailable ? (
+          // One alert per page: KitEmptyState makes unavailable + danger a
+          // role="alert". When the queue failed too, its state below is that
+          // alert, so this box drops to the warn tone (no second alert).
+          <KitEmptyState
+            framed
+            kind="unavailable"
+            tone={queueUnavailable ? 'warn' : 'danger'}
+            headingAs="h2"
+            data-testid="counselor-overview-counts-load-failed"
+            icon={<TriangleAlert size={13} aria-hidden="true" />}
+            title={copy.countsTitle}
+            description={copy.countsBody}
+            primaryAction={{ label: copy.action, href: retryHref }}
+          />
+        ) : null}
 
         {/* 3 + 4. Hero queue (left) + side column (right). */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="lg:wa-col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
             <SectionHeader title={queueTitle} goal={goalCaption} />
             {queueUnavailable ? (
-              <QueueUnavailableState todayHref="/counselor/today" />
+              <KitEmptyState
+                framed
+                kind="unavailable"
+                tone="danger"
+                data-testid="counselor-overview-queue-load-failed"
+                icon={<TriangleAlert size={13} aria-hidden="true" />}
+                title={copy.queueTitle}
+                description={copy.queueBody}
+                primaryAction={{ label: copy.action, href: retryHref }}
+                secondaryAction={{ label: copy.queueSecondary, href: todayHref }}
+              />
             ) : rows.length === 0 ? (
               <EmptyQueueState rosterHref={rosterHref} />
             ) : (
@@ -406,9 +455,7 @@ export function CounselorHomeKit({
                     meta={queueRowMeta(row)}
                     flag={BUCKET_FLAG[row.bucket]}
                     action={
-                      <AstryxLink href={row.href ?? `${memberHrefBase}/${row.memberId}`} as={Link as never} isStandalone>
-                        <Button label="View" variant="secondary" size="sm" />
-                      </AstryxLink>
+                      <KitLinkButton href={row.href ?? `${memberHrefBase}/${row.memberId}`} label="View" variant="secondary" size="sm" />
                     }
                   />
                 );
@@ -417,10 +464,10 @@ export function CounselorHomeKit({
           </div>
 
           <aside className="lg:wa-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
-            {/* Today / this week */}
+            {/* Interview practice, last 7 days: AI tool runs, not scheduled in-office sessions. */}
             <Card>
               <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 4 }}>
-                <SideCardHead title="Today / this week" />
+                <SideCardHead title="Interview practice · last 7 days" />
                 <Link
                   href={sessionsHref}
                   className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
@@ -430,10 +477,10 @@ export function CounselorHomeKit({
                 </Link>
               </div>
               {sessions === null ? (
-                <LoadFailedNote>Couldn&rsquo;t load recent interview-prep sessions.</LoadFailedNote>
+                <LoadFailedNote>{copy.sessions}</LoadFailedNote>
               ) : sessions.length === 0 ? (
                 <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
-                  No interview-prep sessions run this week.
+                  No member ran interview practice in the last 7 days.
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -465,7 +512,7 @@ export function CounselorHomeKit({
               ) : bucketsUnavailable ? (
                 <>
                   <SideCardHead title="Caseload by bucket" />
-                  <LoadFailedNote>Couldn&rsquo;t load the caseload breakdown.</LoadFailedNote>
+                  <LoadFailedNote>{copy.breakdown}</LoadFailedNote>
                 </>
               ) : bucketRankData ? (
                 <>

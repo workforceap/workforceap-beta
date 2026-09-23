@@ -6,6 +6,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
 
 const BUCKET = 'member-files';
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -50,6 +51,11 @@ function storageErrorMessage(error: { message?: string } | null): string {
     }
     const MIME: Record<string, string> = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp' };
     const contentType = MIME[ext] ?? 'application/octet-stream';
+    // The bytes must be the type the name claims: staff review this file as
+    // proof, so HTML or a renamed file never gets stored as `application/pdf`.
+    if (!(await fileMatchesContentType(file, contentType))) {
+      return NextResponse.json({ error: 'Only PDF and image files are accepted' }, { status: 400 });
+    }
   
     // Verify the cert exists for this user
     const cert = await prisma.$transaction((tx) => tx.userCertification.findUnique({
@@ -61,11 +67,19 @@ function storageErrorMessage(error: { message?: string } | null): string {
   
     try {
       const uploadBytes = new Uint8Array(await file.arrayBuffer());
-      const storagePath = `cert-files/${user.id}/${cert.id}.${ext}`;
+      const verified = cert.status === 'approved';
+      // A verified certificate's file is the evidence staff checked, so a new
+      // file never overwrites it (WAP-220): it gets its own path, and the old
+      // path stays in the audit entry. Unverified certificates keep the stable
+      // path, since review starts over anyway. Both sit under
+      // cert-files/{userId}/, the prefix GDPR erasure removes.
+      const storagePath = verified
+        ? `cert-files/${user.id}/${cert.id}-${Date.now()}.${ext}`
+        : `cert-files/${user.id}/${cert.id}.${ext}`;
       const supabase = getSupabaseAdmin();
   
       const { error } = await supabase.storage.from(BUCKET).upload(storagePath, uploadBytes, {
-        upsert: true,
+        upsert: !verified,
         contentType,
       });
   
@@ -78,26 +92,37 @@ function storageErrorMessage(error: { message?: string } | null): string {
       // WAP-197): the file is saved as its proof, the review state and dates
       // are left alone, and the change is recorded in the audit log so staff
       // can see a new file arrived after verification.
-      if (cert.status === 'approved') {
-        await prisma.$transaction((tx) =>
-          tx.userCertification.update({
-            where: { id: cert.id },
-            data: { proofUrl: storagePath },
-          }),
-        );
+      // The status condition closes the read-then-write window (WAP-220): if
+      // staff changed the review between the read above and this write, no
+      // row matches and the file goes through the review path below instead.
+      const keptVerified = verified
+        ? (
+            await prisma.$transaction((tx) =>
+              tx.userCertification.updateMany({
+                where: { id: cert.id, status: 'approved' },
+                data: { proofUrl: storagePath },
+              }),
+            )
+          ).count > 0
+        : false;
+      if (keptVerified) {
         const hadProof = !!cert.proofUrl;
+        const previousProofUrl = cert.proofUrl ?? null;
         void auditLog({
           actorUserId: user.id,
           action: 'member.certification.proof_attached_verified',
           targetType: 'user_certification',
           targetId: cert.id,
-          metadata: { certName: cert.certName, status: 'approved', replacedProof: hadProof },
+          metadata: { certName: cert.certName, status: 'approved', replacedProof: hadProof, previousProofUrl },
         }).catch(() => {});
         void logAuditEvent({
           user: { id: user.id, role: 'member' },
           verb: 'update',
           object: { type: 'UserCertification', id: cert.id },
-          result: { success: true, extensions: { field: 'proofUrl', status: 'approved', statusKept: true, replacedProof: hadProof } },
+          result: {
+            success: true,
+            extensions: { field: 'proofUrl', status: 'approved', statusKept: true, replacedProof: hadProof, previousProofUrl },
+          },
         }).catch(() => {});
         return NextResponse.json({ success: true, storagePath, status: 'approved' });
       }
