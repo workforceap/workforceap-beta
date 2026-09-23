@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import en from '@/messages/en.json';
 
 /**
  * WAP-197 item 6: the pre-screening form and the interview request rendered
@@ -28,7 +29,14 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn(async () => ({})) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findUnique: mocks.findUnique } } }));
-vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn(async (ns: string) => (key: string, values?: Record<string, string>) => {
+    let node: unknown = (en as Record<string, unknown>)[ns];
+    for (const part of key.split('.')) node = (node as Record<string, unknown> | undefined)?.[part];
+    if (typeof node !== 'string') return `${ns}.${key}`;
+    return node.replace(/\{(\w+)\}/g, (_, name: string) => values?.[name] ?? `{${name}}`);
+  }),
+}));
 vi.mock('@/components/portal/AssessmentForm', () => ({ default: () => <div data-testid="assessment-form" /> }));
 
 import AssessmentPage from '@/app/(portal)/dashboard/assessment/page';
@@ -146,6 +154,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
     const section = screen.getByRole('region', { name: 'Interview' });
     expect(section.id).toBe('interview');
     expect(within(section).getByRole('button', { name: 'Request interview' })).toBeInTheDocument();
+    expect(section).toHaveTextContent(en.dashboard.interviewSteps.eligible);
   });
 
   it('interview requested: shows when it was received instead of the button', async () => {
@@ -156,6 +165,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
     });
     const section = screen.getByRole('region', { name: 'Interview' });
     expect(section).toHaveTextContent('We received your interview request on');
+    expect(section).not.toHaveTextContent('{date}');
     expect(within(section).queryByRole('button')).toBeNull();
   });
 
@@ -167,5 +177,24 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
     });
     expect(screen.queryByRole('region', { name: 'Interview' })).toBeNull();
     expect(screen.getByText('Preassessment complete')).toBeInTheDocument();
+  });
+});
+
+describe('interview step and recap copy catalogs (WAP-197)', () => {
+  it('every locale carries the same interviewSteps keys and weeklyRecapOpenGoals', async () => {
+    const catalogs = {
+      en,
+      es: (await import('@/messages/es.json')).default,
+      fr: (await import('@/messages/fr.json')).default,
+      pt: (await import('@/messages/pt.json')).default,
+    };
+    const keys = Object.keys(en.dashboard.interviewSteps).sort();
+    for (const [locale, messages] of Object.entries(catalogs)) {
+      const steps = messages.dashboard.interviewSteps as Record<string, string>;
+      expect(Object.keys(steps).sort(), locale).toEqual(keys);
+      for (const value of Object.values(steps)) expect(value.trim(), locale).not.toBe('');
+      expect(steps.requested, locale).toContain('{date}');
+      expect(messages.dashboard.weeklyRecapOpenGoals.trim(), locale).not.toBe('');
+    }
   });
 });

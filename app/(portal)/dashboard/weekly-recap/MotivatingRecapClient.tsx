@@ -54,6 +54,8 @@ type Props = {
   recap: { id: string; readinessScoreSnapshot: number | null };
   recapData: MotivatingRecapData;
   weekStart: string;
+  /** Translated "Open your goals" (dashboard.weeklyRecapOpenGoals) from the server page. */
+  openGoalsLabel?: string;
 };
 
 const SUBTLE_LABEL: React.CSSProperties = {
@@ -103,7 +105,7 @@ function planItemHref(p: Pick<RecapPlanItem, 'href' | 'source'>): string {
   return p.source === 'goal' && href === CAREER_BRIEF_PATH ? GOALS_HREF : href;
 }
 
-export default function MotivatingRecapClient({ recap, recapData, weekStart }: Props) {
+export default function MotivatingRecapClient({ recap, recapData, weekStart, openGoalsLabel = 'Open your goals' }: Props) {
   const weekLabel = formatRecapWeekLabel(weekStart);
 
   const data = recapData ?? {};
@@ -248,7 +250,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
               className="wa-kit-focus"
               style={{ marginLeft: 'auto', fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none' }}
             >
-              Open your goals →
+              {openGoalsLabel} <span aria-hidden="true">→</span>
             </Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

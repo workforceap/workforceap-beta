@@ -51,6 +51,7 @@ export default async function AssessmentPage({
   });
 
   if (!dbUser) redirect('/login');
+  const t = await getTranslations('dashboard');
 
   return (
     <DesignSurface surface="warm">
@@ -74,6 +75,16 @@ export default async function AssessmentPage({
                 programInterest={dbUser.programInterest}
               />
               <InterviewSteps
+                copy={{
+                  preScreeningTitle: t('interviewSteps.preScreeningTitle'),
+                  preScreeningLede: t('interviewSteps.preScreeningLede'),
+                  interviewTitle: t('interviewSteps.interviewTitle'),
+                  eligible: t('interviewSteps.eligible'),
+                  submitted: t('interviewSteps.submitted'),
+                  requested: dbUser.interviewRequestedAt
+                    ? t('interviewSteps.requested', { date: formatPortalDateTime(dbUser.interviewRequestedAt) })
+                    : '',
+                }}
                 preScreeningDone={!!dbUser.preScreeningResponse}
                 interviewEligible={dbUser.interviewEligible}
                 interviewRequestedAt={dbUser.interviewRequestedAt}
@@ -116,12 +127,24 @@ const STEP_BODY_STYLE = {
  * a completed preassessment and no saved response; the interview request
  * needs staff to have marked the member interview eligible.
  */
+type InterviewStepsCopy = {
+  preScreeningTitle: string;
+  preScreeningLede: string;
+  interviewTitle: string;
+  eligible: string;
+  submitted: string;
+  /** Already formatted with the request date; empty when none is saved. */
+  requested: string;
+};
+
 function InterviewSteps({
+  copy,
   preScreeningDone,
   interviewEligible,
   interviewRequestedAt,
   interviewCompletedAt,
 }: {
+  copy: InterviewStepsCopy;
   preScreeningDone: boolean;
   interviewEligible: boolean;
   interviewRequestedAt: Date | null;
@@ -131,9 +154,9 @@ function InterviewSteps({
     return (
       <section id="pre-screening" aria-labelledby="pre-screening-heading" className="wa-kit-card" style={{ marginTop: 16 }}>
         <h2 id="pre-screening-heading" style={STEP_HEADING_STYLE}>
-          Pre-screening
+          {copy.preScreeningTitle}
         </h2>
-        <p style={{ ...STEP_BODY_STYLE, marginBottom: 16 }}>The step before your interview.</p>
+        <p style={{ ...STEP_BODY_STYLE, marginBottom: 16 }}>{copy.preScreeningLede}</p>
         <MemberPreScreeningForm />
       </section>
     );
@@ -144,22 +167,17 @@ function InterviewSteps({
   return (
     <section id="interview" aria-labelledby="interview-heading" className="wa-kit-card" style={{ marginTop: 16 }}>
       <h2 id="interview-heading" style={STEP_HEADING_STYLE}>
-        Interview
+        {copy.interviewTitle}
       </h2>
       {interviewRequestedAt ? (
-        <p style={STEP_BODY_STYLE}>
-          We received your interview request on {formatPortalDateTime(interviewRequestedAt)}. A counselor will
-          reach out by email.
-        </p>
+        <p style={STEP_BODY_STYLE}>{copy.requested}</p>
       ) : interviewEligible ? (
         <>
-          <p style={{ ...STEP_BODY_STYLE, marginBottom: 16 }}>You&rsquo;re interview eligible.</p>
+          <p style={{ ...STEP_BODY_STYLE, marginBottom: 16 }}>{copy.eligible}</p>
           <MemberInterviewRequestButton />
         </>
       ) : (
-        <p style={STEP_BODY_STYLE}>
-          Pre-screening submitted. A counselor will review it and reach out by email.
-        </p>
+        <p style={STEP_BODY_STYLE}>{copy.submitted}</p>
       )}
     </section>
   );

@@ -1,0 +1,129 @@
+name: Preview Smoke
+
+# WAP-202: load the running app on every Vercel Preview deployment before it
+# can reach production.
+#
+# CI builds the app but never serves it, so a build can be green while the
+# deployed app 500s (a missing env var, a DB-dependent layout, a runtime-only
+# import). `uptime-ping.yml` and the hourly `/api/cron/smoke-test` cron only
+# watch *production*, after the fact. This workflow runs when Vercel reports a
+# Preview deployment as successful and probes that exact deployment:
+#
+#   - the production journey smoke's own probe list, read from
+#     app/api/cron/smoke-test/route.ts (liveness, readiness, /login,
+#     /programs, and the /dashboard, /admin, /counselor login redirects), and
+#   - the WAP-202 extras: /en (with the site title) and /en/program-comparison.
+#
+# Logic and exit codes: scripts/lib/preview-smoke.mjs, scripts/preview-smoke.mjs.
+# Docs: docs/HEALTH-PROBES.md, "Preview smoke".
+#
+# Result: a commit status named "Preview smoke" on the deployed commit, linking
+# to this run. It is NOT a required check. Make it required in branch
+# protection only after it has been green and non-flaky for a week.
+#
+# Vercel Deployment Protection: if previews are protected, set the repository
+# secret VERCEL_AUTOMATION_BYPASS_SECRET (Vercel > Project > Settings >
+# Deployment Protection > Protection Bypass for Automation). Without it, a
+# protected preview is skipped with a notice and no status is posted.
+#
+# Which previews: vercel.json's ignoreCommand builds Preview only for
+# `preview`, `claude/*`, `codex/*`, `feature/portal-*` and `feature/astro-*`.
+# Other branches get no preview, so no smoke.
+
+on:
+  # deployment_status runs this file as it exists at the deployed commit.
+  deployment_status:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: preview-smoke-${{ github.event.deployment.sha }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Probe the Preview deployment
+    # Vercel posts one deployment_status per state (pending, success, ...);
+    # only a successful Vercel Preview in this repository is probed.
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Preview' &&
+      github.event.deployment.creator.login == 'vercel[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DEPLOY_SHA: ${{ github.event.deployment.sha }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout the deployed commit (scripts only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            .nvmrc
+            scripts/preview-smoke.mjs
+            scripts/lib/preview-smoke.mjs
+            scripts/lib/supabase-project-guard.cjs
+            app/api/cron/smoke-test/route.ts
+          sparse-checkout-cone-mode: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      # No install: the script uses only Node built-ins.
+      - name: Run preview smoke
+        id: smoke
+        env:
+          PREVIEW_SMOKE_BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+          PREVIEW_SMOKE_EXPECTED_SHA: ${{ github.event.deployment.sha }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PREVIEW_SMOKE_OUTPUT: test-results/preview-smoke.json
+        shell: bash
+        run: |
+          set +e
+          node scripts/preview-smoke.mjs
+          rc=$?
+          # 3 = preview is behind Vercel protection and no bypass secret is set:
+          # a clean skip (the script already printed a ::notice::).
+          if [ "$rc" -eq 3 ]; then exit 0; fi
+          exit "$rc"
+
+      - name: Upload smoke result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-smoke-${{ github.run_id }}
+          path: test-results/preview-smoke.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # One commit status, context "Preview smoke", on the deployed commit so
+      # the PR shows it. Skipped runs (protected preview, no secret) post none.
+      - name: Post "Preview smoke" commit status
+        if: always() && steps.smoke.outputs.result != 'protected'
+        env:
+          RESULT: ${{ steps.smoke.outputs.result }}
+          FAILED: ${{ steps.smoke.outputs.failed }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$RESULT" in
+            pass) state=success; description="All preview probes passed" ;;
+            fail) state=failure; description="Failed: ${FAILED:-see run}" ;;
+            *)    state=error;   description="Preview smoke did not complete" ;;
+          esac
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${DEPLOY_SHA}" \
+            -f state="$state" \
+            -f context="Preview smoke" \
+            -f description="${description:0:140}" \
+            -f target_url="$RUN_URL" \
+            --jq '"posted \(.context): \(.state)"'

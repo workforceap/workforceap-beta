@@ -76,14 +76,39 @@ export function parseStudentsNeeds(value: string | string[] | undefined | null):
  * days, or at most one such signal in 30 days while enrolled; system-sent
  * mail does not count) is the nearest filter today for both a saved risk
  * alert and a 30-day quiet spell; the training preset has a real
- * "Stalled" pace chip. New applicants without a counselor have no chip yet,
- * so they open the full roster. Server-side `needs=` filters from the
- * attention model replace this mapping when the roster consolidation lands.
+ * "Stalled" pace chip. New applicants without a counselor have no chip:
+ * the page resolves them server-side into a `StudentsRosterFocus` instead
+ * (WAP-198), so the chip stays "All" inside that focused list.
  */
 export function chipForStudentsNeeds(needs: StudentsNeeds | null, view: StudentsRosterView): StudentsRosterChip {
   if (needs === 'at-risk') return 'At Risk';
   if (needs === 'stalled') return view === 'training' ? 'Stalled' : 'At Risk';
   return 'All';
+}
+
+/**
+ * A member set the page resolved on the server, which the roster opens on
+ * (WAP-198). `?needs=new-applicants` has no client-side chip: "joined in the
+ * last 7 days with no active counselor" is decided by the attention model,
+ * so the page passes the exact member ids behind the admin Today row and the
+ * roster shows those rows, with a notice naming the rule and a way back to
+ * everyone. Chips and search still narrow inside the focus.
+ */
+export type StudentsRosterFocus = {
+  /** Notice heading, e.g. "New applicants with no counselor". */
+  label: string;
+  /** The rule behind the set, in the attention model's words. */
+  detail: string;
+  memberIds: readonly string[];
+  /** The unfocused roster. */
+  clearHref: string;
+};
+
+/** Rows inside the focus (WAP members only); every row when there is none. */
+export function applyRosterFocus(rows: StudentRow[], focus: StudentsRosterFocus | null | undefined): StudentRow[] {
+  if (!focus) return rows;
+  const keep = new Set(focus.memberIds);
+  return rows.filter((row) => row.inWap !== false && keep.has(row.id));
 }
 
 /** `/admin/students?needs=<value>`: the roster URL an attention number opens. */

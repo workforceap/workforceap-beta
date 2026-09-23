@@ -1,5 +1,5 @@
 import type { AnchorHTMLAttributes } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 
 /**
@@ -210,7 +210,9 @@ describe('Need a person? actions', () => {
 
   it('feedback submits to the existing route, confirms it was saved and keeps focus in the dialog', async () => {
     fetchMock.mockResolvedValueOnce(json({ feedback: { id: 'fb-1' } }));
+    const previousPath = window.location.pathname;
     window.history.pushState({}, '', '/dashboard/help');
+    onTestFinished(() => window.history.replaceState({}, '', previousPath));
     render(<NeedAPersonCard audience={{ kind: 'team' }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Share feedback' }));
     fireEvent.click(screen.getByRole('radio', { name: 'Rate 4 out of 5' }));

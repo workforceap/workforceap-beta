@@ -43,7 +43,9 @@ import {
   matchesRosterChip,
   matchesRosterSearch,
   toTrainingRosterRow,
+  applyRosterFocus,
   type StudentsRosterChip,
+  type StudentsRosterFocus,
   type StudentsRosterView,
 } from '@/lib/admin/studentsRosterView';
 import { EmbeddableFrame } from './EmbeddableFrame';
@@ -132,6 +134,11 @@ export interface StudentsRosterKitProps {
    * the page). Unknown for this view falls back to "All".
    */
   initialChip?: StudentFilter;
+  /**
+   * Open on a server-resolved member set (`?needs=new-applicants`, WAP-198):
+   * only those rows, a notice naming the rule, and a link back to everyone.
+   */
+  focus?: StudentsRosterFocus;
   /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1); the view nav stays. */
   embedded?: boolean;
 }
@@ -231,6 +238,7 @@ export function StudentsRosterKit({
   total = 847,
   showingLabel,
   initialChip,
+  focus,
   embedded = false,
 }: StudentsRosterKitProps) {
   const router = useRouter();
@@ -250,15 +258,20 @@ export function StudentsRosterKit({
     TEXT_SORT_KEYS,
   );
 
+  // A focus replaces the population: chips, counts and the footer all read
+  // the focused rows, so "All" is the focused total, not the roster's.
+  const pool = useMemo(() => applyRosterFocus(students, focus), [students, focus]);
+  const poolTotal = focus ? pool.length : total;
+  const focusNotLoaded = focus ? Math.max(0, new Set(focus.memberIds).size - pool.length) : 0;
   const counts = Object.fromEntries(
     chips.map((chip) => [
       chip,
-      chip === 'All' ? total : students.filter((s) => matchesRosterChip(s, chip, view)).length,
+      chip === 'All' ? poolTotal : pool.filter((s) => matchesRosterChip(s, chip, view)).length,
     ]),
   ) as Record<StudentFilter, number>;
 
   const visible = useMemo(() => {
-    const kept = students.filter(
+    const kept = pool.filter(
       (s) => matchesRosterChip(s, active, view) && matchesRosterSearch(s, search),
     );
     if (!isTraining) return sortStudentRows(kept, sortKey as StudentSortKey, sortDirection);
@@ -268,7 +281,7 @@ export function StudentsRosterKit({
     return sortTrainingRows(kept.map(toTrainingRosterRow), sortKey as TrainingSortKey, sortDirection)
       .map((row) => byId.get(row.id))
       .filter((row): row is StudentRow => row != null);
-  }, [students, active, search, view, isTraining, sortKey, sortDirection]);
+  }, [pool, active, search, view, isTraining, sortKey, sortDirection]);
 
   const summary = useMemo(
     () => (isTraining ? summarizeTrainingRows(visible.map(toTrainingRosterRow)) : null),
@@ -548,6 +561,19 @@ export function StudentsRosterKit({
         </p>
       ) : null}
 
+      {focus ? (
+        <p className="wa-kit-training-notice" data-testid="students-roster-focus">
+          <strong>{focus.label} · {pool.length}</strong>{' '}
+          {focus.detail}.
+          {focusNotLoaded > 0
+            ? ` ${focusNotLoaded} more ${focusNotLoaded === 1 ? 'is' : 'are'} past this list's load limit; open them from Today.`
+            : ''}{' '}
+          <AstryxLink href={focus.clearHref} as={NextLink as never}>
+            Show all students
+          </AstryxLink>
+        </p>
+      ) : null}
+
       {kpis ? (
         <div className="wa-mb-5" data-testid="students-roster-kpis">
           <KpiStrip items={kpis} />
@@ -645,7 +671,7 @@ export function StudentsRosterKit({
         data-testid="students-roster-footer"
         style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 16 }}
       >
-        {showingLabel ?? `Showing ${visible.length} of ${total}`}
+        {showingLabel ?? `Showing ${visible.length} of ${poolTotal}`}
       </p>
     </EmbeddableFrame>
   );

@@ -22,7 +22,7 @@ import {
   getActiveTab,
 } from '@/lib/nav/portalNav';
 import { withContextualToolRow } from '@/lib/nav/memberToolRoutes';
-import WorkspaceSidebarSections from './WorkspaceSidebarSections';
+import WorkspaceSidebarSections, { navSectionsStorageKey } from './WorkspaceSidebarSections';
 import { useTour } from '@/components/onboarding/TourContext';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import SuperAdminViewSwitcher, { useIsSuperAdmin } from '@/components/super-admin-view-switcher';
@@ -268,6 +268,9 @@ export default function WorkspaceShell({
       'Career Toolkit': tNav('careerToolkit'),
       'AI Career Tools': tNav('careerToolkit'),
       'AI Counselor': tNav('aiCounselor'),
+      // /dashboard/counselor rail row. Its label stays "AI Advisor" (Mike, WAP-197);
+      // nav.aiCounselor is the assistant's name ("Lilley"), not this row's label.
+      'AI Advisor': tNav('aiAdvisor'),
       'Learning Hub': tNav('learningHub'),
       'Find your career': tNav('findYourCareer'),
       'Training preassessment': tNav('trainingPreassessment'),
@@ -722,7 +725,7 @@ export default function WorkspaceShell({
                       tNav(open ? 'hideMoreUnder' : 'showMoreUnder', { count, label })
                     }
                     onNavigate={closeDrawer}
-                    storageKey={`wa_nav_sections_${portalRole}`}
+                    storageKey={navSectionsStorageKey(portalRole)}
                     forceExpanded={tourOpen}
                   />
                 ) : GROUP_ORDER.map((group) => {

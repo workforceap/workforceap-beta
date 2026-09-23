@@ -39,6 +39,7 @@
     "wioaQualification": "WIOA Qualification",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
+    "aiAdvisor": "AI Advisor",
     "trainingPreassessment": "Training preassessment",
     "counselorChat": "Messages",
     "aboutUs": "About Us",
@@ -76,6 +77,7 @@
         "overview": "Overview",
         "jobs": "Jobs",
         "pipeline": "Pipeline",
+        "workQueue": "Queue",
         "messages": "Messages"
       },
       "counselor": {
@@ -514,6 +516,15 @@
     "voiceInterviewMetaDesc": "Practice a live voice mock interview for a specific job or role, with optional camera recording and real-time coaching feedback.",
     "assessmentMetaTitle": "Training Preassessment",
     "assessmentMetaDesc": "A short skills check that helps place you. Completing it does not unlock Coursera.",
+    "interviewSteps": {
+      "preScreeningTitle": "Pre-screening",
+      "preScreeningLede": "The step before your interview.",
+      "interviewTitle": "Interview",
+      "eligible": "You’re interview eligible.",
+      "submitted": "Pre-screening submitted. A counselor will review it and reach out by email.",
+      "requested": "We received your interview request on {date}. A counselor will reach out by email."
+    },
+    "weeklyRecapOpenGoals": "Open your goals",
     "programMetaTitle": "My Program",
     "programMetaDesc": "View or select your enrolled program.",
     "mentorMetaTitle": "Mentor Dashboard",

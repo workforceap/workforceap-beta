@@ -47,6 +47,20 @@ describe('weekly recap goal links (WAP-197)', () => {
     expect(screen.getByRole('link', { name: /Career Brief/ })).toHaveAttribute('href', '/dashboard/career-brief');
   });
 
+  it('uses the translated label from the page and keeps the arrow out of the accessible name', () => {
+    render(
+      <MotivatingRecapClient
+        recap={recap}
+        recapData={{ goalProgress: [{ id: 'g-1', title: 'Terminar el currículum', status: 'ACTIVE' }] }}
+        weekStart="2026-09-14"
+        openGoalsLabel="Abrir tus metas"
+      />,
+    );
+    const link = screen.getByRole('link', { name: 'Abrir tus metas' });
+    expect(link).toHaveAttribute('href', '/dashboard/career-brief#goals');
+    expect(link.querySelector('[aria-hidden="true"]')).toHaveTextContent('→');
+  });
+
   it('shows no goals link when the recap has no goals', () => {
     renderRecap({ wins: [{ label: 'Applied to two roles' }] });
     expect(screen.queryByRole('link', { name: /Open your goals/ })).toBeNull();
