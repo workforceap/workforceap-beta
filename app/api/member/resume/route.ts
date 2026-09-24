@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { isResumeObjectPathOwnedByUser } from '@/lib/resume/atomicResumeObjectSwap';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 import {
   getResumeDraftOwnerToken,
   getResumeProfileRevision,
@@ -74,6 +76,7 @@ export const GET = withApiGuc(async (req: NextRequest) => {
         return NextResponse.json({
           hasOriginal: !!originalPath,
           hasEnhanced: !!enhancedPath,
+          enhancedUnavailable: false,
           originalUrl: null,
           enhancedUrl: null,
           enhancedText: null,
@@ -91,6 +94,8 @@ export const GET = withApiGuc(async (req: NextRequest) => {
       const supabase = getSupabaseAdmin();
       let originalUrl: string | null = null;
       let enhancedUrl: string | null = null;
+      let enhancedText: string | null = null;
+      let enhancedReadable = false;
   
       if (originalPath) {
         const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(originalPath, 3600);
@@ -101,22 +106,27 @@ export const GET = withApiGuc(async (req: NextRequest) => {
         originalUrl = data.signedUrl;
       }
       if (enhancedPath) {
-        const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(enhancedPath, 3600);
-        if (error || !data?.signedUrl) {
-          console.error('[member/resume] createSignedUrl enhanced failed:', error);
-          return NextResponse.json({ error: storageErrorMessage(error, 'sign') }, { status: 502 });
-        }
-        enhancedUrl = data.signedUrl;
-      }
-  
-      let enhancedText: string | null = null;
-      if (enhancedPath) {
         const { data: fileData, error } = await supabase.storage.from(BUCKET).download(enhancedPath);
         if (error || !fileData) {
           console.error('[member/resume] download enhanced failed:', error);
-          return NextResponse.json({ error: storageErrorMessage(error, 'download') }, { status: 502 });
+        } else {
+          const inspected = await inspectStoredEnhancedResume(
+            Buffer.from(await fileData.arrayBuffer()),
+            enhancedPath,
+          );
+          enhancedReadable = inspected.readable;
+          enhancedText = inspected.text;
+          if (enhancedReadable) {
+            const signed = await supabase.storage.from(BUCKET).createSignedUrl(enhancedPath, 3600);
+            if (signed.error || !signed.data?.signedUrl) {
+              console.error('[member/resume] createSignedUrl enhanced failed:', signed.error);
+              enhancedReadable = false;
+              enhancedText = null;
+            } else {
+              enhancedUrl = signed.data.signedUrl;
+            }
+          }
         }
-        enhancedText = await fileData.text();
       }
   
       let resumePlainText: string | null = null;
@@ -126,14 +136,15 @@ export const GET = withApiGuc(async (req: NextRequest) => {
   
       return NextResponse.json({
         hasOriginal: !!originalPath,
-        hasEnhanced: !!enhancedPath,
+        hasEnhanced: enhancedReadable,
+        enhancedUnavailable: !!enhancedPath && !enhancedReadable,
         originalUrl,
         enhancedUrl,
         enhancedText,
         /** Plain text extracted from stored resume (PDF/DOCX/TXT). Use for tools; omit unless `includePlainText`. */
         resumePlainText,
         originalExt: extOf(originalPath),
-        enhancedExt: extOf(enhancedPath),
+        enhancedExt: enhancedReadable ? extOf(enhancedPath) : null,
         /** Echo this opaque token when saving an edited draft. */
         resumeRevision: getResumeProfileRevision(originalPath, enhancedPath),
         /** Browser-storage scope for this target member; contains no user ID. */
@@ -142,7 +153,7 @@ export const GET = withApiGuc(async (req: NextRequest) => {
         previewOriginalPath: originalPath
           ? `/api/member/resume/preview?variant=original&v=${pathRevision(originalPath)}`
           : null,
-        previewEnhancedPath: enhancedPath
+        previewEnhancedPath: enhancedReadable && enhancedPath
           ? `/api/member/resume/preview?variant=enhanced&v=${pathRevision(enhancedPath)}`
           : null,
       });
