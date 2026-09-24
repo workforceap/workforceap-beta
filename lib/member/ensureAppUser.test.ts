@@ -4,6 +4,7 @@ import { ensureAppUserProvisioned } from './ensureAppUser';
 import { prisma } from '../db/prisma';
 
 const ORG_A = 'org-custom-1';
+const ORG_B = 'org-custom-2';
 const DEFAULT_ORG = 'org-default';
 
 function installProvisionMocks(t: { after: (fn: () => void) => void }) {
@@ -14,7 +15,13 @@ function installProvisionMocks(t: { after: (fn: () => void) => void }) {
   const originalTransaction = prisma.$transaction.bind(prisma);
 
   const state = {
-    findUniqueResult: null as { id: string; profile: { userId: string } | null } | null,
+    findUniqueResult: null as { id: string; organizationId: string; profile: { userId: string } | null } | null,
+    accountRoles: [] as string[],
+    hasEmployer: false,
+    hasPartner: false,
+    hasCounselor: false,
+    memberGrants: 0,
+    profileCreates: [] as Array<{ userId: string; role: string }>,
     upserts: [] as Array<{
       where: Record<string, unknown>;
       create: Record<string, unknown>;
@@ -42,16 +49,25 @@ function installProvisionMocks(t: { after: (fn: () => void) => void }) {
           state.upserts.push(args);
           return {};
         },
+        findUniqueOrThrow: async () => ({
+          userRoles: state.accountRoles.map((name) => ({ role: { name } })),
+          employer: state.hasEmployer ? { id: 'employer-1' } : null,
+          partnerUser: state.hasPartner ? { id: 'partner-user-1' } : null,
+          counselorProfile: state.hasCounselor ? { id: 'counselor-1' } : null,
+        }),
       },
       role: {
         findUnique: async () => ({ id: 'role-member' }),
         create: async () => ({ id: 'role-member' }),
       },
       userRole: {
-        createMany: async () => ({ count: 1 }),
+        createMany: async () => { state.memberGrants += 1; return { count: 1 }; },
       },
       profile: {
-        upsert: async () => ({}),
+        upsert: async (args: { create: { userId: string; role: string } }) => {
+          state.profileCreates.push(args.create);
+          return {};
+        },
       },
     };
     return fn(tx as unknown as Parameters<TxCallback>[0]);
@@ -67,7 +83,7 @@ function installProvisionMocks(t: { after: (fn: () => void) => void }) {
 
 test('ensureAppUserProvisioned is a no-op when user + profile already exist', async (t) => {
   const state = installProvisionMocks(t);
-  state.findUniqueResult = { id: 'u1', profile: { userId: 'u1' } };
+  state.findUniqueResult = { id: 'u1', organizationId: ORG_A, profile: { userId: 'u1' } };
 
   await ensureAppUserProvisioned(
     { id: 'u1', email: 'a@b.c' },
@@ -75,6 +91,7 @@ test('ensureAppUserProvisioned is a no-op when user + profile already exist', as
   );
 
   assert.equal(state.upserts.length, 0);
+  assert.equal(state.memberGrants, 0);
 });
 
 test('orphan provision writes the injected org, not a hardcoded default', async (t) => {
@@ -89,6 +106,25 @@ test('orphan provision writes the injected org, not a hardcoded default', async 
   assert.equal(state.upserts.length, 1);
   assert.equal(state.upserts[0].create.organizationId, ORG_A);
   assert.deepEqual(state.upserts[0].update, {});
+  assert.equal(state.memberGrants, 1);
+  assert.deepEqual(state.profileCreates, [{ userId: 'u-orphan', role: 'member' }]);
+});
+
+test('orphan provision uses app metadata rather than user-editable metadata', async (t) => {
+  const state = installProvisionMocks(t);
+
+  await ensureAppUserProvisioned(
+    {
+      id: 'u-auth-orphan',
+      email: 'orphan@example.com',
+      user_metadata: { organization_id: ORG_B },
+      app_metadata: { organization_id: ORG_A },
+    },
+    { headers: { get: () => null } },
+  );
+
+  assert.equal(state.upserts[0].create.organizationId, ORG_A);
+  assert.equal(state.memberGrants, 1);
 });
 
 test('read-only portal audit never provisions an orphaned user', async (t) => {
@@ -101,11 +137,13 @@ test('read-only portal audit never provisions an orphaned user', async (t) => {
   );
 
   assert.equal(state.upserts.length, 0);
+  assert.equal(state.memberGrants, 0);
+  assert.equal(state.profileCreates.length, 0);
 });
 
 test('existing user without profile is not moved to another org', async (t) => {
   const state = installProvisionMocks(t);
-  state.findUniqueResult = { id: 'u1', profile: null };
+  state.findUniqueResult = { id: 'u1', organizationId: ORG_A, profile: null };
 
   await ensureAppUserProvisioned(
     { id: 'u1', email: 'a@b.c' },
@@ -114,5 +152,40 @@ test('existing user without profile is not moved to another org', async (t) => {
 
   assert.equal(state.upserts.length, 1);
   assert.deepEqual(state.upserts[0].update, {});
-  assert.equal(state.upserts[0].create.organizationId, DEFAULT_ORG);
+  assert.equal(state.upserts[0].create.organizationId, ORG_A);
+  assert.equal(state.memberGrants, 1);
+});
+
+test('existing non-member role with missing profile is restored without a member grant', async (t) => {
+  const state = installProvisionMocks(t);
+  state.findUniqueResult = { id: 'u-staff', organizationId: ORG_A, profile: null };
+  state.accountRoles = ['member', 'admin'];
+
+  await ensureAppUserProvisioned({ id: 'u-staff', email: 'staff@example.com' }, { organizationId: DEFAULT_ORG });
+
+  assert.equal(state.memberGrants, 0);
+  assert.deepEqual(state.profileCreates, [{ userId: 'u-staff', role: 'admin' }]);
+  assert.deepEqual(state.upserts[0].update, {});
+});
+
+test('existing employer association without a role row does not become a member', async (t) => {
+  const state = installProvisionMocks(t);
+  state.findUniqueResult = { id: 'u-employer', organizationId: ORG_A, profile: null };
+  state.hasEmployer = true;
+
+  await ensureAppUserProvisioned({ id: 'u-employer', email: 'employer@example.com' }, { organizationId: DEFAULT_ORG });
+
+  assert.equal(state.memberGrants, 0);
+  assert.deepEqual(state.profileCreates, [{ userId: 'u-employer', role: 'employer' }]);
+});
+
+test('existing counselor association without a role row does not become a member', async (t) => {
+  const state = installProvisionMocks(t);
+  state.findUniqueResult = { id: 'u-counselor', organizationId: ORG_A, profile: null };
+  state.hasCounselor = true;
+
+  await ensureAppUserProvisioned({ id: 'u-counselor', email: 'counselor@example.com' });
+
+  assert.equal(state.memberGrants, 0);
+  assert.deepEqual(state.profileCreates, [{ userId: 'u-counselor', role: 'counselor' }]);
 });
