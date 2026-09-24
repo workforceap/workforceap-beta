@@ -25,7 +25,7 @@ import {
 import { getProfileRole } from '@/lib/auth/roles';
 import { resolveLayoutUserId, WAP_USER_ID_HEADER } from '@/lib/auth/layoutUserId';
 import { getUser } from '@/lib/auth/server';
-import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
+import { ensureCurrentAppUserProvisioned } from '@/lib/member/ensureCurrentAppUserProvisioned';
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { resolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
@@ -126,10 +126,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     // /api/member/wioa-qualification's user.update. ensureAppUserProvisioned
     // is idempotent and cheap (one fast-path read) when the rows already
     // exist. We need the full Supabase user (email/metadata) to populate the
-    // new rows; getUser() is request-cached so this is free. Best-effort —
+    // new rows; getUser() is request-cached so this is free. The member access
+    // decision awaits the same request-cached promise before loading roles.
+    // Best-effort here —
     // a failure must not block the render; the GUC bootstrap below still runs.
     if (supabaseUser) {
-      await ensureAppUserProvisioned(supabaseUser, { headers: h, readOnlyAudit }).catch((err) => {
+      await ensureCurrentAppUserProvisioned(resolvedUserId).catch((err) => {
         bootstrapLoadFailed = true;
         console.error('[layout:guc] ensureAppUserProvisioned failed; continuing', err);
       });

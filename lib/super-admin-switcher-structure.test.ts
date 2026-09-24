@@ -12,6 +12,7 @@ test('super-admin switcher uses server-provided state where available', () => {
   const memberShell = read('components/portal/MemberWorkspaceShell.tsx');
   const counselorShell = read('components/portal/CounselorPortalShell.tsx');
   const memberLayout = read('app/(portal)/dashboard/layout.tsx');
+  const memberAccess = read('lib/auth/memberDashboardAccess.ts');
   const counselorLayout = read('app/(portal)/counselor/layout.tsx');
 
   assert.match(switcher, /initialIsSuperAdmin\?: boolean/);
@@ -24,7 +25,8 @@ test('super-admin switcher uses server-provided state where available', () => {
   assert.equal((shell.match(/<SuperAdminViewSwitcher initialIsSuperAdmin=\{isSuperAdmin\} \/>/g) ?? []).length, 2);
   assert.match(memberShell, /superAdmin=\{superAdmin\}/);
   assert.match(counselorShell, /superAdmin=\{superAdmin\}/);
-  assert.match(memberLayout, /isSuperAdmin\(user\.id\)/);
+  assert.match(memberLayout, /getMemberDashboardAccess\(user\.id\)/);
+  assert.match(memberAccess, /isSuperAdmin\(userId\)/);
   assert.match(memberLayout, /<MemberWorkspaceShell[\s\S]*superAdmin=\{superAdmin\}[\s\S]*portalRoles=\{portalRoles\}/);
   assert.match(counselorLayout, /isSuperAdmin\(user\.id\)/);
   assert.match(counselorLayout, /<CounselorPortalShell[\s\S]*superAdmin=\{superAdmin\}[\s\S]*portalRoles=\{portalRoles\}/);
