@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getUser } from '@/lib/auth/server';
-import { getProfileRole, isSuperAdmin } from '@/lib/auth/roles';
+import { getProfileRole, getUserRoles, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import MemberWorkspaceShell from '@/components/portal/MemberWorkspaceShell';
@@ -27,25 +27,30 @@ export default async function DashboardLayout({
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard');
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
-  let memberLayoutLoadFailed = false;
 
   const [profileRole, superAdmin] = await Promise.all([
-    withDbRetry(() => getProfileRole(user.id)).catch((err) => {
-      memberLayoutLoadFailed = true;
-      console.error('[dashboard:layout] profileRole lookup failed; degrading to member', err);
-      return 'member';
-    }),
-    withDbRetry(() => isSuperAdmin(user.id)).catch((err) => {
-      memberLayoutLoadFailed = true;
-      console.error('[dashboard:layout] isSuperAdmin lookup failed; treating as not super admin', err);
-      return false;
-    }),
+    withDbRetry(() => getProfileRole(user.id)),
+    withDbRetry(() => isSuperAdmin(user.id)),
   ]);
-  if (profileRole === 'admin' && !superAdmin) {
-    redirect('/admin');
+
+  // Resolve portal access before reading member profile, resume, tour, or photo data.
+  // A profile role can fall back to "member" for legacy users, but an employer or
+  // other non-member portal association must not gain the member dashboard from it.
+  const [portalRoles, userRoleNames] = await Promise.all([
+    getPortalSwitcherRoles(user.id, { superAdmin }),
+    withDbRetry(() => getUserRoles(user.id)),
+  ]);
+  const memberInSwitcher = portalRoles.some(({ role }) => role === 'member');
+  const memberAccess = superAdmin ||
+    (memberInSwitcher && (profileRole === 'member' || userRoleNames.includes('member')));
+  if (!memberAccess) {
+    const adminHome = profileRole === 'admin'
+      ? portalRoles.find(({ role }) => role === 'admin')?.homeHref
+      : undefined;
+    redirect(adminHome ?? portalRoles.find(({ role }) => role !== 'member')?.homeHref ?? '/');
   }
 
-  const portalRolesPromise = getPortalSwitcherRoles(user.id, { superAdmin });
+  let memberLayoutLoadFailed = false;
   // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
   const memberTour = getHomeTourForRole('member');
   const tourPromise = memberTour ? getTourOffer(user.id, memberTour.key) : Promise.resolve(null);
@@ -103,7 +108,7 @@ export default async function DashboardLayout({
     avatarUrl,
   });
 
-  const [portalRoles, tour] = await Promise.all([portalRolesPromise, tourPromise]);
+  const tour = await tourPromise;
 
   return (
     <MemberWorkspaceShell
