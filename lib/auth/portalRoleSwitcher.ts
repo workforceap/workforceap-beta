@@ -3,10 +3,12 @@ import {
   getCounselorForUser,
   getEmployerAccountForNav,
   getPartnerForUser,
+  getStoredRoleIdentity,
   getUserRoles,
   isAdmin,
   isSuperAdmin,
 } from '@/lib/auth/roles';
+import { normalizeRoleName } from '@/lib/auth/roleAccess';
 
 export type PortalSwitcherRole = {
   role: PortalRole;
@@ -26,6 +28,7 @@ const ROLE_META: Record<Extract<PortalRole, 'member' | 'employer' | 'partner' | 
 
 export function buildPortalSwitcherRoles(input: {
   userRoleNames: string[];
+  hasMemberProfile: boolean;
   hasEmployer: boolean;
   hasPartner: boolean;
   hasCounselor: boolean;
@@ -42,14 +45,14 @@ export function buildPortalSwitcherRoles(input: {
     input.hasAdmin ||
     explicitRoles.has('employer') ||
     explicitRoles.has('partner') ||
+    explicitRoles.has('counselor') ||
     explicitRoles.has('admin') ||
     explicitRoles.has('super_admin') ||
     explicitRoles.has('case_manager');
 
-  // Do not invent member access for employer/admin/counselor-only users.
-  // Member remains available when explicitly granted, or as the safe default for users
-  // with no other portal role yet.
-  if (explicitRoles.has('member') || !hasNonMemberPortalAccess) available.add('member');
+  // The member row is a baseline on staff accounts, not a member entitlement.
+  // Mixed identities need a durable, reviewed entitlement before switching.
+  if (input.hasMemberProfile && !hasNonMemberPortalAccess) available.add('member');
   if (input.hasEmployer || explicitRoles.has('employer')) available.add('employer');
   if (input.hasPartner || explicitRoles.has('partner')) available.add('partner');
   if (input.hasCounselor) available.add('counselor');
@@ -66,6 +69,7 @@ export function buildPortalSwitcherRoles(input: {
 export type PortalSwitcherInputs = {
   superAdmin: boolean;
   userRoleNames: string[];
+  hasMemberProfile: boolean;
   hasEmployer: boolean;
   hasPartner: boolean;
   hasCounselor: boolean;
@@ -117,6 +121,7 @@ async function resolvePortalSwitcherInputs(
     return {
       superAdmin: true,
       userRoleNames,
+      hasMemberProfile: true,
       hasEmployer: false,
       hasPartner: false,
       hasCounselor: false,
@@ -124,7 +129,10 @@ async function resolvePortalSwitcherInputs(
     };
   }
 
-  const [hasEmployer, hasPartner, hasCounselor, hasAdmin] = await Promise.all([
+  const [storedIdentity, hasEmployer, hasPartner, hasCounselor, hasAdmin] = await Promise.all([
+    precomputed?.hasMemberProfile !== undefined
+      ? Promise.resolve(null)
+      : getStoredRoleIdentity(userId),
     precomputed?.hasEmployer !== undefined
       ? precomputed.hasEmployer
       : getEmployerAccountForNav(userId).then((row) => !!row),
@@ -140,6 +148,11 @@ async function resolvePortalSwitcherInputs(
   return {
     superAdmin,
     userRoleNames,
+    hasMemberProfile: precomputed?.hasMemberProfile ?? Boolean(
+      storedIdentity?.userExists &&
+      !storedIdentity.deletedAt &&
+      normalizeRoleName(storedIdentity.profileRole) === 'member'
+    ),
     hasEmployer,
     hasPartner,
     hasCounselor,
