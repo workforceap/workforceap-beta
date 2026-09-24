@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getUser } from '@/lib/auth/server';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
@@ -61,7 +62,7 @@ export default async function CounselorPortalPage({
   if (!user) redirect('/login?redirectTo=/counselor/overview');
 
   const allowed = (await isCounselor(user.id)) || (await isAdmin(user.id));
-  if (!allowed) redirect('/dashboard');
+  if (!allowed) redirect(await deniedPortalHomeHref(user.id, 'counselor'));
 
   const requestedUi = (await searchParams)?.ui ?? null;
 
