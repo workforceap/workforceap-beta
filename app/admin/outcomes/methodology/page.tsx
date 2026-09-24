@@ -49,13 +49,21 @@ export default async function OutcomesMethodologyPage() {
             ← Back to outcomes truth-set
           </Link>
         </p>
-        <article className="resource-content markdown-body">
+        <article className="resource-content markdown-body outcomes-methodology-content">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               // PageHeader above already renders the page h1; the document's
               // own "# Outcomes Methodology" becomes a section heading.
               h1: ({ children }) => <h2>{children}</h2>,
+              table: ({ children }) => (
+                <div className="admin-table-scroll" role="region" aria-label="Scrollable methodology table" tabIndex={0}>
+                  <table>
+                    <caption className="sr-only">Methodology reference table</caption>
+                    {children}
+                  </table>
+                </div>
+              ),
               a: ({ href, children }) => {
                 const isInternal = href?.startsWith('/');
                 return isInternal ? (

@@ -173,6 +173,9 @@ const config = [
       // KitTableShell is the <table> host DataTable composes.
       "components/portal/kit/DataTable.tsx",
       "components/portal/kit/KitTableShell.tsx",
+      // The admin methodology is authored in Markdown, with varying table
+      // columns. Its renderer preserves native table semantics and captions.
+      "app/admin/outcomes/methodology/page.tsx",
       // Legacy admin UIs still use raw tables; migrate to <DataTable> over time.
       // 2026-05-20: each retained <table> now carries a <caption className="sr-only"> for a11y.
       "app/admin/placement-surveys/page.tsx",
