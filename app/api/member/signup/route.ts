@@ -13,6 +13,7 @@ import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
 import { trackEvent } from '@/lib/events/track';
 import { getConversionValuePayload } from '@/lib/analytics/conversionValue';
 import { prisma } from '@/lib/db/prisma';
+import { normalizePartnerRef, PARTNER_REF_COOKIE } from '@/lib/apply/applyReferralCapture';
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -241,8 +242,16 @@ export async function POST(request: NextRequest) {
       );
     }
   
+    // Partner attribution: the body value wins, the `wap_partner_ref` cookie
+    // is the fallback. Middleware plants that cookie httpOnly on
+    // `/enroll/<slug>`, so the client cannot read it back into the body and
+    // the recovery has to happen here. Mirrors app/api/apply/signup/route.ts.
+    const refFromBody = data.referralRef?.trim();
+    const refFromCookie = normalizePartnerRef(cookieStore.get(PARTNER_REF_COOKIE)?.value);
+    const referralRef = (refFromBody || refFromCookie || '').toLowerCase() || undefined;
+
     try {
-      await createMember(user.id, data);
+      await createMember(user.id, { ...data, referralRef });
     } catch (err) {
       console.error('Signup member creation error:', err);
       // signUp may return a pre-existing unconfirmed/orphan Auth identity.

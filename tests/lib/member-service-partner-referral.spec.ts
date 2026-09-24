@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => {
     userFindUnique: vi.fn(),
     resolveProvisionOrganizationId: vi.fn(),
     sendNewApplicationAdminEmail: vi.fn(),
+    loggerWarn: vi.fn(),
   };
 });
 
@@ -48,6 +49,9 @@ vi.mock('@/lib/tenant/currentRequestHeaders', () => ({
 vi.mock('@/lib/email', () => ({
   sendNewApplicationAdminEmail: mocks.sendNewApplicationAdminEmail,
 }));
+vi.mock('@/lib/observability/logger', () => ({
+  logger: { warn: mocks.loggerWarn, info: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}));
 
 import { createMember } from '@/lib/member/service';
 import type { MemberSignupInput } from '@/lib/validation/member';
@@ -66,6 +70,26 @@ function input(overrides: Partial<MemberSignupInput> = {}): MemberSignupInput {
   } as MemberSignupInput;
 }
 
+type PartnerRow = { id: string; active: boolean; organizationId: string; referralCode: string };
+type PartnerWhere = {
+  where: { active?: boolean; organizationId?: string; OR?: { referralCode?: string; slug?: string }[] };
+};
+
+/**
+ * Apply the same filter the database would, so "inactive partner" and
+ * "partner in another org" are real drops rather than a hand-fed null.
+ */
+function seedPartner(row: PartnerRow): void {
+  mocks.partnerFindFirst.mockImplementation(async (args: PartnerWhere) => {
+    const { where } = args;
+    if (where.active === true && !row.active) return null;
+    if (where.organizationId !== row.organizationId) return null;
+    const codes = (where.OR ?? []).flatMap((clause) => [clause.referralCode, clause.slug]);
+    if (!codes.includes(row.referralCode)) return null;
+    return { id: row.id };
+  });
+}
+
 function applicationData(): Record<string, unknown> {
   expect(mocks.tx.application.create).toHaveBeenCalledTimes(1);
   return mocks.tx.application.create.mock.calls[0][0].data;
@@ -73,6 +97,8 @@ function applicationData(): Record<string, unknown> {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // clearAllMocks keeps implementations; seedPartner() installs one.
+  mocks.partnerFindFirst.mockReset();
   mocks.resolveProvisionOrganizationId.mockResolvedValue('org-A');
   mocks.tx.role.findUnique.mockResolvedValue({ id: 'role-member', name: 'member' });
   mocks.tx.user.create.mockResolvedValue({ id: USER_ID });
@@ -133,6 +159,57 @@ describe('createMember partner attribution (/signup door)', () => {
     expect(mocks.partnerFindFirst).not.toHaveBeenCalled();
     expect(mocks.tx.partnerReferral.upsert).not.toHaveBeenCalled();
     expect(mocks.tx.application.create.mock.calls[0][0].data.referralPartnerId).toBeNull();
+  });
+
+  /**
+   * A ref that matches nothing used to be dropped in silence, so a broken
+   * partner link looked exactly like organic traffic. The drop still happens
+   * — attribution must stay off — but it is now visible in the logs.
+   */
+  it('(g) logs the dropped ref and its org when the code belongs to another organization', async () => {
+    seedPartner({ id: 'partner-B', active: true, organizationId: 'org-B', referralCode: 'other-org-code' });
+
+    await createMember(USER_ID, input({ referralRef: 'other-org-code' }));
+
+    expect(mocks.tx.partnerReferral.upsert).not.toHaveBeenCalled();
+    expect(applicationData().referralPartnerId).toBeNull();
+    expect(mocks.loggerWarn).toHaveBeenCalledTimes(1);
+    const [message, context] = mocks.loggerWarn.mock.calls[0];
+    expect(message).toMatch(/partner ref/i);
+    expect(context).toEqual({ ref: 'other-org-code', organizationId: 'org-A' });
+  });
+
+  it('(h) logs the dropped ref when the partner exists in this org but is inactive', async () => {
+    seedPartner({ id: 'partner-A', active: false, organizationId: 'org-A', referralCode: 'retired-ref' });
+
+    await createMember(USER_ID, input({ referralRef: 'Retired-Ref' }));
+
+    expect(mocks.tx.partnerReferral.upsert).not.toHaveBeenCalled();
+    expect(applicationData().referralPartnerId).toBeNull();
+    expect(mocks.loggerWarn).toHaveBeenCalledTimes(1);
+    expect(mocks.loggerWarn.mock.calls[0][1]).toEqual({ ref: 'retired-ref', organizationId: 'org-A' });
+  });
+
+  it('(i) keeps personal data out of the dropped-ref log line', async () => {
+    seedPartner({ id: 'partner-B', active: true, organizationId: 'org-B', referralCode: 'other-org-code' });
+
+    await createMember(
+      USER_ID,
+      input({ referralRef: 'other-org-code', email: 'private.person@example.com', fullName: 'Private Person' }),
+    );
+
+    const logged = JSON.stringify(mocks.loggerWarn.mock.calls);
+    expect(logged).not.toContain('private.person@example.com');
+    expect(logged).not.toContain('Private Person');
+    expect(logged).not.toContain(USER_ID);
+  });
+
+  it('(j) logs nothing when the ref resolves to a partner, and nothing when there is no ref', async () => {
+    mocks.partnerFindFirst.mockResolvedValue({ id: 'partner-A' });
+    await createMember(USER_ID, input({ referralRef: 'acme' }));
+    await createMember(USER_ID, input());
+
+    expect(mocks.loggerWarn).not.toHaveBeenCalled();
   });
 
   it('(e) rejects when the PartnerReferral upsert fails and the user row does not exist', async () => {

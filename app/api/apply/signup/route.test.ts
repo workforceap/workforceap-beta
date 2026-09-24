@@ -320,6 +320,7 @@ import {
   sendSchoolEnrollmentPartnerAckEmail,
 } from '@/lib/email';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { logger } from '@/lib/observability/logger';
 
 function makeRequest(overrides: Record<string, unknown> = {}) {
   const body = {
@@ -1475,5 +1476,75 @@ describe('POST /api/apply/signup receiptSent', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ success: true, receiptSent: false });
     expect(state.applicationCreates).toHaveLength(1);
+  });
+});
+
+/**
+ * A ref that resolves to no partner — a typo, a retired code, or a code that
+ * belongs to another tenant — still attributes nobody. Before this, that drop
+ * was indistinguishable from organic traffic: nothing was logged and the raw
+ * ref was never persisted, so a broken partner link could run for weeks.
+ */
+describe('POST /api/apply/signup unmatched partner ref', () => {
+  beforeEach(resetState);
+
+  function unmatchedRefWarnings() {
+    return vi
+      .mocked(logger.warn)
+      .mock.calls.filter(([message]) => /partner ref/i.test(message));
+  }
+
+  it('logs the dropped ref and the resolved organization when no partner matches', async () => {
+    state.partner = null;
+
+    const res = await POST(makeRequest({ referralRef: 'Ghost-Ref' }));
+
+    expect(res.status).toBe(200);
+    expect(state.applicationCreates[0].data).toMatchObject({ referralPartnerId: null });
+    const warnings = unmatchedRefWarnings();
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0][1]).toEqual({ ref: 'ghost-ref', organizationId: 'org-test-1' });
+  });
+
+  it('logs the dropped ref that arrived on the cookie rather than the body', async () => {
+    state.partner = null;
+    state.cookies[PARTNER_REF_COOKIE] = 'ghost-ref';
+
+    await POST(makeRequest());
+
+    expect(unmatchedRefWarnings()[0][1]).toEqual({ ref: 'ghost-ref', organizationId: 'org-test-1' });
+  });
+
+  it('keeps the applicant out of the dropped-ref log line', async () => {
+    state.partner = null;
+
+    await POST(makeRequest({ referralRef: 'ghost-ref', email: 'private.person@example.com' }));
+
+    const logged = JSON.stringify(unmatchedRefWarnings());
+    expect(logged).not.toContain('private.person@example.com');
+    expect(logged).not.toContain('Concordia Student');
+  });
+
+  it('logs nothing when the ref resolves, and nothing when there is no ref at all', async () => {
+    state.partner = {
+      id: 'partner-matched',
+      name: 'Matched Partner',
+      partnerType: 'community',
+      contactEmail: null,
+      notifyOnEnrollment: false,
+      sponsoredEnrollment: false,
+      sponsorshipFundingSource: null,
+      sponsorshipTermLabel: null,
+      sponsorshipStartsAt: null,
+      sponsorshipEndsAt: null,
+      sponsorshipSeatCap: null,
+      schoolDistrict: null,
+    };
+    await POST(makeRequest({ referralRef: 'matched-ref' }));
+    expect(unmatchedRefWarnings()).toHaveLength(0);
+
+    state.partner = null;
+    await POST(makeRequest());
+    expect(unmatchedRefWarnings()).toHaveLength(0);
   });
 });

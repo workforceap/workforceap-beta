@@ -458,6 +458,15 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         if (isSponsorshipActive(partner, new Date())) {
           sponsorPartner = partner;
         }
+      } else {
+        // Dropped ref (unknown code, inactive partner, or a partner in
+        // another organization): attribution stays off, but say so, or a
+        // broken partner link looks exactly like organic traffic. Ref + org
+        // only: never the applicant's email or name.
+        logger.warn('apply/signup: partner ref matched no active partner in this organization', {
+          ref: refRaw,
+          organizationId,
+        });
       }
     }
 
