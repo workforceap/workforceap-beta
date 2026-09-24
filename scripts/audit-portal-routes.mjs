@@ -18,6 +18,7 @@ import {
   PRODUCTION_CANARY_ROLES,
   REDIRECT_ONLY_PATHS,
   REQUIRED_DYNAMIC_PATHS,
+  ROLE_ACCESS_ROOTS,
   ROLE_ACCESS_MATRIX,
   SAFE_ACTION_CONTRACTS,
   SECTION_LOGIN_REDIRECT,
@@ -47,8 +48,10 @@ import {
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
+  conditionalRedirectFailureReasons,
   dataRequestQuietWindowSatisfied,
   evaluateAccessProbe,
+  fixtureConditionMatches,
   isBlockedAuditTelemetryRequest,
   isAllowedReadOnlyNonGetRequest,
   navigationTargetMatches,
@@ -481,10 +484,27 @@ async function captureRoleStorageState(browser, role, credential) {
       throw new Error(`Unable to verify the authenticated ${role} identity`);
     }
 
+    let fixtureClaims = null;
+    if (artifact.targetValidation.mode !== 'production_canary' && (role === 'admin' || role === 'member')) {
+      fixtureClaims = await page.evaluate(async () => {
+        const response = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (!response.ok) return null;
+        const body = await response.json();
+        return { role: body?.role, superAdmin: body?.superAdmin };
+      });
+      if (
+        typeof fixtureClaims?.role !== 'string' ||
+        typeof fixtureClaims?.superAdmin !== 'boolean'
+      ) {
+        throw new Error(`Unable to verify the authenticated ${role} fixture claims`);
+      }
+    }
+
     return {
       storageState: await context.storageState(),
       finalPathname: canonicalPathname(sanitizeAuditUrl(page.url(), allDynamicPatterns)),
       identityId,
+      fixtureClaims,
       blockedPostLoginWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
       blockedPostLoginTelemetryRequestCount: readOnlyGuard.blockedTelemetryCount(page),
       suppressedPostLoginSideEffectRequestCount: readOnlyGuard.suppressedSideEffectCount(page),
@@ -949,7 +969,7 @@ async function auditDynamicRoutes(browser, role, storageState, initialCandidates
   return { results, resolvedPaths };
 }
 
-async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPaths, mode) {
+async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaims, resolvedPaths, mode) {
   const entries = REDIRECT_ONLY_PATHS[role] ?? [];
   if (mode === 'production_canary') {
     const results = entries.map((entry) => ({
@@ -1009,19 +1029,79 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPath
         results.push(result);
         continue;
       }
+      if (!fixtureConditionMatches(entry.fixtureCondition, role, fixtureClaims)) {
+        result.failureReasons.push('fixture_condition_mismatch');
+        result.resultReason = 'fixture_condition_not_verified';
+        results.push(result);
+        continue;
+      }
 
       const page = await context.newPage();
       const dataRequests = trackSameOriginDataRequests(page);
+      const consoleErrors = [];
+      const pageErrors = [];
+      const documentResponses = [];
+      const handleConsole = (message) => recordConsoleError(message, consoleErrors);
+      const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
+      const handleResponse = (response) => {
+        if (response.request().resourceType() === 'document') {
+          documentResponses.push({ status: response.status(), url: response.url() });
+        }
+      };
+      page.on('console', handleConsole);
+      page.on('pageerror', handlePageError);
+      page.on('response', handleResponse);
       try {
-        await page.goto(routeURL(resolved.sourcePath), {
-          waitUntil: 'domcontentloaded',
-          timeout: remainingTimeout(),
-        });
+        try {
+          await page.goto(routeURL(resolved.sourcePath), {
+            waitUntil: 'domcontentloaded',
+            timeout: remainingTimeout(),
+          });
+        } catch (error) {
+          const message = error?.message ?? String(error);
+          if (!message.includes('net::ERR_ABORTED') && !message.includes('interrupted by another navigation')) {
+            throw error;
+          }
+        }
+        await page.waitForURL(
+          (url) => redirectTargetMatches(url.toString(), resolved.targetPath, trustedOrigin),
+          { timeout: remainingTimeout(7_000) }
+        );
         await waitForPortalReady(page, remainingTimeout(5_000));
+        if (entry.fixtureCondition) {
+          await page.locator('h1:visible').first().waitFor({
+            state: 'visible',
+            timeout: remainingTimeout(5_000),
+          }).catch(() => {});
+        }
         await dataRequests.waitForSettlement(remainingTimeout(5_000));
         const finalUrl = page.url();
         result.finalUrl = sanitizeAuditUrl(finalUrl, allDynamicPatterns);
-        if (redirectTargetMatches(finalUrl, resolved.targetPath, trustedOrigin)) {
+        if (entry.fixtureCondition) {
+          const inspection = await inspectPortalPage(page, allDynamicPatterns);
+          const finalDocument =
+            [...documentResponses].reverse().find((response) => response.url === finalUrl) ??
+            documentResponses.at(-1) ??
+            null;
+          result.failureReasons.push(...conditionalRedirectFailureReasons({
+            finalUrl,
+            expectedTarget: resolved.targetPath,
+            trustedOrigin,
+            documentStatus: finalDocument?.status ?? null,
+            inspection,
+            consoleErrorCount: consoleErrors.length,
+            pageErrorCount: pageErrors.length,
+            dataErrorCount: dataRequests.errors.length,
+            abortedDataRequestCount: dataRequests.abortedDataRequestCount,
+            blockedWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
+          }));
+          if (result.failureReasons.length === 0) {
+            result.status = 'passed';
+            result.resultReason = 'fixture_conditional_redirect_verified';
+          } else {
+            result.resultReason = 'fixture_conditional_redirect_unhealthy';
+          }
+        } else if (redirectTargetMatches(finalUrl, resolved.targetPath, trustedOrigin)) {
           result.status = 'passed';
           result.resultReason = 'exact_internal_redirect_verified';
         } else {
@@ -1033,9 +1113,13 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPath
           result.resultReason = 'redirect_target_data_failed';
         }
       } catch (error) {
+        result.finalUrl = sanitizeAuditUrl(page.url(), allDynamicPatterns);
         result.failureReasons.push(sanitizePortalDiagnostic(error?.message ?? String(error)));
         result.resultReason = 'redirect_probe_failed';
       } finally {
+        page.off('console', handleConsole);
+        page.off('pageerror', handlePageError);
+        page.off('response', handleResponse);
         result.blockedWriteRequestCount = readOnlyGuard.blockedWriteCount(page);
         result.blockedWriteRequests = readOnlyGuard.blockedWriteRequests(page);
         result.abortedDataRequestCount = dataRequests.abortedDataRequestCount;
@@ -1345,7 +1429,7 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
     });
     const readOnlyGuard = await installReadOnlyRequestGuard(context);
     try {
-      const targetRoot = SECTION_LOGIN_REDIRECT[targetRole];
+      const targetRoot = ROLE_ACCESS_ROOTS[targetRole];
       const audit = await auditRoute(
         context,
         targetRole,
@@ -1373,7 +1457,7 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         sourceRole,
         targetRole,
         expectation,
-        requestedPath: SECTION_LOGIN_REDIRECT[targetRole],
+        requestedPath: ROLE_ACCESS_ROOTS[targetRole],
         finalPathname: null,
         targetUsable: false,
         denialEvidence: null,
@@ -1700,6 +1784,7 @@ async function run() {
               browser,
               role,
               authByRole[role].storageState,
+              authByRole[role].fixtureClaims,
               dynamicCoverage.resolvedPaths,
               targetValidation.mode
             );

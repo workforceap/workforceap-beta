@@ -18,9 +18,11 @@ import {
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
+  conditionalRedirectFailureReasons,
   dataRequestQuietWindowSatisfied,
   dynamicRoutePatternMatches,
   evaluateAccessProbe,
+  fixtureConditionMatches,
   isBlockedAuditTelemetryRequest,
   isSuppressedAuditSideEffectGetRequest,
   isAllowedReadOnlyNonGetRequest,
@@ -44,6 +46,7 @@ import {
   PRODUCTION_CANARY_ROLES,
   REDIRECT_ONLY_PATHS,
   REQUIRED_DYNAMIC_PATHS,
+  ROLE_ACCESS_ROOTS,
   ROLE_ACCESS_MATRIX,
   SAFE_ACTION_CONTRACTS,
   STATIC_PATHS,
@@ -214,6 +217,43 @@ describe('portal route inventory gate', () => {
         .flat()
         .every((entry) => entry.path && entry.target && entry.reason),
     ).toBe(true);
+  });
+
+  it('keeps fixture-gated pages out of rendered static coverage and in exact redirect coverage', () => {
+    const adminGates = [
+      '/admin/audit-logs',
+      '/admin/csp-report',
+      '/admin/data-retention',
+      '/admin/messages',
+      '/admin/webhook-events',
+    ];
+    for (const path of adminGates) {
+      expect(STATIC_PATHS.admin).not.toContain(path);
+      expect(REDIRECT_ONLY_PATHS.admin).toContainEqual({
+        path,
+        target: '/admin',
+        reason: 'super_admin_only_for_regular_admin_fixture',
+        fixtureCondition: 'regular_admin',
+      });
+      const source = readFileSync(join(process.cwd(), 'app', ...path.slice(1).split('/'), 'page.tsx'), 'utf8');
+      expect(source).toContain("redirect('/admin')");
+    }
+    for (const path of ['/dashboard/program/start', '/dashboard/program/employer-screening']) {
+      expect(STATIC_PATHS.member).not.toContain(path);
+      expect(REDIRECT_ONLY_PATHS.member).toContainEqual({
+        path,
+        target: '/dashboard/program',
+        reason: 'member_without_active_program_slug',
+        fixtureCondition: 'member_without_active_program_slug',
+      });
+    }
+    expect(STATIC_PATHS.member).not.toContain('/dashboard/mentor');
+    expect(REDIRECT_ONLY_PATHS.member).toContainEqual({
+      path: '/dashboard/mentor',
+      target: '/mentor/apply',
+      reason: 'member_without_mentor_record',
+      fixtureCondition: 'member_without_mentor',
+    });
   });
 
   it('counts redirect-only pages as discovered inventory coverage and rejects overlap', () => {
@@ -747,6 +787,89 @@ describe('read-only portal action contracts', () => {
         'denied',
       ).ok,
     ).toBe(false);
+  });
+
+  it('uses the rendered counselor landing for role access probes', () => {
+    expect(ROLE_ACCESS_ROOTS.counselor).toBe('/counselor/today');
+    expect(ROLE_ACCESS_ROOTS.member).toBe('/dashboard');
+    expect(ROLE_ACCESS_ROOTS.employer).toBe('/employer');
+  });
+
+  it('accepts only exact healthy public landing redirects as cross-role denials', () => {
+    const landing = {
+      ok: false,
+      requestedPathname: '/employer',
+      finalPathname: '/employers',
+      documentStatus: 200,
+      originMatched: true,
+      wrongRoleRedirect: true,
+      unexpectedRedirect: true,
+      failureReasons: [
+        'wrong_role_redirect',
+        'unexpected_redirect',
+        'read_only_audit_capability_not_active',
+        'app_not_ready',
+        'missing_h1',
+      ],
+    };
+    expect(evaluateAccessProbe(landing, 'denied')).toMatchObject({
+      ok: true,
+      targetUsable: false,
+      denialEvidence: 'exact_public_access_landing',
+    });
+    expect(evaluateAccessProbe({ ...landing, finalPathname: '/employers/signup' }, 'denied').ok).toBe(false);
+    expect(evaluateAccessProbe({
+      ...landing,
+      finalPathname: '/unexpected-public-page',
+      failureReasons: ['wrong_role_redirect', 'unexpected_redirect'],
+    }, 'denied').ok).toBe(false);
+    expect(evaluateAccessProbe({ ...landing, documentStatus: 500 }, 'denied').ok).toBe(false);
+    expect(evaluateAccessProbe({ ...landing, originMatched: false }, 'denied').ok).toBe(false);
+    expect(evaluateAccessProbe({
+      ...landing,
+      failureReasons: [...landing.failureReasons, 'page_errors'],
+    }, 'denied').ok).toBe(false);
+    expect(evaluateAccessProbe({
+      ...landing,
+      requestedPathname: '/partner',
+      finalPathname: '/partners',
+    }, 'denied').denialEvidence).toBe('exact_public_access_landing');
+    expect(evaluateAccessProbe({
+      ...landing,
+      requestedPathname: '/dashboard',
+      finalPathname: '/dashboard',
+      ok: true,
+      wrongRoleRedirect: false,
+      unexpectedRedirect: false,
+      failureReasons: [],
+    }, 'denied').ok).toBe(false);
+  });
+
+  it('requires the checked-in fixture predicate and a healthy exact conditional redirect', () => {
+    expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: false })).toBe(true);
+    expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: true })).toBe(false);
+    expect(fixtureConditionMatches('member_without_mentor', 'member', { role: 'member', superAdmin: false })).toBe(true);
+    expect(fixtureConditionMatches('member_without_active_program_slug', 'member', { role: 'member', superAdmin: false })).toBe(true);
+    expect(fixtureConditionMatches('unknown_condition', 'member', { role: 'member', superAdmin: false })).toBe(false);
+
+    const destination = {
+      finalUrl: 'https://preview.example.test/admin',
+      expectedTarget: '/admin',
+      trustedOrigin: 'https://preview.example.test',
+      documentStatus: 200,
+      inspection: {
+        readOnlyCapabilityActive: true,
+        appReady: true,
+        h1Count: 1,
+        errorFallbackDetected: false,
+        errorFallbackStates: [],
+      },
+    };
+    expect(conditionalRedirectFailureReasons(destination)).toEqual([]);
+    expect(conditionalRedirectFailureReasons({ ...destination, documentStatus: 500 })).toContain('conditional_redirect_document_not_200');
+    expect(conditionalRedirectFailureReasons({ ...destination, finalUrl: 'https://preview.example.test/dashboard' })).toContain('redirect_target_mismatch');
+    expect(conditionalRedirectFailureReasons({ ...destination, abortedDataRequestCount: 1 })).toContain('same_origin_data_request_failed');
+    expect(conditionalRedirectFailureReasons({ ...destination, blockedWriteRequestCount: 1 })).toContain('non_get_request_blocked');
   });
 
   it('matches only the resolved concrete target for dynamic navigation', () => {
