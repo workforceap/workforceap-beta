@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { isResumeObjectPathOwnedByUser } from '@/lib/resume/atomicResumeObjectSwap';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -44,6 +45,12 @@ type Props = { params: Promise<{ memberId: string }> };export const GET = withAp
   }
 
   const buf = Buffer.from(await data.arrayBuffer());
+  if (variant === 'enhanced' && !(await inspectStoredEnhancedResume(buf, path)).readable) {
+    return NextResponse.json(
+      { error: 'This enhanced resume is not readable. The original file was kept.' },
+      { status: 422 },
+    );
+  }
   const name = path.split('/').pop() ?? 'resume';
   const lower = name.toLowerCase();
   let contentType = 'application/octet-stream';
