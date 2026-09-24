@@ -56,7 +56,7 @@ export function buildPortalSwitcherRoles(input: {
   if (input.hasEmployer || explicitRoles.has('employer')) available.add('employer');
   if (input.hasPartner || explicitRoles.has('partner')) available.add('partner');
   if (input.hasCounselor) available.add('counselor');
-  if (input.hasAdmin || explicitRoles.has('admin') || explicitRoles.has('super_admin') || explicitRoles.has('case_manager')) {
+  if (input.hasAdmin || explicitRoles.has('admin') || explicitRoles.has('super_admin')) {
     available.add('admin');
   }
 

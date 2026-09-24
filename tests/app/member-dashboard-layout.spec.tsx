@@ -134,6 +134,15 @@ describe('DashboardLayout portal switching', () => {
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
+  it('does not bounce a case manager through the admin portal', async () => {
+    vi.mocked(getProfileRole).mockResolvedValue('case_manager');
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'case_manager' });
+    vi.mocked(getPortalSwitcherRoles).mockResolvedValue([]);
+
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/');
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['an Auth-only orphan', { userExists: false, deletedAt: null, profileRole: null }],
     ['a missing profile', { userExists: true, deletedAt: null, profileRole: null }],

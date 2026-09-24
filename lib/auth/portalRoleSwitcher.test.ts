@@ -59,6 +59,19 @@ test('missing profile cannot be rescued by a baseline member row', () => {
   assert.deepEqual(roles, []);
 });
 
+test('case manager without admin access is not offered an admin/member redirect loop', () => {
+  const roles = buildPortalSwitcherRoles({
+    userRoleNames: ['member', 'case_manager'],
+    hasMemberProfile: false,
+    hasEmployer: false,
+    hasPartner: false,
+    hasCounselor: false,
+    hasAdmin: false,
+  });
+
+  assert.deepEqual(roles, []);
+});
+
 test('does not infer counselor from admin access alone', () => {
   const roles = buildPortalSwitcherRoles({
     userRoleNames: ['admin'],
