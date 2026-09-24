@@ -79,13 +79,13 @@ test('ignores member-like profile defaults when member is not truly granted', ()
 test('portal layouts pass precomputed switcher fields', () => {
   const files = [
     'app/admin/layout.tsx',
-    'app/(portal)/dashboard/layout.tsx',
+    'lib/auth/memberDashboardAccess.ts',
     'app/(portal)/employer/layout.tsx',
     'app/(portal)/partner/layout.tsx',
     'app/(portal)/counselor/layout.tsx',
   ];
   for (const rel of files) {
     const src = readFileSync(join(ROOT, rel), 'utf8');
-    assert.match(src, /getPortalSwitcherRoles\(user\.id,\s*\{/, rel);
+    assert.match(src, /getPortalSwitcherRoles\((?:user\.id|userId),\s*\{/, rel);
   }
 });

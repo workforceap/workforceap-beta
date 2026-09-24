@@ -28,6 +28,7 @@ vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: st
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: vi.fn(() => false) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
+vi.mock('@/lib/auth/memberDashboardAccess', () => ({ getMemberDashboardAccess: vi.fn() }));
 vi.mock('@/lib/auth/roles', () => ({
   canBypassMemberAssessment: vi.fn(),
   getProfileRole: vi.fn(),
@@ -43,6 +44,8 @@ vi.mock('@/components/onboarding/PortalEntryClient', () => ({ default: () => nul
 import DashboardPage from '@/app/(portal)/dashboard/page';
 import { redirect } from 'next/navigation';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
+import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
 import { loadMemberDashboardHome } from '@/lib/member/loadMemberDashboardHome';
 
 type Params = { program?: string | string[]; tab?: string | string[]; ui?: string | string[] };
@@ -52,6 +55,11 @@ describe('/dashboard retires ?ui=legacy and ?tab= (WAP-195)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({ id: 'member-user-1', email: 'maya@example.org' } as never);
+    vi.mocked(getMemberDashboardAccess).mockResolvedValue({
+      portalRoles: [{ role: 'member', roleLabel: 'Member', homeHref: '/dashboard' }],
+      superAdmin: false,
+      redirectTo: null,
+    });
     vi.mocked(loadMemberDashboardHome).mockResolvedValue({
       approvalStatus: {} as never,
       firstName: 'Maya',
@@ -100,6 +108,29 @@ describe('/dashboard retires ?ui=legacy and ?tab= (WAP-195)', () => {
     vi.mocked(getUser).mockResolvedValue(null as never);
     await expect(page({ ui: 'legacy', program: 'google-it-support' })).rejects.toThrow('REDIRECT:/login?redirectTo=/dashboard');
     expect(loadMemberDashboardHome).not.toHaveBeenCalled();
+  });
+
+  it.each(['/employer', '/partner', '/counselor', '/admin'])(
+    'redirects a non-member-only account to %s before the home loader or provisioning',
+    async (destination) => {
+      vi.mocked(getMemberDashboardAccess).mockResolvedValue({
+        portalRoles: [],
+        superAdmin: false,
+        redirectTo: destination,
+      });
+
+      await expect(page({})).rejects.toThrow(`REDIRECT:${destination}`);
+      expect(loadMemberDashboardHome).not.toHaveBeenCalled();
+      expect(ensureAppUserProvisioned).not.toHaveBeenCalled();
+    },
+  );
+
+  it('stops before the home loader when role resolution fails', async () => {
+    vi.mocked(getMemberDashboardAccess).mockRejectedValue(new Error('role lookup unavailable'));
+
+    await expect(page({})).rejects.toThrow('role lookup unavailable');
+    expect(loadMemberDashboardHome).not.toHaveBeenCalled();
+    expect(ensureAppUserProvisioned).not.toHaveBeenCalled();
   });
 
   it.each([{}, { program: 'google-it-support' }, { ui: 'kit' }] as Params[])('%j renders the kit home with no redirect', async (params) => {
