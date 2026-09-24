@@ -1,3 +1,5 @@
+import { isVerifiedReadOnlyDestination } from './portal-audit-environment.mjs';
+
 /**
  * Pure helpers for the authenticated portal audit's read-only discovery and
  * navigation contracts. Runtime identifiers stay in memory; callers must only
@@ -210,6 +212,91 @@ export function redirectTargetMatches(finalUrl, expectedTarget, trustedOrigin) {
   }
 }
 
+/** The checked-in redirect gate must match the identity used by this audit. */
+export function fixtureConditionMatches(condition, role, claims) {
+  if (!condition) return true;
+  if (condition === 'regular_admin') {
+    return role === 'admin' && claims?.role === 'admin' && claims?.superAdmin === false;
+  }
+  if (condition === 'member_without_mentor') {
+    // The exact /mentor/apply redirect below proves this member has no mentor
+    // record because the source page redirects there only after that lookup.
+    return role === 'member' && claims?.role === 'member' && claims?.superAdmin === false;
+  }
+  if (condition === 'member_without_active_program_slug') {
+    // Both program subpages redirect to My Program when the fixture has no
+    // active program slug. The exact redirect proves that source guard ran.
+    return role === 'member' && claims?.role === 'member' && claims?.superAdmin === false;
+  }
+  return false;
+}
+
+/** A redirect passes only when its destination is a healthy read. */
+export function redirectDestinationFailureReasons({
+  finalUrl,
+  expectedTarget,
+  trustedOrigin,
+  documentStatus,
+  inspection,
+  consoleErrorCount = 0,
+  pageErrorCount = 0,
+  dataErrorCount = 0,
+  abortedDataRequestCount = 0,
+  blockedWriteRequestCount = 0,
+}) {
+  const failures = [];
+  const exactExpectedPath = redirectTargetMatches(finalUrl, expectedTarget, trustedOrigin);
+  let sameOrigin = false;
+  try {
+    sameOrigin = new URL(finalUrl).origin === trustedOrigin;
+  } catch {
+    // An invalid final URL is already a target mismatch.
+  }
+  if (!exactExpectedPath) {
+    failures.push('redirect_target_mismatch');
+  }
+  if (documentStatus !== 200) failures.push('redirect_destination_document_not_200');
+  if (inspection?.readOnlyCapabilityActive !== true) {
+    failures.push('read_only_audit_capability_not_active');
+  }
+  if (inspection?.appReady !== true || inspection?.h1Count !== 1) {
+    failures.push('redirect_destination_not_ready');
+  }
+  if (inspection?.errorFallbackDetected === true || (inspection?.errorFallbackStates?.length ?? 0) > 0) {
+    failures.push('route_error_fallback');
+  }
+  const bodyText = String(inspection?.bodyText ?? '').toLowerCase();
+  if (bodyText.includes('page not found') || bodyText.includes('the page you’re looking for')) {
+    failures.push('not_found_fallback');
+  }
+  if (bodyText.includes('hit an unexpected error') || bodyText.includes('something went wrong')) {
+    failures.push('route_error_fallback');
+  }
+  if (consoleErrorCount > 0) failures.push('console_errors');
+  if (pageErrorCount > 0) failures.push('page_errors');
+  if (dataErrorCount > 0) failures.push('same_origin_data_request_failed');
+  if (blockedWriteRequestCount > 0) failures.push('non_get_request_blocked');
+  const destinationVerified = isVerifiedReadOnlyDestination({
+    exactExpectedPath,
+    sameOrigin,
+    documentStatus,
+    appReady: inspection?.appReady,
+    h1Count: inspection?.h1Count,
+    readOnlyCapabilityActive: inspection?.readOnlyCapabilityActive,
+    errorFallbackDetected:
+      failures.includes('route_error_fallback') || failures.includes('not_found_fallback'),
+    consoleErrorCount,
+    pageErrorCount,
+    otherFailureCount: failures.length,
+  });
+  // Canceled read fetches are navigation diagnostics only after the target is
+  // independently verified. A failed target must not hide behind cancellation.
+  if (abortedDataRequestCount > 0 && !destinationVerified) {
+    failures.push('same_origin_data_request_failed');
+  }
+  return [...new Set(failures)];
+}
+
 export function summarizeRedirectCoverage(results) {
   const rows = results ?? [];
   return {
@@ -369,14 +456,32 @@ export function evaluateAccessProbe(row, expectation) {
   const status = Number.isFinite(row?.documentStatus) ? row.documentStatus : null;
   const deniedStatus = status === 401 || status === 403;
   const deniedRedirect = Boolean(row?.stuckLogin || row?.wrongRoleRedirect);
+  const publicPortalTarget = row?.requestedPathname === '/employer' || row?.requestedPathname === '/partner';
+  const exactPublicLanding =
+    status === 200 &&
+    row?.originMatched === true &&
+    row?.wrongRoleRedirect === true &&
+    row?.unexpectedRedirect === true &&
+    ((row?.requestedPathname === '/employer' && row?.finalPathname === '/employers') ||
+      (row?.requestedPathname === '/partner' && row?.finalPathname === '/partners'));
   const denialEvidence = deniedStatus
     ? `http_${status}`
-    : deniedRedirect
-      ? 'safe_redirect_outside_target'
-      : null;
+    : exactPublicLanding
+      ? 'exact_public_access_landing'
+      : deniedRedirect && !publicPortalTarget
+        ? 'safe_redirect_outside_target'
+        : null;
   const allowedFailures = new Set(
     deniedStatus
       ? ['document_error_status', 'app_not_ready', 'missing_h1']
+      : exactPublicLanding
+        ? [
+            'wrong_role_redirect',
+            'unexpected_redirect',
+            'read_only_audit_capability_not_active',
+            'app_not_ready',
+            'missing_h1',
+          ]
       : ['login_redirect', 'wrong_role_redirect', 'unexpected_redirect']
   );
   const unexpectedFailures = (row?.failureReasons ?? []).filter(
@@ -384,7 +489,7 @@ export function evaluateAccessProbe(row, expectation) {
   );
 
   return {
-    ok: Boolean(denialEvidence) && unexpectedFailures.length === 0,
+    ok: !targetUsable && Boolean(denialEvidence) && unexpectedFailures.length === 0,
     targetUsable,
     denialEvidence,
   };
