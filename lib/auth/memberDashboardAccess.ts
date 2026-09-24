@@ -3,6 +3,7 @@ import { getProfileRole, getStoredRoleIdentity, isSuperAdmin } from '@/lib/auth/
 import { getPortalSwitcherRoles, type PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import { normalizeRoleName } from '@/lib/auth/roleAccess';
 import { withDbRetry } from '@/lib/db/withDbRetry';
+import { ensureCurrentAppUserProvisioned } from '@/lib/member/ensureCurrentAppUserProvisioned';
 
 export type MemberDashboardAccess = {
   portalRoles: PortalSwitcherRole[];
@@ -18,6 +19,10 @@ export type MemberDashboardAccess = {
 export const getMemberDashboardAccess = cache(async function getMemberDashboardAccess(
   userId: string,
 ): Promise<MemberDashboardAccess> {
+  // Next may start this page before its parent layout finishes. Wait for the
+  // same request-cached provisioning promise before cached role reads begin.
+  // A failed provision rejects access; read-only audit never writes rows.
+  await ensureCurrentAppUserProvisioned(userId);
   const [profileRole, superAdmin, storedIdentity] = await Promise.all([
     withDbRetry(() => getProfileRole(userId)),
     withDbRetry(() => isSuperAdmin(userId)),

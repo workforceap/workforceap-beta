@@ -29,6 +29,10 @@ vi.mock('@/lib/auth/portalRoleSwitcher', () => ({
   getPortalSwitcherRoles: vi.fn(),
 }));
 
+vi.mock('@/lib/member/ensureCurrentAppUserProvisioned', () => ({
+  ensureCurrentAppUserProvisioned: vi.fn(),
+}));
+
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $transaction: vi.fn(async (arg: any) => { const { prisma } = await import('@/lib/db/prisma'); return typeof arg === 'function' ? arg(prisma) : Promise.all(arg); }),
@@ -50,6 +54,7 @@ import DashboardLayout from '@/app/(portal)/dashboard/layout';
 import { getUser } from '@/lib/auth/server';
 import { getProfileRole, getStoredRoleIdentity, isSuperAdmin } from '@/lib/auth/roles';
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
+import { ensureCurrentAppUserProvisioned } from '@/lib/member/ensureCurrentAppUserProvisioned';
 import { prisma } from '@/lib/db/prisma';
 import { getTourOffer } from '@/lib/tours/getTourOffer';
 
@@ -63,6 +68,7 @@ describe('DashboardLayout portal switching', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({ id: 'user-1' } as any);
+    vi.mocked(ensureCurrentAppUserProvisioned).mockResolvedValue(undefined);
     vi.mocked(getProfileRole).mockResolvedValue('member');
     vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'member' });
     vi.mocked(isSuperAdmin).mockResolvedValue(false);
@@ -125,6 +131,45 @@ describe('DashboardLayout portal switching', () => {
   it('allows an existing member profile without a role row', async () => {
     await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for first-login provisioning before any cached role read', async () => {
+    let finishProvision!: () => void;
+    vi.mocked(ensureCurrentAppUserProvisioned).mockReturnValue(
+      new Promise<void>((resolve) => { finishProvision = resolve; }),
+    );
+    const render = DashboardLayout({ children: <div /> });
+    await vi.waitFor(() => expect(ensureCurrentAppUserProvisioned).toHaveBeenCalledWith('user-1'));
+    expect(getStoredRoleIdentity).not.toHaveBeenCalled();
+    expect(getProfileRole).not.toHaveBeenCalled();
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+
+    finishProvision();
+    await expect(render).resolves.toBeTruthy();
+    expect(getStoredRoleIdentity).toHaveBeenCalledWith('user-1');
+  });
+
+  it('fails closed if first-login provisioning fails', async () => {
+    vi.mocked(ensureCurrentAppUserProvisioned).mockRejectedValue(new Error('provision unavailable'));
+
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('provision unavailable');
+    expect(getStoredRoleIdentity).not.toHaveBeenCalled();
+    expect(getProfileRole).not.toHaveBeenCalled();
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('denies a staff account after its missing profile is restored', async () => {
+    vi.mocked(ensureCurrentAppUserProvisioned).mockImplementation(async () => {
+      vi.mocked(getProfileRole).mockResolvedValue('employer');
+      vi.mocked(getStoredRoleIdentity).mockResolvedValue({
+        userExists: true, deletedAt: null, profileRole: 'employer',
+      });
+      vi.mocked(getPortalSwitcherRoles).mockResolvedValue([employerRole]);
+    });
+
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/employer');
+    expect(ensureCurrentAppUserProvisioned).toHaveBeenCalledWith('user-1');
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
   it('denies an ambiguous member profile with an employer association', async () => {
