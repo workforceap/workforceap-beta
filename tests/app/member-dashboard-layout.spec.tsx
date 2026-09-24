@@ -21,7 +21,7 @@ vi.mock('@/lib/auth/server', () => ({
 
 vi.mock('@/lib/auth/roles', () => ({
   getProfileRole: vi.fn(),
-  getUserRoles: vi.fn(),
+  getStoredRoleIdentity: vi.fn(),
   isSuperAdmin: vi.fn(),
 }));
 
@@ -48,7 +48,7 @@ vi.mock('@/lib/tours/getTourOffer', () => ({
 
 import DashboardLayout from '@/app/(portal)/dashboard/layout';
 import { getUser } from '@/lib/auth/server';
-import { getProfileRole, getUserRoles, isSuperAdmin } from '@/lib/auth/roles';
+import { getProfileRole, getStoredRoleIdentity, isSuperAdmin } from '@/lib/auth/roles';
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
 import { prisma } from '@/lib/db/prisma';
 import { getTourOffer } from '@/lib/tours/getTourOffer';
@@ -64,7 +64,7 @@ describe('DashboardLayout portal switching', () => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({ id: 'user-1' } as any);
     vi.mocked(getProfileRole).mockResolvedValue('member');
-    vi.mocked(getUserRoles).mockResolvedValue(['member']);
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'member' });
     vi.mocked(isSuperAdmin).mockResolvedValue(false);
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole]);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
@@ -75,7 +75,7 @@ describe('DashboardLayout portal switching', () => {
 
   it('still redirects regular admins to the admin portal', async () => {
     vi.mocked(getProfileRole).mockResolvedValue('admin');
-    vi.mocked(getUserRoles).mockResolvedValue(['admin']);
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'admin' });
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([adminRole]);
 
     await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/admin');
@@ -88,7 +88,7 @@ describe('DashboardLayout portal switching', () => {
     ['counselor', counselorRole, '/counselor'],
   ] as const)('redirects %s-only users before loading member data', async (role, switcherRole, destination) => {
     vi.mocked(getProfileRole).mockResolvedValue(role);
-    vi.mocked(getUserRoles).mockResolvedValue([role]);
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: role });
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([switcherRole]);
 
     await expect(DashboardLayout({ children: <div /> })).rejects.toThrow(`REDIRECT:${destination}`);
@@ -98,40 +98,56 @@ describe('DashboardLayout portal switching', () => {
 
   it('denies an employer association even when the profile role says member', async () => {
     vi.mocked(getProfileRole).mockResolvedValue('member');
-    vi.mocked(getUserRoles).mockResolvedValue(['employer']);
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([employerRole]);
 
     await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/employer');
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
-  it('preserves an explicit member role alongside employer access', async () => {
+  it('denies a baseline member row alongside employer access', async () => {
     vi.mocked(getProfileRole).mockResolvedValue('employer');
-    vi.mocked(getUserRoles).mockResolvedValue(['member', 'employer']);
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'employer' });
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole, employerRole]);
 
-    await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/employer');
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
-  it('preserves an explicit member role alongside regular admin access', async () => {
+  it('denies a baseline member row alongside regular admin access', async () => {
     vi.mocked(getProfileRole).mockResolvedValue('admin');
-    vi.mocked(getUserRoles).mockResolvedValue(['member', 'admin']);
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'admin' });
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole, adminRole]);
 
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/admin');
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('allows an existing member profile without a role row', async () => {
     await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
   });
 
-  it('allows the existing no-role member default', async () => {
-    vi.mocked(getUserRoles).mockResolvedValue([]);
-    await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+  it('denies an ambiguous member profile with an employer association', async () => {
+    vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole, employerRole]);
+
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/employer');
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['an Auth-only orphan', { userExists: false, deletedAt: null, profileRole: null }],
+    ['a missing profile', { userExists: true, deletedAt: null, profileRole: null }],
+    ['a soft-deleted member', { userExists: true, deletedAt: new Date(), profileRole: 'member' }],
+  ])('denies %s before member data loads', async (_label, identity) => {
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue(identity);
+
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/');
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
   it('denies a non-member profile fallback without an explicit member role', async () => {
     vi.mocked(getProfileRole).mockResolvedValue('employer');
-    vi.mocked(getUserRoles).mockResolvedValue([]);
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'employer' });
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole]);
 
     await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/');
@@ -146,9 +162,16 @@ describe('DashboardLayout portal switching', () => {
     expect(getTourOffer).not.toHaveBeenCalled();
   });
 
+  it('fails closed when stored identity cannot be resolved', async () => {
+    vi.mocked(getStoredRoleIdentity).mockRejectedValue(new Error('identity lookup unavailable'));
+
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('identity lookup unavailable');
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
   it('allows super admins to render the member dashboard for demos', async () => {
     vi.mocked(getProfileRole).mockResolvedValue('super_admin');
-    vi.mocked(getUserRoles).mockResolvedValue(['super_admin']);
+    vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'super_admin' });
     vi.mocked(isSuperAdmin).mockResolvedValue(true);
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole, employerRole, partnerRole, counselorRole, adminRole]);
 
@@ -163,7 +186,6 @@ describe('DashboardLayout portal switching', () => {
 
   it('keeps the superadmin switcher when UserRole grants super_admin and profile is member', async () => {
     vi.mocked(getProfileRole).mockResolvedValue('member');
-    vi.mocked(getUserRoles).mockResolvedValue(['super_admin']);
     vi.mocked(isSuperAdmin).mockResolvedValue(true);
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole, employerRole, partnerRole, counselorRole, adminRole]);
 
