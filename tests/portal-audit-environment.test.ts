@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { classifyPortalAuditRow } from '../scripts/lib/portal-audit-classify.mjs';
 import {
+  isAbortedReadRequest,
+  isVerifiedReadOnlyDestination,
   isVercelPreviewToolbarCspError,
   requestFailureCategory,
+  sanitizedRequestPath,
 } from '../scripts/lib/portal-audit-environment.mjs';
 
 const preview = {
@@ -59,5 +62,64 @@ describe('same-origin request failure category', () => {
   it('does not persist arbitrary error text or identifiers', () => {
     expect(requestFailureCategory('request failed for alice@example.com with secret=123')).toBe('other_network_error');
     expect(requestFailureCategory(undefined)).toBe('unknown');
+  });
+});
+
+describe('aborted read-request diagnostics', () => {
+  it('separates only canceled GET/HEAD fetches from fatal network failures', () => {
+    expect(isAbortedReadRequest({ method: 'GET', resourceType: 'fetch', category: 'aborted' })).toBe(true);
+    expect(isAbortedReadRequest({ method: 'HEAD', resourceType: 'xhr', category: 'aborted' })).toBe(true);
+    expect(isAbortedReadRequest({ method: 'POST', resourceType: 'fetch', category: 'aborted' })).toBe(false);
+    expect(isAbortedReadRequest({ method: 'GET', resourceType: 'document', category: 'aborted' })).toBe(false);
+    expect(isAbortedReadRequest({ method: 'GET', resourceType: 'fetch', category: 'timeout' })).toBe(false);
+    expect(isAbortedReadRequest({ method: 'GET', resourceType: 'fetch', category: 'connection_reset' })).toBe(false);
+  });
+
+  it('requires a completed healthy destination before a cancellation can be nonfatal', () => {
+    const healthy = {
+      exactExpectedPath: true,
+      sameOrigin: true,
+      documentStatus: 200,
+      appReady: true,
+      h1Count: 1,
+      readOnlyCapabilityActive: true,
+      errorFallbackDetected: false,
+      consoleErrorCount: 0,
+      pageErrorCount: 0,
+      otherFailureCount: 0,
+    };
+    expect(isVerifiedReadOnlyDestination(healthy)).toBe(true);
+    for (const override of [
+      { exactExpectedPath: false },
+      { sameOrigin: false },
+      { documentStatus: null },
+      { documentStatus: 302 },
+      { documentStatus: 500 },
+      { appReady: false },
+      { h1Count: 0 },
+      { h1Count: 2 },
+      { readOnlyCapabilityActive: false },
+      { errorFallbackDetected: true },
+      { consoleErrorCount: 1 },
+      { pageErrorCount: 1 },
+      { otherFailureCount: 1 },
+    ]) {
+      expect(isVerifiedReadOnlyDestination({ ...healthy, ...override })).toBe(false);
+    }
+  });
+
+  it('keeps blocked-request evidence to a redacted path without host or query', () => {
+    expect(
+      sanitizedRequestPath(
+        'https://preview.example.test/dashboard/jobs/member-private?token=secret',
+        ['/dashboard/jobs/[id]'],
+      ),
+    ).toBe('/dashboard/jobs/[redacted]');
+    expect(
+      sanitizedRequestPath(
+        'https://preview.example.test/api/readiness/550e8400-e29b-41d4-a716-446655440000?code=private',
+      ),
+    ).toBe('/api/readiness/[redacted]');
+    expect(sanitizedRequestPath('invalid URL')).toBe('/[invalid-url]');
   });
 });

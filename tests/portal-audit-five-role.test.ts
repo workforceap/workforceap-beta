@@ -960,7 +960,7 @@ describe('portal row quality signals', () => {
     const auditRouteSource = source.slice(auditRouteStart, auditRouteEnd);
     const settlement = auditRouteSource.indexOf('await dataRequests.waitForSettlement');
     const inspection = auditRouteSource.indexOf('inspection = await inspectPortalPage', settlement);
-    const classification = auditRouteSource.indexOf('const row = classifyPortalAuditRow', inspection);
+    const classification = auditRouteSource.indexOf('const candidateRow = classifyPortalAuditRow', inspection);
     expect(auditRouteStart).toBeGreaterThanOrEqual(0);
     expect(settlement).toBeGreaterThanOrEqual(0);
     expect(inspection).toBeGreaterThan(settlement);
@@ -1182,7 +1182,7 @@ describe('portal row quality signals', () => {
         'summary',
       ])
     );
-    expect(schema.properties.schemaVersion.const).toBe('3.1.0');
+    expect(schema.properties.schemaVersion.const).toBe('3.2.0');
     expect(schema.required).toContain('attendedGates');
     expect(schema.$defs.roleResult.required).toContain('actionCoverage');
     expect(schema.$defs.roleResult.required).toContain('redirectCoverage');
@@ -1191,10 +1191,18 @@ describe('portal row quality signals', () => {
     expect(schema.$defs.routeRow.required).toContain('errorFallbackDetected');
     expect(schema.$defs.routeRow.required).toContain('auditSuppressedStates');
     expect(schema.$defs.routeRow.required).toContain('readOnlyCapabilityActive');
+    expect(schema.$defs.routeRow.required).toContain('abortedDataRequests');
+    expect(schema.$defs.routeRow.required).toContain('blockedWriteRequests');
+    expect(schema.$defs.routeRow.properties.abortedDataRequests.maxItems).toBe(10);
+    expect(schema.$defs.routeRow.properties.blockedWriteRequests.maxItems).toBe(10);
     expect(schema.$defs.routeRow.properties.readOnlyCapabilityActive.type).toBe('boolean');
     expect(schema.$defs.routeRow.required).toContain('suppressedSideEffectRequestCount');
     expect(schema.$defs.accessProbe.required).toContain('targetUsable');
     expect(schema.$defs.accessProbe.required).toContain('failureReasons');
+    expect(schema.$defs.accessProbe.required).toContain('abortedDataRequestCount');
+    expect(schema.$defs.actionResult.required).toContain('abortedDataRequestCount');
+    expect(schema.$defs.redirectResult.required).toContain('abortedDataRequestCount');
+    expect(schema.properties.summary.anyOf[1].required).toContain('abortedDataRequestCount');
     expect(schema.properties.executionPolicy.properties.actions.enum).toContain(
       'root_access_only',
     );

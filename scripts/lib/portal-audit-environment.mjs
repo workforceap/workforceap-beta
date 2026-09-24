@@ -1,3 +1,5 @@
+import { sanitizeAuditUrl } from './portal-audit-browser.mjs';
+
 /**
  * Classify infrastructure diagnostics without weakening application failures.
  * This exact CSP error is emitted by Vercel's injected Preview toolbar, not by
@@ -27,4 +29,51 @@ export function requestFailureCategory(errorText) {
   if (/\b(?:net::)?ERR_(?:NAME_NOT_RESOLVED|DNS_PROBE_FINISHED_NXDOMAIN)\b/i.test(error)) return 'dns';
   if (/\b(?:net::)?ERR_(?:CERT_[A-Z_]+|SSL_[A-Z_]+)\b/i.test(error)) return 'tls';
   return error ? 'other_network_error' : 'unknown';
+}
+
+/** A canceled, read-only browser fetch can be diagnostic after the destination is verified. */
+export function isAbortedReadRequest({ method, resourceType, category }) {
+  return (
+    (method === 'GET' || method === 'HEAD') &&
+    (resourceType === 'fetch' || resourceType === 'xhr') &&
+    category === 'aborted'
+  );
+}
+
+/** Never let cancellation stand in for a completed, healthy portal destination. */
+export function isVerifiedReadOnlyDestination({
+  exactExpectedPath,
+  sameOrigin,
+  documentStatus,
+  appReady,
+  h1Count,
+  readOnlyCapabilityActive,
+  errorFallbackDetected,
+  consoleErrorCount,
+  pageErrorCount,
+  otherFailureCount,
+}) {
+  return (
+    exactExpectedPath === true &&
+    sameOrigin === true &&
+    Number.isInteger(documentStatus) &&
+    documentStatus >= 200 &&
+    documentStatus < 300 &&
+    appReady === true &&
+    h1Count === 1 &&
+    readOnlyCapabilityActive === true &&
+    errorFallbackDetected === false &&
+    consoleErrorCount === 0 &&
+    pageErrorCount === 0 &&
+    otherFailureCount === 0
+  );
+}
+
+/** Persist route structure only: no host, query parameters, or concrete fixture IDs. */
+export function sanitizedRequestPath(value, dynamicPatterns = []) {
+  try {
+    return new URL(sanitizeAuditUrl(value, dynamicPatterns)).pathname.slice(0, 240);
+  } catch {
+    return '/[invalid-url]';
+  }
 }
