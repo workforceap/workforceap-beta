@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser, withAuthGuc } from '@/lib/auth/server';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
 import { Activity, Bell, TriangleAlert, UserPlus, Briefcase, Award } from 'lucide-react';
 import { prisma } from '@/lib/db/prisma';
@@ -69,7 +70,7 @@ export default async function AdminTodayPage({
   if (!user) redirect('/login');
 
   const scope = await resolveAdminPageTenant(user.id);
-  if (!scope.ok) redirect('/dashboard');
+  if (!scope.ok) redirect(await deniedPortalHomeHref(user.id, 'admin'));
 
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
