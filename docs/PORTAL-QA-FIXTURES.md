@@ -16,6 +16,10 @@ Configure `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the
 effective `POSTGRES_PRISMA_URL` (or `DATABASE_URL`) for that demo project.
 If `POSTGRES_URL_NON_POOLING` is set, it must identify the same demo project.
 The target guard runs before creating clients or making database/Auth calls.
+The script also checks required DEMO schema columns before creating any Auth
+account. If this check fails, reconcile the DEMO schema and migration history
+first. Do not run a blanket `prisma migrate deploy` against a drifted DEMO
+database or bypass the check to seed accounts.
 
 Supply five independently generated secrets through your secret store or local
 environment: `PORTAL_QA_MEMBER_PASSWORD`, `PORTAL_QA_PARTNER_PASSWORD`,
@@ -27,6 +31,11 @@ The corresponding login names remain
 `member-test@workforceap.org`, `partner-test@workforceap.org`,
 `employer-test@workforceap.org`, `admin-test@workforceap.org`, and
 `counselor-test@workforceap.org`.
+
+The isolated Preview and hub smoke workflows read these test credentials from
+`PREVIEW_E2E_<ROLE>_EMAIL` and `PREVIEW_E2E_<ROLE>_PASSWORD` GitHub Actions
+secrets. Keep the existing unprefixed `E2E_*` secrets for the separate
+production canary; do not overwrite them with DEMO credentials.
 
 The counselor account receives a `counselor` role row, a matching profile role,
 and an active `wap_staff` counselor record in the same Prisma transaction as the
