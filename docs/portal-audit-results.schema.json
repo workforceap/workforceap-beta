@@ -115,7 +115,8 @@
             "notApplicableRedirectChecks": { "type": "integer", "minimum": 0 },
             "totalRequiredActions": { "type": "integer", "minimum": 0 },
             "satisfiedRequiredActions": { "type": "integer", "minimum": 0 },
-            "failedRequiredActions": { "type": "integer", "minimum": 0 }
+            "failedRequiredActions": { "type": "integer", "minimum": 0 },
+            "vercelToolbarCspDiagnosticCount": { "type": "integer", "minimum": 0 }
           }
         }
       ]
@@ -261,6 +262,7 @@
         "errorFallbackStates": { "type": "array", "items": { "type": "string" }, "maxItems": 10 },
         "auditSuppressedStates": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
         "readOnlyCapabilityActive": { "type": "boolean" },
+        "vercelToolbarCspDiagnosticCount": { "type": "integer", "minimum": 0 },
         "blockedTelemetryRequestCount": { "type": "integer", "minimum": 0 },
         "suppressedSideEffectRequestCount": { "type": "integer", "minimum": 0 },
         "unnamedInteractiveControls": { "type": "array", "items": { "type": "object" } }
@@ -300,7 +302,8 @@
         "failureReasons": { "type": "array", "items": { "type": "string" } },
         "blockedWriteRequestCount": { "type": "integer", "minimum": 0 },
         "blockedTelemetryRequestCount": { "type": "integer", "minimum": 0 },
-        "suppressedSideEffectRequestCount": { "type": "integer", "minimum": 0 }
+        "suppressedSideEffectRequestCount": { "type": "integer", "minimum": 0 },
+        "vercelToolbarCspDiagnosticCount": { "type": "integer", "minimum": 0 }
       }
     },
     "actionCoverage": {

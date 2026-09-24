@@ -41,7 +41,7 @@ jobs:
     name: Classify DEMO and Vercel Preview credential targets
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v5' &&
       inputs.audit_target == 'demo_probe'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -106,7 +106,7 @@ jobs:
     name: Create guarded DEMO portal QA fixtures once
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v5' &&
       inputs.audit_target == 'demo_provision'
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -156,7 +156,7 @@ jobs:
     name: Set Preview-branch audit token only
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v5' &&
       inputs.audit_target == 'demo_env'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -203,7 +203,7 @@ jobs:
     name: Audit exact master SHA on DEMO Preview with isolated credentials
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v5' &&
       inputs.audit_target == 'demo_audit'
     runs-on: ubuntu-latest
     timeout-minutes: 55

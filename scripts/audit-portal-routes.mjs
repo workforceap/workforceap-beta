@@ -29,6 +29,10 @@ import {
 } from './lib/portal-audit-auth.mjs';
 import { canonicalPathname, classifyPortalAuditRow } from './lib/portal-audit-classify.mjs';
 import {
+  isVercelPreviewToolbarCspError,
+  requestFailureCategory,
+} from './lib/portal-audit-environment.mjs';
+import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
   inspectPortalPage,
@@ -84,6 +88,7 @@ const routeConcurrency = Math.min(
 const runStartedAt = Date.now();
 let deadlineAt = runStartedAt + 25 * 60_000;
 let trustedOrigin = null;
+let vercelToolbarCspDiagnosticCount = 0;
 
 const READ_ONLY_AUDIT_TOKEN_HEADER_NAME = 'x-workforceap-read-only-audit-token';
 
@@ -234,6 +239,7 @@ function emptySummary() {
     totalRequiredActions: 0,
     satisfiedRequiredActions: 0,
     failedRequiredActions: 0,
+    vercelToolbarCspDiagnosticCount: 0,
   };
 }
 
@@ -471,6 +477,19 @@ function uniqueDiagnostics(values) {
   return [...new Set(values.map(sanitizePortalDiagnostic).filter(Boolean))].slice(0, 20);
 }
 
+function recordConsoleError(message, applicationErrors) {
+  if (message.type() !== 'error') return false;
+  if (isVercelPreviewToolbarCspError(message.text(), {
+    mode: artifact.targetValidation.mode,
+    trustedOrigin,
+  })) {
+    vercelToolbarCspDiagnosticCount += 1;
+    return true;
+  }
+  applicationErrors.push(message.text());
+  return false;
+}
+
 function failedSameOriginDataResponse(response) {
   const type = response.request().resourceType();
   if (type !== 'fetch' && type !== 'xhr') return null;
@@ -516,7 +535,8 @@ function failedSameOriginDataRequest(request) {
     // writes. Avoid duplicating the same evidence as a network failure.
     return null;
   }
-  return `Same-origin data request failed at ${sanitizeAuditUrl(
+  const category = requestFailureCategory(request.failure()?.errorText);
+  return `Same-origin data request failed (${category}) at ${sanitizeAuditUrl(
     request.url(),
     allDynamicPatterns
   )}`;
@@ -598,11 +618,12 @@ async function auditRoute(
   const page = await context.newPage();
   const startedAt = Date.now();
   const consoleErrors = [];
+  let environmentalConsoleErrorCount = 0;
   const pageErrors = [];
   const documentResponses = [];
   const dataRequests = trackSameOriginDataRequests(page);
   const handleConsole = (message) => {
-    if (message.type() === 'error') consoleErrors.push(message.text());
+    if (recordConsoleError(message, consoleErrors)) environmentalConsoleErrorCount += 1;
   };
   const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
   const handleResponse = (response) => {
@@ -691,6 +712,7 @@ async function auditRoute(
       readOnlyCapabilityActive: inspection.readOnlyCapabilityActive,
       documentStatus: finalDocument?.status ?? null,
       consoleErrors: uniqueDiagnostics(consoleErrors),
+      vercelToolbarCspDiagnosticCount: environmentalConsoleErrorCount,
       pageErrors: uniqueDiagnostics([...pageErrors, ...dataRequests.errors]),
       h1Count: inspection.h1Count,
       horizontalOverflowPx: inspection.horizontalOverflowPx,
@@ -997,10 +1019,11 @@ async function exerciseReadOnlyNavigation(
   };
   const page = await context.newPage();
   const consoleErrors = [];
+  let environmentalConsoleErrorCount = 0;
   const pageErrors = [];
   const dataRequests = trackSameOriginDataRequests(page);
   const handleConsole = (message) => {
-    if (message.type() === 'error') consoleErrors.push(message.text());
+    if (recordConsoleError(message, consoleErrors)) environmentalConsoleErrorCount += 1;
   };
   const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
   page.on('console', handleConsole);
@@ -1095,6 +1118,7 @@ async function exerciseReadOnlyNavigation(
     applyBlockedWriteFailure(result, readOnlyGuard.blockedWriteCount(page));
     result.blockedTelemetryRequestCount = readOnlyGuard.blockedTelemetryCount(page);
     result.suppressedSideEffectRequestCount = readOnlyGuard.suppressedSideEffectCount(page);
+    result.vercelToolbarCspDiagnosticCount = environmentalConsoleErrorCount;
     if (dataRequests.errors.length > 0) {
       result.failureReasons = [
         ...new Set([...result.failureReasons, 'same_origin_data_request_failed']),
@@ -1262,6 +1286,7 @@ function summarize() {
     totalRequiredActions,
     satisfiedRequiredActions,
     failedRequiredActions,
+    vercelToolbarCspDiagnosticCount,
   };
 }
 
