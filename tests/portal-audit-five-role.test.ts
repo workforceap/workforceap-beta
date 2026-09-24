@@ -8,10 +8,12 @@ import {
   validateDedicatedPortalCredentials,
 } from '../scripts/lib/portal-audit-auth.mjs';
 import {
+  evaluatePortalPageAfterNavigation,
   isReadOnlyAuditCapabilityActive,
   redactDynamicHrefPath,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
+  waitForPortalReady,
 } from '../scripts/lib/portal-audit-browser.mjs';
 import {
   applyBlockedWriteFailure,
@@ -52,6 +54,63 @@ import {
 } from '../scripts/lib/portal-audit-target.mjs';
 
 const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
+
+describe('portal navigation readiness', () => {
+  function pageWithEvaluation(evaluate: () => Promise<unknown>) {
+    let readinessChecks = 0;
+    return {
+      page: {
+        evaluate,
+        waitForLoadState: async () => { readinessChecks += 1; },
+        locator: () => ({ waitFor: async () => {} }),
+        waitForFunction: async () => {},
+      },
+      readinessChecks: () => readinessChecks,
+    };
+  }
+
+  it('waits for DOM readiness without an evaluation that can race a redirect', async () => {
+    const { page } = pageWithEvaluation(async () => {
+      throw new Error('page.evaluate must not be needed for readiness');
+    });
+    await expect(waitForPortalReady(page)).resolves.toBeUndefined();
+  });
+
+  it('retries a page inspection when a full-page redirect replaces its context', async () => {
+    let evaluations = 0;
+    const { page, readinessChecks } = pageWithEvaluation(async () => {
+      evaluations += 1;
+      if (evaluations === 1) {
+        throw new Error('page.evaluate: Execution context was destroyed, most likely because of a navigation');
+      }
+      return { ready: true };
+    });
+
+    await expect(evaluatePortalPageAfterNavigation(page, () => true)).resolves.toEqual({ ready: true });
+    expect(evaluations).toBe(2);
+    expect(readinessChecks()).toBe(1);
+  });
+
+  it('does not retry unrelated inspection failures or hide repeated navigation', async () => {
+    let unrelatedCalls = 0;
+    const unrelated = pageWithEvaluation(async () => {
+      unrelatedCalls += 1;
+      throw new Error('page.evaluate: application failure');
+    });
+    await expect(evaluatePortalPageAfterNavigation(unrelated.page, () => true)).rejects.toThrow('application failure');
+    expect(unrelatedCalls).toBe(1);
+    expect(unrelated.readinessChecks()).toBe(0);
+
+    let navigationCalls = 0;
+    const repeatedNavigation = pageWithEvaluation(async () => {
+      navigationCalls += 1;
+      throw new Error('page.evaluate: Execution context was destroyed, most likely because of a navigation');
+    });
+    await expect(evaluatePortalPageAfterNavigation(repeatedNavigation.page, () => true)).rejects.toThrow('Execution context was destroyed');
+    expect(navigationCalls).toBe(3);
+    expect(repeatedNavigation.readinessChecks()).toBe(2);
+  });
+});
 
 function completeEnvironment(): NodeJS.ProcessEnv {
   return {

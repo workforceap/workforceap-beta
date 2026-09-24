@@ -422,6 +422,10 @@ async function captureRoleStorageState(browser, role, credential) {
         timeout: remainingTimeout(),
       });
     }
+    await page.waitForURL((url) => pathIsInRole(url.toString(), role), {
+      waitUntil: 'domcontentloaded',
+      timeout: remainingTimeout(45_000),
+    });
     await waitForPortalReady(page, remainingTimeout(5_000));
 
     if (!pathIsInRole(page.url(), role)) {
@@ -431,6 +435,9 @@ async function captureRoleStorageState(browser, role, credential) {
     }
 
     const capabilityInspection = await inspectPortalPage(page, allDynamicPatterns);
+    if (!pathIsInRole(page.url(), role)) {
+      throw new Error(`Dedicated ${role} login left ${entry} during page inspection`);
+    }
     if (!capabilityInspection.readOnlyCapabilityActive) {
       throw new Error(
         `read_only_audit_capability_not_active_for_${role}: expected ${READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER}`

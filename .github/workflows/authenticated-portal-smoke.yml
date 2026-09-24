@@ -41,7 +41,7 @@ jobs:
     name: Classify DEMO and Vercel Preview credential targets
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
       inputs.audit_target == 'demo_probe'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -106,7 +106,7 @@ jobs:
     name: Create guarded DEMO portal QA fixtures once
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
       inputs.audit_target == 'demo_provision'
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -156,7 +156,7 @@ jobs:
     name: Set Preview-branch audit token only
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
       inputs.audit_target == 'demo_env'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -203,7 +203,7 @@ jobs:
     name: Audit exact master SHA on DEMO Preview with isolated credentials
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260923-v3' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v4' &&
       inputs.audit_target == 'demo_audit'
     runs-on: ubuntu-latest
     timeout-minutes: 55
@@ -245,6 +245,40 @@ jobs:
           PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
           PORTAL_AUDIT_TRUSTED_SHA: d6198910b988570fd77582bcd4473141eeeda3e7
         run: node scripts/portal-audit-health-gate.mjs
+      - name: Verify DEMO Prisma read path before login
+        shell: bash
+        env:
+          PORTAL_AUDIT_TARGET_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { resolveHealthGateTarget } from './scripts/lib/portal-audit-health-gate.mjs';
+          const target = resolveHealthGateTarget({
+            mode: 'isolated_preview',
+            baseURL: process.env.PORTAL_AUDIT_TARGET_ORIGIN,
+            trustedPreviewOrigin: process.env.PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN,
+          });
+          if (!target.ok) {
+            console.error('DEMO Prisma organization probe failed.');
+            process.exit(1);
+          }
+          try {
+            const response = await fetch(new URL('/api/org/portal-qa-4b779317-bc1d-4957-b69b-d38c9cb9b9d8/outcomes', target.origin), {
+              method: 'GET',
+              redirect: 'manual',
+              headers: { accept: 'application/json', 'cache-control': 'no-cache' },
+              signal: AbortSignal.timeout(15_000),
+            });
+            const body = await response.json();
+            if (response.status !== 200 || !body || typeof body !== 'object' || Array.isArray(body)) {
+              throw new Error('Invalid DEMO Prisma organization response');
+            }
+            console.log('DEMO Prisma organization probe passed.');
+          } catch {
+            console.error('DEMO Prisma organization probe failed.');
+            process.exitCode = 1;
+          }
+          NODE
       - name: Run isolated five-role audit
         run: pnpm audit:portal
         env:
