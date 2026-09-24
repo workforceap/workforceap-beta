@@ -203,7 +203,7 @@ jobs:
     name: Audit exact master SHA on DEMO Preview with isolated credentials
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
-      github.ref == 'refs/tags/portal-qa-demo-20260924-v7' &&
+      github.ref == 'refs/tags/portal-qa-demo-20260924-v8' &&
       inputs.audit_target == 'demo_audit'
     runs-on: ubuntu-latest
     timeout-minutes: 55
