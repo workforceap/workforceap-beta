@@ -48,7 +48,7 @@ import {
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
-  conditionalRedirectFailureReasons,
+  redirectDestinationFailureReasons,
   dataRequestQuietWindowSatisfied,
   evaluateAccessProbe,
   fixtureConditionMatches,
@@ -269,7 +269,7 @@ function emptySummary() {
 
 const artifact = {
   $schema: '../docs/portal-audit-results.schema.json',
-  schemaVersion: '3.2.0',
+  schemaVersion: '3.3.0',
   // A run starts failed/incomplete. Only a complete green run changes this to passed,
   // so a killed process can never leave a stale success artifact behind.
   status: 'failed',
@@ -982,6 +982,8 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
       resultReason: 'production_canary_root_only_policy',
       finalUrl: null,
       failureReasons: [],
+      consoleErrors: [],
+      pageErrors: [],
       blockedWriteRequestCount: 0,
       blockedWriteRequests: [],
       abortedDataRequestCount: 0,
@@ -1018,6 +1020,8 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         resultReason: resolved ? 'redirect_target_mismatch' : missingFixtureOutcome.resultReason,
         finalUrl: null,
         failureReasons: resolved ? [] : missingFixtureOutcome.failureReasons,
+        consoleErrors: [],
+        pageErrors: [],
         blockedWriteRequestCount: 0,
         blockedWriteRequests: [],
         abortedDataRequestCount: 0,
@@ -1077,40 +1081,32 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         await dataRequests.waitForSettlement(remainingTimeout(5_000));
         const finalUrl = page.url();
         result.finalUrl = sanitizeAuditUrl(finalUrl, allDynamicPatterns);
-        if (entry.fixtureCondition) {
-          const inspection = await inspectPortalPage(page, allDynamicPatterns);
-          const finalDocument =
-            [...documentResponses].reverse().find((response) => response.url === finalUrl) ??
-            documentResponses.at(-1) ??
-            null;
-          result.failureReasons.push(...conditionalRedirectFailureReasons({
-            finalUrl,
-            expectedTarget: resolved.targetPath,
-            trustedOrigin,
-            documentStatus: finalDocument?.status ?? null,
-            inspection,
-            consoleErrorCount: consoleErrors.length,
-            pageErrorCount: pageErrors.length,
-            dataErrorCount: dataRequests.errors.length,
-            abortedDataRequestCount: dataRequests.abortedDataRequestCount,
-            blockedWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
-          }));
-          if (result.failureReasons.length === 0) {
-            result.status = 'passed';
-            result.resultReason = 'fixture_conditional_redirect_verified';
-          } else {
-            result.resultReason = 'fixture_conditional_redirect_unhealthy';
-          }
-        } else if (redirectTargetMatches(finalUrl, resolved.targetPath, trustedOrigin)) {
+        const inspection = await inspectPortalPage(page, allDynamicPatterns);
+        const finalDocument =
+          [...documentResponses].reverse().find((response) => response.url === finalUrl) ??
+          documentResponses.at(-1) ??
+          null;
+        result.failureReasons.push(...redirectDestinationFailureReasons({
+          finalUrl,
+          expectedTarget: resolved.targetPath,
+          trustedOrigin,
+          documentStatus: finalDocument?.status ?? null,
+          inspection,
+          consoleErrorCount: consoleErrors.length,
+          pageErrorCount: pageErrors.length,
+          dataErrorCount: dataRequests.errors.length,
+          abortedDataRequestCount: dataRequests.abortedDataRequestCount,
+          blockedWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
+        }));
+        if (result.failureReasons.length === 0) {
           result.status = 'passed';
-          result.resultReason = 'exact_internal_redirect_verified';
+          result.resultReason = entry.fixtureCondition
+            ? 'fixture_conditional_redirect_verified'
+            : 'exact_internal_redirect_verified';
         } else {
-          result.failureReasons.push('redirect_target_mismatch');
-        }
-        if (dataRequests.errors.length > 0 || dataRequests.abortedDataRequestCount > 0) {
-          result.failureReasons.push('same_origin_data_request_failed');
-          result.status = 'failed';
-          result.resultReason = 'redirect_target_data_failed';
+          result.resultReason = entry.fixtureCondition
+            ? 'fixture_conditional_redirect_unhealthy'
+            : 'redirect_target_unhealthy';
         }
       } catch (error) {
         result.finalUrl = sanitizeAuditUrl(page.url(), allDynamicPatterns);
@@ -1120,6 +1116,8 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         page.off('console', handleConsole);
         page.off('pageerror', handlePageError);
         page.off('response', handleResponse);
+        result.consoleErrors = uniqueDiagnostics(consoleErrors);
+        result.pageErrors = uniqueDiagnostics(pageErrors);
         result.blockedWriteRequestCount = readOnlyGuard.blockedWriteCount(page);
         result.blockedWriteRequests = readOnlyGuard.blockedWriteRequests(page);
         result.abortedDataRequestCount = dataRequests.abortedDataRequestCount;

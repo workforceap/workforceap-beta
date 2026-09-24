@@ -1,3 +1,5 @@
+import { isVerifiedReadOnlyDestination } from './portal-audit-environment.mjs';
+
 /**
  * Pure helpers for the authenticated portal audit's read-only discovery and
  * navigation contracts. Runtime identifiers stay in memory; callers must only
@@ -229,8 +231,8 @@ export function fixtureConditionMatches(condition, role, claims) {
   return false;
 }
 
-/** A fixture-gated redirect passes only when its destination is a healthy read. */
-export function conditionalRedirectFailureReasons({
+/** A redirect passes only when its destination is a healthy read. */
+export function redirectDestinationFailureReasons({
   finalUrl,
   expectedTarget,
   trustedOrigin,
@@ -243,15 +245,22 @@ export function conditionalRedirectFailureReasons({
   blockedWriteRequestCount = 0,
 }) {
   const failures = [];
-  if (!redirectTargetMatches(finalUrl, expectedTarget, trustedOrigin)) {
+  const exactExpectedPath = redirectTargetMatches(finalUrl, expectedTarget, trustedOrigin);
+  let sameOrigin = false;
+  try {
+    sameOrigin = new URL(finalUrl).origin === trustedOrigin;
+  } catch {
+    // An invalid final URL is already a target mismatch.
+  }
+  if (!exactExpectedPath) {
     failures.push('redirect_target_mismatch');
   }
-  if (documentStatus !== 200) failures.push('conditional_redirect_document_not_200');
+  if (documentStatus !== 200) failures.push('redirect_destination_document_not_200');
   if (inspection?.readOnlyCapabilityActive !== true) {
     failures.push('read_only_audit_capability_not_active');
   }
   if (inspection?.appReady !== true || inspection?.h1Count !== 1) {
-    failures.push('conditional_redirect_destination_not_ready');
+    failures.push('redirect_destination_not_ready');
   }
   if (inspection?.errorFallbackDetected === true || (inspection?.errorFallbackStates?.length ?? 0) > 0) {
     failures.push('route_error_fallback');
@@ -265,10 +274,26 @@ export function conditionalRedirectFailureReasons({
   }
   if (consoleErrorCount > 0) failures.push('console_errors');
   if (pageErrorCount > 0) failures.push('page_errors');
-  if (dataErrorCount > 0 || abortedDataRequestCount > 0) {
+  if (dataErrorCount > 0) failures.push('same_origin_data_request_failed');
+  if (blockedWriteRequestCount > 0) failures.push('non_get_request_blocked');
+  const destinationVerified = isVerifiedReadOnlyDestination({
+    exactExpectedPath,
+    sameOrigin,
+    documentStatus,
+    appReady: inspection?.appReady,
+    h1Count: inspection?.h1Count,
+    readOnlyCapabilityActive: inspection?.readOnlyCapabilityActive,
+    errorFallbackDetected:
+      failures.includes('route_error_fallback') || failures.includes('not_found_fallback'),
+    consoleErrorCount,
+    pageErrorCount,
+    otherFailureCount: failures.length,
+  });
+  // Canceled read fetches are navigation diagnostics only after the target is
+  // independently verified. A failed target must not hide behind cancellation.
+  if (abortedDataRequestCount > 0 && !destinationVerified) {
     failures.push('same_origin_data_request_failed');
   }
-  if (blockedWriteRequestCount > 0) failures.push('non_get_request_blocked');
   return [...new Set(failures)];
 }
 

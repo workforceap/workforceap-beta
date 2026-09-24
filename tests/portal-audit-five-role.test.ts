@@ -18,7 +18,7 @@ import {
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
-  conditionalRedirectFailureReasons,
+  redirectDestinationFailureReasons,
   dataRequestQuietWindowSatisfied,
   dynamicRoutePatternMatches,
   evaluateAccessProbe,
@@ -845,7 +845,7 @@ describe('read-only portal action contracts', () => {
     }, 'denied').ok).toBe(false);
   });
 
-  it('requires the checked-in fixture predicate and a healthy exact conditional redirect', () => {
+  it('requires the checked-in fixture predicate and a healthy exact redirect', () => {
     expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: false })).toBe(true);
     expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: true })).toBe(false);
     expect(fixtureConditionMatches('member_without_mentor', 'member', { role: 'member', superAdmin: false })).toBe(true);
@@ -865,11 +865,46 @@ describe('read-only portal action contracts', () => {
         errorFallbackStates: [],
       },
     };
-    expect(conditionalRedirectFailureReasons(destination)).toEqual([]);
-    expect(conditionalRedirectFailureReasons({ ...destination, documentStatus: 500 })).toContain('conditional_redirect_document_not_200');
-    expect(conditionalRedirectFailureReasons({ ...destination, finalUrl: 'https://preview.example.test/dashboard' })).toContain('redirect_target_mismatch');
-    expect(conditionalRedirectFailureReasons({ ...destination, abortedDataRequestCount: 1 })).toContain('same_origin_data_request_failed');
-    expect(conditionalRedirectFailureReasons({ ...destination, blockedWriteRequestCount: 1 })).toContain('non_get_request_blocked');
+    expect(redirectDestinationFailureReasons(destination)).toEqual([]);
+    // A canceled read prefetch during navigation is diagnostic after the
+    // destination passes the same independent health checks as a static route.
+    expect(redirectDestinationFailureReasons({ ...destination, abortedDataRequestCount: 1 })).toEqual([]);
+    expect(redirectDestinationFailureReasons({ ...destination, documentStatus: 500 })).toContain('redirect_destination_document_not_200');
+    expect(redirectDestinationFailureReasons({ ...destination, finalUrl: 'https://preview.example.test/dashboard' })).toContain('redirect_target_mismatch');
+    expect(redirectDestinationFailureReasons({ ...destination, dataErrorCount: 1 })).toContain('same_origin_data_request_failed');
+    expect(redirectDestinationFailureReasons({ ...destination, blockedWriteRequestCount: 1 })).toContain('non_get_request_blocked');
+  });
+
+  it('does not excuse canceled GETs when a redirect target is unhealthy', () => {
+    const destination = {
+      finalUrl: 'https://preview.example.test/admin',
+      expectedTarget: '/admin',
+      trustedOrigin: 'https://preview.example.test',
+      documentStatus: 200,
+      inspection: {
+        readOnlyCapabilityActive: true,
+        appReady: true,
+        h1Count: 1,
+        errorFallbackDetected: false,
+        errorFallbackStates: [],
+      },
+      abortedDataRequestCount: 1,
+    };
+    for (const unhealthy of [
+      { documentStatus: 500, reason: 'redirect_destination_document_not_200' },
+      { pageErrorCount: 1, reason: 'page_errors' },
+      { consoleErrorCount: 1, reason: 'console_errors' },
+      { dataErrorCount: 1, reason: 'same_origin_data_request_failed' },
+      { blockedWriteRequestCount: 1, reason: 'non_get_request_blocked' },
+      { inspection: { ...destination.inspection, h1Count: 0 }, reason: 'redirect_destination_not_ready' },
+      { inspection: { ...destination.inspection, errorFallbackDetected: true }, reason: 'route_error_fallback' },
+      { finalUrl: 'https://preview.example.test/partner', reason: 'redirect_target_mismatch' },
+    ]) {
+      const { reason, ...change } = unhealthy;
+      expect(redirectDestinationFailureReasons({ ...destination, ...change })).toEqual(
+        expect.arrayContaining([reason, 'same_origin_data_request_failed'])
+      );
+    }
   });
 
   it('matches only the resolved concrete target for dynamic navigation', () => {
@@ -1305,7 +1340,7 @@ describe('portal row quality signals', () => {
         'summary',
       ])
     );
-    expect(schema.properties.schemaVersion.const).toBe('3.2.0');
+    expect(schema.properties.schemaVersion.const).toBe('3.3.0');
     expect(schema.required).toContain('attendedGates');
     expect(schema.$defs.roleResult.required).toContain('actionCoverage');
     expect(schema.$defs.roleResult.required).toContain('redirectCoverage');
@@ -1325,6 +1360,8 @@ describe('portal row quality signals', () => {
     expect(schema.$defs.accessProbe.required).toContain('abortedDataRequestCount');
     expect(schema.$defs.actionResult.required).toContain('abortedDataRequestCount');
     expect(schema.$defs.redirectResult.required).toContain('abortedDataRequestCount');
+    expect(schema.$defs.redirectResult.required).toContain('pageErrors');
+    expect(schema.$defs.redirectResult.required).toContain('consoleErrors');
     expect(schema.properties.summary.anyOf[1].required).toContain('abortedDataRequestCount');
     expect(schema.properties.executionPolicy.properties.actions.enum).toContain(
       'root_access_only',
