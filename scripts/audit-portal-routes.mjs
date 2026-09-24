@@ -1069,7 +1069,11 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         }
         await page.waitForURL(
           (url) => redirectTargetMatches(url.toString(), resolved.targetPath, trustedOrigin),
-          { timeout: remainingTimeout(7_000) }
+          // A guarded source can chain through another redirect before load.
+          // Wait for the final navigation to commit, then inspect its document,
+          // readiness, and read-only health below instead of treating the
+          // intermediate load cancellation as a failed destination.
+          { waitUntil: 'commit', timeout: remainingTimeout(7_000) }
         );
         await waitForPortalReady(page, remainingTimeout(5_000));
         if (entry.fixtureCondition) {
@@ -1235,8 +1239,33 @@ async function exerciseReadOnlyNavigation(
         contract.emptyStateText &&
         sourceInspection.bodyText.includes(contract.emptyStateText)
       ) {
-        result.status = 'not_applicable';
-        result.reason = 'declared_empty_state_verified';
+        const sourceUrl = page.url();
+        const sourceDocument =
+          [...documentResponses].reverse().find((response) => response.url === sourceUrl) ??
+          documentResponses.at(-1) ??
+          null;
+        // A declared empty state satisfies a conditional action only on a
+        // healthy, exact, read-only source. Canceled prefetches are diagnostic
+        // after that proof, just as they are after a verified destination.
+        verifiedDestination = isVerifiedReadOnlyDestination({
+          exactExpectedPath: redirectTargetMatches(sourceUrl, contract.sourcePath, trustedOrigin),
+          sameOrigin: new URL(sourceUrl).origin === trustedOrigin,
+          documentStatus: sourceDocument?.status ?? null,
+          appReady: sourceInspection.appReady,
+          h1Count: sourceInspection.h1Count,
+          readOnlyCapabilityActive: sourceInspection.readOnlyCapabilityActive,
+          errorFallbackDetected: sourceInspection.errorFallbackDetected,
+          consoleErrorCount: uniqueDiagnostics(consoleErrors).length,
+          pageErrorCount: uniqueDiagnostics(pageErrors).length,
+          otherFailureCount: dataRequests.errors.length +
+            (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
+        });
+        result.status = verifiedDestination ? 'not_applicable' : 'failed';
+        result.reason = verifiedDestination
+          ? 'declared_empty_state_verified'
+          : 'declared_empty_state_source_unhealthy';
+        result.finalUrl = sanitizeAuditUrl(sourceUrl, allDynamicPatterns);
+        if (!verifiedDestination) result.failureReasons.push(result.reason);
         return result;
       }
       result.reason = contract.targetPattern
@@ -1343,7 +1372,8 @@ async function exerciseReadOnlyNavigation(
       result.reason = 'action_checks_failed';
     }
     verifiedDestination = verifiedDestination &&
-      result.status === 'passed' &&
+      (result.status === 'passed' ||
+        (result.status === 'not_applicable' && result.reason === 'declared_empty_state_verified')) &&
       dataRequests.errors.length === 0 &&
       result.blockedWriteRequestCount === 0;
     if (
