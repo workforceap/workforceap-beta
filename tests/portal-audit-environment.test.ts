@@ -114,12 +114,18 @@ describe('aborted read-request diagnostics', () => {
         'https://preview.example.test/dashboard/jobs/member-private?token=secret',
         ['/dashboard/jobs/[id]'],
       ),
-    ).toBe('/dashboard/jobs/[redacted]');
+    ).toBe('/dashboard/[redacted]');
     expect(
       sanitizedRequestPath(
         'https://preview.example.test/api/readiness/550e8400-e29b-41d4-a716-446655440000?code=private',
       ),
-    ).toBe('/api/readiness/[redacted]');
+    ).toBe('/api/[redacted]');
+    expect(
+      sanitizedRequestPath('https://preview.example.test/api/applications/acme-42?token=secret'),
+    ).toBe('/api/[redacted]');
+    expect(
+      sanitizedRequestPath('https://preview.example.test/acme-42/private?token=secret'),
+    ).toBe('/[redacted]');
     expect(sanitizedRequestPath('invalid URL')).toBe('/[invalid-url]');
   });
 });

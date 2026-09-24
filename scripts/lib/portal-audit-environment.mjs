@@ -69,10 +69,16 @@ export function isVerifiedReadOnlyDestination({
   );
 }
 
-/** Persist route structure only: no host, query parameters, or concrete fixture IDs. */
+const SAFE_REQUEST_ROOTS = new Set(['api', 'dashboard', 'admin', 'employer', 'partner', 'counselor', '_next']);
+
+/** Persist only a coarse request area: API slugs can be short private IDs. */
 export function sanitizedRequestPath(value, dynamicPatterns = []) {
   try {
-    return new URL(sanitizeAuditUrl(value, dynamicPatterns)).pathname.slice(0, 240);
+    const segments = new URL(sanitizeAuditUrl(value, dynamicPatterns)).pathname.split('/').filter(Boolean);
+    if (segments.length === 0) return '/';
+    const root = segments[0];
+    if (!SAFE_REQUEST_ROOTS.has(root)) return '/[redacted]';
+    return segments.length === 1 ? `/${root}` : `/${root}/[redacted]`;
   } catch {
     return '/[invalid-url]';
   }
