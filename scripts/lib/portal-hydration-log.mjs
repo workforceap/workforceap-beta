@@ -15,6 +15,11 @@ const TAGS = new Set([
   'nav', 'noscript', 'ol', 'p', 'script', 'section', 'span', 'style', 'svg',
   'table', 'tbody', 'td', 'textarea', 'th', 'thead', 'title', 'tr', 'ul',
 ]);
+const PAGE_BOUNDARIES = new Set(['workspace-main-body', 'portal-touch-target']);
+const PAGE_MARKERS = new Set([
+  'portal-page-frame', 'portal-route-loading', 'wa-page-opener',
+  'wa-kit-card', 'portal-breadcrumb', 'other',
+]);
 
 function manifestPath(value) {
   if (typeof value !== 'string' || !value.startsWith('/')) return null;
@@ -78,6 +83,37 @@ function safeTags(value, limit) {
     : [];
 }
 
+function safePageLeaf(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return {
+    tag: TAGS.has(value.tag) ? value.tag : 'unknown',
+    marker: PAGE_MARKERS.has(value.marker) ? value.marker : 'other',
+  };
+}
+
+function safePageChild(value) {
+  const leaf = safePageLeaf(value);
+  if (!leaf) return null;
+  return {
+    ...leaf,
+    childCount: boundedCount(value.childCount, 10_000),
+    children: Array.isArray(value.children)
+      ? value.children.slice(0, 6).map(safePageLeaf).filter(Boolean)
+      : [],
+  };
+}
+
+function safePageStructure(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return {
+    boundary: PAGE_BOUNDARIES.has(value.boundary) ? value.boundary : 'unknown',
+    childCount: boundedCount(value.childCount, 10_000),
+    children: Array.isArray(value.children)
+      ? value.children.slice(0, 6).map(safePageChild).filter(Boolean)
+      : [],
+  };
+}
+
 function safeSample(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   return {
@@ -132,6 +168,9 @@ export function sanitizePortalHydrationTrace(trace, { role, viewport, artifactPa
     first: safeSamples(trace.first, 4),
     recent: safeSamples(trace.recent, 16, true),
     atError: safeSample(trace.atError),
+    firstObservedPage: safePageStructure(trace.firstObservedPage),
+    detachedMainPageCandidate: safePageStructure(trace.detachedMainPageCandidate),
+    atErrorPage: safePageStructure(trace.atErrorPage),
   };
 }
 
