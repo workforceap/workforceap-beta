@@ -12,8 +12,61 @@ export function installPortalHydrationTrace() {
     first: [],
     recent: [],
     atError: null,
+    firstObservedPage: null,
+    detachedMainPageCandidate: null,
+    atErrorPage: null,
   };
   let lastShape = '';
+  let detachedMainPageCandidate = null;
+
+  // These fixed classes identify layout chrome, never user-authored content.
+  // Store only the matched enum; never store className or another attribute.
+  const pageMarkers = [
+    'portal-page-frame', 'portal-route-loading', 'wa-page-opener',
+    'wa-kit-card', 'portal-breadcrumb',
+  ];
+  function nodeMarker(element) {
+    return pageMarkers.find((marker) => element.classList?.contains(marker)) ?? 'other';
+  }
+
+  function pageStructure(root) {
+    const workspace = root?.classList?.contains('workspace-shell-main-body')
+      ? root : root?.querySelector?.('.workspace-shell-main-body');
+    const portal = workspace ? null : (root?.classList?.contains('portal-touch-target')
+      ? root : root?.querySelector?.('.portal-touch-target'));
+    const boundary = workspace ?? portal;
+    if (!boundary) return null;
+    const children = Array.from(boundary.children);
+    return {
+      boundary: workspace ? 'workspace-main-body' : 'portal-touch-target',
+      childCount: children.length,
+      children: children.slice(0, 6).map((child) => {
+        const grandchildren = Array.from(child.children);
+        return {
+          tag: child.tagName.toLowerCase(),
+          marker: nodeMarker(child),
+          childCount: grandchildren.length,
+          children: grandchildren.slice(0, 6).map((grandchild) => ({
+            tag: grandchild.tagName.toLowerCase(),
+            marker: nodeMarker(grandchild),
+          })),
+        };
+      }),
+    };
+  }
+
+  function captureRemovedMain(records) {
+    for (const record of records) {
+      for (const node of record.removedNodes ?? []) {
+        if (node.nodeType !== 1) continue;
+        const main = node.matches?.('main#main-content')
+          ? node : node.tagName === 'BODY' ? node.querySelector?.('main#main-content') : null;
+        if (!main) continue;
+        const candidate = pageStructure(main);
+        if (candidate?.childCount) detachedMainPageCandidate = candidate;
+      }
+    }
+  }
 
   function snapshot() {
     const body = document.body;
@@ -37,6 +90,10 @@ export function installPortalHydrationTrace() {
   }
 
   function record(phase) {
+    if (phase !== 'react-error' && !trace.firstObservedPage) {
+      const page = pageStructure(document);
+      if (page?.childCount) trace.firstObservedPage = page;
+    }
     const shape = snapshot();
     const signature = JSON.stringify(shape);
     if (signature === lastShape && phase === 'mutation') return;
@@ -50,10 +107,14 @@ export function installPortalHydrationTrace() {
 
   record('init');
   const observer = new MutationObserver((records) => {
+    captureRemovedMain(records);
     if (records.some(({ target }) =>
       target === document || target === document.documentElement ||
       target === document.body || target?.id === 'main-content' ||
-      target?.classList?.contains('workspace-shell-root'))) {
+      target?.classList?.contains('workspace-shell-root') ||
+      target?.classList?.contains('workspace-shell-main-body') ||
+      target?.classList?.contains('portal-touch-target') ||
+      target?.closest?.('.workspace-shell-main-body'))) {
       record('mutation');
     }
   });
@@ -62,6 +123,12 @@ export function installPortalHydrationTrace() {
   window.addEventListener('error', (event) => {
     const message = String(event?.message ?? event?.error?.message ?? '');
     if (!/Minified React error #418|Hydration failed/i.test(message)) return;
+    // React can replace the root before reporting the recoverable error. The
+    // detached original <main> remains available in queued mutation records;
+    // project it to bounded primitives before those records are discarded.
+    captureRemovedMain(observer.takeRecords());
+    trace.detachedMainPageCandidate = detachedMainPageCandidate;
+    trace.atErrorPage = pageStructure(document);
     trace.atError = record('react-error');
     trace.errorPathname = location.pathname;
     observer.disconnect();
