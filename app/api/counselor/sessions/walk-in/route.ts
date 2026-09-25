@@ -11,7 +11,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope, crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { trackEvent } from '@/lib/events/track';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
-import { stampNewAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
+import { stampCreatedAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 
@@ -166,6 +166,7 @@ const walkInSchema = z.object({
     }
   
     let authUser: Pick<User, 'id' | 'email' | 'app_metadata'> | null = null;
+    let createdAuthResult: Awaited<ReturnType<typeof supabase.auth.admin.createUser>> | null = null;
     if (!inviteError && inviteData.user) {
       authUser = inviteData.user;
     } else if (inviteError?.message?.includes('already') || inviteError?.code === 'user_already_exists') {
@@ -178,12 +179,13 @@ const walkInSchema = z.object({
       );
     } else {
       const tempPassword = `WfAP${Date.now().toString(36)}!`;
-      const { data: createData, error: createError } = await supabase.auth.admin.createUser({
+      const createResult = await supabase.auth.admin.createUser({
         email,
         password: tempPassword,
         email_confirm: true,
         user_metadata: { full_name: fullName, phone, walked_in_by: user.id },
       });
+      const { data: createData, error: createError } = createResult;
       if (createError) {
         if (createError.message.includes('already')) {
           return NextResponse.json(
@@ -195,6 +197,7 @@ const walkInSchema = z.object({
         return NextResponse.json({ error: createError.message }, { status: 400 });
       }
       authUser = createData.user;
+      createdAuthResult = createResult;
     }
   
     if (!authUser) {
@@ -205,9 +208,11 @@ const walkInSchema = z.object({
     // catch on PR #1047 — using `getDefaultOrganizationId()` would mis-tag
     // a non-default-org counselor's walk-ins.
     const organizationId = await getActorOrganizationId(user.id);
-    await stampNewAuthUserProvisionIntent(supabase, authUser, {
-      role: 'member', organizationId, source: 'counselor_walk_in',
-    });
+    if (createdAuthResult) {
+      await stampCreatedAuthUserProvisionIntent(supabase, createdAuthResult, {
+        role: 'member', organizationId, source: 'counselor_walk_in',
+      });
+    }
   
     try {
       // Step 1: User.create goes through withTenantScope so the new row

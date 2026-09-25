@@ -6,7 +6,6 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
-import { stampNewInviteProvisionIntent } from '@/lib/auth/provisionIntent';
 import {
   authProviderFailureStatus,
   classifyAuthProviderError,
@@ -144,17 +143,13 @@ async function ensurePartnerInviteUser(params: {
     }
   
     try {
-      const inviteResult = await supabase.auth.admin.inviteUserByEmail(email, {
+      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
         redirectTo: `${siteUrl}/partner`,
         data: { full_name: displayName },
       });
-      const { data: inviteData, error: inviteError } = inviteResult;
   
       if (!inviteError && inviteData.user?.id) {
         authUserId = inviteData.user.id;
-        await stampNewInviteProvisionIntent(supabase, inviteResult, {
-          role: 'partner', organizationId: partner.organizationId, source: 'admin_partner_invite',
-        });
       } else {
         const inviteKind = inviteError ? classifyAuthProviderError(inviteError) : 'unknown';
         if (inviteKind === 'unavailable') {

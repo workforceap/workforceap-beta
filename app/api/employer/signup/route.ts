@@ -9,7 +9,7 @@ import {
   sendEmployerVerificationEmail,
 } from '@/lib/email';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import { stampNewAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
+import { stampCreatedAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import { cleanupCreatedEmployerSignupAuthUser } from './_signupCleanup';
 import { notifyDiscord } from '@/lib/notify/discord';
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     // Create the auth user unconfirmed; public signup must not grant a session
     // until the contact proves control of the mailbox.
     const admin = getSupabaseAdmin();
-    const { data: createData, error: createError } = await admin.auth.admin.createUser({
+    const createResult = await admin.auth.admin.createUser({
       email: data.email,
       password: data.password,
       user_metadata: {
@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
         phone: data.phone,
       },
     });
+    const { data: createData, error: createError } = createResult;
 
     if (createError) {
       if (
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const organizationId = await resolveProvisionOrganizationId({ headers: request.headers });
-      await stampNewAuthUserProvisionIntent(admin, user, {
+      await stampCreatedAuthUserProvisionIntent(admin, createResult, {
         role: 'employer', organizationId, source: 'employer_signup',
       });
       await createEmployerUser(user.id, data, { organizationId });

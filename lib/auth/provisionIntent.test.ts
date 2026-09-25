@@ -4,15 +4,13 @@ import assert from 'node:assert/strict';
 import type { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   provisionIntentAppMetadata,
-  stampNewAuthUserProvisionIntent,
-  stampNewInviteProvisionIntent,
+  stampCreatedAuthUserProvisionIntent,
   type ProvisionIntent,
 } from './provisionIntent';
 
 const cases: ProvisionIntent[] = [
   { role: 'admin', organizationId: ' org-admin ', source: 'admin_user_create' },
   { role: 'member', organizationId: 'org-member', source: 'admin_member_create' },
-  { role: 'partner', organizationId: 'org-partner', source: 'admin_partner_invite' },
   { role: 'member', organizationId: 'org-coursera', source: 'coursera_reconcile' },
   { role: 'member', organizationId: 'org-walk-in', source: 'counselor_walk_in' },
   { role: 'employer', organizationId: 'org-employer', source: 'employer_signup' },
@@ -37,7 +35,7 @@ test('provision intent retains fixed role, resolved organization, and route sour
   );
 });
 
-test('successful new invite preserves provider metadata and stamps only its returned Auth ID', async () => {
+test('successful create preserves provider metadata and stamps only its returned Auth ID', async () => {
   const updates: Array<{ id: string; appMetadata: Record<string, unknown> }> = [];
   const admin = {
     auth: { admin: { updateUserById: async (id: string, attributes: { app_metadata: Record<string, unknown> }) => {
@@ -46,10 +44,10 @@ test('successful new invite preserves provider metadata and stamps only its retu
     } } },
   } as unknown as ReturnType<typeof getSupabaseAdmin>;
 
-  const stamped = await stampNewInviteProvisionIntent(admin, {
+  const stamped = await stampCreatedAuthUserProvisionIntent(admin, {
     data: { user: { id: 'new-auth-id', app_metadata: { provider: 'email', providers: ['email'] } } },
     error: null,
-  } as Parameters<typeof stampNewInviteProvisionIntent>[1], cases[2]);
+  } as Parameters<typeof stampCreatedAuthUserProvisionIntent>[1], cases[1]);
 
   assert.equal(stamped, true);
   assert.deepEqual(updates, [{
@@ -57,27 +55,27 @@ test('successful new invite preserves provider metadata and stamps only its retu
     appMetadata: {
       provider: 'email',
       providers: ['email'],
-      ...provisionIntentAppMetadata(cases[2]),
+      ...provisionIntentAppMetadata(cases[1]),
     },
   }]);
 });
 
-test('duplicate or failed invite never overwrites an existing Auth ID', async () => {
+test('duplicate create error never overwrites an existing Auth ID', async () => {
   let updates = 0;
   const admin = {
     auth: { admin: { updateUserById: async () => { updates += 1; return { error: null }; } } },
   } as unknown as ReturnType<typeof getSupabaseAdmin>;
 
-  const duplicate = await stampNewInviteProvisionIntent(admin, {
+  const duplicate = await stampCreatedAuthUserProvisionIntent(admin, {
     data: { user: null },
     error: { message: 'User already registered' },
-  } as unknown as Parameters<typeof stampNewInviteProvisionIntent>[1], cases[2]);
+  } as unknown as Parameters<typeof stampCreatedAuthUserProvisionIntent>[1], cases[1]);
 
   assert.equal(duplicate, false);
   assert.equal(updates, 0);
 });
 
-test('metadata provider failure is reported without interrupting invite recovery', async (t) => {
+test('metadata provider failure is reported without interrupting create recovery', async (t) => {
   const errors: unknown[][] = [];
   const original = console.error;
   console.error = (...args) => { errors.push(args); };
@@ -86,9 +84,9 @@ test('metadata provider failure is reported without interrupting invite recovery
     auth: { admin: { updateUserById: async () => ({ error: new Error('provider unavailable') }) } },
   } as unknown as ReturnType<typeof getSupabaseAdmin>;
 
-  const stamped = await stampNewAuthUserProvisionIntent(admin, {
-    id: 'new-auth-id', app_metadata: {},
-  }, cases[7]);
+  const stamped = await stampCreatedAuthUserProvisionIntent(admin, {
+    data: { user: { id: 'new-auth-id', app_metadata: {} } }, error: null,
+  } as Parameters<typeof stampCreatedAuthUserProvisionIntent>[1], cases[6]);
 
   assert.equal(stamped, false);
   assert.equal(errors.length, 1);

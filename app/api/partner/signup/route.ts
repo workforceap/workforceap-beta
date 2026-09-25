@@ -8,7 +8,7 @@ import { getResend } from '@/lib/email';
 import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
 import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import { stampNewAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
+import { stampCreatedAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -167,7 +167,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     // Create the auth user unconfirmed; public signup must not grant a
     // usable account until the contact proves control of the mailbox.
     const supabaseAdmin = getSupabaseAdmin();
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const createResult = await supabaseAdmin.auth.admin.createUser({
       email: d.contactEmail,
       password: d.password,
       user_metadata: {
@@ -175,6 +175,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         phone: phone ?? undefined,
       },
     });
+    const { data: authData, error: authError } = createResult;
 
     if (authError) {
       if (authError.message.includes('already') || authError.code === 'user_already_exists') {
@@ -199,7 +200,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     }
 
     const organizationId = await resolveProvisionOrganizationId({ headers: request.headers });
-    await stampNewAuthUserProvisionIntent(supabaseAdmin, authUser, {
+    await stampCreatedAuthUserProvisionIntent(supabaseAdmin, createResult, {
       role: 'partner', organizationId, source: 'partner_signup',
     });
     const slug = await generateUniqueSlug(d.organizationName);

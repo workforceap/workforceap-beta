@@ -1,5 +1,4 @@
 import type { getSupabaseAdmin } from '@/lib/supabase-admin';
-import type { User } from '@supabase/supabase-js';
 
 /** Server-authored evidence for a later Auth-only provisioning policy. */
 export type ProvisionIntent = {
@@ -8,7 +7,6 @@ export type ProvisionIntent = {
   source:
     | 'admin_user_create'
     | 'admin_member_create'
-    | 'admin_partner_invite'
     | 'coursera_reconcile'
     | 'counselor_walk_in'
     | 'employer_signup'
@@ -31,31 +29,21 @@ export function provisionIntentAppMetadata(intent: ProvisionIntent) {
 }
 
 type Admin = ReturnType<typeof getSupabaseAdmin>;
-type InviteResult = Awaited<ReturnType<Admin['auth']['admin']['inviteUserByEmail']>>;
+type CreateResult = Awaited<ReturnType<Admin['auth']['admin']['createUser']>>;
 
 /**
- * Invites have no app_metadata option. Stamp only the user returned by a
- * successful invite, never an ID recovered from a duplicate-email error.
- * This is preparatory evidence; a provider update failure must not change
- * the existing invite or account-recovery flow.
+ * A successful invite can return an existing unconfirmed Auth user. Only a
+ * successful createUser response proves this request created the identity.
+ * Post-create stamping is preparatory evidence; a provider update failure
+ * must not change the existing signup or account-recovery flow.
  */
-export async function stampNewInviteProvisionIntent(
+export async function stampCreatedAuthUserProvisionIntent(
   admin: Admin,
-  invite: InviteResult,
+  created: CreateResult,
   intent: ProvisionIntent,
 ): Promise<boolean> {
-  const user = !invite.error ? invite.data.user : null;
+  const user = !created.error ? created.data.user : null;
   if (!user?.id) return false;
-
-  return stampNewAuthUserProvisionIntent(admin, user, intent);
-}
-
-/** Call only for a user just created by this request, never a duplicate lookup. */
-export async function stampNewAuthUserProvisionIntent(
-  admin: Admin,
-  user: Pick<User, 'id' | 'app_metadata'>,
-  intent: ProvisionIntent,
-): Promise<boolean> {
   try {
     const { error } = await admin.auth.admin.updateUserById(user.id, {
       app_metadata: {
@@ -66,7 +54,7 @@ export async function stampNewAuthUserProvisionIntent(
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('[provisionIntent] Could not stamp newly invited Auth user', error);
+    console.error('[provisionIntent] Could not stamp newly created Auth user', error);
     return false;
   }
 }
