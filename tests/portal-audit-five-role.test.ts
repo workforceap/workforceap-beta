@@ -25,6 +25,7 @@ import {
   dataRequestQuietWindowSatisfied,
   dynamicRoutePatternMatches,
   evaluateAccessProbe,
+  failedAccessProbeDiagnostics,
   fixtureConditionMatches,
   isVerifiedDeniedRedirectWithCanceledGets,
   isBlockedAuditTelemetryRequest,
@@ -1086,6 +1087,36 @@ describe('read-only portal action contracts', () => {
     }, 'denied').ok).toBe(false);
   });
 
+  it('persists bounded fixed browser-error categories only for failed access probes', () => {
+    const row = {
+      consoleErrors: [
+        'Failed to load resource: net::ERR_CONNECTION_RESET https://example.test?access_token=secret',
+        'Failed to load resource: net::ERR_CONNECTION_RESET https://example.test?access_token=secret',
+        'TypeError: user@example.test',
+        'ReferenceError: 512-825-2896',
+        'SyntaxError: password=hunter2',
+      ],
+      pageErrors: [
+        'Navigation failed: private-member-slug',
+        'Same-origin data request returned HTTP 503 at https://example.test/private',
+        'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]=secret',
+      ],
+    };
+    const diagnostics = failedAccessProbeDiagnostics(row, false);
+    expect(diagnostics.consoleErrorCategories).toEqual([
+      'resource_load_failure', 'type_error', 'reference_error',
+    ]);
+    expect(diagnostics.pageErrorCategories).toEqual([
+      'navigation_failure', 'same_origin_http_5xx', 'react_hydration',
+    ]);
+    expect(JSON.stringify(diagnostics)).not.toMatch(/private|secret|user@example|hunter2|512-825/);
+    expect(failedAccessProbeDiagnostics(row, true)).toEqual({});
+    expect(failedAccessProbeDiagnostics({}, false)).toEqual({
+      consoleErrorCategories: [],
+      pageErrorCategories: [],
+    });
+  });
+
   it('requires the checked-in fixture predicate and a healthy exact redirect', () => {
     expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: false })).toBe(true);
     expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: true })).toBe(false);
@@ -1625,7 +1656,7 @@ describe('portal row quality signals', () => {
         'summary',
       ])
     );
-    expect(schema.properties.schemaVersion.const).toBe('3.4.0');
+    expect(schema.properties.schemaVersion.const).toBe('3.5.0');
     expect(schema.required).toContain('attendedGates');
     expect(schema.$defs.roleResult.required).toContain('actionCoverage');
     expect(schema.$defs.roleResult.required).toContain('redirectCoverage');

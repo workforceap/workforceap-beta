@@ -25,7 +25,7 @@
   ],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": "3.4.0" },
+    "schemaVersion": { "const": "3.5.0" },
     "status": { "enum": ["passed", "partial", "failed", "blocked"] },
     "baseURL": { "type": ["string", "null"] },
     "generatedAt": { "type": "string", "format": "date-time" },
@@ -241,6 +241,8 @@
         "readOnlyCapabilityActive": { "type": "boolean" },
         "consoleErrorCount": { "type": "integer", "minimum": 0 },
         "pageErrorCount": { "type": "integer", "minimum": 0 },
+        "consoleErrorCategories": { "type": "array", "items": { "$ref": "#/$defs/accessBrowserErrorCategory" }, "maxItems": 3 },
+        "pageErrorCategories": { "type": "array", "items": { "$ref": "#/$defs/accessBrowserErrorCategory" }, "maxItems": 3 },
         "durationMs": { "type": ["integer", "null"], "minimum": 0 },
         "targetUsable": { "type": "boolean" },
         "denialEvidence": { "type": ["string", "null"] },
@@ -252,6 +254,14 @@
         "ok": { "type": "boolean" },
         "error": { "type": "string" }
       }
+    },
+    "accessBrowserErrorCategory": {
+      "enum": [
+        "react_hydration", "react_runtime", "same_origin_http_5xx", "same_origin_http_4xx",
+        "same_origin_network_failure", "navigation_failure", "page_inspection_failure",
+        "read_only_policy_block", "csp_violation", "resource_load_failure",
+        "type_error", "reference_error", "syntax_error", "other_console_error", "other_page_error"
+      ]
     },
     "accessMatrix": {
       "type": "object",
