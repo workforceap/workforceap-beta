@@ -183,7 +183,7 @@ export default async function MemberMessagesPage({
         otherInitials={counselorInitials}
         messages={kitMessages}
         feedbackDraft={feedbackDraft}
-        feedbackNotice={hasRequestedFeedback && !feedbackDraft ? 'We could not load that assigned course. You can still write your message below.' : undefined}
+        feedbackNotice={hasRequestedFeedback && !feedbackDraft ? t('feedbackUnavailable') : undefined}
       />
     );
   }

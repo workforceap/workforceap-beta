@@ -70,13 +70,14 @@ export interface MemberMessagesKitProps {
  * inbox reads as the same product as a live one.
  */
 export function MemberMessagesFrame({ children }: { children: ReactNode }) {
+  const tm = useTranslations('messages');
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Inbox"
-          title="Messages"
-          lede="Counselor and support in one inbox."
+          kicker={tm('inbox')}
+          title={tm('messagesTitle')}
+          lede={tm('kitLede')}
           icon={<MessageCircle size={13} aria-hidden="true" />}
         />
         {children}
@@ -103,6 +104,7 @@ export function MemberMessagesKit({
   feedbackNotice,
 }: MemberMessagesKitProps) {
   const t = useTranslations('empty');
+  const tm = useTranslations('messages');
   const [messages, setMessages] = useState<ChatMessage[]>(messagesProp);
   const [error, setError] = useState<string | null>(null);
   // Mobile single-pane navigation: on phones the list and thread cannot sit
@@ -176,7 +178,7 @@ export function MemberMessagesKit({
         };
         if (!r.ok || !data.message) {
           setMessages((prev) => prev.filter((m) => m.id !== tempId));
-          setError(typeof data.error === 'string' ? data.error : 'Send failed');
+          setError(typeof data.error === 'string' ? data.error : tm('sendFailed'));
           return false;
         }
         const saved = data.message;
@@ -196,11 +198,11 @@ export function MemberMessagesKit({
         return true;
       } catch {
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
-        setError('Network error');
+        setError(tm('networkError'));
         return false;
       }
     },
-    [feedbackDraft],
+    [feedbackDraft, tm],
   );
 
   const handleSend = useCallback(
@@ -278,7 +280,7 @@ export function MemberMessagesKit({
             style={{ borderRight: '1px solid var(--wa-border)' }}
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--wa-border)' }}>
-              <h2 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>Conversations</h2>
+              <h2 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>{tm('conversations')}</h2>
             </div>
             <div>
               {conversations.length === 0 ? (
@@ -315,7 +317,7 @@ export function MemberMessagesKit({
                           background: 'var(--wa-accent)',
                           flexShrink: 0,
                         }}
-                        aria-label="Unread message"
+                        aria-label={tm('unreadMessage')}
                       />
                     ) : null}
                   </div>
@@ -353,7 +355,7 @@ export function MemberMessagesKit({
                   type="button"
                   onClick={() => setMobileView('list')}
                   className="wa-kit-focus"
-                  aria-label="Back to messages"
+                  aria-label={tm('backToMessages')}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -381,9 +383,7 @@ export function MemberMessagesKit({
               </div>
             </div>
             <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column' }}>
-              {feedbackDraft ? <p className="wa-kit-lede">
-                Review your course details and any saved project link before sending. Your private notes are not shared.
-              </p> : feedbackNotice ? <p role="status" className="wa-kit-lede">{feedbackNotice}</p> : null}
+              {feedbackDraft ? <p className="wa-kit-lede">{tm('feedbackDraftNotice')}</p> : feedbackNotice ? <p role="status" className="wa-kit-lede">{feedbackNotice}</p> : null}
               {error ? (
                 <p role="alert" className="wa-kit-lede" style={{ margin: '0 0 12px', color: 'var(--wa-danger)' }}>
                   {error}
@@ -392,7 +392,7 @@ export function MemberMessagesKit({
               <ChatThread
                 key={feedbackDraft?.key ?? 'general'}
                 messages={messages}
-                placeholder={`Message ${activeName.split(' ')[0]}…`}
+                placeholder={tm('composerPlaceholder', { name: activeName.split(' ')[0] })}
                 onSend={canSend ? handleSend : undefined}
                 initialText={feedbackDraft?.text}
                 multiline={Boolean(feedbackDraft)}
