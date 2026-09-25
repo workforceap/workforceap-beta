@@ -14,6 +14,7 @@ import {
   type EmailCronRow,
   type EmailCronDisplayStatus,
 } from '@/components/portal/kit/pages/admin-subviews/EmailCronsKit';
+import { EmailCronActivateAll } from '@/components/portal/kit/pages/admin-subviews/EmailCronActivateAll';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -143,6 +144,7 @@ export default async function AdminEmailCronsPage({
           failing={failing}
           lastRun={timeAgo(lastRunIso)}
           manageable
+          headerAction={<EmailCronActivateAll total={cronData.length} enabled={enabledCount} />}
           notice={
             cronSecretMissing ? (
               <p role="alert" className="wa-kit-card wa-mb-5" style={{ color: 'var(--wa-danger)' }}>
