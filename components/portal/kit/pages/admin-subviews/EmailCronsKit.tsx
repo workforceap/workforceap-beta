@@ -65,6 +65,8 @@ export interface EmailCronsKitProps {
   manageable?: boolean;
   /** Optional notice under the opener (e.g. CRON_SECRET missing). */
   notice?: ReactNode;
+  /** Optional opener action, e.g. the "Activate all" control (WAP-193). */
+  headerAction?: ReactNode;
 }
 
 const STATUS_TOKEN_COLOR: Record<EmailCronDisplayStatus, TokenColor> = {
@@ -82,6 +84,7 @@ export function EmailCronsKit({
   lastRun,
   manageable = false,
   notice,
+  headerAction,
 }: EmailCronsKitProps) {
   const actions = (row: EmailCronRow) => (
     <EmailCronRowActions id={row.id} name={row.job} enabled={row.enabled ?? row.status !== 'Disabled'} />
@@ -127,6 +130,7 @@ export function EmailCronsKit({
         title="Email Crons"
         kicker="System"
         lede="Automated email & workflow jobs"
+        action={headerAction}
       />
 
       {notice}
