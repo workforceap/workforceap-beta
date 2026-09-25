@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
@@ -12,7 +12,6 @@ vi.mock('@/lib/milestoneCascade/detectCompletionMilestone', () => ({
   detectTrainingMilestone: vi.fn(),
 }));
 vi.mock('@/lib/member/staffTrainingProgramFallback', () => ({ resolveStaffTrainingPreviewProgramSlug: vi.fn() }));
-vi.mock('@/lib/member/dailyStudyPoints', () => ({ utcDateKey: vi.fn(() => '2026-08-29') }));
 vi.mock('@/lib/member/points', () => ({ awardPoints: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: { user: { findUnique: vi.fn() } },
@@ -453,5 +452,82 @@ describe('handleInboundParsedStatement program resolution', () => {
     expect(recordXapiEvent).toHaveBeenCalledWith(
       expect.objectContaining({ completionStatus: 'unmatched' }),
     );
+  });
+});
+
+describe('handleInboundParsedStatement daily-study award (WAP-276)', () => {
+  const enrolledMember = {
+    organizationId: 'org-1',
+    deletedAt: null,
+    enrolledProgram: 'primary-program',
+    courseEnrollments: [{ programSlug: 'primary-program', isPrimary: true }],
+  };
+
+  function progressedStatement(timestamp: string | null) {
+    return {
+      email: 'member@example.com',
+      courseName: 'Course One',
+      courseraCourseId: 'coursera-course-1',
+      activityType: 'course' as const,
+      statementId: `statement-${timestamp ?? 'none'}`,
+      verbId: 'http://adlnet.gov/expapi/verbs/progressed',
+      timestamp,
+      rawStatement: {},
+    };
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    // The production replay tick that awarded an unearned point.
+    vi.setSystemTime(new Date('2026-09-17T00:15:05.000Z'));
+    vi.mocked(resolveXapiUser).mockResolvedValue({
+      userId: 'member-1',
+      email: 'member@example.com',
+      fullName: 'Member One',
+      mappingMethod: 'direct_email',
+    });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(enrolledMember as never);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isXapiCompletionVerb).mockReturnValue(false);
+    vi.mocked(upsertCourseProgressFromXapiStatement).mockResolvedValue(null as never);
+    vi.mocked(recordXapiEvent).mockResolvedValue(undefined);
+    vi.mocked(markXapiStatementProcessed).mockResolvedValue(undefined);
+    vi.mocked(awardPoints).mockResolvedValue({ awarded: true, points: 5, total: 5, level: 'starter' });
+    vi.mocked(resolveInboundCourseScopes).mockResolvedValue([
+      { programSlug: 'primary-program', curriculumVersion: 'legacy-v1', assignmentMatched: true },
+    ] as never);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('awards "Studied today" keyed on the learner event day when the member studied today', async () => {
+    await handleInboundParsedStatement(progressedStatement('2026-09-17T00:02:00.000Z'), {
+      organizationId: 'org-1',
+      statementHash: 'hash-today',
+    });
+
+    expect(awardPoints).toHaveBeenCalledWith('member-1', 'daily_study', '2026-09-17');
+  });
+
+  it('does not award when the auto-heal replays a statement from an earlier day', async () => {
+    await handleInboundParsedStatement(progressedStatement('2026-07-30T05:50:31.663Z'), {
+      organizationId: 'org-1',
+      statementHash: 'hash-replay',
+    });
+
+    expect(awardPoints).not.toHaveBeenCalled();
+    expect(upsertCourseProgressFromXapiStatement).toHaveBeenCalled();
+  });
+
+  it('does not award a statement with no learner timestamp', async () => {
+    await handleInboundParsedStatement(progressedStatement(null), {
+      organizationId: 'org-1',
+      statementHash: 'hash-none',
+    });
+
+    expect(awardPoints).not.toHaveBeenCalled();
   });
 });
