@@ -148,6 +148,24 @@ export async function waitForPortalReady(page, timeout = PORTAL_AUDIT_READY_TIME
   );
 }
 
+/** The shared portal shell can look ready while its streamed route is still a skeleton. */
+export function hasPortalRouteContent() {
+  const main = document.querySelector('main#main-content');
+  if (!main) return false;
+  const visible = (element) => {
+    if (element.closest('[hidden], [aria-hidden="true"]')) return false;
+    const style = window.getComputedStyle(element);
+    return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+  };
+  if ([...main.querySelectorAll('.portal-route-loading')].some(visible)) return false;
+  return [...main.querySelectorAll('h1')].some(visible);
+}
+
+/** Bounded route-content wait for static audits; failure remains classified from the final DOM. */
+export async function waitForPortalRouteContent(page, timeout = PORTAL_AUDIT_READY_TIMEOUT_MS) {
+  await page.waitForFunction(hasPortalRouteContent, undefined, { timeout });
+}
+
 /** An intermediate canceled navigation must not preempt the final redirect commit. */
 export async function waitForRedirectTargetCommit(page, matchesTarget, timeout) {
   const deadline = Date.now() + timeout;
@@ -259,6 +277,9 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
     );
     const viewportWidth = window.innerWidth || document.documentElement?.clientWidth || 0;
     const visibleH1Count = [...document.querySelectorAll('h1')].filter(isVisible).length;
+    const routeLoadingVisible = [
+      ...document.querySelectorAll('main#main-content .portal-route-loading'),
+    ].some(isVisible);
     const errorFallbackStates = [
       ...document.querySelectorAll('[data-portal-error-state]'),
     ]
@@ -273,7 +294,8 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
       bodyText: document.body?.innerText ?? '',
       readOnlyAuditDocument:
         document.documentElement?.getAttribute('data-portal-read-only-audit') === '1',
-      appReady: normalizedBodyText.length >= 20 && (visibleH1Count > 0 || controls.length > 0),
+      appReady: !routeLoadingVisible && normalizedBodyText.length >= 20 &&
+        (visibleH1Count > 0 || controls.length > 0),
       errorFallbackDetected: errorFallbackStates.length > 0,
       errorFallbackStates: [...new Set(errorFallbackStates)],
       auditSuppressedStates: [...new Set(auditSuppressedStates)],

@@ -22,12 +22,15 @@ test('hydration log discards injected browser strings and bounds structural fiel
   const secret = 'PRIVATE_MEMBER_RESUME_123';
   const sample = {
     phase: secret,
+    elapsedMs: secret,
     bodyTags: ['div', secret, 'header', { secret }],
     bodyChildCount: secret,
     mainCount: 100_001,
     mainBodyIndex: -999,
     mainTags: Array(50).fill(secret),
     mainChildCount: 2,
+    routeLoadingCount: 100_001,
+    routeHeadingCount: -1,
     portalTouchFirst: secret,
     shellCount: 1,
     shellTags: ['span', secret],
@@ -99,11 +102,14 @@ test('hydration log discards injected browser strings and bounds structural fiel
   assert.equal(safe.first.length, 4);
   assert.equal(safe.recent.length, 16);
   assert.equal(safe.atError.phase, 'unknown');
+  assert.equal(safe.atError.elapsedMs, null);
   assert.deepEqual(safe.atError.bodyTags, ['div', 'unknown', 'header', 'unknown']);
   assert.equal(safe.atError.bodyChildCount, null);
   assert.equal(safe.atError.mainCount, 10_000);
   assert.equal(safe.atError.mainBodyIndex, null);
   assert.equal(safe.atError.mainTags.length, 8);
+  assert.equal(safe.atError.routeLoadingCount, 1_000);
+  assert.equal(safe.atError.routeHeadingCount, null);
   assert.equal(safe.atError.portalTouchFirst, null);
   assert.equal(safe.firstObservedPage.boundary, 'unknown');
   assert.equal(safe.firstObservedPage.childCount, 10_000);
@@ -122,8 +128,8 @@ test('hydration log discards injected browser strings and bounds structural fiel
   const serialized = JSON.stringify(safe);
   assert.doesNotMatch(serialized, /PRIVATE_MEMBER_RESUME_123|member-123|PRIVATE_TOKEN/);
   assert.deepEqual(Object.keys(safe.atError), [
-    'phase', 'bodyTags', 'bodyChildCount', 'mainCount', 'mainBodyIndex',
-    'mainTags', 'mainChildCount', 'portalTouchFirst', 'shellCount',
+    'phase', 'elapsedMs', 'bodyTags', 'bodyChildCount', 'mainCount', 'mainBodyIndex',
+    'mainTags', 'mainChildCount', 'routeLoadingCount', 'routeHeadingCount', 'portalTouchFirst', 'shellCount',
     'shellTags', 'shellChildCount',
   ]);
 });
@@ -131,8 +137,9 @@ test('hydration log discards injected browser strings and bounds structural fiel
 test('hydration log retains approved root diagnostics', async () => {
   const { sanitizePortalHydrationTrace } = await import('./portal-hydration-log.mjs');
   const sample = {
-    phase: 'react-error', bodyTags: ['script', 'main'], bodyChildCount: 2,
+    phase: 'react-error', elapsedMs: 321, bodyTags: ['script', 'main'], bodyChildCount: 2,
     mainCount: 1, mainBodyIndex: 1, mainTags: ['div'], mainChildCount: 1,
+    routeLoadingCount: 0, routeHeadingCount: 1,
     portalTouchFirst: true, shellCount: 1, shellTags: ['header'], shellChildCount: 1,
   };
   const safe = sanitizePortalHydrationTrace({

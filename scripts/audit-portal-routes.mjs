@@ -48,6 +48,7 @@ import {
   waitForRedirectTargetCommit,
   waitForVisibleActionTarget,
   waitForPortalReady,
+  waitForPortalRouteContent,
 } from './lib/portal-audit-browser.mjs';
 import {
   applyBlockedWriteFailure,
@@ -765,6 +766,12 @@ async function auditRoute(
       if (!recoverable) pageErrors.push(`Navigation failed: ${message}`);
       await waitForPortalReady(page, remainingTimeout(3_000)).catch(() => {});
     }
+
+    // A portal shell has enough text and controls to pass the generic readiness
+    // gate while the streamed route is still its loading skeleton. Wait a
+    // bounded interval for the route heading and skeleton removal. The final
+    // DOM inspection classifies a timeout, so this does not hide a broken page.
+    await waitForPortalRouteContent(page, remainingTimeout(5_000)).catch(() => {});
 
     // Wait for mount-time same-origin XHR/fetch work to complete. A bounded
     // quiet window catches slow API failures without allowing a hung endpoint

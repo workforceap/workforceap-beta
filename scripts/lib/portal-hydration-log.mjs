@@ -118,12 +118,15 @@ function safeSample(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   return {
     phase: PHASES.has(value.phase) ? value.phase : 'unknown',
+    elapsedMs: boundedCount(value.elapsedMs, 1_500_000),
     bodyTags: safeTags(value.bodyTags, 16),
     bodyChildCount: boundedCount(value.bodyChildCount, 10_000),
     mainCount: boundedCount(value.mainCount, 10_000),
     mainBodyIndex: boundedCount(value.mainBodyIndex, 10_000, -1),
     mainTags: safeTags(value.mainTags, 8),
     mainChildCount: boundedCount(value.mainChildCount, 10_000),
+    routeLoadingCount: boundedCount(value.routeLoadingCount, 1_000),
+    routeHeadingCount: boundedCount(value.routeHeadingCount, 1_000),
     portalTouchFirst: typeof value.portalTouchFirst === 'boolean' ? value.portalTouchFirst : null,
     shellCount: boundedCount(value.shellCount, 10_000),
     shellTags: safeTags(value.shellTags, 8),
