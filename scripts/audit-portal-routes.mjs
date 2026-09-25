@@ -36,6 +36,7 @@ import {
   requestFailureCategory,
   sanitizedRequestPath,
 } from './lib/portal-audit-environment.mjs';
+import { recordPendingDataRequestTimeout } from './lib/portal-audit-pending.mjs';
 import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
@@ -273,7 +274,7 @@ function emptySummary() {
 
 const artifact = {
   $schema: '../docs/portal-audit-results.schema.json',
-  schemaVersion: '3.3.0',
+  schemaVersion: '3.4.0',
   // A run starts failed/incomplete. Only a complete green run changes this to passed,
   // so a killed process can never leave a stale success artifact behind.
   status: 'failed',
@@ -611,6 +612,8 @@ function trackSameOriginDataRequests(page) {
   const abortedErrors = [];
   const abortedDataRequests = [];
   let abortedDataRequestCount = 0;
+  const pendingDataRequests = [];
+  let pendingDataRequestCount = 0;
   let lastActivityAt = Date.now();
 
   const handleRequest = (request) => {
@@ -654,8 +657,12 @@ function trackSameOriginDataRequests(page) {
     errors,
     abortedErrors,
     abortedDataRequests,
+    pendingDataRequests,
     get abortedDataRequestCount() {
       return abortedDataRequestCount;
+    },
+    get pendingDataRequestCount() {
+      return pendingDataRequestCount;
     },
     async waitForSettlement(timeoutMs) {
       const boundedTimeout = Math.max(1, Math.min(timeoutMs, 5_000));
@@ -676,10 +683,12 @@ function trackSameOriginDataRequests(page) {
         }
         await page.waitForTimeout(Math.min(50, Math.max(1, settleDeadline - Date.now())));
       }
-      if (inFlight.size > 0) {
-        errors.push(
-          `Same-origin data requests did not settle within ${boundedTimeout}ms (${inFlight.size} pending)`
-        );
+      const pending = recordPendingDataRequestTimeout(
+        inFlight, errors, boundedTimeout, trustedOrigin
+      );
+      if (pending) {
+        pendingDataRequestCount = pending.count;
+        pendingDataRequests.splice(0, pendingDataRequests.length, ...pending.requests);
       }
     },
     detach() {
@@ -816,6 +825,8 @@ async function auditRoute(
       pageErrors: uniqueDiagnostics([...pageErrors, ...dataRequests.errors]),
       abortedDataRequestCount: dataRequests.abortedDataRequestCount,
       abortedDataRequests: dataRequests.abortedDataRequests,
+      pendingDataRequestCount: dataRequests.pendingDataRequestCount,
+      pendingDataRequests: dataRequests.pendingDataRequests,
       h1Count: inspection.h1Count,
       horizontalOverflowPx: inspection.horizontalOverflowPx,
       blockedWriteRequestCount,
@@ -1017,6 +1028,8 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
       blockedWriteRequests: [],
       abortedDataRequestCount: 0,
       abortedDataRequests: [],
+      pendingDataRequestCount: 0,
+      pendingDataRequests: [],
       blockedTelemetryRequestCount: 0,
       suppressedSideEffectRequestCount: 0,
     }));
@@ -1055,6 +1068,8 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         blockedWriteRequests: [],
         abortedDataRequestCount: 0,
         abortedDataRequests: [],
+        pendingDataRequestCount: 0,
+        pendingDataRequests: [],
         blockedTelemetryRequestCount: 0,
         suppressedSideEffectRequestCount: 0,
       };
@@ -1157,6 +1172,8 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         result.blockedWriteRequests = readOnlyGuard.blockedWriteRequests(page);
         result.abortedDataRequestCount = dataRequests.abortedDataRequestCount;
         result.abortedDataRequests = dataRequests.abortedDataRequests;
+        result.pendingDataRequestCount = dataRequests.pendingDataRequestCount;
+        result.pendingDataRequests = dataRequests.pendingDataRequests;
         result.blockedTelemetryRequestCount = readOnlyGuard.blockedTelemetryCount(page);
         result.suppressedSideEffectRequestCount = readOnlyGuard.suppressedSideEffectCount(page);
         if (result.blockedWriteRequestCount > 0) {
@@ -1226,6 +1243,8 @@ async function exerciseReadOnlyNavigation(
     blockedWriteRequests: [],
     abortedDataRequestCount: 0,
     abortedDataRequests: [],
+    pendingDataRequestCount: 0,
+    pendingDataRequests: [],
     blockedTelemetryRequestCount: 0,
     suppressedSideEffectRequestCount: 0,
   };
@@ -1399,6 +1418,8 @@ async function exerciseReadOnlyNavigation(
     result.blockedWriteRequests = readOnlyGuard.blockedWriteRequests(page);
     result.abortedDataRequestCount = dataRequests.abortedDataRequestCount;
     result.abortedDataRequests = dataRequests.abortedDataRequests;
+    result.pendingDataRequestCount = dataRequests.pendingDataRequestCount;
+    result.pendingDataRequests = dataRequests.pendingDataRequests;
     result.blockedTelemetryRequestCount = readOnlyGuard.blockedTelemetryCount(page);
     result.suppressedSideEffectRequestCount = readOnlyGuard.suppressedSideEffectCount(page);
     result.vercelToolbarCspDiagnosticCount = environmentalConsoleErrorCount;
@@ -1459,6 +1480,8 @@ async function auditRoleActions(browser, role, storageState, resolvedPaths, mode
       blockedWriteRequests: [],
       abortedDataRequestCount: 0,
       abortedDataRequests: [],
+      pendingDataRequestCount: 0,
+      pendingDataRequests: [],
       blockedTelemetryRequestCount: 0,
       suppressedSideEffectRequestCount: 0,
     }));
@@ -1534,6 +1557,8 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         failureReasons: audit.row.failureReasons,
         abortedDataRequestCount: audit.row.abortedDataRequestCount,
         abortedDataRequests: audit.row.abortedDataRequests,
+        pendingDataRequestCount: audit.row.pendingDataRequestCount,
+        pendingDataRequests: audit.row.pendingDataRequests,
         ok: outcome.ok,
       };
     } catch (error) {
@@ -1557,6 +1582,8 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         failureReasons: ['access_probe_execution_failed'],
         abortedDataRequestCount: 0,
         abortedDataRequests: [],
+        pendingDataRequestCount: 0,
+        pendingDataRequests: [],
         ok: false,
         error: sanitizePortalDiagnostic(error?.message ?? String(error)),
       };

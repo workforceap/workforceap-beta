@@ -1468,7 +1468,7 @@ describe('portal row quality signals', () => {
         'summary',
       ])
     );
-    expect(schema.properties.schemaVersion.const).toBe('3.3.0');
+    expect(schema.properties.schemaVersion.const).toBe('3.4.0');
     expect(schema.required).toContain('attendedGates');
     expect(schema.$defs.roleResult.required).toContain('actionCoverage');
     expect(schema.$defs.roleResult.required).toContain('redirectCoverage');
@@ -1478,8 +1478,12 @@ describe('portal row quality signals', () => {
     expect(schema.$defs.routeRow.required).toContain('auditSuppressedStates');
     expect(schema.$defs.routeRow.required).toContain('readOnlyCapabilityActive');
     expect(schema.$defs.routeRow.required).toContain('abortedDataRequests');
+    expect(schema.$defs.routeRow.required).toContain('pendingDataRequestCount');
+    expect(schema.$defs.routeRow.required).toContain('pendingDataRequests');
     expect(schema.$defs.routeRow.required).toContain('blockedWriteRequests');
     expect(schema.$defs.routeRow.properties.abortedDataRequests.maxItems).toBe(10);
+    expect(schema.$defs.routeRow.properties.pendingDataRequests.maxItems).toBe(10);
+    expect(schema.$defs.pendingDataRequest.additionalProperties).toBe(false);
     expect(schema.$defs.routeRow.properties.blockedWriteRequests.maxItems).toBe(10);
     expect(schema.$defs.routeRow.properties.readOnlyCapabilityActive.type).toBe('boolean');
     expect(schema.$defs.routeRow.required).toContain('suppressedSideEffectRequestCount');
@@ -1497,8 +1501,11 @@ describe('portal row quality signals', () => {
     ]));
     expect(schema.$defs.accessProbe.required).toContain('failureReasons');
     expect(schema.$defs.accessProbe.required).toContain('abortedDataRequestCount');
+    expect(schema.$defs.accessProbe.required).toContain('pendingDataRequestCount');
     expect(schema.$defs.actionResult.required).toContain('abortedDataRequestCount');
+    expect(schema.$defs.actionResult.required).toContain('pendingDataRequestCount');
     expect(schema.$defs.redirectResult.required).toContain('abortedDataRequestCount');
+    expect(schema.$defs.redirectResult.required).toContain('pendingDataRequestCount');
     expect(schema.$defs.redirectResult.required).toContain('pageErrors');
     expect(schema.$defs.redirectResult.required).toContain('consoleErrors');
     expect(schema.properties.summary.anyOf[1].required).toContain('abortedDataRequestCount');
