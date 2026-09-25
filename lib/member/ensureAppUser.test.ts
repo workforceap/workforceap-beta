@@ -16,6 +16,9 @@ function installProvisionMocks(t: { after: (fn: () => void) => void }) {
 
   const state = {
     findUniqueResult: null as { id: string; organizationId: string; profile: { userId: string } | null } | null,
+    postConflictReadback: undefined as { id: string; organizationId: string; profile: { userId: string } | null } | null | undefined,
+    findUniqueCalls: [] as Array<{ where: { id: string } }>,
+    upsertError: null as { code: string; message: string } | null,
     accountRoles: [] as string[],
     hasEmployer: false,
     hasPartner: false,
@@ -29,7 +32,12 @@ function installProvisionMocks(t: { after: (fn: () => void) => void }) {
     }>,
   };
 
-  userDelegate.findUnique = async () => state.findUniqueResult;
+  userDelegate.findUnique = async (...args: unknown[]) => {
+    state.findUniqueCalls.push(args[0] as { where: { id: string } });
+    return state.findUniqueCalls.length > 1 && state.postConflictReadback !== undefined
+      ? state.postConflictReadback
+      : state.findUniqueResult;
+  };
   type TxCallback = (tx: {
     user: { upsert: (args: unknown) => Promise<unknown> };
     role: { findUnique: () => Promise<{ id: string }>; create: () => Promise<{ id: string }> };
@@ -47,6 +55,7 @@ function installProvisionMocks(t: { after: (fn: () => void) => void }) {
           update: Record<string, unknown>;
         }) => {
           state.upserts.push(args);
+          if (state.upsertError) throw state.upsertError;
           return {};
         },
         findUniqueOrThrow: async () => ({
@@ -188,4 +197,42 @@ test('existing counselor association without a role row does not become a member
 
   assert.equal(state.memberGrants, 0);
   assert.deepEqual(state.profileCreates, [{ userId: 'u-counselor', role: 'counselor' }]);
+});
+
+test('email P2002 with no rows for this Auth ID reports a sanitized identity conflict', async (t) => {
+  const state = installProvisionMocks(t);
+  state.upsertError = { code: 'P2002', message: 'Unique email belongs to another Auth ID' };
+  state.postConflictReadback = null;
+
+  await assert.rejects(
+    ensureAppUserProvisioned({ id: 'u-collision', email: 'synthetic@example.test' }, { organizationId: ORG_A }),
+    { message: 'APP_USER_PROVISION_IDENTITY_CONFLICT' },
+  );
+  assert.equal(state.findUniqueCalls.length, 2);
+  assert.deepEqual(state.findUniqueCalls[1].where, { id: 'u-collision' });
+  assert.equal(state.profileCreates.length, 0);
+});
+
+test('concurrent P2002 succeeds only after this Auth ID has both app rows', async (t) => {
+  const state = installProvisionMocks(t);
+  state.upsertError = { code: 'P2002', message: 'Unique user ID from a concurrent request' };
+  state.postConflictReadback = {
+    id: 'u-race', organizationId: ORG_A, profile: { userId: 'u-race' },
+  };
+
+  await ensureAppUserProvisioned({ id: 'u-race', email: 'synthetic@example.test' }, { organizationId: ORG_A });
+  assert.equal(state.findUniqueCalls.length, 2);
+  assert.deepEqual(state.findUniqueCalls[1].where, { id: 'u-race' });
+});
+
+test('P2002 with this Auth ID but no profile is not reported as provisioned', async (t) => {
+  const state = installProvisionMocks(t);
+  state.upsertError = { code: 'P2002', message: 'Unique constraint failed' };
+  state.postConflictReadback = { id: 'u-incomplete', organizationId: ORG_A, profile: null };
+
+  await assert.rejects(
+    ensureAppUserProvisioned({ id: 'u-incomplete', email: 'synthetic@example.test' }, { organizationId: ORG_A }),
+    { message: 'APP_USER_PROVISION_IDENTITY_CONFLICT' },
+  );
+  assert.equal(state.findUniqueCalls.length, 2);
 });

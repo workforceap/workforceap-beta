@@ -21,7 +21,7 @@ export type EnsureAppUserOptions = {
   readOnlyAudit?: boolean;
 };
 
-function isUniquePkError(err: unknown): boolean {
+function isUniqueConstraintError(err: unknown): boolean {
   return (
     typeof err === 'object' &&
     err !== null &&
@@ -46,9 +46,10 @@ function isUniquePkError(err: unknown): boolean {
  * When an existing user has a non-member role or portal association but no
  * profile, it restores that profile without granting a baseline member role.
  * The write is one transaction. It is idempotent — a no-op when the rows already
- * exist — and tolerates concurrent creation (duplicate-PK from a racing
- * request is treated as success). Existing `users.organizationId` is
- * never overwritten.
+ * exist — and tolerates concurrent creation only after confirming that this
+ * Auth ID now has both app rows. A unique-email collision with another Auth
+ * ID must not be mistaken for a successful provision. Existing
+ * `users.organizationId` is never overwritten.
  *
  * Writes are wrapped with withDbRetry using isConnectionAcquisitionError so a
  * transient pooler blip while *acquiring* a connection is retried, but an
@@ -131,9 +132,19 @@ export async function ensureAppUserProvisioned(
       { shouldRetry: isConnectionAcquisitionError },
     );
   } catch (err) {
-    // A concurrent request may have provisioned the rows between our read and
-    // this write (duplicate-PK). Treat that as success.
-    if (isUniquePkError(err)) return;
+    // P2002 may be a concurrent provision for this Auth ID, or an email already
+    // owned by a different Auth ID. Only the committed same-ID User + Profile
+    // proves that the former case completed successfully.
+    if (isUniqueConstraintError(err)) {
+      const committed = await withDbRetry(() =>
+        prisma.user.findUnique({
+          where: { id: user.id },
+          select: { id: true, profile: { select: { userId: true } } },
+        }),
+      );
+      if (committed?.id === user.id && committed.profile?.userId === user.id) return;
+      throw new Error('APP_USER_PROVISION_IDENTITY_CONFLICT');
+    }
     throw err;
   }
 }

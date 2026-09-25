@@ -53,6 +53,11 @@ the baseline member role. An Auth identity with no app row still falls back to
 member provisioning; its intended role cannot be established from Auth identity
 alone and needs a separate enrollment/recovery decision.
 
+`User.email` is also unique. If a provisioning write hits P2002, recovery only
+accepts it as a concurrent success after reading both `User` and `Profile` by
+the same verified Auth ID. A same-email row under another ID remains an identity
+conflict; this path does not relink identities or change tenant ownership.
+
 ## Trust and transaction boundaries
 
 Read [tenant scope](../../lib/tenant/withTenantScope.ts), [organization helpers](../../lib/tenant/organization.ts), [request organization resolution](../../lib/tenant/resolveOrgFromRequest.ts), [Prisma](../../lib/db/prisma.ts), and [request GUC context](../../lib/db/withRequestGuc.ts).
