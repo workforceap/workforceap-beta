@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { TextInput } from '@astryxdesign/core/TextInput';
 import { Button } from '@astryxdesign/core/Button';
@@ -66,6 +66,8 @@ export interface CounselorsRosterKitProps {
   atRiskOwned: number;
   /** Avg first-response caption (e.g. "3.2h") or "—". */
   avgResponse: string;
+  /** Add-counselor form, rendered under the roster (WAP-193). */
+  addCounselor?: ReactNode;
 }
 
 const LOAD_TOKEN_COLOR: Record<CounselorRow['load'], TokenColor> = {
@@ -84,6 +86,7 @@ export function CounselorsRosterKit({
   pageSize = 50,
   matchingTotal = total,
   searchQuery = '',
+  addCounselor,
 }: CounselorsRosterKitProps) {
   const [query, setQuery] = useState(searchQuery);
   const pageHref = (page: number) => `/admin/counselors?${new URLSearchParams({ search: searchQuery, page: String(page) })}`;
@@ -301,6 +304,11 @@ export function CounselorsRosterKit({
         {currentPage > 1 && <Link className="wa-kit-cta wa-kit-cta--ghost" href={pageHref(currentPage - 1)}>Previous page</Link>}
         {currentPage * pageSize < matchingTotal && <Link className="wa-kit-cta wa-kit-cta--ghost" href={pageHref(currentPage + 1)}>Next page</Link>}
       </nav>
+      {addCounselor ? (
+        <section aria-label="Add counselor" style={{ marginTop: 32 }}>
+          {addCounselor}
+        </section>
+      ) : null}
     </DesignSurface>
   );
 }
