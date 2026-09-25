@@ -21,6 +21,32 @@ const PAGE_MARKERS = new Set([
   'wa-kit-card', 'portal-breadcrumb', 'other',
 ]);
 
+/**
+ * React DOM 19.2.4 passes "text" or "HTML" as args[0] for production #418.
+ * Accept only its exact decoder URL shape; never return a URL or an argument.
+ * This is a broad mismatch category, not a component or root-cause location.
+ */
+export function safeReact418MismatchKinds(pageErrors) {
+  if (!Array.isArray(pageErrors)) return [];
+  const kinds = new Set();
+  for (const message of pageErrors) {
+    if (typeof message !== 'string' || message.length > 8_192) continue;
+    const match = /^Minified React error #418; visit (https:\/\/react\.dev\/errors\/418\?\S+) for the full message\b/.exec(message);
+    if (!match) continue;
+    try {
+      const url = new URL(match[1]);
+      const params = [...url.searchParams.entries()];
+      if (url.origin !== 'https://react.dev' || url.pathname !== '/errors/418' || url.hash ||
+          params.length !== 2 || params[0][0] !== 'args[]' || params[1][0] !== 'args[]' ||
+          params[1][1] !== '') continue;
+      if (params[0][1] === 'HTML' || params[0][1] === 'text') kinds.add(params[0][1]);
+    } catch {
+      // Browser-owned error messages are untrusted diagnostic input.
+    }
+  }
+  return [...kinds].sort();
+}
+
 function manifestPath(value) {
   if (typeof value !== 'string' || !value.startsWith('/')) return null;
   try {
@@ -153,7 +179,7 @@ function safeNavDecision(trace, prefix, decisionKey, sourceSuffix) {
 }
 
 /** Rebuild the browser-owned trace from approved primitives before JSON logging. */
-export function sanitizePortalHydrationTrace(trace, { role, viewport, artifactPath }) {
+export function sanitizePortalHydrationTrace(trace, { role, viewport, artifactPath, rawPageErrors }) {
   if (!trace || typeof trace !== 'object' || Array.isArray(trace) ||
       trace.auditTraceVersion !== 1) return null;
   return {
@@ -174,6 +200,7 @@ export function sanitizePortalHydrationTrace(trace, { role, viewport, artifactPa
     firstObservedPage: safePageStructure(trace.firstObservedPage),
     detachedMainPageCandidate: safePageStructure(trace.detachedMainPageCandidate),
     atErrorPage: safePageStructure(trace.atErrorPage),
+    react418MismatchKinds: safeReact418MismatchKinds(rawPageErrors),
   };
 }
 
@@ -183,6 +210,7 @@ export async function logPortalHydrationTrace({
   enabled,
   auditMode,
   pageErrors,
+  rawPageErrors,
   role,
   viewport,
   artifactPath,
@@ -196,7 +224,9 @@ export async function logPortalHydrationTrace({
   }
   try {
     const trace = await page.evaluate(() => window.__waPortalHydrationTrace ?? null);
-    const safeTrace = sanitizePortalHydrationTrace(trace, { role, viewport, artifactPath });
+    const safeTrace = sanitizePortalHydrationTrace(trace, {
+      role, viewport, artifactPath, rawPageErrors,
+    });
     if (!safeTrace) return false;
     write('[portal-hydration-structure]', JSON.stringify(safeTrace));
     return true;

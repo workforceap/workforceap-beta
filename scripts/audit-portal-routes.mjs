@@ -897,6 +897,7 @@ async function auditRoute(
       await logPortalHydrationTrace({
         page, enabled: traceHydration, auditMode: requestedMode,
         pageErrors: row.pageErrors, role, viewport: viewportName, artifactPath,
+        rawPageErrors: pageErrors,
       });
     }
     const discoveredRoutes = row.ok
@@ -1220,6 +1221,7 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           await logPortalHydrationTrace({
             page, enabled: traceHydration, auditMode: requestedMode,
             pageErrors: result.pageErrors, role, viewport: 'desktop', artifactPath: entry.path,
+            rawPageErrors: pageErrors,
           });
         }
         await page.close();
