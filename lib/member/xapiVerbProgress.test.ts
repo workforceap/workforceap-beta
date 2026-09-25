@@ -19,6 +19,28 @@ describe('inferCourseProgressStatusFromXapiVerb', () => {
     expect(inferCourseProgressStatusFromXapiVerb(s)).toBe(CourseProgressStatus.COMPLETED);
   });
 
+  test.each(['completed', 'passed'])('item %s does not complete the course', (verb) => {
+    const s = minimalParsed({
+      activityType: 'item',
+      courseraCourseId: 'course-123',
+      verbId: `http://adlnet.gov/expapi/verbs/${verb}`,
+      resultCompletion: true,
+      resultSuccess: true,
+    });
+    expect(inferCourseProgressStatusFromXapiVerb(s)).toBeNull();
+  });
+
+  test('item progress still starts the course even if its result says the item is complete', () => {
+    const s = minimalParsed({
+      activityType: 'item',
+      courseraCourseId: 'course-123',
+      verbId: 'http://adlnet.gov/expapi/verbs/progressed',
+      resultCompletion: true,
+      resultSuccess: true,
+    });
+    expect(inferCourseProgressStatusFromXapiVerb(s)).toBe(CourseProgressStatus.IN_PROGRESS);
+  });
+
   test('progressed → IN_PROGRESS', () => {
     const s = minimalParsed({
       verbId: 'http://adlnet.gov/expapi/verbs/progressed',

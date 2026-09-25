@@ -363,6 +363,75 @@ describe('handleInboundParsedStatement program resolution', () => {
     expect(detectTrainingMilestone).not.toHaveBeenCalled();
   });
 
+  it.each(['completed', 'passed'])('does not orchestrate item %s as course completion', async (verb) => {
+    const { isXapiCompletionVerb: classify } = await vi.importActual<typeof import('@/lib/xapi/statements')>(
+      '@/lib/xapi/statements',
+    );
+    vi.mocked(isXapiCompletionVerb).mockImplementation(classify);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: 'org-1',
+      deletedAt: null,
+      enrolledProgram: 'primary-program',
+      courseEnrollments: [{ programSlug: 'primary-program', isPrimary: true }],
+    } as never);
+
+    const result = await handleInboundParsedStatement(
+      {
+        email: 'member@example.com',
+        courseraCourseId: 'course-123',
+        activityType: 'item',
+        statementId: `statement-item-${verb}`,
+        verbId: `http://adlnet.gov/expapi/verbs/${verb}`,
+        resultCompletion: true,
+        resultSuccess: true,
+        rawStatement: {},
+      },
+      { organizationId: 'org-1', statementHash: `hash-item-${verb}` },
+    );
+
+    expect(result.completions).toEqual([]);
+    expect(completeMemberCourse).not.toHaveBeenCalled();
+    expect(upsertCourseProgressFromXapiStatement).toHaveBeenCalledTimes(1);
+    expect(recordXapiEvent).toHaveBeenCalledWith(expect.objectContaining({
+      completionStatus: 'ignored',
+      statementId: `statement-item-${verb}`,
+    }));
+    expect(markXapiStatementProcessed).toHaveBeenCalledWith(
+      `statement-item-${verb}`,
+      `hash-item-${verb}`,
+    );
+  });
+
+  it.each(['completed', 'passed', 'experienced'])('does not orchestrate untyped item %s as course completion', async (verb) => {
+    const { isXapiCompletionVerb: classify, parseXapiStatement } =
+      await vi.importActual<typeof import('@/lib/xapi/statements')>('@/lib/xapi/statements');
+    vi.mocked(isXapiCompletionVerb).mockImplementation(classify);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: 'org-1',
+      deletedAt: null,
+      enrolledProgram: 'primary-program',
+      courseEnrollments: [{ programSlug: 'primary-program', isPrimary: true }],
+    } as never);
+    const parsed = parseXapiStatement({
+      id: `statement-untyped-item-${verb}`,
+      actor: { mbox: 'mailto:member@example.com' },
+      verb: { id: `http://adlnet.gov/expapi/verbs/${verb}` },
+      object: { id: 'https://www.coursera.org/learn/course-123/item/lecture-1' },
+      context: { extensions: { 'http://coursera.org/xapi/extensions/courseId': 'course-123' } },
+      result: { completion: true, success: true },
+    });
+    expect(parsed?.activityType).toBe('item');
+
+    const result = await handleInboundParsedStatement(
+      parsed!,
+      { organizationId: 'org-1', statementHash: `hash-untyped-item-${verb}` },
+    );
+
+    expect(result.completions).toEqual([]);
+    expect(completeMemberCourse).not.toHaveBeenCalled();
+    expect(recordXapiEvent).toHaveBeenCalledWith(expect.objectContaining({ completionStatus: 'ignored' }));
+  });
+
   it('fails closed before progress or rewards when a resolved mapping points outside the request tenant', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       organizationId: 'org-2',
