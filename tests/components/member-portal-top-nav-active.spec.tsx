@@ -7,7 +7,7 @@ import MemberPortalTopNav from '@/components/portal/MemberPortalTopNav';
 /**
  * WAP-263 items 1 and 2: the member phone nav (MemberPortalTopNav) marks the
  * same destination current as the desktop rail.
- *   1. On /es, /fr and /pt the current tab and every destination must retain
+ *   1. On /en, /es, /fr and /pt the current tab and every destination must retain
  *      the explicit URL locale, including the Messages advisor handoff.
  *   2. Rail aliases count: /dashboard/ai-tools/application-tracker belongs to
  *      Job applications, not to AI Career Tools.
@@ -58,7 +58,7 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     expect(currentLabels(strip)).toEqual(['AI Career Tools']);
   });
 
-  it.each(['es', 'fr', 'pt'])('preserves /%s on every phone tab, including the advisor handoff', (locale) => {
+  it.each(['en', 'es', 'fr', 'pt'])('preserves /%s on every phone tab, including the advisor handoff', (locale) => {
     const strip = renderAt(`/${locale}/dashboard`, locale);
     expect(strip.getByRole('link', { name: 'Messages' })).toHaveAttribute('href', `/${locale}/dashboard/messages`);
     expect(strip.getByRole('link', { name: 'Home' })).toHaveAttribute('href', `/${locale}/dashboard`);
