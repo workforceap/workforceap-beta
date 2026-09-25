@@ -875,6 +875,45 @@ describe('read-only portal action contracts', () => {
     expect(redirectDestinationFailureReasons({ ...destination, blockedWriteRequestCount: 1 })).toContain('non_get_request_blocked');
   });
 
+  it('verifies the public partner sign-up alias by its final form and exact fragment', () => {
+    expect(REDIRECT_ONLY_PATHS.partner).toContainEqual({
+      path: '/partner/signup',
+      target: '/partners#partner-signup',
+      reason: 'legacy_alias',
+    });
+    const destination = {
+      finalUrl: 'https://preview.example.test/en/partners#partner-signup',
+      expectedTarget: '/partners#partner-signup',
+      trustedOrigin: 'https://preview.example.test',
+      documentStatus: 200,
+      inspection: {
+        readOnlyCapabilityActive: false,
+        publicPartnerSignupFormPresent: true,
+        appReady: true,
+        h1Count: 1,
+        errorFallbackDetected: false,
+        errorFallbackStates: [],
+      },
+    };
+    expect(redirectDestinationFailureReasons(destination)).toEqual([]);
+    expect(redirectDestinationFailureReasons({
+      ...destination,
+      inspection: { ...destination.inspection, publicPartnerSignupFormPresent: false },
+    })).toContain('public_partner_signup_form_missing');
+    expect(redirectDestinationFailureReasons({
+      ...destination,
+      finalUrl: 'https://preview.example.test/en/partners',
+    })).toContain('redirect_target_mismatch');
+    expect(redirectDestinationFailureReasons({
+      ...destination,
+      finalUrl: 'https://other.example.test/en/partners#partner-signup',
+    })).toContain('redirect_target_mismatch');
+    expect(redirectDestinationFailureReasons({ ...destination, documentStatus: 500 }))
+      .toContain('redirect_destination_document_not_200');
+    expect(redirectDestinationFailureReasons({ ...destination, blockedWriteRequestCount: 1 }))
+      .toContain('non_get_request_blocked');
+  });
+
   it('does not excuse canceled GETs when a redirect target is unhealthy', () => {
     const destination = {
       finalUrl: 'https://preview.example.test/admin',

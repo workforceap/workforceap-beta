@@ -224,6 +224,7 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
     ].map((element) => element.getAttribute('data-portal-audit-suppressed') || 'unknown');
     const normalizedBodyText = (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim();
 
+    const partnerSignupForm = document.getElementById('partner-signup-form');
     return {
       bodyText: document.body?.innerText ?? '',
       readOnlyAuditDocument:
@@ -232,6 +233,11 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
       errorFallbackDetected: errorFallbackStates.length > 0,
       errorFallbackStates: [...new Set(errorFallbackStates)],
       auditSuppressedStates: [...new Set(auditSuppressedStates)],
+      publicPartnerSignupFormPresent:
+        partnerSignupForm instanceof HTMLFormElement &&
+        isVisible(partnerSignupForm) &&
+        Boolean(partnerSignupForm.querySelector('input[name="organization_name"]')) &&
+        Boolean(partnerSignupForm.querySelector('button[type="submit"]')),
       h1Count: visibleH1Count,
       horizontalOverflowPx: Math.max(0, Math.ceil(rootWidth - viewportWidth)),
       interactiveControlCount: controls.length,

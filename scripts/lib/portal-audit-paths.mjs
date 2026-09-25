@@ -533,10 +533,10 @@ export const REDIRECT_ONLY_PATHS = {
       reason: 'renamed_route_alias',
     },
     {
-      // Signed-in partners following an old link land on the public sign-up
-      // page instead of the portal 404 (partner audit 2026-09-20).
+      // Next redirects this legacy URL before the protected partner layout.
+      // The public Astro page owns the actual registration form.
       path: '/partner/signup',
-      target: '/partner-signup',
+      target: '/partners#partner-signup',
       reason: 'legacy_alias',
     },
   ],
