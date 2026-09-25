@@ -134,3 +134,74 @@ test('hydration log requires the opt-in trace version', async () => {
   assert.equal(sanitizePortalHydrationTrace({ first: [] }, context), null);
   assert.equal(sanitizePortalHydrationTrace({ auditTraceVersion: '1', first: [] }, context), null);
 });
+
+test('hydration logging stays disabled outside opt-in isolated Preview and without #418', async () => {
+  const { logPortalHydrationTrace } = await import('./portal-hydration-log.mjs');
+  let evaluations = 0;
+  const writes = [];
+  const args = {
+    page: { evaluate: async () => { evaluations += 1; return { auditTraceVersion: 1 }; } },
+    pageErrors: ['Minified React error #418'],
+    role: 'partner', viewport: 'desktop', artifactPath: '/partner/members',
+    write: (...parts) => writes.push(parts),
+  };
+
+  assert.equal(await logPortalHydrationTrace({ ...args, enabled: false, auditMode: 'isolated_preview' }), false);
+  assert.equal(await logPortalHydrationTrace({ ...args, enabled: true, auditMode: 'local' }), false);
+  assert.equal(await logPortalHydrationTrace({ ...args, enabled: true, auditMode: 'production_canary' }), false);
+  assert.equal(await logPortalHydrationTrace({
+    ...args, enabled: true, auditMode: 'isolated_preview', pageErrors: ['Unrelated page error'],
+  }), false);
+  assert.equal(evaluations, 0);
+  assert.deepEqual(writes, []);
+});
+
+test('redirect hydration logging emits only Node-sanitized route templates and structure', async () => {
+  const { logPortalHydrationTrace } = await import('./portal-hydration-log.mjs');
+  const secret = 'PRIVATE_MEMBER_RESUME_123';
+  const browserTrace = {
+    auditTraceVersion: 1,
+    initialPathname: '/partner/members/member-123',
+    errorPathname: `/partner/members/member-123?token=${secret}`,
+    firstMarketingNavPathname: '/partner/members/member-123',
+    firstMarketingNavNullPath: false,
+    firstMarketingNavHidden: true,
+    first: [{
+      phase: 'react-error', bodyTags: ['main', secret], bodyChildCount: 2,
+      mainCount: 1, mainBodyIndex: 0, mainTags: ['div'], mainChildCount: 1,
+      portalTouchFirst: true, shellCount: 1, shellTags: ['header'], shellChildCount: 1,
+      memberResume: secret,
+    }],
+    memberResume: secret,
+  };
+  const writes = [];
+  const captured = await logPortalHydrationTrace({
+    page: { evaluate: async () => browserTrace },
+    enabled: true, auditMode: 'isolated_preview',
+    pageErrors: ['Minified React error #418'],
+    role: 'partner', viewport: 'desktop', artifactPath: '/partner/members',
+    write: (...parts) => writes.push(parts),
+  });
+
+  assert.equal(captured, true);
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0][0], '[portal-hydration-structure]');
+  const payload = JSON.parse(writes[0][1]);
+  assert.equal(payload.path, '/partner/members');
+  assert.equal(payload.errorPathname, '/partner/members/[id]');
+  assert.deepEqual(payload.first[0].bodyTags, ['main', 'unknown']);
+  assert.equal(payload.firstMarketingNav.hidden, true);
+  assert.doesNotMatch(writes[0][1], /PRIVATE_MEMBER_RESUME_123|member-123|token=/);
+});
+
+test('trace capture failure does not change the audit verdict', async () => {
+  const { logPortalHydrationTrace } = await import('./portal-hydration-log.mjs');
+  const writes = [];
+  assert.equal(await logPortalHydrationTrace({
+    page: { evaluate: async () => { throw new Error('browser context closed'); } },
+    enabled: true, auditMode: 'isolated_preview',
+    pageErrors: ['Hydration failed'], role: 'member', viewport: 'desktop', artifactPath: '/dashboard',
+    write: (...parts) => writes.push(parts),
+  }), false);
+  assert.deepEqual(writes, []);
+});

@@ -73,7 +73,7 @@ import {
   validatePortalAuditTarget,
 } from './lib/portal-audit-target.mjs';
 import { installPortalHydrationTrace } from './lib/portal-hydration-trace.mjs';
-import { sanitizePortalHydrationTrace } from './lib/portal-hydration-log.mjs';
+import { logPortalHydrationTrace } from './lib/portal-hydration-log.mjs';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const root = join(scriptDirectory, '..');
@@ -848,14 +848,11 @@ async function auditRoute(
           ...rowInput,
           pageErrors: uniqueDiagnostics([...rowInput.pageErrors, ...dataRequests.abortedErrors]),
         });
-    if (traceHydration && row.pageErrors.some((message) => /Minified React error #418|Hydration failed/i.test(message))) {
-      const trace = await page.evaluate(() => window.__waPortalHydrationTrace ?? null).catch(() => null);
-      if (trace) {
-        const safeTrace = sanitizePortalHydrationTrace(trace, {
-          role, viewport: viewportName, artifactPath,
-        });
-        if (safeTrace) console.error('[portal-hydration-structure]', JSON.stringify(safeTrace));
-      }
+    if (traceHydration) {
+      await logPortalHydrationTrace({
+        page, enabled: traceHydration, auditMode: requestedMode,
+        pageErrors: row.pageErrors, role, viewport: viewportName, artifactPath,
+      });
     }
     const discoveredRoutes = row.ok
       ? resolveDynamicRouteCandidates({
@@ -1070,6 +1067,7 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
       }
 
       const page = await context.newPage();
+      if (traceHydration) await page.addInitScript(installPortalHydrationTrace).catch(() => {});
       const dataRequests = trackSameOriginDataRequests(page);
       const consoleErrors = [];
       const pageErrors = [];
@@ -1166,6 +1164,12 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         }
         result.failureReasons = [...new Set(result.failureReasons)];
         dataRequests.detach();
+        if (traceHydration) {
+          await logPortalHydrationTrace({
+            page, enabled: traceHydration, auditMode: requestedMode,
+            pageErrors: result.pageErrors, role, viewport: 'desktop', artifactPath: entry.path,
+          });
+        }
         await page.close();
       }
       results.push(result);

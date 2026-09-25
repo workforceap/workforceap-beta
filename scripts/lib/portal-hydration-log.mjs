@@ -134,3 +134,32 @@ export function sanitizePortalHydrationTrace(trace, { role, viewport, artifactPa
     atError: safeSample(trace.atError),
   };
 }
+
+/** Best-effort, opt-in diagnostic only. Browser-owned values never reach the log directly. */
+export async function logPortalHydrationTrace({
+  page,
+  enabled,
+  auditMode,
+  pageErrors,
+  role,
+  viewport,
+  artifactPath,
+  write = console.error,
+}) {
+  if (!enabled || auditMode !== 'isolated_preview' ||
+      !Array.isArray(pageErrors) ||
+      !pageErrors.some((message) =>
+        typeof message === 'string' && /Minified React error #418|Hydration failed/i.test(message))) {
+    return false;
+  }
+  try {
+    const trace = await page.evaluate(() => window.__waPortalHydrationTrace ?? null);
+    const safeTrace = sanitizePortalHydrationTrace(trace, { role, viewport, artifactPath });
+    if (!safeTrace) return false;
+    write('[portal-hydration-structure]', JSON.stringify(safeTrace));
+    return true;
+  } catch {
+    // Trace capture must never change an audit verdict or mask its original failure.
+    return false;
+  }
+}
