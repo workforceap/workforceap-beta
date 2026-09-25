@@ -18,6 +18,7 @@ export default function PartnerPortalShell({
   orgPrimaryColor,
   orgAccentColor,
   superAdmin,
+  knownSuperAdmin,
   superAdminImpersonating,
   portalRoles,
   readOnlyAudit = false,
@@ -30,6 +31,8 @@ export default function PartnerPortalShell({
   orgPrimaryColor?: string | null;
   orgAccentColor?: string | null;
   superAdmin?: boolean;
+  /** Server-resolved platform identity; may differ from contextual partner preview access. */
+  knownSuperAdmin?: boolean;
   superAdminImpersonating?: boolean;
   portalRoles?: PortalSwitcherRole[];
   readOnlyAudit?: boolean;
@@ -54,6 +57,7 @@ export default function PartnerPortalShell({
       orgAccentColor={orgAccentColor ?? undefined}
       attributionLabel="Powered by WorkforceAP"
       superAdmin={superAdmin}
+      knownSuperAdmin={knownSuperAdmin}
       superAdminImpersonating={superAdminImpersonating}
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}

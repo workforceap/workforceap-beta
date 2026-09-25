@@ -43,6 +43,7 @@ export default async function PartnerPortalLayout({ children }: { children: Reac
       orgPrimaryColor={ctx.orgBranding.primaryColor}
       orgAccentColor={ctx.orgBranding.accentColor}
       superAdmin={superUser && !ctx.hasDirectPartnerLink}
+      knownSuperAdmin={superUser}
       superAdminImpersonating={superAdminImpersonating}
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}

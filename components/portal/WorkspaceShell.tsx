@@ -105,6 +105,8 @@ export default function WorkspaceShell({
   contextLabel,
   minimalMobileHeader = false,
   superAdmin,
+  knownSuperAdmin,
+  knownIsAdmin,
   superAdminImpersonating,
   superAdminBackHref,
   superAdminBackLabel,
@@ -141,6 +143,10 @@ export default function WorkspaceShell({
   /** Optional square logo next to company name (employer portal). */
   contextLogoUrl?: string | null;
   superAdmin?: boolean;
+  /** Server-resolved platform super-admin identity when `superAdmin` is a contextual portal flag. */
+  knownSuperAdmin?: boolean;
+  /** Server-resolved effective role is exactly admin; separate from admin access. */
+  knownIsAdmin?: boolean;
   /** True when super_admin is viewing another org (cookie), not their own portal row */
   superAdminImpersonating?: boolean;
   superAdminBackHref?: string;
@@ -223,7 +229,7 @@ export default function WorkspaceShell({
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isCollapsedDesktop = collapsed && wide;
   const isMobileDrawer = drawerOpen && !wide;
-  const isSuperAdmin = useIsSuperAdmin(superAdmin);
+  const isSuperAdmin = useIsSuperAdmin(knownSuperAdmin ?? superAdmin);
   // Admin rail sections open while a guided tour runs so every anchor is visible
   // (no-op value when no TourProvider is mounted).
   const { isOpen: tourOpen } = useTour();
@@ -588,6 +594,7 @@ export default function WorkspaceShell({
             badges={badges}
             hidePublicSite={Boolean(marketingSiteHref)}
             readOnlyAudit={readOnlyAudit}
+            knownIsAdmin={knownIsAdmin}
             helpTourKey={helpTourKey}
             helpGuideHref={helpGuideHref}
           />
