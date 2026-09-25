@@ -25,7 +25,7 @@
   ],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": "3.3.0" },
+    "schemaVersion": { "const": "3.4.0" },
     "status": { "enum": ["passed", "partial", "failed", "blocked"] },
     "baseURL": { "type": ["string", "null"] },
     "generatedAt": { "type": "string", "format": "date-time" },
@@ -156,6 +156,18 @@
         "rsc": { "type": "boolean" }
       }
     },
+    "pendingDataRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "path", "resourceType", "prefetch", "rsc"],
+      "properties": {
+        "method": { "enum": ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE", "OTHER"] },
+        "path": { "type": "string", "pattern": "^/", "maxLength": 240 },
+        "resourceType": { "enum": ["fetch", "xhr"] },
+        "prefetch": { "type": "boolean" },
+        "rsc": { "type": "boolean" }
+      }
+    },
     "viewport": {
       "type": "object",
       "additionalProperties": false,
@@ -213,7 +225,7 @@
     },
     "accessProbe": {
       "type": "object",
-      "required": ["sourceRole", "targetRole", "expectation", "requestedPath", "finalPathname", "targetUsable", "denialEvidence", "failureReasons", "abortedDataRequestCount", "abortedDataRequests", "ok"],
+      "required": ["sourceRole", "targetRole", "expectation", "requestedPath", "finalPathname", "targetUsable", "denialEvidence", "failureReasons", "abortedDataRequestCount", "abortedDataRequests", "pendingDataRequestCount", "pendingDataRequests", "ok"],
       "properties": {
         "sourceRole": { "$ref": "#/$defs/roleName" },
         "targetRole": { "$ref": "#/$defs/roleName" },
@@ -234,6 +246,8 @@
         "failureReasons": { "type": "array", "items": { "type": "string" } },
         "abortedDataRequestCount": { "type": "integer", "minimum": 0 },
         "abortedDataRequests": { "type": "array", "items": { "$ref": "#/$defs/abortedDataRequest" }, "maxItems": 10 },
+        "pendingDataRequestCount": { "type": "integer", "minimum": 0 },
+        "pendingDataRequests": { "type": "array", "items": { "$ref": "#/$defs/pendingDataRequest" }, "maxItems": 10 },
         "ok": { "type": "boolean" },
         "error": { "type": "string" }
       }
@@ -278,6 +292,8 @@
         "blockedWriteRequests",
         "abortedDataRequestCount",
         "abortedDataRequests",
+        "pendingDataRequestCount",
+        "pendingDataRequests",
         "blockedTelemetryRequestCount",
         "suppressedSideEffectRequestCount",
         "unnamedInteractiveControls"
@@ -304,6 +320,8 @@
         "blockedWriteRequests": { "type": "array", "items": { "$ref": "#/$defs/blockedWriteRequest" }, "maxItems": 10 },
         "abortedDataRequestCount": { "type": "integer", "minimum": 0 },
         "abortedDataRequests": { "type": "array", "items": { "$ref": "#/$defs/abortedDataRequest" }, "maxItems": 10 },
+        "pendingDataRequestCount": { "type": "integer", "minimum": 0 },
+        "pendingDataRequests": { "type": "array", "items": { "$ref": "#/$defs/pendingDataRequest" }, "maxItems": 10 },
         "blockedTelemetryRequestCount": { "type": "integer", "minimum": 0 },
         "suppressedSideEffectRequestCount": { "type": "integer", "minimum": 0 },
         "unnamedInteractiveControls": { "type": "array", "items": { "type": "object" } }
@@ -329,7 +347,7 @@
     "actionResult": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "kind", "required", "requiredWhenApplicable", "sourcePath", "target", "status", "reason", "finalUrl", "failureReasons", "blockedWriteRequestCount", "blockedWriteRequests", "abortedDataRequestCount", "abortedDataRequests", "blockedTelemetryRequestCount", "suppressedSideEffectRequestCount"],
+      "required": ["id", "kind", "required", "requiredWhenApplicable", "sourcePath", "target", "status", "reason", "finalUrl", "failureReasons", "blockedWriteRequestCount", "blockedWriteRequests", "abortedDataRequestCount", "abortedDataRequests", "pendingDataRequestCount", "pendingDataRequests", "blockedTelemetryRequestCount", "suppressedSideEffectRequestCount"],
       "properties": {
         "id": { "type": "string" },
         "kind": { "enum": ["read_only_navigation", "read_only_discovered_navigation"] },
@@ -345,6 +363,8 @@
         "blockedWriteRequests": { "type": "array", "items": { "$ref": "#/$defs/blockedWriteRequest" }, "maxItems": 10 },
         "abortedDataRequestCount": { "type": "integer", "minimum": 0 },
         "abortedDataRequests": { "type": "array", "items": { "$ref": "#/$defs/abortedDataRequest" }, "maxItems": 10 },
+        "pendingDataRequestCount": { "type": "integer", "minimum": 0 },
+        "pendingDataRequests": { "type": "array", "items": { "$ref": "#/$defs/pendingDataRequest" }, "maxItems": 10 },
         "blockedTelemetryRequestCount": { "type": "integer", "minimum": 0 },
         "suppressedSideEffectRequestCount": { "type": "integer", "minimum": 0 },
         "vercelToolbarCspDiagnosticCount": { "type": "integer", "minimum": 0 }
@@ -375,7 +395,7 @@
     "redirectResult": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "target", "reason", "resolvedSourcePath", "resolvedTargetPath", "status", "resultReason", "finalUrl", "failureReasons", "consoleErrors", "pageErrors", "blockedWriteRequestCount", "blockedWriteRequests", "abortedDataRequestCount", "abortedDataRequests", "blockedTelemetryRequestCount", "suppressedSideEffectRequestCount"],
+      "required": ["path", "target", "reason", "resolvedSourcePath", "resolvedTargetPath", "status", "resultReason", "finalUrl", "failureReasons", "consoleErrors", "pageErrors", "blockedWriteRequestCount", "blockedWriteRequests", "abortedDataRequestCount", "abortedDataRequests", "pendingDataRequestCount", "pendingDataRequests", "blockedTelemetryRequestCount", "suppressedSideEffectRequestCount"],
       "properties": {
         "path": { "type": "string" },
         "target": { "type": "string" },
@@ -392,6 +412,8 @@
         "blockedWriteRequests": { "type": "array", "items": { "$ref": "#/$defs/blockedWriteRequest" }, "maxItems": 10 },
         "abortedDataRequestCount": { "type": "integer", "minimum": 0 },
         "abortedDataRequests": { "type": "array", "items": { "$ref": "#/$defs/abortedDataRequest" }, "maxItems": 10 },
+        "pendingDataRequestCount": { "type": "integer", "minimum": 0 },
+        "pendingDataRequests": { "type": "array", "items": { "$ref": "#/$defs/pendingDataRequest" }, "maxItems": 10 },
         "blockedTelemetryRequestCount": { "type": "integer", "minimum": 0 },
         "suppressedSideEffectRequestCount": { "type": "integer", "minimum": 0 }
       }
