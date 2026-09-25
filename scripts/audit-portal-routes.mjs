@@ -43,6 +43,7 @@ import {
   READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
+  waitForVisibleActionTarget,
   waitForPortalReady,
 } from './lib/portal-audit-browser.mjs';
 import {
@@ -1243,6 +1244,12 @@ async function exerciseReadOnlyNavigation(
     await waitForPortalReady(page, remainingTimeout(5_000));
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
     const sourceInspection = await inspectPortalPage(page, allDynamicPatterns);
+    // Keep this in memory only. Comparing headings prevents a client-side URL
+    // change from making the old source H1 look like a rendered destination.
+    const sourceHeadingText = contract.targetReadySelector
+      ? await page.locator('h1:visible').first()
+          .textContent({ timeout: remainingTimeout(5_000) }).catch(() => null)
+      : null;
     if (sourceInspection.errorFallbackDetected) {
       result.reason = 'source_error_fallback';
       result.failureReasons.push('source_error_fallback');
@@ -1312,6 +1319,14 @@ async function exerciseReadOnlyNavigation(
       { timeout: remainingTimeout(20_000) }
     );
     await waitForPortalReady(page, remainingTimeout(5_000));
+    const targetMarkerReady = contract.targetReadySelector
+      ? await waitForVisibleActionTarget(
+          page,
+          contract.targetReadySelector,
+          sourceHeadingText,
+          remainingTimeout(7_500)
+        )
+      : true;
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
     const targetInspection = await inspectPortalPage(page, allDynamicPatterns);
     const finalPath = `${new URL(page.url()).pathname}${new URL(page.url()).search}`;
@@ -1319,6 +1334,7 @@ async function exerciseReadOnlyNavigation(
       result.failureReasons.push('navigation_target_mismatch');
     }
     if (!pathIsInRole(page.url(), role)) result.failureReasons.push('wrong_role_redirect');
+    if (!targetMarkerReady) result.failureReasons.push('target_ready_marker_missing');
     if (!targetInspection.appReady) result.failureReasons.push('app_not_ready');
     if (targetInspection.errorFallbackDetected) result.failureReasons.push('route_error_fallback');
     if (!targetInspection.readOnlyCapabilityActive) {
