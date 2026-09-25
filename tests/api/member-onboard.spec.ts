@@ -24,6 +24,9 @@ vi.mock('next/headers', () => ({
   cookies: vi.fn(() =>
     Promise.resolve({
       getAll: vi.fn(() => []),
+      // The route reads the `wap_partner_ref` cookie to recover partner
+      // attribution; no request here carries one.
+      get: vi.fn(() => undefined),
     })
   ),
 }));
