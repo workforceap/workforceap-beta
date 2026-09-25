@@ -9,7 +9,6 @@ import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/Memb
 import { MemberProgressKit } from '@/components/portal/kit/pages/member/MemberProgressKit';
 import { MemberProgramKit } from '@/components/portal/kit/pages/member/MemberProgramKit';
 import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
-import MemberDashboardVoiceSection from '@/components/portal/MemberDashboardVoiceSection';
 import VoiceCoachesPromo from '@/components/portal/VoiceCoachesPromo';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }), usePathname: () => '/dashboard', useSearchParams: () => new URLSearchParams() }));
@@ -84,8 +83,9 @@ describe('program and coach presentation preserves actions', () => {
 });
 
 describe('gold is a fill, not a text foreground (WAP-100)', () => {
+  // The legacy home's AI coaches band went with the ?ui=legacy home (WAP-195);
+  // the toolkit promo is the live gold band.
   it.each([
-    ['home AI coaches band', () => <MemberDashboardVoiceSection />],
     ['toolkit voice promo', () => <VoiceCoachesPromo />],
   ])('%s puts white CTA text on the hero-gold floor, never on brand gold', (_name, Surface) => {
     render(<Surface />);

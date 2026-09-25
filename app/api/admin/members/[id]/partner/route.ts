@@ -15,7 +15,16 @@ const patchSchema = z.object({
     (v) => (v === '' || v === undefined ? null : v),
     z.string().uuid().nullable()
   ),
-});export const PATCH = withApiGuc(async (
+});
+
+const REFERRAL_PROVENANCE = { partnerId: true, referredAt: true, assignedPartnerUserId: true } as const;
+
+/** What the audit row keeps about a referral this route removed. */
+function provenance(r: { partnerId: string; referredAt: Date; assignedPartnerUserId: string | null }) {
+  return { partnerId: r.partnerId, referredAt: r.referredAt.toISOString(), assignedPartnerUserId: r.assignedPartnerUserId };
+}
+
+export const PATCH = withApiGuc(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -50,31 +59,53 @@ const patchSchema = z.object({
     const { partnerId } = parsed.data;
   
     try {
+      // Only this org's partners' rows are this admin's to change. A referral
+      // to another organization's partner is left untouched.
+      const inOrg = { memberId, partner: { organizationId: orgId } };
+
       if (!partnerId) {
-        await prisma.$transaction((tx) => tx.partnerReferral.deleteMany({ where: { memberId } }));
-        void auditLog({ actorUserId: user.id, action: 'member_partner_remove', targetType: 'user', targetId: memberId, metadata: {} }).catch(() => {});
+        const removed = await prisma.$transaction(async (tx) => {
+          const rows = await tx.partnerReferral.findMany({ where: inOrg, select: REFERRAL_PROVENANCE });
+          await tx.partnerReferral.deleteMany({ where: inOrg });
+          return rows;
+        });
+        void auditLog({ actorUserId: user.id, action: 'member_partner_remove', targetType: 'user', targetId: memberId, metadata: { removed: removed.map(provenance) } }).catch(() => {});
         return NextResponse.json({ ok: true });
       }
-  
+
       const partner = await prisma.$transaction((tx) => tx.partner.findFirst({ where: { id: partnerId, active: true, organizationId: orgId } }));
       if (!partner) {
         return NextResponse.json({ error: 'Invalid or inactive partner' }, { status: 400 });
       }
-  
-      await prisma.$transaction(async (tx) => {
-        await tx.partnerReferral.deleteMany({ where: { memberId } });
-        await tx.partnerReferral.create({
-          data: { partnerId, memberId },
+
+      // Keep the target row (its referredAt and partner-side assignee) when it
+      // already exists; remove only the member's OTHER in-org referrals.
+      const result = await prisma.$transaction(async (tx) => {
+        const rows = await tx.partnerReferral.findMany({ where: inOrg, select: REFERRAL_PROVENANCE });
+        const created = !rows.some((r) => r.partnerId === partnerId);
+        if (!created && rows.length === 1) return { unchanged: true as const };
+        await tx.partnerReferral.upsert({
+          where: { partnerId_memberId: { partnerId, memberId } },
+          create: { partnerId, memberId },
+          update: {},
         });
+        await tx.partnerReferral.deleteMany({ where: { ...inOrg, partnerId: { not: partnerId } } });
+        return { unchanged: false as const, created, removed: rows.filter((r) => r.partnerId !== partnerId) };
       });
-  
-      try {
-        await sendPartnerNewMemberAssignedEmail(memberId, partnerId);
-      } catch (notifyErr) {
-        console.error('[admin] Partner assignment saved; notification failed:', notifyErr);
+
+      if (result.unchanged) {
+        return NextResponse.json({ ok: true, unchanged: true });
       }
-  
-      void auditLog({ actorUserId: user.id, action: 'member_partner_assign', targetType: 'user', targetId: memberId, metadata: { partnerId } }).catch(() => {});
+
+      if (result.created) {
+        try {
+          await sendPartnerNewMemberAssignedEmail(memberId, partnerId);
+        } catch (notifyErr) {
+          console.error('[admin] Partner assignment saved; notification failed:', notifyErr);
+        }
+      }
+
+      void auditLog({ actorUserId: user.id, action: 'member_partner_assign', targetType: 'user', targetId: memberId, metadata: { partnerId, created: result.created, removed: result.removed.map(provenance) } }).catch(() => {});
       return NextResponse.json({ ok: true });
     } catch (e) {
       // The Prisma text stays in the server log; the client gets one sentence.

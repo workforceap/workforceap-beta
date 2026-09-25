@@ -15,6 +15,8 @@ const JOBS: CronJobRow[] = [
     lastRun: '3 min ago',
     duration: '2.4s',
     status: 'Success',
+    freshness: 'ok',
+    lastSuccess: '3 min ago',
   },
   {
     id: 'c2',
@@ -23,6 +25,8 @@ const JOBS: CronJobRow[] = [
     lastRun: '11h ago',
     duration: '18.1s',
     status: 'Success',
+    freshness: 'ok',
+    lastSuccess: '11h ago',
   },
   {
     id: 'c3',
@@ -31,6 +35,8 @@ const JOBS: CronJobRow[] = [
     lastRun: '42 min ago',
     duration: '—',
     status: 'Failed',
+    freshness: 'overdue',
+    lastSuccess: '3h ago',
   },
   {
     id: 'c4',
@@ -39,6 +45,8 @@ const JOBS: CronJobRow[] = [
     lastRun: '6 min ago',
     duration: '4.7s',
     status: 'Running',
+    freshness: 'ok',
+    lastSuccess: '36 min ago',
   },
   {
     id: 'c5',
@@ -47,6 +55,8 @@ const JOBS: CronJobRow[] = [
     lastRun: '2 days ago',
     duration: '31.9s',
     status: 'Success',
+    freshness: 'ok',
+    lastSuccess: '2 days ago',
   },
   {
     id: 'c6',
@@ -55,6 +65,18 @@ const JOBS: CronJobRow[] = [
     lastRun: '9 days ago',
     duration: '—',
     status: 'Disabled',
+    freshness: 'unknown',
+    lastSuccess: '40 days ago',
+  },
+  {
+    id: 'c7',
+    job: 'monthly-report-export',
+    schedule: 'Monthly on the 1st, 2:31 PM UTC',
+    lastRun: '—',
+    duration: '—',
+    status: null,
+    freshness: 'never_run',
+    lastSuccess: '—',
   },
 ];
 
@@ -64,8 +86,8 @@ export default function DevStaffCronsMonitorPage() {
   return (
     <CronsMonitorKit
       jobs={JOBS}
-      totalJobs={6}
-      enabled={4}
+      totalJobs={7}
+      enabled={3}
       failing={1}
       lastRun="3 min ago"
     />

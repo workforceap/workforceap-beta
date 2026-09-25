@@ -36,7 +36,7 @@ vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn(async (
 vi.mock('@/lib/notifications/partner-notify', () => ({ sendPartnerMilestoneEmail: vi.fn(async () => {}) }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
-    userCertification: { findFirst: vi.fn(), update: vi.fn(), upsert: vi.fn() },
+    userCertification: { findFirst: vi.fn(), updateMany: vi.fn(), upsert: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -61,8 +61,7 @@ describe('admin certification review fires credential effects on first approval 
     vi.clearAllMocks();
     afterCallbacks.length = 0;
     vi.mocked(getUser).mockResolvedValue({ id: 'admin_1' } as never);
-    vi.mocked(prisma.userCertification.update).mockImplementation(((args: { data: Record<string, unknown> }) =>
-      Promise.resolve({ id: 'cert_1', ...args.data })) as never);
+    vi.mocked(prisma.userCertification.updateMany).mockResolvedValue({ count: 1 } as never);
   });
 
   it('approving a pending self-report fires the effects once and audits the decision', async () => {
@@ -74,8 +73,8 @@ describe('admin certification review fires credential effects on first approval 
     await flushAfter();
 
     expect(res.status).toBe(200);
-    expect(prisma.userCertification.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 'cert_1' },
+    expect(prisma.userCertification.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: 'cert_1', status: 'pending' }),
       data: expect.objectContaining({ status: 'approved', reviewedById: 'admin_1', reviewedAt: expect.any(Date) }),
     }));
     expect(runCertificationApprovedEffects).toHaveBeenCalledTimes(1);
@@ -92,7 +91,7 @@ describe('admin certification review fires credential effects on first approval 
     await flushAfter();
 
     expect(res.status).toBe(200);
-    expect(prisma.userCertification.update).toHaveBeenCalledWith(expect.objectContaining({
+    expect(prisma.userCertification.updateMany).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ status: 'rejected' }),
     }));
     expect(runCertificationApprovedEffects).not.toHaveBeenCalled();
@@ -118,7 +117,7 @@ describe('admin certification review fires credential effects on first approval 
     const res = await review(reviewRequest({ certId: 'cert_1', action: 'approve' }) as never);
 
     expect(res.status).toBe(400);
-    expect(prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(prisma.userCertification.updateMany).not.toHaveBeenCalled();
     expect(runCertificationApprovedEffects).not.toHaveBeenCalled();
   });
 });

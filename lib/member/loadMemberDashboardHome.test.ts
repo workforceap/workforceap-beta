@@ -6,7 +6,6 @@ import path from 'node:path';
 
 import {
   MEMBER_DASHBOARD_HOME_PRISMA_BUDGET,
-  SECONDARY_PROGRAM_HREF,
   STALE_TRAINING_COUNSELOR_ACTION,
   secondaryProgramAction,
   buildFirst90Card,
@@ -667,18 +666,23 @@ test('loadMemberDashboardHome names the next incomplete course when NBA rows are
   assert.ok(view.nextLesson && view.nextLesson.length > 0);
 });
 
-test('kit-default dashboard page calls the loader and has no prisma. on that branch', () => {
-  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
-  const kitStart = src.indexOf("if (args.requestedUi !== 'legacy')");
-  const legacyStart = src.indexOf('await loadMemberCareerBriefBundleSafe');
-  assert.ok(kitStart > 0, 'kit branch missing');
-  assert.ok(legacyStart > kitStart, 'legacy branch missing');
-  const kitBlock = src.slice(kitStart, legacyStart);
-  assert.match(kitBlock, /loadMemberDashboardHome/);
-  assert.doesNotMatch(kitBlock, /prisma\./);
-  assert.doesNotMatch(kitBlock, /maybeAutoSyncCourseraOnDashboard/);
-  assert.doesNotMatch(kitBlock, /fetchLearnerProgressFromB4B/);
-  assert.doesNotMatch(kitBlock, /getMemberState/);
+test('the dashboard page (one implementation since WAP-195) calls the loader and nothing fat', () => {
+  // The whole page is the kit home now, so the whole file is the block that
+  // must stay lean: every read goes through loadMemberDashboardHome (plus the
+  // approval-wait estimate), never a direct prisma read, B4B or getMemberState.
+  // Code only: the page's comments may name what it deliberately does not call.
+  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+  assert.match(src, /await loadMemberDashboardHome\(/);
+  assert.doesNotMatch(src, /prisma\./);
+  assert.doesNotMatch(src, /from '@\/lib\/db\/prisma'/);
+  assert.doesNotMatch(src, /maybeAutoSyncCourseraOnDashboard/);
+  assert.doesNotMatch(src, /fetchLearnerProgressFromB4B/);
+  assert.doesNotMatch(src, /getMemberState/);
+  assert.doesNotMatch(src, /loadMemberCareerBriefBundleSafe/);
+  assert.doesNotMatch(src, /requestedUi|'legacy'/, 'no ?ui=legacy branch may come back');
+  assert.doesNotMatch(src, /export const maxDuration/, 'the 60s ceiling was only for the retired legacy fan-out');
 });
 
 
@@ -1518,19 +1522,22 @@ test('WAP-194: ?program= names one of the member\'s own enrollments and the home
   assert.equal(view.certModulesTotal, secondary.courses.length);
   assert.equal(view.nextLesson, secondary.courses[0]!.name);
 
-  // My Program and its ?course= only open the primary program (WAP-196), so
-  // a secondary view never deep-links there: every program link is the Learning hub.
-  assert.equal(view.nextLessonHref, '/dashboard/learning');
-  assert.equal(view.programHref, '/dashboard/learning');
-  assert.equal(view.resumeHref, '/dashboard/learning');
+  // My Program honors ?program= for the member's own enrollments (WAP-196),
+  // so every program link on a secondary view opens that program there.
+  const secondarySlugQuery = `program=${encodeURIComponent(SECONDARY_PROGRAM_SLUG)}`;
+  assert.equal(
+    view.nextLessonHref,
+    `/dashboard/program?${secondarySlugQuery}&course=${encodeURIComponent(secondary.courses[0]!.slug)}`,
+  );
+  assert.equal(view.programHref, `/dashboard/program?${secondarySlugQuery}`);
+  assert.equal(view.resumeHref, `/dashboard/program?${secondarySlugQuery}`);
   for (const action of [view.doThisNext, ...view.upNext]) {
-    if (!action) continue;
-    assert.notEqual(action.href.split(/[?#]/)[0], '/dashboard/program', `${action.id} must not open My Program on a secondary view`);
+    if (!action || action.href.split(/[?#]/)[0] !== '/dashboard/program') continue;
+    assert.ok(action.href.includes(secondarySlugQuery), `${action.id} opens the program on screen`);
   }
   const training = [view.doThisNext, ...view.upNext].find((action) => action?.id === 'continue_training');
   assert.ok(training, 'the next-course step is still offered');
-  assert.equal(training.href, '/dashboard/learning');
-  assert.equal(training.cta, 'Open Learning hub');
+  assert.ok(training.href.startsWith(`/dashboard/program?${secondarySlugQuery}`));
   assert.match(training.title, new RegExp(secondary.courses[0]!.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 
@@ -1651,24 +1658,21 @@ test('WAP-194: the first-login wizard and tour gate come from the same read', as
   assert.equal(empty.programSwitch, null);
 });
 
-test('WAP-194: secondaryProgramAction rewrites only My Program steps', () => {
-  const myProgram = { id: 'continue_training', title: 'Continue training: X', body: 'Open My Program', href: '/dashboard/program', cta: 'Open My Program', variant: 'urgent' as const, weight: 86 };
-  const rewritten = secondaryProgramAction(myProgram);
-  assert.equal(rewritten.href, SECONDARY_PROGRAM_HREF);
+test('WAP-196: secondaryProgramAction points My Program steps at the program on screen', () => {
+  const myProgram = { id: 'continue_training', title: 'Continue training: X', body: 'Open My Program', href: '/dashboard/program?course=intro', cta: 'Open My Program', variant: 'urgent' as const, weight: 86 };
+  const rewritten = secondaryProgramAction(myProgram, 'digital-literacy');
+  assert.equal(rewritten.href, '/dashboard/program?program=digital-literacy&course=intro');
   assert.equal(rewritten.title, myProgram.title);
-  assert.equal(rewritten.cta, 'Open Learning hub');
-  assert.doesNotMatch(rewritten.body, /My Program/);
+  assert.equal(rewritten.cta, myProgram.cta);
   for (const href of ['/dashboard/program/start', '/dashboard/messages', '/dashboard/assessment']) {
     const action = { ...myProgram, href };
-    assert.equal(secondaryProgramAction(action), action, `${href} is not a program link`);
+    assert.equal(secondaryProgramAction(action, 'digital-literacy'), action, `${href} is not a program link`);
   }
 });
 
-test('WAP-194: the dashboard page passes ?program= to the loader and mounts the four pieces on the kit branch', () => {
-  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
-  const kitStart = src.indexOf("if (args.requestedUi !== 'legacy')");
-  const legacyStart = src.indexOf('await loadMemberCareerBriefBundleSafe');
-  const kitBlock = src.slice(kitStart, legacyStart);
+test('WAP-194: the dashboard page passes ?program= to the loader and mounts the four pieces on the kit home', () => {
+  // Since WAP-195 the whole page is the kit home, so the whole file is the block.
+  const kitBlock = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
   assert.match(kitBlock, /requestedProgramSlug: args\.requestedProgramSlug/);
   assert.match(kitBlock, /<PWAInstallPrompt \/>/);
   assert.match(kitBlock, /<PortalEntryClient[\s\S]*portal="member"/);

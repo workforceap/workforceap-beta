@@ -10,7 +10,7 @@ import { prisma } from '@/lib/db/prisma';
 import { formatPortalDateTime } from '@/lib/formatDate';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 
-import { loadPartnerReferralBundle, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
+import { loadPartnerReferralBundle, pendingPlacementWindowStart, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
 import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/lib/pipeline/stage';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import PartnerReferredMembersMobile, { type PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
@@ -39,6 +39,7 @@ import PendingApprovalBanner from '@/components/partner/PendingApprovalBanner';
 import PartnerConnectPayoutButton from '@/components/partner/PartnerConnectPayoutButton';
 import { getPartnerPlacementPayoutUsd, isPartnerPlacementPayoutRateConfigured } from '@/lib/partner/partnerPayout';
 import { countUnpaidVerifiedPlacements } from '@/lib/partner/unpaidVerifiedPlacements';
+import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import { isReferralPartner } from '@/lib/partner/partnerType';
 import { buildPartnerReferralBadge, isOutcomesSocialProofEnabled } from '@/lib/outcomes/socialProof';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
@@ -182,8 +183,28 @@ export default async function PartnerDashboardPage({
       organizationId: ctx.partner.organizationId,
       ...MEMBER_ONLY_WHERE,
     };
-    const [referredCount, enrolledCount, placedCount, pendingPlacementEvents, recentReferrals, payoutEvents] =
-      await Promise.all([
+    // Same filter and 90-day window as /partner/outcomes (WAP-214): the list
+    // shows the latest 8, the heading counts them all.
+    const pendingPlacementWhere = {
+      eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
+      createdAt: { gte: pendingPlacementWindowStart() },
+      user: {
+        ...memberFilter,
+        partnerReferrals: {
+          some: { partnerId: ctx.partnerId, partner: { organizationId: ctx.partner.organizationId } },
+        },
+      },
+    };
+    const [
+      referredCount,
+      enrolledCount,
+      placedCount,
+      pendingPlacementEvents,
+      recentReferrals,
+      payoutEvents,
+      pendingPlacementCount,
+      attentionCount,
+    ] = await Promise.all([
         prisma.partnerReferral.count({
           where: {
             partnerId: ctx.partnerId,
@@ -207,10 +228,7 @@ export default async function PartnerDashboardPage({
           },
         }),
         prisma.memberEvent.findMany({
-          where: {
-            eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
-            user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
-          },
+          where: pendingPlacementWhere,
           orderBy: { createdAt: 'desc' },
           take: 8,
           select: { id: true, userId: true, metadata: true, createdAt: true },
@@ -254,6 +272,13 @@ export default async function PartnerDashboardPage({
             metadata: true,
             user: { select: { fullName: true } },
           },
+        }),
+        prisma.memberEvent.count({ where: pendingPlacementWhere }),
+        // The rail badge's number (one aggregate query). A failure is unknown,
+        // not zero, so the card says so instead of "no one" (WAP-215).
+        countPartnerAttention(ctx.partnerId, ctx.partner.organizationId).catch((err: unknown) => {
+          console.error('[partner overview] attention count failed', err);
+          return null;
         }),
       ]);
 
@@ -447,9 +472,13 @@ export default async function PartnerDashboardPage({
           <PartnerReferralFunnel stages={funnelStages} />
 
           <PartnerAttentionCard
-            title={t('nextActionReviewProgress')}
-            body={t('nextActionReviewProgressTip')}
-            href="/partner/referred-members"
+            title={
+              attentionCount === null
+                ? t('nextActionAttentionUnavailable')
+                : t('nextActionAttention', { count: attentionCount })
+            }
+            body={attentionCount === null ? t('nextActionAttentionUnavailableTip') : t('nextActionAttentionTip')}
+            href="/partner/attention"
           />
 
           <PartnerAssistantAccordion title={t('partnerAssistant')} hint="(tap to open)">
@@ -469,7 +498,7 @@ export default async function PartnerDashboardPage({
           {pendingPlacementEvents.length > 0 ? (
             <div className="wa-flex wa-flex-col wa-gap-3">
               <KitSectionHeader
-                title={t('nextActionReviewPlacements', { count: pendingPlacementEvents.length })}
+                title={t('nextActionReviewPlacements', { count: pendingPlacementCount })}
                 goal={t('nextActionReviewPlacementsTip')}
                 action={
                   <Link href="/partner/outcomes" className="portal-section-action">

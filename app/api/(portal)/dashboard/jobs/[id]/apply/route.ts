@@ -5,6 +5,7 @@ import { sendNewJobApplicationEmail } from '@/lib/email';
 import { z } from 'zod';
 import { trackEvent } from '@/lib/events/track';
 import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import { awardPoints } from '@/lib/member/points';
 import { handleApiError, ApiError } from '@/lib/api/errors';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -14,7 +15,9 @@ import {
 } from '@/lib/resume/atomicResumeObjectSwap';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { randomUUID } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 
 const RESUME_BUCKET = 'member-resumes';
 
@@ -51,6 +54,7 @@ async function _POST(
         id,
         status: 'live',
         AND: [
+          ACTIVE_EMPLOYER_JOB_WHERE,
           {
             OR: [
               { expiresAt: null },
@@ -76,21 +80,39 @@ async function _POST(
     });
     if (existing) throw ApiError.conflict('Already applied');
 
-    const currentResumePath = parsed.data.shareResume
+    let currentResumePath = parsed.data.shareResume
       ? (profile?.resumeEnhancedPath || profile?.resumeOriginalPath)
       : undefined;
     if (parsed.data.shareResume && !currentResumePath) {
       throw ApiError.badRequest('Upload a resume before sharing it with an employer');
     }
-    if (currentResumePath && !isResumeObjectPathOwnedByUser(authUser.id, currentResumePath)) {
-      throw ApiError.conflict('Your saved resume record is invalid. Upload it again before applying.');
-    }
-
     const applicationId = randomUUID();
     let snapshotPath: string | undefined;
     const storage = currentResumePath
       ? getSupabaseAdmin().storage.from(RESUME_BUCKET)
       : null;
+    if (currentResumePath && currentResumePath === profile?.resumeEnhancedPath && storage) {
+      if (!isResumeObjectPathOwnedByUser(authUser.id, currentResumePath)) {
+        throw ApiError.conflict('Your saved resume record is invalid. Upload it again before applying.');
+      }
+      const { data, error } = await storage.download(currentResumePath);
+      if (error || !data) {
+        throw ApiError.unavailable('Could not verify your AI-built resume. Your application was not submitted; please try again.');
+      }
+      const inspected = await inspectStoredEnhancedResume(
+        Buffer.from(await data.arrayBuffer()),
+        currentResumePath,
+      );
+      if (!inspected.readable) {
+        currentResumePath = profile?.resumeOriginalPath ?? undefined;
+        if (!currentResumePath) {
+          throw ApiError.badRequest('The AI-built resume is not readable. Upload a readable resume before sharing it with an employer.');
+        }
+      }
+    }
+    if (currentResumePath && !isResumeObjectPathOwnedByUser(authUser.id, currentResumePath)) {
+      throw ApiError.conflict('Your saved resume record is invalid. Upload it again before applying.');
+    }
     if (currentResumePath && storage) {
       const extension = currentResumePath.split('.').pop()?.toLowerCase();
       if (!extension || !['pdf', 'docx', 'txt'].includes(extension)) {

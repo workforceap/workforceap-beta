@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { notifyAndRecordPlacement } from '@/lib/employer/applicationStatusEffects';
+import { allowedNextJobApplicationStatuses, canTransitionJobApplicationStatus } from '@/lib/employer/applicationStatus';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -91,10 +93,38 @@ export const GET = withApiGuc(_GET);async function _PATCH(
     }));
     if (!application) return NextResponse.json({ error: 'Applicant not found' }, { status: 404 });
 
-    const updated = await prisma.$transaction((tx) => tx.jobPostingApplication.update({
-      where: { id: applicantId },
-      data: { status: parsed.data.status, statusUpdatedAt: new Date() },
-    }));
+    // Only moves in the transition map; re-sending the current status is a no-op move.
+    const previousStatus = application.status;
+    const nextStatus = parsed.data.status;
+    if (nextStatus !== previousStatus && !canTransitionJobApplicationStatus(previousStatus, nextStatus)) {
+      return NextResponse.json(
+        {
+          error: `That move isn't available from ${jobApplicationStatusLabel(previousStatus, 'employer')}.`,
+          code: 'invalid_transition',
+          allowed: allowedNextJobApplicationStatuses(previousStatus),
+        },
+        { status: 409 },
+      );
+    }
+
+    // Compare-and-swap on the status we read, so two people moving the same
+    // application at once cannot both win (and both notify the member).
+    const updated = await prisma.$transaction(async (tx) => {
+      const { count } = await tx.jobPostingApplication.updateMany({
+        where: { id: applicantId, jobId: id, status: previousStatus },
+        data: { status: nextStatus, statusUpdatedAt: new Date() },
+      });
+      if (count === 0) return null;
+      return tx.jobPostingApplication.findFirst({
+        where: { id: applicantId, jobId: id, job: { employerId: ctx.employerId } },
+      });
+    });
+    if (!updated) {
+      return NextResponse.json(
+        { code: 'stale', error: 'This application was updated by someone else. Reload to see the latest.' },
+        { status: 409 },
+      );
+    }
 
     auditLog({
       actorUserId: user.id,
@@ -110,13 +140,17 @@ export const GET = withApiGuc(_GET);async function _PATCH(
       result: { success: true, extensions: { jobId: id, nextStatus: updated.status } },
     }).catch(() => {});
 
-    if (updated.status !== application.status) {
-      void notifyAndRecordPlacement({
-        applicationId: applicantId,
-        studentId: updated.studentId,
-        employerId: ctx.employerId,
-        nextStatus: updated.status,
-      });
+    if (updated.status !== previousStatus) {
+      // after(): runs once the response is sent, and the platform keeps the
+      // function alive until it settles (a bare `void` promise can be dropped).
+      after(() =>
+        notifyAndRecordPlacement({
+          applicationId: applicantId,
+          studentId: updated.studentId,
+          employerId: ctx.employerId,
+          nextStatus: updated.status,
+        }),
+      );
     }
 
     return NextResponse.json({ ok: true, application: updated });

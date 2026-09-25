@@ -1,9 +1,6 @@
 import { Users2, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   Avatar,
@@ -12,6 +9,7 @@ import {
   StatusTag,
 } from '@/components/portal/kit';
 import { MENTORS_MEMBER_EMPTY } from '@/lib/member/mentorsEmptyState';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Member Portal — MENTOR BROWSE view.
@@ -90,15 +88,14 @@ export function MemberMentorsKit({ mentors }: MemberMentorsKitProps) {
                     ) : null}
                   </div>
                   <div style={{ marginTop: 'auto', width: '100%' }}>
-                    <AstryxLink href={`/dashboard/mentors/${mentor.id}`} as={Link as never} isStandalone style={{ width: '100%' }}>
-                      <Button
-                        label="Request session"
-                        variant="primary"
-                        size="sm"
-                        endContent={<ArrowRight size={12} aria-hidden="true" />}
-                        style={{ width: '100%' }}
-                      />
-                    </AstryxLink>
+                    <KitLinkButton
+                      href={`/dashboard/mentors/${mentor.id}`}
+                      label="Request session"
+                      variant="primary"
+                      size="sm"
+                      endContent={<ArrowRight size={12} aria-hidden="true" />}
+                      style={{ width: '100%' }}
+                    />
                   </div>
                 </div>
               </Card>

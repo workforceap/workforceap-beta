@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type PageProps = {
-  searchParams?: Promise<{ school?: string; minor?: string }>;
+  searchParams?: Promise<{ school?: string; minor?: string; receipt?: string }>;
 };
 
 export default async function ApplyConfirmationPage({ searchParams }: PageProps) {
@@ -95,7 +95,8 @@ export default async function ApplyConfirmationPage({ searchParams }: PageProps)
   return (
     <div className="inner-page mdx afd-page">
       <ThankYouViewTracker funnel="apply" />
-      {isAuthenticated && receiptEmail ? (
+      {/* Signup already sent the receipt; retry only when it said that send failed (WAP-240). */}
+      {isAuthenticated && receiptEmail && sp.receipt === '0' ? (
         <ApplyConfirmationReceiptRetry email={receiptEmail} fullName={receiptName} />
       ) : null}
       <section className="content-section afd-confirm">

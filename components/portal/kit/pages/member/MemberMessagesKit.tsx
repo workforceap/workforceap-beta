@@ -36,7 +36,6 @@ export interface MemberMessagesKitProps {
   activeName?: string;
   activeRole?: string;
   activeInitials?: string;
-  activeOnline?: boolean;
   messages?: ChatMessage[];
   /**
    * Optional explicit send handler. When omitted but `memberUserId` is set,
@@ -71,13 +70,14 @@ export interface MemberMessagesKitProps {
  * inbox reads as the same product as a live one.
  */
 export function MemberMessagesFrame({ children }: { children: ReactNode }) {
+  const tm = useTranslations('messages');
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Inbox"
-          title="Messages"
-          lede="Counselor and support in one inbox."
+          kicker={tm('inbox')}
+          title={tm('messagesTitle')}
+          lede={tm('kitLede')}
           icon={<MessageCircle size={13} aria-hidden="true" />}
         />
         {children}
@@ -95,7 +95,6 @@ export function MemberMessagesKit({
   activeName = 'Counselor',
   activeRole = 'Support',
   activeInitials = 'CS',
-  activeOnline = false,
   messages: messagesProp = DEFAULT_MESSAGES,
   onSend,
   memberUserId,
@@ -105,6 +104,7 @@ export function MemberMessagesKit({
   feedbackNotice,
 }: MemberMessagesKitProps) {
   const t = useTranslations('empty');
+  const tm = useTranslations('messages');
   const [messages, setMessages] = useState<ChatMessage[]>(messagesProp);
   const [error, setError] = useState<string | null>(null);
   // Mobile single-pane navigation: on phones the list and thread cannot sit
@@ -116,6 +116,13 @@ export function MemberMessagesKit({
   // re-subscribing when they change.
   const otherInitialsRef = useRef(otherInitials);
   otherInitialsRef.current = otherInitials;
+  // Conversations the member has read in this view. `conversations` is a
+  // server prop computed before the thread was opened, so its `unread` flag is
+  // stale once the read marker is written; without this the dot stays on the
+  // thread just read (visible on a phone after "Back to messages").
+  const [readIds, setReadIds] = useState<ReadonlySet<string>>(() => new Set());
+  const conversationsRef = useRef(conversations);
+  conversationsRef.current = conversations;
 
   // Read marker: opening the thread (and receiving a counselor reply while it
   // is open) marks it read, the same way the legacy clients do. Without this
@@ -125,6 +132,12 @@ export function MemberMessagesKit({
     try {
       const r = await fetch('/api/member/messages', { method: 'PATCH', credentials: 'include' });
       if (r.ok) {
+        // Only a confirmed write clears the open conversation's dot; a failed
+        // PATCH leaves it, so the list never claims a read that did not land.
+        const openIds = conversationsRef.current.filter((c) => c.active).map((c) => c.id);
+        if (openIds.length > 0) {
+          setReadIds((prev) => (openIds.every((id) => prev.has(id)) ? prev : new Set([...prev, ...openIds])));
+        }
         try {
           window.dispatchEvent(new CustomEvent('wa-nav-badges-refresh'));
         } catch {
@@ -165,7 +178,7 @@ export function MemberMessagesKit({
         };
         if (!r.ok || !data.message) {
           setMessages((prev) => prev.filter((m) => m.id !== tempId));
-          setError(typeof data.error === 'string' ? data.error : 'Send failed');
+          setError(typeof data.error === 'string' ? data.error : tm('sendFailed'));
           return false;
         }
         const saved = data.message;
@@ -185,11 +198,11 @@ export function MemberMessagesKit({
         return true;
       } catch {
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
-        setError('Network error');
+        setError(tm('networkError'));
         return false;
       }
     },
-    [feedbackDraft],
+    [feedbackDraft, tm],
   );
 
   const handleSend = useCallback(
@@ -267,7 +280,7 @@ export function MemberMessagesKit({
             style={{ borderRight: '1px solid var(--wa-border)' }}
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--wa-border)' }}>
-              <h2 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>Conversations</h2>
+              <h2 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>{tm('conversations')}</h2>
             </div>
             <div>
               {conversations.length === 0 ? (
@@ -295,7 +308,7 @@ export function MemberMessagesKit({
                 >
                   <div className="wa-flex wa-items-center wa-justify-between">
                     <span style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)' }}>{c.name}</span>
-                    {c.unread ? (
+                    {c.unread && !readIds.has(c.id) ? (
                       <span
                         style={{
                           width: 8,
@@ -304,7 +317,7 @@ export function MemberMessagesKit({
                           background: 'var(--wa-accent)',
                           flexShrink: 0,
                         }}
-                        aria-label="Unread message"
+                        aria-label={tm('unreadMessage')}
                       />
                     ) : null}
                   </div>
@@ -342,7 +355,7 @@ export function MemberMessagesKit({
                   type="button"
                   onClick={() => setMobileView('list')}
                   className="wa-kit-focus"
-                  aria-label="Back to messages"
+                  aria-label={tm('backToMessages')}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -362,29 +375,15 @@ export function MemberMessagesKit({
               <Avatar initials={activeInitials} size={36} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)' }}>{activeName}</div>
+                {/* Role only: an assigned counselor is not a presence signal, so
+                    the header makes no "Online" claim (WAP-262). */}
                 <div className="wa-flex wa-items-center wa-gap-1" style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 600, color: 'var(--wa-muted)' }}>
-                  {activeOnline ? (
-                    <span
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 999,
-                        background: 'var(--wa-success)',
-                        flexShrink: 0,
-                      }}
-                      aria-hidden="true"
-                    />
-                  ) : null}
-                  <span style={{ color: activeOnline ? 'var(--wa-success)' : undefined }}>
-                    {activeOnline ? 'Online · ' : ''}{activeRole}
-                  </span>
+                  <span>{activeRole}</span>
                 </div>
               </div>
             </div>
             <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column' }}>
-              {feedbackDraft ? <p className="wa-kit-lede">
-                Review your course details and any saved project link before sending. Your private notes are not shared.
-              </p> : feedbackNotice ? <p role="status" className="wa-kit-lede">{feedbackNotice}</p> : null}
+              {feedbackDraft ? <p className="wa-kit-lede">{tm('feedbackDraftNotice')}</p> : feedbackNotice ? <p role="status" className="wa-kit-lede">{feedbackNotice}</p> : null}
               {error ? (
                 <p role="alert" className="wa-kit-lede" style={{ margin: '0 0 12px', color: 'var(--wa-danger)' }}>
                   {error}
@@ -393,7 +392,7 @@ export function MemberMessagesKit({
               <ChatThread
                 key={feedbackDraft?.key ?? 'general'}
                 messages={messages}
-                placeholder={`Message ${activeName.split(' ')[0]}…`}
+                placeholder={tm('composerPlaceholder', { name: activeName.split(' ')[0] })}
                 onSend={canSend ? handleSend : undefined}
                 initialText={feedbackDraft?.text}
                 multiline={Boolean(feedbackDraft)}

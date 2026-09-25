@@ -84,11 +84,6 @@ const state = vi.hoisted(() => ({
   userUpserts: [] as Array<{ create: Record<string, unknown>; update: Record<string, unknown> }>,
   screeningUpserts: [] as UpsertArgs[],
   userUpsertError: null as unknown,
-  authAdminUser: null as { id: string; email?: string | null } | null,
-  authAdminLookupError: null as unknown,
-  authDeleteError: null as unknown,
-  authAdminLookups: [] as string[],
-  authDeletes: [] as string[],
 }));
 
 vi.mock('@/lib/rate-limit', () => ({
@@ -245,23 +240,7 @@ vi.mock('@/lib/db/withDbRetry', () => ({
 }));
 
 vi.mock('@/lib/supabase-admin', () => ({
-  getSupabaseAdmin: vi.fn(() => ({
-    auth: {
-      admin: {
-        getUserById: vi.fn(async (userId: string) => {
-          state.authAdminLookups.push(userId);
-          return {
-            data: { user: state.authAdminUser },
-            error: state.authAdminLookupError,
-          };
-        }),
-        deleteUser: vi.fn(async (userId: string) => {
-          state.authDeletes.push(userId);
-          return { error: state.authDeleteError };
-        }),
-      },
-    },
-  })),
+  getSupabaseAdmin: vi.fn(() => { throw new Error('Unexpected admin Auth access from apply signup'); }),
 }));
 
 vi.mock('@/lib/email', () => ({
@@ -320,6 +299,8 @@ import {
   sendSchoolEnrollmentPartnerAckEmail,
 } from '@/lib/email';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { logger } from '@/lib/observability/logger';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 function makeRequest(overrides: Record<string, unknown> = {}) {
   const body = {
@@ -361,11 +342,6 @@ function resetState() {
   state.adminEmails.length = 0;
   state.screeningUpserts.length = 0;
   state.userUpsertError = null;
-  state.authAdminUser = null;
-  state.authAdminLookupError = null;
-  state.authDeleteError = null;
-  state.authAdminLookups.length = 0;
-  state.authDeletes.length = 0;
 
   state.provisionCalls.length = 0;
   state.userUpserts.length = 0;
@@ -405,6 +381,14 @@ describe('POST /api/apply/signup ageGroup validation', () => {
     const res = await POST(makeRequest({ ageGroup: 'under_13' }));
     expect(res.status).toBe(400);
     expect(state.applicationCreates).toHaveLength(0);
+  });
+
+  // WAP-242 item 3: a validation failure names its field by code, so the form
+  // can localise it without reading the English message.
+  it('reports a validation failure as invalid_field with the field name', async () => {
+    const res = await POST(makeRequest({ email: 'not-an-email' }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ reason: 'invalid_field', field: 'email' });
   });
 
   it('accepts a missing ageGroup (optional field)', async () => {
@@ -1205,6 +1189,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     const body = await res.json();
     expect(body.code).toBe('ALREADY_SIGNED_IN');
+    expect(body.reason).toBe('already_signed_in');
     expect(body.error).toContain('admin@example.com');
     expect(supabaseSignUp).not.toHaveBeenCalled();
   });
@@ -1215,6 +1200,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required',
       error: expect.stringContaining('staff-assisted account recovery'),
     });
     expect(state.emailLookups).toEqual([{
@@ -1255,6 +1241,7 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required',
       error: expect.stringContaining('staff-assisted account recovery'),
     });
     expect(supabaseSignUp).not.toHaveBeenCalled();
@@ -1273,7 +1260,9 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toMatch(/already exists/i);
+    const body = await res.json();
+    expect(body.error).toMatch(/already exists/i);
+    expect(body.reason).toBe('email_exists');
   });
 
   it('reports a weak password by reason with clear copy instead of the generic failure (WAP-26)', async () => {
@@ -1300,19 +1289,21 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     };
   }
 
-  it('compensates only the freshly created Auth identity after a raced app-email collision', async () => {
+  it('preserves an existing unconfirmed Auth identity returned with nonempty identities after an app-email collision', async () => {
+    // Supabase Auth returns the real existing unconfirmed user and its email
+    // identity on repeated signUp. The response cannot prove this request
+    // created that Auth ID, even when identities is nonempty.
     state.userUpsertError = p2002EmailCollision();
-    state.authAdminUser = { id: 'user-test-1', email: 'applicant@example.com' };
 
-    const res = await POST(makeRequest({ email: 'Applicant@Example.COM' }));
+    const res = await POST(makeRequest());
 
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required',
       error: expect.stringContaining('staff-assisted account recovery'),
     });
-    expect(state.authAdminLookups).toEqual(['user-test-1']);
-    expect(state.authDeletes).toEqual(['user-test-1']);
+    expect(getSupabaseAdmin).not.toHaveBeenCalled();
     expect(state.profileUpserts).toEqual([]);
     expect(state.enrollmentUpserts).toEqual([]);
     expect(state.applicationCreates).toEqual([]);
@@ -1323,10 +1314,10 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(captureApiError).toHaveBeenCalledWith(
       expect.any(Error),
       {
-        route: 'POST /api/apply/signup#authCompensation',
+        route: 'POST /api/apply/signup#appEmailCollision',
         extra: {
           collision: 'app_email_unique',
-          compensation: 'deleted',
+          auth_identity_preserved: true,
         },
       },
     );
@@ -1334,61 +1325,21 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(JSON.stringify(vi.mocked(captureApiError).mock.calls)).not.toContain('user-test-1');
   });
 
-  it('returns the same generic recovery response when guarded compensation fails', async () => {
+  it('preserves an Auth identity when signUp does not include identity provenance', async () => {
+    supabaseSignUp.mockResolvedValue({
+      data: { user: { id: 'user-test-1', email: 'applicant@example.com' }, session: null },
+      error: null,
+    } as never);
     state.userUpsertError = p2002EmailCollision();
-    state.authAdminUser = { id: 'user-test-1', email: 'applicant@example.com' };
-    state.authDeleteError = { message: 'provider delete unavailable' };
 
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({
-      code: 'ACCOUNT_RECOVERY_REQUIRED',
-      error: expect.stringContaining('staff-assisted account recovery'),
-    });
-    expect(state.authDeletes).toEqual(['user-test-1']);
+    expect((await res.json()).code).toBe('ACCOUNT_RECOVERY_REQUIRED');
+    expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
 
-  it('does not delete when the provider identity email does not exactly match the request', async () => {
-    state.userUpsertError = p2002EmailCollision();
-    state.authAdminUser = { id: 'user-test-1', email: 'different@example.com' };
-
-    const res = await POST(makeRequest());
-
-    expect(res.status).toBe(409);
-    expect(state.authAdminLookups).toEqual(['user-test-1']);
-    expect(state.authDeletes).toEqual([]);
-  });
-
-  it('does not delete when the exact-ID provider lookup returns another identity', async () => {
-    state.userUpsertError = p2002EmailCollision();
-    state.authAdminUser = { id: 'different-user', email: 'applicant@example.com' };
-
-    const res = await POST(makeRequest());
-
-    expect(res.status).toBe(409);
-    expect(state.authAdminLookups).toEqual(['user-test-1']);
-    expect(state.authDeletes).toEqual([]);
-  });
-
-  it('does not delete when the exact-ID provider lookup fails', async () => {
-    state.userUpsertError = p2002EmailCollision();
-    state.authAdminLookupError = { message: 'provider lookup unavailable' };
-
-    const res = await POST(makeRequest());
-
-    expect(res.status).toBe(409);
-    expect(state.authAdminLookups).toEqual(['user-test-1']);
-    expect(state.authDeletes).toEqual([]);
-    expect(captureApiError).toHaveBeenCalledWith(
-      expect.any(Error),
-      expect.objectContaining({
-        extra: expect.objectContaining({ compensation: 'guard_failed' }),
-      }),
-    );
-  });
-
-  it('does not compensate an obfuscated reused Auth identity', async () => {
+  it('does not process an obfuscated reused Auth identity', async () => {
     supabaseSignUp.mockResolvedValue({
       data: {
         user: { id: 'user-existing', email: 'applicant@example.com', identities: [] },
@@ -1400,19 +1351,16 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(400);
-    expect(state.authAdminLookups).toEqual([]);
-    expect(state.authDeletes).toEqual([]);
+    expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
 
-  it('does not compensate a newly returned identity for a non-collision database failure', async () => {
+  it('preserves a returned Auth identity after a non-collision database failure', async () => {
     state.userUpsertError = { code: 'P2024', message: 'connection pool timeout' };
-    state.authAdminUser = { id: 'user-test-1', email: 'applicant@example.com' };
 
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(500);
-    expect(state.authAdminLookups).toEqual([]);
-    expect(state.authDeletes).toEqual([]);
+    expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
 });
 
@@ -1439,5 +1387,106 @@ describe('POST /api/apply/signup email lifetime', () => {
     // The admin alert is scheduled through after(): it runs after the response, not before it.
     await new Promise((r) => setTimeout(r, 0));
     expect(sendNewApplicationAdminEmail).toHaveBeenCalledTimes(1);
+  });
+});
+
+// WAP-240: the response says whether the awaited receipt went out, so the
+// confirmation page retries only a failed send instead of emailing twice.
+describe('POST /api/apply/signup receiptSent', () => {
+  beforeEach(resetState);
+
+  it('reports receiptSent: true when the awaited receipt send succeeded', async () => {
+    vi.mocked(sendApplicationConfirmationEmail).mockResolvedValueOnce({ ok: true } as never);
+    const res = await POST(makeRequest());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ success: true, receiptSent: true });
+  });
+
+  it('reports receiptSent: false, and still creates the account, when the send failed', async () => {
+    vi.mocked(sendApplicationConfirmationEmail).mockResolvedValueOnce({ ok: false, error: 'resend down' } as never);
+    const res = await POST(makeRequest());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ success: true, receiptSent: false });
+    expect(state.applicationCreates).toHaveLength(1);
+  });
+});
+
+/**
+ * A ref that resolves to no partner — a typo, a retired code, or a code that
+ * belongs to another tenant — still attributes nobody. Before this, that drop
+ * was indistinguishable from organic traffic: nothing was logged and the raw
+ * ref was never persisted, so a broken partner link could run for weeks.
+ */
+describe('POST /api/apply/signup unmatched partner ref', () => {
+  beforeEach(resetState);
+
+  function unmatchedRefWarnings() {
+    return vi
+      .mocked(logger.warn)
+      .mock.calls.filter(([message]) => /partner ref/i.test(message));
+  }
+
+  it('logs the dropped ref and the resolved organization when no partner matches', async () => {
+    state.partner = null;
+
+    const res = await POST(makeRequest({ referralRef: 'Ghost-Ref' }));
+
+    expect(res.status).toBe(200);
+    expect(state.applicationCreates[0].data).toMatchObject({ referralPartnerId: null });
+    const warnings = unmatchedRefWarnings();
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0][1]).toEqual({ refFingerprint: '1fc9f8a7c21a3acb', organizationId: 'org-test-1' });
+  });
+
+  it('logs the dropped ref that arrived on the cookie rather than the body', async () => {
+    state.partner = null;
+    state.cookies[PARTNER_REF_COOKIE] = 'ghost-ref';
+
+    await POST(makeRequest());
+
+    expect(unmatchedRefWarnings()[0][1]).toEqual({ refFingerprint: '1fc9f8a7c21a3acb', organizationId: 'org-test-1' });
+  });
+
+  it('keeps the applicant out of the dropped-ref log line', async () => {
+    state.partner = null;
+
+    await POST(makeRequest({ referralRef: 'ghost-ref', email: 'private.person@example.com' }));
+
+    const logged = JSON.stringify(unmatchedRefWarnings());
+    expect(logged).not.toContain('private.person@example.com');
+    expect(logged).not.toContain('Concordia Student');
+  });
+
+  it('does not echo arbitrary body-supplied referral text into logs', async () => {
+    state.partner = null;
+
+    await POST(makeRequest({ referralRef: 'private.person@example.com' }));
+
+    const logged = JSON.stringify(unmatchedRefWarnings());
+    expect(logged).not.toContain('private.person@example.com');
+    expect(unmatchedRefWarnings()).toHaveLength(1);
+  });
+
+  it('logs nothing when the ref resolves, and nothing when there is no ref at all', async () => {
+    state.partner = {
+      id: 'partner-matched',
+      name: 'Matched Partner',
+      partnerType: 'community',
+      contactEmail: null,
+      notifyOnEnrollment: false,
+      sponsoredEnrollment: false,
+      sponsorshipFundingSource: null,
+      sponsorshipTermLabel: null,
+      sponsorshipStartsAt: null,
+      sponsorshipEndsAt: null,
+      sponsorshipSeatCap: null,
+      schoolDistrict: null,
+    };
+    await POST(makeRequest({ referralRef: 'matched-ref' }));
+    expect(unmatchedRefWarnings()).toHaveLength(0);
+
+    state.partner = null;
+    await POST(makeRequest());
+    expect(unmatchedRefWarnings()).toHaveLength(0);
   });
 });

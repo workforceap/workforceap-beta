@@ -13,8 +13,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   KitEmptyState,
@@ -30,6 +28,7 @@ import {
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Counselor Portal — HOME view ("Command Center" redesign).
@@ -157,6 +156,11 @@ export interface CounselorHomeKitProps {
   queueRows?: CounselorQueueRow[] | null;
   /** Total rows in the underlying queue (may exceed `queueRows.length` when truncated). */
   queueTotal?: number;
+  /**
+   * Optional bulk follow-up tool (select members, send a template) rendered
+   * under the queue (WAP-193). Hidden while the queue failed to load.
+   */
+  bulkFollowUp?: ReactNode;
   /** Base path for a queue row's "View" action. */
   memberHrefBase?: string;
   /** Roster link shown in the empty state. */
@@ -315,6 +319,7 @@ export function CounselorHomeKit({
   retryHref = '/counselor/overview',
   todayHref = '/counselor/today',
   loadFailedCopy = DEFAULT_LOAD_FAILED_COPY,
+  bulkFollowUp,
 }: CounselorHomeKitProps) {
   const copy = loadFailedCopy;
   const queueUnavailable = queueRows === null;
@@ -456,14 +461,13 @@ export function CounselorHomeKit({
                     meta={queueRowMeta(row)}
                     flag={BUCKET_FLAG[row.bucket]}
                     action={
-                      <AstryxLink href={row.href ?? `${memberHrefBase}/${row.memberId}`} as={Link as never} isStandalone>
-                        <Button label="View" variant="secondary" size="sm" />
-                      </AstryxLink>
+                      <KitLinkButton href={row.href ?? `${memberHrefBase}/${row.memberId}`} label="View" variant="secondary" size="sm" />
                     }
                   />
                 );
               })
             )}
+            {!queueUnavailable && bulkFollowUp ? bulkFollowUp : null}
           </div>
 
           <aside className="lg:wa-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>

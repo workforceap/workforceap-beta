@@ -7,6 +7,9 @@ const {
   findFirstAssignment,
   findUniqueUser,
   findFirstPartnerReferral,
+  findFirstCounselor,
+  findUniqueProfile,
+  findManyUserRoles,
   assignMemberCounselor,
   createNotification,
   transaction,
@@ -17,6 +20,9 @@ const {
   findFirstAssignment: vi.fn(),
   findUniqueUser: vi.fn(),
   findFirstPartnerReferral: vi.fn(),
+  findFirstCounselor: vi.fn(),
+  findUniqueProfile: vi.fn(),
+  findManyUserRoles: vi.fn(),
   assignMemberCounselor: vi.fn(),
   createNotification: vi.fn(),
   transaction: vi.fn(),
@@ -33,10 +39,12 @@ vi.mock('@/lib/notifications/create', () => ({
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $transaction: transaction,
-    counselor: { findMany: findManyCounselors },
+    counselor: { findMany: findManyCounselors, findFirst: findFirstCounselor },
     counselorAssignment: { groupBy: groupByAssignments, findFirst: findFirstAssignment },
     user: { updateMany: updateManyUsers, findUnique: findUniqueUser },
     partnerReferral: { findFirst: findFirstPartnerReferral },
+    profile: { findUnique: findUniqueProfile },
+    userRole: { findMany: findManyUserRoles },
   },
 }));
 
@@ -114,6 +122,56 @@ describe('ensureSelfServeCounselorAssigned', () => {
     });
     createNotification.mockResolvedValue(undefined);
     findFirstPartnerReferral.mockResolvedValue(null);
+    findFirstCounselor.mockResolvedValue(null);
+    findUniqueProfile.mockResolvedValue({ role: 'member' });
+    findManyUserRoles.mockResolvedValue([{ role: { name: 'member' } }]);
+  });
+
+  function expectNoAssignmentWrites() {
+    expect(findManyCounselors).not.toHaveBeenCalled();
+    expect(transaction).not.toHaveBeenCalled();
+    expect(updateManyUsers).not.toHaveBeenCalled();
+    expect(assignMemberCounselor).not.toHaveBeenCalled();
+    expect(createNotification).not.toHaveBeenCalled();
+  }
+
+  function givePoolCounselor() {
+    findFirstAssignment.mockResolvedValue(null);
+    findManyCounselors.mockResolvedValue([
+      { id: 'cns-1', userId: 'counselor-1', createdAt: new Date('2025-01-01') },
+    ]);
+    groupByAssignments.mockResolvedValue([]);
+    updateManyUsers.mockResolvedValue({ count: 1 });
+    assignMemberCounselor.mockResolvedValue({ counselor: { userId: 'counselor-1' }, thread: { id: 't1' } });
+  }
+
+  it('never self-assigns a counselor account that opens the member inbox', async () => {
+    givePoolCounselor();
+    findFirstCounselor.mockResolvedValue({ id: 'cns-staff' });
+
+    await expect(
+      ensureSelfServeCounselorAssigned({ memberId: 'member-1', organizationId: 'org-1' }),
+    ).resolves.toEqual({ assigned: false, counselorUserId: null, reason: 'staff_account' });
+    expect(findFirstCounselor).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'member-1', active: true } }),
+    );
+    expectNoAssignmentWrites();
+  });
+
+  it.each([
+    ['profile admin', { role: 'admin' }, []],
+    ['profile super_admin', { role: 'super_admin' }, []],
+    ['user_roles admin', { role: 'member' }, [{ role: { name: 'admin' } }]],
+    ['user_roles super_admin', null, [{ role: { name: 'super_admin' } }]],
+  ])('never self-assigns a %s account', async (_label, profile, userRoles) => {
+    givePoolCounselor();
+    findUniqueProfile.mockResolvedValue(profile);
+    findManyUserRoles.mockResolvedValue(userRoles);
+
+    await expect(
+      ensureSelfServeCounselorAssigned({ memberId: 'member-1', organizationId: 'org-1' }),
+    ).resolves.toEqual({ assigned: false, counselorUserId: null, reason: 'staff_account' });
+    expectNoAssignmentWrites();
   });
 
   it('returns already_assigned without writing when a counselor is active', async () => {

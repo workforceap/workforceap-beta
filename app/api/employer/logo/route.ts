@@ -8,6 +8,7 @@ import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
 
 const BUCKET = 'employer-logos';
 const MAX_SIZE = 2 * 1024 * 1024;export const POST = withApiGuc(async (request: Request) => {
@@ -36,6 +37,11 @@ const MAX_SIZE = 2 * 1024 * 1024;export const POST = withApiGuc(async (request: 
   }
   const MIME: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg' };
   const contentType = MIME[ext] ?? 'image/png';
+  // Logos are served publicly under this content type, so the bytes must
+  // really be that image (a `.png` holding JPEG or HTML is refused).
+  if (!(await fileMatchesContentType(file, contentType))) {
+    return NextResponse.json({ error: 'Use PNG or JPG only' }, { status: 400 });
+  }
 
   const supabase = getSupabaseAdmin();
   const path = `${ctx.employerId}/logo.${ext}`;

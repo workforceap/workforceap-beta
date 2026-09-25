@@ -18,6 +18,7 @@ import {
   PRODUCTION_CANARY_ROLES,
   REDIRECT_ONLY_PATHS,
   REQUIRED_DYNAMIC_PATHS,
+  ROLE_ACCESS_ROOTS,
   ROLE_ACCESS_MATRIX,
   SAFE_ACTION_CONTRACTS,
   SECTION_LOGIN_REDIRECT,
@@ -29,19 +30,32 @@ import {
 } from './lib/portal-audit-auth.mjs';
 import { canonicalPathname, classifyPortalAuditRow } from './lib/portal-audit-classify.mjs';
 import {
+  isAbortedReadRequest,
+  isVerifiedReadOnlyDestination,
+  isVercelPreviewToolbarCspError,
+  requestFailureCategory,
+  sanitizedRequestPath,
+} from './lib/portal-audit-environment.mjs';
+import { recordPendingDataRequestTimeout } from './lib/portal-audit-pending.mjs';
+import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
   inspectPortalPage,
   READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
+  waitForRedirectTargetCommit,
+  waitForVisibleActionTarget,
   waitForPortalReady,
 } from './lib/portal-audit-browser.mjs';
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
+  redirectDestinationFailureReasons,
   dataRequestQuietWindowSatisfied,
   evaluateAccessProbe,
+  fixtureConditionMatches,
+  isVerifiedDeniedRedirectWithCanceledGets,
   isBlockedAuditTelemetryRequest,
   isAllowedReadOnlyNonGetRequest,
   navigationTargetMatches,
@@ -61,6 +75,8 @@ import {
   normalizePortalAuditMode,
   validatePortalAuditTarget,
 } from './lib/portal-audit-target.mjs';
+import { installPortalHydrationTrace } from './lib/portal-hydration-trace.mjs';
+import { logPortalHydrationTrace } from './lib/portal-hydration-log.mjs';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const root = join(scriptDirectory, '..');
@@ -81,9 +97,11 @@ const routeConcurrency = Math.min(
   12,
   Math.max(1, Number.parseInt(process.env.PORTAL_AUDIT_ROUTE_CONCURRENCY ?? '8', 10) || 8)
 );
+const traceHydration = process.env.PORTAL_AUDIT_HYDRATION_TRACE === '1' && requestedMode === 'isolated_preview';
 const runStartedAt = Date.now();
 let deadlineAt = runStartedAt + 25 * 60_000;
 let trustedOrigin = null;
+let vercelToolbarCspDiagnosticCount = 0;
 
 const READ_ONLY_AUDIT_TOKEN_HEADER_NAME = 'x-workforceap-read-only-audit-token';
 
@@ -93,11 +111,17 @@ function sanitizePortalDiagnostic(value) {
   return sanitizeAuditDiagnostic(value, allDynamicPatterns);
 }
 
+function boundedDiagnosticPush(list, diagnostic) {
+  if (list.length < 10) list.push(diagnostic);
+}
+
 async function installReadOnlyRequestGuard(context, options = {}) {
   const blockedByPage = new WeakMap();
+  const blockedDiagnosticsByPage = new WeakMap();
   const blockedTelemetryByPage = new WeakMap();
   const suppressedSideEffectsByPage = new WeakMap();
   let unscopedBlockedCount = 0;
+  const unscopedBlockedDiagnostics = [];
   let unscopedBlockedTelemetryCount = 0;
   let unscopedSuppressedSideEffectCount = 0;
 
@@ -172,11 +196,19 @@ async function installReadOnlyRequestGuard(context, options = {}) {
       return;
     }
 
+    const blockedDiagnostic = {
+      method: request.method().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 12) || 'UNKNOWN',
+      path: sanitizedRequestPath(request.url(), allDynamicPatterns),
+    };
     try {
       const page = request.frame().page();
       blockedByPage.set(page, (blockedByPage.get(page) ?? 0) + 1);
+      const diagnostics = blockedDiagnosticsByPage.get(page) ?? [];
+      boundedDiagnosticPush(diagnostics, blockedDiagnostic);
+      blockedDiagnosticsByPage.set(page, diagnostics);
     } catch {
       unscopedBlockedCount += 1;
+      boundedDiagnosticPush(unscopedBlockedDiagnostics, blockedDiagnostic);
     }
     await route.abort('blockedbyclient');
   });
@@ -184,6 +216,9 @@ async function installReadOnlyRequestGuard(context, options = {}) {
   return {
     blockedWriteCount(page) {
       return (blockedByPage.get(page) ?? 0) + unscopedBlockedCount;
+    },
+    blockedWriteRequests(page) {
+      return [...(blockedDiagnosticsByPage.get(page) ?? []), ...unscopedBlockedDiagnostics].slice(0, 10);
     },
     blockedTelemetryCount(page) {
       return (
@@ -234,12 +269,14 @@ function emptySummary() {
     totalRequiredActions: 0,
     satisfiedRequiredActions: 0,
     failedRequiredActions: 0,
+    vercelToolbarCspDiagnosticCount: 0,
+    abortedDataRequestCount: 0,
   };
 }
 
 const artifact = {
   $schema: '../docs/portal-audit-results.schema.json',
-  schemaVersion: '3.1.0',
+  schemaVersion: '3.4.0',
   // A run starts failed/incomplete. Only a complete green run changes this to passed,
   // so a killed process can never leave a stale success artifact behind.
   status: 'failed',
@@ -422,6 +459,10 @@ async function captureRoleStorageState(browser, role, credential) {
         timeout: remainingTimeout(),
       });
     }
+    await page.waitForURL((url) => pathIsInRole(url.toString(), role), {
+      waitUntil: 'domcontentloaded',
+      timeout: remainingTimeout(45_000),
+    });
     await waitForPortalReady(page, remainingTimeout(5_000));
 
     if (!pathIsInRole(page.url(), role)) {
@@ -431,6 +472,9 @@ async function captureRoleStorageState(browser, role, credential) {
     }
 
     const capabilityInspection = await inspectPortalPage(page, allDynamicPatterns);
+    if (!pathIsInRole(page.url(), role)) {
+      throw new Error(`Dedicated ${role} login left ${entry} during page inspection`);
+    }
     if (!capabilityInspection.readOnlyCapabilityActive) {
       throw new Error(
         `read_only_audit_capability_not_active_for_${role}: expected ${READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER}`
@@ -447,10 +491,27 @@ async function captureRoleStorageState(browser, role, credential) {
       throw new Error(`Unable to verify the authenticated ${role} identity`);
     }
 
+    let fixtureClaims = null;
+    if (artifact.targetValidation.mode !== 'production_canary' && (role === 'admin' || role === 'member')) {
+      fixtureClaims = await page.evaluate(async () => {
+        const response = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (!response.ok) return null;
+        const body = await response.json();
+        return { role: body?.role, superAdmin: body?.superAdmin };
+      });
+      if (
+        typeof fixtureClaims?.role !== 'string' ||
+        typeof fixtureClaims?.superAdmin !== 'boolean'
+      ) {
+        throw new Error(`Unable to verify the authenticated ${role} fixture claims`);
+      }
+    }
+
     return {
       storageState: await context.storageState(),
       finalPathname: canonicalPathname(sanitizeAuditUrl(page.url(), allDynamicPatterns)),
       identityId,
+      fixtureClaims,
       blockedPostLoginWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
       blockedPostLoginTelemetryRequestCount: readOnlyGuard.blockedTelemetryCount(page),
       suppressedPostLoginSideEffectRequestCount: readOnlyGuard.suppressedSideEffectCount(page),
@@ -462,6 +523,19 @@ async function captureRoleStorageState(browser, role, credential) {
 
 function uniqueDiagnostics(values) {
   return [...new Set(values.map(sanitizePortalDiagnostic).filter(Boolean))].slice(0, 20);
+}
+
+function recordConsoleError(message, applicationErrors) {
+  if (message.type() !== 'error') return false;
+  if (isVercelPreviewToolbarCspError(message.text(), {
+    mode: artifact.targetValidation.mode,
+    trustedOrigin,
+  })) {
+    vercelToolbarCspDiagnosticCount += 1;
+    return true;
+  }
+  applicationErrors.push(message.text());
+  return false;
 }
 
 function failedSameOriginDataResponse(response) {
@@ -509,15 +583,39 @@ function failedSameOriginDataRequest(request) {
     // writes. Avoid duplicating the same evidence as a network failure.
     return null;
   }
-  return `Same-origin data request failed at ${sanitizeAuditUrl(
-    request.url(),
-    allDynamicPatterns
-  )}`;
+  const category = requestFailureCategory(request.failure()?.errorText);
+  const resourceType = request.resourceType();
+  const headers = request.headers();
+  let hasRscQuery = false;
+  try {
+    hasRscQuery = new URL(request.url()).searchParams.has('_rsc');
+  } catch {
+    // The same-origin predicate already rejected unparseable URLs.
+  }
+  return {
+    message: `Same-origin data request failed (${category}) at ${sanitizeAuditUrl(
+      request.url(),
+      allDynamicPatterns
+    )}`,
+    category,
+    method,
+    resourceType,
+    path: sanitizedRequestPath(request.url(), allDynamicPatterns),
+    prefetch: 'next-router-prefetch' in headers ||
+      /\bprefetch\b/i.test(headers.purpose ?? '') ||
+      /\bprefetch\b/i.test(headers['sec-purpose'] ?? ''),
+    rsc: headers.rsc === '1' || hasRscQuery,
+  };
 }
 
 function trackSameOriginDataRequests(page) {
   const inFlight = new Set();
   const errors = [];
+  const abortedErrors = [];
+  const abortedDataRequests = [];
+  let abortedDataRequestCount = 0;
+  const pendingDataRequests = [];
+  let pendingDataRequestCount = 0;
   let lastActivityAt = Date.now();
 
   const handleRequest = (request) => {
@@ -535,8 +633,21 @@ function trackSameOriginDataRequests(page) {
   };
   const handleRequestFailed = (request) => {
     if (inFlight.delete(request)) lastActivityAt = Date.now();
-    const error = failedSameOriginDataRequest(request);
-    if (error) errors.push(error);
+    const failure = failedSameOriginDataRequest(request);
+    if (!failure) return;
+    if (isAbortedReadRequest(failure)) {
+      abortedDataRequestCount += 1;
+      boundedDiagnosticPush(abortedErrors, failure.message);
+      boundedDiagnosticPush(abortedDataRequests, {
+        method: failure.method,
+        path: failure.path,
+        resourceType: failure.resourceType,
+        prefetch: failure.prefetch,
+        rsc: failure.rsc,
+      });
+    } else {
+      errors.push(failure.message);
+    }
   };
 
   page.on('request', handleRequest);
@@ -546,6 +657,15 @@ function trackSameOriginDataRequests(page) {
 
   return {
     errors,
+    abortedErrors,
+    abortedDataRequests,
+    pendingDataRequests,
+    get abortedDataRequestCount() {
+      return abortedDataRequestCount;
+    },
+    get pendingDataRequestCount() {
+      return pendingDataRequestCount;
+    },
     async waitForSettlement(timeoutMs) {
       const boundedTimeout = Math.max(1, Math.min(timeoutMs, 5_000));
       const waitStartedAt = Date.now();
@@ -565,10 +685,12 @@ function trackSameOriginDataRequests(page) {
         }
         await page.waitForTimeout(Math.min(50, Math.max(1, settleDeadline - Date.now())));
       }
-      if (inFlight.size > 0) {
-        errors.push(
-          `Same-origin data requests did not settle within ${boundedTimeout}ms (${inFlight.size} pending)`
-        );
+      const pending = recordPendingDataRequestTimeout(
+        inFlight, errors, boundedTimeout, trustedOrigin
+      );
+      if (pending) {
+        pendingDataRequestCount = pending.count;
+        pendingDataRequests.splice(0, pendingDataRequests.length, ...pending.requests);
       }
     },
     detach() {
@@ -586,16 +708,19 @@ async function auditRoute(
   viewportName,
   requestPath,
   artifactPath = requestPath,
-  readOnlyGuard = null
+  readOnlyGuard = null,
+  options = {}
 ) {
   const page = await context.newPage();
+  if (traceHydration) await page.addInitScript(installPortalHydrationTrace);
   const startedAt = Date.now();
   const consoleErrors = [];
+  let environmentalConsoleErrorCount = 0;
   const pageErrors = [];
   const documentResponses = [];
   const dataRequests = trackSameOriginDataRequests(page);
   const handleConsole = (message) => {
-    if (message.type() === 'error') consoleErrors.push(message.text());
+    if (recordConsoleError(message, consoleErrors)) environmentalConsoleErrorCount += 1;
   };
   const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
   const handleResponse = (response) => {
@@ -630,6 +755,20 @@ async function auditRoute(
     // stale, healthy-looking snapshot has already been captured.
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
 
+    if (options.accessProbe && !documentResponses.some(({ status }) => status === 401 || status === 403)) {
+      // A denied nested layout may stream a generic shell before its server
+      // redirect reaches the browser. The shell has links but no heading, so
+      // the ordinary readiness check can return before the denial resolves.
+      // Give a real destination heading a bounded chance to appear. A blank
+      // target still fails below; this never counts absence of content as a
+      // successful denial.
+      await page.locator('h1:visible').first().waitFor({
+        state: 'visible',
+        timeout: remainingTimeout(7_500),
+      }).catch(() => {});
+      await dataRequests.waitForSettlement(remainingTimeout(5_000));
+    }
+
     let inspection;
     try {
       inspection = await inspectPortalPage(page, allDynamicPatterns);
@@ -662,7 +801,7 @@ async function auditRoute(
       documentResponses.at(-1) ??
       null;
 
-    const row = classifyPortalAuditRow({
+    const rowInput = {
       role,
       viewport: viewportName,
       path: artifactPath,
@@ -684,18 +823,56 @@ async function auditRoute(
       readOnlyCapabilityActive: inspection.readOnlyCapabilityActive,
       documentStatus: finalDocument?.status ?? null,
       consoleErrors: uniqueDiagnostics(consoleErrors),
+      vercelToolbarCspDiagnosticCount: environmentalConsoleErrorCount,
       pageErrors: uniqueDiagnostics([...pageErrors, ...dataRequests.errors]),
+      abortedDataRequestCount: dataRequests.abortedDataRequestCount,
+      abortedDataRequests: dataRequests.abortedDataRequests,
+      pendingDataRequestCount: dataRequests.pendingDataRequestCount,
+      pendingDataRequests: dataRequests.pendingDataRequests,
       h1Count: inspection.h1Count,
       horizontalOverflowPx: inspection.horizontalOverflowPx,
+      blockedWriteRequestCount,
       blockedTelemetryRequestCount:
         readOnlyGuard?.blockedTelemetryCount(page) ?? 0,
+      blockedWriteRequests: readOnlyGuard?.blockedWriteRequests(page) ?? [],
       suppressedSideEffectRequestCount:
         readOnlyGuard?.suppressedSideEffectCount(page) ?? 0,
       interactiveControlCount: inspection.interactiveControlCount,
       unnamedInteractiveControlCount: inspection.unnamedInteractiveControlCount,
       unnamedInteractiveControls: inspection.unnamedInteractiveControls,
       durationMs: Date.now() - startedAt,
+    };
+    const candidateRow = classifyPortalAuditRow(rowInput);
+    const exactDestinationVerified = isVerifiedReadOnlyDestination({
+      exactExpectedPath: !candidateRow.unexpectedRedirect && !candidateRow.queryVariantMismatch,
+      sameOrigin: candidateRow.originMatched,
+      documentStatus: candidateRow.documentStatus,
+      appReady: candidateRow.appReady,
+      h1Count: candidateRow.h1Count,
+      readOnlyCapabilityActive: candidateRow.readOnlyCapabilityActive,
+      errorFallbackDetected: candidateRow.routeErrorFallback || candidateRow.notFoundFallback,
+      consoleErrorCount: candidateRow.consoleErrorCount,
+      pageErrorCount: candidateRow.pageErrorCount,
+      otherFailureCount: candidateRow.failureReasons.length,
     });
+    const deniedRedirectVerified = isVerifiedDeniedRedirectWithCanceledGets(
+      candidateRow,
+      options.accessExpectation,
+      options.accessSourceHome,
+    );
+    const abortsAreDiagnostic = exactDestinationVerified || deniedRedirectVerified;
+    const row = dataRequests.abortedDataRequestCount === 0 || abortsAreDiagnostic
+      ? candidateRow
+      : classifyPortalAuditRow({
+          ...rowInput,
+          pageErrors: uniqueDiagnostics([...rowInput.pageErrors, ...dataRequests.abortedErrors]),
+        });
+    if (traceHydration) {
+      await logPortalHydrationTrace({
+        page, enabled: traceHydration, auditMode: requestedMode,
+        pageErrors: row.pageErrors, role, viewport: viewportName, artifactPath,
+      });
+    }
     const discoveredRoutes = row.ok
       ? resolveDynamicRouteCandidates({
           hrefPaths: inspection.hrefPaths,
@@ -837,7 +1014,7 @@ async function auditDynamicRoutes(browser, role, storageState, initialCandidates
   return { results, resolvedPaths };
 }
 
-async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPaths, mode) {
+async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaims, resolvedPaths, mode) {
   const entries = REDIRECT_ONLY_PATHS[role] ?? [];
   if (mode === 'production_canary') {
     const results = entries.map((entry) => ({
@@ -850,7 +1027,14 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPath
       resultReason: 'production_canary_root_only_policy',
       finalUrl: null,
       failureReasons: [],
+      consoleErrors: [],
+      pageErrors: [],
       blockedWriteRequestCount: 0,
+      blockedWriteRequests: [],
+      abortedDataRequestCount: 0,
+      abortedDataRequests: [],
+      pendingDataRequestCount: 0,
+      pendingDataRequests: [],
       blockedTelemetryRequestCount: 0,
       suppressedSideEffectRequestCount: 0,
     }));
@@ -883,7 +1067,14 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPath
         resultReason: resolved ? 'redirect_target_mismatch' : missingFixtureOutcome.resultReason,
         finalUrl: null,
         failureReasons: resolved ? [] : missingFixtureOutcome.failureReasons,
+        consoleErrors: [],
+        pageErrors: [],
         blockedWriteRequestCount: 0,
+        blockedWriteRequests: [],
+        abortedDataRequestCount: 0,
+        abortedDataRequests: [],
+        pendingDataRequestCount: 0,
+        pendingDataRequests: [],
         blockedTelemetryRequestCount: 0,
         suppressedSideEffectRequestCount: 0,
       };
@@ -891,34 +1082,105 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPath
         results.push(result);
         continue;
       }
+      if (!fixtureConditionMatches(entry.fixtureCondition, role, fixtureClaims)) {
+        result.failureReasons.push('fixture_condition_mismatch');
+        result.resultReason = 'fixture_condition_not_verified';
+        results.push(result);
+        continue;
+      }
 
       const page = await context.newPage();
+      if (traceHydration) await page.addInitScript(installPortalHydrationTrace).catch(() => {});
       const dataRequests = trackSameOriginDataRequests(page);
+      const consoleErrors = [];
+      const pageErrors = [];
+      const documentResponses = [];
+      const handleConsole = (message) => recordConsoleError(message, consoleErrors);
+      const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
+      const handleResponse = (response) => {
+        if (response.request().resourceType() === 'document') {
+          documentResponses.push({ status: response.status(), url: response.url() });
+        }
+      };
+      page.on('console', handleConsole);
+      page.on('pageerror', handlePageError);
+      page.on('response', handleResponse);
       try {
-        await page.goto(routeURL(resolved.sourcePath), {
-          waitUntil: 'domcontentloaded',
-          timeout: remainingTimeout(),
-        });
+        try {
+          await page.goto(routeURL(resolved.sourcePath), {
+            waitUntil: 'domcontentloaded',
+            timeout: remainingTimeout(),
+          });
+        } catch (error) {
+          const message = error?.message ?? String(error);
+          if (!message.includes('net::ERR_ABORTED') && !message.includes('interrupted by another navigation')) {
+            throw error;
+          }
+        }
+        await waitForRedirectTargetCommit(
+          page,
+          (url) => redirectTargetMatches(url.toString(), resolved.targetPath, trustedOrigin),
+          // A guarded source can chain through another redirect before load.
+          // Wait for the final navigation to commit, then inspect its document,
+          // readiness, and read-only health below instead of treating the
+          // intermediate load cancellation as a failed destination.
+          remainingTimeout(7_000)
+        );
         await waitForPortalReady(page, remainingTimeout(5_000));
+        if (entry.fixtureCondition) {
+          await page.locator('h1:visible').first().waitFor({
+            state: 'visible',
+            timeout: remainingTimeout(5_000),
+          }).catch(() => {});
+        }
         await dataRequests.waitForSettlement(remainingTimeout(5_000));
         const finalUrl = page.url();
         result.finalUrl = sanitizeAuditUrl(finalUrl, allDynamicPatterns);
-        if (redirectTargetMatches(finalUrl, resolved.targetPath, trustedOrigin)) {
+        const inspection = await inspectPortalPage(page, allDynamicPatterns);
+        const finalDocument =
+          [...documentResponses].reverse().find((response) => response.url === finalUrl) ??
+          documentResponses.at(-1) ??
+          null;
+        result.failureReasons.push(...redirectDestinationFailureReasons({
+          finalUrl,
+          expectedTarget: resolved.targetPath,
+          trustedOrigin,
+          documentStatus: finalDocument?.status ?? null,
+          inspection,
+          consoleErrorCount: consoleErrors.length,
+          pageErrorCount: pageErrors.length,
+          dataErrorCount: dataRequests.errors.length,
+          abortedDataRequestCount: dataRequests.abortedDataRequestCount,
+          blockedWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
+        }));
+        if (result.failureReasons.length === 0) {
           result.status = 'passed';
-          result.resultReason = 'exact_internal_redirect_verified';
+          result.resultReason = entry.target === '/partners#partner-signup'
+            ? 'public_partner_signup_redirect_verified'
+            : entry.fixtureCondition
+              ? 'fixture_conditional_redirect_verified'
+              : 'exact_internal_redirect_verified';
         } else {
-          result.failureReasons.push('redirect_target_mismatch');
-        }
-        if (dataRequests.errors.length > 0) {
-          result.failureReasons.push('same_origin_data_request_failed');
-          result.status = 'failed';
-          result.resultReason = 'redirect_target_data_failed';
+          result.resultReason = entry.fixtureCondition
+            ? 'fixture_conditional_redirect_unhealthy'
+            : 'redirect_target_unhealthy';
         }
       } catch (error) {
+        result.finalUrl = sanitizeAuditUrl(page.url(), allDynamicPatterns);
         result.failureReasons.push(sanitizePortalDiagnostic(error?.message ?? String(error)));
         result.resultReason = 'redirect_probe_failed';
       } finally {
+        page.off('console', handleConsole);
+        page.off('pageerror', handlePageError);
+        page.off('response', handleResponse);
+        result.consoleErrors = uniqueDiagnostics(consoleErrors);
+        result.pageErrors = uniqueDiagnostics(pageErrors);
         result.blockedWriteRequestCount = readOnlyGuard.blockedWriteCount(page);
+        result.blockedWriteRequests = readOnlyGuard.blockedWriteRequests(page);
+        result.abortedDataRequestCount = dataRequests.abortedDataRequestCount;
+        result.abortedDataRequests = dataRequests.abortedDataRequests;
+        result.pendingDataRequestCount = dataRequests.pendingDataRequestCount;
+        result.pendingDataRequests = dataRequests.pendingDataRequests;
         result.blockedTelemetryRequestCount = readOnlyGuard.blockedTelemetryCount(page);
         result.suppressedSideEffectRequestCount = readOnlyGuard.suppressedSideEffectCount(page);
         if (result.blockedWriteRequestCount > 0) {
@@ -928,6 +1190,12 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, resolvedPath
         }
         result.failureReasons = [...new Set(result.failureReasons)];
         dataRequests.detach();
+        if (traceHydration) {
+          await logPortalHydrationTrace({
+            page, enabled: traceHydration, auditMode: requestedMode,
+            pageErrors: result.pageErrors, role, viewport: 'desktop', artifactPath: entry.path,
+          });
+        }
         await page.close();
       }
       results.push(result);
@@ -985,19 +1253,33 @@ async function exerciseReadOnlyNavigation(
     finalUrl: null,
     failureReasons: [],
     blockedWriteRequestCount: 0,
+    blockedWriteRequests: [],
+    abortedDataRequestCount: 0,
+    abortedDataRequests: [],
+    pendingDataRequestCount: 0,
+    pendingDataRequests: [],
     blockedTelemetryRequestCount: 0,
     suppressedSideEffectRequestCount: 0,
   };
   const page = await context.newPage();
   const consoleErrors = [];
+  let environmentalConsoleErrorCount = 0;
   const pageErrors = [];
+  const documentResponses = [];
   const dataRequests = trackSameOriginDataRequests(page);
+  let verifiedDestination = false;
   const handleConsole = (message) => {
-    if (message.type() === 'error') consoleErrors.push(message.text());
+    if (recordConsoleError(message, consoleErrors)) environmentalConsoleErrorCount += 1;
   };
   const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
+  const handleResponse = (response) => {
+    if (response.request().resourceType() === 'document') {
+      documentResponses.push({ status: response.status(), url: response.url() });
+    }
+  };
   page.on('console', handleConsole);
   page.on('pageerror', handlePageError);
+  page.on('response', handleResponse);
 
   try {
     await page.goto(routeURL(contract.sourcePath), {
@@ -1007,6 +1289,12 @@ async function exerciseReadOnlyNavigation(
     await waitForPortalReady(page, remainingTimeout(5_000));
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
     const sourceInspection = await inspectPortalPage(page, allDynamicPatterns);
+    // Keep this in memory only. Comparing headings prevents a client-side URL
+    // change from making the old source H1 look like a rendered destination.
+    const sourceHeadingText = contract.targetReadySelector
+      ? await page.locator('h1:visible').first()
+          .textContent({ timeout: remainingTimeout(5_000) }).catch(() => null)
+      : null;
     if (sourceInspection.errorFallbackDetected) {
       result.reason = 'source_error_fallback';
       result.failureReasons.push('source_error_fallback');
@@ -1020,8 +1308,33 @@ async function exerciseReadOnlyNavigation(
         contract.emptyStateText &&
         sourceInspection.bodyText.includes(contract.emptyStateText)
       ) {
-        result.status = 'not_applicable';
-        result.reason = 'declared_empty_state_verified';
+        const sourceUrl = page.url();
+        const sourceDocument =
+          [...documentResponses].reverse().find((response) => response.url === sourceUrl) ??
+          documentResponses.at(-1) ??
+          null;
+        // A declared empty state satisfies a conditional action only on a
+        // healthy, exact, read-only source. Canceled prefetches are diagnostic
+        // after that proof, just as they are after a verified destination.
+        verifiedDestination = isVerifiedReadOnlyDestination({
+          exactExpectedPath: redirectTargetMatches(sourceUrl, contract.sourcePath, trustedOrigin),
+          sameOrigin: new URL(sourceUrl).origin === trustedOrigin,
+          documentStatus: sourceDocument?.status ?? null,
+          appReady: sourceInspection.appReady,
+          h1Count: sourceInspection.h1Count,
+          readOnlyCapabilityActive: sourceInspection.readOnlyCapabilityActive,
+          errorFallbackDetected: sourceInspection.errorFallbackDetected,
+          consoleErrorCount: uniqueDiagnostics(consoleErrors).length,
+          pageErrorCount: uniqueDiagnostics(pageErrors).length,
+          otherFailureCount: dataRequests.errors.length +
+            (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
+        });
+        result.status = verifiedDestination ? 'not_applicable' : 'failed';
+        result.reason = verifiedDestination
+          ? 'declared_empty_state_verified'
+          : 'declared_empty_state_source_unhealthy';
+        result.finalUrl = sanitizeAuditUrl(sourceUrl, allDynamicPatterns);
+        if (!verifiedDestination) result.failureReasons.push(result.reason);
         return result;
       }
       result.reason = contract.targetPattern
@@ -1051,6 +1364,14 @@ async function exerciseReadOnlyNavigation(
       { timeout: remainingTimeout(20_000) }
     );
     await waitForPortalReady(page, remainingTimeout(5_000));
+    const targetMarkerReady = contract.targetReadySelector
+      ? await waitForVisibleActionTarget(
+          page,
+          contract.targetReadySelector,
+          sourceHeadingText,
+          remainingTimeout(7_500)
+        )
+      : true;
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
     const targetInspection = await inspectPortalPage(page, allDynamicPatterns);
     const finalPath = `${new URL(page.url()).pathname}${new URL(page.url()).search}`;
@@ -1058,11 +1379,19 @@ async function exerciseReadOnlyNavigation(
       result.failureReasons.push('navigation_target_mismatch');
     }
     if (!pathIsInRole(page.url(), role)) result.failureReasons.push('wrong_role_redirect');
+    if (!targetMarkerReady) result.failureReasons.push('target_ready_marker_missing');
     if (!targetInspection.appReady) result.failureReasons.push('app_not_ready');
     if (targetInspection.errorFallbackDetected) result.failureReasons.push('route_error_fallback');
+    if (!targetInspection.readOnlyCapabilityActive) {
+      result.failureReasons.push('read_only_audit_capability_not_active');
+    }
     if (targetInspection.h1Count !== 1) result.failureReasons.push('invalid_h1_count');
     if (targetInspection.horizontalOverflowPx > 1) {
       result.failureReasons.push('horizontal_overflow');
+    }
+    const finalDocument = documentResponses.at(-1) ?? null;
+    if (!Number.isInteger(finalDocument?.status) || finalDocument.status < 200 || finalDocument.status >= 300) {
+      result.failureReasons.push('document_error_status');
     }
     result.failureReasons.push(
       ...uniqueDiagnostics(consoleErrors).map(() => 'console_error'),
@@ -1073,6 +1402,19 @@ async function exerciseReadOnlyNavigation(
       page.url(),
       contract.targetPattern ? allDynamicPatterns : []
     );
+    verifiedDestination = isVerifiedReadOnlyDestination({
+      exactExpectedPath: navigationTargetMatches(finalPath, contract, resolvedDynamicPath),
+      sameOrigin: new URL(page.url()).origin === trustedOrigin,
+      documentStatus: finalDocument?.status ?? null,
+      appReady: targetInspection.appReady,
+      h1Count: targetInspection.h1Count,
+      readOnlyCapabilityActive: targetInspection.readOnlyCapabilityActive,
+      errorFallbackDetected: targetInspection.errorFallbackDetected,
+      consoleErrorCount: uniqueDiagnostics(consoleErrors).length,
+      pageErrorCount: uniqueDiagnostics(pageErrors).length,
+      otherFailureCount: result.failureReasons.length + dataRequests.errors.length +
+        (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
+    });
     result.status = result.failureReasons.length === 0 ? 'passed' : 'failed';
     result.reason = result.status === 'passed'
       ? contract.kind === 'read_only_discovered_navigation'
@@ -1086,17 +1428,48 @@ async function exerciseReadOnlyNavigation(
     return result;
   } finally {
     applyBlockedWriteFailure(result, readOnlyGuard.blockedWriteCount(page));
+    result.blockedWriteRequests = readOnlyGuard.blockedWriteRequests(page);
+    result.abortedDataRequestCount = dataRequests.abortedDataRequestCount;
+    result.abortedDataRequests = dataRequests.abortedDataRequests;
+    result.pendingDataRequestCount = dataRequests.pendingDataRequestCount;
+    result.pendingDataRequests = dataRequests.pendingDataRequests;
     result.blockedTelemetryRequestCount = readOnlyGuard.blockedTelemetryCount(page);
     result.suppressedSideEffectRequestCount = readOnlyGuard.suppressedSideEffectCount(page);
-    if (dataRequests.errors.length > 0) {
+    result.vercelToolbarCspDiagnosticCount = environmentalConsoleErrorCount;
+    if (uniqueDiagnostics(consoleErrors).length > 0) {
+      result.failureReasons = [...new Set([...result.failureReasons, 'console_error'])];
+      result.status = 'failed';
+    }
+    if (uniqueDiagnostics(pageErrors).length > 0) {
+      result.failureReasons = [...new Set([...result.failureReasons, 'page_error'])];
+      result.status = 'failed';
+    }
+    if (
+      result.status === 'failed' &&
+      (result.reason === 'read_only_anchor_navigation_exercised' ||
+        result.reason === 'visible_fixture_navigated_without_onclick_side_effects')
+    ) {
+      result.reason = 'action_checks_failed';
+    }
+    verifiedDestination = verifiedDestination &&
+      (result.status === 'passed' ||
+        (result.status === 'not_applicable' && result.reason === 'declared_empty_state_verified')) &&
+      dataRequests.errors.length === 0 &&
+      result.blockedWriteRequestCount === 0;
+    if (
+      dataRequests.errors.length > 0 ||
+      (dataRequests.abortedDataRequestCount > 0 && !verifiedDestination)
+    ) {
+      const previousStatus = result.status;
       result.failureReasons = [
         ...new Set([...result.failureReasons, 'same_origin_data_request_failed']),
       ];
       result.status = 'failed';
-      result.reason = 'data_request_failed';
+      if (previousStatus !== 'failed') result.reason = 'data_request_failed';
     }
     page.off('console', handleConsole);
     page.off('pageerror', handlePageError);
+    page.off('response', handleResponse);
     dataRequests.detach();
     await page.close();
   }
@@ -1117,6 +1490,11 @@ async function auditRoleActions(browser, role, storageState, resolvedPaths, mode
       finalUrl: null,
       failureReasons: [],
       blockedWriteRequestCount: 0,
+      blockedWriteRequests: [],
+      abortedDataRequestCount: 0,
+      abortedDataRequests: [],
+      pendingDataRequestCount: 0,
+      pendingDataRequests: [],
       blockedTelemetryRequestCount: 0,
       suppressedSideEffectRequestCount: 0,
     }));
@@ -1161,14 +1539,19 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
     });
     const readOnlyGuard = await installReadOnlyRequestGuard(context);
     try {
-      const targetRoot = SECTION_LOGIN_REDIRECT[targetRole];
+      const targetRoot = ROLE_ACCESS_ROOTS[targetRole];
       const audit = await auditRoute(
         context,
         targetRole,
         'desktop',
         targetRoot,
         targetRoot,
-        readOnlyGuard
+        readOnlyGuard,
+        {
+          accessProbe: true,
+          accessExpectation: expectation,
+          accessSourceHome: ROLE_ACCESS_ROOTS[sourceRole],
+        }
       );
       const outcome = evaluateAccessProbe(audit.row, expectation);
       return {
@@ -1177,9 +1560,22 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         expectation,
         requestedPath: targetRoot,
         finalPathname: audit.row.finalPathname,
+        documentStatus: audit.row.documentStatus,
+        appReady: audit.row.appReady,
+        h1Count: audit.row.h1Count,
+        routeErrorFallback: audit.row.routeErrorFallback,
+        notFoundFallback: audit.row.notFoundFallback,
+        readOnlyCapabilityActive: audit.row.readOnlyCapabilityActive,
+        consoleErrorCount: audit.row.consoleErrorCount,
+        pageErrorCount: audit.row.pageErrorCount,
+        durationMs: audit.row.durationMs,
         targetUsable: outcome.targetUsable,
         denialEvidence: outcome.denialEvidence,
         failureReasons: audit.row.failureReasons,
+        abortedDataRequestCount: audit.row.abortedDataRequestCount,
+        abortedDataRequests: audit.row.abortedDataRequests,
+        pendingDataRequestCount: audit.row.pendingDataRequestCount,
+        pendingDataRequests: audit.row.pendingDataRequests,
         ok: outcome.ok,
       };
     } catch (error) {
@@ -1187,11 +1583,24 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         sourceRole,
         targetRole,
         expectation,
-        requestedPath: SECTION_LOGIN_REDIRECT[targetRole],
+        requestedPath: ROLE_ACCESS_ROOTS[targetRole],
         finalPathname: null,
+        documentStatus: null,
+        appReady: false,
+        h1Count: 0,
+        routeErrorFallback: false,
+        notFoundFallback: false,
+        readOnlyCapabilityActive: false,
+        consoleErrorCount: 0,
+        pageErrorCount: 0,
+        durationMs: null,
         targetUsable: false,
         denialEvidence: null,
         failureReasons: ['access_probe_execution_failed'],
+        abortedDataRequestCount: 0,
+        abortedDataRequests: [],
+        pendingDataRequestCount: 0,
+        pendingDataRequests: [],
         ok: false,
         error: sanitizePortalDiagnostic(error?.message ?? String(error)),
       };
@@ -1217,6 +1626,7 @@ function summarize() {
   let totalRequiredActions = 0;
   let satisfiedRequiredActions = 0;
   let failedRequiredActions = 0;
+  let abortedDataRequestCount = 0;
   for (const role of Object.values(artifact.roles)) {
     if (role.status !== 'passed') failedRoles += 1;
     for (const viewport of Object.values(role.viewports ?? {})) {
@@ -1236,6 +1646,23 @@ function summarize() {
     totalRequiredActions += role.actionCoverage?.summary.required ?? 0;
     satisfiedRequiredActions += role.actionCoverage?.summary.satisfiedRequired ?? 0;
     failedRequiredActions += role.actionCoverage?.summary.failedRequired ?? 0;
+    for (const viewport of Object.values(role.viewports ?? {})) {
+      for (const row of viewport.rows ?? []) {
+        abortedDataRequestCount += row.abortedDataRequestCount ?? 0;
+      }
+    }
+    for (const route of role.dynamicRoutes ?? []) {
+      abortedDataRequestCount += route.routeCheck?.abortedDataRequestCount ?? 0;
+    }
+    for (const action of role.actionCoverage?.results ?? []) {
+      abortedDataRequestCount += action.abortedDataRequestCount ?? 0;
+    }
+    for (const redirect of role.redirectCoverage?.results ?? []) {
+      abortedDataRequestCount += redirect.abortedDataRequestCount ?? 0;
+    }
+  }
+  for (const probe of artifact.accessMatrix.probes ?? []) {
+    abortedDataRequestCount += probe.abortedDataRequestCount ?? 0;
   }
   return {
     totalStaticChecks: total,
@@ -1255,6 +1682,8 @@ function summarize() {
     totalRequiredActions,
     satisfiedRequiredActions,
     failedRequiredActions,
+    vercelToolbarCspDiagnosticCount,
+    abortedDataRequestCount,
   };
 }
 
@@ -1492,6 +1921,7 @@ async function run() {
               browser,
               role,
               authByRole[role].storageState,
+              authByRole[role].fixtureClaims,
               dynamicCoverage.resolvedPaths,
               targetValidation.mode
             );

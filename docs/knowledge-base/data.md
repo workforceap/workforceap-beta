@@ -45,6 +45,25 @@ This overview shows selected declared relationships. Use the [complete Mermaid r
 | Audits and workflow logs | `AuditLog`, `AuditEvent`, `MemberEvent`, `WebhookEvent`, `CronExecution`, `WorkflowDiagnostic` | These record different events and audiences. They are not interchangeable audit trails or proof that an external effect completed. |
 | AI output and conversation memory | `AIToolResult`, `CoachMemory`, `ApplicationAiFeedback` | Application/member data stays within its authorized product context. GBrain's developer KB is a source-navigation layer, not a mirror of this content. |
 
+Orphan recovery uses the verified Auth ID. Tenant hints come from the resolved
+request or server-controlled Auth `app_metadata`, never user-editable
+`user_metadata`. If an existing non-member app user lacks a profile, recovery
+restores that role from stored role rows or portal associations without adding
+the baseline member role. An Auth identity with no app row still falls back to
+member provisioning; its intended role cannot be established from Auth identity
+alone and needs a separate enrollment/recovery decision.
+
+`User.email` is also unique. If a provisioning write hits P2002, recovery only
+accepts it as a concurrent success after reading both `User` and `Profile` by
+the same verified Auth ID. A same-email row under another ID remains an identity
+conflict; this path does not relink identities or change tenant ownership.
+
+Public apply signup can receive an existing unconfirmed Supabase Auth user with
+nonempty `identities`. An app-email P2002 after that response returns staff-assisted
+recovery and preserves the Auth identity. This can leave a genuinely new Auth
+identity without app rows, but a signUp response cannot safely authorize deleting
+it; the broader Auth-only enrollment and recovery policy is tracked separately.
+
 ## Trust and transaction boundaries
 
 Read [tenant scope](../../lib/tenant/withTenantScope.ts), [organization helpers](../../lib/tenant/organization.ts), [request organization resolution](../../lib/tenant/resolveOrgFromRequest.ts), [Prisma](../../lib/db/prisma.ts), and [request GUC context](../../lib/db/withRequestGuc.ts).

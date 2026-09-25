@@ -3,11 +3,11 @@ import { pickExactEmailMatch, normalizeEmail, EXACT_EMAIL_CANDIDATE_LIMIT } from
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { NextRequest, NextResponse, after } from 'next/server';
 import { WEAK_PASSWORD_MESSAGE, WEAK_PASSWORD_REASON, isWeakPasswordError } from '@/lib/auth/authProviderError';
+import type { SignupErrorReason } from '@/lib/apply/signupErrorReason';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabaseCookieOptions } from '@/lib/supabaseCookieOptions';
 import { prisma } from '@/lib/db/prisma';
-import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
@@ -21,6 +21,7 @@ import { ApplicationStatus } from '@prisma/client';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logger } from '@/lib/observability/logger';
+import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
 import { withApiGuc, withSystemGuc } from '@/lib/db/withRequestGuc';
 import { withDbRetry, isConnectionAcquisitionError } from '@/lib/db/withDbRetry';
 import { autoAssignAmbassadorFromReferral } from '@/lib/counselor/ambassadorAutoAssign';
@@ -88,6 +89,7 @@ const accountRecoveryRequiredResponse = () =>
   NextResponse.json(
     {
       code: 'ACCOUNT_RECOVERY_REQUIRED',
+      reason: 'account_recovery_required' satisfies SignupErrorReason,
       error: 'An account with this email already exists. If you cannot sign in, contact WorkforceAP at (512) 777-1808 for staff-assisted account recovery.',
     },
     { status: 409 },
@@ -103,31 +105,6 @@ function isAppEmailCollision(error: unknown): boolean {
     : undefined;
   const fields = Array.isArray(target) ? target : typeof target === 'string' ? [target] : [];
   return fields.some((field) => typeof field === 'string' && field.toLowerCase().includes('email'));
-}
-
-async function compensateFreshApplySignupAuthIdentity(input: {
-  userId: string;
-  requestedEmail: string;
-}): Promise<'deleted' | 'guard_failed' | 'delete_failed'> {
-  try {
-    const admin = getSupabaseAdmin();
-    const { data, error } = await admin.auth.admin.getUserById(input.userId);
-    const providerUser = data?.user;
-    const providerEmail = providerUser?.email?.trim().toLowerCase();
-    if (
-      error ||
-      !providerUser ||
-      providerUser.id !== input.userId ||
-      providerEmail !== input.requestedEmail.trim().toLowerCase()
-    ) {
-      return 'guard_failed';
-    }
-
-    const { error: deleteError } = await admin.auth.admin.deleteUser(input.userId);
-    return deleteError ? 'delete_failed' : 'deleted';
-  } catch {
-    return 'delete_failed';
-  }
 }
 
 const applySignupSchema = z.object({
@@ -195,7 +172,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     const { success: rateOk } = await checkApplySignupRateLimit(ip);
     if (!rateOk) {
       return NextResponse.json(
-        { error: 'We received a lot of signup attempts from this connection in a short window. Please wait a moment and try again.' },
+        { error: 'We received a lot of signup attempts from this connection in a short window. Please wait a moment and try again.', reason: 'rate_limited' satisfies SignupErrorReason },
         { status: 429 }
       );
     }
@@ -204,12 +181,20 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: 'We could not read your signup details. Please refresh the page and try again.' }, { status: 400 });
+      return NextResponse.json({ error: 'We could not read your signup details. Please refresh the page and try again.', reason: 'request_unreadable' satisfies SignupErrorReason }, { status: 400 });
     }
   
     const parsed = applySignupSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Please review your information and try again.' }, { status: 400 });
+      const issue = parsed.error.errors[0];
+      return NextResponse.json(
+        {
+          error: issue?.message ?? 'Please review your information and try again.',
+          reason: 'invalid_field' satisfies SignupErrorReason,
+          field: typeof issue?.path[0] === 'string' ? issue.path[0] : undefined,
+        },
+        { status: 400 },
+      );
     }
     const publicAssistanceIssue = publicAssistanceFollowUpIssue({
       snapWic: parsed.data.snapWic,
@@ -274,7 +259,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     const { success: emailRateOk } = await checkSignupEmailRateLimit(email);
     if (!emailRateOk) {
       return NextResponse.json(
-        { error: 'Too many signup attempts for this email. Please try again later.' },
+        { error: 'Too many signup attempts for this email. Please try again later.', reason: 'rate_limited' satisfies SignupErrorReason },
         { status: 429 }
       );
     }
@@ -285,7 +270,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       if (!secret?.trim()) {
         console.error('TURNSTILE_SECRET_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
         return NextResponse.json(
-          { error: 'Signup is temporarily unavailable. Please try again later.' },
+          { error: 'Signup is temporarily unavailable. Please try again later.', reason: 'service_unavailable' satisfies SignupErrorReason },
           { status: 503 }
         );
       }
@@ -295,17 +280,17 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) {
         console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
         return NextResponse.json(
-          { error: 'Signup is temporarily unavailable. Please try again later.' },
+          { error: 'Signup is temporarily unavailable. Please try again later.', reason: 'service_unavailable' satisfies SignupErrorReason },
           { status: 503 }
         );
       }
       const tok = turnstileToken?.trim() ?? '';
       if (!tok) {
-        return NextResponse.json({ error: 'Please complete the security check.' }, { status: 400 });
+        return NextResponse.json({ error: 'Please complete the security check.', reason: 'security_check_required' satisfies SignupErrorReason }, { status: 400 });
       }
       const ok = await verifyTurnstileResponse(secret, tok, ip !== 'unknown' ? ip : undefined);
       if (!ok) {
-        return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 400 });
+        return NextResponse.json({ error: 'Security check failed. Please try again.', reason: 'security_check_failed' satisfies SignupErrorReason }, { status: 400 });
       }
     }
 
@@ -315,7 +300,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     const programSlug = canonicalizeProgramSlug(programRankedSlugs[0]);
     const program = getProgramBySlug(programSlug);
     if (!program) {
-      return NextResponse.json({ error: 'We could not match that program choice. Please go back and choose your program again.' }, { status: 400 });
+      return NextResponse.json({ error: 'We could not match that program choice. Please go back and choose your program again.', reason: 'program_unmatched' satisfies SignupErrorReason }, { status: 400 });
     }
     // Keep accepting applications for newly approved programs while their
     // Enterprise Coursera curricula are activated. The application records
@@ -448,6 +433,13 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         if (isSponsorshipActive(partner, new Date())) {
           sponsorPartner = partner;
         }
+      } else {
+        // Dropped ref (unknown code, inactive partner, or a partner in
+        // another organization): attribution stays off, but say so, or a
+        // broken partner link looks exactly like organic traffic. The body
+        // value is caller-controlled, so log its fingerprint rather than text.
+        logger.warn('apply/signup: partner ref matched no active partner in this organization',
+          droppedPartnerRefLogContext(refRaw, organizationId));
       }
     }
 
@@ -475,7 +467,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!supabaseUrl || !supabaseAnonKey) {
-      return NextResponse.json({ error: 'Our signup service is temporarily unavailable. Please try again shortly.' }, { status: 500 });
+      return NextResponse.json({ error: 'Our signup service is temporarily unavailable. Please try again shortly.', reason: 'service_unavailable' satisfies SignupErrorReason }, { status: 500 });
     }
 
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -504,6 +496,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         {
           error: `You are already signed in as ${existingSession.user.email ?? 'another account'}. Sign out first, then create the new account.`,
           code: 'ALREADY_SIGNED_IN',
+          reason: 'already_signed_in' satisfies SignupErrorReason,
         },
         { status: 409 },
       );
@@ -540,7 +533,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     if (authError) {
       if (authError.message.includes('already registered') || authError.code === 'user_already_exists') {
         return NextResponse.json(
-          { error: 'An account with this email already exists. Log in to continue, or use password reset if you are returning.' },
+          { error: 'An account with this email already exists. Log in to continue, or use password reset if you are returning.', reason: 'email_exists' satisfies SignupErrorReason },
           { status: 400 }
         );
       }
@@ -562,14 +555,13 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     // falling through to the users.email unique constraint and a 500.
     if (Array.isArray(user.identities) && user.identities.length === 0) {
       return NextResponse.json(
-        { error: 'An account with this email already exists. Log in to continue, or use password reset if you are returning.' },
+        { error: 'An account with this email already exists. Log in to continue, or use password reset if you are returning.', reason: 'email_exists' satisfies SignupErrorReason },
         { status: 400 }
       );
     }
-    // Supabase only returns a non-empty identities array for a newly created
-    // account. Treat an absent/empty array as unproven and never compensate it.
-    const createdAuthIdentityThisRequest =
-      Array.isArray(user.identities) && user.identities.length > 0;
+    // Existing unconfirmed Auth users can also return a nonempty identities
+    // array. Neither this response nor an exact ID/email read proves that this
+    // request created the provider identity.
 
     const priorUser = await withDbRetry(() => prisma.$transaction((tx) => tx.user.findUnique({
       where: { id: user.id },
@@ -577,6 +569,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     })));
 
     let createdApplicationId: string | null = null;
+    // Whether the awaited applicant receipt below went out. Reported to the
+    // client so the confirmation page retries the receipt only when this send
+    // failed, instead of sending a second copy on every signup (WAP-240).
+    let receiptSent = false;
     /**
      * Set inside the transaction when the sponsoring partner has no funded
      * seats left. Soft cap: the student still enrolls, we just skip the
@@ -862,6 +858,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         if (!result.ok) {
           throw new Error(result.error ?? 'Application confirmation email failed');
         }
+        receiptSent = true;
       } catch (err) {
         logger.error('Member application confirmation email failed', { err });
         captureApiError(err, {
@@ -975,18 +972,17 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         }
       }
     } catch (dbError) {
-      if (createdAuthIdentityThisRequest && isAppEmailCollision(dbError)) {
-        const compensation = await compensateFreshApplySignupAuthIdentity({
-          userId: user.id,
-          requestedEmail: email,
-        });
+      if (isAppEmailCollision(dbError)) {
+        // Preserve the Auth identity: signUp can return an existing unconfirmed
+        // user with nonempty identities, so deleting it could remove someone
+        // else's recoverable account. Staff must resolve the app-email conflict.
         captureApiError(
-          new Error('Apply signup app-email collision after Auth creation'),
+          new Error('Apply signup app-email collision after Auth response'),
           {
-            route: 'POST /api/apply/signup#authCompensation',
+            route: 'POST /api/apply/signup#appEmailCollision',
             extra: {
               collision: 'app_email_unique',
-              compensation,
+              auth_identity_preserved: true,
             },
           },
         );
@@ -1069,6 +1065,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         success: true,
         redirectTo: `/apply/confirmation${schoolQuery}${minorQuery}`,
         curriculumAssignmentPending,
+        receiptSent,
       });
     }
   
@@ -1077,6 +1074,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       message: 'Please verify your email, then log in to view your dashboard and next steps.',
       redirectTo: '/login',
       curriculumAssignmentPending,
+      receiptSent,
     });
   } catch (error) {
     logger.error('/apply/signup', { err: error });

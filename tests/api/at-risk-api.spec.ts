@@ -60,6 +60,8 @@ vi.mock('@/lib/counselor/staffMemberAccess', () => ({
 
 vi.mock('@/lib/member/persistedAtRisk', () => ({ loadPersistedAtRiskMembers: vi.fn() }));
 
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(() => Promise.resolve()) }));
+
 // ─── Imports after mocks ───
 import { loadPersistedAtRiskMembers } from '@/lib/member/persistedAtRisk';
 import { GET as getAtRiskMembers, PATCH as patchAtRiskMembers } from '@/app/api/admin/members/at-risk/route';
@@ -68,6 +70,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor, requireAdminOrCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
+import { auditLog } from '@/lib/audit';
 
 // ─── Helpers ───
 function makeRequest(url: string, init?: RequestInit): any {
@@ -118,6 +121,81 @@ describe('GET /api/admin/members/at-risk', () => {
 describe('PATCH /api/admin/members/at-risk', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.atRiskAlert.findFirst).mockResolvedValue({ id: 'alert-1', userId: 'member-1' } as any);
+    vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(true);
+  });
+
+  function patchRequest(body: unknown) {
+    return makeRequest('http://localhost/api/admin/members/at-risk', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  it('lets the assigned counselor acknowledge and records the member in the audit log', async () => {
+    vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: true, userId: 'counselor-1' } as any);
+    vi.mocked(prisma.atRiskAlert.update).mockResolvedValue({ id: 'alert-1', status: 'acknowledged' } as any);
+
+    const res = await patchAtRiskMembers(patchRequest({ alertId: 'alert-1', status: 'acknowledged' }));
+
+    expect(res.status).toBe(200);
+    expect(assertStaffCanAccessMemberRecord).toHaveBeenCalledWith('counselor-1', 'member-1');
+    expect(prisma.atRiskAlert.findFirst).toHaveBeenCalledWith({
+      where: { id: 'alert-1', user: { organizationId: 'org-1' } },
+      select: { id: true, userId: true },
+    });
+    expect(prisma.atRiskAlert.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'alert-1' },
+      data: expect.objectContaining({ status: 'acknowledged', counselorId: 'counselor-1' }),
+    }));
+    expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({
+      actorUserId: 'counselor-1',
+      action: 'admin_at_risk_alert_update',
+      targetId: 'alert-1',
+      metadata: { status: 'acknowledged', memberId: 'member-1' },
+    }));
+  });
+
+  it.each(['acknowledged', 'resolved', 'escalated'])(
+    'returns 404 and changes nothing when a same-org counselor who is not assigned to the member tries %s',
+    async (status) => {
+      vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: true, userId: 'counselor-2' } as any);
+      vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(false);
+
+      const res = await patchAtRiskMembers(patchRequest({ alertId: 'alert-1', status }));
+
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: 'Alert not found' });
+      expect(assertStaffCanAccessMemberRecord).toHaveBeenCalledWith('counselor-2', 'member-1');
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(prisma.atRiskAlert.update).not.toHaveBeenCalled();
+      expect(auditLog).not.toHaveBeenCalled();
+    },
+  );
+
+  it('returns 404 and changes nothing for an admin whose org does not own the alert', async () => {
+    vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: true, userId: 'admin-org-2' } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ organizationId: 'org-2' } as any);
+    vi.mocked(prisma.atRiskAlert.findFirst).mockResolvedValue(null);
+
+    const res = await patchAtRiskMembers(patchRequest({ alertId: 'alert-1', status: 'resolved' }));
+
+    expect(res.status).toBe(404);
+    expect(prisma.atRiskAlert.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'alert-1', user: { organizationId: 'org-2' } },
+    }));
+    expect(prisma.atRiskAlert.update).not.toHaveBeenCalled();
+    expect(auditLog).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 without touching alerts when the caller is not signed in', async () => {
+    vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: false, error: 'Unauthorized', status: 401 });
+
+    const res = await patchAtRiskMembers(patchRequest({ alertId: 'alert-1', status: 'resolved' }));
+
+    expect(res.status).toBe(401);
+    expect(prisma.atRiskAlert.findFirst).not.toHaveBeenCalled();
+    expect(prisma.atRiskAlert.update).not.toHaveBeenCalled();
   });
 
   it('acknowledges an alert', async () => {

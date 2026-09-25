@@ -24,6 +24,9 @@ export const WAP_LOCALE_COOKIE = 'wap-locale';
 /** Middleware sets this request header so layouts/metadata can read active locale. */
 export const WAP_LOCALE_HEADER = 'x-wap-locale';
 
+/** Present only when the browser URL has an explicit /en, /es, /fr, or /pt prefix. */
+export const WAP_EXPLICIT_LOCALE_HEADER = 'x-wap-explicit-locale';
+
 export function isAppLocale(value: string): value is AppLocale {
   return (APP_LOCALES as readonly string[]).includes(value);
 }

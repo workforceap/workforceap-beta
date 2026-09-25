@@ -717,6 +717,25 @@ a.wa-kit-tab {
   max-width: 100%;
   min-width: 0;
 }
+/* An overflowing table scroller is a keyboard tab stop (browsers make
+   scrollable regions focusable), but the wrap's overflow:hidden clips any
+   ring drawn on the scroller itself. The scroller keeps the standard recipe
+   (replacing the clipped UA outline), and the wrap draws the ring you can see
+   (WAP-253 item 4); forced-colors mode drops box-shadow, so outline there. */
+.wa-kit-table-wrap .wa-overflow-x-auto:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
+}
+.wa-kit-table-wrap:has(> .wa-overflow-x-auto:focus-visible) {
+  box-shadow: var(--wa-focus-ring);
+}
+@media (forced-colors: active) {
+  .wa-kit-table-wrap:has(> .wa-overflow-x-auto:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 .wa-kit-table {
   width: 100%;
   border-collapse: collapse;

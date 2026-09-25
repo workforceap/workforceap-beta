@@ -1,16 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
   DataTable,
   type Column,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
+import { ProgramChangeReviewActions } from '@/components/admin/ProgramChangeReviewActions';
 
 /**
  * Program change requests — admin review queue rendered as a dense table.
@@ -21,8 +20,9 @@ import {
  * Status is an Astryx Token (Pending=yellow, Approved=green, Rejected=pink, …).
  * Wide table collapses to stacked cards on mobile via DataTable mobile="cards".
  *
- * This is a pure presenter: the page resolves program slugs → friendly titles
- * and the raw status enum → display status server-side, then hands rows down.
+ * The page resolves program slugs → friendly titles and the raw status enum →
+ * display status server-side, then hands rows down. With `reviewable`, pending
+ * rows get Approve / Deny controls (WAP-193); otherwise it is a pure presenter.
  */
 
 /** Display status mapped from the underlying ProgramChangeRequestStatus enum. */
@@ -48,6 +48,8 @@ export interface ProgramChangeRequestsKitProps {
   requests?: ProgramChangeRow[];
   /** Count of requests still awaiting review (for the subtitle). */
   pendingCount?: number;
+  /** Show Approve / Deny (with an optional admin note) on pending rows. */
+  reviewable?: boolean;
 }
 
 const DEFAULT_REQUESTS: ProgramChangeRow[] = [
@@ -87,7 +89,12 @@ const STATUS_TOKEN_COLOR: Record<ProgramChangeDisplayStatus, TokenColor> = {
 export function ProgramChangeRequestsKit({
   requests = DEFAULT_REQUESTS,
   pendingCount = 3,
+  reviewable = false,
 }: ProgramChangeRequestsKitProps) {
+  const decision = (row: ProgramChangeRow) =>
+    reviewable && row.status === 'Pending' ? (
+      <ProgramChangeReviewActions id={row.id} student={row.student} requested={row.requested} />
+    ) : null;
   const subtitle = `${pendingCount.toLocaleString()} pending approval`;
 
   const columns: Column<ProgramChangeRow>[] = [
@@ -117,6 +124,9 @@ export function ProgramChangeRequestsKit({
       render: (row) => <Token label={row.status} size="sm" color={STATUS_TOKEN_COLOR[row.status]} />,
     },
   ];
+  if (reviewable) {
+    columns.push({ key: 'decision', header: 'Decision', render: decision });
+  }
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
@@ -125,9 +135,12 @@ export function ProgramChangeRequestsKit({
         kicker="Enrollment"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/program-change-requests?ui=legacy" as={Link as never} isStandalone>
-            <Button label="Review & decide" variant="secondary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton
+            href="/admin/program-change-requests?ui=legacy"
+            label={reviewable ? 'History & notes' : 'Review & decide'}
+            variant="secondary"
+            size="sm"
+          />
         }
       />
 
@@ -135,7 +148,7 @@ export function ProgramChangeRequestsKit({
         columns={columns}
         rows={requests}
         rowKey={(row) => row.id}
-        minWidth={760}
+        minWidth={reviewable ? 1000 : 760}
         mobile="cards"
         cardRender={(row) => (
           <Card>
@@ -183,6 +196,7 @@ export function ProgramChangeRequestsKit({
             >
               {row.reason}
             </div>
+            {decision(row) ? <div style={{ marginTop: 12 }}>{decision(row)}</div> : null}
           </Card>
         )}
         emptyTitle="No program change requests"

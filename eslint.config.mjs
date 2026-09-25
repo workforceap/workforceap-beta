@@ -2,6 +2,7 @@ import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import wapKitPlugin from "./scripts/lint/eslint-plugin-wap-kit.mjs";
 
 // eslint-config-next@15.x ships a legacy (eslintrc) config object, not a flat
 // config array. FlatCompat bridges it into the flat config used below.
@@ -172,6 +173,9 @@ const config = [
       // KitTableShell is the <table> host DataTable composes.
       "components/portal/kit/DataTable.tsx",
       "components/portal/kit/KitTableShell.tsx",
+      // The admin methodology is authored in Markdown, with varying table
+      // columns. Its renderer preserves native table semantics and captions.
+      "app/admin/outcomes/methodology/page.tsx",
       // Legacy admin UIs still use raw tables; migrate to <DataTable> over time.
       // 2026-05-20: each retained <table> now carries a <caption className="sr-only"> for a11y.
       "app/admin/placement-surveys/page.tsx",
@@ -355,6 +359,23 @@ const config = [
       "jsx-a11y/label-has-associated-control": "warn",
       "jsx-a11y/no-redundant-roles": "error",
       "jsx-a11y/scope": "error",
+    },
+  },
+  {
+    // No Astryx <Button> directly inside <Link>/<AstryxLink> (WAP-268,
+    // follow-up to WAP-252): it renders invalid <a><button> with two tab
+    // stops. Use KitLinkButton. A separate local rule, not
+    // no-restricted-syntax, so no other block has to restate it.
+    files: ["**/*.{tsx,jsx}"],
+    ignores: [
+      // Remove each ignore when #2553 / #2513 merge and the site is
+      // converted to KitLinkButton (WAP-268).
+      "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx", // #2553
+      "components/portal/kit/pages/employer/EmployerHomeKit.tsx", // #2513
+    ],
+    plugins: { "wap-kit": wapKitPlugin },
+    rules: {
+      "wap-kit/no-button-in-link": "error",
     },
   },
 ];

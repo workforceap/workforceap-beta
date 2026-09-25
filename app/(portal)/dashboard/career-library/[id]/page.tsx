@@ -4,7 +4,6 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import ReactMarkdown from 'react-markdown';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getMemberResources, getMemberResourcesResult } from '@/lib/content/memberResources';
@@ -12,6 +11,7 @@ import { SignOutButton } from '@/components/portal/SignOutButton';
 import ResourceViewTracker from '@/components/portal/ResourceViewTracker';
 import ResourceProgressActions from '@/components/portal/ResourceProgressActions';
 import ResourceDownloadButton from '@/components/portal/ResourceDownloadButton';
+import ResourceMarkdown from '@/components/portal/ResourceMarkdown';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { PageOpener } from '@/components/portal/kit';
 
@@ -121,7 +121,7 @@ export default async function DashboardCareerLibraryDetailPage({ params }: Props
               ) : null}
             </div>
             <article className="resource-content markdown-body">
-              <ReactMarkdown>{content}</ReactMarkdown>
+              <ResourceMarkdown content={content} />
             </article>
           </div>
         </section>

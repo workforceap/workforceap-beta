@@ -55,7 +55,7 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  *      then, for staff viewing a member home, the staff-view notice
  *      (`showStaffViewBanner`), then the youth notice for a member under 18
  *      (`youthNoticeAge`).
- *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard, kit variant).
+ *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard).
  *      Under it, only when they apply: the placement confirmation strip for
  *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
  *      while a placement is inside its window (`first90`) — the two
@@ -212,9 +212,8 @@ export interface MemberHomeKitProps {
   /**
    * View-only enrolled-program switch (`DashboardProgramSelector`) for a
    * member with more than one enrollment. `null` or a single option renders
-   * nothing. `viewingSecondary` adds one line saying My Program shows the
-   * primary program (WAP-196), which is why this view's program links open
-   * the Learning hub.
+   * nothing. `viewingSecondary` marks a non-primary enrollment on screen; its
+   * program links carry `?program=` into My Program (WAP-196).
    */
   programSwitch?: {
     options: DashboardProgramOption[];
@@ -699,7 +698,7 @@ export function MemberHomeKit({
 
         {/* 2. Dominant next-best-action banner. Renders nothing when there's no
             pending action (see MemberDoThisNextCard). */}
-        <MemberDoThisNextCard action={doThisNext} variant="kit" paddingX="0" />
+        <MemberDoThisNextCard action={doThisNext} />
 
         {/* Post-offer surfaces, each only when it applies: confirm an accepted
             offer (writes a member-reported placement and alerts the
@@ -833,11 +832,6 @@ export function MemberHomeKit({
                   activeProgramSlug={programSwitch.activeProgramSlug}
                   pathname={programSwitch.pathname}
                 />
-                {programSwitch.viewingSecondary ? (
-                  <p className="wa-kit-meta" style={{ margin: 0 }}>
-                    My Program shows your primary program. This program&apos;s links open the Learning hub.
-                  </p>
-                ) : null}
               </div>
             ) : null}
             <div className="wa-kit-cert-path-body">

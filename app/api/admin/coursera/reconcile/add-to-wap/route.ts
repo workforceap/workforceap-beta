@@ -11,6 +11,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { maybeSendCourseKickoffEmail } from '@/lib/coursera/courseKickoff';
 import { sendPasswordResetEmail } from '@/lib/auth/passwordReset';
+import { provisionIntentAppMetadata } from '@/lib/auth/provisionIntent';
 import {
   lockCourseraIdentityForAttachment,
   promoteCsvProgressToCanonical,
@@ -205,6 +206,9 @@ const bodySchema = z.object({
           email,
           email_confirm: true,
           user_metadata: { full_name: fullName, source: 'coursera-reconcile' },
+          app_metadata: provisionIntentAppMetadata({
+            role: 'member', organizationId: actorOrgId, source: 'coursera_reconcile',
+          }),
         });
 
         if (error) {

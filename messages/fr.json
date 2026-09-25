@@ -64,6 +64,7 @@
     "collapseSidebar": "Réduire la barre latérale",
     "workspaceTabs": "Onglets de l'espace de travail",
     "unreadCount": "{count, plural, one {# non lu} other {# non lus}}",
+    "pendingApplicationsCount": "{count, plural, one {# en attente d’un employeur} other {# en attente d’employeurs}}",
     "mobileBottomNav": {
       "ariaLabel": "Navigation mobile principale",
       "marketing": {
@@ -90,6 +91,7 @@
       "partner": {
         "overview": "Aperçu",
         "members": "Membres",
+        "attention": "Attention",
         "messages": "Messages",
         "milestones": "Étapes",
         "outcomes": "Résultats"
@@ -669,6 +671,30 @@
     "screeningSectionTitle": "Détails du dépistage d'éligibilité",
     "ageGroupLabel": "Tranche d'âge *",
     "ageGroupPlaceholder": "Sélectionnez une tranche d'âge",
+    "ageGroupOptions": {
+      "under_18": "Moins de 18 ans",
+      "18_24": "18–24 ans",
+      "25_50": "25–50 ans",
+      "50_plus": "50 ans et plus"
+    },
+    "gradeLevelOptions": {
+      "9": "9e année",
+      "10": "10e année",
+      "11": "11e année",
+      "12": "12e année",
+      "other": "Autre / récemment diplômé"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Besoin d'une formation à un métier recherché ou d'un certificat",
+      "no_barrier": "Aucun obstacle pour l'instant",
+      "employment_gap": "Période sans emploi",
+      "limited_work_history": "Expérience professionnelle limitée",
+      "snap_tanf_wic": "SNAP / TANF / bons alimentaires / WIC",
+      "justice_involved": "Antécédents judiciaires",
+      "disability_health": "Handicap ou problème de santé",
+      "housing_instable": "Logement instable",
+      "other_barrier": "Autre obstacle"
+    },
     "countyLabel": "Comté *",
     "primaryBarriersLabel": "Obstacle(s) principal(aux) — cochez tout ce qui s'applique *",
     "primaryBarriersAria": "Obstacles principaux",
@@ -868,6 +894,15 @@
     "errSummaryGeneric": "Veuillez corriger les champs surlignés et réessayer.",
     "errProgramsNotSaved": "Vos sélections de programmes n'ont pas été enregistrées — veuillez retourner à l'étape 2 et choisir au moins un programme.",
     "errAccountGeneric": "Nous n'avons pas pu terminer la création de votre compte. Veuillez vérifier vos informations et réessayer, ou appelez le (512) 777-1808.",
+    "errEmailExists": "Un compte existe déjà avec cette adresse e-mail. Connectez-vous pour continuer, ou réinitialisez votre mot de passe si vous revenez.",
+    "errAccountRecovery": "Un compte existe déjà avec cette adresse e-mail. Si vous ne pouvez pas vous connecter, appelez WorkforceAP au (512) 777-1808 pour le récupérer.",
+    "errAlreadySignedIn": "Vous êtes déjà connecté à un autre compte. Déconnectez-vous d’abord, puis créez le nouveau compte.",
+    "errRateLimited": "Trop de tentatives d’inscription. Patientez quelques minutes, puis réessayez.",
+    "errRequestUnreadable": "Nous n’avons pas pu lire vos informations d’inscription. Actualisez la page et réessayez.",
+    "errServiceUnavailable": "L’inscription est temporairement indisponible. Réessayez bientôt ou appelez le (512) 777-1808.",
+    "errSecurityCheckRequired": "Veuillez effectuer la vérification de sécurité.",
+    "errSecurityCheckFailed": "La vérification de sécurité a échoué. Veuillez réessayer.",
+    "errProgramUnmatched": "Nous n’avons pas trouvé le programme choisi. Revenez à l’étape 2 et choisissez à nouveau votre programme.",
     "errNetwork": "Nous n'avons pas pu atteindre le serveur pour terminer la création de votre compte. Vérifiez votre connexion internet et réessayez, ou appelez le (512) 777-1808 si cela continue d'échouer.",
     "confirmationMetaTitle": "Vous êtes dans le système WorkforceAP",
     "confirmationMetaDescription": "Votre candidature est enregistrée. Consultez votre boîte de réception et vos courriers indésirables pour la confirmation et les prochaines étapes.",
@@ -1088,7 +1123,16 @@
     "noMessagesYet": "Aucun message pour l'instant",
     "yourCounselor": "Votre conseiller",
     "workforceapSupport": "Assistance WorkforceAP",
-    "supportTeam": "Équipe d'assistance"
+    "supportTeam": "Équipe d'assistance",
+    "kitLede": "Votre conseiller et l’équipe d’assistance dans une seule boîte.",
+    "conversations": "Conversations",
+    "unreadMessage": "Message non lu",
+    "backToMessages": "Retour aux messages",
+    "sendFailed": "Échec de l’envoi",
+    "networkError": "Erreur réseau",
+    "composerPlaceholder": "Écrire à {name}…",
+    "feedbackDraftNotice": "Vérifiez les détails du cours et tout lien de projet enregistré avant d’envoyer. Vos notes privées ne sont pas partagées.",
+    "feedbackUnavailable": "Nous n’avons pas pu charger ce cours assigné. Vous pouvez tout de même écrire votre message ci-dessous."
   },
   "profile": {
     "edit": "Modifier le profil",
@@ -1495,6 +1539,10 @@
     "nextActionCelebrateTip": "Vos recommandations débouchent sur des emplois. Gardez le pipeline plein.",
     "nextActionReviewProgress": "Suivez la progression des membres",
     "nextActionReviewProgressTip": "Les membres avancent dans leur parcours — suivez leurs résultats.",
+    "nextActionAttention": "{count, plural, =0 {Personne n'a besoin d'attention pour l'instant} =1 {1 membre a besoin d'attention} other {# membres ont besoin d'attention}}",
+    "nextActionAttentionTip": "Membres bloqués ou silencieux. Prenez contact avant qu'ils n'abandonnent.",
+    "nextActionAttentionUnavailable": "Impossible de charger qui a besoin d'attention",
+    "nextActionAttentionUnavailableTip": "Le nombre est inconnu, pas nul. Ouvrez la file pour le voir.",
     "partnerInsights": "Informations partenaire",
     "assistantSpeaking": "L'assistant parle…",
     "assistantListening": "À l'écoute — posez votre question",
@@ -2850,7 +2898,7 @@
       "phone": "Téléphone (facultatif)",
       "password": "Créez un mot de passe",
       "passwordPlaceholder": "Au moins 8 caractères",
-      "passwordHelp": "Vous êtes nouveau ici ? Créez un mot de passe. Vous avez déjà un compte ? Laissez ce champ vide.",
+      "passwordHelp": "Vous êtes nouveau ici ? Créez un mot de passe. Vous avez déjà un compte ? Connectez-vous d’abord, puis laissez ce champ vide.",
       "accepting": "Acceptation…",
       "accept": "Accepter l’invitation",
       "roles": {
@@ -2869,7 +2917,9 @@
         "alreadyAccepted": "Cette invitation a déjà été acceptée. Connectez-vous à votre compte.",
         "expired": "Cette invitation a expiré. Demandez à votre contact WorkforceAP de la renvoyer.",
         "nameRequired": "Saisissez votre nom complet.",
-        "newAccountRequired": "Pour créer un compte, indiquez votre nom complet et un mot de passe d’au moins 8 caractères.",
+        "newAccountRequired": "Un nouveau compte nécessite un mot de passe d’au moins 8 caractères. Si vous avez déjà un compte, connectez-vous ou réinitialisez votre mot de passe, puis revenez à cette invitation.",
+        "accountRecoveryRequired": "Un compte existe déjà avec cette adresse. Connectez-vous ou réinitialisez votre mot de passe, puis revenez à cette invitation.",
+        "identityReviewRequired": "Nous ne pouvons pas associer cette invitation au compte enregistré. Contactez l’équipe WorkforceAP pour obtenir de l’aide.",
         "signupUnavailable": "La création de compte est temporairement indisponible. Si le problème persiste, contactez l’assistance.",
         "loadFailed": "Impossible de charger cette invitation. Réessayez dans quelques instants.",
         "codeFailed": "Impossible de vérifier ce code. Réessayez dans un instant.",
@@ -3792,6 +3842,17 @@
       "body": "Réessayez ou parcourez le tableau des emplois pour voir toutes les offres.",
       "action": "Réessayer",
       "secondary": "Parcourir les emplois"
+    },
+    "applicationsUnavailable": {
+      "title": "Impossible de charger vos candidatures",
+      "body": "Vos totaux sont inconnus, pas nuls. Réessayez dans un instant.",
+      "action": "Réessayer",
+      "kpiCaption": "Chargement impossible"
+    },
+    "openingsUnavailable": {
+      "title": "Impossible de charger les offres",
+      "body": "C'est un problème de chargement, pas un tableau vide. Réessayez dans un instant.",
+      "action": "Réessayer"
     },
     "stage": {
       "title": "Rien à cette étape"

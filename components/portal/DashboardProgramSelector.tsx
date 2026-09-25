@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState, useTransition, type FocusEvent, type KeyboardEvent } from 'react';
 import { ChevronDown, ChevronUp, GraduationCap } from 'lucide-react';
 
 /**
@@ -17,6 +17,11 @@ import { ChevronDown, ChevronUp, GraduationCap } from 'lucide-react';
  *
  * Painted from `--wa-*` tokens with lucide icons (WAP-194), since it now sits
  * inside the kit home's Certification path card.
+ *
+ * A disclosure, not a listbox (WAP-229): the trigger controls a plain list of
+ * buttons that Tab walks, and the current program carries `aria-current`.
+ * Escape, a pointer outside, and focus leaving the switcher all close it;
+ * Escape and a switch put focus back on the trigger.
  */
 export type DashboardProgramOption = {
   id: string;
@@ -41,6 +46,34 @@ export default function DashboardProgramSelector({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [open]);
+
+  function closeToTrigger() {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (!open || e.key !== 'Escape' || e.nativeEvent.isComposing) return;
+    e.preventDefault();
+    e.stopPropagation();
+    closeToTrigger();
+  }
+
+  function onBlur(e: FocusEvent<HTMLDivElement>) {
+    if (open && !e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+  }
 
   const totalPrograms = options.length;
   const activeIndex = Math.max(
@@ -50,7 +83,7 @@ export default function DashboardProgramSelector({
   const ordinal = activeIndex + 1;
 
   function selectProgram(slug: string) {
-    setOpen(false);
+    closeToTrigger();
     if (slug === activeProgramSlug) return;
     startTransition(() => {
       router.push(`${pathname}?program=${encodeURIComponent(slug)}`);
@@ -58,13 +91,22 @@ export default function DashboardProgramSelector({
   }
 
   return (
-    <div style={{ position: 'relative', display: 'inline-flex', alignSelf: 'flex-start' }}>
+    <div
+      ref={rootRef}
+      onKeyDown={onKeyDown}
+      onBlur={onBlur}
+      style={{ position: 'relative', display: 'inline-flex', alignSelf: 'flex-start' }}
+    >
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
+        onClick={() => {
+          if (!isPending) setOpen((v) => !v);
+        }}
         aria-expanded={open}
-        disabled={isPending}
+        aria-controls={open ? menuId : undefined}
+        // aria-disabled, not disabled: a disabled button drops the focus a switch just put on it.
+        aria-disabled={isPending || undefined}
         data-testid="dashboard-program-selector"
         className="wa-kit-focus"
         style={{
@@ -96,8 +138,9 @@ export default function DashboardProgramSelector({
 
       {open && (
         <ul
-          role="listbox"
+          id={menuId}
           aria-label="Switch active program"
+          data-testid="dashboard-program-selector-menu"
           style={{
             position: 'absolute',
             top: 'calc(100% + 6px)',
@@ -106,7 +149,7 @@ export default function DashboardProgramSelector({
             margin: 0,
             padding: 6,
             minWidth: '14rem',
-            maxWidth: '18rem',
+            maxWidth: 'min(18rem, calc(100vw - 32px))',
             listStyle: 'none',
             background: 'var(--wa-surface)',
             border: '1px solid var(--wa-border)',
@@ -120,13 +163,15 @@ export default function DashboardProgramSelector({
               <li key={opt.id}>
                 <button
                   type="button"
-                  role="option"
-                  aria-selected={isActive}
+                  aria-current={isActive ? 'true' : undefined}
                   onClick={() => selectProgram(opt.programSlug)}
                   className="wa-kit-focus"
                   style={{
                     width: '100%',
                     display: 'flex',
+                    // WAP-253: the Primary badge drops under a long title
+                    // instead of squeezing it into a narrow column.
+                    flexWrap: 'wrap',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: 8,
@@ -142,7 +187,7 @@ export default function DashboardProgramSelector({
                     minHeight: '44px',
                   }}
                 >
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ flex: '1 1 10rem', minWidth: 0, overflowWrap: 'anywhere' }}>
                     {opt.programTitle}
                   </span>
                   {opt.isPrimary && (

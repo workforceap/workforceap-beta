@@ -98,20 +98,6 @@
   box-sizing: border-box;
 }
 
-/* ── TodayHero: ensure quick row doesn't overflow ── */
-@media (max-width: 390px) {
-  .hero .quickRow {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ── MemberFirstCertProgressBar: ensure bar doesn't overflow ── */
-.portal-mobile-content [aria-label="First certification progress"] > div,
-.portal-mobile-content [role="region"][aria-label="First certification progress"] > div {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
 /* ── MemberDoThisNextCard: prevent overflow ── */
 .portal-mobile-content [aria-label="Do this next"] > div,
 .portal-mobile-content [aria-label="Next step"] > div {

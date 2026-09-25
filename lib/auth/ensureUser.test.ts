@@ -34,7 +34,7 @@ test('ensureUserInDb - happy path', async (t) => {
   assert.equal(upsertCalled, 1);
 });
 
-test('ensureUserInDb stamps trusted metadata org instead of always using default', async (t) => {
+test('ensureUserInDb stamps server-controlled app metadata org instead of always using default', async (t) => {
   const { userDelegate } = stubDefaultOrg(t);
   let createOrg: string | undefined;
 
@@ -46,7 +46,7 @@ test('ensureUserInDb stamps trusted metadata org instead of always using default
   await ensureUserInDb({
     id: 'user-meta',
     email: 'meta@example.com',
-    user_metadata: { organization_id: ORG_A },
+    app_metadata: { organization_id: ORG_A },
   });
 
   assert.equal(createOrg, ORG_A);
@@ -65,7 +65,7 @@ test('ensureUserInDb stamps explicit organizationId over metadata and default', 
     {
       id: 'user-explicit',
       email: 'explicit@example.com',
-      user_metadata: { organization_id: DEFAULT_ORG },
+      app_metadata: { organization_id: DEFAULT_ORG },
     },
     { organizationId: ORG_A },
   );
@@ -96,6 +96,23 @@ test('ensureUserInDb stamps request-resolved org over default', async (t) => {
   );
 
   assert.equal(createOrg, ORG_A);
+});
+
+test('ensureUserInDb ignores user-editable metadata when choosing a tenant', async (t) => {
+  const { userDelegate } = stubDefaultOrg(t);
+  let createOrg: string | undefined;
+  userDelegate.upsert = async (args: any) => {
+    createOrg = args.create?.organizationId;
+    return {} as any;
+  };
+
+  await ensureUserInDb({
+    id: 'user-untrusted-meta',
+    email: 'untrusted@example.com',
+    user_metadata: { organization_id: ORG_A },
+  });
+
+  assert.equal(createOrg, DEFAULT_ORG);
 });
 
 test('ensureUserInDb never overwrites an existing users.organizationId', async (t) => {

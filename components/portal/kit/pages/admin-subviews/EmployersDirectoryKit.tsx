@@ -10,11 +10,10 @@ import {
   colorVar,
   type KpiItem,
 } from '@/components/portal/kit';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import { EMPLOYERS_DIRECTORY_EMPTY } from '@/lib/admin/directoryEmptyState';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Employers directory — partner card grid (dense).
@@ -196,9 +195,7 @@ export function EmployersDirectoryKit({
         kicker="Partners"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/employers?ui=legacy#create" as={Link as never} isStandalone>
-            <Button label="Add Employer" variant="primary" size="sm" icon={<Plus className="h-4 w-4" aria-hidden />} />
-          </AstryxLink>
+          <KitLinkButton href="/admin/employers?ui=legacy#create" label="Add Employer" variant="primary" size="sm" icon={<Plus className="h-4 w-4" aria-hidden />} />
         }
       />
 

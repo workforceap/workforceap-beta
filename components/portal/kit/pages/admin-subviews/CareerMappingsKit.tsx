@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   Cloud,
   HeartPulse,
@@ -61,6 +62,13 @@ export interface CareerMappingsKitProps {
   totalRoles?: number;
   /** Total distinct employer partners across all programs (real). */
   totalPartners?: number;
+  /**
+   * Optional occupation → program editor rendered above the grid (WAP-193).
+   * When supplied, "Edit mappings" jumps to it instead of the ?ui=legacy page.
+   */
+  editor?: ReactNode;
+  /** Anchor id of the editor, used by the "Edit mappings" action. */
+  editorId?: string;
 }
 
 const DEFAULT_PATHS: CareerPathCard[] = [
@@ -144,6 +152,8 @@ export function CareerMappingsKit({
   totalPrograms,
   totalRoles,
   totalPartners,
+  editor,
+  editorId = 'career-mapping-editor',
 }: CareerMappingsKitProps) {
   const programs = totalPrograms ?? paths.length;
   const roles = totalRoles ?? paths.reduce((sum, p) => sum + p.mappedRoles, 0);
@@ -164,7 +174,7 @@ export function CareerMappingsKit({
         action={
           <Button
             label="Edit mappings"
-            href="/admin/career-mappings?ui=legacy"
+            href={editor ? `#${editorId}` : '/admin/career-mappings?ui=legacy'}
             variant="secondary"
             size="sm"
           />
@@ -174,6 +184,8 @@ export function CareerMappingsKit({
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />
       </div>
+
+      {editor ? <div className="wa-mb-5">{editor}</div> : null}
 
       {paths.length === 0 ? (
         <EmptyState

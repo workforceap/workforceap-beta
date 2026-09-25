@@ -8,6 +8,7 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { notifyCounselorOfStaffAssignment, type StaffAssignedMember } from '@/lib/counselor/staffAssignmentNotify';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
 import type { PipelineBoardStage, MemberStatus } from '@prisma/client';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -141,6 +142,16 @@ async function _POST(request: NextRequest) {
     let updatedCount = 0;
     const errors: string[] = [];
     const warnings: string[] = [];
+    const assignedToCounselor: StaffAssignedMember[] = [];
+
+    // Report requested members that are gone or in another org as skipped,
+    // so the modal does not say "Updated 7 of 7" when 10 were selected. Only
+    // a count: never echo ids that may belong to another organization.
+    const requestedCount = new Set(memberIds).size;
+    const skippedCount = Math.max(0, requestedCount - members.length);
+    if (skippedCount > 0) {
+      errors.push(`${skippedCount} selected member${skippedCount === 1 ? ' was' : 's were'} not found or ${skippedCount === 1 ? 'is' : 'are'} outside your organization.`);
+    }
 
     for (const member of members) {
       try {
@@ -166,7 +177,7 @@ async function _POST(request: NextRequest) {
         }
         updates.updatedAt = new Date();
 
-        await prisma.$transaction(async (tx) => {
+        const handoff = await prisma.$transaction(async (tx) => {
           const updated = await tx.user.updateMany({
             where: { id: member.id, organizationId: orgId, deletedAt: null },
             data: updates,
@@ -218,13 +229,25 @@ async function _POST(request: NextRequest) {
             }
           }
           if (counselorUserId !== undefined) {
-            await assignMemberCounselor(tx, {
+            const assigned = await assignMemberCounselor(tx, {
               memberId: member.id, organizationId: orgId, counselorUserId,
             });
+            return {
+              previousCounselorUserId: assigned.previousCounselorUserId,
+              previousCounselorName: assigned.previousCounselorName,
+            };
           }
+          return null;
         });
 
         updatedCount++;
+        if (counselorUserId) {
+          assignedToCounselor.push({
+            memberId: member.id,
+            memberName: member.fullName,
+            previousCounselorUserId: handoff?.previousCounselorUserId ?? null,
+          });
+        }
 
         // Staff-led enrollment is an enrollment trigger too (WAP-32): pay a
         // referral captured at signup. Idempotent, non-blocking.
@@ -253,6 +276,7 @@ async function _POST(request: NextRequest) {
             pipelineStage: pipelineStage ?? null,
             memberStatus: memberStatus ?? null,
             counselorUserId: counselorUserId ?? null,
+            ...(handoff ?? {}),
             programSlug: programSlug ?? null,
             previousProgram: member.enrolledProgram,
             previousStage: member.pipelineBoardStage,
@@ -268,6 +292,7 @@ async function _POST(request: NextRequest) {
               pipelineStage: pipelineStage ?? null,
               memberStatus: memberStatus ?? null,
               counselorUserId: counselorUserId ?? null,
+              ...(handoff ?? {}),
               programSlug: programSlug ?? null,
               previousProgram: member.enrolledProgram,
               previousStage: member.pipelineBoardStage,
@@ -287,9 +312,17 @@ async function _POST(request: NextRequest) {
       }
     }
 
+    await notifyCounselorOfStaffAssignment({
+      counselorUserId: counselorUserId ?? null,
+      actorUserId: user.id,
+      members: assignedToCounselor,
+      logPrefix: '[bulk-update]',
+    });
+
     return NextResponse.json({
       updated: updatedCount,
-      total: members.length,
+      total: requestedCount,
+      skipped: skippedCount,
       errors,
       warnings,
     }, { status: errors.length > 0 ? 207 : 200 });

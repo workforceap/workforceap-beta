@@ -65,6 +65,7 @@
     "collapseSidebar": "Contraer barra lateral",
     "workspaceTabs": "Pestañas del espacio de trabajo",
     "unreadCount": "{count, plural, one {# sin leer} other {# sin leer}}",
+    "pendingApplicationsCount": "{count, plural, one {# en espera del empleador} other {# en espera de empleadores}}",
     "mobileBottomNav": {
       "ariaLabel": "Navegación móvil principal",
       "marketing": {
@@ -91,6 +92,7 @@
       "partner": {
         "overview": "Resumen",
         "members": "Miembros",
+        "attention": "Atención",
         "messages": "Mensajes",
         "milestones": "Hitos",
         "outcomes": "Resultados"
@@ -714,6 +716,30 @@
     "screeningSectionTitle": "Detalles de la evaluación de elegibilidad",
     "ageGroupLabel": "Grupo de edad *",
     "ageGroupPlaceholder": "Selecciona grupo de edad",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 o más"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º grado",
+      "10": "10.º grado",
+      "11": "11.º grado",
+      "12": "12.º grado",
+      "other": "Otro / recién graduado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Necesito capacitación en una ocupación demandada o un certificado",
+      "no_barrier": "Ninguna barrera por ahora",
+      "employment_gap": "Periodo sin empleo",
+      "limited_work_history": "Poca experiencia laboral",
+      "snap_tanf_wic": "SNAP / TANF / cupones de alimentos / WIC",
+      "justice_involved": "Antecedentes / involucramiento con la justicia",
+      "disability_health": "Discapacidad o problema de salud",
+      "housing_instable": "Inestabilidad de vivienda",
+      "other_barrier": "Otra barrera"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barrera(s) principal(es) — marca todas las que apliquen *",
     "primaryBarriersAria": "Barreras principales",
@@ -917,6 +943,15 @@
     "errSummaryGeneric": "Corrige los campos resaltados e intenta de nuevo.",
     "errProgramsNotSaved": "No se guardaron tus programas — vuelve al paso 2 y elige al menos uno.",
     "errAccountGeneric": "No pudimos terminar de crear tu cuenta. Revisa tu información e intenta de nuevo, o llama al (512) 777-1808.",
+    "errEmailExists": "Ya existe una cuenta con este correo electrónico. Inicia sesión para continuar o restablece tu contraseña si ya tienes cuenta.",
+    "errAccountRecovery": "Ya existe una cuenta con este correo electrónico. Si no puedes iniciar sesión, llama a WorkforceAP al (512) 777-1808 para recuperarla.",
+    "errAlreadySignedIn": "Ya iniciaste sesión con otra cuenta. Cierra sesión primero y luego crea la cuenta nueva.",
+    "errRateLimited": "Demasiados intentos de registro. Espera unos minutos e inténtalo de nuevo.",
+    "errRequestUnreadable": "No pudimos leer tus datos de registro. Actualiza la página e inténtalo de nuevo.",
+    "errServiceUnavailable": "El registro no está disponible en este momento. Inténtalo de nuevo en breve o llama al (512) 777-1808.",
+    "errSecurityCheckRequired": "Completa la verificación de seguridad.",
+    "errSecurityCheckFailed": "La verificación de seguridad no se superó. Inténtalo de nuevo.",
+    "errProgramUnmatched": "No pudimos encontrar el programa que elegiste. Regresa al paso 2 y elige tu programa de nuevo.",
     "errNetwork": "No pudimos contactar al servidor para crear tu cuenta. Verifica tu conexión e intenta de nuevo, o llama al (512) 777-1808 si sigue fallando.",
     "confirmationMetaTitle": "Ya estás en el sistema de WorkforceAP",
     "confirmationMetaDescription": "Tu solicitud está registrada. Revisa tu bandeja de entrada y la carpeta de spam para ver la confirmación y los próximos pasos.",
@@ -1145,7 +1180,16 @@
     "noMessagesYet": "Aún no hay mensajes",
     "yourCounselor": "Tu consejero",
     "workforceapSupport": "Soporte de WorkforceAP",
-    "supportTeam": "Equipo de soporte"
+    "supportTeam": "Equipo de soporte",
+    "kitLede": "Tu consejero y el equipo de soporte en una sola bandeja.",
+    "conversations": "Conversaciones",
+    "unreadMessage": "Mensaje sin leer",
+    "backToMessages": "Volver a mensajes",
+    "sendFailed": "No se pudo enviar",
+    "networkError": "Error de red",
+    "composerPlaceholder": "Escribe a {name}…",
+    "feedbackDraftNotice": "Revisa los detalles del curso y cualquier enlace de proyecto guardado antes de enviar. Tus notas privadas no se comparten.",
+    "feedbackUnavailable": "No pudimos cargar ese curso asignado. Aún puedes escribir tu mensaje abajo."
   },
   "profile": {
     "edit": "Editar perfil",
@@ -1550,6 +1594,10 @@
     "nextActionCelebrateTip": "Tus referencias están consiguiendo empleos. Mantén el flujo activo.",
     "nextActionReviewProgress": "Sigue el progreso de los miembros",
     "nextActionReviewProgressTip": "Los miembros avanzan en su trayectoria — sigue sus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Nadie necesita atención ahora} =1 {1 miembro necesita atención} other {# miembros necesitan atención}}",
+    "nextActionAttentionTip": "Miembros que se estancaron o dejaron de responder. Contáctalos antes de que abandonen.",
+    "nextActionAttentionUnavailable": "No se pudo cargar quién necesita atención",
+    "nextActionAttentionUnavailableTip": "El número es desconocido, no cero. Abre la cola para verlo.",
     "assistantSpeaking": "El asistente está hablando…",
     "assistantListening": "Escuchando — haz tu pregunta",
     "referredMembersTableSubtitle": "Nombre, estado del recorrido, fechas de inscripción y colocación, y la contribución de cada miembro a tu pago estimado.",
@@ -2907,7 +2955,7 @@
       "phone": "Teléfono (opcional)",
       "password": "Crea una contraseña",
       "passwordPlaceholder": "Al menos 8 caracteres",
-      "passwordHelp": "¿Es tu primera vez aquí? Crea una contraseña. ¿Ya tienes una cuenta? Deja este campo vacío.",
+      "passwordHelp": "¿Es tu primera vez aquí? Crea una contraseña. ¿Ya tienes una cuenta? Inicia sesión primero y deja este campo vacío.",
       "accepting": "Aceptando…",
       "accept": "Aceptar invitación",
       "roles": {
@@ -2926,7 +2974,9 @@
         "alreadyAccepted": "Esta invitación ya fue aceptada. Inicia sesión en tu cuenta.",
         "expired": "Esta invitación ha vencido. Pide a tu contacto de WorkforceAP que la reenvíe.",
         "nameRequired": "Ingresa tu nombre completo.",
-        "newAccountRequired": "Las cuentas nuevas necesitan tu nombre completo y una contraseña de al menos 8 caracteres.",
+        "newAccountRequired": "Las cuentas nuevas necesitan una contraseña de al menos 8 caracteres. Si ya tienes una cuenta, inicia sesión o restablece tu contraseña y vuelve a esta invitación.",
+        "accountRecoveryRequired": "Ya existe una cuenta con este correo. Inicia sesión o restablece tu contraseña y luego vuelve a esta invitación.",
+        "identityReviewRequired": "No pudimos vincular esta invitación con la cuenta registrada. Comunícate con el equipo de WorkforceAP para recibir ayuda.",
         "signupUnavailable": "La creación de cuentas no está disponible por el momento. Si el problema continúa, contacta al equipo de soporte.",
         "loadFailed": "No pudimos cargar esta invitación. Inténtalo de nuevo en unos momentos.",
         "codeFailed": "No pudimos verificar ese código. Inténtalo de nuevo en un momento.",
@@ -3849,6 +3899,17 @@
       "body": "Inténtalo de nuevo o explora el tablero de empleos para ver todas las ofertas.",
       "action": "Intentar de nuevo",
       "secondary": "Ver empleos"
+    },
+    "applicationsUnavailable": {
+      "title": "No se pudieron cargar tus solicitudes",
+      "body": "Tus totales son desconocidos, no cero. Inténtalo de nuevo en un momento.",
+      "action": "Intentar de nuevo",
+      "kpiCaption": "No se pudo cargar"
+    },
+    "openingsUnavailable": {
+      "title": "No se pudieron cargar los empleos disponibles",
+      "body": "Es un problema de carga, no un tablero vacío. Inténtalo de nuevo en un momento.",
+      "action": "Intentar de nuevo"
     },
     "stage": {
       "title": "Nada en esta etapa"

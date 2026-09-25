@@ -1,17 +1,16 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { KeyRound, Plus, SquarePen, Trash2, UserCog } from 'lucide-react';
 import { Button } from '@astryxdesign/core/Button';
 import { Selector } from '@astryxdesign/core/Selector';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { DesignSurface } from '@/components/portal/kit/DesignSurface';
 import { PageOpener } from '@/components/portal/kit/PageOpener';
 import { DataTable, type Column } from '@/components/portal/kit/DataTable';
 import { KitTableToolbar } from '@/components/portal/kit/KitTableToolbar';
 import { KitRowMenu, type KitRowMenuItem } from '@/components/portal/kit/KitRowMenu';
+import { QuickCreateUserForm } from '@/components/admin/QuickCreateUserForm';
 import { StatusTag } from '@/components/portal/kit/StatusTag';
 import { Avatar } from '@/components/portal/kit/Avatar';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
@@ -19,6 +18,7 @@ import { useDirectoryNavigation } from '@/components/admin/useDirectoryNavigatio
 import { directoryRoleLabel } from '@/lib/admin/roleLabels';
 import { ADMIN_USER_ROLES } from '@/lib/admin/adminUserProvisioning';
 import { isSelfRow, SELF_DELETE_BLOCKED_TITLE, SELF_ROLE_CHANGE_BLOCKED_TITLE } from '@/lib/admin/usersSelfGuard';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /** Staff roster: server search/pagination, with full readable identities on phones. */
 export interface UserRow {
@@ -45,9 +45,9 @@ export interface UsersKitProps {
   currentUserId?: string;
   /** Super admins may change roles and delete accounts. */
   canManageRoles?: boolean;
+  /** Render the quick-create account form under the roster (WAP-193). */
+  quickCreate?: boolean;
 }
-
-const manageHref = (row: UserRow) => `/admin/users?ui=legacy&search=${encodeURIComponent(row.email)}`;
 
 const roleCodeOf = (row: UserRow) => row.roleCode ?? row.role.trim().toLowerCase().replace(/\s+/g, '_');
 
@@ -71,6 +71,7 @@ export function UsersKit({
   roleFilter = '',
   currentUserId,
   canManageRoles = false,
+  quickCreate = false,
 }: UsersKitProps) {
   const router = useRouter();
   const { query, search, navigate, pending } = useDirectoryNavigation(searchQuery);
@@ -79,6 +80,10 @@ export function UsersKit({
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftRole, setDraftRole] = useState<string>('admin');
+  // Inline name/email edit (WAP-193: used to open the ?ui=legacy manager).
+  const [detailsId, setDetailsId] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState('');
+  const [draftEmail, setDraftEmail] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -108,6 +113,44 @@ export function UsersKit({
       router.refresh();
     } catch {
       setFeedback({ type: 'err', text: 'Network error while updating the role.' });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function saveDetails(row: UserRow) {
+    const fullName = draftName.trim();
+    const email = draftEmail.trim();
+    if (!fullName || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setFeedback({ type: 'err', text: 'Enter a full name and a valid email.' });
+      return;
+    }
+    setBusyId(row.id);
+    setFeedback(null);
+    try {
+      // Same route as the legacy manager's Save; name and email only, so a
+      // super admin's own row never sends a role.
+      const res = await fetch(`/api/admin/users/${row.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ fullName, email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFeedback({ type: 'err', text: data.error ?? 'Could not save the account.' });
+        return;
+      }
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === row.id ? { ...u, name: data.user?.fullName ?? fullName, email: data.user?.email ?? email } : u,
+        ),
+      );
+      setDetailsId(null);
+      setFeedback({ type: 'ok', text: `${fullName} was updated.` });
+      router.refresh();
+    } catch {
+      setFeedback({ type: 'err', text: 'Network error while saving the account.' });
     } finally {
       setBusyId(null);
     }
@@ -159,7 +202,13 @@ export function UsersKit({
         key: 'edit',
         label: 'Edit name & email',
         icon: <SquarePen size={16} />,
-        onSelect: () => router.push(manageHref(row)),
+        onSelect: () => {
+          setDraftName(row.name);
+          setDraftEmail(row.email);
+          setDetailsId(row.id);
+          setEditingId(null);
+          setFeedback(null);
+        },
       },
     ];
     if (canManageRoles) {
@@ -237,8 +286,33 @@ export function UsersKit({
     );
   };
 
+  const nameFor = (row: UserRow) => {
+    if (detailsId !== row.id) return <UserCell row={row} />;
+    return (
+      <span className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
+        <input
+          aria-label="Full name"
+          className="wa-kit-toolbar__input wa-kit-focus"
+          style={{ minHeight: 36, padding: '4px 8px', width: 'auto' }}
+          value={draftName}
+          onChange={(e) => setDraftName(e.target.value)}
+        />
+        <input
+          aria-label="Email"
+          type="email"
+          className="wa-kit-toolbar__input wa-kit-focus"
+          style={{ minHeight: 36, padding: '4px 8px', width: 'auto' }}
+          value={draftEmail}
+          onChange={(e) => setDraftEmail(e.target.value)}
+        />
+        <Button label={busyId === row.id ? 'Saving…' : 'Save'} variant="primary" size="sm" isDisabled={busyId === row.id} onClick={() => void saveDetails(row)} />
+        <Button label="Cancel" variant="ghost" size="sm" onClick={() => setDetailsId(null)} />
+      </span>
+    );
+  };
+
   const columns: Column<UserRow>[] = [
-    { key: 'name', header: 'Name', stickyLeft: true, minWidth: 200, render: row => <UserCell row={row} /> },
+    { key: 'name', header: 'Name', stickyLeft: true, minWidth: 200, render: nameFor },
     { key: 'email', header: 'Email', render: row => <span className="wa-kit-people-email wa-kit-table-cell--truncate" title={row.email}>{row.email}</span> },
     { key: 'role', header: 'Role', render: roleFor },
     { key: 'lastLogin', header: 'Last login', render: row => <span className="wa-kit-table-cell--nowrap">{row.lastLogin}</span> },
@@ -253,8 +327,8 @@ export function UsersKit({
     <DesignSurface surface="dense" className="wa-kit-people-roster">
       <PageOpener className="wa-mb-5" title="Staff & admins" kicker="People" lede="Find a staff account and manage access."
         action={<div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
-          <AstryxLink href="/admin/users?ui=legacy" as={Link as never} isStandalone><Button label="All accounts" variant="secondary" /></AstryxLink>
-          <AstryxLink href="/admin/invites/new" as={Link as never} isStandalone><Button label="Invite staff" variant="primary" icon={<Plus size={16} aria-hidden />} /></AstryxLink>
+          <KitLinkButton href="/admin/users?ui=legacy" label="All accounts" variant="secondary" size="md" />
+          <KitLinkButton href="/admin/invites/new" label="Invite staff" variant="primary" size="md" icon={<Plus size={16} aria-hidden />} />
         </div>}
       />
       <KitTableToolbar
@@ -282,7 +356,7 @@ export function UsersKit({
         cardRender={row => (
           <article className="wa-kit-people-row">
             <div className="wa-flex wa-items-start wa-justify-between wa-gap-2">
-              <UserCell row={row} />
+              {nameFor(row)}
               {actionsFor(row)}
             </div>
             <p className="wa-kit-people-email">{row.email}</p>
@@ -293,6 +367,11 @@ export function UsersKit({
         emptyTitle={pending ? 'Searching…' : hasQuery ? 'No matching staff accounts' : 'No staff accounts yet'}
         emptyDescription={hasQuery ? 'Try a different name, email, or role.' : 'Invite an admin or counselor to get started.'}
       />
+      {quickCreate ? (
+        <section aria-label="Create an account" style={{ marginTop: 24 }}>
+          <QuickCreateUserForm canManageRoles={canManageRoles} />
+        </section>
+      ) : null}
     </DesignSurface>
   );
 }

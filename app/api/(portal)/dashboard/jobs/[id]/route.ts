@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { handleApiError, ApiError } from '@/lib/api/errors';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 /** Public job detail - only live jobs */
@@ -11,7 +12,7 @@ async function _GET(
   try {
     const { id } = await params;
     const job = await prisma.job.findFirst({
-      where: { id, status: 'live' },
+      where: { id, status: 'live', AND: [ACTIVE_EMPLOYER_JOB_WHERE] },
       include: {
         employer: { select: { companyName: true } },
       },

@@ -361,7 +361,7 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `AppShellMember` (+ `AppShellSidebar` from `kit/AppShellSidebar`) | shell chrome (member tabs / dense sidebar) |
 | `UniversalSearch` (`kit/UniversalSearch`, not in the barrel) | global search affordance |
 | `GuidedTour` | guided-tour engine: spotlight ring + step popover over `[data-tour]` anchors, steps from `lib/tours/registry.ts` through `TourContext`, copy from the `tours` i18n namespace, chrome on `--wa-*` and `--z-tour`. Not in the barrel (it depends on `components/onboarding/TourContext`) — import `@/components/portal/kit/GuidedTour` directly; `TourProviderWrapper` already mounts it for every portal. Reopen a tour from the header `PortalHelpMenu`; offer it once with `TourOfferStrip`. |
-| `MemberDashboardKit` | composed member dashboard |
+| `MemberHomeKit` (`kit/pages/member/MemberHomeKit`, not in the barrel) | the member home at `/dashboard`, its one implementation (fed by `lib/member/loadMemberDashboardHome.ts`; the old `MemberDashboardKit` and the `?ui=legacy` home were removed in WAP-195) |
 
 `ChatThread` accepts an optional editable `initialText` and `multiline` composer
 for server-validated context such as a course feedback request. It never sends
@@ -598,6 +598,12 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   `SegmentedControl`, `Spinner`, `Pagination`, `EmptyState`, `StatusDot`, `ProgressBar`, `Link`
   wrapping Next's `Link` for navigational actions — see `VoiceStudioKit.tsx` /
   `member/MemberHomeKit.tsx`) — same brand-token bridge as everywhere else Astryx is used.
+  A navigational action that should look like a button is `KitLinkButton`
+  (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
+  kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
+  which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
+  `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on
+  a `Button` placed directly inside a `Link` or `AstryxLink` (WAP-268).
   WorkforceAP-specific composites that already encode real layout/business logic —
   `DataTable`, `StageTrack`, `SegmentedProgress`, `QueueRow`, `WorkQueueItem`, `ChatThread`,
   `KpiStrip`, `CardHead`, `Sparkline`/`AreaChartMini`, `ProgressRing`, `FeatureTile`,

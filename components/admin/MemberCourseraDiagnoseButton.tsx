@@ -15,6 +15,10 @@ const STATUS_COLORS: Record<'ok' | 'warn' | 'fail', { bg: string; fg: string; bo
   fail: { bg: 'rgba(239,68,68,0.12)', fg: 'rgb(220,38,38)', border: 'rgba(239,68,68,0.5)' },
 };
 
+function formatWhen(value: Date | string | null): string {
+  return value ? new Date(value).toLocaleString() : 'Never recorded';
+}
+
 export default function MemberCourseraDiagnoseButton({ memberId }: { memberId: string }) {
   const [report, setReport] = useState<CourseraDiagnoseReport | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +92,38 @@ export default function MemberCourseraDiagnoseButton({ memberId }: { memberId: s
             );
           })}
 
+          <div style={{ marginTop: '0.25rem' }}>
+            <p style={{ margin: '0 0 0.3rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
+              Sync freshness
+            </p>
+            {report.freshness ? (
+              <dl
+                style={{
+                  margin: 0,
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(11rem, max-content) 1fr',
+                  rowGap: '0.25rem',
+                  columnGap: '1rem',
+                  fontSize: '0.8125rem',
+                }}
+              >
+                <dt style={{ color: 'var(--color-on-surface-variant)' }}>Last B4B sync (organization)</dt>
+                <dd style={{ margin: 0 }}>{formatWhen(report.freshness.orgLastB4BSyncAt)}</dd>
+                <dt style={{ color: 'var(--color-on-surface-variant)' }}>Last row for this learner</dt>
+                <dd style={{ margin: 0 }}>
+                  {formatWhen(report.freshness.memberLastSyncAt)}
+                  {report.freshness.memberLastSyncSource ? ` · ${report.freshness.memberLastSyncSource}` : ''}
+                </dd>
+                <dt style={{ color: 'var(--color-on-surface-variant)' }}>Last xAPI event received</dt>
+                <dd style={{ margin: 0 }}>{formatWhen(report.freshness.lastXapiReceivedAt)}</dd>
+                <dt style={{ color: 'var(--color-on-surface-variant)' }}>Last learner activity</dt>
+                <dd style={{ margin: 0 }}>{formatWhen(report.freshness.lastLearnerActivityAt)}</dd>
+              </dl>
+            ) : (
+              <p style={{ margin: 0, fontSize: '0.8125rem' }}>Unavailable: the freshness reads failed.</p>
+            )}
+          </div>
+
           <details style={{ marginTop: '0.25rem' }}>
             <summary style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', cursor: 'pointer' }}>
               Raw diagnostic numbers
@@ -122,6 +158,11 @@ export default function MemberCourseraDiagnoseButton({ memberId }: { memberId: s
                   : report.identityMappings
                       .map((m) => `${m.courseraEmail || m.actorIdentifier || '?'} (${m.source})`)
                       .join(', ')}
+              </dd>
+              <dt style={{ color: 'var(--color-on-surface-variant)' }}>Canonical program</dt>
+              <dd style={{ margin: 0 }}>
+                {report.user.canonicalProgram ?? '—'}
+                {report.user.canonicalProgram && !report.user.enrolledProgram ? ' (legacy pointer empty)' : ''}
               </dd>
               <dt style={{ color: 'var(--color-on-surface-variant)' }}>Enrollments</dt>
               <dd style={{ margin: 0 }}>

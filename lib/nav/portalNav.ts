@@ -309,10 +309,6 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     aliases: ['/profile', '/account', '/dashboard/settings'],
     tourTarget: 'tour-profile',
   },
-  // "My Account" is the member's home base — it lands on the dashboard, not on
-  // the profile/settings page (which surprised members). Account settings stay
-  // reachable via "Profile & settings" above (/dashboard/profile #settings).
-  { href: '/dashboard', label: 'My account', group: 'manage', tab: 'me', Icon: Home, exact: true },
 ];
 
 export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
@@ -370,7 +366,6 @@ export const PARTNER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     Icon: Users,
     tourTarget: 'tour-members',
     aliases: ['/partner/members'],
-    badgeKey: 'partner_needs_attention',
   },
   {
     href: '/partner/attention',
@@ -378,6 +373,8 @@ export const PARTNER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     group: 'workflows',
     Icon: AlertTriangle,
     tourTarget: 'tour-attention',
+    // The count is the queue's (countPartnerAttention), so it badges the queue, not the list (WAP-215).
+    badgeKey: 'partner_needs_attention',
   },
   {
     href: '/partner/milestones',

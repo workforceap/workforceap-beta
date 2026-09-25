@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getUser } from '@/lib/auth/server';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
@@ -9,6 +10,7 @@ import { counselorAffiliationLabel } from '@/lib/counselor/counselorLabels';
 import { getCounselorCommandCenter } from '@/lib/counselor/commandCenter';
 import CounselorCommandCenter from '@/components/portal/counselor/CounselorCommandCenter';
 import CounselorPriorityQueue from '@/components/portal/counselor/CounselorPriorityQueue';
+import { CounselorBulkFollowUp } from '@/components/portal/counselor/CounselorBulkFollowUp';
 import AtRiskSummaryWidget from '@/components/portal/counselor/AtRiskSummaryWidget';
 import { getCounselorPriorityQueue } from '@/lib/counselor/priorityQueue';
 import { getCounselorAttention } from '@/lib/attention/counselor';
@@ -61,7 +63,7 @@ export default async function CounselorPortalPage({
   if (!user) redirect('/login?redirectTo=/counselor/overview');
 
   const allowed = (await isCounselor(user.id)) || (await isAdmin(user.id));
-  if (!allowed) redirect('/dashboard');
+  if (!allowed) redirect(await deniedPortalHomeHref(user.id, 'counselor'));
 
   const requestedUi = (await searchParams)?.ui ?? null;
 
@@ -172,6 +174,9 @@ export default async function CounselorPortalPage({
         retryHref="/counselor/overview"
         todayHref="/counselor/today"
         loadFailedCopy={loadFailedCopy}
+        bulkFollowUp={
+          kitAttentionLoaded ? <CounselorBulkFollowUp rows={kitQueue.rows} totals={kitQueue.totals} /> : undefined
+        }
         />
       </>
     );

@@ -6,6 +6,7 @@ import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant } from '@/lib/tenant/adminPageScope';
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import AdminPortalShell from '@/components/portal/AdminPortalShell';
 import LegacyViewNotice from '@/components/portal/LegacyViewNotice';
 import OrgBrandingBar from '@/components/platform/OrgBrandingBar';
@@ -45,7 +46,7 @@ export default async function AdminLayout({
 
   try {
     const scope = await resolveAdminPageTenant(user.id);
-    if (!scope.ok) redirect('/dashboard');
+    if (!scope.ok) redirect(await deniedPortalHomeHref(user.id, 'admin'));
     const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
     const adminTour = getHomeTourForRole('admin');

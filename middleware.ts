@@ -7,6 +7,7 @@ import { isStaffMfaEnforcementEnabled } from '@/lib/auth/mfaConfig';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import type { AppLocale } from '@/lib/i18n/config';
 import {
+  WAP_EXPLICIT_LOCALE_HEADER,
   WAP_LOCALE_COOKIE,
   WAP_LOCALE_HEADER,
   isAppLocale,
@@ -122,8 +123,26 @@ function isAdminApiPath(pathname: string) {
   return ADMIN_API_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+/**
+ * Admin-only APIs that live outside /api/admin but still need the staff MFA
+ * gate: a real Stripe Connect transfer, org settings (custom domain), the
+ * billing-packet send (emails member documents) and the admin SLO report.
+ * Keep these exact; /api/partner/* as a whole is the partner portal, and
+ * /api/billing-packets/[id]/pdf is the member/counselor download.
+ */
+const STAFF_MFA_EXACT_API_PATHS = new Set(['/api/partner/payout', '/api/health/slo']);
+const STAFF_MFA_API_PATTERNS = [
+  /^\/api\/org\/[^/]+\/settings$/,
+  /^\/api\/billing-packets\/[^/]+\/send$/,
+];
+
+function isStaffOnlyApiPath(pathname: string) {
+  return STAFF_MFA_EXACT_API_PATHS.has(pathname) ||
+    STAFF_MFA_API_PATTERNS.some((pattern) => pattern.test(pathname));
+}
+
 function isStaffMfaPath(pathname: string) {
-  return isAdminPath(pathname) || isAdminApiPath(pathname) ||
+  return isAdminPath(pathname) || isAdminApiPath(pathname) || isStaffOnlyApiPath(pathname) ||
     pathname === '/counselor' || pathname.startsWith('/counselor/') ||
     pathname === '/api/counselor' || pathname.startsWith('/api/counselor/');
 }
@@ -168,6 +187,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.delete(WAP_ORG_ID_HEADER);
   requestHeaders.delete(WAP_HOST_HEADER);
   requestHeaders.delete(WAP_USER_ID_HEADER);
+  requestHeaders.delete(WAP_EXPLICIT_LOCALE_HEADER);
   const validReadOnlyAuditToken = isValidReadOnlyPortalAuditToken(
     request.headers.get(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER),
     process.env.PORTAL_AUDIT_READ_ONLY_TOKEN,
@@ -209,6 +229,7 @@ export async function middleware(request: NextRequest) {
   const { locale: prefixLocale, pathnameWithoutLocale } = splitLocalePrefix(pathname);
   const effectivePath = prefixLocale ? pathnameWithoutLocale : pathname;
   requestHeaders.set('x-pathname', effectivePath);
+  if (prefixLocale) requestHeaders.set(WAP_EXPLICIT_LOCALE_HEADER, prefixLocale);
 
   const { locale: inferredLocale, fromQuery: localeFromQuery } = resolvePreferredLocale(request);
   requestHeaders.set(WAP_LOCALE_HEADER, prefixLocale ?? inferredLocale);
@@ -333,7 +354,7 @@ export async function middleware(request: NextRequest) {
     isProtectedPath(effectivePath) ||
     isTenantApiPath(effectivePath) ||
     (isStaffMfaEnforcementEnabled() &&
-      (isAdminPath(effectivePath) || isAdminApiPath(effectivePath)));
+      isStaffMfaPath(effectivePath));
   const hasAuthCookie = hasSupabaseAuthCookies(request.cookies);
 
   // Anonymous public HTML must not construct a GoTrue client. Protected /

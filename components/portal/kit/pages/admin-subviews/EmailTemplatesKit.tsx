@@ -1,10 +1,7 @@
 'use client';
 
 import { Mail } from 'lucide-react';
-import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Token } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
@@ -14,6 +11,7 @@ import {
   type KpiItem,
   type Column,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Email Templates — admin transactional templates rendered as a dense table.
@@ -146,14 +144,13 @@ export function EmailTemplatesKit({ templates = DEFAULT_TEMPLATES }: EmailTempla
         kicker="Messaging"
         lede="Transactional emails sent to members and staff"
         action={
-          <AstryxLink href="/admin/email-templates?ui=legacy" as={NextLink as never} isStandalone>
-            <Button
-              label="Preview & Edit"
-              variant="primary"
-              size="sm"
-              icon={<Mail size={14} aria-hidden="true" />}
-            />
-          </AstryxLink>
+          <KitLinkButton
+            href="/admin/email-templates?ui=legacy"
+            label="Preview & Edit"
+            variant="primary"
+            size="sm"
+            icon={<Mail size={14} aria-hidden="true" />}
+          />
         }
       />
 

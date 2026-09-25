@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/server';
 import { ensureUserInDb } from '@/lib/auth/ensureUser';
 import { prisma } from '@/lib/db/prisma';
 import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -23,7 +24,7 @@ const bodySchema = z.object({
     }
 
     const job = await prisma.$transaction((tx) => tx.job.findFirst({
-      where: { id: parsed.data.jobId, status: 'live' },
+      where: { id: parsed.data.jobId, status: 'live', AND: [ACTIVE_EMPLOYER_JOB_WHERE] },
       include: { employer: { select: { companyName: true } } },
     }));
     if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 });

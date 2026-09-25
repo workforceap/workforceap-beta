@@ -41,7 +41,7 @@ Implemented as `prisma.application.groupBy({ by: ['status'] })`. One row per `Ap
 | Members served / enrolled | `users WHERE deleted_at IS NULL AND enrolled_program IS NOT NULL` (period-bounded by `enrolled_at` when `period != 'all-time'`) |
 | In active training | Members where `memberProgramProgressPct(...)` is in the open interval `(0, 100)` |
 | Training completed | Members whose completed-course rollup equals the required course count for their assigned curriculum version; this does not establish credential verification |
-| Placed | `placement_records` row count (period-bounded by `placed_at` when `period != 'all-time'`) |
+| Placed | `placement_records` row count (period-bounded by `placed_at` when `period != 'all-time'`). Internal board figure: it includes rows a counselor has not yet verified. Public surfaces count verified placements only (see *Public placement counts* below) |
 | Placement rate | `placed / enrolled`, suppressed when `enrolled < SMALL_SAMPLE_THRESHOLD` |
 | Median annual salary | Median of `placement_records.salary_offered` where non-null and > 0 |
 | Total annual salary value | Sum of the same set |
@@ -101,13 +101,29 @@ When `WORKFORCEAP_PUBLIC_OUTCOMES_SOCIAL_PROOF` is true, `/outcomes` may render 
 
 | Metric / card | Source | Public rule |
 |---|---|---|
-| Placement story cards | `placement_records` rows from the last two years with a non-empty `job_title` | PII stripped; no member names, employer names, or salary values; suppressed when there are zero real placements or enrolled N `< SMALL_SAMPLE_THRESHOLD` |
+| Placement story cards | Verified `placement_records` rows (`start_date_verified = true`) from the last two years with a non-empty `job_title` | PII stripped; no member names, employer names, or salary values; suppressed when there are zero real placements or enrolled N `< SMALL_SAMPLE_THRESHOLD` |
 | Partner referrals | Distinct non-deleted users from `partner_referrals` | Count only; no rate claim by itself |
-| Partner placements | Distinct `placement_records.user_id` for non-deleted users with partner referrals | Count only; no fake/seeded rows |
+| Partner placements | Distinct verified `placement_records.user_id` (`start_date_verified = true`) for non-deleted users with partner referrals | Count only; no fake/seeded rows |
 | Partner placement rate | `partner placements / distinct referred members` | Suppressed when referrals `< SMALL_SAMPLE_THRESHOLD` and shown as `X of N` instead |
+| Partner quarterly outcomes page (`/org/[slug]/outcomes`, `GET /api/org/[slug]/outcomes`; not flag-gated) | `generatePartnerQuarterlyOutcomes()` in `lib/analytics/partnerQuarterlyOutcomes.ts`, projected by `toPublicPartnerOutcomes()` in `lib/outcomes/publicPartnerOutcomes.ts` | Allowlist of counts only: referred, enrolled, completions, placements, active, drop-offs, program breakdown and 90/180-day retention counts. Drop-off rate (`drop-offs / referred`) is suppressed when referrals `< SMALL_SAMPLE_THRESHOLD` and shown as `N=<referred> · sample too small for a reliable rate`. No member rows, no salary values and no days-to-placement |
 | Referral badge link/embed | Generated from the authenticated partner's real referral code as `/apply?ref=<code>` | Tracking utility only; hidden unless the feature flag is enabled; does not make an outcome claim |
 
 These public surfaces are designed to stay dark in production until enough verified placements exist to support real social proof.
+
+### 8. Public placement counts
+
+A placement counts on a public surface only when it is **verified**: `placement_records.start_date_verified = true`, which a counselor or admin sets after confirming the start date and wage (`app/api/admin/members/[id]/placed-outcome/route.ts`). An employer marking an application "hired" or a member self-reporting a job creates a row with `start_date_verified = false` (`lib/placement/recordPlacementFromApplication.ts`); that row is not a public outcome until it is verified. This is the same rule the funder report (`lib/admin/funderProgramMetrics.ts`) and the partner outcomes CSV (`app/api/partner/export/referrals/route.ts`) already use. The shared filter is `VERIFIED_PLACEMENT_WHERE` in `lib/placement/verifiedPlacement.ts`.
+
+| Surface | Verified-only figures | Hide rule (unchanged) |
+|---|---|---|
+| TrustStrip on `/apply` (`lib/marketing/trustStripMetrics.ts`) | "members placed" count and the average starting wage beside it | Each segment hidden at 0; the placeholder line (no numbers) shows when both are empty |
+| `/impact` (`lib/marketing/publicImpactStats.ts`) | Hires, placement rate numerator and the average salary increase | Zero-value rates and empty metrics are not published |
+| `/outcomes` and `/partners` social proof (`lib/outcomes/socialProof.ts`) | Placed total, partner placements and story cards | Section 7 rules; the bundle is suppressed when there are zero verified placements |
+| Google IT Support landing (`lib/marketing/googleItSupportLanding.ts`) | Placement count behind the placement-rate card | Rate shown only at `GOOGLE_IT_PLACEMENT_RATE_MIN_ENROLLMENTS` (40) enrollments or more |
+
+There is no fallback number. If no verified placement exists, the placement figure is hidden, never estimated.
+
+Not yet covered: the partner quarterly outcomes page (`/org/[slug]/outcomes`, `generatePartnerQuarterlyOutcomes()`) still counts every placement row, verified or not. That is a follow-up.
 
 
 ## Demographic breakdowns
@@ -156,6 +172,8 @@ If a funder asks for one of the above, the answer is: *"We have the schema field
 |---|---|
 | 2026-05-07 | Initial methodology doc; `getBoardSnapshot()` shipped on branch `claude/workforce-app-stakeholder-alignment-S52it`. |
 | 2026-06-15 | Added flagged public social-proof methodology for placement story cards, partner snapshots, and referral badges. |
+| 2026-09-23 | Documented the public partner quarterly outcomes page: counts only, small-N drop-off rate suppressed, no salary or days-to-placement. |
+| 2026-09-23 | public placed counts are verified-only (Mike, Slack 05:08 UTC) |
 
 ---
 

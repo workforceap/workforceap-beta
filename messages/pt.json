@@ -64,6 +64,7 @@
     "collapseSidebar": "Recolher barra lateral",
     "workspaceTabs": "Abas do espaço de trabalho",
     "unreadCount": "{count, plural, one {# não lida} other {# não lidas}}",
+    "pendingApplicationsCount": "{count, plural, one {# aguardando o empregador} other {# aguardando empregadores}}",
     "mobileBottomNav": {
       "ariaLabel": "Navegação móvel principal",
       "marketing": {
@@ -90,6 +91,7 @@
       "partner": {
         "overview": "Visão Geral",
         "members": "Membros",
+        "attention": "Atenção",
         "messages": "Mensagens",
         "milestones": "Marcos",
         "outcomes": "Resultados"
@@ -669,6 +671,30 @@
     "screeningSectionTitle": "Detalhes da triagem de elegibilidade",
     "ageGroupLabel": "Faixa etária *",
     "ageGroupPlaceholder": "Selecione a faixa etária",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 ou mais"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º ano",
+      "10": "10.º ano",
+      "11": "11.º ano",
+      "12": "12.º ano",
+      "other": "Outro / recém-formado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Preciso de formação em uma ocupação em demanda ou de um certificado",
+      "no_barrier": "Nenhuma barreira no momento",
+      "employment_gap": "Período sem emprego",
+      "limited_work_history": "Pouca experiência de trabalho",
+      "snap_tanf_wic": "SNAP / TANF / vale-alimentação / WIC",
+      "justice_involved": "Antecedentes / envolvimento com a justiça",
+      "disability_health": "Deficiência ou problema de saúde",
+      "housing_instable": "Moradia instável",
+      "other_barrier": "Outra barreira"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barreira(s) principal(is) — marque todas que se aplicam *",
     "primaryBarriersAria": "Barreiras principais",
@@ -868,6 +894,15 @@
     "errSummaryGeneric": "Por favor, corrija os campos destacados e tente novamente.",
     "errProgramsNotSaved": "Suas seleções de programa não foram salvas — por favor, volte para a etapa 2 e escolha pelo menos um programa.",
     "errAccountGeneric": "Não conseguimos finalizar a criação da sua conta. Por favor, revise suas informações e tente novamente, ou ligue para (512) 777-1808.",
+    "errEmailExists": "Já existe uma conta com este e-mail. Entre para continuar ou redefina sua senha se você já tem cadastro.",
+    "errAccountRecovery": "Já existe uma conta com este e-mail. Se você não conseguir entrar, ligue para a WorkforceAP no (512) 777-1808 para recuperá-la.",
+    "errAlreadySignedIn": "Você já está conectado a outra conta. Saia primeiro e depois crie a nova conta.",
+    "errRateLimited": "Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.",
+    "errRequestUnreadable": "Não conseguimos ler seus dados de cadastro. Atualize a página e tente novamente.",
+    "errServiceUnavailable": "O cadastro está temporariamente indisponível. Tente novamente em breve ou ligue para (512) 777-1808.",
+    "errSecurityCheckRequired": "Conclua a verificação de segurança.",
+    "errSecurityCheckFailed": "A verificação de segurança não foi aprovada. Tente novamente.",
+    "errProgramUnmatched": "Não encontramos o programa escolhido. Volte à etapa 2 e escolha seu programa novamente.",
     "errNetwork": "Não conseguimos acessar o servidor para finalizar a criação da sua conta. Verifique sua conexão com a internet e tente novamente, ou ligue para (512) 777-1808 se continuar falhando.",
     "confirmationMetaTitle": "Você está no sistema do WorkforceAP",
     "confirmationMetaDescription": "Sua inscrição está registrada. Verifique sua caixa de entrada e a pasta de spam para a confirmação e os próximos passos.",
@@ -1088,7 +1123,16 @@
     "noMessagesYet": "Nenhuma mensagem ainda",
     "yourCounselor": "Seu orientador",
     "workforceapSupport": "Suporte WorkforceAP",
-    "supportTeam": "Equipe de suporte"
+    "supportTeam": "Equipe de suporte",
+    "kitLede": "Seu orientador e o suporte em uma só caixa de entrada.",
+    "conversations": "Conversas",
+    "unreadMessage": "Mensagem não lida",
+    "backToMessages": "Voltar às mensagens",
+    "sendFailed": "Falha ao enviar",
+    "networkError": "Erro de rede",
+    "composerPlaceholder": "Escreva para {name}…",
+    "feedbackDraftNotice": "Revise os detalhes do curso e qualquer link de projeto salvo antes de enviar. Suas notas privadas não são compartilhadas.",
+    "feedbackUnavailable": "Não conseguimos carregar esse curso atribuído. Você ainda pode escrever sua mensagem abaixo."
   },
   "profile": {
     "edit": "Editar perfil",
@@ -1495,6 +1539,10 @@
     "nextActionCelebrateTip": "Suas indicações estão resultando em empregos. Mantenha o pipeline cheio.",
     "nextActionReviewProgress": "Acompanhe o progresso dos membros",
     "nextActionReviewProgressTip": "Os membros estão avançando na jornada — acompanhe seus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Ninguém precisa de atenção agora} =1 {1 membro precisa de atenção} other {# membros precisam de atenção}}",
+    "nextActionAttentionTip": "Membros que pararam ou ficaram em silêncio. Entre em contato antes que desistam.",
+    "nextActionAttentionUnavailable": "Não foi possível carregar quem precisa de atenção",
+    "nextActionAttentionUnavailableTip": "O número é desconhecido, não zero. Abra a fila para vê-lo.",
     "partnerInsights": "Insights do parceiro",
     "assistantSpeaking": "O assistente está falando…",
     "assistantListening": "Ouvindo — faça sua pergunta",
@@ -2850,7 +2898,7 @@
       "phone": "Telefone (opcional)",
       "password": "Crie uma senha",
       "passwordPlaceholder": "Pelo menos 8 caracteres",
-      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Deixe este campo em branco.",
+      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Entre primeiro e deixe este campo em branco.",
       "accepting": "Aceitando…",
       "accept": "Aceitar convite",
       "roles": {
@@ -2869,7 +2917,9 @@
         "alreadyAccepted": "Este convite já foi aceito. Entre na sua conta.",
         "expired": "Este convite expirou. Peça ao seu contato da WorkforceAP para reenviá-lo.",
         "nameRequired": "Informe seu nome completo.",
-        "newAccountRequired": "Novas contas precisam do seu nome completo e de uma senha com pelo menos 8 caracteres.",
+        "newAccountRequired": "Novas contas precisam de uma senha com pelo menos 8 caracteres. Se você já tem uma conta, entre ou redefina sua senha e depois volte a este convite.",
+        "accountRecoveryRequired": "Já existe uma conta com este e-mail. Entre ou redefina sua senha e depois volte a este convite.",
+        "identityReviewRequired": "Não foi possível vincular este convite à conta cadastrada. Entre em contato com a equipe WorkforceAP para obter ajuda.",
         "signupUnavailable": "A criação de contas está temporariamente indisponível. Se o problema continuar, entre em contato com o suporte.",
         "loadFailed": "Não foi possível carregar este convite. Tente novamente em instantes.",
         "codeFailed": "Não foi possível verificar esse código. Tente novamente em instantes.",
@@ -3792,6 +3842,17 @@
       "body": "Tente novamente ou veja o quadro de vagas para conferir todas as oportunidades.",
       "action": "Tentar novamente",
       "secondary": "Ver vagas"
+    },
+    "applicationsUnavailable": {
+      "title": "Não foi possível carregar suas candidaturas",
+      "body": "Seus totais são desconhecidos, não zero. Tente novamente em instantes.",
+      "action": "Tentar novamente",
+      "kpiCaption": "Não foi possível carregar"
+    },
+    "openingsUnavailable": {
+      "title": "Não foi possível carregar as vagas",
+      "body": "É um problema de carregamento, não um quadro vazio. Tente novamente em instantes.",
+      "action": "Tentar novamente"
     },
     "stage": {
       "title": "Nada nesta etapa"

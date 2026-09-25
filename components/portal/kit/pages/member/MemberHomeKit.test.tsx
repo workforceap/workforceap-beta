@@ -71,6 +71,17 @@ describe('MemberHomeKit certification-path card', () => {
     renderKit(<MemberHomeKit {...base} />);
     expect(screen.getByText('No next module on file.')).toBeTruthy();
   });
+
+  // Dashboard progress semantics (PRODUCT_STAKES, Approval Required): partial
+  // course progress reads as progress, never as an earned certificate. This
+  // pinned the legacy home's first-cert bar until WAP-195 retired it; the kit
+  // certification-path card is the one surface that shows it now.
+  it('shows recorded course progress without claiming a certificate', () => {
+    renderKit(<MemberHomeKit {...base} coursePercent={50} certModulesDone={1} certModulesTotal={2} />);
+    expect(screen.getByRole('progressbar', { name: 'Certification module progress' })).toHaveAttribute('aria-valuenow', '50');
+    expect(screen.getByText('In progress')).toBeTruthy();
+    expect(screen.queryByText(/certifi(ed|cation earned)|certificate earned/i)).toBeNull();
+  });
 });
 
 describe('MemberHomeKit resume module CTA', () => {
@@ -315,17 +326,19 @@ describe('MemberHomeKit enrolled-program switch (view only)', () => {
     expect(screen.queryByText(/My Program shows your primary program/)).toBeNull();
   });
 
-  it('says why the links change while a secondary program is shown', () => {
+  it('links a secondary program into My Program for that program (WAP-196)', () => {
+    const href = '/dashboard/program?program=comptia-a-professional-certificate';
     renderKit(
       <MemberHomeKit
         {...base}
-        programHref="/dashboard/learning"
+        programHref={href}
         programSwitch={{ ...TWO_PROGRAMS, activeProgramSlug: 'comptia-a-professional-certificate', viewingSecondary: true }}
       />,
     );
     expect(screen.getByTestId('dashboard-program-selector')).toHaveTextContent('2 of 2 programs');
-    expect(screen.getByText(/My Program shows your primary program/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Open plan' }).getAttribute('href')).toBe('/dashboard/learning');
+    // The old "links open the Learning hub" caveat is gone: the links now open this program.
+    expect(screen.queryByText(/My Program shows your primary program/)).toBeNull();
+    expect(screen.getByRole('link', { name: 'Open plan' }).getAttribute('href')).toBe(href);
   });
 
   it('renders no switch for one enrollment or none', () => {

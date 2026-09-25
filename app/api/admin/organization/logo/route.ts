@@ -8,6 +8,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
+import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
 
 const BUCKET = 'organization-branding';
 const MAX_SIZE = 2 * 1024 * 1024;export const POST = withApiGuc(async (request: Request) => {
@@ -40,6 +41,11 @@ const MAX_SIZE = 2 * 1024 * 1024;export const POST = withApiGuc(async (request: 
     }
     const MIME: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif' };
     const contentType = MIME[ext] ?? 'image/png';
+    // Logos are served publicly under this content type, so the bytes must
+    // really be that image (a `.png` holding JPEG or HTML is refused).
+    if (!(await fileMatchesContentType(file, contentType))) {
+      return NextResponse.json({ error: 'Use PNG, JPG, WebP, or GIF' }, { status: 400 });
+    }
 
     const supabase = getSupabaseAdmin();
     const path = `${organizationId}/logo.${ext}`;
