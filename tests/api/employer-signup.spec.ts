@@ -88,6 +88,10 @@ vi.mock('@/lib/employer/service', () => ({
   createEmployerUser: vi.fn(),
 }));
 
+vi.mock('@/lib/tenant/resolveProvisionOrg', () => ({
+  resolveProvisionOrganizationId: vi.fn(),
+}));
+
 vi.mock('@/lib/rate-limit', () => ({
   checkPartnerSignupRateLimit: vi.fn(),
   checkSignupEmailRateLimit: vi.fn(),
@@ -184,6 +188,7 @@ import { POST as loginPost } from '@/app/api/auth/login/route';
 import { middleware } from '@/middleware';
 import { createServerClient } from '@supabase/ssr';
 import { createEmployerUser } from '@/lib/employer/service';
+import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import {
   checkAuthIpRateLimit,
   checkAuthRateLimit,
@@ -225,9 +230,10 @@ function makeLoginRequest(body: Record<string, unknown>) {
 
 function mockSupabaseAdmin() {
   const createUser = vi.fn().mockResolvedValue({
-    data: { user: { id: UUIDS.user, email: 'jane@acme.com' } },
+    data: { user: { id: UUIDS.user, email: 'jane@acme.com', app_metadata: { provider: 'email' } } },
     error: null,
   });
+  const updateUserById = vi.fn().mockResolvedValue({ error: null });
   const generateLink = vi.fn().mockResolvedValue({
     data: { properties: { action_link: 'https://test.supabase.co/auth/v1/verify?token=abc' } },
     error: null,
@@ -237,6 +243,7 @@ function mockSupabaseAdmin() {
     auth: {
       admin: {
         createUser,
+        updateUserById,
         generateLink,
       },
     },
@@ -256,7 +263,7 @@ function mockSupabaseAdmin() {
       },
     },
   } as any);
-  return { createUser, generateLink, signInWithPassword };
+  return { createUser, updateUserById, generateLink, signInWithPassword };
 }
 
 // ─────────────────────────────────────────────
@@ -292,6 +299,7 @@ describe('POST /api/employer/signup', () => {
     vi.mocked(checkPartnerSignupRateLimit).mockResolvedValue({ success: true });
     vi.mocked(checkSignupEmailRateLimit).mockResolvedValue({ success: true });
     vi.mocked(createEmployerUser).mockResolvedValue(undefined);
+    vi.mocked(resolveProvisionOrganizationId).mockResolvedValue(UUIDS.org);
     vi.mocked(sendEmployerWelcomeEmail).mockResolvedValue({ ok: true });
     vi.mocked(sendEmployerSignupAdminAlertEmail).mockResolvedValue({ ok: true });
     vi.mocked(sendEmployerVerificationEmail).mockResolvedValue({ ok: true });
@@ -302,7 +310,7 @@ describe('POST /api/employer/signup', () => {
   });
 
   it('creates an unconfirmed employer account without signing the user in', async () => {
-    const { createUser, generateLink, signInWithPassword } = mockSupabaseAdmin();
+    const { createUser, updateUserById, generateLink, signInWithPassword } = mockSupabaseAdmin();
     vi.mocked(sendEmployerVerificationEmail).mockResolvedValue({ ok: true });
 
     const res = await employerSignupPost(makeSignupRequest(validPayload));
@@ -324,6 +332,17 @@ describe('POST /api/employer/signup', () => {
       })
     );
     expect(signInWithPassword).not.toHaveBeenCalled();
+    expect(updateUserById).toHaveBeenCalledWith(UUIDS.user, {
+      app_metadata: {
+        provider: 'email',
+        wap_provision_intent: {
+          version: 1,
+          role: 'employer',
+          organization_id: UUIDS.org,
+          source: 'employer_signup',
+        },
+      },
+    });
 
     expect(generateLink).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -345,7 +364,8 @@ describe('POST /api/employer/signup', () => {
         email: 'jane@acme.com',
         companyName: 'Acme Corp',
         contactName: 'Jane Doe',
-      })
+      }),
+      { organizationId: UUIDS.org },
     );
     expect(sendEmployerWelcomeEmail).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -398,7 +418,22 @@ describe('POST /api/employer/signup', () => {
     expect(sendEmployerVerificationEmail).not.toHaveBeenCalled();
   });
 
+  it('keeps employer signup working when the preparatory Auth metadata update fails', async () => {
+    const { updateUserById } = mockSupabaseAdmin();
+    updateUserById.mockResolvedValue({ error: new Error('metadata unavailable') });
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await employerSignupPost(makeSignupRequest(validPayload));
+      expect(res.status).toBe(200);
+      expect(updateUserById).toHaveBeenCalledOnce();
+      expect(createEmployerUser).toHaveBeenCalledOnce();
+    } finally {
+      errorLog.mockRestore();
+    }
+  });
+
   it('returns 400 for duplicate email', async () => {
+    const updateUserById = vi.fn();
     vi.mocked(getSupabaseAdmin).mockReturnValue({
       auth: {
         admin: {
@@ -406,6 +441,7 @@ describe('POST /api/employer/signup', () => {
             data: { user: null },
             error: { message: 'User already registered', code: 'user_already_exists' },
           }),
+          updateUserById,
         },
       },
     } as any);
@@ -415,6 +451,8 @@ describe('POST /api/employer/signup', () => {
     const body = await res.json();
     expect(body.error).toContain('already exist');
     expect(createEmployerUser).not.toHaveBeenCalled();
+    expect(resolveProvisionOrganizationId).not.toHaveBeenCalled();
+    expect(updateUserById).not.toHaveBeenCalled();
   });
 
   it('returns 400 for invalid data validation', async () => {
