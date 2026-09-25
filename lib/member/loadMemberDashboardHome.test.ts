@@ -6,7 +6,6 @@ import path from 'node:path';
 
 import {
   MEMBER_DASHBOARD_HOME_PRISMA_BUDGET,
-  SECONDARY_PROGRAM_HREF,
   STALE_TRAINING_COUNSELOR_ACTION,
   secondaryProgramAction,
   buildFirst90Card,
@@ -1523,19 +1522,22 @@ test('WAP-194: ?program= names one of the member\'s own enrollments and the home
   assert.equal(view.certModulesTotal, secondary.courses.length);
   assert.equal(view.nextLesson, secondary.courses[0]!.name);
 
-  // My Program and its ?course= only open the primary program (WAP-196), so
-  // a secondary view never deep-links there: every program link is the Learning hub.
-  assert.equal(view.nextLessonHref, '/dashboard/learning');
-  assert.equal(view.programHref, '/dashboard/learning');
-  assert.equal(view.resumeHref, '/dashboard/learning');
+  // My Program honors ?program= for the member's own enrollments (WAP-196),
+  // so every program link on a secondary view opens that program there.
+  const secondarySlugQuery = `program=${encodeURIComponent(SECONDARY_PROGRAM_SLUG)}`;
+  assert.equal(
+    view.nextLessonHref,
+    `/dashboard/program?${secondarySlugQuery}&course=${encodeURIComponent(secondary.courses[0]!.slug)}`,
+  );
+  assert.equal(view.programHref, `/dashboard/program?${secondarySlugQuery}`);
+  assert.equal(view.resumeHref, `/dashboard/program?${secondarySlugQuery}`);
   for (const action of [view.doThisNext, ...view.upNext]) {
-    if (!action) continue;
-    assert.notEqual(action.href.split(/[?#]/)[0], '/dashboard/program', `${action.id} must not open My Program on a secondary view`);
+    if (!action || action.href.split(/[?#]/)[0] !== '/dashboard/program') continue;
+    assert.ok(action.href.includes(secondarySlugQuery), `${action.id} opens the program on screen`);
   }
   const training = [view.doThisNext, ...view.upNext].find((action) => action?.id === 'continue_training');
   assert.ok(training, 'the next-course step is still offered');
-  assert.equal(training.href, '/dashboard/learning');
-  assert.equal(training.cta, 'Open Learning hub');
+  assert.ok(training.href.startsWith(`/dashboard/program?${secondarySlugQuery}`));
   assert.match(training.title, new RegExp(secondary.courses[0]!.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 
@@ -1656,16 +1658,15 @@ test('WAP-194: the first-login wizard and tour gate come from the same read', as
   assert.equal(empty.programSwitch, null);
 });
 
-test('WAP-194: secondaryProgramAction rewrites only My Program steps', () => {
-  const myProgram = { id: 'continue_training', title: 'Continue training: X', body: 'Open My Program', href: '/dashboard/program', cta: 'Open My Program', variant: 'urgent' as const, weight: 86 };
-  const rewritten = secondaryProgramAction(myProgram);
-  assert.equal(rewritten.href, SECONDARY_PROGRAM_HREF);
+test('WAP-196: secondaryProgramAction points My Program steps at the program on screen', () => {
+  const myProgram = { id: 'continue_training', title: 'Continue training: X', body: 'Open My Program', href: '/dashboard/program?course=intro', cta: 'Open My Program', variant: 'urgent' as const, weight: 86 };
+  const rewritten = secondaryProgramAction(myProgram, 'digital-literacy');
+  assert.equal(rewritten.href, '/dashboard/program?program=digital-literacy&course=intro');
   assert.equal(rewritten.title, myProgram.title);
-  assert.equal(rewritten.cta, 'Open Learning hub');
-  assert.doesNotMatch(rewritten.body, /My Program/);
+  assert.equal(rewritten.cta, myProgram.cta);
   for (const href of ['/dashboard/program/start', '/dashboard/messages', '/dashboard/assessment']) {
     const action = { ...myProgram, href };
-    assert.equal(secondaryProgramAction(action), action, `${href} is not a program link`);
+    assert.equal(secondaryProgramAction(action, 'digital-literacy'), action, `${href} is not a program link`);
   }
 });
 

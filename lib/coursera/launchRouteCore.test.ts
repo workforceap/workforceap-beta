@@ -444,3 +444,39 @@ test('Coursera launch route redirects to training error when no launch URL resol
 
   assert.equal(res.redirectedTo, 'https://workforceap.test/dashboard/training?error=launch_failed');
 });
+
+test('WAP-196: a launch from a secondary program opens that program, not the primary', async () => {
+  const resolved: Array<string | null | undefined> = [];
+  const handler = createCourseraLaunchHandler(makeDeps({
+    // The real resolver honors the slug only for the member's own enrollments.
+    resolveActiveProgram: async (_userId, legacy, requestedProgramSlug) => {
+      resolved.push(requestedProgramSlug);
+      return requestedProgramSlug === 'second-program' ? 'second-program' : legacy;
+    },
+    getProgramBySlug: (slug) => ({
+      courses: slug === 'second-program' ? [{ slug: 'second-program-course' }] : [{ slug: 'first-course' }],
+    }),
+    findCourse: async ({ programSlug }) =>
+      programSlug === 'second-program' ? { courseraSlug: 'second-program-course', courseraUrlType: 'course' } : null,
+  }));
+
+  const res = await handler(new Request(
+    'https://workforceap.test/api/member/coursera/launch?course=second-program-course&program=second-program',
+  ));
+
+  assert.deepEqual(resolved, ['second-program']);
+  assert.equal(res.redirectedTo, 'https://www.coursera.org/learn/second-program-course');
+});
+
+test('WAP-196: a signed-out launch keeps the program and course through login', async () => {
+  const handler = createCourseraLaunchHandler(makeDeps({ getUser: async () => null }));
+
+  const res = await handler(new Request(
+    'https://workforceap.test/api/member/coursera/launch?course=second-course&program=second-program',
+  ));
+
+  assert.equal(
+    new URL(res.redirectedTo).searchParams.get('redirectTo'),
+    '/dashboard/program?program=second-program&course=second-course',
+  );
+});
