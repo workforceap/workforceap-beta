@@ -73,6 +73,7 @@ import {
   validatePortalAuditTarget,
 } from './lib/portal-audit-target.mjs';
 import { installPortalHydrationTrace } from './lib/portal-hydration-trace.mjs';
+import { sanitizePortalHydrationTrace } from './lib/portal-hydration-log.mjs';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const root = join(scriptDirectory, '..');
@@ -850,26 +851,10 @@ async function auditRoute(
     if (traceHydration && row.pageErrors.some((message) => /Minified React error #418|Hydration failed/i.test(message))) {
       const trace = await page.evaluate(() => window.__waPortalHydrationTrace ?? null).catch(() => null);
       if (trace) {
-        const safePath = (pathname) => {
-          if (typeof pathname !== 'string' || !pathname.startsWith('/')) return null;
-          try {
-            return canonicalPathname(sanitizeAuditUrl(new URL(pathname, trustedOrigin).toString(), allDynamicPatterns));
-          } catch {
-            return null;
-          }
-        };
-        console.error('[portal-hydration-structure]', JSON.stringify({
-          role,
-          viewport: viewportName,
-          path: safePath(artifactPath),
-          initialPathname: safePath(trace.initialPathname),
-          errorPathname: safePath(trace.errorPathname),
-          firstShellPathname: safePath(trace.firstShellPathname),
-          lastShellPathname: safePath(trace.lastShellPathname),
-          first: trace.first,
-          recent: trace.recent,
-          atError: trace.atError,
-        }));
+        const safeTrace = sanitizePortalHydrationTrace(trace, {
+          role, viewport: viewportName, artifactPath,
+        });
+        if (safeTrace) console.error('[portal-hydration-structure]', JSON.stringify(safeTrace));
       }
     }
     const discoveredRoutes = row.ok

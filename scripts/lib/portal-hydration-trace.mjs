@@ -2,8 +2,8 @@
  * Runs before page scripts in a trusted Preview audit. Playwright serializes
  * this function into the browser, so it must not reference module scope.
  * Retain only pathnames, element tag names, counts and fixed shell-class
- * predicates. The caller sanitizes pathnames before logging; portal text,
- * arbitrary attributes, cookies and HTML never enter the trace.
+ * predicates. The caller rebuilds an allowlisted payload before logging;
+ * portal text, arbitrary attributes, cookies and HTML never enter the trace.
  */
 export function installPortalHydrationTrace() {
   const trace = {
