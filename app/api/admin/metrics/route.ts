@@ -14,6 +14,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 type AuditTimingStage = 'authMs' | 'tenantMs' | 'coreMs' | 'supplementalMs' | 'workQueueMs' | 'courseraMs';
 type AuditTimings = Partial<Record<AuditTimingStage, number>>;
+let hasHandledMetricsRequest = false;
 
 function recordAuditTiming(timings: AuditTimings | undefined, stage: AuditTimingStage, startedAt: number) {
   if (timings) timings[stage] = Math.round(performance.now() - startedAt);
@@ -294,6 +295,8 @@ async function computeAdminRouteMetricsPayload(
 
 export const GET = withApiGuc(async (request: NextRequest) => {
   const readOnlyAudit = isReadOnlyPortalAuditHeader(request.headers);
+  const firstRequestOnInstance = !hasHandledMetricsRequest;
+  hasHandledMetricsRequest = true;
   const stageTimings: AuditTimings | undefined = readOnlyAudit ? {} : undefined;
   const requestStartedAt = performance.now();
   const slowCheckpoint = stageTimings ? setTimeout(() => {
@@ -301,6 +304,7 @@ export const GET = withApiGuc(async (request: NextRequest) => {
     // in-flight snapshot before that deadline in case the client disconnects.
     console.info('[admin/metrics] read-only audit slow checkpoint', {
       ...stageTimings,
+      firstRequestOnInstance,
       elapsedMs: Math.round(performance.now() - requestStartedAt),
     });
   }, 4_500) : null;
@@ -339,6 +343,7 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       const accountedMs = Object.values(stageTimings).reduce((sum, value) => sum + value, 0);
       console.info('[admin/metrics] read-only audit timing', {
         ...stageTimings,
+        firstRequestOnInstance,
         totalMs,
         unaccountedMs: Math.max(0, totalMs - accountedMs),
       });
