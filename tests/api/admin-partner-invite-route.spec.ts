@@ -130,6 +130,29 @@ describe('POST /api/admin/partners/[id]/invite', () => {
     expect(prisma.partnerUser.create).not.toHaveBeenCalled();
   });
 
+  it('does not restamp an existing unconfirmed Auth user returned by a successful invite', async () => {
+    const updateUserById = vi.fn();
+    vi.mocked(getSupabaseAdmin).mockReturnValue({
+      auth: {
+        admin: {
+          inviteUserByEmail: vi.fn(async () => ({
+            data: { user: { id: USER_ID, app_metadata: { wap_provision_intent: { role: 'member' } } } },
+            error: null,
+          })),
+          updateUserById,
+        },
+      },
+    } as any);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: USER_ID, organizationId: ORG_ID } as any);
+
+    const res = await POST(makeRequest({ email: 'existing@example.com' }), {
+      params: Promise.resolve({ id: PARTNER_ID }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(updateUserById).not.toHaveBeenCalled();
+  });
+
   // Audit 2026-09-20: provider failures escaped as 500 "Internal server
   // error" and the partner page showed nothing. Every failure now reads
   // "Invite not sent: <reason>" with a 4xx/5xx that matches the cause.
