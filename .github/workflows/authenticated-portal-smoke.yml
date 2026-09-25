@@ -27,6 +27,11 @@ on:
         required: false
         default: false
         type: boolean
+      skip_preview_toolbar:
+        description: "Suppress Vercel Toolbar injection for a controlled isolated Preview audit"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -168,6 +173,7 @@ jobs:
         run: pnpm audit:portal
         env:
           PORTAL_AUDIT_HYDRATION_TRACE: ${{ inputs.capture_hydration_trace && '1' || '0' }}
+          PORTAL_AUDIT_SKIP_VERCEL_TOOLBAR: ${{ inputs.skip_preview_toolbar && '1' || '0' }}
           PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
           E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
