@@ -34,6 +34,7 @@ import {
   isVerifiedReadOnlyDestination,
   isVercelPreviewToolbarCspError,
   requestFailureCategory,
+  safeToolbarNavigationHeaders,
   sanitizedRequestPath,
 } from './lib/portal-audit-environment.mjs';
 import { recordPendingDataRequestTimeout } from './lib/portal-audit-pending.mjs';
@@ -121,12 +122,6 @@ function boundedDiagnosticPush(list, diagnostic) {
 }
 
 async function installReadOnlyRequestGuard(context, options = {}) {
-  // Browser-managed headers do not turn the Cookie header into a redirect-wide
-  // route override. The toolbar header contains no secret and is scoped to
-  // this opt-in audit context.
-  if (skipVercelToolbar) {
-    await context.setExtraHTTPHeaders({ 'x-vercel-skip-toolbar': '1' });
-  }
   await installReadOnlyAuditCookie(
     context,
     trustedOrigin,
@@ -193,7 +188,28 @@ async function installReadOnlyRequestGuard(context, options = {}) {
     }
 
     if (disposition === 'continue') {
-      await route.continue();
+      // The Toolbar is injected into HTML navigation responses. Keep this
+      // non-secret override off unrelated cross-origin browser fetches, where
+      // a custom header could trigger a CORS preflight. Cookie remains owned
+      // by the browser and is never supplied as a route override.
+      let trustedNavigation = false;
+      if (skipVercelToolbar && request.isNavigationRequest()) {
+        try {
+          trustedNavigation = new URL(request.url()).origin === trustedOrigin;
+        } catch {
+          // Invalid URLs proceed without the optional toolbar header.
+        }
+      }
+      if (trustedNavigation) {
+        await route.continue({
+          headers: {
+            ...safeToolbarNavigationHeaders(request.headers()),
+            'x-vercel-skip-toolbar': '1',
+          },
+        });
+      } else {
+        await route.continue();
+      }
       return;
     }
 

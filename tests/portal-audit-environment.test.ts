@@ -5,6 +5,7 @@ import {
   isVerifiedReadOnlyDestination,
   isVercelPreviewToolbarCspError,
   requestFailureCategory,
+  safeToolbarNavigationHeaders,
   sanitizedRequestPath,
 } from '../scripts/lib/portal-audit-environment.mjs';
 
@@ -14,6 +15,19 @@ const preview = {
 };
 const toolbarCspError =
   "Loading the script 'https://vercel.live/_next-live/feedback/feedback.js' violates the following Content Security Policy directive: \"script-src 'self' https://va.vercel-scripts.com/\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.";
+
+describe('toolbar navigation header boundary', () => {
+  it('preserves safe document headers without forwarding cookie or bearer secrets', () => {
+    expect(safeToolbarNavigationHeaders({
+      Accept: 'text/html',
+      'Accept-Language': 'en-US',
+      Authorization: 'Bearer dummy',
+      Cookie: 'private=dummy',
+      'X-Private-Key': 'dummy',
+      'Sec-Fetch-Site': 'same-origin',
+    })).toEqual({ accept: 'text/html', 'accept-language': 'en-US' });
+  });
+});
 
 function healthyRow(consoleErrors: string[]) {
   return classifyPortalAuditRow({
