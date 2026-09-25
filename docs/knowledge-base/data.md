@@ -58,6 +58,12 @@ accepts it as a concurrent success after reading both `User` and `Profile` by
 the same verified Auth ID. A same-email row under another ID remains an identity
 conflict; this path does not relink identities or change tenant ownership.
 
+Public apply signup can receive an existing unconfirmed Supabase Auth user with
+nonempty `identities`. An app-email P2002 after that response returns staff-assisted
+recovery and preserves the Auth identity. This can leave a genuinely new Auth
+identity without app rows, but a signUp response cannot safely authorize deleting
+it; the broader Auth-only enrollment and recovery policy is tracked separately.
+
 ## Trust and transaction boundaries
 
 Read [tenant scope](../../lib/tenant/withTenantScope.ts), [organization helpers](../../lib/tenant/organization.ts), [request organization resolution](../../lib/tenant/resolveOrgFromRequest.ts), [Prisma](../../lib/db/prisma.ts), and [request GUC context](../../lib/db/withRequestGuc.ts).
