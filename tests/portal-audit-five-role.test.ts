@@ -747,6 +747,30 @@ describe('read-only portal action contracts', () => {
       evaluateAccessProbe(
         {
           ok: false,
+          requestedPathname: '/partner',
+          finalPathname: '/partner',
+          documentStatus: 200,
+          failureReasons: ['missing_h1'],
+        },
+        'denied',
+      ),
+    ).toMatchObject({ ok: false, denialEvidence: null });
+    expect(
+      evaluateAccessProbe(
+        {
+          ok: false,
+          documentStatus: 200,
+          wrongRoleRedirect: true,
+          unexpectedRedirect: true,
+          failureReasons: ['wrong_role_redirect', 'unexpected_redirect', 'missing_h1'],
+        },
+        'denied',
+      ).ok,
+    ).toBe(false);
+    expect(
+      evaluateAccessProbe(
+        {
+          ok: false,
           documentStatus: 500,
           failureReasons: ['document_error_status', 'route_error_fallback'],
         },
@@ -804,12 +828,16 @@ describe('read-only portal action contracts', () => {
       originMatched: true,
       wrongRoleRedirect: true,
       unexpectedRedirect: true,
+      appReady: true,
+      h1Count: 1,
+      routeErrorFallback: false,
+      notFoundFallback: false,
+      consoleErrorCount: 0,
+      pageErrorCount: 0,
       failureReasons: [
         'wrong_role_redirect',
         'unexpected_redirect',
         'read_only_audit_capability_not_active',
-        'app_not_ready',
-        'missing_h1',
       ],
     };
     expect(evaluateAccessProbe(landing, 'denied')).toMatchObject({
@@ -824,6 +852,12 @@ describe('read-only portal action contracts', () => {
       failureReasons: ['wrong_role_redirect', 'unexpected_redirect'],
     }, 'denied').ok).toBe(false);
     expect(evaluateAccessProbe({ ...landing, documentStatus: 500 }, 'denied').ok).toBe(false);
+    expect(evaluateAccessProbe({
+      ...landing,
+      appReady: false,
+      h1Count: 0,
+      failureReasons: [...landing.failureReasons, 'app_not_ready', 'missing_h1'],
+    }, 'denied')).toMatchObject({ ok: false, denialEvidence: null });
     expect(evaluateAccessProbe({ ...landing, originMatched: false }, 'denied').ok).toBe(false);
     expect(evaluateAccessProbe({
       ...landing,
@@ -1395,6 +1429,17 @@ describe('portal row quality signals', () => {
     expect(schema.$defs.routeRow.properties.readOnlyCapabilityActive.type).toBe('boolean');
     expect(schema.$defs.routeRow.required).toContain('suppressedSideEffectRequestCount');
     expect(schema.$defs.accessProbe.required).toContain('targetUsable');
+    expect(Object.keys(schema.$defs.accessProbe.properties)).toEqual(expect.arrayContaining([
+      'documentStatus',
+      'appReady',
+      'h1Count',
+      'routeErrorFallback',
+      'notFoundFallback',
+      'readOnlyCapabilityActive',
+      'consoleErrorCount',
+      'pageErrorCount',
+      'durationMs',
+    ]));
     expect(schema.$defs.accessProbe.required).toContain('failureReasons');
     expect(schema.$defs.accessProbe.required).toContain('abortedDataRequestCount');
     expect(schema.$defs.actionResult.required).toContain('abortedDataRequestCount');

@@ -693,7 +693,8 @@ async function auditRoute(
   viewportName,
   requestPath,
   artifactPath = requestPath,
-  readOnlyGuard = null
+  readOnlyGuard = null,
+  options = {}
 ) {
   const page = await context.newPage();
   const startedAt = Date.now();
@@ -737,6 +738,20 @@ async function auditRoute(
     // this settlement window so an async error boundary cannot appear after a
     // stale, healthy-looking snapshot has already been captured.
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
+
+    if (options.accessProbe && !documentResponses.some(({ status }) => status === 401 || status === 403)) {
+      // A denied nested layout may stream a generic shell before its server
+      // redirect reaches the browser. The shell has links but no heading, so
+      // the ordinary readiness check can return before the denial resolves.
+      // Give a real destination heading a bounded chance to appear. A blank
+      // target still fails below; this never counts absence of content as a
+      // successful denial.
+      await page.locator('h1:visible').first().waitFor({
+        state: 'visible',
+        timeout: remainingTimeout(7_500),
+      }).catch(() => {});
+      await dataRequests.waitForSettlement(remainingTimeout(5_000));
+    }
 
     let inspection;
     try {
@@ -1466,7 +1481,8 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         'desktop',
         targetRoot,
         targetRoot,
-        readOnlyGuard
+        readOnlyGuard,
+        { accessProbe: true }
       );
       const outcome = evaluateAccessProbe(audit.row, expectation);
       return {
@@ -1475,6 +1491,15 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         expectation,
         requestedPath: targetRoot,
         finalPathname: audit.row.finalPathname,
+        documentStatus: audit.row.documentStatus,
+        appReady: audit.row.appReady,
+        h1Count: audit.row.h1Count,
+        routeErrorFallback: audit.row.routeErrorFallback,
+        notFoundFallback: audit.row.notFoundFallback,
+        readOnlyCapabilityActive: audit.row.readOnlyCapabilityActive,
+        consoleErrorCount: audit.row.consoleErrorCount,
+        pageErrorCount: audit.row.pageErrorCount,
+        durationMs: audit.row.durationMs,
         targetUsable: outcome.targetUsable,
         denialEvidence: outcome.denialEvidence,
         failureReasons: audit.row.failureReasons,
@@ -1489,6 +1514,15 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         expectation,
         requestedPath: ROLE_ACCESS_ROOTS[targetRole],
         finalPathname: null,
+        documentStatus: null,
+        appReady: false,
+        h1Count: 0,
+        routeErrorFallback: false,
+        notFoundFallback: false,
+        readOnlyCapabilityActive: false,
+        consoleErrorCount: 0,
+        pageErrorCount: 0,
+        durationMs: null,
         targetUsable: false,
         denialEvidence: null,
         failureReasons: ['access_probe_execution_failed'],
