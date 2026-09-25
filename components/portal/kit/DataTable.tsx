@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { type KitBaseProps, type KitDataAttrs } from './base';
 import { KitEmptyState, type KitEmptyStateProps } from './KitEmptyState';
 import {
@@ -80,9 +80,10 @@ interface DataTableProps<T> extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
 
 /**
  * Dense roster table — native `.wa-kit-table` chrome via `KitTableShell`
- * (pre-rendered cells keep server `render` columns RSC-safe). Mobile: scroll
- * or stacked cards. Row density is surface-driven (see KitTableShell). The
- * table standard (columns, density, states) is in docs/KIT_GUIDE.md §6a.
+ * (pre-rendered, column-keyed cells keep server `render` columns RSC-safe and
+ * avoid Flight list-key warnings). Mobile: scroll or stacked cards. Row density
+ * is surface-driven (see KitTableShell). The table standard (columns, density,
+ * states) is in docs/KIT_GUIDE.md §6a.
  */
 export function DataTable<T>({
   columns,
@@ -128,7 +129,10 @@ export function DataTable<T>({
   }));
   const shellRows = rows.map((row) => ({
     key: rowKey(row),
-    cells: columns.map((c) => cell(c, row)),
+    // Keyed per column: DataTable renders on the server, where an array of
+    // unkeyed server-component elements (a StatusTag cell) crossing into the
+    // client KitTableShell logs React's missing-key warning (WAP-209).
+    cells: columns.map((c) => <Fragment key={c.key}>{cell(c, row)}</Fragment>),
     subRow: renderSubRow ? renderSubRow(row) : undefined,
     label: rowLabel ? rowLabel(row) : undefined,
   }));

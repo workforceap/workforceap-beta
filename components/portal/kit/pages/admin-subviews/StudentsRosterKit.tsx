@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@astryxdesign/core/Card';
@@ -40,8 +40,10 @@ import {
   STUDENTS_ROSTER_VIEW_HREFS,
   TRAINING_PROGRESS_LEGACY_HREF,
   chipsForView,
+  emailWrapParts,
   matchesRosterChip,
   matchesRosterSearch,
+  rosterProgramLabel,
   toTrainingRosterRow,
   applyRosterFocus,
   type StudentsRosterChip,
@@ -329,8 +331,14 @@ export function StudentsRosterKit({
             ) : null}
           </div>
         ) : null}
-        <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
-          {row.email}
+        {/* Wraps at the <wbr>s (name-part dots, then "@"), not mid-domain; break-word only splits a part that cannot fit. */}
+        <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', overflowWrap: 'break-word', whiteSpace: 'normal' }}>
+          {emailWrapParts(row.email).map((part, index) => (
+            <Fragment key={index}>
+              {index > 0 ? <wbr /> : null}
+              {part}
+            </Fragment>
+          ))}
         </p>
         {row.location ? (
           <div
@@ -367,9 +375,8 @@ export function StudentsRosterKit({
     </div>
   );
 
-  /** Program title; the training view marks a program inferred from activity rather than assigned. */
-  const programLabel = (row: StudentRow) =>
-    `${row.program}${isTraining && row.inWap !== false && row.noProgram ? ' (inferred)' : ''}`;
+  /** Program title; every view marks a program inferred from activity rather than assigned (WAP-209). */
+  const programLabel = rosterProgramLabel;
 
   const LastActiveCell = ({ row }: { row: StudentRow }) => (
     <span
@@ -638,7 +645,7 @@ export function StudentsRosterKit({
               </div>
             ) : (
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
-                <span style={{ minWidth: 0 }}>{row.program} · {row.counselor ?? 'Unassigned'}</span>
+                <span style={{ minWidth: 0 }}>{programLabel(row)} · {row.counselor ?? 'Unassigned'}</span>
                 {row.readiness != null ? (
                   <span style={{ whiteSpace: 'nowrap' }}>
                     Readiness{' '}
