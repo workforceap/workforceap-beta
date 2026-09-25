@@ -50,6 +50,7 @@ test('hydration trace captures root structure without portal content or attribut
     };
 
     installPortalHydrationTrace();
+    assert.equal(window.__waPortalHydrationTrace.auditTraceVersion, 1);
     assert.deepEqual(observer.options, { childList: true, subtree: true });
     assert.equal(window.__waPortalHydrationTrace.initialPathname, '/employer/messages');
     body.children.push(main);

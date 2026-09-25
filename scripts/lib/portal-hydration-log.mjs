@@ -101,9 +101,22 @@ function safeSamples(value, limit, recent = false) {
     .map(safeSample).filter(Boolean);
 }
 
+function safeNavDecision(trace, prefix, decisionKey, sourceSuffix) {
+  const pathname = trace[`${prefix}Pathname`];
+  const nullPath = trace[`${prefix}NullPath`];
+  const decision = trace[`${prefix}${sourceSuffix}`];
+  if (pathname === undefined && nullPath === undefined && decision === undefined) return null;
+  return {
+    pathname: safeHydrationRoute(pathname),
+    nullPath: typeof nullPath === 'boolean' ? nullPath : null,
+    [decisionKey]: typeof decision === 'boolean' ? decision : null,
+  };
+}
+
 /** Rebuild the browser-owned trace from approved primitives before JSON logging. */
 export function sanitizePortalHydrationTrace(trace, { role, viewport, artifactPath }) {
-  if (!trace || typeof trace !== 'object' || Array.isArray(trace)) return null;
+  if (!trace || typeof trace !== 'object' || Array.isArray(trace) ||
+      trace.auditTraceVersion !== 1) return null;
   return {
     role: Object.hasOwn(STATIC_PATHS, role) ? role : 'unknown',
     viewport: viewport === 'desktop' || viewport === 'mobile' ? viewport : 'unknown',
@@ -112,6 +125,10 @@ export function sanitizePortalHydrationTrace(trace, { role, viewport, artifactPa
     errorPathname: safeHydrationRoute(trace.errorPathname),
     firstShellPathname: safeHydrationRoute(trace.firstShellPathname),
     lastShellPathname: safeHydrationRoute(trace.lastShellPathname),
+    firstMarketingNav: safeNavDecision(trace, 'firstMarketingNav', 'hidden', 'Hidden'),
+    lastMarketingNav: safeNavDecision(trace, 'lastMarketingNav', 'hidden', 'Hidden'),
+    firstPortalShell: safeNavDecision(trace, 'firstPortalShell', 'showNav', 'ShowNav'),
+    lastPortalShell: safeNavDecision(trace, 'lastPortalShell', 'showNav', 'ShowNav'),
     first: safeSamples(trace.first, 4),
     recent: safeSamples(trace.recent, 16, true),
     atError: safeSample(trace.atError),

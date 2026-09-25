@@ -36,10 +36,24 @@ test('hydration log discards injected browser strings and bounds structural fiel
     toJSON: () => secret,
   };
   const browserTrace = {
+    auditTraceVersion: 1,
     initialPathname: `/partner/private/member-123?token=${secret}`,
     errorPathname: `/partner/members/member-123?token=${secret}`,
     firstShellPathname: `/${secret}`,
     lastShellPathname: '/employer/messages',
+    firstMarketingNavPathname: '/partner/members/member-123',
+    firstMarketingNavNullPath: false,
+    firstMarketingNavHidden: true,
+    lastMarketingNavPathname: `/${secret}`,
+    lastMarketingNavNullPath: secret,
+    lastMarketingNavHidden: secret,
+    firstPortalShellPathname: '/employer/messages',
+    firstPortalShellNullPath: false,
+    firstPortalShellShowNav: false,
+    lastPortalShellPathname: '/partner/private/member-123',
+    lastPortalShellNullPath: true,
+    lastPortalShellShowNav: true,
+    firstMarketingNav: { injected: secret },
     first: Array(30).fill(sample),
     recent: Array(30).fill(sample),
     atError: sample,
@@ -55,6 +69,18 @@ test('hydration log discards injected browser strings and bounds structural fiel
   assert.equal(safe.errorPathname, '/partner/members/[id]');
   assert.equal(safe.firstShellPathname, '[unmatched-route]');
   assert.equal(safe.lastShellPathname, '/employer/messages');
+  assert.deepEqual(safe.firstMarketingNav, {
+    pathname: '/partner/members/[id]', nullPath: false, hidden: true,
+  });
+  assert.deepEqual(safe.lastMarketingNav, {
+    pathname: '[unmatched-route]', nullPath: null, hidden: null,
+  });
+  assert.deepEqual(safe.firstPortalShell, {
+    pathname: '/employer/messages', nullPath: false, showNav: false,
+  });
+  assert.deepEqual(safe.lastPortalShell, {
+    pathname: '[unmatched-route]', nullPath: true, showNav: true,
+  });
   assert.equal(safe.first.length, 4);
   assert.equal(safe.recent.length, 16);
   assert.equal(safe.atError.phase, 'unknown');
@@ -81,8 +107,15 @@ test('hydration log retains approved root diagnostics', async () => {
     portalTouchFirst: true, shellCount: 1, shellTags: ['header'], shellChildCount: 1,
   };
   const safe = sanitizePortalHydrationTrace({
+    auditTraceVersion: 1,
     initialPathname: '/dashboard/ai-tools/elevator-pitch',
     errorPathname: '/dashboard/ai-tools/elevator-pitch',
+    firstMarketingNavPathname: '/dashboard/ai-tools/elevator-pitch',
+    firstMarketingNavNullPath: false,
+    firstMarketingNavHidden: true,
+    firstPortalShellPathname: '/dashboard/ai-tools/elevator-pitch',
+    firstPortalShellNullPath: false,
+    firstPortalShellShowNav: false,
     first: [sample], recent: [sample], atError: sample,
   }, {
     role: 'member', viewport: 'mobile', artifactPath: '/dashboard/ai-tools/elevator-pitch',
@@ -90,5 +123,14 @@ test('hydration log retains approved root diagnostics', async () => {
 
   assert.equal(safe.path, '/dashboard/ai-tools/elevator-pitch');
   assert.equal(safe.viewport, 'mobile');
+  assert.equal(safe.firstMarketingNav.hidden, true);
+  assert.equal(safe.firstPortalShell.showNav, false);
   assert.deepEqual(safe.atError, sample);
+});
+
+test('hydration log requires the opt-in trace version', async () => {
+  const { sanitizePortalHydrationTrace } = await import('./portal-hydration-log.mjs');
+  const context = { role: 'member', viewport: 'desktop', artifactPath: '/dashboard' };
+  assert.equal(sanitizePortalHydrationTrace({ first: [] }, context), null);
+  assert.equal(sanitizePortalHydrationTrace({ auditTraceVersion: '1', first: [] }, context), null);
 });

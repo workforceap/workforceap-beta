@@ -7,6 +7,7 @@
  */
 export function installPortalHydrationTrace() {
   const trace = {
+    auditTraceVersion: 1,
     initialPathname: location.pathname,
     first: [],
     recent: [],
