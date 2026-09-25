@@ -17,6 +17,32 @@ test('hydration log paths contain only checked-in route templates', async () => 
   assert.equal(safeHydrationRoute('https://attacker.test/partner/members/member-123'), '[unmatched-route]');
 });
 
+test('React #418 decoder category accepts only the installed production URL shape', async () => {
+  const { safeReact418MismatchKinds } = await import('./portal-hydration-log.mjs');
+  const error = (query) =>
+    `Minified React error #418; visit https://react.dev/errors/418?${query} for the full message or use the non-minified dev environment for full errors and additional helpful warnings.`;
+  const privateText = 'PRIVATE_MEMBER_RESUME_123';
+
+  assert.deepEqual(safeReact418MismatchKinds([
+    error('args[]=text&args[]='),
+    error('args%5B%5D=HTML&args%5B%5D='),
+    error('args[]=text&args[]='),
+  ]), ['HTML', 'text']);
+  assert.deepEqual(safeReact418MismatchKinds([
+    error(`args[]=${privateText}&args[]=`),
+    error(`args[]=HTML&args[]=${privateText}`),
+    error(`args[]=text&args[]=&token=${privateText}`),
+    error('args[]=text'),
+    error('args[]=HTML&args[]=ignored&args[]='),
+    error('args[]=html&args[]='),
+    error('args[]=HTML&args[]=#fragment'),
+    error('args[]=HTML&args[]=').replace('react.dev', 'attacker.example'),
+    error('args[]=HTML&args[]=').replace('#418', '#419'),
+    { message: error('args[]=HTML&args[]=') },
+    privateText.repeat(1_000),
+  ]), []);
+});
+
 test('hydration log discards injected browser strings and bounds structural fields', async () => {
   const { sanitizePortalHydrationTrace } = await import('./portal-hydration-log.mjs');
   const secret = 'PRIVATE_MEMBER_RESUME_123';
@@ -178,6 +204,9 @@ test('hydration logging stays disabled outside opt-in isolated Preview and witho
   const args = {
     page: { evaluate: async () => { evaluations += 1; return { auditTraceVersion: 1 }; } },
     pageErrors: ['Minified React error #418'],
+    rawPageErrors: [
+      'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]=&token=PRIVATE_MEMBER_RESUME_123 for the full message',
+    ],
     role: 'partner', viewport: 'desktop', artifactPath: '/partner/members',
     write: (...parts) => writes.push(parts),
   };
@@ -215,6 +244,10 @@ test('redirect hydration logging emits only Node-sanitized route templates and s
     page: { evaluate: async () => browserTrace },
     enabled: true, auditMode: 'isolated_preview',
     pageErrors: ['Minified React error #418'],
+    rawPageErrors: [
+      'Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]=&token=PRIVATE_MEMBER_RESUME_123 for the full message',
+      'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message',
+    ],
     role: 'partner', viewport: 'desktop', artifactPath: '/partner/members',
     write: (...parts) => writes.push(parts),
   });
@@ -227,6 +260,7 @@ test('redirect hydration logging emits only Node-sanitized route templates and s
   assert.equal(payload.errorPathname, '/partner/members/[id]');
   assert.deepEqual(payload.first[0].bodyTags, ['main', 'unknown']);
   assert.equal(payload.firstMarketingNav.hidden, true);
+  assert.deepEqual(payload.react418MismatchKinds, ['HTML']);
   assert.doesNotMatch(writes[0][1], /PRIVATE_MEMBER_RESUME_123|member-123|token=/);
 });
 
