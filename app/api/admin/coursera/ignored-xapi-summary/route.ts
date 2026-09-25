@@ -59,6 +59,10 @@ type IgnoredSlugRow = {
       ? Math.floor(rawLimit)
       : DEFAULT_LIMIT;
   
+    // Same scope as the health page loaders: super admins see every tenant,
+    // an org admin sees only their own org's events (WAP-276).
+    const organizationId: string | null = superAdmin ? null : orgId;
+
     try {
       const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
   
@@ -76,6 +80,7 @@ type IgnoredSlugRow = {
         FROM coursera_xapi_events
         WHERE completion_status IN ('ignored', 'unmatched')
           AND received_at >= ${since}
+          AND (${organizationId}::text IS NULL OR organization_id = ${organizationId})
         GROUP BY course_slug
         ORDER BY event_count DESC
         LIMIT ${limit}
@@ -88,6 +93,7 @@ type IgnoredSlugRow = {
         FROM coursera_xapi_events
         WHERE completion_status IN ('ignored', 'unmatched')
           AND received_at >= ${since}
+          AND (${organizationId}::text IS NULL OR organization_id = ${organizationId})
         GROUP BY completion_status
       `;
   
