@@ -62,10 +62,19 @@ import {
 const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
 
 describe('portal navigation readiness', () => {
-  it('requires a fresh visible action heading while retaining page and data failure gates', async () => {
-    const contract = SAFE_ACTION_CONTRACTS.employer.find(({ id }) => id === 'employer-open-jobs');
+  it.each([
+    ['employer', 'employer-open-jobs', 'Employer Overview', 'Job Postings'],
+    ['partner', 'partner-open-referred-members', 'Partner Overview', 'Referred Members'],
+    ['counselor', 'counselor-open-students', 'Today', 'My Members'],
+  ] as const)('requires a fresh visible %s action heading while retaining failure gates', async (
+    role,
+    actionId,
+    sourceHeading,
+    targetHeading
+  ) => {
+    const contract = SAFE_ACTION_CONTRACTS[role].find(({ id }) => id === actionId);
     expect(contract?.targetReadySelector).toBe('.portal-page-frame h1:visible');
-    let currentHeading = 'Employer Overview';
+    let currentHeading: string = sourceHeading;
     let waitOptions: { state: string; timeout: number } | undefined;
     const markerPage = {
       locator: (selector: string) => {
@@ -83,11 +92,11 @@ describe('portal navigation readiness', () => {
       },
     };
     expect(await waitForVisibleActionTarget(
-      markerPage, contract!.targetReadySelector, 'Employer Overview', 750
+      markerPage, contract!.targetReadySelector, sourceHeading, 750
     )).toBe(false);
-    currentHeading = 'Job Postings';
+    currentHeading = targetHeading;
     expect(await waitForVisibleActionTarget(
-      markerPage, contract!.targetReadySelector, 'Employer Overview', 750
+      markerPage, contract!.targetReadySelector, sourceHeading, 750
     )).toBe(true);
     expect(waitOptions).toEqual({ state: 'visible', timeout: 750 });
     expect(await waitForVisibleActionTarget(markerPage, contract!.targetReadySelector, '', 750)).toBe(false);

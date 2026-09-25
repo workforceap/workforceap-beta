@@ -42,6 +42,7 @@ This plan coordinates **route coverage**, **automation**, **manual UX**, and **r
    - `local`: only a loopback origin is accepted; `PORTAL_AUDIT_SECTION` may narrow the run while developing.
 3. Run **`npm run audit:portal`**. The target is validated before the credential file is read or Playwright starts.
 4. Inspect **`test-results/portal-audit-results.json`**. The artifact includes an explicit `evidenceScope` (`complete_five_role_matrix`, `production_nonstaff_canary`, or local subset), route results, actual authenticated-identity distinctness, and every applicable allowed/denied access-matrix probe. A fresh failed/incomplete artifact is written before browser work starts.
+   Safe partner, employer, and counselor navigation actions wait for a new visible destination heading after the URL changes, then run the ordinary destination health and read-only checks.
    Redirect-only rows require the exact target and a healthy rendered destination. Canceled read GETs remain diagnostics only after that destination is verified; page, console, HTTP, fallback, and blocked-write failures still fail the row. Sanitized `pageErrors` and `consoleErrors` on each redirect row support triage without exposing fixture identifiers.
    On a manual isolated Preview run, `capture_hydration_trace` may be enabled to log allowlisted route templates and root structure only when a rendered or redirect-only probe reports React #418. The trace is diagnostic and does not change the row verdict.
 5. Optional: **`npx playwright test tests/e2e/cross-portal-routes.spec.ts`** with the same trusted-target and credential variables.
@@ -121,6 +122,7 @@ Use **parallel explore** subagents to:
 
 | Date | Change |
 |------|--------|
+| 2026-09-25 | Require a fresh destination heading for the partner referred-members and counselor students navigation actions, matching the employer jobs action. |
 | 2026-09-23 | Redirect probes now verify destination health before treating canceled read requests as diagnostics, and retain sanitized page and console errors in the result artifact. |
 | 2026-08-29 | Hardened target trust, middleware-minted read-only capability, provider/write-on-read suppression, five-account isolated-preview coverage, explicit three-role non-staff production scope, negative role probes, redirect-only inventory, deterministic data settlement, redacted artifacts, and current failure artifacts. |
 | 2026-04-08 | Initial cross-portal plan, unified audit runner, subagent route verification. |

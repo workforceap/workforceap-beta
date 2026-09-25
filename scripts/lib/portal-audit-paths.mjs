@@ -314,6 +314,8 @@ export const SAFE_ACTION_CONTRACTS = {
       kind: 'read_only_navigation',
       sourcePath: '/partner',
       targetPath: '/partner/referred-members',
+      // The URL can change while the source H1 remains during an RSC navigation.
+      targetReadySelector: '.portal-page-frame h1:visible',
       required: true,
     },
     {
@@ -331,6 +333,8 @@ export const SAFE_ACTION_CONTRACTS = {
       kind: 'read_only_navigation',
       sourcePath: '/counselor/today',
       targetPath: '/counselor/students',
+      // Wait for the roster H1 after client navigation replaces the Today view.
+      targetReadySelector: '.portal-page-frame h1:visible',
       required: true,
     },
     {
