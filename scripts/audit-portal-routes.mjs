@@ -56,6 +56,7 @@ import {
   redirectDestinationFailureReasons,
   dataRequestQuietWindowSatisfied,
   evaluateAccessProbe,
+  failedAccessProbeDiagnostics,
   fixtureConditionMatches,
   isVerifiedDeniedRedirectWithCanceledGets,
   isBlockedAuditTelemetryRequest,
@@ -294,7 +295,7 @@ function emptySummary() {
 
 const artifact = {
   $schema: '../docs/portal-audit-results.schema.json',
-  schemaVersion: '3.4.0',
+  schemaVersion: '3.5.0',
   // A run starts failed/incomplete. Only a complete green run changes this to passed,
   // so a killed process can never leave a stale success artifact behind.
   status: 'failed',
@@ -1595,6 +1596,7 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         readOnlyCapabilityActive: audit.row.readOnlyCapabilityActive,
         consoleErrorCount: audit.row.consoleErrorCount,
         pageErrorCount: audit.row.pageErrorCount,
+        ...failedAccessProbeDiagnostics(audit.row, outcome.ok),
         durationMs: audit.row.durationMs,
         targetUsable: outcome.targetUsable,
         denialEvidence: outcome.denialEvidence,

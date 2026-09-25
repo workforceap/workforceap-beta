@@ -508,6 +508,39 @@ export function evaluateAccessProbe(row, expectation) {
   };
 }
 
+const ACCESS_BROWSER_ERROR_CATEGORIES = Object.freeze([
+  ['react_hydration', /Minified React error #418|Hydration failed/i],
+  ['react_runtime', /Minified React error #\d+/i],
+  ['same_origin_http_5xx', /Same-origin data request returned HTTP 5\d\d/i],
+  ['same_origin_http_4xx', /Same-origin data request returned HTTP 4\d\d/i],
+  ['same_origin_network_failure', /Same-origin data request (?:failed|was aborted)/i],
+  ['navigation_failure', /Navigation failed|interrupted by another navigation/i],
+  ['page_inspection_failure', /Page inspection failed/i],
+  ['read_only_policy_block', /Read-only audit policy blocked a non-GET request/i],
+  ['csp_violation', /Content Security Policy|CSP directive/i],
+  ['resource_load_failure', /Failed to load resource|net::ERR_[A-Z_]+/i],
+  ['type_error', /\bTypeError\b/],
+  ['reference_error', /\bReferenceError\b/],
+  ['syntax_error', /\bSyntaxError\b/],
+]);
+
+/** Fixed categories only: access-probe artifacts must not persist browser-owned text. */
+export function failedAccessProbeDiagnostics(row, ok) {
+  if (ok) return {};
+  const bounded = (values, source) => Array.isArray(values)
+    ? [...new Set(values
+      .filter((value) => typeof value === 'string')
+      .map((value) => value.length <= 8_192
+        ? ACCESS_BROWSER_ERROR_CATEGORIES.find(([, pattern]) => pattern.test(value))?.[0]
+          ?? `other_${source}_error`
+        : `other_${source}_error`))].slice(0, 3)
+    : [];
+  return {
+    consoleErrorCategories: bounded(row?.consoleErrors, 'console'),
+    pageErrorCategories: bounded(row?.pageErrors, 'page'),
+  };
+}
+
 /**
  * A redirect can cancel destination GETs while Playwright closes the page.
  * Discount those cancellations only when a denied probe has independently
