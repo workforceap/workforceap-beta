@@ -13,8 +13,8 @@ import { localizeHref } from '@/lib/i18n/localizeHref';
 
 /**
  * The rail's matching rule (href, aliases, `exact`) for each member route,
- * keyed by href. `/dashboard` appears twice (Home and "My account"); both are
- * `exact`, so the first row is kept.
+ * keyed by href. Keep the first row if future rail configuration repeats a
+ * destination; the member rail currently has unique hrefs.
  */
 const RAIL_LINKS = new Map<string, ActiveNavLink>();
 for (const link of navItemsForActiveRoute(MEMBER_PORTAL_NAV_ITEMS)) {
