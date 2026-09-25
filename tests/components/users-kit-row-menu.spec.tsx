@@ -167,11 +167,34 @@ describe('UsersKit row menu', () => {
     expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Edit name & email', 'Send password reset']);
   });
 
-  it('hands name and email edits to the full manager for that account', () => {
+  // WAP-193: name and email are edited inline instead of opening ?ui=legacy.
+  it('edits name and email inline through the same PATCH route', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ user: { fullName: 'Other Renamed', email: 'renamed@example.com' } }) });
     render(<UsersKit {...props} />);
-    const menu = openMenu(tableRowFor(other.email), other.name);
-    fireEvent.click(within(menu).getByRole('menuitem', { name: 'Edit name & email' }));
-    expect(navigation.push).toHaveBeenCalledWith(`/admin/users?ui=legacy&search=${encodeURIComponent(other.email)}`);
+    const row = tableRowFor(other.email);
+    fireEvent.click(within(openMenu(row, other.name)).getByRole('menuitem', { name: 'Edit name & email' }));
+    expect(navigation.push).not.toHaveBeenCalled();
+    fireEvent.change(within(row).getByLabelText('Full name'), { target: { value: ' Other Renamed ' } });
+    fireEvent.change(within(row).getByLabelText('Email'), { target: { value: 'renamed@example.com' } });
+    fireEvent.click(within(row).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(navigation.refresh).toHaveBeenCalled());
+    expect(fetchMock).toHaveBeenCalledWith('/api/admin/users/other', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ fullName: 'Other Renamed', email: 'renamed@example.com' }),
+    });
+    expect(within(screen.getByRole('table')).getByText('renamed@example.com')).toBeInTheDocument();
+  });
+
+  it('rejects an invalid email before calling the API', () => {
+    render(<UsersKit {...props} />);
+    const row = tableRowFor(other.email);
+    fireEvent.click(within(openMenu(row, other.name)).getByRole('menuitem', { name: 'Edit name & email' }));
+    fireEvent.change(within(row).getByLabelText('Email'), { target: { value: 'not-an-email' } });
+    fireEvent.click(within(row).getByRole('button', { name: 'Save' }));
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText('Enter a full name and a valid email.').length).toBeGreaterThan(0);
   });
 
   it('closes the menu on Escape and returns focus to the trigger', () => {
