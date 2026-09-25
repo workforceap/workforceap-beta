@@ -9,7 +9,11 @@ import { awardPoints } from '@/lib/member/points';
 import { prisma } from '@/lib/db/prisma';
 import { recordXapiEvent, resolveXapiUser } from '@/lib/xapi/mappings';
 import { resolveInboundProgramSlug } from '@/lib/xapi/resolveInboundProgram';
-import { isXapiCompletionVerb, type ParsedXapiStatement } from '@/lib/xapi/statements';
+import {
+  isXapiCompletionVerb,
+  isXapiCourseProgressVerb,
+  type ParsedXapiStatement,
+} from '@/lib/xapi/statements';
 import { markXapiStatementProcessed } from '@/lib/xapi/storage';
 import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
 import { detectTrainingMilestone } from '@/lib/milestoneCascade/detectCompletionMilestone';
@@ -150,6 +154,7 @@ export async function handleInboundParsedStatement(
   }
 
   if (!isXapiCompletionVerb(parsed)) {
+    let progressWritten = false;
     for (const scope of inboundScopes) {
       const progress = await upsertCourseProgressFromXapiStatement({
         userId: resolvedUser.userId,
@@ -157,6 +162,7 @@ export async function handleInboundParsedStatement(
         curriculumVersion: scope.curriculumVersion,
         parsed,
       });
+      if (progress) progressWritten = true;
       if (
         scope.assignmentMatched
         && progress?.trainingStartedTransition
@@ -193,7 +199,13 @@ export async function handleInboundParsedStatement(
       matchedUserId: resolvedUser.userId,
       organizationId: options.organizationId,
       mappingMethod: resolvedUser.mappingMethod,
-      completionStatus: 'ignored',
+      // A course-progress statement that wrote no progress lost it: its course
+      // did not resolve. Only those are replay/heal candidates; every other
+      // non-completion statement (item completions, experienced, …) is normal
+      // traffic (WAP-276).
+      completionStatus: isXapiCourseProgressVerb(parsed) && !progressWritten
+        ? 'unresolved_course'
+        : 'ignored',
       rawPayload: parsed.rawStatement,
     });
     await markXapiStatementProcessed(parsed.statementId, options.statementHash);
