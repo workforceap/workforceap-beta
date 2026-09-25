@@ -25,6 +25,7 @@ import {
   dynamicRoutePatternMatches,
   evaluateAccessProbe,
   fixtureConditionMatches,
+  isVerifiedDeniedRedirectWithCanceledGets,
   isBlockedAuditTelemetryRequest,
   isSuppressedAuditSideEffectGetRequest,
   isAllowedReadOnlyNonGetRequest,
@@ -861,6 +862,81 @@ describe('read-only portal action contracts', () => {
         'denied',
       ).ok,
     ).toBe(false);
+  });
+
+  it('treats canceled GETs as diagnostic only at a verified denied source-role home', () => {
+    const input = {
+      path: '/admin',
+      expectedPath: '/admin',
+      comparisonExpectedPath: '/admin',
+      sectionRoot: '/admin',
+      finalUrl: 'https://preview.example/dashboard',
+      comparisonFinalUrl: 'https://preview.example/dashboard',
+      originMatched: true,
+      documentStatus: 200,
+      title: 'Member Dashboard',
+      bodyText: 'Member Dashboard',
+      appReady: true,
+      readOnlyCapabilityActive: true,
+      errorFallbackDetected: false,
+      h1Count: 1,
+      consoleErrors: [],
+      pageErrors: [],
+      blockedWriteRequestCount: 0,
+      abortedDataRequestCount: 2,
+      abortedDataRequests: [
+        { method: 'GET', resourceType: 'fetch', prefetch: true, rsc: true },
+        { method: 'GET', resourceType: 'fetch', prefetch: false, rsc: false },
+      ],
+    };
+    const candidate = classifyPortalAuditRow(input);
+    expect(candidate.failureReasons).toEqual(['wrong_role_redirect', 'unexpected_redirect']);
+    expect(evaluateAccessProbe(candidate, 'denied')).toMatchObject({
+      ok: true,
+      denialEvidence: 'safe_redirect_outside_target',
+    });
+    expect(isVerifiedDeniedRedirectWithCanceledGets(candidate, 'denied', '/dashboard')).toBe(true);
+
+    // The discount never applies to allowed probes, an arbitrary destination,
+    // or a public landing whose separate denial contract permits no portal capability.
+    expect(isVerifiedDeniedRedirectWithCanceledGets(candidate, 'allowed', '/dashboard')).toBe(false);
+    expect(isVerifiedDeniedRedirectWithCanceledGets(candidate, 'denied', '/partner')).toBe(false);
+    expect(isVerifiedDeniedRedirectWithCanceledGets(classifyPortalAuditRow({
+      ...input,
+      path: '/employer',
+      expectedPath: '/employer',
+      comparisonExpectedPath: '/employer',
+      sectionRoot: '/employer',
+      finalUrl: 'https://preview.example/employers',
+      comparisonFinalUrl: 'https://preview.example/employers',
+      readOnlyCapabilityActive: false,
+    }), 'denied', '/employers')).toBe(false);
+
+    for (const override of [
+      { originMatched: false },
+      { documentStatus: 403 },
+      { documentStatus: 500 },
+      { appReady: false },
+      { h1Count: 0 },
+      { h1Count: 2 },
+      { errorFallbackDetected: true },
+      { bodyText: '404 page not found' },
+      { consoleErrors: ['Hydration failed'] },
+      { pageErrors: ['Page crashed'] },
+      { pageErrors: ['Same-origin data request failed (timeout)'] },
+      { blockedWriteRequestCount: 1 },
+      { readOnlyCapabilityActive: false },
+      { finalUrl: 'https://preview.example/admin', comparisonFinalUrl: 'https://preview.example/admin' },
+      { abortedDataRequestCount: 3 },
+      { abortedDataRequests: [{ method: 'HEAD', resourceType: 'fetch' }] },
+      { abortedDataRequests: [{ method: 'POST', resourceType: 'fetch' }] },
+    ]) {
+      const unhealthy = classifyPortalAuditRow({ ...input, ...override });
+      expect(
+        isVerifiedDeniedRedirectWithCanceledGets(unhealthy, 'denied', '/dashboard'),
+        JSON.stringify(override),
+      ).toBe(false);
+    }
   });
 
   it('uses the rendered counselor landing for role access probes', () => {

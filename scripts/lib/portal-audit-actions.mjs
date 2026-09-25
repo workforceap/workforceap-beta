@@ -507,3 +507,44 @@ export function evaluateAccessProbe(row, expectation) {
     denialEvidence,
   };
 }
+
+/**
+ * A redirect can cancel destination GETs while Playwright closes the page.
+ * Discount those cancellations only when a denied probe has independently
+ * reached the authenticated source role's healthy portal home. The ordinary
+ * route and allowed-probe rules remain strict.
+ */
+export function isVerifiedDeniedRedirectWithCanceledGets(
+  row,
+  expectation,
+  expectedDestinationPathname,
+) {
+  if (
+    expectation !== 'denied' ||
+    typeof expectedDestinationPathname !== 'string' ||
+    row?.finalPathname !== expectedDestinationPathname ||
+    row?.requestedPathname === expectedDestinationPathname ||
+    row?.abortedDataRequestCount < 1 ||
+    !Array.isArray(row?.abortedDataRequests) ||
+    row.abortedDataRequestCount !== row.abortedDataRequests.length ||
+    !row.abortedDataRequests.every((request) => request?.method === 'GET') ||
+    row?.documentStatus !== 200 ||
+    row?.originMatched !== true ||
+    row?.appReady !== true ||
+    row?.h1Count !== 1 ||
+    row?.readOnlyCapabilityActive !== true ||
+    row?.routeErrorFallback !== false ||
+    row?.notFoundFallback !== false ||
+    row?.consoleErrorCount !== 0 ||
+    row?.pageErrorCount !== 0 ||
+    row?.blockedWriteRequestCount !== 0 ||
+    row?.stuckLogin === true ||
+    row?.wrongRoleRedirect !== true ||
+    row?.unexpectedRedirect !== true
+  ) {
+    return false;
+  }
+
+  const outcome = evaluateAccessProbe(row, expectation);
+  return outcome.ok && outcome.denialEvidence === 'safe_redirect_outside_target';
+}

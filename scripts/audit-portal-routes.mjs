@@ -54,6 +54,7 @@ import {
   dataRequestQuietWindowSatisfied,
   evaluateAccessProbe,
   fixtureConditionMatches,
+  isVerifiedDeniedRedirectWithCanceledGets,
   isBlockedAuditTelemetryRequest,
   isAllowedReadOnlyNonGetRequest,
   navigationTargetMatches,
@@ -841,7 +842,7 @@ async function auditRoute(
       durationMs: Date.now() - startedAt,
     };
     const candidateRow = classifyPortalAuditRow(rowInput);
-    const abortsAreDiagnostic = isVerifiedReadOnlyDestination({
+    const exactDestinationVerified = isVerifiedReadOnlyDestination({
       exactExpectedPath: !candidateRow.unexpectedRedirect && !candidateRow.queryVariantMismatch,
       sameOrigin: candidateRow.originMatched,
       documentStatus: candidateRow.documentStatus,
@@ -853,6 +854,12 @@ async function auditRoute(
       pageErrorCount: candidateRow.pageErrorCount,
       otherFailureCount: candidateRow.failureReasons.length,
     });
+    const deniedRedirectVerified = isVerifiedDeniedRedirectWithCanceledGets(
+      candidateRow,
+      options.accessExpectation,
+      options.accessSourceHome,
+    );
+    const abortsAreDiagnostic = exactDestinationVerified || deniedRedirectVerified;
     const row = dataRequests.abortedDataRequestCount === 0 || abortsAreDiagnostic
       ? candidateRow
       : classifyPortalAuditRow({
@@ -1538,7 +1545,11 @@ async function probeRoleAccess(browser, sourceRole, storageState, targetRole, ex
         targetRoot,
         targetRoot,
         readOnlyGuard,
-        { accessProbe: true }
+        {
+          accessProbe: true,
+          accessExpectation: expectation,
+          accessSourceHome: ROLE_ACCESS_ROOTS[sourceRole],
+        }
       );
       const outcome = evaluateAccessProbe(audit.row, expectation);
       return {
