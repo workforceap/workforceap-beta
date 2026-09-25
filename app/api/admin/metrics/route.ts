@@ -12,6 +12,13 @@ import { COURSERA_XAPI_UNAVAILABLE, type CourseraXapiDegradation } from '@/lib/c
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
+type AuditTimingStage = 'authMs' | 'tenantMs' | 'coreMs' | 'supplementalMs' | 'workQueueMs' | 'courseraMs';
+type AuditTimings = Partial<Record<AuditTimingStage, number>>;
+
+function recordAuditTiming(timings: AuditTimings | undefined, stage: AuditTimingStage, startedAt: number) {
+  if (timings) timings[stage] = Math.round(performance.now() - startedAt);
+}
+
 /**
  * Executive Dashboard payload. Every people count is over member-role
  * accounts (`memberOnlySqlJoin`), the same population `getAdminMetrics`
@@ -20,10 +27,14 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  */
 async function computeAdminRouteMetricsPayload(
   orgId: string,
-  opts: { readOnlyAudit?: boolean } = {},
+  opts: { readOnlyAudit?: boolean; stageTimings?: AuditTimings } = {},
 ) {
+  let stageStartedAt = performance.now();
   const metrics = await getAdminMetrics(orgId, opts);
+  recordAuditTiming(opts.stageTimings, 'coreMs', stageStartedAt);
   const memberJoin = memberOnlySqlJoin();
+
+  stageStartedAt = performance.now();
 
   const assessmentCompleted = await prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*)::int as count FROM users u
@@ -121,7 +132,10 @@ async function computeAdminRouteMetricsPayload(
       ORDER BY week
     `;
 
+  recordAuditTiming(opts.stageTimings, 'supplementalMs', stageStartedAt);
+
   // ── Work Queue counts ──
+  stageStartedAt = performance.now();
   let pendingApplications;
   try {
     pendingApplications = await prisma.$queryRaw<{ count: number }[]>`
@@ -169,6 +183,7 @@ async function computeAdminRouteMetricsPayload(
     console.error('Failed to get stale training', error);
     staleTraining = [{ count: 0 }];
   }
+  recordAuditTiming(opts.stageTimings, 'workQueueMs', stageStartedAt);
 
   // Same loader as the /admin/coursera page this tile links to, so the tile
   // equals the page it opens. The old query INNER JOINed users on
@@ -181,6 +196,7 @@ async function computeAdminRouteMetricsPayload(
   // production's rather than wrong; the probe inside the loader reports it.
   const degraded: CourseraXapiDegradation[] = [];
   let unmatchedCoursera: number;
+  stageStartedAt = performance.now();
   try {
     unmatchedCoursera = await countUnmatchedLearners(orgId, {
       includeTestAccounts: false,
@@ -191,6 +207,7 @@ async function computeAdminRouteMetricsPayload(
     console.error('Failed to get unmatched coursera', error);
     unmatchedCoursera = 0;
   }
+  recordAuditTiming(opts.stageTimings, 'courseraMs', stageStartedAt);
 
   const total = metrics.totalMembers;
   const enrolled = metrics.placementStats.enrolled;
@@ -273,18 +290,26 @@ async function computeAdminRouteMetricsPayload(
     },
     degraded,
   };
-}export const GET = withApiGuc(async (request: NextRequest) => {
+}
+
+export const GET = withApiGuc(async (request: NextRequest) => {
+  const readOnlyAudit = isReadOnlyPortalAuditHeader(request.headers);
+  const stageTimings: AuditTimings | undefined = readOnlyAudit ? {} : undefined;
+  const requestStartedAt = performance.now();
   try {
+    const authStartedAt = performance.now();
     const user = await getUser();
     if (!user || !(await isAdmin(user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    recordAuditTiming(stageTimings, 'authMs', authStartedAt);
   
     try {
+      const tenantStartedAt = performance.now();
       const orgId = await getActorOrganizationId(user.id);
-      const readOnlyAudit = isReadOnlyPortalAuditHeader(request.headers);
+      recordAuditTiming(stageTimings, 'tenantMs', tenantStartedAt);
       const body = readOnlyAudit
-        ? await computeAdminRouteMetricsPayload(orgId, { readOnlyAudit: true })
+        ? await computeAdminRouteMetricsPayload(orgId, { readOnlyAudit: true, stageTimings })
         : await unstable_cache(
             async () => computeAdminRouteMetricsPayload(orgId),
             ['admin-api-metrics-v1', orgId],
@@ -298,5 +323,13 @@ async function computeAdminRouteMetricsPayload(
   } catch (error) {
     console.error('/admin/metrics:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    // Fixed stage names and durations only; no user, tenant, SQL, or metric values.
+    if (stageTimings) {
+      console.info('[admin/metrics] read-only audit timing', {
+        ...stageTimings,
+        totalMs: Math.round(performance.now() - requestStartedAt),
+      });
+    }
   }
 });
