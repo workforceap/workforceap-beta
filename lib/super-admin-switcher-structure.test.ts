@@ -14,13 +14,27 @@ test('super-admin switcher uses server-provided state where available', () => {
   const memberLayout = read('app/(portal)/dashboard/layout.tsx');
   const memberAccess = read('lib/auth/memberDashboardAccess.ts');
   const counselorLayout = read('app/(portal)/counselor/layout.tsx');
+  const adminLayout = read('app/admin/layout.tsx');
+  const adminShell = read('components/portal/AdminPortalShell.tsx');
+  const headerActions = read('components/portal/PortalHeaderActions.tsx');
+  const devViewToggle = read('components/portal/DevViewToggle.tsx');
+  const partnerLayout = read('app/(portal)/partner/layout.tsx');
+  const partnerShell = read('components/portal/PartnerPortalShell.tsx');
 
   assert.match(switcher, /initialIsSuperAdmin\?: boolean/);
-  // WAP-27: a server-known flag short-circuits the shared /api/auth/me read.
-  assert.match(switcher, /export function useIsSuperAdmin\(knownSuperAdmin = false\)/);
-  assert.match(switcher, /useCurrentUser\(\{ enabled: !knownSuperAdmin \}\)/);
+  // WAP-27: either server-known value short-circuits the shared /api/auth/me read.
+  assert.match(switcher, /export function useIsSuperAdmin\(knownSuperAdmin\?: boolean\)/);
+  assert.match(switcher, /useCurrentUser\(\{ enabled: knownSuperAdmin === undefined \}\)/);
   assert.match(switcher, /const isSuperAdmin = useIsSuperAdmin\(initialIsSuperAdmin\)/);
-  assert.match(shell, /const isSuperAdmin = useIsSuperAdmin\(Boolean\(superAdmin\)\)/);
+  assert.match(shell, /const isSuperAdmin = useIsSuperAdmin\(knownSuperAdmin \?\? superAdmin\)/);
+  assert.match(partnerLayout, /knownSuperAdmin=\{superUser\}/);
+  assert.match(partnerShell, /knownSuperAdmin=\{knownSuperAdmin\}/);
+  assert.match(adminLayout, /getProfileRole\(user\.id\)/);
+  assert.match(adminLayout, /knownIsAdmin=\{effectiveRole === 'admin'\}/);
+  assert.match(adminShell, /knownIsAdmin=\{knownIsAdmin\}/);
+  assert.match(shell, /knownIsAdmin=\{knownIsAdmin\}/);
+  assert.match(headerActions, /<DevViewToggle knownIsAdmin=\{knownIsAdmin\} \/>/);
+  assert.match(devViewToggle, /useCurrentUser\(\{ enabled: knownIsAdmin === undefined \}\)/);
   assert.doesNotMatch(switcher, /fetch\('\/api\/auth\/me'/);
   assert.equal((shell.match(/<SuperAdminViewSwitcher initialIsSuperAdmin=\{isSuperAdmin\} \/>/g) ?? []).length, 2);
   assert.match(memberShell, /superAdmin=\{superAdmin\}/);
