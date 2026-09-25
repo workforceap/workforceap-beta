@@ -32,6 +32,15 @@ on:
         required: false
         default: false
         type: boolean
+      route_concurrency:
+        description: "Maximum concurrent route probes (use 1 or 2 to diagnose shared-service contention)"
+        required: false
+        default: '8'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '8'
 
 permissions:
   contents: read
@@ -76,6 +85,7 @@ jobs:
       PORTAL_AUDIT_MODE: ${{ inputs.audit_target == 'hub_smoke' && 'isolated_preview' || inputs.audit_target || 'isolated_preview' }}
       PORTAL_AUDIT_SECTION: all
       PORTAL_AUDIT_OUTPUT: test-results/portal-audit-results.json
+      PORTAL_AUDIT_ROUTE_CONCURRENCY: ${{ inputs.route_concurrency || '8' }}
 
     steps:
       - name: Checkout trusted master
