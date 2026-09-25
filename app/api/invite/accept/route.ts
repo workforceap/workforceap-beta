@@ -12,7 +12,7 @@ import {
 import { invitationRoleLabel, inviteAcceptLoginRedirect } from '@/lib/invitations/inviteRoleLabels';
 import { checkInviteAcceptRateLimit } from '@/lib/rate-limit';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
-import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
+import { getUser } from '@/lib/auth/server';
 import { stampCreatedAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
 import { Prisma, type InvitationRole } from '@prisma/client';
 import {
@@ -400,7 +400,19 @@ async function ensureCounselorRow(
         return await acceptExistingUser(existingUser, invitation, fullName, request);
       }
   
-      if (!fullName || !password || password.length < 8) {
+      if (!fullName) {
+        return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+      }
+
+      // An Auth-only invitee can return with their own signed-in session after
+      // an earlier app transaction failed. They do not need to provide a new
+      // password, and their existing Auth credentials must not be changed.
+      const signedInUser = await getUser();
+      if (signedInUser?.email?.trim().toLowerCase() === inviteEmail) {
+        return await finishNewUserDbSetup(signedInUser.id, invitation, fullName, phone, request);
+      }
+
+      if (!password || password.length < 8) {
         return NextResponse.json(
           { error: 'Name and password (min 8 chars) are required for new accounts' },
           { status: 400 }
@@ -430,6 +442,33 @@ async function acceptExistingUser(
   _request: NextRequest
 ) {
   const invitationId = invitation.id;
+  // A matching public.users email is not proof that this invitation belongs to
+  // the same Supabase identity. The invitation is a bearer token; never grant
+  // its role to a stale or mismatched app row before checking Auth by ID.
+  try {
+    const { data, error } = await getSupabaseAdmin().auth.admin.getUserById(user.id);
+    if (error && error.status !== 404 && error.code !== 'user_not_found') throw error;
+    const inviteEmail = invitation.email.trim().toLowerCase();
+    if (
+      Boolean(error)
+      || !data?.user
+      || data.user.id !== user.id
+      || data.user.email?.trim().toLowerCase() !== inviteEmail
+      || user.email.trim().toLowerCase() !== inviteEmail
+    ) {
+      return NextResponse.json(
+        { error: 'This invitation needs account review before it can be accepted.', code: 'INVITE_IDENTITY_REVIEW_REQUIRED' },
+        { status: 409 },
+      );
+    }
+  } catch (error) {
+    inviteAcceptLog('auth:existing_user_lookup_failed', { invitationId, err: error });
+    return NextResponse.json(
+      { error: 'Account verification is temporarily unavailable. Please try again.' },
+      { status: 503 },
+    );
+  }
+
   let txStep = 'start';
   try {
     await prisma.$transaction(async (tx) => {
@@ -614,19 +653,13 @@ async function createNewUserAndAccept(
       if (existing) {
         return acceptExistingUser(existing, invitation, fullName, request);
       }
-      // Orphaned Supabase auth user (previous attempt created auth but DB tx failed).
-      // Look up the existing auth user and continue with DB record creation.
-      const orphanedAuthUser = await findSupabaseAuthUserByEmail(supabase, inviteEmail, {
-        perPage: 200,
-        maxPages: 25,
-      });
-      if (orphanedAuthUser) {
-        // Update password in case it changed between attempts
-        if (password) {
-          await supabase.auth.admin.updateUserById(orphanedAuthUser.id, { password });
-        }
-        return finishNewUserDbSetup(orphanedAuthUser.id, invitation, fullName, phone, request);
-      }
+      return NextResponse.json(
+        {
+          error: 'An account with this email already exists. Sign in or reset your password, then try this invitation again.',
+          code: 'INVITE_ACCOUNT_RECOVERY_REQUIRED',
+        },
+        { status: 409 },
+      );
     }
     return NextResponse.json(
       { error: authError.message },
@@ -680,8 +713,8 @@ async function finishNewUserDbSetup(
     );
   }
 
-  // The duplicate-auth retry above passes no createdAuthResult, so its existing
-  // identity and app metadata are never restamped from this invitation.
+  // A signed-in existing Auth identity passes no createdAuthResult, so its app
+  // metadata is never restamped from this invitation.
   if (createdAuthResult) {
     await stampCreatedAuthUserProvisionIntent(getSupabaseAdmin(), createdAuthResult, {
       role: invitation.role,
