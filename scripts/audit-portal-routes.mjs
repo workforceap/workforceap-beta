@@ -77,6 +77,10 @@ import {
 } from './lib/portal-audit-target.mjs';
 import { installPortalHydrationTrace } from './lib/portal-hydration-trace.mjs';
 import { logPortalHydrationTrace } from './lib/portal-hydration-log.mjs';
+import {
+  installReadOnlyAuditCookie,
+  stripReadOnlyAuditCookieFromStorageState,
+} from './lib/portal-audit-cookie.mjs';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const root = join(scriptDirectory, '..');
@@ -103,8 +107,6 @@ let deadlineAt = runStartedAt + 25 * 60_000;
 let trustedOrigin = null;
 let vercelToolbarCspDiagnosticCount = 0;
 
-const READ_ONLY_AUDIT_TOKEN_HEADER_NAME = 'x-workforceap-read-only-audit-token';
-
 const allDynamicPatterns = Object.values(DYNAMIC_PATHS).flat();
 
 function sanitizePortalDiagnostic(value) {
@@ -116,6 +118,11 @@ function boundedDiagnosticPush(list, diagnostic) {
 }
 
 async function installReadOnlyRequestGuard(context, options = {}) {
+  await installReadOnlyAuditCookie(
+    context,
+    trustedOrigin,
+    process.env.PORTAL_AUDIT_READ_ONLY_TOKEN
+  );
   const blockedByPage = new WeakMap();
   const blockedDiagnosticsByPage = new WeakMap();
   const blockedTelemetryByPage = new WeakMap();
@@ -177,22 +184,7 @@ async function installReadOnlyRequestGuard(context, options = {}) {
     }
 
     if (disposition === 'continue') {
-      let isTrustedRequest = false;
-      try {
-        isTrustedRequest = new URL(request.url()).origin === trustedOrigin;
-      } catch {
-        // Safe methods may continue without receiving the audit-only header.
-      }
-      if (isTrustedRequest) {
-        await route.continue({
-          headers: {
-            ...request.headers(),
-            [READ_ONLY_AUDIT_TOKEN_HEADER_NAME]: process.env.PORTAL_AUDIT_READ_ONLY_TOKEN,
-          },
-        });
-      } else {
-        await route.continue();
-      }
+      await route.continue();
       return;
     }
 
@@ -508,7 +500,7 @@ async function captureRoleStorageState(browser, role, credential) {
     }
 
     return {
-      storageState: await context.storageState(),
+      storageState: stripReadOnlyAuditCookieFromStorageState(await context.storageState()),
       finalPathname: canonicalPathname(sanitizeAuditUrl(page.url(), allDynamicPatterns)),
       identityId,
       fixtureClaims,
