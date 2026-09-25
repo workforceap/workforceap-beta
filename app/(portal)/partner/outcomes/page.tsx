@@ -21,6 +21,7 @@ import {
   type Column,
 } from '@/components/portal/kit';
 import { PartnerKpiGrid } from '@/components/portal/kit/pages/PartnerOverviewKit';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('partner');
@@ -131,12 +132,16 @@ export default async function PartnerOutcomesPage() {
           ]}
         />
 
-        {pendingPlacementCount > 0 ? (
-          <div>
-            <SectionHeader
-              title={t('pendingPlacementReviews')}
-              goal={t('pendingPlacementDesc', { count: pendingPlacementCount })}
-            />
+        <div>
+          <SectionHeader
+            title={t('pendingPlacementReviews')}
+            goal={pendingPlacementCount > 0 ? t('pendingPlacementDesc', { count: pendingPlacementCount }) : undefined}
+          />
+          {pendingPlacementCount === 0 ? (
+            /* pendingPlacements = self-reported placements from the last 90 days not yet
+               reviewed (lib/partner/referralBundle): zero is the goal, not a missing list. */
+            <PartnerEmptyState variant="pendingReviewsClear" framed />
+          ) : (
             <DataTable<PendingReviewRow>
               columns={pendingColumns}
               rows={pendingRows}
@@ -153,10 +158,9 @@ export default async function PartnerOutcomesPage() {
                   </div>
                 </div>
               )}
-              emptyTitle={t('pendingPlacementReviews')}
             />
-          </div>
-        ) : null}
+          )}
+        </div>
       </DesignSurface>
     </PortalPageFrame>
   );

@@ -84,6 +84,34 @@ describe('empty.* copy', () => {
     expect(c.placements.body).not.toMatch(/it will appear/);
   });
 
+  it('partner: the referral list is a first state with the guide route, filters clear, zero-is-good queues are titled as the goal, failures name what did not load', () => {
+    const p = en.empty.partner;
+    expect(p.referrals.title).toBe('No referred members yet');
+    expect(p.referrals.body).toMatch(/referral link or an invite/);
+    expect(p.referrals.body).not.toMatch(/will appear|approv|Tap Invite/i);
+    expect(p.referrals.action).toBe('Open referral guide');
+    expect(p.referrals.secondary).toBe('Referred members');
+    expect(p.referralsFiltered.title).toBe('No members match this filter');
+    expect(p.referralsFiltered.action).toBe('Clear filters');
+    expect(p.attentionFiltered.action).toBe('Show all tiers');
+    // Clear: the goal and the rule that keeps the queue empty, never a promise.
+    expect(p.attentionClear.title).toBe('No members need attention');
+    expect(p.pendingReviewsClear.title).toBe('No placement reviews pending');
+    expect(p.pendingReviewsClear.body).toMatch(/90 days/);
+    expect(p.milestonesPendingClear.title).toBe('No milestones pending review');
+    expect(p.milestonesPendingClear).not.toHaveProperty('action');
+    // Unavailable (failed): what did not load + a retry verb.
+    for (const group of [p.attentionUnavailable, p.milestonesUnavailable]) {
+      expect(group.title).toMatch(/load/i);
+      expect(group.action).toBe('Try again');
+    }
+    // First: payouts and milestones say what is recorded here without "will appear".
+    expect(p.payouts.title).toBe('No payouts yet');
+    expect(p.payouts.body).toMatch(/verifies a placement/);
+    expect(p.milestones.title).toBe('No milestones yet');
+    for (const group of [p.payouts, p.milestones]) expect(group.body).not.toMatch(/will appear/);
+  });
+
   it('first states name the thing, say what appears here, and end on the first action', () => {
     for (const group of ['activeApplications', 'applications', 'matches'] as const) {
       const leaf = en.empty[group];

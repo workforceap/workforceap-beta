@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
-import { KitEmptyState, StatusTag, type KitTone } from '@/components/portal/kit';
-import { useTranslations } from 'next-intl';
+import { StatusTag, type KitTone } from '@/components/portal/kit';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 
 type Milestone = {
   id: string;
@@ -28,7 +28,6 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 export default function PartnerMilestonesMobile() {
-  const t = useTranslations('partner');
   const [milestones, setMilestones] = useState<Milestone[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [completedOpen, setCompletedOpen] = useState(false);
@@ -50,11 +49,8 @@ export default function PartnerMilestonesMobile() {
   }, [load]);
 
   if (error) return (
-    <div role="alert" style={{ padding: '1.5rem', textAlign: 'center' }}>
-      <p style={{ color: 'var(--wa-muted)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>{error}</p>
-      <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
-        Retry
-      </button>
+    <div style={{ padding: '0 1.5rem' }}>
+      <PartnerEmptyState variant="milestonesUnavailable" framed onPrimary={() => void load()} />
     </div>
   );
 
@@ -70,8 +66,8 @@ export default function PartnerMilestonesMobile() {
 
   if (milestones.length === 0) {
     return (
-      <div className="wa-kit-card" style={{ margin: '0 1.5rem' }}>
-        <KitEmptyState title={t('noMilestonesYet')} description={t('noMilestonesYetDescription')} />
+      <div style={{ padding: '0 1.5rem' }}>
+        <PartnerEmptyState variant="milestones" framed />
       </div>
     );
   }
@@ -93,9 +89,7 @@ export default function PartnerMilestonesMobile() {
         </div>
 
         {pending.length === 0 ? (
-          <div className="wa-kit-card wa-kit-card--sm" style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: 'var(--wa-muted)' }}>No milestones pending review</p>
-          </div>
+          <PartnerEmptyState variant="milestonesPendingClear" framed headingAs="h4" />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {pending.map((m) => (

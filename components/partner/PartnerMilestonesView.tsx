@@ -6,7 +6,6 @@ import type { LucideIcon } from 'lucide-react';
 import { Activity, Award, Briefcase } from 'lucide-react';
 import {
   CardHead,
-  KitEmptyState,
   SegmentedProgress,
   StageTrack,
   StatusTag,
@@ -15,6 +14,7 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import { useTranslations } from 'next-intl';
 
 type Milestone = {
@@ -101,24 +101,13 @@ export default function PartnerMilestonesView() {
   }, [milestones]);
 
   if (error) {
-    return (
-      <div role="alert" className="wa-kit-card">
-        <p style={{ color: 'var(--wa-muted)', marginBottom: '0.75rem' }}>{error}</p>
-        <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
-          Retry
-        </button>
-      </div>
-    );
+    return <PartnerEmptyState variant="milestonesUnavailable" framed onPrimary={() => void load()} />;
   }
   if (!milestones) {
     return <p style={{ color: 'var(--wa-muted)' }}>Loading milestones…</p>;
   }
   if (milestones.length === 0) {
-    return (
-      <div className="wa-kit-card">
-        <KitEmptyState title={t('noMilestonesYet')} description={t('noMilestonesYetDescription')} />
-      </div>
-    );
+    return <PartnerEmptyState variant="milestones" framed />;
   }
 
   return (

@@ -1,4 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), list: vi.fn() }));
@@ -53,7 +56,7 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe('partner default referral journey', () => {
   it('renders the attributed link and copy action on the default overview without legacy mode', async () => {
-    render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    render(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     const share = screen.getByRole('region', { name: 'Share your referral link' });
     fireEvent.click(within(share).getByText('View link and referral code'));
     expect(within(share).getByRole('link')).toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-code');
@@ -70,7 +73,7 @@ describe('partner default referral journey', () => {
 
   it('falls back to the linked partner slug when the optional code is empty', async () => {
     mocks.partner.mockResolvedValue({ name: 'Synthetic Community', slug: null, referralCode: ' ', status: 'active' });
-    render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    render(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     const share = screen.getByRole('region', { name: 'Share your referral link' });
     fireEvent.click(within(share).getByText('View link and referral code'));
     expect(within(share).getByRole('link')).toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-slug');

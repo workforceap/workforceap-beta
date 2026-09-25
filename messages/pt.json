@@ -1479,11 +1479,8 @@
     "appliedViaYourLink": "Aplicou via seu link: {count}",
     "enrollmentAndPlacementDates": "As datas de matrícula e colocação refletem os registros da WorkforceAP.",
     "viewAll": "Ver todos",
-    "noReferredMembersYet": "Nenhum membro indicado ainda",
     "shareReferralLink": "Compartilhe seu link de indicação para que os candidatos possam se matricular com sua organização atribuída.",
     "referralGuide": "Guia de indicação",
-    "sendApplicantsTo": "Envie candidatos para workforceap.org/apply e peça que liste {partnerName} quando perguntado como conheceu a WorkforceAP.",
-    "openReferralGuide": "Abrir guia de indicação",
     "partnerAssistant": "Assistente do parceiro",
     "askAboutReferrals": "Pergunte sobre indicações, progresso dos membros ou uso do portal do parceiro.",
     "quickActions": "Ações rápidas",
@@ -1561,12 +1558,6 @@
     "messagesMetaDescription": "Envie uma mensagem à equipe WorkforceAP.",
     "noMessagesYetTitle": "Ainda não há mensagens",
     "messagesAuditPaused": "O acesso às mensagens está disponível. Conteúdo, confirmações de leitura e sincronização em tempo real estão pausados para esta auditoria.",
-    "noMilestonesYet": "Ainda não há marcos",
-    "noMilestonesYetDescription": "Os marcos aparecerão aqui conforme seus membros avançarem na capacitação.",
-    "noMembersYet": "Ainda não há membros",
-    "noMembersYetDescription": "Você ainda não indicou nenhum membro. Toque em Convidar membro acima para começar seu pipeline.",
-    "noMembersMatchFilter": "Nenhum membro corresponde a este filtro. Tente outra opção.",
-    "noMembersInFilter": "Não há membros neste filtro. Tente “Todos” ou volte mais tarde.",
     "exportsTitle": "Exportações",
     "exportsGoal": "Baixe um CSV de cada membro indicado, estágio, progresso e última atualização — apenas da sua organização. Abra no Excel ou Google Sheets.",
     "resourcesTitle": "Recursos",
@@ -4085,6 +4076,58 @@
         "title": "Nenhuma conversa corresponde",
         "body": "Limpe o filtro ou a busca para ver todas as conversas.",
         "action": "Limpar filtros"
+      }
+    },
+    "partner": {
+      "referrals": {
+        "title": "Ainda não há membros indicados",
+        "body": "Os membros que se inscrevem com seu link de indicação ou um convite aparecem aqui com as datas de matrícula e colocação.",
+        "action": "Abrir o guia de indicações",
+        "secondary": "Membros indicados"
+      },
+      "referralsFiltered": {
+        "title": "Nenhum membro corresponde a este filtro",
+        "body": "Limpe a busca e o filtro de etapa para ver todos os membros indicados.",
+        "action": "Limpar filtros"
+      },
+      "payouts": {
+        "title": "Ainda não há pagamentos",
+        "body": "Um pagamento é registrado aqui depois que a WorkforceAP verifica a colocação de um membro que você indicou.",
+        "action": "Membros indicados"
+      },
+      "pendingReviewsClear": {
+        "title": "Nenhuma revisão de colocação pendente",
+        "body": "Nenhum membro que você indicou relatou, nos últimos 90 dias, uma colocação que ainda aguarde revisão.",
+        "action": "Membros indicados"
+      },
+      "attentionClear": {
+        "title": "Nenhum membro precisa de atenção",
+        "body": "O registro de nenhum membro indicado ficou tanto tempo sem atualização a ponto de entrar nesta fila.",
+        "action": "Membros indicados"
+      },
+      "attentionFiltered": {
+        "title": "Nenhum membro nesta urgência",
+        "body": "Os membros dos outros níveis continuam listados em Todos.",
+        "action": "Mostrar todos os níveis"
+      },
+      "attentionUnavailable": {
+        "title": "Não foi possível carregar a fila de atenção",
+        "body": "A fila não respondeu. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "milestones": {
+        "title": "Ainda não há marcos",
+        "body": "Certificações, colocações e atividades dos membros que você indicou são registradas aqui conforme acontecem.",
+        "action": "Membros indicados"
+      },
+      "milestonesPendingClear": {
+        "title": "Nenhum marco pendente de revisão",
+        "body": "Ainda não há nenhuma certificação ou colocação registrada para seus membros; a atividade aparece em Concluídos."
+      },
+      "milestonesUnavailable": {
+        "title": "Não foi possível carregar os marcos",
+        "body": "A lista de marcos não respondeu. Tente novamente.",
+        "action": "Tentar novamente"
       }
     }
   }

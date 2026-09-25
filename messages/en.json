@@ -1536,11 +1536,8 @@
     "appliedViaYourLink": "Applied via your link: {count}",
     "enrollmentAndPlacementDates": "Enrollment and placement dates reflect WorkforceAP records.",
     "viewAll": "View all",
-    "noReferredMembersYet": "No referred members yet",
     "shareReferralLink": "Share your referral link so applicants can enroll with your organization attributed.",
     "referralGuide": "Referral guide",
-    "sendApplicantsTo": "Send applicants to workforceap.org/apply and have them list {partnerName} when asked how they heard about WorkforceAP.",
-    "openReferralGuide": "Open referral guide",
     "partnerAssistant": "Partner assistant",
     "askAboutReferrals": "Ask about referrals, member progress, or using the partner portal.",
     "quickActions": "Quick actions",
@@ -1618,12 +1615,6 @@
     "messagesMetaDescription": "Message the WorkforceAP team.",
     "noMessagesYetTitle": "No messages yet",
     "messagesAuditPaused": "Messaging access is available. Message content, read receipts, and realtime sync are paused for this audit.",
-    "noMilestonesYet": "No milestones yet",
-    "noMilestonesYetDescription": "Milestones will appear here as your members progress through training.",
-    "noMembersYet": "No members yet",
-    "noMembersYetDescription": "You haven’t referred any members yet. Tap Invite member above to start building your pipeline.",
-    "noMembersMatchFilter": "No members match this filter. Try a different filter option.",
-    "noMembersInFilter": "No members in this filter. Try “All” or check back later.",
     "exportsTitle": "Exports",
     "exportsGoal": "Download a CSV of every referred member, stage, program progress, and last update — scoped to your organization only. Open in Excel or Google Sheets.",
     "resourcesTitle": "Resources",
@@ -4142,6 +4133,58 @@
         "title": "No conversations match",
         "body": "Clear the filter or search to see every conversation.",
         "action": "Clear filters"
+      }
+    },
+    "partner": {
+      "referrals": {
+        "title": "No referred members yet",
+        "body": "Members who apply with your referral link or an invite appear here with their enrollment and placement dates.",
+        "action": "Open referral guide",
+        "secondary": "Referred members"
+      },
+      "referralsFiltered": {
+        "title": "No members match this filter",
+        "body": "Clear the search and stage filter to see every referred member.",
+        "action": "Clear filters"
+      },
+      "payouts": {
+        "title": "No payouts yet",
+        "body": "A payout is recorded here after WorkforceAP verifies a placement for a member you referred.",
+        "action": "Referred members"
+      },
+      "pendingReviewsClear": {
+        "title": "No placement reviews pending",
+        "body": "No member you referred has reported a placement in the last 90 days that is still waiting for review.",
+        "action": "Referred members"
+      },
+      "attentionClear": {
+        "title": "No members need attention",
+        "body": "No referred member's record has gone stale enough to land in this queue.",
+        "action": "Referred members"
+      },
+      "attentionFiltered": {
+        "title": "No members at this urgency",
+        "body": "Members in the other tiers are still listed under All.",
+        "action": "Show all tiers"
+      },
+      "attentionUnavailable": {
+        "title": "Couldn't load the attention queue",
+        "body": "The queue did not answer. Try again.",
+        "action": "Try again"
+      },
+      "milestones": {
+        "title": "No milestones yet",
+        "body": "Certifications, placements and activity for the members you referred are recorded here as they happen.",
+        "action": "Referred members"
+      },
+      "milestonesPendingClear": {
+        "title": "No milestones pending review",
+        "body": "No certification or placement is recorded for your members yet; activity is listed under Completed."
+      },
+      "milestonesUnavailable": {
+        "title": "Couldn't load milestones",
+        "body": "The milestones list did not answer. Try again.",
+        "action": "Try again"
       }
     }
   }
