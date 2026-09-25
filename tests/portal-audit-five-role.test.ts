@@ -65,6 +65,7 @@ describe('portal navigation readiness', () => {
   it.each([
     ['employer', 'employer-open-jobs', 'Employer Overview', 'Job Postings'],
     ['partner', 'partner-open-referred-members', 'Partner Overview', 'Referred Members'],
+    ['counselor', 'counselor-open-students', 'Today', 'My Members'],
   ] as const)('requires a fresh visible %s action heading while retaining failure gates', async (
     role,
     actionId,
