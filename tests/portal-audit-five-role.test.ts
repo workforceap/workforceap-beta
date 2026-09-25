@@ -13,6 +13,7 @@ import {
   redactDynamicHrefPath,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
+  waitForRedirectTargetCommit,
   waitForVisibleActionTarget,
   waitForPortalReady,
 } from '../scripts/lib/portal-audit-browser.mjs';
@@ -62,6 +63,77 @@ import {
 const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
 
 describe('portal navigation readiness', () => {
+  it('retries a canceled intermediate redirect until the exact target commits', async () => {
+    let attempts = 0;
+    const timeouts: number[] = [];
+    const page = {
+      isClosed: () => false,
+      waitForURL: async (matches: (url: URL) => boolean, options: { waitUntil: string; timeout: number }) => {
+        attempts += 1;
+        expect(options.waitUntil).toBe('commit');
+        expect(options.timeout).toBeGreaterThan(0);
+        timeouts.push(options.timeout);
+        if (attempts === 1) throw new Error('net::ERR_ABORTED; maybe frame was detached?');
+        expect(matches(new URL('https://portal.test/dashboard/program'))).toBe(true);
+        expect(matches(new URL('https://portal.test/dashboard/other'))).toBe(false);
+      },
+    };
+
+    await waitForRedirectTargetCommit(
+      page,
+      (url: URL) => redirectTargetMatches(url.toString(), '/dashboard/program', 'https://portal.test'),
+      1_000
+    );
+    expect(attempts).toBe(2);
+    expect(timeouts[1]).toBeLessThanOrEqual(timeouts[0]);
+  });
+
+  it('keeps a canceled redirect failure when the target never commits', async () => {
+    let attempts = 0;
+    const page = {
+      isClosed: () => false,
+      waitForURL: async () => {
+        attempts += 1;
+        throw new Error(attempts === 1
+          ? 'net::ERR_ABORTED; maybe frame was detached?'
+          : 'Timeout waiting for exact redirect target');
+      },
+    };
+
+    await expect(waitForRedirectTargetCommit(page, () => true, 1_000))
+      .rejects.toThrow('Timeout waiting for exact redirect target');
+    expect(attempts).toBe(2);
+  });
+
+  it('yields between immediate cancellations so a later target commit can arrive', async () => {
+    let targetCommitted = false;
+    setTimeout(() => { targetCommitted = true; }, 0);
+    const page = {
+      isClosed: () => false,
+      waitForURL: async () => {
+        if (!targetCommitted) throw new Error('net::ERR_ABORTED; maybe frame was detached?');
+      },
+    };
+
+    await waitForRedirectTargetCommit(page, () => true, 1_000);
+    expect(targetCommitted).toBe(true);
+  });
+
+  it('does not retry a redirect error unrelated to canceled navigation', async () => {
+    let attempts = 0;
+    const page = {
+      isClosed: () => false,
+      waitForURL: async () => {
+        attempts += 1;
+        throw new Error('Navigation failed because page crashed!');
+      },
+    };
+
+    await expect(waitForRedirectTargetCommit(page, () => true, 1_000))
+      .rejects.toThrow('Navigation failed because page crashed!');
+    expect(attempts).toBe(1);
+  });
+
   it.each([
     ['employer', 'employer-open-jobs', 'Employer Overview', 'Job Postings'],
     ['partner', 'partner-open-referred-members', 'Partner Overview', 'Referred Members'],

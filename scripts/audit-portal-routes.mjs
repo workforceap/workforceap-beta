@@ -44,6 +44,7 @@ import {
   READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
+  waitForRedirectTargetCommit,
   waitForVisibleActionTarget,
   waitForPortalReady,
 } from './lib/portal-audit-browser.mjs';
@@ -1116,13 +1117,14 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
             throw error;
           }
         }
-        await page.waitForURL(
+        await waitForRedirectTargetCommit(
+          page,
           (url) => redirectTargetMatches(url.toString(), resolved.targetPath, trustedOrigin),
           // A guarded source can chain through another redirect before load.
           // Wait for the final navigation to commit, then inspect its document,
           // readiness, and read-only health below instead of treating the
           // intermediate load cancellation as a failed destination.
-          { waitUntil: 'commit', timeout: remainingTimeout(7_000) }
+          remainingTimeout(7_000)
         );
         await waitForPortalReady(page, remainingTimeout(5_000));
         if (entry.fixtureCondition) {

@@ -148,6 +148,30 @@ export async function waitForPortalReady(page, timeout = PORTAL_AUDIT_READY_TIME
   );
 }
 
+/** An intermediate canceled navigation must not preempt the final redirect commit. */
+export async function waitForRedirectTargetCommit(page, matchesTarget, timeout) {
+  const deadline = Date.now() + timeout;
+  while (true) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) throw new Error('Exact redirect target did not commit before timeout');
+    try {
+      await page.waitForURL(matchesTarget, { waitUntil: 'commit', timeout: remaining });
+      return;
+    } catch (error) {
+      const message = error?.message ?? String(error);
+      if (!/net::ERR_ABORTED|interrupted by another navigation/.test(message) || page.isClosed()) {
+        throw error;
+      }
+      // Retry only within the original timeout. The caller still checks the
+      // exact URL, document status, page errors, data requests, and write guard.
+      // Yield to the browser event loop so a subsequent commit can arrive even
+      // when Playwright rejects the canceled navigation immediately.
+      const pause = Math.min(25, deadline - Date.now());
+      if (pause > 0) await new Promise((resolve) => setTimeout(resolve, pause));
+    }
+  }
+}
+
 /** A route-specific target marker must replace the source page's heading. */
 export async function waitForVisibleActionTarget(
   page,
