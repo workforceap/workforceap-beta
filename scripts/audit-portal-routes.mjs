@@ -1104,9 +1104,11 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         }));
         if (result.failureReasons.length === 0) {
           result.status = 'passed';
-          result.resultReason = entry.fixtureCondition
-            ? 'fixture_conditional_redirect_verified'
-            : 'exact_internal_redirect_verified';
+          result.resultReason = entry.target === '/partners#partner-signup'
+            ? 'public_partner_signup_redirect_verified'
+            : entry.fixtureCondition
+              ? 'fixture_conditional_redirect_verified'
+              : 'exact_internal_redirect_verified';
         } else {
           result.resultReason = entry.fixtureCondition
             ? 'fixture_conditional_redirect_unhealthy'

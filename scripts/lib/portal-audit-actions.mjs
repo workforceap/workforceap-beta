@@ -256,7 +256,16 @@ export function redirectDestinationFailureReasons({
     failures.push('redirect_target_mismatch');
   }
   if (documentStatus !== 200) failures.push('redirect_destination_document_not_200');
-  if (inspection?.readOnlyCapabilityActive !== true) {
+  // This one legacy alias leaves the Next portal for the public Astro sign-up
+  // form. Astro cannot render the Next root's read-only audit marker, so prove
+  // the exact public form instead. All other redirects still require the marker.
+  const publicPartnerSignup = expectedTarget === '/partners#partner-signup';
+  const destinationCapabilityVerified = publicPartnerSignup
+    ? inspection?.publicPartnerSignupFormPresent === true
+    : inspection?.readOnlyCapabilityActive === true;
+  if (publicPartnerSignup && !destinationCapabilityVerified) {
+    failures.push('public_partner_signup_form_missing');
+  } else if (!publicPartnerSignup && !destinationCapabilityVerified) {
     failures.push('read_only_audit_capability_not_active');
   }
   if (inspection?.appReady !== true || inspection?.h1Count !== 1) {
@@ -282,7 +291,7 @@ export function redirectDestinationFailureReasons({
     documentStatus,
     appReady: inspection?.appReady,
     h1Count: inspection?.h1Count,
-    readOnlyCapabilityActive: inspection?.readOnlyCapabilityActive,
+    readOnlyCapabilityActive: destinationCapabilityVerified,
     errorFallbackDetected:
       failures.includes('route_error_fallback') || failures.includes('not_found_fallback'),
     consoleErrorCount,
