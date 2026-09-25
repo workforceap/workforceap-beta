@@ -7,6 +7,7 @@ import { isStaffMfaEnforcementEnabled } from '@/lib/auth/mfaConfig';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import type { AppLocale } from '@/lib/i18n/config';
 import {
+  WAP_EXPLICIT_LOCALE_HEADER,
   WAP_LOCALE_COOKIE,
   WAP_LOCALE_HEADER,
   isAppLocale,
@@ -186,6 +187,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.delete(WAP_ORG_ID_HEADER);
   requestHeaders.delete(WAP_HOST_HEADER);
   requestHeaders.delete(WAP_USER_ID_HEADER);
+  requestHeaders.delete(WAP_EXPLICIT_LOCALE_HEADER);
   const validReadOnlyAuditToken = isValidReadOnlyPortalAuditToken(
     request.headers.get(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER),
     process.env.PORTAL_AUDIT_READ_ONLY_TOKEN,
@@ -227,6 +229,7 @@ export async function middleware(request: NextRequest) {
   const { locale: prefixLocale, pathnameWithoutLocale } = splitLocalePrefix(pathname);
   const effectivePath = prefixLocale ? pathnameWithoutLocale : pathname;
   requestHeaders.set('x-pathname', effectivePath);
+  if (prefixLocale) requestHeaders.set(WAP_EXPLICIT_LOCALE_HEADER, prefixLocale);
 
   const { locale: inferredLocale, fromQuery: localeFromQuery } = resolvePreferredLocale(request);
   requestHeaders.set(WAP_LOCALE_HEADER, prefixLocale ?? inferredLocale);

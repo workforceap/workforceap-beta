@@ -127,13 +127,13 @@ const PORTAL_PATHS = [
 ];
 ```
 
-These are **not** locale-prefixed. The language toggle on portal pages:
+These are **not automatically redirected** to locale-prefixed URLs. The language toggle on portal pages:
 1. Sets the `wap-locale` cookie
 2. Reloads the page (`window.location.reload()`)
 3. Middleware reads cookie on the next request
 4. `next-intl` loads the appropriate messages
 
-**Rationale:** Portal URLs are not typically shared externally. Members log in once and stay in their preferred language. Adding `/es/dashboard` would complicate auth redirects and deep-linking.
+Portal URLs normally stay unprefixed and use the language cookie. Explicit `/es/dashboard` (and `/en`, `/fr`, `/pt`) deep links still resolve through the middleware rewrite. When a server-side legacy route redirects within the portal, it must preserve an explicit URL prefix without adding one to an unprefixed URL. Middleware forwards a validated `x-wap-explicit-locale` only when the URL contains that prefix; it removes any client-supplied value first. The application-tracker redirect uses this marker to reach the job-applications destination.
 
 ---
 
