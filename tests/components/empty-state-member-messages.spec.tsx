@@ -371,7 +371,7 @@ describe('employer candidate thread (EmployerApplicationChatClient)', () => {
 describe('page-level inbox guards are unavailable states, not "No messages yet"', () => {
   it('member: no member row yet → provisioning (warn) with support as the route', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null as never);
-    const { container } = render(await MemberMessagesPage({ searchParams: Promise.resolve({}) }));
+    const { container } = portal('en', await MemberMessagesPage({ searchParams: Promise.resolve({}) }));
     const empty = emptyOf(container, 'unavailable');
     expect(empty.dataset.tone).toBe('warn');
     expect(empty.closest('.wa-kit-card')).not.toBeNull();
@@ -401,7 +401,7 @@ describe('page-level inbox guards are unavailable states, not "No messages yet"'
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'member-1' } as never);
     vi.mocked(isReadOnlyPortalAuditHeader).mockReturnValue(true);
     vi.mocked(prisma.messageThread.findUnique).mockResolvedValue(null as never);
-    const { container } = render(await MemberMessagesPage({ searchParams: Promise.resolve({}) }));
+    const { container } = portal('en', await MemberMessagesPage({ searchParams: Promise.resolve({}) }));
     const empty = emptyOf(container, 'unavailable');
     expect(empty.dataset.tone).toBe('warn');
     expect(within(empty).getByRole('heading', { level: 2 })).toHaveTextContent(en.empty.inboxUnavailable.title);

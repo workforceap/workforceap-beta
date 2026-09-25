@@ -9,7 +9,13 @@ vi.mock('@/lib/auth/memberDashboardAccess', () => ({ getMemberDashboardAccess: v
 vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findUnique: vi.fn() }, message: { findMany: vi.fn(), count: vi.fn() } } }));
 vi.mock('@/lib/messages/counselorThread', () => ({ getOrCreateMemberCounselorThread: vi.fn(), serializeMessage: vi.fn() }));
 vi.mock('@/lib/member/loadTrainingWorkspace', () => ({ loadTrainingWorkspace: vi.fn() }));
-vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
+vi.mock('next-intl/server', async () => {
+  const en = (await import('@/messages/en.json')).default as Record<string, Record<string, unknown>>;
+  return { getTranslations: vi.fn(async (ns: string) => (key: string) => {
+    const value = en[ns]?.[key];
+    return typeof value === 'string' ? value : key;
+  }) };
+});
 vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({ MemberMessagesKit: () => null }));
 vi.mock('@/components/portal/MemberCounselorChatClient', () => ({ default: () => null }));
 vi.mock('@/components/portal/MemberMessagesMobileClient', () => ({ default: () => null }));
