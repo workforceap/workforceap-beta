@@ -296,6 +296,14 @@ export const GET = withApiGuc(async (request: NextRequest) => {
   const readOnlyAudit = isReadOnlyPortalAuditHeader(request.headers);
   const stageTimings: AuditTimings | undefined = readOnlyAudit ? {} : undefined;
   const requestStartedAt = performance.now();
+  const slowCheckpoint = stageTimings ? setTimeout(() => {
+    // The browser audit gives data requests five seconds to settle. Log an
+    // in-flight snapshot before that deadline in case the client disconnects.
+    console.info('[admin/metrics] read-only audit slow checkpoint', {
+      ...stageTimings,
+      elapsedMs: Math.round(performance.now() - requestStartedAt),
+    });
+  }, 4_500) : null;
   try {
     const authStartedAt = performance.now();
     const user = await getUser();
@@ -325,10 +333,14 @@ export const GET = withApiGuc(async (request: NextRequest) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     // Fixed stage names and durations only; no user, tenant, SQL, or metric values.
+    if (slowCheckpoint) clearTimeout(slowCheckpoint);
     if (stageTimings) {
+      const totalMs = Math.round(performance.now() - requestStartedAt);
+      const accountedMs = Object.values(stageTimings).reduce((sum, value) => sum + value, 0);
       console.info('[admin/metrics] read-only audit timing', {
         ...stageTimings,
-        totalMs: Math.round(performance.now() - requestStartedAt),
+        totalMs,
+        unaccountedMs: Math.max(0, totalMs - accountedMs),
       });
     }
   }
