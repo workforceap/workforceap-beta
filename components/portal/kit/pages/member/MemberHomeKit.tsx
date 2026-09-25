@@ -212,9 +212,8 @@ export interface MemberHomeKitProps {
   /**
    * View-only enrolled-program switch (`DashboardProgramSelector`) for a
    * member with more than one enrollment. `null` or a single option renders
-   * nothing. `viewingSecondary` adds one line saying My Program shows the
-   * primary program (WAP-196), which is why this view's program links open
-   * the Learning hub.
+   * nothing. `viewingSecondary` marks a non-primary enrollment on screen; its
+   * program links carry `?program=` into My Program (WAP-196).
    */
   programSwitch?: {
     options: DashboardProgramOption[];
@@ -833,11 +832,6 @@ export function MemberHomeKit({
                   activeProgramSlug={programSwitch.activeProgramSlug}
                   pathname={programSwitch.pathname}
                 />
-                {programSwitch.viewingSecondary ? (
-                  <p className="wa-kit-meta" style={{ margin: 0 }}>
-                    My Program shows your primary program. This program&apos;s links open the Learning hub.
-                  </p>
-                ) : null}
               </div>
             ) : null}
             <div className="wa-kit-cert-path-body">

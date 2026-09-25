@@ -45,13 +45,18 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ProgramPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ ui?: string; course?: string }>;
+  searchParams?: Promise<{ ui?: string; course?: string; program?: string }>;
 }) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/program');
 
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
+  // A member with two enrollments opens the second with ?program=<slug>
+  // (WAP-196). getActiveProgramForDashboard honors it only for one of this
+  // member's own enrollments and otherwise shows the primary. It changes what
+  // is shown, never the enrollment itself.
+  const requestedProgramSlug = typeof params?.program === 'string' ? params.program : null;
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const [dbUser, activeProgramView] = await Promise.all([
@@ -77,7 +82,7 @@ export default async function ProgramPage({
         },
       },
     }),
-    getActiveProgramForDashboard({ userId: user.id }),
+    getActiveProgramForDashboard({ userId: user.id, requestedProgramSlug }),
   ]);
   const catalogResult = await getActiveProgramsResult(dbUser?.organizationId, { readOnlyAudit });
   let pickerPrograms = catalogResult.programs
@@ -94,7 +99,20 @@ export default async function ProgramPage({
     dbUser?.courseEnrollments[0];
   const enrolledAt = activeEnrollment?.enrolledAt ?? dbUser?.enrolledAt ?? null;
   const staffViewer = await canBypassMemberAssessment(user.id);
-  const otherPrograms = pickerPrograms.filter((p) => p.slug !== enrolledSlug);
+  // Program-change requests are about the primary enrollment, even while a
+  // secondary program is on screen (WAP-196).
+  const otherPrograms = pickerPrograms.filter(
+    (p) => p.slug !== (activeProgramView.primaryProgramSlug ?? enrolledSlug),
+  );
+  // Coursera launches must open the program on screen, not the primary.
+  const viewingSecondaryProgram = Boolean(
+    enrolledSlug && activeProgramView.primaryProgramSlug && enrolledSlug !== activeProgramView.primaryProgramSlug,
+  );
+  const courseraLaunchHref = (courseSlug: string) =>
+    `/api/member/coursera/launch?${new URLSearchParams({
+      course: courseSlug,
+      ...(viewingSecondaryProgram && enrolledSlug ? { program: enrolledSlug } : {}),
+    })}`;
   const pendingRequest = await prisma.programChangeRequest.findFirst({
     where: { userId: user.id, status: 'PENDING' },
     orderBy: { createdAt: 'desc' },
@@ -198,7 +216,7 @@ export default async function ProgramPage({
       trainingView?.progressPercentDisplay ??
       (totalCourses > 0 ? Math.round((completedCount / totalCourses) * 100) : 0);
     const nextCourseLaunchHref = nextCourseSlug && launchableCourseSlugs.has(nextCourseSlug)
-      ? `/api/member/coursera/launch?course=${encodeURIComponent(nextCourseSlug)}`
+      ? courseraLaunchHref(nextCourseSlug)
       : undefined;
 
     // Per-course state: completed → done, the resolved "next" course → active,
@@ -214,7 +232,7 @@ export default async function ProgramPage({
         title: c.name,
         slug: c.slug,
         launchHref: launchableCourseSlugs.has(c.slug)
-          ? `/api/member/coursera/launch?course=${encodeURIComponent(c.slug)}`
+          ? courseraLaunchHref(c.slug)
           : undefined,
         // A WorkforceAP-authored course never has a Coursera launch, so without
         // this its CTA fell through to the Learning Hub anchor, which renders no
@@ -263,7 +281,7 @@ export default async function ProgramPage({
             ...(course.kind === 'workforceap'
               ? { moduleHref: workforceApCourseHref(course.slug, enrolledSlug) }
               : launchableCourseSlugs.has(course.slug)
-                ? { launchHref: `/api/member/coursera/launch?course=${encodeURIComponent(course.slug)}` }
+                ? { launchHref: courseraLaunchHref(course.slug) }
                 : {}),
           })),
         } : undefined}
