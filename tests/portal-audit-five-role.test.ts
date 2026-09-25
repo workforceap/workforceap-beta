@@ -13,8 +13,10 @@ import {
   redactDynamicHrefPath,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
+  waitForVisibleActionTarget,
   waitForPortalReady,
 } from '../scripts/lib/portal-audit-browser.mjs';
+import { isVerifiedReadOnlyDestination } from '../scripts/lib/portal-audit-environment.mjs';
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
@@ -59,6 +61,54 @@ import {
 const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
 
 describe('portal navigation readiness', () => {
+  it('requires a fresh visible action heading while retaining page and data failure gates', async () => {
+    const contract = SAFE_ACTION_CONTRACTS.employer.find(({ id }) => id === 'employer-open-jobs');
+    expect(contract?.targetReadySelector).toBe('.portal-page-frame h1:visible');
+    let currentHeading = 'Employer Overview';
+    let waitOptions: { state: string; timeout: number } | undefined;
+    const markerPage = {
+      locator: (selector: string) => {
+        expect(selector).toBe(contract?.targetReadySelector);
+        return {
+          filter: ({ hasNotText }: { hasNotText: string }) => ({
+            first: () => ({
+              waitFor: async (options: { state: string; timeout: number }) => {
+                waitOptions = options;
+                if (currentHeading.includes(hasNotText)) throw new Error('stale source heading');
+              },
+            }),
+          }),
+        };
+      },
+    };
+    expect(await waitForVisibleActionTarget(
+      markerPage, contract!.targetReadySelector, 'Employer Overview', 750
+    )).toBe(false);
+    currentHeading = 'Job Postings';
+    expect(await waitForVisibleActionTarget(
+      markerPage, contract!.targetReadySelector, 'Employer Overview', 750
+    )).toBe(true);
+    expect(waitOptions).toEqual({ state: 'visible', timeout: 750 });
+    expect(await waitForVisibleActionTarget(markerPage, contract!.targetReadySelector, '', 750)).toBe(false);
+
+    const renderedTarget = {
+      exactExpectedPath: true,
+      sameOrigin: true,
+      documentStatus: 200,
+      appReady: true,
+      h1Count: 1,
+      readOnlyCapabilityActive: true,
+      errorFallbackDetected: false,
+      consoleErrorCount: 0,
+      pageErrorCount: 0,
+      otherFailureCount: 0,
+    };
+    expect(isVerifiedReadOnlyDestination(renderedTarget)).toBe(true);
+    expect(isVerifiedReadOnlyDestination({ ...renderedTarget, h1Count: 0 })).toBe(false);
+    expect(isVerifiedReadOnlyDestination({ ...renderedTarget, pageErrorCount: 1 })).toBe(false);
+    expect(isVerifiedReadOnlyDestination({ ...renderedTarget, otherFailureCount: 1 })).toBe(false);
+  });
+
   function pageWithEvaluation(evaluate: () => Promise<unknown>) {
     let readinessChecks = 0;
     return {

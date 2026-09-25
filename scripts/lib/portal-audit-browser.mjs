@@ -148,6 +148,26 @@ export async function waitForPortalReady(page, timeout = PORTAL_AUDIT_READY_TIME
   );
 }
 
+/** A route-specific target marker must replace the source page's heading. */
+export async function waitForVisibleActionTarget(
+  page,
+  selector,
+  sourceHeadingText,
+  timeout = PORTAL_AUDIT_READY_TIMEOUT_MS
+) {
+  const sourceHeading = typeof sourceHeadingText === 'string' ? sourceHeadingText.trim() : '';
+  if (!sourceHeading) return false;
+  try {
+    await page.locator(selector)
+      .filter({ hasNotText: sourceHeading })
+      .first()
+      .waitFor({ state: 'visible', timeout });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** A full-page login redirect can replace the execution context during inspection. */
 export async function evaluatePortalPageAfterNavigation(page, evaluator, timeout = PORTAL_AUDIT_READY_TIMEOUT_MS) {
   for (let attempt = 0; attempt < 3; attempt += 1) {

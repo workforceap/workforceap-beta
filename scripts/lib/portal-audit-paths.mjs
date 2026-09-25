@@ -294,6 +294,9 @@ export const SAFE_ACTION_CONTRACTS = {
       kind: 'read_only_navigation',
       sourcePath: '/employer',
       targetPath: '/employer/jobs',
+      // The jobs loading skeleton has navigation controls but no page heading.
+      // Wait for the rendered destination before checking the action.
+      targetReadySelector: '.portal-page-frame h1:visible',
       required: true,
     },
     {
