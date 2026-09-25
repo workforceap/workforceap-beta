@@ -98,6 +98,9 @@ const routeConcurrency = Math.min(
   Math.max(1, Number.parseInt(process.env.PORTAL_AUDIT_ROUTE_CONCURRENCY ?? '8', 10) || 8)
 );
 const traceHydration = process.env.PORTAL_AUDIT_HYDRATION_TRACE === '1' && requestedMode === 'isolated_preview';
+// Vercel recommends this request header for automated Preview tests. Keep it
+// opt-in so the same commit can be audited both with and without the toolbar.
+const skipVercelToolbar = process.env.PORTAL_AUDIT_SKIP_VERCEL_TOOLBAR === '1' && requestedMode === 'isolated_preview';
 const runStartedAt = Date.now();
 let deadlineAt = runStartedAt + 25 * 60_000;
 let trustedOrigin = null;
@@ -188,6 +191,7 @@ async function installReadOnlyRequestGuard(context, options = {}) {
           headers: {
             ...request.headers(),
             [READ_ONLY_AUDIT_TOKEN_HEADER_NAME]: process.env.PORTAL_AUDIT_READ_ONLY_TOKEN,
+            ...(skipVercelToolbar ? { 'x-vercel-skip-toolbar': '1' } : {}),
           },
         });
       } else {
@@ -310,6 +314,7 @@ const artifact = {
       ? 'root_access_only'
       : 'internal_read_only_anchor_navigation',
     routeConcurrency,
+    skipVercelToolbar,
     deadlineMs: null,
   },
   attendedGates: ATTENDED_ACTION_GATES,

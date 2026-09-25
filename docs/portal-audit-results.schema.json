@@ -75,6 +75,7 @@
         "dynamicRoutes": { "enum": ["safe_visible_link_discovery", "root_access_only"] },
         "actions": { "enum": ["internal_read_only_anchor_navigation", "root_access_only"] },
         "routeConcurrency": { "type": "integer", "minimum": 1, "maximum": 12 },
+        "skipVercelToolbar": { "type": "boolean" },
         "deadlineMs": { "type": ["integer", "null"], "minimum": 1 }
       }
     },
