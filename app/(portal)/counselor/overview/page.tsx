@@ -10,6 +10,7 @@ import { counselorAffiliationLabel } from '@/lib/counselor/counselorLabels';
 import { getCounselorCommandCenter } from '@/lib/counselor/commandCenter';
 import CounselorCommandCenter from '@/components/portal/counselor/CounselorCommandCenter';
 import CounselorPriorityQueue from '@/components/portal/counselor/CounselorPriorityQueue';
+import { CounselorBulkFollowUp } from '@/components/portal/counselor/CounselorBulkFollowUp';
 import AtRiskSummaryWidget from '@/components/portal/counselor/AtRiskSummaryWidget';
 import { getCounselorPriorityQueue } from '@/lib/counselor/priorityQueue';
 import { getCounselorAttention } from '@/lib/attention/counselor';
@@ -173,6 +174,9 @@ export default async function CounselorPortalPage({
         retryHref="/counselor/overview"
         todayHref="/counselor/today"
         loadFailedCopy={loadFailedCopy}
+        bulkFollowUp={
+          kitAttentionLoaded ? <CounselorBulkFollowUp rows={kitQueue.rows} totals={kitQueue.totals} /> : undefined
+        }
         />
       </>
     );
