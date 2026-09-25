@@ -22,11 +22,16 @@ test('hydration trace captures root structure without portal content or attribut
     classList: { contains: (name) => name === 'portal-touch-target' },
     children: [shell],
   });
+  let loadingPresent = true;
+  let headingPresent = false;
   const main = element('MAIN', {
     id: 'main-content',
     parentElement: body,
     children: [mainChild],
     textContent: 'PRIVATE_MEMBER_RESUME',
+    querySelectorAll: (selector) => selector === '.portal-route-loading'
+      ? loadingPresent ? [element('DIV')] : []
+      : selector === 'h1' && headingPresent ? [element('H1')] : [],
   });
 
   try {
@@ -57,6 +62,13 @@ test('hydration trace captures root structure without portal content or attribut
     body.children.push(main);
     observer.callback([{ target: body }]);
     assert.deepEqual(window.__waPortalHydrationTrace.recent.at(-1).shellTags, ['script', 'span', 'header']);
+    assert.equal(window.__waPortalHydrationTrace.recent.at(-1).routeLoadingCount, 1);
+    loadingPresent = false;
+    headingPresent = true;
+    observer.callback([{ target: main }]);
+    assert.equal(window.__waPortalHydrationTrace.recent.at(-1).routeLoadingCount, 0);
+    assert.equal(window.__waPortalHydrationTrace.recent.at(-1).routeHeadingCount, 1);
+    assert.ok(window.__waPortalHydrationTrace.recent.at(-1).elapsedMs >= 0);
     shell.children.shift();
     observer.callback([{ target: shell }]);
     listeners.DOMContentLoaded();

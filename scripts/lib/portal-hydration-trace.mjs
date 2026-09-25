@@ -6,6 +6,7 @@
  * portal text, arbitrary attributes, cookies and HTML never enter the trace.
  */
 export function installPortalHydrationTrace() {
+  const startedAt = performance.now();
   const trace = {
     auditTraceVersion: 1,
     initialPathname: location.pathname,
@@ -82,6 +83,8 @@ export function installPortalHydrationTrace() {
       mainBodyIndex: main && main.parentElement === body ? bodyChildren.indexOf(main) : -1,
       mainTags: mainChildren.slice(0, 8).map((element) => element.tagName.toLowerCase()),
       mainChildCount: mainChildren.length,
+      routeLoadingCount: main?.querySelectorAll?.('.portal-route-loading').length ?? 0,
+      routeHeadingCount: main?.querySelectorAll?.('h1').length ?? 0,
       portalTouchFirst: mainChildren[0]?.classList.contains('portal-touch-target') === true,
       shellCount: document.querySelectorAll('.workspace-shell-root').length,
       shellTags: shellChildren.slice(0, 8).map((element) => element.tagName.toLowerCase()),
@@ -98,7 +101,7 @@ export function installPortalHydrationTrace() {
     const signature = JSON.stringify(shape);
     if (signature === lastShape && phase === 'mutation') return;
     lastShape = signature;
-    const sample = { phase, ...shape };
+    const sample = { phase, elapsedMs: Math.max(0, Math.round(performance.now() - startedAt)), ...shape };
     if (trace.first.length < 4) trace.first.push(sample);
     trace.recent.push(sample);
     if (trace.recent.length > 16) trace.recent.shift();
