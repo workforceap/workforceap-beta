@@ -36,6 +36,8 @@ export interface PipelineFunnelKitProps {
   kicker?: string;
   /** Right-aligned header action. */
   headerAction?: ReactNode;
+  /** Extra sections rendered under the funnel (e.g. stale applications). */
+  children?: ReactNode;
 }
 
 const DEFAULT_FUNNEL: RankDatum[] = [
@@ -55,6 +57,7 @@ export function PipelineFunnelKit({
   goal,
   kicker,
   headerAction,
+  children,
 }: PipelineFunnelKitProps) {
   const hasData = funnel.length > 0;
   return (
@@ -80,6 +83,8 @@ export function PipelineFunnelKit({
           )}
         </Card>
       </div>
+
+      {children ? <div className="wa-mt-6">{children}</div> : null}
     </DesignSurface>
   );
 }

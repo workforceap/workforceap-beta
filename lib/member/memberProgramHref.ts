@@ -20,3 +20,16 @@ export function resolveMemberProgramHref(href: string | null | undefined): strin
   const query = qIndex === -1 ? '' : href.slice(qIndex);
   return `${MEMBER_PROGRAM_HREF}${query}`;
 }
+
+/**
+ * My Program for one enrollment and, optionally, one course. `program` is
+ * needed only for a non-primary enrollment: My Program shows the primary one
+ * by default and honors `?program=` for the member's own enrollments (WAP-196).
+ */
+export function memberProgramHrefFor(args: { program?: string | null; course?: string | null }): string {
+  const query = new URLSearchParams({
+    ...(args.program ? { program: args.program } : {}),
+    ...(args.course ? { course: args.course } : {}),
+  }).toString();
+  return query ? `${MEMBER_PROGRAM_HREF}?${query}` : MEMBER_PROGRAM_HREF;
+}

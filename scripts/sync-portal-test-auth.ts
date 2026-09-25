@@ -14,17 +14,43 @@ import { randomUUID } from 'crypto';
 import { pathToFileURL } from 'node:url';
 import { PrismaClient, ApplicationStatus, type Prisma } from '@prisma/client';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { readPortalQaConfig, assertPortalQaOrganization } from './lib/portal-qa-guard.cjs';
+import { QA_ROLES, readPortalQaConfig, assertPortalQaOrganization } from './lib/portal-qa-guard.cjs';
+
+type QaRole = 'member' | 'partner' | 'employer' | 'admin' | 'counselor';
+const QA_AUTH_ROLES = QA_ROLES as readonly QaRole[];
 
 const QA_EMAILS = [
-  'member-test@workforceap.org',
-  'partner-test@workforceap.org',
-  'employer-test@workforceap.org',
-  'admin-test@workforceap.org',
+  ...QA_AUTH_ROLES.map(role => `${role}-test@workforceap.org`),
   'referral-member-a@workforceap.org',
   'referral-member-b@workforceap.org',
   'match-candidate@workforceap.org',
 ];
+
+// The Preview app and this fixture use these scalar fields. A missing column
+// must stop provisioning before Supabase Auth creates users outside Prisma's
+// transaction. DEMO can lag the Prisma migration ledger, so migration names
+// alone are not a reliable compatibility check.
+const REQUIRED_DEMO_COLUMNS: Record<string, readonly string[]> = {
+  organizations: ['stripe_subscription_id', 'stripe_subscription_event_at', 'stripe_subscription_event_id', 'stripe_subscription_revision'],
+  employers: ['stripe_subscription_event_id', 'stripe_subscription_revision'],
+  profiles: ['profile_photo_path'],
+};
+
+async function assertDemoSchemaCompatible(prisma: PrismaClient) {
+  const columns = await prisma.$queryRaw<Array<{ table_name: string; column_name: string }>>`
+    SELECT table_name, column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name IN ('organizations', 'employers', 'profiles')
+  `;
+  const found = new Set(columns.map(({ table_name, column_name }) => `${table_name}.${column_name}`));
+  const missing = Object.entries(REQUIRED_DEMO_COLUMNS).flatMap(([table, names]) =>
+    names.filter(name => !found.has(`${table}.${name}`)).map(name => `${table}.${name}`)
+  );
+  if (missing.length) {
+    throw new Error(`Portal QA DEMO schema is missing required columns: ${missing.join(', ')}. No Auth accounts were created.`);
+  }
+}
 
 async function createFreshAuthUser(supabase: SupabaseClient, email: string, fullName: string, password: string, orgId: string): Promise<string> {
   const { data: created, error: createErr } = await supabase.auth.admin.createUser({
@@ -59,17 +85,13 @@ async function assertAuthFixturesAbsent(supabase: SupabaseClient) {
 async function seedQaWithAuthIds(
   prisma: Prisma.TransactionClient,
   orgId: string,
-  ids: {
-    member: string;
-    partner: string;
-    employer: string;
-    admin: string;
-  }
+  ids: Record<QaRole, string>
 ) {
   const memberRole = await prisma.role.findUniqueOrThrow({ where: { name: 'member' } });
   const partnerRole = await prisma.role.findUniqueOrThrow({ where: { name: 'partner' } });
   const employerRole = await prisma.role.findUniqueOrThrow({ where: { name: 'employer' } });
   const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'admin' } });
+  const counselorRole = await prisma.role.findUniqueOrThrow({ where: { name: 'counselor' } });
 
   const partnerOrg = await prisma.partner.create({
     data: {
@@ -200,7 +222,7 @@ async function seedQaWithAuthIds(
 
   const emp = await prisma.employer.findUniqueOrThrow({
     where: { userId: ids.employer },
-    include: { jobs: true },
+    select: { jobs: { select: { id: true, title: true } } },
   });
   const jobs = emp.jobs.filter((j) => j.title.startsWith('[QA]'));
   for (const j of jobs) {
@@ -230,6 +252,18 @@ async function seedQaWithAuthIds(
     },
   });
 
+  await prisma.user.create({
+    data: {
+      id: ids.counselor,
+      organizationId: orgId,
+      email: 'counselor-test@workforceap.org',
+      fullName: 'Portal QA Counselor',
+      userRoles: { create: { roleId: counselorRole.id } },
+      profile: { create: { consentTerms: true, role: 'counselor' } },
+      counselorProfile: { create: { affiliation: 'wap_staff', active: true } },
+    },
+  });
+
 }
 
 export async function syncPortalTestAuth(env: NodeJS.ProcessEnv = process.env) {
@@ -250,12 +284,13 @@ export async function syncPortalTestAuth(env: NodeJS.ProcessEnv = process.env) {
       throw new Error('Portal QA rows already exist. Automatic replacement is disabled.');
     }
     // Preflight role configuration before creating any Auth accounts.
-    for (const name of ['member', 'partner', 'employer', 'admin']) {
+    for (const name of QA_AUTH_ROLES) {
       await prisma.role.findUniqueOrThrow({ where: { name } });
     }
+    await assertDemoSchemaCompatible(prisma);
     await assertAuthFixturesAbsent(supabase);
-    const ids = {} as { member: string; partner: string; employer: string; admin: string };
-    for (const role of ['member', 'partner', 'employer', 'admin'] as const) {
+    const ids = {} as Record<QaRole, string>;
+    for (const role of QA_AUTH_ROLES) {
       ids[role] = await createFreshAuthUser(supabase, `${role}-test@workforceap.org`, `Portal QA ${role}`, config.passwords[role], config.organizationId);
       createdAuthIds.push(ids[role]);
     }

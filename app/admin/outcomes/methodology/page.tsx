@@ -24,6 +24,17 @@ function loadMethodologyMarkdown(): string {
   return readFileSync(filePath, 'utf8');
 }
 
+function tableTitleAtLine(markdown: string, tableLine?: number): string {
+  if (tableLine) {
+    const lines = markdown.split(/\r?\n/);
+    for (let index = tableLine - 2; index >= 0; index -= 1) {
+      const heading = /^#{2,6}\s+(.+)$/.exec(lines[index]);
+      if (heading) return `${heading[1]} table`;
+    }
+  }
+  return 'Outcomes methodology reference table';
+}
+
 export default async function OutcomesMethodologyPage() {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/outcomes/methodology');
@@ -49,13 +60,24 @@ export default async function OutcomesMethodologyPage() {
             ← Back to outcomes truth-set
           </Link>
         </p>
-        <article className="resource-content markdown-body">
+        <article className="resource-content markdown-body outcomes-methodology-content">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               // PageHeader above already renders the page h1; the document's
               // own "# Outcomes Methodology" becomes a section heading.
               h1: ({ children }) => <h2>{children}</h2>,
+              table: ({ children, node }) => {
+                const title = tableTitleAtLine(markdown, node?.position?.start.line);
+                return (
+                  <div className="admin-table-scroll" role="region" aria-label={`Scrollable ${title}`} tabIndex={0}>
+                    <table>
+                      <caption className="sr-only">{title}</caption>
+                      {children}
+                    </table>
+                  </div>
+                );
+              },
               a: ({ href, children }) => {
                 const isInternal = href?.startsWith('/');
                 return isInternal ? (

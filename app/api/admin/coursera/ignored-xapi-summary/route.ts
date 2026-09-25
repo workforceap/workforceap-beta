@@ -12,13 +12,20 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  * GET /api/admin/coursera/ignored-xapi-summary
  *
  * Diagnostic for the most common cause of a stuck Coursera pipeline:
- * inbound xAPI events whose `course_slug` doesn't resolve through any of
+ * inbound xAPI progress events whose course doesn't resolve through any of
  * (a) `coursera_canonical_course_mappings`, (b) the discovered catalog,
- * (c) the static `Program.courses[]` slug list. Those events land with
- * `completion_status='ignored'` and never promote to `course_progress`.
+ * (c) the static `Program.courses[]` slug list. Those land with
+ * `completion_status='unresolved_course'` and never promote to
+ * `course_progress`; `'unmatched'` events never bound to a member.
  *
- * Returns the top N course slugs by ignored-event volume in the last 30
- * days, plus an `outstandingTotal` so the admin UI can flag a backlog.
+ * `'ignored'` is normal traffic (progress written, or not a course-progress
+ * verb), so it is reported as a context total only and is not "stuck"
+ * (WAP-276). Rows recorded before that status existed may still read
+ * `'ignored'` although they dropped progress.
+ *
+ * Returns the top N stuck course slugs in the last 30 days, plus an
+ * `outstandingTotal` (unresolved + unmatched) so the admin UI can flag a
+ * backlog.
  *
  * Read-only. Auth: super_admin OR admin in the actor's org.
  */
@@ -59,6 +66,10 @@ type IgnoredSlugRow = {
       ? Math.floor(rawLimit)
       : DEFAULT_LIMIT;
   
+    // Same scope as the health page loaders: super admins see every tenant,
+    // an org admin sees only their own org's events (WAP-276).
+    const organizationId: string | null = superAdmin ? null : orgId;
+
     try {
       const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
   
@@ -74,8 +85,9 @@ type IgnoredSlugRow = {
           MIN(received_at) AS first_seen,
           MAX(received_at) AS last_seen
         FROM coursera_xapi_events
-        WHERE completion_status IN ('ignored', 'unmatched')
+        WHERE completion_status IN ('unresolved_course', 'unmatched')
           AND received_at >= ${since}
+          AND (${organizationId}::text IS NULL OR organization_id = ${organizationId})
         GROUP BY course_slug
         ORDER BY event_count DESC
         LIMIT ${limit}
@@ -86,23 +98,24 @@ type IgnoredSlugRow = {
       >`
         SELECT completion_status, COUNT(*)::bigint AS total
         FROM coursera_xapi_events
-        WHERE completion_status IN ('ignored', 'unmatched')
+        WHERE completion_status IN ('ignored', 'unresolved_course', 'unmatched')
           AND received_at >= ${since}
+          AND (${organizationId}::text IS NULL OR organization_id = ${organizationId})
         GROUP BY completion_status
       `;
   
-      const outstandingTotal = totals.reduce((sum, t) => sum + Number(t.total), 0);
-      const ignoredTotal = Number(
-        totals.find((t) => t.completion_status === 'ignored')?.total ?? 0,
-      );
-      const unmatchedTotal = Number(
-        totals.find((t) => t.completion_status === 'unmatched')?.total ?? 0,
-      );
+      const totalFor = (status: string) =>
+        Number(totals.find((t) => t.completion_status === status)?.total ?? 0);
+      const ignoredTotal = totalFor('ignored');
+      const unresolvedTotal = totalFor('unresolved_course');
+      const unmatchedTotal = totalFor('unmatched');
+      const outstandingTotal = unresolvedTotal + unmatchedTotal;
   
       return NextResponse.json({
         lookbackDays: LOOKBACK_DAYS,
         outstandingTotal,
         ignoredTotal,
+        unresolvedTotal,
         unmatchedTotal,
         topSlugs: rows.map((r) => ({
           courseSlug: r.course_slug,

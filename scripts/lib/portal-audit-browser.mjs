@@ -136,9 +136,6 @@ export async function waitForPortalReady(page, timeout = PORTAL_AUDIT_READY_TIME
     undefined,
     { timeout }
   );
-  await page.evaluate(
-    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  );
   await page.waitForFunction(
     () => {
       const bodyText = document.body?.innerText?.replace(/\s+/g, ' ').trim() ?? '';
@@ -151,9 +148,44 @@ export async function waitForPortalReady(page, timeout = PORTAL_AUDIT_READY_TIME
   );
 }
 
+/** A route-specific target marker must replace the source page's heading. */
+export async function waitForVisibleActionTarget(
+  page,
+  selector,
+  sourceHeadingText,
+  timeout = PORTAL_AUDIT_READY_TIMEOUT_MS
+) {
+  const sourceHeading = typeof sourceHeadingText === 'string' ? sourceHeadingText.trim() : '';
+  if (!sourceHeading) return false;
+  try {
+    await page.locator(selector)
+      .filter({ hasNotText: sourceHeading })
+      .first()
+      .waitFor({ state: 'visible', timeout });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** A full-page login redirect can replace the execution context during inspection. */
+export async function evaluatePortalPageAfterNavigation(page, evaluator, timeout = PORTAL_AUDIT_READY_TIMEOUT_MS) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await page.evaluate(evaluator);
+    } catch (error) {
+      const navigationDestroyedContext =
+        error instanceof Error &&
+        /Execution context was destroyed, most likely because of a navigation/.test(error.message);
+      if (!navigationDestroyedContext || attempt === 2) throw error;
+      await waitForPortalReady(page, timeout);
+    }
+  }
+}
+
 /** Collect route-level layout and accessible-name signals in the page. */
 export async function inspectPortalPage(page, dynamicPatterns = []) {
-  const inspection = await page.evaluate(() => {
+  const inspection = await evaluatePortalPageAfterNavigation(page, () => {
     const isVisible = (element) => {
       if (!(element instanceof HTMLElement || element instanceof SVGElement)) return false;
       if (element.closest('[hidden], [aria-hidden="true"]')) return false;
@@ -212,6 +244,7 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
     ].map((element) => element.getAttribute('data-portal-audit-suppressed') || 'unknown');
     const normalizedBodyText = (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim();
 
+    const partnerSignupForm = document.getElementById('partner-signup-form');
     return {
       bodyText: document.body?.innerText ?? '',
       readOnlyAuditDocument:
@@ -220,6 +253,11 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
       errorFallbackDetected: errorFallbackStates.length > 0,
       errorFallbackStates: [...new Set(errorFallbackStates)],
       auditSuppressedStates: [...new Set(auditSuppressedStates)],
+      publicPartnerSignupFormPresent:
+        partnerSignupForm instanceof HTMLFormElement &&
+        isVisible(partnerSignupForm) &&
+        Boolean(partnerSignupForm.querySelector('input[name="organization_name"]')) &&
+        Boolean(partnerSignupForm.querySelector('button[type="submit"]')),
       h1Count: visibleH1Count,
       horizontalOverflowPx: Math.max(0, Math.ceil(rootWidth - viewportWidth)),
       interactiveControlCount: controls.length,

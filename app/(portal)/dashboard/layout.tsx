@@ -2,13 +2,11 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getUser } from '@/lib/auth/server';
-import { getProfileRole, isSuperAdmin } from '@/lib/auth/roles';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { prisma } from '@/lib/db/prisma';
-import { withDbRetry } from '@/lib/db/withDbRetry';
 import MemberWorkspaceShell from '@/components/portal/MemberWorkspaceShell';
 import { buildMemberShellIdentity } from '@/lib/member/memberIdentity';
 import { getMemberProfilePhotoSignedUrlForPath } from '@/lib/portal/memberProfilePhotoUrl';
-import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
 import { getTranslations } from 'next-intl/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getTourOffer } from '@/lib/tours/getTourOffer';
@@ -27,25 +25,12 @@ export default async function DashboardLayout({
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard');
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
+
+  const access = await getMemberDashboardAccess(user.id);
+  if (access.redirectTo) redirect(access.redirectTo);
+  const { portalRoles, superAdmin } = access;
+
   let memberLayoutLoadFailed = false;
-
-  const [profileRole, superAdmin] = await Promise.all([
-    withDbRetry(() => getProfileRole(user.id)).catch((err) => {
-      memberLayoutLoadFailed = true;
-      console.error('[dashboard:layout] profileRole lookup failed; degrading to member', err);
-      return 'member';
-    }),
-    withDbRetry(() => isSuperAdmin(user.id)).catch((err) => {
-      memberLayoutLoadFailed = true;
-      console.error('[dashboard:layout] isSuperAdmin lookup failed; treating as not super admin', err);
-      return false;
-    }),
-  ]);
-  if (profileRole === 'admin' && !superAdmin) {
-    redirect('/admin');
-  }
-
-  const portalRolesPromise = getPortalSwitcherRoles(user.id, { superAdmin });
   // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
   const memberTour = getHomeTourForRole('member');
   const tourPromise = memberTour ? getTourOffer(user.id, memberTour.key) : Promise.resolve(null);
@@ -103,7 +88,7 @@ export default async function DashboardLayout({
     avatarUrl,
   });
 
-  const [portalRoles, tour] = await Promise.all([portalRolesPromise, tourPromise]);
+  const tour = await tourPromise;
 
   return (
     <MemberWorkspaceShell

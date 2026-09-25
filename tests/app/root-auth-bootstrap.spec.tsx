@@ -9,7 +9,7 @@ vi.mock('next-intl/server', () => ({ getMessages: async () => ({ cookieConsent: 
 vi.mock('next-intl', () => ({ NextIntlClientProvider: () => null }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
 vi.mock('@/lib/auth/roles', () => ({ getProfileRole: vi.fn() }));
-vi.mock('@/lib/member/ensureAppUser', () => ({ ensureAppUserProvisioned: vi.fn() }));
+vi.mock('@/lib/member/ensureCurrentAppUserProvisioned', () => ({ ensureCurrentAppUserProvisioned: vi.fn() }));
 vi.mock('@/lib/tenant/resolveOrgFromRequest', () => ({ resolveOrgFromRequest: vi.fn() }));
 vi.mock('@/lib/platform/defaultOrgTheme', () => ({ getRequestOrgBranding: async () => ({}) }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
@@ -29,7 +29,7 @@ import RootLayout from '@/app/layout';
 import { headers } from 'next/headers';
 import { getUser } from '@/lib/auth/server';
 import { getProfileRole } from '@/lib/auth/roles';
-import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
+import { ensureCurrentAppUserProvisioned } from '@/lib/member/ensureCurrentAppUserProvisioned';
 import { resolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import { gucContextStorage } from '@/lib/db/gucContext';
 import { prisma } from '@/lib/db/prisma';
@@ -41,7 +41,7 @@ beforeEach(() => {
   vi.mocked(headers).mockResolvedValue(new Headers({ 'x-wap-user-id': 'synthetic-user' }) as never);
   vi.mocked(getUser).mockResolvedValue(null);
   vi.mocked(getProfileRole).mockResolvedValue('admin');
-  vi.mocked(ensureAppUserProvisioned).mockResolvedValue(undefined);
+  vi.mocked(ensureCurrentAppUserProvisioned).mockResolvedValue(undefined);
   vi.mocked(resolveOrgFromRequest).mockResolvedValue('synthetic-public-org');
 });
 afterEach(() => vi.restoreAllMocks());
@@ -73,7 +73,7 @@ it('drops the forwarded identity when shared auth rejects an existing session', 
   expect(getUser).toHaveBeenCalledOnce();
   expect(getProfileRole).not.toHaveBeenCalled();
   expect(prisma.$transaction).not.toHaveBeenCalled();
-  expect(ensureAppUserProvisioned).not.toHaveBeenCalled();
+  expect(ensureCurrentAppUserProvisioned).not.toHaveBeenCalled();
   expect(run.mock.calls.at(-1)?.[0]).toMatchObject({ userId: null, orgId: 'synthetic-public-org' });
 });
 
@@ -82,7 +82,7 @@ it('does not authenticate or provision anonymous requests without the middleware
   const run = vi.spyOn(gucContextStorage, 'run');
   await RootLayout({ children: null });
   expect(getUser).not.toHaveBeenCalled();
-  expect(ensureAppUserProvisioned).not.toHaveBeenCalled();
+  expect(ensureCurrentAppUserProvisioned).not.toHaveBeenCalled();
   expect(run.mock.calls.at(-1)?.[0]).toMatchObject({ userId: null });
 });
 
@@ -90,11 +90,24 @@ it('preserves provisioning and role bootstrap for a matching accepted identity',
   vi.mocked(getUser).mockResolvedValue({ id: 'synthetic-user', email: 'fixture@example.invalid' } as never);
   const run = vi.spyOn(gucContextStorage, 'run');
   await RootLayout({ children: null });
-  expect(ensureAppUserProvisioned).toHaveBeenCalledWith(
-    expect.objectContaining({ id: 'synthetic-user' }), expect.anything(),
-  );
+  expect(ensureCurrentAppUserProvisioned).toHaveBeenCalledWith('synthetic-user');
   expect(getProfileRole).toHaveBeenCalledWith('synthetic-user');
   expect(run.mock.calls.at(-1)?.[0]).toMatchObject({ userId: 'synthetic-user', orgId: 'synthetic-member-org', role: 'admin' });
+});
+
+it('waits for app provisioning before root role bootstrap', async () => {
+  vi.mocked(getUser).mockResolvedValue({ id: 'synthetic-user', email: 'fixture@example.invalid' } as never);
+  let finishProvision!: () => void;
+  vi.mocked(ensureCurrentAppUserProvisioned).mockReturnValue(
+    new Promise<void>((resolve) => { finishProvision = resolve; }),
+  );
+
+  const render = RootLayout({ children: null });
+  await vi.waitFor(() => expect(ensureCurrentAppUserProvisioned).toHaveBeenCalledWith('synthetic-user'));
+  expect(getProfileRole).not.toHaveBeenCalled();
+  finishProvision();
+  await render;
+  expect(getProfileRole).toHaveBeenCalledWith('synthetic-user');
 });
 
 it('does not bootstrap a different identity from the forwarded header', async () => {
@@ -102,6 +115,6 @@ it('does not bootstrap a different identity from the forwarded header', async ()
   const run = vi.spyOn(gucContextStorage, 'run');
   await RootLayout({ children: null });
   expect(getProfileRole).not.toHaveBeenCalled();
-  expect(ensureAppUserProvisioned).not.toHaveBeenCalled();
+  expect(ensureCurrentAppUserProvisioned).not.toHaveBeenCalled();
   expect(run.mock.calls.at(-1)?.[0]).toMatchObject({ userId: null });
 });

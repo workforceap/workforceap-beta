@@ -22,6 +22,11 @@ on:
           - isolated_preview
           - production_canary
           - hub_smoke
+      capture_hydration_trace:
+        description: "Log privacy-minimized root structure on hydration errors (isolated Preview only)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -151,30 +156,31 @@ jobs:
         run: pnpm test:e2e:portal-hubs
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
-          E2E_MEMBER_EMAIL: ${{ secrets.E2E_MEMBER_EMAIL }}
-          E2E_MEMBER_PASSWORD: ${{ secrets.E2E_MEMBER_PASSWORD }}
-          E2E_COUNSELOR_EMAIL: ${{ secrets.E2E_COUNSELOR_EMAIL }}
-          E2E_COUNSELOR_PASSWORD: ${{ secrets.E2E_COUNSELOR_PASSWORD }}
-          E2E_EMPLOYER_EMAIL: ${{ secrets.E2E_EMPLOYER_EMAIL }}
-          E2E_EMPLOYER_PASSWORD: ${{ secrets.E2E_EMPLOYER_PASSWORD }}
+          E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          E2E_MEMBER_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          E2E_COUNSELOR_EMAIL: ${{ secrets.PREVIEW_E2E_COUNSELOR_EMAIL }}
+          E2E_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+          E2E_EMPLOYER_EMAIL: ${{ secrets.PREVIEW_E2E_EMPLOYER_EMAIL }}
+          E2E_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
 
       - name: Run full five-role isolated preview audit
         if: env.AUDIT_TARGET == 'isolated_preview'
         run: pnpm audit:portal
         env:
+          PORTAL_AUDIT_HYDRATION_TRACE: ${{ inputs.capture_hydration_trace && '1' || '0' }}
           PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
-          E2E_MEMBER_EMAIL: ${{ secrets.E2E_MEMBER_EMAIL }}
-          E2E_MEMBER_PASSWORD: ${{ secrets.E2E_MEMBER_PASSWORD }}
-          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-          E2E_EMPLOYER_EMAIL: ${{ secrets.E2E_EMPLOYER_EMAIL }}
-          E2E_EMPLOYER_PASSWORD: ${{ secrets.E2E_EMPLOYER_PASSWORD }}
-          E2E_PARTNER_EMAIL: ${{ secrets.E2E_PARTNER_EMAIL }}
-          E2E_PARTNER_PASSWORD: ${{ secrets.E2E_PARTNER_PASSWORD }}
-          E2E_COUNSELOR_EMAIL: ${{ secrets.E2E_COUNSELOR_EMAIL }}
-          E2E_COUNSELOR_PASSWORD: ${{ secrets.E2E_COUNSELOR_PASSWORD }}
-          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PORTAL_AUDIT_READ_ONLY_TOKEN }}
+          E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          E2E_MEMBER_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.PREVIEW_E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.PREVIEW_E2E_ADMIN_PASSWORD }}
+          E2E_EMPLOYER_EMAIL: ${{ secrets.PREVIEW_E2E_EMPLOYER_EMAIL }}
+          E2E_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
+          E2E_PARTNER_EMAIL: ${{ secrets.PREVIEW_E2E_PARTNER_EMAIL }}
+          E2E_PARTNER_PASSWORD: ${{ secrets.PREVIEW_E2E_PARTNER_PASSWORD }}
+          E2E_COUNSELOR_EMAIL: ${{ secrets.PREVIEW_E2E_COUNSELOR_EMAIL }}
+          E2E_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
 
       - name: Run non-staff production canary
         if: env.AUDIT_TARGET == 'production_canary'

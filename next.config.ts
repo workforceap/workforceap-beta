@@ -195,6 +195,11 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // This old public sign-up URL lives beneath the authenticated /partner
+      // route tree. Redirect before middleware and the partner layout can send
+      // a signed-in visitor through login or back to the portal home.
+      { source: '/partner/signup', destination: '/partners#partner-signup', permanent: false },
+      { source: '/:locale(en|es|fr|pt)/partner/signup', destination: '/:locale/partners#partner-signup', permanent: false },
       // Legacy blog slug redirects — destinations must be live Astro posts under
       // marketing/src/pages/blog (or /blog). Prior targets (our-mission,
       // new-member-guide, career-change-guide, it-certifications-guide,

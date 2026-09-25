@@ -171,12 +171,15 @@ async function fetchChain(origin, path, ctx) {
       headers['x-vercel-protection-bypass'] = ctx.bypassSecret;
     }
     let res;
+    let body;
     try {
       res = await ctx.fetchImpl(url.href, { method: 'GET', redirect: 'manual', headers, signal: controller.signal });
+      // The timeout covers the body too (WAP-222): a response that sends
+      // headers and then stalls must not hang the job until its own timeout.
+      body = await res.text();
     } finally {
       clearTimeout(timer);
     }
-    const body = await res.text();
     hops.push({ status: res.status, path: `${url.pathname}${url.search}` });
     if (isVercelProtectionResponse(res.status, res.headers, body)) {
       return { hops, protectedByVercel: true, status: res.status, body, url };

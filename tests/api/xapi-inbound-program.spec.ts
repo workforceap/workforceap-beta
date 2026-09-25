@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
@@ -12,7 +12,6 @@ vi.mock('@/lib/milestoneCascade/detectCompletionMilestone', () => ({
   detectTrainingMilestone: vi.fn(),
 }));
 vi.mock('@/lib/member/staffTrainingProgramFallback', () => ({ resolveStaffTrainingPreviewProgramSlug: vi.fn() }));
-vi.mock('@/lib/member/dailyStudyPoints', () => ({ utcDateKey: vi.fn(() => '2026-08-29') }));
 vi.mock('@/lib/member/points', () => ({ awardPoints: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: { user: { findUnique: vi.fn() } },
@@ -21,7 +20,10 @@ vi.mock('@/lib/xapi/mappings', () => ({
   recordXapiEvent: vi.fn(),
   resolveXapiUser: vi.fn(),
 }));
-vi.mock('@/lib/xapi/statements', () => ({ isXapiCompletionVerb: vi.fn() }));
+vi.mock('@/lib/xapi/statements', () => ({
+  isXapiCompletionVerb: vi.fn(),
+  isXapiCourseProgressVerb: vi.fn(() => false),
+}));
 vi.mock('@/lib/xapi/storage', () => ({ markXapiStatementProcessed: vi.fn() }));
 vi.mock('@/lib/xapi/resolveInboundCourseScopes', () => ({
   resolveInboundCourseScopes: vi.fn(),
@@ -34,7 +36,7 @@ import { upsertCourseProgressFromXapiStatement } from '@/lib/member/courseProgre
 import { awardPoints } from '@/lib/member/points';
 import { handleInboundParsedStatement } from '@/lib/xapi/inboundStatementPipeline';
 import { recordXapiEvent, resolveXapiUser } from '@/lib/xapi/mappings';
-import { isXapiCompletionVerb } from '@/lib/xapi/statements';
+import { isXapiCompletionVerb, isXapiCourseProgressVerb } from '@/lib/xapi/statements';
 import { markXapiStatementProcessed } from '@/lib/xapi/storage';
 import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
 import { detectTrainingMilestone } from '@/lib/milestoneCascade/detectCompletionMilestone';
@@ -521,6 +523,169 @@ describe('handleInboundParsedStatement program resolution', () => {
     expect(completeMemberCourse).not.toHaveBeenCalled();
     expect(recordXapiEvent).toHaveBeenCalledWith(
       expect.objectContaining({ completionStatus: 'unmatched' }),
+    );
+  });
+});
+
+describe('handleInboundParsedStatement daily-study award (WAP-276)', () => {
+  const enrolledMember = {
+    organizationId: 'org-1',
+    deletedAt: null,
+    enrolledProgram: 'primary-program',
+    courseEnrollments: [{ programSlug: 'primary-program', isPrimary: true }],
+  };
+
+  function progressedStatement(timestamp: string | null) {
+    return {
+      email: 'member@example.com',
+      courseName: 'Course One',
+      courseraCourseId: 'coursera-course-1',
+      activityType: 'course' as const,
+      statementId: `statement-${timestamp ?? 'none'}`,
+      verbId: 'http://adlnet.gov/expapi/verbs/progressed',
+      timestamp,
+      rawStatement: {},
+    };
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    // The production replay tick that awarded an unearned point.
+    vi.setSystemTime(new Date('2026-09-17T00:15:05.000Z'));
+    vi.mocked(resolveXapiUser).mockResolvedValue({
+      userId: 'member-1',
+      email: 'member@example.com',
+      fullName: 'Member One',
+      mappingMethod: 'direct_email',
+    });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(enrolledMember as never);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isXapiCompletionVerb).mockReturnValue(false);
+    vi.mocked(upsertCourseProgressFromXapiStatement).mockResolvedValue(null as never);
+    vi.mocked(recordXapiEvent).mockResolvedValue(undefined);
+    vi.mocked(markXapiStatementProcessed).mockResolvedValue(undefined);
+    vi.mocked(awardPoints).mockResolvedValue({ awarded: true, points: 5, total: 5, level: 'starter' });
+    vi.mocked(resolveInboundCourseScopes).mockResolvedValue([
+      { programSlug: 'primary-program', curriculumVersion: 'legacy-v1', assignmentMatched: true },
+    ] as never);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('awards "Studied today" keyed on the learner event day when the member studied today', async () => {
+    await handleInboundParsedStatement(progressedStatement('2026-09-17T00:02:00.000Z'), {
+      organizationId: 'org-1',
+      statementHash: 'hash-today',
+    });
+
+    expect(awardPoints).toHaveBeenCalledWith('member-1', 'daily_study', '2026-09-17');
+  });
+
+  it('does not award when the auto-heal replays a statement from an earlier day', async () => {
+    await handleInboundParsedStatement(progressedStatement('2026-07-30T05:50:31.663Z'), {
+      organizationId: 'org-1',
+      statementHash: 'hash-replay',
+    });
+
+    expect(awardPoints).not.toHaveBeenCalled();
+    expect(upsertCourseProgressFromXapiStatement).toHaveBeenCalled();
+  });
+
+  it('does not award a statement with no learner timestamp', async () => {
+    await handleInboundParsedStatement(progressedStatement(null), {
+      organizationId: 'org-1',
+      statementHash: 'hash-none',
+    });
+
+    expect(awardPoints).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleInboundParsedStatement unresolved-course status (WAP-276)', () => {
+  const statement = {
+    email: 'member@example.com',
+    courseName: 'Course One',
+    courseraCourseId: 'unmapped-coursera-id',
+    activityType: 'course' as const,
+    statementId: 'statement-unresolved',
+    verbId: 'http://adlnet.gov/expapi/verbs/progressed',
+    rawStatement: {},
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(resolveXapiUser).mockResolvedValue({
+      userId: 'member-1',
+      email: 'member@example.com',
+      fullName: 'Member One',
+      mappingMethod: 'direct_email',
+    });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: 'org-1',
+      deletedAt: null,
+      enrolledProgram: 'primary-program',
+      courseEnrollments: [{ programSlug: 'primary-program', isPrimary: true }],
+    } as never);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isXapiCompletionVerb).mockReturnValue(false);
+    vi.mocked(isXapiCourseProgressVerb).mockReturnValue(true);
+    vi.mocked(recordXapiEvent).mockResolvedValue(undefined);
+    vi.mocked(markXapiStatementProcessed).mockResolvedValue(undefined);
+    vi.mocked(resolveInboundCourseScopes).mockResolvedValue([
+      { programSlug: 'primary-program', curriculumVersion: 'legacy-v1', assignmentMatched: true },
+    ] as never);
+  });
+
+  it('records a progress statement whose course did not resolve as unresolved_course', async () => {
+    vi.mocked(upsertCourseProgressFromXapiStatement).mockResolvedValue(null as never);
+
+    await handleInboundParsedStatement(statement, { organizationId: 'org-1', statementHash: 'h1' });
+
+    expect(recordXapiEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ completionStatus: 'unresolved_course', matchedUserId: 'member-1' }),
+    );
+    expect(markXapiStatementProcessed).toHaveBeenCalledWith('statement-unresolved', 'h1');
+  });
+
+  it('records unresolved_course when no scope resolved at all', async () => {
+    vi.mocked(resolveInboundCourseScopes).mockResolvedValue([] as never);
+
+    await handleInboundParsedStatement(statement, { organizationId: 'org-1', statementHash: 'h2' });
+
+    expect(upsertCourseProgressFromXapiStatement).not.toHaveBeenCalled();
+    expect(recordXapiEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ completionStatus: 'unresolved_course' }),
+    );
+  });
+
+  it('keeps ignored for a progress statement that wrote progress', async () => {
+    vi.mocked(upsertCourseProgressFromXapiStatement).mockResolvedValue({
+      programSlug: 'primary-program',
+      courseSlug: 'course-one',
+      courseName: 'Course One',
+    } as never);
+
+    await handleInboundParsedStatement(statement, { organizationId: 'org-1', statementHash: 'h3' });
+
+    expect(recordXapiEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ completionStatus: 'ignored' }),
+    );
+  });
+
+  it('keeps ignored for a statement that is not a course-progress verb (item completion)', async () => {
+    vi.mocked(isXapiCourseProgressVerb).mockReturnValue(false);
+    vi.mocked(upsertCourseProgressFromXapiStatement).mockResolvedValue(null as never);
+
+    await handleInboundParsedStatement(
+      { ...statement, activityType: 'item' as const, verbId: 'http://adlnet.gov/expapi/verbs/completed' },
+      { organizationId: 'org-1', statementHash: 'h4' },
+    );
+
+    expect(recordXapiEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ completionStatus: 'ignored' }),
     );
   });
 });
