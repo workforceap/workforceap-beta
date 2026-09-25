@@ -314,6 +314,8 @@ export const SAFE_ACTION_CONTRACTS = {
       kind: 'read_only_navigation',
       sourcePath: '/partner',
       targetPath: '/partner/referred-members',
+      // The URL can change while the source H1 remains during an RSC navigation.
+      targetReadySelector: '.portal-page-frame h1:visible',
       required: true,
     },
     {
