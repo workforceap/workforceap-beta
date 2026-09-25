@@ -29,6 +29,7 @@ import {
   fixtureConditionMatches,
   isVerifiedDeniedRedirectWithCanceledGets,
   isBlockedAuditTelemetryRequest,
+  isSuppressedExternalAuditTelemetryRequest,
   isSuppressedAuditSideEffectGetRequest,
   isAllowedReadOnlyNonGetRequest,
   missingRedirectFixtureOutcome,
@@ -589,6 +590,12 @@ describe('read-only portal action contracts', () => {
     ).toBe(true);
     expect(isBlockedAuditTelemetryRequest('POST', '/api/events')).toBe(true);
     expect(isBlockedAuditTelemetryRequest('GET', '/api/events')).toBe(false);
+    expect(isSuppressedExternalAuditTelemetryRequest('POST', 'https://www.google-analytics.com/g/collect?v=2')).toBe(true);
+    expect(isSuppressedExternalAuditTelemetryRequest('POST', 'https://www.google.com/g/collect?v=2')).toBe(true);
+    expect(isSuppressedExternalAuditTelemetryRequest('GET', 'https://www.google.com/g/collect')).toBe(false);
+    expect(isSuppressedExternalAuditTelemetryRequest('POST', 'http://www.google.com/g/collect')).toBe(false);
+    expect(isSuppressedExternalAuditTelemetryRequest('POST', 'https://www.google.com.evil.test/g/collect')).toBe(false);
+    expect(isSuppressedExternalAuditTelemetryRequest('POST', 'https://www.google.com/api/contact')).toBe(false);
     expect(isSuppressedAuditSideEffectGetRequest('GET', '/api/auth/check-mfa-required')).toBe(true);
     expect(isSuppressedAuditSideEffectGetRequest('POST', '/api/auth/check-mfa-required')).toBe(false);
   });
@@ -621,6 +628,15 @@ describe('read-only portal action contracts', () => {
     expect(
       classifyReadOnlyAuditRequest('POST', `${origin}/api/events`, origin),
     ).toBe('suppress_telemetry');
+    expect(
+      classifyReadOnlyAuditRequest('POST', 'https://www.google-analytics.com/g/collect?v=2', origin),
+    ).toBe('suppress_telemetry');
+    expect(
+      classifyReadOnlyAuditRequest('POST', 'https://www.google.com/g/collect?v=2', origin),
+    ).toBe('suppress_telemetry');
+    expect(
+      classifyReadOnlyAuditRequest('POST', 'https://www.google.com.evil.test/g/collect', origin),
+    ).toBe('block');
     expect(
       classifyReadOnlyAuditRequest('GET', `${origin}/api/auth/check-mfa-required`, origin),
     ).toBe('suppress_side_effect_get');

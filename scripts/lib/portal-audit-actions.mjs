@@ -393,6 +393,21 @@ export function isBlockedAuditTelemetryRequest(method, pathname) {
   );
 }
 
+/** Google Tag Manager can send these page-view POSTs from public landing pages. */
+export function isSuppressedExternalAuditTelemetryRequest(method, requestUrl) {
+  if (String(method).toUpperCase() !== 'POST') return false;
+  let parsed;
+  try {
+    parsed = new URL(String(requestUrl));
+  } catch {
+    return false;
+  }
+  return parsed.pathname === '/g/collect' && (
+    parsed.origin === 'https://www.google-analytics.com' ||
+    parsed.origin === 'https://www.google.com'
+  );
+}
+
 /**
  * Exact mount-time GETs whose implementations consume mutable infrastructure
  * even though the HTTP verb is safe. The audit fulfills these locally so it
@@ -407,9 +422,9 @@ export function isSuppressedAuditSideEffectGetRequest(method, pathname) {
 }
 
 /**
- * Decide how the browser guard handles a request. Read-only POST exceptions are
- * valid only on the exact origin that passed target validation; an external
- * URL with the same pathname is always blocked.
+ * Decide how the browser guard handles a request. App POST exceptions are
+ * valid only on the exact origin that passed target validation. Known external
+ * analytics POSTs are fulfilled locally and never reach the collector.
  */
 export function classifyReadOnlyAuditRequest(method, requestUrl, trustedOrigin, options = {}) {
   const normalizedMethod = String(method).toUpperCase();
@@ -432,6 +447,9 @@ export function classifyReadOnlyAuditRequest(method, requestUrl, trustedOrigin, 
     return 'continue';
   }
 
+  if (isSuppressedExternalAuditTelemetryRequest(normalizedMethod, parsed)) {
+    return 'suppress_telemetry';
+  }
   if (parsed.origin !== trustedOrigin) return 'block';
   if (isBlockedAuditTelemetryRequest(normalizedMethod, parsed.pathname)) {
     return 'suppress_telemetry';
