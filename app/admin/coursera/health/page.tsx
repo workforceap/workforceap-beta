@@ -9,7 +9,7 @@ import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import DataTable from '@/components/portal/ui/DataTable';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant } from '@/lib/tenant/adminPageScope';
-import { loadB4BPrograms } from '@/lib/coursera/programContentsCache';
+import { loadB4BProgramsChecked, type B4BProgramWithContents } from '@/lib/coursera/programContentsCache';
 import { prisma } from '@/lib/db/prisma';
 import { loadSyncDriftPairs } from '@/lib/admin/courseraSyncDrift';
 import { buildCompletionDriftQuery, buildCourseProgramIndex, courseMatchesAssignedProgram, type DiagnosticProgram } from '@/lib/admin/courseraDiagnostics';
@@ -447,17 +447,30 @@ async function loadWrongProgramStudying(
   }
 }
 
-async function loadB4BProgramsSafe(): Promise<
-  Awaited<ReturnType<typeof loadB4BPrograms>> | null
-> {
+/**
+ * The B4B program catalog for the cross-checks, or why it can't be used.
+ * A provider error and "programs came back without course lists" are
+ * reported separately (WAP-276), so "unavailable" says which one happened.
+ */
+async function loadB4BProgramsSafe(): Promise<{
+  programs: B4BProgramWithContents[] | null;
+  unavailableReason: string | null;
+}> {
   try {
-    const programs = await loadB4BPrograms();
-    // This cache collapses provider failure into []; do not treat that as a
-    // verified empty catalog or derive out-of-catalog findings from it.
-    return programs.some((program) => program.courses.length > 0) ? programs : null;
+    const result = await loadB4BProgramsChecked();
+    if (!result.ok) {
+      return { programs: null, unavailableReason: `the Coursera program list failed to load (${result.error})` };
+    }
+    if (!result.value.some((program) => program.courses.length > 0)) {
+      return {
+        programs: null,
+        unavailableReason: `Coursera returned ${result.value.length} program(s) without course lists`,
+      };
+    }
+    return { programs: result.value, unavailableReason: null };
   } catch (error) {
     console.error('[admin/coursera/health] loadB4BPrograms failed:', error);
-    return null;
+    return { programs: null, unavailableReason: 'the Coursera program list failed to load' };
   }
 }
 
@@ -585,7 +598,7 @@ export default async function AdminCourseraHealthPage() {
     cronRuns,
     topIgnoredSlugs,
     topUnmatchedActors,
-    b4bPrograms,
+    b4bCatalog,
     driftRows,
     syncDrift,
     linkHealth,
@@ -611,6 +624,8 @@ export default async function AdminCourseraHealthPage() {
   // Build the B4B course-slug index used by the out-of-catalog and wrong-
   // program checks. We do this once and pass it into both loaders so a single
   // B4B fetch supports two cross-checks.
+  const b4bPrograms = b4bCatalog.programs;
+  const catalogUnavailableReason = b4bCatalog.unavailableReason;
   const slugToProgram = buildCourseProgramIndex(b4bPrograms ?? []);
   const b4bCourseSlugs = new Set(slugToProgram.keys());
   const [outOfCatalogRows, wrongProgramRows] = b4bPrograms === null
@@ -1191,13 +1206,18 @@ export default async function AdminCourseraHealthPage() {
         <h2 style={sectionHeadingStyle}>xAPI events on out-of-catalog courses (last 7 days)</h2>
         <p style={{ ...cardSecondaryStyle, marginBottom: '0.6rem' }}>
           xAPI events arriving for a <code>course_slug</code> that isn&apos;t in any
-          B4B program (per <code>loadB4BPrograms()</code>). Means the learner is on a
+          B4B program (per <code>loadB4BProgramsChecked()</code>). Means the learner is on a
           course that&apos;s not in the org&apos;s curriculum — curriculum changed,
           course was added on Coursera without WAP knowing, or the canonical mapping
           is wrong.
         </p>
         {outOfCatalogRows === null ? (
-          <p role="status" style={cardSecondaryStyle}>Catalog comparison unavailable. Provider catalog coverage or event loading could not be verified.</p>
+          <p role="status" style={cardSecondaryStyle}>
+            Catalog comparison unavailable.{' '}
+            {catalogUnavailableReason
+              ? `No verdict because ${catalogUnavailableReason}.`
+              : 'Event loading could not be verified.'}
+          </p>
         ) : outOfCatalogRows.length === 0 ? (
           <span style={cardSecondaryStyle}>
             All recent xAPI traffic is on courses that exist in B4B programs.
@@ -1257,7 +1277,10 @@ export default async function AdminCourseraHealthPage() {
           Pairs where B4B&apos;s <code>last_activity_time</code> and our{' '}
           <code>course_progress.last_activity_at</code> disagree by more than 24 hours
           for the same learner and provider course, shown separately by local program.
-          A database write or replay timestamp is not learner activity.
+          A database write or replay timestamp is not learner activity. Local values written
+          before replays stamped the statement&apos;s own time can still be replay times from the
+          hourly auto-heal (<code>:15</code> past the hour). They only move forward on newer
+          activity, so treat an old local value at <code>:15</code> as suspect.
         </p>
         {syncDrift.status === 'error' ? (
           <p role="alert" style={{ ...cardSecondaryStyle, color: 'var(--color-error, #dc2626)', margin: 0 }}>
@@ -1335,7 +1358,12 @@ export default async function AdminCourseraHealthPage() {
           program identifiers still require review; this is not proof of a wrong enrollment or unused paid seat.
         </p>
         {wrongProgramRows === null ? (
-          <p role="status" style={cardSecondaryStyle}>Program comparison unavailable. Provider catalog coverage or event loading could not be verified.</p>
+          <p role="status" style={cardSecondaryStyle}>
+            Program comparison unavailable.{' '}
+            {catalogUnavailableReason
+              ? `No verdict because ${catalogUnavailableReason}.`
+              : 'Event loading could not be verified.'}
+          </p>
         ) : wrongProgramRows.length === 0 ? (
           <span style={cardSecondaryStyle}>
             No unmatched program associations found in the reviewed event rows. This does not verify provider enrollment or billing.
