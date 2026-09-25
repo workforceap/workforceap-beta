@@ -119,6 +119,12 @@ function boundedDiagnosticPush(list, diagnostic) {
 }
 
 async function installReadOnlyRequestGuard(context, options = {}) {
+  // Browser-managed headers do not turn the Cookie header into a redirect-wide
+  // route override. The toolbar header contains no secret and is scoped to
+  // this opt-in audit context.
+  if (skipVercelToolbar) {
+    await context.setExtraHTTPHeaders({ 'x-vercel-skip-toolbar': '1' });
+  }
   const blockedByPage = new WeakMap();
   const blockedDiagnosticsByPage = new WeakMap();
   const blockedTelemetryByPage = new WeakMap();
@@ -191,7 +197,6 @@ async function installReadOnlyRequestGuard(context, options = {}) {
           headers: {
             ...request.headers(),
             [READ_ONLY_AUDIT_TOKEN_HEADER_NAME]: process.env.PORTAL_AUDIT_READ_ONLY_TOKEN,
-            ...(skipVercelToolbar ? { 'x-vercel-skip-toolbar': '1' } : {}),
           },
         });
       } else {
