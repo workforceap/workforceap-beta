@@ -11,3 +11,7 @@ allowBuilds:
   prisma: true
   sharp: true
   unrs-resolver: true
+patchedDependencies:
+  # Next 15.5.18 vendors a React canary predating the hydration replay cursor
+  # fix (facebook/react#35494). Remove after a Next release bundles that fix.
+  next@15.5.18: patches/next@15.5.18.patch
