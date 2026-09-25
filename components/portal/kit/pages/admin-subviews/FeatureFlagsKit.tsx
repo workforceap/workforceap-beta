@@ -9,6 +9,7 @@ import {
   type KpiItem,
 } from '@/components/portal/kit';
 import FeatureFlagToggle from './FeatureFlagToggle';
+import { FeatureFlagSettings, NewFeatureFlagForm, NEW_FEATURE_FLAG_ID } from './FeatureFlagSettings';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
@@ -21,10 +22,10 @@ import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
  * Columns: Flag · Description · State · Updated.
  * State is a kit Toggle island (FeatureFlagToggle) that PATCHes the existing
  * `/api/admin/feature-flags/[id]` route — same request, same server guard —
- * and reads On/Off from the server-rendered flag. Create,
- * rollout % and role gating still live in the legacy workspace (?ui=legacy).
- * With no flags the table gives way to one kit empty state whose CTA opens
- * that workspace.
+ * and reads On/Off from the server-rendered flag. With `manageable`, a
+ * Rollout column (FeatureFlagSettings) edits rollout % and role gating or
+ * deletes the flag, and a New flag form renders under the table (WAP-193);
+ * without it those still live in the legacy workspace (?ui=legacy).
  */
 export interface FeatureFlagRow {
   id: string;
@@ -37,6 +38,8 @@ export interface FeatureFlagRow {
   enabled: boolean;
   /** Rollout percentage (0–100). */
   rolloutPercentage: number;
+  /** Roles the flag is gated to; empty = everyone. */
+  allowedRoles?: string[];
   /** Pre-formatted "updated" caption, e.g. "Jun 18" or "—". */
   updated: string;
 }
@@ -53,6 +56,8 @@ export interface FeatureFlagsKitProps {
   recentlyChanged: number;
   /** Optional notice under the opener (e.g. org-wide warning for non-super admins). */
   notice?: ReactNode;
+  /** Edit rollout / roles, delete and create in place instead of linking to ?ui=legacy. */
+  manageable?: boolean;
 }
 
 export function FeatureFlagsKit({
@@ -62,7 +67,17 @@ export function FeatureFlagsKit({
   off,
   recentlyChanged,
   notice,
+  manageable = false,
 }: FeatureFlagsKitProps) {
+  const createHref = manageable ? `#${NEW_FEATURE_FLAG_ID}` : '/admin/feature-flags?ui=legacy';
+  const settings = (row: FeatureFlagRow) => (
+    <FeatureFlagSettings
+      id={row.id}
+      name={row.name}
+      rolloutPercentage={row.rolloutPercentage}
+      allowedRoles={row.allowedRoles ?? []}
+    />
+  );
   const kpis: KpiItem[] = [
     { label: 'Total Flags', value: total },
     { label: 'On', value: on },
@@ -126,6 +141,9 @@ export function FeatureFlagsKit({
         <FeatureFlagToggle id={row.id} name={row.name} enabled={row.enabled} />
       ),
     },
+    ...(manageable
+      ? [{ key: 'rollout', header: 'Rollout', render: (row: FeatureFlagRow) => settings(row) } satisfies Column<FeatureFlagRow>]
+      : []),
     {
       key: 'updated',
       header: 'Updated',
@@ -143,7 +161,7 @@ export function FeatureFlagsKit({
         kicker="Platform"
         lede="Gradual rollout & role-gating of platform features"
         action={
-          <KitLinkButton href="/admin/feature-flags?ui=legacy" label="Manage" variant="primary" size="sm" />
+          <KitLinkButton href={createHref} label={manageable ? 'New flag' : 'Manage'} variant="primary" size="sm" />
         }
       />
 
@@ -160,7 +178,7 @@ export function FeatureFlagsKit({
             title="No feature flags yet"
             description="Create a flag to start rolling out features gradually. Flags apply to every member, counselor, employer and partner portal in this organization."
             action={
-              <KitLinkButton href="/admin/feature-flags?ui=legacy" label="Create a flag" variant="primary" size="sm" />
+              <KitLinkButton href={createHref} label="Create a flag" variant="primary" size="sm" />
             }
           />
         </section>
@@ -170,7 +188,7 @@ export function FeatureFlagsKit({
         columns={columns}
         rows={flags}
         rowKey={(row) => row.id}
-        minWidth={680}
+        minWidth={manageable ? 860 : 680}
         mobile="cards"
         cardRender={(row) => (
           <div className="wa-kit-card wa-kit-card--sm">
@@ -214,6 +232,7 @@ export function FeatureFlagsKit({
               </span>
               <span style={{ ...numStyle, whiteSpace: 'nowrap' }}>{row.updated}</span>
             </div>
+            {manageable ? <div style={{ marginTop: 8 }}>{settings(row)}</div> : null}
           </div>
         )}
         emptyTitle="No feature flags yet"
@@ -232,6 +251,12 @@ export function FeatureFlagsKit({
       </p>
       </>
       )}
+
+      {manageable ? (
+        <div style={{ marginTop: 24 }}>
+          <NewFeatureFlagForm />
+        </div>
+      ) : null}
     </DesignSurface>
   );
 }
