@@ -552,6 +552,10 @@ const filterChips = [
   .chip.active{color:#fff}
   .chip.active::before{background:var(--grad);border-color:transparent}
   .chip.active:hover{color:#fff}
+  @media(forced-colors:active){
+    .chip[aria-pressed="true"]{color:HighlightText;forced-color-adjust:none}
+    .chip[aria-pressed="true"]::before{background:Highlight;border-color:Highlight;forced-color-adjust:none}
+  }
   .no-results{margin:0 0 24px;color:var(--muted);font-size:15px}
   .linkbtn{background:none;border:0;color:var(--crimson);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
 

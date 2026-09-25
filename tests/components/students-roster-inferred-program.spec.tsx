@@ -16,11 +16,11 @@ import { emailWrapParts, rosterProgramLabel, ROSTER_PROGRAM_PLACEHOLDERS } from 
 afterEach(cleanup);
 
 /**
- * WAP-209 (phone QA, 390x844): an admin Students roster row said "No program"
- * next to a title that looked assigned, e.g. "IT Support Professional
- * Certificate (IBM)", because only the training view added "(inferred)". Every
- * view (table and phone card) now marks it. Emails wrap at "@" (or a dot in the
- * name part), not mid-domain ("example." / "test").
+ * WAP-209 (phone QA, 390x844): `loadTrainingRoster` can produce a named program
+ * with no assignment, and the dev Students roster deliberately shows the same
+ * shape. Every kit view (table and phone card) marks that title as inferred.
+ * The production default roster loader instead supplies a placeholder when
+ * no program is assigned. Emails prefer a break at "@" or a local-part dot.
  */
 
 const IT = 'IT Support Professional Certificate (IBM)';

@@ -210,10 +210,11 @@ const PLACEHOLDER_PROGRAM_TITLES: ReadonlySet<string> = new Set(Object.values(RO
  * The program as the roster prints it, in every view and on the phone card.
  *
  * A row flagged `noProgram` (a WAP member with no assigned program) whose
- * title still names a program is showing a program inferred from Coursera or
- * course activity, so it says "(inferred)". Without the suffix the row read
- * "No program" beside a title that looks assigned (WAP-209). Placeholder words
- * like "Unassigned" and unmatched Coursera rows print as they are.
+ * title still names a program is showing activity under that program, so it
+ * says "(inferred)". `loadTrainingRoster` can produce that combination from
+ * CourseProgress; the default `loadStudentsRoster` currently uses a placeholder
+ * instead, while the dev roster exercises the named-program case (WAP-209).
+ * Placeholder words and unmatched Coursera rows print as they are.
  */
 export function rosterProgramLabel(row: Pick<StudentRow, 'program' | 'noProgram' | 'inWap'>): string {
   const inferred = row.inWap !== false && row.noProgram === true && !PLACEHOLDER_PROGRAM_TITLES.has(row.program);

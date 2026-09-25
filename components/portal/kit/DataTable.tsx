@@ -80,9 +80,10 @@ interface DataTableProps<T> extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
 
 /**
  * Dense roster table — native `.wa-kit-table` chrome via `KitTableShell`
- * (pre-rendered cells keep server `render` columns RSC-safe). Mobile: scroll
- * or stacked cards. Row density is surface-driven (see KitTableShell). The
- * table standard (columns, density, states) is in docs/KIT_GUIDE.md §6a.
+ * (pre-rendered, column-keyed cells keep server `render` columns RSC-safe and
+ * avoid Flight list-key warnings). Mobile: scroll or stacked cards. Row density
+ * is surface-driven (see KitTableShell). The table standard (columns, density,
+ * states) is in docs/KIT_GUIDE.md §6a.
  */
 export function DataTable<T>({
   columns,
