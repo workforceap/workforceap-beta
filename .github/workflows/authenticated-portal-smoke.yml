@@ -22,6 +22,11 @@ on:
           - isolated_preview
           - production_canary
           - hub_smoke
+      capture_hydration_trace:
+        description: "Log privacy-minimized root structure on hydration errors (isolated Preview only)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -162,6 +167,7 @@ jobs:
         if: env.AUDIT_TARGET == 'isolated_preview'
         run: pnpm audit:portal
         env:
+          PORTAL_AUDIT_HYDRATION_TRACE: ${{ inputs.capture_hydration_trace && '1' || '0' }}
           PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
           E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}

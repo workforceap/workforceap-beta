@@ -72,6 +72,7 @@ import {
   normalizePortalAuditMode,
   validatePortalAuditTarget,
 } from './lib/portal-audit-target.mjs';
+import { installPortalHydrationTrace } from './lib/portal-hydration-trace.mjs';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const root = join(scriptDirectory, '..');
@@ -92,6 +93,7 @@ const routeConcurrency = Math.min(
   12,
   Math.max(1, Number.parseInt(process.env.PORTAL_AUDIT_ROUTE_CONCURRENCY ?? '8', 10) || 8)
 );
+const traceHydration = process.env.PORTAL_AUDIT_HYDRATION_TRACE === '1' && requestedMode === 'isolated_preview';
 const runStartedAt = Date.now();
 let deadlineAt = runStartedAt + 25 * 60_000;
 let trustedOrigin = null;
@@ -698,6 +700,7 @@ async function auditRoute(
   options = {}
 ) {
   const page = await context.newPage();
+  if (traceHydration) await page.addInitScript(installPortalHydrationTrace);
   const startedAt = Date.now();
   const consoleErrors = [];
   let environmentalConsoleErrorCount = 0;
@@ -844,6 +847,31 @@ async function auditRoute(
           ...rowInput,
           pageErrors: uniqueDiagnostics([...rowInput.pageErrors, ...dataRequests.abortedErrors]),
         });
+    if (traceHydration && row.pageErrors.some((message) => /Minified React error #418|Hydration failed/i.test(message))) {
+      const trace = await page.evaluate(() => window.__waPortalHydrationTrace ?? null).catch(() => null);
+      if (trace) {
+        const safePath = (pathname) => {
+          if (typeof pathname !== 'string' || !pathname.startsWith('/')) return null;
+          try {
+            return canonicalPathname(sanitizeAuditUrl(new URL(pathname, trustedOrigin).toString(), allDynamicPatterns));
+          } catch {
+            return null;
+          }
+        };
+        console.error('[portal-hydration-structure]', JSON.stringify({
+          role,
+          viewport: viewportName,
+          path: safePath(artifactPath),
+          initialPathname: safePath(trace.initialPathname),
+          errorPathname: safePath(trace.errorPathname),
+          firstShellPathname: safePath(trace.firstShellPathname),
+          lastShellPathname: safePath(trace.lastShellPathname),
+          first: trace.first,
+          recent: trace.recent,
+          atError: trace.atError,
+        }));
+      }
+    }
     const discoveredRoutes = row.ok
       ? resolveDynamicRouteCandidates({
           hrefPaths: inspection.hrefPaths,

@@ -181,6 +181,17 @@ export default function WorkspaceShell({
   // nav hrefs are locale-less (/admin) — strip the active locale so active-route
   // matching (and the crimson active rail item) works across every portal.
   const rawPathname = usePathname() ?? '';
+  // The trusted Preview audit installs this trace before page scripts. Record
+  // the first client render's hook value without changing hydrated markup.
+  if (typeof window !== 'undefined') {
+    const trace = (window as Window & {
+      __waPortalHydrationTrace?: { firstShellPathname?: string; lastShellPathname?: string };
+    }).__waPortalHydrationTrace;
+    if (trace) {
+      trace.firstShellPathname ??= rawPathname;
+      trace.lastShellPathname = rawPathname;
+    }
+  }
   const pathname =
     rawPathname === `/${locale}`
       ? '/'
