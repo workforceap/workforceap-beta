@@ -173,6 +173,7 @@ vi.mock('@/lib/i18n/config', () => {
   return {
     WAP_LOCALE_COOKIE: 'wap_locale',
     WAP_LOCALE_HEADER: 'x-wap-locale',
+    WAP_EXPLICIT_LOCALE_HEADER: 'x-wap-explicit-locale',
     isAppLocale: vi.fn(() => false),
     isLocaleBypassPath: vi.fn(() => false),
     isLocaleableMarketingPath: vi.fn(() => false),
