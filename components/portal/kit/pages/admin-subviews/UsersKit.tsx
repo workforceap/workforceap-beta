@@ -10,6 +10,7 @@ import { PageOpener } from '@/components/portal/kit/PageOpener';
 import { DataTable, type Column } from '@/components/portal/kit/DataTable';
 import { KitTableToolbar } from '@/components/portal/kit/KitTableToolbar';
 import { KitRowMenu, type KitRowMenuItem } from '@/components/portal/kit/KitRowMenu';
+import { QuickCreateUserForm } from '@/components/admin/QuickCreateUserForm';
 import { StatusTag } from '@/components/portal/kit/StatusTag';
 import { Avatar } from '@/components/portal/kit/Avatar';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
@@ -44,6 +45,8 @@ export interface UsersKitProps {
   currentUserId?: string;
   /** Super admins may change roles and delete accounts. */
   canManageRoles?: boolean;
+  /** Render the quick-create account form under the roster (WAP-193). */
+  quickCreate?: boolean;
 }
 
 const manageHref = (row: UserRow) => `/admin/users?ui=legacy&search=${encodeURIComponent(row.email)}`;
@@ -70,6 +73,7 @@ export function UsersKit({
   roleFilter = '',
   currentUserId,
   canManageRoles = false,
+  quickCreate = false,
 }: UsersKitProps) {
   const router = useRouter();
   const { query, search, navigate, pending } = useDirectoryNavigation(searchQuery);
@@ -292,6 +296,11 @@ export function UsersKit({
         emptyTitle={pending ? 'Searching…' : hasQuery ? 'No matching staff accounts' : 'No staff accounts yet'}
         emptyDescription={hasQuery ? 'Try a different name, email, or role.' : 'Invite an admin or counselor to get started.'}
       />
+      {quickCreate ? (
+        <section aria-label="Create an account" style={{ marginTop: 24 }}>
+          <QuickCreateUserForm canManageRoles={canManageRoles} />
+        </section>
+      ) : null}
     </DesignSurface>
   );
 }
