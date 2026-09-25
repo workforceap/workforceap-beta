@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
@@ -8,6 +9,7 @@ import {
   type Column,
   type KpiItem,
 } from '@/components/portal/kit';
+import { EmailCronRowActions } from './EmailCronRowActions';
 
 /**
  * Email & cron management — automated email/workflow jobs rendered as a dense
@@ -20,7 +22,9 @@ import {
  * onto an Astryx Token (Success=green, Failed=red, Disabled=gray,
  * Pending=blue). All aggregation happens in the page loader and lands here
  * as plain data. DataTable mobile="cards" so the wide table stacks instead
- * of squishing.
+ * of squishing. With `manageable`, each row gets Enable/Disable, Dry run and
+ * Send now (EmailCronRowActions), which used to live only on ?ui=legacy
+ * (WAP-193).
  */
 
 /**
@@ -43,6 +47,8 @@ export interface EmailCronRow {
   /** Relative last-run caption (e.g. "3h ago") or "—" when never run. */
   lastRun: string;
   status: EmailCronDisplayStatus;
+  /** Registry enabled flag (drives the Enable/Disable action). */
+  enabled?: boolean;
 }
 
 export interface EmailCronsKitProps {
@@ -55,6 +61,10 @@ export interface EmailCronsKitProps {
   failing: number;
   /** Relative caption of the most recent run across all jobs, or "—". */
   lastRun: string;
+  /** Per-row Enable/Disable, Dry run and Send now. */
+  manageable?: boolean;
+  /** Optional notice under the opener (e.g. CRON_SECRET missing). */
+  notice?: ReactNode;
 }
 
 const STATUS_TOKEN_COLOR: Record<EmailCronDisplayStatus, TokenColor> = {
@@ -70,7 +80,12 @@ export function EmailCronsKit({
   enabled,
   failing,
   lastRun,
+  manageable = false,
+  notice,
 }: EmailCronsKitProps) {
+  const actions = (row: EmailCronRow) => (
+    <EmailCronRowActions id={row.id} name={row.job} enabled={row.enabled ?? row.status !== 'Disabled'} />
+  );
   const kpis: KpiItem[] = [
     { label: 'Total Jobs', value: totalJobs },
     { label: 'Enabled', value: enabled },
@@ -102,6 +117,9 @@ export function EmailCronsKit({
       render: (row) => <Token label={row.status} size="sm" color={STATUS_TOKEN_COLOR[row.status]} />,
     },
   ];
+  if (manageable) {
+    columns.push({ key: 'actions', header: 'Actions', render: actions });
+  }
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
@@ -111,6 +129,8 @@ export function EmailCronsKit({
         lede="Automated email & workflow jobs"
       />
 
+      {notice}
+
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />
       </div>
@@ -119,7 +139,7 @@ export function EmailCronsKit({
         columns={columns}
         rows={jobs}
         rowKey={(row) => row.id}
-        minWidth={640}
+        minWidth={manageable ? 900 : 640}
         mobile="cards"
         cardRender={(row) => (
           <Card>
@@ -174,6 +194,7 @@ export function EmailCronsKit({
                 Last run <b style={{ color: 'var(--wa-text)' }}>{row.lastRun}</b>
               </span>
             </div>
+            {manageable ? <div style={{ marginTop: 12 }}>{actions(row)}</div> : null}
           </Card>
         )}
         emptyTitle="No email crons registered"
