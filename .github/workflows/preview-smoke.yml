@@ -1,7 +1,7 @@
 name: Preview Smoke
 
-# WAP-202: load the running app on every Vercel Preview deployment before it
-# can reach production.
+# WAP-202: load the running app on every Vercel Preview deployment. The check
+# reports on the deployed commit; it is not required, so it blocks nothing yet.
 #
 # CI builds the app but never serves it, so a build can be green while the
 # deployed app 500s (a missing env var, a DB-dependent layout, a runtime-only
@@ -24,7 +24,14 @@ name: Preview Smoke
 # Vercel Deployment Protection: if previews are protected, set the repository
 # secret VERCEL_AUTOMATION_BYPASS_SECRET (Vercel > Project > Settings >
 # Deployment Protection > Protection Bypass for Automation). Without it, a
-# protected preview is skipped with a notice and no status is posted.
+# protected preview is not probed and the run posts an `error` status that
+# says so (WAP-222): a skipped smoke must never read as a pass or as nothing.
+#
+# Security: deployment_status runs this file as it exists at the deployed
+# commit, with repository secrets. The boundary is Vercel Git Fork Protection
+# (Vercel builds no fork commit without approval); nothing in this file can
+# replace that. The token that can write statuses is scoped to the one step
+# that posts the status.
 #
 # Which previews: vercel.json's ignoreCommand builds Preview only for
 # `preview`, `claude/*`, `codex/*`, `feature/portal-*` and `feature/astro-*`.
@@ -39,7 +46,9 @@ permissions:
   statuses: write
 
 concurrency:
-  group: preview-smoke-${{ github.event.deployment.sha }}
+  # Keyed on the environment too: a Production deployment_status for the same
+  # commit (whose job is skipped) must not cancel an in-flight Preview smoke.
+  group: preview-smoke-${{ github.event.deployment.environment }}-${{ github.event.deployment.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -53,11 +62,11 @@ jobs:
       github.event.deployment.environment == 'Preview' &&
       github.event.deployment.creator.login == 'vercel[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Worst case: 9 probes x (3 attempts x 20 s + 2 x 5 s retry delay) = 630 s.
+    timeout-minutes: 15
     env:
       DEPLOY_SHA: ${{ github.event.deployment.sha }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout the deployed commit (scripts only)
@@ -92,8 +101,8 @@ jobs:
           set +e
           node scripts/preview-smoke.mjs
           rc=$?
-          # 3 = preview is behind Vercel protection and no bypass secret is set:
-          # a clean skip (the script already printed a ::notice::).
+          # 3 = preview is behind Vercel protection and no bypass secret is set.
+          # The job succeeds; the status step posts `error` saying why.
           if [ "$rc" -eq 3 ]; then exit 0; fi
           exit "$rc"
 
@@ -107,10 +116,11 @@ jobs:
           retention-days: 14
 
       # One commit status, context "Preview smoke", on the deployed commit so
-      # the PR shows it. Skipped runs (protected preview, no secret) post none.
+      # the PR shows it, including when the preview could not be probed.
       - name: Post "Preview smoke" commit status
-        if: always() && steps.smoke.outputs.result != 'protected'
+        if: always()
         env:
+          GH_TOKEN: ${{ github.token }}
           RESULT: ${{ steps.smoke.outputs.result }}
           FAILED: ${{ steps.smoke.outputs.failed }}
         shell: bash
@@ -119,6 +129,7 @@ jobs:
           case "$RESULT" in
             pass) state=success; description="All preview probes passed" ;;
             fail) state=failure; description="Failed: ${FAILED:-see run}" ;;
+            protected) state=error; description="Not probed: preview is protected; set VERCEL_AUTOMATION_BYPASS_SECRET" ;;
             *)    state=error;   description="Preview smoke did not complete" ;;
           esac
           gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${DEPLOY_SHA}" \

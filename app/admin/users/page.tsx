@@ -205,6 +205,7 @@ export default async function AdminUsersPage({
       roleFilter={roleFilter}
       currentUserId={user.id}
       canManageRoles={canManageRoles}
+      quickCreate
     />
   );
 }

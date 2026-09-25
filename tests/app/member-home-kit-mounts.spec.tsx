@@ -28,6 +28,7 @@ vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: st
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: vi.fn(() => false) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
+vi.mock('@/lib/auth/memberDashboardAccess', () => ({ getMemberDashboardAccess: vi.fn() }));
 vi.mock('@/lib/auth/roles', () => ({
   canBypassMemberAssessment: vi.fn(async () => false),
   getProfileRole: vi.fn(),
@@ -53,6 +54,7 @@ import DashboardPage from '@/app/(portal)/dashboard/page';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { canBypassMemberAssessment, isSuperAdmin } from '@/lib/auth/roles';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { loadMemberDashboardHome } from '@/lib/member/loadMemberDashboardHome';
@@ -124,6 +126,11 @@ describe('kit /dashboard mounts the four WAP-194 pieces', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({ id: 'member-1', email: 'maya@example.org' } as never);
+    vi.mocked(getMemberDashboardAccess).mockResolvedValue({
+      portalRoles: [{ role: 'member', roleLabel: 'Member', homeHref: '/dashboard' }],
+      superAdmin: false,
+      redirectTo: null,
+    });
     vi.mocked(loadMemberDashboardHome).mockResolvedValue(homeView());
     vi.mocked(getTourOffer).mockResolvedValue({ key: 'member.home', enabled: false, offer: false });
     vi.mocked(canBypassMemberAssessment).mockResolvedValue(false);

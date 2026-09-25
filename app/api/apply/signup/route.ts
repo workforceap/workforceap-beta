@@ -8,7 +8,6 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabaseCookieOptions } from '@/lib/supabaseCookieOptions';
 import { prisma } from '@/lib/db/prisma';
-import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
@@ -105,31 +104,6 @@ function isAppEmailCollision(error: unknown): boolean {
     : undefined;
   const fields = Array.isArray(target) ? target : typeof target === 'string' ? [target] : [];
   return fields.some((field) => typeof field === 'string' && field.toLowerCase().includes('email'));
-}
-
-async function compensateFreshApplySignupAuthIdentity(input: {
-  userId: string;
-  requestedEmail: string;
-}): Promise<'deleted' | 'guard_failed' | 'delete_failed'> {
-  try {
-    const admin = getSupabaseAdmin();
-    const { data, error } = await admin.auth.admin.getUserById(input.userId);
-    const providerUser = data?.user;
-    const providerEmail = providerUser?.email?.trim().toLowerCase();
-    if (
-      error ||
-      !providerUser ||
-      providerUser.id !== input.userId ||
-      providerEmail !== input.requestedEmail.trim().toLowerCase()
-    ) {
-      return 'guard_failed';
-    }
-
-    const { error: deleteError } = await admin.auth.admin.deleteUser(input.userId);
-    return deleteError ? 'delete_failed' : 'deleted';
-  } catch {
-    return 'delete_failed';
-  }
 }
 
 const applySignupSchema = z.object({
@@ -586,10 +560,9 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         { status: 400 }
       );
     }
-    // Supabase only returns a non-empty identities array for a newly created
-    // account. Treat an absent/empty array as unproven and never compensate it.
-    const createdAuthIdentityThisRequest =
-      Array.isArray(user.identities) && user.identities.length > 0;
+    // Existing unconfirmed Auth users can also return a nonempty identities
+    // array. Neither this response nor an exact ID/email read proves that this
+    // request created the provider identity.
 
     const priorUser = await withDbRetry(() => prisma.$transaction((tx) => tx.user.findUnique({
       where: { id: user.id },
@@ -1000,18 +973,17 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         }
       }
     } catch (dbError) {
-      if (createdAuthIdentityThisRequest && isAppEmailCollision(dbError)) {
-        const compensation = await compensateFreshApplySignupAuthIdentity({
-          userId: user.id,
-          requestedEmail: email,
-        });
+      if (isAppEmailCollision(dbError)) {
+        // Preserve the Auth identity: signUp can return an existing unconfirmed
+        // user with nonempty identities, so deleting it could remove someone
+        // else's recoverable account. Staff must resolve the app-email conflict.
         captureApiError(
-          new Error('Apply signup app-email collision after Auth creation'),
+          new Error('Apply signup app-email collision after Auth response'),
           {
-            route: 'POST /api/apply/signup#authCompensation',
+            route: 'POST /api/apply/signup#appEmailCollision',
             extra: {
               collision: 'app_email_unique',
-              compensation,
+              auth_identity_preserved: true,
             },
           },
         );

@@ -175,9 +175,14 @@ vi.mock('@/lib/supabase-admin', () => {
     data: { signedUrl: `https://storage.example.test/signed/${path}` },
     error: null,
   }));
+  const download = vi.fn(async () => ({
+    data: { arrayBuffer: async () => new TextEncoder().encode('Synthetic member resume with verified inventory and logistics experience.').buffer },
+    error: null,
+  }));
   return {
     createSignedUrl,
-    getSupabaseAdmin: vi.fn(() => ({ storage: { from: vi.fn(() => ({ createSignedUrl })) } })),
+    download,
+    getSupabaseAdmin: vi.fn(() => ({ storage: { from: vi.fn(() => ({ createSignedUrl, download })) } })),
   };
 });
 
@@ -200,8 +205,9 @@ const tenantScope = (await import('@/lib/tenant/withTenantScope')) as unknown as
   withTenantScope: ReturnType<typeof vi.fn>;
   scopedDb: Record<'user' | 'employer' | 'partner' | 'subgroup', { findMany: ReturnType<typeof vi.fn> }>;
 };
-const { createSignedUrl } = (await import('@/lib/supabase-admin')) as unknown as {
+const { createSignedUrl, download } = (await import('@/lib/supabase-admin')) as unknown as {
   createSignedUrl: ReturnType<typeof vi.fn>;
+  download: ReturnType<typeof vi.fn>;
 };
 const { auditLog } = await import('@/lib/audit');
 const { logAuditEvent } = await import('@/lib/audit/log');
@@ -307,6 +313,27 @@ describe('GET /api/admin/members/[id]/resume-urls', () => {
     expect(createSignedUrl).toHaveBeenCalledTimes(2);
     expect(createSignedUrl).toHaveBeenCalledWith('member-a/resume-original.pdf', 3600);
     expect(createSignedUrl).toHaveBeenCalledWith('member-a/resume-enhanced.txt', 3600);
+  });
+
+  it('does not sign a legacy enhanced draft containing an extraction failure narrative', async () => {
+    signInAs('admin-a');
+    const failedDraft = 'Given the provided information, the "base resume to improve" is a raw PDF stream that cannot be parsed for text content. The enhanced resume will use contact information only.';
+    download.mockResolvedValueOnce({
+      data: { arrayBuffer: async () => new TextEncoder().encode(failedDraft).buffer },
+      error: null,
+    });
+
+    const response = await call('member-a');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      hasOriginal: true,
+      hasEnhanced: false,
+      enhancedUnavailable: true,
+      enhancedUrl: null,
+      enhancedPath: null,
+    });
+    expect(createSignedUrl).toHaveBeenCalledTimes(1);
+    expect(createSignedUrl).toHaveBeenCalledWith('member-a/resume-original.pdf', 3600);
   });
 });
 

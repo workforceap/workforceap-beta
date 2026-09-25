@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import JSZip from 'jszip';
 
 // ─── Mocks ───
 vi.mock('next/server', () => {
@@ -71,6 +72,10 @@ function makeReq(url: string, init?: RequestInit) {
   return new MockNextRequest(url, init);
 }
 
+function storedText(text: string) {
+  return { arrayBuffer: () => Promise.resolve(new TextEncoder().encode(text).buffer) };
+}
+
 describe('GET /api/member/resume', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -107,14 +112,14 @@ describe('GET /api/member/resume', () => {
     vi.mocked(prisma.profile.findUnique).mockResolvedValue({
       userId: 'user-123',
       resumeOriginalPath: 'user-123/original.pdf',
-      resumeEnhancedPath: 'user-123/enhanced.pdf',
+      resumeEnhancedPath: 'user-123/enhanced.txt',
     } as any);
 
     const sharedMock = {
       createSignedUrl: vi.fn()
         .mockResolvedValueOnce({ data: { signedUrl: 'https://signed/original' }, error: null })
         .mockResolvedValueOnce({ data: { signedUrl: 'https://signed/enhanced' }, error: null }),
-      download: vi.fn().mockResolvedValue({ data: { text: vi.fn().mockResolvedValue('enhanced text') }, error: null }),
+      download: vi.fn().mockResolvedValue({ data: storedText('Synthetic member resume with verified work and inventory skills.'), error: null }),
     };
     const mockFrom = vi.fn(() => sharedMock);
     vi.mocked(getSupabaseAdmin).mockReturnValue({ storage: { from: mockFrom } } as any);
@@ -126,7 +131,7 @@ describe('GET /api/member/resume', () => {
     expect(json.hasEnhanced).toBe(true);
     expect(json.originalUrl).toBe('https://signed/original');
     expect(json.enhancedUrl).toBe('https://signed/enhanced');
-    expect(json.enhancedText).toBe('enhanced text');
+    expect(json.enhancedText).toBe('Synthetic member resume with verified work and inventory skills.');
   });
 
   it('returns local metadata without signing or downloading files during a read-only audit', async () => {
@@ -244,6 +249,7 @@ describe('GET /api/member/resume', () => {
 
     const mockFrom = vi.fn(() => ({
       createSignedUrl: vi.fn().mockResolvedValue({ data: null, error: { message: 'Bucket not found' } }),
+      download: vi.fn().mockResolvedValue({ data: storedText('Synthetic member resume with verified work and inventory skills.'), error: null }),
     }));
     vi.mocked(getSupabaseAdmin).mockReturnValue({ storage: { from: mockFrom } } as any);
 
@@ -261,9 +267,13 @@ describe('GET /api/member/resume', () => {
       resumeEnhancedPath: 'user-123/enhanced.docx',
     } as any);
 
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml', '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>');
+    zip.file('word/document.xml', '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Synthetic candidate with verified inventory and logistics experience.</w:t></w:r></w:p></w:body></w:document>');
+    const docx = await zip.generateAsync({ type: 'uint8array' });
     const mockFrom = vi.fn(() => ({
       createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'https://signed' }, error: null }),
-      download: vi.fn().mockResolvedValue({ data: { text: vi.fn().mockResolvedValue('text') }, error: null }),
+      download: vi.fn().mockResolvedValue({ data: { arrayBuffer: async () => docx.buffer }, error: null }),
     }));
     vi.mocked(getSupabaseAdmin).mockReturnValue({ storage: { from: mockFrom } } as any);
 

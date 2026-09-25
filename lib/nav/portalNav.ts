@@ -309,10 +309,6 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     aliases: ['/profile', '/account', '/dashboard/settings'],
     tourTarget: 'tour-profile',
   },
-  // "My Account" is the member's home base — it lands on the dashboard, not on
-  // the profile/settings page (which surprised members). Account settings stay
-  // reachable via "Profile & settings" above (/dashboard/profile #settings).
-  { href: '/dashboard', label: 'My account', group: 'manage', tab: 'me', Icon: Home, exact: true },
 ];
 
 export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [

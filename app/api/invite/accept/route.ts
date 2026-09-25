@@ -13,7 +13,8 @@ import { invitationRoleLabel, inviteAcceptLoginRedirect } from '@/lib/invitation
 import { checkInviteAcceptRateLimit } from '@/lib/rate-limit';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
-import { Prisma } from '@prisma/client';
+import { stampCreatedAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
+import { Prisma, type InvitationRole } from '@prisma/client';
 import {
   claimPendingInvitationForAccept,
   InvitationClaimError,
@@ -30,10 +31,11 @@ import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentA
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 type InviteTx = Prisma.TransactionClient;
+type AuthCreateResult = Awaited<ReturnType<ReturnType<typeof getSupabaseAdmin>['auth']['admin']['createUser']>>;
 type AcceptInvitation = {
   id: string;
   email: string;
-  role: string;
+  role: InvitationRole;
   invitedById: string;
   subgroupId: string | null;
   partnerId: string | null;
@@ -580,15 +582,14 @@ async function createNewUserAndAccept(
     );
   }
 
-  let authData: Awaited<ReturnType<typeof supabase.auth.admin.createUser>>['data'];
-  let authError: Awaited<ReturnType<typeof supabase.auth.admin.createUser>>['error'];
+  let authCreateResult: AuthCreateResult;
   try {
-    ({ data: authData, error: authError } = await supabase.auth.admin.createUser({
+    authCreateResult = await supabase.auth.admin.createUser({
       email: inviteEmail,
       password,
       email_confirm: true,
       user_metadata: { full_name: fullName, phone },
-    }));
+    });
   } catch (err) {
     inviteAcceptLog('supabase:create_user_threw', { invitationId: invitation.id, err });
     console.error('[createNewUserAndAccept] createUser threw:', err);
@@ -600,6 +601,8 @@ async function createNewUserAndAccept(
       { status: 500 }
     );
   }
+
+  const { data: authData, error: authError } = authCreateResult;
 
   if (authError) {
     if (authError.message.includes('already') || authError.code === 'user_already_exists') {
@@ -637,7 +640,7 @@ async function createNewUserAndAccept(
   }
 
   inviteAcceptLog('supabase:user_created', { invitationId: invitation.id });
-  return finishNewUserDbSetup(authUser.id, invitation, fullName, phone, request);
+  return finishNewUserDbSetup(authUser.id, invitation, fullName, phone, request, authCreateResult);
 }
 
 async function finishNewUserDbSetup(
@@ -645,7 +648,8 @@ async function finishNewUserDbSetup(
   invitation: AcceptInvitation,
   fullName: string,
   phone: string | null,
-  request: NextRequest
+  request: NextRequest,
+  createdAuthResult?: AuthCreateResult,
 ) {
   // Inviter org first, then request host / x-wap-org-id, default last.
   // Multi-tenant invites were broken when every accept landed in the
@@ -674,6 +678,16 @@ async function finishNewUserDbSetup(
       },
       { status: 500 }
     );
+  }
+
+  // The duplicate-auth retry above passes no createdAuthResult, so its existing
+  // identity and app metadata are never restamped from this invitation.
+  if (createdAuthResult) {
+    await stampCreatedAuthUserProvisionIntent(getSupabaseAdmin(), createdAuthResult, {
+      role: invitation.role,
+      organizationId,
+      source: 'invitation_accept',
+    });
   }
 
   const invitationId = invitation.id;

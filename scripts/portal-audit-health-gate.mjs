@@ -78,7 +78,8 @@ const outcome = await waitForTrustedHealth({
 if (outcome.ok) {
   console.log(
     `[health-gate] OK — target serves ${outcome.version ?? 'n/a'} on Supabase project ` +
-      `${outcome.supabaseRef ?? 'n/a'} after ${outcome.attempts} attempt(s).`,
+      `${outcome.supabaseRef ?? 'n/a'} with Prisma ${outcome.prismaProject ?? 'n/a'} ` +
+      `after ${outcome.attempts} attempt(s).`,
   );
   process.exit(0);
 }

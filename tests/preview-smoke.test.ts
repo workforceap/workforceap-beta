@@ -189,4 +189,24 @@ describe('runPreviewSmoke', () => {
     expect(local.some((r) => 'x-vercel-protection-bypass' in r.headers)).toBe(false);
     expect(isVercelDeploymentOrigin('https://evil.example.com')).toBe(false);
   });
+
+  it('times out a response whose body stalls after the headers (WAP-222)', async () => {
+    const stalled = (async (url: string, init?: { signal?: AbortSignal }) => {
+      const path = new URL(url).pathname;
+      if (path !== '/api/health') return fakeFetch(healthyPreview())(url, init as never);
+      return {
+        status: 200,
+        headers: new Headers(),
+        text: () =>
+          new Promise<string>((_, reject) => {
+            init?.signal?.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+          }),
+      };
+    }) as never;
+
+    const outcome = await runPreviewSmoke({ origin: ORIGIN, probes, fetchImpl: stalled, timeoutMs: 20, attempts: 1, retryDelayMs: 0 });
+
+    expect(outcome.result).toBe('fail');
+    expect(outcome.results.find((r) => r.name === 'liveness')?.reason).toBe('timed out after 20ms');
+  });
 });

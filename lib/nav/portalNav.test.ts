@@ -38,6 +38,15 @@ test('the member primary rail is exactly Home, My program, Job board, AI Career 
   assert.deepEqual(primary.map((entry) => entry.label), ['Home', 'My program', 'Job board', 'AI Career Tools', 'Messages']);
 });
 
+test('each member rail destination appears once; account settings stays reachable', () => {
+  for (const items of [MEMBER_PORTAL_NAV_ITEMS, MEMBER_PORTAL_NAV_ITEMS_I18N]) {
+    const hrefs = items.map((item) => item.href);
+    assert.equal(new Set(hrefs).size, hrefs.length, 'duplicate member href');
+    assert.equal(items.find((item) => item.href === '/dashboard')?.group, 'primary');
+    assert.ok(items.some((item) => item.href === '/dashboard/profile'));
+  }
+});
+
 test('Job board and AI Career Tools stay in the member primary rail', () => {
   const jobs = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/jobs');
   const tools = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/ai-tools');

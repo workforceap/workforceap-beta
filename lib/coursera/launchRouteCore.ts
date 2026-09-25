@@ -39,7 +39,14 @@ type ApprovedCurriculumTrack = {
 export type CourseraLaunchDependencies<ResponseLike, ProgramType extends ProgramWithCourses> = {
   getUser: () => Promise<CourseraLaunchUser | null>;
   findUser: (userId: string) => Promise<DbUser>;
-  resolveActiveProgram: (userId: string, legacyEnrolledProgram: string | null) => Promise<string | null>;
+  /** `requestedProgramSlug` is the `&program=` of the page the member launched
+   *  from; the resolver honors it only for one of the member's own enrollments
+   *  (WAP-196), and otherwise falls back to the primary program. */
+  resolveActiveProgram: (
+    userId: string,
+    legacyEnrolledProgram: string | null,
+    requestedProgramSlug?: string | null,
+  ) => Promise<string | null>;
   findCourse: (args: {
     organizationId: string;
     programSlug: string;
@@ -101,15 +108,22 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
   deps: CourseraLaunchDependencies<ResponseLike, ProgramType>,
 ) {
   return async function courseraLaunchGET(request: Request): Promise<ResponseLike> {
-    const requestedSlug = new URL(request.url).searchParams.get('course')?.trim() || '';
+    const searchParams = new URL(request.url).searchParams;
+    const requestedSlug = searchParams.get('course')?.trim() || '';
+    // The enrollment the member was viewing (a secondary program's My Program
+    // page passes it; WAP-196). Validated by resolveActiveProgram.
+    const requestedProgram = searchParams.get('program')?.trim() || '';
+    // Query string that returns to the same program and course.
+    const backQuery = new URLSearchParams({
+      ...(requestedProgram ? { program: requestedProgram } : {}),
+      ...(requestedSlug ? { course: requestedSlug } : {}),
+    }).toString();
     const user = await deps.getUser();
     if (!user) {
       // Come back to My Program with the course the member clicked, so login
       // does not drop them on the default course.
       const loginUrl = new URL('/login', request.url);
-      const back = requestedSlug
-        ? `/dashboard/program?${new URLSearchParams({ course: requestedSlug })}`
-        : '/dashboard/program';
+      const back = backQuery ? `/dashboard/program?${backQuery}` : '/dashboard/program';
       loginUrl.searchParams.set('redirectTo', back);
       return deps.redirect(loginUrl);
     }
@@ -119,6 +133,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     const launchErrorRedirect = (code: 'curriculum_track_pending' | 'course_not_assigned' | 'launch_failed') => {
       const errorUrl = new URL('/dashboard/training', request.url);
       errorUrl.searchParams.set('error', code);
+      if (requestedProgram) errorUrl.searchParams.set('program', requestedProgram);
       if (requestedSlug) errorUrl.searchParams.set('course', requestedSlug);
       return deps.redirect(errorUrl);
     };
@@ -135,6 +150,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     const enrolledProgram = await deps.resolveActiveProgram(
       user.id,
       dbUser?.enrolledProgram ?? null,
+      requestedProgram || null,
     );
     const curriculumVersion = enrolledProgram
       ? dbUser?.courseEnrollments?.find(

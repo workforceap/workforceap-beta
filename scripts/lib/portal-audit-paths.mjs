@@ -51,7 +51,6 @@ export const STATIC_PATHS = {
     '/dashboard/learning/find-your-career',
     '/dashboard/learning/interest-profiler',
     '/dashboard/learning/wioa-qualification',
-    '/dashboard/mentor',
     '/dashboard/mentors',
     '/dashboard/messages',
     '/dashboard/missions',
@@ -59,8 +58,6 @@ export const STATIC_PATHS = {
     '/dashboard/referrals',
     '/dashboard/profile',
     '/dashboard/program',
-    '/dashboard/program/employer-screening',
-    '/dashboard/program/start',
     '/dashboard/readiness',
     '/dashboard/resources',
     '/dashboard/resume',
@@ -74,7 +71,6 @@ export const STATIC_PATHS = {
     '/admin/ai-tools',
     '/admin/analytics/ai-efficacy',
     '/admin/assessments',
-    '/admin/audit-logs',
     '/admin/blog',
     '/admin/blog/ai',
     '/admin/blog/new',
@@ -89,9 +85,7 @@ export const STATIC_PATHS = {
     '/admin/coursera/health',
     '/admin/coursera/provisioning',
     '/admin/crons',
-    '/admin/csp-report',
     '/admin/dashboard',
-    '/admin/data-retention',
     '/admin/diagnostics',
     '/admin/email-crons',
     '/admin/email-templates',
@@ -112,7 +106,6 @@ export const STATIC_PATHS = {
     '/admin/members/merge',
     '/admin/members/new',
     '/admin/mentors',
-    '/admin/messages',
     '/admin/outcomes/methodology',
     '/admin/overview',
     '/admin/partners',
@@ -140,7 +133,6 @@ export const STATIC_PATHS = {
     '/admin/testimonials',
     '/admin/users',
     '/admin/users/deleted',
-    '/admin/webhook-events',
     '/admin/weekly-recap',
     '/admin/what-workforceap-does',
     '/admin/wioa-screening',
@@ -302,6 +294,9 @@ export const SAFE_ACTION_CONTRACTS = {
       kind: 'read_only_navigation',
       sourcePath: '/employer',
       targetPath: '/employer/jobs',
+      // The jobs loading skeleton has navigation controls but no page heading.
+      // Wait for the rendered destination before checking the action.
+      targetReadySelector: '.portal-page-frame h1:visible',
       required: true,
     },
     {
@@ -319,6 +314,8 @@ export const SAFE_ACTION_CONTRACTS = {
       kind: 'read_only_navigation',
       sourcePath: '/partner',
       targetPath: '/partner/referred-members',
+      // The URL can change while the source H1 remains during an RSC navigation.
+      targetReadySelector: '.portal-page-frame h1:visible',
       required: true,
     },
     {
@@ -336,6 +333,8 @@ export const SAFE_ACTION_CONTRACTS = {
       kind: 'read_only_navigation',
       sourcePath: '/counselor/today',
       targetPath: '/counselor/students',
+      // Wait for the roster H1 after client navigation replaces the Today view.
+      targetReadySelector: '.portal-page-frame h1:visible',
       required: true,
     },
     {
@@ -376,12 +375,25 @@ export const ATTENDED_ACTION_GATES = {
 };
 
 /**
- * App Router pages that intentionally redirect and therefore are inventory
- * entries, not browser-audited destinations. Every entry must name the
- * immediate target and a durable reason for keeping the alias.
+ * App Router pages that redirect for the audited fixture (including permanent
+ * aliases and explicit role/data gates). These are checked as exact redirects,
+ * not counted as independently rendered static pages. A fixtureCondition is
+ * verified against the authenticated role before its redirect can pass.
  */
 export const REDIRECT_ONLY_PATHS = {
   member: [
+    {
+      path: '/dashboard/mentor',
+      target: '/mentor/apply',
+      reason: 'member_without_mentor_record',
+      fixtureCondition: 'member_without_mentor',
+    },
+    ...['/dashboard/program/start', '/dashboard/program/employer-screening'].map((path) => ({
+      path,
+      target: '/dashboard/program',
+      reason: 'member_without_active_program_slug',
+      fixtureCondition: 'member_without_active_program_slug',
+    })),
     {
       path: '/dashboard/ai-tools/application-tracker',
       target: '/dashboard/job-applications',
@@ -452,6 +464,18 @@ export const REDIRECT_ONLY_PATHS = {
     },
   ],
   admin: [
+    ...[
+      '/admin/audit-logs',
+      '/admin/csp-report',
+      '/admin/data-retention',
+      '/admin/messages',
+      '/admin/webhook-events',
+    ].map((path) => ({
+      path,
+      target: '/admin',
+      reason: 'super_admin_only_for_regular_admin_fixture',
+      fixtureCondition: 'regular_admin',
+    })),
     {
       // Members → Training progress listed the same members a fourth time.
       // The training preset of the one admin roster owns that view now
@@ -516,10 +540,10 @@ export const REDIRECT_ONLY_PATHS = {
       reason: 'renamed_route_alias',
     },
     {
-      // Signed-in partners following an old link land on the public sign-up
-      // page instead of the portal 404 (partner audit 2026-09-20).
+      // Next redirects this legacy URL before the protected partner layout.
+      // The public Astro page owns the actual registration form.
       path: '/partner/signup',
-      target: '/partner-signup',
+      target: '/partners#partner-signup',
       reason: 'legacy_alias',
     },
   ],
@@ -555,6 +579,12 @@ export const SECTION_LOGIN_REDIRECT = {
   employer: '/employer',
   partner: '/partner',
   counselor: '/counselor',
+};
+
+/** Access probes use the rendered counselor landing, not its redirect-only root. */
+export const ROLE_ACCESS_ROOTS = {
+  ...SECTION_LOGIN_REDIRECT,
+  counselor: '/counselor/today',
 };
 
 /**

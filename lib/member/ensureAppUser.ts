@@ -3,11 +3,13 @@ import { withDbRetry, isConnectionAcquisitionError } from '@/lib/db/withDbRetry'
 import { tryCurrentRequestHeaders } from '@/lib/tenant/currentRequestHeaders';
 import type { HeadersLike } from '@/lib/tenant/resolveOrgFromRequest';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
+import { ROLE_PRECEDENCE, normalizeRoleName } from '@/lib/auth/roleAccess';
 
 type AuthUser = {
   id: string;
   email?: string | null;
   user_metadata?: Record<string, unknown> | null;
+  app_metadata?: Record<string, unknown> | null;
 };
 
 export type EnsureAppUserOptions = {
@@ -19,7 +21,7 @@ export type EnsureAppUserOptions = {
   readOnlyAudit?: boolean;
 };
 
-function isUniquePkError(err: unknown): boolean {
+function isUniqueConstraintError(err: unknown): boolean {
   return (
     typeof err === 'object' &&
     err !== null &&
@@ -40,11 +42,14 @@ function isUniquePkError(err: unknown): boolean {
  *
  * Given an authenticated Supabase user, this provisions the missing app rows
  * (a `users` row in the request org — or default `workforceap` on the
- * canonical host — with role 'member', plus a minimal `profiles` row)
- * in one transaction. It is idempotent — a no-op when the rows already
- * exist — and tolerates concurrent creation (duplicate-PK from a racing
- * request is treated as success). Existing `users.organizationId` is
- * never overwritten.
+ * canonical host — with role 'member', plus a minimal `profiles` row).
+ * When an existing user has a non-member role or portal association but no
+ * profile, it restores that profile without granting a baseline member role.
+ * The write is one transaction. It is idempotent — a no-op when the rows already
+ * exist — and tolerates concurrent creation only after confirming that this
+ * Auth ID now has both app rows. A unique-email collision with another Auth
+ * ID must not be mistaken for a successful provision. Existing
+ * `users.organizationId` is never overwritten.
  *
  * Writes are wrapped with withDbRetry using isConnectionAcquisitionError so a
  * transient pooler blip while *acquiring* a connection is retried, but an
@@ -58,7 +63,7 @@ export async function ensureAppUserProvisioned(
   const existing = await withDbRetry(() =>
     prisma.user.findUnique({
       where: { id: user.id },
-      select: { id: true, profile: { select: { userId: true } } },
+      select: { id: true, organizationId: true, profile: { select: { userId: true } } },
     }),
   );
   if (existing && existing.profile) return;
@@ -68,11 +73,11 @@ export async function ensureAppUserProvisioned(
   const fullName =
     (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim()) ||
     'Member';
-  const organizationId = await withDbRetry(async () =>
+  const organizationId = existing?.organizationId ?? await withDbRetry(async () =>
     resolveProvisionOrganizationId({
       explicitOrganizationId: options.organizationId,
       headers: options.headers ?? (await tryCurrentRequestHeaders()),
-      metadata: user.user_metadata,
+      appMetadata: user.app_metadata,
     }),
   );
 
@@ -86,28 +91,60 @@ export async function ensureAppUserProvisioned(
             update: {},
           });
 
-          let memberRole = await tx.role.findUnique({ where: { name: 'member' } });
-          if (!memberRole) {
-            memberRole = await tx.role.create({ data: { name: 'member' } });
-          }
-          // userId+roleId is unique; skipDuplicates makes the grant idempotent.
-          await tx.userRole.createMany({
-            data: [{ userId: user.id, roleId: memberRole.id }],
-            skipDuplicates: true,
+          // A missing profile is not evidence that this is a member. Existing
+          // staff/partner/employer users may still have their role row or portal
+          // association, so read those inside the write transaction.
+          const account = await tx.user.findUniqueOrThrow({
+            where: { id: user.id },
+            select: {
+              userRoles: { select: { role: { select: { name: true } } } },
+              employer: { select: { id: true } },
+              partnerUser: { select: { id: true } },
+              counselorProfile: { select: { id: true } },
+            },
           });
+          const roleNames = account.userRoles.map((entry) => normalizeRoleName(entry.role.name));
+          if (account.employer) roleNames.push('employer');
+          if (account.partnerUser) roleNames.push('partner');
+          if (account.counselorProfile) roleNames.push('counselor');
+          const nonMemberRole = ROLE_PRECEDENCE.find(
+            (role) => role !== 'member' && roleNames.includes(role),
+          );
+
+          if (!nonMemberRole) {
+            let memberRole = await tx.role.findUnique({ where: { name: 'member' } });
+            if (!memberRole) {
+              memberRole = await tx.role.create({ data: { name: 'member' } });
+            }
+            // userId+roleId is unique; skipDuplicates makes the grant idempotent.
+            await tx.userRole.createMany({
+              data: [{ userId: user.id, roleId: memberRole.id }],
+              skipDuplicates: true,
+            });
+          }
 
           await tx.profile.upsert({
             where: { userId: user.id },
-            create: { userId: user.id },
+            create: { userId: user.id, role: nonMemberRole ?? 'member' },
             update: {},
           });
         }),
       { shouldRetry: isConnectionAcquisitionError },
     );
   } catch (err) {
-    // A concurrent request may have provisioned the rows between our read and
-    // this write (duplicate-PK). Treat that as success.
-    if (isUniquePkError(err)) return;
+    // P2002 may be a concurrent provision for this Auth ID, or an email already
+    // owned by a different Auth ID. Only the committed same-ID User + Profile
+    // proves that the former case completed successfully.
+    if (isUniqueConstraintError(err)) {
+      const committed = await withDbRetry(() =>
+        prisma.user.findUnique({
+          where: { id: user.id },
+          select: { id: true, profile: { select: { userId: true } } },
+        }),
+      );
+      if (committed?.id === user.id && committed.profile?.userId === user.id) return;
+      throw new Error('APP_USER_PROVISION_IDENTITY_CONFLICT');
+    }
     throw err;
   }
 }

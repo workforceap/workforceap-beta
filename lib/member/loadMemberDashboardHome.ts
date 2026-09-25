@@ -30,7 +30,7 @@ import {
   memberPointsSpark,
   type MemberStatSpark,
 } from '@/lib/member/memberPointsTrend';
-import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
+import { MEMBER_PROGRAM_HREF, memberProgramHrefFor, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { buildNextBestActions, type NextBestAction } from '@/lib/member/nextBestActions';
 import { recommendMemberTool, type MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
@@ -691,25 +691,18 @@ function persistedAction(row: DashboardUserRow['nextBestActions'][number]): Next
   };
 }
 
-/** Where program links go while the home describes a non-primary enrollment. */
-export const SECONDARY_PROGRAM_HREF = '/dashboard/learning';
-
 /**
  * A computed training step ("Continue training: …", "Launch your first
- * course") opens My Program, which shows the primary program whatever
- * `?program=` says (WAP-196). On a secondary program's view it would name
- * this program's course and open another program's page, so it points at the
- * Learning hub instead, and says so. Every other step is about the member,
- * not the program, and is left alone; so are persisted (staff-written) rows.
+ * course") opens My Program. On a secondary program's view it must open that
+ * program, so it carries `?program=` (WAP-196; before, it went to the
+ * Learning hub because My Program ignored the parameter). Every other step is
+ * about the member, not the program, and is left alone; so are persisted
+ * (staff-written) rows.
  */
-export function secondaryProgramAction(action: NextBestAction): NextBestAction {
+export function secondaryProgramAction(action: NextBestAction, programSlug: string): NextBestAction {
   if (hrefPath(action.href) !== MEMBER_PROGRAM_HREF) return action;
-  return {
-    ...action,
-    href: SECONDARY_PROGRAM_HREF,
-    body: 'Open the Learning hub for learning pathways and program tools.',
-    cta: 'Open Learning hub',
-  };
+  const course = new URL(action.href, 'https://x.invalid').searchParams.get('course');
+  return { ...action, href: memberProgramHrefFor({ program: programSlug, course }) };
 }
 
 /**
@@ -727,13 +720,15 @@ function resolveDashboardHomeActions(
     persisted: DashboardUserRow['nextBestActions'];
     /** Enrolled training has gone quiet (see `shapeHome`); offers the counselor row. */
     trainingStalled?: boolean;
-    /** The home describes a non-primary enrollment (see {@link secondaryProgramAction}). */
-    viewingSecondaryProgram?: boolean;
+    /** Set when the home describes a non-primary enrollment: its program slug
+     *  (see {@link secondaryProgramAction}). */
+    secondaryProgramSlug?: string | null;
   },
 ): { doThisNext: NextBestAction; upNext: NextBestAction[] } {
   const heuristicActions = computeDashboardHomeActions(args);
-  const computed = args.viewingSecondaryProgram
-    ? heuristicActions.map(secondaryProgramAction)
+  const secondarySlug = args.secondaryProgramSlug;
+  const computed = secondarySlug
+    ? heuristicActions.map((action) => secondaryProgramAction(action, secondarySlug))
     : heuristicActions;
   const [firstPersisted, ...otherPersisted] = args.persisted.map(persistedAction);
   const doThisNext: NextBestAction = firstPersisted ?? computed[0]!;
@@ -1044,25 +1039,20 @@ function shapeHome(args: {
   // The cert-path card must name a module, not the hero action: when the top
   // next-best action is the preassessment (or a guide), the program still has a
   // first / next incomplete module to show. `doThisNext` keeps the hero as is.
-  // A WorkforceAP module page opens any of the member's enrollments by its
-  // stored slug (`?program=`). My Program's `?course=` does not: it always
-  // shows the primary program (WAP-196), so a secondary program's Coursera
-  // module goes to the Learning hub rather than to a page that cannot open it.
+  // Both the WorkforceAP module page and My Program open any of the member's
+  // enrollments by its stored slug (`?program=`, WAP-196), so a secondary
+  // program's links name that program; the primary's need no parameter.
+  const secondaryProgramSlug = viewingSecondary ? home.activeEnrollment?.programSlug ?? slug : null;
   const nextModule = program && slug && nextIncompleteCourse
     ? {
         title: nextIncompleteCourse.name,
         href: isWorkforceApCourse(nextIncompleteCourse)
-          ? workforceApCourseHref(
-              nextIncompleteCourse.slug,
-              viewingSecondary ? home.activeEnrollment?.programSlug ?? slug : slug,
-            )
-          : viewingSecondary
-            ? SECONDARY_PROGRAM_HREF
-            : `${MEMBER_PROGRAM_HREF}?course=${encodeURIComponent(nextIncompleteCourse.slug)}`,
+          ? workforceApCourseHref(nextIncompleteCourse.slug, secondaryProgramSlug ?? slug)
+          : memberProgramHrefFor({ program: secondaryProgramSlug, course: nextIncompleteCourse.slug }),
       }
     : null;
 
-  const programHref = viewingSecondary ? SECONDARY_PROGRAM_HREF : MEMBER_PROGRAM_HREF;
+  const programHref = memberProgramHrefFor({ program: secondaryProgramSlug });
   // /dashboard/training only redirects back to /dashboard, so enrolled members
   // must resume on My Program — otherwise Continue/Resume is a do-loop.
   const resumeHref = programHref;
@@ -1125,7 +1115,7 @@ function shapeHome(args: {
     starterProfileMissingFields: getStarterProfileFieldLabels(starterReview.missing),
     persisted: args.row.nextBestActions,
     trainingStalled,
-    viewingSecondaryProgram: viewingSecondary,
+    secondaryProgramSlug,
     enrolledProgram: assignedSlug,
     assessmentCompleted: args.row.assessmentCompleted,
     courseEnrollmentActive: Boolean(home.pinnedEnrollment),

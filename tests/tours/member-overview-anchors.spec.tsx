@@ -27,6 +27,7 @@ vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: st
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: vi.fn(() => false) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
+vi.mock('@/lib/auth/memberDashboardAccess', () => ({ getMemberDashboardAccess: vi.fn() }));
 vi.mock('@/lib/auth/roles', () => ({
   canBypassMemberAssessment: vi.fn(),
   getProfileRole: vi.fn(),
@@ -41,6 +42,7 @@ vi.mock('@/components/onboarding/PortalEntryClient', () => ({ default: () => nul
 
 import DashboardPage from '@/app/(portal)/dashboard/page';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { loadMemberDashboardHome } from '@/lib/member/loadMemberDashboardHome';
 import { TOUR_REGISTRY } from '@/lib/tours/registry';
 
@@ -52,6 +54,11 @@ describe('member overview leaves every guided-tour anchor to the shell', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({ id: 'member-user-1', email: 'maya@example.org' } as never);
+    vi.mocked(getMemberDashboardAccess).mockResolvedValue({
+      portalRoles: [{ role: 'member', roleLabel: 'Member', homeHref: '/dashboard' }],
+      superAdmin: false,
+      redirectTo: null,
+    });
     vi.mocked(loadMemberDashboardHome).mockResolvedValue({
       approvalStatus: {} as never,
       firstName: 'Maya',

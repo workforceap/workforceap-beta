@@ -1123,7 +1123,16 @@
     "noMessagesYet": "Aucun message pour l'instant",
     "yourCounselor": "Votre conseiller",
     "workforceapSupport": "Assistance WorkforceAP",
-    "supportTeam": "Équipe d'assistance"
+    "supportTeam": "Équipe d'assistance",
+    "kitLede": "Votre conseiller et l’équipe d’assistance dans une seule boîte.",
+    "conversations": "Conversations",
+    "unreadMessage": "Message non lu",
+    "backToMessages": "Retour aux messages",
+    "sendFailed": "Échec de l’envoi",
+    "networkError": "Erreur réseau",
+    "composerPlaceholder": "Écrire à {name}…",
+    "feedbackDraftNotice": "Vérifiez les détails du cours et tout lien de projet enregistré avant d’envoyer. Vos notes privées ne sont pas partagées.",
+    "feedbackUnavailable": "Nous n’avons pas pu charger ce cours assigné. Vous pouvez tout de même écrire votre message ci-dessous."
   },
   "profile": {
     "edit": "Modifier le profil",

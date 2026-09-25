@@ -23,9 +23,6 @@ vi.mock('@/lib/auth/roles', () => ({ isAdmin: vi.fn(async () => false) }));
 vi.mock('@/lib/member/staffTrainingProgramFallback', () => ({
   resolveStaffTrainingPreviewProgramSlug: vi.fn(async () => null),
 }));
-vi.mock('@/lib/member/dailyStudyPoints', () => ({
-  utcDateKey: vi.fn(() => '2026-08-29'),
-}));
 vi.mock('@/lib/member/points', () => ({ awardPoints: mocks.awardPoints }));
 vi.mock('@/lib/member/courseProgress', () => ({
   upsertCourseProgressFromXapiStatement: mocks.upsertXapiProgress,

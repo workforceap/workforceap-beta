@@ -24,6 +24,14 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 
+const MIN_PROFILE_BIO_EVIDENCE_CHARS = 80;
+const PROFILE_BIO_FACT_SIGNAL = /\b(?:work(?:ed|ing)?|experience|skills?|education|degree|diploma|certif(?:ied|ication)?|trained|training|managed|built|developed|supported|served|operated|specializ(?:e|ed|ing))\b/i;
+
+function hasProfileResumeEvidence(bio: string | null | undefined): boolean {
+  const text = sanitizeResumePlainText(bio ?? '');
+  return text.length >= MIN_PROFILE_BIO_EVIDENCE_CHARS && PROFILE_BIO_FACT_SIGNAL.test(text);
+}
+
 export const POST = withApiGuc(async (request: Request) => {
   try {
     const user = await getUser();
@@ -61,11 +69,21 @@ export const POST = withApiGuc(async (request: Request) => {
     }
     if (!resumeText) {
       try {
-        const extracted = await getMemberResumePlainText(user.id, 6000, { preferOriginal: true });
-        resumeText = extracted ?? '';
+        const extracted = await getMemberResumePlainText(user.id, 6000, { originalOnly: true });
+        resumeText = sanitizeResumePlainText(extracted ?? '');
+        if (!hasSubstantiveResumeText(resumeText)) resumeText = '';
       } catch (err) {
         console.error('Failed to extract resume text:', err);
       }
+    }
+
+    if (!resumeText && !hasProfileResumeEvidence(profile?.profileBio)) {
+      return NextResponse.json(
+        { error: expectedPaths.resumeOriginalPath
+          ? 'We could not read enough text from your uploaded resume. Add concrete work history, skills, or education to your profile bio, or upload a PDF with selectable text, DOCX, or TXT file. Your existing files were kept.'
+          : 'Add concrete work history, skills, or education to your profile bio, or upload a readable resume before building. Your existing files were kept.' },
+        { status: 422 },
+      );
     }
   
     const context = [
@@ -92,7 +110,9 @@ export const POST = withApiGuc(async (request: Request) => {
   - Keep all real job titles, company names, and dates exactly as provided
   - Strengthen the language with accurate action verbs while preserving every factual claim
   - Add an ATS-friendly professional summary based on their actual experience
-  - Organize sections clearly: Summary, Experience, Skills, Education, Certifications
+  - Include only sections supported by the source. Omit missing Experience, Skills, Education, or Certifications sections rather than describing what was not provided.
+  - A target program is a goal, not an earned certification or proof of current enrollment.
+  - Return only the resume itself, with no explanation of your process or comments about source quality.
   - Format as clean markdown that renders well
   - Do NOT add fictional education (e.g., "XYZ University") if education is not in their profile`;
   

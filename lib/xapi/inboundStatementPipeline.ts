@@ -4,12 +4,16 @@ import { isAdmin } from '@/lib/auth/roles';
 import { completeMemberCourse } from '@/lib/member/courseCompletion';
 import { upsertCourseProgressFromXapiStatement } from '@/lib/member/courseProgress';
 import { resolveStaffTrainingPreviewProgramSlug } from '@/lib/member/staffTrainingProgramFallback';
-import { utcDateKey } from '@/lib/member/dailyStudyPoints';
+import { dailyStudyAwardKey } from '@/lib/member/dailyStudyPoints';
 import { awardPoints } from '@/lib/member/points';
 import { prisma } from '@/lib/db/prisma';
 import { recordXapiEvent, resolveXapiUser } from '@/lib/xapi/mappings';
 import { resolveInboundProgramSlug } from '@/lib/xapi/resolveInboundProgram';
-import { isXapiCompletionVerb, type ParsedXapiStatement } from '@/lib/xapi/statements';
+import {
+  isXapiCompletionVerb,
+  isXapiCourseProgressVerb,
+  type ParsedXapiStatement,
+} from '@/lib/xapi/statements';
 import { markXapiStatementProcessed } from '@/lib/xapi/storage';
 import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
 import { detectTrainingMilestone } from '@/lib/milestoneCascade/detectCompletionMilestone';
@@ -140,13 +144,17 @@ export async function handleInboundParsedStatement(
   // Enrollment gates rewards, not persistence. Detached linked learners still
   // keep exact mapped progress below, but must not receive a daily-study point
   // or any course-completion celebration until they have a current program.
-  if (enrolledProgram) {
-    await awardPoints(resolvedUser.userId, 'daily_study', utcDateKey()).catch((error) => {
+  // The award follows the learner's event day, so replays of old statements
+  // (hourly auto-heal) never award "Studied today" (WAP-276).
+  const dailyStudyKey = dailyStudyAwardKey(xapiLearnerActivityAt(parsed.timestamp));
+  if (enrolledProgram && dailyStudyKey) {
+    await awardPoints(resolvedUser.userId, 'daily_study', dailyStudyKey).catch((error) => {
       console.warn('[inboundStatementPipeline] daily_study points award failed:', error);
     });
   }
 
   if (!isXapiCompletionVerb(parsed)) {
+    let progressWritten = false;
     for (const scope of inboundScopes) {
       const progress = await upsertCourseProgressFromXapiStatement({
         userId: resolvedUser.userId,
@@ -154,6 +162,7 @@ export async function handleInboundParsedStatement(
         curriculumVersion: scope.curriculumVersion,
         parsed,
       });
+      if (progress) progressWritten = true;
       if (
         scope.assignmentMatched
         && progress?.trainingStartedTransition
@@ -190,7 +199,13 @@ export async function handleInboundParsedStatement(
       matchedUserId: resolvedUser.userId,
       organizationId: options.organizationId,
       mappingMethod: resolvedUser.mappingMethod,
-      completionStatus: 'ignored',
+      // A course-progress statement that wrote no progress lost it: its course
+      // did not resolve. Only those are replay/heal candidates; every other
+      // non-completion statement (item completions, experienced, …) is normal
+      // traffic (WAP-276).
+      completionStatus: isXapiCourseProgressVerb(parsed) && !progressWritten
+        ? 'unresolved_course'
+        : 'ignored',
       rawPayload: parsed.rawStatement,
     });
     await markXapiStatementProcessed(parsed.statementId, options.statementHash);
