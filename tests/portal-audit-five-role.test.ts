@@ -1307,6 +1307,11 @@ describe('portal row quality signals', () => {
         '/admin/members/[id]',
       ]),
     ).toBe('https://example.test/admin/members/[redacted]');
+    expect(
+      sanitizeAuditUrl('https://example.test/admin/members/member-123?access_token=private', [
+        '/admin/members/[id]',
+      ]),
+    ).toBe('https://example.test/admin/members/[redacted]');
   });
 
   it('classifies a redacted dynamic fixture against its redacted expected path', () => {
