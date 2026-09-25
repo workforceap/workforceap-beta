@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
+import type { User } from '@supabase/supabase-js';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
@@ -10,7 +11,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope, crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { trackEvent } from '@/lib/events/track';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
-import { provisionIntentAppMetadata, stampNewInviteProvisionIntent } from '@/lib/auth/provisionIntent';
+import { stampNewAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 
@@ -94,8 +95,6 @@ const walkInSchema = z.object({
     const fullName = `${firstName} ${lastName}`.trim() || firstName;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
   
-    // Walk-ins belong to the actor's tenant, including the Auth intent.
-    const organizationId = await getActorOrganizationId(user.id);
     const supabase = getSupabaseAdmin();
   
     // Pre-flight self-heal: if a Prisma row with this email is soft-deleted,
@@ -136,11 +135,10 @@ const walkInSchema = z.object({
   
     // Invite first (sends a welcome / set-password email). Falls back to
     // createUser + reset-link if invite isn't available in this Supabase setup.
-    let inviteResult = await supabase.auth.admin.inviteUserByEmail(email, {
+    let { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${siteUrl}/dashboard`,
       data: { full_name: fullName, phone, walked_in_by: user.id },
     });
-    let { data: inviteData, error: inviteError } = inviteResult;
   
     // Second self-heal: orphan Supabase auth user from a prior failed delete.
     // If the Prisma row was already soft-deleted (or never existed) and only
@@ -161,19 +159,15 @@ const walkInSchema = z.object({
           });
           inviteData = retry.data;
           inviteError = retry.error;
-          inviteResult = retry;
         }
       } catch (err) {
         console.error('[walk-in] orphan auth cleanup failed', err);
       }
     }
   
-    let authUser: { id: string; email?: string } | null = null;
+    let authUser: Pick<User, 'id' | 'email' | 'app_metadata'> | null = null;
     if (!inviteError && inviteData.user) {
       authUser = inviteData.user;
-      await stampNewInviteProvisionIntent(supabase, inviteResult, {
-        role: 'member', organizationId, source: 'counselor_walk_in',
-      });
     } else if (inviteError?.message?.includes('already') || inviteError?.code === 'user_already_exists') {
       return NextResponse.json(
         {
@@ -189,7 +183,6 @@ const walkInSchema = z.object({
         password: tempPassword,
         email_confirm: true,
         user_metadata: { full_name: fullName, phone, walked_in_by: user.id },
-        app_metadata: provisionIntentAppMetadata({ role: 'member', organizationId, source: 'counselor_walk_in' }),
       });
       if (createError) {
         if (createError.message.includes('already')) {
@@ -211,6 +204,10 @@ const walkInSchema = z.object({
     // Walk-in lands in the actor's tenant, not the default org. Codex P1
     // catch on PR #1047 — using `getDefaultOrganizationId()` would mis-tag
     // a non-default-org counselor's walk-ins.
+    const organizationId = await getActorOrganizationId(user.id);
+    await stampNewAuthUserProvisionIntent(supabase, authUser, {
+      role: 'member', organizationId, source: 'counselor_walk_in',
+    });
   
     try {
       // Step 1: User.create goes through withTenantScope so the new row
