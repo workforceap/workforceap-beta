@@ -12,13 +12,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  * would read, not the SQL text.
  */
 
-type Event = { org: string; status: 'ignored' | 'unmatched'; slug: string; email: string };
+type Status = 'ignored' | 'unresolved_course' | 'unmatched';
+type Event = { org: string; status: Status; slug: string; email: string };
 
 const EVENTS: Event[] = [
-  { org: 'org-1', status: 'ignored', slug: 'course-a', email: 'a@one.test' },
+  { org: 'org-1', status: 'unresolved_course', slug: 'course-a', email: 'a@one.test' },
   { org: 'org-1', status: 'unmatched', slug: 'course-a', email: 'b@one.test' },
-  { org: 'org-2', status: 'ignored', slug: 'other-tenant-course', email: 'c@two.test' },
-  { org: 'org-2', status: 'ignored', slug: 'other-tenant-course', email: 'd@two.test' },
+  // Normal progress traffic: counted as context, never listed as stuck.
+  { org: 'org-1', status: 'ignored', slug: 'healthy-course', email: 'f@one.test' },
+  { org: 'org-2', status: 'unresolved_course', slug: 'other-tenant-course', email: 'c@two.test' },
+  { org: 'org-2', status: 'unresolved_course', slug: 'other-tenant-course', email: 'd@two.test' },
   { org: 'org-2', status: 'unmatched', slug: 'other-tenant-course', email: 'e@two.test' },
 ];
 
@@ -48,7 +51,11 @@ vi.mock('@/lib/db/prisma', () => ({
       // The route binds the org as a nullable text param: NULL means "all orgs".
       const scoped = /organization_id\s*=/.test(sql);
       const orgParam = scoped ? values.find((v) => typeof v === 'string' || v === null) : undefined;
-      const visible = EVENTS.filter((e) => !scoped || orgParam === null || e.org === orgParam);
+      // The statuses the query asks for, read from its IN (...) list.
+      const statuses = new Set([...sql.matchAll(/'(ignored|unresolved_course|unmatched)'/g)].map((m) => m[1]));
+      const visible = EVENTS.filter(
+        (e) => statuses.has(e.status) && (!scoped || orgParam === null || e.org === orgParam),
+      );
       if (/GROUP BY completion_status/.test(sql)) {
         const totals = new Map<string, number>();
         for (const e of visible) totals.set(e.status, (totals.get(e.status) ?? 0) + 1);
@@ -76,6 +83,7 @@ async function read() {
   return res.json() as Promise<{
     outstandingTotal: number;
     ignoredTotal: number;
+    unresolvedTotal: number;
     unmatchedTotal: number;
     topSlugs: { courseSlug: string }[];
   }>;
@@ -89,15 +97,22 @@ describe('ignored-xapi-summary tenant scope', () => {
   it("shows an org admin only their own org's events", async () => {
     const body = await read();
     expect(body.outstandingTotal).toBe(2);
-    expect(body.ignoredTotal).toBe(1);
+    expect(body.unresolvedTotal).toBe(1);
     expect(body.unmatchedTotal).toBe(1);
+    expect(body.ignoredTotal).toBe(1);
     expect(body.topSlugs.map((s) => s.courseSlug)).toEqual(['course-a']);
+  });
+
+  it('lists only events that lost progress, not normal ignored traffic (WAP-276)', async () => {
+    const body = await read();
+    expect(body.topSlugs.map((s) => s.courseSlug)).not.toContain('healthy-course');
   });
 
   it('keeps the all-tenant view for a super admin', async () => {
     auth.superAdmin = true;
     const body = await read();
     expect(body.outstandingTotal).toBe(5);
+    expect(body.ignoredTotal).toBe(1);
     expect(body.topSlugs.map((s) => s.courseSlug).sort()).toEqual(['course-a', 'other-tenant-course']);
   });
 });

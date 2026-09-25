@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
     title: 'Admin – Coursera health',
     description:
-      'Read-only diagnostics for the Coursera ingest pipeline: canonical mappings, xAPI traffic, B4B sync state, and the most-ignored signals over the last 7 days.',
+      'Read-only diagnostics for the Coursera ingest pipeline: canonical mappings, xAPI traffic, B4B sync state, and the most frequent unmapped courses over the last 7 days.',
     path: '/admin/coursera/health',
   });
 }
@@ -220,7 +220,9 @@ async function loadIgnoredRatio(now: Date, organizationId: string | null): Promi
     const rows = await prisma.$queryRaw<Array<{ total: bigint | number; ignored: bigint | number }>>`
       SELECT
         COUNT(*)::bigint AS total,
-        COUNT(*) FILTER (WHERE completion_status = 'ignored')::bigint AS ignored
+        -- WAP-276: only course-progress events that wrote no progress are
+        -- "lost"; plain 'ignored' is normal traffic. The field keeps its name.
+        COUNT(*) FILTER (WHERE completion_status = 'unresolved_course')::bigint AS ignored
       FROM coursera_xapi_events
       WHERE received_at >= ${since}
         AND (${organizationId}::text IS NULL OR organization_id = ${organizationId})
@@ -273,7 +275,7 @@ async function loadTopIgnoredSlugs(now: Date, organizationId: string | null): Pr
         course_slug AS "courseSlug",
         COUNT(*)::bigint AS "eventCount"
       FROM coursera_xapi_events
-      WHERE completion_status = 'ignored'
+      WHERE completion_status = 'unresolved_course'
         AND (${organizationId}::text IS NULL OR organization_id = ${organizationId})
         AND received_at >= ${since}
         AND course_slug IS NOT NULL
@@ -741,10 +743,10 @@ export default async function AdminCourseraHealthPage() {
     });
   }
 
-  // Card 4: xAPI ignored ratio 24h
+  // Card 4: share of xAPI events (24h) that lost progress to an unmapped course
   if (!ignoredRatio) {
     cards.push({
-      title: 'xAPI ignored ratio (24h)',
+      title: 'xAPI unmapped-course ratio (24h)',
       primary: '—',
       secondary: 'Unable to load coursera_xapi_events',
       severity: 'bad',
@@ -754,15 +756,15 @@ export default async function AdminCourseraHealthPage() {
     const ratio = total > 0 ? ignored / total : 0;
     const severity: CardSeverity = total === 0 ? 'ok' : ratio > 0.5 ? 'bad' : ratio > 0.2 ? 'warn' : 'ok';
     cards.push({
-      title: 'xAPI ignored ratio (24h)',
+      title: 'xAPI unmapped-course ratio (24h)',
       primary: total === 0 ? '—' : `${(ratio * 100).toFixed(1)}%`,
       secondary:
         total === 0
           ? 'No coursera_xapi_events in 24h'
-          : `ignored=${ignored.toLocaleString()} of ${total.toLocaleString()}`,
+          : `unresolved_course=${ignored.toLocaleString()} of ${total.toLocaleString()}`,
       hint:
         severity === 'bad'
-          ? 'Most events are being ignored — likely missing canonical mappings.'
+          ? 'Most progress events name a course with no canonical mapping.'
           : undefined,
       severity,
     });
@@ -1011,19 +1013,22 @@ export default async function AdminCourseraHealthPage() {
         )}
       </section>
 
-      {/* Section 3 — top ignored course slugs (7d). */}
+      {/* Section 3 — top unmapped-course slugs (7d). */}
       <section className="content-card" style={sectionStyle}>
-        <h2 style={sectionHeadingStyle}>Top ignored course slugs (last 7 days)</h2>
+        <h2 style={sectionHeadingStyle}>Top unmapped course slugs (last 7 days)</h2>
         <p style={{ ...cardSecondaryStyle, marginBottom: '0.6rem' }}>
-          xAPI events whose <code>completion_status = &apos;ignored&apos;</code>, grouped by{' '}
-          <code>course_slug</code>. Each row links to the Coursera admin where you can wire it up
-          via the canonical course mapping table.
+          xAPI progress events whose course didn&apos;t resolve (
+          <code>completion_status = &apos;unresolved_course&apos;</code>), grouped by{' '}
+          <code>course_slug</code>. No progress was written for them. Each row links to the Coursera
+          admin where you can wire it up via the canonical course mapping table; the hourly
+          auto-heal replays them once the mapping exists. Events recorded before 2026-09-25 still
+          read <code>ignored</code> and are not listed.
         </p>
         {topIgnoredSlugs === null ? (
-          <p role="status" style={cardSecondaryStyle}>Ignored-event check unavailable. No verdict is available.</p>
+          <p role="status" style={cardSecondaryStyle}>Unmapped-course check unavailable. No verdict is available.</p>
         ) : topIgnoredSlugs.length === 0 ? (
           <span style={cardSecondaryStyle}>
-            No ignored xAPI events with a <code>course_slug</code> in the last 7 days.
+            No unmapped-course xAPI events with a <code>course_slug</code> in the last 7 days.
           </span>
         ) : (
           <DataTable

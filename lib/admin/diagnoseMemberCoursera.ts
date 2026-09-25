@@ -88,6 +88,7 @@ type IdentityMappingRaw = {
 type XapiAggRaw = {
   total: bigint | number;
   ignored: bigint | number;
+  unresolved?: bigint | number | null;
   processed: bigint | number;
   errored: bigint | number;
   latest_received?: Date | null;
@@ -152,6 +153,7 @@ export async function diagnoseMemberCoursera(
   let xapiAgg: XapiAggRaw = {
     total: 0,
     ignored: 0,
+    unresolved: 0,
     processed: 0,
     errored: 0,
   };
@@ -161,7 +163,8 @@ export async function diagnoseMemberCoursera(
       SELECT
         COUNT(*) AS total,
         SUM(CASE WHEN completion_status = 'ignored' THEN 1 ELSE 0 END) AS ignored,
-        SUM(CASE WHEN completion_status NOT IN ('ignored') AND error IS NULL THEN 1 ELSE 0 END) AS processed,
+        SUM(CASE WHEN completion_status = 'unresolved_course' THEN 1 ELSE 0 END) AS unresolved,
+        SUM(CASE WHEN completion_status NOT IN ('ignored', 'unresolved_course') AND error IS NULL THEN 1 ELSE 0 END) AS processed,
         SUM(CASE WHEN error IS NOT NULL THEN 1 ELSE 0 END) AS errored,
         MAX(received_at) AS latest_received
       FROM coursera_xapi_events
@@ -174,8 +177,8 @@ export async function diagnoseMemberCoursera(
       FROM coursera_xapi_events
       WHERE organization_id = ${member.organizationId}
         AND (actor_email = ${member.email} OR matched_user_id = ${memberId})
-        AND completion_status = 'ignored'
-      ORDER BY received_at DESC
+        AND completion_status IN ('unresolved_course', 'ignored')
+      ORDER BY (completion_status = 'unresolved_course') DESC, received_at DESC
       LIMIT 5
     `;
   } catch (err) {
@@ -360,6 +363,7 @@ export async function diagnoseMemberCoursera(
   const xapiTotal = Number(xapiAgg.total);
   const xapiIgnored = Number(xapiAgg.ignored);
   const xapiErrored = Number(xapiAgg.errored);
+  const xapiUnresolved = Number(xapiAgg.unresolved ?? 0);
   // The xAPI pipeline upserts CourseProgress unconditionally for matched
   // identities (see lib/xapi/inboundStatementPipeline.ts:98). The
   // `completion_status='ignored'` label means "not a completion verb" (e.g.
@@ -381,6 +385,15 @@ export async function diagnoseMemberCoursera(
       title: `${xapiErrored} of ${xapiTotal} xAPI events errored`,
       detail:
         'Errored events failed during processing — typically because no enrolled program could be resolved. Check enrollment + identity mapping and reprocess via /admin/coursera.',
+    });
+  } else if (xapiUnresolved > 0) {
+    // WAP-276: course-progress statements whose course didn't resolve wrote no
+    // progress. Rows recorded before this status existed still read 'ignored'.
+    verdict.push({
+      status: 'warn',
+      title: `${xapiUnresolved} of ${xapiTotal} xAPI progress events had an unmapped course`,
+      detail:
+        'These events matched the learner but their Coursera course did not resolve to a program course, so no progress was written. Add the canonical course mapping; the hourly auto-heal replays them once it exists. Their slugs are listed first below.',
     });
   } else if (courseProgressRows === 0 && xapiTotal > 0) {
     verdict.push({
