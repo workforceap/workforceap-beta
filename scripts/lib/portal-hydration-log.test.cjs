@@ -57,6 +57,21 @@ test('hydration log discards injected browser strings and bounds structural fiel
     first: Array(30).fill(sample),
     recent: Array(30).fill(sample),
     atError: sample,
+    firstObservedPage: {
+      boundary: secret, childCount: 100_001, textContent: secret,
+      children: Array(20).fill({
+        tag: secret, marker: secret, childCount: secret,
+        children: [{ tag: 'section', marker: 'portal-page-frame', id: secret }, { tag: secret, marker: secret }],
+        className: secret,
+      }),
+    },
+    detachedMainPageCandidate: {
+      boundary: 'workspace-main-body', childCount: 1,
+      children: [{ tag: 'article', marker: 'wa-kit-card', childCount: 1,
+        children: [{ tag: 'h2', marker: 'other', textContent: secret }],
+      }],
+    },
+    atErrorPage: { boundary: 'portal-touch-target', childCount: secret, children: [] },
     arbitraryText: secret,
     toJSON: () => secret,
   };
@@ -90,6 +105,20 @@ test('hydration log discards injected browser strings and bounds structural fiel
   assert.equal(safe.atError.mainBodyIndex, null);
   assert.equal(safe.atError.mainTags.length, 8);
   assert.equal(safe.atError.portalTouchFirst, null);
+  assert.equal(safe.firstObservedPage.boundary, 'unknown');
+  assert.equal(safe.firstObservedPage.childCount, 10_000);
+  assert.equal(safe.firstObservedPage.children.length, 6);
+  assert.deepEqual(safe.firstObservedPage.children[0], {
+    tag: 'unknown', marker: 'other', childCount: null,
+    children: [{ tag: 'section', marker: 'portal-page-frame' }, { tag: 'unknown', marker: 'other' }],
+  });
+  assert.deepEqual(safe.detachedMainPageCandidate, {
+    boundary: 'workspace-main-body', childCount: 1,
+    children: [{ tag: 'article', marker: 'wa-kit-card', childCount: 1,
+      children: [{ tag: 'h2', marker: 'other' }],
+    }],
+  });
+  assert.deepEqual(safe.atErrorPage, { boundary: 'portal-touch-target', childCount: null, children: [] });
   const serialized = JSON.stringify(safe);
   assert.doesNotMatch(serialized, /PRIVATE_MEMBER_RESUME_123|member-123|PRIVATE_TOKEN/);
   assert.deepEqual(Object.keys(safe.atError), [

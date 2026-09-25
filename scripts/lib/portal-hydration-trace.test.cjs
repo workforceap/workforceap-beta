@@ -46,6 +46,7 @@ test('hydration trace captures root structure without portal content or attribut
     globalThis.MutationObserver = class {
       constructor(callback) { this.callback = callback; observer = this; }
       observe(target, options) { this.target = target; this.options = options; }
+      takeRecords() { return []; }
       disconnect() { this.disconnected = true; }
     };
 
@@ -75,6 +76,51 @@ test('hydration trace captures root structure without portal content or attribut
     for (const [key, previous] of old) {
       if (previous.exists) globalThis[key] = previous.value;
       else delete globalThis[key];
+    }
+  }
+});
+
+test('hydration trace projects a removed main from an earlier observer callback', async () => {
+  const { installPortalHydrationTrace } = await import('./portal-hydration-trace.mjs');
+  const keys = ['document', 'window', 'location', 'MutationObserver'];
+  const previous = new Map(keys.map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  const listeners = {};
+  let observer;
+  const page = {
+    tagName: 'DIV', classList: { contains: (name) => name === 'workspace-shell-main-body' },
+    children: [{ tagName: 'SECTION', classList: { contains: () => false }, children: [{ tagName: 'P', classList: { contains: () => false }, children: [] }] }],
+  };
+  const removedMain = {
+    nodeType: 1, tagName: 'MAIN', matches: (selector) => selector === 'main#main-content',
+    querySelector: (selector) => selector === '.workspace-shell-main-body' ? page : null,
+  };
+
+  try {
+    globalThis.document = {
+      body: { children: [] }, documentElement: {},
+      getElementById: () => null, querySelector: () => null, querySelectorAll: () => [],
+      addEventListener: () => {},
+    };
+    globalThis.window = { addEventListener: (name, listener) => { listeners[name] = listener; } };
+    globalThis.location = { pathname: '/dashboard' };
+    globalThis.MutationObserver = class {
+      constructor(callback) { this.callback = callback; observer = this; }
+      observe() {}
+      takeRecords() { return []; }
+      disconnect() {}
+    };
+
+    installPortalHydrationTrace();
+    observer.callback([{ target: document.body, removedNodes: [removedMain] }]);
+    listeners.error({ message: 'Minified React error #418' });
+    const candidate = window.__waPortalHydrationTrace.detachedMainPageCandidate;
+    assert.equal(candidate.boundary, 'workspace-main-body');
+    assert.deepEqual(candidate.children.map((child) => child.tag), ['section']);
+    assert.deepEqual(candidate.children[0].children.map((child) => child.tag), ['p']);
+  } finally {
+    for (const [key, descriptor] of previous) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
     }
   }
 });
