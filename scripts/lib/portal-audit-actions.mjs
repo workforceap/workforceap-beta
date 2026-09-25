@@ -471,6 +471,12 @@ export function evaluateAccessProbe(row, expectation) {
     row?.originMatched === true &&
     row?.wrongRoleRedirect === true &&
     row?.unexpectedRedirect === true &&
+    row?.appReady === true &&
+    row?.h1Count === 1 &&
+    row?.routeErrorFallback === false &&
+    row?.notFoundFallback === false &&
+    row?.consoleErrorCount === 0 &&
+    row?.pageErrorCount === 0 &&
     ((row?.requestedPathname === '/employer' && row?.finalPathname === '/employers') ||
       (row?.requestedPathname === '/partner' && row?.finalPathname === '/partners'));
   const denialEvidence = deniedStatus
@@ -488,8 +494,6 @@ export function evaluateAccessProbe(row, expectation) {
             'wrong_role_redirect',
             'unexpected_redirect',
             'read_only_audit_capability_not_active',
-            'app_not_ready',
-            'missing_h1',
           ]
       : ['login_redirect', 'wrong_role_redirect', 'unexpected_redirect']
   );
