@@ -223,7 +223,7 @@ export default function WorkspaceShell({
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isCollapsedDesktop = collapsed && wide;
   const isMobileDrawer = drawerOpen && !wide;
-  const isSuperAdmin = useIsSuperAdmin(Boolean(superAdmin));
+  const isSuperAdmin = useIsSuperAdmin(superAdmin);
   // Admin rail sections open while a guided tour runs so every anchor is visible
   // (no-op value when no TourProvider is mounted).
   const { isOpen: tourOpen } = useTour();
