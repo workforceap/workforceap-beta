@@ -13,7 +13,9 @@ import { invitationRoleLabel, inviteAcceptLoginRedirect } from '@/lib/invitation
 import { checkInviteAcceptRateLimit } from '@/lib/rate-limit';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
-import { Prisma } from '@prisma/client';
+import { stampNewAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
+import type { User } from '@supabase/supabase-js';
+import { Prisma, type InvitationRole } from '@prisma/client';
 import {
   claimPendingInvitationForAccept,
   InvitationClaimError,
@@ -33,7 +35,7 @@ type InviteTx = Prisma.TransactionClient;
 type AcceptInvitation = {
   id: string;
   email: string;
-  role: string;
+  role: InvitationRole;
   invitedById: string;
   subgroupId: string | null;
   partnerId: string | null;
@@ -637,7 +639,7 @@ async function createNewUserAndAccept(
   }
 
   inviteAcceptLog('supabase:user_created', { invitationId: invitation.id });
-  return finishNewUserDbSetup(authUser.id, invitation, fullName, phone, request);
+  return finishNewUserDbSetup(authUser.id, invitation, fullName, phone, request, authUser);
 }
 
 async function finishNewUserDbSetup(
@@ -645,7 +647,8 @@ async function finishNewUserDbSetup(
   invitation: AcceptInvitation,
   fullName: string,
   phone: string | null,
-  request: NextRequest
+  request: NextRequest,
+  createdAuthUser?: Pick<User, 'id' | 'app_metadata'>,
 ) {
   // Inviter org first, then request host / x-wap-org-id, default last.
   // Multi-tenant invites were broken when every accept landed in the
@@ -674,6 +677,16 @@ async function finishNewUserDbSetup(
       },
       { status: 500 }
     );
+  }
+
+  // The duplicate-auth retry above passes no createdAuthUser, so its existing
+  // identity and app metadata are never restamped from this invitation.
+  if (createdAuthUser) {
+    await stampNewAuthUserProvisionIntent(getSupabaseAdmin(), createdAuthUser, {
+      role: invitation.role,
+      organizationId,
+      source: 'invitation_accept',
+    });
   }
 
   const invitationId = invitation.id;

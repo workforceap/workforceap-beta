@@ -11,6 +11,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { maybeSendCourseKickoffEmail } from '@/lib/coursera/courseKickoff';
 import { sendPasswordResetEmail } from '@/lib/auth/passwordReset';
+import { provisionIntentAppMetadata, stampNewInviteProvisionIntent } from '@/lib/auth/provisionIntent';
 import {
   lockCourseraIdentityForAttachment,
   promoteCsvProgressToCanonical,
@@ -178,14 +179,18 @@ const bodySchema = z.object({
       const supabase = getSupabaseAdmin();
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
 
-      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
+      const inviteResult = await supabase.auth.admin.inviteUserByEmail(email, {
         redirectTo: `${siteUrl}/dashboard`,
         data: { full_name: fullName, source: 'coursera-reconcile' },
       });
+      const { data: inviteData, error: inviteError } = inviteResult;
 
       if (!inviteError && inviteData.user) {
         supabaseUserId = inviteData.user.id;
         createdSupabaseUser = true;
+        await stampNewInviteProvisionIntent(supabase, inviteResult, {
+          role: 'member', organizationId: actorOrgId, source: 'coursera_reconcile',
+        });
       } else if (
         inviteError?.message?.toLowerCase().includes('already') ||
         inviteError?.message?.toLowerCase().includes('registered') ||
@@ -205,6 +210,9 @@ const bodySchema = z.object({
           email,
           email_confirm: true,
           user_metadata: { full_name: fullName, source: 'coursera-reconcile' },
+          app_metadata: provisionIntentAppMetadata({
+            role: 'member', organizationId: actorOrgId, source: 'coursera_reconcile',
+          }),
         });
 
         if (error) {

@@ -13,6 +13,7 @@ import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { trackEvent } from '@/lib/events/track';
 import { sendPasswordResetEmail } from '@/lib/auth/passwordReset';
+import { provisionIntentAppMetadata, stampNewInviteProvisionIntent } from '@/lib/auth/provisionIntent';
 import { maybeSendCourseKickoffEmail } from '@/lib/coursera/courseKickoff';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
@@ -132,14 +133,18 @@ const ETHNICITY_OPTIONS = [
     let authUser: { id: string; email?: string } | null = null;
     let welcomeEmailSent = false;
   
-    const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
+    const inviteResult = await supabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${siteUrl}/dashboard`,
       data: { full_name: fullName, phone },
     });
+    const { data: inviteData, error: inviteError } = inviteResult;
   
     if (!inviteError && inviteData.user) {
       authUser = inviteData.user;
       welcomeEmailSent = true;
+      await stampNewInviteProvisionIntent(supabase, inviteResult, {
+        role: 'member', organizationId, source: 'admin_member_create',
+      });
     } else if (inviteError?.message?.includes('already') || inviteError?.code === 'user_already_exists') {
       return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 400 });
     } else {
@@ -150,6 +155,7 @@ const ETHNICITY_OPTIONS = [
         password: tempPassword,
         email_confirm: true,
         user_metadata: { full_name: fullName, phone },
+        app_metadata: provisionIntentAppMetadata({ role: 'member', organizationId, source: 'admin_member_create' }),
       });
       if (createError) {
         if (createError.message.includes('already')) {

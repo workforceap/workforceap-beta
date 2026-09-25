@@ -8,6 +8,7 @@ import { getResend } from '@/lib/email';
 import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
 import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { provisionIntentAppMetadata } from '@/lib/auth/provisionIntent';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -163,6 +164,8 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       );
     }
 
+    const organizationId = await resolveProvisionOrganizationId({ headers: request.headers });
+
     // Create the auth user unconfirmed; public signup must not grant a
     // usable account until the contact proves control of the mailbox.
     const supabaseAdmin = getSupabaseAdmin();
@@ -173,6 +176,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         full_name: d.contactName,
         phone: phone ?? undefined,
       },
+      app_metadata: provisionIntentAppMetadata({ role: 'partner', organizationId, source: 'partner_signup' }),
     });
 
     if (authError) {
@@ -197,9 +201,6 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       );
     }
 
-    const organizationId = await resolveProvisionOrganizationId({
-      headers: request.headers,
-    });
     const slug = await generateUniqueSlug(d.organizationName);
     const referralCode = await generateUniqueReferralCode(d.organizationName);
 
