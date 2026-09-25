@@ -1,5 +1,23 @@
 import { sanitizeAuditUrl } from './portal-audit-browser.mjs';
 
+const SAFE_TOOLBAR_NAVIGATION_HEADERS = new Set([
+  'accept',
+  'accept-language',
+  'cache-control',
+  'pragma',
+  'upgrade-insecure-requests',
+]);
+
+/** A redirect-wide toolbar override must not copy cookies or bearer headers. */
+export function safeToolbarNavigationHeaders(requestHeaders) {
+  return Object.fromEntries(
+    Object.entries(requestHeaders ?? {})
+      .filter(([name, value]) =>
+        SAFE_TOOLBAR_NAVIGATION_HEADERS.has(name.toLowerCase()) && typeof value === 'string')
+      .map(([name, value]) => [name.toLowerCase(), value])
+  );
+}
+
 /**
  * Classify infrastructure diagnostics without weakening application failures.
  * This exact CSP error is emitted by Vercel's injected Preview toolbar, not by

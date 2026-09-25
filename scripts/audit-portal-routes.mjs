@@ -34,6 +34,7 @@ import {
   isVerifiedReadOnlyDestination,
   isVercelPreviewToolbarCspError,
   requestFailureCategory,
+  safeToolbarNavigationHeaders,
   sanitizedRequestPath,
 } from './lib/portal-audit-environment.mjs';
 import { recordPendingDataRequestTimeout } from './lib/portal-audit-pending.mjs';
@@ -102,6 +103,9 @@ const routeConcurrency = Math.min(
   Math.max(1, Number.parseInt(process.env.PORTAL_AUDIT_ROUTE_CONCURRENCY ?? '8', 10) || 8)
 );
 const traceHydration = process.env.PORTAL_AUDIT_HYDRATION_TRACE === '1' && requestedMode === 'isolated_preview';
+// Vercel recommends this request header for automated Preview tests. Keep it
+// opt-in so the same commit can be audited both with and without the toolbar.
+const skipVercelToolbar = process.env.PORTAL_AUDIT_SKIP_VERCEL_TOOLBAR === '1' && requestedMode === 'isolated_preview';
 const runStartedAt = Date.now();
 let deadlineAt = runStartedAt + 25 * 60_000;
 let trustedOrigin = null;
@@ -184,7 +188,28 @@ async function installReadOnlyRequestGuard(context, options = {}) {
     }
 
     if (disposition === 'continue') {
-      await route.continue();
+      // The Toolbar is injected into HTML navigation responses. Keep this
+      // non-secret override off unrelated cross-origin browser fetches, where
+      // a custom header could trigger a CORS preflight. Cookie remains owned
+      // by the browser and is never supplied as a route override.
+      let trustedNavigation = false;
+      if (skipVercelToolbar && request.isNavigationRequest()) {
+        try {
+          trustedNavigation = new URL(request.url()).origin === trustedOrigin;
+        } catch {
+          // Invalid URLs proceed without the optional toolbar header.
+        }
+      }
+      if (trustedNavigation) {
+        await route.continue({
+          headers: {
+            ...safeToolbarNavigationHeaders(request.headers()),
+            'x-vercel-skip-toolbar': '1',
+          },
+        });
+      } else {
+        await route.continue();
+      }
       return;
     }
 
@@ -302,6 +327,7 @@ const artifact = {
       ? 'root_access_only'
       : 'internal_read_only_anchor_navigation',
     routeConcurrency,
+    skipVercelToolbar,
     deadlineMs: null,
   },
   attendedGates: ATTENDED_ACTION_GATES,
