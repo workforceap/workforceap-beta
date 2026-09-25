@@ -176,7 +176,7 @@ describe('createMember partner attribution (/signup door)', () => {
     expect(mocks.loggerWarn).toHaveBeenCalledTimes(1);
     const [message, context] = mocks.loggerWarn.mock.calls[0];
     expect(message).toMatch(/partner ref/i);
-    expect(context).toEqual({ ref: 'other-org-code', organizationId: 'org-A' });
+    expect(context).toEqual({ refFingerprint: '42e3390fed4764a9', organizationId: 'org-A' });
   });
 
   it('(h) logs the dropped ref when the partner exists in this org but is inactive', async () => {
@@ -187,7 +187,7 @@ describe('createMember partner attribution (/signup door)', () => {
     expect(mocks.tx.partnerReferral.upsert).not.toHaveBeenCalled();
     expect(applicationData().referralPartnerId).toBeNull();
     expect(mocks.loggerWarn).toHaveBeenCalledTimes(1);
-    expect(mocks.loggerWarn.mock.calls[0][1]).toEqual({ ref: 'retired-ref', organizationId: 'org-A' });
+    expect(mocks.loggerWarn.mock.calls[0][1]).toEqual({ refFingerprint: 'b737fdc99508ac5a', organizationId: 'org-A' });
   });
 
   it('(i) keeps personal data out of the dropped-ref log line', async () => {
@@ -195,7 +195,7 @@ describe('createMember partner attribution (/signup door)', () => {
 
     await createMember(
       USER_ID,
-      input({ referralRef: 'other-org-code', email: 'private.person@example.com', fullName: 'Private Person' }),
+      input({ referralRef: 'private.person@example.com', email: 'private.person@example.com', fullName: 'Private Person' }),
     );
 
     const logged = JSON.stringify(mocks.loggerWarn.mock.calls);

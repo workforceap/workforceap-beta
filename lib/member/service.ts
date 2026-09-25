@@ -7,6 +7,7 @@ import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg
 import { MemberSignupInput } from '@/lib/validation/member';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { logger } from '@/lib/observability/logger';
+import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
 
 /**
  * The member row uses the Supabase auth user id as its primary key, so the
@@ -70,11 +71,9 @@ export async function createMember(
       // The ref is dropped (no such code, inactive partner, or a partner in
       // another organization) and nothing about it is persisted, so without
       // this line a broken partner link is indistinguishable from organic
-      // traffic. Ref + org only: never the applicant's email or name.
-      logger.warn('signup: partner ref matched no active partner in this organization', {
-        ref: refRaw,
-        organizationId,
-      });
+      // traffic. The input is caller-controlled, so only log a fingerprint.
+      logger.warn('signup: partner ref matched no active partner in this organization',
+        droppedPartnerRefLogContext(refRaw, organizationId));
     }
   }
 

@@ -21,6 +21,7 @@ import { ApplicationStatus } from '@prisma/client';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logger } from '@/lib/observability/logger';
+import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
 import { withApiGuc, withSystemGuc } from '@/lib/db/withRequestGuc';
 import { withDbRetry, isConnectionAcquisitionError } from '@/lib/db/withDbRetry';
 import { autoAssignAmbassadorFromReferral } from '@/lib/counselor/ambassadorAutoAssign';
@@ -435,12 +436,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       } else {
         // Dropped ref (unknown code, inactive partner, or a partner in
         // another organization): attribution stays off, but say so, or a
-        // broken partner link looks exactly like organic traffic. Ref + org
-        // only: never the applicant's email or name.
-        logger.warn('apply/signup: partner ref matched no active partner in this organization', {
-          ref: refRaw,
-          organizationId,
-        });
+        // broken partner link looks exactly like organic traffic. The body
+        // value is caller-controlled, so log its fingerprint rather than text.
+        logger.warn('apply/signup: partner ref matched no active partner in this organization',
+          droppedPartnerRefLogContext(refRaw, organizationId));
       }
     }
 

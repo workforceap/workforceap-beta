@@ -13,7 +13,7 @@ import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
 import { trackEvent } from '@/lib/events/track';
 import { getConversionValuePayload } from '@/lib/analytics/conversionValue';
 import { prisma } from '@/lib/db/prisma';
-import { normalizePartnerRef, PARTNER_REF_COOKIE } from '@/lib/apply/applyReferralCapture';
+import { normalizePartnerRef, PARTNER_REF_COOKIE, partnerRefCookieClearOptions } from '@/lib/apply/applyReferralCapture';
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -247,7 +247,8 @@ export async function POST(request: NextRequest) {
     // `/enroll/<slug>`, so the client cannot read it back into the body and
     // the recovery has to happen here. Mirrors app/api/apply/signup/route.ts.
     const refFromBody = data.referralRef?.trim();
-    const refFromCookie = normalizePartnerRef(cookieStore.get(PARTNER_REF_COOKIE)?.value);
+    const rawRefCookie = cookieStore.get(PARTNER_REF_COOKIE)?.value;
+    const refFromCookie = normalizePartnerRef(rawRefCookie);
     const referralRef = (refFromBody || refFromCookie || '').toLowerCase() || undefined;
 
     try {
@@ -288,6 +289,18 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       // Don't block signup on telemetry failures.
       console.error('Signup event tracking failed:', err);
+    }
+
+    // Middleware's /enroll/<slug> cookie is httpOnly. Client cleanup cannot
+    // remove it, so consume it here after the member has been committed. This
+    // keeps the next applicant on a shared device from inheriting attribution.
+    if (rawRefCookie !== undefined) {
+      try {
+        cookieStore.set(PARTNER_REF_COOKIE, '', partnerRefCookieClearOptions());
+      } catch {
+        // Signup already succeeded; a cookie write must not change the result.
+        console.warn('Signup partner ref cookie could not be cleared');
+      }
     }
 
     return NextResponse.json({

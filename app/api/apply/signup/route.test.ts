@@ -1435,7 +1435,7 @@ describe('POST /api/apply/signup unmatched partner ref', () => {
     expect(state.applicationCreates[0].data).toMatchObject({ referralPartnerId: null });
     const warnings = unmatchedRefWarnings();
     expect(warnings).toHaveLength(1);
-    expect(warnings[0][1]).toEqual({ ref: 'ghost-ref', organizationId: 'org-test-1' });
+    expect(warnings[0][1]).toEqual({ refFingerprint: '1fc9f8a7c21a3acb', organizationId: 'org-test-1' });
   });
 
   it('logs the dropped ref that arrived on the cookie rather than the body', async () => {
@@ -1444,7 +1444,7 @@ describe('POST /api/apply/signup unmatched partner ref', () => {
 
     await POST(makeRequest());
 
-    expect(unmatchedRefWarnings()[0][1]).toEqual({ ref: 'ghost-ref', organizationId: 'org-test-1' });
+    expect(unmatchedRefWarnings()[0][1]).toEqual({ refFingerprint: '1fc9f8a7c21a3acb', organizationId: 'org-test-1' });
   });
 
   it('keeps the applicant out of the dropped-ref log line', async () => {
@@ -1455,6 +1455,16 @@ describe('POST /api/apply/signup unmatched partner ref', () => {
     const logged = JSON.stringify(unmatchedRefWarnings());
     expect(logged).not.toContain('private.person@example.com');
     expect(logged).not.toContain('Concordia Student');
+  });
+
+  it('does not echo arbitrary body-supplied referral text into logs', async () => {
+    state.partner = null;
+
+    await POST(makeRequest({ referralRef: 'private.person@example.com' }));
+
+    const logged = JSON.stringify(unmatchedRefWarnings());
+    expect(logged).not.toContain('private.person@example.com');
+    expect(unmatchedRefWarnings()).toHaveLength(1);
   });
 
   it('logs nothing when the ref resolves, and nothing when there is no ref at all', async () => {

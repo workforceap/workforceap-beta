@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   checkSignupRateLimit: vi.fn(),
   checkSignupEmailRateLimit: vi.fn(),
   trackEvent: vi.fn(),
+  cookieSet: vi.fn(),
   /** Request cookies the route can see through `next/headers`. */
   cookies: {} as Record<string, string>,
 }));
@@ -24,6 +25,7 @@ vi.mock('next/headers', () => ({
   cookies: async () => ({
     getAll: () => Object.entries(mocks.cookies).map(([name, value]) => ({ name, value })),
     get: (name: string) => (name in mocks.cookies ? { name, value: mocks.cookies[name] } : undefined),
+    set: mocks.cookieSet,
   }),
 }));
 vi.mock('@/lib/member/service', () => ({ createMember: mocks.createMember }));
@@ -202,6 +204,29 @@ describe('POST /api/member/signup partner ref recovery', () => {
       'new-member-id',
       expect.objectContaining({ referralRef: 'concordia-hs' }),
     );
+    // A shared device's next applicant must not inherit this school ref.
+    // document.cookie cannot remove middleware's httpOnly cookie.
+    expect(mocks.cookieSet).toHaveBeenCalledExactlyOnceWith(
+      PARTNER_REF_COOKIE,
+      '',
+      expect.objectContaining({ httpOnly: true, path: '/', maxAge: 0 }),
+    );
+  });
+
+  it('keeps the successful signup response if post-commit cookie cleanup fails', async () => {
+    mocks.cookies[PARTNER_REF_COOKIE] = 'concordia-hs';
+    mocks.cookieSet.mockImplementationOnce(() => { throw new Error('cookie write unavailable'); });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      const response = await POST(request());
+
+      expect(response.status).toBe(200);
+      expect(mocks.createMember).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('prefers the body ref over a stale cookie', async () => {
