@@ -16,6 +16,14 @@ Skills Inventory control, scheduling, and spreadsheet reporting`;
     `# Jane Doe\n\n## Education\nNo educational background was provided.\n\n## Skills\nInventory control`), true);
   assert.equal(hasContradictoryMissingResumeSection(source,
     `# Jane Doe\n\n## Skills\nNo specific skills were provided in the profile.`), true);
+  assert.equal(hasContradictoryMissingResumeSection(source,
+    '# Jane Doe\n\nExperience: No employment history was provided.'), true);
+  assert.equal(hasContradictoryMissingResumeSection(source,
+    '# Jane Doe\n\n## Experience — No employment history was provided.'), true);
+  assert.equal(hasContradictoryMissingResumeSection(source,
+    '# Jane Doe\n\nEducation: No educational background was provided.'), true);
+  assert.equal(hasContradictoryMissingResumeSection(source,
+    '# Jane Doe\n\n## Skills — No specific skills were provided.'), true);
 });
 
 test('permits sparse source text and ordinary negated prose', () => {
@@ -28,6 +36,10 @@ test('permits sparse source text and ordinary negated prose', () => {
     '# Jane Doe\n\n## Experience\nNo gaps in employment history.\nOperations coordinator at Acme Logistics.'), false);
   assert.equal(hasContradictoryMissingResumeSection(source,
     '# Jane Doe\n\n## Experience\nNo Experience Required Trainer at Acme Logistics.'), false);
+
+  const summarySentence = 'Jane Doe\nExperience with Microsoft Word is an asset for this role.';
+  assert.equal(hasContradictoryMissingResumeSection(summarySentence,
+    '# Jane Doe\n\n## Experience\nNo employment history was provided.'), false);
 });
 
 test('does not treat an empty heading followed by another section as experience evidence', () => {

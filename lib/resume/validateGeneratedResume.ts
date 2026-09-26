@@ -16,15 +16,33 @@ const MISSING_SECTION_CLAIMS: Record<ResumeSection, RegExp> = {
   certifications: /(?:^|\n)\s*(?:[-*]\s*)?\**No\s+(?:(?:completed|earned)\s+)?certifications?\s+(?:(?:were|are|have been)\s+)?(?:provided|included|listed|available)\b/im,
 };
 
+const NARRATIVE_OPENING = /^(?:with|in|of|using|for|from|on|at|as|is|was|were|has|have|can|needed|desired)\b/i;
+
+function hasMissingSectionClaim(generated: string, section: ResumeSection): boolean {
+  return generated.replace(/\r\n?/g, '\n').split('\n').some((rawLine) => {
+    const line = rawLine.trim().replace(/^#{1,4}\s*/, '');
+    const heading = line.match(SECTION_HEADINGS[section]);
+    const content = heading
+      ? heading[1].replace(/^[\s:—–-]+/, '').trim()
+      : line;
+    return MISSING_SECTION_CLAIMS[section].test(`\n${content}`);
+  });
+}
+
 function hasPopulatedSection(source: string, section: ResumeSection): boolean {
   const lines = source.replace(/\r\n?/g, '\n').split('\n');
   for (let index = 0; index < lines.length; index += 1) {
-    const match = lines[index].trim().match(SECTION_HEADINGS[section]);
+    const line = lines[index].trim();
+    const match = line.match(SECTION_HEADINGS[section]);
     if (!match) continue;
 
     // PDF extraction sometimes merges a heading and its first entry.
-    const inline = match[1].trim();
-    if (inline.length >= 15 && !MISSING_SECTION_CLAIMS[section].test(`\n${inline}`)) return true;
+    const inline = match[1].replace(/^[\s:—–-]+/, '').trim();
+    const headingPrefix = line.slice(0, line.length - match[1].length);
+    const explicitlyDelimited = /[:—–]|\s{2,}$/.test(headingPrefix);
+    if (inline && !explicitlyDelimited && NARRATIVE_OPENING.test(inline)) continue;
+    if (inline.length >= 15 && !hasMissingSectionClaim(inline, section)
+      && (explicitlyDelimited || /^[A-Z0-9]/.test(inline))) return true;
 
     for (let next = index + 1; next < lines.length; next += 1) {
       const entry = lines[next].trim();
@@ -32,7 +50,7 @@ function hasPopulatedSection(source: string, section: ResumeSection): boolean {
         || (Object.keys(SECTION_HEADINGS) as ResumeSection[]).some(
           (other) => other !== section && SECTION_HEADINGS[other].test(entry),
         )) break;
-      if (entry.length >= 15 && !MISSING_SECTION_CLAIMS[section].test(`\n${entry}`)) return true;
+      if (entry.length >= 15 && !hasMissingSectionClaim(entry, section)) return true;
     }
   }
   return false;
@@ -42,6 +60,6 @@ function hasPopulatedSection(source: string, section: ResumeSection): boolean {
 export function hasContradictoryMissingResumeSection(source: string, generated: string): boolean {
   if (!source || !generated) return false;
   return (Object.keys(SECTION_HEADINGS) as ResumeSection[]).some(
-    (section) => MISSING_SECTION_CLAIMS[section].test(generated) && hasPopulatedSection(source, section),
+    (section) => hasMissingSectionClaim(generated, section) && hasPopulatedSection(source, section),
   );
 }

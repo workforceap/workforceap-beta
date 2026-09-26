@@ -353,7 +353,7 @@ describe('POST /api/member/resume/generate', () => {
     );
     vi.mocked(isAnthropicConfigured).mockReturnValue(true);
     vi.mocked(claudeChat).mockResolvedValue(
-      '# Jane Doe\n\n## Experience\nNo employment history was provided in the resume or profile.',
+      '# Jane Doe\n\n## Experience — No employment history was provided in the resume or profile.',
     );
 
     const res = await generateResume(makeGenerateRequest());
