@@ -16,6 +16,7 @@ import {
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { persistEvent } from '@/lib/events/track';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -72,6 +73,12 @@ export const POST = withApiGuc(async (request: Request) => {
     return NextResponse.json({ error: 'Incorrect password. Account deletion cancelled.' }, { status: 403 });
   }
 
+  const billingDeletion = await beginBillingDeletion(user.id);
+  if (!billingDeletion.ok) return NextResponse.json({
+    error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
+    code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+  }, { status: 409 });
+
   // Revoke Supabase session first (prevents continued use)
   await supabase.auth.signOut({ scope: 'global' });
 
@@ -80,7 +87,8 @@ export const POST = withApiGuc(async (request: Request) => {
   const storage = await deleteUserStorageObjects(userId);
   if (!storage.ok) {
     console.error('[gdpr/delete] storage object delete failed:', storage.error);
-    return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
+    await releaseBillingDeletion(userId, billingDeletion.operationId);
+    return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED, billingDeletionPending: true }, { status: 502 });
   }
 
   // WAP-169: same anonymiser as /api/member/delete-account and the retention
@@ -112,6 +120,7 @@ export const POST = withApiGuc(async (request: Request) => {
 
   if (deleteAuthError) {
     console.error('[gdpr/delete] Supabase auth delete failed:', deleteAuthError);
+    await releaseBillingDeletion(userId, billingDeletion.operationId);
     return NextResponse.json(
       {
         error: 'Account data was anonymized, but auth deletion failed. Please contact support to complete account deletion.',
@@ -119,6 +128,7 @@ export const POST = withApiGuc(async (request: Request) => {
       { status: 500 },
     );
   }
+  await completeBillingDeletion(userId, billingDeletion.operationId);
 
   // The actor snapshot is pinned: `users.email` is now the recoverable
   // deleted marker (which embeds the original address for the 30-day restore

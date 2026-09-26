@@ -37,6 +37,7 @@ import { buildDeletedEmail } from './deletedEmail';
 export type AnonymizeMemberReason =
   | 'member_self_delete'
   | 'gdpr_account_delete'
+  | 'admin_erase'
   | 'retention_purge_blocked';
 
 export type AnonymizeMemberOptions = {

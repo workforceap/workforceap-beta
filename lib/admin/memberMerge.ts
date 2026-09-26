@@ -1,6 +1,7 @@
 import { Prisma, type CourseProgressStatus, type User } from '@prisma/client';
 
 import { getLevelForPoints } from '@/lib/member/pointsConfig';
+import { hasUnresolvedBillingSend, lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
 import {
   MEMBER_MERGE_PREVIEW_ONLY,
   MEMBER_MERGE_REPOINT_PLAN,
@@ -691,6 +692,11 @@ export async function executeMemberMerge(
   secondaryId: string,
   actorUserId: string,
 ): Promise<MergeResult> {
+  // A merge retires the secondary account. Hold the same member lock used by
+  // billing claims until this merge transaction commits, so no provider call
+  // can start after the merge begins or outlive the retirement.
+  for (const id of [primaryId, secondaryId].sort()) await lockBillingMemberLifecycle(tx, id);
+  if (await hasUnresolvedBillingSend(tx, secondaryId)) throw new Error('Cannot merge a member while a billing packet delivery is unresolved. Reconcile the send first.');
   const [primary, secondary] = await Promise.all([
     tx.user.findUnique({ where: { id: primaryId } }),
     tx.user.findUnique({ where: { id: secondaryId } }),
@@ -699,7 +705,7 @@ export async function executeMemberMerge(
   if (!primary || !secondary) {
     throw new Error('One or both members not found');
   }
-  if (primary.deletedAt || secondary.deletedAt) {
+  if (primary.deletedAt || secondary.deletedAt || primary.billingDeletionPendingAt || secondary.billingDeletionPendingAt) {
     throw new Error('Cannot merge deleted members');
   }
   if (primary.organizationId !== secondary.organizationId) {

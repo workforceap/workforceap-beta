@@ -234,6 +234,7 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
       });
       if (!started.ok) {
         if (started.reason === 'superseded') return supersededConflict();
+        if (started.reason === 'member_inactive') return conflict('The member is being deleted or is no longer active; this packet cannot be emailed.', 'member_inactive');
         if (started.reason === 'duplicate') {
           return conflict('A recipient of this attempt already has a delivered copy (just recorded). Refresh, then confirm the duplicate or use "Send to remaining recipients".', 'duplicate_confirmation_required');
         }

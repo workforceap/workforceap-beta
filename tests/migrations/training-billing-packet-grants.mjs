@@ -15,6 +15,7 @@ import { spawnSync } from 'node:child_process';
 const parentMigration = readFileSync('prisma/migrations/20260904020000_training_billing_packets/migration.sql', 'utf8');
 const migration = readFileSync('prisma/migrations/20260926140000_training_billing_packet_signed_snapshot/migration.sql', 'utf8');
 const retentionMigration = readFileSync('prisma/migrations/20260926220743_training_billing_packet_retention_hold/migration.sql', 'utf8');
+const deletionBarrierMigration = readFileSync('prisma/migrations/20260926223506_billing_deletion_pending/migration.sql', 'utf8');
 const sourceUrl = process.env.BILLING_PACKET_GRANTS_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';
 const target = new URL(sourceUrl);
 assert.ok(['127.0.0.1', 'localhost'].includes(target.hostname), 'Proof database must be local.');
@@ -44,6 +45,13 @@ function runSql(input, database = proofDatabase) {
   return result.stdout.trim();
 }
 const sql = (input) => runSql(input);
+function assertSqlRejected(input, code) {
+  const result = spawnSync('psql', ['-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-d', proofDatabase], {
+    env, input: `\\set VERBOSITY sqlstate\n${input}`, encoding: 'utf8', timeout: 20_000,
+  });
+  assert.notEqual(result.status, 0, 'Unsafe SQL unexpectedly succeeded');
+  assert.match(result.stderr, new RegExp(code), `Expected PostgreSQL error ${code}`);
+}
 
 const TABLES = ['training_billing_packets', 'training_billing_packet_sends'];
 const BROWSER_ROLES = ['anon', 'authenticated'];
@@ -88,7 +96,7 @@ try {
   sql(`
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
     CREATE TABLE public.organizations (id TEXT PRIMARY KEY);
-    CREATE TABLE public.users (id TEXT PRIMARY KEY);
+    CREATE TABLE public.users (id TEXT PRIMARY KEY, organization_id TEXT, deleted_at TIMESTAMP(3), full_name TEXT, email TEXT);
   `);
   sql(parentMigration);
   sql(`ALTER TABLE public.training_billing_packets ENABLE ROW LEVEL SECURITY;`);
@@ -124,6 +132,18 @@ try {
     'The packet member FK must detach the packet on account deletion',
   );
   assert.equal(sql(`SELECT subject_member_id FROM public.training_billing_packets WHERE id='p';`), 'u', 'Historical subject ID must be backfilled');
+  sql(deletionBarrierMigration);
+  sql(deletionBarrierMigration);
+  sql(`UPDATE public.users SET organization_id='org', full_name='Synthetic Member', email='synthetic@example.test' WHERE id='u';`);
+  assert.equal(sql(`SELECT id FROM public.users WHERE id='u'::text AND organization_id='org'::text AND deleted_at IS NULL AND billing_deletion_pending_at IS NULL AND full_name='Synthetic Member'::text AND email='synthetic@example.test'::text FOR UPDATE;`), 'u', 'TEXT member row locks for sign and claim must execute');
+  sql(`UPDATE public.users SET billing_deletion_pending_at=now(), billing_deletion_operation_id='00000000-0000-4000-8000-000000000001' WHERE id='u';`);
+  assert.equal(sql(`SELECT id FROM public.users WHERE id='u'::text AND organization_id='org'::text AND deleted_at IS NULL AND billing_deletion_pending_at IS NULL FOR UPDATE;`), '', 'Pending deletion must stop claim');
+  assertSqlRejected(`SET ROLE authenticated; UPDATE public.users SET billing_deletion_pending_at=NULL WHERE id='u';`, '42501');
+  sql(`UPDATE public.users SET billing_deletion_operation_id=NULL WHERE id='u' AND billing_deletion_operation_id='00000000-0000-4000-8000-000000000001';`);
+  assert.equal(sql(`SELECT billing_deletion_pending_at IS NOT NULL AND billing_deletion_operation_id IS NULL FROM public.users WHERE id='u';`), 't', 'Failed Storage retry keeps marker while releasing operation ownership');
+  sql(`UPDATE public.training_billing_packets SET signed_snapshot='{"counselor":{"userId":"signer"}}'::jsonb WHERE id='p'; UPDATE public.training_billing_packet_sends SET recipient='counselor', status='ambiguous' WHERE id='s';`);
+  assert.equal(sql(`SELECT count(*) FROM public.training_billing_packet_sends s JOIN public.training_billing_packets p ON p.id=s.packet_id WHERE s.status IN ('claimed','ambiguous','needs_reconciliation') AND (p.member_id='signer'::text OR (s.recipient='counselor' AND p.signed_snapshot #>> '{counselor,userId}'='signer'::text));`), '1', 'Unresolved counselor copy must block counselor deletion');
+  console.log('PASS deletion operation marker, browser-role protection, TEXT row locks and unresolved counselor lookup');
   sql(`
     CREATE TABLE public.member_private_data (
       id TEXT PRIMARY KEY,

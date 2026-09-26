@@ -32,6 +32,9 @@ export const POST = withApiGuc(async (
           id: true,
           email: true,
           deletedAt: true,
+          billingDeletionPendingAt: true,
+          billingDeletionOperationId: true,
+          billingDeletionCompletedAt: true,
           fullName: true,
           phone: true,
           profile: { select: { role: true } },
@@ -51,6 +54,9 @@ export const POST = withApiGuc(async (
     }
     if (!target.deletedAt) {
       return NextResponse.json({ error: 'User is not soft-deleted; nothing to restore.' }, { status: 400 });
+    }
+    if (target.billingDeletionOperationId || (target.billingDeletionPendingAt && !target.billingDeletionCompletedAt)) {
+      return NextResponse.json({ error: 'Account deletion is still being completed. Retry deletion or contact support before restoring.' }, { status: 409 });
     }
   
     // If the email was rewritten, try to restore the original.
@@ -124,8 +130,13 @@ export const POST = withApiGuc(async (
     try {
       const changed = await withTenantScope(orgId, (db) =>
         db.user.updateMany({
-          where: { id, email: target.email, deletedAt: target.deletedAt },
-          data: { deletedAt: null, email: emailToWrite },
+          where: {
+            id, email: target.email, deletedAt: target.deletedAt,
+            billingDeletionPendingAt: target.billingDeletionPendingAt ?? null,
+            billingDeletionOperationId: null,
+            billingDeletionCompletedAt: target.billingDeletionCompletedAt ?? null,
+          },
+          data: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionCompletedAt: null, email: emailToWrite },
         }),
       );
       if (changed.count !== 1) throw new Error('Restore target changed during request');

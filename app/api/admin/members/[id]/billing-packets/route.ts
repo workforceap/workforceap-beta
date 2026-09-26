@@ -21,6 +21,7 @@ import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 import { RECONCILE_CLAIMED_MIN_AGE_MS, reconcileProviderResults, repairProviderResultsOnRead } from '@/lib/billing/sendAttempts';
 import { randomUUID } from 'node:crypto';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
 
 /**
  * J5 invoice + J6 cover letter packets for one member.
@@ -53,6 +54,8 @@ class DuplicateAttestationError extends Error {
     super('duplicate funding attestation');
   }
 }
+
+class BillingMemberUnavailableError extends Error {}
 
 function isoToDate(iso: string): Date {
   return new Date(`${iso}T00:00:00.000Z`);
@@ -244,6 +247,12 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     for (let attempt = 0; attempt < 3 && !created; attempt++) {
       try {
         created = await prisma.$transaction(async (tx) => {
+          await lockBillingMemberLifecycle(tx, member.id);
+          const activeMember = await tx.user.findFirst({
+            where: { id: member.id, organizationId: member.organizationId, deletedAt: null, billingDeletionPendingAt: null },
+            select: { id: true },
+          });
+          if (!activeMember) throw new BillingMemberUnavailableError('This member is being deleted or changed. No billing packet was signed.');
           // Serializes signs for the same member + approval; released at commit.
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet:${member.organizationId}:${member.id}:${fundingAttestationKey}`}))`;
           // Deletion updates the same users row. Lock it and recheck the
@@ -334,6 +343,9 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
           return replacement;
         });
       } catch (err) {
+        if (err instanceof BillingMemberUnavailableError) {
+          return NextResponse.json({ error: err.message, code: 'member_unavailable' }, { status: 409 });
+        }
         if (err instanceof DuplicateAttestationError) return duplicateResponse(err.packetNumber);
         if (err instanceof SupersedeRefusedError) return NextResponse.json({ error: err.message, code: err.code }, { status: err.status });
         if (!isUniqueViolation(err) || attempt === 2) throw err;

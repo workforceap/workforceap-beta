@@ -75,16 +75,20 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 }));
 
 vi.mock('@/lib/billing/erasureGuard', () => ({
-  hasClaimedBillingSend: vi.fn(),
+  beginBillingDeletion: vi.fn(),
+  releaseBillingDeletion: vi.fn(),
+  completeBillingDeletion: vi.fn(),
   BILLING_SEND_IN_PROGRESS_ERROR: 'A billing packet is being sent for this member. Finish or reconcile that send before deleting the account.',
 }));
+vi.mock('@/lib/member/anonymizeMember', () => ({ anonymizeMember: vi.fn(async () => ({ userId: 'member-1', deletedAt: new Date(), profileRowsCleared: 1 })) }));
 
 import { POST } from '@/app/api/admin/members/[id]/erase/route';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
-import { hasClaimedBillingSend } from '@/lib/billing/erasureGuard';
+import { beginBillingDeletion, releaseBillingDeletion, completeBillingDeletion } from '@/lib/billing/erasureGuard';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
 
 const MEMBER_ID = 'member-1';
 
@@ -122,16 +126,16 @@ describe('POST /api/admin/members/[id]/erase', () => {
     remove.mockResolvedValue({ id: MEMBER_ID });
     supabaseDeleteUser.mockResolvedValue({ error: null });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
-    vi.mocked(hasClaimedBillingSend).mockResolvedValue(false);
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
   });
 
   it('refuses erasure before file deletion while a billing delivery is claimed', async () => {
-    vi.mocked(hasClaimedBillingSend).mockResolvedValue(true);
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: false, reason: 'unresolved_send' });
 
     const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
 
     expect(res.status).toBe(409);
-    expect((await res.json()).code).toBe('billing_send_in_progress');
+    expect((await res.json()).code).toBe('billing_send_unresolved');
     expect(deleteUserStorageObjects).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
   });
@@ -144,7 +148,9 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({
       error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
+      billingDeletionPending: true,
     });
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     expect(update).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
     expect(supabaseDeleteUser).not.toHaveBeenCalled();
@@ -163,12 +169,11 @@ describe('POST /api/admin/members/[id]/erase', () => {
         { bucket: 'member-files', path: 'cert-files/member-1/cert.pdf' },
       ],
     });
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: MEMBER_ID }, data: expect.objectContaining({ deletedAt: expect.any(Date) }) }),
-    );
+    expect(anonymizeMember).toHaveBeenCalledWith(MEMBER_ID, { reason: 'admin_erase', actorUserId: 'admin-1' }, expect.anything());
+    expect(completeBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     expect(remove).not.toHaveBeenCalled();
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
-    const [updateOrder] = update.mock.invocationCallOrder;
+    const [updateOrder] = vi.mocked(anonymizeMember).mock.invocationCallOrder;
     expect(storageOrder).toBeLessThan(updateOrder);
   });
 

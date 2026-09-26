@@ -72,7 +72,9 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 }));
 
 vi.mock('@/lib/billing/erasureGuard', () => ({
-  hasClaimedBillingSend: vi.fn(),
+  beginBillingDeletion: vi.fn(),
+  releaseBillingDeletion: vi.fn(),
+  completeBillingDeletion: vi.fn(),
   BILLING_SEND_IN_PROGRESS_ERROR: 'A billing packet is being sent for this member. Finish or reconcile that send before deleting the account.',
 }));
 
@@ -82,7 +84,7 @@ import { isAdmin, requireAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import { hasClaimedBillingSend } from '@/lib/billing/erasureGuard';
+import { beginBillingDeletion, releaseBillingDeletion, completeBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const MEMBER_ID = 'member-1';
 
@@ -108,18 +110,18 @@ describe('POST /api/admin/members/[id]/delete', () => {
     });
     update.mockResolvedValue({ id: MEMBER_ID });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
-    vi.mocked(hasClaimedBillingSend).mockResolvedValue(false);
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
     supabaseGetUserById.mockResolvedValue({ data: { user: { id: MEMBER_ID, email: 'member@example.com' } }, error: null });
     supabaseUpdateUserById.mockResolvedValue({ error: null });
   });
 
   it('refuses to delete files while a billing delivery is claimed', async () => {
-    vi.mocked(hasClaimedBillingSend).mockResolvedValue(true);
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: false, reason: 'unresolved_send' });
 
     const res = await POST(deleteReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
 
     expect(res.status).toBe(409);
-    expect((await res.json()).code).toBe('billing_send_in_progress');
+    expect((await res.json()).code).toBe('billing_send_unresolved');
     expect(deleteUserStorageObjects).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
   });
@@ -146,7 +148,9 @@ describe('POST /api/admin/members/[id]/delete', () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({
       error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
+      billingDeletionPending: true,
     });
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     expect(update).not.toHaveBeenCalled();
     expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
@@ -166,6 +170,7 @@ describe('POST /api/admin/members/[id]/delete', () => {
       ],
     });
     expect(update).toHaveBeenCalled();
+    expect(completeBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     // Ordering contract (formerly lib/admin/memberDeleteStorage.test.ts): blobs
     // are removed before the row is rewritten and before the login is locked,
     // so a storage failure can never leave a "deleted" member with files.

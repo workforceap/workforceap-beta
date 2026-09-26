@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
@@ -12,7 +11,8 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
-import { BILLING_SEND_IN_PROGRESS_ERROR, hasClaimedBillingSend } from '@/lib/billing/erasureGuard';
+import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -80,9 +80,11 @@ export const POST = withApiGuc(async (
     }
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) return NextResponse.json({ error: 'Administrator accounts cannot be erased from member management.' }, { status: 403 });
 
-    if (await hasClaimedBillingSend(id)) {
-      return NextResponse.json({ error: BILLING_SEND_IN_PROGRESS_ERROR, code: 'billing_send_in_progress' }, { status: 409 });
-    }
+    const billingDeletion = await beginBillingDeletion(id, orgId);
+    if (!billingDeletion.ok) return NextResponse.json({
+      error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during erasure. Reload and try again.',
+      code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+    }, { status: 409 });
 
     const extraPaths = [
       existing.profile?.resumeOriginalPath
@@ -99,7 +101,8 @@ export const POST = withApiGuc(async (
     const storage = await deleteUserStorageObjects(id, { extraPaths });
     if (!storage.ok) {
       console.error(`[gdpr-erase] storage object delete failed for ${id}:`, storage.error);
-      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
+      await releaseBillingDeletion(id, billingDeletion.operationId);
+      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED, billingDeletionPending: true }, { status: 502 });
     }
 
     // Optionally anonymize instead of hard-delete for members that still
@@ -108,23 +111,9 @@ export const POST = withApiGuc(async (
     const shouldAnonymize = !force && existing.deletedAt == null && existing.courseEnrollments.length > 0;
 
     if (shouldAnonymize) {
-      // Anonymize: scramble PII but keep enrollment records for reporting
-      const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
-      await withTenantScope(orgId, (db) =>
-        db.user.update({
-          where: { id },
-          data: {
-            email: `${hash}@anonymized.invalid`,
-            fullName: 'Anonymized User',
-            phone: null,
-            assessmentAnswers: Prisma.JsonNull,
-            careerRecommendationJson: Prisma.JsonNull,
-            wioaQualificationJson: Prisma.JsonNull,
-            wioaReviewNotes: null,
-            deletedAt: new Date(),
-          },
-        }),
-      );
+      // Scrub User and Profile PII together while preserving enrollment rows.
+      await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
+      await completeBillingDeletion(id, billingDeletion.operationId);
 
       await logCronRun('gdpr_erase', {
         memberId: id,

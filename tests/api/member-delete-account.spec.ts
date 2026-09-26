@@ -51,6 +51,10 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 // WAP-169: the route delegates every users/profiles write to the shared
 // anonymiser (covered in tests/gdpr/anonymize-member.spec.ts).
 vi.mock('@/lib/member/anonymizeMember', () => ({ anonymizeMember: vi.fn() }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  beginBillingDeletion: vi.fn(), releaseBillingDeletion: vi.fn(), completeBillingDeletion: vi.fn(),
+  BILLING_SEND_IN_PROGRESS_ERROR: 'Billing send unresolved',
+}));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => {}) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
 
@@ -64,6 +68,7 @@ import { isAdmin } from '@/lib/auth/roles';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { beginBillingDeletion, releaseBillingDeletion, completeBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const anonymized = (overrides: Partial<{ alreadyDeleted: boolean }> = {}) => ({
   userId: UUIDS.user,
@@ -82,6 +87,7 @@ describe('POST /api/member/delete-account', () => {
     vi.clearAllMocks();
     vi.mocked(isAdmin).mockResolvedValue(false);
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] } as any);
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
   });
 
   it('protects administrator accounts from the member self-delete action', async () => {
@@ -110,6 +116,7 @@ describe('POST /api/member/delete-account', () => {
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
+    expect(completeBillingDeletion).toHaveBeenCalledWith(UUIDS.user, 'operation-1');
     expect(anonymizeMember).toHaveBeenCalledTimes(1);
     expect(anonymizeMember).toHaveBeenCalledWith(UUIDS.user, { reason: 'member_self_delete' }, prisma);
     // The route writes no users/profiles row of its own any more.
@@ -228,7 +235,9 @@ describe('POST /api/member/delete-account', () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({
       error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
+      billingDeletionPending: true,
     });
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(UUIDS.user, 'operation-1');
     expect(anonymizeMember).not.toHaveBeenCalled();
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(getSupabaseAdmin).not.toHaveBeenCalled();

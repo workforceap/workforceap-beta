@@ -215,6 +215,41 @@ that automatically emails to counselor and the student."
   the provider org. Anyone else gets 404. Single documents render inline unless `download=1`; `doc=both` downloads
   by default (`download=0` to preview it inline).
 
+## Retention and member deletion
+
+- Issued packet and send rows are financial evidence. The packet's live
+  `member_id` becomes null when an account is hard-deleted, while the frozen
+  `subject_member_id` and signed snapshot remain for provider-org admins.
+  The admin archive is `GET /api/admin/billing-packets/archive`; deleted
+  members and counselors cannot retrieve these PDFs. Other private child
+  records still follow their normal account-delete cascade.
+- Signing and send claims take a member lifecycle transaction lock. Deletion
+  takes that lock, refuses an unresolved `claimed`, `ambiguous`, or
+  `needs_reconciliation` copy for either the student or the frozen counselor,
+  then commits `billing_deletion_pending_at` before Storage cleanup. A pending
+  marker blocks later signing and claiming. The cleanup request owns a UUID
+  operation token, so a second delete or erase returns a conflict while the
+  first is working.
+- A returned Storage or Auth failure releases the operation token while
+  leaving the pending marker in place. Retry can acquire a new token and
+  repeat cleanup. A process crash leaves the token held and requires an
+  operator to verify external cleanup before clearing it. Soft-delete routes
+  set `billing_deletion_completed_at` only after account and Auth cleanup;
+  restore requires that completion version and compares it again when
+  activating the app row. This prevents a concurrent erase from racing a
+  restore through Storage deletion.
+- The member lifecycle lock needs a real interactive transaction. Billing
+  writes fail closed where Prisma transactions are flattened (current Preview
+  configuration); production must keep interactive transactions enabled.
+  The 30-day account purge can detach the packet FK without holding unrelated
+  private child records. The isolated PostgreSQL proof is
+  `tests/migrations/training-billing-packet-grants.mjs`.
+- **Policy to set before release:** retention duration and legal hold for the
+  frozen signed packet/PDF, send evidence and archive audit; which authorized
+  staff may release a crashed cleanup token; and how provider evidence is
+  recorded before reconciling an uncertain send. A provider request already
+  accepted cannot be recalled by account deletion.
+
 ## Page layout
 
 Each document is laid out so the closing never orphans: the J5 remit terms +

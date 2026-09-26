@@ -43,6 +43,7 @@ function matches(row: Record<string, unknown>, where: Record<string, unknown>): 
   return Object.entries(where).every(([key, cond]) => {
     const value = row[key];
     if (cond && typeof cond === 'object' && !(cond instanceof Date) && 'in' in (cond as object)) return (cond as { in: unknown[] }).in.includes(value);
+    if (cond && typeof cond === 'object' && !(cond instanceof Date) && 'not' in (cond as object)) return value !== (cond as { not: unknown }).not;
     if (cond instanceof Date) return value instanceof Date && value.getTime() === cond.getTime();
     return (value ?? null) === (cond ?? null);
   });
@@ -100,6 +101,15 @@ vi.mock('@/lib/db/prisma', () => {
           return 1;
         },
         $queryRaw: async (_sql: TemplateStringsArray, ...values: unknown[]) => {
+          if (Array.from(_sql).join('?').includes('training_billing_packet_sends s')) {
+            const memberId = values[0];
+            return db.sends.filter((s) => {
+              if (!['claimed', 'ambiguous', 'needs_reconciliation'].includes(String(s.status))) return false;
+              const packet = db.packets.find((p) => p.id === s.packetId);
+              const counselorId = (packet?.signedSnapshot as { counselor?: { userId?: string } } | null)?.counselor?.userId;
+              return packet?.memberId === memberId || (s.recipient === 'counselor' && counselorId === memberId);
+            }).map((s) => ({ id: s.id }));
+          }
           if (_sql.join('').includes('FROM counselor_assignments AS ca')) {
             mocks.lockTrace.push('counselor-rows');
             const [memberId, organizationId] = values;
@@ -117,7 +127,7 @@ vi.mock('@/lib/db/prisma', () => {
           }
           const [id, organizationId, fullName, email] = values;
           return db.users
-            .filter((u) => u.id === id && u.organizationId === organizationId && u.deletedAt === null
+            .filter((u) => u.id === id && u.organizationId === organizationId && u.deletedAt === null && u.billingDeletionPendingAt == null
               && (fullName === undefined || u.fullName === fullName)
               && (email === undefined || u.email === email))
             .map((u) => ({ id: u.id, email: u.email }));
@@ -132,6 +142,11 @@ vi.mock('@/lib/db/prisma', () => {
     user: {
       findFirst: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.users.find((u) => matches(u, where)) ?? null),
       findUnique: vi.fn(async ({ where }: { where: { id: string } }) => db.users.find((u) => u.id === where.id) ?? null),
+      updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Row }) => {
+        const rows = db.users.filter((u) => matches(u, where));
+        rows.forEach((u) => Object.assign(u, data));
+        return { count: rows.length };
+      }),
     },
     courseEnrollment: {
       findMany: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.enrollments.filter((e) => matches(e, where))),
@@ -252,6 +267,7 @@ import {
 } from '@/lib/billing/sendAttempts';
 import { listPacketsForMember, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { prisma as prismaMock } from '@/lib/db/prisma';
+import { beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const ORG = DEFAULT_ORG_ID;
 const OTHER_ORG = 'aaaaaaaa-0000-4000-8000-000000000009';
@@ -341,7 +357,7 @@ beforeEach(() => {
   db.catalog = null;
   db.counselor = null;
   db.users = [
-    { id: MEMBER, fullName: 'Test Member', email: 'member@example.test', organizationId: ORG, deletedAt: null, enrolledProgram: null },
+    { id: MEMBER, fullName: 'Test Member', email: 'member@example.test', organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, enrolledProgram: null },
     { id: ADMIN, fullName: 'Test Admin', email: 'admin@example.test', organizationId: ORG, deletedAt: null, enrolledProgram: null },
   ];
   db.enrollments = [
@@ -364,6 +380,80 @@ beforeEach(() => {
   mocks.lockTrace.length = 0;
   delete process.env.BILLING_PACKET_PROVIDER_ORG_ID;
   delete process.env.EMAIL_FROM;
+});
+
+describe('billing deletion barrier ordering', () => {
+  it('deletion wins: marker commits before Storage and no sign or provider claim follows', async () => {
+    const id = await signOne();
+    const deletion = await beginBillingDeletion(MEMBER, ORG);
+    expect(deletion.ok).toBe(true);
+    expect(db.users[0].billingDeletionPendingAt).toBeInstanceOf(Date);
+    expect((await createPacket(req(body({ fundingAttestation: { reference: 'TEST-ITA-0002' } })), params(MEMBER))).status).toBe(409);
+    expect((await sendPacket(req({}), packetParams(id))).status).toBe(409);
+    expect(mocks.send).not.toHaveBeenCalled();
+    if (deletion.ok) await releaseBillingDeletion(MEMBER, deletion.operationId);
+    expect(db.users[0].billingDeletionPendingAt).toBeInstanceOf(Date);
+    expect((await sendPacket(req({}), packetParams(id))).status).toBe(409);
+  });
+
+  it('claim wins: deletion waits for an unresolved delivery, including its ambiguous outcome', async () => {
+    const id = await signOne();
+    let finishProvider!: (value: unknown) => void;
+    mocks.send.mockImplementation(() => new Promise((resolve) => { finishProvider = resolve; }));
+    const sending = sendPacket(req({}), packetParams(id));
+    await vi.waitFor(() => expect(db.sends.some((s) => s.status === 'claimed')).toBe(true));
+    expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'unresolved_send' });
+    expect(db.users[0].billingDeletionPendingAt).toBeNull();
+    finishProvider({ data: { id: 'msg' }, error: null });
+    expect((await sending).status).toBe(200);
+    db.sends[0].status = 'ambiguous';
+    expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'unresolved_send' });
+    db.sends[0].status = 'needs_reconciliation';
+    expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'unresolved_send' });
+    db.sends[0].status = 'reconciled_delivered';
+    expect((await beginBillingDeletion(MEMBER, ORG)).ok).toBe(true);
+  });
+
+  it('one cleanup request owns the barrier; a returned failure can be retried without reopening sends', async () => {
+    const first = await beginBillingDeletion(MEMBER, ORG);
+    expect(first.ok).toBe(true);
+    expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'in_progress' });
+    if (!first.ok) return;
+    await releaseBillingDeletion(MEMBER, first.operationId);
+    expect(db.users[0].billingDeletionOperationId).toBeNull();
+    expect(db.users[0].billingDeletionPendingAt).toEqual(first.pendingAt);
+    const second = await beginBillingDeletion(MEMBER, ORG);
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.operationId).not.toBe(first.operationId);
+    expect(second.pendingAt).toEqual(first.pendingAt);
+    await releaseBillingDeletion(MEMBER, first.operationId);
+    expect(db.users[0].billingDeletionOperationId).toBe(second.operationId);
+    db.users[0].deletedAt = new Date();
+    await completeBillingDeletion(MEMBER, second.operationId);
+    expect(db.users[0].billingDeletionOperationId).toBeNull();
+    expect(db.users[0].billingDeletionCompletedAt).toBeInstanceOf(Date);
+  });
+
+  it('unresolved counselor copies block counselor deletion too', async () => {
+    db.counselor = { ...COUNSELOR, organizationId: ORG, deletedAt: null };
+    db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null });
+    const id = await signOne();
+    db.sends.push({ id: 'counselor-send', packetId: id, recipient: 'counselor', status: 'ambiguous' });
+    expect(await beginBillingDeletion(COUNSELOR.id, ORG)).toEqual({ ok: false, reason: 'unresolved_send' });
+    db.sends[0].status = 'reconciled_delivered';
+    expect((await beginBillingDeletion(COUNSELOR.id, ORG)).ok).toBe(true);
+  });
+
+  it('fails closed when Preview flattens transactions and advisory locks cannot persist', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    try {
+      await expect(beginBillingDeletion(MEMBER, ORG)).rejects.toThrow('interactive transactions');
+      expect(db.users[0].billingDeletionPendingAt).toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });
 
 describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {

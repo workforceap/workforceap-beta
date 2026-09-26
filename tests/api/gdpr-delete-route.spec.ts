@@ -73,6 +73,10 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 // WAP-169: the two raw UPDATEs are gone; the route uses the shared anonymiser
 // (covered in tests/gdpr/anonymize-member.spec.ts).
 vi.mock('@/lib/member/anonymizeMember', () => ({ anonymizeMember: vi.fn() }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  beginBillingDeletion: vi.fn(), releaseBillingDeletion: vi.fn(), completeBillingDeletion: vi.fn(),
+  BILLING_SEND_IN_PROGRESS_ERROR: 'Billing send unresolved',
+}));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
 
 import { POST } from '@/app/api/gdpr/delete/route';
@@ -82,6 +86,7 @@ import { deleteSupabaseAuthUser } from '@/lib/gdpr/deleteAuthUser';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { logAuditEvent } from '@/lib/audit/log';
+import { beginBillingDeletion, releaseBillingDeletion, completeBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const ORIGINAL_EMAIL = 'jane@example.com';
 const DELETED_MARKER = `deleted_user-123_1758369600000_${ORIGINAL_EMAIL}@deleted.invalid`;
@@ -89,6 +94,7 @@ const DELETED_MARKER = `deleted_user-123_1758369600000_${ORIGINAL_EMAIL}@deleted
 describe('POST /api/gdpr/delete', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
     vi.mocked(getUser).mockResolvedValue({
       id: 'user-123',
       email: ORIGINAL_EMAIL,
@@ -120,6 +126,7 @@ describe('POST /api/gdpr/delete', () => {
     );
 
     expect(res.status).toBe(200);
+    expect(completeBillingDeletion).toHaveBeenCalledWith('user-123', 'operation-1');
     expect(await res.json()).toMatchObject({ ok: true });
 
     expect(anonymizeMember).toHaveBeenCalledTimes(1);
@@ -188,7 +195,9 @@ describe('POST /api/gdpr/delete', () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toMatchObject({
       error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
+      billingDeletionPending: true,
     });
+    expect(releaseBillingDeletion).toHaveBeenCalledWith('user-123', 'operation-1');
     expect(anonymizeMember).not.toHaveBeenCalled();
     expect(prisma.$executeRaw).not.toHaveBeenCalled();
     expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();

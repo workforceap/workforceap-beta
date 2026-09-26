@@ -11,6 +11,7 @@ import { ADMIN_USER_ROLES, ensureProfileRole, syncManagedUserRoles } from '@/lib
 import { userAuthDeleteFailedResponse } from '@/lib/admin/userDeleteResponse';
 import { buildDeletedEmail, isDeletedEmailMarker, parseDeletedEmail } from '../_deletedEmail';
 import { disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
+import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -52,7 +53,13 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
           { status: 400 },
         );
       }
-  
+
+      const billingDeletion = await beginBillingDeletion(id, orgId);
+      if (!billingDeletion.ok) return NextResponse.json({
+    error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
+    code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+      }, { status: 409 });
+
       await withTenantScope(orgId, (db) =>
         db.user.updateMany({
           where: { id },
@@ -65,8 +72,10 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
       const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, originalEmail);
       if (!disabled.ok) {
         console.error('[admin/users/:id DELETE] Supabase disable error:', disabled.message);
+        await releaseBillingDeletion(id, billingDeletion.operationId);
         return userAuthDeleteFailedResponse();
       }
+      await completeBillingDeletion(id, billingDeletion.operationId);
   
       await auditLog({
         actorUserId: actor.id,

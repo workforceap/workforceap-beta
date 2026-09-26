@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Prisma, TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
+import { lockBillingMemberLifecycle } from './erasureGuard';
 import type { OrganizationBranding } from '@/lib/tenant/organizationBranding';
 import { parseSignedSnapshot, SignedSnapshotCorruptError } from './packetSnapshot';
 
@@ -65,6 +66,13 @@ async function lockPacketSends(tx: Prisma.TransactionClient, packetId: string) {
   // Guaranteed repair of any provider result recorded without its status.
   await reconcileProviderResults(tx, packetId);
   return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true, signedSnapshot: true, memberId: true, organizationId: true } });
+}
+
+/** The immutable subject ID lets every send take the member lock first. */
+async function lockPacketMemberFirst(tx: Prisma.TransactionClient, packetId: string): Promise<string | null> {
+  const subject = await tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { subjectMemberId: true } });
+  if (subject) await lockBillingMemberLifecycle(tx, subject.subjectMemberId);
+  return subject?.subjectMemberId ?? null;
 }
 
 export type SendStatus =
@@ -245,7 +253,7 @@ export async function startSendAttempt(args: {
   now: Date;
   /** Recipients the operator confirmed may get a duplicate copy ("Email again"). */
   confirmedDuplicates?: PacketRecipient[];
-}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' | 'superseded' | 'duplicate' }> {
+}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' | 'superseded' | 'duplicate' | 'member_inactive' }> {
   const attemptNo = (args.expectedCurrent ?? 0) + 1;
   const order: PacketRecipient[] = ['student', 'counselor'];
   const record: SendAttemptRecord = {
@@ -254,9 +262,17 @@ export async function startSendAttempt(args: {
     recipients: order.filter((r) => args.recipients.some((p) => p.recipient === r)),
   };
   return prisma.$transaction(async (tx) => {
+    const subjectMemberId = await lockPacketMemberFirst(tx, args.packetId);
+    if (!subjectMemberId) return { ok: false as const, reason: 'member_inactive' as const };
     // Re-read under the lock: the route's earlier status check may be stale.
     const current = await lockPacketSends(tx, args.packetId);
     if (!isSendable(current)) return { ok: false as const, reason: 'superseded' as const };
+    if (current!.memberId !== subjectMemberId) return { ok: false as const, reason: 'member_inactive' as const };
+    const activeMember = await tx.user.findFirst({
+      where: { id: subjectMemberId, organizationId: current!.organizationId, deletedAt: null, billingDeletionPendingAt: null },
+      select: { id: true },
+    });
+    if (!activeMember) return { ok: false as const, reason: 'member_inactive' as const };
     if ((current!.sendAttemptNo ?? null) !== (args.expectedCurrent ?? null)) return { ok: false as const, reason: 'raced' as const };
     if (args.expectedCurrent != null) {
       let expected: PacketRecipient[];
@@ -374,7 +390,7 @@ export async function claimRecipient(args: {
     // member/counselor cross-claims cannot deadlock each other. Take these
     // before the packet lock, the same order used by the deletion barrier.
     for (const userId of [...new Set([before.memberId, beforeSnapshot.counselor?.userId].filter((id): id is string => !!id))].sort()) {
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-member-lifecycle:${userId}`}))`;
+      await lockBillingMemberLifecycle(tx, userId);
     }
     // Supersede locks this member before the packet lock. Match that order to
     // avoid a packet/member deadlock while still holding the row until commit.
@@ -383,6 +399,7 @@ export async function claimRecipient(args: {
       WHERE id = ${before.memberId}::text
         AND organization_id = ${before.organizationId}::text
         AND deleted_at IS NULL
+        AND billing_deletion_pending_at IS NULL
       FOR UPDATE
     `;
     if (member.length !== 1) return { kind: 'member_inactive' };

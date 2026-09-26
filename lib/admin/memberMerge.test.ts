@@ -105,6 +105,8 @@ function makeMockTx(options: { rows?: MockRows; memberPointsRow?: { totalPoints:
     // let the two broken column names survive. `rows` lets a test give a
     // model real data to collide on. Specials below override these.
     ...generated,
+    $executeRaw: async () => 1,
+    trainingBillingPacketSend: { findFirst: async () => null },
     pointsTransaction: {
       ...generated.pointsTransaction,
       aggregate: async ({ where }: { where: Record<string, unknown> }) => {
@@ -114,11 +116,11 @@ function makeMockTx(options: { rows?: MockRows; memberPointsRow?: { totalPoints:
     },
     emailSendLog: { ...generated.emailSendLog, count: async () => 0 },
     calls,
-    $queryRaw: async (query: Prisma.Sql) => {
-      const sql = query.sql;
+    $queryRaw: async (query: Prisma.Sql | TemplateStringsArray, ...tagValues: unknown[]) => {
+      const sql = 'sql' in query ? query.sql : Array.from(query).join('?');
       logCall('$queryRaw', sql);
       if (sql.includes('FOR UPDATE')) {
-        const ids = (query.values ?? []).filter((value): value is string => typeof value === 'string');
+        const ids = ('sql' in query ? query.values : tagValues).filter((value): value is string => typeof value === 'string');
         return [
           { id: ids[0] ?? 'primary', organizationId: 'org-1', deletedAt: null },
           { id: ids[1] ?? 'secondary', organizationId: 'org-1', deletedAt: null },
@@ -254,7 +256,8 @@ describe('executeMemberMerge', () => {
     let queryCount = 0;
     (tx as any).$queryRaw = async () => {
       queryCount += 1;
-      return queryCount === 1
+      if (queryCount === 1) return [];
+      return queryCount === 2
         ? [
             { id: 'primary', organizationId: 'org-1', deletedAt: null },
             { id: 'secondary', organizationId: 'org-1', deletedAt: null },

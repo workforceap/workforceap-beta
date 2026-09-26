@@ -40,7 +40,7 @@ const ACTOR = '10000000-0000-4000-8000-000000000001';
 const deletedAt = new Date('2026-09-08T10:00:00Z');
 const marker = buildDeletedEmail(ID, deletedAt.getTime(), 'Member@Example.com')!;
 function deletedRow() {
-  return { id: ID, email: marker, deletedAt, fullName: 'Synthetic Member', phone: null, profile: { role: 'member' }, userRoles: [] };
+  return { id: ID, email: marker, deletedAt, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, fullName: 'Synthetic Member', phone: null, profile: { role: 'member' }, userRoles: [] };
 }
 const req = () => new Request('http://localhost/api/admin/users/fixture', { method: 'POST' });
 const ctx = (id = ID) => ({ params: Promise.resolve({ id }) });
@@ -137,10 +137,37 @@ describe('administrator account restore', () => {
       id: ID, email: 'member@example.com', fullName: 'Synthetic Member', phone: null,
     });
     expect(mocks.updateMany).toHaveBeenCalledExactlyOnceWith({
-      where: { id: ID, email: marker, deletedAt }, data: { deletedAt: null, email: 'member@example.com' },
+      where: { id: ID, email: marker, deletedAt, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null },
+      data: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionCompletedAt: null, email: 'member@example.com' },
     });
     expect(mocks.restoreAuth.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
+  });
+
+  it('refuses restore while deletion owns cleanup or has not completed', async () => {
+    for (const state of [
+      { billingDeletionPendingAt: new Date(), billingDeletionOperationId: 'operation-1', billingDeletionCompletedAt: null },
+      { billingDeletionPendingAt: new Date(), billingDeletionOperationId: null, billingDeletionCompletedAt: null },
+    ]) {
+      mocks.target.mockResolvedValueOnce({ ...deletedRow(), ...state });
+      const response = await restore(req(), ctx());
+      expect(response.status).toBe(409);
+    }
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('binds restore to the completed deletion version so a new deletion wins the race', async () => {
+    const pendingAt = new Date('2026-09-08T09:00:00Z');
+    const completedAt = new Date('2026-09-08T10:30:00Z');
+    mocks.target.mockResolvedValueOnce({ ...deletedRow(), billingDeletionPendingAt: pendingAt, billingDeletionCompletedAt: completedAt })
+      .mockResolvedValueOnce({ ...deletedRow(), billingDeletionPendingAt: pendingAt, billingDeletionOperationId: 'new-operation', billingDeletionCompletedAt: null });
+    mocks.updateMany.mockResolvedValueOnce({ count: 0 });
+    const response = await restore(req(), ctx());
+    expect(response.status).toBe(503);
+    expect(mocks.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ billingDeletionPendingAt: pendingAt, billingDeletionOperationId: null, billingDeletionCompletedAt: completedAt }),
+    }));
   });
 
   it.each(['failure', 'exception'])('keeps the deleted row retryable when Auth restore returns %s', async (mode) => {

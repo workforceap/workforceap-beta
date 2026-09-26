@@ -14,7 +14,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
-import { BILLING_SEND_IN_PROGRESS_ERROR, hasClaimedBillingSend } from '@/lib/billing/erasureGuard';
+import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -74,12 +74,11 @@ export const POST = withApiGuc(async (
     const newEmail = existing.deletedAt ? existing.email : buildDeletedEmail(id, now.getTime(), existing.email);
     if (!newEmail) return NextResponse.json({ error: 'This email is too long to preserve safely for restore.' }, { status: 400 });
 
-    // Do not remove files while a claimed J5/J6 copy may still be crossing
-    // the email provider boundary. A complete race barrier also requires
-    // claim-time account state checks and a deletion marker before Storage.
-    if (await hasClaimedBillingSend(id)) {
-      return NextResponse.json({ error: BILLING_SEND_IN_PROGRESS_ERROR, code: 'billing_send_in_progress' }, { status: 409 });
-    }
+    const billingDeletion = await beginBillingDeletion(id, orgId);
+    if (!billingDeletion.ok) return NextResponse.json({
+    error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
+    code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+    }, { status: 409 });
 
     // Soft-delete still removes member-resumes / member-files objects so PII
     // does not linger while the row is recoverable. Restore will not bring
@@ -100,7 +99,8 @@ export const POST = withApiGuc(async (
     const storage = await deleteUserStorageObjects(id, { extraPaths });
     if (!storage.ok) {
       console.error(`[admin/members/[id]/delete] storage object delete failed for ${id}:`, storage.error);
-      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
+      await releaseBillingDeletion(id, billingDeletion.operationId);
+      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED, billingDeletionPending: true }, { status: 502 });
     }
 
     // If the row is already soft-deleted, leave its email rewrite alone —
@@ -121,8 +121,10 @@ export const POST = withApiGuc(async (
     const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, originalEmail);
     if (!disabled.ok) {
       console.error('[admin/members/[id]/delete] Supabase auth disable error:', disabled.message);
+      await releaseBillingDeletion(id, billingDeletion.operationId);
       return NextResponse.json({ error: 'The account is marked deleted, but its sign-in could not be disabled and its email has not been fully released. Retry this action or contact support.', authDisabled: false }, { status: 502 });
     }
+    await completeBillingDeletion(id, billingDeletion.operationId);
 
     const profileRole = await withDbRetry(() => getProfileRole(user.id)).catch((err) => {
       console.error('[api:admin-member-delete] profileRole lookup failed; degrading to member', err);

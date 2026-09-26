@@ -158,6 +158,11 @@ model User {
   /// accounts. Related portal tables (e.g. `employers`, `partner_users`) do not
   /// duplicate `deletedAt` — lifecycle is anchored on `User`.
   deletedAt                    DateTime?           @map("deleted_at")
+  /// Set before deleting Storage so billing signing and delivery cannot race
+  /// account deletion. A failed deletion keeps the barrier for safe retry.
+  billingDeletionPendingAt     DateTime?           @map("billing_deletion_pending_at")
+  billingDeletionOperationId    String?             @map("billing_deletion_operation_id") @db.Uuid
+  billingDeletionCompletedAt    DateTime?           @map("billing_deletion_completed_at")
   createdAt                    DateTime            @default(now()) @map("created_at")
   updatedAt                    DateTime            @updatedAt @map("updated_at")
   interviewEligible            Boolean             @default(false) @map("interview_eligible")
