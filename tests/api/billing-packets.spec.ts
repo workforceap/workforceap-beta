@@ -48,7 +48,7 @@ function matches(row: Record<string, unknown>, where: Record<string, unknown>): 
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined), auditRequestMeta: vi.fn(() => ({})) }));
-vi.mock('@/lib/auth/roles', () => ({ isSuperAdmin: mocks.isSuperAdmin, isAdmin: mocks.isAdmin, requireAdmin: vi.fn() }));
+vi.mock('@/lib/auth/roles', () => ({ isSuperAdmin: mocks.isSuperAdmin, isAdmin: mocks.isAdmin, isAdminInOrg: vi.fn(async () => false), requireAdmin: vi.fn() }));
 vi.mock('@/lib/tenant/organization', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/tenant/organization')>()),
   getActorOrganizationId: mocks.getActorOrganizationId,
@@ -1204,10 +1204,12 @@ describe('Provider acceptance is never lost to a racing transition', () => {
       recipients: [{ recipient: 'student', email: 'member@example.test', cc: null }],
       record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
     });
-    expect(started).toEqual({ ok: false, reason: 'duplicate' });
+    // The start's locked repair surfaces the contradiction first: not terminal, no new attempt.
+    expect(started).toEqual({ ok: false, reason: 'not_terminal' });
+    expect(db.sends[0].status).toBe('needs_reconciliation');
     const viaRoute = await sendPacket(req({ action: 'email_again' }), packetParams(row.packetId as string));
     expect(viaRoute.status).toBe(409);
-    expect((await viaRoute.json()).code).toBe('duplicate_confirmation_required');
+    expect((await viaRoute.json()).code).toBe('previous_attempt_open');
     expect(db.sends).toHaveLength(1);
     expect(db.packets[0].sendAttemptNo).toBe(1);
     expect(mocks.send).not.toHaveBeenCalled();
@@ -1481,6 +1483,15 @@ describe('Legacy and corrupt snapshots', () => {
   });
 });
 
+function failLockedTransactions(n: number) {
+  const tx = prismaMock.$transaction as unknown as ReturnType<typeof vi.fn>;
+  for (let i = 0; i < n; i += 1) {
+    tx.mockImplementationOnce(async () => {
+      throw new Error('Transaction API error: timeout');
+    });
+  }
+}
+
 describe('A new attempt never sends over an unacknowledged earlier copy', () => {
   const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
   const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
@@ -1523,9 +1534,7 @@ describe('A new attempt never sends over an unacknowledged earlier copy', () => 
 
   it('the same through the unlocked fallback (provider result only, no status): still 409, still one provider call', async () => {
     const { old, resume } = await attempt2Paused();
-    (prismaMock.$transaction as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
-      throw new Error('Transaction API error: timeout');
-    });
+    failLockedTransactions(2); // the locked write and the best-effort settle both fail
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     await recordLateProviderResult(old.id, { delivered: true, detail: 'late', messageId: 'm-old' });
     spy.mockRestore();
@@ -1598,6 +1607,7 @@ describe('Stale counselor assignments (org transfer, deleted) count as no counse
       const id = await signOne();
       expect((await send(id)).status).toBe(200); // both copies reached them while valid
       expect(await counselorPdf(id)).toBe(200);
+      expect((await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id)).map((p) => p.id)).toEqual([id]); // same org: unaffected
       const beforeCalls = mocks.send.mock.calls.length;
       Object.assign(db.counselor!, stale);
       // (a) PDF access is denied.
@@ -1607,6 +1617,8 @@ describe('Stale counselor assignments (org transfer, deleted) count as no counse
       expect(second.status).toBe(201);
       const secondId = (await second.json()).packet.id as string;
       expect((db.packets.find((p) => p.id === secondId)!.signedSnapshot as { counselor: unknown }).counselor).toBeNull();
+      // The counselor student page's packet list is empty for them too.
+      expect(await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id)).toEqual([]);
       // (c) Sending the packet signed with that counselor: recipient drift.
       const res = await send(id, { action: 'email_again', confirmDuplicateTo: ['student', 'counselor'] });
       expect(res.status).toBe(409);
@@ -1614,4 +1626,88 @@ describe('Stale counselor assignments (org transfer, deleted) count as no counse
       expect(mocks.send.mock.calls.length).toBe(beforeCalls);
     });
   }
+});
+
+describe('Fallback acceptance write: best-effort settle and guaranteed repair', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  async function ambiguousOneRecipient() {
+    const id = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(id)).status).toBe(502); // provider call 1
+    return { id, row: db.sends[0] };
+  }
+  const quiet = () => vi.spyOn(console, 'error').mockImplementation(() => {});
+
+  it('locked write fails, best-effort settle succeeds: the one-recipient packet ends sent with sentTo', async () => {
+    const { row } = await ambiguousOneRecipient();
+    failLockedTransactions(1);
+    const spy = quiet();
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    spy.mockRestore();
+    expect(row).toMatchObject({ status: 'sent', providerMessageId: 'm-late' });
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sentTo: ['member@example.test'] });
+  });
+
+  it('both locked paths fail: the next admin read repairs it (sent, sentTo); no second provider call', async () => {
+    const { row } = await ambiguousOneRecipient();
+    failLockedTransactions(2);
+    const spy = quiet();
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    spy.mockRestore();
+    expect(row.status).toBe('ambiguous'); // only the provider-result columns were written
+    expect(db.packets[0].status).toBe('signed');
+    const res = await listAdminPackets(new Request('http://localhost/x'), params(MEMBER));
+    const [p] = (await res.json()).packets;
+    expect(p).toMatchObject({ status: 'sent', sentTo: ['member@example.test'] });
+    expect(row.status).toBe('sent');
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('both locked paths fail: the next locked operation (a send) repairs it instead of resending', async () => {
+    const { id, row } = await ambiguousOneRecipient();
+    failLockedTransactions(2);
+    const spy = quiet();
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    spy.mockRestore();
+    const res = await send(id); // would be a same-key Retry; the claim's repair settles it first
+    expect(res.status).toBe(200);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sentTo: ['member@example.test'] });
+  });
+
+  it('reconciled "not delivered" + fallback acceptance: not terminal, needs_reconciliation, blocks the next attempt and a replacement', async () => {
+    const { id, row } = await ambiguousOneRecipient();
+    Object.assign(row, { claimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS), lastClaimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS) });
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No entry in the Resend log' })).status).toBe(200);
+    failLockedTransactions(2);
+    const spy = quiet();
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    spy.mockRestore();
+    expect(row.status).toBe('reconciled_not_delivered');
+    // Read path: the contradiction shows, and the next action is reconciliation.
+    const listed = (await (await listAdminPackets(new Request('http://localhost/x'), params(MEMBER))).json()).packets[0];
+    expect(listed.sendState.nextAction).toBe('reconcile');
+    expect(row).toMatchObject({ status: 'needs_reconciliation', lastError: expect.stringMatching(/AFTER it was recorded as not delivered/) });
+    const again = await send(id, { action: 'email_again', confirmDuplicateTo: ['student'] });
+    expect(again.status).toBe(409);
+    expect((await again.json()).code).toBe('previous_attempt_open');
+    // A replacement is blocked from sending while the old copy is unsettled.
+    const replacement = await createPacket(req(body({ supersedesPacketId: id, supersedeReason: 'Correction' } as Partial<Body>)), params(MEMBER));
+    expect(replacement.status).toBe(201);
+    const blocked = await send((await replacement.json()).packet.id);
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('terminal checks: an accepted row counts as delivered; "not delivered"/rejected + acceptance is not terminal', async () => {
+    const { isTerminalRow } = await import('@/lib/billing/sendAttempts');
+    const at = new Date();
+    expect(isTerminalRow({ status: 'ambiguous', providerResultAt: at })).toBe(true);
+    expect(isTerminalRow({ status: 'sent', providerResultAt: at })).toBe(true);
+    expect(isTerminalRow({ status: 'reconciled_not_delivered', providerResultAt: at })).toBe(false);
+    expect(isTerminalRow({ status: 'rejected_definite', providerResultAt: at })).toBe(false);
+    expect(isTerminalRow({ status: 'needs_reconciliation', providerResultAt: at })).toBe(false);
+    expect(isTerminalRow({ status: 'reconciled_not_delivered', providerResultAt: null })).toBe(true);
+  });
 });

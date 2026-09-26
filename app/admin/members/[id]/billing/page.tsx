@@ -12,6 +12,7 @@ import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAs
 import { buildDefaultLineItems, resolveProgramPricing } from '@/lib/billing/packetDefaults';
 import { getDefaultBillTo, getDefaultSigner, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
 import { resolveAssignedCounselorContact, serializeBillingPacket } from '@/lib/billing/packetAccess';
+import { repairProviderResultsOnRead } from '@/lib/billing/sendAttempts';
 import { resolveBillableEnrollments } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 import PageHeader from '@/components/portal/PageHeader';
@@ -74,7 +75,7 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
   const enrollments = await resolveBillableEnrollments(member.id, member.organizationId);
   const slugs = enrollments.map((e) => e.programSlug);
 
-  const [catalogRows, packets, counselor] = await Promise.all([
+  const [catalogRows, loadedPackets, counselor] = await Promise.all([
     slugs.length
       ? prisma.organizationProgramCatalog.findMany({
           where: { organizationId: member.organizationId, programSlug: { in: slugs } },
@@ -89,6 +90,15 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
     }),
     resolveAssignedCounselorContact(member.id, member.organizationId),
   ]);
+  // Best effort: apply provider results recorded without their status, then re-read.
+  const packets = (await repairProviderResultsOnRead(loadedPackets))
+    ? await prisma.trainingBillingPacket.findMany({
+        where: { memberId: member.id, organizationId: member.organizationId },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        include: { sends: true },
+      })
+    : loadedPackets;
 
   const programs: BillingProgramOption[] = slugs
     .map((slug, index) => {

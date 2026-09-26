@@ -19,7 +19,7 @@ import { freezeLogo, type SignedPacketSnapshot } from '@/lib/billing/packetSnaps
 import { loadLetterheadLogo } from '@/lib/billing/packetPdf';
 import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
-import { RECONCILE_CLAIMED_MIN_AGE_MS } from '@/lib/billing/sendAttempts';
+import { RECONCILE_CLAIMED_MIN_AGE_MS, reconcileProviderResults, repairProviderResultsOnRead } from '@/lib/billing/sendAttempts';
 import { randomUUID } from 'node:crypto';
 
 /**
@@ -67,12 +67,16 @@ export const GET = withApiGuc(async (_request: Request, { params }: { params: Pr
     const member = await resolveAdminSubject(user.id, id);
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
 
-    const rows = await prisma.trainingBillingPacket.findMany({
-      where: { memberId: member.id, organizationId: member.organizationId },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-      include: { sends: true },
-    });
+    const load = () =>
+      prisma.trainingBillingPacket.findMany({
+        where: { memberId: member.id, organizationId: member.organizationId },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        include: { sends: true },
+      });
+    let rows = await load();
+    // Best effort: apply provider results recorded without their status.
+    if (await repairProviderResultsOnRead(rows)) rows = await load();
     return NextResponse.json({ packets: rows.map((row) => serializeBillingPacket(row)) });
   } catch (error) {
     console.error('[admin/members/billing-packets GET]', error);
@@ -234,6 +238,8 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
           if (supersedesPacketId) {
             // Same lock as sending the old packet, so no provider call can race the supersede.
             await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${supersedesPacketId}`}))`;
+            // Apply any provider result recorded without its status before judging the old copies.
+            await reconcileProviderResults(tx, supersedesPacketId);
             const old = await tx.trainingBillingPacket.findFirst({
               where: { id: supersedesPacketId, organizationId: member.organizationId, memberId: member.id },
               select: { id: true, status: true },

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Prisma, TrainingBillingPacketSend } from '@prisma/client';
+import type { Prisma, TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import type { OrganizationBranding } from '@/lib/tenant/organizationBranding';
 
@@ -58,6 +58,8 @@ function isSendable(packet: { status: string; supersededAt: Date | null } | null
  */
 async function lockPacketSends(tx: Prisma.TransactionClient, packetId: string) {
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${packetId}`}))`;
+  // Guaranteed repair of any provider result recorded without its status.
+  await reconcileProviderResults(tx, packetId);
   return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true } });
 }
 
@@ -157,8 +159,14 @@ export function nextSendAction(args: {
 }): NextSendAction {
   if (args.attemptNo == null) return 'send';
   // A recorded provider acceptance whose status has not caught up yet (e.g.
-  // written by the unlocked fallback) reads as sent.
-  const rows = args.rows.map((r) => (r.providerResultAt && (r.status === 'claimed' || r.status === 'ambiguous') ? { ...r, status: 'sent' } : r));
+  // written by the unlocked fallback) reads as sent; one that contradicts a
+  // recorded "not delivered" / rejection reads as needing reconciliation.
+  const rows = args.rows.map((r) => {
+    if (!r.providerResultAt) return r;
+    if (r.status === 'claimed' || r.status === 'ambiguous') return { ...r, status: 'sent' };
+    if (r.status === 'reconciled_not_delivered' || r.status === 'rejected_definite') return { ...r, status: 'needs_reconciliation' };
+    return r;
+  });
   const fresh = (r: (typeof rows)[number]) => args.now.getTime() - r.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS;
   if (rows.some((r) => r.status === 'needs_reconciliation')) return 'reconcile';
   if (rows.some((r) => r.status === 'claimed' && fresh(r))) return 'in_progress';
@@ -170,6 +178,18 @@ export function nextSendAction(args: {
   return 'email_again';
 }
 
+/**
+ * A row is terminal when its outcome is settled. A recorded provider
+ * acceptance counts as delivered when the status is sent / reconciled
+ * delivered or still catching up (claimed, ambiguous); it makes a row that
+ * says "not delivered", "rejected" or "needs reconciliation" NOT terminal
+ * (the provider contradicts it).
+ */
+export function isTerminalRow(r: Pick<TrainingBillingPacketSend, 'status'> & { providerResultAt?: Date | null }): boolean {
+  if (r.providerResultAt != null) return DELIVERED.has(r.status) || r.status === 'claimed' || r.status === 'ambiguous';
+  return TERMINAL.has(r.status);
+}
+
 /** True when the attempt has exactly the expected recipient rows and every one is terminal. */
 export function attemptIsTerminal(
   rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status'> & { providerResultAt?: Date | null }>,
@@ -179,9 +199,7 @@ export function attemptIsTerminal(
   return (
     recipients.length === expected.length
     && [...expected].sort().every((r, i) => recipients[i] === r)
-    // A recorded provider acceptance counts as delivered (never as "not
-    // delivered"), except while the row is flagged for reconciliation.
-    && rows.every((r) => TERMINAL.has(r.status) || (r.providerResultAt != null && r.status !== 'needs_reconciliation'))
+    && rows.every(isTerminalRow)
   );
 }
 
@@ -447,6 +465,7 @@ export async function reconcileRecipient(args: {
   // so an operator outcome and a provider result are strictly ordered.
   return prisma.$transaction(async (tx): Promise<ReconcileResult> => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${args.packetId}`}))`;
+    await reconcileProviderResults(tx, args.packetId);
     const row = await tx.trainingBillingPacketSend.findUnique({
       where: { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } },
     });
@@ -581,7 +600,95 @@ export async function recordProviderAcceptance(
     // (nextSendAction) settles the status from them.
     console.error('[billing-packets send] locked acceptance write failed; recording the provider result only', { sendId, err });
     await prisma.trainingBillingPacketSend.updateMany({ where: { id: sendId, providerResultAt: null }, data: recorded });
+    // Best effort: settle and finalize now under the lock (same order as
+    // every other locked operation). If this fails too, the next locked
+    // operation or admin read repairs it (reconcileProviderResults).
+    try {
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${row.packetId}`}))`;
+          await reconcileProviderResults(tx, row.packetId, now);
+        },
+        { maxWait: 5_000, timeout: 15_000 },
+      );
+    } catch (settleErr) {
+      console.error('[billing-packets send] best-effort settle after fallback failed; left for the next locked repair', { sendId, settleErr });
+    }
   }
+}
+
+/** Prefix of the warning set when a provider acceptance contradicts a recorded outcome; such a row stays flagged for an operator. */
+export const CONTRADICTION_NOTE = 'The provider reported this copy delivered AFTER it was recorded as';
+
+function isContradiction(row: Pick<TrainingBillingPacketSend, 'lastError' | 'reconciledAt'>): boolean {
+  return (row.lastError ?? '').startsWith(CONTRADICTION_NOTE) || row.reconciledAt != null;
+}
+
+/**
+ * Guaranteed repair, run under the packet send lock at the start of every
+ * locked operation (attempt start, claim, reconcile, supersede, completion)
+ * and best-effort on the admin read path: settle every row whose provider
+ * result was recorded without its status (accepted -> sent; a recorded "not
+ * delivered" / rejection -> needs_reconciliation with a warning), then
+ * finalize the current attempt with the usual compare-and-set.
+ */
+export async function reconcileProviderResults(db: PacketDb, packetId: string, now: Date = new Date()): Promise<void> {
+  const rows = await db.trainingBillingPacketSend.findMany({ where: { packetId } });
+  for (const r of rows) {
+    if (r.providerResultAt && !DELIVERED.has(r.status) && !(r.status === 'needs_reconciliation' && isContradiction(r))) {
+      await applyRecordedProviderResult(r.id, now, db);
+    }
+  }
+  const packet = await db.trainingBillingPacket.findUnique({ where: { id: packetId } });
+  if (!packet || packet.sendAttemptNo == null) return;
+  let attempt: SendAttemptRecord | null = null;
+  try {
+    attempt = parseSendAttempt(packet.sendAttempt, packet.sendAttemptNo);
+  } catch {
+    return;
+  }
+  if (attempt) await finalizeAttemptIfComplete(db, packetId, attempt);
+}
+
+/** Does this packet (with its send rows) have a provider result or completion waiting to be applied? */
+export function packetNeedsProviderRepair(
+  packet: Pick<TrainingBillingPacket, 'status' | 'sendAttempt' | 'sendAttemptNo'>,
+  sends: ReadonlyArray<TrainingBillingPacketSend>,
+): boolean {
+  if (sends.some((r) => r.providerResultAt && !DELIVERED.has(r.status) && !(r.status === 'needs_reconciliation' && isContradiction(r)))) return true;
+  if (packet.status !== 'signed' || packet.sendAttemptNo == null) return false;
+  try {
+    const attempt = parseSendAttempt(packet.sendAttempt, packet.sendAttemptNo);
+    const current = sends.filter((r) => r.attemptNo === packet.sendAttemptNo);
+    return !!attempt && attempt.recipients.every((rec) => current.some((r) => r.recipient === rec && isDeliveredRow(r)));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Best-effort repair on the admin read path: a short locked transaction per
+ * packet that needs it. Never blocks or fails the read. Returns true when a
+ * repair ran (the caller re-reads).
+ */
+export async function repairProviderResultsOnRead(packets: ReadonlyArray<TrainingBillingPacket & { sends: TrainingBillingPacketSend[] }>): Promise<boolean> {
+  let ran = false;
+  for (const p of packets) {
+    if (!packetNeedsProviderRepair(p, p.sends)) continue;
+    try {
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${p.id}`}))`;
+          await reconcileProviderResults(tx, p.id);
+        },
+        { maxWait: 2_000, timeout: 5_000 },
+      );
+      ran = true;
+    } catch (err) {
+      console.warn('[billing-packets] read-path provider repair skipped', { packetId: p.id, err });
+    }
+  }
+  return ran;
 }
 
 /**
@@ -602,13 +709,13 @@ export async function applyRecordedProviderResult(
     const row = await db.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
     if (!row || !row.providerResultAt) return row;
     let data: Prisma.TrainingBillingPacketSendUpdateManyMutationInput | null = null;
-    if (['claimed', 'ambiguous', 'needs_reconciliation'].includes(row.status)) {
+    if (['claimed', 'ambiguous'].includes(row.status) || (row.status === 'needs_reconciliation' && !isContradiction(row))) {
       data = { status: 'sent', sentAt: row.sentAt ?? now, claimToken: randomUUID(), lastError: null };
     } else if (row.status === 'reconciled_not_delivered' || row.status === 'rejected_definite') {
       data = {
         status: 'needs_reconciliation',
         claimToken: randomUUID(),
-        lastError: `The provider reported this copy delivered AFTER it was recorded as ${row.status === 'rejected_definite' ? 'rejected' : 'not delivered'}. Check for a duplicate email.`,
+        lastError: `${CONTRADICTION_NOTE} ${row.status === 'rejected_definite' ? 'rejected' : 'not delivered'}. Check for a duplicate email.`,
       };
     }
     if (!data) return row;

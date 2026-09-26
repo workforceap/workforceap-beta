@@ -64,9 +64,11 @@ that automatically emails to counselor and the student."
   the approved-amount check are computed in integer cents per row, so the
   printed rows always add up to the printed total. The attestation
   fingerprint uses cents.
-- **Counselor at read time**: signing, sending, and counselor access to a
-  packet only count a counselor who is active, not deleted, and in the
-  packet's organization. A stale cross-org assignment means no counselor:
+- **Counselor at read time**: signing, sending, counselor access to a
+  packet, and the shared counselor member-record check
+  (`lib/counselor/staffMemberAccess.ts`, used by the counselor student page)
+  only count a counselor who is active, not deleted, and in the packet's /
+  member's organization. A stale cross-org assignment means no counselor:
   signing prints none, PDF access is 404, and sending a packet signed with that
   counselor gets the drift 409 (`counselor_changed`).
 - **Draft curricula**: programs whose curriculum is not owner-verified
@@ -146,7 +148,14 @@ that automatically emails to counselor and the student."
     in the attempt's `acknowledgedDuplicates`. Those are frozen when an
     "Email again" is confirmed: row ids, who confirmed, and when. If the locked
     acceptance write fails, only the write-once provider-result columns are
-    written (never the status); the next claim settles the status from them.
+    written (never the status). A best-effort locked settle follows at once.
+    If that also fails, `reconcileProviderResults` repairs it. It runs under
+    the lock at the start of every locked operation (attempt start, claim,
+    reconcile, supersede, completion), and best-effort on the admin list and
+    page reads. Accepted rows become `sent`; a recorded "not delivered" or a
+    rejection becomes `needs_reconciliation` with a warning. The current
+    attempt is then finalized. A "not delivered" or rejected row that carries
+    an acceptance is never terminal.
   - **History**: the admin list shows every attempt's per-recipient outcome,
     with time and, for reconciliations, who and the note. Partial delivery
     stays visible after a reload.

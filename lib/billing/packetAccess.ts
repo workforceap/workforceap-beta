@@ -1,6 +1,6 @@
 import type { TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
-import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
+import { isAdmin, isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 import { parseLineItems, type PacketLineItem } from './packetSchema';
@@ -237,6 +237,10 @@ export async function loadPacketForViewer(
   return { ok: false, status: 404, error: 'Document not found' };
 }
 
+async function isAdminInOrgForPackets(userId: string, organizationId: string): Promise<boolean> {
+  return (await isSuperAdmin(userId)) || (await isAdminInOrg(userId, organizationId));
+}
+
 /** Recipient-copy states where that person did, or might have, received the packet. */
 const MAY_HAVE_REACHED = new Set(['sent', 'reconciled_delivered', 'claimed', 'ambiguous', 'needs_reconciliation']);
 
@@ -266,13 +270,33 @@ export function packetVisibleTo(
  * that viewer (see packetVisibleTo); a signed packet that was never sent stays
  * admin-only. Current packets first, then superseded ones (labelled replaced).
  */
-export async function listPacketsForMember(memberId: string, viewer: 'member' | 'counselor' = 'member'): Promise<BillingPacketSummary[]> {
+export async function listPacketsForMember(
+  memberId: string,
+  viewer: 'member' | 'counselor' = 'member',
+  /** Counselor view: the viewing counselor's user id. Defensive re-check of a current, same-org assignment. */
+  viewerUserId?: string,
+): Promise<BillingPacketSummary[]> {
   const rows = await prisma.trainingBillingPacket.findMany({
     where: { memberId },
     orderBy: { createdAt: 'desc' },
     take: 50,
     include: { sends: { select: { recipient: true, status: true } } },
   });
+  if (viewer === 'counselor' && viewerUserId && rows.length > 0) {
+    // Defensive re-check (the page already ran assertStaffCanAccessMemberRecord):
+    // a current, same-org, active and undeleted counselor assignment, or an
+    // admin of the packets' organization.
+    const organizationId = rows[0].organizationId;
+    const assigned = await prisma.counselorAssignment.findFirst({
+      where: {
+        memberId,
+        active: true,
+        counselor: { userId: viewerUserId, active: true, user: { organizationId, deletedAt: null } },
+      },
+      select: { id: true },
+    });
+    if (!assigned && !(await isAdminInOrgForPackets(viewerUserId, organizationId))) return [];
+  }
   const visible = rows.filter((row) => packetVisibleTo(row, row.sends, viewer));
   const ordered = [...visible.filter((r) => r.status !== 'superseded'), ...visible.filter((r) => r.status === 'superseded')];
   return ordered.map(({ sends: _sends, ...row }) => serializeBillingPacket(row));

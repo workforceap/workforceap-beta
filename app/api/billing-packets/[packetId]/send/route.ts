@@ -17,6 +17,7 @@ import {
   deliveredRecipients,
   finalizeAttemptIfComplete,
   isDeliveredRow,
+  reconcileProviderResults,
   nextSendAction,
   UNSETTLED,
   parseSendAttempt,
@@ -350,9 +351,17 @@ async function withPacketState(res: Response, packetId: string): Promise<Respons
 
 const isSupersededRow = (p: { status: string; supersededAt: Date | null }) => p.status === 'superseded' || p.supersededAt != null;
 
-/** Finalize via the shared compare-and-set (lib/billing/sendAttempts.ts). */
+/**
+ * Finalize via the shared compare-and-set (lib/billing/sendAttempts.ts), under
+ * the packet send lock after the provider-result repair, like every other
+ * locked operation.
+ */
 function completeAttempt(packetId: string, attempt: SendAttemptRecord) {
-  return finalizeAttemptIfComplete(prisma, packetId, attempt);
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${packetId}`}))`;
+    await reconcileProviderResults(tx, packetId);
+    return finalizeAttemptIfComplete(tx, packetId, attempt);
+  });
 }
 
 async function freshPacket(packetId: string) {

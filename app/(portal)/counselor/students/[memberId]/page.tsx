@@ -512,7 +512,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
     wioaReviewerName = rev?.fullName ?? null;
   }
 
-  const billingPackets = await listPacketsForMember(member.id, 'counselor');
+  const billingPackets = await listPacketsForMember(member.id, 'counselor', user.id);
 
   // Counselor approvals (Mike, 2026-09-19): counselors approve/deny the
   // member's program application(s) and record WIOA intake verification
