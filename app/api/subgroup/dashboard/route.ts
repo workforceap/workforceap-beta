@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { getSubgroupsForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
-import { getPipelineStage, type PipelineStudent } from '@/lib/pipeline/stage';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { memberProgramCompleted } from '@/lib/partner/memberProgress';
 
@@ -30,7 +29,6 @@ export const GET = withApiGuc(async () => {
       member: {
         select: {
           id: true,
-          fullName: true,
           enrolledProgram: true,
           courseEnrollments: {
             orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
@@ -38,9 +36,7 @@ export const GET = withApiGuc(async () => {
           },
           enrolledAt: true,
           deletedAt: true,
-          placementRecord: { select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true } },
-          userCertifications: { select: { certName: true, earnedAt: true } },
-          applications: { select: { status: true, submittedAt: true } },
+          placementRecord: { select: { id: true } },
           memberProgramProgress: {
             select: { programSlug: true, averagePercent: true, coursesCompleted: true },
           },
@@ -66,22 +62,6 @@ export const GET = withApiGuc(async () => {
       m.enrolledProgram,
       m.courseEnrollments,
     );
-    const student: PipelineStudent = {
-      id: m.id,
-      fullName: m.fullName,
-      email: '',
-      enrolledProgram: assignment.programSlug,
-      curriculumVersion: assignment.curriculumVersion,
-      enrolledAt: m.enrolledAt,
-      assessmentCompleted: false,
-      deletedAt: m.deletedAt,
-      placementRecord: m.placementRecord,
-      userCertifications: m.userCertifications,
-      applications: m.applications,
-      memberProgramProgress: m.memberProgramProgress,
-    };
-    const stage = getPipelineStage(student);
-
     if (m.enrolledAt && assignment.programSlug) enrolled++;
     if (memberProgramCompleted({
       enrolledProgram: assignment.programSlug,
