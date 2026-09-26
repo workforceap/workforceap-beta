@@ -99,6 +99,7 @@ function member(overrides: Record<string, unknown> = {}) {
     userRoles: [],
     userCertifications: [{ proofUrl: 'cert-files/member-1/cert.pdf' }],
     courseEnrollments: [],
+    trainingBillingPackets: [],
     ...overrides,
   };
 }
@@ -166,6 +167,22 @@ describe('POST /api/admin/members/[id]/erase', () => {
     const [authOrder] = supabaseDeleteUser.mock.invocationCallOrder;
     expect(storageOrder).toBeLessThan(deleteOrder);
     expect(deleteOrder).toBeLessThan(authOrder);
+  });
+
+  it.each([false, true])('holds issued billing records before storage deletion (force=%s)', async (force) => {
+    vi.mocked(isSuperAdmin).mockResolvedValue(true);
+    findFirst.mockResolvedValue(member({ trainingBillingPackets: [{ id: 'packet-1' }] }));
+
+    const res = await POST(eraseReq({ force }), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: 'This member has issued billing records. Account erasure is on hold pending the financial-record retention policy.',
+    });
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
+    expect(supabaseDeleteUser).not.toHaveBeenCalled();
   });
 
   it('never touches storage or rows for an administrator target', async () => {

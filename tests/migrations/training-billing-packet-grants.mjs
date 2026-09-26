@@ -14,6 +14,7 @@ import { spawnSync } from 'node:child_process';
 
 const parentMigration = readFileSync('prisma/migrations/20260904020000_training_billing_packets/migration.sql', 'utf8');
 const migration = readFileSync('prisma/migrations/20260926140000_training_billing_packet_signed_snapshot/migration.sql', 'utf8');
+const retentionMigration = readFileSync('prisma/migrations/20260926220743_training_billing_packet_retention_hold/migration.sql', 'utf8');
 const sourceUrl = process.env.BILLING_PACKET_GRANTS_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';
 const target = new URL(sourceUrl);
 assert.ok(['127.0.0.1', 'localhost'].includes(target.hostname), 'Proof database must be local.');
@@ -101,10 +102,10 @@ try {
   // The owner (server-side Prisma) can still write both tables.
   sql(`
     INSERT INTO public.organizations VALUES ('org');
-    INSERT INTO public.users VALUES ('u');
+    INSERT INTO public.users VALUES ('u'), ('signer'), ('free');
     INSERT INTO public.training_billing_packets (id, organization_id, member_id, program_slug, packet_number, invoice_date, bill_to_name, line_items,
       total_amount, cover_letter_body, signer_name, signer_title, signed_at, signed_by_id, updated_at)
-      VALUES ('p', 'org', 'u', 'x', 'N-1', CURRENT_DATE, 'Synthetic Board', '[]', 1, 'x', 'S', 'T', now(), 'u', now());
+      VALUES ('p', 'org', 'u', 'x', 'N-1', CURRENT_DATE, 'Synthetic Board', '[]', 1, 'x', 'S', 'T', now(), 'signer', now());
     INSERT INTO public.training_billing_packet_sends (id, packet_id, attempt_no, recipient, email, idempotency_key, status, claim_token, claimed_at, last_claimed_at, updated_at)
       VALUES ('s', 'p', 1, 'student', 'synthetic@example.test', 'k', 'pending', 't', now(), now(), now());
   `);
@@ -114,6 +115,36 @@ try {
   sql(migration);
   assertLockedDown('second run');
   console.log('PASS the migration is idempotent');
+
+  sql(retentionMigration);
+  sql(retentionMigration);
+  assert.equal(
+    sql(`SELECT confdeltype FROM pg_constraint WHERE conrelid='public.training_billing_packets'::regclass AND conname='training_billing_packets_member_id_fkey';`),
+    'r',
+    'The packet member FK must restrict account deletion',
+  );
+  sql(`
+    DO $$
+    DECLARE blocked_constraint TEXT;
+    BEGIN
+      BEGIN
+        DELETE FROM public.users WHERE id = 'u';
+        RAISE EXCEPTION 'The packet member was deleted';
+      EXCEPTION WHEN foreign_key_violation THEN
+        GET STACKED DIAGNOSTICS blocked_constraint = CONSTRAINT_NAME;
+        IF blocked_constraint <> 'training_billing_packets_member_id_fkey' THEN
+          RAISE EXCEPTION 'Unexpected constraint: %', blocked_constraint;
+        END IF;
+      END;
+    END $$;
+    DELETE FROM public.users WHERE id = 'free';
+  `);
+  assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='u';`), '1', 'Held member must remain');
+  assert.equal(sql(`SELECT count(*) FROM public.training_billing_packets WHERE id='p';`), '1', 'Signed packet must remain');
+  assert.equal(sql(`SELECT count(*) FROM public.training_billing_packet_sends WHERE id='s';`), '1', 'Send history must remain');
+  assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='free';`), '0', 'Unheld account must still be deletable');
+  assertLockedDown('retention hold');
+  console.log('PASS signed packet and send history survive attempted member deletion; unrelated accounts still purge');
 } finally {
   if (proofDatabaseCreated) runSql(`DROP DATABASE "${proofDatabase}";`, 'postgres');
   for (const role of createdRoles) runSql(`DROP ROLE IF EXISTS ${role};`, 'postgres');

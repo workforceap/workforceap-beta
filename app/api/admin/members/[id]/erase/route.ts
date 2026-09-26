@@ -24,9 +24,10 @@ import {
  *
  * GDPR right-to-erasure (hard delete).
  *
- * Permanently removes a member and all cascading data after the
- * legal-hold period, or immediately if `force=true` is passed by
- * a super-admin.
+ * Permanently removes a member and cascading account data after the
+ * account retention period, or immediately if `force=true` is passed by
+ * a super-admin. Issued billing packets hold the account row pending an
+ * approved financial-record retention and disposal policy.
  *
  * Records the erasure in WorkflowDiagnostic for compliance auditing.
  */
@@ -68,6 +69,7 @@ export const POST = withApiGuc(async (
           memberEvents: true,
           messagesAuthored: true,
           courseEnrollments: true,
+          trainingBillingPackets: { select: { id: true }, take: 1 },
           userCertifications: { select: { proofUrl: true } },
         },
       }),
@@ -77,6 +79,16 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) return NextResponse.json({ error: 'Administrator accounts cannot be erased from member management.' }, { status: 403 });
+
+    // Check before deleting storage objects. The RESTRICT foreign key is the
+    // final guard if a packet is signed concurrently after this read.
+    // `force` cannot bypass a signed financial record hold.
+    if (existing.trainingBillingPackets.length > 0) {
+      return NextResponse.json(
+        { error: 'This member has issued billing records. Account erasure is on hold pending the financial-record retention policy.' },
+        { status: 409 },
+      );
+    }
 
     const extraPaths = [
       existing.profile?.resumeOriginalPath

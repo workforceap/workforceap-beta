@@ -14,7 +14,7 @@ import {
   MEMBER_ANONYMIZED_AUDIT_ACTION,
   anonymizeMember,
 } from '@/lib/member/anonymizeMember';
-import { parseDeletedEmail } from '@/lib/member/deletedEmail';
+import { isDeletedEmailMarker, parseDeletedEmail } from '@/lib/member/deletedEmail';
 
 const USER_ID = '550e8400-e29b-41d4-a716-446655440001';
 const ORIGINAL_EMAIL = 'jane.doe@example.com';
@@ -105,17 +105,38 @@ describe('anonymizeMember', () => {
     expect(tx.user.findUnique).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the existing marker and deleted_at when the account is already soft-deleted', async () => {
+  it('keeps the recoverable marker during the 30-day restore window', async () => {
+    const earlier = new Date('2026-09-01T00:00:00.000Z');
+    const marker = `deleted_${USER_ID}_${earlier.getTime()}_${ORIGINAL_EMAIL}@deleted.invalid`;
+    const { tx, db } = fakeDb({ email: marker, deletedAt: earlier });
+
+    await anonymizeMember(USER_ID, { reason: 'retention_purge_blocked', actorUserId: null, now: NOW }, db);
+
+    const userWrite = tx.user.update.mock.calls[0][0];
+    expect(userWrite.data.email).toBe(marker);
+    expect(parseDeletedEmail(String(userWrite.data.email))).toBe(ORIGINAL_EMAIL);
+  });
+
+  it('removes the recoverable email from a held account only after the 30-day window', async () => {
     const earlier = new Date('2026-08-01T00:00:00.000Z');
-    const marker = `deleted_${USER_ID}_1754006400000_${ORIGINAL_EMAIL}@deleted.invalid`;
+    const marker = `deleted_${USER_ID}_${earlier.getTime()}_${ORIGINAL_EMAIL}@deleted.invalid`;
     const { tx, db } = fakeDb({ email: marker, deletedAt: earlier });
 
     const result = await anonymizeMember(USER_ID, { reason: 'retention_purge_blocked', actorUserId: null, now: NOW }, db);
 
     expect(result).toEqual({ userId: USER_ID, deletedAt: earlier, alreadyDeleted: true, profileRowsCleared: 1 });
     const userWrite = tx.user.update.mock.calls[0][0];
-    expect(userWrite.data.email).toBe(marker);
+    const expiredMarker = `deleted_${USER_ID}_${earlier.getTime()}_@deleted.invalid`;
+    expect(userWrite.data.email).toBe(expiredMarker);
+    expect(isDeletedEmailMarker(String(userWrite.data.email))).toBe(true);
+    expect(parseDeletedEmail(String(userWrite.data.email))).toBeNull();
     expect(userWrite.data.deletedAt).toEqual(earlier);
+    const retry = fakeDb({ email: expiredMarker, deletedAt: earlier });
+    await anonymizeMember(USER_ID, { reason: 'retention_purge_blocked', actorUserId: null, now: NOW }, retry.db);
+    expect(retry.tx.user.update.mock.calls[0][0].data.email).toBe(expiredMarker);
+    const other = fakeDb({ email: marker, deletedAt: earlier });
+    await anonymizeMember('550e8400-e29b-41d4-a716-446655440002', { reason: 'retention_purge_blocked', actorUserId: null, now: NOW }, other.db);
+    expect(other.tx.user.update.mock.calls[0][0].data.email).not.toBe(expiredMarker);
     // Unattended job: no actor, system role, still no PII.
     const audit = tx.auditLog.create.mock.calls[0][0];
     expect(audit.data).toMatchObject({ actorUserId: null, actorEmailSnapshot: null, actorRoleSnapshot: 'system' });

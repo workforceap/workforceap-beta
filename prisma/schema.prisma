@@ -2112,7 +2112,9 @@ model TrainingBillingPacket {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  member       User         @relation("MemberBillingPackets", fields: [memberId], references: [id], onDelete: Cascade)
+  // Keep signed invoice snapshots and delivery history if a member account is erased.
+  // Release requires a separately approved financial-record retention policy.
+  member       User         @relation("MemberBillingPackets", fields: [memberId], references: [id], onDelete: Restrict)
   signedBy     User         @relation("BillingPacketSigner", fields: [signedById], references: [id], onDelete: Restrict)
   sends        TrainingBillingPacketSend[]
 

@@ -250,8 +250,8 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
 export const DELETED_ACCOUNT_RETENTION_DAYS = 30;
 
 /** Returns the cutoff Date for a given retention period. */
-export function getCutoffDate(days: number): Date {
-  const d = new Date();
+export function getCutoffDate(days: number, now = new Date()): Date {
+  const d = new Date(now);
   d.setDate(d.getDate() - days);
   d.setHours(0, 0, 0, 0);
   return d;

@@ -219,6 +219,14 @@ describe('administrator account restore', () => {
     expect(mocks.restoreAuth).not.toHaveBeenCalled();
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
+
+  it('cannot restore a held account after its recoverable email expires', async () => {
+    mocks.target.mockResolvedValue({ ...deletedRow(), email: `deleted_${ID}_${deletedAt.getTime()}_@deleted.invalid` });
+    const response = await restore(req(), ctx());
+    expect(response.status).toBe(409);
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
 });
 
 describe('administrator email release', () => {

@@ -1,6 +1,7 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
+import { DELETED_ACCOUNT_RETENTION_DAYS, getCutoffDate } from '@/lib/retention/config';
 import { buildDeletedEmail } from './deletedEmail';
 
 /**
@@ -14,7 +15,8 @@ import { buildDeletedEmail } from './deletedEmail';
  *
  * What it does, in one transaction:
  *  1. rewrites `users.email` to the recoverable deleted marker
- *     (lib/member/deletedEmail.ts) unless the row is already soft-deleted,
+ *     (lib/member/deletedEmail.ts) during the 30-day restore window; a
+ *     held row past that window gets an irreversible marker,
  *     scrubs the name, phone, workspace email and the assessment / career /
  *     WIOA self-report JSON, and sets `deleted_at` when it is not set yet so
  *     the retention purge picks the row up after DELETED_ACCOUNT_RETENTION_DAYS;
@@ -109,6 +111,13 @@ function scrambledEmail(userId: string, email: string, now: Date): string {
   );
 }
 
+function expiredDeletedEmail(userId: string, deletedAt: Date): string {
+  // The trailing underscore matches isDeletedEmailMarker but has no original
+  // address for parseDeletedEmail to recover. The first deletion timestamp
+  // makes retries deterministic; the user id makes the value unique.
+  return `deleted_${userId}_${deletedAt.getTime()}_@deleted.invalid`;
+}
+
 /**
  * Returns `null` when no `users` row exists for the id (nothing to anonymise).
  * Throws when any write fails, so callers never report a deletion that did
@@ -132,13 +141,19 @@ export async function anonymizeMember(
 
     const alreadyDeleted = existing.deletedAt !== null;
     const deletedAt = existing.deletedAt ?? now;
+    const purgeWindowPassed = options.reason === 'retention_purge_blocked'
+      && existing.deletedAt !== null
+      && existing.deletedAt < getCutoffDate(DELETED_ACCOUNT_RETENTION_DAYS, now);
 
     await tx.user.update({
       where: { id: userId },
       data: {
-        // A row that is already soft-deleted keeps its marker so the original
-        // address stays parseable for /admin/users/deleted during the window.
-        email: alreadyDeleted ? existing.email : scrambledEmail(userId, existing.email, now),
+        // Keep the original recoverable only during the restore window. When a
+        // foreign key holds an expired row, its app account email must not
+        // retain the original indefinitely.
+        email: purgeWindowPassed
+          ? expiredDeletedEmail(userId, deletedAt)
+          : alreadyDeleted ? existing.email : scrambledEmail(userId, existing.email, now),
         fullName: ANONYMIZED_FULL_NAME,
         phone: null,
         workspaceEmail: null,
