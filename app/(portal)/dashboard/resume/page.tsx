@@ -69,7 +69,7 @@ export default async function DashboardResumePage() {
   }
   const completeness = memberState.profileCompletenessPct;
 
-  // Still need profile for resume paths
+  // The member state already resolves profile and account phone from its owned user read.
   const profile = await withDbRetry(() =>
     prisma.profile.findUnique({
       where: { userId: user.id },
@@ -83,7 +83,7 @@ export default async function DashboardResumePage() {
   const fields = {
     name: memberState.fullName ?? "",
     email: memberState.email ?? "",
-    phone: "", // getMemberState doesn't expose phone currently
+    phone: memberState.contactPhone ?? "",
   };
 
   return (
