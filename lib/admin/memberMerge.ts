@@ -447,6 +447,29 @@ export async function checkMergeConflicts(
 
   if (!primary || !secondary) return conflicts;
 
+  // Billing packets bind a signed approval reference and send history to the
+  // original account. The executor calls this again after locking both member
+  // lifecycles, so a packet cannot appear between this check and retirement.
+  // Even a draft is held here: moving it or leaving it on the secondary would
+  // make the merge result ambiguous to staff and to the primary member.
+  if (primary.organizationId === secondary.organizationId) {
+    const packet = await tx.trainingBillingPacket.findFirst({
+      where: {
+        organizationId: primary.organizationId,
+        memberId: { in: [primaryId, secondaryId] },
+      },
+      select: { id: true, memberId: true, packetNumber: true },
+    });
+    if (packet) {
+      conflicts.push({
+        field: 'trainingBillingPacket.memberId',
+        primaryValue: primaryId,
+        secondaryValue: secondaryId,
+        message: `A billing packet (${packet.packetNumber}) belongs to one of these accounts. Review it before merging; this merge cannot safely move or strand billing approval history.`,
+      });
+    }
+  }
+
   // Critical scalar conflicts
   if (primary.enrolledProgram && secondary.enrolledProgram && primary.enrolledProgram !== secondary.enrolledProgram) {
     conflicts.push({

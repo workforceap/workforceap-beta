@@ -107,6 +107,14 @@ function makeMockTx(options: { rows?: MockRows; memberPointsRow?: { totalPoints:
     ...generated,
     $executeRaw: async () => 1,
     trainingBillingPacketSend: { findFirst: async () => null },
+    trainingBillingPacket: {
+      findFirst: async ({ where }: { where: { organizationId: string; memberId: { in: string[] } } }) => {
+        logCall('trainingBillingPacket.findFirst', where);
+        return (rows.trainingBillingPacket ?? []).find((row) =>
+          row.organizationId === where.organizationId && where.memberId.in.includes(String(row.memberId)),
+        ) ?? null;
+      },
+    },
     pointsTransaction: {
       ...generated.pointsTransaction,
       aggregate: async ({ where }: { where: Record<string, unknown> }) => {
@@ -233,6 +241,14 @@ describe('checkMergeConflicts', () => {
     expect(conflicts[0].field).toBe('enrolledProgram');
     expect(conflicts[0].message).toContain('tech vs health');
   });
+
+  it('shows a billing packet conflict in the preview', async () => {
+    const tx = makeMockTx({ rows: { trainingBillingPacket: [{ id: 'packet-1', memberId: 'secondary', organizationId: 'org-1', packetNumber: 'INV-1' }] } });
+    const conflicts = await checkMergeConflicts(tx, 'primary', 'secondary');
+    expect(conflicts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: 'trainingBillingPacket.memberId', message: expect.stringContaining('INV-1') }),
+    ]));
+  });
 });
 
 describe('executeMemberMerge', () => {
@@ -271,6 +287,18 @@ describe('executeMemberMerge', () => {
 
     const calls = (tx as unknown as MockTxExtras & { calls: string[] }).calls;
     expect(calls.some((call) => call.startsWith('user.update'))).toBe(false);
+  });
+
+  it.each(['primary', 'secondary'])('refuses retirement when %s owns a billing packet', async (owner) => {
+    const tx = makeMockTx({ rows: { trainingBillingPacket: [{ id: 'packet-1', memberId: owner, organizationId: 'org-1', packetNumber: 'INV-1' }] } });
+
+    await expect(executeMemberMerge(tx, 'primary', 'secondary', 'admin-1'))
+      .rejects.toThrow('A billing packet (INV-1) belongs to one of these accounts');
+
+    const calls = (tx as unknown as MockTxExtras).calls;
+    expect(calls.some((call) => call.startsWith('trainingBillingPacket.findFirst'))).toBe(true);
+    expect(calls.some((call) => call.startsWith('user.update'))).toBe(false);
+    expect(calls.some((call) => call.startsWith('workflowDiagnostic.create'))).toBe(false);
   });
 
   it('soft-deletes secondary and logs merge', async () => {
