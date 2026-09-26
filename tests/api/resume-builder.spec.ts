@@ -304,7 +304,7 @@ describe('POST /api/member/resume/generate', () => {
     expect(saveEnhancedResumeText).not.toHaveBeenCalled();
   });
 
-  it('builds from substantive profile evidence when the uploaded original is unreadable', async () => {
+  it('keeps an unreadable uploaded original even when the profile bio has substance', async () => {
     vi.mocked(getUser).mockResolvedValue(mockUser() as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       ...mockUser(),
@@ -312,16 +312,55 @@ describe('POST /api/member/resume/generate', () => {
     } as any);
     vi.mocked(getMemberResumePlainText).mockResolvedValue('');
     vi.mocked(isAnthropicConfigured).mockReturnValue(true);
-    vi.mocked(claudeChat).mockResolvedValue('# Resume\n\nVerified logistics coordination and inventory skills from the profile bio.');
 
     const res = await generateResume(makeGenerateRequest());
-    expect(res.status).toBe(200);
-    expect(claudeChat).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.not.stringContaining('<resume_data>'),
-      expect.any(Object),
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toContain('could not read enough text');
+    expect(claudeChat).not.toHaveBeenCalled();
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
+  it('does not let client-supplied text bypass extraction of an uploaded original', async () => {
+    const originalPath = `${UUIDS.user}/resume-original.pdf`;
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({ resumeOriginalPath: originalPath }),
+    } as any);
+    vi.mocked(getMemberResumePlainText).mockResolvedValue('');
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+
+    const res = await generateResume(makeGenerateRequest({
+      resumeBase: 'Client supplied profile summary with logistics coordination experience.',
+      resumeRevision: getResumeProfileRevision(originalPath, null),
+    }));
+
+    expect(res.status).toBe(422);
+    expect(getMemberResumePlainText).toHaveBeenCalledWith(UUIDS.user, 6000, { originalOnly: true });
+    expect(claudeChat).not.toHaveBeenCalled();
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
+  it('rejects a draft claiming source experience is missing before saving', async () => {
+    const originalPath = `${UUIDS.user}/resume-original.pdf`;
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({ resumeOriginalPath: originalPath }),
+    } as any);
+    vi.mocked(getMemberResumePlainText).mockResolvedValue(
+      'Jane Doe\nExperience Operations Manager | Acme Logistics\nManaged incoming shipments and trained staff.',
     );
-    expect(saveEnhancedResumeText).toHaveBeenCalledOnce();
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+    vi.mocked(claudeChat).mockResolvedValue(
+      '# Jane Doe\n\n## Experience\nNo employment history was provided in the resume or profile.',
+    );
+
+    const res = await generateResume(makeGenerateRequest());
+
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toContain('did not preserve details');
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
   });
 
   it('rejects raw PDF body text before a model call when the stored original is unreadable', async () => {
