@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { TrainingProviderIdentity } from './providerIdentity';
 import type { PacketLineItem } from './packetSchema';
-import { formatLongDate, formatMoney, totalContactHours } from './packetText';
+import { formatLongDate, formatLongDateOfInstant, formatMoney, totalContactHours } from './packetText';
 
 /**
  * J5 (training invoice) and J6 (cover letter) renderers. Both documents are
@@ -76,6 +76,32 @@ export async function loadLetterheadLogo(): Promise<Uint8Array | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Letterhead contact block (address, phone, website, entity, EIN) flowed
+ * whole-segment onto at most three lines under the legal name, so nothing is
+ * cut off mid-word. Only a single segment wider than the line is ellipsized.
+ */
+export function letterheadContactLines(provider: TrainingProviderIdentity, measure: (text: string) => number, maxWidth: number): string[] {
+  const segments = [...provider.addressLines, provider.phone, provider.website, provider.entityLine, `EIN ${provider.ein}`]
+    .map((s) => sanitizePdfText(s).trim())
+    .filter(Boolean);
+  const sep = '  |  ';
+  const lines: string[] = [];
+  for (const segment of segments) {
+    const last = lines[lines.length - 1];
+    if (last !== undefined && measure(`${last}${sep}${segment}`) <= maxWidth) lines[lines.length - 1] = `${last}${sep}${segment}`;
+    else lines.push(segment);
+  }
+  const fit = (text: string) => {
+    if (measure(text) <= maxWidth) return text;
+    let out = text;
+    while (out.length > 1 && measure(`${out}…`) > maxWidth) out = out.slice(0, -1);
+    return `${out}…`;
+  };
+  if (lines.length > 3) lines.splice(2, lines.length - 2, lines.slice(2).join(sep));
+  return lines.map(fit);
 }
 
 function toIsoDate(value: string | Date): string {
@@ -195,20 +221,9 @@ class Sheet {
     }
     const pale = rgb(1, 0.9, 0.92);
     page.drawText(sanitizePdfText(provider.legalName), { x: textX, y: PAGE_H - 30, size: 13, font: this.fonts.bold, color: WHITE });
-    const contact = [...provider.addressLines, `${provider.phone}  |  ${provider.website}`].join('   |   ');
-    page.drawText(ellipsize(contact, this.fonts.regular, 7.5, PAGE_W - MARGIN - textX - 100), {
-      x: textX,
-      y: PAGE_H - 44,
-      size: 7.5,
-      font: this.fonts.regular,
-      color: pale,
-    });
-    page.drawText(sanitizePdfText(`${provider.entityLine}  |  EIN ${provider.ein}`), {
-      x: textX,
-      y: PAGE_H - 56,
-      size: 7.5,
-      font: this.fonts.regular,
-      color: pale,
+    const lines = letterheadContactLines(provider, (t) => this.fonts.regular.widthOfTextAtSize(t, 7.5), PAGE_W - MARGIN - textX - 100);
+    lines.forEach((line, i) => {
+      page.drawText(line, { x: textX, y: PAGE_H - 44 - i * 12, size: 7.5, font: this.fonts.regular, color: pale });
     });
 
     const badge = `FORM ${label.code}`;
@@ -285,7 +300,7 @@ class Sheet {
     this.text(`${input.provider.email}  |  ${input.provider.phone}`, { size: 9.5, color: MUTED });
     this.gap(13);
     this.text(
-      `Signed ${formatLongDate(toIsoDate(input.signedAt))}${drawn ? ' (electronic signature)' : ' (typed signature)'}`,
+      `Signed ${formatLongDateOfInstant(input.signedAt)}${drawn ? ' (electronic signature)' : ' (typed signature)'}`,
       { size: 9, color: MUTED },
     );
     this.gap(12);

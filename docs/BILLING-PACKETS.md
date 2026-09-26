@@ -74,6 +74,11 @@ current catalog bar one) fits on a single page per document — guarded by a
 regression test in `lib/billing/packetPdf.test.ts`. A 13-class program
 legitimately runs to two pages, with real content on the second.
 
+The letterhead contact block (address, phone, website, entity, EIN) flows
+whole segments onto up to three lines instead of truncating. "Signed" and
+"emailed" dates are the calendar day in `PORTAL_TIMEZONE` (America/Chicago),
+not the UTC day; invoice and due dates are stored as plain dates.
+
 ## Files
 
 - `prisma/schema.prisma` `TrainingBillingPacket` + migration

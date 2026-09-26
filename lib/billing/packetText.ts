@@ -1,3 +1,4 @@
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
 import type { PacketLineItem } from './packetSchema';
 
 /**
@@ -13,6 +14,15 @@ export function formatMoney(n: number): string {
 export function formatLongDate(iso: string | Date): string {
   const d = typeof iso === 'string' ? new Date(`${iso.slice(0, 10)}T12:00:00Z`) : iso;
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+
+/**
+ * Long date of an instant (signed, emailed) in the org's operating timezone,
+ * so an evening signature in Texas is not dated the next (UTC) day.
+ */
+export function formatLongDateOfInstant(instant: string | Date): string {
+  const d = typeof instant === 'string' ? new Date(instant) : instant;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: PORTAL_TIMEZONE });
 }
 
 export function totalContactHours(items: ReadonlyArray<PacketLineItem>): number {

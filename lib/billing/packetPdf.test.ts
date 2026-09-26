@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
 import {
+  letterheadContactLines,
   packetDocumentFilename,
   parsePacketDownloadKind,
   renderJ5InvoicePdf,
@@ -127,6 +128,24 @@ describe('J5 / J6 PDF renderers', () => {
     assert.equal(parsePacketDownloadKind('j5'), 'j5');
     assert.equal(parsePacketDownloadKind(null), 'j5');
     assert.equal(parsePacketDownloadKind('nonsense'), 'j5');
+  });
+
+  it('flows the letterhead contact block onto whole-segment lines instead of cutting off the website', async () => {
+    const font = await (await PDFDocument.create()).embedFont(StandardFonts.Helvetica);
+    const measure = (t: string) => font.widthOfTextAtSize(t, 7.5);
+    const provider = getTrainingProviderIdentity();
+    // Width the renderer leaves beside the logo and the form badge.
+    const lines = letterheadContactLines(provider, measure, 316);
+    assert.ok(lines.length <= 3);
+    assert.ok(lines.every((l) => !l.endsWith('…') && measure(l) <= 316));
+    const joined = lines.join('  |  ');
+    for (const part of [...provider.addressLines, provider.phone, provider.website, provider.entityLine, `EIN ${provider.ein}`]) {
+      assert.ok(joined.includes(part), part);
+    }
+    // A pathological single segment is the only thing ever ellipsized.
+    const long = letterheadContactLines({ ...provider, website: 'x'.repeat(400) }, measure, 316);
+    assert.ok(long.some((l) => l.endsWith('…')));
+    assert.ok(long.length <= 3);
   });
 
   it('builds safe filenames', () => {

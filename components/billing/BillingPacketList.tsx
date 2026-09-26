@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import type { BillingPacketSummary } from '@/lib/billing/packetAccess';
-import { formatLongDate, formatMoney } from '@/lib/billing/packetText';
+import { formatLongDate, formatLongDateOfInstant, formatMoney } from '@/lib/billing/packetText';
 
 type BillingPacketListProps = {
   packets: BillingPacketSummary[];
@@ -86,7 +86,7 @@ export default function BillingPacketList({
               {p.referenceNumber ? ` · ref ${p.referenceNumber}` : ''}
               <br />
               Signed by {p.signerName}, {p.signerTitle}
-              {p.sentAt ? ` · emailed ${formatLongDate(p.sentAt)}${p.sendCount > 1 ? ` (${p.sendCount} times)` : ''}` : ''}
+              {p.sentAt ? ` · emailed ${formatLongDateOfInstant(p.sentAt)}${p.sendCount > 1 ? ` (${p.sendCount} times)` : ''}` : ''}
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <a className="btn btn-outline" style={{ minHeight: 40 }} href={pdfHref(p.id, 'j5')} target="_blank" rel="noopener">

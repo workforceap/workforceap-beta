@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { allocateAmount, defaultCoverLetterBody, formatMoney, isoDatePlusDays, totalContactHours } from './packetText';
+import { allocateAmount, defaultCoverLetterBody, formatLongDateOfInstant, formatMoney, isoDatePlusDays, totalContactHours } from './packetText';
 import { buildDefaultLineItems, resolveProgramPricing } from './packetDefaults';
 import { createPacketSchema, parseLineItems, sumLineItems } from './packetSchema';
 import { formatPacketNumber } from './packetNumber';
@@ -137,5 +137,8 @@ describe('schema + helpers', () => {
     assert.equal(formatMoney(1234.5), '$1,234.50');
     assert.equal(formatPacketNumber('WAP', 2026, 7), 'WAP-2026-0007');
     assert.equal(isoDatePlusDays(30, new Date('2026-09-04T12:00:00Z')), '2026-10-04');
+    // Instants (signed/emailed) use Central time: 8:30 pm CDT stays on the 25th.
+    assert.equal(formatLongDateOfInstant(new Date('2026-09-26T01:30:00Z')), 'September 25, 2026');
+    assert.equal(formatLongDateOfInstant('2026-09-26T06:00:00.000Z'), 'September 26, 2026');
   });
 });
