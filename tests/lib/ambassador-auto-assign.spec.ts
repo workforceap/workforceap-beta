@@ -8,6 +8,7 @@ const {
   updateAssignment,
   updateThread,
   lockBillingLifecycle,
+  billingLifecyclePending,
   hasUnresolvedBillingSend,
   lockMemberRow,
 } = vi.hoisted(() => ({
@@ -18,6 +19,7 @@ const {
   updateAssignment: vi.fn(),
   updateThread: vi.fn(),
   lockBillingLifecycle: vi.fn(),
+  billingLifecyclePending: vi.fn(),
   hasUnresolvedBillingSend: vi.fn(),
   lockMemberRow: vi.fn(),
 }));
@@ -25,6 +27,7 @@ const {
 vi.mock('server-only', () => ({}));
 vi.mock('@/lib/billing/erasureGuard', () => ({
   lockBillingMemberLifecycle: lockBillingLifecycle,
+  billingLifecyclePending,
   hasUnresolvedBillingSend,
 }));
 vi.mock('@/lib/db/prisma', () => ({
@@ -80,6 +83,7 @@ describe('autoAssignAmbassadorFromReferral', () => {
     createAssignment.mockResolvedValue({ id: 'asg-1' });
     updateThread.mockResolvedValue({});
     lockBillingLifecycle.mockResolvedValue(undefined);
+    billingLifecyclePending.mockResolvedValue(false);
     hasUnresolvedBillingSend.mockResolvedValue(false);
     lockMemberRow.mockResolvedValue([{ id: 'member-1', alreadyAssigned: false }]);
   });
@@ -166,6 +170,16 @@ describe('autoAssignAmbassadorFromReferral', () => {
     expect(lockMemberRow).not.toHaveBeenCalled();
     expect(createAssignment).not.toHaveBeenCalled();
     expect(updateAssignment).not.toHaveBeenCalled();
+  });
+
+  it('does not create an assignment while member deletion owns the lifecycle', async () => {
+    billingLifecyclePending.mockResolvedValue(true);
+    const result = await autoAssignAmbassadorFromReferral({
+      memberId: 'member-1', source: 'apply_signup', partnerAmbassadorReferral: 'Maria García',
+    });
+    expect(result).toEqual({ assigned: false, reason: 'billing_send_in_progress' });
+    expect(hasUnresolvedBillingSend).not.toHaveBeenCalled();
+    expect(createAssignment).not.toHaveBeenCalled();
   });
 
   it('does not override an assignment created after the initial eligibility lookup', async () => {
