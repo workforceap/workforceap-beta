@@ -74,11 +74,17 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
   deleteUserStorageObjects: vi.fn(),
 }));
 
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  hasClaimedBillingSend: vi.fn(),
+  BILLING_SEND_IN_PROGRESS_ERROR: 'A billing packet is being sent for this member. Finish or reconcile that send before deleting the account.',
+}));
+
 import { POST } from '@/app/api/admin/members/[id]/erase/route';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
+import { hasClaimedBillingSend } from '@/lib/billing/erasureGuard';
 
 const MEMBER_ID = 'member-1';
 
@@ -116,6 +122,18 @@ describe('POST /api/admin/members/[id]/erase', () => {
     remove.mockResolvedValue({ id: MEMBER_ID });
     supabaseDeleteUser.mockResolvedValue({ error: null });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
+    vi.mocked(hasClaimedBillingSend).mockResolvedValue(false);
+  });
+
+  it('refuses erasure before file deletion while a billing delivery is claimed', async () => {
+    vi.mocked(hasClaimedBillingSend).mockResolvedValue(true);
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('billing_send_in_progress');
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
   });
 
   it('fails closed with 502 and writes nothing when storage objects cannot be deleted', async () => {
@@ -169,20 +187,18 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(deleteOrder).toBeLessThan(authOrder);
   });
 
-  it.each([false, true])('holds issued billing records before storage deletion (force=%s)', async (force) => {
+  it.each([false, true])('erases the member while the database detaches issued billing records (force=%s)', async (force) => {
     vi.mocked(isSuperAdmin).mockResolvedValue(true);
     findFirst.mockResolvedValue(member({ trainingBillingPackets: [{ id: 'packet-1' }] }));
 
     const res = await POST(eraseReq({ force }), { params: Promise.resolve({ id: MEMBER_ID }) });
 
-    expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({
-      error: 'This member has issued billing records. Account erasure is on hold pending the financial-record retention policy.',
-    });
-    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
+    expect(deleteUserStorageObjects).toHaveBeenCalledOnce();
     expect(update).not.toHaveBeenCalled();
-    expect(remove).not.toHaveBeenCalled();
-    expect(supabaseDeleteUser).not.toHaveBeenCalled();
+    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
+    expect(supabaseDeleteUser).toHaveBeenCalledWith(MEMBER_ID);
   });
 
   it('never touches storage or rows for an administrator target', async () => {

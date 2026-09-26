@@ -120,31 +120,28 @@ try {
   sql(retentionMigration);
   assert.equal(
     sql(`SELECT confdeltype FROM pg_constraint WHERE conrelid='public.training_billing_packets'::regclass AND conname='training_billing_packets_member_id_fkey';`),
-    'r',
-    'The packet member FK must restrict account deletion',
+    'n',
+    'The packet member FK must detach the packet on account deletion',
   );
+  assert.equal(sql(`SELECT subject_member_id FROM public.training_billing_packets WHERE id='p';`), 'u', 'Historical subject ID must be backfilled');
   sql(`
-    DO $$
-    DECLARE blocked_constraint TEXT;
-    BEGIN
-      BEGIN
-        DELETE FROM public.users WHERE id = 'u';
-        RAISE EXCEPTION 'The packet member was deleted';
-      EXCEPTION WHEN foreign_key_violation THEN
-        GET STACKED DIAGNOSTICS blocked_constraint = CONSTRAINT_NAME;
-        IF blocked_constraint <> 'training_billing_packets_member_id_fkey' THEN
-          RAISE EXCEPTION 'Unexpected constraint: %', blocked_constraint;
-        END IF;
-      END;
-    END $$;
+    CREATE TABLE public.member_private_data (
+      id TEXT PRIMARY KEY,
+      member_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE
+    );
+    INSERT INTO public.member_private_data VALUES ('private-u', 'u');
+    DELETE FROM public.users WHERE id = 'u';
     DELETE FROM public.users WHERE id = 'free';
   `);
-  assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='u';`), '1', 'Held member must remain');
+  assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='u';`), '0', 'Member account must be purged');
+  assert.equal(sql(`SELECT count(*) FROM public.member_private_data WHERE id='private-u';`), '0', 'Unrelated private child must be purged');
   assert.equal(sql(`SELECT count(*) FROM public.training_billing_packets WHERE id='p';`), '1', 'Signed packet must remain');
   assert.equal(sql(`SELECT count(*) FROM public.training_billing_packet_sends WHERE id='s';`), '1', 'Send history must remain');
+  assert.equal(sql(`SELECT member_id IS NULL FROM public.training_billing_packets WHERE id='p';`), 't', 'Packet must detach from deleted account');
+  assert.equal(sql(`SELECT subject_member_id FROM public.training_billing_packets WHERE id='p';`), 'u', 'Archive lookup ID must remain');
   assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='free';`), '0', 'Unheld account must still be deletable');
-  assertLockedDown('retention hold');
-  console.log('PASS signed packet and send history survive attempted member deletion; unrelated accounts still purge');
+  assertLockedDown('retention archive');
+  console.log('PASS member and private child purge while signed packet, send history and scoped archive ID survive');
 } finally {
   if (proofDatabaseCreated) runSql(`DROP DATABASE "${proofDatabase}";`, 'postgres');
   for (const role of createdRoles) runSql(`DROP ROLE IF EXISTS ${role};`, 'postgres');

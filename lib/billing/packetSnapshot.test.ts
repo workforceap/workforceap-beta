@@ -41,6 +41,7 @@ function row(overrides: Partial<TrainingBillingPacket> = {}): TrainingBillingPac
     id: 'p1',
     organizationId: DEFAULT_ORG_ID,
     memberId: 'm1',
+    subjectMemberId: 'm1',
     programSlug: 'it-support-professional-certificate-ibm',
     packetNumber: 'WAP-2026-0001',
     status: 'signed',

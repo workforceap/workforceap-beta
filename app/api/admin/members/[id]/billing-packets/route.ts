@@ -304,6 +304,7 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
             data: {
               organizationId: member.organizationId,
               memberId: member.id,
+              subjectMemberId: member.id,
               programSlug,
               packetNumber,
               status: 'signed',

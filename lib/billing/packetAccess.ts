@@ -175,7 +175,8 @@ export type PacketViewer = 'admin' | 'counselor' | 'member';
 
 export type LoadedPacket = {
   packet: TrainingBillingPacket;
-  member: { id: string; fullName: string; email: string; organizationId: string };
+  /** Null for a soft-deleted or erased account; the signed packet is still an admin archive record. */
+  member: { id: string; fullName: string; email: string; organizationId: string } | null;
   viewer: PacketViewer;
 };
 
@@ -200,8 +201,10 @@ export async function loadPacketForViewer(
     where: { id: packetId },
     include: { member: { select: { id: true, fullName: true, email: true, organizationId: true, deletedAt: true } } },
   });
-  if (!packet || packet.member.deletedAt) return { ok: false, status: 404, error: 'Document not found' };
-  const member = { id: packet.member.id, fullName: packet.member.fullName, email: packet.member.email, organizationId: packet.member.organizationId };
+  if (!packet) return { ok: false, status: 404, error: 'Document not found' };
+  const member = packet.member && !packet.member.deletedAt
+    ? { id: packet.member.id, fullName: packet.member.fullName, email: packet.member.email, organizationId: packet.member.organizationId }
+    : null;
 
   if (await isAdmin(userId)) {
     const superAdmin = await isSuperAdmin(userId);
@@ -212,6 +215,10 @@ export async function loadPacketForViewer(
     return { ok: false, status: 404, error: 'Document not found' };
   }
   if (opts.requireAdmin) return { ok: false, status: 403, error: 'Admin access required' };
+
+  // An archived packet is financial evidence for authorized admins only.
+  // Deleted members and former counselors no longer inherit document access.
+  if (!member || !packet.memberId) return { ok: false, status: 404, error: 'Document not found' };
 
   // Members and counselors only see a packet once a send could have reached them.
   const reached = async (viewer: 'member' | 'counselor') =>

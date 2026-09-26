@@ -14,6 +14,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
+import { BILLING_SEND_IN_PROGRESS_ERROR, hasClaimedBillingSend } from '@/lib/billing/erasureGuard';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -72,6 +73,13 @@ export const POST = withApiGuc(async (
     }
     const newEmail = existing.deletedAt ? existing.email : buildDeletedEmail(id, now.getTime(), existing.email);
     if (!newEmail) return NextResponse.json({ error: 'This email is too long to preserve safely for restore.' }, { status: 400 });
+
+    // Do not remove files while a claimed J5/J6 copy may still be crossing
+    // the email provider boundary. A complete race barrier also requires
+    // claim-time account state checks and a deletion marker before Storage.
+    if (await hasClaimedBillingSend(id)) {
+      return NextResponse.json({ error: BILLING_SEND_IN_PROGRESS_ERROR, code: 'billing_send_in_progress' }, { status: 409 });
+    }
 
     // Soft-delete still removes member-resumes / member-files objects so PII
     // does not linger while the row is recoverable. Restore will not bring

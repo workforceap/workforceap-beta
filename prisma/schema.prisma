@@ -2065,7 +2065,11 @@ model CourseEnrollment {
 model TrainingBillingPacket {
   id              String   @id @default(uuid())
   organizationId  String   @map("organization_id")
-  memberId        String   @map("member_id")
+  /// Live account link. Null after the member is erased; invoices remain.
+  memberId        String?  @map("member_id")
+  /// Original account ID for scoped finance archive lookup, without holding
+  /// the account and its unrelated private data in place.
+  subjectMemberId String   @map("subject_member_id")
   programSlug     String   @map("program_slug")
   /// Human invoice number, unique per organization (e.g. WAP-2026-0007).
   packetNumber    String   @map("packet_number")
@@ -2112,15 +2116,16 @@ model TrainingBillingPacket {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  // Keep signed invoice snapshots and delivery history if a member account is erased.
-  // Release requires a separately approved financial-record retention policy.
-  member       User         @relation("MemberBillingPackets", fields: [memberId], references: [id], onDelete: Restrict)
+  // The issued snapshot and sends outlive account erasure. Financial-record
+  // retention and final disposal still require an approved policy.
+  member       User?        @relation("MemberBillingPackets", fields: [memberId], references: [id], onDelete: SetNull)
   signedBy     User         @relation("BillingPacketSigner", fields: [signedById], references: [id], onDelete: Restrict)
   sends        TrainingBillingPacketSend[]
 
   @@unique([organizationId, packetNumber])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([memberId, createdAt(sort: Desc)])
+  @@index([organizationId, subjectMemberId, createdAt(sort: Desc)])
   @@index([organizationId, memberId, fundingAttestationKey])
   @@map("training_billing_packets")
 }

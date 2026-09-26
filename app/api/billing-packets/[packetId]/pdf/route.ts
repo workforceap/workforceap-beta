@@ -5,6 +5,7 @@ import { loadPacketForViewer } from '@/lib/billing/packetAccess';
 import { packetToDocumentInput } from '@/lib/billing/packetDocument';
 import { packetDocumentFilename, parsePacketDownloadKind, renderPacketDocument } from '@/lib/billing/packetPdf';
 import { SignedSnapshotCorruptError } from '@/lib/billing/packetSnapshot';
+import { parseSignedSnapshot } from '@/lib/billing/packetSnapshot';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 
 /**
@@ -34,14 +35,23 @@ export const GET = withApiGuc(async (request: Request, { params }: { params: Pro
     const orgCheck = checkBillingProviderOrg(packet.organizationId);
     if (!orgCheck.ok) return NextResponse.json({ error: orgCheck.error }, { status: orgCheck.status });
     let bytes: Uint8Array;
+    let memberName: string;
     try {
       // A signed snapshot renders only from itself; a corrupt one is refused, never re-rendered from live data.
-      bytes = await renderPacketDocument(kind, await packetToDocumentInput(packet, member));
+      // Erased accounts have no live member to fall back to: legacy packets
+      // without a complete snapshot cannot be reconstructed as issued.
+      const archivedSnapshot = member ? null : parseSignedSnapshot(packet.signedSnapshot);
+      if (!member && !archivedSnapshot) {
+        return NextResponse.json({ error: 'This archived packet has no signed snapshot and cannot be reconstructed.', code: 'legacy_packet' }, { status: 409 });
+      }
+      const documentMember = member ?? archivedSnapshot!.member;
+      bytes = await renderPacketDocument(kind, await packetToDocumentInput(packet, documentMember));
+      memberName = documentMember.fullName;
     } catch (err) {
       if (err instanceof SignedSnapshotCorruptError) return NextResponse.json({ error: err.message, code: 'snapshot_corrupt' }, { status: 409 });
       throw err;
     }
-    const filename = packetDocumentFilename(kind, packet.packetNumber, member.fullName);
+    const filename = packetDocumentFilename(kind, packet.packetNumber, memberName);
     return new NextResponse(Buffer.from(bytes), {
       status: 200,
       headers: {

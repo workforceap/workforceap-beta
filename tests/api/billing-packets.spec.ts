@@ -169,7 +169,7 @@ vi.mock('@/lib/db/prisma', () => {
         const p = db.packets.find((x) => x.id === where.id);
         if (!p) return null;
         const member = db.users.find((u) => u.id === p.memberId);
-        return { ...p, member: { ...member, deletedAt: null }, ...(include?.sends ? { sends: db.sends.filter((x) => x.packetId === p.id) } : {}) };
+        return { ...p, member: member ? { ...member } : null, ...(include?.sends ? { sends: db.sends.filter((x) => x.packetId === p.id) } : {}) };
       }),
       create: vi.fn(async ({ data }: { data: Row }) => {
         await tick();
@@ -236,6 +236,7 @@ vi.mock('@/lib/db/prisma', () => {
 import { GET as listAdminPackets, POST as createPacket } from '@/app/api/admin/members/[id]/billing-packets/route';
 import { POST as sendPacket } from '@/app/api/billing-packets/[packetId]/send/route';
 import { GET as packetPdf } from '@/app/api/billing-packets/[packetId]/pdf/route';
+import { GET as listArchivedPackets } from '@/app/api/admin/billing-packets/archive/route';
 import { attestationFingerprint } from '@/lib/billing/packetText';
 import {
   IDEMPOTENCY_SAFE_RETRY_MS,
@@ -387,6 +388,7 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
     expect(res.status).toBe(201);
     const row = db.packets[0];
     expect(row.packetNumber).toBe('WAP-2026-0001');
+    expect(row.subjectMemberId).toBe(MEMBER);
     expect(row.totalAmount).toBe(1300);
     expect(row.fundingAttestationKey).toBe('wioa_ita:TESTITA0001');
     const snap = row.signedSnapshot as Record<string, any>;
@@ -1103,6 +1105,49 @@ describe('GET /api/billing-packets/[packetId]/pdf', () => {
     const res = await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=both`), packetParams(id));
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Disposition')).toContain('attachment; filename="J5-J6-invoice-packet-WAP-2026-0001-test-member.pdf"');
+  });
+
+  it('keeps erased-member packets in the scoped admin archive, and refuses delivery and former-member access', async () => {
+    const id = await signOne();
+    db.users = db.users.filter((u) => u.id !== MEMBER);
+    db.packets[0].memberId = null; // ON DELETE SET NULL; snapshot and send rows remain.
+
+    const archive = await listArchivedPackets(new Request(`http://localhost/api/admin/billing-packets/archive?subjectMemberId=${MEMBER}`));
+    expect(archive.status).toBe(200);
+    expect((await archive.json()).packets).toMatchObject([{
+      id, subjectMemberId: MEMBER, memberName: 'Test Member',
+      pdfUrl: `/api/billing-packets/${id}/pdf?doc=both`,
+    }]);
+
+    const pdf = await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=both`), packetParams(id));
+    expect(pdf.status).toBe(200);
+    expect(Buffer.from(new Uint8Array(await pdf.arrayBuffer()).slice(0, 5)).toString()).toBe('%PDF-');
+    const send = await sendPacket(req({}), packetParams(id));
+    expect(send.status).toBe(409);
+    expect((await send.json()).code).toBe('archived_member');
+    expect(mocks.send).not.toHaveBeenCalled();
+
+    mocks.isAdmin.mockResolvedValue(false);
+    mocks.getUser.mockResolvedValue({ id: MEMBER });
+    expect((await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=j5`), packetParams(id))).status).toBe(404);
+    expect((await listArchivedPackets(new Request('http://localhost/api/admin/billing-packets/archive'))).status).toBe(403);
+  });
+
+  it('refuses to reconstruct an archived legacy packet without a signed snapshot', async () => {
+    const id = await signOne();
+    db.users = db.users.filter((u) => u.id !== MEMBER);
+    db.packets[0].memberId = null;
+    db.packets[0].signedSnapshot = null;
+    const pdf = await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=both`), packetParams(id));
+    expect(pdf.status).toBe(409);
+    expect((await pdf.json()).code).toBe('legacy_packet');
+  });
+
+  it('keeps the finance archive scoped to the provider organization', async () => {
+    await signOne();
+    db.packets[0].memberId = null;
+    mocks.getActorOrganizationId.mockResolvedValue(OTHER_ORG);
+    expect((await listArchivedPackets(new Request('http://localhost/api/admin/billing-packets/archive'))).status).toBe(403);
   });
 });
 

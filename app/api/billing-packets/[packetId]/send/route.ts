@@ -154,6 +154,10 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
       return reconciliationRecorded(packet.id, attempt, body.recipient, body.delivered);
     }
 
+    // A departed member's issued packet remains evidence, but cannot start or
+    // retry delivery to addresses frozen before erasure.
+    if (!member) return conflict('This member account was deleted. The archived packet cannot be emailed.', 'archived_member');
+
     // Everything below sends. A superseded packet never sends again (reconcile above still works).
     if (packet.status === 'superseded' || packet.supersededAt) return supersededConflict();
     // A replacement waits until every copy of the packet it replaced is settled.

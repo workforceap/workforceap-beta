@@ -12,6 +12,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { BILLING_SEND_IN_PROGRESS_ERROR, hasClaimedBillingSend } from '@/lib/billing/erasureGuard';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -26,8 +27,8 @@ import {
  *
  * Permanently removes a member and cascading account data after the
  * account retention period, or immediately if `force=true` is passed by
- * a super-admin. Issued billing packets hold the account row pending an
- * approved financial-record retention and disposal policy.
+ * a super-admin. Issued billing packets detach from the deleted account and
+ * remain in the finance archive with their signed snapshot and send history.
  *
  * Records the erasure in WorkflowDiagnostic for compliance auditing.
  */
@@ -69,7 +70,6 @@ export const POST = withApiGuc(async (
           memberEvents: true,
           messagesAuthored: true,
           courseEnrollments: true,
-          trainingBillingPackets: { select: { id: true }, take: 1 },
           userCertifications: { select: { proofUrl: true } },
         },
       }),
@@ -80,14 +80,8 @@ export const POST = withApiGuc(async (
     }
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) return NextResponse.json({ error: 'Administrator accounts cannot be erased from member management.' }, { status: 403 });
 
-    // Check before deleting storage objects. The RESTRICT foreign key is the
-    // final guard if a packet is signed concurrently after this read.
-    // `force` cannot bypass a signed financial record hold.
-    if (existing.trainingBillingPackets.length > 0) {
-      return NextResponse.json(
-        { error: 'This member has issued billing records. Account erasure is on hold pending the financial-record retention policy.' },
-        { status: 409 },
-      );
+    if (await hasClaimedBillingSend(id)) {
+      return NextResponse.json({ error: BILLING_SEND_IN_PROGRESS_ERROR, code: 'billing_send_in_progress' }, { status: 409 });
     }
 
     const extraPaths = [

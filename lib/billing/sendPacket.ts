@@ -83,7 +83,7 @@ export async function buildPacketEmail(args: {
   const counselor = snapshot.counselor;
   if (!counselor) throw new Error('No counselor was assigned when this packet was signed.');
   const first = counselor.fullName.trim().split(/\s+/)[0] || 'there';
-  const studentUrl = `${branding.domain}/counselor/students/${packet.memberId}`;
+  const studentUrl = `${branding.domain}/counselor/students/${packet.subjectMemberId}`;
   return {
     ...common,
     recipient: 'counselor',
