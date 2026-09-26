@@ -10,6 +10,7 @@ import { hasAdminAccess } from '@/lib/auth/roleAccess';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 /**
  * Rewrite a soft-deleted user's email to the sentinel form so the
@@ -57,17 +58,30 @@ async function _POST(
       { status: 400 },
     );
   }
-  const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, originalEmail);
-  if (!disabled.ok) return NextResponse.json({ error: 'The sign-in email could not be released. Retry or contact support.' }, { status: 502 });
-  if (!alreadyFreed) {
-    const changed = await withTenantScope(orgId, (db) =>
-      db.user.updateMany({
-        where: { id, email: target.email, deletedAt: target.deletedAt },
-        data: { email: newEmail },
-      }),
-    );
-    if (changed.count !== 1) return NextResponse.json({ error: 'The account changed during this request. Reload before trying again.' }, { status: 409 });
+  // A restore may have started after the read above. Claim the same lifecycle
+  // operation it uses before crossing into Auth. Match the exact deletedAt so
+  // a restored or subsequently re-deleted row cannot be mistaken for this one.
+  const authAdmin = getSupabaseAdmin();
+  const deletion = await beginBillingDeletion(id, orgId, undefined, target.deletedAt);
+  if (!deletion.ok) return NextResponse.json({ error: 'The account is being restored, deleted, or has an unresolved billing delivery. Reload and try again.' }, { status: 409 });
+
+  const disabled = await disableAuthUserForSoftDelete(authAdmin, id, originalEmail);
+  if (!disabled.ok) {
+    // Keep the pending barrier after a returned Auth failure. The provider
+    // outcome may be ambiguous, so restore requires reconciliation first.
+    await releaseBillingDeletion(id, deletion.operationId);
+    return NextResponse.json({ error: 'The sign-in email could not be released. Retry or contact support.', reconciliationRequired: true }, { status: 502 });
   }
+  // Also compare-and-set an already-freed row: a no-op email is not proof the
+  // same deleted User still owns the lifecycle operation after Auth returned.
+  const changed = await withTenantScope(orgId, (db) =>
+    db.user.updateMany({
+      where: { id, email: target.email, deletedAt: target.deletedAt, billingDeletionOperationId: deletion.operationId },
+      data: { email: newEmail },
+    }),
+  );
+  if (changed.count !== 1) return NextResponse.json({ error: 'The account changed during this request. Reconciliation is required.', reconciliationRequired: true }, { status: 409 });
+  await completeBillingDeletion(id, deletion.operationId);
 
   auditLog({
     actorUserId: actor.id,

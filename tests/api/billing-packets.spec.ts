@@ -394,6 +394,17 @@ describe('billing deletion barrier ordering', () => {
     expect((await beginBillingDeletion(MEMBER, ORG, cutoff)).ok).toBe(true);
   });
 
+  it('claims a deleted-email repair only for the exact soft-delete read before Auth', async () => {
+    const oldDelete = new Date('2026-08-01T00:00:00Z');
+    const newDelete = new Date('2026-09-01T00:00:00Z');
+    db.users[0].deletedAt = newDelete;
+    expect(await beginBillingDeletion(MEMBER, ORG, undefined, oldDelete)).toEqual({ ok: false, reason: 'missing' });
+    expect(db.users[0].billingDeletionOperationId).toBeNull();
+    const exact = await beginBillingDeletion(MEMBER, ORG, undefined, newDelete);
+    expect(exact.ok).toBe(true);
+    expect(db.users[0].billingDeletionOperationId).toBe(exact.ok ? exact.operationId : null);
+  });
+
   it('restore owns the provider boundary before any retry deletion can begin', async () => {
     const deletedAt = new Date('2026-08-01T00:00:00Z');
     const completedAt = new Date('2026-08-01T00:01:00Z');

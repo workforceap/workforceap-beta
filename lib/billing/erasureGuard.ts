@@ -58,13 +58,17 @@ export type BeginBillingDeletionResult =
  * releases ownership but keeps the marker; a crashed operation needs manual
  * reconciliation before its token can be cleared.
  */
-export async function beginBillingDeletion(memberId: string, organizationId?: string, deletedBefore?: Date): Promise<BeginBillingDeletionResult> {
+export async function beginBillingDeletion(memberId: string, organizationId?: string, deletedBefore?: Date, expectedDeletedAt?: Date): Promise<BeginBillingDeletionResult> {
   if (!interactiveTransactionsGuaranteed()) return { ok: false, reason: 'transaction_unavailable' };
   return prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, memberId);
     const scoped = await scopedBillingUser(tx, memberId, organizationId);
     if (!scoped) return { ok: false as const, reason: 'missing' as const };
-    const where = { id: memberId, ...(organizationId ? { organizationId } : {}), ...(deletedBefore ? { deletedAt: { not: null, lt: deletedBefore } } : {}) };
+    const where = {
+      id: memberId,
+      ...(organizationId ? { organizationId } : {}),
+      ...(expectedDeletedAt ? { deletedAt: expectedDeletedAt } : deletedBefore ? { deletedAt: { not: null, lt: deletedBefore } } : {}),
+    };
     const member = await scoped.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true } });
     if (!member) return { ok: false as const, reason: 'missing' as const };
     if (member.billingDeletionOperationId) return { ok: false as const, reason: 'in_progress' as const };
