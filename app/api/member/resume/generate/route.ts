@@ -19,10 +19,19 @@ import {
   saveEnhancedResumeText,
 } from '@/lib/resume/resumeProfileStorage';
 import { getResumeProfileRevision } from '@/lib/resume/resumeProfileRevision';
+import { hasContradictoryMissingResumeSection } from '@/lib/resume/validateGeneratedResume';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+
+const MIN_PROFILE_BIO_EVIDENCE_CHARS = 80;
+const PROFILE_BIO_FACT_SIGNAL = /\b(?:work(?:ed|ing)?|experience|skills?|education|degree|diploma|certif(?:ied|ication)?|trained|training|managed|built|developed|supported|served|operated|specializ(?:e|ed|ing))\b/i;
+
+function hasProfileResumeEvidence(bio: string | null | undefined): boolean {
+  const text = sanitizeResumePlainText(bio ?? '');
+  return text.length >= MIN_PROFILE_BIO_EVIDENCE_CHARS && PROFILE_BIO_FACT_SIGNAL.test(text);
+}
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -50,22 +59,40 @@ export const POST = withApiGuc(async (request: Request) => {
       expectedPaths.resumeEnhancedPath,
     );
   
-    // Try to extract text from the uploaded original resume
-    let resumeText = sanitizeResumePlainText(body.resumeBase ?? '');
-    if (!hasSubstantiveResumeText(resumeText)) resumeText = '';
-    if (resumeText && body.resumeRevision !== startingRevision) {
+    // Client-supplied text can seed a draft only when no original is stored.
+    // When an original exists, extraction must succeed for that exact source.
+    const suppliedText = sanitizeResumePlainText(body.resumeBase ?? '');
+    if (hasSubstantiveResumeText(suppliedText) && body.resumeRevision !== startingRevision) {
       return NextResponse.json(
         { error: 'Your resume changed in another session. Reload and try again.' },
         { status: 409 },
       );
     }
+    let resumeText = expectedPaths.resumeOriginalPath ? '' : suppliedText;
+    if (!hasSubstantiveResumeText(resumeText)) resumeText = '';
     if (!resumeText) {
       try {
-        const extracted = await getMemberResumePlainText(user.id, 6000, { preferOriginal: true });
-        resumeText = extracted ?? '';
+        const extracted = await getMemberResumePlainText(user.id, 6000, { originalOnly: true });
+        resumeText = sanitizeResumePlainText(extracted ?? '');
+        if (!hasSubstantiveResumeText(resumeText)) resumeText = '';
       } catch (err) {
         console.error('Failed to extract resume text:', err);
       }
+    }
+
+    // An uploaded original is the member's source of truth. A profile bio can
+    // be partial, so never replace that original with a profile-only rewrite.
+    if (expectedPaths.resumeOriginalPath && !resumeText) {
+      return NextResponse.json(
+        { error: 'We could not read enough text from your uploaded resume. Upload a PDF with selectable text, DOCX, or TXT file. Your existing files were kept.' },
+        { status: 422 },
+      );
+    }
+    if (!resumeText && !hasProfileResumeEvidence(profile?.profileBio)) {
+      return NextResponse.json(
+        { error: 'Add concrete work history, skills, or education to your profile bio, or upload a readable resume before building. Your existing files were kept.' },
+        { status: 422 },
+      );
     }
   
     const context = [
@@ -92,7 +119,9 @@ export const POST = withApiGuc(async (request: Request) => {
   - Keep all real job titles, company names, and dates exactly as provided
   - Strengthen the language with accurate action verbs while preserving every factual claim
   - Add an ATS-friendly professional summary based on their actual experience
-  - Organize sections clearly: Summary, Experience, Skills, Education, Certifications
+  - Include only sections supported by the source. Omit missing Experience, Skills, Education, or Certifications sections rather than describing what was not provided.
+  - A target program is a goal, not an earned certification or proof of current enrollment.
+  - Return only the resume itself, with no explanation of your process or comments about source quality.
   - Format as clean markdown that renders well
   - Do NOT add fictional education (e.g., "XYZ University") if education is not in their profile`;
   
@@ -142,6 +171,12 @@ export const POST = withApiGuc(async (request: Request) => {
     if (!hasSubstantiveResumeText(cleanedOutput)) {
       return NextResponse.json(
         { error: 'The generated draft was not readable, so your existing resume was kept.' },
+        { status: 422 },
+      );
+    }
+    if (hasContradictoryMissingResumeSection(resumeText, cleanedOutput)) {
+      return NextResponse.json(
+        { error: 'The generated draft did not preserve details from your source resume, so your existing resume was kept.' },
         { status: 422 },
       );
     }

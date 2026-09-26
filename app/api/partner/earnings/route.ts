@@ -4,6 +4,7 @@ import { getPartnerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { getPartnerPlacementPayoutUsd } from '@/lib/partner/partnerPayout';
 import { isReferralPartner } from '@/lib/partner/partnerType';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const GET = withApiGuc(async () => {
@@ -26,14 +27,22 @@ export const GET = withApiGuc(async () => {
 
     const referrals = await prisma.$transaction((tx) => tx.partnerReferral.findMany({
       take: 500,
-      where: { partnerId: ctx.partnerId },
+      where: {
+        partnerId: ctx.partnerId,
+        partner: { organizationId: ctx.partner.organizationId },
+        member: {
+          organizationId: ctx.partner.organizationId,
+          deletedAt: null,
+          ...MEMBER_ONLY_WHERE,
+        },
+      },
       include: {
         member: {
           select: {
             id: true,
             fullName: true,
             placementRecord: {
-              select: { placedAt: true, employerName: true, jobTitle: true },
+              select: { placedAt: true, employerName: true, jobTitle: true, startDateVerified: true },
             },
           },
         },
@@ -41,7 +50,7 @@ export const GET = withApiGuc(async () => {
     }));
 
     const payoutPerPlacement = getPartnerPlacementPayoutUsd();
-    const placedReferrals = referrals.filter((r) => r.member.placementRecord);
+    const placedReferrals = referrals.filter((r) => r.member.placementRecord?.startDateVerified === true);
     const estimatedTotal = placedReferrals.length * payoutPerPlacement;
 
     return NextResponse.json({

@@ -57,7 +57,7 @@ export default async function PartnerGuidePage() {
     prisma.user.count({
       where: {
         applications: { some: { referralPartnerId: ctx.partnerId } },
-        jobPostingApplications: { some: { status: 'hired' } },
+        placementRecord: { is: { startDateVerified: true } },
       },
     }),
   ]);

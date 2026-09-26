@@ -7,6 +7,7 @@ import { isStaffMfaEnforcementEnabled } from '@/lib/auth/mfaConfig';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import type { AppLocale } from '@/lib/i18n/config';
 import {
+  WAP_EXPLICIT_LOCALE_HEADER,
   WAP_LOCALE_COOKIE,
   WAP_LOCALE_HEADER,
   isAppLocale,
@@ -42,6 +43,7 @@ import { hasSupabaseAuthCookies, shouldTalkToGoTrue, isSupabaseAuthTokenCookieNa
 import { isUnauthenticatedBrowserNavigationApiPath } from '@/lib/auth/tenantApiNavigation';
 import {
   READ_ONLY_PORTAL_AUDIT_HEADER,
+  READ_ONLY_PORTAL_AUDIT_TOKEN_COOKIE,
   READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER,
   isValidReadOnlyPortalAuditToken,
 } from '@/lib/audit/readOnlyPortalAudit';
@@ -186,11 +188,22 @@ export async function middleware(request: NextRequest) {
   requestHeaders.delete(WAP_ORG_ID_HEADER);
   requestHeaders.delete(WAP_HOST_HEADER);
   requestHeaders.delete(WAP_USER_ID_HEADER);
+  requestHeaders.delete(WAP_EXPLICIT_LOCALE_HEADER);
   const validReadOnlyAuditToken = isValidReadOnlyPortalAuditToken(
-    request.headers.get(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER),
+    request.cookies.get(READ_ONLY_PORTAL_AUDIT_TOKEN_COOKIE)?.value,
     process.env.PORTAL_AUDIT_READ_ONLY_TOKEN,
   );
+  // The browser holds this capability only for the trusted host. Consume it
+  // here so neither server components nor Supabase session reads see the raw
+  // secret in the forwarded Cookie header.
+  if (request.cookies.get(READ_ONLY_PORTAL_AUDIT_TOKEN_COOKIE)) {
+    request.cookies.delete(READ_ONLY_PORTAL_AUDIT_TOKEN_COOKIE);
+    const remainingCookies = request.cookies.toString();
+    if (remainingCookies) requestHeaders.set('cookie', remainingCookies);
+    else requestHeaders.delete('cookie');
+  }
   requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_HEADER);
+  // Old caller-supplied token headers must remain inert and unforwarded.
   requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER);
   // Same rule for the CSP nonce: Next.js reads the nonce back out of the
   // forwarded `content-security-policy` (preferred) or
@@ -227,6 +240,7 @@ export async function middleware(request: NextRequest) {
   const { locale: prefixLocale, pathnameWithoutLocale } = splitLocalePrefix(pathname);
   const effectivePath = prefixLocale ? pathnameWithoutLocale : pathname;
   requestHeaders.set('x-pathname', effectivePath);
+  if (prefixLocale) requestHeaders.set(WAP_EXPLICIT_LOCALE_HEADER, prefixLocale);
 
   const { locale: inferredLocale, fromQuery: localeFromQuery } = resolvePreferredLocale(request);
   requestHeaders.set(WAP_LOCALE_HEADER, prefixLocale ?? inferredLocale);

@@ -13,6 +13,7 @@ import {
   type RecordPlacementOutcome,
 } from '@/lib/placement/recordPlacementFromApplication';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { PARTNER_PLACEMENT_LABELS } from '@/lib/partner/partnerVisibleEvents';
 
 export type ConfirmPlacementResult = {
   /**
@@ -114,7 +115,7 @@ export async function confirmPlacement(jobApplicationId: string): Promise<Confir
         partnerId: referral.partnerId,
         actorUserId: user.id,
         kind: 'placement_confirmation_submitted',
-        headline: `${application.company} offer reported by member`,
+        headline: PARTNER_PLACEMENT_LABELS.pendingVerification,
         detail:
           'Member self-reported an accepted role. Recorded as a member-reported placement; WorkforceAP still verifies start date and wage before it is finalized.',
         entityType: 'JobApplication',

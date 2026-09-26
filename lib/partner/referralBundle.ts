@@ -6,6 +6,7 @@ import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress
 import { getPipelineStage, PIPELINE_STAGE_LABELS, type PipelineStudent } from '@/lib/pipeline/stage';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { eventNameReadCandidates } from '@/lib/events/names';
+import { PARTNER_PLACEMENT_LABELS } from '@/lib/partner/partnerVisibleEvents';
 
 const referralMemberSelect = {
   id: true,
@@ -165,32 +166,27 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
   const ninetyDaysAgo = pendingPlacementWindowStart();
 
   // Load pending placement confirmations (self-reported by members, not yet reviewed)
+  const pendingMemberIds = referrals
+    .filter((row) => row.member.placementRecord?.startDateVerified !== true)
+    .map((row) => row.member.id);
   const pendingPlacements =
-    memberIds.length === 0
+    pendingMemberIds.length === 0
       ? []
       : await prisma.memberEvent.findMany({
         take: 500,
           where: {
-            userId: { in: memberIds },
+            userId: { in: pendingMemberIds },
             eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
             createdAt: { gte: ninetyDaysAgo },
           },
           orderBy: { createdAt: 'desc' },
+          distinct: ['userId'],
           select: {
             userId: true,
             eventName: true,
-            metadata: true,
             createdAt: true,
           },
         });
-
-  // Group by userId for quick lookup
-  const pendingByUserId = new Map<string, typeof pendingPlacements[number]>();
-  for (const p of pendingPlacements) {
-    if (!pendingByUserId.has(p.userId)) {
-      pendingByUserId.set(p.userId, p);
-    }
-  }
 
   const pipelineMembers: PipelineRow[] = [];
 
@@ -203,6 +199,7 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
     const program = assignment.programSlug
       ? getProgramBySlug(assignment.programSlug)
       : null;
+    const verifiedPlacement = m.placementRecord?.startDateVerified === true ? m.placementRecord : null;
     const student: PipelineStudent = {
       id: m.id,
       fullName: m.fullName,
@@ -212,7 +209,7 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
       enrolledAt: m.enrolledAt,
       assessmentCompleted: m.assessmentCompleted,
       deletedAt: m.deletedAt,
-      placementRecord: m.placementRecord as PipelineStudent['placementRecord'],
+      placementRecord: verifiedPlacement as PipelineStudent['placementRecord'],
       userCertifications: m.userCertifications as PipelineStudent['userCertifications'],
       applications: m.applications,
       memberProgramProgress: m.memberProgramProgress,
@@ -266,25 +263,6 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
   return { referrals, members, pipelineMembers, pendingPlacements };
 }
 
-/**
- * Partner-facing placement story. Names the employer and job only once staff
- * verified the start date; a self-reported or employer-marked hire is
- * recorded with `startDateVerified: false` and reads as pending, with no
- * employer, job or salary. Same wording as #2562's `partnerPlacementLabel`
- * for the unverified case.
- */
-export const PARTNER_PLACEMENT_PENDING_STORY = 'Placement reported, pending verification';
-
-export function partnerPlacementStory(placement: {
-  employerName: string;
-  jobTitle: string;
-  startDateVerified: boolean | null;
-}): string {
-  return placement.startDateVerified === true
-    ? `Placed at ${placement.employerName} as ${placement.jobTitle}`
-    : PARTNER_PLACEMENT_PENDING_STORY;
-}
-
 export function toPartnerMembersListRows(pipelineMembers: PipelineRow[]) {
   return pipelineMembers.map(
     ({ member: m, referredAt, stage, progress, programTitle, allProgramTitles }) => {
@@ -295,8 +273,10 @@ export function toPartnerMembersListRows(pipelineMembers: PipelineRow[]) {
       // `allProgramTitles` and is rendered separately by callers that want
       // the multi-program chip.
       const headlineTitle = allProgramTitles[0] ?? programTitle;
-      const story = m.placementRecord
-        ? partnerPlacementStory(m.placementRecord)
+      const story = m.placementRecord?.startDateVerified === true
+        ? `Placed at ${m.placementRecord.employerName} as ${m.placementRecord.jobTitle}`
+        : m.placementRecord
+          ? PARTNER_PLACEMENT_LABELS.pendingVerification
         : progress >= 100
           ? `Completed ${headlineTitle}`
           : progress > 0

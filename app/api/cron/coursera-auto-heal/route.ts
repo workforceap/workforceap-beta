@@ -6,7 +6,7 @@ import {
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
-import { loadB4BContents } from '@/lib/coursera/programContentsCache';
+import { loadB4BContentsChecked } from '@/lib/coursera/programContentsCache';
 import { seedCanonicalMappingsFromB4B } from '@/lib/coursera/seedCanonicalMappingsFromB4B';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { countCourseraHealQueue } from '@/lib/cron/courseraHealQueue';
@@ -78,8 +78,11 @@ async function handle(_request: Request) {
 
   if (queue.ignoredWithSlug > 0) {
     try {
-      const contents = await loadB4BContents();
-      const seed = await seedCanonicalMappingsFromB4B({ contents, actorUserId: null });
+      // A provider failure must skip the seed, not run it on an empty list
+      // (WAP-276): the cache used to collapse errors into [].
+      const loaded = await loadB4BContentsChecked();
+      if (!loaded.ok) throw new Error(`B4B contents unavailable: ${loaded.error}`);
+      const seed = await seedCanonicalMappingsFromB4B({ contents: loaded.value, actorUserId: null });
       canonicalSeed = {
         matched: seed.coursesMatched,
         unmatched: seed.coursesUnmatched,

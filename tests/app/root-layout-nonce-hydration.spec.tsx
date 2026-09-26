@@ -10,7 +10,7 @@ vi.mock('next-intl/server', () => ({ getMessages: async () => ({ cookieConsent: 
 vi.mock('next-intl', () => ({ NextIntlClientProvider: () => null }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => null) }));
 vi.mock('@/lib/auth/roles', () => ({ getProfileRole: vi.fn() }));
-vi.mock('@/lib/member/ensureAppUser', () => ({ ensureAppUserProvisioned: vi.fn() }));
+vi.mock('@/lib/member/ensureCurrentAppUserProvisioned', () => ({ ensureCurrentAppUserProvisioned: vi.fn() }));
 vi.mock('@/lib/tenant/resolveOrgFromRequest', () => ({ resolveOrgFromRequest: vi.fn(async () => 'synthetic-public-org') }));
 vi.mock('@/lib/platform/defaultOrgTheme', () => ({ getRequestOrgBranding: async () => ({}) }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: vi.fn() } }));

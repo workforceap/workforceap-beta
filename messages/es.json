@@ -1180,7 +1180,16 @@
     "noMessagesYet": "Aún no hay mensajes",
     "yourCounselor": "Tu consejero",
     "workforceapSupport": "Soporte de WorkforceAP",
-    "supportTeam": "Equipo de soporte"
+    "supportTeam": "Equipo de soporte",
+    "kitLede": "Tu consejero y el equipo de soporte en una sola bandeja.",
+    "conversations": "Conversaciones",
+    "unreadMessage": "Mensaje sin leer",
+    "backToMessages": "Volver a mensajes",
+    "sendFailed": "No se pudo enviar",
+    "networkError": "Error de red",
+    "composerPlaceholder": "Escribe a {name}…",
+    "feedbackDraftNotice": "Revisa los detalles del curso y cualquier enlace de proyecto guardado antes de enviar. Tus notas privadas no se comparten.",
+    "feedbackUnavailable": "No pudimos cargar ese curso asignado. Aún puedes escribir tu mensaje abajo."
   },
   "profile": {
     "edit": "Editar perfil",
@@ -2946,7 +2955,7 @@
       "phone": "Teléfono (opcional)",
       "password": "Crea una contraseña",
       "passwordPlaceholder": "Al menos 8 caracteres",
-      "passwordHelp": "¿Es tu primera vez aquí? Crea una contraseña. ¿Ya tienes una cuenta? Deja este campo vacío.",
+      "passwordHelp": "¿Es tu primera vez aquí? Crea una contraseña. ¿Ya tienes una cuenta? Inicia sesión primero y deja este campo vacío.",
       "accepting": "Aceptando…",
       "accept": "Aceptar invitación",
       "roles": {
@@ -2965,7 +2974,9 @@
         "alreadyAccepted": "Esta invitación ya fue aceptada. Inicia sesión en tu cuenta.",
         "expired": "Esta invitación ha vencido. Pide a tu contacto de WorkforceAP que la reenvíe.",
         "nameRequired": "Ingresa tu nombre completo.",
-        "newAccountRequired": "Las cuentas nuevas necesitan tu nombre completo y una contraseña de al menos 8 caracteres.",
+        "newAccountRequired": "Las cuentas nuevas necesitan una contraseña de al menos 8 caracteres. Si ya tienes una cuenta, inicia sesión o restablece tu contraseña y vuelve a esta invitación.",
+        "accountRecoveryRequired": "Ya existe una cuenta con este correo. Inicia sesión o restablece tu contraseña y luego vuelve a esta invitación.",
+        "identityReviewRequired": "No pudimos vincular esta invitación con la cuenta registrada. Comunícate con el equipo de WorkforceAP para recibir ayuda.",
         "signupUnavailable": "La creación de cuentas no está disponible por el momento. Si el problema continúa, contacta al equipo de soporte.",
         "loadFailed": "No pudimos cargar esta invitación. Inténtalo de nuevo en unos momentos.",
         "codeFailed": "No pudimos verificar ese código. Inténtalo de nuevo en un momento.",

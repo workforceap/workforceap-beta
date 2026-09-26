@@ -68,6 +68,7 @@ vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({
 }));
 
 import PartnerDashboardPage from '@/app/(portal)/partner/page';
+import { prisma } from '@/lib/db/prisma';
 
 const REFERRED_AT = new Date('2026-09-10T15:00:00Z');
 
@@ -76,6 +77,7 @@ beforeEach(() => {
     { id: 'ref-1', referredAt: REFERRED_AT, member: { id: 'm-placed', fullName: 'Keisha Washington', enrolledAt: REFERRED_AT, enrolledProgram: 'it-support', placementRecord: { startDateVerified: true } } },
     { id: 'ref-2', referredAt: REFERRED_AT, member: { id: 'm-enrolled', fullName: 'Jordan Williams', enrolledAt: REFERRED_AT, enrolledProgram: null, placementRecord: null } },
     { id: 'ref-3', referredAt: REFERRED_AT, member: { id: 'm-referred', fullName: 'Angela Davis', enrolledAt: null, enrolledProgram: null, placementRecord: null } },
+    { id: 'ref-4', referredAt: REFERRED_AT, member: { id: 'm-pending', fullName: 'Sam Rivera', enrolledAt: REFERRED_AT, enrolledProgram: 'it-support', placementRecord: { startDateVerified: false } } },
   ]);
 });
 
@@ -94,7 +96,7 @@ describe('/partner referred members at phone width', () => {
 
     const cardNames = within(cards).getAllByRole('listitem').map((li) => li.textContent?.split(' · ')[0]);
     const tableNames = within(table).getAllByRole('cell').map((td) => td.textContent);
-    expect(cardNames).toEqual(['Keisha Washington', 'Jordan Williams', 'Angela Davis']);
+    expect(cardNames).toEqual(['Keisha Washington', 'Jordan Williams', 'Angela Davis', 'Sam Rivera']);
     expect(tableNames).toEqual(cardNames);
   });
 
@@ -105,6 +107,15 @@ describe('/partner referred members at phone width', () => {
       'Keisha Washington · Placed · Verified',
       'Jordan Williams · Enrolled',
       'Angela Davis · Applied',
+      'Sam Rivera · Enrolled',
     ]);
+  });
+
+  it('counts only verified placements in the default overview', async () => {
+    await PartnerDashboardPage({ searchParams: Promise.resolve({}) });
+    expect(vi.mocked(prisma.placementRecord.count).mock.calls[0][0]?.where).toMatchObject({
+      startDateVerified: true,
+      user: { organizationId: 'org-1' },
+    });
   });
 });

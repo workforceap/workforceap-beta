@@ -223,7 +223,7 @@ describe('GET /api/partner/dashboard', () => {
       id: UUIDS.member,
       fullName: 'Alice',
       enrolledAt: new Date(),
-      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date(), salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
+      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date(), startDateVerified: true, salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
     });
     const member2 = makeMember({ id: UUIDS.member2, fullName: 'Bob', enrolledAt: new Date() });
 
@@ -249,6 +249,31 @@ describe('GET /api/partner/dashboard', () => {
     expect(body.estimatedPayout).toBe(500);
     expect(body.stageCounts.placed).toBe(1);
     expect(body.stageCounts.enrolled).toBe(1);
+  });
+
+  it('does not count a self-reported placement in dashboard payout or placed total', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getPartnerForUser).mockResolvedValue(partnerCtx as any);
+    const member = makeMember({
+      placementRecord: {
+        placedAt: new Date('2026-04-01'),
+        employerName: 'Private Employer',
+        startDateVerified: false,
+      },
+    });
+    vi.mocked(loadPartnerReferralBundle).mockResolvedValue({
+      members: [member],
+      pipelineMembers: [{ member, stage: 'enrolled' }],
+    } as any);
+
+    const res = await dashboardGet(new Request('http://localhost:3000/api/partner/dashboard'));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      totalMembers: 1,
+      placedCount: 0,
+      estimatedPayout: 0,
+      stageCounts: { enrolled: 1, placed: 0 },
+    });
   });
 });
 
@@ -646,7 +671,7 @@ describe('GET /api/partner/earnings', () => {
         member: {
           id: UUIDS.member,
           fullName: 'Alice',
-          placementRecord: { placedAt: new Date('2026-03-01'), employerName: 'Acme', jobTitle: 'Dev' },
+          placementRecord: { placedAt: new Date('2026-03-01'), employerName: 'Acme', jobTitle: 'Dev', startDateVerified: true },
         },
       },
       {
@@ -667,6 +692,55 @@ describe('GET /api/partner/earnings', () => {
     expect(body.placements).toHaveLength(1);
     expect(body.placements[0].memberName).toBe('Alice');
     expect(body.placements[0].employerName).toBe('Acme');
+  });
+
+  it('omits unverified placement details and payout while enforcing the referral tenant', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getPartnerForUser).mockResolvedValue(partnerCtx as any);
+    vi.mocked(prisma.partnerReferral.findMany).mockResolvedValue([{
+      member: {
+        id: UUIDS.member,
+        fullName: 'Alice',
+        placementRecord: {
+          placedAt: new Date('2026-03-01'),
+          employerName: 'Private Employer',
+          jobTitle: 'Private Role',
+          startDateVerified: false,
+        },
+      },
+    }] as any);
+
+    const res = await earningsGet(new Request('http://localhost'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toMatchObject({
+      totalReferrals: 1,
+      placedCount: 0,
+      estimatedTotal: 0,
+      placements: [],
+    });
+    expect(JSON.stringify(body)).not.toContain('Private Employer');
+    expect(JSON.stringify(body)).not.toContain('Private Role');
+    expect(prisma.partnerReferral.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          partnerId: UUIDS.partner,
+          partner: { organizationId: UUIDS.org },
+          member: expect.objectContaining({
+            organizationId: UUIDS.org,
+            deletedAt: null,
+            ...MEMBER_ONLY_WHERE,
+          }),
+        }),
+        include: {
+          member: {
+            select: expect.objectContaining({
+              placementRecord: { select: expect.objectContaining({ startDateVerified: true }) },
+            }),
+          },
+        },
+      }),
+    );
   });
 });
 
@@ -703,7 +777,7 @@ describe('GET /api/partner/members', () => {
       id: UUIDS.member,
       fullName: 'Alice',
       enrolledAt: new Date('2026-01-01'),
-      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date('2026-04-01'), salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
+      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date('2026-04-01'), startDateVerified: true, salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
     });
     const member2 = makeMember({ id: UUIDS.member2, fullName: 'Bob', enrolledAt: new Date('2026-02-01') });
 
@@ -729,6 +803,41 @@ describe('GET /api/partner/members', () => {
     expect(body.members[1].stage).toBe('in_training');
     expect(body.members[1].progress).toBe(45);
     expect(body.members[1].placedAt).toBeNull();
+  });
+
+  it('redacts employer, role, and date from an unverified member placement', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getPartnerForUser).mockResolvedValue(partnerCtx as any);
+    const member = makeMember({
+      placementRecord: {
+        employerName: 'Private Employer',
+        jobTitle: 'Private Role',
+        placedAt: new Date('2026-04-01'),
+        startDateVerified: false,
+      },
+    });
+    vi.mocked(loadPartnerReferralBundle).mockResolvedValue({
+      pipelineMembers: [{
+        member,
+        stage: 'enrolled',
+        progress: 0,
+        programTitle: 'IT Support',
+        allProgramTitles: ['IT Support'],
+        referredAt: new Date('2026-01-15'),
+      }],
+    } as any);
+
+    const res = await membersGet(new Request('http://localhost:3000/api/partner/members'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.members[0]).toMatchObject({
+      stage: 'enrolled',
+      placedAt: null,
+      employerName: null,
+      jobTitle: null,
+    });
+    expect(JSON.stringify(body)).not.toContain('Private Employer');
+    expect(JSON.stringify(body)).not.toContain('Private Role');
   });
 
   it('returns empty members array when partner has no referrals', async () => {

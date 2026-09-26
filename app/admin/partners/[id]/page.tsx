@@ -20,6 +20,7 @@ import PartnerPayoutsPanel, { type PayoutRow } from '@/components/admin/PartnerP
 import { getPartnerPlacementPayoutUsd } from '@/lib/partner/partnerPayout';
 import { isPayoutEligibleType } from '@/lib/partner/partnerType';
 import PartnerDetailActions from '@/components/admin/PartnerDetailActions';
+import { PartnerApprovalActions } from '@/components/admin/PartnerApprovalActions';
 import PageHeader from '@/components/portal/PageHeader';
 import {
   DesignSurface,
@@ -275,7 +276,15 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
         subtitle={`${partner._count.counselors} counselor${partner._count.counselors !== 1 ? 's' : ''} · ${partner._count.referrals} referral${partner._count.referrals !== 1 ? 's' : ''}`}
         action={
           <div className="wa-flex wa-items-center" style={{ gap: 12 }}>
-            <StatusTag tone={partner.active ? 'ok' : 'muted'}>{partner.active ? 'Active' : 'Inactive'}</StatusTag>
+            {partner.status === 'pending_approval' ? (
+              <>
+                <StatusTag tone="warn">Pending approval</StatusTag>
+                {/* Approve / reject used to live only in the ?ui=legacy table (WAP-193). */}
+                <PartnerApprovalActions partnerId={partner.id} partnerName={partner.name} />
+              </>
+            ) : (
+              <StatusTag tone={partner.active ? 'ok' : 'muted'}>{partner.active ? 'Active' : 'Inactive'}</StatusTag>
+            )}
             <PartnerDetailActions
               partner={partner}
               subgroups={subgroups}

@@ -77,6 +77,52 @@ describe('getMemberResumePlainText substantive text gate', () => {
     expect(mocks.download).toHaveBeenCalledTimes(2);
   });
 
+  it('never uses an enhanced draft as the source when originalOnly is requested', async () => {
+    mocks.findProfile.mockResolvedValue({
+      resumeOriginalPath: 'member-1/resume-original-v1.pdf',
+      resumeEnhancedPath: 'member-1/resume-enhanced-v1.txt',
+    });
+    mocks.extract
+      .mockRejectedValueOnce(new Error('Unreadable original'))
+      .mockResolvedValueOnce('Enhanced draft for non-Rewriter session context with enough real text.');
+
+    await expect(getMemberResumePlainText('member-1', 8000, { originalOnly: true })).resolves.toBe('');
+    expect(mocks.download).toHaveBeenCalledTimes(1);
+    expect(mocks.download).toHaveBeenCalledWith('member-1/resume-original-v1.pdf');
+
+    // Other session tools retain the fallback; Rewriter's originalOnly read
+    // above cannot consume it when extraction fails.
+    await expect(getMemberResumePlainText('member-1', 8000, { enhancedOnly: true }))
+      .resolves.toMatch(/Enhanced draft/);
+    expect(mocks.download).toHaveBeenNthCalledWith(2, 'member-1/resume-enhanced-v1.txt');
+    expect(mocks.download).toHaveBeenCalledTimes(2);
+    expect(mocks.extract).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps enhanced-only storage out of an originalOnly read', async () => {
+    mocks.findProfile.mockResolvedValue({
+      resumeOriginalPath: null,
+      resumeEnhancedPath: 'member-1/resume-enhanced-v1.txt',
+    });
+    mocks.extract.mockResolvedValue('Enhanced draft for non-Rewriter context with enough real text.');
+
+    await expect(getMemberResumePlainText('member-1', 8000, { originalOnly: true })).resolves.toBe('');
+    expect(mocks.download).not.toHaveBeenCalled();
+    await expect(getMemberResumePlainText('member-1', 8000, { enhancedOnly: true }))
+      .resolves.toMatch(/Enhanced draft/);
+    expect(mocks.download).toHaveBeenCalledWith('member-1/resume-enhanced-v1.txt');
+  });
+
+  it('returns no source when only an enhanced draft is stored', async () => {
+    mocks.findProfile.mockResolvedValue({
+      resumeOriginalPath: null,
+      resumeEnhancedPath: 'member-1/resume-enhanced-v1.txt',
+    });
+
+    await expect(getMemberResumePlainText('member-1', 8000, { originalOnly: true })).resolves.toBe('');
+    expect(mocks.download).not.toHaveBeenCalled();
+  });
+
   it('skips a stored AI extraction-failure narrative and returns the original resume', async () => {
     mocks.findProfile.mockResolvedValue({
       resumeOriginalPath: 'member-1/resume-original-v1.txt',

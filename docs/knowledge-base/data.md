@@ -32,6 +32,7 @@ This overview shows selected declared relationships. Use the [complete Mermaid r
 | --- | --- | --- |
 | Identity vs application user | Supabase Auth identity; Prisma `User`, `Profile`, `Role`, `UserRole` | A provider identity and domain rows can be temporarily inconsistent. Follow provisioning/recovery and soft-deletion checks in [auth](../../lib/auth/server.ts) and [ensureAppUser](../../lib/member/ensureAppUser.ts). |
 | Organization vs partner/employer | `Organization` is the tenant; `Partner` and `Employer` belong to it | A partner/employer identifier is not a substitute for verified actor organization. |
+| Subgroup leader vs member detail | `SubgroupLeader`, `MemberSubgroup`; [subgroup member API](../../app/api/subgroup/members/route.ts) | Assigned leaders receive program progress and a limited placement summary. The member API does not return phone or salary; the dashboard reads only placement existence for its count. |
 | Admissions application | `Application`, eligibility/screening models | This is entry into Workforce AP; it is not a job application. |
 | Personal job tracker | `JobApplication` | Member-entered company/role/status, optionally linked to a curated job. |
 | Application to a posted job | `JobPostingApplication`, `ApplicationMessage` | Employer-facing application and conversation; scope both sides of the relationship. |
@@ -44,6 +45,25 @@ This overview shows selected declared relationships. Use the [complete Mermaid r
 | Provider billing vs stored status | Stripe objects; `Organization`, `Employer`, `EmployerSubscription` fields | Signed webhook delivery updates local projections. Confirm the provider/local-state reconciliation contract before changing billing behavior. |
 | Audits and workflow logs | `AuditLog`, `AuditEvent`, `MemberEvent`, `WebhookEvent`, `CronExecution`, `WorkflowDiagnostic` | These record different events and audiences. They are not interchangeable audit trails or proof that an external effect completed. |
 | AI output and conversation memory | `AIToolResult`, `CoachMemory`, `ApplicationAiFeedback` | Application/member data stays within its authorized product context. GBrain's developer KB is a source-navigation layer, not a mirror of this content. |
+
+Orphan recovery uses the verified Auth ID. Tenant hints come from the resolved
+request or server-controlled Auth `app_metadata`, never user-editable
+`user_metadata`. If an existing non-member app user lacks a profile, recovery
+restores that role from stored role rows or portal associations without adding
+the baseline member role. An Auth identity with no app row still falls back to
+member provisioning; its intended role cannot be established from Auth identity
+alone and needs a separate enrollment/recovery decision.
+
+`User.email` is also unique. If a provisioning write hits P2002, recovery only
+accepts it as a concurrent success after reading both `User` and `Profile` by
+the same verified Auth ID. A same-email row under another ID remains an identity
+conflict; this path does not relink identities or change tenant ownership.
+
+Public apply signup can receive an existing unconfirmed Supabase Auth user with
+nonempty `identities`. An app-email P2002 after that response returns staff-assisted
+recovery and preserves the Auth identity. This can leave a genuinely new Auth
+identity without app rows, but a signUp response cannot safely authorize deleting
+it; the broader Auth-only enrollment and recovery policy is tracked separately.
 
 ## Trust and transaction boundaries
 

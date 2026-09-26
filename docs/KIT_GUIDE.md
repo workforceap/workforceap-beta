@@ -455,6 +455,12 @@ against that page in the client.
 `StudentsRosterKit` shows the full account email beneath each student name in
 both table rows and mobile cards. Keep that identifier visible and wrapping so
 staff can distinguish same-name accounts before opening an account action.
+Phone-width emails prefer breaks after local-part dots and before `@`, with an
+emergency break only when a segment cannot fit. A named program with no stored
+assignment is marked `(inferred)` in every kit view. The training loader can
+produce that state from course progress; the default roster loader uses a
+placeholder when it has no assignment, and the dev roster exercises the
+named-program case.
 
 `StudentsRosterKit` is the one admin roster (admin audit 2026-09-20, §7 item 2). It
 takes a `view` preset: `roster` (`/admin/students`) shows Program, Progress, Coursera

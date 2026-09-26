@@ -1123,7 +1123,16 @@
     "noMessagesYet": "Nenhuma mensagem ainda",
     "yourCounselor": "Seu orientador",
     "workforceapSupport": "Suporte WorkforceAP",
-    "supportTeam": "Equipe de suporte"
+    "supportTeam": "Equipe de suporte",
+    "kitLede": "Seu orientador e o suporte em uma só caixa de entrada.",
+    "conversations": "Conversas",
+    "unreadMessage": "Mensagem não lida",
+    "backToMessages": "Voltar às mensagens",
+    "sendFailed": "Falha ao enviar",
+    "networkError": "Erro de rede",
+    "composerPlaceholder": "Escreva para {name}…",
+    "feedbackDraftNotice": "Revise os detalhes do curso e qualquer link de projeto salvo antes de enviar. Suas notas privadas não são compartilhadas.",
+    "feedbackUnavailable": "Não conseguimos carregar esse curso atribuído. Você ainda pode escrever sua mensagem abaixo."
   },
   "profile": {
     "edit": "Editar perfil",
@@ -2889,7 +2898,7 @@
       "phone": "Telefone (opcional)",
       "password": "Crie uma senha",
       "passwordPlaceholder": "Pelo menos 8 caracteres",
-      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Deixe este campo em branco.",
+      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Entre primeiro e deixe este campo em branco.",
       "accepting": "Aceitando…",
       "accept": "Aceitar convite",
       "roles": {
@@ -2908,7 +2917,9 @@
         "alreadyAccepted": "Este convite já foi aceito. Entre na sua conta.",
         "expired": "Este convite expirou. Peça ao seu contato da WorkforceAP para reenviá-lo.",
         "nameRequired": "Informe seu nome completo.",
-        "newAccountRequired": "Novas contas precisam do seu nome completo e de uma senha com pelo menos 8 caracteres.",
+        "newAccountRequired": "Novas contas precisam de uma senha com pelo menos 8 caracteres. Se você já tem uma conta, entre ou redefina sua senha e depois volte a este convite.",
+        "accountRecoveryRequired": "Já existe uma conta com este e-mail. Entre ou redefina sua senha e depois volte a este convite.",
+        "identityReviewRequired": "Não foi possível vincular este convite à conta cadastrada. Entre em contato com a equipe WorkforceAP para obter ajuda.",
         "signupUnavailable": "A criação de contas está temporariamente indisponível. Se o problema continuar, entre em contato com o suporte.",
         "loadFailed": "Não foi possível carregar este convite. Tente novamente em instantes.",
         "codeFailed": "Não foi possível verificar esse código. Tente novamente em instantes.",

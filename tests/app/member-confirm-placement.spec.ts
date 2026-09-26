@@ -82,6 +82,11 @@ describe('confirmPlacement records the member-reported placement', () => {
         actorUserId: MEMBER_ID,
       }),
     );
+    expect(recordPartnerWorkflowEvent).toHaveBeenCalledWith(expect.objectContaining({
+      kind: 'placement_confirmation_submitted',
+      headline: 'Placement reported, pending verification',
+    }));
+    expect(JSON.stringify(vi.mocked(recordPartnerWorkflowEvent).mock.calls)).not.toContain('Acme');
   });
 
   it('writes the record after the tracker row is ACCEPTED and before the claim event, which carries the outcome', async () => {

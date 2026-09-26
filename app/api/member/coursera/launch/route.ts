@@ -32,8 +32,8 @@ const courseraLaunchHandler = createCourseraLaunchHandler({
       },
     },
   }),
-  resolveActiveProgram: async (userId: string) => {
-    const activeProgramView = await getActiveProgramForDashboard({ userId });
+  resolveActiveProgram: async (userId: string, _legacy: string | null, requestedProgramSlug?: string | null) => {
+    const activeProgramView = await getActiveProgramForDashboard({ userId, requestedProgramSlug });
     return activeProgramView.activeProgramSlug;
   },
   findCourse: ({ organizationId, programSlug, courseSlug }) => prisma.course.findUnique({

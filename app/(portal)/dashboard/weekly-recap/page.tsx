@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { prisma } from '@/lib/db/prisma';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
@@ -33,6 +34,8 @@ function getWeekStart(date: Date): Date {
 export default async function WeeklyRecapPage() {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/weekly-recap');
+  const access = await getMemberDashboardAccess(user.id);
+  if (access.redirectTo) redirect(access.redirectTo);
 
   const weekStart = getWeekStart(new Date());
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());

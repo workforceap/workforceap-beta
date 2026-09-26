@@ -1,14 +1,16 @@
 import { CourseProgressStatus } from '@prisma/client';
 
+import { isXapiCourseProgressVerb } from '@/lib/xapi/statementModel';
 import type { ParsedXapiStatement } from '@/lib/xapi/statementModel';
 
-/** Maps xAPI verb / result fields to the next `CourseProgressStatus` for upserts (pure).
- *  Callers should already have validated the statement is a course-progress
- *  event (e.g. via `isXapiCourseProgressVerb`) — this function only maps
- *  the verb string to a status enum value. */
+/** Maps xAPI verbs to the next `CourseProgressStatus` for upserts (pure).
+ *  Recheck the shared course-progress classification here so an isolated caller
+ *  cannot complete a whole course from one lesson's `completed` or `passed` verb. */
 export function inferCourseProgressStatusFromXapiVerb(
   parsed: ParsedXapiStatement
 ): CourseProgressStatus | null {
+  if (!isXapiCourseProgressVerb(parsed)) return null;
+
   const verbId = (parsed.verbId ?? '').toLowerCase();
   if (verbId.includes('completed') || verbId.includes('passed')) {
     return CourseProgressStatus.COMPLETED;

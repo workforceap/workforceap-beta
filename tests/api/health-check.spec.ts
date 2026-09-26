@@ -65,6 +65,7 @@ describe('GET /api/health', () => {
       ...OLD_ENV,
       VERCEL_GIT_COMMIT_SHA: 'abc123def',
       VERCEL_ENV: 'production',
+      POSTGRES_PRISMA_URL: '',
     };
   });
 
@@ -138,6 +139,33 @@ describe('GET /api/health', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://esbdrgaonplpvzmtrdhw.example.com';
     body = await (await healthGET(new Request('http://localhost:3000/api/health'))).json();
     expect(body.supabaseRef).toBeNull();
+  });
+
+  it('classifies the runtime Prisma URL without returning a connection string', async () => {
+    const fixtures = [
+      ['postgresql://postgres:secret@db.esbdrgaonplpvzmtrdhw.supabase.co:5432/postgres', 'demo'],
+      ['postgresql://postgres:secret@aws-0-us-east-1.pooler.supabase.com:6543/postgres?options=reference%3Desbdrgaonplpvzmtrdhw', 'demo'],
+      ['postgresql://postgres:secret@db.jqddnyuszufndwwezdwp.supabase.co:5432/postgres', 'prod'],
+      ['postgresql://postgres:secret@db.esbdrgaonplpvzmtrdhw.supabase.co.attacker.invalid:5432/postgres', 'unknown'],
+    ] as const;
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://esbdrgaonplpvzmtrdhw.supabase.co';
+    for (const [url, expected] of fixtures) {
+      process.env.POSTGRES_PRISMA_URL = url;
+      const body = await (await healthGET(new Request('http://localhost:3000/api/health'))).json();
+      expect(body.supabaseRef).toBe('esbdrgaonplpvzmtrdhw');
+      expect(body.prismaProject).toBe(expected);
+      expect(JSON.stringify(body)).not.toContain('secret');
+      expect(JSON.stringify(body)).not.toContain('postgresql://');
+    }
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('does not use DATABASE_URL to attest Prisma when POSTGRES_PRISMA_URL is missing', async () => {
+    delete process.env.POSTGRES_PRISMA_URL;
+    process.env.DATABASE_URL = 'postgresql://postgres:secret@db.esbdrgaonplpvzmtrdhw.supabase.co/postgres';
+    const body = await (await healthGET(new Request('http://localhost:3000/api/health'))).json();
+    expect(body.prismaProject).toBe('unset');
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it('includes max-age=5 cache header', async () => {
