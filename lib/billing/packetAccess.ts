@@ -266,17 +266,18 @@ export function packetVisibleTo(
  * that viewer (see packetVisibleTo); a signed packet that was never sent stays
  * admin-only. Current packets first, then superseded ones (labelled replaced).
  */
+export async function listPacketsForMember(memberId: string, viewer?: 'member'): Promise<BillingPacketSummary[]>;
+/** Staff view (the counselor student page): the viewer's user id is required; packets are scoped per packet (staffPacketScope). */
+export async function listPacketsForMember(memberId: string, viewer: 'counselor', viewerUserId: string): Promise<BillingPacketSummary[]>;
 export async function listPacketsForMember(
   memberId: string,
   viewer: 'member' | 'counselor' = 'member',
-  /**
-   * Staff view (the counselor student page): the viewer's user id. Packets are
-   * then scoped per packet in the query itself (see staffPacketScope).
-   */
   viewerUserId?: string,
 ): Promise<BillingPacketSummary[]> {
   let where: Prisma.TrainingBillingPacketWhereInput = { memberId };
-  if (viewer === 'counselor' && viewerUserId) {
+  if (viewer === 'counselor') {
+    // Fail closed: a staff view without a viewer id sees nothing.
+    if (!viewerUserId) return [];
     const scope = await staffPacketScope(memberId, viewerUserId);
     if (!scope) return [];
     where = { ...where, ...scope };

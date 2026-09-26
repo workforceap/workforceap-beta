@@ -1450,13 +1450,13 @@ describe('Pre-send visibility', () => {
     db.counselor = COUNSELOR;
     const id = await signOne();
     expect(await listPacketsForMember(MEMBER, 'member')).toEqual([]);
-    expect(await listPacketsForMember(MEMBER, 'counselor')).toEqual([]);
+    expect(await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id)).toEqual([]);
     expect(await memberPdf(id)).toBe(404);
     const admin = await listAdminPackets(new Request('http://localhost/x'), params(MEMBER));
     expect((await admin.json()).packets.map((p: { id: string }) => p.id)).toEqual([id]);
     expect((await send(id)).status).toBe(200);
     expect((await listPacketsForMember(MEMBER, 'member')).map((p) => p.id)).toEqual([id]);
-    expect((await listPacketsForMember(MEMBER, 'counselor')).map((p) => p.id)).toEqual([id]);
+    expect((await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id)).map((p) => p.id)).toEqual([id]);
     expect(await memberPdf(id)).toBe(200);
   });
 
@@ -1466,7 +1466,7 @@ describe('Pre-send visibility', () => {
     mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
     expect((await send(id)).status).toBe(502);
     expect((await listPacketsForMember(MEMBER, 'member')).map((p) => p.id)).toEqual([id]);
-    expect(await listPacketsForMember(MEMBER, 'counselor')).toEqual([]); // counselor copy closed, never attempted
+    expect(await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id)).toEqual([]); // counselor copy closed, never attempted
   });
 });
 
@@ -1763,6 +1763,12 @@ describe('Staff packet list is scoped per packet to the viewer\'s org', () => {
   it('the member\'s own view keeps their packets across orgs (subject to the sent-visibility rule)', async () => {
     const { aId, bId } = await twoOrgPackets();
     expect(ids(await listPacketsForMember(MEMBER, 'member'))).toEqual([aId, bId].sort());
+  });
+
+  it('fails closed: a staff (counselor) view without a viewer id returns nothing', async () => {
+    await twoOrgPackets();
+    const unsafe = listPacketsForMember as unknown as (memberId: string, viewer: 'counselor') => Promise<unknown[]>;
+    expect(await unsafe(MEMBER, 'counselor')).toEqual([]);
   });
 
   it('someone who is neither an assigned counselor nor an admin gets nothing', async () => {
