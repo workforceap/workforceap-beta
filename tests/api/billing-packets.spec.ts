@@ -1652,6 +1652,26 @@ describe('A new attempt never sends over an unacknowledged earlier copy', () => 
   });
 });
 
+describe('Member deletion while preparing a send', () => {
+  it('refuses the claim and makes no provider call when deletion commits after the route check', async () => {
+    const id = await signOne();
+    let resume!: () => void;
+    mocks.buildGate.value = new Promise<void>((resolve) => { resume = resolve; });
+    const pending = sendPacket(req({}), packetParams(id));
+    await vi.waitFor(() => expect(db.sends[0]?.status).toBe('pending'));
+
+    db.users.find((u) => u.id === MEMBER)!.deletedAt = new Date();
+    mocks.buildGate.value = null;
+    resume();
+
+    const response = await pending;
+    expect(response.status).toBe(409);
+    expect((await response.json()).code).toBe('member_inactive');
+    expect(db.sends[0].status).toBe('pending');
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+});
+
 describe('Stale counselor assignments (org transfer, deleted) count as no counselor', () => {
   const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
   const counselorPdf = async (id: string) => {

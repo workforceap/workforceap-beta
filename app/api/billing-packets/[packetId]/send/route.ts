@@ -275,6 +275,7 @@ async function sendOne(args: {
   const claim = await claimRecipient({ packetId: packet.id, attemptNo: attempt.attemptNo, recipient, email: email.to, cc: null, now: new Date() });
   const label = recipient === 'student' ? 'student' : 'counselor';
   if (claim.kind === 'superseded') return supersededConflict();
+  if (claim.kind === 'member_inactive') return conflict('The member is no longer active; this packet cannot be emailed.', 'member_inactive');
   if (claim.kind === 'prior_copy') return conflict(`${claim.reason} ${RECONCILE_HINT}`, 'prior_copy_accepted', { recipient });
   if (claim.kind === 'missing_row') {
     return conflict(`The ${label} copy has no send record for this attempt. ${RECONCILE_HINT}`, 'needs_reconciliation', { recipient });

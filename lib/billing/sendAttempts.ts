@@ -60,7 +60,7 @@ async function lockPacketSends(tx: Prisma.TransactionClient, packetId: string) {
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${packetId}`}))`;
   // Guaranteed repair of any provider result recorded without its status.
   await reconcileProviderResults(tx, packetId);
-  return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true } });
+  return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true, memberId: true, organizationId: true } });
 }
 
 export type SendStatus =
@@ -315,6 +315,8 @@ export type ClaimOutcome =
   | { kind: 'needs_reconciliation'; row: TrainingBillingPacketSend }
   /** The packet was superseded: nothing is claimed and nothing may be sent. */
   | { kind: 'superseded' }
+  /** The member was deleted or anonymized before this copy was claimed. */
+  | { kind: 'member_inactive' }
   /** No row for this recipient in the attempt: operator reconciliation. */
   | { kind: 'missing_row' }
   /**
@@ -344,6 +346,13 @@ export async function claimRecipient(args: {
   return prisma.$transaction(async (tx): Promise<ClaimOutcome> => {
     const packet = await lockPacketSends(tx, args.packetId);
     if (!isSendable(packet)) return { kind: 'superseded' };
+    // The route's earlier viewer/recipient check can be stale while it builds
+    // the email. Refuse a claim if deletion or anonymization committed first.
+    const member = await tx.user.findFirst({
+      where: { id: packet!.memberId, organizationId: packet!.organizationId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!member) return { kind: 'member_inactive' };
     const key = { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } };
     let existing = await tx.trainingBillingPacketSend.findUnique({ where: key });
     // Every row is created pending when its attempt starts, so a missing row is
