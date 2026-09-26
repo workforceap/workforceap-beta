@@ -48,11 +48,12 @@ const probeCalls = () => db.$queryRaw.mock.calls.filter(isProbe);
 const otherCalls = () => db.$queryRaw.mock.calls.filter((call) => !isProbe(call));
 
 /** The probe answers `present`; the unmatched COUNT returns 9; every other read is a zero count row. */
-function mockDatabase(present: boolean): void {
+function mockDatabase(present: boolean, dashboard = { viewers: 0, activated: 0 }): void {
   db.$queryRaw.mockImplementation(async (strings: TemplateStringsArray) => {
     const sql = strings.join('');
     if (PROBE.test(sql)) return [{ present }];
     if (/COUNT\(DISTINCT email\)/.test(sql)) return [{ count: BigInt(9) }];
+    if (/FILTER \(WHERE me\.event_name = 'member_dashboard_viewed'\)/.test(sql)) return [dashboard];
     if (/AVG\(/.test(sql)) return [{ avg: null }];
     if (/DATE_TRUNC/.test(sql)) return [];
     return [{ count: 0 }];
@@ -109,6 +110,28 @@ describe('GET /api/admin/metrics when coursera_xapi_events is absent', () => {
 });
 
 describe('GET /api/admin/metrics when coursera_xapi_events is present (production path)', () => {
+  it('maps the two distinct member event counts to the activation funnel', async () => {
+    mockDatabase(true, { viewers: 3, activated: 1 });
+    const body = await getPayload();
+
+    expect(body.summary.activeDashboardUsers).toBe(3);
+    expect(body.summary.activationRate).toBe(33);
+    expect(body.funnels).toContainEqual(expect.objectContaining({
+      name: 'Dashboard Activation', current: 1, target: 3, rate: 33,
+    }));
+
+    const engagementCalls = otherCalls().filter((call) =>
+      /FILTER \(WHERE me\.event_name = 'member_dashboard_viewed'\)/.test(
+        (call[0] as TemplateStringsArray).join(''),
+      ),
+    );
+    expect(engagementCalls).toHaveLength(1);
+    const sql = (engagementCalls[0][0] as TemplateStringsArray).join('');
+    expect(sql.match(/COUNT\(DISTINCT me\.user_id\) FILTER/g)).toHaveLength(2);
+    expect(sql).toContain("WHERE me.event_name IN ('member_dashboard_viewed', 'member_dashboard_activated')");
+    expect(engagementCalls[0]).toContain('org-1');
+  });
+
   it('returns an empty `degraded` list, the same numbers, and asks the catalog exactly once', async () => {
     mockDatabase(true);
     const body = await getPayload();

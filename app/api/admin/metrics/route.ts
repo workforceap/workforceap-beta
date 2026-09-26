@@ -44,23 +44,16 @@ async function computeAdminRouteMetricsPayload(
         AND u.organization_id = ${orgId}
     `;
 
-  const dashboardViews = await prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(DISTINCT me.user_id)::int as count
+  // Count both events over the same member population in one database read.
+  // Distinct users remain the numerator and denominator for activation rate.
+  const dashboardEngagement = await prisma.$queryRaw<{ viewers: number; activated: number }[]>`
+      SELECT
+        (COUNT(DISTINCT me.user_id) FILTER (WHERE me.event_name = 'member_dashboard_viewed'))::int as viewers,
+        (COUNT(DISTINCT me.user_id) FILTER (WHERE me.event_name = 'member_dashboard_activated'))::int as activated
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
-      WHERE me.event_name = 'member_dashboard_viewed'
-    `;
-
-  // Distinct members who activated, so the activation rate is members ÷
-  // members. COUNT(*) counted every activation event (161 events from one
-  // user over 40 viewers printed "Activation Rate 403%"; S4).
-  const dashboardActivated = await prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(DISTINCT me.user_id)::int as count
-      FROM member_events me
-      INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
-      ${memberJoin}
-      WHERE me.event_name = 'member_dashboard_activated'
+      WHERE me.event_name IN ('member_dashboard_viewed', 'member_dashboard_activated')
     `;
 
   const aiToolUsers = await prisma.$queryRaw<{ count: number }[]>`
@@ -213,8 +206,8 @@ async function computeAdminRouteMetricsPayload(
   const total = metrics.totalMembers;
   const enrolled = metrics.placementStats.enrolled;
   const assessed = Number(assessmentCompleted[0].count);
-  const dashboardViewers = Number(dashboardViews[0].count);
-  const activated = Number(dashboardActivated[0].count);
+  const dashboardViewers = Number(dashboardEngagement[0].viewers);
+  const activated = Number(dashboardEngagement[0].activated);
   const aiRuns = metrics.aiToolRuns;
   const aiUsers = Number(aiToolUsers[0].count);
   const jobApps = metrics.applicationsSubmitted;
