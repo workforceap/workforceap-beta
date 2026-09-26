@@ -49,12 +49,14 @@ function extFromPath(path: string): string {
  * By default prefers enhanced resume (for voice/context consumers).
  * Pass `opts.preferOriginal = true` to try the original first while retaining
  * the alternate fallback. Generation must use `originalOnly` so a legacy AI
- * draft never becomes the source for another AI draft.
+ * draft never becomes the source for another AI draft. A caller that has
+ * already tried originalOnly can use `enhancedOnly` for context without
+ * downloading/parsing the same failed original twice.
  */
 export async function getMemberResumePlainText(
   userId: string,
   maxChars = 8000,
-  opts?: { preferOriginal?: boolean; originalOnly?: boolean; readOnlyAudit?: boolean }
+  opts?: { preferOriginal?: boolean; originalOnly?: boolean; enhancedOnly?: boolean; readOnlyAudit?: boolean }
 ): Promise<string> {
   if (opts?.readOnlyAudit) return '';
   const profile = await prisma.profile.findUnique({
@@ -64,6 +66,8 @@ export async function getMemberResumePlainText(
 
   const paths = (opts?.originalOnly
     ? [profile.resumeOriginalPath]
+    : opts?.enhancedOnly
+      ? [profile.resumeEnhancedPath]
     : opts?.preferOriginal
       ? [profile.resumeOriginalPath, profile.resumeEnhancedPath]
       : [profile.resumeEnhancedPath, profile.resumeOriginalPath]
