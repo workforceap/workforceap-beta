@@ -19,7 +19,6 @@ export type PacketEmail = {
   recipient: PacketRecipient;
   from: string;
   to: string;
-  cc?: string;
   replyTo: string;
   subject: string;
   html: string;
@@ -29,7 +28,8 @@ export type PacketEmail = {
 /**
  * Build one delivery email. Every input is frozen: recipients, names, the
  * reply-to and the PDFs come from the signed snapshot and packet row; the
- * from address, branding and cc from the send attempt. So a retry of the same
+ * from address and branding from the send attempt. No cc: ops asked for the
+ * student and the counselor only. So a retry of the same
  * attempt produces the same payload. Live and NOT frozen: the email template
  * code and the List-Unsubscribe header the mail wrapper adds (see
  * lib/email/send.ts); a change there surfaces as a provider 409.
@@ -84,12 +84,10 @@ export async function buildPacketEmail(args: {
   if (!counselor) throw new Error('No counselor was assigned when this packet was signed.');
   const first = counselor.fullName.trim().split(/\s+/)[0] || 'there';
   const studentUrl = `${branding.domain}/counselor/students/${packet.memberId}`;
-  const cc = attempt.ccEmail && attempt.ccEmail.toLowerCase() !== counselor.email.toLowerCase() ? attempt.ccEmail : undefined;
   return {
     ...common,
     recipient: 'counselor',
     to: counselor.email,
-    cc,
     subject: sanitizeEmailSubjectLine(`J5/J6 for ${facts.memberName} - ${facts.programTitle} (${facts.packetNumber})`),
     html: brandedEmailLayout({
       title: `Signed J5 invoice and J6 cover letter for ${facts.memberName}`,
@@ -139,18 +137,55 @@ export function classifyDeliveryError(err: unknown): DeliveryErrorClass {
   return 'ambiguous';
 }
 
-/** Deliver one packet email with its attempt's idempotency key. Throws on failure. */
-export async function deliverPacketEmail(email: PacketEmail, idempotencyKey: string): Promise<void> {
+/**
+ * Hard bound on one provider call. A timeout is an ambiguous outcome (the
+ * provider may still accept it), handled by a same-key retry.
+ */
+export const PROVIDER_SEND_TIMEOUT_MS = 30_000;
+
+export class DeliveryTimeoutError extends Error {
+  constructor() {
+    super(`The email provider did not answer within ${PROVIDER_SEND_TIMEOUT_MS / 1000}s.`);
+    this.name = 'DeliveryTimeoutError';
+  }
+}
+
+/**
+ * Deliver one packet email with its attempt's idempotency key. Throws on
+ * failure. When the call times out, the still-running request's eventual
+ * result is handed to `onLateResult` so it is recorded, never dropped.
+ */
+export async function deliverPacketEmail(
+  email: PacketEmail,
+  idempotencyKey: string,
+  opts: { timeoutMs?: number; onLateResult?: (outcome: { delivered: boolean; detail: string }) => void } = {},
+): Promise<void> {
   const resend = getResend();
   if (!resend) throw new EmailNotConfiguredError();
-  await sendBrandedEmailOrThrowOnSkip(resend, {
+  const request = sendBrandedEmailOrThrowOnSkip(resend, {
     from: email.from,
     to: email.to,
-    cc: email.cc,
     replyTo: email.replyTo,
     subject: email.subject,
     html: email.html,
     attachments: email.attachments,
     idempotencyKey,
   });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let timedOut = false;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      timedOut = true;
+      reject(new DeliveryTimeoutError());
+    }, opts.timeoutMs ?? PROVIDER_SEND_TIMEOUT_MS);
+  });
+  request.then(
+    () => timedOut && opts.onLateResult?.({ delivered: true, detail: 'provider accepted after the timeout' }),
+    (err: unknown) => timedOut && opts.onLateResult?.({ delivered: false, detail: err instanceof Error ? err.message : 'provider error after the timeout' }),
+  );
+  try {
+    await Promise.race([request, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
 }

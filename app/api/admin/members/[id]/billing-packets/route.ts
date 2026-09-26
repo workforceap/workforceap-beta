@@ -19,6 +19,8 @@ import { freezeLogo, type SignedPacketSnapshot } from '@/lib/billing/packetSnaps
 import { loadLetterheadLogo } from '@/lib/billing/packetPdf';
 import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
+import { IN_FLIGHT_GRACE_MS } from '@/lib/billing/sendAttempts';
+import { randomUUID } from 'node:crypto';
 
 /**
  * J5 invoice + J6 cover letter packets for one member.
@@ -38,6 +40,12 @@ async function resolveAdminSubject(userId: string, memberId: string) {
     select: { id: true, fullName: true, email: true, organizationId: true },
   });
   return member;
+}
+
+class SupersedeRefusedError extends Error {
+  constructor(readonly status: 404 | 409, message: string, readonly code: string) {
+    super(message);
+  }
 }
 
 class DuplicateAttestationError extends Error {
@@ -97,6 +105,10 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Validation failed' }, { status: 400 });
     }
     const input = parsed.data;
+    const supersedesPacketId = input.supersedesPacketId ?? null;
+    if (supersedesPacketId && (input.supersedeReason ?? '').length < 3) {
+      return NextResponse.json({ error: 'Give a reason for superseding the signed packet.' }, { status: 400 });
+    }
 
     // The program must be one of the member's billable enrollments in this org
     // (aliases accepted), not just any catalog program.
@@ -218,13 +230,41 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
         created = await prisma.$transaction(async (tx) => {
           // Serializes signs for the same member + approval; released at commit.
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet:${member.organizationId}:${member.id}:${fundingAttestationKey}`}))`;
+          if (supersedesPacketId) {
+            // Same lock as sending the old packet, so no provider call can race the supersede.
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${supersedesPacketId}`}))`;
+            const old = await tx.trainingBillingPacket.findFirst({
+              where: { id: supersedesPacketId, organizationId: member.organizationId, memberId: member.id },
+              select: { id: true, status: true },
+            });
+            if (!old) throw new SupersedeRefusedError(404, 'The packet to supersede was not found for this member.', 'not_found');
+            if (old.status !== 'signed' && old.status !== 'sent') {
+              throw new SupersedeRefusedError(409, 'Only a current signed packet can be superseded.', 'not_supersedable');
+            }
+            const oldRows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: old.id } });
+            if (oldRows.some((r) => r.status === 'claimed' && now.getTime() - r.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS)) {
+              throw new SupersedeRefusedError(409, 'A copy of that packet is being sent right now. Try again in a few minutes.', 'in_progress');
+            }
+            // Copies never claimed can never go out now: close them as definitely not sent.
+            await tx.trainingBillingPacketSend.updateMany({
+              where: { packetId: old.id, status: 'pending' },
+              data: { status: 'rejected_definite', lastError: 'Not sent: the packet was superseded.', claimToken: randomUUID() },
+            });
+            const { count } = await tx.trainingBillingPacket.updateMany({
+              where: { id: old.id, status: { in: ['signed', 'sent'] } },
+              data: { status: 'superseded', supersededAt: now, supersededById: user.id, supersededReason: input.supersedeReason ?? null },
+            });
+            if (count !== 1) throw new SupersedeRefusedError(409, 'That packet changed meanwhile. Refresh and try again.', 'not_supersedable');
+          }
+          // A superseded packet is out of the check: it is linked to its
+          // replacement (created below), which carries the block from now on.
           const duplicate = await tx.trainingBillingPacket.findFirst({
             where: { organizationId: member.organizationId, memberId: member.id, fundingAttestationKey, status: { in: ['signed', 'sent'] } },
             select: { packetNumber: true },
           });
           if (duplicate) throw new DuplicateAttestationError(duplicate.packetNumber);
           const packetNumber = await nextPacketNumber(tx, { organizationId: member.organizationId, prefix, now });
-          return tx.trainingBillingPacket.create({
+          const replacement = await tx.trainingBillingPacket.create({
             data: {
               organizationId: member.organizationId,
               memberId: member.id,
@@ -248,11 +288,17 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
               signedById: user.id,
               signedSnapshot,
               fundingAttestationKey,
+              supersedesPacketId,
             },
           });
+          if (supersedesPacketId) {
+            await tx.trainingBillingPacket.updateMany({ where: { id: supersedesPacketId }, data: { supersededByPacketId: replacement.id } });
+          }
+          return replacement;
         });
       } catch (err) {
         if (err instanceof DuplicateAttestationError) return duplicateResponse(err.packetNumber);
+        if (err instanceof SupersedeRefusedError) return NextResponse.json({ error: err.message, code: err.code }, { status: err.status });
         if (!isUniqueViolation(err) || attempt === 2) throw err;
       }
     }
@@ -273,6 +319,7 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
         pricingSource: pricing.source,
         fundingBasis: funding.fundingBasis,
         warnings: warnings.length,
+        supersedesPacketId,
         orgId: member.organizationId,
       },
     }).catch(() => {});

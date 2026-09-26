@@ -22,6 +22,14 @@ ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "funding_attesta
 CREATE INDEX IF NOT EXISTS "training_billing_packets_organization_id_member_id_funding__idx"
   ON "training_billing_packets" ("organization_id", "member_id", "funding_attestation_key");
 
+-- Supersede audit (status "superseded"): the old packet records who, when, why
+-- and its replacement; the replacement points back.
+ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "superseded_at" TIMESTAMP(3);
+ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "superseded_by_id" TEXT;
+ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "superseded_reason" TEXT;
+ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "superseded_by_packet_id" TEXT;
+ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "supersedes_packet_id" TEXT;
+
 -- One row per recipient per send attempt. The unique key is the atomic claim;
 -- claim_token is rotated on every claim/reconciliation and every final
 -- transition compare-and-sets on it.
@@ -42,6 +50,7 @@ CREATE TABLE IF NOT EXISTS "training_billing_packet_sends" (
   "reconciled_by_id" TEXT,
   "reconciled_at"    TIMESTAMP(3),
   "reconcile_note"   TEXT,
+  "late_provider_result" TEXT,
   "created_at"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at"       TIMESTAMP(3) NOT NULL,
 
@@ -83,6 +92,8 @@ COMMIT;
 --   DROP TABLE IF EXISTS "training_billing_packet_sends";
 --   DROP INDEX IF EXISTS "training_billing_packets_organization_id_member_id_funding__idx";
 --   ALTER TABLE "training_billing_packets" DROP COLUMN IF EXISTS "funding_attestation_key";
+--   ALTER TABLE "training_billing_packets" DROP COLUMN IF EXISTS "superseded_at", DROP COLUMN IF EXISTS "superseded_by_id",
+--     DROP COLUMN IF EXISTS "superseded_reason", DROP COLUMN IF EXISTS "superseded_by_packet_id", DROP COLUMN IF EXISTS "supersedes_packet_id";
 --   ALTER TABLE "training_billing_packets" DROP COLUMN IF EXISTS "send_attempt";
 --   ALTER TABLE "training_billing_packets" DROP COLUMN IF EXISTS "send_attempt_no";
 --   ALTER TABLE "training_billing_packets" DROP COLUMN IF EXISTS "signed_snapshot";

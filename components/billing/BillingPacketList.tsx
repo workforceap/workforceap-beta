@@ -15,6 +15,8 @@ type BillingPacketListProps = {
   memberEmail?: string | null;
   /** Called with the updated packet after a successful send. */
   onPacketUpdated?: (packet: BillingPacketSummary) => void;
+  /** Admin: start "Supersede and re-issue" for a signed packet. */
+  onSupersede?: (packet: BillingPacketSummary) => void;
   emptyText?: string;
 };
 
@@ -53,6 +55,7 @@ export default function BillingPacketList({
   counselorLabel,
   memberEmail,
   onPacketUpdated,
+  onSupersede,
   emptyText = 'No invoice packets yet.',
 }: BillingPacketListProps) {
   const [send, setSend] = useState<SendState>(null);
@@ -89,13 +92,16 @@ export default function BillingPacketList({
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.75rem' }}>
       {packets.map((p) => {
         const state = send?.id === p.id ? send : null;
+        const superseded = p.status === 'superseded';
+        const replacement = p.supersededByPacketId ? packets.find((x) => x.id === p.supersededByPacketId) : undefined;
+        const live = canSend && !superseded;
         return (
           <li key={p.id} className="wa-kit-card" style={{ padding: '1rem', display: 'grid', gap: '0.6rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'baseline' }}>
               <div>
                 <strong style={{ fontSize: '1rem' }}>Invoice {p.packetNumber}</strong>
-                <span style={{ marginLeft: 8, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.status === 'sent' ? 'var(--color-green, #15803d)' : 'var(--color-accent, #ad2c4d)' }}>
-                  {p.status === 'sent' ? 'Sent' : 'Signed'}
+                <span style={{ marginLeft: 8, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.status === 'sent' ? 'var(--color-green, #15803d)' : superseded ? 'var(--color-muted, #64748b)' : 'var(--color-accent, #ad2c4d)' }}>
+                  {p.status === 'sent' ? 'Sent' : superseded ? 'Superseded' : 'Signed'}
                 </span>
               </div>
               <strong>{formatMoney(p.totalAmount)}</strong>
@@ -107,6 +113,20 @@ export default function BillingPacketList({
               Signed by {p.signerName}, {p.signerTitle}
               {p.sentAt ? ` · emailed ${formatLongDateOfInstant(p.sentAt)}${p.sendCount > 1 ? ` (${p.sendCount} times)` : ''}` : ''}
             </div>
+            {superseded ? (
+              <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>
+                Superseded — replaced by{' '}
+                {replacement ? (
+                  <a href={pdfHref(replacement.id, 'j5')} target="_blank" rel="noopener">
+                    invoice {replacement.packetNumber}
+                  </a>
+                ) : (
+                  'a newer invoice'
+                )}
+                {canSend && p.supersededAt ? ` on ${formatLongDateOfInstant(p.supersededAt)}` : ''}
+                {canSend && p.supersededReason ? `. Reason: ${p.supersededReason}` : ''}
+              </p>
+            ) : null}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <a className="btn btn-outline" style={{ minHeight: 40 }} href={pdfHref(p.id, 'j5')} target="_blank" rel="noopener">
                 View J5 invoice
@@ -123,7 +143,7 @@ export default function BillingPacketList({
               <a className="btn btn-outline" style={{ minHeight: 40 }} href={pdfHref(p.id, 'j6', true)} download>
                 Download J6
               </a>
-              {canSend ? (
+              {live ? (
                 <button
                   type="button"
                   className="btn"
@@ -135,14 +155,18 @@ export default function BillingPacketList({
                   {state?.busy ? 'Sending…' : primaryAction(p).label}
                 </button>
               ) : null}
+              {live && onSupersede ? (
+                <button type="button" className="btn btn-outline" style={{ minHeight: 40 }} onClick={() => onSupersede(p)}>
+                  Supersede and re-issue
+                </button>
+              ) : null}
             </div>
-            {canSend ? (
+            {live ? (
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-muted, #64748b)' }}>
-                {/* The admin is cc'd on the counselor copy only, so there is no cc without a counselor. */}
                 Goes to {p.recipients ? p.recipients.student : (memberEmail ?? 'the student')}
                 {(p.recipients ? p.recipients.counselor : counselorLabel)
-                  ? ` and ${p.recipients ? p.recipients.counselor : counselorLabel}; you are cc\u2019d on the counselor copy.`
-                  : ' only (no counselor was assigned at signing, so no counselor copy and no cc to you).'}
+                  ? ` and ${p.recipients ? p.recipients.counselor : counselorLabel}.`
+                  : ' only (no counselor was assigned at signing, so there is no counselor copy).'}
               </p>
             ) : null}
             {state && !state.busy && state.message ? (
@@ -150,12 +174,16 @@ export default function BillingPacketList({
                 {state.message}
               </p>
             ) : null}
+            {canSend && p.sendState?.warnings.length ? (
+              <p role="alert" style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-accent, #ad2c4d)', fontWeight: 600 }}>{p.sendState.warnings.join(' ')}</p>
+            ) : null}
             {canSend && primaryAction(p).why ? (
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-accent, #ad2c4d)' }}>{primaryAction(p).why}</p>
             ) : null}
-            {canSend && p.sendState?.nextAction === 'reconcile'
+            {canSend && p.sendState
               ? p.sendState.rows
-                  .filter((r) => r.status === 'needs_reconciliation')
+                  // Superseded packets cannot retry, so any unsettled copy is offered for reconciliation.
+                  .filter((r) => r.status === 'needs_reconciliation' || (superseded && (r.status === 'ambiguous' || r.status === 'claimed')))
                   .map((r) => (
                     <ReconcileRow
                       key={r.recipient}
@@ -193,7 +221,14 @@ function ReconcileRow(props: { recipient: string; lastError: string | null; busy
         <button type="button" className="btn btn-outline" style={{ minHeight: 38 }} disabled={!ready} onClick={() => props.onSubmit(true, note)}>
           Mark delivered
         </button>
-        <button type="button" className="btn btn-outline" style={{ minHeight: 38 }} disabled={!ready} onClick={() => props.onSubmit(false, note)}>
+        <button
+          type="button"
+          className="btn btn-outline"
+          style={{ minHeight: 38 }}
+          disabled={!ready}
+          title="Allowed only after the provider's 24-hour idempotency window; before that, use Retry."
+          onClick={() => props.onSubmit(false, note)}
+        >
           Confirm not delivered
         </button>
       </div>

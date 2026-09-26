@@ -35,7 +35,8 @@ that automatically emails to counselor and the student."
 - **Staff funding attestation (required)**: funding basis (WIOA ITA or separate
   contract), approved amount, ITA/contract reference, plus explicit
   confirmations that these were checked against the ITA or contract and that
-  the tuition rows match it, and that the J6 facts block was reviewed. Nothing
+  the tuition rows match it, and that the J6 facts block and narrative were
+  reviewed. Nothing
   is prefilled. It is a staff-recorded attestation plus reference, not proof of
   Board or contract approval (TWC 40 TAC §840.61 ties ITA funding to Board
   approval). The server refuses: a total above the recorded approved amount;
@@ -49,11 +50,18 @@ that automatically emails to counselor and the student."
   pp.63-64, exceptions up to $10,000); other boards may differ and no per-board
   limit exists in the app. An optional exception note is recorded as a staff
   note, unverified.
-- **J6 facts block**: every factual statement in the J6 (dates, bill-to,
+- **J6 facts block and narrative**: the facts block (dates, bill-to,
   reference, funding basis/approved amount/reference, each row with its amount,
   total hours, total) is generated from the J5 rows and the attestation
-  (`buildJ6Facts` in `packetText.ts`) and frozen at signing. The narrative is
-  prose around it; a hint flags figures typed into the narrative.
+  (`buildJ6Facts` in `packetText.ts`), printed first, frozen at signing, and
+  authoritative. The narrative after it is human-reviewed prose, attested at
+  signing (it is part of the reviewed fingerprint); the only machine check is a
+  basic numeric-currency block (`narrativeMoneyViolations`: `$`, money-formatted
+  numbers, total/amount/tuition/fee/invoice next to a number). Wording such as a
+  payer name or a spelled-out amount is covered only by the signer's review.
+- **Draft curricula**: programs whose curriculum is not owner-verified
+  (`isCurriculumOwnerVerified` in `shared/programCurricula.ts`, the same rule as
+  the price list) cannot be billed; the page lists them as unavailable.
 - **Create** stores one `TrainingBillingPacket` row (status `signed`) with an
   invoice number `WAP-YYYY-NNNN` unique per organization and a `signedSnapshot`
   (`lib/billing/packetSnapshot.ts`). Frozen: provider identity, member name and
@@ -65,22 +73,39 @@ that automatically emails to counselor and the student."
   from live data). Only legacy rows with no snapshot render from live values,
   and they cannot be emailed.
 - **Email to counselor and student** (`POST /api/billing-packets/[id]/send`):
-  two branded emails with both PDFs attached, to the recipients in the
-  snapshot. If the member's live counselor assignment differs from the one at
-  signing (added, changed or removed), the send is refused: re-sign. The student
-  copy goes first; if it fails, the counselor copy is not sent. The admin who
-  starts an attempt is cc'd on the counselor copy (no counselor, no cc).
-  Sends run in attempts (`lib/billing/sendAttempts.ts`): the first press starts
-  attempt 1; "Email again" explicitly starts a new one. Each recipient of an
-  attempt is claimed once (unique row); delivery uses the idempotency key
-  `billing-packet:<id>:<attempt>:<recipient>` with a payload built only from
-  frozen inputs (snapshot + the attempt's from address, branding and cc), so a
-  retry within Resend's 24-hour window is deduplicated by the provider. An
-  unconfirmed claim older than 23 hours, or a Resend 409 (key reused with a
-  changed payload), puts that copy in "needs reconciliation": the operator checks
-  Resend and marks it delivered, or starts a new attempt. This is not lifetime
+  two branded emails with both PDFs attached, to the student and the counselor
+  in the snapshot (no cc). A send is refused when the member's live email, or
+  the live counselor assignment or email, differs from the snapshot; reconcile
+  still works, and delivery then needs a re-issued packet (see Supersede). The
+  student copy goes first; if it is not sent, the counselor copy is not sent.
+  Sends run in attempts (`lib/billing/sendAttempts.ts`). Starting an attempt
+  creates a `pending` row per recipient in one transaction; a new attempt
+  ("Email again") can only start when every row of the current one is terminal
+  (`sent`, `rejected_definite`, or operator-reconciled). Each row is claimed by
+  compare-and-set on a claim token; delivery uses the key
+  `billing-packet:<id>:<attempt>:<recipient>`, a payload built only from frozen
+  inputs (snapshot + the attempt's from address and branding), and a 30 s
+  provider timeout. Outcomes: accepted -> `sent`; a definite provider rejection
+  -> `rejected_definite`; timeout/network/5xx/429 -> `ambiguous` (Retry with the
+  same key, which Resend deduplicates within 24 h); Resend 409 (key reused with
+  a changed payload) or an unconfirmed copy older than 23 h ->
+  `needs_reconciliation`. Operator reconciliation records delivered / not
+  delivered with actor, time and a note; a still-claimed row can only be
+  reconciled 15 minutes after its last claim, and "not delivered" only after
+  the 24 h window. Late provider results are recorded on the row (and flip a
+  "not delivered" row back to `needs_reconciliation`). This is not lifetime
   exactly-once. Live, not frozen: the email template code and the
   List-Unsubscribe header the mail wrapper adds.
+- **Supersede and re-issue**: an admin can re-issue a signed packet with a
+  reason. In one transaction under the sign and send locks, the old packet
+  becomes `superseded` (who, when, why, replacement id; pending copies closed
+  as not sent) and the replacement is signed through every normal guard and
+  links back. Refused while a copy of the old packet is in flight. A superseded
+  packet never sends again (reconcile still works), and its replacement cannot
+  be delivered until the old packet's unconfirmed copies are settled. Members
+  see the current packet first and a superseded one only if it reached, or may
+  have reached, them, labelled "Superseded - replaced by". Superseded PDFs are
+  unchanged (no watermark).
 - **Downloads**: every surface offers "Download both (PDF)" — the J6 cover
   letter and J5 invoice merged into one file, in that order, so the whole packet
   prints or saves as a set — plus separate "Download J5" / "Download J6" buttons
@@ -136,6 +161,6 @@ not the UTC day; invoice and due dates are stored as plain dates.
   letterhead; if a workforce board publishes its own required form, map the
   fields in `packetPdf.ts`.
 - Payment tracking (paid / partially paid). Status is `signed` or `sent`.
-- Void / supersede of a signed packet, installment or cumulative-balance
-  billing against one approval, per-board ITA limits, and per-tenant provider
-  identity / payer configuration.
+- Void without replacement, installment or cumulative-balance billing against
+  one approval, per-board ITA limits, and per-tenant provider identity / payer
+  configuration.

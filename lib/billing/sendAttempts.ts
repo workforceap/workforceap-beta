@@ -25,12 +25,25 @@ import { isUniqueViolation } from './packetNumber';
  */
 export const IDEMPOTENCY_SAFE_RETRY_MS = 23 * 60 * 60 * 1000;
 
-/** A claim this fresh is an in-flight send; nobody else may retry or reconcile it. */
+/**
+ * A claim this fresh is an in-flight send: nobody else may take it over for a
+ * same-key retry. The provider call itself is bounded by PROVIDER_SEND_TIMEOUT_MS
+ * (sendPacket.ts), so a live request cannot still be waiting after this.
+ */
 export const IN_FLIGHT_GRACE_MS = 2 * 60 * 1000;
+
+/**
+ * An operator may only reconcile a still-`claimed` row this long after its
+ * last claim: well beyond the provider timeout plus the longest serverless
+ * function duration, so no request can still be about to deliver it.
+ */
+export const RECONCILE_CLAIMED_MIN_AGE_MS = 15 * 60 * 1000;
 
 export type PacketRecipient = 'student' | 'counselor';
 
 export type SendStatus =
+  /** Created with the attempt, not claimed yet. */
+  | 'pending'
   | 'claimed'
   | 'sent'
   /** Provider or local check definitely did not accept it. */
@@ -43,18 +56,18 @@ export type SendStatus =
 
 /** Delivered: counts toward completing the attempt. */
 export const DELIVERED: ReadonlySet<string> = new Set(['sent', 'reconciled_delivered']);
+/** Outcome not settled yet: claimed/in flight, pending, ambiguous or awaiting reconciliation. */
+export const UNSETTLED: ReadonlySet<string> = new Set(['pending', 'claimed', 'ambiguous', 'needs_reconciliation']);
 /** Terminal: a new attempt may start once every row is one of these. */
 export const TERMINAL: ReadonlySet<string> = new Set(['sent', 'reconciled_delivered', 'reconciled_not_delivered', 'rejected_definite']);
 
-/** Inputs frozen when an attempt starts, so every retry sends the same payload. */
+/** Inputs frozen when an attempt starts, so every retry sends the same payload. Recipients are only the student and the counselor (no cc). */
 export type SendAttemptRecord = {
   attemptNo: number;
   startedAt: string;
   startedById: string;
   from: string;
   branding: OrganizationBranding;
-  /** Admin cc'd on the counselor copy (their email when the attempt started). */
-  ccEmail: string | null;
 };
 
 export function sendIdempotencyKey(packetId: string, attemptNo: number, recipient: PacketRecipient): string {
@@ -83,7 +96,6 @@ export function parseSendAttempt(value: unknown, attemptNo: number | null): Send
     || typeof v.startedById !== 'string'
     || !v.branding
     || typeof v.branding !== 'object'
-    || !(v.ccEmail === null || typeof v.ccEmail === 'string')
   ) {
     throw new SendAttemptCorruptError();
   }
@@ -104,27 +116,42 @@ export function nextSendAction(args: {
 }): NextSendAction {
   if (args.attemptNo == null) return 'send';
   const rows = args.rows;
+  const fresh = (r: (typeof rows)[number]) => args.now.getTime() - r.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS;
   if (rows.some((r) => r.status === 'needs_reconciliation')) return 'reconcile';
-  if (rows.some((r) => r.status === 'claimed' && args.now.getTime() - r.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS)) return 'in_progress';
+  if (rows.some((r) => r.status === 'claimed' && fresh(r))) return 'in_progress';
   if (rows.some((r) => r.status === 'ambiguous' || r.status === 'claimed')) return 'retry';
-  // Every row is terminal now. All delivered, or one definitively not
-  // delivered: only a new attempt can send again. Otherwise a copy was never
-  // attempted (e.g. an interrupted request), so this attempt continues.
-  const allDelivered = args.recipients.every((recipient) => rows.some((r) => r.recipient === recipient && DELIVERED.has(r.status)));
-  if (allDelivered || rows.some((r) => !DELIVERED.has(r.status))) return 'email_again';
-  return 'send';
+  // Pending or missing rows: this attempt still has copies to send.
+  if (!attemptIsTerminal(rows, args.recipients)) return 'send';
+  // Every expected copy is terminal (delivered, rejected or recorded not
+  // delivered): only a new attempt can send again.
+  return 'email_again';
 }
 
+/** True when the attempt has exactly the expected recipient rows and every one is terminal. */
+export function attemptIsTerminal(rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status'>>, expected: PacketRecipient[]): boolean {
+  const recipients = rows.map((r) => r.recipient).sort();
+  return (
+    recipients.length === expected.length
+    && [...expected].sort().every((r, i) => recipients[i] === r)
+    && rows.every((r) => TERMINAL.has(r.status))
+  );
+}
+
+export type PlannedRecipient = { recipient: PacketRecipient; email: string; cc: string | null };
+
 /**
- * Start attempt N+1 atomically: under a per-packet advisory lock, require the
- * packet to still be on attempt `expectedCurrent` and every row of that
- * attempt to be terminal. Returns null when another request won or the
- * current attempt is not finished.
+ * Start attempt N+1 atomically, under a per-packet advisory lock: the packet
+ * must still be on attempt `expectedCurrent`, that attempt must be terminal
+ * (exactly the expected rows, all terminal), and every recipient row of the
+ * new attempt is created `pending` in the same transaction, so there is never
+ * an empty or partial attempt to race against.
  */
 export async function startSendAttempt(args: {
   packetId: string;
   expectedCurrent: number | null;
+  recipients: PlannedRecipient[];
   record: Omit<SendAttemptRecord, 'attemptNo'>;
+  now: Date;
 }): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' }> {
   const attemptNo = (args.expectedCurrent ?? 0) + 1;
   const record: SendAttemptRecord = { ...args.record, attemptNo };
@@ -132,13 +159,30 @@ export async function startSendAttempt(args: {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${args.packetId}`}))`;
     if (args.expectedCurrent != null) {
       const rows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: args.packetId, attemptNo: args.expectedCurrent } });
-      if (!rows.every((r) => TERMINAL.has(r.status))) return { ok: false as const, reason: 'not_terminal' as const };
+      if (!attemptIsTerminal(rows, args.recipients.map((r) => r.recipient))) return { ok: false as const, reason: 'not_terminal' as const };
     }
     const { count } = await tx.trainingBillingPacket.updateMany({
       where: { id: args.packetId, sendAttemptNo: args.expectedCurrent },
       data: { sendAttemptNo: attemptNo, sendAttempt: record as unknown as Prisma.InputJsonValue },
     });
-    return count === 1 ? { ok: true as const, record } : { ok: false as const, reason: 'raced' as const };
+    if (count !== 1) return { ok: false as const, reason: 'raced' as const };
+    for (const r of args.recipients) {
+      await tx.trainingBillingPacketSend.create({
+        data: {
+          packetId: args.packetId,
+          attemptNo,
+          recipient: r.recipient,
+          email: r.email,
+          cc: r.cc,
+          idempotencyKey: sendIdempotencyKey(args.packetId, attemptNo, r.recipient),
+          status: 'pending',
+          claimToken: randomUUID(),
+          claimedAt: args.now,
+          lastClaimedAt: args.now,
+        },
+      });
+    }
+    return { ok: true as const, record };
   });
 }
 
@@ -183,6 +227,16 @@ export async function claimRecipient(args: {
     }
   }
   if (DELIVERED.has(existing.status)) return { kind: 'done', row: existing };
+  if (existing.status === 'pending') {
+    // First claim: the provider window starts now.
+    const claimToken = randomUUID();
+    const { count } = await prisma.trainingBillingPacketSend.updateMany({
+      where: { id: existing.id, status: 'pending', claimToken: existing.claimToken },
+      data: { status: 'claimed', claimToken, claimedAt: args.now, lastClaimedAt: args.now },
+    });
+    if (count !== 1) return { kind: 'in_progress' };
+    return { kind: 'claimed', row: { ...existing, status: 'claimed', claimToken, claimedAt: args.now, lastClaimedAt: args.now } };
+  }
   if (existing.status === 'needs_reconciliation') return { kind: 'needs_reconciliation', row: existing };
   if (existing.status === 'rejected_definite' || existing.status === 'reconciled_not_delivered') return { kind: 'terminal_undelivered', row: existing };
   if (existing.status === 'claimed' && args.now.getTime() - existing.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS) return { kind: 'in_progress' };
@@ -224,12 +278,20 @@ export async function transition(
   return count === 1;
 }
 
-export type ReconcileResult = 'ok' | 'in_progress' | 'not_reconcilable';
+export type ReconcileResult = 'ok' | 'in_progress' | 'retry_first' | 'not_reconcilable';
 
 /**
- * Operator reconciliation after checking the provider: record delivered or not
- * delivered, with who, when and a note. Only for rows that need it, or claims
- * past the in-flight window; a fresh claim is refused as "in progress".
+ * Operator reconciliation after checking the provider, recorded with who, when
+ * and a note.
+ *  - A `claimed` row can only be reconciled RECONCILE_CLAIMED_MIN_AGE_MS after
+ *    its last claim ("in progress" before that).
+ *  - "Delivered" is allowed for claimed (past that age), ambiguous or
+ *    needs_reconciliation rows.
+ *  - "Not delivered" is allowed only after the provider idempotency window
+ *    (first claim + IDEMPOTENCY_SAFE_RETRY_MS). Within it the only way to
+ *    settle an unknown outcome is a same-key Retry, which Resend answers with
+ *    one delivery or the original result; so a new key is never unlocked while
+ *    the first one could still deliver.
  */
 export async function reconcileRecipient(args: {
   packetId: string;
@@ -243,10 +305,9 @@ export async function reconcileRecipient(args: {
   const row = await prisma.trainingBillingPacketSend.findUnique({
     where: { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } },
   });
-  if (!row) return 'not_reconcilable';
-  const stale = args.now.getTime() - row.lastClaimedAt.getTime() >= IN_FLIGHT_GRACE_MS;
-  if (row.status === 'claimed' && !stale) return 'in_progress';
-  if (!['needs_reconciliation', 'ambiguous', 'claimed'].includes(row.status)) return 'not_reconcilable';
+  if (!row || !['needs_reconciliation', 'ambiguous', 'claimed'].includes(row.status)) return 'not_reconcilable';
+  if (row.status === 'claimed' && args.now.getTime() - row.lastClaimedAt.getTime() < RECONCILE_CLAIMED_MIN_AGE_MS) return 'in_progress';
+  if (!args.delivered && args.now.getTime() - row.claimedAt.getTime() <= IDEMPOTENCY_SAFE_RETRY_MS) return 'retry_first';
   const { count } = await prisma.trainingBillingPacketSend.updateMany({
     where: { id: row.id, status: row.status, claimToken: row.claimToken },
     data: {
@@ -259,4 +320,38 @@ export async function reconcileRecipient(args: {
     },
   });
   return count === 1 ? 'ok' : 'in_progress';
+}
+
+/**
+ * A provider result that arrived after its row moved on (a timed-out request
+ * that finished later, or a result that lost the compare-and-set). Never
+ * ignored: it is recorded on the row; a late success settles an unsettled row
+ * as sent, and one that contradicts a recorded "not delivered" puts the row
+ * back into needs_reconciliation with a visible warning.
+ */
+export async function recordLateProviderResult(sendId: string, outcome: { delivered: boolean; detail: string }, now: Date = new Date()) {
+  const row = await prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
+  if (!row) return;
+  const lateProviderResult = JSON.stringify({ at: now.toISOString(), delivered: outcome.delivered, detail: outcome.detail.slice(0, 500), statusWhenReceived: row.status });
+  console.warn('[billing-packets send] late provider result', { sendId, delivered: outcome.delivered, status: row.status });
+  let data: Prisma.TrainingBillingPacketSendUpdateManyMutationInput = { lateProviderResult };
+  if (outcome.delivered && ['claimed', 'ambiguous'].includes(row.status)) {
+    data = { ...data, status: 'sent', sentAt: now, claimToken: randomUUID() };
+  } else if (outcome.delivered && row.status === 'reconciled_not_delivered') {
+    data = {
+      ...data,
+      status: 'needs_reconciliation',
+      claimToken: randomUUID(),
+      lastError: 'The provider reported this copy delivered AFTER it was recorded as not delivered. Check for a duplicate email.',
+    };
+  }
+  await prisma.trainingBillingPacketSend.updateMany({ where: { id: row.id, status: row.status, claimToken: row.claimToken }, data });
+}
+
+/** Close the attempt's pending rows as definitely not sent (e.g. the student copy was rejected, so the counselor copy never goes). */
+export async function closePendingRows(packetId: string, attemptNo: number, reason: string) {
+  await prisma.trainingBillingPacketSend.updateMany({
+    where: { packetId, attemptNo, status: 'pending' },
+    data: { status: 'rejected_definite', lastError: reason, claimToken: randomUUID() },
+  });
 }

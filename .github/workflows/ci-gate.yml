@@ -127,7 +127,7 @@ jobs:
       - name: Static gates (scripts/prepush.mjs --ci)
         run: node scripts/prepush.mjs --ci
         env:
-          TENANT_SCOPING_MAX_UNSCOPED: "679"
+          TENANT_SCOPING_MAX_UNSCOPED: "678"
         timeout-minutes: 12
 
       # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and

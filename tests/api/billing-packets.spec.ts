@@ -47,7 +47,7 @@ vi.mock('@/lib/tenant/organization', async (importOriginal) => ({
 }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: (...args: unknown[]) => Promise<Response>) => handler }));
 vi.mock('@/lib/email', () => ({ getResend: () => ({}) }));
-vi.mock('@/lib/email/send', () => ({ sendBrandedEmailOrThrowOnSkip: mocks.send }));
+vi.mock('@/lib/email/send', () => ({ sendBrandedEmailOrThrowOnSkip: mocks.send, FixtureRecipientSkippedError: class extends Error {} }));
 vi.mock('@/lib/email/template', () => ({
   brandedEmailLayout: (a: { title: string; branding: { name: string; primaryColor: string } }) => `${a.branding.name}|${a.branding.primaryColor}|${a.title}`,
 }));
@@ -92,12 +92,16 @@ vi.mock('@/lib/db/prisma', () => {
     trainingBillingPacket: {
       count: vi.fn(async ({ where }: { where: { organizationId: string } }) => db.packets.filter((p) => p.organizationId === where.organizationId).length),
       findFirst: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.packets.find((p) => matches(p, where)) ?? null),
-      findMany: vi.fn(async () => db.packets),
-      findUnique: vi.fn(async ({ where }: { where: { id: string } }) => {
+      findMany: vi.fn(async (args: { include?: { sends?: { where?: { recipient?: string } } | boolean } } = {}) =>
+        db.packets.map((p) => {
+          const only = typeof args.include?.sends === 'object' ? args.include.sends.where?.recipient : undefined;
+          return { ...p, sends: db.sends.filter((x) => x.packetId === p.id && (!only || x.recipient === only)).map((x) => ({ ...x })) };
+        })),
+      findUnique: vi.fn(async ({ where, include }: { where: { id: string }; include?: Record<string, unknown> }) => {
         const p = db.packets.find((x) => x.id === where.id);
         if (!p) return null;
         const member = db.users.find((u) => u.id === p.memberId);
-        return { ...p, member: { ...member, deletedAt: null } };
+        return { ...p, member: { ...member, deletedAt: null }, ...(include?.sends ? { sends: db.sends.filter((x) => x.packetId === p.id) } : {}) };
       }),
       create: vi.fn(async ({ data }: { data: Row }) => {
         await tick();
@@ -118,14 +122,17 @@ vi.mock('@/lib/db/prisma', () => {
       }),
     },
     trainingBillingPacketSend: {
-      findUnique: vi.fn(async ({ where }: { where: { packetId_attemptNo_recipient: Record<string, unknown> } }) =>
-        db.sends.find((s) => matches(s, where.packetId_attemptNo_recipient)) ?? null),
-      findMany: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.sends.filter((s) => matches(s, where))),
+      // Copies, like a real client: callers must not see later writes through a returned object.
+      findUnique: vi.fn(async ({ where }: { where: { id?: string; packetId_attemptNo_recipient?: Record<string, unknown> } }) => {
+        const row = db.sends.find((s) => (where.id ? s.id === where.id : matches(s, where.packetId_attemptNo_recipient ?? {})));
+        return row ? { ...row } : null;
+      }),
+      findMany: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.sends.filter((s) => matches(s, where)).map((s) => ({ ...s }))),
       create: vi.fn(async ({ data }: { data: Row }) => {
         if (db.sends.some((s) => s.packetId === data.packetId && s.attemptNo === data.attemptNo && s.recipient === data.recipient)) throw p2002();
         const row = { ...data, id: `send-${++db.seq}`, sentAt: null, lastError: null };
         db.sends.push(row);
-        return row;
+        return { ...row };
       }),
       update: vi.fn(async ({ where, data }: { where: { id: string }; data: Row }) => {
         const s = db.sends.find((x) => x.id === where.id)!;
@@ -146,7 +153,8 @@ import { POST as createPacket } from '@/app/api/admin/members/[id]/billing-packe
 import { POST as sendPacket } from '@/app/api/billing-packets/[packetId]/send/route';
 import { GET as packetPdf } from '@/app/api/billing-packets/[packetId]/pdf/route';
 import { attestationFingerprint } from '@/lib/billing/packetText';
-import { IDEMPOTENCY_SAFE_RETRY_MS, sendIdempotencyKey } from '@/lib/billing/sendAttempts';
+import { IDEMPOTENCY_SAFE_RETRY_MS, IN_FLIGHT_GRACE_MS, RECONCILE_CLAIMED_MIN_AGE_MS, sendIdempotencyKey, startSendAttempt, transition } from '@/lib/billing/sendAttempts';
+import { listPacketsForMember } from '@/lib/billing/packetAccess';
 
 const ORG = DEFAULT_ORG_ID;
 const OTHER_ORG = 'aaaaaaaa-0000-4000-8000-000000000009';
@@ -154,7 +162,10 @@ const ADMIN = 'a0000000-0000-4000-8000-000000000001';
 const MEMBER = 'b0000000-0000-4000-8000-000000000002';
 const COUNSELOR = { id: 'c0000000-0000-4000-8000-000000000003', fullName: 'Casey Counselor', email: 'casey@example.test' };
 const SYLLABUS_PROGRAM = 'it-support-professional-certificate-ibm';
-const FALLBACK_PROGRAM = 'certified-production-technician-cpt';
+/** Verified static program with no catalog or syllabus price (price_list_default). */
+const FALLBACK_PROGRAM = 'it-automation-with-python-google';
+/** Draft curriculum pending owner verification. */
+const DRAFT_PROGRAM = 'certified-production-technician-cpt';
 
 type Body = Record<string, unknown> & { lineItems: Array<{ description: string; hours: number | null; amount: number | null }>; fundingAttestation: Record<string, unknown> };
 
@@ -201,8 +212,9 @@ function body(overrides: Partial<Body> = {}, opts: { staleFingerprint?: boolean 
     approvedAmount: f.approvedAmount as number,
     fundingReference: f.reference as string,
     exceptionNote: (f.exceptionNote as string) ?? '',
+    narrative: b.coverLetterBody as string,
   });
-  b.reviewedFingerprint = opts.staleFingerprint ? attestationFingerprint({ programSlug: 'stale', invoiceDate: '', dueDate: null, billToName: '', referenceNumber: '', lineItems: [], fundingBasis: '', approvedAmount: null, fundingReference: '', exceptionNote: '' }) : fp;
+  b.reviewedFingerprint = opts.staleFingerprint ? attestationFingerprint({ programSlug: 'stale', invoiceDate: '', dueDate: null, billToName: '', referenceNumber: '', lineItems: [], fundingBasis: '', approvedAmount: null, fundingReference: '', exceptionNote: '', narrative: '' }) : fp;
   return b;
 }
 
@@ -253,7 +265,7 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
     const row = db.packets[0];
     expect(row.packetNumber).toBe('WAP-2026-0001');
     expect(row.totalAmount).toBe(1300);
-    expect(row.fundingAttestationKey).toBe('wioa_ita:test-ita-0001');
+    expect(row.fundingAttestationKey).toBe('wioa_ita:TESTITA0001');
     const snap = row.signedSnapshot as Record<string, any>;
     expect(snap.member).toEqual({ fullName: 'Test Member', email: 'member@example.test' });
     expect(snap.counselor).toEqual({ userId: COUNSELOR.id, fullName: COUNSELOR.fullName, email: COUNSELOR.email });
@@ -269,12 +281,29 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
       { description: 'Intro to IT', hours: 10, amount: 1000 },
       { description: 'Exam voucher', hours: null, amount: 300 },
     ];
-    const res = await createPacket(req(body({ lineItems: edited, coverLetterBody: 'Old narrative that says the total is $1,000.00.' })), params(MEMBER));
+    const res = await createPacket(req(body({ lineItems: edited, coverLetterBody: 'Narrative drafted before the fee row was added.' })), params(MEMBER));
     expect(res.status).toBe(201);
     const snap = db.packets[0].signedSnapshot as Record<string, any>;
     expect(snap.j6.facts).toContain('Total due: $1,300.00');
     expect(snap.j6.facts).toContain('2. Exam voucher: $300.00');
     expect(db.packets[0].totalAmount).toBe(1300);
+  });
+
+  it('hard-blocks money in the J6 narrative; a payer name is accepted (covered by review only)', async () => {
+    const money = await createPacket(req(body({ coverLetterBody: 'Please note Intro costs $2,000 this term.' })), params(MEMBER));
+    expect(money.status).toBe(400);
+    expect((await money.json()).code).toBe('narrative_money');
+    const payer = await createPacket(req(body({ coverLetterBody: 'This invoice is billed to Another Workforce Board for this participant.' })), params(MEMBER));
+    expect(payer.status).toBe(201);
+    expect(db.packets).toHaveLength(1);
+  });
+
+  it('a narrative edit after the confirmations voids them', async () => {
+    const b = body();
+    b.coverLetterBody = 'A different narrative typed after ticking the boxes.';
+    const res = await createPacket(req(b), params(MEMBER));
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('stale_attestation');
   });
 
   it('refuses a stale attestation: values edited after the boxes were ticked', async () => {
@@ -326,7 +355,7 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
 
   it('one signed packet per member + approval: case/whitespace variants are refused', async () => {
     await signOne();
-    for (const reference of ['TEST-ITA-0001', ' test-ita-0001 ', 'Test-ITA-0001', 'TEST-ITA-0001  ']) {
+    for (const reference of ['TEST-ITA-0001', ' test-ita-0001 ', 'Test-ITA-0001', 'TEST_ITA_0001.', 'test ita 0001']) {
       const res = await createPacket(req(body({ fundingAttestation: { reference } })), params(MEMBER));
       expect(res.status).toBe(409);
       expect((await res.json()).error).toMatch(/Repeat or installment billing for the same member and approval is not supported/);
@@ -364,10 +393,18 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
     });
 
     it('accepts an alias of an enrolled program and a completed enrollment (no status on CourseEnrollment)', async () => {
-      db.enrollments = [{ userId: MEMBER, organizationId: ORG, programSlug: 'production-technology-certificate-cpt', curriculumVersion: 'legacy-v1', isPrimary: true, completedAt: new Date() }];
+      db.enrollments = [{ userId: MEMBER, organizationId: ORG, programSlug: 'it-automation-with-python-professional-certificate-google', curriculumVersion: 'legacy-v1', isPrimary: true, completedAt: new Date() }];
       const res = await createPacket(req(body({ programSlug: FALLBACK_PROGRAM, lineItems: [{ description: 'Tuition', hours: null, amount: 1300 }] })), params(MEMBER));
       expect(res.status).toBe(201);
       expect(db.packets[0].programSlug).toBe(FALLBACK_PROGRAM);
+    });
+
+    it('refuses a draft (owner-pending) curriculum even when enrolled and priced by hand', async () => {
+      db.enrollments.push({ userId: MEMBER, organizationId: ORG, programSlug: DRAFT_PROGRAM, curriculumVersion: 'legacy-v1', isPrimary: false });
+      const res = await createPacket(req(body({ programSlug: DRAFT_PROGRAM, lineItems: [{ description: 'Tuition', hours: null, amount: 1300 }] })), params(MEMBER));
+      expect(res.status).toBe(422);
+      expect((await res.json()).code).toBe('draft_curriculum');
+      expect(db.packets).toHaveLength(0);
     });
 
     it('refuses a non-enrolled alias', async () => {
@@ -422,129 +459,344 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
 });
 
 describe('POST /api/billing-packets/[packetId]/send', () => {
-  it('sends student then counselor from the snapshot with attempt-scoped idempotency keys, then marks sent', async () => {
+  const ambiguous = () => new Error('socket hang up');
+  const definite = () => Object.assign(new Error('Invalid `to` field'), { providerErrorName: 'validation_error' });
+  const conflict409 = () => Object.assign(new Error('Same idempotency key used with a different payload'), { providerErrorName: 'invalid_idempotent_request' });
+  const deferred = () => {
+    let resolve!: (v: unknown) => void;
+    let reject!: (e: unknown) => void;
+    const promise = new Promise((res, rej) => ((resolve = res), (reject = rej)));
+    return { promise, resolve, reject };
+  };
+  const ageClaims = (ms: number) =>
+    db.sends.forEach((r) => {
+      r.lastClaimedAt = new Date(Date.now() - ms);
+      r.claimedAt = new Date(Date.now() - ms);
+    });
+  const DAY = 24 * 60 * 60 * 1000;
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+
+  it('sends student then counselor from the snapshot with attempt-scoped keys, then marks sent', async () => {
     db.counselor = COUNSELOR;
     const id = await signOne();
-    const res = await sendPacket(req({}), packetParams(id));
+    const res = await send(id);
     expect(res.status).toBe(200);
     expect(mocks.send.mock.calls.map((c) => [c[1].to, c[1].idempotencyKey])).toEqual([
       ['member@example.test', sendIdempotencyKey(id, 1, 'student')],
       [COUNSELOR.email, sendIdempotencyKey(id, 1, 'counselor')],
     ]);
-    expect(mocks.send.mock.calls[1][1].cc).toBe('admin@example.test');
+    expect(mocks.send.mock.calls[1][1].cc).toBeUndefined();
     expect(db.packets[0]).toMatchObject({ status: 'sent', sendCount: 1, sendAttemptNo: 1 });
   });
 
-  it('uses the frozen recipients even after the member record changes', async () => {
+  it('a member name change still sends the frozen name; an email change blocks with recipient_changed', async () => {
     const id = await signOne();
-    db.users[0].email = 'changed@example.test';
     db.users[0].fullName = 'Changed Name';
-    await sendPacket(req({}), packetParams(id));
-    expect(mocks.send.mock.calls[0][1].to).toBe('member@example.test');
+    expect((await send(id)).status).toBe(200);
+    expect(mocks.send.mock.calls[0][1].subject).toContain('IT Support');
+    const id2 = await signOne({ fundingAttestation: { reference: 'TEST-ITA-0002' } });
+    db.users[0].email = 'changed@example.test';
+    mocks.send.mockClear();
+    const res = await send(id2);
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('recipient_changed');
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(db.sends.filter((r) => r.packetId === id2)).toHaveLength(0);
+  });
+
+  it('a counselor email change after signing blocks with recipient_changed', async () => {
+    db.counselor = COUNSELOR;
+    const id = await signOne();
+    db.counselor = { ...COUNSELOR, email: 'new-casey@example.test' };
+    const res = await send(id);
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('recipient_changed');
+    expect(mocks.send).not.toHaveBeenCalled();
   });
 
   it('concurrent sends: exactly one student email', async () => {
     const id = await signOne();
-    const results = await Promise.all([sendPacket(req({}), packetParams(id)), sendPacket(req({}), packetParams(id))]);
+    const results = await Promise.all([send(id), send(id)]);
     expect(results.map((r) => r.status).sort()).toEqual([200, 409]);
     expect(studentSends()).toHaveLength(1);
   });
 
-  it('counselor failure: stays signed, student recorded; the retry reuses the same keys and payload and sends only the counselor copy', async () => {
+  it('counselor ambiguous failure: stays signed; Retry reuses the same key and identical payload after branding/EMAIL_FROM change', async () => {
     db.counselor = COUNSELOR;
     const id = await signOne();
     mocks.send.mockImplementation(async (_r: unknown, a: { to: string }) => {
-      if (a.to === COUNSELOR.email) throw new Error('provider down');
+      if (a.to === COUNSELOR.email) throw ambiguous();
       return { data: { id: 'x' }, error: null };
     });
-    const first = await sendPacket(req({}), packetParams(id));
+    const first = await send(id);
     expect(first.status).toBe(502);
-    expect((await first.json()).error).toMatch(/student copy was sent, but the counselor copy failed/);
+    const firstJson = await first.json();
+    expect(firstJson.error).toMatch(/student copy was sent, but the counselor copy did not confirm/);
+    expect(firstJson.packet.sendState.nextAction).toBe('retry');
     expect(db.packets[0].status).toBe('signed');
-    const failedCounselorPayload = mocks.send.mock.calls[1][1];
+    const failedPayload = mocks.send.mock.calls[1][1];
 
     mocks.send.mockResolvedValue({ data: { id: 'y' }, error: null });
-    // A different admin retries after branding and EMAIL_FROM changed: frozen values still apply.
     mocks.branding.value = { ...mocks.branding.value, name: 'Brand Changed Later', primaryColor: '#999999' };
     process.env.EMAIL_FROM = 'changed@example.test';
-    mocks.getUser.mockResolvedValue({ id: ADMIN });
-    const retry = await sendPacket(req({}), packetParams(id));
+    const retry = await send(id);
     expect(retry.status).toBe(200);
     expect(studentSends()).toHaveLength(1);
     const retried = mocks.send.mock.calls[2][1];
     expect(retried.idempotencyKey).toBe(sendIdempotencyKey(id, 1, 'counselor'));
-    expect(retried).toEqual(failedCounselorPayload);
+    expect(retried).toEqual(failedPayload);
     expect(retried.html).toContain('Brand At Attempt');
     expect(db.packets[0].status).toBe('sent');
+  });
+
+  it('an ambiguous timeout past the idempotency window goes to needs_reconciliation, not a resend', async () => {
+    const id = await signOne();
+    mocks.send.mockRejectedValueOnce(ambiguous());
+    expect((await send(id)).status).toBe(502);
+    db.sends[0].claimedAt = new Date(Date.now() - IDEMPOTENCY_SAFE_RETRY_MS - 1000);
+    const res = await send(id);
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('needs_reconciliation');
+    expect(mocks.send).toHaveBeenCalledTimes(1);
   });
 
   it('student failure: nothing goes to the counselor', async () => {
     db.counselor = COUNSELOR;
     const id = await signOne();
-    mocks.send.mockRejectedValueOnce(new Error('bounced'));
-    const res = await sendPacket(req({}), packetParams(id));
-    expect(res.status).toBe(502);
+    mocks.send.mockRejectedValueOnce(ambiguous());
+    expect((await send(id)).status).toBe(502);
     expect(mocks.send).toHaveBeenCalledTimes(1);
   });
 
-  it('a Resend 409 (key reused with a changed payload) becomes needs_reconciliation, with no new key and no further send', async () => {
+  it('a Resend 409 becomes needs_reconciliation: no new key, no send, and "Email again" is blocked until an outcome is recorded', async () => {
     const id = await signOne();
-    mocks.send.mockRejectedValueOnce(Object.assign(new Error('Same idempotency key used with a different payload'), { providerErrorName: 'invalid_idempotent_request' }));
-    const res = await sendPacket(req({}), packetParams(id));
+    mocks.send.mockRejectedValueOnce(conflict409());
+    const res = await send(id);
     expect(res.status).toBe(409);
     expect((await res.json()).code).toBe('needs_reconciliation');
     expect(db.sends[0].status).toBe('needs_reconciliation');
-    const again = await sendPacket(req({}), packetParams(id));
+    expect((await send(id)).status).toBe(409);
+    const again = await send(id, { action: 'email_again' });
     expect(again.status).toBe(409);
+    expect((await again.json()).code).toBe('previous_attempt_open');
     expect(mocks.send).toHaveBeenCalledTimes(1);
-    // Operator checked the provider and marks it delivered.
-    const reconciled = await sendPacket(req({ action: 'mark_delivered', recipient: 'student' }), packetParams(id));
-    expect(reconciled.status).toBe(200);
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: false })).status).toBe(400); // note required
+    const early = await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'too early' });
+    expect(early.status).toBe(409);
+    expect((await early.json()).code).toBe('retry_first');
+    ageClaims(DAY);
+    const reconciled = await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'Resend log shows no delivery' });
+    expect(reconciled.status).toBe(409); // recorded, but not delivered
+    expect(db.sends[0]).toMatchObject({ status: 'reconciled_not_delivered', reconciledById: ADMIN, reconcileNote: 'Resend log shows no delivery' });
+    const newAttempt = await send(id, { action: 'email_again' });
+    expect(newAttempt.status).toBe(200);
+    expect(mocks.send.mock.calls.map((c) => c[1].idempotencyKey)).toEqual([sendIdempotencyKey(id, 1, 'student'), sendIdempotencyKey(id, 2, 'student')]);
+  });
+
+  it('operator marks a needs_reconciliation copy delivered: the packet completes', async () => {
+    const id = await signOne();
+    mocks.send.mockRejectedValueOnce(conflict409());
+    await send(id);
+    const res = await send(id, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Delivered per Resend log' });
+    expect(res.status).toBe(200);
     expect(db.packets[0].status).toBe('sent');
   });
 
-  it('an unconfirmed claim older than the idempotency window blocks automatic retry', async () => {
+  it('a definite rejection is terminal and allows a new attempt', async () => {
     const id = await signOne();
-    mocks.send.mockImplementationOnce(() => new Promise(() => {})); // simulate a crash mid-send
-    void sendPacket(req({}), packetParams(id));
-    await new Promise((r) => setTimeout(r, 10));
-    const claim = db.sends[0];
-    claim.claimedAt = new Date(Date.now() - IDEMPOTENCY_SAFE_RETRY_MS - 1000);
-    claim.lastClaimedAt = claim.claimedAt;
-    const res = await sendPacket(req({}), packetParams(id));
-    expect(res.status).toBe(409);
-    expect((await res.json()).code).toBe('needs_reconciliation');
-    expect(studentSends()).toHaveLength(1);
+    mocks.send.mockRejectedValueOnce(definite());
+    const res = await send(id);
+    expect(res.status).toBe(502);
+    expect((await res.json()).packet.sendState.nextAction).toBe('email_again');
+    expect(db.sends[0].status).toBe('rejected_definite');
+    expect((await send(id, { action: 'email_again' })).status).toBe(200);
+    expect(mocks.send.mock.calls[1][1].idempotencyKey).toBe(sendIdempotencyKey(id, 2, 'student'));
+  });
+
+  it('"Email again" while an attempt is in flight is refused; concurrent "Email again" clicks start one attempt', async () => {
+    const id = await signOne();
+    const pending = deferred();
+    mocks.send.mockImplementationOnce(() => pending.promise);
+    const inFlight = send(id);
+    await new Promise((r) => setTimeout(r, 20));
+    const blocked = await send(id, { action: 'email_again' });
+    expect(blocked.status).toBe(409);
+    pending.resolve({ data: { id: 'x' }, error: null });
+    expect((await inFlight).status).toBe(200);
+    const clicks = await Promise.all([send(id, { action: 'email_again' }), send(id, { action: 'email_again' })]);
+    expect(clicks.map((r) => r.status).sort()).toEqual([200, 409]);
+    expect(db.packets[0].sendAttemptNo).toBe(2);
+    expect(studentSends()).toHaveLength(2);
+  });
+
+  it('operator reconcile on a fresh claim is refused; a late failure after reconcile does not overwrite it', async () => {
+    const id = await signOne();
+    const pending = deferred();
+    mocks.send.mockImplementationOnce(() => pending.promise);
+    const inFlight = send(id);
+    await new Promise((r) => setTimeout(r, 20));
+    const fresh = await send(id, { action: 'reconcile', recipient: 'student', delivered: true, note: 'checked' });
+    expect(fresh.status).toBe(409);
+    expect((await fresh.json()).code).toBe('in_progress');
+    ageClaims(IN_FLIGHT_GRACE_MS + 1000);
+    const stillEarly = await send(id, { action: 'reconcile', recipient: 'student', delivered: true, note: 'checked' });
+    expect(stillEarly.status).toBe(409); // claimed rows need RECONCILE_CLAIMED_MIN_AGE_MS
+    ageClaims(RECONCILE_CLAIMED_MIN_AGE_MS + 1000);
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Delivered per Resend log' })).status).toBe(200);
+    pending.reject(ambiguous());
+    await inFlight;
+    expect(db.sends[0].status).toBe('reconciled_delivered');
+    expect(db.packets[0].status).toBe('sent');
+  });
+
+  it('a late needs_reconciliation cannot overwrite a newer state (claim-token compare-and-set)', async () => {
+    const id = await signOne();
+    await send(id);
+    const row = db.sends[0];
+    const stale = { id: row.id as string, status: 'claimed', claimToken: 'old-token' };
+    expect(await transition(stale as never, 'needs_reconciliation', { lastError: 'late' })).toBe(false);
+    expect(row.status).toBe('sent');
+  });
+
+  it('an older attempt finishing after a newer one started does not change the packet', async () => {
+    const id = await signOne();
+    const pending = deferred();
+    mocks.send.mockImplementationOnce(() => pending.promise);
+    const slow = send(id);
+    await new Promise((r) => setTimeout(r, 20));
+    ageClaims(DAY);
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No delivery in Resend log' })).status).toBe(409);
+    expect((await send(id, { action: 'email_again' })).status).toBe(200);
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sendAttemptNo: 2, sendCount: 2 });
+    pending.resolve({ data: { id: 'late' }, error: null });
+    await slow;
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sendAttemptNo: 2, sendCount: 2 });
+    // The late success is recorded, and it contradicts the "not delivered" record.
+    const old = db.sends.find((r) => r.attemptNo === 1)!;
+    expect(old.status).toBe('needs_reconciliation');
+    expect(String(old.lateProviderResult)).toContain('"delivered":true');
+    const listed = await sendPacket(req({}), packetParams(id));
+    expect((await listed.json()).packet.sendState.warnings[0]).toMatch(/late provider result/);
+  });
+
+  it('reconcile rules: claimed rows wait 15 minutes; "not delivered" waits for the idempotency window; a same-key Retry settles it', async () => {
+    const id = await signOne();
+    mocks.send.mockRejectedValueOnce(ambiguous());
+    expect((await send(id)).status).toBe(502);
+    const notYet = await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'no log' });
+    expect(notYet.status).toBe(409);
+    expect((await notYet.json()).code).toBe('retry_first');
+    expect((await send(id, { action: 'email_again' })).status).toBe(409);
+    const retried = await send(id);
+    expect(retried.status).toBe(200);
+    expect(mocks.send.mock.calls.map((c) => c[1].idempotencyKey)).toEqual([sendIdempotencyKey(id, 1, 'student'), sendIdempotencyKey(id, 1, 'student')]);
+  });
+
+  it('a late success after "mark delivered" is recorded without changing the outcome', async () => {
+    const id = await signOne();
+    const pending = deferred();
+    mocks.send.mockImplementationOnce(() => pending.promise);
+    const slow = send(id);
+    await new Promise((r) => setTimeout(r, 20));
+    ageClaims(RECONCILE_CLAIMED_MIN_AGE_MS + 1000);
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Delivered per Resend log' })).status).toBe(200);
+    pending.resolve({ data: { id: 'late' }, error: null });
+    await slow;
+    expect(db.sends[0].status).toBe('reconciled_delivered');
+    expect(String(db.sends[0].lateProviderResult)).toContain('"delivered":true');
+  });
+
+  it('reconcile still works after a recipient change; further sending needs a re-sign', async () => {
+    const id = await signOne();
+    mocks.send.mockRejectedValueOnce(ambiguous());
+    expect((await send(id)).status).toBe(502);
+    db.users[0].email = 'changed@example.test';
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Delivered per Resend log' })).status).toBe(200);
+    const more = await send(id, { action: 'email_again' });
+    expect(more.status).toBe(409);
+    expect((await more.json()).code).toBe('recipient_changed');
+  });
+
+  it('"Email again" is refused while the new attempt has unclaimed (pending) rows or only the student is done', async () => {
+    db.counselor = COUNSELOR;
+    const id = await signOne();
+    const started = await startSendAttempt({
+      packetId: id,
+      expectedCurrent: null,
+      now: new Date(),
+      recipients: [
+        { recipient: 'student', email: 'member@example.test', cc: null },
+        { recipient: 'counselor', email: COUNSELOR.email, cc: null },
+      ],
+      record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
+    });
+    expect(started.ok).toBe(true);
+    const clicks = await Promise.all([send(id, { action: 'email_again' }), send(id, { action: 'email_again' })]);
+    expect(clicks.map((r) => r.status)).toEqual([409, 409]);
+    db.sends.find((r) => r.recipient === 'student')!.status = 'sent';
+    expect((await send(id, { action: 'email_again' })).status).toBe(409);
+    expect(db.packets[0].sendAttemptNo).toBe(1);
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('attempt 2 partially failing is retried as attempt 2 (no attempt 3)', async () => {
+    db.counselor = COUNSELOR;
+    const id = await signOne();
+    expect((await send(id)).status).toBe(200);
+    mocks.send.mockImplementation(async (_r: unknown, a: { to: string }) => {
+      if (a.to === COUNSELOR.email) throw ambiguous();
+      return { data: { id: 'x' }, error: null };
+    });
+    const second = await send(id, { action: 'email_again' });
+    expect(second.status).toBe(502);
+    expect((await second.json()).packet.sendState.nextAction).toBe('retry');
+    expect((await send(id, { action: 'email_again' })).status).toBe(409);
+    mocks.send.mockResolvedValue({ data: { id: 'y' }, error: null });
+    expect((await send(id)).status).toBe(200);
+    expect(db.packets[0].sendAttemptNo).toBe(2);
+    expect(mocks.send.mock.calls.at(-1)?.[1].idempotencyKey).toBe(sendIdempotencyKey(id, 2, 'counselor'));
   });
 
   it('a crash after a claim within the window: the retry reuses the same key', async () => {
     const id = await signOne();
     mocks.send.mockImplementationOnce(() => new Promise(() => {}));
-    void sendPacket(req({}), packetParams(id));
-    await new Promise((r) => setTimeout(r, 10));
-    db.sends[0].lastClaimedAt = new Date(Date.now() - 10 * 60 * 1000);
-    const res = await sendPacket(req({}), packetParams(id));
+    void send(id);
+    await new Promise((r) => setTimeout(r, 20));
+    ageClaims(10 * 60 * 1000);
+    const res = await send(id);
     expect(res.status).toBe(200);
     expect(mocks.send.mock.calls.map((c) => c[1].idempotencyKey)).toEqual([sendIdempotencyKey(id, 1, 'student'), sendIdempotencyKey(id, 1, 'student')]);
   });
 
-  it('"Email again" after completion starts a new attempt with new keys; a plain press does not resend', async () => {
+  it('a plain press on a completed attempt resends nothing; "Email again" uses new keys', async () => {
     const id = await signOne();
-    await sendPacket(req({}), packetParams(id));
-    // A plain press on a completed attempt is a no-op: nothing is re-sent.
-    expect((await sendPacket(req({}), packetParams(id))).status).toBe(200);
+    await send(id);
+    expect((await send(id)).status).toBe(200);
     expect(mocks.send).toHaveBeenCalledTimes(1);
-    const again = await sendPacket(req({ action: 'email_again' }), packetParams(id));
-    expect(again.status).toBe(200);
+    expect((await send(id, { action: 'email_again' })).status).toBe(200);
     expect(mocks.send.mock.calls.map((c) => c[1].idempotencyKey)).toEqual([sendIdempotencyKey(id, 1, 'student'), sendIdempotencyKey(id, 2, 'student')]);
     expect(db.packets[0].sendCount).toBe(2);
+  });
+
+  it('a corrupt non-null send attempt fails closed: 409, no new key, no send; a null attempt starts attempt 1', async () => {
+    const id = await signOne();
+    db.packets[0].sendAttemptNo = 1;
+    db.packets[0].sendAttempt = { attemptNo: 'x' };
+    const res = await send(id);
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('needs_reconciliation');
+    expect((await send(id, { action: 'email_again' })).status).toBe(409);
+    expect(mocks.send).not.toHaveBeenCalled();
+    db.packets[0].sendAttemptNo = null;
+    db.packets[0].sendAttempt = null;
+    expect((await send(id)).status).toBe(200);
   });
 
   describe('cc drift', () => {
     it('refuses when a counselor was assigned after signing', async () => {
       const id = await signOne();
       db.counselor = COUNSELOR;
-      const res = await sendPacket(req({}), packetParams(id));
+      const res = await send(id);
       expect(res.status).toBe(409);
       expect((await res.json()).code).toBe('counselor_changed');
       expect(mocks.send).not.toHaveBeenCalled();
@@ -554,7 +806,7 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
       db.counselor = COUNSELOR;
       const id = await signOne();
       db.counselor = { ...COUNSELOR, id: 'c0000000-0000-4000-8000-000000000099', email: 'other@example.test' };
-      expect((await sendPacket(req({}), packetParams(id))).status).toBe(409);
+      expect((await send(id)).status).toBe(409);
       expect(mocks.send).not.toHaveBeenCalled();
     });
 
@@ -562,7 +814,7 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
       db.counselor = COUNSELOR;
       const id = await signOne();
       db.counselor = null;
-      expect((await sendPacket(req({}), packetParams(id))).status).toBe(409);
+      expect((await send(id)).status).toBe(409);
       expect(mocks.send).not.toHaveBeenCalled();
     });
   });
@@ -570,11 +822,11 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
   it('a corrupt snapshot is refused (409) and nothing is sent; a legacy packet cannot be emailed', async () => {
     const id = await signOne();
     db.packets[0].signedSnapshot = { version: 1, provider: {} };
-    const res = await sendPacket(req({}), packetParams(id));
+    const res = await send(id);
     expect(res.status).toBe(409);
     expect((await res.json()).code).toBe('snapshot_corrupt');
     db.packets[0].signedSnapshot = null;
-    expect((await sendPacket(req({}), packetParams(id))).status).toBe(409);
+    expect((await send(id)).status).toBe(409);
     expect(mocks.send).not.toHaveBeenCalled();
   });
 
@@ -582,15 +834,83 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
     const id = await signOne();
     mocks.getActorOrganizationId.mockResolvedValue(OTHER_ORG);
     mocks.isSuperAdmin.mockResolvedValue(true);
-    expect((await sendPacket(req({}), packetParams(id))).status).toBe(403);
+    expect((await send(id)).status).toBe(403);
     expect(mocks.send).not.toHaveBeenCalled();
   });
 
   it('is admin-only: a counselor cannot trigger the send', async () => {
     const id = await signOne();
     mocks.isAdmin.mockResolvedValue(false);
-    expect((await sendPacket(req({}), packetParams(id))).status).toBe(403);
+    expect((await send(id)).status).toBe(403);
     expect(mocks.send).not.toHaveBeenCalled();
+  });
+});
+
+describe('Supersede and re-issue', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  const resign = (oldId: string, overrides: Partial<Body> = {}) =>
+    createPacket(req(body({ ...overrides, supersedesPacketId: oldId, supersedeReason: 'Member email changed after signing' } as Partial<Body>)), params(MEMBER));
+
+  it('after recipient drift: supersede, then the replacement signs and sends; the old one cannot send; audit fields are set', async () => {
+    const oldId = await signOne();
+    db.users[0].email = 'new@example.test';
+    expect((await send(oldId)).status).toBe(409);
+    // A plain second packet with the same approval is still refused.
+    expect((await createPacket(req(body()), params(MEMBER))).status).toBe(409);
+    const res = await resign(oldId);
+    expect(res.status).toBe(201);
+    const newId = (await res.json()).packet.id as string;
+    const old = db.packets.find((p) => p.id === oldId)!;
+    expect(old).toMatchObject({ status: 'superseded', supersededById: ADMIN, supersededReason: 'Member email changed after signing', supersededByPacketId: newId });
+    expect(old.supersededAt).toBeInstanceOf(Date);
+    expect(db.packets.find((p) => p.id === newId)!.supersedesPacketId).toBe(oldId);
+    const oldSend = await send(oldId);
+    expect(oldSend.status).toBe(409);
+    expect((await oldSend.json()).code).toBe('superseded_packet');
+    expect((await send(oldId, { action: 'email_again' })).status).toBe(409);
+    expect((await send(newId)).status).toBe(200);
+    expect(mocks.send.mock.calls.at(-1)?.[1].to).toBe('new@example.test');
+    // And the replacement itself now blocks a plain duplicate.
+    expect((await createPacket(req(body()), params(MEMBER))).status).toBe(409);
+  });
+
+  it('refuses to supersede while a copy of the old packet is being sent', async () => {
+    const oldId = await signOne();
+    let resolve!: (v: unknown) => void;
+    mocks.send.mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+    const inFlight = send(oldId);
+    await new Promise((r) => setTimeout(r, 20));
+    const res = await resign(oldId);
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('in_progress');
+    expect(db.packets.find((p) => p.id === oldId)!.status).toBe('signed');
+    resolve({ data: { id: 'x' }, error: null });
+    await inFlight;
+  });
+
+  it('the replacement cannot be delivered until the old packet\'s unconfirmed copies are settled; reconcile on the old packet works', async () => {
+    const oldId = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(oldId)).status).toBe(502);
+    const newId = (await (await resign(oldId)).json()).packet.id as string;
+    const blocked = await send(newId);
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect((await send(oldId, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Delivered per Resend log' })).status).toBe(200);
+    expect((await send(newId)).status).toBe(200);
+  });
+
+  it('members see the current packet first and a superseded one only if it reached, or may have reached, them', async () => {
+    const neverSent = await signOne();
+    const r1 = await resign(neverSent);
+    const current1 = (await r1.json()).packet.id as string;
+    expect((await send(current1)).status).toBe(200); // delivered to the member
+    const r2 = await resign(current1, { fundingAttestation: { reference: 'TEST-ITA-0001' } });
+    expect(r2.status).toBe(201);
+    const current2 = (await r2.json()).packet.id as string;
+    const listed = await listPacketsForMember(MEMBER);
+    expect(listed.map((p) => p.id)).toEqual([current2, current1]);
+    expect(listed[1]).toMatchObject({ status: 'superseded', supersededByPacketId: current2 });
   });
 });
 

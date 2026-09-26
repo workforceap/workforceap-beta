@@ -101,6 +101,8 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
   const [lastCreated, setLastCreated] = useState<BillingPacketSummary | null>(null);
   const [confirmed, setConfirmed] = useState<Confirmations>({ funding: null, tuition: null, facts: null });
+  /** "Supersede and re-issue": the signed packet this new one replaces, and the reason. */
+  const [supersede, setSupersede] = useState<{ id: string; packetNumber: string; reason: string } | null>(null);
 
   const [draft, setDraft] = useState<Draft>(() => ({
     programSlug: initialProgram?.slug ?? '',
@@ -218,12 +220,18 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             tuitionMatches: isConfirmed('tuition'),
           },
           j6FactsReviewed: isConfirmed('facts'),
+          ...(supersede ? { supersedesPacketId: supersede.id, supersedeReason: supersede.reason } : {}),
           reviewedFingerprint: allConfirmed ? fingerprint : undefined,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; packet?: BillingPacketSummary; warnings?: string[] };
       if (!res.ok || !data.packet) throw new Error(data.error ?? 'Could not create the documents.');
-      setPackets((list) => [data.packet as BillingPacketSummary, ...list]);
+      const created = data.packet;
+      setPackets((list) => [
+        created,
+        ...list.map((p) => (supersede && p.id === supersede.id ? { ...p, status: 'superseded', supersededByPacketId: created.id, supersededReason: supersede.reason } : p)),
+      ]);
+      setSupersede(null);
       setLastCreated(data.packet);
       setSignature(null);
       setConfirmed({ funding: null, tuition: null, facts: null });
@@ -256,16 +264,35 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             counselorLabel={props.counselorLabel}
             memberEmail={props.memberEmail}
             onPacketUpdated={onPacketUpdated}
+            onSupersede={(p) => {
+              setSupersede({ id: p.id, packetNumber: p.packetNumber, reason: '' });
+              document.getElementById('billing-packet-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
             emptyText="No J5/J6 packets for this member yet. Create the first one below."
           />
         </div>
       </section>
 
-      <form onSubmit={handleSubmit} className="portal-profile-section-card" noValidate>
+      <form id="billing-packet-form" onSubmit={handleSubmit} className="portal-profile-section-card" noValidate>
         <div className="portal-profile-section-card__header">
           <h2 className="portal-profile-section-card__title">Create a new J5 invoice + J6 cover letter</h2>
         </div>
         <div className="portal-profile-section-card__body" style={{ display: 'grid', gap: '1.25rem' }}>
+          {supersede ? (
+            <div role="note" style={{ display: 'grid', gap: '0.4rem', padding: '0.75rem', border: '1px solid var(--color-accent, #ad2c4d)', borderRadius: 8 }}>
+              <strong>Superseding invoice {supersede.packetNumber}</strong>
+              <span style={{ fontSize: '0.85rem' }}>
+                Signing this form marks {supersede.packetNumber} as superseded (kept for the record) and issues this packet as its replacement. All the normal checks still apply.
+              </span>
+              <label style={labelStyle}>
+                Reason
+                <input style={inputStyle} value={supersede.reason} onChange={(e) => setSupersede({ ...supersede, reason: e.target.value })} required />
+              </label>
+              <button type="button" className="btn btn-outline" style={{ minHeight: 36, justifySelf: 'start' }} onClick={() => setSupersede(null)}>
+                Cancel supersede
+              </button>
+            </div>
+          ) : null}
           {props.programs.length === 0 ? (
             <p style={{ margin: 0, color: 'var(--color-accent, #ad2c4d)', fontWeight: 600 }}>
               This member is not enrolled in a program yet. Assign a program from the member page first.
@@ -527,7 +554,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
 
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <button type="submit" className="btn" style={{ minHeight: 46, padding: '0 1.25rem' }} disabled={saving || props.programs.length === 0 || draft.lineItems.length === 0 || missingAmount || narrativeBlocks.length > 0 || Boolean(selectedProgram?.unavailableReason)}>
-              {saving ? 'Creating…' : `Create signed J5 + J6 (${formatMoney(total)})`}
+              {saving ? 'Creating…' : `${supersede ? `Supersede ${supersede.packetNumber} and create` : 'Create'} signed J5 + J6 (${formatMoney(total)})`}
             </button>
             <span style={{ fontSize: '0.85rem', color: 'var(--color-muted, #64748b)' }}>
               Creates both PDFs with your signature. Emailing is a separate button so you can review first.

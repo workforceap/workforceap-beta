@@ -31,11 +31,19 @@ export type BillingPacketSummary = {
   sendCount: number;
   /** Frozen send recipients from the signed snapshot (null for legacy or unreadable snapshots). */
   recipients: { student: string; counselor: string | null } | null;
+  /** Supersede audit. `supersededReason`/`supersededById` are for the admin view. */
+  supersededAt: string | null;
+  supersededReason: string | null;
+  supersededById: string | null;
+  supersededByPacketId: string | null;
+  supersedesPacketId: string | null;
   /** Admin view only: the current send attempt's rows and the next allowed action (same rule the send route enforces). */
   sendState: {
     attemptNo: number | null;
     nextAction: NextSendAction;
     rows: Array<{ recipient: string; status: string; lastError: string | null }>;
+    /** Late provider results recorded on any attempt (e.g. delivered after being recorded not delivered). */
+    warnings: string[];
   } | null;
 };
 
@@ -76,11 +84,19 @@ export function serializeBillingPacket(
     recipients: snapshot
       ? { student: snapshot.member.email, counselor: snapshot.counselor ? `${snapshot.counselor.fullName} (${snapshot.counselor.email})` : null }
       : null,
+    supersededAt: row.supersededAt ? row.supersededAt.toISOString() : null,
+    supersededReason: row.supersededReason,
+    supersededById: row.supersededById,
+    supersededByPacketId: row.supersededByPacketId,
+    supersedesPacketId: row.supersedesPacketId,
     sendState: currentRows
       ? {
           attemptNo: row.sendAttemptNo,
           nextAction: nextSendAction({ attemptNo: row.sendAttemptNo, recipients, rows: currentRows, now: new Date() }),
           rows: currentRows.map((s) => ({ recipient: s.recipient, status: s.status, lastError: s.lastError })),
+          warnings: (row.sends ?? [])
+            .filter((s) => s.lateProviderResult)
+            .map((s) => `Attempt ${s.attemptNo}, ${s.recipient} copy: late provider result recorded (${s.lateProviderResult}).`),
         }
       : null,
   };
@@ -138,14 +154,25 @@ export async function loadPacketForViewer(
   return { ok: false, status: 404, error: 'Document not found' };
 }
 
-/** Packets a member may see about themselves. */
+/** Student-copy states where the member did or might have received the packet. */
+const MEMBER_MAY_HAVE_IT = new Set(['sent', 'reconciled_delivered', 'claimed', 'ambiguous', 'needs_reconciliation']);
+
+/**
+ * Packets shown to the member (and on the counselor's student page): current
+ * packets first, then superseded ones that were, or might have been, delivered
+ * to the member (labelled as replaced). A superseded packet the member never
+ * received stays admin-only.
+ */
 export async function listPacketsForMember(memberId: string): Promise<BillingPacketSummary[]> {
   const rows = await prisma.trainingBillingPacket.findMany({
     where: { memberId },
     orderBy: { createdAt: 'desc' },
     take: 50,
+    include: { sends: { where: { recipient: 'student' }, select: { status: true } } },
   });
-  return rows.map((row) => serializeBillingPacket(row));
+  const visible = rows.filter((row) => row.status !== 'superseded' || row.sends.some((s) => MEMBER_MAY_HAVE_IT.has(s.status)));
+  const ordered = [...visible.filter((r) => r.status !== 'superseded'), ...visible.filter((r) => r.status === 'superseded')];
+  return ordered.map(({ sends: _sends, ...row }) => serializeBillingPacket(row));
 }
 
 /** The member's active counselor (user row) for the send step; null when unassigned. */

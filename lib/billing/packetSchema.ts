@@ -77,6 +77,9 @@ export const createPacketSchema = z
     /** Explicit "I am signing this by typing my name" acknowledgement. */
     signatureTyped: z.boolean().optional().default(false),
     fundingAttestation: fundingAttestationSchema,
+    /** "Supersede and re-issue": the signed packet this one replaces, and why. */
+    supersedesPacketId: z.string().uuid().optional(),
+    supersedeReason: z.string().trim().max(1000).optional(),
     /** Fingerprint the form recorded when staff ticked the confirmations (attestationFingerprint). */
     reviewedFingerprint: z.string().regex(/^[0-9a-f]{16}$/, 'Review and confirm the funding and J6 facts before signing.'),
     /** Explicit "I reviewed the generated J6 facts block" confirmation. */

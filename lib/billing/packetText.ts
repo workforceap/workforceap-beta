@@ -91,7 +91,7 @@ export function fundingReviewWarnings(args: { fundingType: FundingBasis | '' | n
 export function defaultCoverLetterNarrative(providerName: string): string {
   return [
     `Please find enclosed the training invoice (Form J5) from ${providerName} for the participant and program named above.`,
-    'The facts below are generated from the signed invoice; the class-by-class breakdown also appears on Form J5. Training is provided at no cost to the participant.',
+    'The facts above are generated from the signed invoice; the class-by-class breakdown also appears on Form J5. Training is provided at no cost to the participant.',
     "Thank you for your partnership in advancing this participant's career. Please contact me directly with any questions about this enrollment or invoice.",
   ].join('\n\n');
 }

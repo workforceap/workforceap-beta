@@ -13,6 +13,7 @@ import {
 } from './packetPdf';
 import { getTrainingProviderIdentity } from './providerIdentity';
 import { buildJ6Facts, defaultCoverLetterNarrative } from './packetText';
+import { extractTextFromResumeBuffer } from '@/lib/resume/extractTextFromResumeBuffer';
 
 // 1x1 transparent PNG.
 const TINY_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
@@ -170,6 +171,14 @@ describe('J5 / J6 PDF renderers', () => {
     // The PDF still renders on one page with the taller band.
     const bytes = await renderJ6CoverLetterPdf(input({ provider }));
     assert.equal(await pageCount(bytes), 1);
+  });
+
+  it('prints the generated facts block before the narrative on the J6', async () => {
+    const bytes = await renderJ6CoverLetterPdf(input({ coverLetterBody: 'NARRATIVE-MARKER paragraph.' }));
+    const text = await extractTextFromResumeBuffer(Buffer.from(bytes), 'pdf');
+    const facts = text.indexOf('Invoice facts');
+    const narrative = text.indexOf('NARRATIVE-MARKER');
+    assert.ok(facts >= 0 && narrative > facts, `facts at ${facts}, narrative at ${narrative}`);
   });
 
   it('builds safe filenames', () => {

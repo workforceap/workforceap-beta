@@ -8,13 +8,15 @@ import {
   formatLongDateOfInstant,
   formatMoney,
   fundingReviewWarnings,
+  isoDateInPortalTz,
   isoDatePlusDays,
   narrativeFactHints,
+  narrativeMoneyViolations,
   totalContactHours,
   type ReviewedValues,
 } from './packetText';
 import { buildDefaultLineItems, resolveProgramPricing } from './packetDefaults';
-import { createPacketSchema, parseLineItems, sumLineItems, type PacketLineItem } from './packetSchema';
+import { createPacketSchema, normalizeFundingReference, parseLineItems, sumLineItems, type PacketLineItem } from './packetSchema';
 import { formatPacketNumber } from './packetNumber';
 
 // Synthetic test data only; no real ITA, contract or approval.
@@ -115,11 +117,21 @@ describe('J6 facts block and narrative', () => {
     assert.ok(!facts.some((l) => l.includes('Exam voucher')));
   });
 
-  it('the default narrative states no facts, and the hint flags figures typed into it', () => {
+  it('the default narrative states no facts and passes the money block', () => {
     const narrative = defaultCoverLetterNarrative('Test Provider');
     assert.doesNotMatch(narrative, /\$\d|contact hours|enrolled/);
+    assert.deepEqual(narrativeMoneyViolations(narrative), []);
     assert.deepEqual(narrativeFactHints(narrative), []);
-    assert.equal(narrativeFactHints('Intro costs $2,000 and runs 10 contact hours.').length, 2);
+    assert.equal(narrativeFactHints('It runs 10 contact hours.').length, 1);
+  });
+
+  it('hard-blocks money in the narrative; other wording (e.g. a payer name) is left to the signer review', () => {
+    for (const text of ['Intro costs $2,000.', 'The total is 7500.', 'amount of 1300.00', '7,500 for tuition', 'The fee is 300']) {
+      assert.ok(narrativeMoneyViolations(text).length > 0, text);
+    }
+    for (const text of ['This invoice is billed to Another Workforce Board.', 'Please see Form J5 invoice enclosed.', 'Suite 200, Austin TX 78660']) {
+      assert.deepEqual(narrativeMoneyViolations(text), [], text);
+    }
   });
 });
 
@@ -145,6 +157,7 @@ describe('attestation fingerprint', () => {
     approvedAmount: 1000,
     fundingReference: 'TEST-ITA-1',
     exceptionNote: '',
+    narrative: 'Narrative.',
   };
   it('changes when a reviewed value changes', () => {
     const fp = attestationFingerprint(base);
@@ -154,6 +167,7 @@ describe('attestation fingerprint', () => {
     assert.notEqual(attestationFingerprint({ ...base, approvedAmount: 2000 }), fp);
     assert.notEqual(attestationFingerprint({ ...base, fundingBasis: 'separate_contract' }), fp);
     assert.notEqual(attestationFingerprint({ ...base, fundingReference: 'TEST-ITA-2' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, narrative: 'Edited narrative.' }), fp);
   });
 });
 
@@ -212,6 +226,19 @@ describe('schema + helpers', () => {
       { description: 'B', hours: null, amount: 0 },
     ]);
     assert.deepEqual(parseLineItems('garbage'), []);
+  });
+
+  it('canonicalizes funding references: case and punctuation variants collide', () => {
+    for (const ref of ['ITA-123', 'ita 123', 'ITA_123.', ' i.t.a-1 2 3 ']) assert.equal(normalizeFundingReference(ref), 'ITA123', ref);
+    assert.notEqual(normalizeFundingReference('ITA-124'), 'ITA123');
+  });
+
+  it('defaults form dates to the Central-time business day', () => {
+    // 23:30 CDT on Sept 25 is 04:30 UTC on Sept 26.
+    const lateEvening = new Date('2026-09-26T04:30:00Z');
+    assert.equal(isoDateInPortalTz(0, lateEvening), '2026-09-25');
+    assert.equal(isoDateInPortalTz(30, lateEvening), '2026-10-25');
+    assert.equal(isoDatePlusDays(0, lateEvening), '2026-09-26', 'the UTC helper is why the default was wrong');
   });
 
   it('formats money, dates and invoice numbers', () => {

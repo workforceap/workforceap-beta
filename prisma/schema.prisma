@@ -2097,6 +2097,13 @@ model TrainingBillingPacket {
   /// "<fundingBasis>:<normalized ITA/contract reference>" from the staff attestation. With the
   /// member it keys the one-signed-packet-per-approval check (advisory lock at sign time).
   fundingAttestationKey String? @map("funding_attestation_key")
+  /// Supersede audit: set on the old packet when an admin re-issues it (status "superseded").
+  supersededAt          DateTime? @map("superseded_at")
+  supersededById        String?   @map("superseded_by_id")
+  supersededReason      String?   @map("superseded_reason") @db.Text
+  supersededByPacketId  String?   @map("superseded_by_packet_id")
+  /// On the replacement: the packet it re-issues.
+  supersedesPacketId    String?   @map("supersedes_packet_id")
   /// Current send attempt number; each explicit "Email again" starts a new one (lib/billing/sendAttempts.ts).
   sendAttemptNo   Int?     @map("send_attempt_no")
   /// Inputs frozen when that attempt started: from address, branding, admin cc.
@@ -2140,6 +2147,8 @@ model TrainingBillingPacketSend {
   reconciledById String?   @map("reconciled_by_id")
   reconciledAt   DateTime? @map("reconciled_at")
   reconcileNote  String?   @map("reconcile_note") @db.Text
+  /// Provider result that arrived after the row had moved on (timeout, reconcile); kept for audit.
+  lateProviderResult String? @map("late_provider_result") @db.Text
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
