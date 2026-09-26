@@ -8,8 +8,8 @@ name: Nightly failure issue
 # "Nightly: <suite> failing" and the `nightly-failure` label.
 #   - result `failure` / `cancelled`, no open issue  -> open one with the run link
 #   - result `failure` / `cancelled`, open issue     -> comment the new run link
-#   - result `success`, open issue                   -> comment that it passed
-#     (the issue is left open for a human to close; it may be mirrored to Linear)
+#   - result `success`, open issue                   -> comment once per failure
+#     episode (the issue stays open for a person to close or mirror to Linear)
 #   - anything else                                  -> nothing
 # `dry_run: true` performs the lookup and prints the action without writing.
 
@@ -84,6 +84,15 @@ jobs:
 
           if [ "$want" = recover ]; then
             if [ -z "$existing" ]; then echo "passing and no open issue: nothing to do"; exit 0; fi
+            # The last automation comment marks the current episode. Ignore
+            # human discussion, and recognize comments written before this fix.
+            # A failed lookup stops the job rather than writing a duplicate.
+            last_report="$(gh api --paginate "repos/${GH_REPO}/issues/${existing}/comments?per_page=100" \
+              --jq '.[] | select(.user.login == "github-actions[bot]") | .body | if startswith("Failed again.") then "failure" elif startswith("Passed again") then "success" else empty end' | tail -n 1)"
+            if [ "$last_report" = success ]; then
+              echo "recovery already noted on #${existing}; nothing to do"
+              exit 0
+            fi
             body="Passed again in [run ${GITHUB_RUN_ID}](${RUN_URL}) at ${stamp} (\`${sha}\`, ${EVENT}). Close this issue if the failure is understood."
             if [ "$DRY_RUN" = "true" ]; then echo "dry run: would comment recovery on #${existing}"; exit 0; fi
             gh issue comment "$existing" --body "$body"

@@ -1,16 +1,17 @@
 name: Authenticated Portal Smoke
 
-# WAP-204: nightly-ready, dispatch-only until WAP-66 lands (see `on:`). The
+# WAP-204/WAP-216: scheduled nightly after WAP-66's five-role acceptance. The
 # preview policies first refresh the `preview` mirror to master and wait for
-# Vercel to build it, because the SHA gate below refuses a stale target. Once
-# scheduled, a scheduled run uses the default `isolated_preview` policy and a
-# failure opens or refreshes one GitHub issue, "Nightly: Authenticated Portal
+# Vercel to build it, because the SHA gate below refuses a stale target. A
+# scheduled run uses the default `isolated_preview` policy and a failure opens
+# or refreshes one GitHub issue, "Nightly: Authenticated Portal
 # Smoke failing" (nightly-failure-issue.yml). Not a PR check. See
 # docs/SLO-AND-STATUS.md, "Nightly heavy suites".
 
 on:
-  # Schedule gated on WAP-66 (authenticated fresh preview): once it lands, add
-  # `schedule: - cron: "37 7 * * *"` here (07:37 UTC, after the 06:17 RLS job).
+  # 07:37 UTC, after the 06:17 RLS rehearsal.
+  schedule:
+    - cron: "37 7 * * *"
   workflow_dispatch:
     inputs:
       audit_target:
@@ -45,7 +46,7 @@ on:
 permissions:
   contents: read
 
-# A scheduled run (once enabled) has no inputs; it runs the default isolated_preview policy.
+# A scheduled run has no inputs; it runs the default isolated_preview policy.
 concurrency:
   group: authenticated-portal-smoke-${{ inputs.audit_target || 'isolated_preview' }}
   cancel-in-progress: false
@@ -68,10 +69,10 @@ jobs:
     needs: mirror
     # Secrets are only exposed to the canonical repository's trusted master workflow.
     # Dispatching a feature-branch copy results in a skipped job.
-    # `always()` so production_canary (mirror skipped) still runs; a failed
-    # mirror stops the audit.
+    # `!cancelled()` lets production_canary run with a skipped mirror, but
+    # stops work when the workflow itself has been cancelled.
     if: >-
-      always() &&
+      !cancelled() &&
       github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master' &&
       (needs.mirror.result == 'success' || needs.mirror.result == 'skipped')
     runs-on: ubuntu-latest
@@ -236,7 +237,8 @@ jobs:
           retention-days: 14
 
   # WAP-204: a failed *scheduled* run opens (or comments on) one issue.
-  # Inert until the schedule is enabled (WAP-66); dispatches never report.
+  # Dispatches never report. Scheduled runs require both jobs to succeed;
+  # a cancelled/skipped mirror or smoke is a failed nightly, not a pass.
   report:
     name: Nightly failure issue
     needs: [mirror, smoke]
@@ -246,5 +248,5 @@ jobs:
     uses: ./.github/workflows/nightly-failure-issue.yml
     with:
       suite: Authenticated Portal Smoke
-      result: ${{ contains(needs.*.result, 'failure') && 'failure' || needs.smoke.result }}
-      detail: ${{ needs.mirror.result == 'failure' && 'refreshing the preview mirror failed' || '' }}
+      result: ${{ needs.mirror.result != 'success' && 'failure' || needs.smoke.result != 'success' && 'failure' || 'success' }}
+      detail: ${{ needs.mirror.result != 'success' && 'refreshing the preview mirror did not succeed' || needs.smoke.result != 'success' && 'trusted portal audit did not pass' || '' }}
