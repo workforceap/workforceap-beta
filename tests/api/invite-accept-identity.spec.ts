@@ -13,6 +13,10 @@ vi.mock('next/server', () => ({
 vi.mock('@/lib/db/withRequestGuc', () => ({
   withApiGuc: (handler: (request: Request) => Promise<Response>) => handler,
 }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: vi.fn(),
+  scopedBillingUser: vi.fn(async (tx: unknown) => tx),
+}));
 vi.mock('@/lib/db/prisma', () => {
   const tx = {
     invitation: { findFirst: vi.fn(), updateMany: vi.fn() },
@@ -38,6 +42,7 @@ import { POST } from '@/app/api/invite/accept/route';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getUser } from '@/lib/auth/server';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
 
 const email = 'invitee@example.test';
 const token = 't'.repeat(40);
@@ -138,6 +143,42 @@ describe('public invitation acceptance identity boundary', () => {
       data: expect.objectContaining({ acceptedById: appUserId }),
     }));
     expect(authAdmin.updateUserById).not.toHaveBeenCalled();
+    expect(lockBillingMemberLifecycle).toHaveBeenCalledWith(expect.anything(), appUserId);
+  });
+
+  it('does not grant an admin invitation when deletion claimed the account after preflight', async () => {
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'admin', invitedById: 'inviter-1',
+      subgroupId: null, partnerId: null, counselorAffiliation: null,
+      programSlug: null, status: 'pending', expiresAt: new Date('2999-01-01'),
+    } as never);
+    vi.mocked(prisma.user.findFirst)
+      .mockResolvedValueOnce({ id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, organizationId: 'org-1' } as never)
+      .mockResolvedValueOnce(null);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+
+    const response = await POST(inviteRequest());
+
+    expect(response.status).toBe(409);
+    expect(lockBillingMemberLifecycle).toHaveBeenCalledWith(expect.anything(), appUserId);
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.profile.create).not.toHaveBeenCalled();
+    expect(prisma.userRole.upsert).not.toHaveBeenCalled();
+  });
+
+  it('refuses to reuse an app row owned by deletion in the Auth-only invite path', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: otherAuthId, email } as never);
+    vi.mocked(prisma.user.findFirst)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: otherAuthId, organizationId: 'org-1', deletedAt: null, billingDeletionPendingAt: new Date(), billingDeletionOperationId: 'erase-1' } as never);
+
+    const response = await POST(inviteRequest(''));
+
+    expect(response.status).toBe(409);
+    expect(lockBillingMemberLifecycle).toHaveBeenCalledWith(expect.anything(), otherAuthId);
+    expect(prisma.profile.create).not.toHaveBeenCalled();
+    expect(prisma.userRole.upsert).not.toHaveBeenCalled();
   });
 
   it('still accepts an invitation when Auth creation returns a new identity', async () => {

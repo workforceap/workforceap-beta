@@ -29,6 +29,7 @@ import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/p
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { lockBillingMemberLifecycle, scopedBillingUser } from '@/lib/billing/erasureGuard';
 
 type InviteTx = Prisma.TransactionClient;
 type AuthCreateResult = Awaited<ReturnType<ReturnType<typeof getSupabaseAdmin>['auth']['admin']['createUser']>>;
@@ -44,6 +45,8 @@ type AcceptInvitation = {
   status: string;
   expiresAt: Date;
 };
+
+class ExistingInviteAccountUnavailableError extends Error {}
 
 function profileRoleForInvitation(role: string): string {
   return role === 'member' ? 'member' : role === 'counselor' ? 'counselor' : role;
@@ -178,9 +181,12 @@ async function ensureAppUserForInvite(
   // Live DB may lack users.email unique index; avoid upsert which assumes schema constraints.
   const byId = await tx.user.findFirst({
     where: { id: authUserId },
-    select: { id: true, organizationId: true },
+    select: { id: true, organizationId: true, deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
   });
   if (byId) {
+    if (byId.deletedAt || byId.billingDeletionPendingAt || byId.billingDeletionOperationId) {
+      throw new ExistingInviteAccountUnavailableError('Invitation account is being retired');
+    }
     // Existing invitees keep their tenant. Never stamp organizationId here.
     await tx.user.update({
       where: { id: authUserId },
@@ -390,7 +396,7 @@ async function ensureCounselorRow(
       const inviteEmail = String(invitation.email).trim().toLowerCase();
       const existingUser = await prisma.$transaction((tx) => tx.user.findFirst({
         where: { email: inviteEmail },
-        select: { id: true, fullName: true, email: true, enrolledProgram: true },
+        select: { id: true, fullName: true, email: true, enrolledProgram: true, organizationId: true },
       }));
   
       if (existingUser) {
@@ -436,7 +442,7 @@ async function ensureCounselorRow(
 });
 
 async function acceptExistingUser(
-  user: { id: string; fullName: string; email: string; enrolledProgram: string | null },
+  user: { id: string; fullName: string; email: string; enrolledProgram: string | null; organizationId: string },
   invitation: AcceptInvitation,
   fullName: string,
   _request: NextRequest
@@ -472,6 +478,21 @@ async function acceptExistingUser(
   let txStep = 'start';
   try {
     await prisma.$transaction(async (tx) => {
+      txStep = 'lock_existing_user_lifecycle';
+      await lockBillingMemberLifecycle(tx, user.id);
+      const scoped = await scopedBillingUser(tx, user.id, user.organizationId);
+      const active = scoped && await scoped.user.findFirst({
+        where: {
+          id: user.id,
+          email: invitation.email.trim().toLowerCase(),
+          deletedAt: null,
+          billingDeletionPendingAt: null,
+          billingDeletionOperationId: null,
+        },
+        select: { id: true },
+      });
+      if (!active) throw new ExistingInviteAccountUnavailableError('Invitation account changed or is being retired');
+
       txStep = 'claim_invitation_existing';
       await claimPendingInvitationForAccept(tx, invitation.id, user.id);
 
@@ -567,6 +588,9 @@ async function acceptExistingUser(
 
     });
   } catch (dbError) {
+    if (dbError instanceof ExistingInviteAccountUnavailableError) {
+      return NextResponse.json({ error: 'This account is being changed or retired. Ask an administrator to review the invitation.' }, { status: 409 });
+    }
     if (dbError instanceof InvitationClaimError) {
       return NextResponse.json({ error: 'Invitation no longer valid' }, { status: 400 });
     }
@@ -648,7 +672,7 @@ async function createNewUserAndAccept(
       // Check if a DB record exists for this email
       const existing = await prisma.$transaction((tx) => tx.user.findFirst({
         where: { email: inviteEmail },
-        select: { id: true, fullName: true, email: true, enrolledProgram: true },
+        select: { id: true, fullName: true, email: true, enrolledProgram: true, organizationId: true },
       }));
       if (existing) {
         return acceptExistingUser(existing, invitation, fullName, request);
@@ -728,6 +752,11 @@ async function finishNewUserDbSetup(
   try {
     await prisma.$transaction(async (tx) => {
       inviteAcceptLog('tx:start', { invitationId });
+
+      // The Auth-only path can find an app row that appeared after the first
+      // email lookup. Serialize any reuse of that row with account erasure.
+      txStep = 'lock_invitee_lifecycle';
+      await lockBillingMemberLifecycle(tx, authUserId);
 
       txStep = 'claim_invitation';
       await claimPendingInvitationForAccept(tx, invitation.id, authUserId);
@@ -827,6 +856,9 @@ async function finishNewUserDbSetup(
 
     });
   } catch (dbError) {
+    if (dbError instanceof ExistingInviteAccountUnavailableError) {
+      return NextResponse.json({ error: 'This account is being changed or retired. Ask an administrator to review the invitation.' }, { status: 409 });
+    }
     if (dbError instanceof InvitationClaimError) {
       return NextResponse.json({ error: 'Invitation no longer valid' }, { status: 400 });
     }
