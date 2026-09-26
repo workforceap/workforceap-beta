@@ -25,7 +25,7 @@ export function isAnthropicConfigured(): boolean {
 export async function claudeChat(
   systemPrompt: string,
   userContent: string,
-  opts?: { maxTokens?: number; temperature?: number }
+  opts?: { maxTokens?: number; temperature?: number; allowGeminiFallback?: boolean }
 ): Promise<string | null> {
   const errors: string[] = [];
 
@@ -67,7 +67,7 @@ export async function claudeChat(
   }
 
   // Gemini final fallback.
-  if (isGeminiConfigured()) {
+  if (opts?.allowGeminiFallback !== false && isGeminiConfigured()) {
     try {
       const text = await geminiChat(systemPrompt, userContent, opts);
       if (text) {
