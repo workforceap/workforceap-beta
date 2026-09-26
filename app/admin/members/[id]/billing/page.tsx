@@ -87,7 +87,7 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
       take: 50,
       include: { sends: true },
     }),
-    resolveAssignedCounselorContact(member.id),
+    resolveAssignedCounselorContact(member.id, member.organizationId),
   ]);
 
   const programs: BillingProgramOption[] = slugs

@@ -187,6 +187,31 @@ describe('schema + helpers', () => {
     reviewedFingerprint: '0123456789abcdef',
   };
 
+  it('rejects fractional-cent row amounts and approved amounts; accepts whole cents with float noise', () => {
+    const rows = (amounts: number[]) => ({ ...base, lineItems: amounts.map((amount, i) => ({ description: `Row ${i}`, hours: null, amount })) });
+    assert.equal(createPacketSchema.safeParse(rows([0.005, 0.005, 0.005])).success, false);
+    assert.equal(createPacketSchema.safeParse(rows([100.001])).success, false);
+    const bad = createPacketSchema.safeParse({ ...base, fundingAttestation: { ...attestation, approvedAmount: 7500.005 } });
+    assert.equal(bad.success, false);
+    assert.match(JSON.stringify(bad.error?.issues), /whole cents/);
+    assert.equal(createPacketSchema.safeParse(rows([0.1, 0.2, 1234.56])).success, true);
+    assert.equal(createPacketSchema.safeParse({ ...base, fundingAttestation: { ...attestation, approvedAmount: 7500.01 } }).success, true);
+  });
+
+  it('the printed rows always add up to the printed total (integer cents)', () => {
+    const money = (s: string) => Math.round(Number(s.replace(/[^0-9.]/g, '')) * 100);
+    const cases: number[][] = [[0.1, 0.2], Array.from({ length: 40 }, (_, i) => 0.01 * (i + 1) + 0.1), [1000.5, 299.5, 0.07, 19.99, 0.33]];
+    for (const amounts of cases) {
+      const items = amounts.map((amount, i) => ({ description: `Row ${i}`, hours: null, amount: Math.round(amount * 100) / 100 }));
+      const facts = buildJ6Facts({ invoiceDate: '2026-09-25', dueDate: null, billToName: 'Test Board', referenceNumber: null, lineItems: items, funding: null });
+      const printedRows = facts.filter((l) => /^\d+\. /.test(l)).map((l) => money(l.split(': ').at(-1)!));
+      const printedTotal = money(facts.find((l) => l.startsWith('Total due'))!);
+      assert.equal(printedRows.reduce((a, b) => a + b, 0), printedTotal);
+      assert.equal(Math.round(sumLineItems(items) * 100), printedTotal);
+    }
+    assert.equal(sumLineItems([{ amount: 0.1 }, { amount: 0.2 }]), 0.3);
+  });
+
   it('requires a signature (drawn or typed) and rejects negative or missing amounts', () => {
     assert.equal(createPacketSchema.safeParse(base).success, true);
     assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: false }).success, false);

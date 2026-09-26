@@ -91,6 +91,13 @@ export type SendAttemptRecord = {
    * The terminal check and completion use this stored set.
    */
   recipients: PacketRecipient[];
+  /**
+   * Duplicates the operator knowingly approved when starting this attempt
+   * ("Email again" with confirmDuplicateTo): per recipient, the exact earlier
+   * row ids known delivered at that moment, who confirmed and when. A claim
+   * only proceeds past earlier delivered/accepted rows that are listed here.
+   */
+  acknowledgedDuplicates?: Array<{ recipient: PacketRecipient; sendIds: string[]; confirmedById: string; confirmedAt: string }>;
   startedAt: string;
   startedById: string;
   from: string;
@@ -127,6 +134,9 @@ export function parseSendAttempt(value: unknown, attemptNo: number | null): Send
     || v.recipients.length === 0
     || new Set(v.recipients).size !== v.recipients.length
     || !v.recipients.every((r) => r === 'student' || r === 'counselor')
+    || (v.acknowledgedDuplicates !== undefined
+      && (!Array.isArray(v.acknowledgedDuplicates)
+        || !v.acknowledgedDuplicates.every((a) => a && (a.recipient === 'student' || a.recipient === 'counselor') && Array.isArray(a.sendIds) && a.sendIds.every((id) => typeof id === 'string'))))
   ) {
     throw new SendAttemptCorruptError();
   }
@@ -142,11 +152,13 @@ export type NextSendAction = 'send' | 'retry' | 'reconcile' | 'email_again' | 'i
 export function nextSendAction(args: {
   attemptNo: number | null;
   recipients: PacketRecipient[];
-  rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status' | 'lastClaimedAt'>>;
+  rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status' | 'lastClaimedAt'> & { providerResultAt?: Date | null }>;
   now: Date;
 }): NextSendAction {
   if (args.attemptNo == null) return 'send';
-  const rows = args.rows;
+  // A recorded provider acceptance whose status has not caught up yet (e.g.
+  // written by the unlocked fallback) reads as sent.
+  const rows = args.rows.map((r) => (r.providerResultAt && (r.status === 'claimed' || r.status === 'ambiguous') ? { ...r, status: 'sent' } : r));
   const fresh = (r: (typeof rows)[number]) => args.now.getTime() - r.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS;
   if (rows.some((r) => r.status === 'needs_reconciliation')) return 'reconcile';
   if (rows.some((r) => r.status === 'claimed' && fresh(r))) return 'in_progress';
@@ -241,6 +253,17 @@ export async function startSendAttempt(args: {
     const delivered = deliveredRecipients(await tx.trainingBillingPacketSend.findMany({ where: { packetId: args.packetId } }));
     const confirmed = new Set(args.confirmedDuplicates ?? []);
     if (record.recipients.some((r) => delivered.has(r) && !confirmed.has(r))) return { ok: false as const, reason: 'duplicate' as const };
+    // Freeze exactly which earlier copies the operator acknowledged.
+    const allRows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: args.packetId } });
+    const acknowledged = record.recipients
+      .filter((r) => confirmed.has(r) && delivered.has(r))
+      .map((r) => ({
+        recipient: r,
+        sendIds: allRows.filter((row) => row.recipient === r && isDeliveredRow(row)).map((row) => row.id),
+        confirmedById: args.record.startedById,
+        confirmedAt: args.now.toISOString(),
+      }));
+    if (acknowledged.length > 0) record.acknowledgedDuplicates = acknowledged;
     const { count } = await tx.trainingBillingPacket.updateMany({
       where: { id: args.packetId, sendAttemptNo: args.expectedCurrent, ...SENDABLE_PACKET_WHERE },
       data: { sendAttemptNo: attemptNo, sendAttempt: record as unknown as Prisma.InputJsonValue },
@@ -275,7 +298,13 @@ export type ClaimOutcome =
   /** The packet was superseded: nothing is claimed and nothing may be sent. */
   | { kind: 'superseded' }
   /** No row for this recipient in the attempt: operator reconciliation. */
-  | { kind: 'missing_row' };
+  | { kind: 'missing_row' }
+  /**
+   * An earlier attempt's copy for this recipient was (or may have been)
+   * delivered and this attempt did not acknowledge it: nothing is claimed,
+   * and this attempt's row is flagged for reconciliation.
+   */
+  | { kind: 'prior_copy'; reason: string };
 
 /**
  * Claim one recipient of one attempt, or report why it cannot be sent now.
@@ -295,12 +324,45 @@ export async function claimRecipient(args: {
   now: Date;
 }): Promise<ClaimOutcome> {
   return prisma.$transaction(async (tx): Promise<ClaimOutcome> => {
-    if (!isSendable(await lockPacketSends(tx, args.packetId))) return { kind: 'superseded' };
+    const packet = await lockPacketSends(tx, args.packetId);
+    if (!isSendable(packet)) return { kind: 'superseded' };
     const key = { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } };
-    const existing = await tx.trainingBillingPacketSend.findUnique({ where: key });
+    let existing = await tx.trainingBillingPacketSend.findUnique({ where: key });
     // Every row is created pending when its attempt starts, so a missing row is
     // an inconsistent state: fail closed, never lazily create a claim.
     if (!existing) return { kind: 'missing_row' };
+    // A provider acceptance recorded without its status (unlocked fallback):
+    // settle it now, under the lock, before anything else.
+    if (existing.providerResultAt && !DELIVERED.has(existing.status)) {
+      existing = (await applyRecordedProviderResult(existing.id, args.now, tx)) ?? existing;
+      if (isDeliveredRow(existing) && existing.status !== 'needs_reconciliation') return { kind: 'done', row: existing };
+    }
+    // Every EARLIER attempt's row for this recipient, read under the lock and
+    // straight from the provider-result columns: a copy that was, or may have
+    // been, delivered blocks a new key unless this attempt acknowledged that
+    // exact row when it was started.
+    let acknowledged = new Set<string>();
+    try {
+      const attempt = packet!.sendAttemptNo === args.attemptNo ? parseSendAttempt(packet!.sendAttempt, packet!.sendAttemptNo) : null;
+      acknowledged = new Set((attempt?.acknowledgedDuplicates ?? []).filter((a) => a.recipient === args.recipient).flatMap((a) => a.sendIds));
+    } catch {
+      acknowledged = new Set();
+    }
+    const earlier = (await tx.trainingBillingPacketSend.findMany({ where: { packetId: args.packetId, recipient: args.recipient } }))
+      .filter((r) => r.attemptNo < args.attemptNo);
+    const blocking = earlier.filter(
+      (r) => (r.providerResultAt != null || r.providerMessageId != null || ['claimed', 'ambiguous', 'needs_reconciliation'].includes(r.status)) && !acknowledged.has(r.id),
+    );
+    if (blocking.length > 0) {
+      const reason = `An earlier attempt's ${args.recipient} copy (attempt ${blocking.map((r) => r.attemptNo).join(', ')}) was, or may have been, delivered and this attempt did not acknowledge it. Check the provider for a delivered copy before sending again.`;
+      if (!TERMINAL.has(existing.status) && existing.status !== 'needs_reconciliation') {
+        await tx.trainingBillingPacketSend.updateMany({
+          where: { id: existing.id, status: existing.status, claimToken: existing.claimToken },
+          data: { status: 'needs_reconciliation', claimToken: randomUUID(), lastError: reason },
+        });
+      }
+      return { kind: 'prior_copy', reason };
+    }
     if (DELIVERED.has(existing.status)) return { kind: 'done', row: existing };
     if (existing.status === 'pending') {
       // First claim: the provider window starts now.
@@ -512,9 +574,13 @@ export async function recordProviderAcceptance(
   } catch (err) {
     // Never lose an acceptance: if the locked write fails (e.g. a transaction
     // timeout), persist it without the lock. Still write-once and CAS-guarded.
-    console.error('[billing-packets send] locked acceptance write failed; writing without the lock', { sendId, err });
-    await write(prisma);
-    await finalizeAfterAcceptance(prisma, sendId);
+    // Fallback (e.g. lock wait or transaction timeout): persist ONLY the
+    // write-once provider-result columns, never the status, so an unlocked
+    // write cannot race attempt start or a claim. The claim check reads these
+    // columns directly, and the next locked operation (claim) or a read
+    // (nextSendAction) settles the status from them.
+    console.error('[billing-packets send] locked acceptance write failed; recording the provider result only', { sendId, err });
+    await prisma.trainingBillingPacketSend.updateMany({ where: { id: sendId, providerResultAt: null }, data: recorded });
   }
 }
 

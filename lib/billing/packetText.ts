@@ -42,6 +42,30 @@ export function totalContactHours(items: ReadonlyArray<PacketLineItem>): number 
  * row with a positive weight. Zero-weight rows (a class with no hours on
  * file) share the total equally instead of getting $0.
  */
+/** Whole cents of a dollar amount. */
+export function toCents(amount: number): number {
+  return Math.round(amount * 100);
+}
+
+/**
+ * True for a finite amount with at most two decimal places (whole cents),
+ * tolerant of binary floating-point noise (0.1 * 100 = 10.000000000000002)
+ * but not of real fractions of a cent (0.005, 7500.005).
+ */
+export function isWholeCents(amount: number): boolean {
+  if (!Number.isFinite(amount)) return false;
+  const cents = amount * 100;
+  return Math.abs(cents - Math.round(cents)) < 1e-6;
+}
+
+/**
+ * Sum in integer cents, row by row, so the printed rows always add up to the
+ * printed total by construction.
+ */
+export function sumMoney(items: ReadonlyArray<{ amount: number | null }>): number {
+  return items.reduce((cents, row) => cents + (row.amount != null && Number.isFinite(row.amount) ? toCents(row.amount) : 0), 0) / 100;
+}
+
 export function allocateAmount(total: number, weights: ReadonlyArray<number>): number[] {
   if (weights.length === 0) return [];
   const totalCents = Math.round(total * 100);
@@ -119,7 +143,7 @@ export function buildJ6Facts(args: {
   lineItems: ReadonlyArray<PacketLineItem>;
   funding: J6FundingFacts | null;
 }): string[] {
-  const total = args.lineItems.reduce((sum, row) => sum + (Number.isFinite(row.amount) ? row.amount : 0), 0);
+  const total = sumMoney(args.lineItems);
   const lines = [
     `Invoice date: ${formatLongDate(args.invoiceDate)}; due: ${args.dueDate ? formatLongDate(args.dueDate) : 'Net 30 from receipt'}`,
     `Billed to: ${args.billToName}`,
@@ -204,9 +228,10 @@ export function attestationFingerprint(v: ReviewedValues): string {
     v.dueDate ?? '',
     v.billToName.trim(),
     v.referenceNumber.trim(),
-    v.lineItems.map((row) => [row.description.trim(), row.hours ?? null, row.amount ?? null]),
+    // Amounts enter the fingerprint as whole cents.
+    v.lineItems.map((row) => [row.description.trim(), row.hours ?? null, row.amount == null || !Number.isFinite(row.amount) ? null : toCents(row.amount)]),
     v.fundingBasis,
-    v.approvedAmount ?? null,
+    v.approvedAmount == null || !Number.isFinite(v.approvedAmount) ? null : toCents(v.approvedAmount),
     v.fundingReference.trim(),
     v.exceptionNote.trim(),
     v.narrative.trim(),

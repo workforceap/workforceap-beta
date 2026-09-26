@@ -16,6 +16,7 @@ import {
   DELIVERED,
   deliveredRecipients,
   finalizeAttemptIfComplete,
+  isDeliveredRow,
   nextSendAction,
   UNSETTLED,
   parseSendAttempt,
@@ -166,7 +167,7 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
     }
 
     // Recipients are exactly the ones printed at signing; any drift means re-sign.
-    const live = await resolveAssignedCounselorContact(member.id);
+    const live = await resolveAssignedCounselorContact(member.id, packet.organizationId);
     if ((snapshot.counselor?.userId ?? null) !== (live?.userId ?? null)) {
       return conflict(
         'The counselor assignment changed after this packet was signed, so its J6 cc line is out of date. Supersede and re-issue it before emailing.',
@@ -273,6 +274,7 @@ async function sendOne(args: {
   const claim = await claimRecipient({ packetId: packet.id, attemptNo: attempt.attemptNo, recipient, email: email.to, cc: null, now: new Date() });
   const label = recipient === 'student' ? 'student' : 'counselor';
   if (claim.kind === 'superseded') return supersededConflict();
+  if (claim.kind === 'prior_copy') return conflict(`${claim.reason} ${RECONCILE_HINT}`, 'prior_copy_accepted', { recipient });
   if (claim.kind === 'missing_row') {
     return conflict(`The ${label} copy has no send record for this attempt. ${RECONCILE_HINT}`, 'needs_reconciliation', { recipient });
   }
@@ -298,7 +300,7 @@ async function sendOne(args: {
   const late = !(before?.status === 'claimed' && before.claimToken === claim.row.claimToken);
   await recordProviderAcceptance(claim.row.id, { messageId, detail: 'provider accepted', late });
   const after = await prisma.trainingBillingPacketSend.findUnique({ where: { id: claim.row.id } });
-  if (after && DELIVERED.has(after.status)) return null;
+  if (after && isDeliveredRow(after) && after.status !== 'needs_reconciliation') return null;
   return conflict(
     `The ${label} copy was accepted by the provider, but its record had already changed (${after?.status ?? 'missing'}). ${RECONCILE_HINT}`,
     'needs_reconciliation',

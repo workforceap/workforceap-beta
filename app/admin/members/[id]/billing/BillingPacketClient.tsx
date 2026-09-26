@@ -15,6 +15,7 @@ import {
   isoDateInPortalTz,
   narrativeFactHints,
   narrativeMoneyViolations,
+  sumMoney,
   totalContactHours,
   type FundingBasis,
   type ReviewedValues,
@@ -125,7 +126,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
   }));
 
   const rows = useMemo(() => normalizedRows(draft.lineItems), [draft.lineItems]);
-  const total = useMemo(() => rows.reduce((s, r) => s + (r.amount ?? 0), 0), [rows]);
+  const total = useMemo(() => sumMoney(rows), [rows]);
   const hours = useMemo(() => totalContactHours(rows.map((r) => ({ ...r, amount: r.amount ?? 0 }))), [rows]);
   const selectedProgram = props.programs.find((p) => p.slug === draft.programSlug) ?? null;
   const approvedAmount = draft.approvedAmount === '' ? null : Number(draft.approvedAmount);

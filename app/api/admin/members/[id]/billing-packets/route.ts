@@ -13,7 +13,7 @@ import { isUniqueViolation, nextPacketNumber } from '@/lib/billing/packetNumber'
 import { getPacketNumberPrefix, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
 import { resolveAssignedCounselorContact, resolveProgramTitle, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { resolveProgramPricing } from '@/lib/billing/packetDefaults';
-import { attestationFingerprint, buildJ6Facts, DRAFT_CURRICULUM_REASON, formatMoney, fundingReviewWarnings, narrativeMoneyViolations } from '@/lib/billing/packetText';
+import { attestationFingerprint, buildJ6Facts, DRAFT_CURRICULUM_REASON, formatMoney, fundingReviewWarnings, narrativeMoneyViolations, toCents } from '@/lib/billing/packetText';
 import { isCurriculumOwnerVerified } from '@/shared/programCurricula';
 import { freezeLogo, type SignedPacketSnapshot } from '@/lib/billing/packetSnapshot';
 import { loadLetterheadLogo } from '@/lib/billing/packetPdf';
@@ -150,7 +150,8 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       return NextResponse.json({ error: narrativeViolations.join(' '), code: 'narrative_money' }, { status: 400 });
     }
     const funding = input.fundingAttestation;
-    if (totalAmount > roundMoney(funding.approvedAmount)) {
+    // Compared in integer cents.
+    if (toCents(totalAmount) > toCents(funding.approvedAmount)) {
       return NextResponse.json(
         { error: `The invoice total (${formatMoney(totalAmount)}) is more than the approved amount you recorded (${formatMoney(funding.approvedAmount)}).` },
         { status: 400 },
@@ -199,7 +200,7 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       lineItems: input.lineItems.map((row) => ({ description: row.description, hours: row.hours ?? null, amount: row.amount })),
       funding: { fundingType: funding.fundingBasis, approvedAmount: funding.approvedAmount, reference: funding.reference },
     });
-    const counselor = await resolveAssignedCounselorContact(member.id);
+    const counselor = await resolveAssignedCounselorContact(member.id, member.organizationId);
     const signedSnapshot: SignedPacketSnapshot = {
       version: 1,
       provider: getTrainingProviderIdentity(),

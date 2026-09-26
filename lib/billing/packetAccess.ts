@@ -221,8 +221,15 @@ export async function loadPacketForViewer(
     return (await reached('member')) ? { ok: true, value: { packet, member, viewer: 'member' } } : { ok: false, status: 404, error: 'Document not found' };
   }
 
+  // The counselor must still be an active counselor, not deleted, and in the
+  // packet's organization at read time (an org transfer can leave an
+  // assignment active); a stale cross-org assignment grants nothing.
   const assignment = await prisma.counselorAssignment.findFirst({
-    where: { memberId: packet.memberId, active: true, counselor: { userId, active: true } },
+    where: {
+      memberId: packet.memberId,
+      active: true,
+      counselor: { userId, active: true, user: { organizationId: packet.organizationId, deletedAt: null } },
+    },
     select: { id: true },
   });
   if (assignment && (await reached('counselor'))) return { ok: true, value: { packet, member, viewer: 'counselor' } };
@@ -271,10 +278,19 @@ export async function listPacketsForMember(memberId: string, viewer: 'member' | 
   return ordered.map(({ sends: _sends, ...row }) => serializeBillingPacket(row));
 }
 
-/** The member's active counselor (user row) for the send step; null when unassigned. */
-export async function resolveAssignedCounselorContact(memberId: string): Promise<{ userId: string; fullName: string; email: string } | null> {
+/**
+ * The member's active counselor (user row) for signing and sending; null when
+ * unassigned. Only a counselor who is active, not deleted and in the given
+ * (packet / member) organization counts: a stale cross-org assignment is "no
+ * counselor", so signing prints none and a send of a packet signed with that
+ * counselor hits the recipient-drift 409.
+ */
+export async function resolveAssignedCounselorContact(
+  memberId: string,
+  organizationId: string,
+): Promise<{ userId: string; fullName: string; email: string } | null> {
   const row = await prisma.counselorAssignment.findFirst({
-    where: { memberId, active: true, counselor: { active: true } },
+    where: { memberId, active: true, counselor: { active: true, user: { organizationId, deletedAt: null } } },
     orderBy: { assignedAt: 'desc' },
     select: { counselor: { select: { user: { select: { id: true, fullName: true, email: true } } } } },
   });

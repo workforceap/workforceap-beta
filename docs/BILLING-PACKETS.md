@@ -59,6 +59,16 @@ that automatically emails to counselor and the student."
   basic numeric-currency block (`narrativeMoneyViolations`: `$`, money-formatted
   numbers, total/amount/tuition/fee/invoice next to a number). Wording such as a
   payer name or a spelled-out amount is covered only by the signer's review.
+- **Money**: every row amount and the approved amount must be whole cents
+  (at most 2 decimal places; otherwise 400). Totals, the J6 facts total and
+  the approved-amount check are computed in integer cents per row, so the
+  printed rows always add up to the printed total. The attestation
+  fingerprint uses cents.
+- **Counselor at read time**: signing, sending, and counselor access to a
+  packet only count a counselor who is active, not deleted, and in the
+  packet's organization. A stale cross-org assignment means no counselor:
+  signing prints none, PDF access is 404, and sending a packet signed with that
+  counselor gets the drift 409 (`counselor_changed`).
 - **Draft curricula**: programs whose curriculum is not owner-verified
   (`isCurriculumOwnerVerified` in `shared/programCurricula.ts`, the same rule as
   the price list) cannot be billed; the page lists them as unavailable.
@@ -128,6 +138,15 @@ that automatically emails to counselor and the student."
       `confirmDuplicateTo` listing exactly those recipients, or it gets 409
       `duplicate_confirmation_required`. The UI confirm dialog names who
       received it and when.
+  - **Earlier copies at claim time**: under the lock, a claim re-reads every
+    earlier attempt's row for that recipient. It refuses (409
+    `prior_copy_accepted`, no provider call) and flags this attempt's row
+    `needs_reconciliation` when an earlier row has a recorded provider result
+    or is claimed, ambiguous or needs_reconciliation, unless that exact row is
+    in the attempt's `acknowledgedDuplicates`. Those are frozen when an
+    "Email again" is confirmed: row ids, who confirmed, and when. If the locked
+    acceptance write fails, only the write-once provider-result columns are
+    written (never the status); the next claim settles the status from them.
   - **History**: the admin list shows every attempt's per-recipient outcome,
     with time and, for reconciliations, who and the note. Partial delivery
     stays visible after a reload.

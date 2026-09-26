@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { isWholeCents, sumMoney } from './packetText';
+
+const WHOLE_CENTS = 'Amounts must be whole cents (at most 2 decimal places).';
 
 /** One row on the J5 invoice: a class in the program or a fee. */
 export type PacketLineItem = {
@@ -17,7 +20,8 @@ const lineItemSchema = z.object({
   amount: z
     .number({ required_error: 'Enter an amount for every row.', invalid_type_error: 'Enter an amount for every row.' })
     .min(0, 'Amounts cannot be negative')
-    .max(1_000_000),
+    .max(1_000_000)
+    .refine(isWholeCents, WHOLE_CENTS),
 });
 
 /**
@@ -36,7 +40,8 @@ const fundingAttestationSchema = z.object(
       .number({ required_error: 'Enter the approved amount.', invalid_type_error: 'Enter the approved amount.' })
       .finite()
       .positive('Enter the approved amount.')
-      .max(1_000_000),
+      .max(1_000_000)
+      .refine(isWholeCents, 'The approved amount must be whole cents (at most 2 decimal places).'),
     /** ITA / voucher / contract reference staff checked the amount against. */
     reference: z
       .string({ required_error: 'Enter the ITA approval or contract reference.' })
@@ -109,8 +114,9 @@ export function roundMoney(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+/** Invoice total: summed in integer cents per row (see sumMoney). */
 export function sumLineItems(items: ReadonlyArray<{ amount: number }>): number {
-  return roundMoney(items.reduce((sum, item) => sum + (Number.isFinite(item.amount) ? item.amount : 0), 0));
+  return sumMoney(items);
 }
 
 /** Read the JSON column back into typed rows; tolerates hand-edited rows. */

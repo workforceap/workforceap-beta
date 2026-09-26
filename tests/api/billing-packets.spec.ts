@@ -9,7 +9,7 @@ const db = vi.hoisted(() => ({
   sends: [] as Row[],
   enrollments: [] as Array<Record<string, unknown>>,
   users: [] as Row[],
-  counselor: null as null | { id: string; fullName: string; email: string },
+  counselor: null as null | { id: string; fullName: string; email: string; organizationId?: string; deletedAt?: Date | null },
   catalog: null as null | Record<string, unknown>,
   seq: 0,
 }));
@@ -111,7 +111,15 @@ vi.mock('@/lib/db/prisma', () => {
     },
     organizationProgramCatalog: { findFirst: vi.fn(async () => db.catalog) },
     counselorAssignment: {
-      findFirst: vi.fn(async () => (db.counselor ? { counselor: { user: db.counselor } } : null)),
+      // Honors the read-time counselor guards: same org as asked, not deleted.
+      findFirst: vi.fn(async ({ where }: { where?: { counselor?: { user?: { organizationId?: string; deletedAt?: null } } } } = {}) => {
+        const c = db.counselor;
+        if (!c) return null;
+        const u = where?.counselor?.user;
+        if (u?.organizationId !== undefined && c.organizationId !== undefined && c.organizationId !== u.organizationId) return null;
+        if (u && 'deletedAt' in u && c.deletedAt) return null;
+        return { counselor: { user: c } };
+      }),
     },
     trainingBillingPacket: {
       count: vi.fn(async ({ where }: { where: { organizationId: string } }) => db.packets.filter((p) => p.organizationId === where.organizationId).length),
@@ -206,6 +214,7 @@ import {
   transition,
 } from '@/lib/billing/sendAttempts';
 import { listPacketsForMember, serializeBillingPacket } from '@/lib/billing/packetAccess';
+import { prisma as prismaMock } from '@/lib/db/prisma';
 
 const ORG = DEFAULT_ORG_ID;
 const OTHER_ORG = 'aaaaaaaa-0000-4000-8000-000000000009';
@@ -393,6 +402,23 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
     const res = await createPacket(req(body({ fundingAttestation: { approvedAmount: 1000 } })), params(MEMBER));
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/more than the approved amount/);
+  });
+
+  it('rejects fractional cents at the API and compares the approved amount in cents', async () => {
+    const frac = await createPacket(req(body({ lineItems: [{ description: 'A', hours: null, amount: 0.005 }, { description: 'B', hours: null, amount: 0.005 }, { description: 'C', hours: null, amount: 0.005 }] })), params(MEMBER));
+    expect(frac.status).toBe(400);
+    expect((await frac.json()).error).toMatch(/whole cents/);
+    const approved = await createPacket(req(body({ fundingAttestation: { approvedAmount: 7500.005 } })), params(MEMBER));
+    expect(approved.status).toBe(400);
+    expect((await approved.json()).error).toMatch(/whole cents/);
+    expect(db.packets).toHaveLength(0);
+    // 0.10 + 0.20 = 0.30 exactly equal to the approved amount: allowed (float sum would be 0.30000000000000004).
+    const exact = await createPacket(
+      req(body({ lineItems: [{ description: 'A', hours: null, amount: 0.1 }, { description: 'B', hours: null, amount: 0.2 }], fundingAttestation: { approvedAmount: 0.3 } })),
+      params(MEMBER),
+    );
+    expect(exact.status).toBe(201);
+    expect(db.packets[0].totalAmount).toBe(0.3);
   });
 
   it('WIOA ITA above $7,500 is a non-blocking warning, not a global cap; the exception note is recorded as unverified', async () => {
@@ -1453,4 +1479,139 @@ describe('Legacy and corrupt snapshots', () => {
     expect(db.packets.find((p) => p.id === replacement.id)!.signedSnapshot).toEqual(expect.objectContaining({ version: 1 }));
     expect(db.packets.find((p) => p.id === id)!.status).toBe('superseded');
   });
+});
+
+describe('A new attempt never sends over an unacknowledged earlier copy', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
+  const DAY2 = 2 * 24 * 60 * 60 * 1000;
+  const age = (r: Row) => Object.assign(r, { claimedAt: new Date(Date.now() - DAY2), lastClaimedAt: new Date(Date.now() - DAY2) });
+
+  /** Attempt 1 unconfirmed then recorded "not delivered"; attempt 2 started and paused before its claim. */
+  async function attempt2Paused(): Promise<{ id: string; old: Row; resume: () => Promise<Response> }> {
+    const id = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(id)).status).toBe(502); // provider call 1
+    const old = db.sends[0];
+    age(old);
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No entry in the Resend log' })).status).toBe(200);
+    let open!: () => void;
+    mocks.buildGate.value = new Promise<void>((r) => (open = r));
+    const pending = send(id, { action: 'email_again' });
+    await tick();
+    expect(db.sends.find((r) => r.attemptNo === 2)?.status).toBe('pending');
+    return {
+      id,
+      old,
+      resume: async () => {
+        mocks.buildGate.value = null;
+        open();
+        return pending;
+      },
+    };
+  }
+
+  it('late acceptance for attempt 1 after attempt 2 started: attempt 2 does not send (409, one provider call total)', async () => {
+    const { old, resume } = await attempt2Paused();
+    await recordLateProviderResult(old.id, { delivered: true, detail: 'late', messageId: 'm-old' });
+    const res = await resume();
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('prior_copy_accepted');
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(db.sends.find((r) => r.attemptNo === 2)).toMatchObject({ status: 'needs_reconciliation', lastError: expect.stringMatching(/earlier attempt/) });
+  });
+
+  it('the same through the unlocked fallback (provider result only, no status): still 409, still one provider call', async () => {
+    const { old, resume } = await attempt2Paused();
+    (prismaMock.$transaction as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
+      throw new Error('Transaction API error: timeout');
+    });
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await recordLateProviderResult(old.id, { delivered: true, detail: 'late', messageId: 'm-old' });
+    spy.mockRestore();
+    expect(old).toMatchObject({ status: 'reconciled_not_delivered', providerMessageId: 'm-old' }); // status untouched by the fallback
+    const res = await resume();
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('prior_copy_accepted');
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('a known delivered copy with an explicit confirmation still allows attempt 2 (one new provider call)', async () => {
+    const id = await signOne();
+    expect((await send(id)).status).toBe(200);
+    const res = await send(id, { action: 'email_again', confirmDuplicateTo: ['student'] });
+    expect(res.status).toBe(200);
+    expect(mocks.send).toHaveBeenCalledTimes(2);
+    const attempt = db.packets[0].sendAttempt as { acknowledgedDuplicates: Array<{ recipient: string; sendIds: string[]; confirmedById: string }> };
+    expect(attempt.acknowledgedDuplicates).toEqual([
+      expect.objectContaining({ recipient: 'student', sendIds: [db.sends.find((r) => r.attemptNo === 1)!.id], confirmedById: ADMIN }),
+    ]);
+  });
+
+  it('mixed: the acknowledged student copy sends, the newly accepted counselor copy is blocked', async () => {
+    db.counselor = COUNSELOR;
+    const id = await signOne();
+    mocks.send.mockImplementation(async (_r: unknown, a: { to: string }) => {
+      if (a.to === COUNSELOR.email) throw new Error('socket hang up');
+      return { data: { id: 'm-student-1' }, error: null };
+    });
+    expect((await send(id)).status).toBe(502); // calls 1 (student ok) and 2 (counselor unconfirmed)
+    mocks.send.mockReset();
+    mocks.send.mockResolvedValue({ data: { id: 'm-2' }, error: null });
+    const counselorOld = db.sends.find((r) => r.recipient === 'counselor')!;
+    age(counselorOld);
+    expect((await send(id, { action: 'reconcile', recipient: 'counselor', delivered: false, note: 'No entry in the Resend log' })).status).toBe(200);
+    let open!: () => void;
+    mocks.buildGate.value = new Promise<void>((r) => (open = r));
+    const pending = send(id, { action: 'email_again', confirmDuplicateTo: ['student'] });
+    await tick();
+    await recordLateProviderResult(counselorOld.id, { delivered: true, detail: 'late', messageId: 'm-counselor-1' });
+    mocks.buildGate.value = null;
+    open();
+    const res = await pending;
+    expect(res.status).toBe(409);
+    const json = await res.json();
+    expect(json).toMatchObject({ code: 'prior_copy_accepted', recipient: 'counselor' });
+    expect(mocks.send.mock.calls.map((c) => c[1].to)).toEqual(['member@example.test']); // only the acknowledged student copy
+    expect(db.sends.find((r) => r.attemptNo === 2 && r.recipient === 'counselor')!.status).toBe('needs_reconciliation');
+    expect(db.sends.find((r) => r.attemptNo === 2 && r.recipient === 'student')!.status).toBe('sent');
+  });
+});
+
+describe('Stale counselor assignments (org transfer, deleted) count as no counselor', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  const counselorPdf = async (id: string) => {
+    mocks.isAdmin.mockResolvedValue(false);
+    mocks.getUser.mockResolvedValue({ id: COUNSELOR.id });
+    const res = await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=j5`), packetParams(id));
+    mocks.isAdmin.mockResolvedValue(true);
+    mocks.getUser.mockResolvedValue({ id: ADMIN });
+    return res.status;
+  };
+
+  for (const [label, stale] of [
+    ['transferred to another org', { organizationId: OTHER_ORG }],
+    ['deleted', { deletedAt: new Date() }],
+  ] as const) {
+    it(`a counselor ${label} after assignment: no PDF, not resolved at sign, send is 409 recipient_changed`, async () => {
+      db.counselor = { ...COUNSELOR, organizationId: ORG };
+      const id = await signOne();
+      expect((await send(id)).status).toBe(200); // both copies reached them while valid
+      expect(await counselorPdf(id)).toBe(200);
+      const beforeCalls = mocks.send.mock.calls.length;
+      Object.assign(db.counselor!, stale);
+      // (a) PDF access is denied.
+      expect(await counselorPdf(id)).toBe(404);
+      // (b) A new packet sees no counselor.
+      const second = await createPacket(req(body({ fundingAttestation: { reference: 'TEST-ITA-0077' } })), params(MEMBER));
+      expect(second.status).toBe(201);
+      const secondId = (await second.json()).packet.id as string;
+      expect((db.packets.find((p) => p.id === secondId)!.signedSnapshot as { counselor: unknown }).counselor).toBeNull();
+      // (c) Sending the packet signed with that counselor: recipient drift.
+      const res = await send(id, { action: 'email_again', confirmDuplicateTo: ['student', 'counselor'] });
+      expect(res.status).toBe(409);
+      expect((await res.json()).code).toBe('counselor_changed');
+      expect(mocks.send.mock.calls.length).toBe(beforeCalls);
+    });
+  }
 });
