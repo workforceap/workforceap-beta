@@ -252,7 +252,7 @@ that automatically emails to counselor and the student."
   reconciliation. Unfinished cleanup and unresolved student/counselor copies
   block the purge before any private child data is deleted.
 - The member lifecycle lock needs a real interactive transaction. Signing,
-  send claims, account deletion and restore fail closed where Prisma
+  send claims, account deletion, restore and member merge fail closed where Prisma
   transactions are flattened (current Preview configuration); production must
   keep interactive transactions enabled. Ordinary invitation acceptance,
   counselor assignment and admin identity edits remain available on the

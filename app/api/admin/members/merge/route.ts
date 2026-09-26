@@ -3,6 +3,8 @@ import { getUser } from '@/lib/auth/server';
 import { requireAdmin, isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { executeMemberMerge, buildMergePreview } from '@/lib/admin/memberMerge';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR } from '@/lib/billing/erasureGuard';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -72,6 +74,9 @@ export const GET = withApiGuc(_GET);async function _POST(req: NextRequest) {
     try { await requireAdmin(user.id); } catch {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+    if (!interactiveTransactionsGuaranteed()) return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
 
     const body = ((await req.json().catch(() => ({}))) ?? {}) as { primaryId?: string; secondaryId?: string };
     const { primaryId, secondaryId } = body;

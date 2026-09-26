@@ -2,7 +2,8 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
 import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
-import { BillingAssignmentInProgressError } from './billingAssignmentGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { assertBillingAssignmentMutable, BillingAssignmentInProgressError } from './billingAssignmentGuard';
 import { createNotification } from '@/lib/notifications/create';
 import { hasAdminAccess } from '@/lib/auth/roleAccess';
 
@@ -190,7 +191,8 @@ export async function ensureSelfServeCounselorAssigned(input: {
   const result = await prisma.$transaction(async (tx) => {
     // Claim also takes the lifecycle key before its member row lock. Doing
     // this before the optimistic User update avoids a lock-order deadlock.
-    await lockBillingMemberLifecycle(tx, input.memberId);
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, input.memberId);
+    else await assertBillingAssignmentMutable(tx, input.memberId);
     const locked = await tx.user.updateMany({
       where: {
         id: input.memberId,

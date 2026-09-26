@@ -10,7 +10,8 @@ import { hasAdminAccess } from '@/lib/auth/roleAccess';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
-import { beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 /**
  * Rewrite a soft-deleted user's email to the sentinel form so the
@@ -33,6 +34,9 @@ async function _POST(
   const actor = await getUser();
   if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!(await isAdmin(actor.id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!interactiveTransactionsGuaranteed()) return NextResponse.json({
+    error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+  }, { status: 503 });
 
   const { id } = await params;
   const orgId = await getActorOrganizationId(actor.id);

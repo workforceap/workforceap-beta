@@ -405,6 +405,17 @@ describe('billing deletion barrier ordering', () => {
     expect(db.users[0].billingDeletionOperationId).toBe(exact.ok ? exact.operationId : null);
   });
 
+  it('does not let deleted-email repair complete an unfinished account erasure', async () => {
+    const deletedAt = new Date('2026-08-01T00:00:00Z');
+    db.users[0].deletedAt = deletedAt;
+    db.users[0].billingDeletionPendingAt = deletedAt;
+    db.users[0].billingDeletionCompletedAt = null;
+    expect(await beginBillingDeletion(MEMBER, ORG, undefined, deletedAt)).toEqual({ ok: false, reason: 'in_progress' });
+    expect(db.users[0].billingDeletionOperationId).toBeNull();
+    // The original deletion path can still take an explicit retry lease.
+    expect((await beginBillingDeletion(MEMBER, ORG)).ok).toBe(true);
+  });
+
   it('restore owns the provider boundary before any retry deletion can begin', async () => {
     const deletedAt = new Date('2026-08-01T00:00:00Z');
     const completedAt = new Date('2026-08-01T00:01:00Z');

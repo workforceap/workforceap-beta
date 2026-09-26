@@ -11,7 +11,8 @@ import { hasAdminAccess } from '@/lib/auth/roleAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
-import { beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 /**
  * Batch-rewrite up to 100 soft-deleted users' emails to the sentinel form
@@ -32,6 +33,9 @@ async function _POST() {
     const actor = await getUser();
     if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     if (!(await isAdmin(actor.id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!interactiveTransactionsGuaranteed()) return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
   
     const orgId = await getActorOrganizationId(actor.id);
   

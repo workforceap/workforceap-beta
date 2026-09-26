@@ -27,6 +27,7 @@ vi.mock('@/lib/admin/authUserLifecycle', () => ({
   disableAuthUserForSoftDelete: mocks.disableAuth,
 }));
 vi.mock('@/lib/billing/erasureGuard', () => ({
+  BILLING_LIFECYCLE_UNAVAILABLE_ERROR: 'Account deletion requires an interactive database transaction.',
   beginBillingRestore: mocks.beginRestore,
   beginBillingDeletion: mocks.beginDeletion,
   completeBillingDeletion: mocks.completeDeletion,
@@ -273,6 +274,27 @@ describe('administrator account restore', () => {
 });
 
 describe('administrator email release', () => {
+  it('returns a clear conflict before Auth or DB reads in flattened Preview', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    try {
+      const single = await freeEmail(req(), ctx());
+      const batch = await freeBatch(req());
+      const restored = await restore(req(), ctx());
+      expect(single.status).toBe(503);
+      expect(batch.status).toBe(503);
+      expect(restored.status).toBe(503);
+      for (const response of [single, batch, restored]) {
+        expect((await response.json()).code).toBe('billing_lifecycle_unavailable');
+      }
+      expect(mocks.target).not.toHaveBeenCalled();
+      expect(mocks.findMany).not.toHaveBeenCalled();
+      expect(mocks.disableAuth).not.toHaveBeenCalled();
+      expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('repairs an already-marked app row by retiring its exact Auth address', async () => {
     const response = await freeEmail(req(), ctx());
     expect(response.status).toBe(200);
@@ -295,6 +317,20 @@ describe('administrator email release', () => {
     expect(response.status).toBe(409);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
     expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('leaves Auth untouched when an unfinished erasure blocks deleted-email repair', async () => {
+    const unfinished = { ...deletedRow(), email: 'member@example.com', billingDeletionPendingAt: deletedAt, billingDeletionCompletedAt: null };
+    mocks.target.mockResolvedValue(unfinished);
+    mocks.findMany.mockResolvedValue([unfinished]);
+    mocks.beginDeletion.mockResolvedValue({ ok: false, reason: 'in_progress' });
+
+    expect((await freeEmail(req(), ctx())).status).toBe(409);
+    expect(await (await freeBatch(req())).json()).toMatchObject({ freed: 0, skipped: 1 });
+    expect(mocks.beginDeletion).toHaveBeenCalledTimes(2);
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.completeDeletion).not.toHaveBeenCalled();
   });
 
   it('keeps restore out while Auth retirement is in flight', async () => {

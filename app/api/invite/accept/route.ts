@@ -4,6 +4,7 @@ import { readJsonObjectBody } from '@/lib/api/readJsonBody';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { sendInvitationAcceptedEmail } from '@/lib/email';
 import { getDefaultOrganizationId } from '@/lib/tenant/organization';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { tryResolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import {
   buildInviteAcceptExistingUserUpdate,
@@ -762,10 +763,10 @@ async function finishNewUserDbSetup(
       // flattened Preview, where a failed callback cannot roll back the claim).
       txStep = 'lock_invitee_lifecycle';
       if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, authUserId);
-      const appUser = await tx.user.findFirst({
+      const appUser = await crossTenantOK(() => tx.user.findFirst({
         where: { id: authUserId },
         select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
-      });
+      }));
       if (appUser?.deletedAt || appUser?.billingDeletionPendingAt || appUser?.billingDeletionOperationId) {
         throw new ExistingInviteAccountUnavailableError('Invitation account is being retired');
       }

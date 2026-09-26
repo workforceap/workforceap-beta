@@ -69,9 +69,15 @@ export async function beginBillingDeletion(memberId: string, organizationId?: st
       ...(organizationId ? { organizationId } : {}),
       ...(expectedDeletedAt ? { deletedAt: expectedDeletedAt } : deletedBefore ? { deletedAt: { not: null, lt: deletedBefore } } : {}),
     };
-    const member = await scoped.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true } });
+    const member = await scoped.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true, billingDeletionCompletedAt: true } });
     if (!member) return { ok: false as const, reason: 'missing' as const };
     if (member.billingDeletionOperationId) return { ok: false as const, reason: 'in_progress' as const };
+    // The exact-deletedAt claim is used by the deleted-email repair routes.
+    // They may retire an old Auth address, but must not complete a failed
+    // GDPR/self-delete operation that still requires hard Auth erasure.
+    if (expectedDeletedAt && member.billingDeletionPendingAt && !member.billingDeletionCompletedAt) {
+      return { ok: false as const, reason: 'in_progress' as const };
+    }
     if (await hasUnresolvedBillingSend(tx, memberId)) return { ok: false as const, reason: 'unresolved_send' as const };
     const pendingAt = member.billingDeletionPendingAt ?? new Date();
     const operationId = randomUUID();
