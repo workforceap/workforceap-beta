@@ -199,6 +199,41 @@ function wrap(text: string, font: PDFFont, size: number, maxWidth: number): stri
   return lines;
 }
 
+/** A drawn signature must decode as a bounded PNG before a signed packet is stored. */
+export async function isValidDrawnSignaturePng(dataUrl: string): Promise<boolean> {
+  try {
+    const bytes = Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+    const pngHeader = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+    if (bytes.length < 24 || bytes.length > 300_000 || !bytes.subarray(0, 8).equals(pngHeader)) return false;
+    const width = bytes.readUInt32BE(16);
+    const height = bytes.readUInt32BE(20);
+    if (width < 1 || height < 1 || width > 4096 || height > 2048) return false;
+    await (await PDFDocument.create()).embedPng(bytes);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Wrap human-entered address lines without dropping long unbroken tokens (including emails). */
+export function wrapTextWithinWidth(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  return wrap(text, font, size, maxWidth).flatMap((line) => {
+    if (font.widthOfTextAtSize(line, size) <= maxWidth) return [line];
+    const chunks: string[] = [];
+    let chunk = '';
+    for (const char of line) {
+      if (chunk && font.widthOfTextAtSize(`${chunk}${char}`, size) > maxWidth) {
+        chunks.push(chunk);
+        chunk = char;
+      } else {
+        chunk += char;
+      }
+    }
+    if (chunk) chunks.push(chunk);
+    return chunks;
+  });
+}
+
 function ellipsize(text: string, font: PDFFont, size: number, maxWidth: number): string {
   const clean = sanitizePdfText(text);
   if (font.widthOfTextAtSize(clean, size) <= maxWidth) return clean;
@@ -346,7 +381,6 @@ class Sheet {
 
     const sigBoxW = 220;
     const sigTop = this.y;
-    let drawn = false;
     if (input.signatureImage) {
       try {
         const base64 = input.signatureImage.replace(/^data:image\/png;base64,/, '');
@@ -355,12 +389,10 @@ class Sheet {
         const w = image.width * scale;
         const h = image.height * scale;
         this.page.drawImage(image, { x: MARGIN, y: sigTop - sigBoxH + (sigBoxH - h) / 2, width: w, height: h });
-        drawn = true;
       } catch {
-        drawn = false;
+        throw new Error('The drawn signature image is invalid; the signed document cannot be rendered.');
       }
-    }
-    if (!drawn) {
+    } else {
       this.text(input.signerName, { size: 20, font: this.fonts.italic, color: rgb(0.1, 0.15, 0.45), y: sigTop - sigBoxH + 14 });
     }
     this.y = sigTop - sigBoxH - 4;
@@ -373,7 +405,7 @@ class Sheet {
     this.text(`${input.provider.email}  |  ${input.provider.phone}`, { size: 9.5, color: MUTED });
     this.gap(13);
     this.text(
-      `Signed ${formatLongDateOfInstant(input.signedAt)}${drawn ? ' (electronic signature)' : ' (typed signature)'}`,
+      `Signed ${formatLongDateOfInstant(input.signedAt)}${input.signatureImage ? ' (electronic signature)' : ' (typed signature)'}`,
       { size: 9, color: MUTED },
     );
     this.gap(12);
@@ -454,29 +486,25 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
 
   // Bill to / participant columns.
   const colW = (PAGE_W - MARGIN * 2 - 24) / 2;
-  const startY = sheet.y;
-  sheet.text('BILL TO', { size: 8, font: f.bold, color: ACCENT });
-  sheet.gap(13);
-  for (const line of billToLines(input)) {
-    sheet.text(ellipsize(line, f.regular, 10, colW), { size: 10 });
-    sheet.gap(13);
-  }
-  const leftEnd = sheet.y;
-  sheet.y = startY;
   const rightX = MARGIN + colW + 24;
-  sheet.text('PARTICIPANT', { x: rightX, size: 8, font: f.bold, color: ACCENT });
-  sheet.gap(13);
+  const billTo = billToLines(input).flatMap((line) => wrapTextWithinWidth(line, f.regular, 10, colW));
   const participant = [
     input.member.fullName,
     input.member.email,
     `Program: ${input.programTitle}`,
     `Provider contact: ${input.provider.email}`,
-  ];
-  for (const line of participant) {
-    sheet.text(ellipsize(line, f.regular, 10, colW), { x: rightX, size: 10 });
+  ].flatMap((line) => wrapTextWithinWidth(line, f.regular, 10, colW));
+  sheet.ensure(30);
+  sheet.text('BILL TO', { size: 8, font: f.bold, color: ACCENT });
+  sheet.text('PARTICIPANT', { x: rightX, size: 8, font: f.bold, color: ACCENT });
+  sheet.gap(13);
+  for (let i = 0; i < Math.max(billTo.length, participant.length); i++) {
+    sheet.ensure(13);
+    if (billTo[i]) sheet.text(billTo[i], { size: 10 });
+    if (participant[i]) sheet.text(participant[i], { x: rightX, size: 10 });
     sheet.gap(13);
   }
-  sheet.y = Math.min(leftEnd, sheet.y) - 10;
+  sheet.gap(10);
 
   // Line-item table.
   const cols = { idx: MARGIN, desc: MARGIN + 26, hours: PAGE_W - MARGIN - 190, amount: PAGE_W - MARGIN };
@@ -558,8 +586,11 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   sheet.text(formatLongDate(toIsoDate(input.invoiceDate)), { size: 10.5 });
   sheet.gap(20);
   for (const line of billToLines(input)) {
-    sheet.text(line, { size: 10.5 });
-    sheet.gap(13);
+    for (const wrapped of wrapTextWithinWidth(line, f.regular, 10.5, PAGE_W - MARGIN * 2)) {
+      sheet.ensure(13);
+      sheet.text(wrapped, { size: 10.5 });
+      sheet.gap(13);
+    }
   }
   sheet.gap(8);
   sheet.paragraph(`RE: Training invoice ${input.packetNumber} — ${input.member.fullName}, ${input.programTitle}`, {
@@ -568,7 +599,12 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   });
   sheet.gap(8);
   const salutation = input.billToAttention ? `Dear ${input.billToAttention},` : 'To Whom It May Concern:';
-  sheet.text(salutation, { size: 10.5 });
+  const salutationLines = wrapTextWithinWidth(salutation, f.regular, 10.5, PAGE_W - MARGIN * 2);
+  salutationLines.forEach((line, i) => {
+    if (i > 0) sheet.gap(15);
+    sheet.ensure(16);
+    sheet.text(line, { size: 10.5 });
+  });
   sheet.gap(16);
 
   // Facts block FIRST: generated from the J5 rows and the signed snapshot, and

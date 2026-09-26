@@ -151,6 +151,9 @@ describe('attestation fingerprint', () => {
     invoiceDate: '2026-09-25',
     dueDate: null,
     billToName: 'Board',
+    billToAttention: 'Accounts Payable',
+    billToAddress: '123 Test Lane\nAustin, TX 78701',
+    billToEmail: 'ap@example.test',
     referenceNumber: '',
     lineItems: [{ description: 'Intro', hours: 10, amount: 1000 }],
     fundingBasis: 'wioa_ita',
@@ -158,6 +161,8 @@ describe('attestation fingerprint', () => {
     fundingReference: 'TEST-ITA-1',
     exceptionNote: '',
     narrative: 'Narrative.',
+    signerName: 'Test Signer',
+    signerTitle: 'Executive Director',
   };
   it('changes when a reviewed value changes', () => {
     const fp = attestationFingerprint(base);
@@ -168,6 +173,11 @@ describe('attestation fingerprint', () => {
     assert.notEqual(attestationFingerprint({ ...base, fundingBasis: 'separate_contract' }), fp);
     assert.notEqual(attestationFingerprint({ ...base, fundingReference: 'TEST-ITA-2' }), fp);
     assert.notEqual(attestationFingerprint({ ...base, narrative: 'Edited narrative.' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, billToAttention: 'Contracts Desk' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, billToAddress: '456 Other Road' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, billToEmail: 'new-ap@example.test' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, signerName: 'Another Signer' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, signerTitle: 'Finance Director' }), fp);
   });
 });
 

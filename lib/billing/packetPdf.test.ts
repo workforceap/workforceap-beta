@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import {
   letterheadLayout,
+  isValidDrawnSignaturePng,
   packetDocumentFilename,
   parsePacketDownloadKind,
   renderJ5InvoicePdf,
   renderJ6CoverLetterPdf,
   renderPacketBundlePdf,
   sanitizePdfText,
+  wrapTextWithinWidth,
   type PacketDocumentInput,
 } from './packetPdf';
 import { getTrainingProviderIdentity } from './providerIdentity';
@@ -63,8 +65,16 @@ describe('J5 / J6 PDF renderers', () => {
   });
 
   it('embeds a drawn PNG signature', async () => {
+    assert.equal(await isValidDrawnSignaturePng(TINY_PNG), true);
     const j5 = await renderJ5InvoicePdf(input({ signatureImage: TINY_PNG }));
     assert.equal(await pageCount(j5), 1);
+  });
+
+  it('rejects a corrupt drawn signature instead of substituting an unacknowledged typed one', async () => {
+    const corrupt = 'data:image/png;base64,AAAA';
+    assert.equal(await isValidDrawnSignaturePng(corrupt), false);
+    await assert.rejects(renderJ5InvoicePdf(input({ signatureImage: corrupt })), /drawn signature image is invalid/);
+    await assert.rejects(renderJ6CoverLetterPdf(input({ signatureImage: corrupt })), /drawn signature image is invalid/);
   });
 
   it('keeps a full 10-class program to one page per document', async () => {
@@ -108,6 +118,41 @@ describe('J5 / J6 PDF renderers', () => {
     const longLetter = Array.from({ length: 30 }, () => 'A paragraph of cover letter text that repeats to force pagination in the renderer.').join('\n\n');
     const j6 = await renderJ6CoverLetterPdf(input({ coverLetterBody: longLetter }));
     assert.ok((await pageCount(j6)) >= 2);
+  });
+
+  it('preserves max-length bill-to text without clipping J5 or J6', async () => {
+    const billToName = `BILLTOSTART ${'Regional Funding Partner '.repeat(10)}`.slice(0, 190) + ' BILLTOEND';
+    const billToAttention = `ATTNSTART ${'Accounts Payable Department '.repeat(10)}`.slice(0, 191) + ' ATTNEND';
+    const billToAddress = `ADDRESSSTART ${'Long Funding Office Address Lane '.repeat(20)}`.slice(0, 589) + ' ADDRESSEND';
+    const billToEmail = `billing@${'x'.repeat(40)}.${'y'.repeat(40)}.${'z'.repeat(40)}.${'w'.repeat(40)}.${'q'.repeat(23)}.test`;
+    assert.equal(billToName.length, 200);
+    assert.equal(billToAttention.length, 199);
+    assert.equal(billToAddress.length, 600);
+    assert.equal(billToEmail.length, 200);
+
+    const font = await (await PDFDocument.create()).embedFont(StandardFonts.Helvetica);
+    for (const [value, size, width] of [
+      [billToName, 10, 240],
+      [billToAttention, 10, 240],
+      [billToAddress, 10, 240],
+      [billToEmail, 10, 240],
+      [billToAddress, 10.5, 504],
+      [billToEmail, 10.5, 504],
+    ] as const) {
+      const lines = wrapTextWithinWidth(value, font, size, width);
+      assert.ok(lines.length > 1);
+      assert.ok(lines.every((line) => font.widthOfTextAtSize(line, size) <= width), value);
+      assert.equal(lines.join('').replace(/\s/g, ''), value.replace(/\s/g, ''));
+    }
+
+    const packet = input({ billToName, billToAttention, billToAddress, billToEmail });
+    for (const pdf of [await renderJ5InvoicePdf(packet), await renderJ6CoverLetterPdf(packet)]) {
+      assert.ok((await pageCount(pdf)) >= 1);
+      const text = await extractTextFromResumeBuffer(Buffer.from(pdf), 'pdf');
+      for (const marker of ['BILLTOSTART', 'BILLTOEND', 'ATTNSTART', 'ATTNEND', 'ADDRESSSTART', 'ADDRESSEND', 'q'.repeat(10)]) {
+        assert.ok(text.includes(marker), `missing ${marker}`);
+      }
+    }
   });
 
   it('survives characters the standard fonts cannot encode', async () => {

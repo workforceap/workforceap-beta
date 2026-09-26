@@ -6,6 +6,7 @@ import BillingPacketList from '@/components/billing/BillingPacketList';
 import type { BillingPacketSummary } from '@/lib/billing/packetAccess';
 import { postSignCue } from '@/lib/billing/sendResultCopy';
 import type { DefaultLineItem } from '@/lib/billing/packetDefaults';
+import styles from './BillingPacketClient.module.css';
 import {
   attestationFingerprint,
   buildJ6Facts,
@@ -138,6 +139,9 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
     invoiceDate: draft.invoiceDate,
     dueDate: draft.dueDate || null,
     billToName: draft.billToName,
+    billToAttention: draft.billToAttention,
+    billToAddress: draft.billToAddress,
+    billToEmail: draft.billToEmail,
     referenceNumber: draft.referenceNumber,
     lineItems: rows,
     fundingBasis: draft.fundingBasis,
@@ -145,6 +149,8 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
     fundingReference: draft.fundingReference,
     exceptionNote: draft.exceptionNote,
     narrative: draft.coverLetterBody,
+    signerName: draft.signerName,
+    signerTitle: draft.signerTitle,
   };
   const fingerprint = attestationFingerprint(reviewed);
   const isConfirmed = (key: keyof Confirmations) => confirmed[key] === fingerprint;
@@ -371,17 +377,14 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             <div role="group" aria-label="Invoice line items" style={{ display: 'grid', gap: '0.4rem' }}>
               <div
                 aria-hidden="true"
+                className={`${styles.itemGrid} ${styles.itemHeading}`}
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(0, 1fr) 120px 140px 44px',
-                  gap: '0.5rem',
                   padding: '0 0.3rem',
                   color: 'var(--color-muted, #64748b)',
                   fontSize: '0.8125rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}
-                className="billing-row-head"
               >
                 <span>Class / item</span>
                 <span>Contact hours</span>
@@ -391,46 +394,48 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
               {draft.lineItems.map((row, i) => (
                 <div
                   key={i}
+                  className={`${styles.itemGrid} ${styles.itemRow}`}
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0, 1fr) 120px 140px 44px',
-                    gap: '0.5rem',
                     alignItems: 'center',
                     padding: '0.15rem 0.3rem',
                   }}
                 >
                   <input aria-label={`Item ${i + 1} description`} style={inputStyle} value={row.description} onChange={(e) => updateRow(i, { description: e.target.value })} required />
-                  <input
-                    aria-label={`Item ${i + 1} contact hours`}
-                    type="number"
-                    min={0}
-                    step="0.5"
-                    style={inputStyle}
-                    value={row.hours ?? ''}
-                    placeholder="n/a"
-                    onChange={(e) => updateRow(i, { hours: e.target.value === '' ? null : Number(e.target.value) })}
-                  />
-                  <input
-                    aria-label={`Item ${i + 1} amount`}
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    style={inputStyle}
-                    value={row.amount != null && Number.isFinite(row.amount) ? row.amount : ''}
-                    placeholder="Enter amount"
-                    onChange={(e) => updateRow(i, { amount: e.target.value === '' ? null : Number(e.target.value) })}
-                    required
-                  />
+                  <label className={styles.itemField}>
+                    <span className={styles.mobileLabel}>Contact hours</span>
+                    <input
+                      aria-label={`Item ${i + 1} contact hours`}
+                      type="number"
+                      min={0}
+                      step="0.5"
+                      style={inputStyle}
+                      value={row.hours ?? ''}
+                      placeholder="n/a"
+                      onChange={(e) => updateRow(i, { hours: e.target.value === '' ? null : Number(e.target.value) })}
+                    />
+                  </label>
+                  <label className={styles.itemField}>
+                    <span className={styles.mobileLabel}>Amount (USD)</span>
+                    <input
+                      aria-label={`Item ${i + 1} amount`}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      style={inputStyle}
+                      value={row.amount != null && Number.isFinite(row.amount) ? row.amount : ''}
+                      placeholder="Enter amount"
+                      onChange={(e) => updateRow(i, { amount: e.target.value === '' ? null : Number(e.target.value) })}
+                      required
+                    />
+                  </label>
                   <button type="button" className="btn btn-outline" style={{ minHeight: 36, minWidth: 36, padding: '0 0.5rem' }} onClick={() => removeRow(i)} aria-label={`Remove item ${i + 1}`}>
                     &times;
                   </button>
                 </div>
               ))}
               <div
+                className={`${styles.itemGrid} ${styles.itemTotals}`}
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(0, 1fr) 120px 140px 44px',
-                  gap: '0.5rem',
                   padding: '0.5rem 0.3rem',
                   fontWeight: 700,
                   borderTop: '1px solid var(--outline-variant, #cbd5e1)',
@@ -537,7 +542,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             <label style={labelStyle}>
               Signer name
-              <input style={inputStyle} value={draft.signerName} onChange={(e) => set('signerName', e.target.value)} required />
+              <input style={inputStyle} value={draft.signerName} onChange={(e) => { set('signerName', e.target.value); setSignature(null); }} required />
             </label>
             <label style={labelStyle}>
               Signer title

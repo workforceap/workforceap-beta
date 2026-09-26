@@ -16,7 +16,7 @@ import { resolveProgramPricing } from '@/lib/billing/packetDefaults';
 import { attestationFingerprint, buildJ6Facts, DRAFT_CURRICULUM_REASON, formatMoney, fundingReviewWarnings, narrativeMoneyViolations, toCents } from '@/lib/billing/packetText';
 import { isCurriculumOwnerVerified } from '@/shared/programCurricula';
 import { freezeLogo, type SignedPacketSnapshot } from '@/lib/billing/packetSnapshot';
-import { loadLetterheadLogo } from '@/lib/billing/packetPdf';
+import { isValidDrawnSignaturePng, loadLetterheadLogo } from '@/lib/billing/packetPdf';
 import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 import { RECONCILE_CLAIMED_MIN_AGE_MS, reconcileProviderResults, repairProviderResultsOnRead } from '@/lib/billing/sendAttempts';
@@ -109,6 +109,12 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Validation failed' }, { status: 400 });
     }
     const input = parsed.data;
+    if (input.signatureImage && !(await isValidDrawnSignaturePng(input.signatureImage))) {
+      return NextResponse.json(
+        { error: 'The drawn signature image is invalid. Draw and capture the signature again.', code: 'invalid_signature' },
+        { status: 400 },
+      );
+    }
     const supersedesPacketId = input.supersedesPacketId ?? null;
     if (supersedesPacketId && (input.supersedeReason ?? '').length < 3) {
       return NextResponse.json({ error: 'Give a reason for superseding the signed packet.' }, { status: 400 });
@@ -167,6 +173,9 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       invoiceDate: input.invoiceDate,
       dueDate: input.dueDate ?? null,
       billToName: input.billToName,
+      billToAttention: input.billToAttention,
+      billToAddress: input.billToAddress,
+      billToEmail: input.billToEmail,
       referenceNumber: input.referenceNumber,
       lineItems: input.lineItems,
       fundingBasis: funding.fundingBasis,
@@ -174,6 +183,8 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       fundingReference: funding.reference,
       exceptionNote: funding.exceptionNote,
       narrative: input.coverLetterBody,
+      signerName: input.signerName,
+      signerTitle: input.signerTitle,
     });
     if (fingerprint !== input.reviewedFingerprint) {
       return NextResponse.json(

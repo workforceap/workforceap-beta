@@ -196,6 +196,9 @@ export type ReviewedValues = {
   invoiceDate: string;
   dueDate: string | null;
   billToName: string;
+  billToAttention: string;
+  billToAddress: string;
+  billToEmail: string;
   referenceNumber: string;
   lineItems: ReadonlyArray<{ description: string; hours: number | null; amount: number | null }>;
   fundingBasis: string;
@@ -204,6 +207,8 @@ export type ReviewedValues = {
   exceptionNote: string;
   /** The J6 narrative is covered by the review too. */
   narrative: string;
+  signerName: string;
+  signerTitle: string;
 };
 
 function fnv1a(text: string, seed: number): string {
@@ -227,6 +232,9 @@ export function attestationFingerprint(v: ReviewedValues): string {
     v.invoiceDate,
     v.dueDate ?? '',
     v.billToName.trim(),
+    v.billToAttention.trim(),
+    v.billToAddress.trim(),
+    v.billToEmail.trim(),
     v.referenceNumber.trim(),
     // Amounts enter the fingerprint as whole cents.
     v.lineItems.map((row) => [row.description.trim(), row.hours ?? null, row.amount == null || !Number.isFinite(row.amount) ? null : toCents(row.amount)]),
@@ -235,6 +243,8 @@ export function attestationFingerprint(v: ReviewedValues): string {
     v.fundingReference.trim(),
     v.exceptionNote.trim(),
     v.narrative.trim(),
+    v.signerName.trim(),
+    v.signerTitle.trim(),
   ]);
   return `${fnv1a(canonical, 0x811c9dc5)}${fnv1a(canonical, 0x01000193)}`;
 }

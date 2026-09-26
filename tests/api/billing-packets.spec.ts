@@ -273,6 +273,9 @@ function body(overrides: Partial<Body> = {}, opts: { staleFingerprint?: boolean 
     invoiceDate: b.invoiceDate as string,
     dueDate: (b.dueDate as string) ?? null,
     billToName: b.billToName as string,
+    billToAttention: (b.billToAttention as string) ?? '',
+    billToAddress: (b.billToAddress as string) ?? '',
+    billToEmail: (b.billToEmail as string) ?? '',
     referenceNumber: b.referenceNumber as string,
     lineItems: b.lineItems,
     fundingBasis: f.fundingBasis as string,
@@ -280,8 +283,10 @@ function body(overrides: Partial<Body> = {}, opts: { staleFingerprint?: boolean 
     fundingReference: f.reference as string,
     exceptionNote: (f.exceptionNote as string) ?? '',
     narrative: b.coverLetterBody as string,
+    signerName: b.signerName as string,
+    signerTitle: b.signerTitle as string,
   });
-  b.reviewedFingerprint = opts.staleFingerprint ? attestationFingerprint({ programSlug: 'stale', invoiceDate: '', dueDate: null, billToName: '', referenceNumber: '', lineItems: [], fundingBasis: '', approvedAmount: null, fundingReference: '', exceptionNote: '', narrative: '' }) : fp;
+  b.reviewedFingerprint = opts.staleFingerprint ? attestationFingerprint({ programSlug: 'stale', invoiceDate: '', dueDate: null, billToName: '', billToAttention: '', billToAddress: '', billToEmail: '', referenceNumber: '', lineItems: [], fundingBasis: '', approvedAmount: null, fundingReference: '', exceptionNote: '', narrative: '', signerName: '', signerTitle: '' }) : fp;
   return b;
 }
 
@@ -376,6 +381,30 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
     const res = await createPacket(req(b), params(MEMBER));
     expect(res.status).toBe(409);
     expect((await res.json()).code).toBe('stale_attestation');
+  });
+
+  it('refuses changed bill-to and signer details after confirmation', async () => {
+    for (const [field, value] of [
+      ['billToAttention', 'Contracts Desk'],
+      ['billToAddress', '456 Other Road'],
+      ['billToEmail', 'new-ap@example.test'],
+      ['signerName', 'Another Signer'],
+      ['signerTitle', 'Finance Director'],
+    ] as const) {
+      const b = body();
+      b[field] = value;
+      const res = await createPacket(req(b), params(MEMBER));
+      expect(res.status, field).toBe(409);
+      expect((await res.json()).code, field).toBe('stale_attestation');
+    }
+    expect(db.packets).toHaveLength(0);
+  });
+
+  it('refuses a malformed drawn signature before storing a signed packet', async () => {
+    const res = await createPacket(req(body({ signatureTyped: false, signatureImage: 'data:image/png;base64,AAAA' })), params(MEMBER));
+    expect(res.status).toBe(400);
+    expect((await res.json()).code).toBe('invalid_signature');
+    expect(db.packets).toHaveLength(0);
   });
 
   it('refuses a stale attestation: values edited after the boxes were ticked', async () => {
