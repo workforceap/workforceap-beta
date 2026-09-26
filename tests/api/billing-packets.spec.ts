@@ -29,6 +29,8 @@ const mocks = vi.hoisted(() => ({
   afterSendRead: { value: null as null | (() => void) },
   /** Test hook: runs once right after the next send-row findMany. */
   afterSendFindMany: { value: null as null | (() => void) },
+  /** Test hook: a member changes after the route's first read, before the transaction locks it. */
+  beforeMemberLock: { value: null as null | (() => void) },
   /** Ordered log of send-row creates and provider-result writes. */
   trace: [] as string[],
 }));
@@ -94,6 +96,17 @@ vi.mock('@/lib/db/prisma', () => {
           await prev;
           releases.push(release);
           return 1;
+        },
+        $queryRaw: async (_sql: TemplateStringsArray, ...values: unknown[]) => {
+          const hook = mocks.beforeMemberLock.value;
+          if (hook) {
+            mocks.beforeMemberLock.value = null;
+            hook();
+          }
+          const [id, organizationId, fullName, email] = values;
+          return db.users
+            .filter((u) => u.id === id && u.organizationId === organizationId && u.deletedAt === null && u.fullName === fullName && u.email === email)
+            .map((u) => ({ id: u.id }));
         },
       };
       try {
@@ -329,12 +342,28 @@ beforeEach(() => {
   mocks.buildGate.value = null;
   mocks.afterSendRead.value = null;
   mocks.afterSendFindMany.value = null;
+  mocks.beforeMemberLock.value = null;
   mocks.trace.length = 0;
   delete process.env.BILLING_PACKET_PROVIDER_ORG_ID;
   delete process.env.EMAIL_FROM;
 });
 
 describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
+  it('refuses a member deleted or edited after the first read, before the sign transaction', async () => {
+    for (const change of [
+      (member: Row) => { member.deletedAt = new Date(); },
+      (member: Row) => { member.fullName = 'Updated Member'; },
+      (member: Row) => { member.organizationId = OTHER_ORG; },
+    ]) {
+      mocks.beforeMemberLock.value = () => change(db.users[0]);
+      const res = await createPacket(req(body()), params(MEMBER));
+      expect(res.status).toBe(409);
+      expect((await res.json()).code).toBe('stale_member');
+      expect(db.packets).toHaveLength(0);
+      db.users[0] = { id: MEMBER, fullName: 'Test Member', email: 'member@example.test', organizationId: ORG, deletedAt: null, enrolledProgram: null };
+    }
+  });
+
   it('signs with a frozen snapshot of identity, recipients, facts and the staff attestation', async () => {
     db.counselor = COUNSELOR;
     const res = await createPacket(req(body()), params(MEMBER));

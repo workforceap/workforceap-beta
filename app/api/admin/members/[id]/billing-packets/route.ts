@@ -246,6 +246,21 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
         created = await prisma.$transaction(async (tx) => {
           // Serializes signs for the same member + approval; released at commit.
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet:${member.organizationId}:${member.id}:${fundingAttestationKey}`}))`;
+          // Deletion updates the same users row. Lock it and recheck the
+          // identity captured for the signed snapshot after the slow PDF/form
+          // work, so a deletion or profile edit cannot slip in before insert.
+          const currentMember = await tx.$queryRaw<Array<{ id: string }>>`
+            SELECT id FROM users
+            WHERE id = ${member.id}::text
+              AND organization_id = ${member.organizationId}::text
+              AND deleted_at IS NULL
+              AND full_name = ${member.fullName}
+              AND email = ${member.email}
+            FOR UPDATE
+          `;
+          if (currentMember.length !== 1) {
+            throw new SupersedeRefusedError(409, 'The member changed while the packet was being signed. Refresh and review it again.', 'stale_member');
+          }
           if (supersedesPacketId) {
             // Same lock as sending the old packet, so no provider call can race the supersede.
             await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${supersedesPacketId}`}))`;

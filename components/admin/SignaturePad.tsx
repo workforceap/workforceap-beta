@@ -31,6 +31,9 @@ export default function SignaturePad({
   const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    drawing.current = false;
+    last.current = null;
+    hasInk.current = false;
     const ratio = Math.max(1, window.devicePixelRatio || 1);
     const rect = canvas.getBoundingClientRect();
     if (rect.width === 0) return;
@@ -43,7 +46,6 @@ export default function SignaturePad({
     ctx.lineJoin = 'round';
     ctx.lineWidth = 2.2;
     ctx.strokeStyle = '#1b2a6b';
-    hasInk.current = false;
   }, []);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function SignaturePad({
     const onResize = () => setupCanvas();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, [mode, setupCanvas]);
+  }, [mode, setupCanvas, signerName]);
 
   const point = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -142,6 +144,9 @@ export default function SignaturePad({
       {mode === 'draw' ? (
         <>
           <canvas
+            // A different signer gets a fresh bitmap; the effect above also
+            // clears hasInk so a click cannot recapture the previous drawing.
+            key={signerName}
             ref={canvasRef}
             role="img"
             aria-label="Signature drawing area. Draw your signature with a mouse, finger, or pen."
