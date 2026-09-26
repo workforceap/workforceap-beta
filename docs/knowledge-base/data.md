@@ -32,6 +32,7 @@ This overview shows selected declared relationships. Use the [complete Mermaid r
 | --- | --- | --- |
 | Identity vs application user | Supabase Auth identity; Prisma `User`, `Profile`, `Role`, `UserRole` | A provider identity and domain rows can be temporarily inconsistent. Follow provisioning/recovery and soft-deletion checks in [auth](../../lib/auth/server.ts) and [ensureAppUser](../../lib/member/ensureAppUser.ts). |
 | Organization vs partner/employer | `Organization` is the tenant; `Partner` and `Employer` belong to it | A partner/employer identifier is not a substitute for verified actor organization. |
+| Subgroup leader vs member detail | `SubgroupLeader`, `MemberSubgroup`; [subgroup member API](../../app/api/subgroup/members/route.ts) | Assigned leaders receive program progress and a limited placement summary. The member API does not return phone or salary; the dashboard reads only placement existence for its count. |
 | Admissions application | `Application`, eligibility/screening models | This is entry into Workforce AP; it is not a job application. |
 | Personal job tracker | `JobApplication` | Member-entered company/role/status, optionally linked to a curated job. |
 | Application to a posted job | `JobPostingApplication`, `ApplicationMessage` | Employer-facing application and conversation; scope both sides of the relationship. |

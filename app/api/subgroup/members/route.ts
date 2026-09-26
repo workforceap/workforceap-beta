@@ -7,6 +7,7 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
 import { memberProgramProgressPct } from '@/lib/partner/memberProgress';
 import { getPipelineStage, PIPELINE_STAGE_LABELS, type PipelineStudent } from '@/lib/pipeline/stage';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { subgroupPlacementSummary } from '@/lib/subgroup/memberPayload';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const GET = withApiGuc(async () => {
@@ -44,7 +45,7 @@ export const GET = withApiGuc(async () => {
           deletedAt: true,
           assessmentCompleted: true,
           placementRecord: {
-            select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true },
+            select: { employerName: true, jobTitle: true, placedAt: true },
           },
           userCertifications: { select: { certName: true, earnedAt: true } },
           applications: { select: { status: true, submittedAt: true } },
@@ -96,7 +97,7 @@ export const GET = withApiGuc(async () => {
         enrolledAt: m.enrolledAt,
         progressPct: pct,
         stage: PIPELINE_STAGE_LABELS[stage],
-        placementRecord: m.placementRecord,
+        placementRecord: subgroupPlacementSummary(m.placementRecord),
       };
     });
 
