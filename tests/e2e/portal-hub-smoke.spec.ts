@@ -33,6 +33,29 @@ async function assertInsideRole(page: Page, role: HubSmokeRole): Promise<void> {
   ).toBe(true);
 }
 
+function primaryPageHeading(page: Page, name: RegExp) {
+  return page.getByRole('heading', { level: 1, name });
+}
+
+test('page headings remain visible when the shell has a hidden matching label', async ({ page }) => {
+  const cases = [
+    { title: 'Welcome back, Member', name: PORTAL_HUB_SMOKE_PATHS.member.hubHeading },
+    { title: 'Job board', name: PORTAL_HUB_SMOKE_PATHS.member.deepHeading },
+    { title: 'Today', name: PORTAL_HUB_SMOKE_PATHS.counselor.hubHeading },
+    { title: 'Inbox zero', name: PORTAL_HUB_SMOKE_PATHS.counselor.deepHeading },
+    { title: 'Hiring', name: PORTAL_HUB_SMOKE_PATHS.employer.hubHeading },
+    { title: 'Applicants (0)', name: PORTAL_HUB_SMOKE_PATHS.employer.deepHeading },
+  ];
+
+  for (const { title, name } of cases) {
+    await page.setContent(
+      `<span class="workspace-shell-current-page" hidden>${title}</span><main><h1>${title}</h1></main>`,
+    );
+    await expect(page.getByText(title).first()).toBeHidden();
+    await expect(primaryPageHeading(page, name)).toBeVisible();
+  }
+});
+
 for (const role of PORTAL_HUB_SMOKE_ROLES as readonly HubSmokeRole[]) {
   const paths = PORTAL_HUB_SMOKE_PATHS[role];
 
@@ -50,13 +73,12 @@ for (const role of PORTAL_HUB_SMOKE_ROLES as readonly HubSmokeRole[]) {
     test(`login → ${paths.hub} → ${paths.deepLink}`, async ({ page }) => {
       await loginPortalRole(page, role);
       await assertInsideRole(page, role);
-      await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 20_000 });
-      await expect(page.getByText(paths.hubHeading).first()).toBeVisible({ timeout: 20_000 });
+      await expect(primaryPageHeading(page, paths.hubHeading)).toBeVisible({ timeout: 20_000 });
 
       await page.goto(paths.deepLink, { waitUntil: 'domcontentloaded' });
       await assertInsideRole(page, role);
-      await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 20_000 });
-      await expect(page.getByText(paths.deepHeading).first()).toBeVisible({ timeout: 20_000 });
+      await expect(page).toHaveURL((url) => url.pathname === paths.deepLink, { timeout: 20_000 });
+      await expect(primaryPageHeading(page, paths.deepHeading)).toBeVisible({ timeout: 20_000 });
     });
   });
 }
