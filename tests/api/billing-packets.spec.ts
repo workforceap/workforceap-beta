@@ -9,7 +9,7 @@ const db = vi.hoisted(() => ({
   sends: [] as Row[],
   enrollments: [] as Array<Record<string, unknown>>,
   users: [] as Row[],
-  counselor: null as null | { id: string; fullName: string; email: string; organizationId?: string; deletedAt?: Date | null },
+  counselor: null as null | { id: string; fullName: string; email: string; organizationId?: string; deletedAt?: Date | null; assigned?: boolean; active?: boolean },
   catalog: null as null | Record<string, unknown>,
   seq: 0,
 }));
@@ -33,6 +33,7 @@ const mocks = vi.hoisted(() => ({
   beforeMemberLock: { value: null as null | (() => void) },
   /** Ordered log of send-row creates and provider-result writes. */
   trace: [] as string[],
+  lockTrace: [] as string[],
 }));
 
 function p2002() {
@@ -89,6 +90,7 @@ vi.mock('@/lib/db/prisma', () => {
         ...prisma,
         $executeRaw: async (_sql: TemplateStringsArray, ...values: unknown[]) => {
           const key = String(values[0]);
+          mocks.lockTrace.push(key);
           const prev = locks.get(key) ?? Promise.resolve();
           let release!: () => void;
           const mine = new Promise<void>((r) => (release = r));
@@ -98,6 +100,16 @@ vi.mock('@/lib/db/prisma', () => {
           return 1;
         },
         $queryRaw: async (_sql: TemplateStringsArray, ...values: unknown[]) => {
+          if (_sql.join('').includes('FROM counselor_assignments AS ca')) {
+            mocks.lockTrace.push('counselor-rows');
+            const [memberId, organizationId] = values;
+            const c = db.counselor;
+            return c && memberId === db.users[0]?.id && c.assigned !== false && c.active !== false
+              && !c.deletedAt && (c.organizationId === undefined || c.organizationId === organizationId)
+              ? [{ userId: c.id, email: c.email }]
+              : [];
+          }
+          mocks.lockTrace.push('member-row');
           const hook = mocks.beforeMemberLock.value;
           if (hook) {
             mocks.beforeMemberLock.value = null;
@@ -108,7 +120,7 @@ vi.mock('@/lib/db/prisma', () => {
             .filter((u) => u.id === id && u.organizationId === organizationId && u.deletedAt === null
               && (fullName === undefined || u.fullName === fullName)
               && (email === undefined || u.email === email))
-            .map((u) => ({ id: u.id }));
+            .map((u) => ({ id: u.id, email: u.email }));
         },
       };
       try {
@@ -127,9 +139,11 @@ vi.mock('@/lib/db/prisma', () => {
     organizationProgramCatalog: { findFirst: vi.fn(async () => db.catalog) },
     counselorAssignment: {
       // Honors the read-time counselor guards: same org as asked, not deleted.
-      findFirst: vi.fn(async ({ where }: { where?: { counselor?: { user?: { organizationId?: string; deletedAt?: null } } } } = {}) => {
+      findFirst: vi.fn(async ({ where }: { where?: { counselor?: { active?: boolean; user?: { organizationId?: string; deletedAt?: null } }; active?: boolean } } = {}) => {
         const c = db.counselor;
         if (!c) return null;
+        if (where?.active && c.assigned === false) return null;
+        if (where?.counselor?.active && c.active === false) return null;
         const u = where?.counselor?.user;
         if (u?.organizationId !== undefined && c.organizationId !== undefined && c.organizationId !== u.organizationId) return null;
         if (u && 'deletedAt' in u && c.deletedAt) return null;
@@ -346,6 +360,7 @@ beforeEach(() => {
   mocks.afterSendFindMany.value = null;
   mocks.beforeMemberLock.value = null;
   mocks.trace.length = 0;
+  mocks.lockTrace.length = 0;
   delete process.env.BILLING_PACKET_PROVIDER_ORG_ID;
   delete process.env.EMAIL_FROM;
 });
@@ -1655,6 +1670,14 @@ describe('A new attempt never sends over an unacknowledged earlier copy', () => 
 });
 
 describe('Member deletion while preparing a send', () => {
+  it('fails closed on a retained packet whose member FK was detached', async () => {
+    const id = await signOne();
+    db.packets[0].memberId = null;
+    expect(await claimRecipient({ packetId: id, attemptNo: 1, recipient: 'student', email: 'member@example.test', cc: null, now: new Date() }))
+      .toEqual({ kind: 'member_inactive' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
   it('refuses the claim and makes no provider call when deletion commits after the route check', async () => {
     const id = await signOne();
     let resume!: () => void;
@@ -1671,6 +1694,67 @@ describe('Member deletion while preparing a send', () => {
     expect((await response.json()).code).toBe('member_inactive');
     expect(db.sends[0].status).toBe('pending');
     expect(mocks.send).not.toHaveBeenCalled();
+  });
+});
+
+describe('Counselor drift while preparing a send', () => {
+  it('locks counselor/member lifecycles in sorted order before the member row and packet', async () => {
+    const earlierCounselorId = '10000000-0000-4000-8000-000000000003';
+    db.counselor = { ...COUNSELOR, id: earlierCounselorId, organizationId: ORG };
+    const id = await signOne();
+    mocks.lockTrace.length = 0;
+
+    expect((await sendPacket(req({}), packetParams(id))).status).toBe(200);
+    const claimAt = mocks.lockTrace.indexOf(`billing-member-lifecycle:${earlierCounselorId}`);
+    expect(mocks.lockTrace.slice(claimAt, claimAt + 5)).toEqual([
+      `billing-member-lifecycle:${earlierCounselorId}`,
+      `billing-member-lifecycle:${MEMBER}`,
+      'member-row',
+      `billing-packet-send:${id}`,
+      'counselor-rows',
+    ]);
+  });
+
+  for (const [label, change, code] of [
+    ['deleted', () => { db.counselor!.deletedAt = new Date(); }, 'counselor_changed'],
+    ['transferred', () => { db.counselor!.organizationId = OTHER_ORG; }, 'counselor_changed'],
+    ['unassigned', () => { db.counselor!.assigned = false; }, 'counselor_changed'],
+    ['deactivated', () => { db.counselor!.active = false; }, 'counselor_changed'],
+    ['email edited', () => { db.counselor!.email = 'changed@example.test'; }, 'recipient_changed'],
+  ] as const) {
+    it(`refuses a claim after the counselor is ${label}, with no provider calls`, async () => {
+      db.counselor = { ...COUNSELOR, organizationId: ORG };
+      const id = await signOne();
+      let resume!: () => void;
+      mocks.buildGate.value = new Promise<void>((resolve) => { resume = resolve; });
+      const pending = sendPacket(req({}), packetParams(id));
+      await vi.waitFor(() => expect(db.sends.map((row) => row.status)).toEqual(['pending', 'pending']));
+
+      change();
+      mocks.buildGate.value = null;
+      resume();
+
+      const response = await pending;
+      expect(response.status).toBe(409);
+      expect((await response.json()).code).toBe(code);
+      expect(db.sends.map((row) => row.status)).toEqual(['pending', 'pending']);
+      expect(mocks.send).not.toHaveBeenCalled();
+    });
+  }
+
+  it('rechecks the counselor before the second copy when assignment changes after the student copy', async () => {
+    db.counselor = { ...COUNSELOR, organizationId: ORG };
+    const id = await signOne();
+    mocks.send.mockImplementation(async (_r: unknown, args: { to: string }) => {
+      if (args.to === 'member@example.test') db.counselor!.assigned = false;
+      return { data: { id: 'message-1' }, error: null };
+    });
+
+    const response = await sendPacket(req({}), packetParams(id));
+    expect(response.status).toBe(409);
+    expect((await response.json()).code).toBe('counselor_changed');
+    expect(mocks.send.mock.calls.map((call) => call[1].to)).toEqual(['member@example.test']);
+    expect(db.sends.map((row) => row.status)).toEqual(['sent', 'pending']);
   });
 });
 

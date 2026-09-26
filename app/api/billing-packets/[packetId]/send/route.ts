@@ -276,6 +276,9 @@ async function sendOne(args: {
   const label = recipient === 'student' ? 'student' : 'counselor';
   if (claim.kind === 'superseded') return supersededConflict();
   if (claim.kind === 'member_inactive') return conflict('The member is no longer active; this packet cannot be emailed.', 'member_inactive');
+  if (claim.kind === 'snapshot_corrupt') return conflict('The signed snapshot changed or is unreadable. Supersede and re-issue the packet before emailing it.', 'snapshot_corrupt');
+  if (claim.kind === 'counselor_changed') return conflict('The counselor assignment changed after this packet was signed. Supersede and re-issue it before emailing.', 'counselor_changed');
+  if (claim.kind === 'recipient_changed') return conflict('A recipient email changed since signing. Supersede and re-issue the packet before emailing it.', 'recipient_changed');
   if (claim.kind === 'prior_copy') return conflict(`${claim.reason} ${RECONCILE_HINT}`, 'prior_copy_accepted', { recipient });
   if (claim.kind === 'missing_row') {
     return conflict(`The ${label} copy has no send record for this attempt. ${RECONCILE_HINT}`, 'needs_reconciliation', { recipient });

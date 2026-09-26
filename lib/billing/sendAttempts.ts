@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Prisma, TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import type { OrganizationBranding } from '@/lib/tenant/organizationBranding';
+import { parseSignedSnapshot, SignedSnapshotCorruptError } from './packetSnapshot';
 
 /**
  * Send attempts for J5/J6 packets.
@@ -50,6 +51,9 @@ function isSendable(packet: { status: string; supersededAt: Date | null } | null
   return !!packet && (SENDABLE_PACKET_STATUSES as readonly string[]).includes(packet.status) && packet.supersededAt == null;
 }
 
+const sameEmail = (a: string | null | undefined, b: string | null | undefined) =>
+  (a ?? '').trim().toLowerCase() === (b ?? '').trim().toLowerCase();
+
 /**
  * Per-packet advisory lock shared by attempt start, every row claim and the
  * supersede transaction (billing-packets POST). Holding it, a caller re-reads
@@ -60,7 +64,7 @@ async function lockPacketSends(tx: Prisma.TransactionClient, packetId: string) {
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${packetId}`}))`;
   // Guaranteed repair of any provider result recorded without its status.
   await reconcileProviderResults(tx, packetId);
-  return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true, memberId: true, organizationId: true } });
+  return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true, signedSnapshot: true, memberId: true, organizationId: true } });
 }
 
 export type SendStatus =
@@ -317,6 +321,10 @@ export type ClaimOutcome =
   | { kind: 'superseded' }
   /** The member was deleted or anonymized before this copy was claimed. */
   | { kind: 'member_inactive' }
+  /** A snapshot or its recipients changed before this copy was claimed. */
+  | { kind: 'snapshot_corrupt' }
+  | { kind: 'counselor_changed' }
+  | { kind: 'recipient_changed' }
   /** No row for this recipient in the attempt: operator reconciliation. */
   | { kind: 'missing_row' }
   /**
@@ -344,21 +352,80 @@ export async function claimRecipient(args: {
   now: Date;
 }): Promise<ClaimOutcome> {
   return prisma.$transaction(async (tx): Promise<ClaimOutcome> => {
-    const packet = await lockPacketSends(tx, args.packetId);
-    if (!isSendable(packet)) return { kind: 'superseded' };
-    // The route's earlier viewer/recipient check can be stale while it builds
-    // the email. Refuse a claim if deletion or anonymization committed first.
-    // Raw query includes the tenant key explicitly and holds the member row
-    // through the claim transaction. A later delete still needs its own
-    // lifecycle barrier before the external provider call.
-    const member = await tx.$queryRaw<Array<{ id: string }>>`
-      SELECT id FROM users
-      WHERE id = ${packet!.memberId}::text
-        AND organization_id = ${packet!.organizationId}::text
+    // Read only enough to know whose lifecycle locks to take. Re-read the
+    // packet under its send lock below; a changed identity fails closed.
+    const before = await tx.trainingBillingPacket.findUnique({
+      where: { id: args.packetId },
+      select: { memberId: true, organizationId: true, signedSnapshot: true },
+    });
+    if (!before) return { kind: 'superseded' };
+    // An archived packet may retain its signed snapshot after its member FK
+    // is detached by the retention flow. It can never claim a new send.
+    if (!before.memberId) return { kind: 'member_inactive' };
+    let beforeSnapshot;
+    try {
+      beforeSnapshot = parseSignedSnapshot(before.signedSnapshot);
+    } catch (error) {
+      if (error instanceof SignedSnapshotCorruptError) return { kind: 'snapshot_corrupt' };
+      throw error;
+    }
+    if (!beforeSnapshot) return { kind: 'snapshot_corrupt' };
+    // The deletion barrier uses this same advisory key. Sort the two users so
+    // member/counselor cross-claims cannot deadlock each other. Take these
+    // before the packet lock, the same order used by the deletion barrier.
+    for (const userId of [...new Set([before.memberId, beforeSnapshot.counselor?.userId].filter((id): id is string => !!id))].sort()) {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-member-lifecycle:${userId}`}))`;
+    }
+    // Supersede locks this member before the packet lock. Match that order to
+    // avoid a packet/member deadlock while still holding the row until commit.
+    const member = await tx.$queryRaw<Array<{ id: string; email: string }>>`
+      SELECT id, email FROM users
+      WHERE id = ${before.memberId}::text
+        AND organization_id = ${before.organizationId}::text
         AND deleted_at IS NULL
       FOR UPDATE
     `;
     if (member.length !== 1) return { kind: 'member_inactive' };
+    const packet = await lockPacketSends(tx, args.packetId);
+    if (!isSendable(packet)) return { kind: 'superseded' };
+    let snapshot;
+    try {
+      snapshot = parseSignedSnapshot(packet!.signedSnapshot);
+    } catch (error) {
+      if (error instanceof SignedSnapshotCorruptError) return { kind: 'snapshot_corrupt' };
+      throw error;
+    }
+    if (!snapshot || packet!.memberId !== before.memberId || packet!.organizationId !== before.organizationId
+      || snapshot.counselor?.userId !== beforeSnapshot.counselor?.userId
+      || !sameEmail(snapshot.member.email, beforeSnapshot.member.email)
+      || !sameEmail(snapshot.counselor?.email, beforeSnapshot.counselor?.email)) return { kind: 'snapshot_corrupt' };
+    // The route's earlier viewer/recipient check can be stale while it builds
+    // the email. Refuse a claim if deletion or anonymization committed first.
+    // The tenant-scoped member row was locked above. A later delete still
+    // needs its own lifecycle barrier before the external provider call.
+    if (!sameEmail(member[0].email, snapshot.member.email)) return { kind: 'recipient_changed' };
+    // Lock the active assignment, counselor profile and user through the
+    // claim. This mirrors resolveAssignedCounselorContact's tenant scope and
+    // most-recent-active rule, closing the PDF-preparation gap before claim.
+    const assigned = await tx.$queryRaw<Array<{ userId: string; email: string }>>`
+      SELECT cu.id AS "userId", cu.email
+      FROM counselor_assignments AS ca
+      JOIN counselors AS c ON c.id = ca.counselor_id
+      JOIN users AS cu ON cu.id = c.user_id
+      WHERE ca.member_id = ${packet!.memberId}::text
+        AND ca.active = TRUE
+        AND c.active = TRUE
+        AND cu.organization_id = ${packet!.organizationId}::text
+        AND cu.deleted_at IS NULL
+      ORDER BY ca.assigned_at DESC
+      LIMIT 1
+      FOR UPDATE OF ca, c, cu
+    `;
+    const counselor = assigned[0] ?? null;
+    if ((snapshot.counselor?.userId ?? null) !== (counselor?.userId ?? null)) return { kind: 'counselor_changed' };
+    if (snapshot.counselor && !sameEmail(counselor?.email, snapshot.counselor.email)) return { kind: 'recipient_changed' };
+    const snapshotEmail = args.recipient === 'student' ? snapshot.member.email : snapshot.counselor?.email;
+    if (!snapshotEmail || !sameEmail(args.email, snapshotEmail)) return { kind: 'recipient_changed' };
     const key = { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } };
     let existing = await tx.trainingBillingPacketSend.findUnique({ where: key });
     // Every row is created pending when its attempt starts, so a missing row is
