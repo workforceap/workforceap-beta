@@ -5,7 +5,14 @@ import SignaturePad, { type SignatureValue } from '@/components/admin/SignatureP
 import BillingPacketList from '@/components/billing/BillingPacketList';
 import type { BillingPacketSummary } from '@/lib/billing/packetAccess';
 import type { PacketLineItem } from '@/lib/billing/packetSchema';
-import { defaultCoverLetterBody, formatMoney, isoDatePlusDays, totalContactHours } from '@/lib/billing/packetText';
+import {
+  defaultCoverLetterBody,
+  findCoverLetterMismatches,
+  formatMoney,
+  isoDatePlusDays,
+  totalContactHours,
+  WIOA_ITA_MAX_WITHOUT_EXCEPTION,
+} from '@/lib/billing/packetText';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 
 export type BillingProgramOption = {
@@ -47,6 +54,12 @@ type Draft = {
   coverLetterBody: string;
   signerName: string;
   signerTitle: string;
+  /** Funding approval: never prefilled; the signer records what they checked. */
+  fundingType: '' | 'wioa_ita' | 'separate_contract';
+  approvedAmount: string;
+  fundingBasis: string;
+  capException: string;
+  fundingReviewed: boolean;
 };
 
 const inputStyle: React.CSSProperties = {
@@ -103,12 +116,28 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
         : '',
       signerName: props.signer.name,
       signerTitle: props.signer.title,
+      fundingType: '',
+      approvedAmount: '',
+      fundingBasis: '',
+      capException: '',
+      fundingReviewed: false,
     };
   });
 
   const total = useMemo(() => draft.lineItems.reduce((s, r) => s + (Number.isFinite(r.amount) ? r.amount : 0), 0), [draft.lineItems]);
   const hours = useMemo(() => totalContactHours(draft.lineItems), [draft.lineItems]);
   const selectedProgram = props.programs.find((p) => p.slug === draft.programSlug) ?? null;
+  const letterIssues = useMemo(
+    () =>
+      findCoverLetterMismatches({
+        coverLetterBody: draft.coverLetterBody,
+        lineItems: draft.lineItems,
+        billToName: draft.billToName,
+        referenceNumber: draft.referenceNumber,
+      }),
+    [draft.coverLetterBody, draft.lineItems, draft.billToName, draft.referenceNumber],
+  );
+  const overItaMax = draft.fundingType === 'wioa_ita' && total > WIOA_ITA_MAX_WITHOUT_EXCEPTION;
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
@@ -157,6 +186,13 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           signerTitle: draft.signerTitle,
           signatureImage: signature.kind === 'drawn' ? signature.dataUrl : null,
           signatureTyped: signature.kind === 'typed',
+          fundingApproval: {
+            fundingType: draft.fundingType || undefined,
+            approvedAmount: draft.approvedAmount === '' ? undefined : Number(draft.approvedAmount),
+            basis: draft.fundingBasis,
+            capException: draft.capException,
+            reviewed: draft.fundingReviewed,
+          },
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; packet?: BillingPacketSummary };
@@ -164,6 +200,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
       setPackets((list) => [data.packet as BillingPacketSummary, ...list]);
       setLastCreated(data.packet);
       setSignature(null);
+      setDraft((d) => ({ ...d, fundingReviewed: false }));
       setMsg({ type: 'ok', text: `Invoice ${data.packet.packetNumber} signed. Review the PDFs below, then email them to the counselor and student.` });
       document.getElementById('billing-packet-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
@@ -264,6 +301,12 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
                 {selectedProgram ? `Prefilled with ${PRICING_SOURCE_LABEL[selectedProgram.pricingSource]}. Edit any row.` : ''}
               </span>
             </div>
+            {selectedProgram?.pricingSource === 'price_list_default' ? (
+              <p role="note" style={{ margin: 0, fontWeight: 600, color: 'var(--color-accent, #ad2c4d)' }}>
+                No catalog or syllabus price is on file for this program. $7,500 is the price-list maximum, not an approved amount:
+                record the approved amount from the ITA or contract below before signing.
+              </p>
+            ) : null}
             <div role="group" aria-label="Invoice line items" style={{ display: 'grid', gap: '0.4rem' }}>
               <div
                 aria-hidden="true"
@@ -366,7 +409,47 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             <span style={{ fontSize: '0.8125rem', color: 'var(--color-muted, #64748b)', fontWeight: 400 }}>
               Date, addressee, RE line, salutation, closing and signature are added automatically. Start lines with &ldquo;- &rdquo; for bullets.
             </span>
+            {letterIssues.length > 0 ? (
+              <span role="alert" style={{ fontSize: '0.85rem', color: 'var(--color-accent, #ad2c4d)' }}>
+                The letter no longer matches the rows above, so it cannot be signed yet: {letterIssues.join(' ')}
+              </span>
+            ) : null}
           </label>
+
+          <fieldset style={{ border: 0, padding: 0, margin: 0, display: 'grid', gap: '0.75rem' }}>
+            <legend style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Funding approval (required before signing)</legend>
+            <div style={{ display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+              <label style={labelStyle}>
+                Funding basis
+                <select style={inputStyle} value={draft.fundingType} onChange={(e) => set('fundingType', e.target.value as Draft['fundingType'])} required>
+                  <option value="">Select…</option>
+                  <option value="wioa_ita">WIOA ITA</option>
+                  <option value="separate_contract">Separate contract</option>
+                </select>
+              </label>
+              <label style={labelStyle}>
+                Approved amount (USD)
+                <input type="number" min={0} step="0.01" style={inputStyle} value={draft.approvedAmount} onChange={(e) => set('approvedAmount', e.target.value)} required />
+              </label>
+              <label style={labelStyle}>
+                ITA approval / contract reference
+                <input style={inputStyle} value={draft.fundingBasis} onChange={(e) => set('fundingBasis', e.target.value)} required />
+              </label>
+            </div>
+            {overItaMax ? (
+              <label style={labelStyle}>
+                Board-approved exception (required above {formatMoney(WIOA_ITA_MAX_WITHOUT_EXCEPTION)} for a WIOA ITA)
+                <input style={inputStyle} value={draft.capException} onChange={(e) => set('capException', e.target.value)} required />
+              </label>
+            ) : null}
+            <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.9rem' }}>
+              <input type="checkbox" checked={draft.fundingReviewed} onChange={(e) => set('fundingReviewed', e.target.checked)} style={{ marginTop: 4 }} />
+              <span>
+                I checked the approved amount and funding basis against the Board-issued ITA approval or the contract. They are not
+                taken from the price-list default.
+              </span>
+            </label>
+          </fieldset>
 
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             <label style={labelStyle}>
@@ -391,7 +474,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           ) : null}
 
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button type="submit" className="btn" style={{ minHeight: 46, padding: '0 1.25rem' }} disabled={saving || props.programs.length === 0 || draft.lineItems.length === 0}>
+            <button type="submit" className="btn" style={{ minHeight: 46, padding: '0 1.25rem' }} disabled={saving || props.programs.length === 0 || draft.lineItems.length === 0 || letterIssues.length > 0}>
               {saving ? 'Creating…' : `Create signed J5 + J6 (${formatMoney(total)})`}
             </button>
             <span style={{ fontSize: '0.85rem', color: 'var(--color-muted, #64748b)' }}>

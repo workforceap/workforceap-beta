@@ -72,6 +72,85 @@ export function defaultCoverLetterBody(args: {
   ].join('\n\n');
 }
 
+/**
+ * Above this total a WIOA ITA invoice needs a recorded Board-approved
+ * exception. Source: Workforce Solutions Capital Area Board plan PY2025-2028,
+ * p.57 ($7,500 maximum ITA, exceptions by Board-staff approval). Not applied to
+ * a separate contract, and never used as an approved amount.
+ */
+export const WIOA_ITA_MAX_WITHOUT_EXCEPTION = 7500;
+
+const MONEY_IN_TEXT = /\$\s?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?/g;
+const CLASS_BULLET = /^\s*(?:[-*]|\u2022)\s+(.+?)\s+\((\d+(?:\.\d+)?) contact hours\)\s*$/;
+const TOTAL_HOURS = /(\d+(?:\.\d+)?) total contact hours/g;
+const BILLED_TO = /billed to (.+?) as the funding partner/g;
+
+const toCents = (n: number) => Math.round(n * 100);
+
+/**
+ * Facts in the J6 letter body that contradict the J5 rows it transmits: a
+ * dollar figure that is neither the total nor a row amount, a stated total of
+ * contact hours, a listed class (name + hours) that is not a J5 class row or a
+ * J5 class missing from the list, and the default letter's bill-to and
+ * reference phrases. Empty when the letter agrees with the invoice.
+ */
+export function findCoverLetterMismatches(args: {
+  coverLetterBody: string;
+  lineItems: ReadonlyArray<PacketLineItem>;
+  billToName: string;
+  referenceNumber?: string | null;
+}): string[] {
+  const body = args.coverLetterBody;
+  const issues: string[] = [];
+  const total = args.lineItems.reduce((sum, row) => sum + (Number.isFinite(row.amount) ? row.amount : 0), 0);
+  const allowed = new Set([toCents(total), ...args.lineItems.map((row) => toCents(row.amount))]);
+
+  // A figure in a sentence about the total must be the total; any other figure
+  // must be the total or one row's amount.
+  for (const sentence of body.split(/(?<=[.!?])\s+|\n/)) {
+    const aboutTotal = /\btotal\b/i.test(sentence);
+    for (const m of sentence.matchAll(MONEY_IN_TEXT)) {
+      const cents = Number(m[1].replace(/,/g, '')) * 100 + Number((m[2] ?? '0').padEnd(2, '0'));
+      if (aboutTotal ? cents !== toCents(total) : !allowed.has(cents)) {
+        issues.push(`The letter mentions ${m[0].trim()}, but the invoice total is ${formatMoney(total)}${aboutTotal ? '' : ' and no row has that amount'}.`);
+      }
+    }
+  }
+
+  const hours = totalContactHours(args.lineItems);
+  for (const m of body.matchAll(TOTAL_HOURS)) {
+    if (Number(m[1]) !== hours) issues.push(`The letter says ${m[1]} total contact hours; the invoice rows add up to ${hours}.`);
+  }
+
+  const classRows = args.lineItems.filter((row) => row.hours != null);
+  const listed = body
+    .split('\n')
+    .map((line) => CLASS_BULLET.exec(line))
+    .filter((m): m is RegExpExecArray => m !== null)
+    .map((m) => ({ description: m[1].trim(), hours: Number(m[2]) }));
+  const key = (description: string, h: number | null) => `${description.trim().toLowerCase()}|${h ?? ''}`;
+  if (listed.length > 0) {
+    const rowKeys = new Set(classRows.map((row) => key(row.description, row.hours)));
+    const listedKeys = new Set(listed.map((c) => key(c.description, c.hours)));
+    for (const c of listed) {
+      if (!rowKeys.has(key(c.description, c.hours))) issues.push(`The letter lists "${c.description} (${c.hours} contact hours)", which is not a class row on the invoice.`);
+    }
+    for (const row of classRows) {
+      if (row.hours && !listedKeys.has(key(row.description, row.hours))) issues.push(`The invoice class "${row.description}" is missing from the letter's class list.`);
+    }
+  }
+
+  for (const m of body.matchAll(BILLED_TO)) {
+    if (m[1].trim() !== args.billToName.trim()) issues.push(`The letter says it is billed to ${m[1].trim()}; the invoice is billed to ${args.billToName.trim()}.`);
+  }
+
+  const ref = args.referenceNumber?.trim() ?? '';
+  if (body.includes('under reference ') && (!ref || !body.includes(`under reference ${ref}`))) {
+    issues.push(ref ? `The letter's reference does not match the invoice reference ${ref}.` : 'The letter cites a reference number, but the invoice has none.');
+  }
+  return issues;
+}
+
 /** Today (UTC) as YYYY-MM-DD, with an optional day offset. */
 export function isoDatePlusDays(days: number, from: Date = new Date()): string {
   const d = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate() + days));

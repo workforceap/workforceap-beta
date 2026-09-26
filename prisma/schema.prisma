@@ -2092,6 +2092,8 @@ model TrainingBillingPacket {
   sentAt          DateTime? @map("sent_at")
   sentTo          String[] @default([]) @map("sent_to")
   sendCount       Int      @default(0) @map("send_count")
+  /// Provider/member/program identity, pricing source and funding approval frozen at signing (lib/billing/packetSnapshot.ts).
+  signedSnapshot  Json?    @map("signed_snapshot")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 

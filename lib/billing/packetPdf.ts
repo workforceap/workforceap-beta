@@ -29,6 +29,8 @@ export type PacketDocumentInput = {
   member: { fullName: string; email: string };
   programTitle: string;
   provider: TrainingProviderIdentity;
+  /** Counselor assigned at signing; false drops the counselor from the J6 cc line. Unknown (legacy) keeps it. */
+  counselorAssigned?: boolean;
   /** Letterhead logo bytes (PNG). Optional so tests and cold paths never touch disk. */
   logoPng?: Uint8Array | null;
 };
@@ -443,6 +445,14 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
   return doc.save();
 }
 
+/** Enclosure and cc lines under the J6 signature. No counselor at signing, no counselor cc. */
+export function j6EnclosureLines(input: PacketDocumentInput): string[] {
+  return [
+    `Enclosure: Form J5 Training Invoice ${input.packetNumber} (${formatMoney(input.totalAmount)})`,
+    `cc: ${input.member.fullName} (participant)${input.counselorAssigned === false ? '' : '; assigned career counselor'}`,
+  ];
+}
+
 /** J6: cover letter transmitting the J5 invoice to the funding partner. */
 export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promise<Uint8Array> {
   const { doc, sheet } = await open(input, 'j6');
@@ -472,10 +482,7 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   sheet.gap(4);
   // Closing, signature, enclosure and cc are one unit: reserve exactly what
   // they occupy so the letter only breaks when the body genuinely runs long.
-  const tail = [
-    `Enclosure: Form J5 Training Invoice ${input.packetNumber} (${formatMoney(input.totalAmount)})`,
-    `cc: ${input.member.fullName} (participant); assigned career counselor`,
-  ];
+  const tail = j6EnclosureLines(input);
   sheet.ensure(14 + 4 + Sheet.signatureHeight(false, tail.length));
   sheet.text('Respectfully,', { size: 10.5 });
   sheet.gap(4);

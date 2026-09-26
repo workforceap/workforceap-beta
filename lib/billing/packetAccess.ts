@@ -5,6 +5,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 import { parseLineItems, type PacketLineItem } from './packetSchema';
 import { resolveProgramTitle } from './packetDocument';
+import { parseSignedSnapshot } from './packetSnapshot';
 
 export { resolveProgramTitle } from './packetDocument';
 
@@ -35,7 +36,7 @@ export function serializeBillingPacket(row: TrainingBillingPacket, programTitle?
     packetNumber: row.packetNumber,
     status: row.status,
     programSlug: row.programSlug,
-    programTitle: programTitle ?? resolveProgramTitle(row.programSlug),
+    programTitle: parseSignedSnapshot(row.signedSnapshot)?.programTitle ?? programTitle ?? resolveProgramTitle(row.programSlug),
     invoiceDate: row.invoiceDate.toISOString().slice(0, 10),
     dueDate: row.dueDate ? row.dueDate.toISOString().slice(0, 10) : null,
     billToName: row.billToName,

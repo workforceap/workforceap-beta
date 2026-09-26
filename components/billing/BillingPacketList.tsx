@@ -112,8 +112,9 @@ export default function BillingPacketList({
             </div>
             {canSend ? (
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-muted, #64748b)' }}>
+                {/* The admin is cc'd on the counselor copy only, so there is no cc without a counselor. */}
                 Goes to {memberEmail ?? 'the student'}
-                {counselorLabel ? ` and ${counselorLabel}` : ' (no counselor assigned yet)'}; you are cc&rsquo;d.
+                {counselorLabel ? ` and ${counselorLabel}; you are cc\u2019d on the counselor copy.` : ' only (no counselor assigned yet, so no counselor copy and no cc to you).'}
               </p>
             ) : null}
             {state && !state.busy && state.message ? (

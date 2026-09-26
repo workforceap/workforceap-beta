@@ -26,12 +26,18 @@ export type SendPacketResult = {
  * Two separate messages (different wording, each with both attachments). The
  * admin who pressed the button is cc'd on the counselor copy so the office has
  * the sent record in its own inbox.
+ *
+ * The student copy goes first because the counselor copy says "the same copy
+ * went to the student": if it fails, the counselor copy is not sent.
+ * `studentAlreadySent` skips the student copy when retrying a send whose
+ * counselor copy failed, so the student is not emailed twice.
  */
 export async function sendBillingPacketEmails(args: {
   packet: TrainingBillingPacket;
   member: { id: string; fullName: string; email: string; organizationId: string };
   counselor: { fullName: string; email: string } | null;
   ccEmail?: string | null;
+  studentAlreadySent?: boolean;
 }): Promise<SendPacketResult> {
   const resend = getResend();
   if (!resend) {
@@ -66,27 +72,30 @@ export async function sendBillingPacketEmails(args: {
 
   // Student copy.
   let studentSent = false;
-  try {
-    const first = args.member.fullName.trim().split(/\s+/)[0] || 'there';
-    const documentsUrl = `${branding.domain}/dashboard/documents`;
-    await sendBrandedEmail(resend, {
-      from: getFrom(),
-      to: args.member.email,
-      replyTo,
-      subject: sanitizeEmailSubjectLine(`Your ${facts.programTitle} enrollment documents (invoice ${facts.packetNumber})`),
-      html: brandedEmailLayout({
-        title: 'Your signed training documents',
-        bodyHtml: billingPacketStudentHtml({ firstName: first, facts, documentsUrl }),
-        ctaText: 'Open my documents',
-        ctaUrl: documentsUrl,
-        branding,
-      }),
-      attachments,
-    });
-    studentSent = true;
-    sentTo.push(args.member.email);
-  } catch (err) {
-    errors.push(`Student email failed: ${err instanceof Error ? err.message : 'send error'}`);
+  if (!args.studentAlreadySent) {
+    try {
+      const first = args.member.fullName.trim().split(/\s+/)[0] || 'there';
+      const documentsUrl = `${branding.domain}/dashboard/documents`;
+      await sendBrandedEmail(resend, {
+        from: getFrom(),
+        to: args.member.email,
+        replyTo,
+        subject: sanitizeEmailSubjectLine(`Your ${facts.programTitle} enrollment documents (invoice ${facts.packetNumber})`),
+        html: brandedEmailLayout({
+          title: 'Your signed training documents',
+          bodyHtml: billingPacketStudentHtml({ firstName: first, facts, documentsUrl }),
+          ctaText: 'Open my documents',
+          ctaUrl: documentsUrl,
+          branding,
+        }),
+        attachments,
+      });
+      studentSent = true;
+      sentTo.push(args.member.email);
+    } catch (err) {
+      errors.push(`Student email failed: ${err instanceof Error ? err.message : 'send error'}`);
+      return { sentTo, counselor: args.counselor, studentSent, counselorSent: false, errors };
+    }
   }
 
   // Counselor copy (cc the admin who sent it).

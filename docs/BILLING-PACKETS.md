@@ -19,16 +19,39 @@ that automatically emails to counselor and the student."
   - "Bill to" and signer defaults from `BILLING_*` env vars (see ENV-VARIABLES.md).
 - **Signature**: draw on a canvas (PNG embedded in both PDFs) or type the name
   with an explicit acknowledgement (rendered in italics, marked "typed signature").
+- **Funding approval (required)**: before signing, staff choose the funding
+  basis (WIOA ITA or separate contract), enter the approved amount and the ITA
+  approval / contract reference, and tick that they checked it. Nothing is
+  prefilled. The $7,500 price-list figure is a maximum, not an approval
+  (WFSCA Board plan PY2025-2028 p.57; TWC 40 TAC §840.61), so a program priced
+  from the fallback cannot be signed without this review. The server refuses a
+  total above the recorded approved amount, and a WIOA ITA total above $7,500
+  without a recorded Board-approved exception. A separate contract has no cap.
+- **J6 must match J5**: the server refuses to sign when the letter body states
+  a total, a dollar figure, total contact hours, a class list, a bill-to or a
+  reference that contradicts the J5 rows (`findCoverLetterMismatches` in
+  `packetText.ts`); the form shows the same check live. "Regenerate from the
+  rows above" fixes a letter left over from earlier rows.
 - **Create** stores one `TrainingBillingPacket` row (status `signed`) with an
-  invoice number `WAP-YYYY-NNNN` unique per organization. PDFs are rendered on
-  demand from the row (`lib/billing/packetPdf.ts`), so the two documents can
-  never disagree with each other or with what was signed.
+  invoice number `WAP-YYYY-NNNN` unique per organization, plus a
+  `signedSnapshot` (`lib/billing/packetSnapshot.ts`): provider identity,
+  member name/email, program title, whether a counselor was assigned, the
+  pricing source and the recorded funding approval. PDFs are rendered on demand
+  from the row and that snapshot (`lib/billing/packetPdf.ts`), so later member,
+  program or `BILLING_*` edits do not change a signed document. Rows without a
+  snapshot (signed before it existed) render from live values.
 - **Email to counselor and student** (`POST /api/billing-packets/[id]/send`):
   two branded emails with both PDFs attached. The student copy is plain and says
   "no cost to you"; the counselor copy has the amounts and a link to the student
   record. The admin who pressed the button is cc'd on the counselor copy. If no
-  counselor is assigned, only the student receives it and the UI says so.
-  Status moves to `sent`; re-sending is allowed and counted.
+  counselor is assigned, only the student receives it (no cc) and the UI says
+  so; the J6 cc line then names only the participant.
+  The student copy goes first; if it fails, the counselor copy is not sent. The
+  status moves to `sent` only once every required copy went out. If the
+  counselor copy fails, the student address is recorded, the status stays
+  `signed`, and pressing the button again sends the counselor copy only.
+  Re-sending a `sent` packet ("Email again") sends both copies again and is
+  counted.
 - **Downloads**: every surface offers "Download both (PDF)" — the J6 cover
   letter and J5 invoice merged into one file, in that order, so the whole packet
   prints or saves as a set — plus separate "Download J5" / "Download J6" buttons

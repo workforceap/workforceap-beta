@@ -56,6 +56,7 @@ vi.mock('@/lib/db/prisma', () => {
 vi.mock('@/lib/billing/sendPacket', () => ({ sendBillingPacketEmails: mocks.sendBillingPacketEmails }));
 
 import { POST as createPacket, GET as listPackets } from '@/app/api/admin/members/[id]/billing-packets/route';
+import { defaultCoverLetterBody } from '@/lib/billing/packetText';
 import { POST as sendPacket } from '@/app/api/billing-packets/[packetId]/send/route';
 import { GET as packetPdf } from '@/app/api/billing-packets/[packetId]/pdf/route';
 
@@ -82,6 +83,8 @@ const validBody = {
   signerName: 'Michael A. Brown, PMP, ChE',
   signerTitle: 'Executive Director',
   signatureTyped: true,
+  // Synthetic approval record; real approvals are entered by staff at signing.
+  fundingApproval: { fundingType: 'wioa_ita', approvedAmount: 1300, basis: 'TEST-ITA-0001', capException: '', reviewed: true },
 };
 
 const packetRow = {
@@ -148,6 +151,73 @@ describe('POST /api/admin/members/[id]/billing-packets', () => {
     expect(data.invoiceDate).toEqual(new Date('2026-09-04T00:00:00.000Z'));
     expect(data.billToAttention).toBe('Accounts Payable');
     expect(data.billToAddress).toBeNull();
+  });
+
+  it('freezes identity, pricing source and the recorded funding approval in a signed snapshot', async () => {
+    mocks.assignmentFindFirst.mockResolvedValue(null);
+    const res = await createPacket(req(validBody), params(MEMBER));
+    expect(res.status).toBe(201);
+    const snapshot = mocks.packetCreate.mock.calls[0][0].data.signedSnapshot;
+    expect(snapshot.version).toBe(1);
+    expect(snapshot.member).toEqual({ fullName: 'Tarrance Hopkins', email: 'tarrance@example.com' });
+    expect(snapshot.programTitle).toMatch(/IT Support/);
+    expect(snapshot.provider.legalName).toBeTruthy();
+    expect(snapshot.counselorAssigned).toBe(false);
+    expect(snapshot.fundingApproval).toMatchObject({ fundingType: 'wioa_ita', approvedAmount: 1300, basis: 'TEST-ITA-0001', reviewed: true });
+  });
+
+  it('refuses to sign the $7,500 price-list fallback without a recorded funding review', async () => {
+    // A program with no catalog row and no TWC syllabus prices from the fallback.
+    const fallbackBody = { ...validBody, programSlug: 'certified-production-technician-cpt', lineItems: [{ description: 'Tuition', hours: null, amount: 7500 }] };
+    const { fundingApproval: _omit, ...unreviewed } = fallbackBody;
+    const missing = await createPacket(req(unreviewed), params(MEMBER));
+    expect(missing.status).toBe(400);
+    expect((await missing.json()).error).toMatch(/approved amount and funding basis/);
+    const unticked = await createPacket(req({ ...fallbackBody, fundingApproval: { ...validBody.fundingApproval, approvedAmount: 7500, reviewed: false } }), params(MEMBER));
+    expect(unticked.status).toBe(400);
+    expect(mocks.packetCreate).not.toHaveBeenCalled();
+
+    const reviewed = await createPacket(req({ ...fallbackBody, fundingApproval: { ...validBody.fundingApproval, approvedAmount: 7500 } }), params(MEMBER));
+    expect(reviewed.status).toBe(201);
+    expect(mocks.packetCreate.mock.calls[0][0].data.signedSnapshot.pricing).toEqual({ source: 'price_list_default', defaultTotal: 7500 });
+  });
+
+  it('refuses a total above the approved amount the signer recorded', async () => {
+    const res = await createPacket(req({ ...validBody, fundingApproval: { ...validBody.fundingApproval, approvedAmount: 1000 } }), params(MEMBER));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/more than the approved amount/);
+    expect(mocks.packetCreate).not.toHaveBeenCalled();
+  });
+
+  it('needs a recorded Board exception for a WIOA ITA above $7,500, but not for a separate contract', async () => {
+    const big = { ...validBody, lineItems: [{ description: 'Intro to IT', hours: 10, amount: 8000 }] };
+    const ita = { ...validBody.fundingApproval, approvedAmount: 8000 };
+    const blocked = await createPacket(req({ ...big, fundingApproval: ita }), params(MEMBER));
+    expect(blocked.status).toBe(400);
+    expect((await blocked.json()).error).toMatch(/Board-approved exception/);
+
+    const withException = await createPacket(req({ ...big, fundingApproval: { ...ita, capException: 'TEST-EXCEPTION-1' } }), params(MEMBER));
+    expect(withException.status).toBe(201);
+    const contract = await createPacket(req({ ...big, fundingApproval: { ...ita, fundingType: 'separate_contract', basis: 'TEST-CONTRACT-1' } }), params(MEMBER));
+    expect(contract.status).toBe(201);
+  });
+
+  it('refuses a J6 letter drafted from the initial rows after the J5 rows were edited', async () => {
+    // The admin form seeds the letter from the default rows; adding a fee
+    // row afterwards does not rewrite it unless "Regenerate" is pressed.
+    const initialRows = [{ description: 'Intro to IT', hours: 10, amount: 1000 }];
+    const letter = (rows: typeof initialRows) =>
+      defaultCoverLetterBody({ memberName: 'Tarrance Hopkins', programTitle: 'IT Support', billToName: validBody.billToName, lineItems: rows, providerName: 'Provider', referenceNumber: 'ITA-1' });
+    const editedRows = [...initialRows, { description: 'Exam voucher', hours: null, amount: 300 } as never];
+    const stale = await createPacket(req({ ...validBody, lineItems: editedRows, coverLetterBody: letter(initialRows) }), params(MEMBER));
+    expect(stale.status).toBe(400);
+    const body = await stale.json();
+    expect(body.error).toMatch(/J6 cover letter does not match the J5 rows/);
+    expect(body.letterIssues).toEqual([expect.stringMatching(/\$1,000\.00.*\$1,300\.00/)]);
+    expect(mocks.packetCreate).not.toHaveBeenCalled();
+
+    const regenerated = await createPacket(req({ ...validBody, lineItems: editedRows, coverLetterBody: letter(editedRows) }), params(MEMBER));
+    expect(regenerated.status).toBe(201);
   });
 
   it('rejects an unsigned packet', async () => {
@@ -224,6 +294,57 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
     const res = await sendPacket(req({}), packetParams(PACKET));
     expect(res.status).toBe(200);
     expect((await res.json()).counselorMissing).toBe(true);
+  });
+
+  it('does not mark the packet sent when the counselor copy fails, and records the student copy', async () => {
+    mocks.packetFindUnique.mockResolvedValue(packetRow);
+    mocks.assignmentFindFirst.mockResolvedValue({ counselor: { user: { id: COUNSELOR, fullName: 'Casey Counselor', email: 'casey@example.org' } } });
+    mocks.userFindUnique.mockResolvedValue({ email: 'admin@workforceap.org' });
+    mocks.sendBillingPacketEmails.mockResolvedValue({
+      sentTo: ['tarrance@example.com'],
+      counselor: { fullName: 'Casey Counselor', email: 'casey@example.org' },
+      studentSent: true,
+      counselorSent: false,
+      errors: ['Counselor email failed: provider down'],
+    });
+    const res = await sendPacket(req({}), packetParams(PACKET));
+    expect(res.status).toBe(502);
+    expect((await res.json()).error).toMatch(/student copy was sent, but the counselor copy failed.*retry the counselor copy only/);
+    expect(mocks.packetUpdate).toHaveBeenCalledTimes(1);
+    const data = mocks.packetUpdate.mock.calls[0][0].data;
+    expect(data).toEqual({ sentTo: ['tarrance@example.com'] });
+    expect(data.status).toBeUndefined();
+  });
+
+  it('retries only the counselor copy after a partial send, then marks it sent', async () => {
+    mocks.packetFindUnique.mockResolvedValue({ ...packetRow, sentTo: ['tarrance@example.com'] });
+    mocks.assignmentFindFirst.mockResolvedValue({ counselor: { user: { id: COUNSELOR, fullName: 'Casey Counselor', email: 'casey@example.org' } } });
+    mocks.userFindUnique.mockResolvedValue({ email: 'admin@workforceap.org' });
+    mocks.sendBillingPacketEmails.mockResolvedValue({
+      sentTo: ['casey@example.org', 'admin@workforceap.org'],
+      counselor: { fullName: 'Casey Counselor', email: 'casey@example.org' },
+      studentSent: false,
+      counselorSent: true,
+      errors: [],
+    });
+    mocks.packetUpdate.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({ ...packetRow, status: data.status, sentAt: new Date(), sentTo: data.sentTo, sendCount: 1 }));
+    const res = await sendPacket(req({}), packetParams(PACKET));
+    expect(res.status).toBe(200);
+    expect(mocks.sendBillingPacketEmails.mock.calls[0][0].studentAlreadySent).toBe(true);
+    const data = mocks.packetUpdate.mock.calls[0][0].data;
+    expect(data.status).toBe('sent');
+    expect(data.sentTo).toEqual(['tarrance@example.com', 'casey@example.org', 'admin@workforceap.org']);
+  });
+
+  it('re-sends the student copy on a deliberate "email again" of a sent packet', async () => {
+    mocks.packetFindUnique.mockResolvedValue({ ...packetRow, status: 'sent', sentTo: ['tarrance@example.com'] });
+    mocks.assignmentFindFirst.mockResolvedValue(null);
+    mocks.userFindUnique.mockResolvedValue({ email: 'admin@workforceap.org' });
+    mocks.sendBillingPacketEmails.mockResolvedValue({ sentTo: ['tarrance@example.com'], counselor: null, studentSent: true, counselorSent: false, errors: [] });
+    mocks.packetUpdate.mockResolvedValue({ ...packetRow, status: 'sent', sentAt: new Date(), sentTo: ['tarrance@example.com'], sendCount: 2 });
+    const res = await sendPacket(req({}), packetParams(PACKET));
+    expect(res.status).toBe(200);
+    expect(mocks.sendBillingPacketEmails.mock.calls[0][0].studentAlreadySent).toBe(false);
   });
 
   it('is admin-only: a counselor cannot trigger the send', async () => {

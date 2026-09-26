@@ -88,12 +88,41 @@ describe('schema + helpers', () => {
       coverLetterBody: 'A perfectly adequate cover letter body for testing.',
       signerName: 'Michael A. Brown',
       signerTitle: 'Executive Director',
+      // Synthetic funding approval for the schema test.
+      fundingApproval: { fundingType: 'wioa_ita', approvedAmount: 100, basis: 'TEST-ITA-1', reviewed: true },
     };
     assert.equal(createPacketSchema.safeParse(base).success, false);
     assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: true }).success, true);
     assert.equal(createPacketSchema.safeParse({ ...base, signatureImage: 'data:image/png;base64,iVBORw0KGgo=' }).success, true);
     assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: true, lineItems: [{ description: 'x', amount: -1 }] }).success, false);
     assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: true, signatureImage: 'data:image/jpeg;base64,AAAA' }).success, false);
+  });
+
+  it('requires a reviewed approved amount and funding basis, never a default', () => {
+    const base = {
+      programSlug: 'google-it-support',
+      invoiceDate: '2026-09-04',
+      billToName: 'Board',
+      lineItems: [{ description: 'Intro', hours: 10, amount: 100 }],
+      coverLetterBody: 'A perfectly adequate cover letter body for testing.',
+      signerName: 'Michael A. Brown',
+      signerTitle: 'Executive Director',
+      signatureTyped: true,
+    };
+    const funding = { fundingType: 'separate_contract', approvedAmount: 100, basis: 'TEST-CONTRACT-1', reviewed: true };
+    assert.equal(createPacketSchema.safeParse({ ...base, fundingApproval: funding }).success, true);
+    const missing = createPacketSchema.safeParse(base);
+    assert.equal(missing.success, false);
+    assert.match(missing.error?.errors[0]?.message ?? '', /approved amount and funding basis/);
+    for (const bad of [
+      { ...funding, reviewed: false },
+      { ...funding, fundingType: undefined },
+      { ...funding, fundingType: 'other' },
+      { ...funding, approvedAmount: 0 },
+      { ...funding, basis: '' },
+    ]) {
+      assert.equal(createPacketSchema.safeParse({ ...base, fundingApproval: bad }).success, false, JSON.stringify(bad));
+    }
   });
 
   it('parses stored JSON rows defensively', () => {

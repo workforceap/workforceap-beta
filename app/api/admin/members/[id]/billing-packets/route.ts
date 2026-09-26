@@ -8,10 +8,13 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProgramBySlug } from '@/lib/content/programs';
-import { createPacketSchema, sumLineItems } from '@/lib/billing/packetSchema';
+import { createPacketSchema, roundMoney, sumLineItems } from '@/lib/billing/packetSchema';
 import { isUniqueViolation, nextPacketNumber } from '@/lib/billing/packetNumber';
-import { getPacketNumberPrefix } from '@/lib/billing/providerIdentity';
-import { resolveProgramTitle, serializeBillingPacket } from '@/lib/billing/packetAccess';
+import { getPacketNumberPrefix, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
+import { resolveAssignedCounselorContact, resolveProgramTitle, serializeBillingPacket } from '@/lib/billing/packetAccess';
+import { resolveProgramPricing } from '@/lib/billing/packetDefaults';
+import { findCoverLetterMismatches, formatMoney, WIOA_ITA_MAX_WITHOUT_EXCEPTION } from '@/lib/billing/packetText';
+import { buildSignedSnapshot } from '@/lib/billing/packetSnapshot';
 
 /**
  * J5 invoice + J6 cover letter packets for one member.
@@ -80,14 +83,12 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     const input = parsed.data;
 
     // The program must be one this org can bill for: the static catalog or the
-    // organization's own catalog row.
+    // organization's own catalog row. The catalog row also prices it.
     const program = getProgramBySlug(input.programSlug);
-    const catalogRow = program
-      ? null
-      : await prisma.organizationProgramCatalog.findFirst({
-          where: { organizationId: member.organizationId, programSlug: input.programSlug },
-          select: { name: true },
-        });
+    const catalogRow = await prisma.organizationProgramCatalog.findFirst({
+      where: { organizationId: member.organizationId, programSlug: input.programSlug },
+      select: { name: true, cost: true, certCost: true, bookCost: true, miscCost: true },
+    });
     if (!program && !catalogRow) {
       return NextResponse.json({ error: 'Unknown program for this organization' }, { status: 400 });
     }
@@ -97,6 +98,45 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     if (totalAmount <= 0) {
       return NextResponse.json({ error: 'The invoice total must be greater than zero' }, { status: 400 });
     }
+
+    // Sign-time guards. The schema already requires a reviewed approved amount
+    // and funding basis, so a $7,500 price-list fallback is never signed unreviewed.
+    const funding = input.fundingApproval;
+    if (totalAmount > roundMoney(funding.approvedAmount)) {
+      return NextResponse.json(
+        { error: `The invoice total (${formatMoney(totalAmount)}) is more than the approved amount you recorded (${formatMoney(funding.approvedAmount)}).` },
+        { status: 400 },
+      );
+    }
+    if (funding.fundingType === 'wioa_ita' && totalAmount > WIOA_ITA_MAX_WITHOUT_EXCEPTION && !funding.capException) {
+      return NextResponse.json(
+        { error: `A WIOA ITA invoice above ${formatMoney(WIOA_ITA_MAX_WITHOUT_EXCEPTION)} needs the Board-approved exception recorded before signing.` },
+        { status: 400 },
+      );
+    }
+    const letterIssues = findCoverLetterMismatches({
+      coverLetterBody: input.coverLetterBody,
+      lineItems: input.lineItems,
+      billToName: input.billToName,
+      referenceNumber: input.referenceNumber,
+    });
+    if (letterIssues.length > 0) {
+      return NextResponse.json(
+        { error: `The J6 cover letter does not match the J5 rows: ${letterIssues.join(' ')} Regenerate the letter from the rows or correct it before signing.`, letterIssues },
+        { status: 400 },
+      );
+    }
+
+    const pricing = resolveProgramPricing({ slug: input.programSlug }, catalogRow);
+    const counselor = await resolveAssignedCounselorContact(member.id);
+    const signedSnapshot = buildSignedSnapshot({
+      provider: getTrainingProviderIdentity(),
+      member: { fullName: member.fullName, email: member.email },
+      programTitle,
+      counselorAssigned: Boolean(counselor),
+      pricing: { source: pricing.source, defaultTotal: roundMoney(pricing.tuition + pricing.certCost + pricing.bookCost + pricing.miscCost) },
+      fundingApproval: funding,
+    });
     const now = new Date();
     const prefix = getPacketNumberPrefix();
 
@@ -127,6 +167,7 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
               signatureImage: input.signatureImage ?? null,
               signedAt: now,
               signedById: user.id,
+              signedSnapshot,
             },
           });
         });
@@ -148,6 +189,8 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
         programSlug: input.programSlug,
         packetNumber: created.packetNumber,
         totalAmount,
+        pricingSource: pricing.source,
+        fundingType: funding.fundingType,
         orgId: member.organizationId,
       },
     }).catch(() => {});

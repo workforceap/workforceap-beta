@@ -17,6 +17,34 @@ const lineItemSchema = z.object({
   amount: z.number().min(0, 'Amounts cannot be negative').max(1_000_000),
 });
 
+/**
+ * The approved amount and funding basis the signer checked against the
+ * Board-issued ITA approval or the contract. Never prefilled: the price-list
+ * default is a maximum, not an approval (TWC 40 TAC §840.61 ties ITA funding
+ * to Board approval).
+ */
+const fundingApprovalSchema = z.object(
+  {
+    fundingType: z.enum(['wioa_ita', 'separate_contract'], {
+      errorMap: () => ({ message: 'Choose the funding basis (WIOA ITA or separate contract).' }),
+    }),
+    approvedAmount: z
+      .number({ required_error: 'Enter the approved amount.', invalid_type_error: 'Enter the approved amount.' })
+      .positive('Enter the approved amount.')
+      .max(1_000_000),
+    /** ITA / voucher / contract reference or approval note. */
+    basis: z.string().trim().min(3, 'Record the ITA approval or contract reference the amount comes from.').max(300),
+    /** Board-approved exception reference; required for a WIOA ITA above the maximum. */
+    capException: z.string().trim().max(300).optional().default(''),
+    reviewed: z.literal(true, {
+      errorMap: () => ({ message: 'Confirm you reviewed the approved amount and funding basis before signing.' }),
+    }),
+  },
+  { required_error: 'Record the approved amount and funding basis before signing.' },
+);
+
+export type FundingApproval = z.infer<typeof fundingApprovalSchema>;
+
 export const createPacketSchema = z
   .object({
     programSlug: z.string().trim().min(1).max(120),
@@ -35,6 +63,7 @@ export const createPacketSchema = z
     signatureImage: z.string().regex(PNG_DATA_URL, 'Signature must be a PNG image').max(400_000).nullable().optional(),
     /** Explicit "I am signing this by typing my name" acknowledgement. */
     signatureTyped: z.boolean().optional().default(false),
+    fundingApproval: fundingApprovalSchema,
   })
   .refine((v) => Boolean(v.signatureImage) || v.signatureTyped, {
     message: 'Sign the documents (draw your signature or type your name) before creating them.',
