@@ -61,15 +61,16 @@ describe('partner Milestones badge (WAP-214)', () => {
     expect(badges.milestones_new).toBe(0);
   });
 
-  it('counts a certification, a course completion and a placement confirmation, including its legacy spelling', async () => {
+  it('counts training access and course progress, without duplicate certification or placement events', async () => {
     db.events = [
       { userId: 'member-1', eventName: 'certification_earned', createdAt: recent },
       { userId: 'member-1', eventName: 'course_completed', createdAt: recent },
       { userId: 'member-1', eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED', createdAt: recent },
+      { userId: 'member-1', eventName: 'training_access_activated', createdAt: recent },
       { userId: 'member-1', eventName: 'member_logged_in', createdAt: recent },
     ];
     const badges = await getNavBadgeCountsForUser('partner', 'partner-user');
-    expect(badges.milestones_new).toBe(3);
+    expect(badges.milestones_new).toBe(2);
   });
 
   it('reads referred members of this org who are members, not staff or fixtures', async () => {

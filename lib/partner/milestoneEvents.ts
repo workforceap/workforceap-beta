@@ -8,13 +8,11 @@ import { eventNameReadCandidates, type EventName } from '@/lib/events/names';
  */
 export const PARTNER_MILESTONE_EVENT_NAMES = [
   'program_enrolled',
+  'training_access_activated',
   'course_completed',
   'pathway_completed',
   'program_completed',
   'skill_mission_passed',
-  'certification_earned',
-  'placement_recorded',
-  'placement_confirmation_submitted',
 ] as const satisfies readonly EventName[];
 
 /** Every stored spelling of the milestone events, for `eventName: { in }` filters. */

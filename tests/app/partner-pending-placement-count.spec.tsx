@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), eventCount: vi.fn(), placements: vi.fn(), unpaid: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), pendingCount: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn(), unpaid: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
@@ -19,9 +19,13 @@ vi.mock('@/lib/auth/portalGuards', () => ({ unlinkedPartnerHref: async () => '/d
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => true }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   partner: { findUnique: mocks.partner },
-  partnerReferral: { count: mocks.count, findMany: mocks.referrals },
+  partnerReferral: {
+    count: vi.fn((args: { where?: { member?: { memberEvents?: unknown } } }) =>
+      args.where?.member?.memberEvents ? mocks.pendingCount(args) : mocks.count(args)),
+    findMany: mocks.referrals,
+  },
   placementRecord: { count: mocks.count, findMany: mocks.placements },
-  memberEvent: { findMany: mocks.events, count: mocks.eventCount },
+  memberEvent: { findMany: mocks.events, count: vi.fn() },
 } }));
 vi.mock('@/components/portal/kit/pages/PartnerOverviewKit', () => ({
   PartnerKpiGrid: ({ items }: { items: Array<{ label: string; value: string | number; subtitle?: string }> }) => (
@@ -44,7 +48,7 @@ vi.mock('@/components/portal/kit', () => ({
   DataTable: ({ rows }: { rows: Array<Record<string, unknown>> }) => (
     <ul>{rows.map((r, i) => <li key={i}>{String(r.referred ?? '')}</li>)}</ul>
   ),
-  QueueRow: ({ meta }: { meta?: string }) => <div data-testid="queue-row">{meta}</div>,
+  QueueRow: ({ title, meta }: { title?: string; meta?: string }) => <div data-testid="queue-row">{title} · {meta}</div>,
 }));
 vi.mock('@/lib/partner/unpaidVerifiedPlacements', () => ({ countUnpaidVerifiedPlacements: mocks.unpaid }));
 // The phone-width card list is a client component with its own translations; the desktop kit table is what these specs read.
@@ -73,34 +77,52 @@ beforeEach(() => {
   const pending = Array.from({ length: 8 }, (_, i) => ({
     id: `ev-${i}`,
     userId: `member-${i}`,
-    metadata: { employerName: `Employer ${i}`, jobTitle: 'Analyst' },
+    metadata: { label: 'SECRET_STAFF_NOTE', employerName: `Employer ${i}`, jobTitle: 'Analyst' },
     createdAt: new Date('2026-09-20T12:00:00Z'),
   }));
   mocks.events.mockImplementation(async (args: { take?: number }) => (args.take === 8 ? pending : []));
-  mocks.eventCount.mockResolvedValue(23);
+  mocks.pendingCount.mockResolvedValue(23);
 });
 afterEach(() => vi.unstubAllEnvs());
 
 describe('partner overview pending placement count (WAP-214)', () => {
-  it('heads the 8 listed rows with the real total, not the page size', async () => {
+  it('heads the 8 listed members with the full unique-member count', async () => {
     const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain('nextActionReviewPlacements({&quot;count&quot;:23})');
     expect(html).not.toContain('nextActionReviewPlacements({&quot;count&quot;:8})');
   });
 
-  it('counts and lists with one filter: the 90-day window and this org\'s referred members', async () => {
+  it('counts and lists the same pending members in this org and 90-day window', async () => {
     const before = Date.now();
     await PartnerDashboardPage({ searchParams: Promise.resolve({}) });
-    const where = mocks.eventCount.mock.calls[0][0].where;
+    const where = mocks.pendingCount.mock.calls[0][0].where;
     const listCall = mocks.events.mock.calls.find(([args]) => args.take === 8);
-    expect(listCall?.[0].where).toEqual(where);
+    const pendingMemberFilter = { ...where.member };
+    delete pendingMemberFilter.memberEvents;
+    expect(listCall?.[0].where.user).toMatchObject(pendingMemberFilter);
+    expect(listCall?.[0].where.eventName).toEqual(where.member.memberEvents.some.eventName);
+    expect(listCall?.[0].where.createdAt).toEqual(where.member.memberEvents.some.createdAt);
+    expect(listCall?.[0].distinct).toEqual(['userId']);
 
-    const days = (before - where.createdAt.gte.getTime()) / 86_400_000;
+    const days = (before - where.member.memberEvents.some.createdAt.gte.getTime()) / 86_400_000;
     expect(Math.round(days)).toBe(90);
-    expect(where.user).toMatchObject({
+    expect(where.member).toMatchObject({
       deletedAt: null,
       organizationId: 'org-1',
       partnerReferrals: { some: { partnerId: 'partner-1', partner: { organizationId: 'org-1' } } },
+      OR: [
+        { placementRecord: { is: null } },
+        { placementRecord: { is: { startDateVerified: false } } },
+      ],
     });
+  });
+
+  it('uses fixed pending wording and does not select or render event metadata', async () => {
+    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const listCall = mocks.events.mock.calls.find(([args]) => args.take === 8);
+    expect(listCall?.[0].select).not.toHaveProperty('metadata');
+    expect(html).toContain('pendingVerification');
+    expect(html).not.toContain('SECRET_STAFF_NOTE');
+    expect(html).not.toContain('Employer 0');
   });
 });

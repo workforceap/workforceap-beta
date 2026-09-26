@@ -20,19 +20,24 @@ async function _GET() {
       ctx.partner.organizationId,
     );
 
-    const members = pipelineMembers.map((p) => ({
-      id: p.member.id,
-      fullName: p.member.fullName,
-      stage: p.stage,
-      progress: p.progress,
-      programTitle: p.programTitle,
-      allProgramTitles: p.allProgramTitles,
-      referredAt: p.referredAt.toISOString(),
-      enrolledAt: p.member.enrolledAt?.toISOString() ?? null,
-      placedAt: p.member.placementRecord?.placedAt?.toISOString() ?? null,
-      employerName: p.member.placementRecord?.employerName ?? null,
-      jobTitle: p.member.placementRecord?.jobTitle ?? null,
-    }));
+    const members = pipelineMembers.map((p) => {
+      const verifiedPlacement = p.member.placementRecord?.startDateVerified === true
+        ? p.member.placementRecord
+        : null;
+      return {
+        id: p.member.id,
+        fullName: p.member.fullName,
+        stage: p.stage,
+        progress: p.progress,
+        programTitle: p.programTitle,
+        allProgramTitles: p.allProgramTitles,
+        referredAt: p.referredAt.toISOString(),
+        enrolledAt: p.member.enrolledAt?.toISOString() ?? null,
+        placedAt: verifiedPlacement?.placedAt?.toISOString() ?? null,
+        employerName: verifiedPlacement?.employerName ?? null,
+        jobTitle: verifiedPlacement?.jobTitle ?? null,
+      };
+    });
 
     return NextResponse.json({ members });
   } catch (error) {

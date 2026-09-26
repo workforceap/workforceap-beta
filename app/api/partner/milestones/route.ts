@@ -3,7 +3,11 @@ import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { loadPartnerReferralBundle } from '@/lib/partner/referralBundle';
-import { partnerMilestoneEventNameCandidates } from '@/lib/partner/milestoneEvents';
+import {
+  partnerEventLabel,
+  partnerPlacementLabel,
+  partnerVisibleEventNames,
+} from '@/lib/partner/partnerVisibleEvents';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -70,8 +74,10 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       if (placedAt && inRange(placedAt)) {
         rows.push({
           id: `placement-${m.id}`,
-          kind: 'placement',
-          label: `Placed at ${m.placementRecord!.employerName} — ${m.placementRecord!.jobTitle}`,
+          kind: m.placementRecord?.startDateVerified === true ? 'placement' : 'placement_pending',
+          // Confirmed wording (employer, job) only once the start date is
+          // verified; a member self-report reads as pending (#2570 rule).
+          label: partnerPlacementLabel(m.placementRecord!),
           memberId: m.id,
           memberName: m.fullName,
           at: placedAt.toISOString(),
@@ -84,15 +90,16 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       : members.map((m) => m.id);
   
     if (ids.length > 0) {
-      // Milestone events only (WAP-214): logins, page views and tool runs are
-      // not milestones, and the rail badge counts this same list.
+      // Partner-visible milestone events only (WAP-214, Vision C3): logins,
+      // page views, tool runs and staff events are never shown, and the rail
+      // badge counts this same list.
       const eventWhere: {
         userId: { in: string[] };
         eventName: { in: string[] };
         createdAt?: { gte?: Date; lte?: Date };
       } = {
         userId: { in: ids },
-        eventName: { in: partnerMilestoneEventNameCandidates() },
+        eventName: { in: partnerVisibleEventNames() },
       };
       if (fromDate || toDate) {
         eventWhere.createdAt = {};
@@ -104,14 +111,19 @@ export const GET = withApiGuc(async (request: NextRequest) => {
         where: eventWhere,
         orderBy: { createdAt: 'desc' },
         take: 200,
-        include: { user: { select: { fullName: true } } },
+        // Metadata is never selected: a partner sees a fixed label only.
+        select: {
+          id: true,
+          userId: true,
+          eventName: true,
+          createdAt: true,
+          user: { select: { fullName: true } },
+        },
       }));
   
       for (const ev of events) {
-        let label = ev.eventName;
-        if (ev.metadata && typeof ev.metadata === 'object' && ev.metadata !== null && 'label' in ev.metadata) {
-          label = `${ev.eventName} — ${String((ev.metadata as { label?: string }).label)}`;
-        }
+        const label = partnerEventLabel(ev.eventName);
+        if (!label) continue;
         rows.push({
           id: ev.id,
           kind: 'event',

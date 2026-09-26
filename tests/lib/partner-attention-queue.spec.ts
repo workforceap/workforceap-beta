@@ -94,10 +94,32 @@ describe('partner follow-up eligibility', () => {
     db.referrals.mockResolvedValue([
       referral('applicant', { enrolledProgram: null, courseEnrollments: [], enrolledAt: null }),
       referral('closed', { deletedAt: now }),
-      referral('placed', { placementRecord: { employerName: 'Synthetic', jobTitle: 'Support', placedAt: now } }),
+      referral('placed', { placementRecord: { employerName: 'Synthetic', jobTitle: 'Support', placedAt: now, startDateVerified: true } }),
       referral('certified', { userCertifications: [{ certName: 'Recorded certificate', earnedAt: now }] }),
     ]);
     expect((await loadFixtureRows()).map(row => row.memberId)).toEqual(['applicant']);
+  });
+
+  it('keeps an unverified self-report available for follow-up without calling the member placed', async () => {
+    db.referrals.mockResolvedValue([
+      referral('pending-placement', {
+        placementRecord: {
+          employerName: 'Private Employer', jobTitle: 'Private Role', placedAt: now,
+          startDateVerified: false,
+        },
+      }),
+      referral('verified-placement', {
+        placementRecord: {
+          employerName: 'Confirmed Employer', jobTitle: 'Confirmed Role', placedAt: now,
+          startDateVerified: true,
+        },
+      }),
+    ]);
+    const rows = await loadFixtureRows();
+    expect(rows.map(row => row.memberId)).toEqual(['pending-placement']);
+    expect(rows[0].stage).toBe('enrolled');
+    expect(JSON.stringify(rows)).not.toContain('Private Employer');
+    expect(JSON.stringify(rows)).not.toContain('Private Role');
   });
 
   it('applies the active partner, same-tenant member and real-member predicates before paging', () => {
@@ -108,6 +130,7 @@ describe('partner follow-up eligibility', () => {
     // not a hand-written `profile.role = 'member'`.
     expect(query.text).toContain(memberOnlyRoleSql('u').text);
     expect(query.text).toContain('NOT EXISTS (SELECT 1 FROM user_certifications');
+    expect(query.text).toContain('placement.start_date_verified = true');
     expect(query.values).toContain('partner-1');
     expect(query.values.filter(value => value === 'org-1')).toHaveLength(2);
   });

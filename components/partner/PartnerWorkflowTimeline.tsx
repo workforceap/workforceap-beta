@@ -1,4 +1,5 @@
 import { formatPortalDateTime } from '@/lib/formatDate';
+import { PARTNER_PLACEMENT_LABELS } from '@/lib/partner/partnerVisibleEvents';
 
 type Ev = {
   id: string;
@@ -30,8 +31,14 @@ export default function PartnerWorkflowTimeline({ events }: { events: Ev[] }) {
             <div className="employer-workflow-timeline-dot" aria-hidden />
             <div>
               <div className="employer-workflow-timeline-kind">{e.kind.replace(/_/g, ' ')}</div>
-              <div className="employer-workflow-timeline-headline">{e.headline}</div>
-              {e.detail ? <div className="employer-workflow-timeline-detail">{e.detail}</div> : null}
+              <div className="employer-workflow-timeline-headline">
+                {e.kind === 'placement_confirmation_submitted'
+                  ? PARTNER_PLACEMENT_LABELS.pendingVerification
+                  : e.headline}
+              </div>
+              {e.kind === 'placement_confirmation_submitted'
+                ? <div className="employer-workflow-timeline-detail">WorkforceAP will verify the placement details.</div>
+                : e.detail ? <div className="employer-workflow-timeline-detail">{e.detail}</div> : null}
               <div className="employer-workflow-timeline-meta">
                 {e.actorName ? <span>{e.actorName} · </span> : null}
                 {formatPortalDateTime(e.createdAt)}

@@ -63,6 +63,7 @@ import {
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getTourOffer } from '@/lib/tours/getTourOffer';
 import { eventNameReadCandidates } from '@/lib/events/names';
+import { partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('partner');
@@ -183,18 +184,23 @@ export default async function PartnerDashboardPage({
       organizationId: ctx.partner.organizationId,
       ...MEMBER_ONLY_WHERE,
     };
-    // Same filter and 90-day window as /partner/outcomes (WAP-214): the list
-    // shows the latest 8, the heading counts them all.
-    const pendingPlacementWhere = {
+    // One pending row and one count per referred member, even if they sent
+    // several confirmations. A verified placement is no longer pending.
+    const pendingEventFilter = {
       eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
       createdAt: { gte: pendingPlacementWindowStart() },
-      user: {
-        ...memberFilter,
-        partnerReferrals: {
-          some: { partnerId: ctx.partnerId, partner: { organizationId: ctx.partner.organizationId } },
-        },
-      },
     };
+    const pendingMemberFilter = {
+      ...memberFilter,
+      partnerReferrals: {
+        some: { partnerId: ctx.partnerId, partner: { organizationId: ctx.partner.organizationId } },
+      },
+      OR: [
+        { placementRecord: { is: null } },
+        { placementRecord: { is: { startDateVerified: false } } },
+      ],
+    };
+    const pendingPlacementWhere = { ...pendingEventFilter, user: pendingMemberFilter };
     const [
       referredCount,
       enrolledCount,
@@ -221,6 +227,7 @@ export default async function PartnerDashboardPage({
         }),
         prisma.placementRecord.count({
           where: {
+            startDateVerified: true,
             user: {
               partnerReferrals: { some: { partnerId: ctx.partnerId } },
               organizationId: ctx.partner.organizationId,
@@ -231,7 +238,8 @@ export default async function PartnerDashboardPage({
           where: pendingPlacementWhere,
           orderBy: { createdAt: 'desc' },
           take: 8,
-          select: { id: true, userId: true, metadata: true, createdAt: true },
+          distinct: ['userId'],
+          select: { id: true, userId: true, createdAt: true },
         }),
         // Same population as the "Members referred" count above, so the
         // table never lists a staff or seeded-fixture account the tile
@@ -273,7 +281,13 @@ export default async function PartnerDashboardPage({
             user: { select: { fullName: true } },
           },
         }),
-        prisma.memberEvent.count({ where: pendingPlacementWhere }),
+        prisma.partnerReferral.count({
+          where: {
+            partnerId: ctx.partnerId,
+            partner: { organizationId: ctx.partner.organizationId },
+            member: { ...pendingMemberFilter, memberEvents: { some: pendingEventFilter } },
+          },
+        }),
         // The rail badge's number (one aggregate query). A failure is unknown,
         // not zero, so the card says so instead of "no one" (WAP-215).
         countPartnerAttention(ctx.partnerId, ctx.partner.organizationId).catch((err: unknown) => {
@@ -311,7 +325,7 @@ export default async function PartnerDashboardPage({
     const referralMobileRows: PartnerMemberRow[] = recentReferrals.flatMap((r) => {
       const m = r.member;
       if (!m) return [];
-      const stage: PipelineStage = m.placementRecord ? 'placed' : m.enrolledAt ? 'enrolled' : 'applied';
+      const stage: PipelineStage = m.placementRecord?.startDateVerified ? 'placed' : m.enrolledAt ? 'enrolled' : 'applied';
       return [
         {
           id: m.id,
@@ -507,18 +521,11 @@ export default async function PartnerDashboardPage({
                 }
               />
               {pendingPlacementEvents.map((ev) => {
-                const label =
-                  ev.metadata &&
-                  typeof ev.metadata === 'object' &&
-                  ev.metadata !== null &&
-                  'label' in ev.metadata
-                    ? String((ev.metadata as { label?: string }).label)
-                    : t('pendingVerification');
                 return (
                   <QueueRow
                     key={ev.id}
                     tone="yellow"
-                    title={label}
+                    title={t('pendingVerification')}
                     meta={formatPortalDate(ev.createdAt)}
                     flag={t('pendingVerification')}
                     action={
@@ -651,7 +658,7 @@ export default async function PartnerDashboardPage({
         status: 'rewarded',
         referee: {
           deletedAt: null,
-          placementRecord: { isNot: null },
+          placementRecord: { is: { startDateVerified: true } },
         },
       },
     }),
@@ -678,11 +685,18 @@ export default async function PartnerDashboardPage({
     memberIds.length === 0
       ? []
       : await prisma.memberEvent.findMany({
-          where: { userId: { in: memberIds } },
+          where: {
+            userId: { in: memberIds },
+            eventName: { in: partnerVisibleEventNames() },
+          },
           orderBy: { createdAt: 'desc' },
           take: 15,
-          include: { user: { select: { fullName: true } } },
+          select: { id: true, eventName: true, createdAt: true, user: { select: { fullName: true } } },
         });
+  const visibleEvents = events.flatMap((event) => {
+    const label = partnerEventLabel(event.eventName);
+    return label ? [{ id: event.id, label, user: event.user, createdAt: event.createdAt }] : [];
+  });
 
   const stageCounts: Record<string, number> = {};
   for (const s of JOURNEY_STAGES) {
@@ -695,7 +709,7 @@ export default async function PartnerDashboardPage({
     }
   }
 
-  const placements = members.filter((m) => m.placementRecord).length;
+  const placements = members.filter((m) => m.placementRecord?.startDateVerified === true).length;
   const inTraining = pipelineMembers.filter((p) => p.stage === 'in_training' || p.stage === 'certified').length;
 
   const total = members.length;
@@ -710,10 +724,12 @@ export default async function PartnerDashboardPage({
   const referralTableRows = pipelineMembers.map((p) => {
     const stageLabel = (PIPELINE_STAGE_LABELS as Record<string, string>)[p.stage] ?? p.stage;
     const enrollmentDate = p.member.enrolledAt ? formatPortalDate(p.member.enrolledAt) : '—';
-    const placementDate = p.member.placementRecord?.placedAt ? formatPortalDate(p.member.placementRecord.placedAt) : '—';
+    const placementDate = p.member.placementRecord?.startDateVerified && p.member.placementRecord.placedAt
+      ? formatPortalDate(p.member.placementRecord.placedAt)
+      : '—';
     let payoutStatus = t('notPlaced');
-    if (p.member.placementRecord) payoutStatus = t('includedInEstimate');
-    else if (pendingUserIds.has(p.member.id)) payoutStatus = t('pendingVerification');
+    if (p.member.placementRecord?.startDateVerified) payoutStatus = t('includedInEstimate');
+    else if (p.member.placementRecord || pendingUserIds.has(p.member.id)) payoutStatus = t('pendingVerification');
     return {
       id: p.member.id,
       fullName: p.member.fullName ?? t('memberFallback'),
@@ -1448,17 +1464,14 @@ export default async function PartnerDashboardPage({
           <section className="partner-activity partner-panel">
             <details className="partner-activity-collapsed">
               <summary>{t('recentActivity')}</summary>
-              {events.length === 0 ? (
+              {visibleEvents.length === 0 ? (
                 <p className="partner-activity-empty">{t('noMilestoneEventsYet')}</p>
               ) : (
                 <ul>
-                  {events.map((ev) => (
+                  {visibleEvents.map((ev) => (
                     <li key={ev.id}>
                       <strong>{ev.user.fullName}</strong>
-                      <span> · {ev.eventName}</span>
-                      {ev.metadata && typeof ev.metadata === 'object' && ev.metadata !== null && 'label' in ev.metadata && (
-                        <span> — {String((ev.metadata as { label?: string }).label)}</span>
-                      )}
+                      <span> · {ev.label}</span>
                       <span className="partner-activity-date">{formatPortalDateTime(ev.createdAt)}</span>
                     </li>
                   ))}

@@ -47,7 +47,7 @@ export function encodeAttentionCursor(value: AttentionCursor): string {
 export type AttentionPageKey = { referralId: string; memberId: string; updatedAt: string; lastTouchName: string | null };
 export type AttentionQueryResult = { counts: AttentionCounts; rows: AttentionPageKey[] };
 
-/** Eligibility mirrors this caller's getPipelineStage inputs: deleted, placed,
+/** Eligibility mirrors this caller's getPipelineStage inputs: deleted, verified placed,
  * or any recorded certification is terminal; course completion alone is not.
  * Age tiers are monotonic in updatedAt, so order the full cohort BEFORE paging.
  */
@@ -70,7 +70,8 @@ export function buildAttentionPageQuery(
         AND u.organization_id = ${organizationId} AND u.deleted_at IS NULL
         AND ${memberOnlyRoleSql('u')} AND ${memberOnlyEmailSql('u')}
         AND (r.referred_at AT TIME ZONE 'UTC') <= ${asOf}::timestamptz
-        AND NOT EXISTS (SELECT 1 FROM placement_records placement WHERE placement.user_id = u.id)
+        AND NOT EXISTS (SELECT 1 FROM placement_records placement
+          WHERE placement.user_id = u.id AND placement.start_date_verified = true)
         AND NOT EXISTS (SELECT 1 FROM user_certifications certification WHERE certification.user_id = u.id)
     ), tagged AS (
       SELECT *, CASE WHEN stale_days >= 14 THEN 'high' WHEN stale_days >= 7 THEN 'medium'

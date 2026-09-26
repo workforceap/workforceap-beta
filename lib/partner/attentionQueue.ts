@@ -67,7 +67,7 @@ const attentionInclude = {
       deletedAt: true,
       assessmentCompleted: true,
       placementRecord: {
-        select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true },
+        select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true, startDateVerified: true },
       },
       userCertifications: { select: { certName: true, earnedAt: true } },
       applications: { select: { status: true, submittedAt: true } },
@@ -88,6 +88,7 @@ export function partnerAttentionRows(referrals: AttentionReferral[], lastTouchBy
       m.enrolledProgram,
       m.courseEnrollments,
     );
+    const verifiedPlacement = m.placementRecord?.startDateVerified === true ? m.placementRecord : null;
     const student: PipelineStudent = {
       id: m.id,
       fullName: m.fullName,
@@ -97,7 +98,7 @@ export function partnerAttentionRows(referrals: AttentionReferral[], lastTouchBy
       enrolledAt: m.enrolledAt,
       assessmentCompleted: m.assessmentCompleted,
       deletedAt: m.deletedAt,
-      placementRecord: m.placementRecord as PipelineStudent['placementRecord'],
+      placementRecord: verifiedPlacement as PipelineStudent['placementRecord'],
       userCertifications: m.userCertifications as PipelineStudent['userCertifications'],
       applications: m.applications,
       memberProgramProgress: m.memberProgramProgress,
