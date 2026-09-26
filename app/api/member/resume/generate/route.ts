@@ -19,6 +19,7 @@ import {
   saveEnhancedResumeText,
 } from '@/lib/resume/resumeProfileStorage';
 import { getResumeProfileRevision } from '@/lib/resume/resumeProfileRevision';
+import { hasContradictoryMissingResumeSection } from '@/lib/resume/validateGeneratedResume';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -58,15 +59,17 @@ export const POST = withApiGuc(async (request: Request) => {
       expectedPaths.resumeEnhancedPath,
     );
   
-    // Try to extract text from the uploaded original resume
-    let resumeText = sanitizeResumePlainText(body.resumeBase ?? '');
-    if (!hasSubstantiveResumeText(resumeText)) resumeText = '';
-    if (resumeText && body.resumeRevision !== startingRevision) {
+    // Client-supplied text can seed a draft only when no original is stored.
+    // When an original exists, extraction must succeed for that exact source.
+    const suppliedText = sanitizeResumePlainText(body.resumeBase ?? '');
+    if (hasSubstantiveResumeText(suppliedText) && body.resumeRevision !== startingRevision) {
       return NextResponse.json(
         { error: 'Your resume changed in another session. Reload and try again.' },
         { status: 409 },
       );
     }
+    let resumeText = expectedPaths.resumeOriginalPath ? '' : suppliedText;
+    if (!hasSubstantiveResumeText(resumeText)) resumeText = '';
     if (!resumeText) {
       try {
         const extracted = await getMemberResumePlainText(user.id, 6000, { originalOnly: true });
@@ -77,11 +80,17 @@ export const POST = withApiGuc(async (request: Request) => {
       }
     }
 
+    // An uploaded original is the member's source of truth. A profile bio can
+    // be partial, so never replace that original with a profile-only rewrite.
+    if (expectedPaths.resumeOriginalPath && !resumeText) {
+      return NextResponse.json(
+        { error: 'We could not read enough text from your uploaded resume. Upload a PDF with selectable text, DOCX, or TXT file. Your existing files were kept.' },
+        { status: 422 },
+      );
+    }
     if (!resumeText && !hasProfileResumeEvidence(profile?.profileBio)) {
       return NextResponse.json(
-        { error: expectedPaths.resumeOriginalPath
-          ? 'We could not read enough text from your uploaded resume. Add concrete work history, skills, or education to your profile bio, or upload a PDF with selectable text, DOCX, or TXT file. Your existing files were kept.'
-          : 'Add concrete work history, skills, or education to your profile bio, or upload a readable resume before building. Your existing files were kept.' },
+        { error: 'Add concrete work history, skills, or education to your profile bio, or upload a readable resume before building. Your existing files were kept.' },
         { status: 422 },
       );
     }
@@ -162,6 +171,12 @@ export const POST = withApiGuc(async (request: Request) => {
     if (!hasSubstantiveResumeText(cleanedOutput)) {
       return NextResponse.json(
         { error: 'The generated draft was not readable, so your existing resume was kept.' },
+        { status: 422 },
+      );
+    }
+    if (hasContradictoryMissingResumeSection(resumeText, cleanedOutput)) {
+      return NextResponse.json(
+        { error: 'The generated draft did not preserve details from your source resume, so your existing resume was kept.' },
         { status: 422 },
       );
     }
