@@ -74,7 +74,7 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       if (placedAt && inRange(placedAt)) {
         rows.push({
           id: `placement-${m.id}`,
-          kind: 'placement',
+          kind: m.placementRecord?.startDateVerified === true ? 'placement' : 'placement_pending',
           // Confirmed wording (employer, job) only once the start date is
           // verified; a member self-report reads as pending (#2570 rule).
           label: partnerPlacementLabel(m.placementRecord!),

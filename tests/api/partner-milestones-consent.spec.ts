@@ -156,8 +156,9 @@ describe('partner milestones consent (Vision C3)', () => {
     h.startDateVerified = false;
     const res = await GET(new NextRequest('http://localhost/api/partner/milestones'));
     const body = (await res.json()) as Body;
-    const placement = body.milestones.find((m) => m.kind === 'placement');
+    const placement = body.milestones.find((m) => m.kind === 'placement_pending');
     expect(placement?.label).toBe('Placement reported, pending verification');
+    expect(body.milestones.some((m) => m.kind === 'placement')).toBe(false);
     const text = JSON.stringify(body);
     expect(text).not.toContain('Placed at');
     expect(text).not.toContain('Acme');

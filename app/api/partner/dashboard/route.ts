@@ -33,7 +33,7 @@ async function _GET(_request: Request) {
       }
     }
 
-    const placements = members.filter((m) => m.placementRecord).length;
+    const placements = members.filter((m) => m.placementRecord?.startDateVerified === true).length;
     const enrolledCount = members.filter((m) => m.enrolledAt != null).length;
     const total = members.length;
     const payoutPerPlacement = getPartnerPlacementPayoutUsd();

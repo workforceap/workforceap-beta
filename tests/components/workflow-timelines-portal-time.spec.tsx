@@ -24,4 +24,17 @@ describe('workflow timelines render event times in Central time', () => {
     expect(html).not.toContain('2:30');
     expect(html).not.toContain('9/19/2026');
   });
+
+  it('redacts historic member placement claims in the partner timeline', () => {
+    const html = renderToStaticMarkup(<PartnerWorkflowTimeline events={[{
+      id: 'old-claim', createdAt: '2026-09-19T02:30:00Z',
+      kind: 'placement_confirmation_submitted',
+      headline: 'Private Employer offer reported by member',
+      detail: 'Private Role at Private Employer',
+      actorName: 'Fixture Actor',
+    }]} />);
+    expect(html).toContain('Placement reported, pending verification');
+    expect(html).not.toContain('Private Employer');
+    expect(html).not.toContain('Private Role');
+  });
 });

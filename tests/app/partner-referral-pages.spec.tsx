@@ -68,6 +68,16 @@ describe('partner default referral journey', () => {
     expect(screen.getAllByRole('link').filter(link => link.getAttribute('href') === '/apply')).toHaveLength(0);
   });
 
+  it('counts a referred member as placed only with a verified placement record', async () => {
+    render(await PartnerGuidePage());
+    expect(mocks.count).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        applications: { some: { referralPartnerId: 'partner-1' } },
+        placementRecord: { is: { startDateVerified: true } },
+      }),
+    }));
+  });
+
   it('falls back to the linked partner slug when the optional code is empty', async () => {
     mocks.partner.mockResolvedValue({ name: 'Synthetic Community', slug: null, referralCode: ' ', status: 'active' });
     render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
