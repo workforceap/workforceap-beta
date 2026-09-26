@@ -4,8 +4,7 @@ import { readJsonObjectBody } from '@/lib/api/readJsonBody';
 import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
-import { chatCompletion, isAIConfigured } from '@/lib/ai/groq';
-import { claudeChat, isAnthropicConfigured } from '@/lib/ai/anthropicChat';
+import { generateResumeBuildText, isResumeBuildAIConfigured } from '@/lib/ai/resumeBuildProviders';
 import { cleanLongFormPlainText } from '@/lib/ai/postProcess';
 import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
@@ -131,9 +130,7 @@ export const POST = withApiGuc(async (request: Request) => {
   
     let output = '';
     try {
-      const anthropicConfigured = isAnthropicConfigured();
-      const groqConfigured = isAIConfigured();
-      if (!anthropicConfigured && !groqConfigured) {
+      if (!isResumeBuildAIConfigured()) {
         return NextResponse.json(
           { error: 'Resume generation is temporarily unavailable. Your existing resume was kept.' },
           { status: 503 },
@@ -148,17 +145,7 @@ export const POST = withApiGuc(async (request: Request) => {
         );
       }
 
-      if (anthropicConfigured) {
-        output = (await claudeChat(systemPrompt, userContent, { maxTokens: 2000 })) ?? '';
-      } else {
-        output = (await chatCompletion(
-          [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userContent },
-          ],
-          { maxTokens: 2000, temperature: 0.5 }
-        )) ?? '';
-      }
+      output = (await generateResumeBuildText(systemPrompt, userContent)) ?? '';
     } catch (err) {
       console.error('[member/resume/generate] AI generation failed:', err);
       return NextResponse.json(
