@@ -69,28 +69,21 @@ export default async function DashboardResumePage() {
   }
   const completeness = memberState.profileCompletenessPct;
 
-  // Keep the resume paths and both saved phone sources in one owned read.
-  const resumeOwner = await withDbRetry(() =>
-    prisma.user.findUnique({
-      where: { id: user.id },
+  // The member state already resolves profile and account phone from its owned user read.
+  const profile = await withDbRetry(() =>
+    prisma.profile.findUnique({
+      where: { userId: user.id },
       select: {
-        phone: true,
-        profile: {
-          select: {
-            resumeOriginalPath: true,
-            resumeEnhancedPath: true,
-            profilePhone: true,
-          },
-        },
+        resumeOriginalPath: true,
+        resumeEnhancedPath: true,
       },
     }),
   );
-  const profile = resumeOwner?.profile;
 
   const fields = {
     name: memberState.fullName ?? "",
     email: memberState.email ?? "",
-    phone: profile?.profilePhone?.trim() || resumeOwner?.phone?.trim() || "",
+    phone: memberState.contactPhone ?? "",
   };
 
   return (
