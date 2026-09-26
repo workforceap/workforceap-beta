@@ -79,7 +79,11 @@ export default async function AdminSessionRunPage({
   }));
   if (!member) notFound();
 
-  const existingResume = await getMemberResumePlainText(memberId, 8000, {
+  const originalResume = await getMemberResumePlainText(memberId, 8000, {
+    originalOnly: true,
+    readOnlyAudit,
+  });
+  const existingResume = originalResume || await getMemberResumePlainText(memberId, 8000, {
     preferOriginal: true,
     readOnlyAudit,
   });
@@ -125,6 +129,7 @@ export default async function AdminSessionRunPage({
         memberTargetRole={member.programInterest ?? null}
         sessionId={sessionId}
         existingResume={existingResume}
+        originalResume={originalResume}
         isFreshWalkIn={fresh === '1'}
         memberDetailHref={`/admin/members/${member.id}`}
         sessionsListHref="/admin/sessions"

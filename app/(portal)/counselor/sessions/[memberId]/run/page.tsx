@@ -96,8 +96,14 @@ export default async function SessionRunPage({
   });
   if (!member) notFound();
 
-  // Hydrate existing resume text if any (empty string for walk-ins).
-  const existingResume = await getMemberResumePlainText(memberId, 8000, {
+  // Rewriter must start from the member's original, while the other session
+  // tools may still use an enhanced draft as context when the original is
+  // unavailable or cannot be extracted.
+  const originalResume = await getMemberResumePlainText(memberId, 8000, {
+    originalOnly: true,
+    readOnlyAudit,
+  });
+  const existingResume = originalResume || await getMemberResumePlainText(memberId, 8000, {
     preferOriginal: true,
     readOnlyAudit,
   });
@@ -143,6 +149,7 @@ export default async function SessionRunPage({
         memberTargetRole={member.programInterest ?? null}
         sessionId={sessionId}
         existingResume={existingResume}
+        originalResume={originalResume}
         isFreshWalkIn={fresh === '1'}
       />
     </>

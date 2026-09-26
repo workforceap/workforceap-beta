@@ -56,7 +56,10 @@ interface Props {
   memberPhone: string | null;
   memberTargetRole: string | null;
   sessionId: string;
+  /** Context for non-Rewriter tools; may be an enhanced draft. */
   existingResume: string;
+  /** Extracted original only. Never prefill Rewriter from an enhanced draft. */
+  originalResume: string;
   isFreshWalkIn: boolean;
   /** Where "Edit full profile" links to. Differs by actor (counselor vs admin). */
   memberDetailHref?: string;
@@ -86,6 +89,7 @@ export default function SessionRunClient({
   memberTargetRole,
   sessionId,
   existingResume,
+  originalResume,
   isFreshWalkIn,
   memberDetailHref,
   sessionsListHref}: Props) {
@@ -122,6 +126,7 @@ export default function SessionRunClient({
 
   // Per-tool inputs
   const [resumeText, setResumeText] = useState(existingResume);
+  const [rewriterSourceText, setRewriterSourceText] = useState(originalResume);
   const [jobTarget, setJobTarget] = useState(memberTargetRole ?? '');
   const [jobDescription, setJobDescription] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -187,6 +192,7 @@ export default function SessionRunClient({
       .join('\n');
     if (memberOnly.trim().length > 0) {
       setResumeText(memberOnly);
+      setRewriterSourceText(memberOnly);
     }
   }, [transcripts]);
 
@@ -217,6 +223,7 @@ export default function SessionRunClient({
         setUploadResumeError(data.error ?? 'Upload failed');
       } else if (data.text) {
         setResumeText(data.text);
+        setRewriterSourceText(data.text);
         setUploadResumeWarning([
           typeof data.extractionWarning === 'string' ? data.extractionWarning.trim() : '',
           data.enhancedInvalidated
@@ -271,6 +278,10 @@ export default function SessionRunClient({
     resumeAnalysisState.output || gapState.output || jobMatchState.output ||
     headlineState.output || aboutState.output || salaryState.output || pitchState.output);
   const allRun = !!(resumeState.output && coverState.output && interviewState.output);
+  const usesSavedDraftContext = !rewriterSourceText.trim() && resumeText.trim().length > 50;
+  const sharedResumeContextNote = resumeText.trim().length > 50
+    ? usesSavedDraftContext ? 'Uses saved resume draft as context.' : 'Uses resume from step 2.'
+    : null;
 
   // Tool grid: all runnable tools (excludes voice walkthrough + profile which aren't AI outputs)
   const TOOL_GRID: Array<{ key: string; label: string; state: ToolState; accent: string }> = [
@@ -316,8 +327,9 @@ export default function SessionRunClient({
 
   const runResume = () => {
     openCard('resume');
+    if (rewriterSourceText.trim().length < 50) return;
     runTool('resume', setResumeState, '/api/ai/resume-rewriter',
-      { resume: resumeText, jobTarget, targetLocation: '', targetSalary: '' },
+      { resume: rewriterSourceText, jobTarget, targetLocation: '', targetSalary: '' },
       jobTarget, (d) => (d as { output?: string }).output ?? '');
   };
   const runCover = () => {
@@ -695,10 +707,18 @@ export default function SessionRunClient({
           {uploadResumeWarning ? (
             <p role="status" style={{ margin: '0 0 0.35rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{uploadResumeWarning}</p>
           ) : null}
+          {usesSavedDraftContext ? (
+            <p role="status" style={{ margin: '0 0 0.35rem', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
+              Only a previous draft is available for the other tools. Upload the original resume or enter the member&apos;s work history to build a new one.
+            </p>
+          ) : null}
           <textarea
             id="session-resume-text"
-            value={resumeText}
-            onChange={(e) => setResumeText(e.target.value)}
+            value={rewriterSourceText}
+            onChange={(e) => {
+              setRewriterSourceText(e.target.value);
+              setResumeText(e.target.value);
+            }}
             rows={8}
             placeholder="Paste their resume, or type out their work history together — jobs, dates, what they did."
             disabled={resumeState.status === 'running'}
@@ -708,7 +728,7 @@ export default function SessionRunClient({
           type="button"
           className="btn btn-primary btn-small"
           onClick={runResume}
-          disabled={resumeState.status === 'running' || !jobTarget.trim() || resumeText.trim().length < 50}
+          disabled={resumeState.status === 'running' || !jobTarget.trim() || rewriterSourceText.trim().length < 50}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
         >
           {resumeState.status === 'running' ? (
@@ -745,6 +765,8 @@ export default function SessionRunClient({
         contextNote={
           resumeState.output
             ? `Using resume from step 2 as context.`
+            : usesSavedDraftContext
+            ? 'Will use the saved resume draft as context.'
             : resumeText.trim().length > 50
             ? 'Will use the resume input from step 2 as context.'
             : null
@@ -866,7 +888,7 @@ export default function SessionRunClient({
             ? 'Using resume + cover letter from steps 2 & 3 as context.'
             : resumeState.output
             ? 'Using resume from step 2 as context.'
-            : null
+            : sharedResumeContextNote
         }
         headerAction={
           <button
@@ -942,7 +964,7 @@ export default function SessionRunClient({
       <SectionCard id="session-card-resumeAnalysis" title="Resume Analysis" Icon={FileText} accent="var(--wa-gold)"
         isOpen={openCards.has('resumeAnalysis')} onToggle={() => toggleCard('resumeAnalysis')}
         statusBadge={resumeAnalysisState.status === 'running' ? 'Running' : resumeAnalysisState.output ? 'Done' : resumeAnalysisState.error ? 'Failed' : 'Ready'}
-        contextNote={resumeText.trim().length > 50 ? 'Uses resume from step 2.' : null}
+        contextNote={sharedResumeContextNote}
       >
         <p style={{ margin: '0 0 0.75rem', color: 'var(--color-on-surface-variant)', fontSize: '0.875rem' }}>
           Score the resume for clarity, impact, keywords, and ATS scannability. Surfaces strengths and priority improvements.
@@ -961,7 +983,7 @@ export default function SessionRunClient({
       <SectionCard id="session-card-gapAnalyzer" title="Gap Analyzer" Icon={FileText} accent={TOOL_TEAL}
         isOpen={openCards.has('gapAnalyzer')} onToggle={() => toggleCard('gapAnalyzer')}
         statusBadge={gapState.status === 'running' ? 'Running' : gapState.output ? 'Done' : gapState.error ? 'Failed' : 'Ready'}
-        contextNote={resumeText.trim().length > 50 ? 'Uses resume from step 2.' : null}
+        contextNote={sharedResumeContextNote}
       >
         <p style={{ margin: '0 0 0.75rem', color: 'var(--color-on-surface-variant)', fontSize: '0.875rem' }}>
           Detect employment gaps and generate framing language for cover letters and interviews.
@@ -980,7 +1002,7 @@ export default function SessionRunClient({
       <SectionCard id="session-card-jobMatch" title="Job Match Scorer" Icon={Search} accent="var(--wa-success)"
         isOpen={openCards.has('jobMatch')} onToggle={() => toggleCard('jobMatch')}
         statusBadge={jobMatchState.status === 'running' ? 'Running' : jobMatchState.output ? 'Done' : jobMatchState.error ? 'Failed' : 'Ready'}
-        contextNote={resumeText.trim().length > 50 ? 'Uses resume from step 2.' : null}
+        contextNote={sharedResumeContextNote}
       >
         <p style={{ margin: '0 0 0.75rem', color: 'var(--color-on-surface-variant)', fontSize: '0.875rem' }}>
           Score how well the resume matches a specific job posting and surface quick wins.
