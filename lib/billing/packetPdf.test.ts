@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
 import {
+  letterheadLayout,
   packetDocumentFilename,
   parsePacketDownloadKind,
   renderJ5InvoicePdf,
@@ -11,6 +12,8 @@ import {
   type PacketDocumentInput,
 } from './packetPdf';
 import { getTrainingProviderIdentity } from './providerIdentity';
+import { buildJ6Facts, defaultCoverLetterNarrative } from './packetText';
+import { extractTextFromResumeBuffer } from '@/lib/resume/extractTextFromResumeBuffer';
 
 // 1x1 transparent PNG.
 const TINY_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
@@ -31,7 +34,8 @@ function input(overrides: Partial<PacketDocumentInput> = {}): PacketDocumentInpu
       { description: 'Certification exam voucher(s)', hours: null, amount: 300 },
     ],
     totalAmount: 2800,
-    coverLetterBody: 'Please find enclosed the invoice.\n\n- IT Support Foundations (10 contact hours)\n- Another class\n\nThank you.',
+    coverLetterBody: 'Please find enclosed the invoice.\n\nThank you.',
+    j6Facts: ['Billed to: Workforce Solutions Capital Area', '1. IT Support Foundations (10 contact hours): $1,250.00', 'Total due: $2,800.00'],
     signerName: 'Michael A. Brown, PMP, ChE',
     signerTitle: 'Executive Director',
     signatureImage: null,
@@ -79,16 +83,18 @@ describe('J5 / J6 PDF renderers', () => {
       ['PMP Application Process and Practice Exam', 19],
     ] as const;
     const lineItems = classes.map(([description, hours]) => ({ description, hours, amount: 750 }));
-    const body = [
-      'Please find enclosed the training invoice (Form J5) from Workforce Advancement Project for Tarrance Hopkins, who is enrolled in the Project Management Professional Certificate (Microsoft) program under reference ITA-2026-4471.',
-      `The invoice covers the following classes (160 total contact hours):\n${classes.map(([n, h]) => `- ${n} (${h} contact hours)`).join('\n')}`,
-      'The total amount due is $7,500.00. A class-by-class price breakdown appears on the invoice. Training is provided at no cost to the participant; this invoice is billed to Workforce Solutions Capital Area as the funding partner.',
-      "Thank you for your partnership in advancing this participant's career. Please contact me directly with any questions about this enrollment or invoice.",
-    ].join('\n\n');
     const packet = input({
       lineItems,
       totalAmount: 7500,
-      coverLetterBody: body,
+      coverLetterBody: defaultCoverLetterNarrative('Workforce Advancement Project'),
+      j6Facts: buildJ6Facts({
+        invoiceDate: '2026-09-04',
+        dueDate: '2026-10-04',
+        billToName: 'Workforce Solutions Capital Area',
+        referenceNumber: 'ITA-2026-4471',
+        lineItems,
+        funding: { fundingType: 'wioa_ita', approvedAmount: 7500, reference: 'TEST-ITA-1' },
+      }),
       programTitle: 'Project Management Professional Certificate (Microsoft)',
     });
     assert.equal(await pageCount(await renderJ5InvoicePdf(packet)), 1);
@@ -127,6 +133,52 @@ describe('J5 / J6 PDF renderers', () => {
     assert.equal(parsePacketDownloadKind('j5'), 'j5');
     assert.equal(parsePacketDownloadKind(null), 'j5');
     assert.equal(parsePacketDownloadKind('nonsense'), 'j5');
+  });
+
+  it('fits the default letterhead in the standard band with nothing cut off', async () => {
+    const font = await (await PDFDocument.create()).embedFont(StandardFonts.Helvetica);
+    const measure = (t: string, size: number) => font.widthOfTextAtSize(t, size);
+    const provider = getTrainingProviderIdentity();
+    const layout = letterheadLayout(provider, measure, 316);
+    assert.equal(layout.headerH, 78);
+    assert.ok(layout.contactLines.every((l) => !l.includes('…') && measure(l, layout.contactSize) <= 316));
+    const joined = layout.contactLines.join('  |  ');
+    for (const part of [...provider.addressLines, provider.phone, provider.website, provider.entityLine, `EIN ${provider.ein}`]) {
+      assert.ok(joined.includes(part), part);
+    }
+    assert.equal(layout.contactLines[layout.contactLines.length - 1], `${provider.entityLine}  |  EIN ${provider.ein}`);
+  });
+
+  it('never truncates the legal entity or EIN, even with three long address lines', async () => {
+    const font = await (await PDFDocument.create()).embedFont(StandardFonts.Helvetica);
+    const measure = (t: string, size: number) => font.widthOfTextAtSize(t, size);
+    // Synthetic long address; not a real value.
+    const provider = {
+      ...getTrainingProviderIdentity(),
+      addressLines: [
+        'Building 12, Innovation and Workforce Training Campus, 1234 Example Parkway North',
+        'Suite 5000, Attention: Training Provider Accounts Receivable Department',
+        'Example City, Texas 78000-1234, United States of America',
+      ],
+    };
+    const layout = letterheadLayout(provider, measure, 316);
+    const text = [...layout.nameLines, ...layout.contactLines].join('\n');
+    assert.ok(text.includes(provider.entityLine), 'entity line intact');
+    assert.ok(text.includes(`EIN ${provider.ein}`), 'EIN intact');
+    for (const line of provider.addressLines) assert.ok(text.replace(/\n/g, ' ').includes(line), line);
+    assert.ok(layout.contactSize >= 6);
+    assert.ok(layout.contactLines.every((l) => measure(l, layout.contactSize) <= 316));
+    // The PDF still renders on one page with the taller band.
+    const bytes = await renderJ6CoverLetterPdf(input({ provider }));
+    assert.equal(await pageCount(bytes), 1);
+  });
+
+  it('prints the generated facts block before the narrative on the J6', async () => {
+    const bytes = await renderJ6CoverLetterPdf(input({ coverLetterBody: 'NARRATIVE-MARKER paragraph.' }));
+    const text = await extractTextFromResumeBuffer(Buffer.from(bytes), 'pdf');
+    const facts = text.indexOf('Invoice facts');
+    const narrative = text.indexOf('NARRATIVE-MARKER');
+    assert.ok(facts >= 0 && narrative > facts, `facts at ${facts}, narrative at ${narrative}`);
   });
 
   it('builds safe filenames', () => {

@@ -1,10 +1,25 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { allocateAmount, defaultCoverLetterBody, formatMoney, isoDatePlusDays, totalContactHours } from './packetText';
+import {
+  allocateAmount,
+  attestationFingerprint,
+  buildJ6Facts,
+  defaultCoverLetterNarrative,
+  formatLongDateOfInstant,
+  formatMoney,
+  fundingReviewWarnings,
+  isoDateInPortalTz,
+  isoDatePlusDays,
+  narrativeFactHints,
+  narrativeMoneyViolations,
+  totalContactHours,
+  type ReviewedValues,
+} from './packetText';
 import { buildDefaultLineItems, resolveProgramPricing } from './packetDefaults';
-import { createPacketSchema, parseLineItems, sumLineItems } from './packetSchema';
+import { createPacketSchema, normalizeFundingReference, parseLineItems, sumLineItems, type PacketLineItem } from './packetSchema';
 import { formatPacketNumber } from './packetNumber';
 
+// Synthetic test data only; no real ITA, contract or approval.
 describe('allocateAmount', () => {
   it('splits by weight in whole cents and always sums back to the total', () => {
     const shares = allocateAmount(7500, [10, 10, 10, 10, 10, 10]);
@@ -25,12 +40,14 @@ describe('buildDefaultLineItems + pricing', () => {
     const fromCatalog = resolveProgramPricing({ slug: 'anything' }, { cost: 4200, certCost: 300, bookCost: 0, miscCost: 50 });
     assert.equal(fromCatalog.source, 'organization_catalog');
     assert.equal(fromCatalog.tuition, 4200);
-    const fromSyllabus = resolveProgramPricing({ slug: 'google-it-support' }, null);
-    assert.ok(['syllabus', 'price_list_default'].includes(fromSyllabus.source));
-    assert.equal(resolveProgramPricing({ slug: 'no-such-program' }, null).tuition, 7500);
+    const fromSyllabus = resolveProgramPricing({ slug: 'it-support-professional-certificate-ibm' }, null);
+    assert.equal(fromSyllabus.source, 'syllabus');
+    const fallback = resolveProgramPricing({ slug: 'no-such-program' }, null);
+    assert.equal(fallback.source, 'price_list_default');
+    assert.equal(fallback.tuition, 7500, 'kept only as the price-list maximum reference');
   });
 
-  it('makes one row per class plus fee rows, and the rows sum to tuition + fees', () => {
+  it('catalog pricing: one row per class plus fee rows, and the rows sum to tuition + fees', () => {
     const pricing = resolveProgramPricing({ slug: 'x' }, { cost: 5000, certCost: 400, bookCost: 100, miscCost: 0 });
     const rows = buildDefaultLineItems({
       programTitle: 'Test Program',
@@ -40,60 +57,192 @@ describe('buildDefaultLineItems + pricing', () => {
         { name: 'Advanced', estimatedHours: 30 },
       ],
     });
-    assert.equal(rows.length, 4);
     assert.deepEqual(rows.map((r) => r.description), ['Intro', 'Advanced', 'Certification exam voucher(s)', 'Books and course materials']);
-    assert.deepEqual(rows.slice(0, 2).map((r) => r.amount), [2000, 3000]);
-    assert.equal(sumLineItems(rows), 5500);
-    assert.equal(totalContactHours(rows), 50);
+    assert.deepEqual(rows.map((r) => r.amount), [2000, 3000, 400, 100]);
+    assert.equal(sumLineItems(rows as PacketLineItem[]), 5500);
   });
 
-  it('falls back to a single tuition row when the program has no classes on file', () => {
-    const rows = buildDefaultLineItems({ programTitle: 'Custom', pricing: resolveProgramPricing({ slug: 'x' }, null), courses: [] });
-    assert.equal(rows.length, 1);
-    assert.equal(rows[0].amount, 7500);
-    assert.equal(rows[0].hours, null);
+  it('syllabus pricing is unchanged: the syllabus tuition is spread across the classes', () => {
+    const pricing = resolveProgramPricing({ slug: 'it-support-professional-certificate-ibm' }, null);
+    const rows = buildDefaultLineItems({ programTitle: 'T', pricing, courses: [{ name: 'A', estimatedHours: 1 }, { name: 'B', estimatedHours: 1 }] });
+    assert.deepEqual(rows.map((r) => r.amount), [pricing.tuition / 2, pricing.tuition / 2]);
+  });
+
+  it('no catalog or syllabus price: tuition rows are empty, never the $7,500 ceiling', () => {
+    const pricing = resolveProgramPricing({ slug: 'no-such-program' }, null);
+    const classes = buildDefaultLineItems({ programTitle: 'Custom', pricing, courses: [{ name: 'A', estimatedHours: 10 }, { name: 'B', estimatedHours: 20 }] });
+    assert.deepEqual(classes.map((r) => r.amount), [null, null]);
+    assert.deepEqual(classes.map((r) => r.hours), [10, 20]);
+    const single = buildDefaultLineItems({ programTitle: 'Custom', pricing, courses: [] });
+    assert.equal(single.length, 1);
+    assert.equal(single[0].amount, null);
   });
 });
 
-describe('defaultCoverLetterBody', () => {
-  it('names the student, program, classes, total and bill-to', () => {
-    const body = defaultCoverLetterBody({
-      memberName: 'Tarrance Hopkins',
-      programTitle: 'IT Support',
-      billToName: 'Workforce Solutions Capital Area',
-      providerName: 'Workforce Advancement Project',
-      referenceNumber: 'ITA-1',
-      lineItems: [
-        { description: 'Intro', hours: 10, amount: 1000 },
-        { description: 'Exam voucher', hours: null, amount: 250 },
-      ],
+describe('J6 facts block and narrative', () => {
+  const rows: PacketLineItem[] = [
+    { description: 'Intro', hours: 10, amount: 1000 },
+    { description: 'Advanced', hours: 20, amount: 2000 },
+    { description: 'Exam voucher', hours: null, amount: 300 },
+  ];
+  const factsFor = (lineItems: PacketLineItem[]) =>
+    buildJ6Facts({
+      invoiceDate: '2026-09-25',
+      dueDate: '2026-10-25',
+      billToName: 'Test Board',
+      referenceNumber: 'REF-1',
+      lineItems,
+      funding: { fundingType: 'wioa_ita', approvedAmount: 3300, reference: 'TEST-ITA-1' },
     });
-    assert.match(body, /Tarrance Hopkins/);
-    assert.match(body, /IT Support program under reference ITA-1/);
-    assert.match(body, /- Intro \(10 contact hours\)/);
-    assert.ok(!body.includes('- Exam voucher'), 'fee rows are not listed as classes');
-    assert.match(body, /\$1,250\.00/);
-    assert.match(body, /billed to Workforce Solutions Capital Area/);
-    assert.match(body, /no cost to the participant/);
+
+  it('states every row with its own amount, the totals, bill-to, reference, funding and dates', () => {
+    assert.deepEqual(factsFor(rows), [
+      'Invoice date: September 25, 2026; due: October 25, 2026',
+      'Billed to: Test Board',
+      'Board / ITA / voucher reference: REF-1',
+      'Funding (staff-recorded): WIOA ITA, reference TEST-ITA-1, approved amount $3,300.00',
+      '1. Intro (10 contact hours): $1,000.00',
+      '2. Advanced (20 contact hours): $2,000.00',
+      '3. Exam voucher: $300.00',
+      'Total contact hours: 30',
+      'Total due: $3,300.00',
+    ]);
+  });
+
+  it('always follows the rows after an edit', () => {
+    const edited = [{ ...rows[0], amount: 1250 }, rows[1]];
+    const facts = factsFor(edited);
+    assert.ok(facts.includes('1. Intro (10 contact hours): $1,250.00'));
+    assert.ok(facts.includes('Total due: $3,250.00'));
+    assert.ok(!facts.some((l) => l.includes('Exam voucher')));
+  });
+
+  it('the default narrative states no facts and passes the money block', () => {
+    const narrative = defaultCoverLetterNarrative('Test Provider');
+    assert.doesNotMatch(narrative, /\$\d|contact hours|enrolled/);
+    assert.deepEqual(narrativeMoneyViolations(narrative), []);
+    assert.deepEqual(narrativeFactHints(narrative), []);
+    assert.equal(narrativeFactHints('It runs 10 contact hours.').length, 1);
+  });
+
+  it('hard-blocks money in the narrative; other wording (e.g. a payer name) is left to the signer review', () => {
+    for (const text of ['Intro costs $2,000.', 'The total is 7500.', 'amount of 1300.00', '7,500 for tuition', 'The fee is 300']) {
+      assert.ok(narrativeMoneyViolations(text).length > 0, text);
+    }
+    for (const text of ['This invoice is billed to Another Workforce Board.', 'Please see Form J5 invoice enclosed.', 'Suite 200, Austin TX 78660']) {
+      assert.deepEqual(narrativeMoneyViolations(text), [], text);
+    }
+  });
+});
+
+describe('funding review warnings', () => {
+  it('warns (never blocks) for a WIOA ITA above the Capital Area standard, not for a separate contract', () => {
+    assert.equal(fundingReviewWarnings({ fundingType: 'wioa_ita', total: 7500 }).length, 0);
+    const [warning] = fundingReviewWarnings({ fundingType: 'wioa_ita', total: 8000 });
+    assert.match(warning, /Capital Area Board's standard ITA amount/);
+    assert.match(warning, /unverified/);
+    assert.equal(fundingReviewWarnings({ fundingType: 'separate_contract', total: 9000 }).length, 0);
+  });
+});
+
+describe('attestation fingerprint', () => {
+  const base: ReviewedValues = {
+    programSlug: 'p',
+    invoiceDate: '2026-09-25',
+    dueDate: null,
+    billToName: 'Board',
+    referenceNumber: '',
+    lineItems: [{ description: 'Intro', hours: 10, amount: 1000 }],
+    fundingBasis: 'wioa_ita',
+    approvedAmount: 1000,
+    fundingReference: 'TEST-ITA-1',
+    exceptionNote: '',
+    narrative: 'Narrative.',
+  };
+  it('changes when a reviewed value changes', () => {
+    const fp = attestationFingerprint(base);
+    assert.match(fp, /^[0-9a-f]{16}$/);
+    assert.equal(attestationFingerprint({ ...base }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, lineItems: [{ description: 'Intro', hours: 10, amount: 1001 }] }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, approvedAmount: 2000 }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, fundingBasis: 'separate_contract' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, fundingReference: 'TEST-ITA-2' }), fp);
+    assert.notEqual(attestationFingerprint({ ...base, narrative: 'Edited narrative.' }), fp);
   });
 });
 
 describe('schema + helpers', () => {
-  it('requires a signature (drawn or typed) and rejects negative amounts', () => {
-    const base = {
-      programSlug: 'google-it-support',
-      invoiceDate: '2026-09-04',
-      billToName: 'Board',
-      lineItems: [{ description: 'Intro', hours: 10, amount: 100 }],
-      coverLetterBody: 'A perfectly adequate cover letter body for testing.',
-      signerName: 'Michael A. Brown',
-      signerTitle: 'Executive Director',
-    };
-    assert.equal(createPacketSchema.safeParse(base).success, false);
-    assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: true }).success, true);
-    assert.equal(createPacketSchema.safeParse({ ...base, signatureImage: 'data:image/png;base64,iVBORw0KGgo=' }).success, true);
-    assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: true, lineItems: [{ description: 'x', amount: -1 }] }).success, false);
-    assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: true, signatureImage: 'data:image/jpeg;base64,AAAA' }).success, false);
+  const attestation = { fundingBasis: 'separate_contract', approvedAmount: 100, reference: 'TEST-CONTRACT-1', reviewed: true, tuitionMatches: true };
+  const base = {
+    programSlug: 'it-support-professional-certificate-ibm',
+    invoiceDate: '2026-09-04',
+    billToName: 'Board',
+    lineItems: [{ description: 'Intro', hours: 10, amount: 100 }],
+    coverLetterBody: 'A perfectly adequate cover letter body for testing.',
+    signerName: 'Michael A. Brown',
+    signerTitle: 'Executive Director',
+    signatureTyped: true,
+    fundingAttestation: attestation,
+    j6FactsReviewed: true,
+    reviewedFingerprint: '0123456789abcdef',
+  };
+
+  it('rejects fractional-cent row amounts and approved amounts; accepts whole cents with float noise', () => {
+    const rows = (amounts: number[]) => ({ ...base, lineItems: amounts.map((amount, i) => ({ description: `Row ${i}`, hours: null, amount })) });
+    assert.equal(createPacketSchema.safeParse(rows([0.005, 0.005, 0.005])).success, false);
+    assert.equal(createPacketSchema.safeParse(rows([100.001])).success, false);
+    const bad = createPacketSchema.safeParse({ ...base, fundingAttestation: { ...attestation, approvedAmount: 7500.005 } });
+    assert.equal(bad.success, false);
+    assert.match(JSON.stringify(bad.error?.issues), /whole cents/);
+    assert.equal(createPacketSchema.safeParse(rows([0.1, 0.2, 1234.56])).success, true);
+    assert.equal(createPacketSchema.safeParse({ ...base, fundingAttestation: { ...attestation, approvedAmount: 7500.01 } }).success, true);
+  });
+
+  it('the printed rows always add up to the printed total (integer cents)', () => {
+    const money = (s: string) => Math.round(Number(s.replace(/[^0-9.]/g, '')) * 100);
+    const cases: number[][] = [[0.1, 0.2], Array.from({ length: 40 }, (_, i) => 0.01 * (i + 1) + 0.1), [1000.5, 299.5, 0.07, 19.99, 0.33]];
+    for (const amounts of cases) {
+      const items = amounts.map((amount, i) => ({ description: `Row ${i}`, hours: null, amount: Math.round(amount * 100) / 100 }));
+      const facts = buildJ6Facts({ invoiceDate: '2026-09-25', dueDate: null, billToName: 'Test Board', referenceNumber: null, lineItems: items, funding: null });
+      const printedRows = facts.filter((l) => /^\d+\. /.test(l)).map((l) => money(l.split(': ').at(-1)!));
+      const printedTotal = money(facts.find((l) => l.startsWith('Total due'))!);
+      assert.equal(printedRows.reduce((a, b) => a + b, 0), printedTotal);
+      assert.equal(Math.round(sumLineItems(items) * 100), printedTotal);
+    }
+    assert.equal(sumLineItems([{ amount: 0.1 }, { amount: 0.2 }]), 0.3);
+  });
+
+  it('requires a signature (drawn or typed) and rejects negative or missing amounts', () => {
+    assert.equal(createPacketSchema.safeParse(base).success, true);
+    assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: false }).success, false);
+    assert.equal(createPacketSchema.safeParse({ ...base, signatureTyped: false, signatureImage: 'data:image/png;base64,iVBORw0KGgo=' }).success, true);
+    assert.equal(createPacketSchema.safeParse({ ...base, lineItems: [{ description: 'x', amount: -1 }] }).success, false);
+    const empty = createPacketSchema.safeParse({ ...base, lineItems: [{ description: 'x', hours: 1, amount: null }] });
+    assert.equal(empty.success, false);
+    assert.match(empty.error?.errors[0]?.message ?? '', /Enter an amount for every row/);
+    assert.equal(createPacketSchema.safeParse({ ...base, signatureImage: 'data:image/jpeg;base64,AAAA' }).success, false);
+  });
+
+  it('requires an explicit staff attestation with a known basis, a reference and a positive amount; nothing defaults', () => {
+    const { fundingAttestation: _omit, ...missing } = base;
+    const res = createPacketSchema.safeParse(missing);
+    assert.equal(res.success, false);
+    assert.match(res.error?.errors[0]?.message ?? '', /funding basis, approved amount and reference/);
+    for (const bad of [
+      { ...attestation, reviewed: false },
+      { ...attestation, reviewed: undefined },
+      { ...attestation, tuitionMatches: false },
+      { ...attestation, fundingBasis: undefined },
+      { ...attestation, fundingBasis: 'other' },
+      { ...attestation, approvedAmount: 0 },
+      { ...attestation, approvedAmount: -5 },
+      { ...attestation, reference: '' },
+      { ...attestation, reference: '   ab  ' },
+    ]) {
+      assert.equal(createPacketSchema.safeParse({ ...base, fundingAttestation: bad }).success, false, JSON.stringify(bad));
+    }
+    assert.equal(createPacketSchema.safeParse({ ...base, j6FactsReviewed: false }).success, false);
+    assert.equal(createPacketSchema.safeParse({ ...base, reviewedFingerprint: undefined }).success, false);
   });
 
   it('parses stored JSON rows defensively', () => {
@@ -104,9 +253,26 @@ describe('schema + helpers', () => {
     assert.deepEqual(parseLineItems('garbage'), []);
   });
 
+  it('canonicalizes funding references: case and punctuation variants collide', () => {
+    for (const ref of ['ITA-123', 'ita 123', 'ITA_123.', ' i.t.a-1 2 3 ']) assert.equal(normalizeFundingReference(ref), 'ITA123', ref);
+    assert.notEqual(normalizeFundingReference('ITA-124'), 'ITA123');
+  });
+
+  it('defaults form dates to the Central-time business day', () => {
+    // 23:30 CDT on Sept 25 is 04:30 UTC on Sept 26.
+    const lateEvening = new Date('2026-09-26T04:30:00Z');
+    assert.equal(isoDateInPortalTz(0, lateEvening), '2026-09-25');
+    assert.equal(isoDateInPortalTz(30, lateEvening), '2026-10-25');
+    assert.equal(isoDatePlusDays(0, lateEvening), '2026-09-26', 'the UTC helper is why the default was wrong');
+  });
+
   it('formats money, dates and invoice numbers', () => {
     assert.equal(formatMoney(1234.5), '$1,234.50');
     assert.equal(formatPacketNumber('WAP', 2026, 7), 'WAP-2026-0007');
     assert.equal(isoDatePlusDays(30, new Date('2026-09-04T12:00:00Z')), '2026-10-04');
+    assert.equal(totalContactHours([{ description: 'a', hours: 2, amount: 0 }, { description: 'b', hours: null, amount: 0 }]), 2);
+    // Instants (signed/emailed) use Central time: 8:30 pm CDT stays on the 25th.
+    assert.equal(formatLongDateOfInstant(new Date('2026-09-26T01:30:00Z')), 'September 25, 2026');
+    assert.equal(formatLongDateOfInstant('2026-09-26T06:00:00.000Z'), 'September 26, 2026');
   });
 });

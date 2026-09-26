@@ -1,78 +1,75 @@
 import type { TrainingBillingPacket } from '@prisma/client';
 import { getResend } from '@/lib/email';
-import { sendBrandedEmailOrThrowOnSkip as sendBrandedEmail } from '@/lib/email/send';
+import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
-import { getOrganizationBranding } from '@/lib/tenant/organizationBranding';
 import { billingPacketCounselorHtml, billingPacketStudentHtml, type BillingPacketEmailFacts } from '@/emails/billing-packet';
-import { loadLetterheadLogo, packetDocumentFilename, renderJ5InvoicePdf, renderJ6CoverLetterPdf } from './packetPdf';
+import { packetDocumentFilename, renderJ5InvoicePdf, renderJ6CoverLetterPdf } from './packetPdf';
 import { packetToDocumentInput } from './packetDocument';
+import type { SignedPacketSnapshot } from './packetSnapshot';
+import type { PacketRecipient, SendAttemptRecord } from './sendAttempts';
 import { formatLongDate, formatMoney } from './packetText';
 
-function getFrom(): string {
+/** From address frozen into a send attempt when it starts. */
+export function currentEmailFrom(): string {
   return process.env.EMAIL_FROM || 'WorkforceAP <hello@workforceap.org>';
 }
 
-export type SendPacketResult = {
-  sentTo: string[];
-  counselor: { fullName: string; email: string } | null;
-  studentSent: boolean;
-  counselorSent: boolean;
-  errors: string[];
+export type PacketEmail = {
+  recipient: PacketRecipient;
+  from: string;
+  to: string;
+  replyTo: string;
+  subject: string;
+  html: string;
+  attachments: Array<{ filename: string; content: Buffer }>;
 };
 
 /**
- * Email the J5 + J6 PDFs to the participant and to their assigned counselor.
- * Two separate messages (different wording, each with both attachments). The
- * admin who pressed the button is cc'd on the counselor copy so the office has
- * the sent record in its own inbox.
+ * Build one delivery email. Every input is frozen: recipients, names, the
+ * reply-to and the PDFs come from the signed snapshot and packet row; the
+ * from address and branding from the send attempt. No cc: ops asked for the
+ * student and the counselor only. So a retry of the same
+ * attempt produces the same payload. Live and NOT frozen: the email template
+ * code and the List-Unsubscribe header the mail wrapper adds (see
+ * lib/email/send.ts); a change there surfaces as a provider 409.
  */
-export async function sendBillingPacketEmails(args: {
+export async function buildPacketEmail(args: {
   packet: TrainingBillingPacket;
-  member: { id: string; fullName: string; email: string; organizationId: string };
-  counselor: { fullName: string; email: string } | null;
-  ccEmail?: string | null;
-}): Promise<SendPacketResult> {
-  const resend = getResend();
-  if (!resend) {
-    return { sentTo: [], counselor: args.counselor, studentSent: false, counselorSent: false, errors: ['Email is not configured (RESEND_API_KEY missing).'] };
-  }
-
-  const branding = await getOrganizationBranding(args.member.organizationId);
-  const input = packetToDocumentInput(args.packet, args.member, await loadLetterheadLogo());
+  snapshot: SignedPacketSnapshot;
+  attempt: SendAttemptRecord;
+  recipient: PacketRecipient;
+}): Promise<PacketEmail> {
+  const { packet, snapshot, attempt } = args;
+  const input = await packetToDocumentInput(packet, snapshot.member, async () => null);
   const [j5, j6] = await Promise.all([renderJ5InvoicePdf(input), renderJ6CoverLetterPdf(input)]);
   const attachments = [
-    { filename: packetDocumentFilename('j5', args.packet.packetNumber, args.member.fullName), content: Buffer.from(j5) },
-    { filename: packetDocumentFilename('j6', args.packet.packetNumber, args.member.fullName), content: Buffer.from(j6) },
+    { filename: packetDocumentFilename('j5', packet.packetNumber, snapshot.member.fullName), content: Buffer.from(j5) },
+    { filename: packetDocumentFilename('j6', packet.packetNumber, snapshot.member.fullName), content: Buffer.from(j6) },
   ];
-
   const facts: BillingPacketEmailFacts = {
-    memberName: args.member.fullName,
-    programTitle: input.programTitle,
-    packetNumber: args.packet.packetNumber,
-    totalLabel: formatMoney(args.packet.totalAmount),
-    billToName: args.packet.billToName,
-    invoiceDateLabel: formatLongDate(args.packet.invoiceDate),
-    signerName: args.packet.signerName,
-    signerTitle: args.packet.signerTitle,
+    memberName: snapshot.member.fullName,
+    programTitle: snapshot.programTitle,
+    packetNumber: packet.packetNumber,
+    totalLabel: formatMoney(packet.totalAmount),
+    billToName: packet.billToName,
+    invoiceDateLabel: formatLongDate(packet.invoiceDate),
+    signerName: packet.signerName,
+    signerTitle: packet.signerTitle,
     classLines: input.lineItems.map((row) =>
       `${row.description}${row.hours != null ? ` (${row.hours} contact hours)` : ''} - ${formatMoney(row.amount)}`,
     ),
   };
+  const branding = attempt.branding;
+  const common = { from: attempt.from, replyTo: snapshot.provider.email, attachments };
 
-  const sentTo: string[] = [];
-  const errors: string[] = [];
-  const replyTo = input.provider.email;
-
-  // Student copy.
-  let studentSent = false;
-  try {
-    const first = args.member.fullName.trim().split(/\s+/)[0] || 'there';
+  if (args.recipient === 'student') {
+    const first = snapshot.member.fullName.trim().split(/\s+/)[0] || 'there';
     const documentsUrl = `${branding.domain}/dashboard/documents`;
-    await sendBrandedEmail(resend, {
-      from: getFrom(),
-      to: args.member.email,
-      replyTo,
+    return {
+      ...common,
+      recipient: 'student',
+      to: snapshot.member.email,
       subject: sanitizeEmailSubjectLine(`Your ${facts.programTitle} enrollment documents (invoice ${facts.packetNumber})`),
       html: brandedEmailLayout({
         title: 'Your signed training documents',
@@ -81,43 +78,119 @@ export async function sendBillingPacketEmails(args: {
         ctaUrl: documentsUrl,
         branding,
       }),
-      attachments,
-    });
-    studentSent = true;
-    sentTo.push(args.member.email);
-  } catch (err) {
-    errors.push(`Student email failed: ${err instanceof Error ? err.message : 'send error'}`);
+    };
   }
+  const counselor = snapshot.counselor;
+  if (!counselor) throw new Error('No counselor was assigned when this packet was signed.');
+  const first = counselor.fullName.trim().split(/\s+/)[0] || 'there';
+  const studentUrl = `${branding.domain}/counselor/students/${packet.memberId}`;
+  return {
+    ...common,
+    recipient: 'counselor',
+    to: counselor.email,
+    subject: sanitizeEmailSubjectLine(`J5/J6 for ${facts.memberName} - ${facts.programTitle} (${facts.packetNumber})`),
+    html: brandedEmailLayout({
+      title: `Signed J5 invoice and J6 cover letter for ${facts.memberName}`,
+      bodyHtml: billingPacketCounselorHtml({ counselorFirstName: first, facts, studentUrl, memberEmail: snapshot.member.email }),
+      ctaText: 'Open student record',
+      ctaUrl: studentUrl,
+      branding,
+    }),
+  };
+}
 
-  // Counselor copy (cc the admin who sent it).
-  let counselorSent = false;
-  if (args.counselor) {
-    try {
-      const first = args.counselor.fullName.trim().split(/\s+/)[0] || 'there';
-      const studentUrl = `${branding.domain}/counselor/students/${args.member.id}`;
-      const cc = args.ccEmail && args.ccEmail.toLowerCase() !== args.counselor.email.toLowerCase() ? args.ccEmail : undefined;
-      await sendBrandedEmail(resend, {
-        from: getFrom(),
-        to: args.counselor.email,
-        cc,
-        replyTo,
-        subject: sanitizeEmailSubjectLine(`J5/J6 for ${facts.memberName} - ${facts.programTitle} (${facts.packetNumber})`),
-        html: brandedEmailLayout({
-          title: `Signed J5 invoice and J6 cover letter for ${facts.memberName}`,
-          bodyHtml: billingPacketCounselorHtml({ counselorFirstName: first, facts, studentUrl, memberEmail: args.member.email }),
-          ctaText: 'Open student record',
-          ctaUrl: studentUrl,
-          branding,
-        }),
-        attachments,
-      });
-      counselorSent = true;
-      sentTo.push(args.counselor.email);
-      if (cc) sentTo.push(cc);
-    } catch (err) {
-      errors.push(`Counselor email failed: ${err instanceof Error ? err.message : 'send error'}`);
-    }
+export class EmailNotConfiguredError extends Error {
+  constructor() {
+    super('Email is not configured (RESEND_API_KEY missing).');
+    this.name = 'EmailNotConfiguredError';
   }
+}
 
-  return { sentTo, counselor: args.counselor, studentSent, counselorSent, errors };
+/** Resend error codes (node_modules/resend) that definitively mean "not accepted". */
+const DEFINITE_REJECTIONS = new Set([
+  'missing_required_field',
+  'invalid_idempotency_key',
+  'invalid_access',
+  'invalid_parameter',
+  'invalid_region',
+  'missing_api_key',
+  'invalid_api_Key',
+  'invalid_from_address',
+  'validation_error',
+  'not_found',
+  'method_not_allowed',
+]);
+
+export type DeliveryErrorClass =
+  /** Resend refused a reused key with a changed payload: operator reconciliation, never a new key. */
+  | 'idempotency_conflict'
+  /** Definitely not accepted (local skip, config, provider 4xx validation). */
+  | 'rejected_definite'
+  /** Unknown whether it was accepted (timeout, network, 5xx, 429, unknown): same-key retry only. */
+  | 'ambiguous';
+
+export function classifyDeliveryError(err: unknown): DeliveryErrorClass {
+  if (err instanceof EmailNotConfiguredError || err instanceof FixtureRecipientSkippedError) return 'rejected_definite';
+  const name = err && typeof err === 'object' ? (err as { providerErrorName?: unknown }).providerErrorName : undefined;
+  if (name === 'invalid_idempotent_request') return 'idempotency_conflict';
+  if (typeof name === 'string' && DEFINITE_REJECTIONS.has(name)) return 'rejected_definite';
+  return 'ambiguous';
+}
+
+/**
+ * Hard bound on one provider call. A timeout is an ambiguous outcome (the
+ * provider may still accept it), handled by a same-key retry.
+ */
+export const PROVIDER_SEND_TIMEOUT_MS = 30_000;
+
+export class DeliveryTimeoutError extends Error {
+  constructor() {
+    super(`The email provider did not answer within ${PROVIDER_SEND_TIMEOUT_MS / 1000}s.`);
+    this.name = 'DeliveryTimeoutError';
+  }
+}
+
+/**
+ * Deliver one packet email with its attempt's idempotency key. Throws on
+ * failure. When the call times out, the still-running request's eventual
+ * result is handed to `onLateResult` so it is recorded, never dropped.
+ */
+export async function deliverPacketEmail(
+  email: PacketEmail,
+  idempotencyKey: string,
+  opts: { timeoutMs?: number; onLateResult?: (outcome: { delivered: boolean; detail: string; messageId?: string | null }) => void } = {},
+): Promise<{ messageId: string | null }> {
+  const resend = getResend();
+  if (!resend) throw new EmailNotConfiguredError();
+  const request = sendBrandedEmailOrThrowOnSkip(resend, {
+    from: email.from,
+    to: email.to,
+    replyTo: email.replyTo,
+    subject: email.subject,
+    html: email.html,
+    attachments: email.attachments,
+    idempotencyKey,
+  });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let timedOut = false;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      timedOut = true;
+      reject(new DeliveryTimeoutError());
+    }, opts.timeoutMs ?? PROVIDER_SEND_TIMEOUT_MS);
+  });
+  const messageIdOf = (result: unknown): string | null => {
+    const id = (result as { data?: { id?: unknown } | null } | null)?.data?.id;
+    return typeof id === 'string' ? id : null;
+  };
+  request.then(
+    (result) => timedOut && opts.onLateResult?.({ delivered: true, detail: 'provider accepted after the timeout', messageId: messageIdOf(result) }),
+    (err: unknown) => timedOut && opts.onLateResult?.({ delivered: false, detail: err instanceof Error ? err.message : 'provider error after the timeout' }),
+  );
+  try {
+    const result = await Promise.race([request, timeout]);
+    return { messageId: messageIdOf(result) };
+  } finally {
+    clearTimeout(timer);
+  }
 }

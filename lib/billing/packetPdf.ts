@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { TrainingProviderIdentity } from './providerIdentity';
 import type { PacketLineItem } from './packetSchema';
-import { formatLongDate, formatMoney, totalContactHours } from './packetText';
+import { formatLongDate, formatLongDateOfInstant, formatMoney, totalContactHours } from './packetText';
 
 /**
  * J5 (training invoice) and J6 (cover letter) renderers. Both documents are
@@ -21,7 +21,10 @@ export type PacketDocumentInput = {
   referenceNumber: string | null;
   lineItems: PacketLineItem[];
   totalAmount: number;
+  /** J6 narrative (staff-edited prose). */
   coverLetterBody: string;
+  /** J6 facts block generated from the J5 rows and the funding attestation; not editable. */
+  j6Facts: string[];
   signerName: string;
   signerTitle: string;
   signatureImage: string | null;
@@ -29,6 +32,8 @@ export type PacketDocumentInput = {
   member: { fullName: string; email: string };
   programTitle: string;
   provider: TrainingProviderIdentity;
+  /** Counselor assigned at signing; false drops the counselor from the J6 cc line. Unknown (legacy) keeps it. */
+  counselorAssigned?: boolean;
   /** Letterhead logo bytes (PNG). Optional so tests and cold paths never touch disk. */
   logoPng?: Uint8Array | null;
 };
@@ -76,6 +81,90 @@ export async function loadLetterheadLogo(): Promise<Uint8Array | null> {
   }
 }
 
+export type LetterheadLayout = {
+  nameSize: number;
+  nameLines: string[];
+  contactSize: number;
+  contactLines: string[];
+  /** Header band height; grows only when the text cannot fit the default band. */
+  headerH: number;
+};
+
+type Measure = (text: string, size: number) => number;
+
+function wrapWords(text: string, size: number, measure: Measure, maxWidth: number): string[] {
+  const lines: string[] = [];
+  let current = '';
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (current && measure(candidate, size) > maxWidth) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+/**
+ * Letterhead text layout. The legal name and the entity + EIN line are never
+ * truncated: they shrink to a floor and then wrap. Address, phone and website
+ * flow as whole segments (a segment wider than the line wraps by words), with
+ * the font shrinking to a floor so the default band usually holds everything.
+ * Only the website may be ellipsized, and only when the contact text still
+ * cannot fit at the floor; if even that is not enough the band grows.
+ */
+export function letterheadLayout(provider: TrainingProviderIdentity, measure: Measure, maxWidth: number): LetterheadLayout {
+  const clean = (t: string) => sanitizePdfText(t).replace(/\s+/g, ' ').trim();
+  const sep = '  |  ';
+  const legalName = clean(provider.legalName);
+  let nameSize = 13;
+  while (nameSize > 9 && measure(legalName, nameSize) > maxWidth) nameSize -= 0.5;
+  const nameLines = measure(legalName, nameSize) <= maxWidth ? [legalName] : wrapWords(legalName, nameSize, measure, maxWidth);
+  const nameBottom = 30 + (nameLines.length - 1) * nameSize * 1.15;
+
+  const address = [...provider.addressLines, provider.phone].map(clean).filter(Boolean);
+  const website = clean(provider.website);
+  const legal = [clean(provider.entityLine), `EIN ${clean(provider.ein)}`].filter(Boolean);
+
+  const flow = (segments: string[], size: number): string[] => {
+    const lines: string[] = [];
+    for (const segment of segments) {
+      const last = lines[lines.length - 1];
+      if (last !== undefined && measure(`${last}${sep}${segment}`, size) <= maxWidth) lines[lines.length - 1] = `${last}${sep}${segment}`;
+      else if (measure(segment, size) <= maxWidth) lines.push(segment);
+      else lines.push(...wrapWords(segment, size, measure, maxWidth));
+    }
+    return lines;
+  };
+  const legalLines = (size: number) => {
+    const joined = legal.join(sep);
+    return measure(joined, size) <= maxWidth ? [joined] : legal.flatMap((part) => wrapWords(part, size, measure, maxWidth));
+  };
+  const heightFor = (lineCount: number, size: number) => nameBottom + 14 + (lineCount - 1) * size * 1.4 + 10;
+
+  const sizes = [7.5, 7, 6.5, 6];
+  for (const size of sizes) {
+    const lines = [...flow(website ? [...address, website] : address, size), ...legalLines(size)];
+    if (heightFor(lines.length, size) <= HEADER_H) return { nameSize, nameLines, contactSize: size, contactLines: lines, headerH: HEADER_H };
+  }
+  // Floor size: the website is the only decoration that may be shortened.
+  const floor = sizes[sizes.length - 1];
+  const addressLines = flow(address, floor);
+  const legalAtFloor = legalLines(floor);
+  if (website) {
+    const last = addressLines[addressLines.length - 1] ?? '';
+    const room = maxWidth - measure(`${last}${sep}`, floor);
+    let short = website;
+    while (short.length > 1 && measure(`${short}…`, floor) > room) short = short.slice(0, -1);
+    if (short.length > 8) addressLines[addressLines.length - 1] = `${last}${sep}${short === website ? website : `${short}…`}`;
+  }
+  const lines = [...addressLines, ...legalAtFloor];
+  return { nameSize, nameLines, contactSize: floor, contactLines: lines, headerH: Math.max(HEADER_H, Math.ceil(heightFor(lines.length, floor))) };
+}
+
 function toIsoDate(value: string | Date): string {
   return typeof value === 'string' ? value.slice(0, 10) : value.toISOString().slice(0, 10);
 }
@@ -121,6 +210,8 @@ function ellipsize(text: string, font: PDFFont, size: number, maxWidth: number):
 class Sheet {
   page: PDFPage;
   y: number;
+  readonly header: LetterheadLayout;
+  readonly textX: number;
   constructor(
     readonly doc: PDFDocument,
     readonly fonts: Fonts,
@@ -128,8 +219,14 @@ class Sheet {
     readonly kind: PacketDocKind,
     readonly logo: PDFImage | null,
   ) {
+    this.textX = logo ? MARGIN + (logo.width / logo.height) * 34 + 14 : MARGIN;
+    this.header = letterheadLayout(
+      input.provider,
+      (t, size) => fonts.regular.widthOfTextAtSize(t, size),
+      PAGE_W - MARGIN - this.textX - 100,
+    );
     this.page = this.newPage();
-    this.y = PAGE_H - HEADER_H - 30;
+    this.y = PAGE_H - this.header.headerH - 30;
   }
 
   private newPage(): PDFPage {
@@ -141,7 +238,7 @@ class Sheet {
   ensure(height: number) {
     if (this.y - height < FOOTER_H + 12) {
       this.page = this.newPage();
-      this.y = PAGE_H - HEADER_H - 30;
+      this.y = PAGE_H - this.header.headerH - 30;
     }
   }
 
@@ -180,33 +277,26 @@ class Sheet {
   }
 
   private drawLetterhead(page: PDFPage) {
-    const { provider } = this.input;
     const label = PACKET_DOC_LABELS[this.kind];
-    page.drawRectangle({ x: 0, y: PAGE_H - HEADER_H, width: PAGE_W, height: HEADER_H, color: ACCENT });
+    const { header, textX } = this;
+    const headerH = header.headerH;
+    page.drawRectangle({ x: 0, y: PAGE_H - headerH, width: PAGE_W, height: headerH, color: ACCENT });
 
-    let textX = MARGIN;
     if (this.logo) {
       const logoH = 34;
       const logoW = (this.logo.width / this.logo.height) * logoH;
       page.drawImage(this.logo, { x: MARGIN, y: PAGE_H - HEADER_H + (HEADER_H - logoH) / 2, width: logoW, height: logoH });
-      textX = MARGIN + logoW + 14;
     }
     const pale = rgb(1, 0.9, 0.92);
-    page.drawText(sanitizePdfText(provider.legalName), { x: textX, y: PAGE_H - 30, size: 13, font: this.fonts.bold, color: WHITE });
-    const contact = [...provider.addressLines, `${provider.phone}  |  ${provider.website}`].join('   |   ');
-    page.drawText(ellipsize(contact, this.fonts.regular, 7.5, PAGE_W - MARGIN - textX - 100), {
-      x: textX,
-      y: PAGE_H - 44,
-      size: 7.5,
-      font: this.fonts.regular,
-      color: pale,
+    let y = PAGE_H - 30;
+    header.nameLines.forEach((line, i) => {
+      if (i > 0) y -= header.nameSize * 1.15;
+      page.drawText(line, { x: textX, y, size: header.nameSize, font: this.fonts.bold, color: WHITE });
     });
-    page.drawText(sanitizePdfText(`${provider.entityLine}  |  EIN ${provider.ein}`), {
-      x: textX,
-      y: PAGE_H - 56,
-      size: 7.5,
-      font: this.fonts.regular,
-      color: pale,
+    y -= 14;
+    header.contactLines.forEach((line, i) => {
+      if (i > 0) y -= header.contactSize * 1.4;
+      page.drawText(line, { x: textX, y, size: header.contactSize, font: this.fonts.regular, color: pale });
     });
 
     const badge = `FORM ${label.code}`;
@@ -283,7 +373,7 @@ class Sheet {
     this.text(`${input.provider.email}  |  ${input.provider.phone}`, { size: 9.5, color: MUTED });
     this.gap(13);
     this.text(
-      `Signed ${formatLongDate(toIsoDate(input.signedAt))}${drawn ? ' (electronic signature)' : ' (typed signature)'}`,
+      `Signed ${formatLongDateOfInstant(input.signedAt)}${drawn ? ' (electronic signature)' : ' (typed signature)'}`,
       { size: 9, color: MUTED },
     );
     this.gap(12);
@@ -294,8 +384,17 @@ class Sheet {
   }
 }
 
+/** Fixed metadata so the same packet always renders byte-identical PDFs (stable email payloads). */
+function stampMetadata(doc: PDFDocument, input: PacketDocumentInput) {
+  const signedAt = typeof input.signedAt === 'string' ? new Date(input.signedAt) : input.signedAt;
+  doc.setCreationDate(signedAt);
+  doc.setModificationDate(signedAt);
+  doc.setProducer(`${input.provider.shortName} billing`);
+}
+
 async function open(input: PacketDocumentInput, kind: PacketDocKind) {
   const doc = await PDFDocument.create();
+  stampMetadata(doc, input);
   doc.setTitle(`${PACKET_DOC_LABELS[kind].code} ${PACKET_DOC_LABELS[kind].title} ${input.packetNumber}`);
   doc.setAuthor(input.provider.legalName);
   doc.setSubject(`${input.member.fullName} - ${input.programTitle}`);
@@ -343,7 +442,7 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
     ['Due date', input.dueDate ? formatLongDate(toIsoDate(input.dueDate)) : 'Net 30 from receipt'],
   ];
   if (input.referenceNumber) meta.push(['Reference / voucher', input.referenceNumber]);
-  let metaY = PAGE_H - HEADER_H - 30;
+  let metaY = PAGE_H - sheet.header.headerH - 30;
   for (const [k, v] of meta) {
     sheet.text(k, { x: metaX, y: metaY, size: 8.5, color: MUTED });
     sheet.text(ellipsize(v, f.bold, 9.5, 125), { x: metaX + 105, y: metaY, size: 9.5, font: f.bold });
@@ -443,6 +542,14 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
   return doc.save();
 }
 
+/** Enclosure and cc lines under the J6 signature. No counselor at signing, no counselor cc. */
+export function j6EnclosureLines(input: PacketDocumentInput): string[] {
+  return [
+    `Enclosure: Form J5 Training Invoice ${input.packetNumber} (${formatMoney(input.totalAmount)})`,
+    `cc: ${input.member.fullName} (participant)${input.counselorAssigned === false ? '' : '; assigned career counselor'}`,
+  ];
+}
+
 /** J6: cover letter transmitting the J5 invoice to the funding partner. */
 export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promise<Uint8Array> {
   const { doc, sheet } = await open(input, 'j6');
@@ -464,6 +571,17 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   sheet.text(salutation, { size: 10.5 });
   sheet.gap(16);
 
+  // Facts block FIRST: generated from the J5 rows and the signed snapshot, and
+  // authoritative. The narrative after it is human-reviewed prose, not
+  // machine-verified beyond the money check at signing.
+  sheet.ensure(40);
+  sheet.text('Invoice facts (generated from Form J5)', { size: 9.5, font: f.bold, color: ACCENT });
+  sheet.gap(14);
+  for (const line of input.j6Facts) {
+    sheet.paragraph(line, { size: 9.5, leading: 12.5, x: MARGIN + 10 });
+  }
+  sheet.gap(6);
+
   for (const block of sanitizePdfText(input.coverLetterBody).split(/\n{2,}/)) {
     sheet.paragraph(block, { size: 10.5, leading: 14.6 });
     sheet.gap(6);
@@ -472,10 +590,7 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   sheet.gap(4);
   // Closing, signature, enclosure and cc are one unit: reserve exactly what
   // they occupy so the letter only breaks when the body genuinely runs long.
-  const tail = [
-    `Enclosure: Form J5 Training Invoice ${input.packetNumber} (${formatMoney(input.totalAmount)})`,
-    `cc: ${input.member.fullName} (participant); assigned career counselor`,
-  ];
+  const tail = j6EnclosureLines(input);
   sheet.ensure(14 + 4 + Sheet.signatureHeight(false, tail.length));
   sheet.text('Respectfully,', { size: 10.5 });
   sheet.gap(4);
@@ -492,6 +607,7 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
 export async function renderPacketBundlePdf(input: PacketDocumentInput): Promise<Uint8Array> {
   const [j6, j5] = await Promise.all([renderJ6CoverLetterPdf(input), renderJ5InvoicePdf(input)]);
   const bundle = await PDFDocument.create();
+  stampMetadata(bundle, input);
   bundle.setTitle(`Training invoice packet ${input.packetNumber}`);
   bundle.setAuthor(input.provider.legalName);
   bundle.setSubject(`${input.member.fullName} - ${input.programTitle}`);

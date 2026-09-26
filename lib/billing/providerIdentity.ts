@@ -16,7 +16,8 @@ export type TrainingProviderIdentity = {
   entityLine: string;
 };
 
-export type DefaultSigner = { name: string; title: string; email: string };
+/** Prefilled signer. The signature block and email reply-to use BILLING_PROVIDER_EMAIL (see ENV-VARIABLES.md). */
+export type DefaultSigner = { name: string; title: string };
 
 function env(name: string, fallback: string): string {
   const value = process.env[name]?.trim();
@@ -41,7 +42,6 @@ export function getDefaultSigner(): DefaultSigner {
   return {
     name: env('BILLING_SIGNER_NAME', 'Michael A. Brown, PMP, ChE'),
     title: env('BILLING_SIGNER_TITLE', 'Executive Director'),
-    email: env('BILLING_SIGNER_EMAIL', 'michael.brown@workforceap.org'),
   };
 }
 

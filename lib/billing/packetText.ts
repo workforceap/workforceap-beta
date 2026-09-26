@@ -1,3 +1,4 @@
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
 import type { PacketLineItem } from './packetSchema';
 
 /**
@@ -15,6 +16,22 @@ export function formatLongDate(iso: string | Date): string {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 }
 
+/**
+ * Long date of an instant (signed, emailed) in the org's operating timezone,
+ * so an evening signature in Texas is not dated the next (UTC) day.
+ */
+export function formatLongDateOfInstant(instant: string | Date): string {
+  const d = typeof instant === 'string' ? new Date(instant) : instant;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: PORTAL_TIMEZONE });
+}
+
+/** Short date and time of an instant in PORTAL_TIMEZONE, e.g. "Sep 26, 10:02 AM CT". */
+export function formatShortDateTimeOfInstant(instant: string | Date): string {
+  const d = typeof instant === 'string' ? new Date(instant) : instant;
+  const text = d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: PORTAL_TIMEZONE });
+  return `${text} CT`;
+}
+
 export function totalContactHours(items: ReadonlyArray<PacketLineItem>): number {
   return items.reduce((sum, item) => sum + (item.hours ?? 0), 0);
 }
@@ -25,6 +42,30 @@ export function totalContactHours(items: ReadonlyArray<PacketLineItem>): number 
  * row with a positive weight. Zero-weight rows (a class with no hours on
  * file) share the total equally instead of getting $0.
  */
+/** Whole cents of a dollar amount. */
+export function toCents(amount: number): number {
+  return Math.round(amount * 100);
+}
+
+/**
+ * True for a finite amount with at most two decimal places (whole cents),
+ * tolerant of binary floating-point noise (0.1 * 100 = 10.000000000000002)
+ * but not of real fractions of a cent (0.005, 7500.005).
+ */
+export function isWholeCents(amount: number): boolean {
+  if (!Number.isFinite(amount)) return false;
+  const cents = amount * 100;
+  return Math.abs(cents - Math.round(cents)) < 1e-6;
+}
+
+/**
+ * Sum in integer cents, row by row, so the printed rows always add up to the
+ * printed total by construction.
+ */
+export function sumMoney(items: ReadonlyArray<{ amount: number | null }>): number {
+  return items.reduce((cents, row) => cents + (row.amount != null && Number.isFinite(row.amount) ? toCents(row.amount) : 0), 0) / 100;
+}
+
 export function allocateAmount(total: number, weights: ReadonlyArray<number>): number[] {
   if (weights.length === 0) return [];
   const totalCents = Math.round(total * 100);
@@ -44,32 +85,169 @@ export function allocateAmount(total: number, weights: ReadonlyArray<number>): n
   return cents.map((c) => c / 100);
 }
 
-/**
- * Default J6 body. Plain paragraphs separated by blank lines; the admin edits
- * it on the form before signing. Keep the wording board-facing and factual.
- */
-export function defaultCoverLetterBody(args: {
-  memberName: string;
-  programTitle: string;
-  billToName: string;
-  lineItems: ReadonlyArray<PacketLineItem>;
-  providerName: string;
-  referenceNumber?: string;
-}): string {
-  const classes = args.lineItems.filter((row) => row.hours != null);
-  const hours = totalContactHours(args.lineItems);
-  const total = args.lineItems.reduce((sum, row) => sum + row.amount, 0);
-  const classList = classes.length
-    ? classes.map((row) => `- ${row.description}${row.hours ? ` (${row.hours} contact hours)` : ''}`).join('\n')
-    : `- ${args.programTitle}`;
-  const reference = args.referenceNumber ? ` under reference ${args.referenceNumber}` : '';
+export const DRAFT_CURRICULUM_REASON =
+  "Not available for billing: this program's curriculum is pending owner verification, so its hours and price are not on the official price list.";
 
+/** Funding basis staff select on the form; never inferred from other data. */
+export type FundingBasis = 'wioa_ita' | 'separate_contract';
+
+export const FUNDING_BASIS_LABEL: Record<FundingBasis, string> = {
+  wioa_ita: 'WIOA ITA',
+  separate_contract: 'Separate contract',
+};
+
+/**
+ * Capital Area Board's standard WIOA ITA amount: WFSCA Board Plan PY2025-2028,
+ * printed pp.63-64 (Board-approved exceptions up to $10,000). It is a
+ * board-specific reference used only for a non-blocking review warning, never
+ * a charge, an approval or a cap applied to other boards.
+ */
+export const WFSCA_STANDARD_ITA_AMOUNT = 7500;
+
+/** Non-blocking review warnings shown before signing and recorded at signing. */
+export function fundingReviewWarnings(args: { fundingType: FundingBasis | '' | null | undefined; total: number }): string[] {
+  if (args.fundingType === 'wioa_ita' && args.total > WFSCA_STANDARD_ITA_AMOUNT) {
+    return [
+      `The total exceeds ${formatMoney(WFSCA_STANDARD_ITA_AMOUNT)}, the Capital Area Board's standard ITA amount. Confirm the local board's limit and any exception; an exception note is recorded as a staff note, unverified.`,
+    ];
+  }
+  return [];
+}
+
+/**
+ * Default J6 narrative. Deliberately fact-free: the member, program, classes,
+ * amounts, bill-to, funding and reference are printed by the facts block and
+ * the RE line, which are generated from the invoice itself.
+ */
+export function defaultCoverLetterNarrative(providerName: string): string {
   return [
-    `Please find enclosed the training invoice (Form J5) from ${args.providerName} for ${args.memberName}, who is enrolled in the ${args.programTitle} program${reference}.`,
-    `The invoice covers the following classes${hours ? ` (${hours} total contact hours)` : ''}:\n${classList}`,
-    `The total amount due is ${formatMoney(total)}. A class-by-class price breakdown appears on the invoice. Training is provided at no cost to the participant; this invoice is billed to ${args.billToName} as the funding partner.`,
-    `Thank you for your partnership in advancing this participant's career. Please contact me directly with any questions about this enrollment or invoice.`,
+    `Please find enclosed the training invoice (Form J5) from ${providerName} for the participant and program named above.`,
+    'The facts above are generated from the signed invoice; the class-by-class breakdown also appears on Form J5. Training is provided at no cost to the participant.',
+    "Thank you for your partnership in advancing this participant's career. Please contact me directly with any questions about this enrollment or invoice.",
   ].join('\n\n');
+}
+
+/** Staff-recorded funding attestation as it appears in the J6 facts block. */
+export type J6FundingFacts = { fundingType: FundingBasis; approvedAmount: number; reference: string };
+
+/**
+ * The J6 facts block: every factual statement the cover letter makes, generated
+ * from the J5 rows and the funding attestation. Staff cannot edit it; signing
+ * freezes it in the snapshot, so J5 and J6 always state the same facts.
+ */
+export function buildJ6Facts(args: {
+  invoiceDate: string | Date;
+  dueDate: string | Date | null;
+  billToName: string;
+  referenceNumber: string | null;
+  lineItems: ReadonlyArray<PacketLineItem>;
+  funding: J6FundingFacts | null;
+}): string[] {
+  const total = sumMoney(args.lineItems);
+  const lines = [
+    `Invoice date: ${formatLongDate(args.invoiceDate)}; due: ${args.dueDate ? formatLongDate(args.dueDate) : 'Net 30 from receipt'}`,
+    `Billed to: ${args.billToName}`,
+  ];
+  if (args.referenceNumber) lines.push(`Board / ITA / voucher reference: ${args.referenceNumber}`);
+  if (args.funding) {
+    lines.push(
+      `Funding (staff-recorded): ${FUNDING_BASIS_LABEL[args.funding.fundingType]}, reference ${args.funding.reference}, approved amount ${formatMoney(args.funding.approvedAmount)}`,
+    );
+  }
+  args.lineItems.forEach((row, i) => {
+    lines.push(`${i + 1}. ${row.description}${row.hours != null ? ` (${row.hours} contact hours)` : ''}: ${formatMoney(row.amount)}`);
+  });
+  lines.push(`Total contact hours: ${totalContactHours(args.lineItems)}`);
+  lines.push(`Total due: ${formatMoney(total)}`);
+  return lines;
+}
+
+const MONEY_WORDS = '(?:total|amount|tuition|fees?|invoice)';
+const NARRATIVE_MONEY_PATTERNS: Array<[RegExp, string]> = [
+  [/\$\s?\d/, 'a dollar amount'],
+  [/(?:^|[^\w.])\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?\b/, 'a number formatted like money'],
+  [/(?:^|[^\w.])\d+\.\d{2}\b/, 'a number formatted like money'],
+  [new RegExp(`\\b${MONEY_WORDS}\\b(?:\\W+[A-Za-z]+){0,2}\\W+\\d[\\d,.]*\\b`, 'i'), 'an amount word next to a number'],
+  [new RegExp(`(?:^|[^\\w.])\\d[\\d,.]*(?:\\W+[A-Za-z]+){0,2}\\W+${MONEY_WORDS}\\b`, 'i'), 'an amount word next to a number'],
+];
+
+/**
+ * Hard server-side block: the narrative may not state money. The facts block
+ * is generated and authoritative; the narrative is human-reviewed prose, NOT
+ * machine-verified beyond this check (a payer name or other wording is only
+ * covered by the signer's review confirmation).
+ */
+export function narrativeMoneyViolations(narrative: string): string[] {
+  const found = new Set<string>();
+  for (const [pattern, label] of NARRATIVE_MONEY_PATTERNS) if (pattern.test(narrative)) found.add(label);
+  return [...found].map((label) => `The J6 narrative contains ${label}. Amounts belong only in the generated facts block; remove it from the narrative.`);
+}
+
+/** Non-blocking hint for hours typed into the narrative. */
+export function narrativeFactHints(narrative: string): string[] {
+  return /\d+(?:\.\d+)?\s+(?:total\s+)?contact hours/i.test(narrative)
+    ? ['The narrative mentions contact hours. Hours are printed in the facts block; consider removing them from the prose.']
+    : [];
+}
+
+/** Values the signer reviews; any change after ticking a confirmation voids it. */
+export type ReviewedValues = {
+  programSlug: string;
+  invoiceDate: string;
+  dueDate: string | null;
+  billToName: string;
+  referenceNumber: string;
+  lineItems: ReadonlyArray<{ description: string; hours: number | null; amount: number | null }>;
+  fundingBasis: string;
+  approvedAmount: number | null;
+  fundingReference: string;
+  exceptionNote: string;
+  /** The J6 narrative is covered by the review too. */
+  narrative: string;
+};
+
+function fnv1a(text: string, seed: number): string {
+  let h = seed >>> 0;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
+/**
+ * Deterministic fingerprint of the reviewed values. The form records it when
+ * staff tick a confirmation; the server recomputes it from what is being
+ * signed and refuses a mismatch, so a stale confirmation cannot sign edited
+ * values. An integrity binding, not a security token.
+ */
+export function attestationFingerprint(v: ReviewedValues): string {
+  const canonical = JSON.stringify([
+    v.programSlug,
+    v.invoiceDate,
+    v.dueDate ?? '',
+    v.billToName.trim(),
+    v.referenceNumber.trim(),
+    // Amounts enter the fingerprint as whole cents.
+    v.lineItems.map((row) => [row.description.trim(), row.hours ?? null, row.amount == null || !Number.isFinite(row.amount) ? null : toCents(row.amount)]),
+    v.fundingBasis,
+    v.approvedAmount == null || !Number.isFinite(v.approvedAmount) ? null : toCents(v.approvedAmount),
+    v.fundingReference.trim(),
+    v.exceptionNote.trim(),
+    v.narrative.trim(),
+  ]);
+  return `${fnv1a(canonical, 0x811c9dc5)}${fnv1a(canonical, 0x01000193)}`;
+}
+
+/**
+ * Today in the org's operating timezone (PORTAL_TIMEZONE) as YYYY-MM-DD, plus
+ * an optional day offset. Used for the form's invoice/due date defaults so a
+ * late-evening Texas session does not default to tomorrow's (UTC) date.
+ */
+export function isoDateInPortalTz(days: number, from: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: PORTAL_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(from);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return new Date(Date.UTC(get('year'), get('month') - 1, get('day') + days)).toISOString().slice(0, 10);
 }
 
 /** Today (UTC) as YYYY-MM-DD, with an optional day offset. */
