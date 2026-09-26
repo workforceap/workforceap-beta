@@ -19,7 +19,7 @@ export function hasSupabaseServerEnv() {
 }
 
 /** A surviving Auth session must not revive an application soft-delete. */
-async function isApplicationAccountAvailable(userId: string): Promise<boolean> {
+async function getApplicationAccountState(userId: string): Promise<'active' | 'missing' | 'deleted'> {
   // A newly confirmed Auth identity may not have its application row yet.
   // Only a recorded deletion denies it; a failed lookup must not grant access.
   const context = buildGucContext({ userId, orgId: null });
@@ -28,7 +28,8 @@ async function isApplicationAccountAvailable(userId: string): Promise<boolean> {
       tx.user.findUnique({ where: { id: userId }, select: { deletedAt: true } }),
     )),
   );
-  return !account?.deletedAt;
+  if (!account) return 'missing';
+  return account.deletedAt ? 'deleted' : 'active';
 }
 
 /**
@@ -114,7 +115,22 @@ export async function getSession() {
       await handleServerAuthFailure(error, 'auth:getSession');
       return null;
     }
-    if (session?.user && !(await isApplicationAccountAvailable(session.user.id))) return null;
+    if (session?.user) {
+      const accountState = await getApplicationAccountState(session.user.id);
+      if (accountState === 'deleted') return null;
+      if (accountState === 'missing') {
+        // getSession reads the cookie without asking Auth whether the user still
+        // exists. A newly confirmed identity may be awaiting app provisioning,
+        // but a hard-erased identity may also have an unexpired access token.
+        // Confirm the missing-row identity with Auth before returning a session.
+        const { data: { user }, error: userError } = await readAuthWithRetry(() => supabase.auth.getUser());
+        if (userError) {
+          await handleServerAuthFailure(userError, 'auth:getSession:missingAccount');
+          return null;
+        }
+        if (!user || user.id !== session.user.id) return null;
+      }
+    }
     return session;
   } catch (err) {
     unstable_rethrow(err);
@@ -144,7 +160,7 @@ export const getUser = cache(async function getUser() {
       await handleServerAuthFailure(error, 'auth:getUser');
       return null;
     }
-    if (user && !(await isApplicationAccountAvailable(user.id))) return null;
+    if (user && (await getApplicationAccountState(user.id)) === 'deleted') return null;
     return user;
   } catch (err) {
     unstable_rethrow(err);
