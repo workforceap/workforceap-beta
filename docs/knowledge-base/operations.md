@@ -55,7 +55,7 @@ Additional workflows have separate meanings:
 
 - [Locked Product Stakes](../../.github/workflows/locked-product-stakes.yml#L38) checks specific protected product files for approval or the conservative i18n bypass.
 - [Coursera Catalog Placeholders](../../.github/workflows/coursera-catalog-placeholders.yml) enforces its source-script baseline; it is not a live catalog check.
-- [Authenticated Portal Smoke](../../.github/workflows/authenticated-portal-smoke.yml#L24) is manual, restricted to trusted `master`, checks deployed version against its checkout, and separates five-role isolated-preview coverage from non-staff production canaries. Target and role credentials are workflow secrets; inspect its mode before invocation.
+- [Authenticated Portal Smoke](../../.github/workflows/authenticated-portal-smoke.yml#L24) is manual, restricted to trusted `master`, checks deployed version against its checkout, and separates five-role isolated-preview coverage from non-staff production canaries. The `hub_smoke` lane checks visible primary page headings on member, counselor, and employer hub and deep-link routes; a hidden shell label does not satisfy a page check. Target and role credentials are workflow secrets; inspect its mode before invocation.
 - [FORCE RLS Shadow Rehearsal](../../.github/workflows/force-rls-shadow.yml#L21) is manual and report-only against a disposable PostgreSQL service. Its existence does not prove production RLS correctness.
 - [deploy.yml](../../.github/workflows/deploy.yml#L1) is a disabled historical self-hosted deployment workflow.
 
