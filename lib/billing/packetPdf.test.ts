@@ -17,7 +17,7 @@ import { getTrainingProviderIdentity } from './providerIdentity';
 import { buildJ6Facts, defaultCoverLetterNarrative } from './packetText';
 import { extractTextFromResumeBuffer } from '@/lib/resume/extractTextFromResumeBuffer';
 
-// 1x1 transparent PNG.
+// 1x1 RGBA PNG with a visible pixel.
 const TINY_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
 function input(overrides: Partial<PacketDocumentInput> = {}): PacketDocumentInput {

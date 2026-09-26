@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import type { TrainingProviderIdentity } from './providerIdentity';
 import type { PacketLineItem } from './packetSchema';
 import { formatLongDate, formatLongDateOfInstant, formatMoney, totalContactHours } from './packetText';
+import { normalizeDrawnSignaturePng } from './signaturePng';
 
 /**
  * J5 (training invoice) and J6 (cover letter) renderers. Both documents are
@@ -202,13 +203,7 @@ function wrap(text: string, font: PDFFont, size: number, maxWidth: number): stri
 /** A drawn signature must decode as a bounded PNG before a signed packet is stored. */
 export async function isValidDrawnSignaturePng(dataUrl: string): Promise<boolean> {
   try {
-    const bytes = Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
-    const pngHeader = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-    if (bytes.length < 24 || bytes.length > 300_000 || !bytes.subarray(0, 8).equals(pngHeader)) return false;
-    const width = bytes.readUInt32BE(16);
-    const height = bytes.readUInt32BE(20);
-    if (width < 1 || height < 1 || width > 4096 || height > 2048) return false;
-    await (await PDFDocument.create()).embedPng(bytes);
+    normalizeDrawnSignaturePng(dataUrl);
     return true;
   } catch {
     return false;
@@ -383,8 +378,7 @@ class Sheet {
     const sigTop = this.y;
     if (input.signatureImage) {
       try {
-        const base64 = input.signatureImage.replace(/^data:image\/png;base64,/, '');
-        const image = await this.doc.embedPng(Buffer.from(base64, 'base64'));
+        const image = await this.doc.embedPng(normalizeDrawnSignaturePng(input.signatureImage));
         const scale = Math.min(sigBoxW / image.width, sigBoxH / image.height);
         const w = image.width * scale;
         const h = image.height * scale;
