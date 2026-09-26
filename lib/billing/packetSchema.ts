@@ -78,7 +78,7 @@ export const createPacketSchema = z
     signerName: z.string().trim().min(2).max(120),
     signerTitle: z.string().trim().min(2).max(120),
     /** Drawn signature (PNG data URL). Omit when the signer typed their name. */
-    signatureImage: z.string().regex(PNG_DATA_URL, 'Signature must be a PNG image').max(400_000).nullable().optional(),
+    signatureImage: z.string().regex(PNG_DATA_URL, 'Signature must be a PNG image').max(400_000, 'Signature image is too large. Clear it and draw again, or type your name.').nullable().optional(),
     /** Explicit "I am signing this by typing my name" acknowledgement. */
     signatureTyped: z.boolean().optional().default(false),
     fundingAttestation: fundingAttestationSchema,

@@ -34,9 +34,8 @@ export default function SignaturePad({
     drawing.current = false;
     last.current = null;
     hasInk.current = false;
-    // The signed PNG is capped at 2M pixels server-side; 4x leaves room for
-    // this 520 x 160 CSS-pixel canvas without rejecting high-density screens.
-    const ratio = Math.min(4, Math.max(1, window.devicePixelRatio || 1));
+    // Keep dense signatures below the signed PNG's byte limit on high-density screens.
+    const ratio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
     const rect = canvas.getBoundingClientRect();
     if (rect.width === 0) return;
     canvas.width = Math.round(rect.width * ratio);
