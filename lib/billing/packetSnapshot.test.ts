@@ -60,6 +60,7 @@ function row(overrides: Partial<TrainingBillingPacket> = {}): TrainingBillingPac
     signatureImage: null,
     signedAt: new Date('2026-09-04T01:00:00Z'),
     signedById: 'a1',
+    signedBySubjectId: 'a1',
     sentAt: null,
     sentTo: [],
     sendCount: 0,

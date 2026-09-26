@@ -131,7 +131,20 @@ try {
     'n',
     'The packet member FK must detach the packet on account deletion',
   );
+  assert.equal(
+    sql(`SELECT confdeltype FROM pg_constraint WHERE conrelid='public.training_billing_packets'::regclass AND conname='training_billing_packets_signed_by_id_fkey';`),
+    'n',
+    'The signer FK must detach the packet on signer account deletion',
+  );
+  assert.equal(
+    sql(`SELECT string_agg(conname::text || ':' || confdeltype::text, ',' ORDER BY conname::text) FROM pg_constraint WHERE contype='f' AND confrelid='public.users'::regclass AND conrelid IN ('public.training_billing_packets'::regclass, 'public.training_billing_packet_sends'::regclass);`),
+    'training_billing_packets_member_id_fkey:n,training_billing_packets_signed_by_id_fkey:n',
+    'No other billing User FK may hold a deleted account',
+  );
   assert.equal(sql(`SELECT subject_member_id FROM public.training_billing_packets WHERE id='p';`), 'u', 'Historical subject ID must be backfilled');
+  assert.equal(sql(`SELECT signed_by_subject_id FROM public.training_billing_packets WHERE id='p';`), 'signer', 'Historical signer ID must be backfilled');
+  assertSqlRejected(`UPDATE public.training_billing_packets SET subject_member_id='other' WHERE id='p';`, '23514');
+  assertSqlRejected(`UPDATE public.training_billing_packets SET signed_by_subject_id='other' WHERE id='p';`, '23514');
   sql(deletionBarrierMigration);
   sql(deletionBarrierMigration);
   sql(`UPDATE public.users SET organization_id='org', full_name='Synthetic Member', email='synthetic@example.test' WHERE id='u';`);
@@ -151,6 +164,7 @@ try {
     );
     INSERT INTO public.member_private_data VALUES ('private-u', 'u');
     DELETE FROM public.users WHERE id = 'u';
+    DELETE FROM public.users WHERE id = 'signer';
     DELETE FROM public.users WHERE id = 'free';
   `);
   assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='u';`), '0', 'Member account must be purged');
@@ -159,9 +173,11 @@ try {
   assert.equal(sql(`SELECT count(*) FROM public.training_billing_packet_sends WHERE id='s';`), '1', 'Send history must remain');
   assert.equal(sql(`SELECT member_id IS NULL FROM public.training_billing_packets WHERE id='p';`), 't', 'Packet must detach from deleted account');
   assert.equal(sql(`SELECT subject_member_id FROM public.training_billing_packets WHERE id='p';`), 'u', 'Archive lookup ID must remain');
+  assert.equal(sql(`SELECT signed_by_id IS NULL AND signed_by_subject_id='signer' FROM public.training_billing_packets WHERE id='p';`), 't', 'Signer account must detach without losing historical signer ID');
+  assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='signer';`), '0', 'Signer account must be purged');
   assert.equal(sql(`SELECT count(*) FROM public.users WHERE id='free';`), '0', 'Unheld account must still be deletable');
   assertLockedDown('retention archive');
-  console.log('PASS member and private child purge while signed packet, send history and scoped archive ID survive');
+  console.log('PASS member, signer and private child purge while signed packet, send history and scoped archive IDs survive');
 } finally {
   if (proofDatabaseCreated) runSql(`DROP DATABASE "${proofDatabase}";`, 'postgres');
   for (const role of createdRoles) runSql(`DROP ROLE IF EXISTS ${role};`, 'postgres');

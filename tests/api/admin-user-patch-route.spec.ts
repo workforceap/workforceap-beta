@@ -90,12 +90,18 @@ vi.mock('@/lib/db/prisma', () => ({
 
 vi.mock('@/lib/audit', () => ({ auditLog: routeMocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: routeMocks.event }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  beginBillingDeletion: vi.fn(), completeBillingDeletion: vi.fn(), releaseBillingDeletion: vi.fn(),
+  beginBillingIdentityEdit: vi.fn(), endBillingIdentityEdit: vi.fn(),
+  BILLING_SEND_IN_PROGRESS_ERROR: 'Billing delivery unresolved',
+}));
 
 import { PATCH } from '@/app/api/admin/users/[id]/route';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { prisma } from '@/lib/db/prisma';
+import { beginBillingIdentityEdit, endBillingIdentityEdit } from '@/lib/billing/erasureGuard';
 
 function patchReq(body: Record<string, unknown>, targetId = 'user-1') {
   return new Request(`http://localhost:3000/api/admin/users/${targetId}`, {
@@ -142,6 +148,7 @@ describe('PATCH /api/admin/users/[id]', () => {
     vi.mocked(updateUserById).mockResolvedValue({ error: null });
     globalUserFindFirst.mockResolvedValue(null);
     tenantUserFindFirst.mockResolvedValue({ id: 'user-1', email: 'old@example.com' });
+    vi.mocked(beginBillingIdentityEdit).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'edit-1' });
   });
 
   it('hides a foreign-tenant email collision before changing Supabase auth', async () => {
@@ -218,6 +225,20 @@ describe('PATCH /api/admin/users/[id]', () => {
     expect(res.status).toBe(200);
     expect(updateUserById).toHaveBeenCalledOnce();
     expect(prisma.$transaction).toHaveBeenCalledOnce();
+    expect(vi.mocked(beginBillingIdentityEdit).mock.invocationCallOrder[0]).toBeLessThan(updateUserById.mock.invocationCallOrder[0]);
+    expect(endBillingIdentityEdit).toHaveBeenCalledWith('user-1', 'edit-1');
+  });
+
+  it('blocks an email or role edit before Auth when a signed copy is unresolved', async () => {
+    vi.mocked(beginBillingIdentityEdit).mockResolvedValueOnce({ ok: false, reason: 'unresolved_send' });
+    const res = await PATCH(
+      patchReq({ fullName: 'User One', email: 'new@example.com', role: 'member' }),
+      { params: Promise.resolve({ id: 'user-1' }) },
+    );
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('billing_send_unresolved');
+    expect(updateUserById).not.toHaveBeenCalled();
+    expect(routeMocks.updateMany).not.toHaveBeenCalled();
   });
 
   it('preserves explicit super-admin authority over a privileged target', async () => {
@@ -250,7 +271,7 @@ describe('PATCH /api/admin/users/[id]', () => {
   });
 
   it('rolls Supabase email back when the database transaction fails after auth update', async () => {
-    vi.mocked(prisma.$transaction).mockRejectedValue(new Error('db failed'));
+    vi.mocked(prisma.$transaction).mockRejectedValueOnce(new Error('db failed'));
 
     const res = await PATCH(
       patchReq({ fullName: 'User One', email: 'new@example.com', role: 'member' }),
@@ -267,5 +288,41 @@ describe('PATCH /api/admin/users/[id]', () => {
       email: 'old@example.com',
       email_confirm: true,
     });
+    expect(endBillingIdentityEdit).toHaveBeenCalledWith('user-1', 'edit-1');
+  });
+
+  it('keeps the billing hold if Auth rollback fails after a DB error', async () => {
+    vi.mocked(prisma.$transaction).mockRejectedValueOnce(new Error('db failed'));
+    updateUserById.mockResolvedValueOnce({ error: null }).mockResolvedValueOnce({ error: { message: 'rollback failed' } });
+    const res = await PATCH(
+      patchReq({ fullName: 'User One', email: 'new@example.com' }),
+      { params: Promise.resolve({ id: 'user-1' }) },
+    );
+    expect(res.status).toBe(500);
+    expect((await res.json()).reconciliationRequired).toBe(true);
+    expect(endBillingIdentityEdit).not.toHaveBeenCalled();
+  });
+
+  it('keeps the billing hold when the Auth email result is unknown', async () => {
+    updateUserById.mockRejectedValueOnce(new Error('network timeout'));
+    const res = await PATCH(
+      patchReq({ fullName: 'User One', email: 'new@example.com' }),
+      { params: Promise.resolve({ id: 'user-1' }) },
+    );
+    expect(res.status).toBe(503);
+    expect((await res.json()).reconciliationRequired).toBe(true);
+    expect(routeMocks.updateMany).not.toHaveBeenCalled();
+    expect(endBillingIdentityEdit).not.toHaveBeenCalled();
+  });
+
+  it('keeps the billing hold if DB changed but releasing it fails', async () => {
+    vi.mocked(endBillingIdentityEdit).mockRejectedValueOnce(new Error('db disconnected'));
+    const res = await PATCH(
+      patchReq({ fullName: 'User One', email: 'new@example.com' }),
+      { params: Promise.resolve({ id: 'user-1' }) },
+    );
+    expect(res.status).toBe(503);
+    expect((await res.json()).reconciliationRequired).toBe(true);
+    expect(updateUserById).toHaveBeenCalledTimes(1);
   });
 });

@@ -12,6 +12,7 @@ import {
 
 const mockDeleteMany = vi.fn();
 const mockFindMany = vi.fn();
+const mockUserFindFirst = vi.fn();
 const mockCount = vi.fn();
 const mockAuditEventDeleteMany = vi.fn();
 const mockAnonymizeMember = vi.fn();
@@ -74,6 +75,7 @@ vi.mock('@/lib/db/prisma', () => ({
     },
     user: {
       findMany: (...args: unknown[]) => mockFindMany(...args),
+      findFirst: (...args: unknown[]) => mockUserFindFirst(...args),
       deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
     },
@@ -582,6 +584,12 @@ describe('cleanupDeletedAccounts', () => {
     vi.resetAllMocks();
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
     mockAnonymizeMember.mockResolvedValue(null);
+    mockUserFindFirst.mockResolvedValue({
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+      billingDeletionCompletedAt: null,
+    });
+    mockQueryRaw.mockResolvedValue([]);
   });
 
   it('hard-deletes soft-deleted users past retention, one transaction per account', async () => {
@@ -637,6 +645,50 @@ describe('cleanupDeletedAccounts', () => {
     for (const call of mockAuditEventDeleteMany.mock.calls) {
       expect(call[0]).toEqual({ where: { actorUserId: 'u1', actorRole: 'member' } });
     }
+  });
+
+  it('skips a deletion with unfinished external cleanup before touching audit rows', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'pending' }, { id: 'free' }]).mockResolvedValueOnce([]);
+    mockUserFindFirst
+      .mockResolvedValueOnce({
+        billingDeletionPendingAt: new Date('2026-08-01T00:00:00Z'),
+        billingDeletionOperationId: 'held-token',
+        billingDeletionCompletedAt: null,
+      })
+      .mockResolvedValueOnce({ billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null });
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 1, blocked: [{ id: 'pending', constraint: 'billing_deletion_incomplete' }] });
+    expect(mockAuditEventDeleteMany).not.toHaveBeenCalledWith({ where: { actorUserId: 'pending', actorRole: 'member' } });
+    expect(mockDeleteMany).toHaveBeenCalledTimes(1);
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free' } });
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+  });
+
+  it('skips an unresolved counselor copy even for an old soft-deleted account', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'counselor' }]).mockResolvedValueOnce([]);
+    mockQueryRaw.mockResolvedValueOnce([{ id: 'claimed-copy' }]);
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 0, blocked: [{ id: 'counselor', constraint: 'billing_send_unresolved' }] });
+    expect(mockAuditEventDeleteMany).not.toHaveBeenCalled();
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it('rechecks retention eligibility after acquiring the billing lock', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'restored' }]).mockResolvedValueOnce([]);
+    mockUserFindFirst.mockResolvedValueOnce(null);
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 0, blocked: [] });
+    expect(mockUserFindFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'restored', deletedAt: { not: null, lt: expect.any(Date) } },
+    }));
+    expect(mockDeleteMany).not.toHaveBeenCalled();
   });
 
   it('reports an account a foreign key still holds and keeps purging the rest', async () => {
@@ -822,6 +874,10 @@ describe('runDataCleanup', () => {
       args?.where && 'deletedAt' in args.where && !('id' in args.where) ? [{ id: 'held' }] : [],
     );
     mockDeleteMany.mockRejectedValue(foreignKeyError('audit_events_actor_user_id_fkey'));
+    mockUserFindFirst.mockResolvedValue({ billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null });
+    mockQueryRaw.mockImplementation(async (parts: TemplateStringsArray) =>
+      parts.join('?').includes('training_billing_packet_sends') ? [] : [{ present: true }],
+    );
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

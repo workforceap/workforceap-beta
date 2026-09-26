@@ -2097,7 +2097,10 @@ model TrainingBillingPacket {
   /// PNG data URL of the drawn signature. Null when the signer typed their name.
   signatureImage  String?  @map("signature_image") @db.Text
   signedAt        DateTime @map("signed_at")
-  signedById      String   @map("signed_by_id")
+  /// Live signer link, detached if that account is purged.
+  signedById      String?  @map("signed_by_id")
+  /// Historical signer identity retained with the frozen signature evidence.
+  signedBySubjectId String @map("signed_by_subject_id")
   sentAt          DateTime? @map("sent_at")
   sentTo          String[] @default([]) @map("sent_to")
   sendCount       Int      @default(0) @map("send_count")
@@ -2124,7 +2127,7 @@ model TrainingBillingPacket {
   // The issued snapshot and sends outlive account erasure. Financial-record
   // retention and final disposal still require an approved policy.
   member       User?        @relation("MemberBillingPackets", fields: [memberId], references: [id], onDelete: SetNull)
-  signedBy     User         @relation("BillingPacketSigner", fields: [signedById], references: [id], onDelete: Restrict)
+  signedBy     User?        @relation("BillingPacketSigner", fields: [signedById], references: [id], onDelete: SetNull)
   sends        TrainingBillingPacketSend[]
 
   @@unique([organizationId, packetNumber])

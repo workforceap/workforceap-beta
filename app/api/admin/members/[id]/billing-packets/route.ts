@@ -332,6 +332,7 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
               signatureImage: input.signatureImage ?? null,
               signedAt: now,
               signedById: user.id,
+              signedBySubjectId: user.id,
               signedSnapshot,
               fundingAttestationKey,
               supersedesPacketId,

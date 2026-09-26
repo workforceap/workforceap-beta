@@ -11,7 +11,7 @@ import { ADMIN_USER_ROLES, ensureProfileRole, syncManagedUserRoles } from '@/lib
 import { userAuthDeleteFailedResponse } from '@/lib/admin/userDeleteResponse';
 import { buildDeletedEmail, isDeletedEmailMarker, parseDeletedEmail } from '../_deletedEmail';
 import { disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
-import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, beginBillingIdentityEdit, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -220,15 +220,31 @@ async function _PATCH(
       }
     }
 
+    // Claim a member/counselor lifecycle hold before changing Auth outside
+    // PostgreSQL. A send that claimed first blocks this edit; an edit that
+    // wins blocks new claims until Auth and the app row agree.
+    const billingEdit = await beginBillingIdentityEdit(id, orgId, existing.email);
+    if (!billingEdit.ok) return NextResponse.json({
+      error: billingEdit.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'This account is being deleted or edited. Reload and try again.',
+      code: billingEdit.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+    }, { status: 409 });
+
     let authEmailChanged = false;
+    let authOutcomeUnknown = false;
+    let dbUpdated = false;
+    let editHeld = true;
  
     try {
       if (emailChanged) {
+        authOutcomeUnknown = true;
         const { error: authError } = await supabase.auth.admin.updateUserById(id, {
           email: normalizedEmail,
           email_confirm: true,
         });
+        authOutcomeUnknown = false;
         if (authError) {
+          await endBillingIdentityEdit(id, billingEdit.operationId);
+          editHeld = false;
           return NextResponse.json({ error: authError.message }, { status: 400 });
         }
         authEmailChanged = true;
@@ -245,7 +261,7 @@ async function _PATCH(
       // organizationId on this updateMany is belt-and-braces.
       const updated = await prisma.$transaction(async (tx) => {
         const userResult = await tx.user.updateMany({
-          where: { id, organizationId: orgId },
+          where: { id, organizationId: orgId, email: existing.email, billingDeletionOperationId: billingEdit.operationId },
           data: { fullName, email: normalizedEmail },
         });
         if (userResult.count === 0) {
@@ -270,6 +286,9 @@ async function _PATCH(
           role: profile?.role ?? 'member',
         };
       });
+      dbUpdated = true;
+      await endBillingIdentityEdit(id, billingEdit.operationId);
+      editHeld = false;
   
       await auditLog({
         actorUserId: admin.id,
@@ -281,7 +300,11 @@ async function _PATCH(
       logAuditEvent({ user: { id: admin.id, role: 'admin' }, verb: 'updated', object: { type: 'User', id }, result: { success: true, extensions: { role: updated.role } } }).catch(() => {});
       return NextResponse.json({ success: true, user: updated });
     } catch (error) {
-      if (authEmailChanged) {
+      if (authOutcomeUnknown) {
+        console.error('[admin/users/:id PATCH] Auth email outcome unknown:', error);
+        return NextResponse.json({ error: 'The sign-in email outcome is unknown; account reconciliation is required.', reconciliationRequired: true }, { status: 503 });
+      }
+      if (authEmailChanged && !dbUpdated) {
         try {
           const rollbackError = await rollbackSupabaseEmailChange(supabase, id, existing.email);
           if (rollbackError) {
@@ -298,6 +321,18 @@ async function _PATCH(
             { status: 500 },
           );
         }
+      }
+      if (editHeld && !dbUpdated) {
+        try {
+          await endBillingIdentityEdit(id, billingEdit.operationId);
+          editHeld = false;
+        } catch (releaseError) {
+          console.error('[admin/users/:id PATCH] billing edit release failed:', releaseError);
+          return NextResponse.json({ error: 'The account edit could not be completed; reconciliation is required.', reconciliationRequired: true }, { status: 503 });
+        }
+      }
+      if (editHeld && dbUpdated) {
+        return NextResponse.json({ error: 'Account details changed, but billing remains paused until reconciliation.', reconciliationRequired: true }, { status: 503 });
       }
       if (error instanceof Error && error.message === 'USER_NOT_FOUND_IN_TX') {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });

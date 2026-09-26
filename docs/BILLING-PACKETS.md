@@ -220,6 +220,8 @@ that automatically emails to counselor and the student."
 - Issued packet and send rows are financial evidence. The packet's live
   `member_id` becomes null when an account is hard-deleted, while the frozen
   `subject_member_id` and signed snapshot remain for provider-org admins.
+  The signer FK likewise detaches; `signed_by_subject_id` and the signed
+  name/title remain as financial evidence without holding the signer account.
   The admin archive is `GET /api/admin/billing-packets/archive`; deleted
   members and counselors cannot retrieve these PDFs. Other private child
   records still follow their normal account-delete cascade.
@@ -238,6 +240,12 @@ that automatically emails to counselor and the student."
   restore requires that completion version and compares it again when
   activating the app row. This prevents a concurrent erase from racing a
   restore through Storage deletion.
+- Admin name, email and role edits take a temporary lifecycle hold before
+  touching Supabase Auth or the app row. Unresolved sends block the edit;
+  new claims are blocked until both identity stores are updated. If the Auth result
+  is unknown, the hold stays in place for operator reconciliation. The
+  30-day purge also takes the lifecycle lock and skips an unfinished cleanup
+  or unresolved student/counselor copy before deleting private child data.
 - The member lifecycle lock needs a real interactive transaction. Billing
   writes fail closed where Prisma transactions are flattened (current Preview
   configuration); production must keep interactive transactions enabled.

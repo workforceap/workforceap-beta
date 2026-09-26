@@ -267,7 +267,7 @@ import {
 } from '@/lib/billing/sendAttempts';
 import { listPacketsForMember, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { prisma as prismaMock } from '@/lib/db/prisma';
-import { beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { beginBillingDeletion, beginBillingIdentityEdit, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const ORG = DEFAULT_ORG_ID;
 const OTHER_ORG = 'aaaaaaaa-0000-4000-8000-000000000009';
@@ -403,6 +403,7 @@ describe('billing deletion barrier ordering', () => {
     const sending = sendPacket(req({}), packetParams(id));
     await vi.waitFor(() => expect(db.sends.some((s) => s.status === 'claimed')).toBe(true));
     expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'unresolved_send' });
+    expect(await beginBillingIdentityEdit(MEMBER, ORG, 'member@example.test')).toEqual({ ok: false, reason: 'unresolved_send' });
     expect(db.users[0].billingDeletionPendingAt).toBeNull();
     finishProvider({ data: { id: 'msg' }, error: null });
     expect((await sending).status).toBe(200);
@@ -454,6 +455,20 @@ describe('billing deletion barrier ordering', () => {
       vi.unstubAllEnvs();
     }
   });
+
+  it('holds billing claims through a cross-system identity edit, then releases only its owner token', async () => {
+    const id = await signOne();
+    const edit = await beginBillingIdentityEdit(MEMBER, ORG, 'member@example.test');
+    expect(edit.ok).toBe(true);
+    if (!edit.ok) return;
+    expect((await sendPacket(req({}), packetParams(id))).status).toBe(409);
+    expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'in_progress' });
+    await expect(endBillingIdentityEdit(MEMBER, 'another-operation')).rejects.toThrow('could not be confirmed');
+    expect(db.users[0].billingDeletionOperationId).toBe(edit.operationId);
+    await endBillingIdentityEdit(MEMBER, edit.operationId);
+    expect(db.users[0].billingDeletionPendingAt).toBeNull();
+    expect((await sendPacket(req({}), packetParams(id))).status).toBe(200);
+  });
 });
 
 describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
@@ -479,6 +494,7 @@ describe('POST /api/admin/members/[id]/billing-packets (sign)', () => {
     const row = db.packets[0];
     expect(row.packetNumber).toBe('WAP-2026-0001');
     expect(row.subjectMemberId).toBe(MEMBER);
+    expect(row.signedBySubjectId).toBe(ADMIN);
     expect(row.totalAmount).toBe(1300);
     expect(row.fundingAttestationKey).toBe('wioa_ita:TESTITA0001');
     const snap = row.signedSnapshot as Record<string, any>;

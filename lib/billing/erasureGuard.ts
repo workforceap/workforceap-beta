@@ -75,5 +75,35 @@ export async function completeBillingDeletion(memberId: string, operationId: str
   if (completed.count !== 1) throw new Error('Billing deletion completion could not be confirmed');
 }
 
+/** Temporarily close claims before an Auth email or staff-role edit crosses the DB boundary. */
+export async function beginBillingIdentityEdit(userId: string, organizationId: string, expectedEmail: string): Promise<BeginBillingDeletionResult> {
+  return prisma.$transaction(async (tx) => {
+    await lockBillingMemberLifecycle(tx, userId);
+    const where = { id: userId, organizationId, email: expectedEmail, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null };
+    const active = await tx.user.findFirst({ where, select: { id: true } });
+    if (!active) return { ok: false as const, reason: 'in_progress' as const };
+    if (await hasUnresolvedBillingSend(tx, userId)) return { ok: false as const, reason: 'unresolved_send' as const };
+    const pendingAt = new Date();
+    const operationId = randomUUID();
+    const { count } = await tx.user.updateMany({
+      where,
+      data: { billingDeletionPendingAt: pendingAt, billingDeletionOperationId: operationId },
+    });
+    return count === 1 ? { ok: true as const, pendingAt, operationId } : { ok: false as const, reason: 'raced' as const };
+  });
+}
+
+/** Only the matching edit owner may reopen billing claims. */
+export async function endBillingIdentityEdit(userId: string, operationId: string): Promise<void> {
+  const released = await prisma.$transaction(async (tx) => {
+    await lockBillingMemberLifecycle(tx, userId);
+    return tx.user.updateMany({
+      where: { id: userId, deletedAt: null, billingDeletionOperationId: operationId },
+      data: { billingDeletionPendingAt: null, billingDeletionOperationId: null },
+    });
+  });
+  if (released.count !== 1) throw new Error('Billing identity edit release could not be confirmed');
+}
+
 export const BILLING_SEND_IN_PROGRESS_ERROR =
   'A billing packet delivery is unresolved for this member. Reconcile that send before deleting the account.';

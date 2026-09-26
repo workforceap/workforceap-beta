@@ -5,6 +5,7 @@ import {
   type EmailFailureSnapshotClient,
 } from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { hasUnresolvedBillingSend, lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -285,7 +286,7 @@ export async function cleanupUnmatchedCourseraXapiEvents(): Promise<CleanupResul
   return { model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: totalDeleted, batchCount };
 }
 
-/** A soft-deleted account the purge could not remove, and the constraint that stopped it. */
+/** A soft-deleted account the purge could not remove, and the reason that stopped it. */
 export type BlockedAccount = {
   id: string;
   constraint: string;
@@ -333,7 +334,10 @@ export function foreignKeyConstraintName(err: unknown): string | null {
  * the member's own self-service rows are removed first, inside the same
  * transaction as the user row.
  *
- * Each account is purged in its own transaction. An account that is still
+ * Each account is purged in its own transaction. The billing lifecycle lock
+ * keeps an in-progress deletion or send from racing the hard purge. An account
+ * whose external deletion is incomplete or whose send remains unresolved is
+ * reported and retained for reconciliation. An account that is still
  * held by a foreign key (a subgroup they created, a table added later without
  * a delete rule) is reported by constraint name and skipped, so one held account can no longer
  * stop every other account in the batch from being purged. A held account is
@@ -374,15 +378,32 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
 
     for (const { id } of rows) {
       try {
-        await prisma.$transaction(async (tx) => {
+        const outcome = await prisma.$transaction(async (tx) => {
+          await lockBillingMemberLifecycle(tx, id);
+          const account = await tx.user.findFirst({
+            where: { id, deletedAt: { not: null, lt: cutoff } },
+            select: {
+              billingDeletionPendingAt: true,
+              billingDeletionOperationId: true,
+              billingDeletionCompletedAt: true,
+            },
+          });
+          if (!account) return 'missing';
+          if (account.billingDeletionOperationId ||
+            (account.billingDeletionPendingAt && !account.billingDeletionCompletedAt)) {
+            return 'billing_deletion_incomplete';
+          }
+          if (await hasUnresolvedBillingSend(tx, id)) return 'billing_send_unresolved';
           await tx.auditEvent.deleteMany({
             where: { actorUserId: id, actorRole: SELF_SERVICE_AUDIT_ACTOR_ROLE },
           });
           // deleteMany (not delete) so a row removed concurrently is a no-op,
           // not a P2025. Cascades run at the database level from here.
-          await tx.user.deleteMany({ where: { id } });
+          const result = await tx.user.deleteMany({ where: { id } });
+          return result.count === 1 ? 'deleted' : 'missing';
         });
-        deleted += 1;
+        if (outcome === 'deleted') deleted += 1;
+        else if (outcome !== 'missing') blocked.push({ id, constraint: outcome });
       } catch (err) {
         const constraint = foreignKeyConstraintName(err);
         if (!constraint) throw err;
@@ -462,7 +483,7 @@ export async function runDataCleanup(): Promise<DataCleanupReport> {
         model: 'user (deleted accounts)',
         deleted: deletedAccounts,
         batchCount: 0,
-        error: `${blockedAccounts.length} account(s) still referenced by: ${[...new Set(blockedAccounts.map((b) => b.constraint))].join(', ')}`,
+        error: `${blockedAccounts.length} account(s) blocked by: ${[...new Set(blockedAccounts.map((b) => b.constraint))].join(', ')}`,
       });
     }
   } catch (err) {
