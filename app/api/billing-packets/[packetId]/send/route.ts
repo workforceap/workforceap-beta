@@ -15,7 +15,7 @@ import {
   closePendingRows,
   DELIVERED,
   deliveredRecipients,
-  isDeliveredRow,
+  finalizeAttemptIfComplete,
   nextSendAction,
   UNSETTLED,
   parseSendAttempt,
@@ -348,28 +348,9 @@ async function withPacketState(res: Response, packetId: string): Promise<Respons
 
 const isSupersededRow = (p: { status: string; supersededAt: Date | null }) => p.status === 'superseded' || p.supersededAt != null;
 
-/**
- * Mark the packet sent when every expected copy of THIS attempt is delivered.
- * Compare-and-set on the attempt number AND the packet still being sendable:
- * an older request finishing after "Email again", or a send that ran into a
- * supersede, never changes the packet. Returns false when the CAS lost.
- */
-async function completeAttempt(packetId: string, attempt: SendAttemptRecord): Promise<'completed' | 'incomplete' | 'lost'> {
-  const current = await prisma.trainingBillingPacket.findUnique({ where: { id: packetId } });
-  if (!current || isSupersededRow(current)) return 'lost';
-  const allRows = await prisma.trainingBillingPacketSend.findMany({ where: { packetId } });
-  const delivered = allRows.filter((s) => s.attemptNo === attempt.attemptNo && isDeliveredRow(s));
-  if (!attempt.recipients.every((r) => delivered.some((s) => s.recipient === r))) return 'incomplete';
-  if (current.status === 'sent' && current.sendCount === attempt.attemptNo) return 'completed';
-  // Everyone who has a copy from ANY attempt (deduplicated, student first),
-  // not just this attempt's recipients.
-  const summary = deliveredRecipients(allRows);
-  const sentTo = RECIPIENT_ORDER.filter((r) => summary.has(r)).map((r) => summary.get(r)!.email);
-  const { count } = await prisma.trainingBillingPacket.updateMany({
-    where: { id: packetId, sendAttemptNo: attempt.attemptNo, ...SENDABLE_PACKET_WHERE },
-    data: { status: 'sent', sentAt: new Date(), sendCount: attempt.attemptNo, sentTo },
-  });
-  return count === 1 ? 'completed' : 'lost';
+/** Finalize via the shared compare-and-set (lib/billing/sendAttempts.ts). */
+function completeAttempt(packetId: string, attempt: SendAttemptRecord) {
+  return finalizeAttemptIfComplete(prisma, packetId, attempt);
 }
 
 async function freshPacket(packetId: string) {

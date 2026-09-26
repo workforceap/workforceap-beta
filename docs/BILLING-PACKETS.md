@@ -105,8 +105,14 @@ that automatically emails to counselor and the student."
     - `reconciled_delivered` / `reconciled_not_delivered`: operator outcomes,
       recorded with actor, time and note.
   - **Provider results**: an acceptance (message id) is written once to
-    `provider_result*`, independent of the status compare-and-set, and the
-    status then follows it with a bounded retry. A copy that is claimed,
+    `provider_result*`, under the packet's send lock (the same lock attempt
+    start, claims, reconciliation and supersede take; it waits, and if the
+    locked write fails it is persisted without the lock rather than dropped).
+    One UPDATE records it and settles an unsettled row, and the status then
+    follows it with a bounded retry. If that completes the current attempt, the
+    packet is finalized (`sent`, `sentAt`, cross-attempt `sentTo`) with the
+    same compare-and-set as the send route; a superseded packet or an older
+    attempt only gets the row result. A copy that is claimed,
     ambiguous or needs_reconciliation becomes `sent`. A copy recorded as not
     delivered or rejected goes to `needs_reconciliation` with a warning. The
     timeout path never overwrites a recorded acceptance. Late errors are kept

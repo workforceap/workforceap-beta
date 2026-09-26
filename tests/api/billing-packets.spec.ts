@@ -27,6 +27,10 @@ const mocks = vi.hoisted(() => ({
   buildGate: { value: null as null | Promise<unknown> },
   /** Test hook: runs once right after the next send-row findUnique (simulates a concurrent write in the gap). */
   afterSendRead: { value: null as null | (() => void) },
+  /** Test hook: runs once right after the next send-row findMany. */
+  afterSendFindMany: { value: null as null | (() => void) },
+  /** Ordered log of send-row creates and provider-result writes. */
+  trace: [] as string[],
 }));
 
 function p2002() {
@@ -153,8 +157,17 @@ vi.mock('@/lib/db/prisma', () => {
         }
         return copy;
       }),
-      findMany: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.sends.filter((s) => matches(s, where)).map((s) => ({ ...s }))),
+      findMany: vi.fn(async ({ where }: { where: Record<string, unknown> }) => {
+        const rows = db.sends.filter((s) => matches(s, where)).map((s) => ({ ...s }));
+        const hook = mocks.afterSendFindMany.value;
+        if (hook) {
+          mocks.afterSendFindMany.value = null;
+          hook();
+        }
+        return rows;
+      }),
       create: vi.fn(async ({ data }: { data: Row }) => {
+        mocks.trace.push(`create:${data.attemptNo}:${data.recipient}`);
         if (db.sends.some((s) => s.packetId === data.packetId && s.attemptNo === data.attemptNo && s.recipient === data.recipient)) throw p2002();
         const row = { ...data, id: `send-${++db.seq}`, sentAt: null, lastError: null };
         db.sends.push(row);
@@ -167,6 +180,7 @@ vi.mock('@/lib/db/prisma', () => {
       }),
       updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Row }) => {
         const rows = db.sends.filter((s) => matches(s, where));
+        if (data.providerResultAt && rows.length) mocks.trace.push('provider_result');
         rows.forEach((s) => Object.assign(s, data));
         return { count: rows.length };
       }),
@@ -293,6 +307,8 @@ beforeEach(() => {
   mocks.brandingGate.value = null;
   mocks.buildGate.value = null;
   mocks.afterSendRead.value = null;
+  mocks.afterSendFindMany.value = null;
+  mocks.trace.length = 0;
   delete process.env.BILLING_PACKET_PROVIDER_ORG_ID;
   delete process.env.EMAIL_FROM;
 });
@@ -1111,21 +1127,25 @@ describe('Provider acceptance is never lost to a racing transition', () => {
     expect(db.sends[0].providerMessageId).toBe('m-1');
   });
 
-  it('acceptance recorded in the gap after reconcile read the row: "not delivered" is rejected and the row ends sent', async () => {
+  it('reconcile "not delivered" and a concurrent acceptance serialize on the lock: never terminal-undelivered with an acceptance', async () => {
     const row = await claimedRow();
     db.sends[0].status = 'ambiguous';
     db.sends[0].claimedAt = new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS);
     db.sends[0].lastClaimedAt = new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS);
-    // Reconcile reads the row (no acceptance yet); the acceptance lands before its CAS.
+    // The acceptance starts while reconcile holds the lock (right after its row read).
     let accepted: Promise<void> | null = null;
     mocks.afterSendRead.value = () => {
       accepted = recordProviderAcceptance(row.id, { messageId: 'm-gap', detail: 'late', late: true });
     };
+    mocks.trace.length = 0;
     const res = await sendPacket(req({ action: 'reconcile', recipient: 'student', delivered: false, note: 'no log found' }), packetParams(row.packetId as string));
     await accepted;
-    expect(res.status).toBe(409);
-    expect(db.sends[0]).toMatchObject({ status: 'sent', providerMessageId: 'm-gap' });
-    expect(db.sends[0].reconciledAt ?? null).toBeNull();
+    expect(res.status).toBe(200); // reconcile held the lock first
+    // The acceptance then landed and contradicted it: flagged, not left terminal.
+    expect(db.sends[0]).toMatchObject({ status: 'needs_reconciliation', providerMessageId: 'm-gap' });
+    expect(String(db.sends[0].lastError)).toMatch(/AFTER it was recorded as not delivered/);
+    // The provider did accept the only expected copy, so the packet is finalized truthfully.
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sentTo: ['member@example.test'] });
   });
 
   it('the reconcile "not delivered" CAS itself refuses a row whose acceptance was recorded after the read', async () => {
@@ -1165,6 +1185,97 @@ describe('Provider acceptance is never lost to a racing transition', () => {
     expect(db.sends).toHaveLength(1);
     expect(db.packets[0].sendAttemptNo).toBe(1);
     expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('acceptance arriving between startSendAttempt\'s last read and its create waits for the lock; the old row is then flagged', async () => {
+    const row = await claimedRow();
+    Object.assign(db.sends[0], { status: 'reconciled_not_delivered' }); // terminal, undelivered
+    const startArgs = {
+      packetId: row.packetId as string,
+      expectedCurrent: 1,
+      now: new Date(),
+      recipients: [{ recipient: 'student' as const, email: 'member@example.test', cc: null }],
+      record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
+    };
+    let acceptance: Promise<void> | null = null;
+    // The start's delivered read is its last findMany before the create: hook the gap there.
+    let reads = 0;
+    const arm = () => {
+      mocks.afterSendFindMany.value = () => {
+        reads += 1;
+        if (reads < 2) return arm(); // 1st findMany = terminal check, 2nd = delivered read
+        acceptance = recordProviderAcceptance(row.id, { messageId: 'm-gap', detail: 'late', late: true });
+      };
+    };
+    arm();
+    mocks.trace.length = 0;
+    const started = await startSendAttempt(startArgs);
+    await acceptance;
+    expect(started.ok).toBe(true);
+    // The acceptance blocked on the lock until attempt 2's row was created.
+    expect(mocks.trace).toEqual(['create:2:student', 'provider_result']);
+    const old = db.sends.find((r) => r.attemptNo === 1)!;
+    expect(old).toMatchObject({ status: 'needs_reconciliation', providerMessageId: 'm-gap' });
+    expect(String(old.lastError)).toMatch(/Check for a duplicate email/);
+  });
+
+  it('acceptance committing first: startSendAttempt sees a delivered recipient and requires a duplicate confirmation', async () => {
+    const row = await claimedRow();
+    Object.assign(db.sends[0], { status: 'reconciled_not_delivered' });
+    await recordProviderAcceptance(row.id, { messageId: 'm-first', detail: 'late', late: true });
+    const args = {
+      packetId: row.packetId as string,
+      expectedCurrent: 1,
+      now: new Date(),
+      recipients: [{ recipient: 'student' as const, email: 'member@example.test', cc: null }],
+      record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
+    };
+    // Flagged for reconciliation (not terminal) -> no new attempt at all; once reconciled delivered, a duplicate needs confirmation.
+    expect(await startSendAttempt(args)).toEqual({ ok: false, reason: 'not_terminal' });
+    Object.assign(db.sends[0], { status: 'reconciled_delivered' });
+    expect(await startSendAttempt(args)).toEqual({ ok: false, reason: 'duplicate' });
+    expect((await startSendAttempt({ ...args, confirmedDuplicates: ['student'] })).ok).toBe(true);
+  });
+
+  it('timeout, then a late acceptance: the packet is finalized (sent, sentAt, sentTo)', async () => {
+    const row = await claimedRow();
+    await recordAmbiguousOutcome(row, 'timeout');
+    expect(db.packets[0].status).toBe('signed');
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sendCount: 1, sentTo: ['member@example.test'] });
+    expect(db.packets[0].sentAt).toBeInstanceOf(Date);
+  });
+
+  it('a late acceptance on a superseded packet records the row but leaves the packet superseded', async () => {
+    const row = await claimedRow();
+    await recordAmbiguousOutcome(row, 'timeout');
+    db.sends[0].lastClaimedAt = new Date(Date.now() - RECONCILE_CLAIMED_MIN_AGE_MS - 1000);
+    const res = await createPacket(req(body({ supersedesPacketId: row.packetId, supersedeReason: 'Correction' } as Partial<Body>)), params(MEMBER));
+    expect(res.status).toBe(201);
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    const old = db.packets.find((p) => p.id === row.packetId)!;
+    expect(old.status).toBe('superseded');
+    expect(old.sentAt ?? null).toBeNull();
+    expect(db.sends.find((r) => r.id === row.id)).toMatchObject({ status: 'sent', providerMessageId: 'm-late' });
+  });
+
+  it('a late acceptance for an older attempt records the row but does not change the packet', async () => {
+    const row = await claimedRow();
+    await recordAmbiguousOutcome(row, 'timeout');
+    // Operator settled attempt 1 after the window; attempt 2 started and is still pending.
+    Object.assign(db.sends[0], { status: 'reconciled_not_delivered' });
+    const next = await startSendAttempt({
+      packetId: row.packetId as string,
+      expectedCurrent: 1,
+      now: new Date(),
+      recipients: [{ recipient: 'student', email: 'member@example.test', cc: null }],
+      record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
+    });
+    expect(next.ok).toBe(true);
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-old' });
+    expect(db.packets[0]).toMatchObject({ status: 'signed', sendAttemptNo: 2 });
+    expect(db.packets[0].sentAt ?? null).toBeNull();
+    expect(db.sends.find((r) => r.id === row.id)).toMatchObject({ status: 'needs_reconciliation', providerMessageId: 'm-old' });
   });
 
   it('an acceptance after "not delivered" was recorded goes back to needs_reconciliation; "not delivered" is refused once accepted', async () => {

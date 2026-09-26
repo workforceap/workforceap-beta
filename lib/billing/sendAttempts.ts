@@ -167,8 +167,9 @@ export function attemptIsTerminal(
   return (
     recipients.length === expected.length
     && [...expected].sort().every((r, i) => recipients[i] === r)
-    // A recorded provider acceptance counts as delivered whatever the status.
-    && rows.every((r) => TERMINAL.has(r.status) || r.providerResultAt != null)
+    // A recorded provider acceptance counts as delivered (never as "not
+    // delivered"), except while the row is flagged for reconciliation.
+    && rows.every((r) => TERMINAL.has(r.status) || (r.providerResultAt != null && r.status !== 'needs_reconciliation'))
   );
 }
 
@@ -380,30 +381,81 @@ export async function reconcileRecipient(args: {
   actorLabel: string;
   now: Date;
 }): Promise<ReconcileResult> {
-  const row = await prisma.trainingBillingPacketSend.findUnique({
-    where: { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } },
+  // Under the packet's send lock, like acceptance writes and attempt starts,
+  // so an operator outcome and a provider result are strictly ordered.
+  return prisma.$transaction(async (tx): Promise<ReconcileResult> => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${args.packetId}`}))`;
+    const row = await tx.trainingBillingPacketSend.findUnique({
+      where: { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } },
+    });
+    if (!row || !['needs_reconciliation', 'ambiguous', 'claimed'].includes(row.status)) return 'not_reconcilable';
+    // The provider already accepted this key: "not delivered" would be false.
+    if (!args.delivered && row.providerResultAt) return 'not_reconcilable';
+    if (row.status === 'claimed' && args.now.getTime() - row.lastClaimedAt.getTime() < RECONCILE_CLAIMED_MIN_AGE_MS) return 'in_progress';
+    if (!args.delivered && args.now.getTime() - row.claimedAt.getTime() <= IDEMPOTENCY_SAFE_RETRY_MS) return 'retry_first';
+    const { count } = await tx.trainingBillingPacketSend.updateMany({
+      // "Not delivered" also requires that no provider acceptance was recorded
+      // meanwhile (recordProviderAcceptance writes it atomically); "delivered"
+      // may proceed regardless.
+      where: { id: row.id, status: row.status, claimToken: row.claimToken, ...(args.delivered ? {} : { providerResultAt: null }) },
+      data: {
+        status: args.delivered ? 'reconciled_delivered' : 'reconciled_not_delivered',
+        claimToken: randomUUID(),
+        reconciledById: args.actorId,
+        reconciledByLabel: args.actorLabel.slice(0, 320),
+        reconciledAt: args.now,
+        reconcileNote: args.note.slice(0, 1000),
+        ...(args.delivered ? { sentAt: args.now } : {}),
+      },
+    });
+    return count === 1 ? 'ok' : 'in_progress';
   });
-  if (!row || !['needs_reconciliation', 'ambiguous', 'claimed'].includes(row.status)) return 'not_reconcilable';
-  // The provider already accepted this key: "not delivered" would be false.
-  if (!args.delivered && row.providerResultAt) return 'not_reconcilable';
-  if (row.status === 'claimed' && args.now.getTime() - row.lastClaimedAt.getTime() < RECONCILE_CLAIMED_MIN_AGE_MS) return 'in_progress';
-  if (!args.delivered && args.now.getTime() - row.claimedAt.getTime() <= IDEMPOTENCY_SAFE_RETRY_MS) return 'retry_first';
-  const { count } = await prisma.trainingBillingPacketSend.updateMany({
-    // "Not delivered" also requires that no provider acceptance was recorded
-    // meanwhile (recordProviderAcceptance writes it atomically); "delivered"
-    // may proceed regardless.
-    where: { id: row.id, status: row.status, claimToken: row.claimToken, ...(args.delivered ? {} : { providerResultAt: null }) },
-    data: {
-      status: args.delivered ? 'reconciled_delivered' : 'reconciled_not_delivered',
-      claimToken: randomUUID(),
-      reconciledById: args.actorId,
-      reconciledByLabel: args.actorLabel.slice(0, 320),
-      reconciledAt: args.now,
-      reconcileNote: args.note.slice(0, 1000),
-      ...(args.delivered ? { sentAt: args.now } : {}),
-    },
+}
+
+type PacketDb = Pick<Prisma.TransactionClient, 'trainingBillingPacket' | 'trainingBillingPacketSend'>;
+
+const RECIPIENT_ORDER: PacketRecipient[] = ['student', 'counselor'];
+
+/**
+ * Mark the packet `sent` when every expected copy of `attempt` is delivered,
+ * with a compare-and-set on the attempt still being current AND the packet
+ * still sendable (never a superseded packet, never an older attempt).
+ * `sentTo` is the delivered summary across ALL attempts. Shared by the send
+ * route, reconciliation and late provider acceptances.
+ */
+export async function finalizeAttemptIfComplete(
+  db: PacketDb,
+  packetId: string,
+  attempt: Pick<SendAttemptRecord, 'attemptNo' | 'recipients'>,
+): Promise<'completed' | 'incomplete' | 'lost'> {
+  const current = await db.trainingBillingPacket.findUnique({ where: { id: packetId } });
+  if (!current || !isSendable(current) || current.sendAttemptNo !== attempt.attemptNo) return 'lost';
+  const allRows = await db.trainingBillingPacketSend.findMany({ where: { packetId } });
+  const delivered = allRows.filter((s) => s.attemptNo === attempt.attemptNo && isDeliveredRow(s));
+  if (!attempt.recipients.every((r) => delivered.some((s) => s.recipient === r))) return 'incomplete';
+  if (current.status === 'sent' && current.sendCount === attempt.attemptNo) return 'completed';
+  const summary = deliveredRecipients(allRows);
+  const sentTo = RECIPIENT_ORDER.filter((r) => summary.has(r)).map((r) => summary.get(r)!.email);
+  const { count } = await db.trainingBillingPacket.updateMany({
+    where: { id: packetId, sendAttemptNo: attempt.attemptNo, ...SENDABLE_PACKET_WHERE },
+    data: { status: 'sent', sentAt: new Date(), sendCount: attempt.attemptNo, sentTo },
   });
-  return count === 1 ? 'ok' : 'in_progress';
+  return count === 1 ? 'completed' : 'lost';
+}
+
+/** After a late acceptance: finalize the packet if that row's attempt is the current one and now complete. */
+async function finalizeAfterAcceptance(db: PacketDb, sendId: string): Promise<void> {
+  const row = await db.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
+  if (!row) return;
+  const packet = await db.trainingBillingPacket.findUnique({ where: { id: row.packetId } });
+  if (!packet || packet.sendAttemptNo !== row.attemptNo) return;
+  let attempt: SendAttemptRecord | null;
+  try {
+    attempt = parseSendAttempt(packet.sendAttempt, packet.sendAttemptNo);
+  } catch {
+    return;
+  }
+  if (attempt) await finalizeAttemptIfComplete(db, row.packetId, attempt);
 }
 
 /**
@@ -427,19 +479,43 @@ export async function recordProviderAcceptance(
     // A result after the request stopped waiting is also surfaced as a warning.
     ...(result.late ? { lateProviderResult: providerResult } : {}),
   };
-  // One atomic UPDATE records the acceptance AND settles the status when the
-  // row is still unsettled, so no reconciliation or new attempt can slip into
-  // a gap between the two.
-  const { count } = await prisma.trainingBillingPacketSend.updateMany({
-    where: { id: sendId, providerResultAt: null, status: { in: ['claimed', 'ambiguous', 'needs_reconciliation'] } },
-    data: { ...recorded, status: 'sent', sentAt: now, claimToken: randomUUID(), lastError: null },
-  });
-  if (count === 1) return;
-  // Any other status (already delivered, or a recorded "not delivered" /
-  // rejection the provider now contradicts): record the result once, then
-  // apply the contradiction rules.
-  await prisma.trainingBillingPacketSend.updateMany({ where: { id: sendId, providerResultAt: null }, data: recorded });
-  await applyRecordedProviderResult(sendId, now);
+  const write = async (db: Pick<Prisma.TransactionClient, 'trainingBillingPacketSend'>) => {
+    // One atomic UPDATE records the acceptance AND settles the status when the
+    // row is still unsettled.
+    const { count } = await db.trainingBillingPacketSend.updateMany({
+      where: { id: sendId, providerResultAt: null, status: { in: ['claimed', 'ambiguous', 'needs_reconciliation'] } },
+      data: { ...recorded, status: 'sent', sentAt: now, claimToken: randomUUID(), lastError: null },
+    });
+    if (count === 1) return;
+    // Any other status (already delivered, or a recorded "not delivered" /
+    // rejection the provider now contradicts): record the result once, then
+    // apply the contradiction rules.
+    await db.trainingBillingPacketSend.updateMany({ where: { id: sendId, providerResultAt: null }, data: recorded });
+    await applyRecordedProviderResult(sendId, now, db);
+  };
+  const row = await prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId }, select: { packetId: true } });
+  if (!row) return;
+  try {
+    // Under the packet's send lock, so it serializes with startSendAttempt's
+    // read-then-create: an acceptance either lands before the start reads the
+    // rows (the start then needs a duplicate confirmation) or after the new
+    // attempt committed (the old row is flagged for reconciliation). It waits
+    // for the lock; it never skips the write.
+    await prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${row.packetId}`}))`;
+        await write(tx);
+        await finalizeAfterAcceptance(tx, sendId);
+      },
+      { maxWait: 10_000, timeout: 60_000 },
+    );
+  } catch (err) {
+    // Never lose an acceptance: if the locked write fails (e.g. a transaction
+    // timeout), persist it without the lock. Still write-once and CAS-guarded.
+    console.error('[billing-packets send] locked acceptance write failed; writing without the lock', { sendId, err });
+    await write(prisma);
+    await finalizeAfterAcceptance(prisma, sendId);
+  }
 }
 
 /**
@@ -451,9 +527,13 @@ export async function recordProviderAcceptance(
  *  - sent / reconciled_delivered / pending: unchanged.
  * Returns the row as finally read.
  */
-export async function applyRecordedProviderResult(sendId: string, now: Date = new Date()): Promise<TrainingBillingPacketSend | null> {
+export async function applyRecordedProviderResult(
+  sendId: string,
+  now: Date = new Date(),
+  db: Pick<Prisma.TransactionClient, 'trainingBillingPacketSend'> = prisma,
+): Promise<TrainingBillingPacketSend | null> {
   for (let i = 0; i < 5; i += 1) {
-    const row = await prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
+    const row = await db.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
     if (!row || !row.providerResultAt) return row;
     let data: Prisma.TrainingBillingPacketSendUpdateManyMutationInput | null = null;
     if (['claimed', 'ambiguous', 'needs_reconciliation'].includes(row.status)) {
@@ -466,11 +546,11 @@ export async function applyRecordedProviderResult(sendId: string, now: Date = ne
       };
     }
     if (!data) return row;
-    const { count } = await prisma.trainingBillingPacketSend.updateMany({ where: { id: row.id, status: row.status, claimToken: row.claimToken }, data });
-    if (count === 1) return prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
+    const { count } = await db.trainingBillingPacketSend.updateMany({ where: { id: row.id, status: row.status, claimToken: row.claimToken }, data });
+    if (count === 1) return db.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
   }
   console.error('[billing-packets send] could not settle a recorded provider acceptance', { sendId });
-  return prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
+  return db.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
 }
 
 /**
