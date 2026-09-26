@@ -59,7 +59,7 @@ describe('staff session Resume Rewriter source', () => {
       status: 200, headers: { 'Content-Type': 'application/json' },
     }));
     vi.stubGlobal('fetch', fetchMock);
-    render(<SessionRunClient {...props} existingResume={enhanced} originalResume="" />);
+    const { container } = render(<SessionRunClient {...props} existingResume={enhanced} originalResume="" />);
 
     const source = screen.getByLabelText(/Resume \/ experience/i);
     expect(source).toHaveValue('');
@@ -81,6 +81,8 @@ describe('staff session Resume Rewriter source', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/ai/resume-rewriter', expect.anything()));
     const rewriterCall = fetchMock.mock.calls.find(([url]) => url === '/api/ai/resume-rewriter');
     expect(JSON.parse((rewriterCall?.[1] as RequestInit).body as string).resume).toBe(original);
+    await waitFor(() => expect(container.querySelector('#session-card-cover')).toHaveTextContent('Will use the saved resume draft as context.'));
+    expect(container.querySelector('#session-card-interview')).toHaveTextContent('Uses saved resume draft as context.');
   });
 
   it('uses a newly uploaded original as the Rewriter source', async () => {

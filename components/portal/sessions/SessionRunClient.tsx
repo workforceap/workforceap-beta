@@ -765,10 +765,10 @@ export default function SessionRunClient({
           'Ready'
         }
         contextNote={
-          resumeState.output
-            ? `Using resume from step 2 as context.`
-            : usesSavedDraftContext
+          usesSavedDraftContext
             ? 'Will use the saved resume draft as context.'
+            : resumeState.output
+            ? `Using resume from step 2 as context.`
             : resumeText.trim().length > 50
             ? 'Will use the resume input from step 2 as context.'
             : null
@@ -886,7 +886,9 @@ export default function SessionRunClient({
           'Ready'
         }
         contextNote={
-          resumeState.output && coverState.output
+          usesSavedDraftContext
+            ? 'Uses saved resume draft as context.'
+            : resumeState.output && coverState.output
             ? 'Using resume + cover letter from steps 2 & 3 as context.'
             : resumeState.output
             ? 'Using resume from step 2 as context.'
