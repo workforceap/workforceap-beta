@@ -348,11 +348,17 @@ export async function claimRecipient(args: {
     if (!isSendable(packet)) return { kind: 'superseded' };
     // The route's earlier viewer/recipient check can be stale while it builds
     // the email. Refuse a claim if deletion or anonymization committed first.
-    const member = await tx.user.findFirst({
-      where: { id: packet!.memberId, organizationId: packet!.organizationId, deletedAt: null },
-      select: { id: true },
-    });
-    if (!member) return { kind: 'member_inactive' };
+    // Raw query includes the tenant key explicitly and holds the member row
+    // through the claim transaction. A later delete still needs its own
+    // lifecycle barrier before the external provider call.
+    const member = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM users
+      WHERE id = ${packet!.memberId}::text
+        AND organization_id = ${packet!.organizationId}::text
+        AND deleted_at IS NULL
+      FOR UPDATE
+    `;
+    if (member.length !== 1) return { kind: 'member_inactive' };
     const key = { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } };
     let existing = await tx.trainingBillingPacketSend.findUnique({ where: key });
     // Every row is created pending when its attempt starts, so a missing row is

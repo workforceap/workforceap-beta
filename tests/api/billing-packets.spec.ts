@@ -105,7 +105,9 @@ vi.mock('@/lib/db/prisma', () => {
           }
           const [id, organizationId, fullName, email] = values;
           return db.users
-            .filter((u) => u.id === id && u.organizationId === organizationId && u.deletedAt === null && u.fullName === fullName && u.email === email)
+            .filter((u) => u.id === id && u.organizationId === organizationId && u.deletedAt === null
+              && (fullName === undefined || u.fullName === fullName)
+              && (email === undefined || u.email === email))
             .map((u) => ({ id: u.id }));
         },
       };
