@@ -128,6 +128,8 @@ describe('GET /api/admin/metrics when coursera_xapi_events is present (productio
     expect(engagementCalls).toHaveLength(1);
     const sql = (engagementCalls[0][0] as TemplateStringsArray).join('');
     expect(sql.match(/COUNT\(DISTINCT me\.user_id\) FILTER/g)).toHaveLength(2);
+    expect(sql).toMatch(/COUNT\(DISTINCT me\.user_id\) FILTER \(WHERE me\.event_name = 'member_dashboard_viewed'\)\)::int as viewers/);
+    expect(sql).toMatch(/COUNT\(DISTINCT me\.user_id\) FILTER \(WHERE me\.event_name = 'member_dashboard_activated'\)\)::int as activated/);
     expect(sql).toContain("WHERE me.event_name IN ('member_dashboard_viewed', 'member_dashboard_activated')");
     expect(engagementCalls[0]).toContain('org-1');
   });

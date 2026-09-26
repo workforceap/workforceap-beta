@@ -46,6 +46,8 @@ async function computeAdminRouteMetricsPayload(
 
   // Count both events over the same member population in one database read.
   // Distinct users remain the numerator and denominator for activation rate.
+  // COUNT(*) once counted 161 activation events from one user over 40 viewers
+  // and printed "Activation Rate 403%"; keep DISTINCT for both counts (S4).
   const dashboardEngagement = await prisma.$queryRaw<{ viewers: number; activated: number }[]>`
       SELECT
         (COUNT(DISTINCT me.user_id) FILTER (WHERE me.event_name = 'member_dashboard_viewed'))::int as viewers,
