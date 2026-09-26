@@ -42,6 +42,7 @@ import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
   inspectPortalPage,
+  observeAdminDashboardMetrics,
   READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
@@ -739,6 +740,9 @@ async function auditRoute(
   const pageErrors = [];
   const documentResponses = [];
   const dataRequests = trackSameOriginDataRequests(page);
+  const adminMetricsCheck = role === 'admin' && requestPath === '/admin/dashboard' && !options.accessProbe
+    ? observeAdminDashboardMetrics(page, trustedOrigin, remainingTimeout(30_000), remainingTimeout(20_000))
+    : null;
   const handleConsole = (message) => {
     if (recordConsoleError(message, consoleErrors)) environmentalConsoleErrorCount += 1;
   };
@@ -780,6 +784,14 @@ async function auditRoute(
     // this settlement window so an async error boundary cannot appear after a
     // stale, healthy-looking snapshot has already been captured.
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
+
+    if (adminMetricsCheck) {
+      // A visible heading belongs to the dashboard loading state too. Require
+      // the authenticated data read to complete before classifying this page.
+      const failure = await adminMetricsCheck;
+      if (failure) pageErrors.push(failure);
+      await dataRequests.waitForSettlement(remainingTimeout(5_000));
+    }
 
     if (options.accessProbe && !documentResponses.some(({ status }) => status === 401 || status === 403)) {
       // A denied nested layout may stream a generic shell before its server

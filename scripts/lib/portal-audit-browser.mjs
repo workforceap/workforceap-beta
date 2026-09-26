@@ -166,6 +166,39 @@ export async function waitForPortalRouteContent(page, timeout = PORTAL_AUDIT_REA
   await page.waitForFunction(hasPortalRouteContent, undefined, { timeout });
 }
 
+/** Start before navigation so a fast dashboard API response cannot escape the audit. */
+export function observeAdminDashboardMetrics(page, trustedOrigin, responseTimeout, contentTimeout) {
+  return page.waitForResponse((response) => {
+    if (response.request().method() !== 'GET') return false;
+    try {
+      const url = new URL(response.url());
+      const pageUrl = new URL(page.url());
+      return pageUrl.origin === trustedOrigin && pageUrl.pathname === '/admin/dashboard' &&
+        url.origin === trustedOrigin && url.pathname === '/api/admin/metrics';
+    } catch {
+      return false;
+    }
+  }, { timeout: responseTimeout }).then(
+    async (response) => {
+      if (response.status() !== 200) return 'admin_metrics_api_http_error';
+      try {
+        await page.locator('[data-portal-loading-state="admin-metrics"]')
+          .waitFor({ state: 'hidden', timeout: contentTimeout });
+      } catch {
+        return 'admin_metrics_loading_not_cleared';
+      }
+      try {
+        await page.locator('main#main-content [data-portal-data-ready="admin-metrics"]')
+          .waitFor({ state: 'visible', timeout: contentTimeout });
+        return null;
+      } catch {
+        return 'admin_metrics_content_not_ready';
+      }
+    },
+    () => 'admin_metrics_api_response_missing',
+  );
+}
+
 /** An intermediate canceled navigation must not preempt the final redirect commit. */
 export async function waitForRedirectTargetCommit(page, matchesTarget, timeout) {
   const deadline = Date.now() + timeout;

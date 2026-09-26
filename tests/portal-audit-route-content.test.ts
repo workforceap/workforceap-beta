@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   hasPortalRouteContent,
   inspectPortalPage,
+  observeAdminDashboardMetrics,
   waitForPortalRouteContent,
 } from '../scripts/lib/portal-audit-browser.mjs';
 
@@ -64,5 +65,75 @@ describe('portal audit streamed route readiness', () => {
     loader.style.display = 'none';
     document.querySelector('main')?.insertAdjacentHTML('beforeend', '<h1>Eligibility details</h1>');
     expect(hasPortalRouteContent()).toBe(true);
+  });
+});
+
+describe('admin dashboard audit data readiness', () => {
+  const response = (url: string, method = 'GET', status = 200) => ({
+    url: () => url,
+    request: () => ({ method: () => method }),
+    status: () => status,
+  });
+
+  it('registers before navigation and accepts only the trusted metrics GET before loading clears', async () => {
+    let deliverResponse: (value: ReturnType<typeof response>) => void = () => {};
+    let currentUrl = 'https://preview.test/admin/dashboard';
+    const responseGate = new Promise<ReturnType<typeof response>>((resolve) => { deliverResponse = resolve; });
+    const waitFor = vi.fn(async () => {});
+    const waitForResponse = vi.fn((matches: (value: ReturnType<typeof response>) => boolean) => {
+      expect(matches(response('https://preview.test/api/admin/metrics'))).toBe(true);
+      expect(matches(response('https://preview.test/api/admin/metrics?source=audit'))).toBe(true);
+      expect(matches(response('https://elsewhere.test/api/admin/metrics'))).toBe(false);
+      expect(matches(response('https://preview.test/api/admin/health'))).toBe(false);
+      expect(matches(response('https://preview.test/api/admin/metrics', 'POST'))).toBe(false);
+      expect(matches(response('invalid-url'))).toBe(false);
+      currentUrl = 'https://preview.test/admin/reporting';
+      expect(matches(response('https://preview.test/api/admin/metrics'))).toBe(false);
+      currentUrl = 'https://preview.test/admin/dashboard';
+      return responseGate;
+    });
+    const locator = vi.fn(() => ({ waitFor }));
+    const page = { waitForResponse, locator, url: () => currentUrl };
+
+    const check = observeAdminDashboardMetrics(page, 'https://preview.test', 1_000, 250);
+    expect(waitForResponse).toHaveBeenCalledTimes(1);
+    deliverResponse(response('https://preview.test/api/admin/metrics'));
+
+    await expect(check).resolves.toBeNull();
+    expect(locator).toHaveBeenCalledWith('[data-portal-loading-state="admin-metrics"]');
+    expect(locator).toHaveBeenCalledWith('main#main-content [data-portal-data-ready="admin-metrics"]');
+    expect(waitFor.mock.calls).toEqual([
+      [{ state: 'hidden', timeout: 250 }],
+      [{ state: 'visible', timeout: 250 }],
+    ]);
+  });
+
+  it('fails when the API response is missing, non-200, or leaves loading visible', async () => {
+    const loadingWait = vi.fn(async () => {});
+    const page = (result: Promise<ReturnType<typeof response>>) => ({
+      waitForResponse: vi.fn(() => result),
+      locator: vi.fn(() => ({ waitFor: loadingWait })),
+      url: () => 'https://preview.test/admin/dashboard',
+    });
+
+    const missing = page(Promise.reject(new Error('timeout with private request details')));
+    await expect(observeAdminDashboardMetrics(missing, 'https://preview.test', 10, 10))
+      .resolves.toBe('admin_metrics_api_response_missing');
+    expect(missing.locator).not.toHaveBeenCalled();
+
+    const failed = page(Promise.resolve(response('https://preview.test/api/admin/metrics', 'GET', 500)));
+    await expect(observeAdminDashboardMetrics(failed, 'https://preview.test', 10, 10))
+      .resolves.toBe('admin_metrics_api_http_error');
+    expect(failed.locator).not.toHaveBeenCalled();
+
+    loadingWait.mockRejectedValueOnce(new Error('loading with private page details'));
+    const stuck = page(Promise.resolve(response('https://preview.test/api/admin/metrics')));
+    await expect(observeAdminDashboardMetrics(stuck, 'https://preview.test', 10, 10))
+      .resolves.toBe('admin_metrics_loading_not_cleared');
+
+    loadingWait.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('private page details'));
+    const empty = page(Promise.resolve(response('https://preview.test/api/admin/metrics')));
+    await expect(observeAdminDashboardMetrics(empty, 'https://preview.test', 10, 10))
+      .resolves.toBe('admin_metrics_content_not_ready');
   });
 });
