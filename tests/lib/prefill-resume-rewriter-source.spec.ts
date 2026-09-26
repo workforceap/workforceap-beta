@@ -46,7 +46,7 @@ describe('Resume Rewriter source prefill', () => {
 
     await expect(prefillResumeRewriter('member-1')).resolves.toEqual({
       ok: false,
-      error: 'No readable original resume found. Upload or paste your resume at /dashboard/resume.',
+      error: 'We could not read an original resume. Paste it into the Resume Rewriter text box or upload a readable file.',
     });
     expect(mocks.getMemberResumePlainText).toHaveBeenCalledWith('member-1', 12000, { originalOnly: true });
     expect(mocks.findAiResult).not.toHaveBeenCalled();
