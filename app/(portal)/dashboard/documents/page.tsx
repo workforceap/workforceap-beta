@@ -15,9 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Member view of the signed J5 invoice + J6 cover letter packets about them.
- * Read-only: view or download the PDFs. The office emails the same files when
- * a packet is sent.
+ * Member view of the signed J5 invoice + J6 cover letter packets about them,
+ * shown once a send could have reached the member (lib/billing/packetAccess.ts).
+ * Read-only: view or download the PDFs.
  */
 export default async function DashboardDocumentsPage() {
   const user = await getUser();
@@ -33,7 +33,7 @@ export default async function DashboardDocumentsPage() {
       <div style={{ maxWidth: 800, display: 'grid', gap: '1rem' }}>
         <BillingPacketList
           packets={packets}
-          emptyText="No documents yet. When your training invoice is signed, it appears here and is also emailed to you."
+          emptyText="No documents yet. Billing documents appear here once they have been sent to you."
         />
       </div>
     </div>

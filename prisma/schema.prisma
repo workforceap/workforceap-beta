@@ -2147,8 +2147,14 @@ model TrainingBillingPacketSend {
   reconciledById String?   @map("reconciled_by_id")
   reconciledAt   DateTime? @map("reconciled_at")
   reconcileNote  String?   @map("reconcile_note") @db.Text
+  /// Who reconciled (admin email at the time), for the per-recipient history.
+  reconciledByLabel String? @map("reconciled_by_label")
   /// Provider result that arrived after the row had moved on (timeout, reconcile); kept for audit.
   lateProviderResult String? @map("late_provider_result") @db.Text
+  /// Provider acceptance for this row's idempotency key, written once whatever the status CAS does.
+  providerMessageId  String?   @map("provider_message_id")
+  providerResult     String?   @map("provider_result") @db.Text
+  providerResultAt   DateTime? @map("provider_result_at")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 

@@ -512,7 +512,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
     wioaReviewerName = rev?.fullName ?? null;
   }
 
-  const billingPackets = await listPacketsForMember(member.id);
+  const billingPackets = await listPacketsForMember(member.id, 'counselor');
 
   // Counselor approvals (Mike, 2026-09-19): counselors approve/deny the
   // member's program application(s) and record WIOA intake verification
@@ -847,9 +847,9 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                 Training invoice &amp; cover letter (J5 / J6)
               </h2>
               <p className={styles.lede}>
-                Signed by the office and emailed to you and the student. Download the PDFs here anytime.
+                Billing documents appear here once the office has sent them to you. Download the PDFs here anytime.
               </p>
-              <BillingPacketList packets={billingPackets} emptyText="No signed invoice packet for this student yet." />
+              <BillingPacketList packets={billingPackets} emptyText="No invoice packet has been sent for this student yet." />
             </section>
           </div>
         </TabPanel>

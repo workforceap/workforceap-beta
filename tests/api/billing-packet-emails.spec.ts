@@ -38,7 +38,7 @@ const packet = {
   createdAt: new Date(), updatedAt: new Date(),
 } as unknown as TrainingBillingPacket;
 const attempt: SendAttemptRecord = {
-  attemptNo: 1, startedAt: '2026-09-26T00:00:00.000Z', startedById: 'a1', from: 'Frozen From <from@example.test>',
+  attemptNo: 1, recipients: ['student', 'counselor'], startedAt: '2026-09-26T00:00:00.000Z', startedById: 'a1', from: 'Frozen From <from@example.test>',
   branding: { orgId: 'org', name: 'Frozen Brand', logoUrl: '', primaryColor: '#111111', supportEmail: '', domain: 'https://x.test', domainLabel: 'x.test' },
 };
 
@@ -81,7 +81,7 @@ describe('packet emails', () => {
     expect(classifyDeliveryError(err)).toBe('ambiguous');
     resolve({ data: { id: 'x' }, error: null });
     await new Promise((r) => setTimeout(r, 5));
-    expect(late).toEqual([{ delivered: true, detail: 'provider accepted after the timeout' }]);
+    expect(late).toEqual([{ delivered: true, detail: 'provider accepted after the timeout', messageId: 'x' }]);
   });
 
   it('classifies provider outcomes: idempotency conflict, definite rejection, ambiguous', () => {

@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 import type { Prisma, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import type { OrganizationBranding } from '@/lib/tenant/organizationBranding';
-import { isUniqueViolation } from './packetNumber';
 
 /**
  * Send attempts for J5/J6 packets.
@@ -41,6 +40,27 @@ export const RECONCILE_CLAIMED_MIN_AGE_MS = 15 * 60 * 1000;
 
 export type PacketRecipient = 'student' | 'counselor';
 
+/** Packet statuses that may still send. A superseded packet never does. */
+export const SENDABLE_PACKET_STATUSES = ['signed', 'sent'] as const;
+
+/** Compare-and-set guard for every packet-level write in the send path. */
+export const SENDABLE_PACKET_WHERE: Prisma.TrainingBillingPacketWhereInput = { status: { in: [...SENDABLE_PACKET_STATUSES] }, supersededAt: null };
+
+function isSendable(packet: { status: string; supersededAt: Date | null } | null): boolean {
+  return !!packet && (SENDABLE_PACKET_STATUSES as readonly string[]).includes(packet.status) && packet.supersededAt == null;
+}
+
+/**
+ * Per-packet advisory lock shared by attempt start, every row claim and the
+ * supersede transaction (billing-packets POST). Holding it, a caller re-reads
+ * the packet and refuses if it was superseded, so no attempt starts and no row
+ * is claimed after a supersede commits.
+ */
+async function lockPacketSends(tx: Prisma.TransactionClient, packetId: string) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${packetId}`}))`;
+  return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true } });
+}
+
 export type SendStatus =
   /** Created with the attempt, not claimed yet. */
   | 'pending'
@@ -64,6 +84,13 @@ export const TERMINAL: ReadonlySet<string> = new Set(['sent', 'reconciled_delive
 /** Inputs frozen when an attempt starts, so every retry sends the same payload. Recipients are only the student and the counselor (no cc). */
 export type SendAttemptRecord = {
   attemptNo: number;
+  /**
+   * The recipients this attempt is expected to deliver, fixed at creation
+   * (student first). A full attempt is every snapshot recipient; "Send to
+   * remaining recipients" stores only the ones with no delivered copy yet.
+   * The terminal check and completion use this stored set.
+   */
+  recipients: PacketRecipient[];
   startedAt: string;
   startedById: string;
   from: string;
@@ -96,6 +123,10 @@ export function parseSendAttempt(value: unknown, attemptNo: number | null): Send
     || typeof v.startedById !== 'string'
     || !v.branding
     || typeof v.branding !== 'object'
+    || !Array.isArray(v.recipients)
+    || v.recipients.length === 0
+    || new Set(v.recipients).size !== v.recipients.length
+    || !v.recipients.every((r) => r === 'student' || r === 'counselor')
   ) {
     throw new SendAttemptCorruptError();
   }
@@ -137,32 +168,64 @@ export function attemptIsTerminal(rows: ReadonlyArray<Pick<TrainingBillingPacket
   );
 }
 
+/**
+ * Recipients that already have a delivered copy (sent or reconciled delivered)
+ * in ANY attempt of the packet, with the first time it was delivered.
+ */
+export function deliveredRecipients(
+  rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status' | 'sentAt' | 'attemptNo'>>,
+): Map<PacketRecipient, { at: Date | null; attemptNo: number }> {
+  const out = new Map<PacketRecipient, { at: Date | null; attemptNo: number }>();
+  for (const r of [...rows].sort((a, b) => a.attemptNo - b.attemptNo)) {
+    if (!DELIVERED.has(r.status)) continue;
+    const key = r.recipient as PacketRecipient;
+    if (!out.has(key)) out.set(key, { at: r.sentAt ?? null, attemptNo: r.attemptNo });
+  }
+  return out;
+}
+
 export type PlannedRecipient = { recipient: PacketRecipient; email: string; cc: string | null };
 
 /**
  * Start attempt N+1 atomically, under a per-packet advisory lock: the packet
- * must still be on attempt `expectedCurrent`, that attempt must be terminal
- * (exactly the expected rows, all terminal), and every recipient row of the
- * new attempt is created `pending` in the same transaction, so there is never
- * an empty or partial attempt to race against.
+ * must still be sendable (not superseded) and on attempt `expectedCurrent`,
+ * that attempt must be terminal (exactly its STORED recipient rows, all
+ * terminal), and every recipient row of the new attempt is created `pending`
+ * in the same transaction, so there is never an empty or partial attempt to
+ * race against. The new attempt stores `recipients` as its expected set.
  */
 export async function startSendAttempt(args: {
   packetId: string;
   expectedCurrent: number | null;
   recipients: PlannedRecipient[];
-  record: Omit<SendAttemptRecord, 'attemptNo'>;
+  record: Omit<SendAttemptRecord, 'attemptNo' | 'recipients'>;
   now: Date;
-}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' }> {
+}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' | 'superseded' }> {
   const attemptNo = (args.expectedCurrent ?? 0) + 1;
-  const record: SendAttemptRecord = { ...args.record, attemptNo };
+  const order: PacketRecipient[] = ['student', 'counselor'];
+  const record: SendAttemptRecord = {
+    ...args.record,
+    attemptNo,
+    recipients: order.filter((r) => args.recipients.some((p) => p.recipient === r)),
+  };
   return prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${args.packetId}`}))`;
+    // Re-read under the lock: the route's earlier status check may be stale.
+    const current = await lockPacketSends(tx, args.packetId);
+    if (!isSendable(current)) return { ok: false as const, reason: 'superseded' as const };
+    if ((current!.sendAttemptNo ?? null) !== (args.expectedCurrent ?? null)) return { ok: false as const, reason: 'raced' as const };
     if (args.expectedCurrent != null) {
+      let expected: PacketRecipient[];
+      try {
+        expected = parseSendAttempt(current!.sendAttempt, current!.sendAttemptNo)!.recipients;
+      } catch {
+        return { ok: false as const, reason: 'not_terminal' as const };
+      }
       const rows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: args.packetId, attemptNo: args.expectedCurrent } });
-      if (!attemptIsTerminal(rows, args.recipients.map((r) => r.recipient))) return { ok: false as const, reason: 'not_terminal' as const };
+      if (!attemptIsTerminal(rows, expected)) return { ok: false as const, reason: 'not_terminal' as const };
     }
+    if (record.recipients.length === 0) return { ok: false as const, reason: 'not_terminal' as const };
     const { count } = await tx.trainingBillingPacket.updateMany({
-      where: { id: args.packetId, sendAttemptNo: args.expectedCurrent },
+      where: { id: args.packetId, sendAttemptNo: args.expectedCurrent, ...SENDABLE_PACKET_WHERE },
       data: { sendAttemptNo: attemptNo, sendAttempt: record as unknown as Prisma.InputJsonValue },
     });
     if (count !== 1) return { ok: false as const, reason: 'raced' as const };
@@ -191,9 +254,21 @@ export type ClaimOutcome =
   | { kind: 'done'; row: TrainingBillingPacketSend }
   | { kind: 'in_progress' }
   | { kind: 'terminal_undelivered'; row: TrainingBillingPacketSend }
-  | { kind: 'needs_reconciliation'; row: TrainingBillingPacketSend };
+  | { kind: 'needs_reconciliation'; row: TrainingBillingPacketSend }
+  /** The packet was superseded: nothing is claimed and nothing may be sent. */
+  | { kind: 'superseded' }
+  /** No row for this recipient in the attempt: operator reconciliation. */
+  | { kind: 'missing_row' };
 
-/** Claim one recipient of one attempt, or report why it cannot be sent now. */
+/**
+ * Claim one recipient of one attempt, or report why it cannot be sent now.
+ * Runs under the packet's send lock and re-reads the packet first, so a claim
+ * can never succeed after a supersede commits (the supersede takes the same
+ * lock, refuses while a claim is younger than RECONCILE_CLAIMED_MIN_AGE_MS,
+ * and closes pending rows in its own transaction). The caller calls the
+ * provider immediately after a successful claim, with no other I/O between.
+ * `now` should be the time of the claim, not of the request.
+ */
 export async function claimRecipient(args: {
   packetId: string;
   attemptNo: number;
@@ -202,57 +277,41 @@ export async function claimRecipient(args: {
   cc: string | null;
   now: Date;
 }): Promise<ClaimOutcome> {
-  const key = { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } };
-  const existing = await prisma.trainingBillingPacketSend.findUnique({ where: key });
-  if (!existing) {
-    try {
-      const row = await prisma.trainingBillingPacketSend.create({
-        data: {
-          packetId: args.packetId,
-          attemptNo: args.attemptNo,
-          recipient: args.recipient,
-          email: args.email,
-          cc: args.cc,
-          idempotencyKey: sendIdempotencyKey(args.packetId, args.attemptNo, args.recipient),
-          status: 'claimed',
-          claimToken: randomUUID(),
-          claimedAt: args.now,
-          lastClaimedAt: args.now,
-        },
+  return prisma.$transaction(async (tx): Promise<ClaimOutcome> => {
+    if (!isSendable(await lockPacketSends(tx, args.packetId))) return { kind: 'superseded' };
+    const key = { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } };
+    const existing = await tx.trainingBillingPacketSend.findUnique({ where: key });
+    // Every row is created pending when its attempt starts, so a missing row is
+    // an inconsistent state: fail closed, never lazily create a claim.
+    if (!existing) return { kind: 'missing_row' };
+    if (DELIVERED.has(existing.status)) return { kind: 'done', row: existing };
+    if (existing.status === 'pending') {
+      // First claim: the provider window starts now.
+      const claimToken = randomUUID();
+      const { count } = await tx.trainingBillingPacketSend.updateMany({
+        where: { id: existing.id, status: 'pending', claimToken: existing.claimToken },
+        data: { status: 'claimed', claimToken, claimedAt: args.now, lastClaimedAt: args.now },
       });
-      return { kind: 'claimed', row };
-    } catch (err) {
-      if (isUniqueViolation(err)) return { kind: 'in_progress' };
-      throw err;
+      if (count !== 1) return { kind: 'in_progress' };
+      return { kind: 'claimed', row: { ...existing, status: 'claimed', claimToken, claimedAt: args.now, lastClaimedAt: args.now } };
     }
-  }
-  if (DELIVERED.has(existing.status)) return { kind: 'done', row: existing };
-  if (existing.status === 'pending') {
-    // First claim: the provider window starts now.
+    if (existing.status === 'needs_reconciliation') return { kind: 'needs_reconciliation', row: existing };
+    if (existing.status === 'rejected_definite' || existing.status === 'reconciled_not_delivered') return { kind: 'terminal_undelivered', row: existing };
+    if (existing.status === 'claimed' && args.now.getTime() - existing.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS) return { kind: 'in_progress' };
+    if (args.now.getTime() - existing.claimedAt.getTime() > IDEMPOTENCY_SAFE_RETRY_MS) {
+      await transition(existing, 'needs_reconciliation', { lastError: 'The copy was never confirmed and is older than the provider idempotency window.' }, tx);
+      const row = await tx.trainingBillingPacketSend.findUnique({ where: { id: existing.id } });
+      return { kind: 'needs_reconciliation', row: row ?? existing };
+    }
+    // Same-key retry of an ambiguous or interrupted send within the window.
     const claimToken = randomUUID();
-    const { count } = await prisma.trainingBillingPacketSend.updateMany({
-      where: { id: existing.id, status: 'pending', claimToken: existing.claimToken },
-      data: { status: 'claimed', claimToken, claimedAt: args.now, lastClaimedAt: args.now },
+    const { count } = await tx.trainingBillingPacketSend.updateMany({
+      where: { id: existing.id, status: existing.status, claimToken: existing.claimToken },
+      data: { status: 'claimed', claimToken, lastClaimedAt: args.now },
     });
     if (count !== 1) return { kind: 'in_progress' };
-    return { kind: 'claimed', row: { ...existing, status: 'claimed', claimToken, claimedAt: args.now, lastClaimedAt: args.now } };
-  }
-  if (existing.status === 'needs_reconciliation') return { kind: 'needs_reconciliation', row: existing };
-  if (existing.status === 'rejected_definite' || existing.status === 'reconciled_not_delivered') return { kind: 'terminal_undelivered', row: existing };
-  if (existing.status === 'claimed' && args.now.getTime() - existing.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS) return { kind: 'in_progress' };
-  if (args.now.getTime() - existing.claimedAt.getTime() > IDEMPOTENCY_SAFE_RETRY_MS) {
-    await transition(existing, 'needs_reconciliation', { lastError: 'The copy was never confirmed and is older than the provider idempotency window.' });
-    const row = await prisma.trainingBillingPacketSend.findUnique({ where: { id: existing.id } });
-    return { kind: 'needs_reconciliation', row: row ?? existing };
-  }
-  // Same-key retry of an ambiguous or interrupted send within the window.
-  const claimToken = randomUUID();
-  const { count } = await prisma.trainingBillingPacketSend.updateMany({
-    where: { id: existing.id, status: existing.status, claimToken: existing.claimToken },
-    data: { status: 'claimed', claimToken, lastClaimedAt: args.now },
+    return { kind: 'claimed', row: { ...existing, status: 'claimed', claimToken, lastClaimedAt: args.now } };
   });
-  if (count !== 1) return { kind: 'in_progress' };
-  return { kind: 'claimed', row: { ...existing, status: 'claimed', claimToken, lastClaimedAt: args.now } };
 }
 
 /**
@@ -264,8 +323,9 @@ export async function transition(
   row: Pick<TrainingBillingPacketSend, 'id' | 'claimToken' | 'status'>,
   status: Exclude<SendStatus, 'claimed' | 'reconciled_delivered' | 'reconciled_not_delivered'>,
   extra: { lastError?: string | null; sentAt?: Date } = {},
+  db: Pick<Prisma.TransactionClient, 'trainingBillingPacketSend'> = prisma,
 ): Promise<boolean> {
-  const { count } = await prisma.trainingBillingPacketSend.updateMany({
+  const { count } = await db.trainingBillingPacketSend.updateMany({
     where: { id: row.id, status: row.status, claimToken: row.claimToken },
     data: {
       status,
@@ -300,12 +360,16 @@ export async function reconcileRecipient(args: {
   delivered: boolean;
   note: string;
   actorId: string;
+  /** Who reconciled, as shown in the history (the admin's email), frozen at the time. */
+  actorLabel: string;
   now: Date;
 }): Promise<ReconcileResult> {
   const row = await prisma.trainingBillingPacketSend.findUnique({
     where: { packetId_attemptNo_recipient: { packetId: args.packetId, attemptNo: args.attemptNo, recipient: args.recipient } },
   });
   if (!row || !['needs_reconciliation', 'ambiguous', 'claimed'].includes(row.status)) return 'not_reconcilable';
+  // The provider already accepted this key: "not delivered" would be false.
+  if (!args.delivered && row.providerResultAt) return 'not_reconcilable';
   if (row.status === 'claimed' && args.now.getTime() - row.lastClaimedAt.getTime() < RECONCILE_CLAIMED_MIN_AGE_MS) return 'in_progress';
   if (!args.delivered && args.now.getTime() - row.claimedAt.getTime() <= IDEMPOTENCY_SAFE_RETRY_MS) return 'retry_first';
   const { count } = await prisma.trainingBillingPacketSend.updateMany({
@@ -314,6 +378,7 @@ export async function reconcileRecipient(args: {
       status: args.delivered ? 'reconciled_delivered' : 'reconciled_not_delivered',
       claimToken: randomUUID(),
       reconciledById: args.actorId,
+      reconciledByLabel: args.actorLabel.slice(0, 320),
       reconciledAt: args.now,
       reconcileNote: args.note.slice(0, 1000),
       ...(args.delivered ? { sentAt: args.now } : {}),
@@ -323,29 +388,95 @@ export async function reconcileRecipient(args: {
 }
 
 /**
- * A provider result that arrived after its row moved on (a timed-out request
- * that finished later, or a result that lost the compare-and-set). Never
- * ignored: it is recorded on the row; a late success settles an unsettled row
- * as sent, and one that contradicts a recorded "not delivered" puts the row
- * back into needs_reconciliation with a visible warning.
+ * Record that the provider ACCEPTED this row's idempotency key. Written once
+ * (WHERE provider_result_at IS NULL), keyed on the row id and independent of
+ * the status compare-and-set, so an acceptance can never be lost to a racing
+ * transition (e.g. the timeout path moving the row to `ambiguous`). The row id
+ * already scopes to one key: packet, attempt and recipient. Then the status is
+ * brought in line with it (see applyRecordedProviderResult).
  */
-export async function recordLateProviderResult(sendId: string, outcome: { delivered: boolean; detail: string }, now: Date = new Date()) {
-  const row = await prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
-  if (!row) return;
-  const lateProviderResult = JSON.stringify({ at: now.toISOString(), delivered: outcome.delivered, detail: outcome.detail.slice(0, 500), statusWhenReceived: row.status });
-  console.warn('[billing-packets send] late provider result', { sendId, delivered: outcome.delivered, status: row.status });
-  let data: Prisma.TrainingBillingPacketSendUpdateManyMutationInput = { lateProviderResult };
-  if (outcome.delivered && ['claimed', 'ambiguous'].includes(row.status)) {
-    data = { ...data, status: 'sent', sentAt: now, claimToken: randomUUID() };
-  } else if (outcome.delivered && row.status === 'reconciled_not_delivered') {
-    data = {
-      ...data,
-      status: 'needs_reconciliation',
-      claimToken: randomUUID(),
-      lastError: 'The provider reported this copy delivered AFTER it was recorded as not delivered. Check for a duplicate email.',
-    };
+export async function recordProviderAcceptance(
+  sendId: string,
+  result: { messageId: string | null; detail: string; late: boolean },
+  now: Date = new Date(),
+): Promise<void> {
+  const providerResult = JSON.stringify({ at: now.toISOString(), delivered: true, messageId: result.messageId, detail: result.detail.slice(0, 500) });
+  await prisma.trainingBillingPacketSend.updateMany({
+    where: { id: sendId, providerResultAt: null },
+    data: {
+      providerResult,
+      providerResultAt: now,
+      providerMessageId: result.messageId,
+      // A result after the request stopped waiting is also surfaced as a warning.
+      ...(result.late ? { lateProviderResult: providerResult } : {}),
+    },
+  });
+  await applyRecordedProviderResult(sendId, now);
+}
+
+/**
+ * Bring a row's status in line with a recorded provider acceptance, with a
+ * bounded compare-and-set retry across concurrent transitions:
+ *  - claimed / ambiguous / needs_reconciliation -> sent;
+ *  - reconciled_not_delivered / rejected_definite -> needs_reconciliation with
+ *    a warning (the provider contradicts the recorded outcome);
+ *  - sent / reconciled_delivered / pending: unchanged.
+ * Returns the row as finally read.
+ */
+export async function applyRecordedProviderResult(sendId: string, now: Date = new Date()): Promise<TrainingBillingPacketSend | null> {
+  for (let i = 0; i < 5; i += 1) {
+    const row = await prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
+    if (!row || !row.providerResultAt) return row;
+    let data: Prisma.TrainingBillingPacketSendUpdateManyMutationInput | null = null;
+    if (['claimed', 'ambiguous', 'needs_reconciliation'].includes(row.status)) {
+      data = { status: 'sent', sentAt: row.sentAt ?? now, claimToken: randomUUID(), lastError: null };
+    } else if (row.status === 'reconciled_not_delivered' || row.status === 'rejected_definite') {
+      data = {
+        status: 'needs_reconciliation',
+        claimToken: randomUUID(),
+        lastError: `The provider reported this copy delivered AFTER it was recorded as ${row.status === 'rejected_definite' ? 'rejected' : 'not delivered'}. Check for a duplicate email.`,
+      };
+    }
+    if (!data) return row;
+    const { count } = await prisma.trainingBillingPacketSend.updateMany({ where: { id: row.id, status: row.status, claimToken: row.claimToken }, data });
+    if (count === 1) return prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
   }
-  await prisma.trainingBillingPacketSend.updateMany({ where: { id: row.id, status: row.status, claimToken: row.claimToken }, data });
+  console.error('[billing-packets send] could not settle a recorded provider acceptance', { sendId });
+  return prisma.trainingBillingPacketSend.findUnique({ where: { id: sendId } });
+}
+
+/**
+ * A provider result that arrived after the request stopped waiting (timeout).
+ * An acceptance goes through recordProviderAcceptance (write-once, never
+ * lost). A late error changes no status; it is recorded for audit only.
+ */
+export async function recordLateProviderResult(
+  sendId: string,
+  outcome: { delivered: boolean; detail: string; messageId?: string | null },
+  now: Date = new Date(),
+): Promise<void> {
+  console.warn('[billing-packets send] late provider result', { sendId, delivered: outcome.delivered });
+  if (outcome.delivered) {
+    await recordProviderAcceptance(sendId, { messageId: outcome.messageId ?? null, detail: outcome.detail, late: true }, now);
+    return;
+  }
+  const lateProviderResult = JSON.stringify({ at: now.toISOString(), delivered: false, detail: outcome.detail.slice(0, 500) });
+  await prisma.trainingBillingPacketSend.updateMany({ where: { id: sendId }, data: { lateProviderResult } });
+}
+
+/**
+ * Record an ambiguous outcome (timeout, network, 5xx) for a claimed row without
+ * ever overwriting a provider acceptance: if one was recorded (before or while
+ * this runs), the row ends `sent`; otherwise `ambiguous`. Returns the final row.
+ */
+export async function recordAmbiguousOutcome(
+  row: Pick<TrainingBillingPacketSend, 'id' | 'claimToken' | 'status'>,
+  lastError: string,
+): Promise<TrainingBillingPacketSend | null> {
+  const before = await prisma.trainingBillingPacketSend.findUnique({ where: { id: row.id } });
+  if (!before?.providerResultAt) await transition(row, 'ambiguous', { lastError });
+  // An acceptance written between that read and the transition is applied here.
+  return applyRecordedProviderResult(row.id);
 }
 
 /** Close the attempt's pending rows as definitely not sent (e.g. the student copy was rejected, so the counselor copy never goes). */

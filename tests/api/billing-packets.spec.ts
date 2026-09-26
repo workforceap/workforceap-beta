@@ -22,6 +22,9 @@ const mocks = vi.hoisted(() => ({
   getSubjectOrganizationId: vi.fn(),
   send: vi.fn(),
   branding: { value: null as null | Record<string, unknown> },
+  /** Test gates: when set, the route waits here (before starting an attempt / before claiming). */
+  brandingGate: { value: null as null | Promise<unknown> },
+  buildGate: { value: null as null | Promise<unknown> },
 }));
 
 function p2002() {
@@ -51,7 +54,22 @@ vi.mock('@/lib/email/send', () => ({ sendBrandedEmailOrThrowOnSkip: mocks.send, 
 vi.mock('@/lib/email/template', () => ({
   brandedEmailLayout: (a: { title: string; branding: { name: string; primaryColor: string } }) => `${a.branding.name}|${a.branding.primaryColor}|${a.title}`,
 }));
-vi.mock('@/lib/tenant/organizationBranding', () => ({ getOrganizationBranding: async () => mocks.branding.value }));
+vi.mock('@/lib/tenant/organizationBranding', () => ({
+  getOrganizationBranding: async () => {
+    if (mocks.brandingGate.value) await mocks.brandingGate.value;
+    return mocks.branding.value;
+  },
+}));
+vi.mock('@/lib/billing/sendPacket', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/billing/sendPacket')>();
+  return {
+    ...real,
+    buildPacketEmail: async (...args: Parameters<typeof real.buildPacketEmail>) => {
+      if (mocks.buildGate.value) await mocks.buildGate.value;
+      return real.buildPacketEmail(...args);
+    },
+  };
+});
 vi.mock('@/lib/db/prisma', () => {
   const tick = () => new Promise((r) => setTimeout(r, 0));
   // pg_advisory_xact_lock stand-in: waiters queue per key until the holder's transaction ends.
@@ -149,12 +167,23 @@ vi.mock('@/lib/db/prisma', () => {
   return { prisma };
 });
 
-import { POST as createPacket } from '@/app/api/admin/members/[id]/billing-packets/route';
+import { GET as listAdminPackets, POST as createPacket } from '@/app/api/admin/members/[id]/billing-packets/route';
 import { POST as sendPacket } from '@/app/api/billing-packets/[packetId]/send/route';
 import { GET as packetPdf } from '@/app/api/billing-packets/[packetId]/pdf/route';
 import { attestationFingerprint } from '@/lib/billing/packetText';
-import { IDEMPOTENCY_SAFE_RETRY_MS, IN_FLIGHT_GRACE_MS, RECONCILE_CLAIMED_MIN_AGE_MS, sendIdempotencyKey, startSendAttempt, transition } from '@/lib/billing/sendAttempts';
-import { listPacketsForMember } from '@/lib/billing/packetAccess';
+import {
+  IDEMPOTENCY_SAFE_RETRY_MS,
+  IN_FLIGHT_GRACE_MS,
+  RECONCILE_CLAIMED_MIN_AGE_MS,
+  claimRecipient,
+  recordAmbiguousOutcome,
+  recordLateProviderResult,
+  recordProviderAcceptance,
+  sendIdempotencyKey,
+  startSendAttempt,
+  transition,
+} from '@/lib/billing/sendAttempts';
+import { listPacketsForMember, serializeBillingPacket } from '@/lib/billing/packetAccess';
 
 const ORG = DEFAULT_ORG_ID;
 const OTHER_ORG = 'aaaaaaaa-0000-4000-8000-000000000009';
@@ -253,6 +282,8 @@ beforeEach(() => {
   mocks.getSubjectOrganizationId.mockResolvedValue(ORG);
   mocks.send.mockResolvedValue({ data: { id: 'msg' }, error: null });
   mocks.branding.value = { orgId: ORG, name: 'Brand At Attempt', logoUrl: 'https://x.test/l.png', primaryColor: '#111111', supportEmail: 's@x.test', domain: 'https://x.test', domainLabel: 'x.test' };
+  mocks.brandingGate.value = null;
+  mocks.buildGate.value = null;
   delete process.env.BILLING_PACKET_PROVIDER_ORG_ID;
   delete process.env.EMAIL_FROM;
 });
@@ -586,7 +617,8 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
     expect((await early.json()).code).toBe('retry_first');
     ageClaims(DAY);
     const reconciled = await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'Resend log shows no delivery' });
-    expect(reconciled.status).toBe(409); // recorded, but not delivered
+    expect(reconciled.status).toBe(200); // recorded (not delivered): its own success shape
+    expect(await reconciled.json()).toMatchObject({ kind: 'reconciliation_recorded', outcome: 'not_delivered', recipient: 'student' });
     expect(db.sends[0]).toMatchObject({ status: 'reconciled_not_delivered', reconciledById: ADMIN, reconcileNote: 'Resend log shows no delivery' });
     const newAttempt = await send(id, { action: 'email_again' });
     expect(newAttempt.status).toBe(200);
@@ -623,7 +655,8 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
     expect(blocked.status).toBe(409);
     pending.resolve({ data: { id: 'x' }, error: null });
     expect((await inFlight).status).toBe(200);
-    const clicks = await Promise.all([send(id, { action: 'email_again' }), send(id, { action: 'email_again' })]);
+    const again = { action: 'email_again', confirmDuplicateTo: ['student'] };
+    const clicks = await Promise.all([send(id, again), send(id, again)]);
     expect(clicks.map((r) => r.status).sort()).toEqual([200, 409]);
     expect(db.packets[0].sendAttemptNo).toBe(2);
     expect(studentSends()).toHaveLength(2);
@@ -665,7 +698,7 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
     const slow = send(id);
     await new Promise((r) => setTimeout(r, 20));
     ageClaims(DAY);
-    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No delivery in Resend log' })).status).toBe(409);
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No delivery in Resend log' })).status).toBe(200);
     expect((await send(id, { action: 'email_again' })).status).toBe(200);
     expect(db.packets[0]).toMatchObject({ status: 'sent', sendAttemptNo: 2, sendCount: 2 });
     pending.resolve({ data: { id: 'late' }, error: null });
@@ -747,7 +780,7 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
       if (a.to === COUNSELOR.email) throw ambiguous();
       return { data: { id: 'x' }, error: null };
     });
-    const second = await send(id, { action: 'email_again' });
+    const second = await send(id, { action: 'email_again', confirmDuplicateTo: ['counselor', 'student'] });
     expect(second.status).toBe(502);
     expect((await second.json()).packet.sendState.nextAction).toBe('retry');
     expect((await send(id, { action: 'email_again' })).status).toBe(409);
@@ -773,7 +806,7 @@ describe('POST /api/billing-packets/[packetId]/send', () => {
     await send(id);
     expect((await send(id)).status).toBe(200);
     expect(mocks.send).toHaveBeenCalledTimes(1);
-    expect((await send(id, { action: 'email_again' })).status).toBe(200);
+    expect((await send(id, { action: 'email_again', confirmDuplicateTo: ['student'] })).status).toBe(200);
     expect(mocks.send.mock.calls.map((c) => c[1].idempotencyKey)).toEqual([sendIdempotencyKey(id, 1, 'student'), sendIdempotencyKey(id, 2, 'student')]);
     expect(db.packets[0].sendCount).toBe(2);
   });
@@ -908,15 +941,19 @@ describe('Supersede and re-issue', () => {
     const r2 = await resign(current1, { fundingAttestation: { reference: 'TEST-ITA-0001' } });
     expect(r2.status).toBe(201);
     const current2 = (await r2.json()).packet.id as string;
+    // current2 is signed but not sent yet: hidden from the member until a send could reach them.
     const listed = await listPacketsForMember(MEMBER);
-    expect(listed.map((p) => p.id)).toEqual([current2, current1]);
-    expect(listed[1]).toMatchObject({ status: 'superseded', supersededByPacketId: current2 });
+    expect(listed.map((p) => p.id)).toEqual([current1]);
+    expect(listed[0]).toMatchObject({ status: 'superseded', supersededByPacketId: current2 });
+    expect((await send(current2)).status).toBe(200);
+    expect((await listPacketsForMember(MEMBER)).map((p) => p.id)).toEqual([current2, current1]);
   });
 });
 
 describe('GET /api/billing-packets/[packetId]/pdf', () => {
   it('lets the member download their own J6; a corrupt snapshot is a 409, never a live re-render', async () => {
     const id = await signOne();
+    expect((await sendPacket(req({}), packetParams(id))).status).toBe(200);
     mocks.isAdmin.mockResolvedValue(false);
     mocks.getUser.mockResolvedValue({ id: MEMBER });
     const ok = await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=j6&download=1`), packetParams(id));
@@ -933,5 +970,309 @@ describe('GET /api/billing-packets/[packetId]/pdf', () => {
     const res = await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=both`), packetParams(id));
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Disposition')).toContain('attachment; filename="J5-J6-invoice-packet-WAP-2026-0001-test-member.pdf"');
+  });
+});
+
+describe('Send-state races with supersede (checkpoint 4)', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  const resign = (oldId: string, overrides: Partial<Body> = {}) =>
+    createPacket(req(body({ ...overrides, supersedesPacketId: oldId, supersedeReason: 'Correction' } as Partial<Body>)), params(MEMBER));
+  const gate = () => {
+    let open!: () => void;
+    const promise = new Promise<void>((r) => (open = r));
+    return { promise, open };
+  };
+  const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
+
+  it('start deferred, supersede commits, start resumes: no attempt, no provider call, 409', async () => {
+    const oldId = await signOne();
+    const g = gate();
+    mocks.brandingGate.value = g.promise;
+    const stale = send(oldId); // passes the route's status check, then waits before startSendAttempt
+    await tick();
+    mocks.brandingGate.value = null;
+    expect((await resign(oldId)).status).toBe(201);
+    g.open();
+    const res = await stale;
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('superseded_packet');
+    expect(mocks.send).not.toHaveBeenCalled();
+    const old = db.packets.find((p) => p.id === oldId)!;
+    expect(old).toMatchObject({ status: 'superseded', sendAttemptNo: null });
+    expect(db.sends.filter((r) => r.packetId === oldId)).toHaveLength(0);
+  });
+
+  it('claim deferred, supersede commits first: the claim fails under the lock and nothing is sent', async () => {
+    const oldId = await signOne();
+    const g = gate();
+    mocks.buildGate.value = g.promise;
+    const stale = send(oldId); // attempt 1 started (pending rows), waiting before the claim
+    await tick();
+    expect(db.sends.filter((r) => r.packetId === oldId).map((r) => r.status)).toEqual(['pending']);
+    mocks.buildGate.value = null;
+    expect((await resign(oldId)).status).toBe(201);
+    expect(db.sends.find((r) => r.packetId === oldId)!.status).toBe('rejected_definite'); // closed in the supersede transaction
+    g.open();
+    const res = await stale;
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('superseded_packet');
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('claim first, supersede second: supersede is refused (in_progress) and the send completes', async () => {
+    const oldId = await signOne();
+    let resolve!: (v: unknown) => void;
+    mocks.send.mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+    const inFlight = send(oldId);
+    await tick();
+    const res = await resign(oldId);
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('in_progress');
+    resolve({ data: { id: 'm-1' }, error: null });
+    expect((await inFlight).status).toBe(200);
+    expect(db.packets.find((p) => p.id === oldId)!.status).toBe('sent');
+  });
+
+  it('a direct claim on a superseded packet is refused; a missing row fails closed', async () => {
+    const oldId = await signOne();
+    expect((await resign(oldId)).status).toBe(201);
+    expect(await claimRecipient({ packetId: oldId, attemptNo: 1, recipient: 'student', email: 'member@example.test', cc: null, now: new Date() })).toEqual({ kind: 'superseded' });
+    const id = await signOne({ fundingAttestation: { reference: 'TEST-ITA-0009' } });
+    expect(await claimRecipient({ packetId: id, attemptNo: 1, recipient: 'student', email: 'member@example.test', cc: null, now: new Date() })).toEqual({ kind: 'missing_row' });
+    expect(db.sends.filter((r) => r.packetId === id)).toHaveLength(0);
+  });
+
+  it('completion deferred, supersede commits, completion resumes: packet stays superseded and the row result is recorded', async () => {
+    const oldId = await signOne();
+    let resolve!: (v: unknown) => void;
+    mocks.send.mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+    const slow = send(oldId);
+    await tick();
+    db.sends.forEach((r) => (r.lastClaimedAt = new Date(Date.now() - RECONCILE_CLAIMED_MIN_AGE_MS - 1000))); // a hung request
+    expect((await resign(oldId)).status).toBe(201);
+    resolve({ data: { id: 'm-late' }, error: null });
+    const res = await slow;
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('superseded_packet');
+    const old = db.packets.find((p) => p.id === oldId)!;
+    expect(old.status).toBe('superseded');
+    expect(old.sentAt ?? null).toBeNull();
+    const row = db.sends.find((r) => r.packetId === oldId)!;
+    expect(row).toMatchObject({ status: 'sent', providerMessageId: 'm-late' });
+    expect(row.providerResultAt).toBeInstanceOf(Date);
+  });
+});
+
+describe('Provider acceptance is never lost to a racing transition', () => {
+  async function claimedRow() {
+    const id = await signOne();
+    await startSendAttempt({
+      packetId: id,
+      expectedCurrent: null,
+      now: new Date(),
+      recipients: [{ recipient: 'student', email: 'member@example.test', cc: null }],
+      record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
+    });
+    const claim = await claimRecipient({ packetId: id, attemptNo: 1, recipient: 'student', email: 'member@example.test', cc: null, now: new Date() });
+    if (claim.kind !== 'claimed') throw new Error(claim.kind);
+    return claim.row;
+  }
+
+  it('timeout transition first, late acceptance second: ends sent with the provider result', async () => {
+    const row = await claimedRow();
+    expect((await recordAmbiguousOutcome(row, 'timeout'))!.status).toBe('ambiguous');
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-1' });
+    expect(db.sends[0]).toMatchObject({ status: 'sent', providerMessageId: 'm-1' });
+    expect(String(db.sends[0].providerResult)).toContain('"delivered":true');
+  });
+
+  it('late acceptance first, timeout transition second: stays sent, never ambiguous', async () => {
+    const row = await claimedRow();
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-1' });
+    expect(db.sends[0].status).toBe('sent');
+    expect((await recordAmbiguousOutcome(row, 'timeout'))!.status).toBe('sent');
+    expect(db.sends[0]).toMatchObject({ status: 'sent', providerMessageId: 'm-1' });
+  });
+
+  it('acceptance recorded but its status CAS lost: the timeout path goes to sent, not ambiguous; the result is write-once', async () => {
+    const row = await claimedRow();
+    Object.assign(db.sends[0], { providerResult: '{"delivered":true}', providerResultAt: new Date(), providerMessageId: 'm-1' });
+    expect((await recordAmbiguousOutcome(row, 'timeout'))!.status).toBe('sent');
+    await recordProviderAcceptance(row.id, { messageId: 'm-2', detail: 'again', late: false });
+    expect(db.sends[0].providerMessageId).toBe('m-1');
+  });
+
+  it('an acceptance after "not delivered" was recorded goes back to needs_reconciliation; "not delivered" is refused once accepted', async () => {
+    const row = await claimedRow();
+    db.sends[0].status = 'reconciled_not_delivered';
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-1' });
+    expect(db.sends[0].status).toBe('needs_reconciliation');
+    expect(String(db.sends[0].lastError)).toMatch(/AFTER it was recorded as not delivered/);
+    db.sends[0].claimedAt = new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS);
+    const res = await sendPacket(req({ action: 'reconcile', recipient: 'student', delivered: false, note: 'no log' }), packetParams(row.packetId as string));
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('not_reconcilable');
+  });
+});
+
+describe('Reconcile on a superseded packet', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  const resign = (oldId: string) =>
+    createPacket(req(body({ supersedesPacketId: oldId, supersedeReason: 'Correction' } as Partial<Body>)), params(MEMBER));
+
+  it('reconciling every old row: 200, old stays superseded, the replacement becomes sendable', async () => {
+    const oldId = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(oldId)).status).toBe(502);
+    const newId = (await (await resign(oldId)).json()).packet.id as string;
+    const res = await send(oldId, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Resend log shows delivered (message id m-x)' });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toMatchObject({ kind: 'reconciliation_recorded', outcome: 'delivered', recipient: 'student', replacementSendable: true });
+    expect(body.packet.status).toBe('superseded');
+    expect(db.packets.find((p) => p.id === oldId)!.status).toBe('superseded');
+    expect((await send(newId)).status).toBe(200);
+  });
+
+  it('a partial reconcile reflects exactly the committed row, and the replacement stays blocked', async () => {
+    db.counselor = COUNSELOR;
+    const oldId = await signOne();
+    mocks.send.mockRejectedValue(new Error('socket hang up'));
+    expect((await send(oldId)).status).toBe(502);
+    mocks.send.mockResolvedValue({ data: { id: 'msg' }, error: null });
+    // Synthetic state: both copies unconfirmed (the counselor copy after an earlier retry).
+    Object.assign(db.sends.find((r) => r.recipient === 'counselor')!, { status: 'ambiguous', claimedAt: new Date(), lastClaimedAt: new Date() });
+    const newId = (await (await resign(oldId)).json()).packet.id as string;
+    const res = await send(oldId, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Resend log shows delivered' });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.replacementSendable).toBe(false);
+    expect(body.sendState.rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ recipient: 'student', status: 'reconciled_delivered' }),
+        expect.objectContaining({ recipient: 'counselor', status: 'ambiguous' }),
+      ]),
+    );
+    const blocked = await send(newId);
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+  });
+});
+
+describe('Partial delivery and targeted attempts', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  const definite = () => Object.assign(new Error('Invalid `to` field'), { providerErrorName: 'validation_error' });
+
+  async function partiallyDelivered() {
+    db.counselor = COUNSELOR;
+    const id = await signOne();
+    mocks.send.mockImplementation(async (_r: unknown, a: { to: string }) => {
+      if (a.to === COUNSELOR.email) throw definite();
+      return { data: { id: 'm-student' }, error: null };
+    });
+    expect((await send(id)).status).toBe(502);
+    mocks.send.mockReset();
+    mocks.send.mockResolvedValue({ data: { id: 'm-2' }, error: null });
+    return id;
+  }
+
+  it('shows per-recipient history after a reload and offers only the remaining recipient', async () => {
+    const id = await partiallyDelivered();
+    const reload = await listAdminPackets(new Request('http://localhost/x'), params(MEMBER));
+    const [p] = (await reload.json()).packets;
+    expect(p.status).toBe('signed');
+    expect(p.sendState.history).toEqual([
+      expect.objectContaining({ attemptNo: 1, recipient: 'student', status: 'sent', email: 'member@example.test' }),
+      expect.objectContaining({ attemptNo: 1, recipient: 'counselor', status: 'rejected_definite' }),
+    ]);
+    expect(p.sendState.history[0].sentAt).toEqual(expect.any(String));
+    expect(p.sendState.delivered).toEqual([expect.objectContaining({ recipient: 'student', attemptNo: 1 })]);
+    expect(p.sendState.remaining).toEqual(['counselor']);
+    expect(p.sendState.nextAction).toBe('email_again');
+    expect(id).toBe(p.id);
+  });
+
+  it('"Send to remaining recipients" emails only the counselor; the stored subset makes the attempt terminal', async () => {
+    const id = await partiallyDelivered();
+    const res = await send(id, { action: 'send_remaining' });
+    expect(res.status).toBe(200);
+    expect((await res.json()).sentTo).toEqual([COUNSELOR.email]);
+    expect(mocks.send.mock.calls.map((c) => [c[1].to, c[1].idempotencyKey])).toEqual([[COUNSELOR.email, sendIdempotencyKey(id, 2, 'counselor')]]);
+    const p = db.packets[0];
+    expect(p).toMatchObject({ status: 'sent', sendAttemptNo: 2 });
+    expect((p.sendAttempt as { recipients: string[] }).recipients).toEqual(['counselor']);
+    // Attempt 2 has only the counselor row and is terminal: a new (confirmed) attempt may start.
+    expect((await send(id, { action: 'send_remaining' })).status).toBe(409);
+    expect((await send(id, { action: 'email_again', confirmDuplicateTo: ['student', 'counselor'] })).status).toBe(200);
+    expect(db.packets[0].sendAttemptNo).toBe(3);
+  });
+
+  it('a full resend without confirmation is refused naming who already has it; with a matching confirmation it goes', async () => {
+    const id = await partiallyDelivered();
+    const refused = await send(id, { action: 'email_again' });
+    expect(refused.status).toBe(409);
+    const body = await refused.json();
+    expect(body.code).toBe('duplicate_confirmation_required');
+    expect(body.deliveredTo).toEqual([expect.objectContaining({ recipient: 'student', email: 'member@example.test', attemptNo: 1 })]);
+    expect((await send(id, { action: 'email_again', confirmDuplicateTo: ['counselor'] })).status).toBe(409); // must match exactly
+    expect(mocks.send).not.toHaveBeenCalled();
+    const ok = await send(id, { action: 'email_again', confirmDuplicateTo: ['student'] });
+    expect(ok.status).toBe(200);
+    expect(mocks.send.mock.calls.map((c) => c[1].to)).toEqual(['member@example.test', COUNSELOR.email]);
+  });
+});
+
+describe('Pre-send visibility', () => {
+  const send = (id: string, payload: Record<string, unknown> = {}) => sendPacket(req(payload), packetParams(id));
+  const memberPdf = async (id: string) => {
+    mocks.isAdmin.mockResolvedValue(false);
+    mocks.getUser.mockResolvedValue({ id: MEMBER });
+    const res = await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=j5`), packetParams(id));
+    mocks.isAdmin.mockResolvedValue(true);
+    mocks.getUser.mockResolvedValue({ id: ADMIN });
+    return res.status;
+  };
+
+  it('a signed, unsent packet is hidden from the member and counselor (list and PDF) but visible to the admin', async () => {
+    db.counselor = COUNSELOR;
+    const id = await signOne();
+    expect(await listPacketsForMember(MEMBER, 'member')).toEqual([]);
+    expect(await listPacketsForMember(MEMBER, 'counselor')).toEqual([]);
+    expect(await memberPdf(id)).toBe(404);
+    const admin = await listAdminPackets(new Request('http://localhost/x'), params(MEMBER));
+    expect((await admin.json()).packets.map((p: { id: string }) => p.id)).toEqual([id]);
+    expect((await send(id)).status).toBe(200);
+    expect((await listPacketsForMember(MEMBER, 'member')).map((p) => p.id)).toEqual([id]);
+    expect((await listPacketsForMember(MEMBER, 'counselor')).map((p) => p.id)).toEqual([id]);
+    expect(await memberPdf(id)).toBe(200);
+  });
+
+  it('an ambiguous student copy counts as possibly received; a rejected counselor copy keeps it from the counselor', async () => {
+    db.counselor = COUNSELOR;
+    const id = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(id)).status).toBe(502);
+    expect((await listPacketsForMember(MEMBER, 'member')).map((p) => p.id)).toEqual([id]);
+    expect(await listPacketsForMember(MEMBER, 'counselor')).toEqual([]); // counselor copy closed, never attempted
+  });
+});
+
+describe('Legacy and corrupt snapshots', () => {
+  it('serialize sendBlockedReason, and supersede re-issues them with a fresh snapshot', async () => {
+    const id = await signOne();
+    const row = db.packets[0];
+    expect(serializeBillingPacket(row as never).sendBlockedReason).toBeNull();
+    row.signedSnapshot = { version: 1 };
+    expect(serializeBillingPacket(row as never).sendBlockedReason).toBe('snapshot_corrupt');
+    row.signedSnapshot = null;
+    expect(serializeBillingPacket(row as never).sendBlockedReason).toBe('legacy_packet');
+    const blocked = await sendPacket(req({}), packetParams(id));
+    expect((await blocked.json()).code).toBe('legacy_packet');
+    const res = await createPacket(req(body({ supersedesPacketId: id, supersedeReason: 'Re-issue with a snapshot' } as Partial<Body>)), params(MEMBER));
+    expect(res.status).toBe(201);
+    const replacement = (await res.json()).packet;
+    expect(replacement.sendBlockedReason).toBeNull();
+    expect(db.packets.find((p) => p.id === replacement.id)!.signedSnapshot).toEqual(expect.objectContaining({ version: 1 }));
+    expect(db.packets.find((p) => p.id === id)!.status).toBe('superseded');
   });
 });

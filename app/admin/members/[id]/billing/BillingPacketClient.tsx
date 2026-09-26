@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import SignaturePad, { type SignatureValue } from '@/components/admin/SignaturePad';
 import BillingPacketList from '@/components/billing/BillingPacketList';
 import type { BillingPacketSummary } from '@/lib/billing/packetAccess';
+import { postSignCue } from '@/lib/billing/sendResultCopy';
 import type { DefaultLineItem } from '@/lib/billing/packetDefaults';
 import {
   attestationFingerprint,
@@ -245,6 +246,8 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
   }
 
   const onPacketUpdated = (updated: BillingPacketSummary) => setPackets((list) => list.map((p) => (p.id === updated.id ? updated : p)));
+  // Follows the packet's current send state, so the "press Email" cue disappears once it is sent.
+  const lastCreatedCue = lastCreated ? postSignCue(packets.find((p) => p.id === lastCreated.id) ?? lastCreated) : null;
 
   return (
     <div style={{ display: 'grid', gap: '1.5rem', maxWidth: 900 }}>
@@ -253,9 +256,9 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           <h2 className="portal-profile-section-card__title">Signed packets</h2>
         </div>
         <div className="portal-profile-section-card__body">
-          {lastCreated ? (
+          {lastCreatedCue ? (
             <p role="status" style={{ margin: '0 0 0.75rem', fontWeight: 600, color: 'var(--wa-success-dark)' }}>
-              Invoice {lastCreated.packetNumber} is ready. Next step: press &ldquo;Email to counselor and student&rdquo;.
+              {lastCreatedCue}
             </p>
           ) : null}
           <BillingPacketList

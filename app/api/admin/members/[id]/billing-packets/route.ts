@@ -19,7 +19,7 @@ import { freezeLogo, type SignedPacketSnapshot } from '@/lib/billing/packetSnaps
 import { loadLetterheadLogo } from '@/lib/billing/packetPdf';
 import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
-import { IN_FLIGHT_GRACE_MS } from '@/lib/billing/sendAttempts';
+import { RECONCILE_CLAIMED_MIN_AGE_MS } from '@/lib/billing/sendAttempts';
 import { randomUUID } from 'node:crypto';
 
 /**
@@ -242,7 +242,10 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
               throw new SupersedeRefusedError(409, 'Only a current signed packet can be superseded.', 'not_supersedable');
             }
             const oldRows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: old.id } });
-            if (oldRows.some((r) => r.status === 'claimed' && now.getTime() - r.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS)) {
+            // Same window as reconcile: a claimed copy younger than this may still be
+            // mid-delivery (up to the provider timeout plus a slow render), and the
+            // old packet should not change state under a live send.
+            if (oldRows.some((r) => r.status === 'claimed' && now.getTime() - r.lastClaimedAt.getTime() < RECONCILE_CLAIMED_MIN_AGE_MS)) {
               throw new SupersedeRefusedError(409, 'A copy of that packet is being sent right now. Try again in a few minutes.', 'in_progress');
             }
             // Copies never claimed can never go out now: close them as definitely not sent.

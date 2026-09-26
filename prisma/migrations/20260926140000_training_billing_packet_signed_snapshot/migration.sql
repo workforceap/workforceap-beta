@@ -11,7 +11,7 @@ SET LOCAL statement_timeout = '30s';
 -- signed_snapshot: everything the signed PDFs and send recipients come from,
 -- frozen at signing. Nullable: NULL marks a legacy row signed before it existed.
 ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "signed_snapshot" JSONB;
--- Current send attempt and the inputs frozen when it started (from, branding, cc).
+-- Current send attempt and the inputs frozen when it started (from, branding, expected recipients).
 ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "send_attempt_no" INTEGER;
 ALTER TABLE "training_billing_packets" ADD COLUMN IF NOT EXISTS "send_attempt" JSONB;
 -- "<funding basis>:<normalized reference>" from the staff attestation. Sign
@@ -50,7 +50,11 @@ CREATE TABLE IF NOT EXISTS "training_billing_packet_sends" (
   "reconciled_by_id" TEXT,
   "reconciled_at"    TIMESTAMP(3),
   "reconcile_note"   TEXT,
+  "reconciled_by_label" TEXT,
   "late_provider_result" TEXT,
+  "provider_message_id"  TEXT,
+  "provider_result"      TEXT,
+  "provider_result_at"   TIMESTAMP(3),
   "created_at"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at"       TIMESTAMP(3) NOT NULL,
 
@@ -76,12 +80,25 @@ END $$;
 -- 20260514000000_defer_rls_force_authorize_system), and the Supabase browser
 -- roles get no table grants.
 ALTER TABLE "training_billing_packet_sends" ENABLE ROW LEVEL SECURITY;
+
+-- PRE-LAUNCH SECURITY FIX (parent table). Production showed
+-- public.training_billing_packets with RLS enabled and zero policies, but with
+-- full SELECT/INSERT/UPDATE/DELETE and TRUNCATE granted to anon and
+-- authenticated (Supabase default privileges). TRUNCATE is not governed by
+-- RLS, so a browser key could empty the table. Nothing reads this table
+-- through PostgREST; only the server-side Prisma client (table owner) does,
+-- and owner/server-role grants are untouched here. Apply before any
+-- production packet is created.
+ALTER TABLE "training_billing_packets" ENABLE ROW LEVEL SECURITY;
+
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE ALL ON TABLE "training_billing_packets" FROM anon;
     REVOKE ALL ON TABLE "training_billing_packet_sends" FROM anon;
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    REVOKE ALL ON TABLE "training_billing_packets" FROM authenticated;
     REVOKE ALL ON TABLE "training_billing_packet_sends" FROM authenticated;
   END IF;
 END $$;
@@ -89,6 +106,7 @@ END $$;
 COMMIT;
 
 -- Down (manual):
+--   (Do NOT re-grant anon/authenticated on training_billing_packets; the REVOKE is a security fix.)
 --   DROP TABLE IF EXISTS "training_billing_packet_sends";
 --   DROP INDEX IF EXISTS "training_billing_packets_organization_id_member_id_funding__idx";
 --   ALTER TABLE "training_billing_packets" DROP COLUMN IF EXISTS "funding_attestation_key";

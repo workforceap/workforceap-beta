@@ -6,7 +6,7 @@ import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAcces
 import { parseLineItems, type PacketLineItem } from './packetSchema';
 import { resolveProgramTitle } from './packetDocument';
 import { parseSignedSnapshot } from './packetSnapshot';
-import { nextSendAction, type NextSendAction, type PacketRecipient } from './sendAttempts';
+import { deliveredRecipients, nextSendAction, parseSendAttempt, type NextSendAction, type PacketRecipient } from './sendAttempts';
 
 export { resolveProgramTitle } from './packetDocument';
 
@@ -37,11 +37,35 @@ export type BillingPacketSummary = {
   supersededById: string | null;
   supersededByPacketId: string | null;
   supersedesPacketId: string | null;
+  /**
+   * Set when the packet can never be emailed: no signed snapshot (signed
+   * before snapshots existed) or an unreadable one. Supersede and re-issue.
+   */
+  sendBlockedReason: 'legacy_packet' | 'snapshot_corrupt' | null;
   /** Admin view only: the current send attempt's rows and the next allowed action (same rule the send route enforces). */
   sendState: {
     attemptNo: number | null;
+    /** The current attempt's expected recipients as stored at creation. */
+    attemptRecipients: PacketRecipient[];
     nextAction: NextSendAction;
     rows: Array<{ recipient: string; status: string; lastError: string | null }>;
+    /** Snapshot recipients with a delivered copy in any attempt, and when. */
+    delivered: Array<{ recipient: PacketRecipient; email: string | null; at: string | null; attemptNo: number }>;
+    /** Snapshot recipients with no delivered copy yet ("Send to remaining recipients"). */
+    remaining: PacketRecipient[];
+    /** Every attempt's per-recipient outcome, oldest first. */
+    history: Array<{
+      attemptNo: number;
+      recipient: string;
+      email: string;
+      status: string;
+      claimedAt: string;
+      sentAt: string | null;
+      lastError: string | null;
+      reconciledAt: string | null;
+      reconciledBy: string | null;
+      reconcileNote: string | null;
+    }>;
     /** Late provider results recorded on any attempt (e.g. delivered after being recorded not delivered). */
     warnings: string[];
   } | null;
@@ -56,13 +80,33 @@ function readSnapshotForSummary(row: TrainingBillingPacket) {
   }
 }
 
+function sendBlockedReasonOf(row: TrainingBillingPacket): BillingPacketSummary['sendBlockedReason'] {
+  if (row.signedSnapshot === null || row.signedSnapshot === undefined) return 'legacy_packet';
+  try {
+    parseSignedSnapshot(row.signedSnapshot);
+    return null;
+  } catch {
+    return 'snapshot_corrupt';
+  }
+}
+
+function attemptRecipientsOf(row: TrainingBillingPacket, fallback: PacketRecipient[]): PacketRecipient[] {
+  try {
+    return parseSendAttempt(row.sendAttempt, row.sendAttemptNo)?.recipients ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function serializeBillingPacket(
   row: TrainingBillingPacket & { sends?: TrainingBillingPacketSend[] },
   programTitle?: string,
 ): BillingPacketSummary {
   const snapshot = readSnapshotForSummary(row);
   const currentRows = row.sends ? row.sends.filter((s) => s.attemptNo === row.sendAttemptNo) : null;
-  const recipients: PacketRecipient[] = snapshot?.counselor ? ['student', 'counselor'] : ['student'];
+  const snapshotRecipients: PacketRecipient[] = snapshot?.counselor ? ['student', 'counselor'] : ['student'];
+  const recipients = attemptRecipientsOf(row, snapshotRecipients);
+  const delivered = row.sends ? deliveredRecipients(row.sends) : new Map();
   return {
     id: row.id,
     packetNumber: row.packetNumber,
@@ -89,11 +133,36 @@ export function serializeBillingPacket(
     supersededById: row.supersededById,
     supersededByPacketId: row.supersededByPacketId,
     supersedesPacketId: row.supersedesPacketId,
+    sendBlockedReason: sendBlockedReasonOf(row),
     sendState: currentRows
       ? {
           attemptNo: row.sendAttemptNo,
+          attemptRecipients: recipients,
           nextAction: nextSendAction({ attemptNo: row.sendAttemptNo, recipients, rows: currentRows, now: new Date() }),
           rows: currentRows.map((s) => ({ recipient: s.recipient, status: s.status, lastError: s.lastError })),
+          delivered: snapshotRecipients
+            .filter((r) => delivered.has(r))
+            .map((r) => ({
+              recipient: r,
+              email: r === 'student' ? snapshot?.member.email ?? null : snapshot?.counselor?.email ?? null,
+              at: delivered.get(r)?.at ? (delivered.get(r)!.at as Date).toISOString() : null,
+              attemptNo: delivered.get(r)!.attemptNo,
+            })),
+          remaining: snapshotRecipients.filter((r) => !delivered.has(r)),
+          history: [...(row.sends ?? [])]
+            .sort((a, b) => a.attemptNo - b.attemptNo || (a.recipient === b.recipient ? 0 : a.recipient === 'student' ? -1 : 1))
+            .map((s) => ({
+              attemptNo: s.attemptNo,
+              recipient: s.recipient,
+              email: s.email,
+              status: s.status,
+              claimedAt: s.claimedAt.toISOString(),
+              sentAt: s.sentAt ? s.sentAt.toISOString() : null,
+              lastError: s.lastError,
+              reconciledAt: s.reconciledAt ? s.reconciledAt.toISOString() : null,
+              reconciledBy: s.reconciledByLabel ?? null,
+              reconcileNote: s.reconcileNote ?? null,
+            })),
           warnings: (row.sends ?? [])
             .filter((s) => s.lateProviderResult)
             .map((s) => `Attempt ${s.attemptNo}, ${s.recipient} copy: late provider result recorded (${s.lateProviderResult}).`),
@@ -117,8 +186,9 @@ export type LoadPacketResult =
 /**
  * Who may open a packet:
  *  - an admin in the member's organization (super-admins cross tenants),
- *  - the member's assigned, active counselor,
- *  - the member the packet is about.
+ *  - the member's assigned, active counselor, and
+ *  - the member the packet is about,
+ * the last two only once a send could have reached them (packetVisibleTo).
  * `requireAdmin` narrows to the first group (create/send).
  */
 export async function loadPacketForViewer(
@@ -143,34 +213,60 @@ export async function loadPacketForViewer(
   }
   if (opts.requireAdmin) return { ok: false, status: 403, error: 'Admin access required' };
 
-  if (packet.memberId === userId) return { ok: true, value: { packet, member, viewer: 'member' } };
+  // Members and counselors only see a packet once a send could have reached them.
+  const reached = async (viewer: 'member' | 'counselor') =>
+    packetVisibleTo(packet, await prisma.trainingBillingPacketSend.findMany({ where: { packetId: packet.id }, select: { recipient: true, status: true } }), viewer);
+
+  if (packet.memberId === userId) {
+    return (await reached('member')) ? { ok: true, value: { packet, member, viewer: 'member' } } : { ok: false, status: 404, error: 'Document not found' };
+  }
 
   const assignment = await prisma.counselorAssignment.findFirst({
     where: { memberId: packet.memberId, active: true, counselor: { userId, active: true } },
     select: { id: true },
   });
-  if (assignment) return { ok: true, value: { packet, member, viewer: 'counselor' } };
+  if (assignment && (await reached('counselor'))) return { ok: true, value: { packet, member, viewer: 'counselor' } };
 
   return { ok: false, status: 404, error: 'Document not found' };
 }
 
-/** Student-copy states where the member did or might have received the packet. */
-const MEMBER_MAY_HAVE_IT = new Set(['sent', 'reconciled_delivered', 'claimed', 'ambiguous', 'needs_reconciliation']);
+/** Recipient-copy states where that person did, or might have, received the packet. */
+const MAY_HAVE_REACHED = new Set(['sent', 'reconciled_delivered', 'claimed', 'ambiguous', 'needs_reconciliation']);
 
 /**
- * Packets shown to the member (and on the counselor's student page): current
- * packets first, then superseded ones that were, or might have been, delivered
- * to the member (labelled as replaced). A superseded packet the member never
- * received stays admin-only.
+ * Which recipient copy decides what a non-admin viewer sees: the member sees a
+ * packet once the student copy could have reached them; the counselor once the
+ * counselor copy could have (or, for a packet signed with no counselor, the
+ * student copy). Admins always see every packet (they review before sending).
  */
-export async function listPacketsForMember(memberId: string): Promise<BillingPacketSummary[]> {
+function visibilityRecipient(row: TrainingBillingPacket, viewer: 'member' | 'counselor'): PacketRecipient {
+  if (viewer === 'member') return 'student';
+  return readSnapshotForSummary(row)?.counselor ? 'counselor' : 'student';
+}
+
+export function packetVisibleTo(
+  row: TrainingBillingPacket,
+  sends: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status'>>,
+  viewer: 'member' | 'counselor',
+): boolean {
+  const recipient = visibilityRecipient(row, viewer);
+  return sends.some((s) => s.recipient === recipient && MAY_HAVE_REACHED.has(s.status));
+}
+
+/**
+ * Packets shown to the member, or on the counselor's student page. A packet
+ * (current or superseded) appears only once a send attempt could have reached
+ * that viewer (see packetVisibleTo); a signed packet that was never sent stays
+ * admin-only. Current packets first, then superseded ones (labelled replaced).
+ */
+export async function listPacketsForMember(memberId: string, viewer: 'member' | 'counselor' = 'member'): Promise<BillingPacketSummary[]> {
   const rows = await prisma.trainingBillingPacket.findMany({
     where: { memberId },
     orderBy: { createdAt: 'desc' },
     take: 50,
-    include: { sends: { where: { recipient: 'student' }, select: { status: true } } },
+    include: { sends: { select: { recipient: true, status: true } } },
   });
-  const visible = rows.filter((row) => row.status !== 'superseded' || row.sends.some((s) => MEMBER_MAY_HAVE_IT.has(s.status)));
+  const visible = rows.filter((row) => packetVisibleTo(row, row.sends, viewer));
   const ordered = [...visible.filter((r) => r.status !== 'superseded'), ...visible.filter((r) => r.status === 'superseded')];
   return ordered.map(({ sends: _sends, ...row }) => serializeBillingPacket(row));
 }

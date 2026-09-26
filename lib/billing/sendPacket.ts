@@ -158,8 +158,8 @@ export class DeliveryTimeoutError extends Error {
 export async function deliverPacketEmail(
   email: PacketEmail,
   idempotencyKey: string,
-  opts: { timeoutMs?: number; onLateResult?: (outcome: { delivered: boolean; detail: string }) => void } = {},
-): Promise<void> {
+  opts: { timeoutMs?: number; onLateResult?: (outcome: { delivered: boolean; detail: string; messageId?: string | null }) => void } = {},
+): Promise<{ messageId: string | null }> {
   const resend = getResend();
   if (!resend) throw new EmailNotConfiguredError();
   const request = sendBrandedEmailOrThrowOnSkip(resend, {
@@ -179,12 +179,17 @@ export async function deliverPacketEmail(
       reject(new DeliveryTimeoutError());
     }, opts.timeoutMs ?? PROVIDER_SEND_TIMEOUT_MS);
   });
+  const messageIdOf = (result: unknown): string | null => {
+    const id = (result as { data?: { id?: unknown } | null } | null)?.data?.id;
+    return typeof id === 'string' ? id : null;
+  };
   request.then(
-    () => timedOut && opts.onLateResult?.({ delivered: true, detail: 'provider accepted after the timeout' }),
+    (result) => timedOut && opts.onLateResult?.({ delivered: true, detail: 'provider accepted after the timeout', messageId: messageIdOf(result) }),
     (err: unknown) => timedOut && opts.onLateResult?.({ delivered: false, detail: err instanceof Error ? err.message : 'provider error after the timeout' }),
   );
   try {
-    await Promise.race([request, timeout]);
+    const result = await Promise.race([request, timeout]);
+    return { messageId: messageIdOf(result) };
   } finally {
     clearTimeout(timer);
   }

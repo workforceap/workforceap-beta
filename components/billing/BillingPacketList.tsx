@@ -5,12 +5,13 @@ import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import type { BillingPacketSummary } from '@/lib/billing/packetAccess';
 import { formatLongDate, formatLongDateOfInstant, formatMoney } from '@/lib/billing/packetText';
+import { describeSendResult, duplicateCopyConfirmText, type SendResponseBody } from '@/lib/billing/sendResultCopy';
 
 type BillingPacketListProps = {
   packets: BillingPacketSummary[];
   /** Admins get the "Email to counselor and student" button. */
   canSend?: boolean;
-  /** Who the send goes to, shown next to the button so the admin knows before pressing it. */
+  /** Unused since recipients come only from the signed snapshot; kept for callers. */
   counselorLabel?: string | null;
   memberEmail?: string | null;
   /** Called with the updated packet after a successful send. */
@@ -22,10 +23,32 @@ type BillingPacketListProps = {
 
 type SendState = { id: string; busy: boolean; ok?: boolean; message?: string } | null;
 
-type SendAction = { action?: 'send' | 'email_again' | 'reconcile'; recipient?: string; delivered?: boolean; note?: string };
+type SendAction = {
+  action?: 'send' | 'email_again' | 'send_remaining' | 'reconcile';
+  recipient?: string;
+  delivered?: boolean;
+  note?: string;
+  confirmDuplicateTo?: string[];
+};
+
+type ActionButton = { label: string; body: SendAction; disabled: boolean; why?: string; confirm?: string | null };
+
+export const SEND_BLOCKED_COPY = 'Re-issue required: this packet has no valid signed snapshot, so it cannot be emailed. Use “Supersede and re-issue”.';
+
+/** Full resend to every snapshot recipient; duplicates need an explicit confirmation (server-checked too). */
+function emailAgainAction(p: BillingPacketSummary, label: string): ActionButton {
+  const delivered = p.sendState?.delivered ?? [];
+  return {
+    label,
+    body: { action: 'email_again', ...(delivered.length ? { confirmDuplicateTo: delivered.map((d) => d.recipient) } : {}) },
+    disabled: false,
+    confirm: duplicateCopyConfirmText(p),
+  };
+}
 
 /** Button label and request for the current attempt's next action (the send route enforces the same rule). */
-function primaryAction(p: BillingPacketSummary): { label: string; body: SendAction; disabled: boolean; why?: string } {
+export function primaryAction(p: BillingPacketSummary): ActionButton {
+  if (p.sendBlockedReason) return { label: 'Email to counselor and student', body: {}, disabled: true, why: SEND_BLOCKED_COPY };
   switch (p.sendState?.nextAction ?? 'send') {
     case 'retry':
       return { label: 'Retry (same attempt, same keys)', body: { action: 'send' }, disabled: false };
@@ -33,11 +56,23 @@ function primaryAction(p: BillingPacketSummary): { label: string; body: SendActi
       return { label: 'Sending…', body: {}, disabled: true, why: 'A copy is being sent right now.' };
     case 'reconcile':
       return { label: 'Email again', body: {}, disabled: true, why: 'A copy needs reconciliation below before anything else can be sent.' };
-    case 'email_again':
-      return { label: 'Email again to counselor and student (new attempt)', body: { action: 'email_again' }, disabled: false };
+    case 'email_again': {
+      const remaining = p.sendState?.remaining ?? [];
+      if (remaining.length > 0 && (p.sendState?.delivered.length ?? 0) > 0) {
+        return { label: `Send to remaining recipients (${remaining.join(', ')})`, body: { action: 'send_remaining' }, disabled: false };
+      }
+      return emailAgainAction(p, 'Email again to counselor and student (new attempt)');
+    }
     default:
       return { label: 'Email to counselor and student', body: { action: 'send' }, disabled: false };
   }
+}
+
+/** When "Send to remaining" is primary, the full resend is still offered, behind the duplicate confirmation. */
+export function secondaryAction(p: BillingPacketSummary): ActionButton | null {
+  if (p.sendBlockedReason || p.sendState?.nextAction !== 'email_again') return null;
+  if (primaryAction(p).body.action !== 'send_remaining') return null;
+  return emailAgainAction(p, 'Email again to everyone (duplicate copy)');
 }
 
 function pdfHref(id: string, doc: 'j5' | 'j6' | 'both', download = false) {
@@ -52,8 +87,6 @@ function pdfHref(id: string, doc: 'j5' | 'j6' | 'both', download = false) {
 export default function BillingPacketList({
   packets,
   canSend = false,
-  counselorLabel,
-  memberEmail,
   onPacketUpdated,
   onSupersede,
   emptyText = 'No invoice packets yet.',
@@ -65,24 +98,15 @@ export default function BillingPacketList({
     return <p style={{ margin: 0, color: 'var(--color-muted, #64748b)', fontSize: '0.95rem' }}>{emptyText}</p>;
   }
 
-  const sendPacket = async (packet: BillingPacketSummary, body: SendAction = {}) => {
+  const sendPacket = async (packet: BillingPacketSummary, body: SendAction = {}, confirmText?: string | null) => {
+    if (confirmText && typeof window !== 'undefined' && !window.confirm(confirmText)) return;
     setSend({ id: packet.id, busy: true });
     try {
       const res = await fetch(`/api/billing-packets/${packet.id}/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const data = (await res.json().catch(() => ({}))) as {
-        error?: string;
-        packet?: BillingPacketSummary;
-        sentTo?: string[];
-        counselorMissing?: boolean;
-      };
+      const data = (await res.json().catch(() => ({}))) as SendResponseBody;
       if (data.packet && onPacketUpdated) onPacketUpdated(data.packet);
-      if (!res.ok) {
-        setSend({ id: packet.id, busy: false, ok: false, message: data.error ?? 'Could not send the documents right now.' });
-        return;
-      }
-      const to = (data.sentTo ?? []).join(', ');
-      const warn = data.counselorMissing ? ' No counselor was assigned when it was signed, so only the student received it.' : '';
-      setSend({ id: packet.id, busy: false, ok: true, message: `Sent to ${to}.${warn}` });
+      const result = describeSendResult(res.ok, data);
+      setSend({ id: packet.id, busy: false, ...result });
     } catch (err) {
       setSend({ id: packet.id, busy: false, ok: false, message: requestFailureMessage(err, { connection: tCommon('connectionError'), fallback: 'Could not send the documents right now.' }, 'billing-packet-send') });
     }
@@ -150,9 +174,20 @@ export default function BillingPacketList({
                   style={{ minHeight: 40 }}
                   disabled={Boolean(state?.busy) || primaryAction(p).disabled}
                   title={primaryAction(p).why}
-                  onClick={() => void sendPacket(p, primaryAction(p).body)}
+                  onClick={() => void sendPacket(p, primaryAction(p).body, primaryAction(p).confirm)}
                 >
                   {state?.busy ? 'Sending…' : primaryAction(p).label}
+                </button>
+              ) : null}
+              {live && secondaryAction(p) ? (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ minHeight: 40 }}
+                  disabled={Boolean(state?.busy)}
+                  onClick={() => void sendPacket(p, secondaryAction(p)!.body, secondaryAction(p)!.confirm)}
+                >
+                  {secondaryAction(p)!.label}
                 </button>
               ) : null}
               {live && onSupersede ? (
@@ -161,11 +196,11 @@ export default function BillingPacketList({
                 </button>
               ) : null}
             </div>
-            {live ? (
+            {live && p.recipients && !p.sendBlockedReason ? (
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-muted, #64748b)' }}>
-                Goes to {p.recipients ? p.recipients.student : (memberEmail ?? 'the student')}
-                {(p.recipients ? p.recipients.counselor : counselorLabel)
-                  ? ` and ${p.recipients ? p.recipients.counselor : counselorLabel}.`
+                Goes to {p.recipients.student}
+                {p.recipients.counselor
+                  ? ` and ${p.recipients.counselor}.`
                   : ' only (no counselor was assigned at signing, so there is no counselor copy).'}
               </p>
             ) : null}
@@ -180,6 +215,7 @@ export default function BillingPacketList({
             {canSend && primaryAction(p).why ? (
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-accent, #ad2c4d)' }}>{primaryAction(p).why}</p>
             ) : null}
+            {canSend && p.sendState && p.sendState.history.length > 0 ? <SendHistory history={p.sendState.history} /> : null}
             {canSend && p.sendState
               ? p.sendState.rows
                   // Superseded packets cannot retry, so any unsettled copy is offered for reconciliation.
@@ -198,6 +234,37 @@ export default function BillingPacketList({
         );
       })}
     </ul>
+  );
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'not sent yet',
+  claimed: 'sending',
+  sent: 'delivered to the provider',
+  rejected_definite: 'rejected (not sent)',
+  ambiguous: 'unconfirmed',
+  needs_reconciliation: 'needs reconciliation',
+  reconciled_delivered: 'marked delivered',
+  reconciled_not_delivered: 'marked not delivered',
+};
+
+/** Every attempt's per-recipient outcome (admin view), so partial delivery stays visible after a reload. */
+function SendHistory({ history }: { history: NonNullable<BillingPacketSummary['sendState']>['history'] }) {
+  return (
+    <details open style={{ fontSize: '0.82rem' }}>
+      <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Send history</summary>
+      <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.1rem', display: 'grid', gap: '0.2rem' }}>
+        {history.map((h) => (
+          <li key={`${h.attemptNo}-${h.recipient}`}>
+            Attempt {h.attemptNo}, {h.recipient} ({h.email}): {STATUS_LABEL[h.status] ?? h.status}
+            {h.sentAt ? ` · ${formatLongDateOfInstant(h.sentAt)}` : ''}
+            {h.reconciledAt ? ` · reconciled ${formatLongDateOfInstant(h.reconciledAt)}${h.reconciledBy ? ` by ${h.reconciledBy}` : ''}` : ''}
+            {h.reconcileNote ? ` · note: ${h.reconcileNote}` : ''}
+            {h.lastError && !h.sentAt ? ` · ${h.lastError}` : ''}
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
