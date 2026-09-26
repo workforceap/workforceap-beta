@@ -6,10 +6,13 @@ import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPageScope';
 import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { buildDefaultLineItems, resolveProgramPricing } from '@/lib/billing/packetDefaults';
 import { getDefaultBillTo, getDefaultSigner, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
 import { resolveAssignedCounselorContact, serializeBillingPacket } from '@/lib/billing/packetAccess';
+import { resolveBillableEnrollments } from '@/lib/billing/billableEnrollments';
+import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 import PageHeader from '@/components/portal/PageHeader';
 import BillingPacketClient, { type BillingProgramOption } from './BillingPacketClient';
 
@@ -41,22 +44,33 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
         fullName: true,
         email: true,
         organizationId: true,
-        enrolledProgram: true,
         deletedAt: true,
-        courseEnrollments: {
-          select: { programSlug: true, curriculumVersion: true, isPrimary: true, enrolledAt: true },
-          orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'asc' }],
-        },
       },
     }),
   );
   if (!member || member.deletedAt) notFound();
 
-  // Programs this member can be billed for: every enrollment, then the legacy
-  // `enrolledProgram` slug if it is not already an enrollment row.
-  const enrollmentSlugs = member.courseEnrollments.map((e) => e.programSlug);
-  const slugs = [...enrollmentSlugs];
-  if (member.enrolledProgram && !slugs.includes(member.enrolledProgram)) slugs.push(member.enrolledProgram);
+  const orgCheck = checkBillingProviderOrg(await getActorOrganizationId(user.id).catch(() => null), member.organizationId);
+  if (!orgCheck.ok) {
+    return (
+      <div>
+        <PageHeader
+          breadcrumbs={[
+            { label: 'Members', href: '/admin/members' },
+            { label: member.fullName, href: `/admin/members/${member.id}` },
+            { label: 'J5 / J6 billing' },
+          ]}
+          title="J5 / J6 billing is not available"
+          subtitle={orgCheck.error}
+        />
+      </div>
+    );
+  }
+
+  // Programs this member can be billed for (same rule the POST enforces):
+  // canonical enrollments, or the legacy pointer only when there are none.
+  const enrollments = await resolveBillableEnrollments(member.id, member.organizationId);
+  const slugs = enrollments.map((e) => e.programSlug);
 
   const [catalogRows, packets, counselor] = await Promise.all([
     slugs.length
@@ -79,7 +93,7 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
       const catalog = catalogRows.find((row) => row.programSlug === slug) ?? null;
       const title = program?.title ?? catalog?.name ?? slug;
       if (!program && !catalog) return null;
-      const enrollment = member.courseEnrollments.find((e) => e.programSlug === slug);
+      const enrollment = enrollments[index];
       const courses = program ? getProgramCoursesForCurriculumVersion(program, enrollment?.curriculumVersion) : [];
       const pricing = resolveProgramPricing({ slug }, catalog);
       return {
@@ -87,7 +101,8 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
         title,
         lineItems: buildDefaultLineItems({ courses, pricing, programTitle: title }),
         pricingSource: pricing.source,
-        isPrimary: enrollment?.isPrimary ?? (index === 0 && enrollmentSlugs.length === 0),
+        priceListMaximum: pricing.source === 'price_list_default' ? pricing.tuition : null,
+        isPrimary: enrollment?.isPrimary ?? false,
       };
     })
     .filter((p): p is BillingProgramOption => p !== null);

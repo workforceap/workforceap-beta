@@ -2,19 +2,44 @@ import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import type { TrainingBillingPacket } from '@prisma/client';
 import { packetToDocumentInput } from './packetDocument';
-import { j6EnclosureLines } from './packetPdf';
-import { buildSignedSnapshot, parseSignedSnapshot } from './packetSnapshot';
+import { j6EnclosureLines, renderJ5InvoicePdf, renderJ6CoverLetterPdf } from './packetPdf';
+import { freezeLogo, MAX_SNAPSHOT_LOGO_BYTES, parseSignedSnapshot, SignedSnapshotCorruptError, type SignedPacketSnapshot } from './packetSnapshot';
 import { getTrainingProviderIdentity } from './providerIdentity';
-import { buildDefaultLineItems, resolveProgramPricing } from './packetDefaults';
-import { defaultCoverLetterBody, findCoverLetterMismatches } from './packetText';
+import { checkBillingProviderOrg, getBillingProviderOrgId } from './providerOrg';
+import { DEFAULT_ORG_ID } from '@/lib/tenant/organization';
 
 // Synthetic test data only.
-const FUNDING = { fundingType: 'wioa_ita' as const, approvedAmount: 1300, basis: 'TEST-ITA-0001', capException: '', reviewed: true as const };
+const LOGO = new Uint8Array(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
+
+function snapshot(overrides: Partial<SignedPacketSnapshot> = {}): SignedPacketSnapshot {
+  return {
+    version: 1,
+    provider: getTrainingProviderIdentity(),
+    member: { fullName: 'Name At Signing', email: 'signed@example.test' },
+    programSlug: 'it-support-professional-certificate-ibm',
+    programTitle: 'Title At Signing',
+    counselor: null,
+    logo: freezeLogo(LOGO),
+    pricing: { source: 'syllabus', priceListMaximum: null },
+    fundingAttestation: {
+      fundingBasis: 'wioa_ita',
+      approvedAmount: 1300,
+      reference: 'TEST-ITA-0001',
+      reviewed: true,
+      tuitionMatches: true,
+      staffNotedExceptionUnverified: null,
+      reviewedFingerprint: '0123456789abcdef',
+    },
+    j6: { facts: ['Billed to: Test Board', 'Total due: $1,300.00'], narrative: 'Narrative at signing.', factsReviewed: true },
+    warnings: [],
+    ...overrides,
+  };
+}
 
 function row(overrides: Partial<TrainingBillingPacket> = {}): TrainingBillingPacket {
   return {
     id: 'p1',
-    organizationId: 'org',
+    organizationId: DEFAULT_ORG_ID,
     memberId: 'm1',
     programSlug: 'it-support-professional-certificate-ibm',
     packetNumber: 'WAP-2026-0001',
@@ -28,7 +53,7 @@ function row(overrides: Partial<TrainingBillingPacket> = {}): TrainingBillingPac
     referenceNumber: null,
     lineItems: [{ description: 'Intro', hours: 10, amount: 1300 }],
     totalAmount: 1300,
-    coverLetterBody: 'Body of the letter for testing.',
+    coverLetterBody: 'Narrative at signing.',
     signerName: 'Test Signer',
     signerTitle: 'Test Title',
     signatureImage: null,
@@ -37,104 +62,121 @@ function row(overrides: Partial<TrainingBillingPacket> = {}): TrainingBillingPac
     sentAt: null,
     sentTo: [],
     sendCount: 0,
-    signedSnapshot: null,
+    signedSnapshot: JSON.parse(JSON.stringify(snapshot())),
+    sendAttemptNo: null,
+    sendAttempt: null,
+    fundingAttestationKey: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
   };
 }
 
-const ENV_KEYS = ['BILLING_PROVIDER_LEGAL_NAME', 'BILLING_PROVIDER_ADDRESS'] as const;
+const ENV_KEYS = ['BILLING_PROVIDER_LEGAL_NAME', 'BILLING_PROVIDER_ADDRESS', 'BILLING_PACKET_PROVIDER_ORG_ID'] as const;
 afterEach(() => {
   for (const key of ENV_KEYS) delete process.env[key];
 });
 
 describe('signed snapshot', () => {
-  it('renders from the snapshot, not later member, program or provider edits', () => {
+  it('renders only from the snapshot: later member, program, provider or logo changes do not reach the PDF inputs', async () => {
     const signedProvider = getTrainingProviderIdentity();
-    const snapshot = buildSignedSnapshot({
-      provider: signedProvider,
-      member: { fullName: 'Name At Signing', email: 'signed@example.test' },
-      programTitle: 'Title At Signing',
-      counselorAssigned: false,
-      pricing: { source: 'syllabus', defaultTotal: 7500 },
-      fundingApproval: FUNDING,
-    });
-    // Edits after signing: provider env, member rename, program slug title.
+    const signed = row();
     process.env.BILLING_PROVIDER_LEGAL_NAME = 'Renamed Provider';
     process.env.BILLING_PROVIDER_ADDRESS = '1 Moved St | Elsewhere, TX 00000';
-    const input = packetToDocumentInput(
-      row({ signedSnapshot: JSON.parse(JSON.stringify(snapshot)) }),
-      { fullName: 'Renamed Member', email: 'new@example.test' },
-      null,
-    );
+    let liveLogoCalls = 0;
+    const input = await packetToDocumentInput(signed, { fullName: 'Renamed Member', email: 'new@example.test' }, async () => {
+      liveLogoCalls++;
+      return new Uint8Array([1, 2, 3]);
+    });
+    assert.equal(liveLogoCalls, 0);
     assert.equal(input.provider.legalName, signedProvider.legalName);
     assert.deepEqual(input.provider.addressLines, signedProvider.addressLines);
     assert.deepEqual(input.member, { fullName: 'Name At Signing', email: 'signed@example.test' });
     assert.equal(input.programTitle, 'Title At Signing');
-    assert.equal(input.counselorAssigned, false);
+    assert.deepEqual(input.logoPng, LOGO);
+    assert.deepEqual(input.j6Facts, ['Billed to: Test Board', 'Total due: $1,300.00']);
+    assert.equal(input.coverLetterBody, 'Narrative at signing.');
   });
 
-  it('falls back to live values for a legacy row or a malformed snapshot', () => {
+  it('renders byte-identical PDFs for the same packet (stable email payloads)', async () => {
+    const input = await packetToDocumentInput(row(), { fullName: 'x', email: 'x@example.test' });
+    const [a, b] = [await renderJ5InvoicePdf(input), await renderJ5InvoicePdf(input)];
+    assert.deepEqual(Buffer.from(a), Buffer.from(b));
+    const [c, d] = [await renderJ6CoverLetterPdf(input), await renderJ6CoverLetterPdf(input)];
+    assert.deepEqual(Buffer.from(c), Buffer.from(d));
+  });
+
+  it('LEGACY: a null snapshot falls back to live values', async () => {
     process.env.BILLING_PROVIDER_LEGAL_NAME = 'Live Provider';
-    for (const signedSnapshot of [null, { version: 1, provider: {}, member: {} }, 'garbage']) {
-      const input = packetToDocumentInput(row({ signedSnapshot }), { fullName: 'Live Member', email: 'l@example.test' }, null);
-      assert.equal(input.provider.legalName, 'Live Provider');
-      assert.equal(input.member.fullName, 'Live Member');
-      assert.equal(input.counselorAssigned, undefined);
+    const input = await packetToDocumentInput(row({ signedSnapshot: null }), { fullName: 'Live Member', email: 'l@example.test' }, async () => null);
+    assert.equal(input.provider.legalName, 'Live Provider');
+    assert.equal(input.member.fullName, 'Live Member');
+    assert.equal(input.counselorAssigned, undefined);
+    assert.ok(input.j6Facts.some((l) => l.startsWith('Total due')));
+  });
+
+  it('a malformed non-null snapshot throws without reading any live value', async () => {
+    let liveLogoCalls = 0;
+    const bad = [
+      { version: 1, provider: {}, member: {} },
+      'garbage',
+      { ...snapshot(), member: { fullName: 'x' } },
+      { ...snapshot(), fundingAttestation: { ...snapshot().fundingAttestation, reviewed: false } },
+      { ...snapshot(), logo: { pngBase64: Buffer.from(LOGO).toString('base64'), sha256: 'f'.repeat(64) } },
+    ];
+    for (const signedSnapshot of bad) {
+      await assert.rejects(
+        packetToDocumentInput(row({ signedSnapshot: JSON.parse(JSON.stringify(signedSnapshot)) }), { fullName: 'Live', email: 'l@example.test' }, async () => {
+          liveLogoCalls++;
+          return null;
+        }),
+        SignedSnapshotCorruptError,
+      );
     }
-    assert.equal(parseSignedSnapshot({ version: 2 }), null);
+    assert.equal(liveLogoCalls, 0);
+    assert.throws(() => parseSignedSnapshot({ version: 2 }), SignedSnapshotCorruptError);
+    assert.equal(parseSignedSnapshot(null), null);
+  });
+
+  it('bounds the frozen logo', () => {
+    assert.equal(freezeLogo(new Uint8Array(MAX_SNAPSHOT_LOGO_BYTES + 1)), null);
+    assert.equal(freezeLogo(null), null);
+    assert.match(freezeLogo(LOGO)?.sha256 ?? '', /^[0-9a-f]{64}$/);
   });
 });
 
 describe('J6 cc line', () => {
-  it('names the counselor only when one was assigned at signing', () => {
-    const base = packetToDocumentInput(row(), { fullName: 'Test Member', email: 't@example.test' }, null);
-    assert.equal(j6EnclosureLines({ ...base, counselorAssigned: false })[1], 'cc: Test Member (participant)');
-    assert.equal(j6EnclosureLines({ ...base, counselorAssigned: true })[1], 'cc: Test Member (participant); assigned career counselor');
-    assert.equal(j6EnclosureLines(base)[1], 'cc: Test Member (participant); assigned career counselor');
+  it('names the counselor only when one was assigned at signing', async () => {
+    const counselor = { userId: 'c1', fullName: 'Test Counselor', email: 'c@example.test' };
+    const without = await packetToDocumentInput(row(), { fullName: 'x', email: 'x@example.test' });
+    const withC = await packetToDocumentInput(row({ signedSnapshot: JSON.parse(JSON.stringify(snapshot({ counselor }))) }), { fullName: 'x', email: 'x@example.test' });
+    assert.equal(j6EnclosureLines(without)[1], 'cc: Name At Signing (participant)');
+    assert.equal(j6EnclosureLines(withC)[1], 'cc: Name At Signing (participant); assigned career counselor');
   });
 });
 
-describe('findCoverLetterMismatches', () => {
-  const pricing = resolveProgramPricing({ slug: 'x' }, { cost: 3000, certCost: 0, bookCost: 0, miscCost: 0 });
-  const rows = buildDefaultLineItems({
-    programTitle: 'Test Program',
-    pricing,
-    courses: [
-      { name: 'Intro', estimatedHours: 10 },
-      { name: 'Advanced', estimatedHours: 20 },
-    ],
-  });
-  const letterFor = (lineItems = rows, billToName = 'Test Board', referenceNumber?: string) =>
-    defaultCoverLetterBody({ memberName: 'Test Member', programTitle: 'Test Program', billToName, lineItems, providerName: 'Test Provider', referenceNumber });
+describe('billing provider org', () => {
+  it('defaults to DEFAULT_ORG_ID, accepts a valid override, fails closed on an invalid one, refuses other orgs', () => {
+    assert.equal(getBillingProviderOrgId(), DEFAULT_ORG_ID);
+    assert.deepEqual(checkBillingProviderOrg(DEFAULT_ORG_ID, DEFAULT_ORG_ID), { ok: true });
+    const other = 'aaaaaaaa-0000-4000-8000-000000000009';
+    assert.equal(checkBillingProviderOrg(DEFAULT_ORG_ID, other).ok, false);
+    assert.equal(checkBillingProviderOrg(null).ok, false);
+    assert.equal(checkBillingProviderOrg().ok, false);
 
-  it('accepts the default letter for the same rows', () => {
-    assert.deepEqual(findCoverLetterMismatches({ coverLetterBody: letterFor(), lineItems: rows, billToName: 'Test Board' }), []);
-    assert.deepEqual(
-      findCoverLetterMismatches({ coverLetterBody: letterFor(rows, 'Test Board', 'REF-1'), lineItems: rows, billToName: 'Test Board', referenceNumber: 'REF-1' }),
-      [],
-    );
-  });
+    process.env.BILLING_PACKET_PROVIDER_ORG_ID = other;
+    assert.deepEqual(checkBillingProviderOrg(other), { ok: true });
+    assert.equal(checkBillingProviderOrg(DEFAULT_ORG_ID).ok, false);
 
-  it('flags a letter left over from rows that were edited afterwards', () => {
-    const edited = [...rows, { description: 'Exam voucher', hours: null, amount: 300 }];
-    const issues = findCoverLetterMismatches({ coverLetterBody: letterFor(), lineItems: edited, billToName: 'Test Board' });
-    assert.equal(issues.length, 1);
-    assert.match(issues[0], /\$3,000\.00.*\$3,300\.00/);
-  });
-
-  it('flags changed classes, hours, bill-to and reference', () => {
-    const changed = [{ description: 'Intro', hours: 12, amount: 1000 }, { description: 'Advanced', hours: 20, amount: 2000 }];
-    const issues = findCoverLetterMismatches({ coverLetterBody: letterFor(rows, 'Old Board', 'REF-1'), lineItems: changed, billToName: 'New Board', referenceNumber: 'REF-2' });
-    assert.ok(issues.some((i) => /30 total contact hours.*32/.test(i)));
-    assert.ok(issues.some((i) => /"Intro \(10 contact hours\)"/.test(i)));
-    assert.ok(issues.some((i) => /"Intro" is missing/.test(i)));
-    assert.ok(issues.some((i) => /billed to Old Board.*New Board/.test(i)));
-    assert.ok(issues.some((i) => /reference REF-2/.test(i)));
-  });
-
-  it('accepts a hand-written letter that states no conflicting facts', () => {
-    assert.deepEqual(findCoverLetterMismatches({ coverLetterBody: 'Please find the enclosed invoice for this participant.', lineItems: rows, billToName: 'Test Board' }), []);
+    process.env.BILLING_PACKET_PROVIDER_ORG_ID = 'not-a-uuid';
+    const originalError = console.error;
+    console.error = () => {};
+    try {
+      const res = checkBillingProviderOrg(DEFAULT_ORG_ID);
+      assert.equal(res.ok, false);
+      assert.equal(res.ok === false && res.status, 503);
+    } finally {
+      console.error = originalError;
+    }
   });
 });

@@ -18,7 +18,16 @@ type BillingPacketListProps = {
   emptyText?: string;
 };
 
-type SendState = { id: string; busy: boolean; ok?: boolean; message?: string } | null;
+type SendState = {
+  id: string;
+  busy: boolean;
+  ok?: boolean;
+  message?: string;
+  /** Copy that needs operator reconciliation (checked in the provider dashboard). */
+  reconcile?: 'student' | 'counselor';
+} | null;
+
+type SendAction = { action?: 'email_again' | 'mark_delivered'; recipient?: 'student' | 'counselor' };
 
 function pdfHref(id: string, doc: 'j5' | 'j6' | 'both', download = false) {
   return `/api/billing-packets/${id}/pdf?doc=${doc}${download ? '&download=1' : ''}`;
@@ -44,23 +53,27 @@ export default function BillingPacketList({
     return <p style={{ margin: 0, color: 'var(--color-muted, #64748b)', fontSize: '0.95rem' }}>{emptyText}</p>;
   }
 
-  const sendPacket = async (packet: BillingPacketSummary) => {
+  const sendPacket = async (packet: BillingPacketSummary, body: SendAction = {}) => {
     setSend({ id: packet.id, busy: true });
     try {
-      const res = await fetch(`/api/billing-packets/${packet.id}/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const res = await fetch(`/api/billing-packets/${packet.id}/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
+        code?: string;
+        recipient?: 'student' | 'counselor';
         packet?: BillingPacketSummary;
         sentTo?: string[];
         counselorMissing?: boolean;
-        warnings?: string[];
       };
+      if (data.packet && onPacketUpdated) onPacketUpdated(data.packet);
+      if (data.code === 'needs_reconciliation') {
+        setSend({ id: packet.id, busy: false, ok: false, message: data.error, reconcile: data.recipient });
+        return;
+      }
       if (!res.ok) throw new Error(data.error ?? 'Could not send the documents right now.');
       const to = (data.sentTo ?? []).join(', ');
-      const warn = data.counselorMissing ? ' No counselor is assigned yet, so only the student received it.' : '';
-      const extra = data.warnings && data.warnings.length ? ` ${data.warnings.join(' ')}` : '';
-      setSend({ id: packet.id, busy: false, ok: true, message: `Sent to ${to}.${warn}${extra}` });
-      if (data.packet && onPacketUpdated) onPacketUpdated(data.packet);
+      const warn = data.counselorMissing ? ' No counselor was assigned when it was signed, so only the student received it.' : '';
+      setSend({ id: packet.id, busy: false, ok: true, message: `Sent to ${to}.${warn}` });
     } catch (err) {
       setSend({ id: packet.id, busy: false, ok: false, message: requestFailureMessage(err, { connection: tCommon('connectionError'), fallback: 'Could not send the documents right now.' }, 'billing-packet-send') });
     }
@@ -105,7 +118,13 @@ export default function BillingPacketList({
                 Download J6
               </a>
               {canSend ? (
-                <button type="button" className="btn" style={{ minHeight: 40 }} disabled={Boolean(state?.busy)} onClick={() => void sendPacket(p)}>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ minHeight: 40 }}
+                  disabled={Boolean(state?.busy)}
+                  onClick={() => void sendPacket(p, p.status === 'sent' ? { action: 'email_again' } : {})}
+                >
                   {state?.busy ? 'Sending…' : p.status === 'sent' ? 'Email again to counselor and student' : 'Email to counselor and student'}
                 </button>
               ) : null}
@@ -113,14 +132,26 @@ export default function BillingPacketList({
             {canSend ? (
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-muted, #64748b)' }}>
                 {/* The admin is cc'd on the counselor copy only, so there is no cc without a counselor. */}
-                Goes to {memberEmail ?? 'the student'}
-                {counselorLabel ? ` and ${counselorLabel}; you are cc\u2019d on the counselor copy.` : ' only (no counselor assigned yet, so no counselor copy and no cc to you).'}
+                Goes to {p.recipients ? p.recipients.student : (memberEmail ?? 'the student')}
+                {(p.recipients ? p.recipients.counselor : counselorLabel)
+                  ? ` and ${p.recipients ? p.recipients.counselor : counselorLabel}; you are cc\u2019d on the counselor copy.`
+                  : ' only (no counselor was assigned at signing, so no counselor copy and no cc to you).'}
               </p>
             ) : null}
             {state && !state.busy && state.message ? (
               <p role="status" style={{ margin: 0, fontSize: '0.9rem', color: state.ok ? 'var(--color-green, #15803d)' : 'var(--color-accent, #ad2c4d)' }}>
                 {state.message}
               </p>
+            ) : null}
+            {canSend && state && !state.busy && state.reconcile ? (
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button type="button" className="btn btn-outline" style={{ minHeight: 40 }} onClick={() => void sendPacket(p, { action: 'mark_delivered', recipient: state.reconcile })}>
+                  I checked the provider: mark the {state.reconcile} copy delivered
+                </button>
+                <button type="button" className="btn btn-outline" style={{ minHeight: 40 }} onClick={() => void sendPacket(p, { action: 'email_again' })}>
+                  Not delivered: start a new attempt (Email again)
+                </button>
+              </div>
             ) : null}
           </li>
         );

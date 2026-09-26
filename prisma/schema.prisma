@@ -2092,19 +2092,56 @@ model TrainingBillingPacket {
   sentAt          DateTime? @map("sent_at")
   sentTo          String[] @default([]) @map("sent_to")
   sendCount       Int      @default(0) @map("send_count")
-  /// Provider/member/program identity, pricing source and funding approval frozen at signing (lib/billing/packetSnapshot.ts).
+  /// Everything the signed PDFs and send recipients come from, frozen at signing (lib/billing/packetSnapshot.ts). Null only for legacy rows.
   signedSnapshot  Json?    @map("signed_snapshot")
+  /// "<fundingBasis>:<normalized ITA/contract reference>" from the staff attestation. With the
+  /// member it keys the one-signed-packet-per-approval check (advisory lock at sign time).
+  fundingAttestationKey String? @map("funding_attestation_key")
+  /// Current send attempt number; each explicit "Email again" starts a new one (lib/billing/sendAttempts.ts).
+  sendAttemptNo   Int?     @map("send_attempt_no")
+  /// Inputs frozen when that attempt started: from address, branding, admin cc.
+  sendAttempt     Json?    @map("send_attempt")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   member       User         @relation("MemberBillingPackets", fields: [memberId], references: [id], onDelete: Cascade)
   signedBy     User         @relation("BillingPacketSigner", fields: [signedById], references: [id], onDelete: Restrict)
+  sends        TrainingBillingPacketSend[]
 
   @@unique([organizationId, packetNumber])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([memberId, createdAt(sort: Desc)])
   @@map("training_billing_packets")
+}
+
+/// One recipient's delivery within one send attempt of a J5/J6 packet. The
+/// unique key is the atomic claim: only one request can create it.
+model TrainingBillingPacketSend {
+  id             String    @id @default(uuid())
+  packetId       String    @map("packet_id")
+  attemptNo      Int       @map("attempt_no")
+  /// "student" | "counselor"
+  recipient      String
+  email          String
+  cc             String?
+  idempotencyKey String    @map("idempotency_key")
+  /// "claimed" | "sent" | "failed" | "needs_reconciliation"
+  status         String
+  /// First claim: when the idempotency key was first used (provider window starts here).
+  claimedAt      DateTime  @map("claimed_at")
+  /// Latest claim or retry of this key.
+  lastClaimedAt  DateTime  @map("last_claimed_at")
+  sentAt         DateTime? @map("sent_at")
+  lastError      String?   @map("last_error") @db.Text
+  reconciledById String?   @map("reconciled_by_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  packet TrainingBillingPacket @relation(fields: [packetId], references: [id], onDelete: Cascade)
+
+  @@unique([packetId, attemptNo, recipient])
+  @@map("training_billing_packet_sends")
 }
 
 /// xAPI statements ingested from Coursera (LRS webhook). `statementId` is the external UUID when present.

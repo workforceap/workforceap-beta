@@ -54,111 +54,134 @@ export function allocateAmount(total: number, weights: ReadonlyArray<number>): n
   return cents.map((c) => c / 100);
 }
 
-/**
- * Default J6 body. Plain paragraphs separated by blank lines; the admin edits
- * it on the form before signing. Keep the wording board-facing and factual.
- */
-export function defaultCoverLetterBody(args: {
-  memberName: string;
-  programTitle: string;
-  billToName: string;
-  lineItems: ReadonlyArray<PacketLineItem>;
-  providerName: string;
-  referenceNumber?: string;
-}): string {
-  const classes = args.lineItems.filter((row) => row.hours != null);
-  const hours = totalContactHours(args.lineItems);
-  const total = args.lineItems.reduce((sum, row) => sum + row.amount, 0);
-  const classList = classes.length
-    ? classes.map((row) => `- ${row.description}${row.hours ? ` (${row.hours} contact hours)` : ''}`).join('\n')
-    : `- ${args.programTitle}`;
-  const reference = args.referenceNumber ? ` under reference ${args.referenceNumber}` : '';
+/** Funding basis staff select on the form; never inferred from other data. */
+export type FundingBasis = 'wioa_ita' | 'separate_contract';
 
-  return [
-    `Please find enclosed the training invoice (Form J5) from ${args.providerName} for ${args.memberName}, who is enrolled in the ${args.programTitle} program${reference}.`,
-    `The invoice covers the following classes${hours ? ` (${hours} total contact hours)` : ''}:\n${classList}`,
-    `The total amount due is ${formatMoney(total)}. A class-by-class price breakdown appears on the invoice. Training is provided at no cost to the participant; this invoice is billed to ${args.billToName} as the funding partner.`,
-    `Thank you for your partnership in advancing this participant's career. Please contact me directly with any questions about this enrollment or invoice.`,
-  ].join('\n\n');
+export const FUNDING_BASIS_LABEL: Record<FundingBasis, string> = {
+  wioa_ita: 'WIOA ITA',
+  separate_contract: 'Separate contract',
+};
+
+/**
+ * Capital Area Board's standard WIOA ITA amount: WFSCA Board Plan PY2025-2028,
+ * printed pp.63-64 (Board-approved exceptions up to $10,000). It is a
+ * board-specific reference used only for a non-blocking review warning, never
+ * a charge, an approval or a cap applied to other boards.
+ */
+export const WFSCA_STANDARD_ITA_AMOUNT = 7500;
+
+/** Non-blocking review warnings shown before signing and recorded at signing. */
+export function fundingReviewWarnings(args: { fundingType: FundingBasis | '' | null | undefined; total: number }): string[] {
+  if (args.fundingType === 'wioa_ita' && args.total > WFSCA_STANDARD_ITA_AMOUNT) {
+    return [
+      `The total exceeds ${formatMoney(WFSCA_STANDARD_ITA_AMOUNT)}, the Capital Area Board's standard ITA amount. Confirm the local board's limit and any exception; an exception note is recorded as a staff note, unverified.`,
+    ];
+  }
+  return [];
 }
 
 /**
- * Above this total a WIOA ITA invoice needs a recorded Board-approved
- * exception. Source: Workforce Solutions Capital Area Board plan PY2025-2028,
- * p.57 ($7,500 maximum ITA, exceptions by Board-staff approval). Not applied to
- * a separate contract, and never used as an approved amount.
+ * Default J6 narrative. Deliberately fact-free: the member, program, classes,
+ * amounts, bill-to, funding and reference are printed by the facts block and
+ * the RE line, which are generated from the invoice itself.
  */
-export const WIOA_ITA_MAX_WITHOUT_EXCEPTION = 7500;
+export function defaultCoverLetterNarrative(providerName: string): string {
+  return [
+    `Please find enclosed the training invoice (Form J5) from ${providerName} for the participant and program named above.`,
+    'The facts below are generated from the signed invoice; the class-by-class breakdown also appears on Form J5. Training is provided at no cost to the participant.',
+    "Thank you for your partnership in advancing this participant's career. Please contact me directly with any questions about this enrollment or invoice.",
+  ].join('\n\n');
+}
 
-const MONEY_IN_TEXT = /\$\s?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?/g;
-const CLASS_BULLET = /^\s*(?:[-*]|\u2022)\s+(.+?)\s+\((\d+(?:\.\d+)?) contact hours\)\s*$/;
-const TOTAL_HOURS = /(\d+(?:\.\d+)?) total contact hours/g;
-const BILLED_TO = /billed to (.+?) as the funding partner/g;
-
-const toCents = (n: number) => Math.round(n * 100);
+/** Staff-recorded funding attestation as it appears in the J6 facts block. */
+export type J6FundingFacts = { fundingType: FundingBasis; approvedAmount: number; reference: string };
 
 /**
- * Facts in the J6 letter body that contradict the J5 rows it transmits: a
- * dollar figure that is neither the total nor a row amount, a stated total of
- * contact hours, a listed class (name + hours) that is not a J5 class row or a
- * J5 class missing from the list, and the default letter's bill-to and
- * reference phrases. Empty when the letter agrees with the invoice.
+ * The J6 facts block: every factual statement the cover letter makes, generated
+ * from the J5 rows and the funding attestation. Staff cannot edit it; signing
+ * freezes it in the snapshot, so J5 and J6 always state the same facts.
  */
-export function findCoverLetterMismatches(args: {
-  coverLetterBody: string;
-  lineItems: ReadonlyArray<PacketLineItem>;
+export function buildJ6Facts(args: {
+  invoiceDate: string | Date;
+  dueDate: string | Date | null;
   billToName: string;
-  referenceNumber?: string | null;
+  referenceNumber: string | null;
+  lineItems: ReadonlyArray<PacketLineItem>;
+  funding: J6FundingFacts | null;
 }): string[] {
-  const body = args.coverLetterBody;
-  const issues: string[] = [];
   const total = args.lineItems.reduce((sum, row) => sum + (Number.isFinite(row.amount) ? row.amount : 0), 0);
-  const allowed = new Set([toCents(total), ...args.lineItems.map((row) => toCents(row.amount))]);
-
-  // A figure in a sentence about the total must be the total; any other figure
-  // must be the total or one row's amount.
-  for (const sentence of body.split(/(?<=[.!?])\s+|\n/)) {
-    const aboutTotal = /\btotal\b/i.test(sentence);
-    for (const m of sentence.matchAll(MONEY_IN_TEXT)) {
-      const cents = Number(m[1].replace(/,/g, '')) * 100 + Number((m[2] ?? '0').padEnd(2, '0'));
-      if (aboutTotal ? cents !== toCents(total) : !allowed.has(cents)) {
-        issues.push(`The letter mentions ${m[0].trim()}, but the invoice total is ${formatMoney(total)}${aboutTotal ? '' : ' and no row has that amount'}.`);
-      }
-    }
+  const lines = [
+    `Invoice date: ${formatLongDate(args.invoiceDate)}; due: ${args.dueDate ? formatLongDate(args.dueDate) : 'Net 30 from receipt'}`,
+    `Billed to: ${args.billToName}`,
+  ];
+  if (args.referenceNumber) lines.push(`Board / ITA / voucher reference: ${args.referenceNumber}`);
+  if (args.funding) {
+    lines.push(
+      `Funding (staff-recorded): ${FUNDING_BASIS_LABEL[args.funding.fundingType]}, reference ${args.funding.reference}, approved amount ${formatMoney(args.funding.approvedAmount)}`,
+    );
   }
+  args.lineItems.forEach((row, i) => {
+    lines.push(`${i + 1}. ${row.description}${row.hours != null ? ` (${row.hours} contact hours)` : ''}: ${formatMoney(row.amount)}`);
+  });
+  lines.push(`Total contact hours: ${totalContactHours(args.lineItems)}`);
+  lines.push(`Total due: ${formatMoney(total)}`);
+  return lines;
+}
 
-  const hours = totalContactHours(args.lineItems);
-  for (const m of body.matchAll(TOTAL_HOURS)) {
-    if (Number(m[1]) !== hours) issues.push(`The letter says ${m[1]} total contact hours; the invoice rows add up to ${hours}.`);
-  }
+/**
+ * Non-blocking hint: the narrative restates figures that belong in the facts
+ * block. Not a correctness check; the facts block is the source of truth.
+ */
+export function narrativeFactHints(narrative: string): string[] {
+  const hints: string[] = [];
+  if (/\$\s?\d/.test(narrative)) hints.push('The narrative mentions a dollar amount. Amounts are printed in the facts block; consider removing it from the prose.');
+  if (/\d+(?:\.\d+)?\s+(?:total\s+)?contact hours/i.test(narrative)) hints.push('The narrative mentions contact hours. Hours are printed in the facts block; consider removing them from the prose.');
+  return hints;
+}
 
-  const classRows = args.lineItems.filter((row) => row.hours != null);
-  const listed = body
-    .split('\n')
-    .map((line) => CLASS_BULLET.exec(line))
-    .filter((m): m is RegExpExecArray => m !== null)
-    .map((m) => ({ description: m[1].trim(), hours: Number(m[2]) }));
-  const key = (description: string, h: number | null) => `${description.trim().toLowerCase()}|${h ?? ''}`;
-  if (listed.length > 0) {
-    const rowKeys = new Set(classRows.map((row) => key(row.description, row.hours)));
-    const listedKeys = new Set(listed.map((c) => key(c.description, c.hours)));
-    for (const c of listed) {
-      if (!rowKeys.has(key(c.description, c.hours))) issues.push(`The letter lists "${c.description} (${c.hours} contact hours)", which is not a class row on the invoice.`);
-    }
-    for (const row of classRows) {
-      if (row.hours && !listedKeys.has(key(row.description, row.hours))) issues.push(`The invoice class "${row.description}" is missing from the letter's class list.`);
-    }
-  }
+/** Values the signer reviews; any change after ticking a confirmation voids it. */
+export type ReviewedValues = {
+  programSlug: string;
+  invoiceDate: string;
+  dueDate: string | null;
+  billToName: string;
+  referenceNumber: string;
+  lineItems: ReadonlyArray<{ description: string; hours: number | null; amount: number | null }>;
+  fundingBasis: string;
+  approvedAmount: number | null;
+  fundingReference: string;
+  exceptionNote: string;
+};
 
-  for (const m of body.matchAll(BILLED_TO)) {
-    if (m[1].trim() !== args.billToName.trim()) issues.push(`The letter says it is billed to ${m[1].trim()}; the invoice is billed to ${args.billToName.trim()}.`);
+function fnv1a(text: string, seed: number): string {
+  let h = seed >>> 0;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
   }
+  return h.toString(16).padStart(8, '0');
+}
 
-  const ref = args.referenceNumber?.trim() ?? '';
-  if (body.includes('under reference ') && (!ref || !body.includes(`under reference ${ref}`))) {
-    issues.push(ref ? `The letter's reference does not match the invoice reference ${ref}.` : 'The letter cites a reference number, but the invoice has none.');
-  }
-  return issues;
+/**
+ * Deterministic fingerprint of the reviewed values. The form records it when
+ * staff tick a confirmation; the server recomputes it from what is being
+ * signed and refuses a mismatch, so a stale confirmation cannot sign edited
+ * values. An integrity binding, not a security token.
+ */
+export function attestationFingerprint(v: ReviewedValues): string {
+  const canonical = JSON.stringify([
+    v.programSlug,
+    v.invoiceDate,
+    v.dueDate ?? '',
+    v.billToName.trim(),
+    v.referenceNumber.trim(),
+    v.lineItems.map((row) => [row.description.trim(), row.hours ?? null, row.amount ?? null]),
+    v.fundingBasis,
+    v.approvedAmount ?? null,
+    v.fundingReference.trim(),
+    v.exceptionNote.trim(),
+  ]);
+  return `${fnv1a(canonical, 0x811c9dc5)}${fnv1a(canonical, 0x01000193)}`;
 }
 
 /** Today (UTC) as YYYY-MM-DD, with an optional day offset. */

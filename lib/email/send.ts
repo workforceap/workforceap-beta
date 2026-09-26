@@ -582,7 +582,9 @@ export async function sendBrandedEmail(
     if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, result.error);
     sendLog.fail(result.error, attempt);
     await sendLog.settle();
-    throw new Error(message);
+    // Keep the provider's error code so callers can tell e.g. an idempotency
+    // conflict (`invalid_idempotent_request`) from an ordinary failure.
+    throw Object.assign(new Error(message), { providerErrorName: result.error.name ?? null });
   }
   sendLog.fail('Resend retry budget exhausted', RESEND_MAX_ATTEMPTS);
   await sendLog.settle();

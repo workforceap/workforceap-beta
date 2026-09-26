@@ -1,70 +1,75 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { TrainingBillingPacket } from '@prisma/client';
 
 const mocks = vi.hoisted(() => ({ send: vi.fn() }));
 vi.mock('@/lib/email', () => ({ getResend: () => ({}) }));
 vi.mock('@/lib/email/send', () => ({ sendBrandedEmailOrThrowOnSkip: mocks.send }));
-vi.mock('@/lib/email/template', () => ({ brandedEmailLayout: () => '<html></html>' }));
-vi.mock('@/lib/tenant/organizationBranding', () => ({ getOrganizationBranding: async () => ({ domain: 'https://portal.example.test' }) }));
+vi.mock('@/lib/email/template', () => ({ brandedEmailLayout: (a: { branding: { name: string } }) => `layout:${a.branding.name}` }));
 
-import { sendBillingPacketEmails } from '@/lib/billing/sendPacket';
+import { buildPacketEmail, deliverPacketEmail, isIdempotencyConflict } from '@/lib/billing/sendPacket';
+import type { SignedPacketSnapshot } from '@/lib/billing/packetSnapshot';
+import type { SendAttemptRecord } from '@/lib/billing/sendAttempts';
+import { getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
 
-// Synthetic packet; nothing leaves the process (the email sender is mocked).
-const packet = {
-  id: 'd0000000-0000-4000-8000-000000000004',
-  organizationId: 'org',
-  memberId: 'm1',
+// Synthetic packet; nothing leaves the process (the sender is mocked).
+const snapshot: SignedPacketSnapshot = {
+  version: 1,
+  provider: getTrainingProviderIdentity(),
+  member: { fullName: 'Frozen Member', email: 'frozen@example.test' },
   programSlug: 'it-support-professional-certificate-ibm',
-  packetNumber: 'WAP-2026-0001',
-  status: 'signed',
-  invoiceDate: new Date('2026-09-04T00:00:00Z'),
-  dueDate: null,
-  billToName: 'Test Board',
-  billToAttention: null,
-  billToAddress: null,
-  billToEmail: null,
-  referenceNumber: null,
-  lineItems: [{ description: 'Intro', hours: 10, amount: 1300 }],
-  totalAmount: 1300,
-  coverLetterBody: 'Body of the letter for testing.',
-  signerName: 'Test Signer',
-  signerTitle: 'Test Title',
-  signatureImage: null,
-  signedAt: new Date('2026-09-04T01:00:00Z'),
-  signedById: 'a1',
-  sentAt: null,
-  sentTo: [] as string[],
-  sendCount: 0,
-  signedSnapshot: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  programTitle: 'Frozen Program',
+  counselor: { userId: 'c1', fullName: 'Frozen Counselor', email: 'counselor@example.test' },
+  logo: null,
+  pricing: { source: 'syllabus', priceListMaximum: null },
+  fundingAttestation: { fundingBasis: 'wioa_ita', approvedAmount: 1300, reference: 'TEST-ITA-1', reviewed: true, tuitionMatches: true, staffNotedExceptionUnverified: null, reviewedFingerprint: '0123456789abcdef' },
+  j6: { facts: ['Total due: $1,300.00'], narrative: 'Narrative.', factsReviewed: true },
+  warnings: [],
 };
-const member = { id: 'm1', fullName: 'Test Member', email: 'member@example.test', organizationId: 'org' };
-const counselor = { fullName: 'Test Counselor', email: 'counselor@example.test' };
+const packet = {
+  id: 'p1', organizationId: 'org', memberId: 'm1', programSlug: snapshot.programSlug, packetNumber: 'WAP-2026-0001', status: 'signed',
+  invoiceDate: new Date('2026-09-04T00:00:00Z'), dueDate: null, billToName: 'Test Board', billToAttention: null, billToAddress: null, billToEmail: null,
+  referenceNumber: null, lineItems: [{ description: 'Intro', hours: 10, amount: 1300 }], totalAmount: 1300, coverLetterBody: 'Narrative.',
+  signerName: 'Test Signer', signerTitle: 'Test Title', signatureImage: null, signedAt: new Date('2026-09-04T01:00:00Z'), signedById: 'a1',
+  sentAt: null, sentTo: [], sendCount: 0, signedSnapshot: snapshot, sendAttemptNo: 1, sendAttempt: null, fundingAttestationKey: 'wioa_ita:test-ita-1',
+  createdAt: new Date(), updatedAt: new Date(),
+} as unknown as TrainingBillingPacket;
+const attempt: SendAttemptRecord = {
+  attemptNo: 1, startedAt: '2026-09-26T00:00:00.000Z', startedById: 'a1', from: 'Frozen From <from@example.test>',
+  branding: { orgId: 'org', name: 'Frozen Brand', logoUrl: '', primaryColor: '#111111', supportEmail: '', domain: 'https://x.test', domainLabel: 'x.test' },
+  ccEmail: 'admin@example.test',
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.send.mockResolvedValue(undefined);
+  mocks.send.mockResolvedValue({ data: { id: 'x' }, error: null });
 });
 
-describe('sendBillingPacketEmails', () => {
-  it('sends the student copy first, then the counselor copy with the admin cc', async () => {
-    const result = await sendBillingPacketEmails({ packet, member, counselor, ccEmail: 'admin@example.test' });
-    expect(mocks.send.mock.calls.map((c) => c[1].to)).toEqual(['member@example.test', 'counselor@example.test']);
-    expect(mocks.send.mock.calls[1][1].cc).toBe('admin@example.test');
-    expect(result).toMatchObject({ studentSent: true, counselorSent: true, errors: [] });
+describe('packet emails', () => {
+  it('builds each copy only from the snapshot and the attempt', async () => {
+    const student = await buildPacketEmail({ packet, snapshot, attempt, recipient: 'student' });
+    expect(student).toMatchObject({ to: 'frozen@example.test', from: 'Frozen From <from@example.test>', replyTo: snapshot.provider.email, html: 'layout:Frozen Brand' });
+    const counselor = await buildPacketEmail({ packet, snapshot, attempt, recipient: 'counselor' });
+    expect(counselor).toMatchObject({ to: 'counselor@example.test', cc: 'admin@example.test' });
+    expect(counselor.attachments.map((a) => a.filename)).toEqual(['J5-training-invoice-WAP-2026-0001-frozen-member.pdf', 'J6-cover-letter-WAP-2026-0001-frozen-member.pdf']);
   });
 
-  it('does not tell the counselor the student has a copy when the student copy failed', async () => {
-    mocks.send.mockRejectedValueOnce(new Error('bounced'));
-    const result = await sendBillingPacketEmails({ packet, member, counselor, ccEmail: 'admin@example.test' });
-    expect(mocks.send).toHaveBeenCalledTimes(1);
-    expect(result).toMatchObject({ sentTo: [], studentSent: false, counselorSent: false });
-    expect(result.errors[0]).toMatch(/Student email failed: bounced/);
+  it('builds a byte-identical payload on every retry', async () => {
+    const a = await buildPacketEmail({ packet, snapshot, attempt, recipient: 'counselor' });
+    process.env.EMAIL_FROM = 'changed@example.test';
+    const b = await buildPacketEmail({ packet, snapshot, attempt, recipient: 'counselor' });
+    delete process.env.EMAIL_FROM;
+    expect(b).toEqual(a);
   });
 
-  it('skips the student copy when retrying a send whose counselor copy failed', async () => {
-    const result = await sendBillingPacketEmails({ packet, member, counselor, ccEmail: 'admin@example.test', studentAlreadySent: true });
-    expect(mocks.send.mock.calls.map((c) => c[1].to)).toEqual(['counselor@example.test']);
-    expect(result).toMatchObject({ studentSent: false, counselorSent: true, sentTo: ['counselor@example.test', 'admin@example.test'] });
+  it('passes the idempotency key through to the mail wrapper', async () => {
+    const email = await buildPacketEmail({ packet, snapshot, attempt, recipient: 'student' });
+    await deliverPacketEmail(email, 'billing-packet:p1:1:student');
+    expect(mocks.send.mock.calls[0][1].idempotencyKey).toBe('billing-packet:p1:1:student');
+  });
+
+  it('recognizes a Resend idempotency conflict', () => {
+    expect(isIdempotencyConflict(Object.assign(new Error('x'), { providerErrorName: 'invalid_idempotent_request' }))).toBe(true);
+    expect(isIdempotencyConflict(Object.assign(new Error('x'), { statusCode: 409 }))).toBe(true);
+    expect(isIdempotencyConflict(new Error('timeout'))).toBe(false);
   });
 });

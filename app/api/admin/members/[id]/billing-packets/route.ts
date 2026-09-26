@@ -8,13 +8,16 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProgramBySlug } from '@/lib/content/programs';
-import { createPacketSchema, roundMoney, sumLineItems } from '@/lib/billing/packetSchema';
+import { createPacketSchema, normalizeFundingReference, roundMoney, sumLineItems } from '@/lib/billing/packetSchema';
 import { isUniqueViolation, nextPacketNumber } from '@/lib/billing/packetNumber';
 import { getPacketNumberPrefix, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
 import { resolveAssignedCounselorContact, resolveProgramTitle, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { resolveProgramPricing } from '@/lib/billing/packetDefaults';
-import { findCoverLetterMismatches, formatMoney, WIOA_ITA_MAX_WITHOUT_EXCEPTION } from '@/lib/billing/packetText';
-import { buildSignedSnapshot } from '@/lib/billing/packetSnapshot';
+import { attestationFingerprint, buildJ6Facts, formatMoney, fundingReviewWarnings } from '@/lib/billing/packetText';
+import { freezeLogo, type SignedPacketSnapshot } from '@/lib/billing/packetSnapshot';
+import { loadLetterheadLogo } from '@/lib/billing/packetPdf';
+import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
+import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 
 /**
  * J5 invoice + J6 cover letter packets for one member.
@@ -34,6 +37,12 @@ async function resolveAdminSubject(userId: string, memberId: string) {
     select: { id: true, fullName: true, email: true, organizationId: true },
   });
   return member;
+}
+
+class DuplicateAttestationError extends Error {
+  constructor(readonly packetNumber: string) {
+    super('duplicate funding attestation');
+  }
 }
 
 function isoToDate(iso: string): Date {
@@ -70,6 +79,11 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     const member = await resolveAdminSubject(user.id, id);
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
 
+    // Issuance is limited to the provider org: both the admin's own org
+    // (resolved from the session) and the member's org must be it.
+    const orgCheck = checkBillingProviderOrg(await getActorOrganizationId(user.id).catch(() => null), member.organizationId);
+    if (!orgCheck.ok) return NextResponse.json({ error: orgCheck.error }, { status: orgCheck.status });
+
     let body: unknown;
     try {
       body = await request.json();
@@ -82,61 +96,107 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     }
     const input = parsed.data;
 
-    // The program must be one this org can bill for: the static catalog or the
-    // organization's own catalog row. The catalog row also prices it.
-    const program = getProgramBySlug(input.programSlug);
+    // The program must be one of the member's billable enrollments in this org
+    // (aliases accepted), not just any catalog program.
+    const enrollment = await findBillableEnrollment(member.id, member.organizationId, input.programSlug);
+    if (!enrollment) {
+      return NextResponse.json({ error: 'The member is not enrolled in that program in this organization.' }, { status: 422 });
+    }
+    const programSlug = enrollment.programSlug;
+    const program = getProgramBySlug(programSlug);
     const catalogRow = await prisma.organizationProgramCatalog.findFirst({
-      where: { organizationId: member.organizationId, programSlug: input.programSlug },
+      where: { organizationId: member.organizationId, programSlug },
       select: { name: true, cost: true, certCost: true, bookCost: true, miscCost: true },
     });
     if (!program && !catalogRow) {
       return NextResponse.json({ error: 'Unknown program for this organization' }, { status: 400 });
     }
-    const programTitle = resolveProgramTitle(input.programSlug, catalogRow?.name);
+    const programTitle = resolveProgramTitle(programSlug, catalogRow?.name);
+    const pricing = resolveProgramPricing({ slug: programSlug }, catalogRow);
 
+    // No catalog or syllabus price: the form leaves tuition empty, and a row
+    // may not be signed at zero; $7,500 is a ceiling, not a charge.
+    if (pricing.source === 'price_list_default' && input.lineItems.some((row) => !(row.amount > 0))) {
+      return NextResponse.json(
+        { error: 'No catalog or syllabus price is on file for this program. Enter the approved tuition for every row before signing.' },
+        { status: 400 },
+      );
+    }
     const totalAmount = sumLineItems(input.lineItems);
     if (totalAmount <= 0) {
       return NextResponse.json({ error: 'The invoice total must be greater than zero' }, { status: 400 });
     }
-
-    // Sign-time guards. The schema already requires a reviewed approved amount
-    // and funding basis, so a $7,500 price-list fallback is never signed unreviewed.
-    const funding = input.fundingApproval;
+    const funding = input.fundingAttestation;
     if (totalAmount > roundMoney(funding.approvedAmount)) {
       return NextResponse.json(
         { error: `The invoice total (${formatMoney(totalAmount)}) is more than the approved amount you recorded (${formatMoney(funding.approvedAmount)}).` },
         { status: 400 },
       );
     }
-    if (funding.fundingType === 'wioa_ita' && totalAmount > WIOA_ITA_MAX_WITHOUT_EXCEPTION && !funding.capException) {
-      return NextResponse.json(
-        { error: `A WIOA ITA invoice above ${formatMoney(WIOA_ITA_MAX_WITHOUT_EXCEPTION)} needs the Board-approved exception recorded before signing.` },
-        { status: 400 },
-      );
-    }
-    const letterIssues = findCoverLetterMismatches({
-      coverLetterBody: input.coverLetterBody,
-      lineItems: input.lineItems,
+    // The confirmations must be for exactly the values being signed.
+    const fingerprint = attestationFingerprint({
+      programSlug: input.programSlug,
+      invoiceDate: input.invoiceDate,
+      dueDate: input.dueDate ?? null,
       billToName: input.billToName,
       referenceNumber: input.referenceNumber,
+      lineItems: input.lineItems,
+      fundingBasis: funding.fundingBasis,
+      approvedAmount: funding.approvedAmount,
+      fundingReference: funding.reference,
+      exceptionNote: funding.exceptionNote,
     });
-    if (letterIssues.length > 0) {
+    if (fingerprint !== input.reviewedFingerprint) {
       return NextResponse.json(
-        { error: `The J6 cover letter does not match the J5 rows: ${letterIssues.join(' ')} Regenerate the letter from the rows or correct it before signing.`, letterIssues },
-        { status: 400 },
+        { error: 'The invoice or funding values changed after you confirmed them. Review and confirm again before signing.', code: 'stale_attestation' },
+        { status: 409 },
       );
     }
 
-    const pricing = resolveProgramPricing({ slug: input.programSlug }, catalogRow);
+    // One signed packet per member per approval (funding basis + normalized
+    // reference) until void/supersede or a cumulative-balance design exists.
+    // Different members may share a cohort contract reference.
+    const fundingAttestationKey = `${funding.fundingBasis}:${normalizeFundingReference(funding.reference)}`;
+    const duplicateResponse = (packetNumber: string) =>
+      NextResponse.json(
+        {
+          error: `Invoice ${packetNumber} is already signed for this member against ${funding.fundingBasis === 'wioa_ita' ? 'ITA' : 'contract'} reference "${funding.reference}". Repeat or installment billing for the same member and approval is not supported until void/supersede or a cumulative-balance design exists.`,
+          code: 'duplicate_reference',
+        },
+        { status: 409 },
+      );
+
+    const warnings = fundingReviewWarnings({ fundingType: funding.fundingBasis, total: totalAmount });
+    const j6Facts = buildJ6Facts({
+      invoiceDate: input.invoiceDate,
+      dueDate: input.dueDate ?? null,
+      billToName: input.billToName,
+      referenceNumber: input.referenceNumber || null,
+      lineItems: input.lineItems.map((row) => ({ description: row.description, hours: row.hours ?? null, amount: row.amount })),
+      funding: { fundingType: funding.fundingBasis, approvedAmount: funding.approvedAmount, reference: funding.reference },
+    });
     const counselor = await resolveAssignedCounselorContact(member.id);
-    const signedSnapshot = buildSignedSnapshot({
+    const signedSnapshot: SignedPacketSnapshot = {
+      version: 1,
       provider: getTrainingProviderIdentity(),
       member: { fullName: member.fullName, email: member.email },
+      programSlug,
       programTitle,
-      counselorAssigned: Boolean(counselor),
-      pricing: { source: pricing.source, defaultTotal: roundMoney(pricing.tuition + pricing.certCost + pricing.bookCost + pricing.miscCost) },
-      fundingApproval: funding,
-    });
+      counselor: counselor ? { userId: counselor.userId, fullName: counselor.fullName, email: counselor.email } : null,
+      logo: freezeLogo(await loadLetterheadLogo()),
+      pricing: { source: pricing.source, priceListMaximum: pricing.source === 'price_list_default' ? pricing.tuition : null },
+      fundingAttestation: {
+        fundingBasis: funding.fundingBasis,
+        approvedAmount: roundMoney(funding.approvedAmount),
+        reference: funding.reference,
+        reviewed: true,
+        tuitionMatches: true,
+        staffNotedExceptionUnverified: funding.exceptionNote || null,
+        reviewedFingerprint: fingerprint,
+      },
+      j6: { facts: j6Facts, narrative: input.coverLetterBody, factsReviewed: true },
+      warnings,
+    };
     const now = new Date();
     const prefix = getPacketNumberPrefix();
 
@@ -144,12 +204,19 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     for (let attempt = 0; attempt < 3 && !created; attempt++) {
       try {
         created = await prisma.$transaction(async (tx) => {
+          // Serializes signs for the same member + approval; released at commit.
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet:${member.organizationId}:${member.id}:${fundingAttestationKey}`}))`;
+          const duplicate = await tx.trainingBillingPacket.findFirst({
+            where: { organizationId: member.organizationId, memberId: member.id, fundingAttestationKey, status: { in: ['signed', 'sent'] } },
+            select: { packetNumber: true },
+          });
+          if (duplicate) throw new DuplicateAttestationError(duplicate.packetNumber);
           const packetNumber = await nextPacketNumber(tx, { organizationId: member.organizationId, prefix, now });
           return tx.trainingBillingPacket.create({
             data: {
               organizationId: member.organizationId,
               memberId: member.id,
-              programSlug: input.programSlug,
+              programSlug,
               packetNumber,
               status: 'signed',
               invoiceDate: isoToDate(input.invoiceDate),
@@ -168,10 +235,12 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
               signedAt: now,
               signedById: user.id,
               signedSnapshot,
+              fundingAttestationKey,
             },
           });
         });
       } catch (err) {
+        if (err instanceof DuplicateAttestationError) return duplicateResponse(err.packetNumber);
         if (!isUniqueViolation(err) || attempt === 2) throw err;
       }
     }
@@ -186,11 +255,12 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       targetId: created.id,
       metadata: {
         memberId: member.id,
-        programSlug: input.programSlug,
+        programSlug,
         packetNumber: created.packetNumber,
         totalAmount,
         pricingSource: pricing.source,
-        fundingType: funding.fundingType,
+        fundingBasis: funding.fundingBasis,
+        warnings: warnings.length,
         orgId: member.organizationId,
       },
     }).catch(() => {});
@@ -198,12 +268,12 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       user: { id: user.id, role: 'admin' },
       verb: 'created',
       object: { type: 'TrainingBillingPacket', id: created.id },
-      result: { success: true, extensions: { memberId: member.id, programSlug: input.programSlug, totalAmount } },
+      result: { success: true, extensions: { memberId: member.id, programSlug, totalAmount } },
       request: auditRequestMeta(request),
       orgId: member.organizationId,
     }).catch(() => {});
 
-    return NextResponse.json({ ok: true, packet: serializeBillingPacket(created, programTitle) }, { status: 201 });
+    return NextResponse.json({ ok: true, packet: serializeBillingPacket(created, programTitle), warnings }, { status: 201 });
   } catch (error) {
     console.error('[admin/members/billing-packets POST]', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

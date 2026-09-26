@@ -28,15 +28,27 @@ export type BillingPacketSummary = {
   sentAt: string | null;
   sentTo: string[];
   sendCount: number;
+  /** Frozen send recipients from the signed snapshot (null for legacy or unreadable snapshots). */
+  recipients: { student: string; counselor: string | null } | null;
 };
 
+/** List summaries must not fail on one bad row; the PDF/send routes refuse a corrupt snapshot. */
+function readSnapshotForSummary(row: TrainingBillingPacket) {
+  try {
+    return parseSignedSnapshot(row.signedSnapshot);
+  } catch {
+    return null;
+  }
+}
+
 export function serializeBillingPacket(row: TrainingBillingPacket, programTitle?: string): BillingPacketSummary {
+  const snapshot = readSnapshotForSummary(row);
   return {
     id: row.id,
     packetNumber: row.packetNumber,
     status: row.status,
     programSlug: row.programSlug,
-    programTitle: parseSignedSnapshot(row.signedSnapshot)?.programTitle ?? programTitle ?? resolveProgramTitle(row.programSlug),
+    programTitle: snapshot?.programTitle ?? programTitle ?? resolveProgramTitle(row.programSlug),
     invoiceDate: row.invoiceDate.toISOString().slice(0, 10),
     dueDate: row.dueDate ? row.dueDate.toISOString().slice(0, 10) : null,
     billToName: row.billToName,
@@ -49,6 +61,9 @@ export function serializeBillingPacket(row: TrainingBillingPacket, programTitle?
     sentAt: row.sentAt ? row.sentAt.toISOString() : null,
     sentTo: row.sentTo,
     sendCount: row.sendCount,
+    recipients: snapshot
+      ? { student: snapshot.member.email, counselor: snapshot.counselor ? `${snapshot.counselor.fullName} (${snapshot.counselor.email})` : null }
+      : null,
   };
 }
 

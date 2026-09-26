@@ -4,22 +4,28 @@ import { useMemo, useState } from 'react';
 import SignaturePad, { type SignatureValue } from '@/components/admin/SignaturePad';
 import BillingPacketList from '@/components/billing/BillingPacketList';
 import type { BillingPacketSummary } from '@/lib/billing/packetAccess';
-import type { PacketLineItem } from '@/lib/billing/packetSchema';
+import type { DefaultLineItem } from '@/lib/billing/packetDefaults';
 import {
-  defaultCoverLetterBody,
-  findCoverLetterMismatches,
+  attestationFingerprint,
+  buildJ6Facts,
+  defaultCoverLetterNarrative,
   formatMoney,
+  fundingReviewWarnings,
   isoDatePlusDays,
+  narrativeFactHints,
   totalContactHours,
-  WIOA_ITA_MAX_WITHOUT_EXCEPTION,
+  type FundingBasis,
+  type ReviewedValues,
 } from '@/lib/billing/packetText';
-import { programDisplayTitle } from '@/lib/content/programTitle';
 
 export type BillingProgramOption = {
   slug: string;
   title: string;
-  lineItems: PacketLineItem[];
+  /** Default rows; tuition amounts are null when no price is on file. */
+  lineItems: DefaultLineItem[];
   pricingSource: 'organization_catalog' | 'syllabus' | 'price_list_default';
+  /** Price-list maximum shown as a reference only (never prefilled). */
+  priceListMaximum: number | null;
   isPrimary: boolean;
 };
 
@@ -38,7 +44,7 @@ type BillingPacketClientProps = {
 const PRICING_SOURCE_LABEL: Record<BillingProgramOption['pricingSource'], string> = {
   organization_catalog: 'prices from your program catalog (/admin/programs)',
   syllabus: 'tuition from the approved TWC syllabus',
-  price_list_default: 'price-list default of $7,500 spread across the classes',
+  price_list_default: 'class rows only: no catalog or syllabus price is on file, so tuition is left empty',
 };
 
 type Draft = {
@@ -50,17 +56,20 @@ type Draft = {
   billToAddress: string;
   billToEmail: string;
   referenceNumber: string;
-  lineItems: PacketLineItem[];
+  lineItems: DefaultLineItem[];
+  /** J6 narrative only; the facts block is generated from the rows. */
   coverLetterBody: string;
   signerName: string;
   signerTitle: string;
-  /** Funding approval: never prefilled; the signer records what they checked. */
-  fundingType: '' | 'wioa_ita' | 'separate_contract';
+  /** Staff-recorded funding attestation: never prefilled. */
+  fundingBasis: '' | FundingBasis;
   approvedAmount: string;
-  fundingBasis: string;
-  capException: string;
-  fundingReviewed: boolean;
+  fundingReference: string;
+  exceptionNote: string;
 };
+
+/** Confirmations record the fingerprint of the values they were ticked for. */
+type Confirmations = { funding: string | null; tuition: string | null; facts: string | null };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -73,6 +82,14 @@ const inputStyle: React.CSSProperties = {
 };
 const labelStyle: React.CSSProperties = { display: 'grid', gap: '0.3rem', fontSize: '0.85rem', fontWeight: 600 };
 
+function normalizedRows(rows: DefaultLineItem[]) {
+  return rows.map((row) => ({
+    description: row.description,
+    hours: row.hours == null || Number.isNaN(row.hours) ? null : row.hours,
+    amount: row.amount == null || !Number.isFinite(row.amount) ? null : row.amount,
+  }));
+}
+
 export default function BillingPacketClient(props: BillingPacketClientProps) {
   const initialProgram = props.programs.find((p) => p.isPrimary) ?? props.programs[0] ?? null;
   const [packets, setPackets] = useState<BillingPacketSummary[]>(props.initialPackets);
@@ -80,80 +97,84 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
   const [lastCreated, setLastCreated] = useState<BillingPacketSummary | null>(null);
+  const [confirmed, setConfirmed] = useState<Confirmations>({ funding: null, tuition: null, facts: null });
 
-  const buildLetter = (programSlug: string, lineItems: PacketLineItem[], billToName: string, referenceNumber: string) => {
-    const program = props.programs.find((p) => p.slug === programSlug);
-    return defaultCoverLetterBody({
-      memberName: props.memberName,
-      programTitle: program?.title ?? programDisplayTitle(programSlug),
-      billToName: billToName || 'the funding partner',
-      lineItems,
-      providerName: props.providerName,
-      referenceNumber: referenceNumber || undefined,
-    });
-  };
+  const [draft, setDraft] = useState<Draft>(() => ({
+    programSlug: initialProgram?.slug ?? '',
+    invoiceDate: isoDatePlusDays(0),
+    dueDate: isoDatePlusDays(30),
+    billToName: props.billTo.name,
+    billToAttention: props.billTo.attention,
+    billToAddress: props.billTo.address,
+    billToEmail: '',
+    referenceNumber: '',
+    lineItems: initialProgram?.lineItems ?? [],
+    coverLetterBody: defaultCoverLetterNarrative(props.providerName),
+    signerName: props.signer.name,
+    signerTitle: props.signer.title,
+    fundingBasis: '',
+    approvedAmount: '',
+    fundingReference: '',
+    exceptionNote: '',
+  }));
 
-  const [draft, setDraft] = useState<Draft>(() => {
-    const lineItems = initialProgram?.lineItems ?? [];
-    return {
-      programSlug: initialProgram?.slug ?? '',
-      invoiceDate: isoDatePlusDays(0),
-      dueDate: isoDatePlusDays(30),
-      billToName: props.billTo.name,
-      billToAttention: props.billTo.attention,
-      billToAddress: props.billTo.address,
-      billToEmail: '',
-      referenceNumber: '',
-      lineItems,
-      coverLetterBody: initialProgram
-        ? defaultCoverLetterBody({
-            memberName: props.memberName,
-            programTitle: initialProgram.title,
-            lineItems,
-            billToName: props.billTo.name,
-            providerName: props.providerName,
-          })
-        : '',
-      signerName: props.signer.name,
-      signerTitle: props.signer.title,
-      fundingType: '',
-      approvedAmount: '',
-      fundingBasis: '',
-      capException: '',
-      fundingReviewed: false,
-    };
-  });
-
-  const total = useMemo(() => draft.lineItems.reduce((s, r) => s + (Number.isFinite(r.amount) ? r.amount : 0), 0), [draft.lineItems]);
-  const hours = useMemo(() => totalContactHours(draft.lineItems), [draft.lineItems]);
+  const rows = useMemo(() => normalizedRows(draft.lineItems), [draft.lineItems]);
+  const total = useMemo(() => rows.reduce((s, r) => s + (r.amount ?? 0), 0), [rows]);
+  const hours = useMemo(() => totalContactHours(rows.map((r) => ({ ...r, amount: r.amount ?? 0 }))), [rows]);
   const selectedProgram = props.programs.find((p) => p.slug === draft.programSlug) ?? null;
-  const letterIssues = useMemo(
+  const approvedAmount = draft.approvedAmount === '' ? null : Number(draft.approvedAmount);
+
+  // Any change to a reviewed value changes the fingerprint, so every
+  // confirmation ticked for the old values reads as unticked again.
+  const reviewed: ReviewedValues = {
+    programSlug: draft.programSlug,
+    invoiceDate: draft.invoiceDate,
+    dueDate: draft.dueDate || null,
+    billToName: draft.billToName,
+    referenceNumber: draft.referenceNumber,
+    lineItems: rows,
+    fundingBasis: draft.fundingBasis,
+    approvedAmount,
+    fundingReference: draft.fundingReference,
+    exceptionNote: draft.exceptionNote,
+  };
+  const fingerprint = attestationFingerprint(reviewed);
+  const isConfirmed = (key: keyof Confirmations) => confirmed[key] === fingerprint;
+  const toggle = (key: keyof Confirmations, on: boolean) => setConfirmed((c) => ({ ...c, [key]: on ? fingerprint : null }));
+
+  const facts = useMemo(
     () =>
-      findCoverLetterMismatches({
-        coverLetterBody: draft.coverLetterBody,
-        lineItems: draft.lineItems,
+      buildJ6Facts({
+        invoiceDate: draft.invoiceDate || isoDatePlusDays(0),
+        dueDate: draft.dueDate || null,
         billToName: draft.billToName,
-        referenceNumber: draft.referenceNumber,
+        referenceNumber: draft.referenceNumber || null,
+        lineItems: rows.map((r) => ({ ...r, amount: r.amount ?? 0 })),
+        funding:
+          draft.fundingBasis && approvedAmount != null && draft.fundingReference.trim()
+            ? { fundingType: draft.fundingBasis, approvedAmount, reference: draft.fundingReference.trim() }
+            : null,
       }),
-    [draft.coverLetterBody, draft.lineItems, draft.billToName, draft.referenceNumber],
+    [draft.invoiceDate, draft.dueDate, draft.billToName, draft.referenceNumber, rows, draft.fundingBasis, approvedAmount, draft.fundingReference],
   );
-  const overItaMax = draft.fundingType === 'wioa_ita' && total > WIOA_ITA_MAX_WITHOUT_EXCEPTION;
+  const hints = useMemo(() => narrativeFactHints(draft.coverLetterBody), [draft.coverLetterBody]);
+  const warnings = fundingReviewWarnings({ fundingType: draft.fundingBasis, total });
+  const missingAmount = rows.some((r) => r.amount == null);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
   const changeProgram = (slug: string) => {
     const program = props.programs.find((p) => p.slug === slug);
-    const lineItems = program?.lineItems ?? [];
-    setDraft((d) => ({ ...d, programSlug: slug, lineItems, coverLetterBody: buildLetter(slug, lineItems, d.billToName, d.referenceNumber) }));
+    setDraft((d) => ({ ...d, programSlug: slug, lineItems: program?.lineItems ?? [] }));
   };
 
-  const updateRow = (index: number, patch: Partial<PacketLineItem>) =>
+  const updateRow = (index: number, patch: Partial<DefaultLineItem>) =>
     setDraft((d) => ({ ...d, lineItems: d.lineItems.map((row, i) => (i === index ? { ...row, ...patch } : row)) }));
   const removeRow = (index: number) => setDraft((d) => ({ ...d, lineItems: d.lineItems.filter((_, i) => i !== index) }));
   const addRow = (kind: 'class' | 'fee') =>
-    setDraft((d) => ({ ...d, lineItems: [...d.lineItems, { description: '', hours: kind === 'class' ? 0 : null, amount: 0 }] }));
+    setDraft((d) => ({ ...d, lineItems: [...d.lineItems, { description: '', hours: kind === 'class' ? 0 : null, amount: null }] }));
   const resetRows = () => selectedProgram && set('lineItems', selectedProgram.lineItems);
-  const resetLetter = () => set('coverLetterBody', buildLetter(draft.programSlug, draft.lineItems, draft.billToName, draft.referenceNumber));
+  const resetNarrative = () => set('coverLetterBody', defaultCoverLetterNarrative(props.providerName));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -164,6 +185,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
     }
     setSaving(true);
     try {
+      const allConfirmed = isConfirmed('funding') && isConfirmed('tuition') && isConfirmed('facts');
       const res = await fetch(`/api/admin/members/${props.memberId}/billing-packets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -176,31 +198,30 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           billToAddress: draft.billToAddress,
           billToEmail: draft.billToEmail,
           referenceNumber: draft.referenceNumber,
-          lineItems: draft.lineItems.map((row) => ({
-            description: row.description,
-            hours: row.hours == null || Number.isNaN(row.hours) ? null : row.hours,
-            amount: Number.isFinite(row.amount) ? row.amount : 0,
-          })),
+          lineItems: rows,
           coverLetterBody: draft.coverLetterBody,
           signerName: draft.signerName,
           signerTitle: draft.signerTitle,
           signatureImage: signature.kind === 'drawn' ? signature.dataUrl : null,
           signatureTyped: signature.kind === 'typed',
-          fundingApproval: {
-            fundingType: draft.fundingType || undefined,
-            approvedAmount: draft.approvedAmount === '' ? undefined : Number(draft.approvedAmount),
-            basis: draft.fundingBasis,
-            capException: draft.capException,
-            reviewed: draft.fundingReviewed,
+          fundingAttestation: {
+            fundingBasis: draft.fundingBasis || undefined,
+            approvedAmount: approvedAmount ?? undefined,
+            reference: draft.fundingReference,
+            exceptionNote: draft.exceptionNote,
+            reviewed: isConfirmed('funding'),
+            tuitionMatches: isConfirmed('tuition'),
           },
+          j6FactsReviewed: isConfirmed('facts'),
+          reviewedFingerprint: allConfirmed ? fingerprint : undefined,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; packet?: BillingPacketSummary };
+      const data = (await res.json().catch(() => ({}))) as { error?: string; packet?: BillingPacketSummary; warnings?: string[] };
       if (!res.ok || !data.packet) throw new Error(data.error ?? 'Could not create the documents.');
       setPackets((list) => [data.packet as BillingPacketSummary, ...list]);
       setLastCreated(data.packet);
       setSignature(null);
-      setDraft((d) => ({ ...d, fundingReviewed: false }));
+      setConfirmed({ funding: null, tuition: null, facts: null });
       setMsg({ type: 'ok', text: `Invoice ${data.packet.packetNumber} signed. Review the PDFs below, then email them to the counselor and student.` });
       document.getElementById('billing-packet-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
@@ -303,8 +324,8 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             </div>
             {selectedProgram?.pricingSource === 'price_list_default' ? (
               <p role="note" style={{ margin: 0, fontWeight: 600, color: 'var(--color-accent, #ad2c4d)' }}>
-                No catalog or syllabus price is on file for this program. $7,500 is the price-list maximum, not an approved amount:
-                record the approved amount from the ITA or contract below before signing.
+                No catalog or syllabus price is on file for this program. Enter the actual approved tuition from the ITA or contract.
+                {selectedProgram.priceListMaximum != null ? ` Price list maximum: ${formatMoney(selectedProgram.priceListMaximum)} (ceiling, not a charge).` : ''}
               </p>
             ) : null}
             <div role="group" aria-label="Invoice line items" style={{ display: 'grid', gap: '0.4rem' }}>
@@ -355,8 +376,9 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
                     min={0}
                     step="0.01"
                     style={inputStyle}
-                    value={Number.isFinite(row.amount) ? row.amount : ''}
-                    onChange={(e) => updateRow(i, { amount: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    value={row.amount != null && Number.isFinite(row.amount) ? row.amount : ''}
+                    placeholder="Enter amount"
+                    onChange={(e) => updateRow(i, { amount: e.target.value === '' ? null : Number(e.target.value) })}
                     required
                   />
                   <button type="button" className="btn btn-outline" style={{ minHeight: 36, minWidth: 36, padding: '0 0.5rem' }} onClick={() => removeRow(i)} aria-label={`Remove item ${i + 1}`}>
@@ -393,35 +415,15 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             </div>
           </div>
 
-          <label style={labelStyle}>
-            <span style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
-              J6 cover letter body
-              <button type="button" className="btn btn-outline" style={{ minHeight: 32, fontSize: '0.8125rem' }} onClick={resetLetter}>
-                Regenerate from the rows above
-              </button>
-            </span>
-            <textarea
-              style={{ ...inputStyle, minHeight: 240, fontFamily: 'inherit', lineHeight: 1.5 }}
-              value={draft.coverLetterBody}
-              onChange={(e) => set('coverLetterBody', e.target.value)}
-              required
-            />
-            <span style={{ fontSize: '0.8125rem', color: 'var(--color-muted, #64748b)', fontWeight: 400 }}>
-              Date, addressee, RE line, salutation, closing and signature are added automatically. Start lines with &ldquo;- &rdquo; for bullets.
-            </span>
-            {letterIssues.length > 0 ? (
-              <span role="alert" style={{ fontSize: '0.85rem', color: 'var(--color-accent, #ad2c4d)' }}>
-                The letter no longer matches the rows above, so it cannot be signed yet: {letterIssues.join(' ')}
-              </span>
-            ) : null}
-          </label>
-
           <fieldset style={{ border: 0, padding: 0, margin: 0, display: 'grid', gap: '0.75rem' }}>
-            <legend style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Funding approval (required before signing)</legend>
+            <legend style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Funding attestation (staff-recorded, required before signing)</legend>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-muted, #64748b)' }}>
+              This records what you checked and where. It is not proof of Board or contract approval.
+            </p>
             <div style={{ display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
               <label style={labelStyle}>
                 Funding basis
-                <select style={inputStyle} value={draft.fundingType} onChange={(e) => set('fundingType', e.target.value as Draft['fundingType'])} required>
+                <select style={inputStyle} value={draft.fundingBasis} onChange={(e) => set('fundingBasis', e.target.value as Draft['fundingBasis'])} required>
                   <option value="">Select…</option>
                   <option value="wioa_ita">WIOA ITA</option>
                   <option value="separate_contract">Separate contract</option>
@@ -433,23 +435,61 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
               </label>
               <label style={labelStyle}>
                 ITA approval / contract reference
-                <input style={inputStyle} value={draft.fundingBasis} onChange={(e) => set('fundingBasis', e.target.value)} required />
+                <input style={inputStyle} value={draft.fundingReference} onChange={(e) => set('fundingReference', e.target.value)} required />
               </label>
             </div>
-            {overItaMax ? (
-              <label style={labelStyle}>
-                Board-approved exception (required above {formatMoney(WIOA_ITA_MAX_WITHOUT_EXCEPTION)} for a WIOA ITA)
-                <input style={inputStyle} value={draft.capException} onChange={(e) => set('capException', e.target.value)} required />
-              </label>
+            {warnings.length > 0 ? (
+              <>
+                <p role="note" style={{ margin: 0, fontWeight: 600, color: 'var(--color-accent, #ad2c4d)' }}>{warnings.join(' ')}</p>
+                <label style={labelStyle}>
+                  Exception note (optional, staff-entered, unverified)
+                  <input style={inputStyle} value={draft.exceptionNote} onChange={(e) => set('exceptionNote', e.target.value)} />
+                </label>
+              </>
             ) : null}
             <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.9rem' }}>
-              <input type="checkbox" checked={draft.fundingReviewed} onChange={(e) => set('fundingReviewed', e.target.checked)} style={{ marginTop: 4 }} />
-              <span>
-                I checked the approved amount and funding basis against the Board-issued ITA approval or the contract. They are not
-                taken from the price-list default.
-              </span>
+              <input type="checkbox" checked={isConfirmed('funding')} onChange={(e) => toggle('funding', e.target.checked)} style={{ marginTop: 4 }} />
+              <span>I checked the funding basis, approved amount and reference above against the Board-issued ITA or the contract.</span>
+            </label>
+            <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.9rem' }}>
+              <input type="checkbox" checked={isConfirmed('tuition')} onChange={(e) => toggle('tuition', e.target.checked)} style={{ marginTop: 4 }} />
+              <span>The tuition row amounts match the ITA or contract (not the price-list maximum).</span>
             </label>
           </fieldset>
+
+          <label style={labelStyle}>
+            <span style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+              J6 cover letter narrative
+              <button type="button" className="btn btn-outline" style={{ minHeight: 32, fontSize: '0.8125rem' }} onClick={resetNarrative}>
+                Reset narrative to default
+              </button>
+            </span>
+            <textarea
+              style={{ ...inputStyle, minHeight: 160, fontFamily: 'inherit', lineHeight: 1.5 }}
+              value={draft.coverLetterBody}
+              onChange={(e) => set('coverLetterBody', e.target.value)}
+              required
+            />
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-muted, #64748b)', fontWeight: 400 }}>
+              Prose only. Date, addressee, RE line, the facts block below, closing and signature are added automatically. Start lines with &ldquo;- &rdquo; for bullets.
+            </span>
+            {hints.length > 0 ? (
+              <span role="note" style={{ fontSize: '0.85rem', color: 'var(--color-muted, #64748b)' }}>{hints.join(' ')}</span>
+            ) : null}
+          </label>
+
+          <div style={{ display: 'grid', gap: '0.5rem' }}>
+            <strong>J6 facts block (generated from the rows and funding above; not editable)</strong>
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              {facts.map((line, i) => (
+                <li key={i}>{line}</li>
+              ))}
+            </ul>
+            <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.9rem' }}>
+              <input type="checkbox" checked={isConfirmed('facts')} onChange={(e) => toggle('facts', e.target.checked)} style={{ marginTop: 4 }} />
+              <span>I reviewed the J6 facts block.</span>
+            </label>
+          </div>
 
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             <label style={labelStyle}>
@@ -474,7 +514,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           ) : null}
 
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button type="submit" className="btn" style={{ minHeight: 46, padding: '0 1.25rem' }} disabled={saving || props.programs.length === 0 || draft.lineItems.length === 0 || letterIssues.length > 0}>
+            <button type="submit" className="btn" style={{ minHeight: 46, padding: '0 1.25rem' }} disabled={saving || props.programs.length === 0 || draft.lineItems.length === 0 || missingAmount}>
               {saving ? 'Creating…' : `Create signed J5 + J6 (${formatMoney(total)})`}
             </button>
             <span style={{ fontSize: '0.85rem', color: 'var(--color-muted, #64748b)' }}>

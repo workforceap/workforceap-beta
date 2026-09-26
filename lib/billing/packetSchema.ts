@@ -14,36 +14,48 @@ const PNG_DATA_URL = /^data:image\/png;base64,[A-Za-z0-9+/=]+$/;
 const lineItemSchema = z.object({
   description: z.string().trim().min(1, 'Line item needs a description').max(200),
   hours: z.number().min(0).max(10_000).nullable().optional().transform((v) => (v == null ? null : v)),
-  amount: z.number().min(0, 'Amounts cannot be negative').max(1_000_000),
+  amount: z
+    .number({ required_error: 'Enter an amount for every row.', invalid_type_error: 'Enter an amount for every row.' })
+    .min(0, 'Amounts cannot be negative')
+    .max(1_000_000),
 });
 
 /**
- * The approved amount and funding basis the signer checked against the
- * Board-issued ITA approval or the contract. Never prefilled: the price-list
- * default is a maximum, not an approval (TWC 40 TAC §840.61 ties ITA funding
- * to Board approval).
+ * Staff-recorded funding attestation: the funding basis staff selected, the
+ * approved amount and the ITA / contract reference they checked, and their
+ * explicit confirmations. It is a record of what staff attested, not proof of
+ * Board or contract approval. Nothing here is ever prefilled or defaulted; the
+ * price-list figure is a maximum, not an approval (TWC 40 TAC §840.61).
  */
-const fundingApprovalSchema = z.object(
+const fundingAttestationSchema = z.object(
   {
-    fundingType: z.enum(['wioa_ita', 'separate_contract'], {
+    fundingBasis: z.enum(['wioa_ita', 'separate_contract'], {
       errorMap: () => ({ message: 'Choose the funding basis (WIOA ITA or separate contract).' }),
     }),
     approvedAmount: z
       .number({ required_error: 'Enter the approved amount.', invalid_type_error: 'Enter the approved amount.' })
+      .finite()
       .positive('Enter the approved amount.')
       .max(1_000_000),
-    /** ITA / voucher / contract reference or approval note. */
-    basis: z.string().trim().min(3, 'Record the ITA approval or contract reference the amount comes from.').max(300),
-    /** Board-approved exception reference; required for a WIOA ITA above the maximum. */
-    capException: z.string().trim().max(300).optional().default(''),
+    /** ITA / voucher / contract reference staff checked the amount against. */
+    reference: z
+      .string({ required_error: 'Enter the ITA approval or contract reference.' })
+      .trim()
+      .min(4, 'Enter the ITA approval or contract reference (at least 4 characters).')
+      .max(200),
+    /** Optional staff note about an exception. Recorded as unverified. */
+    exceptionNote: z.string().trim().max(300).optional().default(''),
     reviewed: z.literal(true, {
-      errorMap: () => ({ message: 'Confirm you reviewed the approved amount and funding basis before signing.' }),
+      errorMap: () => ({ message: 'Confirm you reviewed the approved amount, funding basis and reference before signing.' }),
+    }),
+    tuitionMatches: z.literal(true, {
+      errorMap: () => ({ message: 'Confirm the tuition row amounts match the ITA or contract before signing.' }),
     }),
   },
-  { required_error: 'Record the approved amount and funding basis before signing.' },
+  { required_error: 'Record the funding basis, approved amount and reference before signing.' },
 );
 
-export type FundingApproval = z.infer<typeof fundingApprovalSchema>;
+export type FundingAttestation = z.infer<typeof fundingAttestationSchema>;
 
 export const createPacketSchema = z
   .object({
@@ -56,6 +68,7 @@ export const createPacketSchema = z
     billToEmail: z.union([z.literal(''), z.string().trim().email('Bill-to email is not valid').max(200)]).optional().default(''),
     referenceNumber: z.string().trim().max(120).optional().default(''),
     lineItems: z.array(lineItemSchema).min(1, 'Add at least one class or fee').max(40),
+    /** J6 narrative only; the facts block is generated from the rows. */
     coverLetterBody: z.string().trim().min(20, 'The cover letter is too short').max(6000),
     signerName: z.string().trim().min(2).max(120),
     signerTitle: z.string().trim().min(2).max(120),
@@ -63,7 +76,13 @@ export const createPacketSchema = z
     signatureImage: z.string().regex(PNG_DATA_URL, 'Signature must be a PNG image').max(400_000).nullable().optional(),
     /** Explicit "I am signing this by typing my name" acknowledgement. */
     signatureTyped: z.boolean().optional().default(false),
-    fundingApproval: fundingApprovalSchema,
+    fundingAttestation: fundingAttestationSchema,
+    /** Fingerprint the form recorded when staff ticked the confirmations (attestationFingerprint). */
+    reviewedFingerprint: z.string().regex(/^[0-9a-f]{16}$/, 'Review and confirm the funding and J6 facts before signing.'),
+    /** Explicit "I reviewed the generated J6 facts block" confirmation. */
+    j6FactsReviewed: z.literal(true, {
+      errorMap: () => ({ message: 'Confirm you reviewed the J6 facts block before signing.' }),
+    }),
   })
   .refine((v) => Boolean(v.signatureImage) || v.signatureTyped, {
     message: 'Sign the documents (draw your signature or type your name) before creating them.',
@@ -71,6 +90,11 @@ export const createPacketSchema = z
   });
 
 export type CreatePacketInput = z.infer<typeof createPacketSchema>;
+
+/** Key for the one-packet-per-reference rule: trimmed, inner whitespace collapsed, case-insensitive. */
+export function normalizeFundingReference(reference: string): string {
+  return reference.trim().replace(/\s+/g, ' ').toLowerCase();
+}
 
 /** Round to cents so JSON storage and PDF totals agree. */
 export function roundMoney(n: number): number {
