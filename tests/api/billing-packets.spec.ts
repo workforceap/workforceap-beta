@@ -124,8 +124,15 @@ vi.mock('@/lib/db/prisma', () => {
     trainingBillingPacket: {
       count: vi.fn(async ({ where }: { where: { organizationId: string } }) => db.packets.filter((p) => p.organizationId === where.organizationId).length),
       findFirst: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.packets.find((p) => matches(p, where)) ?? null),
-      findMany: vi.fn(async (args: { include?: { sends?: { where?: { recipient?: string } } | boolean } } = {}) =>
-        db.packets.map((p) => {
+      findMany: vi.fn(async (args: { where?: Record<string, unknown>; include?: { sends?: { where?: { recipient?: string } } | boolean } } = {}) =>
+        db.packets
+          .filter((p) => {
+            const { member, ...scalar } = (args.where ?? {}) as Record<string, unknown> & { member?: { organizationId?: string } };
+            if (!matches(p, scalar)) return false;
+            if (member?.organizationId !== undefined) return db.users.find((u) => u.id === p.memberId)?.organizationId === member.organizationId;
+            return true;
+          })
+          .map((p) => {
           const only = typeof args.include?.sends === 'object' ? args.include.sends.where?.recipient : undefined;
           return { ...p, sends: db.sends.filter((x) => x.packetId === p.id && (!only || x.recipient === only)).map((x) => ({ ...x })) };
         })),
@@ -1617,8 +1624,10 @@ describe('Stale counselor assignments (org transfer, deleted) count as no counse
       expect(second.status).toBe(201);
       const secondId = (await second.json()).packet.id as string;
       expect((db.packets.find((p) => p.id === secondId)!.signedSnapshot as { counselor: unknown }).counselor).toBeNull();
-      // The counselor student page's packet list is empty for them too.
+      // The counselor student page's packet list is empty for them too (they are not an admin).
+      mocks.isAdmin.mockResolvedValue(false);
       expect(await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id)).toEqual([]);
+      mocks.isAdmin.mockResolvedValue(true);
       // (c) Sending the packet signed with that counselor: recipient drift.
       const res = await send(id, { action: 'email_again', confirmDuplicateTo: ['student', 'counselor'] });
       expect(res.status).toBe(409);
@@ -1709,5 +1718,57 @@ describe('Fallback acceptance write: best-effort settle and guaranteed repair', 
     expect(isTerminalRow({ status: 'rejected_definite', providerResultAt: at })).toBe(false);
     expect(isTerminalRow({ status: 'needs_reconciliation', providerResultAt: at })).toBe(false);
     expect(isTerminalRow({ status: 'reconciled_not_delivered', providerResultAt: null })).toBe(true);
+  });
+});
+
+describe('Staff packet list is scoped per packet to the viewer\'s org', () => {
+  /** Org A packet (older, sent) signed normally; the member then moves to org B, which has a newer sent packet (synthetic row). */
+  async function twoOrgPackets() {
+    const aId = await signOne();
+    expect((await sendPacket(req({}), packetParams(aId))).status).toBe(200);
+    const a = db.packets.find((p) => p.id === aId)!;
+    const bId = 'd0000000-0000-4000-8000-00000000b0b0';
+    db.packets.push({ ...a, id: bId, organizationId: OTHER_ORG, packetNumber: 'WAP-TEST-B-0001', createdAt: new Date(Date.now() + 1000) });
+    db.sends.push({ ...db.sends.find((r) => r.packetId === aId)!, id: 'send-b', packetId: bId });
+    db.users[0].organizationId = OTHER_ORG; // the member now belongs to org B
+    return { aId, bId };
+  }
+  const ids = (list: Array<{ id: string }>) => list.map((p) => p.id).sort();
+
+  it('an org-B counselor sees only the B packet', async () => {
+    const { bId } = await twoOrgPackets();
+    db.counselor = { ...COUNSELOR, organizationId: OTHER_ORG };
+    expect(ids(await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id))).toEqual([bId]);
+  });
+
+  it('a stale org-A counselor (assignment still active) sees nothing', async () => {
+    await twoOrgPackets();
+    db.counselor = { ...COUNSELOR, organizationId: ORG };
+    mocks.isAdmin.mockResolvedValue(false);
+    expect(await listPacketsForMember(MEMBER, 'counselor', COUNSELOR.id)).toEqual([]);
+  });
+
+  it('an org-B admin sees only B; an org-A admin sees nothing (member moved); a super-admin sees both', async () => {
+    const { aId, bId } = await twoOrgPackets();
+    db.counselor = null;
+    mocks.isAdmin.mockResolvedValue(true);
+    mocks.getActorOrganizationId.mockResolvedValue(OTHER_ORG);
+    expect(ids(await listPacketsForMember(MEMBER, 'counselor', ADMIN))).toEqual([bId]);
+    mocks.getActorOrganizationId.mockResolvedValue(ORG);
+    expect(await listPacketsForMember(MEMBER, 'counselor', ADMIN)).toEqual([]);
+    mocks.isSuperAdmin.mockResolvedValue(true);
+    expect(ids(await listPacketsForMember(MEMBER, 'counselor', ADMIN))).toEqual([aId, bId].sort());
+  });
+
+  it('the member\'s own view keeps their packets across orgs (subject to the sent-visibility rule)', async () => {
+    const { aId, bId } = await twoOrgPackets();
+    expect(ids(await listPacketsForMember(MEMBER, 'member'))).toEqual([aId, bId].sort());
+  });
+
+  it('someone who is neither an assigned counselor nor an admin gets nothing', async () => {
+    await twoOrgPackets();
+    db.counselor = null;
+    mocks.isAdmin.mockResolvedValue(false);
+    expect(await listPacketsForMember(MEMBER, 'counselor', 'e0000000-0000-4000-8000-000000000099')).toEqual([]);
   });
 });

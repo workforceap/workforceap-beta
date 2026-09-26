@@ -1,6 +1,6 @@
-import type { TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
+import type { Prisma, TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
-import { isAdmin, isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
+import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 import { parseLineItems, type PacketLineItem } from './packetSchema';
@@ -237,10 +237,6 @@ export async function loadPacketForViewer(
   return { ok: false, status: 404, error: 'Document not found' };
 }
 
-async function isAdminInOrgForPackets(userId: string, organizationId: string): Promise<boolean> {
-  return (await isSuperAdmin(userId)) || (await isAdminInOrg(userId, organizationId));
-}
-
 /** Recipient-copy states where that person did, or might have, received the packet. */
 const MAY_HAVE_REACHED = new Set(['sent', 'reconciled_delivered', 'claimed', 'ambiguous', 'needs_reconciliation']);
 
@@ -273,33 +269,52 @@ export function packetVisibleTo(
 export async function listPacketsForMember(
   memberId: string,
   viewer: 'member' | 'counselor' = 'member',
-  /** Counselor view: the viewing counselor's user id. Defensive re-check of a current, same-org assignment. */
+  /**
+   * Staff view (the counselor student page): the viewer's user id. Packets are
+   * then scoped per packet in the query itself (see staffPacketScope).
+   */
   viewerUserId?: string,
 ): Promise<BillingPacketSummary[]> {
+  let where: Prisma.TrainingBillingPacketWhereInput = { memberId };
+  if (viewer === 'counselor' && viewerUserId) {
+    const scope = await staffPacketScope(memberId, viewerUserId);
+    if (!scope) return [];
+    where = { ...where, ...scope };
+  }
   const rows = await prisma.trainingBillingPacket.findMany({
-    where: { memberId },
+    where,
     orderBy: { createdAt: 'desc' },
     take: 50,
     include: { sends: { select: { recipient: true, status: true } } },
   });
-  if (viewer === 'counselor' && viewerUserId && rows.length > 0) {
-    // Defensive re-check (the page already ran assertStaffCanAccessMemberRecord):
-    // a current, same-org, active and undeleted counselor assignment, or an
-    // admin of the packets' organization.
-    const organizationId = rows[0].organizationId;
-    const assigned = await prisma.counselorAssignment.findFirst({
-      where: {
-        memberId,
-        active: true,
-        counselor: { userId: viewerUserId, active: true, user: { organizationId, deletedAt: null } },
-      },
-      select: { id: true },
-    });
-    if (!assigned && !(await isAdminInOrgForPackets(viewerUserId, organizationId))) return [];
-  }
   const visible = rows.filter((row) => packetVisibleTo(row, row.sends, viewer));
   const ordered = [...visible.filter((r) => r.status !== 'superseded'), ...visible.filter((r) => r.status === 'superseded')];
   return ordered.map(({ sends: _sends, ...row }) => serializeBillingPacket(row));
+}
+
+/**
+ * Per-packet org scope for a staff viewer of a member's packets:
+ *  - an assigned counselor (active, undeleted): only packets of the
+ *    counselor's CURRENT org, and only while the member is in that org too;
+ *  - an admin: only packets of the admin's org (member in that org too);
+ *  - a super-admin: every packet (same cross-org semantics as
+ *    loadPacketForViewer / canAdminActInSubjectOrganization);
+ *  - anyone else: nothing (null).
+ * Applied in the query's WHERE, so each packet is filtered individually.
+ */
+async function staffPacketScope(memberId: string, viewerUserId: string): Promise<Prisma.TrainingBillingPacketWhereInput | null> {
+  if (await isSuperAdmin(viewerUserId)) return {};
+  const assignment = await prisma.counselorAssignment.findFirst({
+    where: { memberId, active: true, counselor: { userId: viewerUserId, active: true, user: { deletedAt: null } } },
+    select: { counselor: { select: { user: { select: { organizationId: true } } } } },
+  });
+  const counselorOrg = assignment?.counselor.user.organizationId;
+  if (counselorOrg) return { organizationId: counselorOrg, member: { organizationId: counselorOrg } };
+  if (await isAdmin(viewerUserId)) {
+    const actorOrg = await getActorOrganizationId(viewerUserId).catch(() => null);
+    if (actorOrg) return { organizationId: actorOrg, member: { organizationId: actorOrg } };
+  }
+  return null;
 }
 
 /**

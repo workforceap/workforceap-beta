@@ -197,7 +197,11 @@ that automatically emails to counselor and the student."
   `needs_reconciliation`, meaning a send did or may have reached them. For a
   packet signed with no counselor, the counselor view follows the student copy.
   Current packets are listed first, then superseded ones labelled
-  "Superseded - replaced by".
+  "Superseded - replaced by". On the counselor student page the list is also
+  scoped per packet in the query: an assigned counselor sees only packets of
+  their current org, and only while the member is in that org. An admin sees
+  their own org's packets; a super-admin sees all. The member's own view keeps
+  their packets across orgs.
 - **Downloads**: every surface offers "Download both (PDF)" — the J6 cover
   letter and J5 invoice merged into one file, in that order, so the whole packet
   prints or saves as a set — plus separate "Download J5" / "Download J6" buttons
