@@ -45,6 +45,7 @@ export const GET = withApiGuc(async (req: NextRequest) => {
     const includePlain =
       req.nextUrl.searchParams.get('includePlainText') === '1' ||
       req.nextUrl.searchParams.get('includePlainText') === 'true';
+    const originalOnly = req.nextUrl.searchParams.get('originalOnly') === '1';
   
     const memberId = req.nextUrl.searchParams.get('memberId');
     const targetUserId = memberId || user.id;
@@ -131,7 +132,9 @@ export const GET = withApiGuc(async (req: NextRequest) => {
   
       let resumePlainText: string | null = null;
       if (includePlain) {
-        resumePlainText = (await getMemberResumePlainText(targetUserId, 12000)) || null;
+        resumePlainText = (await (originalOnly
+          ? getMemberResumePlainText(targetUserId, 12000, { originalOnly: true })
+          : getMemberResumePlainText(targetUserId, 12000))) || null;
       }
   
       return NextResponse.json({

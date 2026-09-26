@@ -89,6 +89,16 @@ describe('getMemberResumePlainText substantive text gate', () => {
     expect(mocks.download).toHaveBeenCalledWith('member-1/resume-original-v1.pdf');
   });
 
+  it('returns no source when only an enhanced draft is stored', async () => {
+    mocks.findProfile.mockResolvedValue({
+      resumeOriginalPath: null,
+      resumeEnhancedPath: 'member-1/resume-enhanced-v1.txt',
+    });
+
+    await expect(getMemberResumePlainText('member-1', 8000, { originalOnly: true })).resolves.toBe('');
+    expect(mocks.download).not.toHaveBeenCalled();
+  });
+
   it('skips a stored AI extraction-failure narrative and returns the original resume', async () => {
     mocks.findProfile.mockResolvedValue({
       resumeOriginalPath: 'member-1/resume-original-v1.txt',

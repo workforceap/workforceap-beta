@@ -183,6 +183,39 @@ describe('GET /api/member/resume', () => {
     expect(json.resumePlainText).toBe('plain resume text');
   });
 
+  it('returns no enhanced draft for an original-only text request when the original is unreadable', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'user-123' } as any);
+    vi.mocked(prisma.profile.findUnique).mockResolvedValue({
+      userId: 'user-123',
+      resumeOriginalPath: 'user-123/original.pdf',
+      resumeEnhancedPath: 'user-123/enhanced.txt',
+    } as any);
+    vi.mocked(getMemberResumePlainText).mockImplementation(async (_userId, _maxChars, opts) =>
+      opts?.originalOnly ? '' : 'AI-enhanced draft that is not original source evidence.',
+    );
+    const storage = {
+      createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'https://signed/resume' }, error: null }),
+      download: vi.fn().mockResolvedValue({
+        data: storedText('Synthetic enhanced draft with enough readable resume text to inspect.'),
+        error: null,
+      }),
+    };
+    vi.mocked(getSupabaseAdmin).mockReturnValue({ storage: { from: () => storage } } as any);
+
+    const originalOnly = await resumeGET(
+      makeReq('http://localhost:3000/api/member/resume?includePlainText=1&originalOnly=1') as any,
+    );
+    expect(originalOnly.status).toBe(200);
+    expect((await originalOnly.json()).resumePlainText).toBeNull();
+    expect(getMemberResumePlainText).toHaveBeenCalledWith('user-123', 12000, { originalOnly: true });
+
+    const defaultRead = await resumeGET(
+      makeReq('http://localhost:3000/api/member/resume?includePlainText=1') as any,
+    );
+    expect(defaultRead.status).toBe(200);
+    expect((await defaultRead.json()).resumePlainText).toMatch(/AI-enhanced draft/);
+  });
+
   it('returns 403 when requesting another member as non-admin/non-counselor', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'user-123' } as any);
     vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(false);
