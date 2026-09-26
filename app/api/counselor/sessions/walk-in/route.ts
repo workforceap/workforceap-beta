@@ -14,6 +14,9 @@ import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
 import { stampCreatedAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { buildDeletedEmail } from '@/lib/member/deletedEmail';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -104,9 +107,9 @@ const walkInSchema = z.object({
     //
     // `User.email` is `@unique` GLOBALLY (not per-tenant) in the current
     // schema, so the lookup MUST span all tenants — `crossTenantOK` marks
-    // the intentional bypass. The follow-up `update` below is also
-    // unscoped because the soft-deleted row could legitimately live in
-    // any tenant; we just want to free the email slot regardless.
+    // the intentional bypass. A deleted row may also be under a billing
+    // deletion, restore, or Auth-email operation, so the rewrite takes that
+    // row's lifecycle lock and checks the exact state again before inviting.
     const existingPrisma = await crossTenantOK(() =>
       prisma.user.findUnique({
         where: { email },
@@ -114,13 +117,28 @@ const walkInSchema = z.object({
       }),
     );
     if (existingPrisma?.deletedAt) {
-      const freedEmail = `deleted_${existingPrisma.id}_${Date.now()}_${email}@deleted.invalid`.slice(0, 255);
-      await crossTenantOK(() =>
-        prisma.user.update({
-          where: { id: existingPrisma.id },
-          data: { email: freedEmail },
-        }),
-      );
+      const freedEmail = buildDeletedEmail(existingPrisma.id, Date.now(), email);
+      if (!freedEmail) return NextResponse.json({ error: 'The deleted account email cannot be released without losing its restore address.' }, { status: 409 });
+      const rewrite = {
+        where: {
+          id: existingPrisma.id,
+          email,
+          deletedAt: existingPrisma.deletedAt,
+          billingDeletionOperationId: null,
+          OR: [{ billingDeletionPendingAt: null }, { billingDeletionCompletedAt: { not: null } }],
+        },
+        data: { email: freedEmail },
+      };
+      // Preview/development flatten Prisma transactions. The single UPDATE
+      // compare-and-set is still atomic there; production additionally shares
+      // the lifecycle lock with delete and restore.
+      const changed = interactiveTransactionsGuaranteed()
+        ? await crossTenantOK(() => prisma.$transaction(async (tx) => {
+            await lockBillingMemberLifecycle(tx, existingPrisma.id);
+            return tx.user.updateMany(rewrite);
+          }))
+        : await crossTenantOK(() => prisma.user.updateMany(rewrite));
+      if (changed.count !== 1) return NextResponse.json({ error: 'The deleted account changed during this request. Reload before inviting again.' }, { status: 409 });
     } else if (existingPrisma) {
       // Active Prisma row — existing member. Return their ID so the client can
       // offer a one-click "start session with them" path.
