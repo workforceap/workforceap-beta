@@ -132,11 +132,9 @@ export const GET = withApiGuc(async (req: NextRequest) => {
   
       let resumePlainText: string | null = null;
       if (includePlain) {
-        resumePlainText = (await getMemberResumePlainText(
-          targetUserId,
-          12000,
-          originalOnly ? { originalOnly: true } : undefined,
-        )) || null;
+        resumePlainText = (await (originalOnly
+          ? getMemberResumePlainText(targetUserId, 12000, { originalOnly: true })
+          : getMemberResumePlainText(targetUserId, 12000))) || null;
       }
   
       return NextResponse.json({
