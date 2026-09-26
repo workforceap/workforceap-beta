@@ -7,6 +7,7 @@ import { withTenantScope, counselorInOrg, assertSameTenant } from '@/lib/tenant/
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import { hasUnresolvedBillingSend, lockBillingMemberLifecycle, scopedBillingUser } from '@/lib/billing/erasureGuard';
 import { auditLog } from '@/lib/audit';async function _GET() {
   try {
@@ -118,7 +119,9 @@ const createBody = z.object({
   }
 
   await prisma.$transaction(async (tx) => {
-    await lockBillingMemberLifecycle(tx, userId);
+    // Preview flattens transactions; billing sign/claim/deletion are disabled
+    // there. Production takes the lifecycle lock before this role write.
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
     const scoped = await scopedBillingUser(tx, userId, orgId);
     const active = scoped && await scoped.user.findFirst({
       where: { id: userId, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null },

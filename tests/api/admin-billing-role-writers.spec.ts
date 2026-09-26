@@ -109,4 +109,21 @@ describe('existing-user role writes respect billing deletion ownership', () => {
     expect(mocks.lock.mock.invocationCallOrder[0]).toBeLessThan(mocks.employerCreate.mock.invocationCallOrder[0]);
     expect(mocks.userRoleUpsert).toHaveBeenCalledOnce();
   });
+
+  it('keeps ordinary role writes available on migrated Preview without advisory locks', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    try {
+      const counselorResponse = await createCounselor(post('/api/admin/counselors', { userId }) as never);
+      const employerResponse = await createEmployer(post('/api/admin/employers', {
+        userId, companyName: 'Acme', contactName: 'Pat', contactEmail: 'pat@example.test',
+      }) as never);
+      expect(counselorResponse.status).toBe(200);
+      expect(employerResponse.status).toBe(201);
+      expect(mocks.lock).not.toHaveBeenCalled();
+      expect(mocks.userFindFirst).toHaveBeenCalledTimes(2);
+      expect(mocks.unresolved).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });

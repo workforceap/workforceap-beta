@@ -8,6 +8,7 @@ import { resolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import { z } from 'zod';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import { hasUnresolvedBillingSend, lockBillingMemberLifecycle, scopedBillingUser } from '@/lib/billing/erasureGuard';
 import { auditLog } from '@/lib/audit';
 
@@ -106,7 +107,9 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
     }
 
     const employer = await prisma.$transaction(async (tx) => {
-      await lockBillingMemberLifecycle(tx, parsed.data.userId);
+      // Billing lifecycle writes fail closed in flattened Preview. Keep this
+      // ordinary role grant available there while honoring persisted pauses.
+      if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, parsed.data.userId);
       const scoped = await scopedBillingUser(tx, parsed.data.userId, orgId);
       const active = scoped && await scoped.user.findFirst({
         where: {

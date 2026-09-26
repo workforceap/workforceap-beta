@@ -11,7 +11,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
-import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { deleteAuthUserForErasure, disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
 import {
@@ -82,6 +82,9 @@ export const POST = withApiGuc(async (
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) return NextResponse.json({ error: 'Administrator accounts cannot be erased from member management.' }, { status: 403 });
 
     const billingDeletion = await beginBillingDeletion(id, orgId);
+    if (!billingDeletion.ok && billingDeletion.reason === 'transaction_unavailable') return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
     if (!billingDeletion.ok) return NextResponse.json({
       error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during erasure. Reload and try again.',
       code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',

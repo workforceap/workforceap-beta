@@ -11,7 +11,7 @@ import { ADMIN_USER_ROLES, ensureProfileRole, syncManagedUserRoles } from '@/lib
 import { userAuthDeleteFailedResponse } from '@/lib/admin/userDeleteResponse';
 import { buildDeletedEmail, isDeletedEmailMarker, parseDeletedEmail } from '../_deletedEmail';
 import { disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
-import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, beginBillingIdentityEdit, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, beginBillingIdentityEdit, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -55,6 +55,9 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
       }
 
       const billingDeletion = await beginBillingDeletion(id, orgId);
+      if (!billingDeletion.ok && billingDeletion.reason === 'transaction_unavailable') return NextResponse.json({
+        error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+      }, { status: 503 });
       if (!billingDeletion.ok) return NextResponse.json({
     error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
     code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',

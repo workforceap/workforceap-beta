@@ -476,8 +476,27 @@ describe('billing deletion barrier ordering', () => {
   it('fails closed when Preview flattens transactions and advisory locks cannot persist', async () => {
     vi.stubEnv('VERCEL_ENV', 'preview');
     try {
-      await expect(beginBillingDeletion(MEMBER, ORG)).rejects.toThrow('interactive transactions');
+      expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'transaction_unavailable' });
+      expect(await beginBillingRestore(MEMBER, ORG, {
+        email: 'member@example.test', deletedAt: new Date(), pendingAt: null, completedAt: null,
+      })).toEqual({ ok: false });
       expect(db.users[0].billingDeletionPendingAt).toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('allows an ordinary identity edit on migrated Preview while deletion stays disabled', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    try {
+      const edit = await beginBillingIdentityEdit(MEMBER, ORG, 'member@example.test');
+      expect(edit.ok).toBe(true);
+      if (!edit.ok) return;
+      expect(db.users[0].billingDeletionOperationId).toBe(edit.operationId);
+      await endBillingIdentityEdit(MEMBER, edit.operationId);
+      expect(db.users[0].billingDeletionPendingAt).toBeNull();
+      expect(db.users[0].billingDeletionOperationId).toBeNull();
+      expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'transaction_unavailable' });
     } finally {
       vi.unstubAllEnvs();
     }

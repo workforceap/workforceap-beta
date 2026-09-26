@@ -50,4 +50,28 @@ describe('billing assignment lifecycle guard', () => {
       .rejects.toThrow('transaction unavailable');
     expect(hasUnresolvedBillingSend).not.toHaveBeenCalled();
   });
+
+  it('keeps ordinary assignment available on migrated Preview without an advisory lock', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    try {
+      await assertBillingAssignmentMutable({} as never, 'member-1');
+      expect(lockBillingLifecycle).not.toHaveBeenCalled();
+      expect(billingLifecyclePending).toHaveBeenCalledOnce();
+      expect(hasUnresolvedBillingSend).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('still rejects a persisted deletion marker on migrated Preview', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    billingLifecyclePending.mockResolvedValue(true);
+    try {
+      await expect(assertBillingAssignmentMutable({} as never, 'member-1'))
+        .rejects.toBeInstanceOf(BillingAssignmentInProgressError);
+      expect(lockBillingLifecycle).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });

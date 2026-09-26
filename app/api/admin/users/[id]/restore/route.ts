@@ -11,7 +11,8 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { isDeletedEmailMarker, parseDeletedEmail } from '../../_deletedEmail';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { reenableAuthUserAfterRestore } from '@/lib/admin/authUserLifecycle';
-import { beginBillingRestore } from '@/lib/billing/erasureGuard';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, beginBillingRestore } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const POST = withApiGuc(async (
@@ -22,6 +23,9 @@ export const POST = withApiGuc(async (
     const actor = await getUser();
     if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     if (!(await isAdmin(actor.id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!interactiveTransactionsGuaranteed()) return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
   
     const { id } = await params;
     const orgId = await getActorOrganizationId(actor.id);

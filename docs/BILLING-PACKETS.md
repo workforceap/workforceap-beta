@@ -251,9 +251,16 @@ that automatically emails to counselor and the student."
   owner. Failed Auth confirmation leaves the tombstone for a later retry or
   reconciliation. Unfinished cleanup and unresolved student/counselor copies
   block the purge before any private child data is deleted.
-- The member lifecycle lock needs a real interactive transaction. Billing
-  writes fail closed where Prisma transactions are flattened (current Preview
-  configuration); production must keep interactive transactions enabled.
+- The member lifecycle lock needs a real interactive transaction. Signing,
+  send claims, account deletion and restore fail closed where Prisma
+  transactions are flattened (current Preview configuration); production must
+  keep interactive transactions enabled. Ordinary invitation acceptance,
+  counselor assignment and admin identity edits remain available on the
+  isolated Preview database after its schema is migrated; they still check
+  persisted deletion markers and unresolved sends. Authenticated Preview
+  acceptance is blocked until the DEMO database is brought to the required
+  migration level with its own backup, rehearsal and rollback plan. Do not
+  apply the full migration backlog there solely to test this billing change.
   The 30-day account purge can detach the packet FK without holding unrelated
   private child records. The isolated PostgreSQL proof is
   `tests/migrations/training-billing-packet-grants.mjs`.

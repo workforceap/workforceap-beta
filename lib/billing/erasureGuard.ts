@@ -48,7 +48,7 @@ export async function billingLifecyclePending(tx: Prisma.TransactionClient, user
 
 export type BeginBillingDeletionResult =
   | { ok: true; pendingAt: Date; operationId: string }
-  | { ok: false; reason: 'missing' | 'unresolved_send' | 'in_progress' | 'raced' };
+  | { ok: false; reason: 'missing' | 'unresolved_send' | 'in_progress' | 'raced' | 'transaction_unavailable' };
 
 /**
  * Commit the deletion barrier before touching external Storage. A claim that
@@ -59,6 +59,7 @@ export type BeginBillingDeletionResult =
  * reconciliation before its token can be cleared.
  */
 export async function beginBillingDeletion(memberId: string, organizationId?: string, deletedBefore?: Date): Promise<BeginBillingDeletionResult> {
+  if (!interactiveTransactionsGuaranteed()) return { ok: false, reason: 'transaction_unavailable' };
   return prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, memberId);
     const scoped = await scopedBillingUser(tx, memberId, organizationId);
@@ -108,7 +109,10 @@ export async function completeBillingDeletion(memberId: string, operationId: str
 /** Temporarily close claims before an Auth email or staff-role edit crosses the DB boundary. */
 export async function beginBillingIdentityEdit(userId: string, organizationId: string, expectedEmail: string): Promise<BeginBillingDeletionResult> {
   return prisma.$transaction(async (tx) => {
-    await lockBillingMemberLifecycle(tx, userId);
+    // Preview uses an isolated demo database with flattened transactions;
+    // billing sign/claim/deletion are disabled there. Its CAS marker still
+    // protects the Auth-to-app edit boundary for ordinary profile management.
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
     const scoped = await scopedBillingUser(tx, userId, organizationId);
     if (!scoped) return { ok: false as const, reason: 'missing' as const };
     const where = { id: userId, organizationId, email: expectedEmail, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null };
@@ -128,7 +132,7 @@ export async function beginBillingIdentityEdit(userId: string, organizationId: s
 /** Only the matching edit owner may reopen billing claims. */
 export async function endBillingIdentityEdit(userId: string, operationId: string): Promise<void> {
   const released = await prisma.$transaction(async (tx) => {
-    await lockBillingMemberLifecycle(tx, userId);
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
     const scoped = await scopedBillingUser(tx, userId);
     if (!scoped) return { count: 0 };
     return scoped.user.updateMany({
@@ -146,6 +150,7 @@ export async function beginBillingRestore(userId: string, organizationId: string
   pendingAt: Date | null;
   completedAt: Date | null;
 }): Promise<{ ok: true; operationId: string } | { ok: false }> {
+  if (!interactiveTransactionsGuaranteed()) return { ok: false };
   if (expected.pendingAt && !expected.completedAt) return { ok: false };
   return prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, userId);
@@ -169,3 +174,5 @@ export async function beginBillingRestore(userId: string, organizationId: string
 
 export const BILLING_SEND_IN_PROGRESS_ERROR =
   'A billing packet delivery is unresolved for this member. Reconcile that send before deleting the account.';
+export const BILLING_LIFECYCLE_UNAVAILABLE_ERROR =
+  'Account deletion requires an interactive database transaction. Try again in the production environment.';

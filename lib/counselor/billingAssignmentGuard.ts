@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { billingLifecyclePending, hasUnresolvedBillingSend, lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 export class BillingAssignmentInProgressError extends Error {
   readonly code = 'billing_send_in_progress';
@@ -12,7 +13,9 @@ export class BillingAssignmentInProgressError extends Error {
 
 /** Must precede any User or CounselorAssignment row lock in this transaction. */
 export async function assertBillingAssignmentMutable(tx: Prisma.TransactionClient, memberId: string): Promise<void> {
-  await lockBillingMemberLifecycle(tx, memberId);
+  // Preview flattens transactions and disables sign/claim/deletion. Preserve
+  // ordinary assignment there while checking any persisted pause/send state.
+  if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, memberId);
   if (await billingLifecyclePending(tx, memberId) || await hasUnresolvedBillingSend(tx, memberId)) {
     throw new BillingAssignmentInProgressError();
   }

@@ -30,6 +30,7 @@ import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentA
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { lockBillingMemberLifecycle, scopedBillingUser } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 type InviteTx = Prisma.TransactionClient;
 type AuthCreateResult = Awaited<ReturnType<ReturnType<typeof getSupabaseAdmin>['auth']['admin']['createUser']>>;
@@ -479,7 +480,10 @@ async function acceptExistingUser(
   try {
     await prisma.$transaction(async (tx) => {
       txStep = 'lock_existing_user_lifecycle';
-      await lockBillingMemberLifecycle(tx, user.id);
+      // Billing sign, claim and deletion all fail closed in flattened Preview.
+      // Keep ordinary invitation acceptance usable there, while production
+      // serializes this role write with those billing lifecycle operations.
+      if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, user.id);
       const scoped = await scopedBillingUser(tx, user.id, user.organizationId);
       const active = scoped && await scoped.user.findFirst({
         where: {
@@ -754,9 +758,17 @@ async function finishNewUserDbSetup(
       inviteAcceptLog('tx:start', { invitationId });
 
       // The Auth-only path can find an app row that appeared after the first
-      // email lookup. Serialize any reuse of that row with account erasure.
+      // email lookup. Check it before claiming the invitation (especially in
+      // flattened Preview, where a failed callback cannot roll back the claim).
       txStep = 'lock_invitee_lifecycle';
-      await lockBillingMemberLifecycle(tx, authUserId);
+      if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, authUserId);
+      const appUser = await tx.user.findFirst({
+        where: { id: authUserId },
+        select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+      });
+      if (appUser?.deletedAt || appUser?.billingDeletionPendingAt || appUser?.billingDeletionOperationId) {
+        throw new ExistingInviteAccountUnavailableError('Invitation account is being retired');
+      }
 
       txStep = 'claim_invitation';
       await claimPendingInvitationForAccept(tx, invitation.id, authUserId);

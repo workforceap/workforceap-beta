@@ -194,4 +194,35 @@ describe('public invitation acceptance identity boundary', () => {
     }));
     expect(authAdmin.updateUserById).not.toHaveBeenCalled();
   });
+
+  it('keeps a matching existing account invitation usable on migrated Preview', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, organizationId: 'org-1',
+    } as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+    try {
+      const response = await POST(inviteRequest());
+      expect(response.status).toBe(200);
+      expect(lockBillingMemberLifecycle).not.toHaveBeenCalled();
+      expect(prisma.invitation.updateMany).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('keeps brand-new Auth signup usable on Preview without touching billing locks', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    authAdmin.createUser.mockResolvedValue({
+      data: { user: { id: otherAuthId, email, app_metadata: {} } }, error: null,
+    });
+    try {
+      const response = await POST(inviteRequest());
+      expect(response.status).toBe(200);
+      expect(lockBillingMemberLifecycle).not.toHaveBeenCalled();
+      expect(prisma.user.create).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });
