@@ -1873,6 +1873,27 @@ describe('Fallback acceptance write: best-effort settle and guaranteed repair', 
     expect(mocks.send).toHaveBeenCalledTimes(1);
   });
 
+  it('blocks a replacement before any read repairs a contradicted prior acceptance', async () => {
+    const { id, row } = await ambiguousOneRecipient();
+    Object.assign(row, { claimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS), lastClaimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS) });
+    expect((await send(id, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No entry in the Resend log' })).status).toBe(200);
+    const replacement = await createPacket(req(body({ supersedesPacketId: id, supersedeReason: 'Correction' } as Partial<Body>)), params(MEMBER));
+    expect(replacement.status).toBe(201);
+    const replacementId = (await replacement.json()).packet.id as string;
+
+    failLockedTransactions(2);
+    const spy = quiet();
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    spy.mockRestore();
+    expect(row).toMatchObject({ status: 'reconciled_not_delivered', providerMessageId: 'm-late' });
+    expect(row.providerResultAt).toBeInstanceOf(Date);
+
+    const blocked = await send(replacementId);
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
   it('terminal checks: an accepted row counts as delivered; "not delivered"/rejected + acceptance is not terminal', async () => {
     const { isTerminalRow } = await import('@/lib/billing/sendAttempts');
     const at = new Date();

@@ -17,9 +17,9 @@ import {
   deliveredRecipients,
   finalizeAttemptIfComplete,
   isDeliveredRow,
+  isTerminalRow,
   reconcileProviderResults,
   nextSendAction,
-  UNSETTLED,
   parseSendAttempt,
   reconcileRecipient,
   recordAmbiguousOutcome,
@@ -159,9 +159,9 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
     // A replacement waits until every copy of the packet it replaced is settled.
     if (packet.supersedesPacketId) {
       const prior = await prisma.trainingBillingPacketSend.findMany({ where: { packetId: packet.supersedesPacketId } });
-      if (prior.some((r) => UNSETTLED.has(r.status))) {
+      if (prior.some((r) => !isTerminalRow(r))) {
         return conflict(
-          'Settle the replaced packet\'s send first: one of its copies is still unconfirmed. Reconcile it on the replaced packet, then send this one.',
+          'Settle the replaced packet\'s send first: one of its copies has an unresolved or contradictory result. Reconcile it on the replaced packet, then send this one.',
           'prior_packet_unsettled',
         );
       }
@@ -408,6 +408,6 @@ async function reconciliationRecorded(packetId: string, attempt: SendAttemptReco
     recipient,
     packet: summary,
     sendState: summary.sendState,
-    ...(superseded ? { replacementSendable: !fresh.sends.some((s) => UNSETTLED.has(s.status)) } : {}),
+    ...(superseded ? { replacementSendable: fresh.sends.every(isTerminalRow) } : {}),
   });
 }
