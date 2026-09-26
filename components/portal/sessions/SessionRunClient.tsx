@@ -282,8 +282,20 @@ export default function SessionRunClient({
     headlineState.output || aboutState.output || salaryState.output || pitchState.output);
   const allRun = !!(resumeState.output && coverState.output && interviewState.output);
   const usesSavedDraftContext = sharedContextIsSavedDraft && resumeText.trim().length > 50;
+  const rewriterDiffersFromSharedContext = rewriterSourceText !== resumeText && resumeText.trim().length > 50;
+  const rewriterContextNotice = usesSavedDraftContext
+    ? rewriterSourceText.trim()
+      ? 'This entry is for Resume Rewriter. Other tools continue using the saved draft until you upload a new original.'
+      : 'Only a previous draft is available for the other tools. Upload the original resume or enter the member\'s work history to build a new one.'
+    : rewriterDiffersFromSharedContext
+      ? 'Rewriter uses the text above. Other tools continue using the previously loaded resume context.'
+      : null;
   const sharedResumeContextNote = resumeText.trim().length > 50
-    ? usesSavedDraftContext ? 'Uses saved resume draft as context.' : 'Uses resume from step 2.'
+    ? usesSavedDraftContext
+      ? 'Uses saved resume draft as context.'
+      : rewriterDiffersFromSharedContext
+        ? 'Uses previously loaded resume as context.'
+        : 'Uses resume from step 2.'
     : null;
 
   // Tool grid: all runnable tools (excludes voice walkthrough + profile which aren't AI outputs)
@@ -710,11 +722,9 @@ export default function SessionRunClient({
           {uploadResumeWarning ? (
             <p role="status" style={{ margin: '0 0 0.35rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{uploadResumeWarning}</p>
           ) : null}
-          {usesSavedDraftContext ? (
+          {rewriterContextNotice ? (
             <p role="status" style={{ margin: '0 0 0.35rem', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
-              {rewriterSourceText.trim()
-                ? 'This entry is for Resume Rewriter. Other tools continue using the saved draft until you upload a new original.'
-                : 'Only a previous draft is available for the other tools. Upload the original resume or enter the member\'s work history to build a new one.'}
+              {rewriterContextNotice}
             </p>
           ) : null}
           <textarea
@@ -767,6 +777,8 @@ export default function SessionRunClient({
         contextNote={
           usesSavedDraftContext
             ? 'Will use the saved resume draft as context.'
+            : rewriterDiffersFromSharedContext
+            ? 'Will use the previously loaded resume as context.'
             : resumeState.output
             ? `Using resume from step 2 as context.`
             : resumeText.trim().length > 50
@@ -888,6 +900,8 @@ export default function SessionRunClient({
         contextNote={
           usesSavedDraftContext
             ? 'Uses saved resume draft as context.'
+            : rewriterDiffersFromSharedContext
+            ? 'Uses previously loaded resume as context.'
             : resumeState.output && coverState.output
             ? 'Using resume + cover letter from steps 2 & 3 as context.'
             : resumeState.output

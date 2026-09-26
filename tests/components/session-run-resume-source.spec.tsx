@@ -109,4 +109,29 @@ describe('staff session Resume Rewriter source', () => {
     const gapCall = fetchMock.mock.calls.find(([url]) => url === '/api/ai/gap-analyzer');
     expect(JSON.parse((gapCall?.[1] as RequestInit).body as string).resume).toBe(original);
   });
+
+  it('keeps a readable loaded original for other tools when staff edits only Rewriter', async () => {
+    const edited = `${original} Reframed for the support specialist role.`;
+    const fetchMock = vi.fn(async (_url: string, _options?: RequestInit) => new Response(JSON.stringify({ output: 'Done' }), {
+      status: 200, headers: { 'Content-Type': 'application/json' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { container } = render(<SessionRunClient {...props} existingResume={original} originalResume={original} />);
+
+    fireEvent.change(screen.getByLabelText(/Resume \/ experience/i), { target: { value: edited } });
+    expect(screen.getByText(/Other tools continue using the previously loaded resume context/i)).toBeInTheDocument();
+    expect(container.querySelector('#session-card-cover')).toHaveTextContent('Will use the previously loaded resume as context.');
+    expect(container.querySelector('#session-card-interview')).toHaveTextContent('Uses previously loaded resume as context.');
+
+    fireEvent.click(screen.getByRole('button', { name: /^Gap Analysis$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Analyze gaps/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Build resume/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/ai/gap-analyzer', expect.anything()));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/ai/resume-rewriter', expect.anything()));
+    const gapCall = fetchMock.mock.calls.find(([url]) => url === '/api/ai/gap-analyzer');
+    const rewriterCall = fetchMock.mock.calls.find(([url]) => url === '/api/ai/resume-rewriter');
+    expect(JSON.parse((gapCall?.[1] as RequestInit).body as string).resume).toBe(original);
+    expect(JSON.parse((rewriterCall?.[1] as RequestInit).body as string).resume).toBe(edited);
+    expect(container.querySelector('#session-card-cover')).toHaveTextContent('Will use the previously loaded resume as context.');
+  });
 });
