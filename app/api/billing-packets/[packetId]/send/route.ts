@@ -15,6 +15,7 @@ import {
   closePendingRows,
   DELIVERED,
   deliveredRecipients,
+  isDeliveredRow,
   nextSendAction,
   UNSETTLED,
   parseSendAttempt,
@@ -122,7 +123,7 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
         return NextResponse.json({ error: 'Say which copy and whether it was delivered.' }, { status: 400 });
       }
       const note = (body.note ?? '').trim();
-      if (note.length < 3) return NextResponse.json({ error: 'Add a short note about what you checked in the provider.' }, { status: 400 });
+      if (note.length < 3) return NextResponse.json({ error: 'Add a note naming the provider evidence you checked (e.g. the Resend log entry or message id).' }, { status: 400 });
       const result = await reconcileRecipient({
         packetId: packet.id,
         attemptNo: attempt.attemptNo,
@@ -189,12 +190,14 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
       }
       const delivered = deliveredRecipients(await prisma.trainingBillingPacketSend.findMany({ where: { packetId: packet.id } }));
       let planned = snapshotRecipients;
+      let confirmedDuplicates: PacketRecipient[] = [];
       if (attempt && action === 'send_remaining') {
         planned = snapshotRecipients.filter((r) => !delivered.has(r));
         if (planned.length === 0) return conflict('Every recipient already has a delivered copy.', 'nothing_remaining');
       } else if (attempt) {
         const already = snapshotRecipients.filter((r) => delivered.has(r));
         const confirmed = Array.isArray(body.confirmDuplicateTo) ? [...new Set(body.confirmDuplicateTo.map(String))].sort() : [];
+        confirmedDuplicates = already;
         if (already.length > 0 && (confirmed.length !== already.length || [...already].sort().some((r, i) => confirmed[i] !== r))) {
           return conflict(
             `${already.map((r) => (r === 'student' ? 'The student' : 'The counselor')).join(' and ')} already received this packet. Confirm the duplicate copy, or use "Send to remaining recipients".`,
@@ -213,6 +216,7 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
       const started = await startSendAttempt({
         packetId: packet.id,
         expectedCurrent: packet.sendAttemptNo,
+        confirmedDuplicates,
         now,
         recipients: planned.map((r) => ({ recipient: r, email: r === 'student' ? snapshot!.member.email : snapshot!.counselor!.email, cc: null })),
         record: {
@@ -224,6 +228,9 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
       });
       if (!started.ok) {
         if (started.reason === 'superseded') return supersededConflict();
+        if (started.reason === 'duplicate') {
+          return conflict('A recipient of this attempt already has a delivered copy (just recorded). Refresh, then confirm the duplicate or use "Send to remaining recipients".', 'duplicate_confirmation_required');
+        }
         return conflict('The previous send is in progress or needs reconciliation, or another send just started.', 'previous_attempt_open');
       }
       attempt = started.record;
@@ -350,14 +357,17 @@ const isSupersededRow = (p: { status: string; supersededAt: Date | null }) => p.
 async function completeAttempt(packetId: string, attempt: SendAttemptRecord): Promise<'completed' | 'incomplete' | 'lost'> {
   const current = await prisma.trainingBillingPacket.findUnique({ where: { id: packetId } });
   if (!current || isSupersededRow(current)) return 'lost';
-  const rows = await rowsFor(packetId, attempt.attemptNo);
-  const delivered = rows.filter((s) => DELIVERED.has(s.status));
+  const allRows = await prisma.trainingBillingPacketSend.findMany({ where: { packetId } });
+  const delivered = allRows.filter((s) => s.attemptNo === attempt.attemptNo && isDeliveredRow(s));
   if (!attempt.recipients.every((r) => delivered.some((s) => s.recipient === r))) return 'incomplete';
   if (current.status === 'sent' && current.sendCount === attempt.attemptNo) return 'completed';
-  const deliveredTo = delivered.map((s) => s.email);
+  // Everyone who has a copy from ANY attempt (deduplicated, student first),
+  // not just this attempt's recipients.
+  const summary = deliveredRecipients(allRows);
+  const sentTo = RECIPIENT_ORDER.filter((r) => summary.has(r)).map((r) => summary.get(r)!.email);
   const { count } = await prisma.trainingBillingPacket.updateMany({
     where: { id: packetId, sendAttemptNo: attempt.attemptNo, ...SENDABLE_PACKET_WHERE },
-    data: { status: 'sent', sentAt: new Date(), sendCount: attempt.attemptNo, sentTo: Array.from(new Set([...current.sentTo, ...deliveredTo])) },
+    data: { status: 'sent', sentAt: new Date(), sendCount: attempt.attemptNo, sentTo },
   });
   return count === 1 ? 'completed' : 'lost';
 }

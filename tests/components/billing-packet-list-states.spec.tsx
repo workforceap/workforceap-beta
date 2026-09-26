@@ -72,6 +72,20 @@ describe('BillingPacketList admin states', () => {
     expect(status.textContent).not.toMatch(/Sent to/);
   });
 
+  it('after both copies went out in different attempts, the summary names each recipient, not an attempt count', () => {
+    const p = packet({ status: 'sent', sentAt: '2026-09-26T15:40:00.000Z', sendCount: 2 }, {
+      attemptNo: 2, attemptRecipients: ['counselor'], nextAction: 'email_again', remaining: [],
+      delivered: [
+        { recipient: 'student', email: 'student@example.test', at: '2026-09-26T15:02:00.000Z', attemptNo: 1 },
+        { recipient: 'counselor', email: 'casey@example.test', at: '2026-09-26T15:40:00.000Z', attemptNo: 2 },
+      ],
+    });
+    withMessages(<BillingPacketList packets={[p]} canSend />);
+    expect(document.body.textContent).toContain('Emailed to student (Sep 26, 10:02 AM CT) and counselor (Sep 26, 10:40 AM CT)');
+    expect(document.body.textContent).not.toMatch(/2 times/);
+    expect(screen.getByText('Goes to student student@example.test and counselor Casey (casey@example.test).')).toBeInTheDocument();
+  });
+
   it('partial delivery: history stays visible and "Send to remaining recipients" is offered; the full resend asks for confirmation', async () => {
     const p = packet({}, {
       nextAction: 'email_again',
@@ -87,6 +101,9 @@ describe('BillingPacketList admin states', () => {
     expect(screen.getByText(/Attempt 1, student \(student@example.test\): delivered to the provider/)).toBeInTheDocument();
     expect(screen.getByText(/Attempt 1, counselor \(casey@example.test\): rejected \(not sent\)/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send to remaining recipients (counselor)' })).toBeEnabled();
+    expect(screen.getByText('Goes to counselor Casey (casey@example.test) only.')).toBeInTheDocument();
+    expect(document.body.textContent).toContain('Emailed to student (Sep 2, 10:00 AM CT)');
+    expect(document.body.textContent).not.toMatch(/times\)/);
     fireEvent.click(screen.getByRole('button', { name: 'Email again to everyone (duplicate copy)' }));
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining('the student (student@example.test) on September 2, 2026, attempt 1'));
     expect(fetchMock).not.toHaveBeenCalled(); // declined

@@ -106,7 +106,7 @@ export function serializeBillingPacket(
   const currentRows = row.sends ? row.sends.filter((s) => s.attemptNo === row.sendAttemptNo) : null;
   const snapshotRecipients: PacketRecipient[] = snapshot?.counselor ? ['student', 'counselor'] : ['student'];
   const recipients = attemptRecipientsOf(row, snapshotRecipients);
-  const delivered = row.sends ? deliveredRecipients(row.sends) : new Map();
+  const delivered = row.sends ? deliveredRecipients(row.sends) : new Map<PacketRecipient, { at: Date | null; attemptNo: number; email: string }>();
   return {
     id: row.id,
     packetNumber: row.packetNumber,
@@ -144,7 +144,7 @@ export function serializeBillingPacket(
             .filter((r) => delivered.has(r))
             .map((r) => ({
               recipient: r,
-              email: r === 'student' ? snapshot?.member.email ?? null : snapshot?.counselor?.email ?? null,
+              email: delivered.get(r)!.email,
               at: delivered.get(r)?.at ? (delivered.get(r)!.at as Date).toISOString() : null,
               attemptNo: delivered.get(r)!.attemptNo,
             })),

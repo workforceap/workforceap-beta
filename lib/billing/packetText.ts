@@ -25,6 +25,13 @@ export function formatLongDateOfInstant(instant: string | Date): string {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: PORTAL_TIMEZONE });
 }
 
+/** Short date and time of an instant in PORTAL_TIMEZONE, e.g. "Sep 26, 10:02 AM CT". */
+export function formatShortDateTimeOfInstant(instant: string | Date): string {
+  const d = typeof instant === 'string' ? new Date(instant) : instant;
+  const text = d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: PORTAL_TIMEZONE });
+  return `${text} CT`;
+}
+
 export function totalContactHours(items: ReadonlyArray<PacketLineItem>): number {
   return items.reduce((sum, item) => sum + (item.hours ?? 0), 0);
 }

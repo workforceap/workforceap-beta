@@ -25,6 +25,8 @@ const mocks = vi.hoisted(() => ({
   /** Test gates: when set, the route waits here (before starting an attempt / before claiming). */
   brandingGate: { value: null as null | Promise<unknown> },
   buildGate: { value: null as null | Promise<unknown> },
+  /** Test hook: runs once right after the next send-row findUnique (simulates a concurrent write in the gap). */
+  afterSendRead: { value: null as null | (() => void) },
 }));
 
 function p2002() {
@@ -143,7 +145,13 @@ vi.mock('@/lib/db/prisma', () => {
       // Copies, like a real client: callers must not see later writes through a returned object.
       findUnique: vi.fn(async ({ where }: { where: { id?: string; packetId_attemptNo_recipient?: Record<string, unknown> } }) => {
         const row = db.sends.find((s) => (where.id ? s.id === where.id : matches(s, where.packetId_attemptNo_recipient ?? {})));
-        return row ? { ...row } : null;
+        const copy = row ? { ...row } : null;
+        const hook = mocks.afterSendRead.value;
+        if (hook) {
+          mocks.afterSendRead.value = null;
+          hook();
+        }
+        return copy;
       }),
       findMany: vi.fn(async ({ where }: { where: Record<string, unknown> }) => db.sends.filter((s) => matches(s, where)).map((s) => ({ ...s }))),
       create: vi.fn(async ({ data }: { data: Row }) => {
@@ -284,6 +292,7 @@ beforeEach(() => {
   mocks.branding.value = { orgId: ORG, name: 'Brand At Attempt', logoUrl: 'https://x.test/l.png', primaryColor: '#111111', supportEmail: 's@x.test', domain: 'https://x.test', domainLabel: 'x.test' };
   mocks.brandingGate.value = null;
   mocks.buildGate.value = null;
+  mocks.afterSendRead.value = null;
   delete process.env.BILLING_PACKET_PROVIDER_ORG_ID;
   delete process.env.EMAIL_FROM;
 });
@@ -1102,6 +1111,62 @@ describe('Provider acceptance is never lost to a racing transition', () => {
     expect(db.sends[0].providerMessageId).toBe('m-1');
   });
 
+  it('acceptance recorded in the gap after reconcile read the row: "not delivered" is rejected and the row ends sent', async () => {
+    const row = await claimedRow();
+    db.sends[0].status = 'ambiguous';
+    db.sends[0].claimedAt = new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS);
+    db.sends[0].lastClaimedAt = new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS);
+    // Reconcile reads the row (no acceptance yet); the acceptance lands before its CAS.
+    let accepted: Promise<void> | null = null;
+    mocks.afterSendRead.value = () => {
+      accepted = recordProviderAcceptance(row.id, { messageId: 'm-gap', detail: 'late', late: true });
+    };
+    const res = await sendPacket(req({ action: 'reconcile', recipient: 'student', delivered: false, note: 'no log found' }), packetParams(row.packetId as string));
+    await accepted;
+    expect(res.status).toBe(409);
+    expect(db.sends[0]).toMatchObject({ status: 'sent', providerMessageId: 'm-gap' });
+    expect(db.sends[0].reconciledAt ?? null).toBeNull();
+  });
+
+  it('the reconcile "not delivered" CAS itself refuses a row whose acceptance was recorded after the read', async () => {
+    const row = await claimedRow();
+    Object.assign(db.sends[0], { status: 'ambiguous', claimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS), lastClaimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS) });
+    // Only the result columns land in the gap (status and token unchanged): the CAS guard must still refuse.
+    mocks.afterSendRead.value = () => Object.assign(db.sends[0], { providerResultAt: new Date(), providerResult: '{"delivered":true}' });
+    const res = await sendPacket(req({ action: 'reconcile', recipient: 'student', delivered: false, note: 'no log found' }), packetParams(row.packetId as string));
+    expect(res.status).toBe(409);
+    expect(db.sends[0].status).toBe('ambiguous');
+  });
+
+  it('reconcile "not delivered" first, then the acceptance: needs_reconciliation with a warning, never silently terminal', async () => {
+    const row = await claimedRow();
+    Object.assign(db.sends[0], { status: 'ambiguous', claimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS), lastClaimedAt: new Date(Date.now() - 2 * IDEMPOTENCY_SAFE_RETRY_MS) });
+    const res = await sendPacket(req({ action: 'reconcile', recipient: 'student', delivered: false, note: 'no log found' }), packetParams(row.packetId as string));
+    expect(res.status).toBe(200);
+    await recordProviderAcceptance(row.id, { messageId: 'm-after', detail: 'late', late: true });
+    expect(db.sends[0].status).toBe('needs_reconciliation');
+  });
+
+  it('a new attempt starting in the gap (acceptance recorded, status not settled) creates no new key', async () => {
+    const row = await claimedRow();
+    // Gap: terminal-looking status, acceptance already recorded.
+    Object.assign(db.sends[0], { status: 'reconciled_not_delivered', providerResultAt: new Date(), providerResult: '{"delivered":true}', providerMessageId: 'm-gap' });
+    const started = await startSendAttempt({
+      packetId: row.packetId as string,
+      expectedCurrent: 1,
+      now: new Date(),
+      recipients: [{ recipient: 'student', email: 'member@example.test', cc: null }],
+      record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
+    });
+    expect(started).toEqual({ ok: false, reason: 'duplicate' });
+    const viaRoute = await sendPacket(req({ action: 'email_again' }), packetParams(row.packetId as string));
+    expect(viaRoute.status).toBe(409);
+    expect((await viaRoute.json()).code).toBe('duplicate_confirmation_required');
+    expect(db.sends).toHaveLength(1);
+    expect(db.packets[0].sendAttemptNo).toBe(1);
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
   it('an acceptance after "not delivered" was recorded goes back to needs_reconciliation; "not delivered" is refused once accepted', async () => {
     const row = await claimedRow();
     db.sends[0].status = 'reconciled_not_delivered';
@@ -1201,6 +1266,8 @@ describe('Partial delivery and targeted attempts', () => {
     const p = db.packets[0];
     expect(p).toMatchObject({ status: 'sent', sendAttemptNo: 2 });
     expect((p.sendAttempt as { recipients: string[] }).recipients).toEqual(['counselor']);
+    // The packet summary covers every attempt: the student got attempt 1.
+    expect(p.sentTo).toEqual(['member@example.test', COUNSELOR.email]);
     // Attempt 2 has only the counselor row and is terminal: a new (confirmed) attempt may start.
     expect((await send(id, { action: 'send_remaining' })).status).toBe(409);
     expect((await send(id, { action: 'email_again', confirmDuplicateTo: ['student', 'counselor'] })).status).toBe(200);

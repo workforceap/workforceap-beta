@@ -159,27 +159,35 @@ export function nextSendAction(args: {
 }
 
 /** True when the attempt has exactly the expected recipient rows and every one is terminal. */
-export function attemptIsTerminal(rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status'>>, expected: PacketRecipient[]): boolean {
+export function attemptIsTerminal(
+  rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status'> & { providerResultAt?: Date | null }>,
+  expected: PacketRecipient[],
+): boolean {
   const recipients = rows.map((r) => r.recipient).sort();
   return (
     recipients.length === expected.length
     && [...expected].sort().every((r, i) => recipients[i] === r)
-    && rows.every((r) => TERMINAL.has(r.status))
+    // A recorded provider acceptance counts as delivered whatever the status.
+    && rows.every((r) => TERMINAL.has(r.status) || r.providerResultAt != null)
   );
 }
 
+/** A copy counts as delivered when sent, reconciled delivered, or accepted by the provider (whatever its status). */
+export function isDeliveredRow(r: Pick<TrainingBillingPacketSend, 'status'> & { providerResultAt?: Date | null }): boolean {
+  return DELIVERED.has(r.status) || r.providerResultAt != null;
+}
+
 /**
- * Recipients that already have a delivered copy (sent or reconciled delivered)
- * in ANY attempt of the packet, with the first time it was delivered.
+ * Recipients with a delivered copy in ANY attempt of the packet, deduplicated,
+ * with the email and the LATEST delivery time and attempt.
  */
 export function deliveredRecipients(
-  rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status' | 'sentAt' | 'attemptNo'>>,
-): Map<PacketRecipient, { at: Date | null; attemptNo: number }> {
-  const out = new Map<PacketRecipient, { at: Date | null; attemptNo: number }>();
+  rows: ReadonlyArray<Pick<TrainingBillingPacketSend, 'recipient' | 'status' | 'sentAt' | 'attemptNo' | 'email'> & { providerResultAt?: Date | null }>,
+): Map<PacketRecipient, { at: Date | null; attemptNo: number; email: string }> {
+  const out = new Map<PacketRecipient, { at: Date | null; attemptNo: number; email: string }>();
   for (const r of [...rows].sort((a, b) => a.attemptNo - b.attemptNo)) {
-    if (!DELIVERED.has(r.status)) continue;
-    const key = r.recipient as PacketRecipient;
-    if (!out.has(key)) out.set(key, { at: r.sentAt ?? null, attemptNo: r.attemptNo });
+    if (!isDeliveredRow(r)) continue;
+    out.set(r.recipient as PacketRecipient, { at: r.sentAt ?? r.providerResultAt ?? null, attemptNo: r.attemptNo, email: r.email });
   }
   return out;
 }
@@ -200,7 +208,9 @@ export async function startSendAttempt(args: {
   recipients: PlannedRecipient[];
   record: Omit<SendAttemptRecord, 'attemptNo' | 'recipients'>;
   now: Date;
-}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' | 'superseded' }> {
+  /** Recipients the operator confirmed may get a duplicate copy ("Email again"). */
+  confirmedDuplicates?: PacketRecipient[];
+}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' | 'superseded' | 'duplicate' }> {
   const attemptNo = (args.expectedCurrent ?? 0) + 1;
   const order: PacketRecipient[] = ['student', 'counselor'];
   const record: SendAttemptRecord = {
@@ -224,6 +234,12 @@ export async function startSendAttempt(args: {
       if (!attemptIsTerminal(rows, expected)) return { ok: false as const, reason: 'not_terminal' as const };
     }
     if (record.recipients.length === 0) return { ok: false as const, reason: 'not_terminal' as const };
+    // Re-read every row under the lock: a recipient whose copy was delivered
+    // (including a provider acceptance recorded a moment ago) never gets a new
+    // key unless the operator confirmed the duplicate.
+    const delivered = deliveredRecipients(await tx.trainingBillingPacketSend.findMany({ where: { packetId: args.packetId } }));
+    const confirmed = new Set(args.confirmedDuplicates ?? []);
+    if (record.recipients.some((r) => delivered.has(r) && !confirmed.has(r))) return { ok: false as const, reason: 'duplicate' as const };
     const { count } = await tx.trainingBillingPacket.updateMany({
       where: { id: args.packetId, sendAttemptNo: args.expectedCurrent, ...SENDABLE_PACKET_WHERE },
       data: { sendAttemptNo: attemptNo, sendAttempt: record as unknown as Prisma.InputJsonValue },
@@ -373,7 +389,10 @@ export async function reconcileRecipient(args: {
   if (row.status === 'claimed' && args.now.getTime() - row.lastClaimedAt.getTime() < RECONCILE_CLAIMED_MIN_AGE_MS) return 'in_progress';
   if (!args.delivered && args.now.getTime() - row.claimedAt.getTime() <= IDEMPOTENCY_SAFE_RETRY_MS) return 'retry_first';
   const { count } = await prisma.trainingBillingPacketSend.updateMany({
-    where: { id: row.id, status: row.status, claimToken: row.claimToken },
+    // "Not delivered" also requires that no provider acceptance was recorded
+    // meanwhile (recordProviderAcceptance writes it atomically); "delivered"
+    // may proceed regardless.
+    where: { id: row.id, status: row.status, claimToken: row.claimToken, ...(args.delivered ? {} : { providerResultAt: null }) },
     data: {
       status: args.delivered ? 'reconciled_delivered' : 'reconciled_not_delivered',
       claimToken: randomUUID(),
@@ -401,16 +420,25 @@ export async function recordProviderAcceptance(
   now: Date = new Date(),
 ): Promise<void> {
   const providerResult = JSON.stringify({ at: now.toISOString(), delivered: true, messageId: result.messageId, detail: result.detail.slice(0, 500) });
-  await prisma.trainingBillingPacketSend.updateMany({
-    where: { id: sendId, providerResultAt: null },
-    data: {
-      providerResult,
-      providerResultAt: now,
-      providerMessageId: result.messageId,
-      // A result after the request stopped waiting is also surfaced as a warning.
-      ...(result.late ? { lateProviderResult: providerResult } : {}),
-    },
+  const recorded = {
+    providerResult,
+    providerResultAt: now,
+    providerMessageId: result.messageId,
+    // A result after the request stopped waiting is also surfaced as a warning.
+    ...(result.late ? { lateProviderResult: providerResult } : {}),
+  };
+  // One atomic UPDATE records the acceptance AND settles the status when the
+  // row is still unsettled, so no reconciliation or new attempt can slip into
+  // a gap between the two.
+  const { count } = await prisma.trainingBillingPacketSend.updateMany({
+    where: { id: sendId, providerResultAt: null, status: { in: ['claimed', 'ambiguous', 'needs_reconciliation'] } },
+    data: { ...recorded, status: 'sent', sentAt: now, claimToken: randomUUID(), lastError: null },
   });
+  if (count === 1) return;
+  // Any other status (already delivered, or a recorded "not delivered" /
+  // rejection the provider now contradicts): record the result once, then
+  // apply the contradiction rules.
+  await prisma.trainingBillingPacketSend.updateMany({ where: { id: sendId, providerResultAt: null }, data: recorded });
   await applyRecordedProviderResult(sendId, now);
 }
 

@@ -78,34 +78,92 @@ that automatically emails to counselor and the student."
   the live counselor assignment or email, differs from the snapshot; reconcile
   still works, and delivery then needs a re-issued packet (see Supersede). The
   student copy goes first; if it is not sent, the counselor copy is not sent.
-  Sends run in attempts (`lib/billing/sendAttempts.ts`). Starting an attempt
-  creates a `pending` row per recipient in one transaction; a new attempt
-  ("Email again") can only start when every row of the current one is terminal
-  (`sent`, `rejected_definite`, or operator-reconciled). Each row is claimed by
-  compare-and-set on a claim token; delivery uses the key
-  `billing-packet:<id>:<attempt>:<recipient>`, a payload built only from frozen
-  inputs (snapshot + the attempt's from address and branding), and a 30 s
-  provider timeout. Outcomes: accepted -> `sent`; a definite provider rejection
-  -> `rejected_definite`; timeout/network/5xx/429 -> `ambiguous` (Retry with the
-  same key, which Resend deduplicates within 24 h); Resend 409 (key reused with
-  a changed payload) or an unconfirmed copy older than 23 h ->
-  `needs_reconciliation`. Operator reconciliation records delivered / not
-  delivered with actor, time and a note; a still-claimed row can only be
-  reconciled 15 minutes after its last claim, and "not delivered" only after
-  the 24 h window. Late provider results are recorded on the row (and flip a
-  "not delivered" row back to `needs_reconciliation`). This is not lifetime
-  exactly-once. Live, not frozen: the email template code and the
-  List-Unsubscribe header the mail wrapper adds.
+  Sends run in attempts (`lib/billing/sendAttempts.ts`). Each attempt stores
+  its expected recipient set when it is created, and a `pending` row per
+  recipient is created in the same transaction. Every packet-level write in the
+  send path (attempt start, completion) is a compare-and-set on the attempt
+  number AND the packet still being sendable (`signed`/`sent`, not superseded).
+  Each row claim runs under the per-packet advisory lock that supersede also
+  takes. It re-reads the packet, refuses a superseded one, and compare-and-sets
+  `pending` -> `claimed` with a new claim token. The lock is released before
+  the provider call, and nothing else runs between the claim and that call. A
+  missing row fails closed (reconciliation); it is never created lazily.
+  Delivery uses the key `billing-packet:<id>:<attempt>:<recipient>`, a payload
+  built only from frozen inputs (snapshot + the attempt's from address and
+  branding), and a 30 s provider timeout.
+  - **States**:
+    - `pending`: created with the attempt, not claimed.
+    - `claimed`: in flight.
+    - `sent`: accepted by the provider.
+    - `rejected_definite`: the provider or a local check definitely did not
+      accept it.
+    - `ambiguous`: timeout, network, 5xx or 429. Retry with the same key, which
+      Resend deduplicates within 24 h.
+    - `needs_reconciliation`: a Resend 409 (key reused with a changed payload),
+      an unconfirmed copy older than 23 h, a missing row, or a provider
+      acceptance that contradicts a recorded outcome.
+    - `reconciled_delivered` / `reconciled_not_delivered`: operator outcomes,
+      recorded with actor, time and note.
+  - **Provider results**: an acceptance (message id) is written once to
+    `provider_result*`, independent of the status compare-and-set, and the
+    status then follows it with a bounded retry. A copy that is claimed,
+    ambiguous or needs_reconciliation becomes `sent`. A copy recorded as not
+    delivered or rejected goes to `needs_reconciliation` with a warning. The
+    timeout path never overwrites a recorded acceptance. Late errors are kept
+    for audit only.
+  - **Margins**: a claim younger than 2 min is "in progress" (same-key takeover
+    after that). A claimed copy can be reconciled, and a packet superseded,
+    only 15 min after its last claim.
+  - **New attempts**, once every row of the current attempt is terminal:
+    - "Send to remaining recipients" (`send_remaining`) starts attempt N+1 for
+      only the recipients with no delivered copy in any attempt.
+    - "Email again" (`email_again`) starts attempt N+1 for everyone. If someone
+      already has a delivered copy, the request must carry
+      `confirmDuplicateTo` listing exactly those recipients, or it gets 409
+      `duplicate_confirmation_required`. The UI confirm dialog names who
+      received it and when.
+  - **History**: the admin list shows every attempt's per-recipient outcome,
+    with time and, for reconciliations, who and the note. Partial delivery
+    stays visible after a reload.
+  - **Reconcile** always answers 200 once the row is committed
+    (`kind: 'reconciliation_recorded'`, fresh packet and send state), whether
+    or not the attempt is complete.
+  - This is not lifetime exactly-once. Live, not frozen: the email template
+    code and the List-Unsubscribe header the mail wrapper adds.
+- **Decided rule: unconfirmed copies of a superseded packet** (Mike, 9/26/26).
+  Keep the conservative rule. Nothing is ever auto-marked undelivered, and the
+  replacement is never sent while a prior copy may have landed. An operator may
+  mark a copy delivered with provider evidence; the note is required and should
+  name what was checked, for example the Resend log entry or message id.
+  "Not delivered" can be recorded only after the 24 h idempotency window, with
+  its review note. The replacement stays blocked (`prior_packet_unsettled`)
+  until every copy of the old packet is terminal, which can mean waiting up to
+  24 h.
+- **Legacy or corrupt snapshot**: the packet serializes `sendBlockedReason`
+  (`legacy_packet` | `snapshot_corrupt`). The UI disables every send action,
+  shows "Re-issue required" and no live fallback addresses, and keeps
+  Supersede, which signs the replacement with a fresh snapshot.
 - **Supersede and re-issue**: an admin can re-issue a signed packet with a
   reason. In one transaction under the sign and send locks, the old packet
   becomes `superseded` (who, when, why, replacement id; pending copies closed
   as not sent) and the replacement is signed through every normal guard and
-  links back. Refused while a copy of the old packet is in flight. A superseded
-  packet never sends again (reconcile still works), and its replacement cannot
-  be delivered until the old packet's unconfirmed copies are settled. Members
-  see the current packet first and a superseded one only if it reached, or may
-  have reached, them, labelled "Superseded - replaced by". Superseded PDFs are
-  unchanged (no watermark).
+  links back. Refused (`in_progress`) while a copy of the old packet was
+  claimed less than 15 minutes ago; the check and the closing of pending rows
+  happen under the same lock the claims take. A superseded packet never sends
+  again (reconcile still works and never changes its status), and its
+  replacement cannot be delivered until the old packet's unconfirmed copies are
+  settled. Superseded PDFs are unchanged (no watermark; open question). The
+  correction form starts from current program defaults, not the old signed
+  values (follow-up: prefill from the superseded packet's snapshot, deferred
+  until the stakeholder's exact edits are known).
+- **Who sees a packet before it is sent**: admins always do; they review the
+  PDFs before sending. The member (and the counselor on the student page, and
+  both via the PDF route) sees a packet, current or superseded, only once their
+  copy is `claimed`, `sent`, `reconciled_delivered`, `ambiguous` or
+  `needs_reconciliation`, meaning a send did or may have reached them. For a
+  packet signed with no counselor, the counselor view follows the student copy.
+  Current packets are listed first, then superseded ones labelled
+  "Superseded - replaced by".
 - **Downloads**: every surface offers "Download both (PDF)" — the J6 cover
   letter and J5 invoice merged into one file, in that order, so the whole packet
   prints or saves as a set — plus separate "Download J5" / "Download J6" buttons
@@ -142,10 +200,15 @@ not the UTC day; invoice and due dates are stored as plain dates.
   `lib/tenant/scopeProxy.ts` as tenant-scoped.
 - Migration `20260926140000_training_billing_packet_signed_snapshot`:
   `signed_snapshot`, `send_attempt_no`, `send_attempt`, `funding_attestation_key`
-  columns and the `training_billing_packet_sends` table.
+  and supersede columns, and the `training_billing_packet_sends` table. RLS is
+  enabled on both tables, and a guarded `REVOKE ALL` removes every privilege
+  from `anon` / `authenticated` on both tables. This is a **pre-launch security
+  fix** for the parent table: production had full grants including TRUNCATE,
+  which RLS does not govern. Proof: `tests/migrations/training-billing-packet-grants.mjs`
+  (database contract lane).
 - `lib/billing/`: `providerIdentity.ts` (letterhead + env overrides),
   `providerOrg.ts`, `billableEnrollments.ts`, `packetSnapshot.ts`,
-  `sendAttempts.ts`,
+  `sendAttempts.ts`, `sendResultCopy.ts` (client-safe send result and banner copy),
   `packetSchema.ts` (zod), `packetText.ts` (client-safe helpers, default letter),
   `packetDefaults.ts` (pricing + default rows), `packetNumber.ts`,
   `packetPdf.ts` (J5/J6 renderers), `packetAccess.ts` (authorization +

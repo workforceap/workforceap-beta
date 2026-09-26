@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import type { BillingPacketSummary } from '@/lib/billing/packetAccess';
-import { formatLongDate, formatLongDateOfInstant, formatMoney } from '@/lib/billing/packetText';
+import { formatLongDate, formatLongDateOfInstant, formatMoney, formatShortDateTimeOfInstant } from '@/lib/billing/packetText';
 import { describeSendResult, duplicateCopyConfirmText, type SendResponseBody } from '@/lib/billing/sendResultCopy';
 
 type BillingPacketListProps = {
@@ -75,6 +75,33 @@ export function secondaryAction(p: BillingPacketSummary): ActionButton | null {
   return emailAgainAction(p, 'Email again to everyone (duplicate copy)');
 }
 
+/**
+ * Who the primary action would email: "Send to remaining" goes to the
+ * remaining recipients; continuing or retrying the current attempt goes to its
+ * stored recipients that have no delivered copy in it yet; a first send or a
+ * full "Email again" goes to every snapshot recipient.
+ */
+export function plannedRecipients(p: BillingPacketSummary): string[] {
+  const all = p.recipients?.counselor ? ['student', 'counselor'] : ['student'];
+  const s = p.sendState;
+  const action = primaryAction(p).body.action;
+  if (action === 'send_remaining') return s?.remaining ?? all;
+  if (s && s.attemptNo != null && s.nextAction !== 'email_again') {
+    const done = new Set(s.rows.filter((r) => r.status === 'sent' || r.status === 'reconciled_delivered').map((r) => r.recipient));
+    return s.attemptRecipients.filter((r) => !done.has(r));
+  }
+  return all;
+}
+
+/** "Emailed to student (Sep 26, 10:02 AM CT) and counselor (…)" from the cross-attempt delivered summary. */
+export function emailedSummary(p: BillingPacketSummary): string | null {
+  const delivered = p.sendState?.delivered ?? [];
+  if (delivered.length > 0) {
+    return `Emailed to ${delivered.map((d) => `${d.recipient}${d.at ? ` (${formatShortDateTimeOfInstant(d.at)})` : ''}`).join(' and ')}`;
+  }
+  return p.sentAt ? `emailed ${formatLongDateOfInstant(p.sentAt)}` : null;
+}
+
 function pdfHref(id: string, doc: 'j5' | 'j6' | 'both', download = false) {
   return `/api/billing-packets/${id}/pdf?doc=${doc}${download ? '&download=1' : ''}`;
 }
@@ -135,7 +162,7 @@ export default function BillingPacketList({
               {p.referenceNumber ? ` · ref ${p.referenceNumber}` : ''}
               <br />
               Signed by {p.signerName}, {p.signerTitle}
-              {p.sentAt ? ` · emailed ${formatLongDateOfInstant(p.sentAt)}${p.sendCount > 1 ? ` (${p.sendCount} times)` : ''}` : ''}
+              {emailedSummary(p) ? ` · ${emailedSummary(p)}` : ''}
             </div>
             {superseded ? (
               <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>
@@ -196,12 +223,9 @@ export default function BillingPacketList({
                 </button>
               ) : null}
             </div>
-            {live && p.recipients && !p.sendBlockedReason ? (
+            {live && p.recipients && !p.sendBlockedReason && plannedRecipients(p).length > 0 && !primaryAction(p).disabled ? (
               <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-muted, #64748b)' }}>
-                Goes to {p.recipients.student}
-                {p.recipients.counselor
-                  ? ` and ${p.recipients.counselor}.`
-                  : ' only (no counselor was assigned at signing, so there is no counselor copy).'}
+                {goesToLine(p.recipients, plannedRecipients(p))}
               </p>
             ) : null}
             {state && !state.busy && state.message ? (
@@ -235,6 +259,13 @@ export default function BillingPacketList({
       })}
     </ul>
   );
+}
+
+function goesToLine(recipients: NonNullable<BillingPacketSummary['recipients']>, planned: string[]): string {
+  const label = (r: string) => (r === 'counselor' ? `counselor ${recipients.counselor ?? ''}`.trim() : `student ${recipients.student}`);
+  if (!recipients.counselor) return `Goes to ${label('student')} only (no counselor was assigned at signing, so there is no counselor copy).`;
+  if (planned.length === 1) return `Goes to ${label(planned[0])} only.`;
+  return `Goes to ${planned.map(label).join(' and ')}.`;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -279,7 +310,7 @@ function ReconcileRow(props: { recipient: string; lastError: string | null; busy
       </span>
       <input
         aria-label={`What you checked for the ${props.recipient} copy`}
-        placeholder="What you checked (e.g. Resend log entry)"
+        placeholder="Provider evidence you checked (e.g. Resend log entry or message id)"
         value={note}
         onChange={(e) => setNote(e.target.value)}
         style={{ minHeight: 38, padding: '0.4rem 0.6rem', border: '1px solid var(--outline-variant, #cbd5e1)', borderRadius: 8 }}
