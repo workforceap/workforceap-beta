@@ -250,4 +250,21 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(update).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
   });
+
+  it('rechecks the target role after claiming deletion ownership', async () => {
+    findFirst.mockResolvedValueOnce(member()).mockResolvedValueOnce(member({
+      profile: { role: 'admin' },
+    }));
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(403);
+    expect(findFirst).toHaveBeenCalledTimes(2);
+    expect(beginBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'org-1');
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(anonymizeMember).not.toHaveBeenCalled();
+    expect(deleteAuthUserForErasure).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
+  });
 });

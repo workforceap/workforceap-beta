@@ -87,14 +87,35 @@ export const POST = withApiGuc(async (
       code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
     }, { status: 409 });
 
+    // A staff-role edit may have committed after the first lookup and before
+    // the deletion owner was claimed. Re-read under that owner, which blocks
+    // subsequent role edits, before touching Storage or Auth.
+    const current = await withTenantScope(orgId, (db) =>
+      db.user.findFirst({
+        where: { id },
+        include: {
+          profile: true,
+          userRoles: { select: { role: { select: { name: true } } } },
+          courseEnrollments: true,
+          userCertifications: { select: { proofUrl: true } },
+        },
+      }),
+    );
+    if (!current || hasAdminAccess(current.profile?.role ?? 'member', current.userRoles.map((entry) => entry.role.name))) {
+      await releaseBillingDeletion(id, billingDeletion.operationId);
+      return NextResponse.json({
+        error: !current ? 'The account changed during erasure. Reload and try again.' : 'Administrator accounts cannot be erased from member management.',
+      }, { status: current ? 403 : 409 });
+    }
+
     const extraPaths = [
-      existing.profile?.resumeOriginalPath
-        ? { bucket: MEMBER_RESUME_BUCKET, path: existing.profile.resumeOriginalPath }
+      current.profile?.resumeOriginalPath
+        ? { bucket: MEMBER_RESUME_BUCKET, path: current.profile.resumeOriginalPath }
         : null,
-      existing.profile?.resumeEnhancedPath
-        ? { bucket: MEMBER_RESUME_BUCKET, path: existing.profile.resumeEnhancedPath }
+      current.profile?.resumeEnhancedPath
+        ? { bucket: MEMBER_RESUME_BUCKET, path: current.profile.resumeEnhancedPath }
         : null,
-      ...existing.userCertifications.map((cert) =>
+      ...current.userCertifications.map((cert) =>
         cert.proofUrl ? { bucket: MEMBER_FILES_BUCKET, path: cert.proofUrl } : null,
       ),
     ].filter((row): row is { bucket: string; path: string } => Boolean(row));
@@ -109,14 +130,14 @@ export const POST = withApiGuc(async (
     // Optionally anonymize instead of hard-delete for members that still
     // have active program enrollments. Admins can pass force=true to
     // override, but the default is hard-delete.
-    const shouldAnonymize = !force && existing.deletedAt == null && existing.courseEnrollments.length > 0;
+    const shouldAnonymize = !force && current.deletedAt == null && current.courseEnrollments.length > 0;
 
     if (shouldAnonymize) {
       // Scrub User and Profile PII together while preserving enrollment rows.
       await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
       let authDisabled;
       try {
-        authDisabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, existing.email);
+        authDisabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, current.email);
       } catch (authError) {
         console.error(`[gdpr-erase] Auth retirement outcome unknown for ${id}:`, authError);
         return NextResponse.json({ error: 'Sign-in retirement requires reconciliation.', reconciliationRequired: true }, { status: 503 });
