@@ -96,15 +96,14 @@ export default async function SessionRunPage({
   });
   if (!member) notFound();
 
-  // Rewriter must start from the member's original, while the other session
-  // tools may still use an enhanced draft as context when the original is
-  // unavailable or cannot be extracted.
+  // Rewriter must start from the member's original. If it cannot be read,
+  // use the enhanced draft for other tools without retrying the failed PDF.
   const originalResume = await getMemberResumePlainText(memberId, 8000, {
     originalOnly: true,
     readOnlyAudit,
   });
   const existingResume = originalResume || await getMemberResumePlainText(memberId, 8000, {
-    preferOriginal: true,
+    enhancedOnly: true,
     readOnlyAudit,
   });
 

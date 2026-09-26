@@ -97,7 +97,7 @@ describe.each([
       originalOnly: true, readOnlyAudit: false,
     });
     expect(mocks.getResume).toHaveBeenNthCalledWith(2, member.id, 8000, {
-      preferOriginal: true, readOnlyAudit: false,
+      enhancedOnly: true, readOnlyAudit: false,
     });
   });
 });

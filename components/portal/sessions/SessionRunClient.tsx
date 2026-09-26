@@ -127,6 +127,7 @@ export default function SessionRunClient({
   // Per-tool inputs
   const [resumeText, setResumeText] = useState(existingResume);
   const [rewriterSourceText, setRewriterSourceText] = useState(originalResume);
+  const [sharedContextIsSavedDraft, setSharedContextIsSavedDraft] = useState(!originalResume && !!existingResume);
   const [jobTarget, setJobTarget] = useState(memberTargetRole ?? '');
   const [jobDescription, setJobDescription] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -193,6 +194,7 @@ export default function SessionRunClient({
     if (memberOnly.trim().length > 0) {
       setResumeText(memberOnly);
       setRewriterSourceText(memberOnly);
+      setSharedContextIsSavedDraft(false);
     }
   }, [transcripts]);
 
@@ -224,6 +226,7 @@ export default function SessionRunClient({
       } else if (data.text) {
         setResumeText(data.text);
         setRewriterSourceText(data.text);
+        setSharedContextIsSavedDraft(false);
         setUploadResumeWarning([
           typeof data.extractionWarning === 'string' ? data.extractionWarning.trim() : '',
           data.enhancedInvalidated
@@ -278,7 +281,7 @@ export default function SessionRunClient({
     resumeAnalysisState.output || gapState.output || jobMatchState.output ||
     headlineState.output || aboutState.output || salaryState.output || pitchState.output);
   const allRun = !!(resumeState.output && coverState.output && interviewState.output);
-  const usesSavedDraftContext = !rewriterSourceText.trim() && resumeText.trim().length > 50;
+  const usesSavedDraftContext = sharedContextIsSavedDraft && resumeText.trim().length > 50;
   const sharedResumeContextNote = resumeText.trim().length > 50
     ? usesSavedDraftContext ? 'Uses saved resume draft as context.' : 'Uses resume from step 2.'
     : null;
@@ -709,16 +712,15 @@ export default function SessionRunClient({
           ) : null}
           {usesSavedDraftContext ? (
             <p role="status" style={{ margin: '0 0 0.35rem', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
-              Only a previous draft is available for the other tools. Upload the original resume or enter the member&apos;s work history to build a new one.
+              {rewriterSourceText.trim()
+                ? 'This entry is for Resume Rewriter. Other tools continue using the saved draft until you upload a new original.'
+                : 'Only a previous draft is available for the other tools. Upload the original resume or enter the member\'s work history to build a new one.'}
             </p>
           ) : null}
           <textarea
             id="session-resume-text"
             value={rewriterSourceText}
-            onChange={(e) => {
-              setRewriterSourceText(e.target.value);
-              setResumeText(e.target.value);
-            }}
+            onChange={(e) => setRewriterSourceText(e.target.value)}
             rows={8}
             placeholder="Paste their resume, or type out their work history together — jobs, dates, what they did."
             disabled={resumeState.status === 'running'}

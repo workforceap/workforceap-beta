@@ -84,7 +84,6 @@ describe('getMemberResumePlainText substantive text gate', () => {
     });
     mocks.extract
       .mockRejectedValueOnce(new Error('Unreadable original'))
-      .mockRejectedValueOnce(new Error('Unreadable original'))
       .mockResolvedValueOnce('Enhanced draft for non-Rewriter session context with enough real text.');
 
     await expect(getMemberResumePlainText('member-1', 8000, { originalOnly: true })).resolves.toBe('');
@@ -93,10 +92,11 @@ describe('getMemberResumePlainText substantive text gate', () => {
 
     // Other session tools retain the fallback; Rewriter's originalOnly read
     // above cannot consume it when extraction fails.
-    await expect(getMemberResumePlainText('member-1', 8000, { preferOriginal: true }))
+    await expect(getMemberResumePlainText('member-1', 8000, { enhancedOnly: true }))
       .resolves.toMatch(/Enhanced draft/);
-    expect(mocks.download).toHaveBeenNthCalledWith(2, 'member-1/resume-original-v1.pdf');
-    expect(mocks.download).toHaveBeenNthCalledWith(3, 'member-1/resume-enhanced-v1.txt');
+    expect(mocks.download).toHaveBeenNthCalledWith(2, 'member-1/resume-enhanced-v1.txt');
+    expect(mocks.download).toHaveBeenCalledTimes(2);
+    expect(mocks.extract).toHaveBeenCalledTimes(2);
   });
 
   it('keeps enhanced-only storage out of an originalOnly read', async () => {
@@ -108,7 +108,7 @@ describe('getMemberResumePlainText substantive text gate', () => {
 
     await expect(getMemberResumePlainText('member-1', 8000, { originalOnly: true })).resolves.toBe('');
     expect(mocks.download).not.toHaveBeenCalled();
-    await expect(getMemberResumePlainText('member-1', 8000, { preferOriginal: true }))
+    await expect(getMemberResumePlainText('member-1', 8000, { enhancedOnly: true }))
       .resolves.toMatch(/Enhanced draft/);
     expect(mocks.download).toHaveBeenCalledWith('member-1/resume-enhanced-v1.txt');
   });

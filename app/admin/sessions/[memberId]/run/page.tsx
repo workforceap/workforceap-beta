@@ -84,7 +84,7 @@ export default async function AdminSessionRunPage({
     readOnlyAudit,
   });
   const existingResume = originalResume || await getMemberResumePlainText(memberId, 8000, {
-    preferOriginal: true,
+    enhancedOnly: true,
     readOnlyAudit,
   });
 

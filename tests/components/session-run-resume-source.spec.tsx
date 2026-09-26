@@ -67,6 +67,15 @@ describe('staff session Resume Rewriter source', () => {
     expect(screen.getByRole('button', { name: /Build resume/i })).toBeDisabled();
     expect(fetchMock).not.toHaveBeenCalled();
 
+    fireEvent.change(source, { target: { value: 'Short note' } });
+    expect(screen.getByRole('button', { name: /Build resume/i })).toBeDisabled();
+    expect(screen.getByText(/Other tools continue using the saved draft/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^Gap Analysis$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Analyze gaps/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/ai/gap-analyzer', expect.anything()));
+    const gapCall = fetchMock.mock.calls.find(([url]) => url === '/api/ai/gap-analyzer');
+    expect(JSON.parse((gapCall?.[1] as RequestInit).body as string).resume).toBe(enhanced);
+
     fireEvent.change(source, { target: { value: original } });
     fireEvent.click(screen.getByRole('button', { name: /Build resume/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/ai/resume-rewriter', expect.anything()));
@@ -91,5 +100,11 @@ describe('staff session Resume Rewriter source', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/ai/resume-rewriter', expect.anything()));
     const rewriterCall = fetchMock.mock.calls.find(([url]) => url === '/api/ai/resume-rewriter');
     expect(JSON.parse((rewriterCall?.[1] as RequestInit).body as string).resume).toBe(original);
+
+    fireEvent.click(screen.getByRole('button', { name: /^Gap Analysis$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Analyze gaps/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/ai/gap-analyzer', expect.anything()));
+    const gapCall = fetchMock.mock.calls.find(([url]) => url === '/api/ai/gap-analyzer');
+    expect(JSON.parse((gapCall?.[1] as RequestInit).body as string).resume).toBe(original);
   });
 });
