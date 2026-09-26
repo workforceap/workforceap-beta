@@ -6,6 +6,7 @@ import { getRequestLocale } from '@/lib/i18n/server';
 import { withLocalePrefix } from '@/lib/i18n/config';
 import SignupForm from './SignupForm';
 import UtmCapture from '@/components/marketing/UtmCapture';
+import PartnerRefCapture from '@/components/marketing/PartnerRefCapture';
 import { Suspense } from 'react';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,6 +34,10 @@ export default async function SignupPage({
   return (
     <>
       <Suspense fallback={null}>
+        {/* `?ref=` may arrive straight on /signup (partner link, QR, email)
+            without a prior /apply visit; SignupForm reads what this persists
+            and posts it as `referralRef`. */}
+        <PartnerRefCapture />
         <UtmCapture />
       </Suspense>
       <SignupForm initialRedirectTo={normalizedRedirect} />

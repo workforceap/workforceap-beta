@@ -6,10 +6,9 @@ import type { ResumeFramework } from '@/lib/resume/inferResumeFramework';
 /**
  * Prefill data for AI tools — reads from member state, never invents.
  * 
- * Resume source of truth (in order):
- *  1. Supabase file (profile.resumeOriginalPath / resumeEnhancedPath)
- *  2. AIToolResult type='resume_analysis' fallback
- *  3. null → honest error
+ * Resume Rewriter source of truth: the member's original uploaded file only.
+ * Other AI tools may use enhanced or analysis text for context, but a rewrite
+ * must not treat generated text as the member's original evidence.
  * 
  * Career recommendation source of truth:
  *  - Only from "Find Your Path" quiz (careerRecommendationJson on User)
@@ -61,8 +60,8 @@ export async function prefillElevatorPitch(userId: string): Promise<ElevatorPitc
 // ─── Resume Rewriter ───────────────────────────────────────────────────────────
 
 export async function prefillResumeRewriter(userId: string): Promise<ResumeRewriterPrefill> {
-  // 1. Supabase file (original first — we want the source-of-truth resume for rewriting)
-  const fromFile = await getMemberResumePlainText(userId, 12000, { preferOriginal: true });
+  // A rewrite needs the member's source document, never an enhanced draft or AI analysis.
+  const fromFile = await getMemberResumePlainText(userId, 12000, { originalOnly: true });
   if (fromFile && fromFile.trim().length > 40) {
     const state = await getMemberState(userId);
     return {
@@ -73,26 +72,10 @@ export async function prefillResumeRewriter(userId: string): Promise<ResumeRewri
     };
   }
 
-  // 2. AIToolResult fallback
-  const aiResult = await prisma.aIToolResult.findFirst({
-    where: { userId, toolType: 'resume_analysis' },
-    orderBy: { createdAt: 'desc' },
-    select: { output: true },
-  });
-  if (aiResult?.output && aiResult.output.trim().length > 40) {
-    const state = await getMemberState(userId);
-    return {
-      ok: true,
-      resume: aiResult.output.trim().slice(0, 12000),
-      jobTarget: state.inferredTargetRole,
-      framework: 'auto',
-    };
-  }
-
-  // 3. Honest failure — no resume exists
+  // Honest failure when the original is absent or cannot be read.
   return {
     ok: false,
-    error: 'No resume on file. Upload or paste your resume first at /dashboard/resume.',
+    error: 'We could not read an original resume. Paste it into the Resume Rewriter text box or upload a readable file.',
   };
 }
 

@@ -265,7 +265,7 @@ describe('TWC syllabus source lock', () => {
     );
     expect(programPage).toContain('...curriculumCourses');
     expect(programPage).toContain("Boolean(course.courseraSlug?.trim())");
-    expect(programPage).toContain('/api/member/coursera/launch?course=');
+    expect(programPage).toContain('/api/member/coursera/launch?');
   });
 
   it('renders syllabus facts and removes the generic course placeholder', () => {

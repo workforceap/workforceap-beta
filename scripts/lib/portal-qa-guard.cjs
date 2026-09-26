@@ -1,6 +1,6 @@
 const { projectForUrl } = require('./supabase-project-guard.cjs');
 
-const QA_ROLES = ['member', 'partner', 'employer', 'admin'];
+const QA_ROLES = ['member', 'partner', 'employer', 'admin', 'counselor'];
 
 /** Validate before constructing clients or making any network/database call. */
 function readPortalQaConfig(env = process.env) {

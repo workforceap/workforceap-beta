@@ -27,7 +27,7 @@ The hourly journey smoke intentionally does not log in or carry a learner cookie
 
 ## Preview smoke (WAP-202)
 
-`.github/workflows/preview-smoke.yml` runs the same journey probes against every **Vercel Preview** deployment before it can reach production. Vercel posts a GitHub `deployment_status`; when it is `success` for environment `Preview` (created by `vercel[bot]`), the job checks out the deployed commit and runs `node scripts/preview-smoke.mjs` against the deployment URL.
+`.github/workflows/preview-smoke.yml` runs the same journey probes against every **Vercel Preview** deployment and reports the result on the deployed commit. It is not a required check, so it blocks nothing yet. Vercel posts a GitHub `deployment_status`; when it is `success` for environment `Preview` (created by `vercel[bot]`), the job checks out the deployed commit and runs `node scripts/preview-smoke.mjs` against the deployment URL.
 
 | Property | Value |
 |---|---|
@@ -35,9 +35,9 @@ The hourly journey smoke intentionally does not log in or carry a learner cookie
 | Probes | The `PROBES` array of `app/api/cron/smoke-test/route.ts`, read from the route source so production and preview check the same routes (the parser fails closed if the array changes shape), plus `/en` (200 and a branded `<title>`) and `/en/program-comparison` (200) |
 | Fails on | Any 5xx on any redirect hop; a non-200 public page or health probe; health JSON without `status: "ok"`; a missing page marker or site title; Next's error shell (`<html id="__next_error__">` or "Application error"); a protected route that does not redirect (3xx) to `/login?redirectTo=<path>`; `/api/health` `version` not matching the deployed commit. Network errors and 502/503/504 are retried twice, 5 s apart, for cold starts |
 | Not failed on | Latency, and `rateLimiter` not being `redis` (previews may run without Upstash; the value is reported). A preview wired to the production Supabase project is reported as a warning |
-| Result | Commit status **Preview smoke** on the deployed commit, linking to the run; the run summary has a per-probe table and `preview-smoke.json` is uploaded. The deployment URL is never logged |
+| Result | Commit status **Preview smoke** on the deployed commit, linking to the run; the run summary has a per-probe table and `preview-smoke.json` is uploaded. The script doesn't print the deployment URL, but the step log shows the step's environment, which includes it; preview URLs are not secret |
 | Required? | No. Make it a required check only after a week of stable green runs |
-| Secrets | Optional `VERCEL_AUTOMATION_BYPASS_SECRET`, only if Vercel Deployment Protection is on for previews (Vercel → Project → Settings → Deployment Protection → *Protection Bypass for Automation*). It is sent as `x-vercel-protection-bypass`, and only to `*.vercel.app` origins. Without it, a protected preview is skipped with a `::notice::` and no status is posted; a secret Vercel rejects fails the run |
+| Secrets | Optional `VERCEL_AUTOMATION_BYPASS_SECRET`, only if Vercel Deployment Protection is on for previews (Vercel → Project → Settings → Deployment Protection → *Protection Bypass for Automation*). It is sent as `x-vercel-protection-bypass`, and only to `*.vercel.app` origins. Without it, a protected preview is not probed: the script prints a `::notice::` and the run posts an **error** status saying the secret is missing (WAP-222). A secret Vercel rejects fails the run |
 
 Run it by hand against any origin (for example a local `next start`):
 
@@ -45,7 +45,7 @@ Run it by hand against any origin (for example a local `next start`):
 PREVIEW_SMOKE_BASE_URL=http://localhost:3000 node scripts/preview-smoke.mjs
 ```
 
-Exit codes: `0` pass, `1` a probe failed, `2` configuration error (bad URL, unreadable probe list), `3` skipped because Vercel protection answered and no bypass secret is set.
+Exit codes: `0` pass, `1` a probe failed, `2` configuration error (bad URL, unreadable probe list), `3` not probed because Vercel protection answered and no bypass secret is set (the workflow turns this into an `error` status, not a silent skip).
 
 ## Example
 

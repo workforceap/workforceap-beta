@@ -42,6 +42,7 @@ import ThemeSelector from '@/components/theme/ThemeSelector';
 import UnreviewedLocaleBanner from '@/components/portal/UnreviewedLocaleBanner';
 import { useTranslations, useLocale } from 'next-intl';
 import { useWorkspaceMobileScrollChrome } from '@/hooks/useWorkspaceMobileScrollChrome';
+import { recordWorkspaceShellPathname } from '@/lib/observability/portalHydrationClientTrace';
 
 // Map non-member portal roles to MobileBottomNav variants. Member uses
 // MemberPortalTopNav (sticky-top horizontal-scroll) per /plan-design-review
@@ -104,6 +105,8 @@ export default function WorkspaceShell({
   contextLabel,
   minimalMobileHeader = false,
   superAdmin,
+  knownSuperAdmin,
+  knownIsAdmin,
   superAdminImpersonating,
   superAdminBackHref,
   superAdminBackLabel,
@@ -140,6 +143,10 @@ export default function WorkspaceShell({
   /** Optional square logo next to company name (employer portal). */
   contextLogoUrl?: string | null;
   superAdmin?: boolean;
+  /** Server-resolved platform super-admin identity when `superAdmin` is a contextual portal flag. */
+  knownSuperAdmin?: boolean;
+  /** Server-resolved effective role is exactly admin; separate from admin access. */
+  knownIsAdmin?: boolean;
   /** True when super_admin is viewing another org (cookie), not their own portal row */
   superAdminImpersonating?: boolean;
   superAdminBackHref?: string;
@@ -181,6 +188,8 @@ export default function WorkspaceShell({
   // nav hrefs are locale-less (/admin) — strip the active locale so active-route
   // matching (and the crimson active rail item) works across every portal.
   const rawPathname = usePathname() ?? '';
+  // The trusted Preview audit records the first hook value without changing markup.
+  recordWorkspaceShellPathname(rawPathname);
   const pathname =
     rawPathname === `/${locale}`
       ? '/'
@@ -220,7 +229,7 @@ export default function WorkspaceShell({
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isCollapsedDesktop = collapsed && wide;
   const isMobileDrawer = drawerOpen && !wide;
-  const isSuperAdmin = useIsSuperAdmin(Boolean(superAdmin));
+  const isSuperAdmin = useIsSuperAdmin(knownSuperAdmin ?? superAdmin);
   // Admin rail sections open while a guided tour runs so every anchor is visible
   // (no-op value when no TourProvider is mounted).
   const { isOpen: tourOpen } = useTour();
@@ -585,6 +594,7 @@ export default function WorkspaceShell({
             badges={badges}
             hidePublicSite={Boolean(marketingSiteHref)}
             readOnlyAudit={readOnlyAudit}
+            knownIsAdmin={knownIsAdmin}
             helpTourKey={helpTourKey}
             helpGuideHref={helpGuideHref}
           />

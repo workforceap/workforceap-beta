@@ -36,6 +36,9 @@ so a member on My progress or Skill missions still sees that row, marked current
 collapsed 72px rail has no disclosure: it lists every row as an icon. Kit
 tokens: warm surface, ~232px rail (208 laptop / 72 collapsed), sentence-case labels,
 16px / 44px targets, `aria-current` on the most specific destination only.
+Each destination appears once in the rail: Home owns `/dashboard`, while Profile &
+settings owns `/dashboard/profile`. The former duplicate "My account" row had the
+same home href and added no destination.
 
 Primary order (`lib/nav/portalNav.ts`, pinned by `lib/nav/portalNav.test.ts`,
 `lib/nav/memberToolRoutes.test.ts` and `tests/components/workspace-sidebar.test.tsx`):

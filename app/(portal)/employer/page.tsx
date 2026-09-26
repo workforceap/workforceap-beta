@@ -76,6 +76,7 @@ export default async function EmployerDashboardPage({
       kitHired,
       kitRecent,
       kitOpenRolesList,
+      kitHiringIntents,
     ] = await Promise.all([
       prisma.job.count({ where: { employerId: ctx.employerId, status: 'live' } }),
       prisma.jobPostingApplication.count({
@@ -105,6 +106,21 @@ export default async function EmployerDashboardPage({
         take: 5,
         select: { id: true, title: true, location: true, applicationsCount: true },
       }),
+      // Cohort-sponsorship hiring intents: the panel used to render only on
+      // ?ui=legacy (WAP-193). Same query and component as legacy; a failure
+      // here only hides the panel, never the overview.
+      (async () => {
+        try {
+          return await prisma.employerHiringIntent.findMany({
+            where: { employerId: ctx.employerId },
+            orderBy: { createdAt: 'desc' },
+            take: 25,
+          });
+        } catch (error) {
+          console.error('[employer/home] hiring intents load failed', error);
+          return null;
+        }
+      })(),
     ]);
 
     // Cheap, indexed fit-score lookup for the handful of candidates shown in
@@ -171,6 +187,12 @@ export default async function EmployerDashboardPage({
           candidatesTotal={kitTotalCandidates}
           openRolesList={kitOpenRolesRows}
         />
+
+        {kitHiringIntents ? (
+          <section className="wa-px-6 wa-pb-6" aria-label="Sponsor a cohort">
+            <EmployerHiringIntentPanel initialIntents={kitHiringIntents} />
+          </section>
+        ) : null}
       </>
     );
   }

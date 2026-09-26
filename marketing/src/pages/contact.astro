@@ -368,7 +368,9 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
   .infocard p{color:var(--muted);font-size:14px}
   .infocard .mono{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:18px;color:var(--text);margin-bottom:2px}
   .infocard .hours{font-size:13px;margin-top:6px}
-  .ilink{color:var(--crimson);font-weight:600}
+  /* 44px tap target (WAP-209): the link box is 44px tall and the negative
+     block margin (44px minus the ~22px line) keeps the card's spacing as it was. */
+  .ilink{display:inline-flex;align-items:center;min-height:44px;margin-block:-11px;color:var(--crimson);font-weight:600}
   .ilink:hover{text-decoration:underline}
 
   .austincard{position:relative;overflow:hidden;background:color-mix(in srgb,var(--gold) 5%,var(--surface));border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);border-left:4px solid var(--gold)}

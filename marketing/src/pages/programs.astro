@@ -538,11 +538,24 @@ const filterChips = [
   .searchbox:focus-within{border-color:var(--crimson);box-shadow:0 0 0 3px rgba(173,44,77,.1)}
   .searchbox input{flex:1;min-width:0;border:0;background:transparent;outline:none;font:inherit;font-size:15px;color:var(--text)}
   .searchbox input::placeholder{color:var(--muted)}
-  .chips{display:flex;flex-wrap:wrap;gap:10px}
-  .chip{font-size:14px;font-weight:600;padding:8px 16px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:border-color .15s,color .15s,background .15s}
-  .chip:hover{border-color:var(--crimson);color:var(--crimson)}
-  .chip.active{background:var(--grad);color:#fff;border-color:transparent}
+  /* Row gap 0 and a -5px block margin (WAP-209): the 44px chip boxes carry
+     5px of transparent hit area above and below each 34px pill, so wrapped
+     pills stay 10px apart and the group keeps its old outer spacing. */
+  .chips{display:flex;flex-wrap:wrap;gap:0 10px;margin-block:-5px}
+  /* 44px tap target, 34px pill (WAP-209): the button is the full 44px hit
+     area and stays transparent; the visible pill is its ::before, inset 5px
+     top and bottom, so the chips look exactly as before. */
+  .chip{position:relative;isolation:isolate;min-height:44px;font-size:14px;font-weight:600;padding:0 17px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;transition:color .15s}
+  .chip::before{content:"";position:absolute;inset:5px 0;z-index:-1;border-radius:999px;background:var(--surface);border:1px solid var(--border);transition:border-color .15s,background .15s}
+  .chip:hover{color:var(--crimson)}
+  .chip:hover::before{border-color:var(--crimson)}
+  .chip.active{color:#fff}
+  .chip.active::before{background:var(--grad);border-color:transparent}
   .chip.active:hover{color:#fff}
+  @media(forced-colors:active){
+    .chip[aria-pressed="true"]{color:HighlightText;forced-color-adjust:none}
+    .chip[aria-pressed="true"]::before{background:Highlight;border-color:Highlight;forced-color-adjust:none}
+  }
   .no-results{margin:0 0 24px;color:var(--muted);font-size:15px}
   .linkbtn{background:none;border:0;color:var(--crimson);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
 

@@ -195,8 +195,8 @@ describe('partner portal', () => {
     expect(src).toContain('<StatusTag tone={row.stage === \'placed\' ? \'ok\' : \'alert\'}>');
   });
 
-  it('/partner/signup redirects to the public /partner-signup page', () => {
+  it('/partner/signup fallback points to the canonical public sign-up form', () => {
     const src = readFileSync(path.join(root, 'app/(portal)/partner/signup/page.tsx'), 'utf8');
-    expect(src).toContain("redirect('/partner-signup')");
+    expect(src).toContain("redirect('/partners#partner-signup')");
   });
 });

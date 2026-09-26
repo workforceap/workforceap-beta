@@ -28,6 +28,7 @@ describe('read-only portal audit header', () => {
 
   it('requires middleware to strip public audit headers and re-mint only after auth', () => {
     const source = readFileSync(join(process.cwd(), 'middleware.ts'), 'utf8');
+    expect(source).toContain('request.cookies.get(READ_ONLY_PORTAL_AUDIT_TOKEN_COOKIE)?.value');
     expect(source).toContain('requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_HEADER)');
     expect(source).toContain('requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER)');
     expect(source).toMatch(/if \(user\?\.id && validReadOnlyAuditToken\)\s*\{\s*requestHeaders\.set\(READ_ONLY_PORTAL_AUDIT_HEADER, '1'\)/);

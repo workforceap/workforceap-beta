@@ -156,6 +156,11 @@ export interface CounselorHomeKitProps {
   queueRows?: CounselorQueueRow[] | null;
   /** Total rows in the underlying queue (may exceed `queueRows.length` when truncated). */
   queueTotal?: number;
+  /**
+   * Optional bulk follow-up tool (select members, send a template) rendered
+   * under the queue (WAP-193). Hidden while the queue failed to load.
+   */
+  bulkFollowUp?: ReactNode;
   /** Base path for a queue row's "View" action. */
   memberHrefBase?: string;
   /** Roster link shown in the empty state. */
@@ -314,6 +319,7 @@ export function CounselorHomeKit({
   retryHref = '/counselor/overview',
   todayHref = '/counselor/today',
   loadFailedCopy = DEFAULT_LOAD_FAILED_COPY,
+  bulkFollowUp,
 }: CounselorHomeKitProps) {
   const copy = loadFailedCopy;
   const queueUnavailable = queueRows === null;
@@ -461,6 +467,7 @@ export function CounselorHomeKit({
                 );
               })
             )}
+            {!queueUnavailable && bulkFollowUp ? bulkFollowUp : null}
           </div>
 
           <aside className="lg:wa-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>

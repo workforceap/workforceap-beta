@@ -14,10 +14,13 @@ const INVITATION_ERROR_KEYS = {
 } as const;
 
 export type InvitationErrorKey = typeof INVITATION_ERROR_KEYS[keyof typeof INVITATION_ERROR_KEYS]
-  | 'loadFailed' | 'codeFailed' | 'acceptFailed' | 'curriculumPending' | 'generic';
+  | 'loadFailed' | 'codeFailed' | 'acceptFailed' | 'curriculumPending'
+  | 'accountRecoveryRequired' | 'identityReviewRequired' | 'generic';
 
 export function invitationErrorKey(error: unknown, fallback: InvitationErrorKey, code?: unknown): InvitationErrorKey {
   if (code === 'CURRICULUM_MIGRATION_PENDING') return 'curriculumPending';
+  if (code === 'INVITE_ACCOUNT_RECOVERY_REQUIRED') return 'accountRecoveryRequired';
+  if (code === 'INVITE_IDENTITY_REVIEW_REQUIRED') return 'identityReviewRequired';
   return typeof error === 'string' && Object.hasOwn(INVITATION_ERROR_KEYS, error)
     ? INVITATION_ERROR_KEYS[error as keyof typeof INVITATION_ERROR_KEYS]
     : fallback;

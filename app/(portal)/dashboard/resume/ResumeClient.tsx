@@ -55,6 +55,7 @@ export default function ResumeClient({
     enhancedText: string | null;
     hasOriginal: boolean;
     hasEnhanced: boolean;
+    enhancedUnavailable: boolean;
     originalExt: string | null;
     enhancedExt: string | null;
     previewOriginalPath: string | null;
@@ -96,6 +97,7 @@ export default function ResumeClient({
           enhancedText: d.enhancedText ?? null,
           hasOriginal: d.hasOriginal ?? false,
           hasEnhanced: d.hasEnhanced ?? false,
+          enhancedUnavailable: d.enhancedUnavailable ?? false,
           originalExt: d.originalExt ?? null,
           enhancedExt: d.enhancedExt ?? null,
           previewOriginalPath: d.previewOriginalPath ?? null,
@@ -127,6 +129,7 @@ export default function ResumeClient({
         enhancedText: d.enhancedText ?? null,
         hasOriginal: d.hasOriginal ?? true,
         hasEnhanced: d.hasEnhanced ?? false,
+        enhancedUnavailable: d.enhancedUnavailable ?? false,
         originalExt: d.originalExt ?? null,
         enhancedExt: d.enhancedExt ?? null,
         previewOriginalPath: d.previewOriginalPath ?? null,
@@ -143,6 +146,7 @@ export default function ResumeClient({
   const handleGenerate = async () => {
     setGenerating(true);
     setGenerateError("");
+    let saved = false;
     try {
       const res = await fetch("/api/member/resume/generate", {
         method: "POST",
@@ -151,19 +155,22 @@ export default function ResumeClient({
       });
       const data = await res.json();
       if (res.ok) {
-        const generated = typeof data.resume === "string" ? data.resume : "";
+        saved = true;
         const refetch = await fetch("/api/member/resume");
+        if (!refetch.ok) throw new Error('Could not verify the saved resume');
         const d = await refetch.json();
-        const textFromApi =
-          typeof d.enhancedText === "string" && d.enhancedText.trim()
+        const textFromApi = d.enhancedUnavailable
+          ? null
+          : typeof d.enhancedText === "string" && d.enhancedText.trim()
             ? d.enhancedText
-            : generated || null;
+            : null;
         setResumeData({
           originalUrl: d.originalUrl ?? null,
           enhancedUrl: d.enhancedUrl ?? null,
           enhancedText: textFromApi,
           hasOriginal: d.hasOriginal ?? false,
-          hasEnhanced: Boolean(d.hasEnhanced || textFromApi),
+          hasEnhanced: Boolean(d.hasEnhanced && !d.enhancedUnavailable),
+          enhancedUnavailable: d.enhancedUnavailable ?? false,
           originalExt: d.originalExt ?? null,
           enhancedExt: d.enhancedExt ?? null,
           previewOriginalPath: d.previewOriginalPath ?? null,
@@ -173,7 +180,9 @@ export default function ResumeClient({
         setGenerateError(data.error ?? "Generation failed");
       }
     } catch {
-      setGenerateError("Generation failed");
+      setGenerateError(saved
+        ? 'The resume was saved, but its preview could not be verified. Reload to check it.'
+        : 'Generation failed');
     } finally {
       setGenerating(false);
     }
@@ -369,7 +378,7 @@ export default function ResumeClient({
           >
             Complete My Profile
           </Link>{" "}
-          for a stronger resume. You can still build one now.
+          with concrete work history, skills, or education before building from it. You can also upload a readable resume.
         </p>
       )}
       <button
@@ -402,6 +411,13 @@ export default function ResumeClient({
       </button>
       {generateError && (
         <p role="alert" style={{ color: "var(--wa-danger)", marginTop: "0.75rem", fontSize: "0.85rem" }}>{generateError}</p>
+      )}
+      {resumeData?.enhancedUnavailable && (
+        <p role="status" style={{ color: "var(--wa-warning-text, var(--wa-muted))", marginTop: "0.75rem", fontSize: "0.85rem" }}>
+          An older AI-built resume could not be read safely, so it is hidden. {hasOriginal ? 'Your original resume is still available. ' : ''}
+          Upload a PDF with selectable text, DOCX, or TXT file, or add concrete work history and skills to your{' '}
+          <Link href="/dashboard/profile" style={{ color: "var(--wa-accent)", fontWeight: 700 }}>profile</Link>, then build again.
+        </p>
       )}
     </section>
   );
@@ -825,12 +841,14 @@ export default function ResumeClient({
   );
 
   const witDataEmpty = !witData.name && !witData.email && !witData.phone && !witData.recentEmployer && !witData.targetJob && !witData.skills;
+  const witDataComplete = !!(witData.name && witData.email && witData.phone && witData.recentEmployer && witData.targetJob && witData.skills);
+  const witContact = [witData.name || 'Add your name', witData.email || 'Add your email', witData.phone || 'Add your phone'].join(', ');
 
   const witGuideSection = (
     <section className="wa-kit-card">
       <CardHead title="WorkInTexas guide" />
       <div className="wa-flex wa-items-center wa-gap-2" style={{ marginBottom: 12, marginTop: -6 }}>
-        <StatusTag tone={witDataEmpty ? "muted" : "info"}>{witDataEmpty ? "Copy manually" : "Pre-filled"}</StatusTag>
+        <StatusTag tone={witDataEmpty ? "muted" : "info"}>{witDataEmpty ? "Fill in manually" : witDataComplete ? "Ready to copy" : "Partially filled"}</StatusTag>
       </div>
       <p
         style={{
@@ -840,29 +858,28 @@ export default function ResumeClient({
           lineHeight: 1.55,
         }}
       >
-        {witDataEmpty
-          ? "Copy these from your profile. Use these steps when creating your WorkInTexas profile."
-          : "Pre-filled with your data. Use these steps when creating your WorkInTexas profile."}
+        {witDataComplete
+          ? "Use these details when creating your WorkInTexas profile."
+          : "Use the available details below. Fill in the prompts with your own work history, skills, and target job before copying them."}
       </p>
       <ol style={{ margin: "0 0 1rem", paddingLeft: "1.15rem", color: "var(--wa-text)", fontSize: "0.875rem", lineHeight: 1.85 }}>
         <li>
           <strong>Create account</strong> at workintexas.com
         </li>
         <li>
-          <strong>Contact info</strong> → {witData.name}, {witData.email},{" "}
-          {witData.phone}
+          <strong>Contact info</strong> → {witContact}
         </li>
         <li>
-          <strong>Work history</strong> → {witData.recentEmployer}
+          <strong>Work history</strong> → {witData.recentEmployer || (hasOriginal ? "Use the jobs and dates on your original resume" : "Add your jobs and dates")}
         </li>
         <li>
-          <strong>Target job</strong> → {witData.targetJob}
+          <strong>Target job</strong> → {witData.targetJob || "Choose the job title you want to pursue"}
         </li>
         <li>
-          <strong>Upload resume</strong> → Download from above
+          <strong>Upload resume</strong> → {resumeData?.originalUrl ? "Download your original resume from above" : hasOriginal ? "Original file on record; download currently unavailable" : "Upload your original resume above first"}
         </li>
         <li>
-          <strong>Skills</strong> → {witData.skills}
+          <strong>Skills</strong> → {witData.skills || (hasOriginal ? "Use the skills on your original resume" : "List skills you can demonstrate")}
         </li>
       </ol>
       <a

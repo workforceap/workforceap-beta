@@ -2,6 +2,7 @@
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { getRedirectUrl, unstable_getResponseFromNextConfig } from 'next/experimental/testing/server';
 import { getPublishedPosts } from '../marketing/src/data/blog';
 import { getProgramBySlug } from '../lib/content/programs';
 import nextConfig from '../next.config';
@@ -32,7 +33,7 @@ const LOCALE_PREFIX = /^\/(?::locale(?:\([^)]*\))?|en|es|fr|pt)(?=\/|$)/;
 
 /** Resolve a redirect destination to a shipped Next.js App Router page or Astro marketing page. */
 function appRouteExists(urlPath: string): boolean {
-  const clean = urlPath.replace(LOCALE_PREFIX, '').replace(/\?.*$/, '').replace(/\/$/, '') || '/';
+  const clean = urlPath.replace(LOCALE_PREFIX, '').split(/[?#]/, 1)[0]!.replace(/\/$/, '') || '/';
   if (clean === '/') {
     return existsSync(path.join(root, 'marketing/src/pages/index.astro'))
       || existsSync(path.join(root, 'app/page.tsx'));
@@ -104,12 +105,27 @@ const STALE_ROUTES: Array<{ source: string; destination: string }> = [
   { source: '/dashboard/weekly-focus', destination: '/dashboard/weekly-recap' },
   { source: '/my-group', destination: '/dashboard' },
   { source: '/employer/dashboard', destination: '/employer' },
+  { source: '/partner/signup', destination: '/partners#partner-signup' },
   { source: '/admin/wioa', destination: '/admin/wioa-screening' },
   { source: '/programs/quiz', destination: '/career-quiz' },
   { source: '/programs/cybersecurity', destination: '/programs/cybersecurity-professional-certificate-google' },
 ];
 
 describe('stale routes keep redirecting to destinations that exist (WAP-40)', () => {
+  it('sends partner sign-up aliases to the public form before portal middleware', async () => {
+    for (const [source, destination] of [
+      ['/partner/signup', '/partners#partner-signup'],
+      ['/es/partner/signup', '/es/partners#partner-signup'],
+    ]) {
+      const response = await unstable_getResponseFromNextConfig({
+        url: `https://preview.example.test${source}`,
+        nextConfig,
+      });
+      expect(response.status).toBe(307);
+      expect(getRedirectUrl(response)).toBe(`https://preview.example.test${destination}`);
+    }
+  });
+
   it('covers every advertised stale route', async () => {
     const redirects = (await nextConfig.redirects?.()) as Redirect[];
     const bySource = new Map(redirects.map((r) => [r.source, r]));
@@ -118,6 +134,11 @@ describe('stale routes keep redirecting to destinations that exist (WAP-40)', ()
       expect(redirect, `${stale.source} must still redirect`).toBeDefined();
       expect(redirect!.destination, stale.source).toBe(stale.destination);
     }
+    expect(bySource.get('/partner/signup')?.permanent).toBe(false);
+    expect(bySource.get('/:locale(en|es|fr|pt)/partner/signup')).toMatchObject({
+      destination: '/:locale/partners#partner-signup',
+      permanent: false,
+    });
   });
 
   it('sends every non-blog redirect to a shipped app or marketing route', async () => {
