@@ -92,7 +92,7 @@ type Props = { params: Promise<{ id: string }> };export const POST = withApiGuc(
       notes: d.notes?.trim() || null,
       wageAtFollowUp: d.wageAtFollowUp ?? null,
       retentionStatus: d.retentionStatus?.trim() || null,
-      startDateVerified: d.startDateVerified ?? false,
+      startDateVerified: d.startDateVerified ?? prior?.startDateVerified ?? false,
       fundingSource: d.fundingSource?.trim() || null,
       grantReportingNotes: d.grantReportingNotes?.trim() || null,
       retentionDecision: d.retentionDecision ?? null,
@@ -164,14 +164,18 @@ type Props = { params: Promise<{ id: string }> };export const POST = withApiGuc(
     }).catch(() => {})
   );
 
-  // Points + partner milestone email on first placement only — edits to an
-  // existing record (correcting a typo, adding wage data) must not re-award.
+  // Points are awarded once when the record is created. A partner only gets
+  // the placement email when staff verifies an unverified start date. Creating
+  // an unverified record or editing an already verified one is not a new
+  // confirmed placement to announce.
   if (!prior) {
     after(() => awardPoints(memberId, 'placement_recorded', placement.id).catch(() => {}));
+  }
+  if (placement.startDateVerified === true && prior?.startDateVerified !== true) {
     after(() =>
       sendPartnerMilestoneEmail(memberId, 'Job placement', {
-        Employer: d.employerName,
-        Role: d.jobTitle,
+        Employer: placement.employerName,
+        Role: placement.jobTitle,
       }).catch((err) => console.error('Partner milestone email failed:', err))
     );
   }
