@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { isResumeObjectPathOwnedByUser } from '@/lib/resume/atomicResumeObjectSwap';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -59,6 +61,7 @@ type Props = { params: Promise<{ memberId: string }> };export const GET = withAp
         return NextResponse.json({
           hasOriginal: !!originalPath,
           hasEnhanced: !!enhancedPath,
+          enhancedUnavailable: false,
           originalUrl: null,
           enhancedUrl: null,
           enhancedText: null,
@@ -73,6 +76,8 @@ type Props = { params: Promise<{ memberId: string }> };export const GET = withAp
       const supabase = getSupabaseAdmin();
       let originalUrl: string | null = null;
       let enhancedUrl: string | null = null;
+      let enhancedText: string | null = null;
+      let enhancedReadable = false;
   
       if (originalPath) {
         const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(originalPath, 3600);
@@ -83,38 +88,44 @@ type Props = { params: Promise<{ memberId: string }> };export const GET = withAp
         originalUrl = data.signedUrl;
       }
       if (enhancedPath) {
-        const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(enhancedPath, 3600);
-        if (error || !data?.signedUrl) {
-          console.error('[counselor/members/.../resume] createSignedUrl enhanced failed:', error);
-          return NextResponse.json({ error: storageErrorMessage(error, 'sign') }, { status: 502 });
-        }
-        enhancedUrl = data.signedUrl;
-      }
-  
-      let enhancedText: string | null = null;
-      if (enhancedPath) {
         const { data: fileData, error } = await supabase.storage.from(BUCKET).download(enhancedPath);
         if (error || !fileData) {
           console.error('[counselor/members/.../resume] download enhanced failed:', error);
-          return NextResponse.json({ error: storageErrorMessage(error, 'download') }, { status: 502 });
+        } else {
+          const inspected = await inspectStoredEnhancedResume(
+            Buffer.from(await fileData.arrayBuffer()),
+            enhancedPath,
+          );
+          enhancedReadable = inspected.readable;
+          enhancedText = inspected.text;
+          if (enhancedReadable) {
+            const signed = await supabase.storage.from(BUCKET).createSignedUrl(enhancedPath, 3600);
+            if (signed.error || !signed.data?.signedUrl) {
+              console.error('[counselor/members/.../resume] createSignedUrl enhanced failed:', signed.error);
+              enhancedReadable = false;
+              enhancedText = null;
+            } else {
+              enhancedUrl = signed.data.signedUrl;
+            }
+          }
         }
-        enhancedText = await fileData.text();
       }
   
       const base = `/api/counselor/members/${encodeURIComponent(memberId)}/resume`;
   
       return NextResponse.json({
         hasOriginal: !!originalPath,
-        hasEnhanced: !!enhancedPath,
+        hasEnhanced: enhancedReadable,
+        enhancedUnavailable: !!enhancedPath && !enhancedReadable,
         originalUrl,
         enhancedUrl,
         enhancedText,
         originalExt: extOf(originalPath),
-        enhancedExt: extOf(enhancedPath),
+        enhancedExt: enhancedReadable ? extOf(enhancedPath) : null,
         previewOriginalPath: originalPath
           ? `${base}/preview?variant=original&v=${pathRevision(originalPath)}`
           : null,
-        previewEnhancedPath: enhancedPath
+        previewEnhancedPath: enhancedReadable && enhancedPath
           ? `${base}/preview?variant=enhanced&v=${pathRevision(enhancedPath)}`
           : null,
       });

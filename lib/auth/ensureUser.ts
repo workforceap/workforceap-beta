@@ -7,6 +7,7 @@ type SupabaseUser = {
   id: string;
   email?: string;
   user_metadata?: Record<string, unknown>;
+  app_metadata?: Record<string, unknown>;
 };
 
 export type EnsureUserOptions = {
@@ -35,7 +36,7 @@ export async function ensureUserInDb(
   const organizationId = await resolveProvisionOrganizationId({
     explicitOrganizationId: options.organizationId,
     headers: options.headers ?? (await tryCurrentRequestHeaders()),
-    metadata: supabaseUser.user_metadata,
+    appMetadata: supabaseUser.app_metadata,
     programSlug: options.programSlug,
   });
 

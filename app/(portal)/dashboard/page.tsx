@@ -4,6 +4,7 @@ import { redirect, unstable_rethrow } from 'next/navigation';
 import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { canBypassMemberAssessment, isSuperAdmin } from '@/lib/auth/roles';
 import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -44,6 +45,8 @@ export default async function DashboardPage({
 }) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard');
+  const access = await getMemberDashboardAccess(user.id);
+  if (access.redirectTo) redirect(access.redirectTo);
   const t = await getTranslations('dashboard');
 
   // `?ui=legacy` and `?tab=` were switches on the retired legacy home. Send

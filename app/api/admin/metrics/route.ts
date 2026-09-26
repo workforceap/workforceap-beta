@@ -12,6 +12,45 @@ import { COURSERA_XAPI_UNAVAILABLE, type CourseraXapiDegradation } from '@/lib/c
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
+type AuditTimingStage = 'authMs' | 'tenantMs' | 'coreMs' | 'supplementalMs' | 'workQueueMs' | 'courseraMs';
+type AuditTimings = Partial<Record<AuditTimingStage, number>>;
+type AuditSupplementalQuery =
+  | 'assessmentCompletedMs'
+  | 'dashboardViewsMs'
+  | 'dashboardActivatedMs'
+  | 'aiToolUsersMs'
+  | 'jobApplicationUsersMs'
+  | 'recentPlacementsMs'
+  | 'avgSalaryMs'
+  | 'weeklySignupsMs'
+  | 'weeklyEnrollmentsMs'
+  | 'weeklyDashboardViewsMs';
+type AuditSupplementalProbe = {
+  durationsMs: Partial<Record<AuditSupplementalQuery, number>>;
+  inFlight?: AuditSupplementalQuery;
+};
+let hasHandledMetricsRequest = false;
+
+function recordAuditTiming(timings: AuditTimings | undefined, stage: AuditTimingStage, startedAt: number) {
+  if (timings) timings[stage] = Math.round(performance.now() - startedAt);
+}
+
+async function timeSupplementalQuery<T>(
+  probe: AuditSupplementalProbe | undefined,
+  name: AuditSupplementalQuery,
+  read: () => Promise<T>,
+): Promise<T> {
+  if (!probe) return read();
+  probe.inFlight = name;
+  const startedAt = performance.now();
+  try {
+    return await read();
+  } finally {
+    probe.durationsMs[name] = Math.round(performance.now() - startedAt);
+    probe.inFlight = undefined;
+  }
+}
+
 /**
  * Executive Dashboard payload. Every people count is over member-role
  * accounts (`memberOnlySqlJoin`), the same population `getAdminMetrics`
@@ -20,38 +59,42 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  */
 async function computeAdminRouteMetricsPayload(
   orgId: string,
-  opts: { readOnlyAudit?: boolean } = {},
+  opts: { readOnlyAudit?: boolean; stageTimings?: AuditTimings; supplementalProbe?: AuditSupplementalProbe } = {},
 ) {
+  let stageStartedAt = performance.now();
   const metrics = await getAdminMetrics(orgId, opts);
+  recordAuditTiming(opts.stageTimings, 'coreMs', stageStartedAt);
   const memberJoin = memberOnlySqlJoin();
 
-  const assessmentCompleted = await prisma.$queryRaw<{ count: number }[]>`
+  stageStartedAt = performance.now();
+
+  const assessmentCompleted = await timeSupplementalQuery(opts.supplementalProbe, 'assessmentCompletedMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*)::int as count FROM users u
       ${memberJoin}
       WHERE u.assessment_completed = true AND u.deleted_at IS NULL
         AND u.organization_id = ${orgId}
-    `;
+    `);
 
-  const dashboardViews = await prisma.$queryRaw<{ count: number }[]>`
+  const dashboardViews = await timeSupplementalQuery(opts.supplementalProbe, 'dashboardViewsMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT me.user_id)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE me.event_name = 'member_dashboard_viewed'
-    `;
+    `);
 
   // Distinct members who activated, so the activation rate is members ÷
   // members. COUNT(*) counted every activation event (161 events from one
   // user over 40 viewers printed "Activation Rate 403%"; S4).
-  const dashboardActivated = await prisma.$queryRaw<{ count: number }[]>`
+  const dashboardActivated = await timeSupplementalQuery(opts.supplementalProbe, 'dashboardActivatedMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT me.user_id)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE me.event_name = 'member_dashboard_activated'
-    `;
+    `);
 
-  const aiToolUsers = await prisma.$queryRaw<{ count: number }[]>`
+  const aiToolUsers = await timeSupplementalQuery(opts.supplementalProbe, 'aiToolUsersMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT s.user_id)::int as count
       FROM (
         SELECT air.user_id FROM ai_tool_results air
@@ -63,36 +106,36 @@ async function computeAdminRouteMetricsPayload(
         ${memberJoin}
         WHERE me.event_name = 'ai_tool_run_started' AND me.entity_type = 'ai_tool'
       ) s
-    `;
+    `);
 
-  const jobApplicationUsers = await prisma.$queryRaw<{ count: number }[]>`
+  const jobApplicationUsers = await timeSupplementalQuery(opts.supplementalProbe, 'jobApplicationUsersMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT ja.user_id)::int as count
       FROM job_applications ja
       INNER JOIN users u ON u.id = ja.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE ja.status <> 'SAVED'
-    `;
+    `);
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const recentPlacements = await prisma.$queryRaw<{ count: number }[]>`
+  const recentPlacements = await timeSupplementalQuery(opts.supplementalProbe, 'recentPlacementsMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*)::int as count
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE pr.placed_at >= ${thirtyDaysAgo}
-    `;
+    `);
 
-  const avgSalary = await prisma.$queryRaw<{ avg: number | null }[]>`
+  const avgSalary = await timeSupplementalQuery(opts.supplementalProbe, 'avgSalaryMs', () => prisma.$queryRaw<{ avg: number | null }[]>`
       SELECT AVG(pr.salary_offered)::float as avg
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE pr.salary_offered IS NOT NULL
-    `;
+    `);
 
-  const weeklySignups = await prisma.$queryRaw<{ week: string; count: number }[]>`
+  const weeklySignups = await timeSupplementalQuery(opts.supplementalProbe, 'weeklySignupsMs', () => prisma.$queryRaw<{ week: string; count: number }[]>`
       SELECT DATE_TRUNC('week', u.created_at)::text as week, COUNT(*)::int as count
       FROM users u
       ${memberJoin}
@@ -100,18 +143,18 @@ async function computeAdminRouteMetricsPayload(
         AND u.organization_id = ${orgId}
       GROUP BY DATE_TRUNC('week', u.created_at)
       ORDER BY week
-    `;
+    `);
 
-  const weeklyEnrollments = await prisma.$queryRaw<{ week: string; count: number }[]>`
+  const weeklyEnrollments = await timeSupplementalQuery(opts.supplementalProbe, 'weeklyEnrollmentsMs', () => prisma.$queryRaw<{ week: string; count: number }[]>`
       SELECT DATE_TRUNC('week', ce.created_at)::text as week, COUNT(*)::int as count
       FROM course_enrollments ce
       WHERE ce.created_at >= ${thirtyDaysAgo}
         AND ce.organization_id = ${orgId}
       GROUP BY DATE_TRUNC('week', ce.created_at)
       ORDER BY week
-    `;
+    `);
 
-  const weeklyDashboardViews = await prisma.$queryRaw<{ week: string; count: number }[]>`
+  const weeklyDashboardViews = await timeSupplementalQuery(opts.supplementalProbe, 'weeklyDashboardViewsMs', () => prisma.$queryRaw<{ week: string; count: number }[]>`
       SELECT DATE_TRUNC('week', me.created_at)::text as week, COUNT(*)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
@@ -119,9 +162,12 @@ async function computeAdminRouteMetricsPayload(
       WHERE me.event_name = 'member_dashboard_viewed' AND me.created_at >= ${thirtyDaysAgo}
       GROUP BY DATE_TRUNC('week', me.created_at)
       ORDER BY week
-    `;
+    `);
+
+  recordAuditTiming(opts.stageTimings, 'supplementalMs', stageStartedAt);
 
   // ── Work Queue counts ──
+  stageStartedAt = performance.now();
   let pendingApplications;
   try {
     pendingApplications = await prisma.$queryRaw<{ count: number }[]>`
@@ -169,6 +215,7 @@ async function computeAdminRouteMetricsPayload(
     console.error('Failed to get stale training', error);
     staleTraining = [{ count: 0 }];
   }
+  recordAuditTiming(opts.stageTimings, 'workQueueMs', stageStartedAt);
 
   // Same loader as the /admin/coursera page this tile links to, so the tile
   // equals the page it opens. The old query INNER JOINed users on
@@ -181,6 +228,7 @@ async function computeAdminRouteMetricsPayload(
   // production's rather than wrong; the probe inside the loader reports it.
   const degraded: CourseraXapiDegradation[] = [];
   let unmatchedCoursera: number;
+  stageStartedAt = performance.now();
   try {
     unmatchedCoursera = await countUnmatchedLearners(orgId, {
       includeTestAccounts: false,
@@ -191,6 +239,7 @@ async function computeAdminRouteMetricsPayload(
     console.error('Failed to get unmatched coursera', error);
     unmatchedCoursera = 0;
   }
+  recordAuditTiming(opts.stageTimings, 'courseraMs', stageStartedAt);
 
   const total = metrics.totalMembers;
   const enrolled = metrics.placementStats.enrolled;
@@ -273,18 +322,40 @@ async function computeAdminRouteMetricsPayload(
     },
     degraded,
   };
-}export const GET = withApiGuc(async (request: NextRequest) => {
+}
+
+export const GET = withApiGuc(async (request: NextRequest) => {
+  const readOnlyAudit = isReadOnlyPortalAuditHeader(request.headers);
+  const firstRequestOnInstance = !hasHandledMetricsRequest;
+  hasHandledMetricsRequest = true;
+  const stageTimings: AuditTimings | undefined = readOnlyAudit ? {} : undefined;
+  const supplementalProbe: AuditSupplementalProbe | undefined = readOnlyAudit ? { durationsMs: {} } : undefined;
+  const requestStartedAt = performance.now();
+  const slowCheckpoint = stageTimings ? setTimeout(() => {
+    // The browser audit gives data requests five seconds to settle. Log an
+    // in-flight snapshot before that deadline in case the client disconnects.
+    console.info('[admin/metrics] read-only audit slow checkpoint', {
+      ...stageTimings,
+      supplementalQueriesMs: { ...supplementalProbe?.durationsMs },
+      supplementalQueryInFlight: supplementalProbe?.inFlight ?? null,
+      firstRequestOnInstance,
+      elapsedMs: Math.round(performance.now() - requestStartedAt),
+    });
+  }, 4_500) : null;
   try {
+    const authStartedAt = performance.now();
     const user = await getUser();
     if (!user || !(await isAdmin(user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    recordAuditTiming(stageTimings, 'authMs', authStartedAt);
   
     try {
+      const tenantStartedAt = performance.now();
       const orgId = await getActorOrganizationId(user.id);
-      const readOnlyAudit = isReadOnlyPortalAuditHeader(request.headers);
+      recordAuditTiming(stageTimings, 'tenantMs', tenantStartedAt);
       const body = readOnlyAudit
-        ? await computeAdminRouteMetricsPayload(orgId, { readOnlyAudit: true })
+        ? await computeAdminRouteMetricsPayload(orgId, { readOnlyAudit: true, stageTimings, supplementalProbe })
         : await unstable_cache(
             async () => computeAdminRouteMetricsPayload(orgId),
             ['admin-api-metrics-v1', orgId],
@@ -298,5 +369,19 @@ async function computeAdminRouteMetricsPayload(
   } catch (error) {
     console.error('/admin/metrics:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    // Fixed stage names and durations only; no user, tenant, SQL, or metric values.
+    if (slowCheckpoint) clearTimeout(slowCheckpoint);
+    if (stageTimings) {
+      const totalMs = Math.round(performance.now() - requestStartedAt);
+      const accountedMs = Object.values(stageTimings).reduce((sum, value) => sum + value, 0);
+      console.info('[admin/metrics] read-only audit timing', {
+        ...stageTimings,
+        supplementalQueriesMs: { ...supplementalProbe?.durationsMs },
+        firstRequestOnInstance,
+        totalMs,
+        unaccountedMs: Math.max(0, totalMs - accountedMs),
+      });
+    }
   }
 });

@@ -1123,7 +1123,16 @@
     "noMessagesYet": "Aucun message pour l'instant",
     "yourCounselor": "Votre conseiller",
     "workforceapSupport": "Assistance WorkforceAP",
-    "supportTeam": "Équipe d'assistance"
+    "supportTeam": "Équipe d'assistance",
+    "kitLede": "Votre conseiller et l’équipe d’assistance dans une seule boîte.",
+    "conversations": "Conversations",
+    "unreadMessage": "Message non lu",
+    "backToMessages": "Retour aux messages",
+    "sendFailed": "Échec de l’envoi",
+    "networkError": "Erreur réseau",
+    "composerPlaceholder": "Écrire à {name}…",
+    "feedbackDraftNotice": "Vérifiez les détails du cours et tout lien de projet enregistré avant d’envoyer. Vos notes privées ne sont pas partagées.",
+    "feedbackUnavailable": "Nous n’avons pas pu charger ce cours assigné. Vous pouvez tout de même écrire votre message ci-dessous."
   },
   "profile": {
     "edit": "Modifier le profil",
@@ -2889,7 +2898,7 @@
       "phone": "Téléphone (facultatif)",
       "password": "Créez un mot de passe",
       "passwordPlaceholder": "Au moins 8 caractères",
-      "passwordHelp": "Vous êtes nouveau ici ? Créez un mot de passe. Vous avez déjà un compte ? Laissez ce champ vide.",
+      "passwordHelp": "Vous êtes nouveau ici ? Créez un mot de passe. Vous avez déjà un compte ? Connectez-vous d’abord, puis laissez ce champ vide.",
       "accepting": "Acceptation…",
       "accept": "Accepter l’invitation",
       "roles": {
@@ -2908,7 +2917,9 @@
         "alreadyAccepted": "Cette invitation a déjà été acceptée. Connectez-vous à votre compte.",
         "expired": "Cette invitation a expiré. Demandez à votre contact WorkforceAP de la renvoyer.",
         "nameRequired": "Saisissez votre nom complet.",
-        "newAccountRequired": "Pour créer un compte, indiquez votre nom complet et un mot de passe d’au moins 8 caractères.",
+        "newAccountRequired": "Un nouveau compte nécessite un mot de passe d’au moins 8 caractères. Si vous avez déjà un compte, connectez-vous ou réinitialisez votre mot de passe, puis revenez à cette invitation.",
+        "accountRecoveryRequired": "Un compte existe déjà avec cette adresse. Connectez-vous ou réinitialisez votre mot de passe, puis revenez à cette invitation.",
+        "identityReviewRequired": "Nous ne pouvons pas associer cette invitation au compte enregistré. Contactez l’équipe WorkforceAP pour obtenir de l’aide.",
         "signupUnavailable": "La création de compte est temporairement indisponible. Si le problème persiste, contactez l’assistance.",
         "loadFailed": "Impossible de charger cette invitation. Réessayez dans quelques instants.",
         "codeFailed": "Impossible de vérifier ce code. Réessayez dans un instant.",

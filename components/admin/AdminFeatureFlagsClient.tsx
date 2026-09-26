@@ -1,6 +1,7 @@
 'use client';
 
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
+import { FEATURE_FLAG_ROLES } from '@/lib/admin/featureFlagRoles';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import PageHeader from '@/components/portal/PageHeader';
@@ -17,7 +18,7 @@ interface FeatureFlag {
   updatedAt: string;
 }
 
-const ALL_ROLES = ['member', 'admin', 'super_admin', 'case_manager', 'counselor', 'partner', 'employer'];
+const ALL_ROLES: readonly string[] = FEATURE_FLAG_ROLES;
 
 function RoleBadge({ role }: { role: string }) {
   const colorMap: Record<string, string> = {

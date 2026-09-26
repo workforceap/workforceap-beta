@@ -6,6 +6,7 @@ import PortalNav from './PortalNav';
 import PortalRoleSwitcher from './PortalRoleSwitcher';
 import type { PortalRole } from '@/lib/nav/portalNav';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { recordPortalShellDecision } from '@/lib/observability/portalHydrationClientTrace';
 
 const MEMBER_PORTAL_PREFIXES = ['/dashboard', '/programs', '/apply', '/certifications', '/profile'];
 const DEDICATED_SHELL_PREFIXES = ['/employer', '/partner', '/counselor'];
@@ -24,13 +25,15 @@ function stripLocale(path: string) {
 }
 
 export default function PortalShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname() ?? '';
+  const detectedPathname = usePathname();
+  const pathname = detectedPathname ?? '';
   const normalizedPath = stripLocale(pathname);
   const isDashboard = normalizedPath.startsWith('/dashboard');
   const isPartnerPortal = normalizedPath.startsWith('/partner');
   const isDedicatedShell = hasDedicatedShell(normalizedPath);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const showNav = !isDashboard && !isPartnerPortal && !isDedicatedShell;
+  recordPortalShellDecision(detectedPathname, showNav);
 
   // Roles come from the shared current-user snapshot (WAP-27) and only when
   // this shell renders its own nav; the workspace shells (/dashboard,

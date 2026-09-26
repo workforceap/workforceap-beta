@@ -11,6 +11,13 @@
 @import './portal-ui-kit.css';
 @import './portal-kit.css';
 
+/* Keep long Markdown code tokens inside the admin methodology page column.
+   Its wide tables scroll separately through .admin-table-scroll. */
+.outcomes-methodology-content p code,
+.outcomes-methodology-content li code {
+  overflow-wrap: anywhere;
+}
+
 /* Final portal-scoped Astryx card polish. Astryx emits generated atomic classes,
    so this lives after all portal imports and keys off the stable root class. */
 [data-surface] .astryx-card {

@@ -36,14 +36,13 @@ export default async function PartnerExclusiveServerGate() {
   const user = await getUser();
   if (!user) return null;
 
+  let redirectToPartner = false;
   try {
     const superAdmin = await withDbRetry(() => isSuperAdmin(user.id));
     const partnerCtx = await withDbRetry(() =>
       getPartnerForUser(user.id, { isSuperAdminHint: superAdmin }),
     );
-    if (partnerCtx && !superAdmin) {
-      redirect('/partner');
-    }
+    redirectToPartner = Boolean(partnerCtx && !superAdmin);
   } catch (e) {
     console.error('[PartnerExclusiveServerGate] role lookup failed', e);
     if (readOnlyAudit) {
@@ -52,5 +51,8 @@ export default async function PartnerExclusiveServerGate() {
     /* Fail open: allow member UI when DB is unavailable; partner redirect is best-effort */
   }
 
+  // Next's redirect throws. Keep it outside the role-lookup catch so an
+  // authorized redirect cannot be mistaken for a failed database lookup.
+  if (redirectToPartner) redirect('/partner');
   return null;
 }

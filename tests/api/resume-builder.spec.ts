@@ -101,7 +101,9 @@ vi.mock('@/lib/counselor/staffMemberAccess', () => ({
 import { POST as generateResume } from '@/app/api/member/resume/generate/route';
 import { POST as savePlainResume } from '@/app/api/member/resume/plain-text/route';
 import { GET as getResume } from '@/app/api/member/resume/route';
+import { GET as getResumePreview } from '@/app/api/member/resume/preview/route';
 import { GET as getCounselorMemberResume } from '@/app/api/counselor/members/[memberId]/resume/route';
+import { GET as getCounselorResumePreview } from '@/app/api/counselor/members/[memberId]/resume/preview/route';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
@@ -125,14 +127,20 @@ const UUIDS = {
   admin: '550e8400-e29b-41d4-a716-446655440003',
 };
 
+const LEGACY_FAILURE_TEXT = 'Given the provided information, the "base resume to improve" is a raw PDF stream that cannot be parsed for text content. The enhanced resume will use contact information only.';
+
 function mockSupabaseAdmin(storageFn?: () => any) {
   const storage = storageFn?.() ?? {
     upload: vi.fn(() => ({ error: null })),
     createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/signed' }, error: null })),
-    download: vi.fn(() => ({ data: { text: vi.fn(() => Promise.resolve('Mock resume text')), arrayBuffer: vi.fn(() => Promise.resolve(new ArrayBuffer(0))) }, error: null })),
+    download: vi.fn(() => ({ data: storedText('Synthetic candidate with verified inventory and logistics experience.'), error: null })),
   };
   vi.mocked(getSupabaseAdmin).mockReturnValue({ storage: { from: () => storage } } as any);
   return storage;
+}
+
+function storedText(text: string) {
+  return { arrayBuffer: () => Promise.resolve(new TextEncoder().encode(text).buffer) };
 }
 
 function mockUser(overrides: Partial<{ id: string; email: string; fullName: string; phone: string; enrolledProgram: string }> = {}) {
@@ -152,7 +160,7 @@ function mockProfile(overrides: Partial<any> = {}) {
     profilePhone: '555-1234',
     profileAddress: '123 Main St',
     profileLinkedin: 'linkedin.com/in/test',
-    profileBio: 'Experienced professional',
+    profileBio: 'I worked as a logistics coordinator for four years, managed incoming shipments, trained staff on inventory checks, and used spreadsheets to reconcile stock.',
     employmentStatus: 'unemployed',
     educationLevel: 'High School',
     resumeOriginalPath: null,
@@ -258,6 +266,120 @@ describe('POST /api/member/resume/generate', () => {
     );
   });
 
+  it('rejects a sparse profile before an AI call or storage write', async () => {
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({ profileBio: null, employmentStatus: null, educationLevel: null }),
+    } as any);
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+
+    const res = await generateResume(makeGenerateRequest());
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toContain('work history, skills, or education');
+    expect(claudeChat).not.toHaveBeenCalled();
+    expect(chatCompletion).not.toHaveBeenCalled();
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+    expect(checkAIToolRateLimit).not.toHaveBeenCalled();
+  });
+
+  it('rejects an unreadable uploaded original instead of rewriting an older enhanced draft', async () => {
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({
+        profileBio: null,
+        resumeOriginalPath: `${UUIDS.user}/resume-original.pdf`,
+        resumeEnhancedPath: `${UUIDS.user}/resume-enhanced.txt`,
+      }),
+    } as any);
+    vi.mocked(getMemberResumePlainText).mockResolvedValue('');
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+
+    const res = await generateResume(makeGenerateRequest());
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toContain('could not read enough text');
+    expect(getMemberResumePlainText).toHaveBeenCalledWith(UUIDS.user, 6000, { originalOnly: true });
+    expect(claudeChat).not.toHaveBeenCalled();
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
+  it('keeps an unreadable uploaded original even when the profile bio has substance', async () => {
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({ resumeOriginalPath: `${UUIDS.user}/resume-original.pdf` }),
+    } as any);
+    vi.mocked(getMemberResumePlainText).mockResolvedValue('');
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+
+    const res = await generateResume(makeGenerateRequest());
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toContain('could not read enough text');
+    expect(claudeChat).not.toHaveBeenCalled();
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
+  it('does not let client-supplied text bypass extraction of an uploaded original', async () => {
+    const originalPath = `${UUIDS.user}/resume-original.pdf`;
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({ resumeOriginalPath: originalPath }),
+    } as any);
+    vi.mocked(getMemberResumePlainText).mockResolvedValue('');
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+
+    const res = await generateResume(makeGenerateRequest({
+      resumeBase: 'Client supplied profile summary with logistics coordination experience.',
+      resumeRevision: getResumeProfileRevision(originalPath, null),
+    }));
+
+    expect(res.status).toBe(422);
+    expect(getMemberResumePlainText).toHaveBeenCalledWith(UUIDS.user, 6000, { originalOnly: true });
+    expect(claudeChat).not.toHaveBeenCalled();
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
+  it('rejects a draft claiming source experience is missing before saving', async () => {
+    const originalPath = `${UUIDS.user}/resume-original.pdf`;
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({ resumeOriginalPath: originalPath }),
+    } as any);
+    vi.mocked(getMemberResumePlainText).mockResolvedValue(
+      'Jane Doe\nExperience Operations Manager | Acme Logistics\nManaged incoming shipments and trained staff.',
+    );
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+    vi.mocked(claudeChat).mockResolvedValue(
+      '# Jane Doe\n\n## Experience — No employment history was provided in the resume or profile.',
+    );
+
+    const res = await generateResume(makeGenerateRequest());
+
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toContain('did not preserve details');
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
+  it('rejects raw PDF body text before a model call when the stored original is unreadable', async () => {
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile({ profileBio: null, resumeOriginalPath: `${UUIDS.user}/resume-original.pdf` }),
+    } as any);
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+
+    const res = await generateResume(makeGenerateRequest({
+      resumeBase: '%PDF-1.7\n1 0 obj\nstream\nraw bytes cannot be a resume\nendstream\nendobj',
+      resumeRevision: getResumeProfileRevision(`${UUIDS.user}/resume-original.pdf`, null),
+    }));
+    expect(res.status).toBe(422);
+    expect(claudeChat).not.toHaveBeenCalled();
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
   it('falls back to Groq when Anthropic is not configured', async () => {
     vi.mocked(getUser).mockResolvedValue(mockUser() as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
@@ -307,6 +429,20 @@ describe('POST /api/member/resume/generate', () => {
     expect(saveEnhancedResumeText).not.toHaveBeenCalled();
   });
 
+  it('does not save model commentary about an unreadable PDF as a resume', async () => {
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser(),
+      profile: mockProfile(),
+    } as any);
+    vi.mocked(isAnthropicConfigured).mockReturnValue(true);
+    vi.mocked(claudeChat).mockResolvedValue(LEGACY_FAILURE_TEXT);
+
+    const res = await generateResume(makeGenerateRequest());
+    expect(res.status).toBe(422);
+    expect(saveEnhancedResumeText).not.toHaveBeenCalled();
+  });
+
   it('rate-limits every configured provider before generation', async () => {
     vi.mocked(getUser).mockResolvedValue(mockUser() as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
@@ -324,16 +460,16 @@ describe('POST /api/member/resume/generate', () => {
     expect(saveEnhancedResumeText).not.toHaveBeenCalled();
   });
 
-  it('keeps the existing resume when profile-only generation has no provider', async () => {
+  it('keeps the existing resume when there is no profile evidence', async () => {
     vi.mocked(getUser).mockResolvedValue(mockUser() as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       ...mockUser(),
       profile: null,
     } as any);
     const res = await generateResume(makeGenerateRequest());
-    expect(res.status).toBe(503);
+    expect(res.status).toBe(422);
     const body = await res.json();
-    expect(body.error).toContain('temporarily unavailable');
+    expect(body.error).toContain('work history, skills, or education');
   });
 
   it('uses resumeBase from request body when provided', async () => {
@@ -396,6 +532,9 @@ describe('POST /api/member/resume/generate', () => {
     } as any);
     vi.mocked(isAnthropicConfigured).mockReturnValue(true);
     vi.mocked(claudeChat).mockResolvedValue('# Resume\n\nVerified professional experience and skills for this member.');
+    vi.mocked(getMemberResumePlainText).mockResolvedValue(
+      'Synthetic source resume with verified inventory work and logistics experience.',
+    );
     const conflict = new Error('stale lineage');
     vi.mocked(saveEnhancedResumeText).mockRejectedValue(conflict);
     vi.mocked(isResumeProfileConflict).mockImplementation((error) => error === conflict);
@@ -515,7 +654,7 @@ describe('GET /api/member/resume', () => {
     } as any);
     const storage = mockSupabaseAdmin(() => ({
       createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/signed' }, error: null })),
-      download: vi.fn(() => ({ data: { text: vi.fn(() => Promise.resolve('# Test Member\n\n## Professional Summary\nExperienced professional\n\n## Experience\nDriver at ABC Corp\n\n## Education\nHigh School\n\n## Core Skills\nCommunication')), arrayBuffer: vi.fn(() => Promise.resolve(new ArrayBuffer(0))) }, error: null })),
+      download: vi.fn(() => ({ data: storedText('# Test Member\n\n## Professional Summary\nExperienced professional\n\n## Experience\nDriver at ABC Corp\n\n## Education\nHigh School\n\n## Core Skills\nCommunication'), error: null })),
     }));
 
     const res = await getResume(makeGetResumeRequest());
@@ -535,6 +674,52 @@ describe('GET /api/member/resume', () => {
       `${UUIDS.user}/resume-original.pdf`,
       `${UUIDS.user}/resume-enhanced.txt`,
     ));
+  });
+
+  it('quarantines an unsafe legacy enhanced draft without deleting the original', async () => {
+    const originalPath = `${UUIDS.user}/resume-original.pdf`;
+    const enhancedPath = `${UUIDS.user}/resume-enhanced.txt`;
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.profile.findUnique).mockResolvedValue(mockProfile({
+      resumeOriginalPath: originalPath,
+      resumeEnhancedPath: enhancedPath,
+    }) as any);
+    const storage = mockSupabaseAdmin(() => ({
+      createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/original' }, error: null })),
+      download: vi.fn(() => ({ data: storedText(LEGACY_FAILURE_TEXT), error: null })),
+    }));
+
+    const res = await getResume(makeGetResumeRequest());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      hasOriginal: true,
+      originalUrl: 'https://example.com/original',
+      hasEnhanced: false,
+      enhancedUnavailable: true,
+      enhancedUrl: null,
+      enhancedText: null,
+      enhancedExt: null,
+      previewEnhancedPath: null,
+      resumeRevision: getResumeProfileRevision(originalPath, enhancedPath),
+    });
+    expect(storage.createSignedUrl).toHaveBeenCalledTimes(1);
+    expect(storage.createSignedUrl).toHaveBeenCalledWith(originalPath, 3600);
+  });
+
+  it('blocks a direct enhanced preview of the same legacy failure text', async () => {
+    vi.mocked(getUser).mockResolvedValue(mockUser() as any);
+    vi.mocked(prisma.profile.findUnique).mockResolvedValue(mockProfile({
+      resumeEnhancedPath: `${UUIDS.user}/resume-enhanced.txt`,
+    }) as any);
+    mockSupabaseAdmin(() => ({
+      download: vi.fn(() => ({ data: storedText(LEGACY_FAILURE_TEXT), error: null })),
+    }));
+
+    const res = await getResumePreview(
+      new NextRequest('http://localhost:3000/api/member/resume/preview?variant=enhanced'),
+    );
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toContain('not readable');
   });
 
   it('returns empty metadata when no resume exists', async () => {
@@ -569,7 +754,7 @@ describe('GET /api/member/resume', () => {
     } as any);
     mockSupabaseAdmin(() => ({
       createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/signed' }, error: null })),
-      download: vi.fn(() => ({ data: { text: vi.fn(() => Promise.resolve('Admin view')), arrayBuffer: vi.fn(() => Promise.resolve(new ArrayBuffer(0))) }, error: null })),
+      download: vi.fn(() => ({ data: storedText('Synthetic member resume with verified inventory and logistics experience.'), error: null })),
     }));
 
     const res = await getResume(makeGetResumeRequest('?memberId=' + UUIDS.user));
@@ -587,7 +772,7 @@ describe('GET /api/member/resume', () => {
     } as any);
     mockSupabaseAdmin(() => ({
       createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/signed' }, error: null })),
-      download: vi.fn(() => ({ data: { text: vi.fn(() => Promise.resolve('Counselor view')), arrayBuffer: vi.fn(() => Promise.resolve(new ArrayBuffer(0))) }, error: null })),
+      download: vi.fn(() => ({ data: storedText('Synthetic member resume with verified inventory and logistics experience.'), error: null })),
     }));
 
     const res = await getResume(makeGetResumeRequest('?memberId=' + UUIDS.user));
@@ -614,7 +799,7 @@ describe('GET /api/member/resume', () => {
     vi.mocked(getMemberResumePlainText).mockResolvedValue('Plain text resume content');
     mockSupabaseAdmin(() => ({
       createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/signed' }, error: null })),
-      download: vi.fn(() => ({ data: { text: vi.fn(() => Promise.resolve('Enhanced')), arrayBuffer: vi.fn(() => Promise.resolve(new ArrayBuffer(0))) }, error: null })),
+      download: vi.fn(() => ({ data: storedText('Synthetic member resume with verified inventory and logistics experience.'), error: null })),
     }));
 
     const res = await getResume(makeGetResumeRequest('?includePlainText=1'));
@@ -624,19 +809,30 @@ describe('GET /api/member/resume', () => {
     expect(getMemberResumePlainText).toHaveBeenCalledWith(UUIDS.user, 12000);
   });
 
-  it('returns 502 when storage sign URL fails', async () => {
+  it('keeps the original available when the enhanced download URL cannot be signed', async () => {
     vi.mocked(getUser).mockResolvedValue(mockUser() as any);
     vi.mocked(prisma.profile.findUnique).mockResolvedValue({
       ...mockProfile(),
+      resumeOriginalPath: `${UUIDS.user}/resume-original.pdf`,
       resumeEnhancedPath: `${UUIDS.user}/resume-enhanced.txt`,
     } as any);
+    const sign = vi.fn()
+      .mockResolvedValueOnce({ data: { signedUrl: 'https://example.com/original' }, error: null })
+      .mockResolvedValueOnce({ data: null, error: { message: 'Bucket not found' } });
     mockSupabaseAdmin(() => ({
-      createSignedUrl: vi.fn(() => ({ data: null, error: { message: 'Bucket not found' } })),
+      createSignedUrl: sign,
+      download: vi.fn(() => ({ data: storedText('Synthetic member resume with verified inventory and logistics experience.'), error: null })),
     }));
 
     const res = await getResume(makeGetResumeRequest());
-    expect(res.status).toBe(502);
-    expect(await res.json()).toEqual({ error: 'Storage is not configured. Create the member-resumes bucket in Supabase Storage.' });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      hasOriginal: true,
+      originalUrl: 'https://example.com/original',
+      hasEnhanced: false,
+      enhancedUnavailable: true,
+      enhancedUrl: null,
+    });
   });
 });
 
@@ -673,7 +869,7 @@ describe('GET /api/counselor/members/[memberId]/resume', () => {
     } as any);
     mockSupabaseAdmin(() => ({
       createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/signed' }, error: null })),
-      download: vi.fn(() => ({ data: { text: vi.fn(() => Promise.resolve('# Counselor View\n\n## Summary\nGood candidate')), arrayBuffer: vi.fn(() => Promise.resolve(new ArrayBuffer(0))) }, error: null })),
+      download: vi.fn(() => ({ data: storedText('# Counselor View\n\n## Summary\nCandidate with verified logistics and inventory experience.'), error: null })),
     }));
 
     const res = await getCounselorMemberResume(makeCounselorRequest(UUIDS.user), { params: Promise.resolve({ memberId: UUIDS.user }) });
@@ -682,6 +878,40 @@ describe('GET /api/counselor/members/[memberId]/resume', () => {
     expect(body.hasOriginal).toBe(true);
     expect(body.hasEnhanced).toBe(true);
     expect(body.enhancedText).toContain('Counselor View');
+  });
+
+  it('hides unsafe enhanced text and blocks its direct counselor preview', async () => {
+    vi.mocked(getUser).mockResolvedValue(mockUser({ id: UUIDS.counselor }) as any);
+    vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(true);
+    vi.mocked(prisma.profile.findUnique).mockResolvedValue(mockProfile({
+      resumeOriginalPath: `${UUIDS.user}/resume-original.pdf`,
+      resumeEnhancedPath: `${UUIDS.user}/resume-enhanced.txt`,
+    }) as any);
+    const storage = mockSupabaseAdmin(() => ({
+      createSignedUrl: vi.fn(() => ({ data: { signedUrl: 'https://example.com/original' }, error: null })),
+      download: vi.fn(() => ({ data: storedText(LEGACY_FAILURE_TEXT), error: null })),
+    }));
+
+    const res = await getCounselorMemberResume(
+      makeCounselorRequest(UUIDS.user),
+      { params: Promise.resolve({ memberId: UUIDS.user }) },
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      hasOriginal: true,
+      hasEnhanced: false,
+      enhancedUnavailable: true,
+      enhancedUrl: null,
+      enhancedText: null,
+      previewEnhancedPath: null,
+    });
+    expect(storage.createSignedUrl).toHaveBeenCalledTimes(1);
+
+    const preview = await getCounselorResumePreview(
+      new NextRequest(`http://localhost:3000/api/counselor/members/${UUIDS.user}/resume/preview?variant=enhanced`),
+      { params: Promise.resolve({ memberId: UUIDS.user }) },
+    );
+    expect(preview.status).toBe(422);
   });
 
   it('does not mint provider URLs or download content during a read-only audit', async () => {
@@ -744,7 +974,7 @@ describe('GET /api/counselor/members/[memberId]/resume', () => {
     expect(body.hasEnhanced).toBe(false);
   });
 
-  it('returns 502 when storage download fails', async () => {
+  it('keeps the original available when enhanced storage download fails', async () => {
     vi.mocked(getUser).mockResolvedValue(mockUser({ id: UUIDS.counselor }) as any);
     vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(true);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ organizationId: 'org-1' } as any);
@@ -753,6 +983,7 @@ describe('GET /api/counselor/members/[memberId]/resume', () => {
     } as any);
     vi.mocked(prisma.profile.findUnique).mockResolvedValue({
       ...mockProfile(),
+      resumeOriginalPath: `${UUIDS.user}/resume-original.pdf`,
       resumeEnhancedPath: `${UUIDS.user}/resume-enhanced.txt`,
     } as any);
     mockSupabaseAdmin(() => ({
@@ -761,7 +992,13 @@ describe('GET /api/counselor/members/[memberId]/resume', () => {
     }));
 
     const res = await getCounselorMemberResume(makeCounselorRequest(UUIDS.user), { params: Promise.resolve({ memberId: UUIDS.user }) });
-    expect(res.status).toBe(502);
-    expect(await res.json()).toEqual({ error: 'Could not load resume file' });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      hasOriginal: true,
+      originalUrl: 'https://example.com/signed',
+      hasEnhanced: false,
+      enhancedUnavailable: true,
+      enhancedUrl: null,
+    });
   });
 });

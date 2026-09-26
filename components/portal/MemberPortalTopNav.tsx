@@ -2,17 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useLayoutEffect, useRef } from 'react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import { getBestActiveHref, type ActiveNavLink } from '@/lib/nav/activeRoute';
 import { MEMBER_PORTAL_NAV_ITEMS, navItemsForActiveRoute, type NavBadgeKey } from '@/lib/nav/portalNav';
+import { splitLocalePrefix } from '@/lib/i18n/config';
+import { localizeHref } from '@/lib/i18n/localizeHref';
 
 /**
  * The rail's matching rule (href, aliases, `exact`) for each member route,
- * keyed by href. `/dashboard` appears twice (Home and "My account"); both are
- * `exact`, so the first row is kept.
+ * keyed by href. Keep the first row if future rail configuration repeats a
+ * destination; the member rail currently has unique hrefs.
  */
 const RAIL_LINKS = new Map<string, ActiveNavLink>();
 for (const link of navItemsForActiveRoute(MEMBER_PORTAL_NAV_ITEMS)) {
@@ -27,17 +29,11 @@ export default function MemberPortalTopNav({
   /** Rewrite canonical /dashboard hrefs (used by /dev/member proofs). */
   hrefMap?: Record<string, string>;
 }) {
-  const locale = useLocale();
-  // usePathname() keeps the locale prefix (/es/dashboard/messages) while the
-  // tab hrefs are locale-less, so strip the active locale exactly as the rail
-  // does (WorkspaceShell); otherwise no tab is current on /es, /fr or /pt.
+  // Portal paths may use an explicit locale (/es/dashboard/messages) or rely
+  // on the language cookie (/dashboard/messages). Match the canonical route,
+  // then retain an explicit URL locale when rendering phone tab destinations.
   const rawPathname = usePathname() ?? '/dashboard';
-  const pathname =
-    rawPathname === `/${locale}`
-      ? '/'
-      : rawPathname.startsWith(`/${locale}/`)
-        ? rawPathname.slice(locale.length + 1)
-        : rawPathname;
+  const { locale: explicitLocale, pathnameWithoutLocale: pathname } = splitLocalePrefix(rawPathname);
   const t = useTranslations('nav');
   const navRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -125,7 +121,8 @@ export default function MemberPortalTopNav({
     <nav ref={navRef} className="member-portal-top-nav" aria-label={t('memberPortal')}>
       <ul ref={listRef} className="member-portal-top-nav__list">
         {tabs.map((tab) => {
-          const href = remap(tab.canonical);
+          const mappedHref = remap(tab.canonical);
+          const href = explicitLocale ? localizeHref(mappedHref, explicitLocale) : mappedHref;
           const active = tab.canonical === activeCanonical;
           const badge = tab.badgeKey ? badgeCounts?.[tab.badgeKey] : undefined;
           return (

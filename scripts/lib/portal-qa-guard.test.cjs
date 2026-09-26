@@ -10,7 +10,7 @@ function environment() {
     POSTGRES_PRISMA_URL: `postgresql://postgres:example@db.${DEMO_REF}.supabase.co:5432/postgres`,
     SUPABASE_SERVICE_ROLE_KEY: 'test-only-admin-key',
     PORTAL_QA_ORGANIZATION_ID: 'qa-org', PORTAL_QA_ORGANIZATION_SLUG: 'portal-qa-test',
-    ...Object.fromEntries(['member', 'partner', 'employer', 'admin'].map(role => [
+    ...Object.fromEntries(['member', 'partner', 'employer', 'admin', 'counselor'].map(role => [
       `PORTAL_QA_${role.toUpperCase()}_PASSWORD`, `${role}-unique-fixture-secret-123456`,
     ])),
   };
@@ -20,7 +20,8 @@ test('accepts only explicitly selected matching demo targets and distinct suppli
   const env = environment();
   const config = readPortalQaConfig(env);
   assert.equal(config.organizationId, 'qa-org');
-  assert.equal(new Set(Object.values(config.passwords)).size, 4);
+  assert.deepEqual(Object.keys(config.passwords), ['member', 'partner', 'employer', 'admin', 'counselor']);
+  assert.equal(new Set(Object.values(config.passwords)).size, 5);
 });
 
 for (const [name, change] of Object.entries({
@@ -34,7 +35,10 @@ for (const [name, change] of Object.entries({
   'missing key': { SUPABASE_SERVICE_ROLE_KEY: undefined },
   'missing password': { PORTAL_QA_MEMBER_PASSWORD: undefined },
   'short password': { PORTAL_QA_MEMBER_PASSWORD: 'short' },
+  'missing counselor password': { PORTAL_QA_COUNSELOR_PASSWORD: undefined },
+  'short counselor password': { PORTAL_QA_COUNSELOR_PASSWORD: 'short' },
   'duplicate passwords': { PORTAL_QA_MEMBER_PASSWORD: 'admin-unique-fixture-secret-123456' },
+  'duplicate counselor password': { PORTAL_QA_COUNSELOR_PASSWORD: 'admin-unique-fixture-secret-123456' },
 })) {
   test(`rejects ${name} without including credentials in its error`, () => {
     const env = { ...environment(), ...change };

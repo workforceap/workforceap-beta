@@ -3,9 +3,8 @@ name: Nightly E2E
 # WAP-204: the Playwright suites under tests/e2e/ ran in no scheduled lane, so
 # they ran only when someone remembered to. This runs the credential-free,
 # read-only public specs against production (or any deployed origin) with the
-# stock Playwright Chromium and uploads the HTML report. It is dispatch-only
-# until WAP-66 lands (see `on:`); once scheduled, a failed scheduled run opens
-# or refreshes one issue, "Nightly: Public E2E failing"
+# stock Playwright Chromium and uploads the HTML report. A failed scheduled
+# run opens or refreshes one issue, "Nightly: Public E2E failing"
 # (nightly-failure-issue.yml).
 #
 # Scope: page loads and navigation only. No spec in this lane signs in,
@@ -19,8 +18,9 @@ name: Nightly E2E
 # Not a PR check. See docs/SLO-AND-STATUS.md, "Nightly heavy suites".
 
 on:
-  # Schedule gated on WAP-66 (authenticated fresh preview): once it lands, add
-  # `schedule: - cron: "47 8 * * *"` here (08:47 UTC, after the portal smoke).
+  # 08:47 UTC, after the portal smoke.
+  schedule:
+    - cron: "47 8 * * *"
   workflow_dispatch:
     inputs:
       base_url:
@@ -115,4 +115,4 @@ jobs:
     uses: ./.github/workflows/nightly-failure-issue.yml
     with:
       suite: Public E2E
-      result: ${{ needs.e2e.result }}
+      result: ${{ needs.e2e.result == 'success' && 'success' || 'failure' }}

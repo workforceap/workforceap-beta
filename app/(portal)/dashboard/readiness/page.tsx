@@ -1,7 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
+import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getUser } from '@/lib/auth/server';
 import { getScoreBreakdownSafeResult } from '@/lib/readiness/score';
 import PageHeader from '@/components/portal/PageHeader';
@@ -43,6 +45,7 @@ export default async function DashboardReadinessPage({
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/readiness');
 
+  const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
 
@@ -76,6 +79,9 @@ export default async function DashboardReadinessPage({
   if (requestedUi !== 'legacy') {
     return (
       <>
+        {readOnlyAudit ? (
+          <span hidden data-portal-audit-suppressed="member-readiness-summary-generation" />
+        ) : null}
         {checklistLoadFailed ? (
           <span hidden data-portal-error-state="member-readiness-checklist-load" />
         ) : null}
@@ -91,7 +97,7 @@ export default async function DashboardReadinessPage({
               factualSummary={factualSummary}
               nextAction={scoreLoadFailed ? null : view.priorityAction}
               breakdown={scoreLoadFailed ? null : buildReadinessRecapBreakdown(view)}
-              enableGeneration={!scoreLoadFailed}
+              enableGeneration={!scoreLoadFailed && !readOnlyAudit}
               loadFailed={scoreLoadFailed}
             />
           }

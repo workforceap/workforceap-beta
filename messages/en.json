@@ -1180,7 +1180,16 @@
     "noMessagesYet": "No messages yet",
     "yourCounselor": "Your counselor",
     "workforceapSupport": "WorkforceAP support",
-    "supportTeam": "Support team"
+    "supportTeam": "Support team",
+    "kitLede": "Counselor and support in one inbox.",
+    "conversations": "Conversations",
+    "unreadMessage": "Unread message",
+    "backToMessages": "Back to messages",
+    "sendFailed": "Send failed",
+    "networkError": "Network error",
+    "composerPlaceholder": "Message {name}…",
+    "feedbackDraftNotice": "Review your course details and any saved project link before sending. Your private notes are not shared.",
+    "feedbackUnavailable": "We could not load that assigned course. You can still write your message below."
   },
   "profile": {
     "edit": "Edit profile",
@@ -2946,7 +2955,7 @@
       "phone": "Phone (optional)",
       "password": "Create a password",
       "passwordPlaceholder": "At least 8 characters",
-      "passwordHelp": "First time here? Create a password. Already have an account? Leave this blank.",
+      "passwordHelp": "First time here? Create a password. Already have an account? Sign in first, then leave this blank.",
       "accepting": "Accepting…",
       "accept": "Accept Invitation",
       "roles": {
@@ -2965,7 +2974,9 @@
         "alreadyAccepted": "This invitation has already been accepted. Sign in to your account.",
         "expired": "This invitation has expired. Ask your WorkforceAP contact to resend it.",
         "nameRequired": "Enter your full name.",
-        "newAccountRequired": "New accounts need your full name and a password with at least 8 characters.",
+        "newAccountRequired": "New accounts need a password with at least 8 characters. If you already have an account, sign in or reset your password, then return to this invitation.",
+        "accountRecoveryRequired": "An account with this email already exists. Sign in or reset your password, then return to this invitation.",
+        "identityReviewRequired": "We couldn't match this invitation to the account on file. Contact WorkforceAP support for help.",
         "signupUnavailable": "Account signup is temporarily unavailable. If this continues, contact support.",
         "loadFailed": "We couldn’t load this invitation. Please try again shortly.",
         "codeFailed": "We couldn’t check that code. Try again in a moment.",

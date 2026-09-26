@@ -7,8 +7,8 @@ import MemberPortalTopNav from '@/components/portal/MemberPortalTopNav';
 /**
  * WAP-263 items 1 and 2: the member phone nav (MemberPortalTopNav) marks the
  * same destination current as the desktop rail.
- *   1. On /es, /fr and /pt the URL keeps the locale prefix, so the tab for the
- *      page must still be current (the rail strips the locale first).
+ *   1. On /en, /es, /fr and /pt the current tab and every destination must retain
+ *      the explicit URL locale, including the Messages advisor handoff.
  *   2. Rail aliases count: /dashboard/ai-tools/application-tracker belongs to
  *      Job applications, not to AI Career Tools.
  */
@@ -25,8 +25,8 @@ afterEach(cleanup);
 function renderAt(pathname: string, locale = 'en', hrefMap?: Record<string, string>) {
   nav.pathname = pathname;
   render(
-    // English strings keep the labels stable; the provider's locale is what
-    // useLocale() returns, as next-intl does for a /{locale}/… request.
+    // English strings keep the labels stable while the URL prefix selects
+    // which locale each tab destination must retain.
     <NextIntlClientProvider locale={locale} messages={en} timeZone="America/Chicago">
       <MemberPortalTopNav hrefMap={hrefMap} />
     </NextIntlClientProvider>,
@@ -58,8 +58,17 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     expect(currentLabels(strip)).toEqual(['AI Career Tools']);
   });
 
-  it('keeps the tab hrefs locale-less, like the rail', () => {
-    const strip = renderAt('/es/dashboard/messages', 'es');
+  it.each(['en', 'es', 'fr', 'pt'])('preserves /%s on every phone tab, including the advisor handoff', (locale) => {
+    const strip = renderAt(`/${locale}/dashboard`, locale);
+    expect(strip.getByRole('link', { name: 'Messages' })).toHaveAttribute('href', `/${locale}/dashboard/messages`);
+    expect(strip.getByRole('link', { name: 'Home' })).toHaveAttribute('href', `/${locale}/dashboard`);
+    for (const link of strip.getAllByRole('link')) {
+      expect(link.getAttribute('href')).toMatch(new RegExp(`^/${locale}/dashboard(?:/|$)`));
+    }
+  });
+
+  it('keeps unprefixed portal links unprefixed when the current URL has no locale', () => {
+    const strip = renderAt('/dashboard/messages', 'es');
     expect(strip.getByRole('link', { name: 'Messages' })).toHaveAttribute('href', '/dashboard/messages');
     expect(strip.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/dashboard');
   });
@@ -69,6 +78,12 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     expect(strip.getByRole('link', { name: 'Job applications' })).toHaveAttribute('aria-current', 'page');
     expect(strip.getByRole('link', { name: 'AI Career Tools' })).not.toHaveAttribute('aria-current');
     expect(currentLabels(strip)).toEqual(['Job applications']);
+  });
+
+  it('keeps the rail alias active and localized on a prefixed application-tracker URL', () => {
+    const strip = renderAt('/es/dashboard/ai-tools/application-tracker', 'es');
+    expect(currentLabels(strip)).toEqual(['Job applications']);
+    expect(strip.getByRole('link', { name: 'Job applications' })).toHaveAttribute('href', '/es/dashboard/job-applications');
   });
 
   it('on a Profile alias (/dashboard/settings), Profile is the current tab', () => {
@@ -106,5 +121,20 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     expect(currentLabels(strip)).toEqual(['Messages']);
     cleanup();
     expect(currentLabels(renderAt('/dev/member/home', 'en', hrefMap))).toEqual(['Home']);
+  });
+
+  it('keeps explicit locale on remapped dev links and still marks the matching tab current', () => {
+    const hrefMap = {
+      '/dashboard': '/dev/member/home',
+      '/dashboard/messages': '/dev/member/messages',
+      '/dashboard/ai-tools': '/dev/member/toolkit',
+    };
+    const strip = renderAt('/es/dev/member/messages', 'es', hrefMap);
+    expect(strip.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/es/dev/member/home',
+      '/es/dev/member/messages',
+      '/es/dev/member/toolkit',
+    ]);
+    expect(currentLabels(strip)).toEqual(['Messages']);
   });
 });
