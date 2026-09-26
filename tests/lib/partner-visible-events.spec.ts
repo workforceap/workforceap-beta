@@ -27,6 +27,7 @@ describe('partner-visible event allowlist', () => {
 
   it('labels an allowlisted event in plain language, not its raw name', () => {
     expect(partnerEventLabel('program_enrolled')).toBe('Enrolled in a program');
+    expect(partnerEventLabel('training_access_activated')).toBe('Training access activated');
     expect(partnerEventLabel('course_completed')).toBe('Completed a course');
     expect(partnerEventLabel('program_completed')).toBe('Completed program training');
     for (const key of Object.keys(PARTNER_VISIBLE_EVENTS)) {
@@ -54,11 +55,10 @@ describe('partner-visible event allowlist', () => {
     expect(partnerEventLabel(name)).toBeNull();
   });
 
-  it('resolves legacy spellings of an allowlisted event to the same label', () => {
-    expect(partnerEventLabel('PLACEMENT_CONFIRMATION_SUBMITTED')).toBe(
-      partnerEventLabel('placement_confirmation_submitted'),
-    );
-    expect(partnerEventLabel('PLACEMENT_CONFIRMATION_SUBMITTED')).not.toBeNull();
+  it('uses record-backed certification and placement rows without duplicate event milestones', () => {
+    for (const name of ['certification_earned', 'placement_recorded', 'placement_confirmation_submitted', 'PLACEMENT_CONFIRMATION_SUBMITTED']) {
+      expect(partnerEventLabel(name)).toBeNull();
+    }
   });
 
   it('queries every stored spelling of the allowlist and nothing else', () => {
@@ -70,6 +70,9 @@ describe('partner-visible event allowlist', () => {
     }
     for (const name of names) expect(partnerEventLabel(name), name).not.toBeNull();
     expect(names).not.toContain('member_logged_in');
+    expect(names).not.toContain('certification_earned');
+    expect(names).not.toContain('placement_recorded');
+    expect(names).not.toContain('PLACEMENT_CONFIRMATION_SUBMITTED');
   });
 });
 

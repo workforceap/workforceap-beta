@@ -142,6 +142,26 @@ describe('PartnerReferredMemberDetailPage partner-visible activity', () => {
     expect(html).toContain('No recent member activity recorded yet.');
   });
 
+  it('keeps an unverified placement pending and hides its employer, role, salary and retention details', async () => {
+    vi.mocked(prisma.memberEvent.findMany).mockResolvedValue([] as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: 'member-1', fullName: 'Fixture Member', email: null, enrolledProgram: null, enrolledAt: INSTANT,
+      courseEnrollments: [], courseProgress: [], userCertifications: [], memberProgramProgress: [],
+      placementRecord: {
+        employerName: 'SECRET_EMPLOYER', jobTitle: 'SECRET_ROLE', salaryOffered: 98765,
+        placedAt: INSTANT, startDateVerified: false, retentionDecision: 'SECRET_RETENTION',
+        retentionStatus: null, onboardingWindowEnd: null,
+      },
+    } as never);
+    const html = renderToStaticMarkup(await PartnerReferredMemberDetailPage({ params: Promise.resolve({ memberId: 'member-1' }) }));
+    expect(html).toContain('Placement reported, pending verification');
+    expect(html).not.toContain('SECRET_EMPLOYER');
+    expect(html).not.toContain('SECRET_ROLE');
+    expect(html).not.toContain('98,765');
+    expect(html).not.toContain('SECRET_RETENTION');
+    expect(html).not.toContain('>Placed<');
+  });
+
   it('404s a member this partner did not refer (or another org member) before reading any events', async () => {
     vi.mocked(prisma.partnerReferral.findFirst).mockResolvedValue(null as never);
     await expect(

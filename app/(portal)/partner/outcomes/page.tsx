@@ -64,7 +64,7 @@ export default async function PartnerOutcomesPage() {
     ctx.partner.organizationId,
   );
 
-  const placements = members.filter((m) => m.placementRecord).length;
+  const placements = members.filter((m) => m.placementRecord?.startDateVerified === true).length;
   const pendingPlacementCount = pendingPlacements.length;
   const certified = members.filter((m) => m.userCertifications.length > 0).length;
   const inTraining = pipelineMembers.filter(

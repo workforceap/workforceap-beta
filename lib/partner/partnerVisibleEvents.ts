@@ -20,13 +20,11 @@ type PartnerMilestoneEventName = (typeof PARTNER_MILESTONE_EVENT_NAMES)[number];
  */
 export const PARTNER_VISIBLE_EVENTS: Readonly<Record<PartnerMilestoneEventName, string>> = {
   program_enrolled: 'Enrolled in a program',
+  training_access_activated: 'Training access activated',
   course_completed: 'Completed a course',
   pathway_completed: 'Completed a learning pathway',
   program_completed: 'Completed program training',
   skill_mission_passed: 'Passed a skill check',
-  certification_earned: 'Earned a certification',
-  placement_recorded: 'Placement recorded',
-  placement_confirmation_submitted: 'Self-reported a job offer',
 };
 
 /** Every stored spelling of the partner-visible events, for `eventName: { in }` filters. */

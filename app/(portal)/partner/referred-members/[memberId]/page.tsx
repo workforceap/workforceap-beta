@@ -25,7 +25,7 @@ import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAs
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { eventNameReadCandidates } from '@/lib/events/names';
-import { partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
+import { PARTNER_PLACEMENT_LABELS, partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
 
 type Props = {
   params: Promise<{ memberId: string }>;
@@ -109,6 +109,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
           startDate: true,
           salaryOffered: true,
           placedAt: true,
+          startDateVerified: true,
           retentionStatus: true,
           retentionDecision: true,
           onboardingWindowEnd: true,
@@ -144,7 +145,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
       where: { userId: memberId, eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') } },
       orderBy: { createdAt: 'desc' },
       take: 1,
-      select: { metadata: true, createdAt: true },
+      select: { id: true, createdAt: true },
     }),
   ]);
 
@@ -206,14 +207,17 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
   const skillsetProgress = await loadMemberSkillsetProgress(memberId);
   const certificateCount = member.userCertifications.length;
   const outreachCount = outreachLogs.length;
-  const placed = !!member.placementRecord;
+  const placed = member.placementRecord?.startDateVerified === true;
+  const reportedPlacement = !!member.placementRecord;
   const pendingPlacement = placementConfirmations[0] ?? null;
   const recentActivity = recentEvents.flatMap((event) => {
     const label = partnerEventLabel(event.eventName);
     return label ? [{ id: event.id, label, createdAt: event.createdAt }] : [];
   });
   const recentEvent = recentActivity[0] ?? null;
-  const memberStatus = placed ? 'Placed' : pendingPlacement ? 'Offer reported — review pending' : progressPct >= 80 ? 'Course-complete' : 'In training';
+  const memberStatus = placed ? 'Placed' : reportedPlacement || pendingPlacement
+    ? PARTNER_PLACEMENT_LABELS.pendingVerification
+    : progressPct >= 80 ? 'Course-complete' : 'In training';
 
   const lastCertAt = member.userCertifications[0]?.earnedAt ?? null;
   const allCoursesDone =
@@ -245,21 +249,23 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
     {
       key: 'placement',
       label: 'Placement',
-      detail: member.placementRecord ? `${member.placementRecord.jobTitle} @ ${member.placementRecord.employerName}` : 'Not placed yet',
-      date: member.placementRecord?.placedAt ?? null,
+      detail: placed && member.placementRecord
+        ? `${member.placementRecord.jobTitle} @ ${member.placementRecord.employerName}`
+        : reportedPlacement || pendingPlacement ? PARTNER_PLACEMENT_LABELS.pendingVerification : 'Not placed yet',
+      date: placed ? member.placementRecord?.placedAt ?? null : null,
       done: placed,
     },
     {
       key: 'retention',
       label: 'Retention / follow-up',
       detail:
-        member.placementRecord?.retentionDecision ??
-        member.placementRecord?.retentionStatus ??
-        (member.placementRecord?.onboardingWindowEnd
+        (placed ? member.placementRecord?.retentionDecision : null) ??
+        (placed ? member.placementRecord?.retentionStatus : null) ??
+        (placed && member.placementRecord?.onboardingWindowEnd
           ? `Onboarding window through ${formatDate(member.placementRecord.onboardingWindowEnd)}`
-          : 'Recorded after placement'),
-      date: member.placementRecord?.onboardingWindowEnd ?? null,
-      done: !!(member.placementRecord?.retentionStatus || member.placementRecord?.retentionDecision),
+          : 'Awaiting verified placement'),
+      date: placed ? member.placementRecord?.onboardingWindowEnd ?? null : null,
+      done: placed && !!(member.placementRecord?.retentionStatus || member.placementRecord?.retentionDecision),
     },
   ];
 
@@ -419,7 +425,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
 
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
               {sectionHeading('Placement')}
-              {member.placementRecord ? (
+              {placed && member.placementRecord ? (
                 <div style={{ display: 'grid', gap: '0.7rem', marginTop: '0.75rem' }}>
                   <div>
                     <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Employer</p>
@@ -440,7 +446,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                     </p>
                   </div>
                 </div>
-              ) : pendingPlacement ? (
+              ) : reportedPlacement || pendingPlacement ? (
                 <div style={{ marginTop: '0.75rem' }}>
                   <div
                     style={{
@@ -455,9 +461,9 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                   >
                     <span className="material-symbols-outlined" style={{ color: 'var(--color-gold)', flexShrink: 0 }} aria-hidden="true">pending</span>
                     <div>
-                      <p style={{ margin: '0 0 0.25rem', fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)' }}>Offer reported — under review</p>
+                      <p style={{ margin: '0 0 0.25rem', fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)' }}>{PARTNER_PLACEMENT_LABELS.pendingVerification}</p>
                       <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
-                        This member self-reported accepting a job offer. WorkforceAP staff are reviewing the report before finalizing the placement.
+                        WorkforceAP staff have not verified this placement. Employer, role, and salary details will appear after verification.
                       </p>
                     </div>
                   </div>

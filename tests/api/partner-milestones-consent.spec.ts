@@ -79,8 +79,11 @@ describe('partner milestones consent (Vision C3)', () => {
     expect(h.findMany).toHaveBeenCalledTimes(1);
     const args = h.findMany.mock.calls[0][0] as { where: { eventName: { in: string[] } }; select?: Record<string, unknown> };
     expect(args.where.eventName.in).toContain('program_enrolled');
+    expect(args.where.eventName.in).toContain('training_access_activated');
     expect(args.where.eventName.in).not.toContain('member_logged_in');
     expect(args.where.eventName.in).not.toContain('counselor_followup_needed');
+    expect(args.where.eventName.in).not.toContain('certification_earned');
+    expect(args.where.eventName.in).not.toContain('placement_recorded');
     // Metadata is never loaded, so it can never be rendered.
     expect(args.select).toBeDefined();
     expect(args.select).not.toHaveProperty('metadata');
@@ -120,6 +123,25 @@ describe('partner milestones consent (Vision C3)', () => {
     for (const row of body.milestones) {
       expect(Object.keys(row).sort()).toEqual(['at', 'id', 'kind', 'label', 'memberId', 'memberName']);
     }
+  });
+
+  it('shows training access once and drops event copies of record-backed outcomes', async () => {
+    h.events = ['training_access_activated', 'certification_earned', 'placement_recorded'].map((eventName, index) => ({
+      id: `ev-${index}`,
+      userId: 'member-1',
+      eventName,
+      createdAt: new Date('2026-09-05T15:00:00Z'),
+      metadata: { label: 'SECRET_NOTE' },
+      user: { fullName: 'Riley Park' },
+    }));
+    const res = await GET(new NextRequest('http://localhost/api/partner/milestones'));
+    const body = (await res.json()) as Body;
+    expect(body.milestones.filter((row) => row.label === 'Training access activated')).toHaveLength(1);
+    expect(body.milestones.filter((row) => row.kind === 'certification')).toHaveLength(1);
+    expect(body.milestones.filter((row) => row.kind === 'placement')).toHaveLength(1);
+    expect(body.milestones.map((row) => row.id)).not.toContain('ev-1');
+    expect(body.milestones.map((row) => row.id)).not.toContain('ev-2');
+    expect(JSON.stringify(body)).not.toContain('SECRET_NOTE');
   });
 
   it('labels a verified placement with its employer and job', async () => {
