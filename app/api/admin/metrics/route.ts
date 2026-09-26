@@ -14,10 +14,41 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 type AuditTimingStage = 'authMs' | 'tenantMs' | 'coreMs' | 'supplementalMs' | 'workQueueMs' | 'courseraMs';
 type AuditTimings = Partial<Record<AuditTimingStage, number>>;
+type AuditSupplementalQuery =
+  | 'assessmentCompletedMs'
+  | 'dashboardViewsMs'
+  | 'dashboardActivatedMs'
+  | 'aiToolUsersMs'
+  | 'jobApplicationUsersMs'
+  | 'recentPlacementsMs'
+  | 'avgSalaryMs'
+  | 'weeklySignupsMs'
+  | 'weeklyEnrollmentsMs'
+  | 'weeklyDashboardViewsMs';
+type AuditSupplementalProbe = {
+  durationsMs: Partial<Record<AuditSupplementalQuery, number>>;
+  inFlight?: AuditSupplementalQuery;
+};
 let hasHandledMetricsRequest = false;
 
 function recordAuditTiming(timings: AuditTimings | undefined, stage: AuditTimingStage, startedAt: number) {
   if (timings) timings[stage] = Math.round(performance.now() - startedAt);
+}
+
+async function timeSupplementalQuery<T>(
+  probe: AuditSupplementalProbe | undefined,
+  name: AuditSupplementalQuery,
+  read: () => Promise<T>,
+): Promise<T> {
+  if (!probe) return read();
+  probe.inFlight = name;
+  const startedAt = performance.now();
+  try {
+    return await read();
+  } finally {
+    probe.durationsMs[name] = Math.round(performance.now() - startedAt);
+    probe.inFlight = undefined;
+  }
 }
 
 /**
@@ -28,7 +59,7 @@ function recordAuditTiming(timings: AuditTimings | undefined, stage: AuditTiming
  */
 async function computeAdminRouteMetricsPayload(
   orgId: string,
-  opts: { readOnlyAudit?: boolean; stageTimings?: AuditTimings } = {},
+  opts: { readOnlyAudit?: boolean; stageTimings?: AuditTimings; supplementalProbe?: AuditSupplementalProbe } = {},
 ) {
   let stageStartedAt = performance.now();
   const metrics = await getAdminMetrics(orgId, opts);
@@ -37,33 +68,33 @@ async function computeAdminRouteMetricsPayload(
 
   stageStartedAt = performance.now();
 
-  const assessmentCompleted = await prisma.$queryRaw<{ count: number }[]>`
+  const assessmentCompleted = await timeSupplementalQuery(opts.supplementalProbe, 'assessmentCompletedMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*)::int as count FROM users u
       ${memberJoin}
       WHERE u.assessment_completed = true AND u.deleted_at IS NULL
         AND u.organization_id = ${orgId}
-    `;
+    `);
 
-  const dashboardViews = await prisma.$queryRaw<{ count: number }[]>`
+  const dashboardViews = await timeSupplementalQuery(opts.supplementalProbe, 'dashboardViewsMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT me.user_id)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE me.event_name = 'member_dashboard_viewed'
-    `;
+    `);
 
   // Distinct members who activated, so the activation rate is members ÷
   // members. COUNT(*) counted every activation event (161 events from one
   // user over 40 viewers printed "Activation Rate 403%"; S4).
-  const dashboardActivated = await prisma.$queryRaw<{ count: number }[]>`
+  const dashboardActivated = await timeSupplementalQuery(opts.supplementalProbe, 'dashboardActivatedMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT me.user_id)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE me.event_name = 'member_dashboard_activated'
-    `;
+    `);
 
-  const aiToolUsers = await prisma.$queryRaw<{ count: number }[]>`
+  const aiToolUsers = await timeSupplementalQuery(opts.supplementalProbe, 'aiToolUsersMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT s.user_id)::int as count
       FROM (
         SELECT air.user_id FROM ai_tool_results air
@@ -75,36 +106,36 @@ async function computeAdminRouteMetricsPayload(
         ${memberJoin}
         WHERE me.event_name = 'ai_tool_run_started' AND me.entity_type = 'ai_tool'
       ) s
-    `;
+    `);
 
-  const jobApplicationUsers = await prisma.$queryRaw<{ count: number }[]>`
+  const jobApplicationUsers = await timeSupplementalQuery(opts.supplementalProbe, 'jobApplicationUsersMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT ja.user_id)::int as count
       FROM job_applications ja
       INNER JOIN users u ON u.id = ja.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE ja.status <> 'SAVED'
-    `;
+    `);
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const recentPlacements = await prisma.$queryRaw<{ count: number }[]>`
+  const recentPlacements = await timeSupplementalQuery(opts.supplementalProbe, 'recentPlacementsMs', () => prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*)::int as count
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE pr.placed_at >= ${thirtyDaysAgo}
-    `;
+    `);
 
-  const avgSalary = await prisma.$queryRaw<{ avg: number | null }[]>`
+  const avgSalary = await timeSupplementalQuery(opts.supplementalProbe, 'avgSalaryMs', () => prisma.$queryRaw<{ avg: number | null }[]>`
       SELECT AVG(pr.salary_offered)::float as avg
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE pr.salary_offered IS NOT NULL
-    `;
+    `);
 
-  const weeklySignups = await prisma.$queryRaw<{ week: string; count: number }[]>`
+  const weeklySignups = await timeSupplementalQuery(opts.supplementalProbe, 'weeklySignupsMs', () => prisma.$queryRaw<{ week: string; count: number }[]>`
       SELECT DATE_TRUNC('week', u.created_at)::text as week, COUNT(*)::int as count
       FROM users u
       ${memberJoin}
@@ -112,18 +143,18 @@ async function computeAdminRouteMetricsPayload(
         AND u.organization_id = ${orgId}
       GROUP BY DATE_TRUNC('week', u.created_at)
       ORDER BY week
-    `;
+    `);
 
-  const weeklyEnrollments = await prisma.$queryRaw<{ week: string; count: number }[]>`
+  const weeklyEnrollments = await timeSupplementalQuery(opts.supplementalProbe, 'weeklyEnrollmentsMs', () => prisma.$queryRaw<{ week: string; count: number }[]>`
       SELECT DATE_TRUNC('week', ce.created_at)::text as week, COUNT(*)::int as count
       FROM course_enrollments ce
       WHERE ce.created_at >= ${thirtyDaysAgo}
         AND ce.organization_id = ${orgId}
       GROUP BY DATE_TRUNC('week', ce.created_at)
       ORDER BY week
-    `;
+    `);
 
-  const weeklyDashboardViews = await prisma.$queryRaw<{ week: string; count: number }[]>`
+  const weeklyDashboardViews = await timeSupplementalQuery(opts.supplementalProbe, 'weeklyDashboardViewsMs', () => prisma.$queryRaw<{ week: string; count: number }[]>`
       SELECT DATE_TRUNC('week', me.created_at)::text as week, COUNT(*)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
@@ -131,7 +162,7 @@ async function computeAdminRouteMetricsPayload(
       WHERE me.event_name = 'member_dashboard_viewed' AND me.created_at >= ${thirtyDaysAgo}
       GROUP BY DATE_TRUNC('week', me.created_at)
       ORDER BY week
-    `;
+    `);
 
   recordAuditTiming(opts.stageTimings, 'supplementalMs', stageStartedAt);
 
@@ -298,12 +329,15 @@ export const GET = withApiGuc(async (request: NextRequest) => {
   const firstRequestOnInstance = !hasHandledMetricsRequest;
   hasHandledMetricsRequest = true;
   const stageTimings: AuditTimings | undefined = readOnlyAudit ? {} : undefined;
+  const supplementalProbe: AuditSupplementalProbe | undefined = readOnlyAudit ? { durationsMs: {} } : undefined;
   const requestStartedAt = performance.now();
   const slowCheckpoint = stageTimings ? setTimeout(() => {
     // The browser audit gives data requests five seconds to settle. Log an
     // in-flight snapshot before that deadline in case the client disconnects.
     console.info('[admin/metrics] read-only audit slow checkpoint', {
       ...stageTimings,
+      supplementalQueriesMs: { ...supplementalProbe?.durationsMs },
+      supplementalQueryInFlight: supplementalProbe?.inFlight ?? null,
       firstRequestOnInstance,
       elapsedMs: Math.round(performance.now() - requestStartedAt),
     });
@@ -321,7 +355,7 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       const orgId = await getActorOrganizationId(user.id);
       recordAuditTiming(stageTimings, 'tenantMs', tenantStartedAt);
       const body = readOnlyAudit
-        ? await computeAdminRouteMetricsPayload(orgId, { readOnlyAudit: true, stageTimings })
+        ? await computeAdminRouteMetricsPayload(orgId, { readOnlyAudit: true, stageTimings, supplementalProbe })
         : await unstable_cache(
             async () => computeAdminRouteMetricsPayload(orgId),
             ['admin-api-metrics-v1', orgId],
@@ -343,6 +377,7 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       const accountedMs = Object.values(stageTimings).reduce((sum, value) => sum + value, 0);
       console.info('[admin/metrics] read-only audit timing', {
         ...stageTimings,
+        supplementalQueriesMs: { ...supplementalProbe?.durationsMs },
         firstRequestOnInstance,
         totalMs,
         unaccountedMs: Math.max(0, totalMs - accountedMs),
