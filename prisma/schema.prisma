@@ -2112,6 +2112,7 @@ model TrainingBillingPacket {
   @@unique([organizationId, packetNumber])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([memberId, createdAt(sort: Desc)])
+  @@index([organizationId, memberId, fundingAttestationKey])
   @@map("training_billing_packets")
 }
 
@@ -2126,8 +2127,10 @@ model TrainingBillingPacketSend {
   email          String
   cc             String?
   idempotencyKey String    @map("idempotency_key")
-  /// "claimed" | "sent" | "failed" | "needs_reconciliation"
+  /// claimed | sent | rejected_definite | ambiguous | needs_reconciliation | reconciled_delivered | reconciled_not_delivered
   status         String
+  /// Rotated on every claim and reconciliation; every final transition compare-and-sets on it.
+  claimToken     String    @map("claim_token")
   /// First claim: when the idempotency key was first used (provider window starts here).
   claimedAt      DateTime  @map("claimed_at")
   /// Latest claim or retry of this key.
@@ -2135,6 +2138,8 @@ model TrainingBillingPacketSend {
   sentAt         DateTime? @map("sent_at")
   lastError      String?   @map("last_error") @db.Text
   reconciledById String?   @map("reconciled_by_id")
+  reconciledAt   DateTime? @map("reconciled_at")
+  reconcileNote  String?   @map("reconcile_note") @db.Text
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 

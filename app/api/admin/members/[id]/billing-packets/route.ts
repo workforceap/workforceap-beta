@@ -13,7 +13,8 @@ import { isUniqueViolation, nextPacketNumber } from '@/lib/billing/packetNumber'
 import { getPacketNumberPrefix, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
 import { resolveAssignedCounselorContact, resolveProgramTitle, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { resolveProgramPricing } from '@/lib/billing/packetDefaults';
-import { attestationFingerprint, buildJ6Facts, formatMoney, fundingReviewWarnings } from '@/lib/billing/packetText';
+import { attestationFingerprint, buildJ6Facts, DRAFT_CURRICULUM_REASON, formatMoney, fundingReviewWarnings, narrativeMoneyViolations } from '@/lib/billing/packetText';
+import { isCurriculumOwnerVerified } from '@/shared/programCurricula';
 import { freezeLogo, type SignedPacketSnapshot } from '@/lib/billing/packetSnapshot';
 import { loadLetterheadLogo } from '@/lib/billing/packetPdf';
 import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
@@ -62,6 +63,7 @@ export const GET = withApiGuc(async (_request: Request, { params }: { params: Pr
       where: { memberId: member.id, organizationId: member.organizationId },
       orderBy: { createdAt: 'desc' },
       take: 50,
+      include: { sends: true },
     });
     return NextResponse.json({ packets: rows.map((row) => serializeBillingPacket(row)) });
   } catch (error) {
@@ -111,6 +113,10 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     if (!program && !catalogRow) {
       return NextResponse.json({ error: 'Unknown program for this organization' }, { status: 400 });
     }
+    // Fail closed on unverified curricula (same predicate as the price list).
+    if (!isCurriculumOwnerVerified(program?.curriculum)) {
+      return NextResponse.json({ error: DRAFT_CURRICULUM_REASON, code: 'draft_curriculum' }, { status: 422 });
+    }
     const programTitle = resolveProgramTitle(programSlug, catalogRow?.name);
     const pricing = resolveProgramPricing({ slug: programSlug }, catalogRow);
 
@@ -125,6 +131,11 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     const totalAmount = sumLineItems(input.lineItems);
     if (totalAmount <= 0) {
       return NextResponse.json({ error: 'The invoice total must be greater than zero' }, { status: 400 });
+    }
+    // The narrative is human-reviewed prose; money may only appear in the generated facts block.
+    const narrativeViolations = narrativeMoneyViolations(input.coverLetterBody);
+    if (narrativeViolations.length > 0) {
+      return NextResponse.json({ error: narrativeViolations.join(' '), code: 'narrative_money' }, { status: 400 });
     }
     const funding = input.fundingAttestation;
     if (totalAmount > roundMoney(funding.approvedAmount)) {
@@ -145,6 +156,7 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       approvedAmount: funding.approvedAmount,
       fundingReference: funding.reference,
       exceptionNote: funding.exceptionNote,
+      narrative: input.coverLetterBody,
     });
     if (fingerprint !== input.reviewedFingerprint) {
       return NextResponse.json(

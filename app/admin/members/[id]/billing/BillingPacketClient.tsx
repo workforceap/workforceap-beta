@@ -11,8 +11,9 @@ import {
   defaultCoverLetterNarrative,
   formatMoney,
   fundingReviewWarnings,
-  isoDatePlusDays,
+  isoDateInPortalTz,
   narrativeFactHints,
+  narrativeMoneyViolations,
   totalContactHours,
   type FundingBasis,
   type ReviewedValues,
@@ -27,6 +28,8 @@ export type BillingProgramOption = {
   /** Price-list maximum shown as a reference only (never prefilled). */
   priceListMaximum: number | null;
   isPrimary: boolean;
+  /** Set when the program cannot be billed (e.g. a draft curriculum), with the reason. */
+  unavailableReason: string | null;
 };
 
 type BillingPacketClientProps = {
@@ -101,8 +104,8 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
 
   const [draft, setDraft] = useState<Draft>(() => ({
     programSlug: initialProgram?.slug ?? '',
-    invoiceDate: isoDatePlusDays(0),
-    dueDate: isoDatePlusDays(30),
+    invoiceDate: isoDateInPortalTz(0),
+    dueDate: isoDateInPortalTz(30),
     billToName: props.billTo.name,
     billToAttention: props.billTo.attention,
     billToAddress: props.billTo.address,
@@ -137,6 +140,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
     approvedAmount,
     fundingReference: draft.fundingReference,
     exceptionNote: draft.exceptionNote,
+    narrative: draft.coverLetterBody,
   };
   const fingerprint = attestationFingerprint(reviewed);
   const isConfirmed = (key: keyof Confirmations) => confirmed[key] === fingerprint;
@@ -145,7 +149,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
   const facts = useMemo(
     () =>
       buildJ6Facts({
-        invoiceDate: draft.invoiceDate || isoDatePlusDays(0),
+        invoiceDate: draft.invoiceDate || isoDateInPortalTz(0),
         dueDate: draft.dueDate || null,
         billToName: draft.billToName,
         referenceNumber: draft.referenceNumber || null,
@@ -158,6 +162,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
     [draft.invoiceDate, draft.dueDate, draft.billToName, draft.referenceNumber, rows, draft.fundingBasis, approvedAmount, draft.fundingReference],
   );
   const hints = useMemo(() => narrativeFactHints(draft.coverLetterBody), [draft.coverLetterBody]);
+  const narrativeBlocks = useMemo(() => narrativeMoneyViolations(draft.coverLetterBody), [draft.coverLetterBody]);
   const warnings = fundingReviewWarnings({ fundingType: draft.fundingBasis, total });
   const missingAmount = rows.some((r) => r.amount == null);
 
@@ -275,6 +280,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
                   <option key={p.slug} value={p.slug}>
                     {p.title}
                     {p.isPrimary ? ' (primary)' : ''}
+                    {p.unavailableReason ? ' (not available for billing)' : ''}
                   </option>
                 ))}
               </select>
@@ -322,7 +328,10 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
                 {selectedProgram ? `Prefilled with ${PRICING_SOURCE_LABEL[selectedProgram.pricingSource]}. Edit any row.` : ''}
               </span>
             </div>
-            {selectedProgram?.pricingSource === 'price_list_default' ? (
+            {selectedProgram?.unavailableReason ? (
+              <p role="alert" style={{ margin: 0, fontWeight: 600, color: 'var(--color-accent, #ad2c4d)' }}>{selectedProgram.unavailableReason}</p>
+            ) : null}
+            {selectedProgram?.pricingSource === 'price_list_default' && !selectedProgram.unavailableReason ? (
               <p role="note" style={{ margin: 0, fontWeight: 600, color: 'var(--color-accent, #ad2c4d)' }}>
                 No catalog or syllabus price is on file for this program. Enter the actual approved tuition from the ITA or contract.
                 {selectedProgram.priceListMaximum != null ? ` Price list maximum: ${formatMoney(selectedProgram.priceListMaximum)} (ceiling, not a charge).` : ''}
@@ -473,6 +482,9 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             <span style={{ fontSize: '0.8125rem', color: 'var(--color-muted, #64748b)', fontWeight: 400 }}>
               Prose only. Date, addressee, RE line, the facts block below, closing and signature are added automatically. Start lines with &ldquo;- &rdquo; for bullets.
             </span>
+            {narrativeBlocks.length > 0 ? (
+              <span role="alert" style={{ fontSize: '0.85rem', color: 'var(--color-accent, #ad2c4d)', fontWeight: 600 }}>{narrativeBlocks.join(' ')}</span>
+            ) : null}
             {hints.length > 0 ? (
               <span role="note" style={{ fontSize: '0.85rem', color: 'var(--color-muted, #64748b)' }}>{hints.join(' ')}</span>
             ) : null}
@@ -487,7 +499,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
             </ul>
             <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.9rem' }}>
               <input type="checkbox" checked={isConfirmed('facts')} onChange={(e) => toggle('facts', e.target.checked)} style={{ marginTop: 4 }} />
-              <span>I reviewed the J6 facts block.</span>
+              <span>I reviewed the J6 facts block and the narrative text; the narrative is not machine-checked beyond amounts.</span>
             </label>
           </div>
 
@@ -514,7 +526,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           ) : null}
 
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button type="submit" className="btn" style={{ minHeight: 46, padding: '0 1.25rem' }} disabled={saving || props.programs.length === 0 || draft.lineItems.length === 0 || missingAmount}>
+            <button type="submit" className="btn" style={{ minHeight: 46, padding: '0 1.25rem' }} disabled={saving || props.programs.length === 0 || draft.lineItems.length === 0 || missingAmount || narrativeBlocks.length > 0 || Boolean(selectedProgram?.unavailableReason)}>
               {saving ? 'Creating…' : `Create signed J5 + J6 (${formatMoney(total)})`}
             </button>
             <span style={{ fontSize: '0.85rem', color: 'var(--color-muted, #64748b)' }}>

@@ -1,6 +1,6 @@
 import type { TrainingBillingPacket } from '@prisma/client';
 import { getResend } from '@/lib/email';
-import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { billingPacketCounselorHtml, billingPacketStudentHtml, type BillingPacketEmailFacts } from '@/emails/billing-packet';
@@ -108,11 +108,35 @@ export class EmailNotConfiguredError extends Error {
   }
 }
 
-/** Resend refused a reused idempotency key (409): needs operator reconciliation, never a new key. */
-export function isIdempotencyConflict(err: unknown): boolean {
-  if (!err || typeof err !== 'object') return false;
-  const e = err as { statusCode?: unknown; providerErrorName?: unknown };
-  return e.statusCode === 409 || e.providerErrorName === 'invalid_idempotent_request' || e.providerErrorName === 'concurrent_idempotent_requests';
+/** Resend error codes (node_modules/resend) that definitively mean "not accepted". */
+const DEFINITE_REJECTIONS = new Set([
+  'missing_required_field',
+  'invalid_idempotency_key',
+  'invalid_access',
+  'invalid_parameter',
+  'invalid_region',
+  'missing_api_key',
+  'invalid_api_Key',
+  'invalid_from_address',
+  'validation_error',
+  'not_found',
+  'method_not_allowed',
+]);
+
+export type DeliveryErrorClass =
+  /** Resend refused a reused key with a changed payload: operator reconciliation, never a new key. */
+  | 'idempotency_conflict'
+  /** Definitely not accepted (local skip, config, provider 4xx validation). */
+  | 'rejected_definite'
+  /** Unknown whether it was accepted (timeout, network, 5xx, 429, unknown): same-key retry only. */
+  | 'ambiguous';
+
+export function classifyDeliveryError(err: unknown): DeliveryErrorClass {
+  if (err instanceof EmailNotConfiguredError || err instanceof FixtureRecipientSkippedError) return 'rejected_definite';
+  const name = err && typeof err === 'object' ? (err as { providerErrorName?: unknown }).providerErrorName : undefined;
+  if (name === 'invalid_idempotent_request') return 'idempotency_conflict';
+  if (typeof name === 'string' && DEFINITE_REJECTIONS.has(name)) return 'rejected_definite';
+  return 'ambiguous';
 }
 
 /** Deliver one packet email with its attempt's idempotency key. Throws on failure. */

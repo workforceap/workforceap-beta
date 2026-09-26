@@ -7,6 +7,7 @@ import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPa
 import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { isCurriculumOwnerVerified } from '@/shared/programCurricula';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { buildDefaultLineItems, resolveProgramPricing } from '@/lib/billing/packetDefaults';
 import { getDefaultBillTo, getDefaultSigner, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
@@ -15,6 +16,7 @@ import { resolveBillableEnrollments } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 import PageHeader from '@/components/portal/PageHeader';
 import BillingPacketClient, { type BillingProgramOption } from './BillingPacketClient';
+import { DRAFT_CURRICULUM_REASON } from '@/lib/billing/packetText';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -83,6 +85,7 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
       where: { memberId: member.id, organizationId: member.organizationId },
       orderBy: { createdAt: 'desc' },
       take: 50,
+      include: { sends: true },
     }),
     resolveAssignedCounselorContact(member.id),
   ]);
@@ -96,13 +99,17 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
       const enrollment = enrollments[index];
       const courses = program ? getProgramCoursesForCurriculumVersion(program, enrollment?.curriculumVersion) : [];
       const pricing = resolveProgramPricing({ slug }, catalog);
+      // Same rule as the funder-facing price list: a draft curriculum's hours
+      // and price never go on an official document.
+      const verified = isCurriculumOwnerVerified(program?.curriculum);
       return {
         slug,
         title,
-        lineItems: buildDefaultLineItems({ courses, pricing, programTitle: title }),
+        lineItems: verified ? buildDefaultLineItems({ courses, pricing, programTitle: title }) : [],
         pricingSource: pricing.source,
-        priceListMaximum: pricing.source === 'price_list_default' ? pricing.tuition : null,
+        priceListMaximum: verified && pricing.source === 'price_list_default' ? pricing.tuition : null,
         isPrimary: enrollment?.isPrimary ?? false,
+        unavailableReason: verified ? null : DRAFT_CURRICULUM_REASON,
       };
     })
     .filter((p): p is BillingProgramOption => p !== null);

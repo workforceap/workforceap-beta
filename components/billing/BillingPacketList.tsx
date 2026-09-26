@@ -18,16 +18,25 @@ type BillingPacketListProps = {
   emptyText?: string;
 };
 
-type SendState = {
-  id: string;
-  busy: boolean;
-  ok?: boolean;
-  message?: string;
-  /** Copy that needs operator reconciliation (checked in the provider dashboard). */
-  reconcile?: 'student' | 'counselor';
-} | null;
+type SendState = { id: string; busy: boolean; ok?: boolean; message?: string } | null;
 
-type SendAction = { action?: 'email_again' | 'mark_delivered'; recipient?: 'student' | 'counselor' };
+type SendAction = { action?: 'send' | 'email_again' | 'reconcile'; recipient?: string; delivered?: boolean; note?: string };
+
+/** Button label and request for the current attempt's next action (the send route enforces the same rule). */
+function primaryAction(p: BillingPacketSummary): { label: string; body: SendAction; disabled: boolean; why?: string } {
+  switch (p.sendState?.nextAction ?? 'send') {
+    case 'retry':
+      return { label: 'Retry (same attempt, same keys)', body: { action: 'send' }, disabled: false };
+    case 'in_progress':
+      return { label: 'Sending…', body: {}, disabled: true, why: 'A copy is being sent right now.' };
+    case 'reconcile':
+      return { label: 'Email again', body: {}, disabled: true, why: 'A copy needs reconciliation below before anything else can be sent.' };
+    case 'email_again':
+      return { label: 'Email again to counselor and student (new attempt)', body: { action: 'email_again' }, disabled: false };
+    default:
+      return { label: 'Email to counselor and student', body: { action: 'send' }, disabled: false };
+  }
+}
 
 function pdfHref(id: string, doc: 'j5' | 'j6' | 'both', download = false) {
   return `/api/billing-packets/${id}/pdf?doc=${doc}${download ? '&download=1' : ''}`;
@@ -59,18 +68,15 @@ export default function BillingPacketList({
       const res = await fetch(`/api/billing-packets/${packet.id}/send`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
-        code?: string;
-        recipient?: 'student' | 'counselor';
         packet?: BillingPacketSummary;
         sentTo?: string[];
         counselorMissing?: boolean;
       };
       if (data.packet && onPacketUpdated) onPacketUpdated(data.packet);
-      if (data.code === 'needs_reconciliation') {
-        setSend({ id: packet.id, busy: false, ok: false, message: data.error, reconcile: data.recipient });
+      if (!res.ok) {
+        setSend({ id: packet.id, busy: false, ok: false, message: data.error ?? 'Could not send the documents right now.' });
         return;
       }
-      if (!res.ok) throw new Error(data.error ?? 'Could not send the documents right now.');
       const to = (data.sentTo ?? []).join(', ');
       const warn = data.counselorMissing ? ' No counselor was assigned when it was signed, so only the student received it.' : '';
       setSend({ id: packet.id, busy: false, ok: true, message: `Sent to ${to}.${warn}` });
@@ -122,10 +128,11 @@ export default function BillingPacketList({
                   type="button"
                   className="btn"
                   style={{ minHeight: 40 }}
-                  disabled={Boolean(state?.busy)}
-                  onClick={() => void sendPacket(p, p.status === 'sent' ? { action: 'email_again' } : {})}
+                  disabled={Boolean(state?.busy) || primaryAction(p).disabled}
+                  title={primaryAction(p).why}
+                  onClick={() => void sendPacket(p, primaryAction(p).body)}
                 >
-                  {state?.busy ? 'Sending…' : p.status === 'sent' ? 'Email again to counselor and student' : 'Email to counselor and student'}
+                  {state?.busy ? 'Sending…' : primaryAction(p).label}
                 </button>
               ) : null}
             </div>
@@ -143,19 +150,53 @@ export default function BillingPacketList({
                 {state.message}
               </p>
             ) : null}
-            {canSend && state && !state.busy && state.reconcile ? (
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button type="button" className="btn btn-outline" style={{ minHeight: 40 }} onClick={() => void sendPacket(p, { action: 'mark_delivered', recipient: state.reconcile })}>
-                  I checked the provider: mark the {state.reconcile} copy delivered
-                </button>
-                <button type="button" className="btn btn-outline" style={{ minHeight: 40 }} onClick={() => void sendPacket(p, { action: 'email_again' })}>
-                  Not delivered: start a new attempt (Email again)
-                </button>
-              </div>
+            {canSend && primaryAction(p).why ? (
+              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-accent, #ad2c4d)' }}>{primaryAction(p).why}</p>
             ) : null}
+            {canSend && p.sendState?.nextAction === 'reconcile'
+              ? p.sendState.rows
+                  .filter((r) => r.status === 'needs_reconciliation')
+                  .map((r) => (
+                    <ReconcileRow
+                      key={r.recipient}
+                      recipient={r.recipient}
+                      lastError={r.lastError}
+                      busy={Boolean(state?.busy)}
+                      onSubmit={(delivered, note) => void sendPacket(p, { action: 'reconcile', recipient: r.recipient, delivered, note })}
+                    />
+                  ))
+              : null}
           </li>
         );
       })}
     </ul>
+  );
+}
+
+/** Operator reconciliation for one copy: record the outcome checked in the provider, with a note. */
+function ReconcileRow(props: { recipient: string; lastError: string | null; busy: boolean; onSubmit: (delivered: boolean, note: string) => void }) {
+  const [note, setNote] = useState('');
+  const ready = note.trim().length >= 3 && !props.busy;
+  return (
+    <div style={{ display: 'grid', gap: '0.4rem', padding: '0.5rem', border: '1px solid var(--outline-variant, #cbd5e1)', borderRadius: 8 }}>
+      <span style={{ fontSize: '0.85rem' }}>
+        The {props.recipient} copy needs reconciliation{props.lastError ? `: ${props.lastError}` : ''}. Check the Resend dashboard or logs, then record what you found.
+      </span>
+      <input
+        aria-label={`What you checked for the ${props.recipient} copy`}
+        placeholder="What you checked (e.g. Resend log entry)"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        style={{ minHeight: 38, padding: '0.4rem 0.6rem', border: '1px solid var(--outline-variant, #cbd5e1)', borderRadius: 8 }}
+      />
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <button type="button" className="btn btn-outline" style={{ minHeight: 38 }} disabled={!ready} onClick={() => props.onSubmit(true, note)}>
+          Mark delivered
+        </button>
+        <button type="button" className="btn btn-outline" style={{ minHeight: 38 }} disabled={!ready} onClick={() => props.onSubmit(false, note)}>
+          Confirm not delivered
+        </button>
+      </div>
+    </div>
   );
 }

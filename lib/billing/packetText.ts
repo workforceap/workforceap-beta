@@ -54,6 +54,9 @@ export function allocateAmount(total: number, weights: ReadonlyArray<number>): n
   return cents.map((c) => c / 100);
 }
 
+export const DRAFT_CURRICULUM_REASON =
+  "Not available for billing: this program's curriculum is pending owner verification, so its hours and price are not on the official price list.";
+
 /** Funding basis staff select on the form; never inferred from other data. */
 export type FundingBasis = 'wioa_ita' | 'separate_contract';
 
@@ -128,15 +131,32 @@ export function buildJ6Facts(args: {
   return lines;
 }
 
+const MONEY_WORDS = '(?:total|amount|tuition|fees?|invoice)';
+const NARRATIVE_MONEY_PATTERNS: Array<[RegExp, string]> = [
+  [/\$\s?\d/, 'a dollar amount'],
+  [/(?:^|[^\w.])\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?\b/, 'a number formatted like money'],
+  [/(?:^|[^\w.])\d+\.\d{2}\b/, 'a number formatted like money'],
+  [new RegExp(`\\b${MONEY_WORDS}\\b(?:\\W+[A-Za-z]+){0,2}\\W+\\d[\\d,.]*\\b`, 'i'), 'an amount word next to a number'],
+  [new RegExp(`(?:^|[^\\w.])\\d[\\d,.]*(?:\\W+[A-Za-z]+){0,2}\\W+${MONEY_WORDS}\\b`, 'i'), 'an amount word next to a number'],
+];
+
 /**
- * Non-blocking hint: the narrative restates figures that belong in the facts
- * block. Not a correctness check; the facts block is the source of truth.
+ * Hard server-side block: the narrative may not state money. The facts block
+ * is generated and authoritative; the narrative is human-reviewed prose, NOT
+ * machine-verified beyond this check (a payer name or other wording is only
+ * covered by the signer's review confirmation).
  */
+export function narrativeMoneyViolations(narrative: string): string[] {
+  const found = new Set<string>();
+  for (const [pattern, label] of NARRATIVE_MONEY_PATTERNS) if (pattern.test(narrative)) found.add(label);
+  return [...found].map((label) => `The J6 narrative contains ${label}. Amounts belong only in the generated facts block; remove it from the narrative.`);
+}
+
+/** Non-blocking hint for hours typed into the narrative. */
 export function narrativeFactHints(narrative: string): string[] {
-  const hints: string[] = [];
-  if (/\$\s?\d/.test(narrative)) hints.push('The narrative mentions a dollar amount. Amounts are printed in the facts block; consider removing it from the prose.');
-  if (/\d+(?:\.\d+)?\s+(?:total\s+)?contact hours/i.test(narrative)) hints.push('The narrative mentions contact hours. Hours are printed in the facts block; consider removing them from the prose.');
-  return hints;
+  return /\d+(?:\.\d+)?\s+(?:total\s+)?contact hours/i.test(narrative)
+    ? ['The narrative mentions contact hours. Hours are printed in the facts block; consider removing them from the prose.']
+    : [];
 }
 
 /** Values the signer reviews; any change after ticking a confirmation voids it. */
@@ -151,6 +171,8 @@ export type ReviewedValues = {
   approvedAmount: number | null;
   fundingReference: string;
   exceptionNote: string;
+  /** The J6 narrative is covered by the review too. */
+  narrative: string;
 };
 
 function fnv1a(text: string, seed: number): string {
@@ -180,8 +202,20 @@ export function attestationFingerprint(v: ReviewedValues): string {
     v.approvedAmount ?? null,
     v.fundingReference.trim(),
     v.exceptionNote.trim(),
+    v.narrative.trim(),
   ]);
   return `${fnv1a(canonical, 0x811c9dc5)}${fnv1a(canonical, 0x01000193)}`;
+}
+
+/**
+ * Today in the org's operating timezone (PORTAL_TIMEZONE) as YYYY-MM-DD, plus
+ * an optional day offset. Used for the form's invoice/due date defaults so a
+ * late-evening Texas session does not default to tomorrow's (UTC) date.
+ */
+export function isoDateInPortalTz(days: number, from: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: PORTAL_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(from);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return new Date(Date.UTC(get('year'), get('month') - 1, get('day') + days)).toISOString().slice(0, 10);
 }
 
 /** Today (UTC) as YYYY-MM-DD, with an optional day offset. */

@@ -1,4 +1,4 @@
-import type { TrainingBillingPacket } from '@prisma/client';
+import type { TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
@@ -6,6 +6,7 @@ import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAcces
 import { parseLineItems, type PacketLineItem } from './packetSchema';
 import { resolveProgramTitle } from './packetDocument';
 import { parseSignedSnapshot } from './packetSnapshot';
+import { nextSendAction, type NextSendAction, type PacketRecipient } from './sendAttempts';
 
 export { resolveProgramTitle } from './packetDocument';
 
@@ -30,6 +31,12 @@ export type BillingPacketSummary = {
   sendCount: number;
   /** Frozen send recipients from the signed snapshot (null for legacy or unreadable snapshots). */
   recipients: { student: string; counselor: string | null } | null;
+  /** Admin view only: the current send attempt's rows and the next allowed action (same rule the send route enforces). */
+  sendState: {
+    attemptNo: number | null;
+    nextAction: NextSendAction;
+    rows: Array<{ recipient: string; status: string; lastError: string | null }>;
+  } | null;
 };
 
 /** List summaries must not fail on one bad row; the PDF/send routes refuse a corrupt snapshot. */
@@ -41,8 +48,13 @@ function readSnapshotForSummary(row: TrainingBillingPacket) {
   }
 }
 
-export function serializeBillingPacket(row: TrainingBillingPacket, programTitle?: string): BillingPacketSummary {
+export function serializeBillingPacket(
+  row: TrainingBillingPacket & { sends?: TrainingBillingPacketSend[] },
+  programTitle?: string,
+): BillingPacketSummary {
   const snapshot = readSnapshotForSummary(row);
+  const currentRows = row.sends ? row.sends.filter((s) => s.attemptNo === row.sendAttemptNo) : null;
+  const recipients: PacketRecipient[] = snapshot?.counselor ? ['student', 'counselor'] : ['student'];
   return {
     id: row.id,
     packetNumber: row.packetNumber,
@@ -63,6 +75,13 @@ export function serializeBillingPacket(row: TrainingBillingPacket, programTitle?
     sendCount: row.sendCount,
     recipients: snapshot
       ? { student: snapshot.member.email, counselor: snapshot.counselor ? `${snapshot.counselor.fullName} (${snapshot.counselor.email})` : null }
+      : null,
+    sendState: currentRows
+      ? {
+          attemptNo: row.sendAttemptNo,
+          nextAction: nextSendAction({ attemptNo: row.sendAttemptNo, recipients, rows: currentRows, now: new Date() }),
+          rows: currentRows.map((s) => ({ recipient: s.recipient, status: s.status, lastError: s.lastError })),
+        }
       : null,
   };
 }

@@ -571,13 +571,9 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   sheet.text(salutation, { size: 10.5 });
   sheet.gap(16);
 
-  for (const block of sanitizePdfText(input.coverLetterBody).split(/\n{2,}/)) {
-    sheet.paragraph(block, { size: 10.5, leading: 14.6 });
-    sheet.gap(6);
-  }
-
-  // Facts block: generated from the J5 rows and the signed snapshot, never
-  // from the editable narrative, so the letter cannot contradict the invoice.
+  // Facts block FIRST: generated from the J5 rows and the signed snapshot, and
+  // authoritative. The narrative after it is human-reviewed prose, not
+  // machine-verified beyond the money check at signing.
   sheet.ensure(40);
   sheet.text('Invoice facts (generated from Form J5)', { size: 9.5, font: f.bold, color: ACCENT });
   sheet.gap(14);
@@ -585,6 +581,11 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
     sheet.paragraph(line, { size: 9.5, leading: 12.5, x: MARGIN + 10 });
   }
   sheet.gap(6);
+
+  for (const block of sanitizePdfText(input.coverLetterBody).split(/\n{2,}/)) {
+    sheet.paragraph(block, { size: 10.5, leading: 14.6 });
+    sheet.gap(6);
+  }
 
   sheet.gap(4);
   // Closing, signature, enclosure and cc are one unit: reserve exactly what

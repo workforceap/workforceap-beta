@@ -91,9 +91,14 @@ export const createPacketSchema = z
 
 export type CreatePacketInput = z.infer<typeof createPacketSchema>;
 
-/** Key for the one-packet-per-reference rule: trimmed, inner whitespace collapsed, case-insensitive. */
+/**
+ * Key for the one-packet-per-member-and-approval rule: upper-cased with every
+ * character that is not a letter or digit removed, so "ITA-123", "ita 123" and
+ * "ITA_123." collide. Over-matching is the conservative failure mode for a
+ * same-member duplicate guard. The reference as typed stays in the snapshot.
+ */
 export function normalizeFundingReference(reference: string): string {
-  return reference.trim().replace(/\s+/g, ' ').toLowerCase();
+  return reference.toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
 /** Round to cents so JSON storage and PDF totals agree. */
