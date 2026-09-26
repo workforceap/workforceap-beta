@@ -20,13 +20,22 @@ vi.mock('@/lib/partner/referralBundle', () => ({
     pipelineMembers: [{
       member: {
         id: 'm1',
+        fullName: 'Member One',
+        enrolledProgram: 'it-support',
+        enrolledAt: new Date('2026-01-01T00:00:00Z'),
+        courseEnrollments: [],
+        userCertifications: [],
+        memberProgramProgress: [],
         placementRecord: { employerName: 'Acme', jobTitle: 'Technician', placedAt: new Date('2026-01-02T00:00:00Z'), startDateVerified: true, onboardingWindowEnd: new Date('2026-04-02T00:00:00Z'), retentionDecision: 'retained', salaryOffered: 52000 },
         // A profile that still carries the demographic fields must not leak them into the CSV.
         profile: { city: 'Austin', state: 'TX', zip: '78701', employmentStatus: 'unemployed', educationLevel: 'high_school', ethnicity: 'ETHNICITY_MARKER', veteranStatus: 'VETERAN_MARKER' },
       },
       referredAt: new Date('2026-01-01T00:00:00Z'),
+      stage: 'placed',
+      programTitle: 'IT Support',
     }],
   }),
+  countPartnerReferrals: async () => 1,
   toPartnerMembersListRows: () => [{ id: 'm1', fullName: 'Member One', stageLabel: 'Enrolled', programTitle: 'IT Support', progress: 40, story: '40% through IT Support', referredAtLabel: '1/1/2026' }],
 }));
 
@@ -60,5 +69,26 @@ describe('partner referrals export columns (WAP-171)', () => {
   it('outcomes and default presets are unchanged', async () => {
     expect((await exportCsv('outcomes')).header).toEqual([...BASE, ...OUTCOMES]);
     expect((await exportCsv()).header).toEqual(BASE);
+  });
+
+  it('packet preset (V12) has no ethnicity, veteran, salary or email columns, and the other presets keep theirs', async () => {
+    const { text } = await exportCsv('packet');
+    const lines = text.split('\r\n');
+    const rowHeader = lines[lines.indexOf('') + 1].split(',');
+    expect(rowHeader).toEqual([
+      'Member name',
+      'Referred at',
+      'Stage',
+      'Program',
+      'Enrolled',
+      'Training completed',
+      'Credential record (any source or status)',
+      'Placement status',
+      'Placed employer (start date verified)',
+      'Job title (start date verified)',
+    ]);
+    expect(rowHeader.join(',')).not.toMatch(/ethnicity|veteran|salary|email|story|city|zip/i);
+    expect(text).not.toMatch(/ETHNICITY_MARKER|VETERAN_MARKER|52000|m1@example\.test/);
+    expect((await exportCsv('outcomes')).header).toEqual([...BASE, ...OUTCOMES]);
   });
 });

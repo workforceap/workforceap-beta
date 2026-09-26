@@ -4,7 +4,12 @@ import { logAuditEvent } from '@/lib/audit/log';
 import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
-import { loadPartnerReferralBundle, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
+import {
+  countPartnerReferrals,
+  loadPartnerReferralBundle,
+  toPartnerMembersListRows,
+} from '@/lib/partner/referralBundle';
+import { buildPartnerOutcomePacket, partnerOutcomePacketCsv } from '@/lib/partner/outcomePacket';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 // Shared escaper (P02): quotes like before and also neutralizes a leading
@@ -35,6 +40,33 @@ export const GET = withApiGuc(async (request: NextRequest) => {
     const preset = request.nextUrl.searchParams.get('preset');
   
     try {
+    if (preset === 'packet') {
+      // Outcome packet (V12): the same builder the /partner/exports summary
+      // renders, plus the uncapped referral count so a capped load is disclosed.
+      const [{ pipelineMembers: packetMembers }, totalReferrals] = await Promise.all([
+        loadPartnerReferralBundle(ctx.partnerId, ctx.partner.organizationId),
+        countPartnerReferrals(ctx.partnerId, ctx.partner.organizationId),
+      ]);
+      const packet = buildPartnerOutcomePacket({
+        pipelineMembers: packetMembers,
+        totalReferrals,
+        partnerName: ctx.partner.name,
+        generatedAt: new Date(),
+      });
+      const auditMeta = { preset: 'packet', rows: packet.loadedReferrals, totalReferrals: packet.totalReferrals };
+      auditLog({ actorUserId: user.id, action: 'partner_referrals_export', targetType: 'Partner', targetId: ctx.partnerId, metadata: auditMeta }).catch(() => {});
+      logAuditEvent({ user: { id: user.id, role: 'partner' }, verb: 'exported', object: { type: 'PartnerReferralExport', id: ctx.partnerId }, result: { success: true, extensions: auditMeta } }).catch(() => {});
+      return new NextResponse(partnerOutcomePacketCsv(packet), {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': `attachment; filename="workforceap-outcome-packet-${ctx.partner.slug}.csv"`,
+          // Member names: never kept by a browser, proxy or CDN cache.
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
     const { pipelineMembers } = await loadPartnerReferralBundle(ctx.partnerId, ctx.partner.organizationId);
     const rows = toPartnerMembersListRows(pipelineMembers);
   
