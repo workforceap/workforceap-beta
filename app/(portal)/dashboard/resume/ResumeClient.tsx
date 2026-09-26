@@ -841,12 +841,14 @@ export default function ResumeClient({
   );
 
   const witDataEmpty = !witData.name && !witData.email && !witData.phone && !witData.recentEmployer && !witData.targetJob && !witData.skills;
+  const witDataComplete = !!(witData.name && witData.email && witData.phone && witData.recentEmployer && witData.targetJob && witData.skills);
+  const witContact = [witData.name || 'Add your name', witData.email || 'Add your email', witData.phone || 'Add your phone'].join(', ');
 
   const witGuideSection = (
     <section className="wa-kit-card">
       <CardHead title="WorkInTexas guide" />
       <div className="wa-flex wa-items-center wa-gap-2" style={{ marginBottom: 12, marginTop: -6 }}>
-        <StatusTag tone={witDataEmpty ? "muted" : "info"}>{witDataEmpty ? "Copy manually" : "Pre-filled"}</StatusTag>
+        <StatusTag tone={witDataEmpty ? "muted" : "info"}>{witDataEmpty ? "Fill in manually" : witDataComplete ? "Ready to copy" : "Partially filled"}</StatusTag>
       </div>
       <p
         style={{
@@ -856,29 +858,28 @@ export default function ResumeClient({
           lineHeight: 1.55,
         }}
       >
-        {witDataEmpty
-          ? "Copy these from your profile. Use these steps when creating your WorkInTexas profile."
-          : "Pre-filled with your data. Use these steps when creating your WorkInTexas profile."}
+        {witDataComplete
+          ? "Use these details when creating your WorkInTexas profile."
+          : "Use the available details below. Fill in the prompts with your own work history, skills, and target job before copying them."}
       </p>
       <ol style={{ margin: "0 0 1rem", paddingLeft: "1.15rem", color: "var(--wa-text)", fontSize: "0.875rem", lineHeight: 1.85 }}>
         <li>
           <strong>Create account</strong> at workintexas.com
         </li>
         <li>
-          <strong>Contact info</strong> → {witData.name}, {witData.email},{" "}
-          {witData.phone}
+          <strong>Contact info</strong> → {witContact}
         </li>
         <li>
-          <strong>Work history</strong> → {witData.recentEmployer}
+          <strong>Work history</strong> → {witData.recentEmployer || (hasOriginal ? "Use the jobs and dates on your original resume" : "Add your jobs and dates")}
         </li>
         <li>
-          <strong>Target job</strong> → {witData.targetJob}
+          <strong>Target job</strong> → {witData.targetJob || "Choose the job title you want to pursue"}
         </li>
         <li>
-          <strong>Upload resume</strong> → Download from above
+          <strong>Upload resume</strong> → {resumeData?.originalUrl ? "Download your original resume from above" : hasOriginal ? "Original file on record; download currently unavailable" : "Upload your original resume above first"}
         </li>
         <li>
-          <strong>Skills</strong> → {witData.skills}
+          <strong>Skills</strong> → {witData.skills || (hasOriginal ? "Use the skills on your original resume" : "List skills you can demonstrate")}
         </li>
       </ol>
       <a
