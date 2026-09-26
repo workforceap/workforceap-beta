@@ -488,7 +488,7 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
   });
 
   it.each(['light', 'dark'] as const)('%s: a solid --wa-accent chip reads through --wa-on-accent-control (M14)', async (scheme) => {
-    vi.stubGlobal('fetch', vi.fn(async () => json({ milestones: [{ id: 'm1', kind: 'placement', label: 'Placed', memberId: 'u1', memberName: 'Ada', at: '2026-09-01T00:00:00Z' }] })));
+    vi.stubGlobal('fetch', vi.fn(async () => json({ milestones: [{ id: 'm1', kind: 'placement_pending', label: 'Pending verification', memberId: 'u1', memberName: 'Ada', at: '2026-09-01T00:00:00Z' }] })));
     const { default: PartnerMilestonesMobile } = await import('@/components/partner/PartnerMilestonesMobile');
     const { container } = render(
       <NextIntlClientProvider locale="en" messages={messages}><PartnerMilestonesMobile /></NextIntlClientProvider>,
