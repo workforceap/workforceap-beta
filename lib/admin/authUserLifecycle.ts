@@ -20,6 +20,26 @@ export type DisableAuthUserResult =
   | { ok: true; alreadyMissing: boolean }
   | { ok: false; message: string };
 
+function isConfirmedMissingAuthUser(error: { status?: number; code?: string }): boolean {
+  return error.status === 404 || error.code === 'user_not_found';
+}
+
+/** Confirm Auth removal before an app tombstone can be hard-purged. */
+export async function deleteAuthUserForErasure(admin: Admin, userId: string): Promise<DisableAuthUserResult> {
+  const { data, error: lookupError } = await admin.auth.admin.getUserById(userId);
+  if (lookupError) return isConfirmedMissingAuthUser(lookupError)
+    ? { ok: true, alreadyMissing: true }
+    : { ok: false, message: 'Could not verify the selected sign-in account.' };
+  if (!data.user || data.user.id !== userId) {
+    return { ok: false, message: 'The selected sign-in identity could not be confirmed.' };
+  }
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (!error) return { ok: true, alreadyMissing: false };
+  return isConfirmedMissingAuthUser(error)
+    ? { ok: true, alreadyMissing: true }
+    : { ok: false, message: 'Could not confirm sign-in account deletion.' };
+}
+
 /**
  * Admin "soft delete" used to hard-delete the Supabase auth user, which made
  * the app-side restore a no-op for sign-in (the row came back, the login did
@@ -33,7 +53,7 @@ export async function disableAuthUserForSoftDelete(
   expectedEmail: string,
 ): Promise<DisableAuthUserResult> {
   const { data, error: lookupError } = await admin.auth.admin.getUserById(userId);
-  if (lookupError) return isUserNotFound(lookupError.message, lookupError.status)
+  if (lookupError) return isConfirmedMissingAuthUser(lookupError)
     ? { ok: true, alreadyMissing: true }
     : { ok: false, message: 'Could not verify the selected sign-in account.' };
   if (!data.user || !matchesSelectedIdentity(data.user, userId, expectedEmail)) {
@@ -45,7 +65,7 @@ export async function disableAuthUserForSoftDelete(
     email_confirm: true,
   });
   if (!error) return { ok: true, alreadyMissing: false };
-  if (isUserNotFound(error.message, error.status)) {
+  if (isConfirmedMissingAuthUser(error)) {
     // Nothing to disable — the auth user is already gone (legacy hard delete).
     return { ok: true, alreadyMissing: true };
   }
@@ -78,7 +98,7 @@ export async function reenableAuthUserAfterRestore(
     });
     return unbanError ? { ok: false, message: unbanError.message } : { ok: true, action: 'unbanned' };
   }
-  if (!isUserNotFound(lookupError.message, lookupError.status)) {
+  if (!isConfirmedMissingAuthUser(lookupError)) {
     return { ok: false, message: 'Could not verify the selected sign-in account.' };
   }
 
@@ -109,9 +129,4 @@ export async function reenableAuthUserAfterRestore(
     };
   }
   return { ok: true, action: 'recreated' };
-}
-
-function isUserNotFound(message: string | undefined, status: number | undefined): boolean {
-  if (status === 404) return true;
-  return /user.*not.*found|not found/i.test(message ?? '');
 }

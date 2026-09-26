@@ -43,14 +43,16 @@ const remove = vi.fn();
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: vi.fn((_orgId: string, fn: (db: unknown) => Promise<unknown>) =>
-    fn({ user: { findFirst, update, delete: remove } }),
+    fn({ user: { findFirst, update, deleteMany: remove } }),
   ),
 }));
 
-const supabaseDeleteUser = vi.fn();
-
 vi.mock('@/lib/supabase-admin', () => ({
-  getSupabaseAdmin: vi.fn(() => ({ auth: { admin: { deleteUser: supabaseDeleteUser } } })),
+  getSupabaseAdmin: vi.fn(() => ({ syntheticAdmin: true })),
+}));
+vi.mock('@/lib/admin/authUserLifecycle', () => ({
+  deleteAuthUserForErasure: vi.fn(),
+  disableAuthUserForSoftDelete: vi.fn(),
 }));
 
 vi.mock('@/lib/admin/logCronRun', () => ({
@@ -89,6 +91,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { beginBillingDeletion, releaseBillingDeletion, completeBillingDeletion } from '@/lib/billing/erasureGuard';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { deleteAuthUserForErasure, disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
 
 const MEMBER_ID = 'member-1';
 
@@ -123,8 +126,9 @@ describe('POST /api/admin/members/[id]/erase', () => {
     vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
     findFirst.mockResolvedValue(member());
     update.mockResolvedValue({ id: MEMBER_ID });
-    remove.mockResolvedValue({ id: MEMBER_ID });
-    supabaseDeleteUser.mockResolvedValue({ error: null });
+    remove.mockResolvedValue({ count: 1 });
+    vi.mocked(deleteAuthUserForErasure).mockResolvedValue({ ok: true, alreadyMissing: false });
+    vi.mocked(disableAuthUserForSoftDelete).mockResolvedValue({ ok: true, alreadyMissing: false });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
     vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
   });
@@ -153,7 +157,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     expect(update).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
-    expect(supabaseDeleteUser).not.toHaveBeenCalled();
+    expect(deleteAuthUserForErasure).not.toHaveBeenCalled();
   });
 
   it('removes resume and certificate blobs before anonymizing an enrolled member', async () => {
@@ -170,6 +174,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
       ],
     });
     expect(anonymizeMember).toHaveBeenCalledWith(MEMBER_ID, { reason: 'admin_erase', actorUserId: 'admin-1' }, expect.anything());
+    expect(disableAuthUserForSoftDelete).toHaveBeenCalledWith(expect.anything(), MEMBER_ID, 'member@example.com');
     expect(completeBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     expect(remove).not.toHaveBeenCalled();
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
@@ -177,19 +182,48 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(storageOrder).toBeLessThan(updateOrder);
   });
 
-  it('removes blobs before the hard delete and the auth delete', async () => {
+  it('keeps a deleted tombstone until Auth removal is confirmed, then hard-deletes by owner', async () => {
     const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
     expect(update).not.toHaveBeenCalled();
-    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
-    expect(supabaseDeleteUser).toHaveBeenCalledWith(MEMBER_ID);
+    expect(anonymizeMember).toHaveBeenCalledWith(MEMBER_ID, { reason: 'admin_erase', actorUserId: 'admin-1' }, expect.anything());
+    expect(deleteAuthUserForErasure).toHaveBeenCalledWith(expect.anything(), MEMBER_ID);
+    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID, billingDeletionOperationId: 'operation-1' } });
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
+    const [tombstoneOrder] = vi.mocked(anonymizeMember).mock.invocationCallOrder;
     const [deleteOrder] = remove.mock.invocationCallOrder;
-    const [authOrder] = supabaseDeleteUser.mock.invocationCallOrder;
-    expect(storageOrder).toBeLessThan(deleteOrder);
-    expect(deleteOrder).toBeLessThan(authOrder);
+    const [authOrder] = vi.mocked(deleteAuthUserForErasure).mock.invocationCallOrder;
+    expect(storageOrder).toBeLessThan(tombstoneOrder);
+    expect(tombstoneOrder).toBeLessThan(authOrder);
+    expect(authOrder).toBeLessThan(deleteOrder);
+  });
+
+  it.each(['error', 'exception'])('retains the deleted app tombstone when hard-delete Auth returns %s', async (mode) => {
+    if (mode === 'error') vi.mocked(deleteAuthUserForErasure).mockResolvedValueOnce({ ok: false, message: 'provider unavailable' });
+    else vi.mocked(deleteAuthUserForErasure).mockRejectedValueOnce(new Error('network timeout'));
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(mode === 'error' ? 502 : 503);
+    expect((await res.json()).reconciliationRequired).toBe(true);
+    expect(anonymizeMember).toHaveBeenCalledOnce();
+    expect(remove).not.toHaveBeenCalled();
+    expect(releaseBillingDeletion).not.toHaveBeenCalled();
+  });
+
+  it('retains the anonymized tombstone and owner when Auth disable is unconfirmed', async () => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+    vi.mocked(disableAuthUserForSoftDelete).mockResolvedValueOnce({ ok: false, message: 'provider unavailable' });
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(502);
+    expect((await res.json()).reconciliationRequired).toBe(true);
+    expect(anonymizeMember).toHaveBeenCalledOnce();
+    expect(completeBillingDeletion).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
   });
 
   it.each([false, true])('erases the member while the database detaches issued billing records (force=%s)', async (force) => {
@@ -202,8 +236,8 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
     expect(deleteUserStorageObjects).toHaveBeenCalledOnce();
     expect(update).not.toHaveBeenCalled();
-    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
-    expect(supabaseDeleteUser).toHaveBeenCalledWith(MEMBER_ID);
+    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID, billingDeletionOperationId: 'operation-1' } });
+    expect(deleteAuthUserForErasure).toHaveBeenCalledWith(expect.anything(), MEMBER_ID);
   });
 
   it('never touches storage or rows for an administrator target', async () => {

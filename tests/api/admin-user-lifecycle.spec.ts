@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(), isAdmin: vi.fn(), isSuperAdmin: vi.fn(),
   target: vi.fn(), collision: vi.fn(), updateMany: vi.fn(), findMany: vi.fn(),
-  restoreAuth: vi.fn(), disableAuth: vi.fn(), audit: vi.fn(), event: vi.fn(),
+  restoreAuth: vi.fn(), disableAuth: vi.fn(), beginRestore: vi.fn(), audit: vi.fn(), event: vi.fn(),
   org: vi.fn(),
 }));
 const db = vi.hoisted(() => ({ user: { findFirst: mocks.target, updateMany: mocks.updateMany, findMany: mocks.findMany } }));
@@ -26,6 +26,7 @@ vi.mock('@/lib/admin/authUserLifecycle', () => ({
   reenableAuthUserAfterRestore: mocks.restoreAuth,
   disableAuthUserForSoftDelete: mocks.disableAuth,
 }));
+vi.mock('@/lib/billing/erasureGuard', () => ({ beginBillingRestore: mocks.beginRestore }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.event, auditRequestMeta: () => ({}) }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
@@ -71,6 +72,7 @@ beforeEach(() => {
   mocks.updateMany.mockResolvedValue({ count: 1 });
   mocks.findMany.mockResolvedValue([]);
   mocks.restoreAuth.mockResolvedValue({ ok: true, action: 'unbanned' });
+  mocks.beginRestore.mockResolvedValue({ ok: true, operationId: 'restore-operation' });
   mocks.disableAuth.mockResolvedValue({ ok: true, alreadyMissing: false });
   mocks.audit.mockResolvedValue(undefined);
   mocks.event.mockResolvedValue(undefined);
@@ -137,9 +139,13 @@ describe('administrator account restore', () => {
       id: ID, email: 'member@example.com', fullName: 'Synthetic Member', phone: null,
     });
     expect(mocks.updateMany).toHaveBeenCalledExactlyOnceWith({
-      where: { id: ID, email: marker, deletedAt, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null },
-      data: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionCompletedAt: null, email: 'member@example.com' },
+      where: { id: ID, email: marker, deletedAt, billingDeletionPendingAt: null, billingDeletionOperationId: 'restore-operation', billingDeletionCompletedAt: null },
+      data: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, email: 'member@example.com' },
     });
+    expect(mocks.beginRestore).toHaveBeenCalledWith(ID, 'org-1', {
+      email: marker, deletedAt, pendingAt: null, completedAt: null,
+    });
+    expect(mocks.beginRestore.mock.invocationCallOrder[0]).toBeLessThan(mocks.restoreAuth.mock.invocationCallOrder[0]);
     expect(mocks.restoreAuth.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
   });
@@ -157,30 +163,32 @@ describe('administrator account restore', () => {
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 
-  it('binds restore to the completed deletion version so a new deletion wins the race', async () => {
+  it('refuses Auth restoration when a new deletion won the lifecycle operation first', async () => {
     const pendingAt = new Date('2026-09-08T09:00:00Z');
     const completedAt = new Date('2026-09-08T10:30:00Z');
-    mocks.target.mockResolvedValueOnce({ ...deletedRow(), billingDeletionPendingAt: pendingAt, billingDeletionCompletedAt: completedAt })
-      .mockResolvedValueOnce({ ...deletedRow(), billingDeletionPendingAt: pendingAt, billingDeletionOperationId: 'new-operation', billingDeletionCompletedAt: null });
-    mocks.updateMany.mockResolvedValueOnce({ count: 0 });
+    mocks.target.mockResolvedValueOnce({ ...deletedRow(), billingDeletionPendingAt: pendingAt, billingDeletionCompletedAt: completedAt });
+    mocks.beginRestore.mockResolvedValueOnce({ ok: false });
     const response = await restore(req(), ctx());
-    expect(response.status).toBe(503);
-    expect(mocks.updateMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: expect.objectContaining({ billingDeletionPendingAt: pendingAt, billingDeletionOperationId: null, billingDeletionCompletedAt: completedAt }),
-    }));
+    expect(response.status).toBe(409);
+    expect(mocks.beginRestore).toHaveBeenCalledWith(ID, 'org-1', {
+      email: marker, deletedAt, pendingAt, completedAt,
+    });
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 
-  it.each(['failure', 'exception'])('keeps the deleted row retryable when Auth restore returns %s', async (mode) => {
+  it.each(['failure', 'exception'])('keeps the restore owner held when Auth returns %s', async (mode) => {
     if (mode === 'failure') mocks.restoreAuth.mockResolvedValueOnce({ ok: false, message: 'Synthetic provider failure' });
     else mocks.restoreAuth.mockRejectedValueOnce(new Error('Synthetic network failure'));
+    mocks.target.mockResolvedValueOnce(deletedRow()).mockResolvedValueOnce({ ...deletedRow(), billingDeletionOperationId: 'restore-operation' });
     const failed = await restore(req(), ctx());
-    expect(failed.status).toBe(502);
-    expect(await failed.json()).toMatchObject({ ok: false, authRestored: false });
+    expect(failed.status).toBe(mode === 'failure' ? 502 : 503);
+    expect(await failed.json()).toMatchObject({ ok: false, authRestored: false, reconciliationRequired: true });
     expect(mocks.updateMany).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
     const retried = await restore(req(), ctx());
-    expect(retried.status).toBe(200);
-    expect(mocks.updateMany).toHaveBeenCalledTimes(1);
+    expect(retried.status).toBe(409);
+    expect(mocks.restoreAuth).toHaveBeenCalledTimes(1);
   });
 
   it('checks global email collisions before Auth without exposing the foreign identity or address', async () => {
@@ -201,12 +209,11 @@ describe('administrator account restore', () => {
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 
-  it('treats a lost compare-and-set as success when another restore activated the same identity', async () => {
-    mocks.target.mockResolvedValueOnce(deletedRow()).mockResolvedValueOnce({ email: 'MEMBER@example.com', deletedAt: null });
+  it('requires reconciliation when the restore owner loses its app compare-and-set', async () => {
     mocks.updateMany.mockResolvedValue({ count: 0 });
     const response = await restore(req(), ctx());
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ ok: true, authRestored: true });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ reconciliationRequired: true });
     expect(mocks.disableAuth).not.toHaveBeenCalled();
   });
 
@@ -219,15 +226,16 @@ describe('administrator account restore', () => {
     expect(mocks.audit).not.toHaveBeenCalled();
   });
 
-  it('preserves Auth after a database failure rather than racing a later successful restore with a re-ban', async () => {
+  it('keeps the owner held after a database failure rather than re-banning Auth', async () => {
     mocks.updateMany.mockRejectedValueOnce(new Error('Write disconnected'));
+    mocks.target.mockResolvedValueOnce(deletedRow()).mockResolvedValueOnce({ ...deletedRow(), billingDeletionOperationId: 'restore-operation' });
     const failed = await restore(req(), ctx());
     expect(failed.status).toBe(503);
     expect((await failed.json()).error).toContain('account reconciliation');
     expect(mocks.disableAuth).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
     const retry = await restore(req(), ctx());
-    expect(retry.status).toBe(200);
+    expect(retry.status).toBe(409);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
   });
 

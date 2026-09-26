@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { lockBillingLifecycle, hasUnresolvedBillingSend } = vi.hoisted(() => ({
+const { lockBillingLifecycle, hasUnresolvedBillingSend, billingLifecyclePending } = vi.hoisted(() => ({
   lockBillingLifecycle: vi.fn(),
   hasUnresolvedBillingSend: vi.fn(),
+  billingLifecyclePending: vi.fn(),
 }));
 
 vi.mock('@/lib/billing/erasureGuard', () => ({
   lockBillingMemberLifecycle: lockBillingLifecycle,
   hasUnresolvedBillingSend,
+  billingLifecyclePending,
 }));
 
 import { assertBillingAssignmentMutable, BillingAssignmentInProgressError } from '@/lib/counselor/billingAssignmentGuard';
@@ -17,6 +19,7 @@ describe('billing assignment lifecycle guard', () => {
     vi.clearAllMocks();
     lockBillingLifecycle.mockResolvedValue(undefined);
     hasUnresolvedBillingSend.mockResolvedValue(false);
+    billingLifecyclePending.mockResolvedValue(false);
   });
 
   it('takes the same member lifecycle lock as the send claim before reading send status', async () => {
@@ -25,6 +28,14 @@ describe('billing assignment lifecycle guard', () => {
     expect(lockBillingLifecycle).toHaveBeenCalledWith(tx, 'member-1');
     expect(hasUnresolvedBillingSend).toHaveBeenCalledWith(tx, 'member-1');
     expect(lockBillingLifecycle.mock.invocationCallOrder[0]).toBeLessThan(hasUnresolvedBillingSend.mock.invocationCallOrder[0]);
+    expect(lockBillingLifecycle.mock.invocationCallOrder[0]).toBeLessThan(billingLifecyclePending.mock.invocationCallOrder[0]);
+  });
+
+  it('blocks reassignment after deletion or identity-edit marker commits', async () => {
+    billingLifecyclePending.mockResolvedValue(true);
+    await expect(assertBillingAssignmentMutable({} as never, 'member-1'))
+      .rejects.toBeInstanceOf(BillingAssignmentInProgressError);
+    expect(hasUnresolvedBillingSend).not.toHaveBeenCalled();
   });
 
   it('fails closed while a claimed or ambiguous copy can still reach the provider', async () => {

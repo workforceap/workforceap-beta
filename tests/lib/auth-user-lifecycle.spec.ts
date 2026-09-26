@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { disableAuthUserForSoftDelete, reenableAuthUserAfterRestore, retiredAuthEmail } from '@/lib/admin/authUserLifecycle';
+import { deleteAuthUserForErasure, disableAuthUserForSoftDelete, reenableAuthUserAfterRestore, retiredAuthEmail } from '@/lib/admin/authUserLifecycle';
 
 vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: vi.fn() }));
 const id = '10000000-0000-4000-8000-000000000001';
@@ -23,6 +23,44 @@ function expectNoMutations() {
 }
 
 describe('verified Supabase auth identity lifecycle', () => {
+  it('confirms the selected identity was removed before allowing hard erasure', async () => {
+    expect(await deleteAuthUserForErasure(admin, id)).toEqual({ ok: true, alreadyMissing: false });
+    expect(api.deleteUser).toHaveBeenCalledExactlyOnceWith(id);
+  });
+
+  it('accepts only an explicit missing-identity response as already erased', async () => {
+    api.getUserById.mockResolvedValueOnce({ data: { user: null }, error: { status: 404, message: 'User not found' } });
+    expect(await deleteAuthUserForErasure(admin, id)).toEqual({ ok: true, alreadyMissing: true });
+    expect(api.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('never interprets a provider 503 with not-found wording as confirmed absence', async () => {
+    api.getUserById.mockResolvedValueOnce({ data: { user: null }, error: { status: 503, message: 'User not found in failed upstream request' } });
+    expect(await deleteAuthUserForErasure(admin, id)).toMatchObject({ ok: false });
+    expect(api.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('keeps soft-delete and restore closed on a 503 containing not-found wording', async () => {
+    api.getUserById.mockResolvedValue({ data: { user: null }, error: { status: 503, message: 'User not found in failed upstream request' } });
+    expect(await disableAuthUserForSoftDelete(admin, id, email)).toMatchObject({ ok: false });
+    expect(await reenableAuthUserAfterRestore(admin, { id, email })).toMatchObject({ ok: false });
+    expectNoMutations();
+  });
+
+  it.each([
+    { data: { user: null }, error: null },
+    { data: { user: { id: otherId } }, error: null },
+    { data: { user: null }, error: { status: 503, message: 'Unavailable' } },
+  ])('refuses an unconfirmed erasure target: %j', async (lookup) => {
+    api.getUserById.mockResolvedValueOnce(lookup);
+    expect(await deleteAuthUserForErasure(admin, id)).toMatchObject({ ok: false });
+    expect(api.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('keeps the app tombstone when provider deletion fails', async () => {
+    api.deleteUser.mockResolvedValueOnce({ data: {}, error: { status: 503, message: 'Unavailable' } });
+    expect(await deleteAuthUserForErasure(admin, id)).toMatchObject({ ok: false });
+  });
   it.each([' LEARNER@EXAMPLE.TEST ', retiredAuthEmail(id)])('retires only the selected UUID with a matching original or retired address: %s', async (actualEmail) => {
     api.getUserById.mockResolvedValueOnce({ data: { user: { id, email: actualEmail } }, error: null });
     expect(await disableAuthUserForSoftDelete(admin, id, ' Learner@Example.Test ')).toEqual({ ok: true, alreadyMissing: false });

@@ -8,7 +8,7 @@ import { checkBillingProviderOrg, getBillingProviderOrgId } from '@/lib/billing/
 import { serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { parseSignedSnapshot } from '@/lib/billing/packetSnapshot';
 
-/** Recent issued packets whose member account has been erased. Admin only. */
+/** Recent issued packets whose member account is deleted or has been purged. Admin only. */
 export const GET = withApiGuc(async (request: Request) => {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -28,17 +28,24 @@ export const GET = withApiGuc(async (request: Request) => {
     return NextResponse.json({ error: 'Search value is too long' }, { status: 400 });
   }
 
-  const rows = await prisma.trainingBillingPacket.findMany({
-    where: {
-      organizationId: providerOrgId!,
-      memberId: null,
-      ...(subjectMemberId ? { subjectMemberId } : {}),
-      ...(packetNumber ? { packetNumber } : {}),
-    },
-    include: { sends: true },
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  });
+  const filters = {
+    organizationId: providerOrgId!,
+    ...(subjectMemberId ? { subjectMemberId } : {}),
+    ...(packetNumber ? { packetNumber } : {}),
+  };
+  const [detached, softDeleted] = await Promise.all([
+    prisma.trainingBillingPacket.findMany({
+      where: { ...filters, memberId: null },
+      include: { sends: true }, orderBy: { createdAt: 'desc' }, take: 50,
+    }),
+    prisma.trainingBillingPacket.findMany({
+      where: { ...filters, member: { deletedAt: { not: null } } },
+      include: { sends: true }, orderBy: { createdAt: 'desc' }, take: 50,
+    }),
+  ]);
+  const rows = [...detached, ...softDeleted]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || a.id.localeCompare(b.id))
+    .slice(0, 50);
 
   return NextResponse.json({
     packets: rows.map((row) => {

@@ -43,7 +43,10 @@ function matches(row: Record<string, unknown>, where: Record<string, unknown>): 
   return Object.entries(where).every(([key, cond]) => {
     const value = row[key];
     if (cond && typeof cond === 'object' && !(cond instanceof Date) && 'in' in (cond as object)) return (cond as { in: unknown[] }).in.includes(value);
-    if (cond && typeof cond === 'object' && !(cond instanceof Date) && 'not' in (cond as object)) return value !== (cond as { not: unknown }).not;
+    if (cond && typeof cond === 'object' && !(cond instanceof Date) && 'not' in (cond as object)) {
+      const range = cond as { not: unknown; lt?: Date };
+      return value !== range.not && (!range.lt || value instanceof Date && value < range.lt);
+    }
     if (cond instanceof Date) return value instanceof Date && value.getTime() === cond.getTime();
     return (value ?? null) === (cond ?? null);
   });
@@ -171,9 +174,10 @@ vi.mock('@/lib/db/prisma', () => {
       findMany: vi.fn(async (args: { where?: Record<string, unknown>; include?: { sends?: { where?: { recipient?: string } } | boolean } } = {}) =>
         db.packets
           .filter((p) => {
-            const { member, ...scalar } = (args.where ?? {}) as Record<string, unknown> & { member?: { organizationId?: string } };
+            const { member, ...scalar } = (args.where ?? {}) as Record<string, unknown> & { member?: { organizationId?: string; deletedAt?: { not: null } } };
             if (!matches(p, scalar)) return false;
             if (member?.organizationId !== undefined) return db.users.find((u) => u.id === p.memberId)?.organizationId === member.organizationId;
+            if (member?.deletedAt) return db.users.some((u) => u.id === p.memberId && u.deletedAt !== null);
             return true;
           })
           .map((p) => {
@@ -267,7 +271,7 @@ import {
 } from '@/lib/billing/sendAttempts';
 import { listPacketsForMember, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { prisma as prismaMock } from '@/lib/db/prisma';
-import { beginBillingDeletion, beginBillingIdentityEdit, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { beginBillingDeletion, beginBillingIdentityEdit, beginBillingRestore, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const ORG = DEFAULT_ORG_ID;
 const OTHER_ORG = 'aaaaaaaa-0000-4000-8000-000000000009';
@@ -383,6 +387,29 @@ beforeEach(() => {
 });
 
 describe('billing deletion barrier ordering', () => {
+  it('claims a retention purge only for a row still past the cutoff', async () => {
+    const cutoff = new Date('2026-09-01T00:00:00Z');
+    expect(await beginBillingDeletion(MEMBER, ORG, cutoff)).toEqual({ ok: false, reason: 'missing' });
+    db.users[0].deletedAt = new Date('2026-08-01T00:00:00Z');
+    expect((await beginBillingDeletion(MEMBER, ORG, cutoff)).ok).toBe(true);
+  });
+
+  it('restore owns the provider boundary before any retry deletion can begin', async () => {
+    const deletedAt = new Date('2026-08-01T00:00:00Z');
+    const completedAt = new Date('2026-08-01T00:01:00Z');
+    db.users[0].deletedAt = deletedAt;
+    db.users[0].billingDeletionPendingAt = deletedAt;
+    db.users[0].billingDeletionCompletedAt = completedAt;
+    const restore = await beginBillingRestore(MEMBER, ORG, {
+      email: 'member@example.test', deletedAt, pendingAt: deletedAt, completedAt,
+    });
+    expect(restore.ok).toBe(true);
+    expect(await beginBillingDeletion(MEMBER, ORG)).toEqual({ ok: false, reason: 'in_progress' });
+    expect(await beginBillingRestore(MEMBER, ORG, {
+      email: 'member@example.test', deletedAt, pendingAt: deletedAt, completedAt,
+    })).toEqual({ ok: false });
+  });
+
   it('deletion wins: marker commits before Storage and no sign or provider claim follows', async () => {
     const id = await signOne();
     const deletion = await beginBillingDeletion(MEMBER, ORG);
@@ -1237,6 +1264,18 @@ describe('GET /api/billing-packets/[packetId]/pdf', () => {
     mocks.getUser.mockResolvedValue({ id: MEMBER });
     expect((await packetPdf(new Request(`http://localhost/api/billing-packets/${id}/pdf?doc=j5`), packetParams(id))).status).toBe(404);
     expect((await listArchivedPackets(new Request('http://localhost/api/admin/billing-packets/archive'))).status).toBe(403);
+  });
+
+  it('lists a soft-deleted member in the admin archive during the 30-day purge window', async () => {
+    const id = await signOne();
+    db.users[0].deletedAt = new Date('2026-09-01T00:00:00Z');
+    db.users[0].billingDeletionPendingAt = new Date('2026-09-01T00:00:00Z');
+    db.users[0].billingDeletionCompletedAt = new Date('2026-09-01T00:01:00Z');
+
+    const archive = await listArchivedPackets(new Request(`http://localhost/api/admin/billing-packets/archive?subjectMemberId=${MEMBER}`));
+    expect(archive.status).toBe(200);
+    expect((await archive.json()).packets).toMatchObject([{ id, subjectMemberId: MEMBER, memberName: 'Test Member' }]);
+    expect((await sendPacket(req({}), packetParams(id))).status).toBe(409);
   });
 
   it('refuses to reconstruct an archived legacy packet without a signed snapshot', async () => {

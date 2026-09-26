@@ -222,8 +222,9 @@ that automatically emails to counselor and the student."
   `subject_member_id` and signed snapshot remain for provider-org admins.
   The signer FK likewise detaches; `signed_by_subject_id` and the signed
   name/title remain as financial evidence without holding the signer account.
-  The admin archive is `GET /api/admin/billing-packets/archive`; deleted
-  members and counselors cannot retrieve these PDFs. Other private child
+  The admin archive is `GET /api/admin/billing-packets/archive`; it includes
+  soft-deleted accounts during the 30-day purge window and detached packets
+  after hard deletion. Deleted members and counselors cannot retrieve these PDFs. Other private child
   records still follow their normal account-delete cascade.
 - Signing and send claims take a member lifecycle transaction lock. Deletion
   takes that lock, refuses an unresolved `claimed`, `ambiguous`, or
@@ -238,14 +239,18 @@ that automatically emails to counselor and the student."
   operator to verify external cleanup before clearing it. Soft-delete routes
   set `billing_deletion_completed_at` only after account and Auth cleanup;
   restore requires that completion version and compares it again when
-  activating the app row. This prevents a concurrent erase from racing a
-  restore through Storage deletion.
+  activating the app row. Restore claims its own operation token before
+  changing Auth, so a concurrent erase cannot cross that provider boundary.
+  Unknown Auth or failed app activation leaves the token held for reconciliation.
 - Admin name, email and role edits take a temporary lifecycle hold before
   touching Supabase Auth or the app row. Unresolved sends block the edit;
   new claims are blocked until both identity stores are updated. If the Auth result
   is unknown, the hold stays in place for operator reconciliation. The
-  30-day purge also takes the lifecycle lock and skips an unfinished cleanup
-  or unresolved student/counselor copy before deleting private child data.
+  30-day purge also claims a deletion owner, confirms Auth removal while the
+  app's deleted tombstone still denies access, and then hard-deletes by that
+  owner. Failed Auth confirmation leaves the tombstone for a later retry or
+  reconciliation. Unfinished cleanup and unresolved student/counselor copies
+  block the purge before any private child data is deleted.
 - The member lifecycle lock needs a real interactive transaction. Billing
   writes fail closed where Prisma transactions are flattened (current Preview
   configuration); production must keep interactive transactions enabled.

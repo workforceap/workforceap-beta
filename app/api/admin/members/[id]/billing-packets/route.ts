@@ -21,7 +21,7 @@ import { findBillableEnrollment } from '@/lib/billing/billableEnrollments';
 import { checkBillingProviderOrg } from '@/lib/billing/providerOrg';
 import { RECONCILE_CLAIMED_MIN_AGE_MS, reconcileProviderResults, repairProviderResultsOnRead } from '@/lib/billing/sendAttempts';
 import { randomUUID } from 'node:crypto';
-import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { lockBillingMemberLifecycle, scopedBillingUser } from '@/lib/billing/erasureGuard';
 
 /**
  * J5 invoice + J6 cover letter packets for one member.
@@ -248,7 +248,8 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       try {
         created = await prisma.$transaction(async (tx) => {
           await lockBillingMemberLifecycle(tx, member.id);
-          const activeMember = await tx.user.findFirst({
+          const scoped = await scopedBillingUser(tx, member.id, member.organizationId);
+          const activeMember = await scoped?.user.findFirst({
             where: { id: member.id, organizationId: member.organizationId, deletedAt: null, billingDeletionPendingAt: null },
             select: { id: true },
           });

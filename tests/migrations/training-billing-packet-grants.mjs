@@ -155,7 +155,11 @@ try {
   sql(`UPDATE public.users SET billing_deletion_operation_id=NULL WHERE id='u' AND billing_deletion_operation_id='00000000-0000-4000-8000-000000000001';`);
   assert.equal(sql(`SELECT billing_deletion_pending_at IS NOT NULL AND billing_deletion_operation_id IS NULL FROM public.users WHERE id='u';`), 't', 'Failed Storage retry keeps marker while releasing operation ownership');
   sql(`UPDATE public.training_billing_packets SET signed_snapshot='{"counselor":{"userId":"signer"}}'::jsonb WHERE id='p'; UPDATE public.training_billing_packet_sends SET recipient='counselor', status='ambiguous' WHERE id='s';`);
-  assert.equal(sql(`SELECT count(*) FROM public.training_billing_packet_sends s JOIN public.training_billing_packets p ON p.id=s.packet_id WHERE s.status IN ('claimed','ambiguous','needs_reconciliation') AND (p.member_id='signer'::text OR (s.recipient='counselor' AND p.signed_snapshot #>> '{counselor,userId}'='signer'::text));`), '1', 'Unresolved counselor copy must block counselor deletion');
+  const unresolvedCounselorSql = `SELECT count(*) FROM public.training_billing_packet_sends s JOIN public.training_billing_packets p ON p.id=s.packet_id JOIN public.users u ON u.id='signer'::text AND u.organization_id=p.organization_id WHERE s.status IN ('claimed','ambiguous','needs_reconciliation') AND (p.member_id=u.id OR (s.recipient='counselor' AND p.signed_snapshot #>> '{counselor,userId}'=u.id));`;
+  sql(`UPDATE public.users SET organization_id='other' WHERE id='signer';`);
+  assert.equal(sql(unresolvedCounselorSql), '0', 'A cross-org user must not match this packet');
+  sql(`UPDATE public.users SET organization_id='org' WHERE id='signer';`);
+  assert.equal(sql(unresolvedCounselorSql), '1', 'Unresolved counselor copy must block same-org counselor deletion');
   console.log('PASS deletion operation marker, browser-role protection, TEXT row locks and unresolved counselor lookup');
   sql(`
     CREATE TABLE public.member_private_data (

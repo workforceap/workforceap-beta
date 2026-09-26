@@ -2,6 +2,8 @@ import type { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/db/prisma';
 import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { makeScopedProxy } from '@/lib/tenant/scopeProxy';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 
 /** Every sign, send claim and deletion begins with this lock. */
 export async function lockBillingMemberLifecycle(tx: Prisma.TransactionClient, memberId: string): Promise<void> {
@@ -14,12 +16,34 @@ export async function hasUnresolvedBillingSend(tx: Prisma.TransactionClient, mem
   const rows = await tx.$queryRaw<Array<{ id: string }>>`
     SELECT s.id FROM public.training_billing_packet_sends s
     JOIN public.training_billing_packets p ON p.id = s.packet_id
+    JOIN public.users u ON u.id = ${memberId}::text AND u.organization_id = p.organization_id
     WHERE s.status IN ('claimed', 'ambiguous', 'needs_reconciliation')
-      AND (p.member_id = ${memberId}::text
-        OR (s.recipient = 'counselor' AND p.signed_snapshot #>> '{counselor,userId}' = ${memberId}::text))
+      AND (p.member_id = u.id
+        OR (s.recipient = 'counselor' AND p.signed_snapshot #>> '{counselor,userId}' = u.id))
     LIMIT 1
   `;
   return rows.length > 0;
+}
+
+/** Resolve a unique User's tenant only after taking its lifecycle lock. */
+export async function scopedBillingUser(tx: Prisma.TransactionClient, userId: string, expectedOrgId?: string): Promise<Prisma.TransactionClient | null> {
+  // Callers with only an internal User ID must first discover its tenant.
+  // This one-field read is intentional cross-tenant lookup by unique ID;
+  // every subsequent User read/write uses the scoped transaction proxy.
+  const organizationId = expectedOrgId ?? (await crossTenantOK(() => tx.user.findFirst({
+    where: { id: userId }, select: { organizationId: true },
+  })))?.organizationId;
+  return organizationId ? makeScopedProxy(organizationId, tx) : null;
+}
+
+/** A committed deletion or cross-system identity edit closes assignment writes. */
+export async function billingLifecyclePending(tx: Prisma.TransactionClient, userId: string): Promise<boolean> {
+  const scoped = await scopedBillingUser(tx, userId);
+  if (!scoped) return true;
+  const state = await scoped.user.findFirst({
+    where: { id: userId }, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true, deletedAt: true },
+  });
+  return !state || !!state.deletedAt || !!state.billingDeletionPendingAt || !!state.billingDeletionOperationId;
 }
 
 export type BeginBillingDeletionResult =
@@ -34,17 +58,19 @@ export type BeginBillingDeletionResult =
  * releases ownership but keeps the marker; a crashed operation needs manual
  * reconciliation before its token can be cleared.
  */
-export async function beginBillingDeletion(memberId: string, organizationId?: string): Promise<BeginBillingDeletionResult> {
+export async function beginBillingDeletion(memberId: string, organizationId?: string, deletedBefore?: Date): Promise<BeginBillingDeletionResult> {
   return prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, memberId);
-    const where = { id: memberId, ...(organizationId ? { organizationId } : {}) };
-    const member = await tx.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true } });
+    const scoped = await scopedBillingUser(tx, memberId, organizationId);
+    if (!scoped) return { ok: false as const, reason: 'missing' as const };
+    const where = { id: memberId, ...(organizationId ? { organizationId } : {}), ...(deletedBefore ? { deletedAt: { not: null, lt: deletedBefore } } : {}) };
+    const member = await scoped.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true } });
     if (!member) return { ok: false as const, reason: 'missing' as const };
     if (member.billingDeletionOperationId) return { ok: false as const, reason: 'in_progress' as const };
     if (await hasUnresolvedBillingSend(tx, memberId)) return { ok: false as const, reason: 'unresolved_send' as const };
     const pendingAt = member.billingDeletionPendingAt ?? new Date();
     const operationId = randomUUID();
-    const { count } = await tx.user.updateMany({
+    const { count } = await scoped.user.updateMany({
       where: { ...where, billingDeletionOperationId: null },
       data: { billingDeletionPendingAt: pendingAt, billingDeletionOperationId: operationId, billingDeletionCompletedAt: null },
     });
@@ -56,7 +82,9 @@ export async function beginBillingDeletion(memberId: string, organizationId?: st
 export async function releaseBillingDeletion(memberId: string, operationId: string): Promise<void> {
   await prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, memberId);
-    await tx.user.updateMany({
+    const scoped = await scopedBillingUser(tx, memberId);
+    if (!scoped) return;
+    await scoped.user.updateMany({
       where: { id: memberId, billingDeletionOperationId: operationId },
       data: { billingDeletionOperationId: null },
     });
@@ -67,7 +95,9 @@ export async function releaseBillingDeletion(memberId: string, operationId: stri
 export async function completeBillingDeletion(memberId: string, operationId: string): Promise<void> {
   const completed = await prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, memberId);
-    return tx.user.updateMany({
+    const scoped = await scopedBillingUser(tx, memberId);
+    if (!scoped) return { count: 0 };
+    return scoped.user.updateMany({
       where: { id: memberId, billingDeletionOperationId: operationId, deletedAt: { not: null } },
       data: { billingDeletionOperationId: null, billingDeletionCompletedAt: new Date() },
     });
@@ -79,13 +109,15 @@ export async function completeBillingDeletion(memberId: string, operationId: str
 export async function beginBillingIdentityEdit(userId: string, organizationId: string, expectedEmail: string): Promise<BeginBillingDeletionResult> {
   return prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, userId);
+    const scoped = await scopedBillingUser(tx, userId, organizationId);
+    if (!scoped) return { ok: false as const, reason: 'missing' as const };
     const where = { id: userId, organizationId, email: expectedEmail, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null };
-    const active = await tx.user.findFirst({ where, select: { id: true } });
+    const active = await scoped.user.findFirst({ where, select: { id: true } });
     if (!active) return { ok: false as const, reason: 'in_progress' as const };
     if (await hasUnresolvedBillingSend(tx, userId)) return { ok: false as const, reason: 'unresolved_send' as const };
     const pendingAt = new Date();
     const operationId = randomUUID();
-    const { count } = await tx.user.updateMany({
+    const { count } = await scoped.user.updateMany({
       where,
       data: { billingDeletionPendingAt: pendingAt, billingDeletionOperationId: operationId },
     });
@@ -97,12 +129,42 @@ export async function beginBillingIdentityEdit(userId: string, organizationId: s
 export async function endBillingIdentityEdit(userId: string, operationId: string): Promise<void> {
   const released = await prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, userId);
-    return tx.user.updateMany({
+    const scoped = await scopedBillingUser(tx, userId);
+    if (!scoped) return { count: 0 };
+    return scoped.user.updateMany({
       where: { id: userId, deletedAt: null, billingDeletionOperationId: operationId },
       data: { billingDeletionPendingAt: null, billingDeletionOperationId: null },
     });
   });
   if (released.count !== 1) throw new Error('Billing identity edit release could not be confirmed');
+}
+
+/** Own the Auth-to-app restore boundary so a second delete cannot start midway. */
+export async function beginBillingRestore(userId: string, organizationId: string, expected: {
+  email: string;
+  deletedAt: Date;
+  pendingAt: Date | null;
+  completedAt: Date | null;
+}): Promise<{ ok: true; operationId: string } | { ok: false }> {
+  if (expected.pendingAt && !expected.completedAt) return { ok: false };
+  return prisma.$transaction(async (tx) => {
+    await lockBillingMemberLifecycle(tx, userId);
+    const scoped = await scopedBillingUser(tx, userId, organizationId);
+    if (!scoped) return { ok: false as const };
+    const operationId = randomUUID();
+    const { count } = await scoped.user.updateMany({
+      where: {
+        id: userId,
+        email: expected.email,
+        deletedAt: expected.deletedAt,
+        billingDeletionPendingAt: expected.pendingAt,
+        billingDeletionCompletedAt: expected.completedAt,
+        billingDeletionOperationId: null,
+      },
+      data: { billingDeletionOperationId: operationId },
+    });
+    return count === 1 ? { ok: true as const, operationId } : { ok: false as const };
+  });
 }
 
 export const BILLING_SEND_IN_PROGRESS_ERROR =

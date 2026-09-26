@@ -5,7 +5,9 @@ import {
   type EmailFailureSnapshotClient,
 } from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
-import { hasUnresolvedBillingSend, lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { beginBillingDeletion, lockBillingMemberLifecycle, releaseBillingDeletion, scopedBillingUser } from '@/lib/billing/erasureGuard';
+import { deleteAuthUserForErasure } from '@/lib/admin/authUserLifecycle';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -334,9 +336,11 @@ export function foreignKeyConstraintName(err: unknown): string | null {
  * the member's own self-service rows are removed first, inside the same
  * transaction as the user row.
  *
- * Each account is purged in its own transaction. The billing lifecycle lock
- * keeps an in-progress deletion or send from racing the hard purge. An account
- * whose external deletion is incomplete or whose send remains unresolved is
+ * Each account first claims a deletion operation under the billing lifecycle
+ * lock. Auth removal is confirmed outside the database transaction, while
+ * the deleted app row remains an access tombstone. The final transaction
+ * deletes only the row still owned by that operation. An account whose
+ * external deletion is incomplete or whose send remains unresolved is
  * reported and retained for reconciliation. An account that is still
  * held by a foreign key (a subgroup they created, a table added later without
  * a delete rule) is reported by constraint name and skipped, so one held account can no longer
@@ -377,36 +381,52 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
     if (rows.length === 0) break;
 
     for (const { id } of rows) {
+      let ownedOperationId: string | null = null;
       try {
+        const deletion = await beginBillingDeletion(id, undefined, cutoff);
+        if (!deletion.ok) {
+          if (deletion.reason !== 'missing') blocked.push({
+            id,
+            constraint: deletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'billing_deletion_incomplete',
+          });
+          continue;
+        }
+        ownedOperationId = deletion.operationId;
+        let authConfirmed = false;
+        try {
+          authConfirmed = (await deleteAuthUserForErasure(getSupabaseAdmin(), id)).ok;
+        } catch (authError) {
+          console.error(`[data-cleanup] Could not confirm Auth removal for ${id}:`, authError);
+        }
+        if (!authConfirmed) {
+          await releaseBillingDeletion(id, deletion.operationId);
+          blocked.push({ id, constraint: 'auth_erasure_unconfirmed' });
+          continue;
+        }
         const outcome = await prisma.$transaction(async (tx) => {
           await lockBillingMemberLifecycle(tx, id);
-          const account = await tx.user.findFirst({
-            where: { id, deletedAt: { not: null, lt: cutoff } },
-            select: {
-              billingDeletionPendingAt: true,
-              billingDeletionOperationId: true,
-              billingDeletionCompletedAt: true,
-            },
+          const scoped = await scopedBillingUser(tx, id);
+          const account = await scoped?.user.findFirst({
+            where: { id, deletedAt: { not: null, lt: cutoff }, billingDeletionOperationId: deletion.operationId },
+            select: { id: true },
           });
-          if (!account) return 'missing';
-          if (account.billingDeletionOperationId ||
-            (account.billingDeletionPendingAt && !account.billingDeletionCompletedAt)) {
-            return 'billing_deletion_incomplete';
-          }
-          if (await hasUnresolvedBillingSend(tx, id)) return 'billing_send_unresolved';
+          if (!account) return 'billing_deletion_raced';
           await tx.auditEvent.deleteMany({
             where: { actorUserId: id, actorRole: SELF_SERVICE_AUDIT_ACTOR_ROLE },
           });
           // deleteMany (not delete) so a row removed concurrently is a no-op,
           // not a P2025. Cascades run at the database level from here.
-          const result = await tx.user.deleteMany({ where: { id } });
-          return result.count === 1 ? 'deleted' : 'missing';
+          const result = await scoped!.user.deleteMany({ where: { id, billingDeletionOperationId: deletion.operationId } });
+          return result.count === 1 ? 'deleted' : 'billing_deletion_raced';
         });
         if (outcome === 'deleted') deleted += 1;
-        else if (outcome !== 'missing') blocked.push({ id, constraint: outcome });
+        else blocked.push({ id, constraint: outcome });
       } catch (err) {
         const constraint = foreignKeyConstraintName(err);
         if (!constraint) throw err;
+        // Auth has already been confirmed absent. An FK hold is a known
+        // rollback, so let the next sweep retry after the holding row clears.
+        if (ownedOperationId) await releaseBillingDeletion(id, ownedOperationId);
         console.error(`[data-cleanup] Soft-deleted account ${id} is still referenced by ${constraint}; skipped.`);
         blocked.push({ id, constraint });
         try {

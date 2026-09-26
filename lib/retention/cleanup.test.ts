@@ -19,6 +19,9 @@ const mockAnonymizeMember = vi.fn();
 const mockQueryRaw = vi.fn();
 const mockExecuteRaw = vi.fn();
 const mockSnapshotCreateMany = vi.fn();
+const mockBeginBillingDeletion = vi.fn();
+const mockReleaseBillingDeletion = vi.fn();
+const mockDeleteAuthUserForErasure = vi.fn();
 
 /**
  * Ordered log of what the cleanup did, shared by the transaction wrapper and
@@ -42,6 +45,16 @@ const workflowDiagnosticOverride: {
 vi.mock('@/lib/member/anonymizeMember', () => ({
   anonymizeMember: (...args: unknown[]) => mockAnonymizeMember(...args),
 }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  beginBillingDeletion: (...args: unknown[]) => mockBeginBillingDeletion(...args),
+  releaseBillingDeletion: (...args: unknown[]) => mockReleaseBillingDeletion(...args),
+  lockBillingMemberLifecycle: vi.fn(async () => undefined),
+  scopedBillingUser: vi.fn(async (tx: unknown) => tx),
+}));
+vi.mock('@/lib/admin/authUserLifecycle', () => ({
+  deleteAuthUserForErasure: (...args: unknown[]) => mockDeleteAuthUserForErasure(...args),
+}));
+vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ syntheticAdmin: true }) }));
 
 /** Shape Prisma gives a violated foreign key (P2003). */
 function foreignKeyError(constraint: string) {
@@ -584,11 +597,10 @@ describe('cleanupDeletedAccounts', () => {
     vi.resetAllMocks();
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
     mockAnonymizeMember.mockResolvedValue(null);
-    mockUserFindFirst.mockResolvedValue({
-      billingDeletionPendingAt: null,
-      billingDeletionOperationId: null,
-      billingDeletionCompletedAt: null,
-    });
+    mockUserFindFirst.mockResolvedValue({ id: 'eligible' });
+    mockBeginBillingDeletion.mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'purge-1' });
+    mockReleaseBillingDeletion.mockResolvedValue(undefined);
+    mockDeleteAuthUserForErasure.mockResolvedValue({ ok: true, alreadyMissing: false });
     mockQueryRaw.mockResolvedValue([]);
   });
 
@@ -609,8 +621,10 @@ describe('cleanupDeletedAccounts', () => {
       }),
     );
     expect(mockDeleteMany).toHaveBeenCalledTimes(2);
-    expect(mockDeleteMany).toHaveBeenNthCalledWith(1, { where: { id: 'u1' } });
-    expect(mockDeleteMany).toHaveBeenNthCalledWith(2, { where: { id: 'u2' } });
+    expect(mockDeleteMany).toHaveBeenNthCalledWith(1, { where: { id: 'u1', billingDeletionOperationId: 'purge-1' } });
+    expect(mockDeleteMany).toHaveBeenNthCalledWith(2, { where: { id: 'u2', billingDeletionOperationId: 'purge-1' } });
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(2);
+    expect(mockDeleteAuthUserForErasure.mock.invocationCallOrder[0]).toBeLessThan(mockDeleteMany.mock.invocationCallOrder[0]);
     // A purged account is gone; only held accounts go through the anonymiser.
     expect(mockAnonymizeMember).not.toHaveBeenCalled();
   });
@@ -649,13 +663,8 @@ describe('cleanupDeletedAccounts', () => {
 
   it('skips a deletion with unfinished external cleanup before touching audit rows', async () => {
     mockFindMany.mockResolvedValueOnce([{ id: 'pending' }, { id: 'free' }]).mockResolvedValueOnce([]);
-    mockUserFindFirst
-      .mockResolvedValueOnce({
-        billingDeletionPendingAt: new Date('2026-08-01T00:00:00Z'),
-        billingDeletionOperationId: 'held-token',
-        billingDeletionCompletedAt: null,
-      })
-      .mockResolvedValueOnce({ billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null });
+    mockBeginBillingDeletion.mockResolvedValueOnce({ ok: false, reason: 'in_progress' })
+      .mockResolvedValueOnce({ ok: true, pendingAt: new Date(), operationId: 'purge-1' });
     mockDeleteMany.mockResolvedValue({ count: 1 });
 
     const result = await cleanupDeletedAccounts();
@@ -663,31 +672,46 @@ describe('cleanupDeletedAccounts', () => {
     expect(result).toEqual({ deleted: 1, blocked: [{ id: 'pending', constraint: 'billing_deletion_incomplete' }] });
     expect(mockAuditEventDeleteMany).not.toHaveBeenCalledWith({ where: { actorUserId: 'pending', actorRole: 'member' } });
     expect(mockDeleteMany).toHaveBeenCalledTimes(1);
-    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free' } });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free', billingDeletionOperationId: 'purge-1' } });
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(1);
     expect(mockAnonymizeMember).not.toHaveBeenCalled();
   });
 
   it('skips an unresolved counselor copy even for an old soft-deleted account', async () => {
     mockFindMany.mockResolvedValueOnce([{ id: 'counselor' }]).mockResolvedValueOnce([]);
-    mockQueryRaw.mockResolvedValueOnce([{ id: 'claimed-copy' }]);
+    mockBeginBillingDeletion.mockResolvedValueOnce({ ok: false, reason: 'unresolved_send' });
 
     const result = await cleanupDeletedAccounts();
 
     expect(result).toEqual({ deleted: 0, blocked: [{ id: 'counselor', constraint: 'billing_send_unresolved' }] });
     expect(mockAuditEventDeleteMany).not.toHaveBeenCalled();
     expect(mockDeleteMany).not.toHaveBeenCalled();
+    expect(mockDeleteAuthUserForErasure).not.toHaveBeenCalled();
   });
 
-  it('rechecks retention eligibility after acquiring the billing lock', async () => {
+  it('rechecks retention eligibility by operation owner after Auth is removed', async () => {
     mockFindMany.mockResolvedValueOnce([{ id: 'restored' }]).mockResolvedValueOnce([]);
     mockUserFindFirst.mockResolvedValueOnce(null);
 
     const result = await cleanupDeletedAccounts();
 
-    expect(result).toEqual({ deleted: 0, blocked: [] });
+    expect(result).toEqual({ deleted: 0, blocked: [{ id: 'restored', constraint: 'billing_deletion_raced' }] });
     expect(mockUserFindFirst).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 'restored', deletedAt: { not: null, lt: expect.any(Date) } },
+      where: { id: 'restored', deletedAt: { not: null, lt: expect.any(Date) }, billingDeletionOperationId: 'purge-1' },
     }));
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it('retains the deleted app tombstone when Auth removal is unconfirmed', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'auth-held' }]).mockResolvedValueOnce([]);
+    mockDeleteAuthUserForErasure.mockResolvedValueOnce({ ok: false, message: 'provider unavailable' });
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 0, blocked: [{ id: 'auth-held', constraint: 'auth_erasure_unconfirmed' }] });
+    expect(mockBeginBillingDeletion).toHaveBeenCalledWith('auth-held', undefined, expect.any(Date));
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('auth-held', 'purge-1');
+    expect(mockAuditEventDeleteMany).not.toHaveBeenCalled();
     expect(mockDeleteMany).not.toHaveBeenCalled();
   });
 
@@ -707,8 +731,9 @@ describe('cleanupDeletedAccounts', () => {
       deleted: 999,
       blocked: [{ id: 'held', constraint: 'audit_events_actor_user_id_fkey' }],
     });
-    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-0' } });
-    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-998' } });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-0', billingDeletionOperationId: 'purge-1' } });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-998', billingDeletionOperationId: 'purge-1' } });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('held', 'purge-1');
     // The held account is excluded from the next page so the sweep terminates.
     expect(mockFindMany).toHaveBeenCalledTimes(2);
     expect(mockFindMany).toHaveBeenLastCalledWith(
@@ -738,7 +763,7 @@ describe('cleanupDeletedAccounts', () => {
     const result = await cleanupDeletedAccounts();
 
     expect(result).toEqual({ deleted: 1, blocked: [{ id: 'held', constraint: 'chapter_members_user_id_fkey' }] });
-    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free' } });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free', billingDeletionOperationId: 'purge-1' } });
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Could not anonymise held account held'), expect.any(Error));
     errorSpy.mockRestore();
   });
@@ -828,6 +853,10 @@ describe('runDataCleanup', () => {
     vi.resetAllMocks();
     mockQueryRaw.mockResolvedValue([{ present: true }]);
     mockExecuteRaw.mockResolvedValue(0);
+    mockUserFindFirst.mockResolvedValue({ id: 'eligible' });
+    mockBeginBillingDeletion.mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'purge-1' });
+    mockReleaseBillingDeletion.mockResolvedValue(undefined);
+    mockDeleteAuthUserForErasure.mockResolvedValue({ ok: true, alreadyMissing: false });
   });
 
   it('includes the unmatched xAPI event purge in the report', async () => {

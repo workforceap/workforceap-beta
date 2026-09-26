@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Prisma, TrainingBillingPacket, TrainingBillingPacketSend } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
-import { lockBillingMemberLifecycle } from './erasureGuard';
+import { lockBillingMemberLifecycle, scopedBillingUser } from './erasureGuard';
 import type { OrganizationBranding } from '@/lib/tenant/organizationBranding';
 import { parseSignedSnapshot, SignedSnapshotCorruptError } from './packetSnapshot';
 
@@ -268,7 +268,8 @@ export async function startSendAttempt(args: {
     const current = await lockPacketSends(tx, args.packetId);
     if (!isSendable(current)) return { ok: false as const, reason: 'superseded' as const };
     if (current!.memberId !== subjectMemberId) return { ok: false as const, reason: 'member_inactive' as const };
-    const activeMember = await tx.user.findFirst({
+    const scoped = await scopedBillingUser(tx, subjectMemberId, current!.organizationId);
+    const activeMember = await scoped?.user.findFirst({
       where: { id: subjectMemberId, organizationId: current!.organizationId, deletedAt: null, billingDeletionPendingAt: null },
       select: { id: true },
     });

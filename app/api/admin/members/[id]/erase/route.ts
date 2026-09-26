@@ -13,6 +13,7 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { deleteAuthUserForErasure, disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -113,6 +114,16 @@ export const POST = withApiGuc(async (
     if (shouldAnonymize) {
       // Scrub User and Profile PII together while preserving enrollment rows.
       await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
+      let authDisabled;
+      try {
+        authDisabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, existing.email);
+      } catch (authError) {
+        console.error(`[gdpr-erase] Auth retirement outcome unknown for ${id}:`, authError);
+        return NextResponse.json({ error: 'Sign-in retirement requires reconciliation.', reconciliationRequired: true }, { status: 503 });
+      }
+      if (!authDisabled.ok) {
+        return NextResponse.json({ error: 'Sign-in retirement could not be confirmed.', reconciliationRequired: true }, { status: 502 });
+      }
       await completeBillingDeletion(id, billingDeletion.operationId);
 
       await logCronRun('gdpr_erase', {
@@ -141,14 +152,24 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ ok: true, action: 'anonymize', memberId: id });
     }
 
-    // Hard delete via Prisma cascading relations
-    await withTenantScope(orgId, (db) => db.user.delete({ where: { id } }));
-
-    // Also remove from Supabase Auth so the identity cannot be reused
-    const supabaseAdmin = getSupabaseAdmin();
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
-    if (error) {
-      console.error(`[gdpr-erase] Supabase auth delete error for ${id}:`, error.message);
+    // Retain a deleted app tombstone while Auth is removed. Existing JWTs
+    // remain denied even if the provider request fails or times out.
+    await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
+    let authDeleted;
+    try {
+      authDeleted = await deleteAuthUserForErasure(getSupabaseAdmin(), id);
+    } catch (authError) {
+      console.error(`[gdpr-erase] Auth deletion outcome unknown for ${id}:`, authError);
+      return NextResponse.json({ error: 'Sign-in deletion requires reconciliation.', reconciliationRequired: true }, { status: 503 });
+    }
+    if (!authDeleted.ok) {
+      return NextResponse.json({ error: 'Sign-in deletion could not be confirmed.', reconciliationRequired: true }, { status: 502 });
+    }
+    const removed = await withTenantScope(orgId, (db) => db.user.deleteMany({
+      where: { id, billingDeletionOperationId: billingDeletion.operationId },
+    }));
+    if (removed.count !== 1) {
+      return NextResponse.json({ error: 'Account erasure could not be confirmed.', reconciliationRequired: true }, { status: 503 });
     }
 
     await logCronRun('gdpr_erase', {

@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { lockBillingLifecycle, hasUnresolvedBillingSend } = vi.hoisted(() => ({
+const { lockBillingLifecycle, hasUnresolvedBillingSend, billingLifecyclePending } = vi.hoisted(() => ({
   lockBillingLifecycle: vi.fn(),
   hasUnresolvedBillingSend: vi.fn(),
+  billingLifecyclePending: vi.fn(),
 }));
 
 vi.mock('@/lib/billing/erasureGuard', () => ({
   lockBillingMemberLifecycle: lockBillingLifecycle,
   hasUnresolvedBillingSend,
+  billingLifecyclePending,
 }));
 
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
@@ -33,6 +35,7 @@ describe('counselor handoff while billing is in flight', () => {
     vi.clearAllMocks();
     lockBillingLifecycle.mockResolvedValue(undefined);
     hasUnresolvedBillingSend.mockResolvedValue(false);
+    billingLifecyclePending.mockResolvedValue(false);
   });
 
   it('checks under the lifecycle lock before the first member row write', async () => {
