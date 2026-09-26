@@ -1,6 +1,8 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { BillingAssignmentInProgressError } from './billingAssignmentGuard';
 import { createNotification } from '@/lib/notifications/create';
 import { hasAdminAccess } from '@/lib/auth/roleAccess';
 
@@ -15,6 +17,7 @@ export type EnsureSelfServeCounselorResult = {
     | 'partner_referred'
     | 'no_counselors'
     | 'member_unavailable'
+    | 'billing_send_in_progress'
     | 'staff_account';
 };
 
@@ -185,6 +188,9 @@ export async function ensureSelfServeCounselorAssigned(input: {
   }
 
   const result = await prisma.$transaction(async (tx) => {
+    // Claim also takes the lifecycle key before its member row lock. Doing
+    // this before the optimistic User update avoids a lock-order deadlock.
+    await lockBillingMemberLifecycle(tx, input.memberId);
     const locked = await tx.user.updateMany({
       where: {
         id: input.memberId,
@@ -222,6 +228,11 @@ export async function ensureSelfServeCounselorAssigned(input: {
       reason: 'assigned',
       threadId: assigned.thread.id,
     } as const;
+  }).catch((error: unknown) => {
+    if (error instanceof BillingAssignmentInProgressError) {
+      return { assigned: false, counselorUserId: null, reason: 'billing_send_in_progress' } as const;
+    }
+    throw error;
   });
 
   if (result.reason === 'assigned' && result.counselorUserId) {

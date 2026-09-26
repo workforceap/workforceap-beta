@@ -8,6 +8,7 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
 import { notifyCounselorOfStaffAssignment, type StaffAssignedMember } from '@/lib/counselor/staffAssignmentNotify';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
 import type { PipelineBoardStage, MemberStatus } from '@prisma/client';
@@ -178,6 +179,9 @@ async function _POST(request: NextRequest) {
         updates.updatedAt = new Date();
 
         const handoff = await prisma.$transaction(async (tx) => {
+          // The send claim takes this key before its User row lock. Take it
+          // before the bulk update's User write to preserve that lock order.
+          if (counselorUserId !== undefined) await lockBillingMemberLifecycle(tx, member.id);
           const updated = await tx.user.updateMany({
             where: { id: member.id, organizationId: orgId, deletedAt: null },
             data: updates,

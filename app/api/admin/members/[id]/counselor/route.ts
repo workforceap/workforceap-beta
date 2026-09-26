@@ -5,6 +5,7 @@ import { isAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { sendCounselorAssignedEmail } from '@/lib/email';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { BillingAssignmentInProgressError } from '@/lib/counselor/billingAssignmentGuard';
 import { createNotification } from '@/lib/notifications/create';
 import { notifyCounselorOfStaffAssignment } from '@/lib/counselor/staffAssignmentNotify';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
@@ -110,6 +111,9 @@ type Props = { params: Promise<{ id: string }> };export const POST = withApiGuc(
   });
 
   } catch (error) {
+    if (error instanceof BillingAssignmentInProgressError) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: 409 });
+    }
     console.error('/admin/members/[id]/counselor error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

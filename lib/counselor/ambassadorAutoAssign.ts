@@ -7,6 +7,7 @@ import { getOrCreateMemberCounselorThread } from '@/lib/messages/counselorThread
 import { createNotification } from '@/lib/notifications/create';
 import { logger } from '@/lib/observability/logger';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { assertBillingAssignmentMutable, BillingAssignmentInProgressError } from './billingAssignmentGuard';
 import { matchAmbassador, pickAmbassadorReferralText } from '@/lib/counselor/ambassadorReferral';
 
 export type AmbassadorAutoAssignInput = {
@@ -25,6 +26,7 @@ export type AmbassadorAutoAssignResult =
         | 'no_referral_text'
         | 'member_not_found'
         | 'already_assigned'
+        | 'billing_send_in_progress'
         | 'no_match'
         | 'ambiguous'
         | 'failed';
@@ -97,7 +99,22 @@ export async function autoAssignAmbassadorFromReferral(
     }
 
     const { candidate } = match;
-    await prisma.$transaction(async (tx) => {
+    const writeResult = await prisma.$transaction(async (tx) => {
+      await assertBillingAssignmentMutable(tx, member.id);
+      // The earlier eligibility lookup is a preflight only. Re-read under
+      // the lifecycle and member row locks so a competing handoff cannot be
+      // overridden by this background referral assignment.
+      const locked = await tx.$queryRaw<Array<{ id: string; alreadyAssigned: boolean }>>`
+        SELECT u.id,
+          EXISTS(SELECT 1 FROM counselor_assignments AS ca WHERE ca.member_id = u.id AND ca.active = TRUE) AS "alreadyAssigned"
+        FROM users AS u
+        WHERE u.id = ${member.id}::text
+          AND u.organization_id = ${member.organizationId}::text
+          AND u.deleted_at IS NULL
+        FOR UPDATE OF u
+      `;
+      if (locked.length !== 1) return 'member_not_found' as const;
+      if (locked[0].alreadyAssigned) return 'already_assigned' as const;
       const existingPair = await tx.counselorAssignment.findUnique({
         where: { counselorId_memberId: { counselorId: candidate.counselorId, memberId: member.id } },
         select: { id: true },
@@ -117,7 +134,9 @@ export async function autoAssignAmbassadorFromReferral(
           },
         });
       }
+      return 'assigned' as const;
     });
+    if (writeResult !== 'assigned') return { assigned: false, reason: writeResult };
 
     const counselorName = candidate.fullName?.trim() || 'your Community Ambassador';
 
@@ -179,6 +198,7 @@ export async function autoAssignAmbassadorFromReferral(
 
     return { assigned: true, counselorUserId: candidate.userId, counselorName, matchedOn: match.matchedOn };
   } catch (error) {
+    if (error instanceof BillingAssignmentInProgressError) return { assigned: false, reason: 'billing_send_in_progress' };
     captureApiError(error, {
       route: `ambassadorAutoAssign#${input.source}`,
       extra: { memberId: input.memberId },

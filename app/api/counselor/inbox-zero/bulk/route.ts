@@ -5,6 +5,7 @@ import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { auditLog } from '@/lib/audit';
 import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { BillingAssignmentInProgressError } from '@/lib/counselor/billingAssignmentGuard';
 import { notifyCounselorOfStaffAssignment, type StaffAssignedMember } from '@/lib/counselor/staffAssignmentNotify';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -314,7 +315,7 @@ export const POST = withApiGuc(async (request: Request) => {
           sent += 1;
         } catch (e) {
           console.error('[bulk reassign]', memberId, e);
-          results.push({ memberId, ok: false, error: 'internal' });
+          results.push({ memberId, ok: false, error: e instanceof BillingAssignmentInProgressError ? e.code : 'internal' });
           failed += 1;
         }
       }

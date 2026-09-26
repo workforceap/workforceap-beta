@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { assertBillingAssignmentMutable } from './billingAssignmentGuard';
 
 /**
  * Must run inside the caller's transaction. Lock the member row before reading
@@ -10,6 +11,9 @@ export async function assignMemberCounselor(
   input: { memberId: string; organizationId: string; counselorUserId: string | null },
 ) {
   const { memberId, organizationId, counselorUserId } = input;
+  // Claim takes this lifecycle lock before the member row. Once a copy is
+  // claimed, assignment cannot change until its provider result is settled.
+  await assertBillingAssignmentMutable(tx, memberId);
   const locked = await tx.user.updateMany({
     where: { id: memberId, organizationId, deletedAt: null },
     data: { updatedAt: new Date() },

@@ -7,6 +7,9 @@ const {
   createAssignment,
   updateAssignment,
   updateThread,
+  lockBillingLifecycle,
+  hasUnresolvedBillingSend,
+  lockMemberRow,
 } = vi.hoisted(() => ({
   findFirstUser: vi.fn(),
   findManyCounselors: vi.fn(),
@@ -14,9 +17,16 @@ const {
   createAssignment: vi.fn(),
   updateAssignment: vi.fn(),
   updateThread: vi.fn(),
+  lockBillingLifecycle: vi.fn(),
+  hasUnresolvedBillingSend: vi.fn(),
+  lockMemberRow: vi.fn(),
 }));
 
 vi.mock('server-only', () => ({}));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: lockBillingLifecycle,
+  hasUnresolvedBillingSend,
+}));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     user: { findFirst: findFirstUser },
@@ -24,6 +34,7 @@ vi.mock('@/lib/db/prisma', () => ({
     messageThread: { update: updateThread },
     $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
       fn({
+        $queryRaw: lockMemberRow,
         counselorAssignment: {
           findUnique: findUniqueAssignment,
           create: createAssignment,
@@ -68,6 +79,9 @@ describe('autoAssignAmbassadorFromReferral', () => {
     findUniqueAssignment.mockResolvedValue(null);
     createAssignment.mockResolvedValue({ id: 'asg-1' });
     updateThread.mockResolvedValue({});
+    lockBillingLifecycle.mockResolvedValue(undefined);
+    hasUnresolvedBillingSend.mockResolvedValue(false);
+    lockMemberRow.mockResolvedValue([{ id: 'member-1', alreadyAssigned: false }]);
   });
 
   it('assigns the student to the uniquely named ambassador and notifies both sides', async () => {
@@ -140,5 +154,26 @@ describe('autoAssignAmbassadorFromReferral', () => {
       partnerAmbassadorReferral: 'Maria García',
     });
     expect(result).toEqual({ assigned: false, reason: 'failed' });
+  });
+
+  it('does not create an assignment while a billing provider call is unresolved', async () => {
+    hasUnresolvedBillingSend.mockResolvedValue(true);
+    const result = await autoAssignAmbassadorFromReferral({
+      memberId: 'member-1', source: 'apply_signup', partnerAmbassadorReferral: 'Maria García',
+    });
+    expect(result).toEqual({ assigned: false, reason: 'billing_send_in_progress' });
+    expect(lockBillingLifecycle).toHaveBeenCalledWith(expect.anything(), 'member-1');
+    expect(lockMemberRow).not.toHaveBeenCalled();
+    expect(createAssignment).not.toHaveBeenCalled();
+    expect(updateAssignment).not.toHaveBeenCalled();
+  });
+
+  it('does not override an assignment created after the initial eligibility lookup', async () => {
+    lockMemberRow.mockResolvedValue([{ id: 'member-1', alreadyAssigned: true }]);
+    const result = await autoAssignAmbassadorFromReferral({
+      memberId: 'member-1', source: 'apply_signup', partnerAmbassadorReferral: 'Maria García',
+    });
+    expect(result).toEqual({ assigned: false, reason: 'already_assigned' });
+    expect(createAssignment).not.toHaveBeenCalled();
   });
 });
