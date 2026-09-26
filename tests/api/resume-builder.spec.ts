@@ -64,6 +64,7 @@ vi.mock('@/lib/content/programs', () => ({
 vi.mock('@/lib/ai/groq', () => ({
   chatCompletion: vi.fn(),
   isAIConfigured: vi.fn(),
+  isGroqConfigured: vi.fn(),
 }));
 
 vi.mock('@/lib/ai/anthropicChat', () => ({
@@ -108,7 +109,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getProgramBySlug } from '@/lib/content/programs';
-import { chatCompletion, isAIConfigured } from '@/lib/ai/groq';
+import { isGroqConfigured } from '@/lib/ai/groq';
 import { claudeChat, isAnthropicConfigured } from '@/lib/ai/anthropicChat';
 import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
@@ -208,7 +209,7 @@ describe('POST /api/member/resume/generate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(isAnthropicConfigured).mockReturnValue(false);
-    vi.mocked(isAIConfigured).mockReturnValue(false);
+    vi.mocked(isGroqConfigured).mockReturnValue(false);
     vi.mocked(checkAIToolRateLimit).mockResolvedValue({ success: true });
     vi.mocked(getMemberResumePlainText).mockResolvedValue('');
     vi.mocked(getProgramBySlug).mockReturnValue(mockProgram() as any);
@@ -256,7 +257,7 @@ describe('POST /api/member/resume/generate', () => {
     expect(claudeChat).toHaveBeenCalledWith(
       expect.stringContaining('expert resume writer'),
       expect.stringContaining('Name: Test Member'),
-      expect.objectContaining({ maxTokens: 2000 })
+      { maxTokens: 2000, allowGeminiFallback: false },
     );
     expect(checkAIToolRateLimit).toHaveBeenCalledWith(UUIDS.user);
     expect(saveEnhancedResumeText).toHaveBeenCalledWith(
@@ -278,7 +279,6 @@ describe('POST /api/member/resume/generate', () => {
     expect(res.status).toBe(422);
     expect((await res.json()).error).toContain('work history, skills, or education');
     expect(claudeChat).not.toHaveBeenCalled();
-    expect(chatCompletion).not.toHaveBeenCalled();
     expect(saveEnhancedResumeText).not.toHaveBeenCalled();
     expect(checkAIToolRateLimit).not.toHaveBeenCalled();
   });
@@ -387,8 +387,8 @@ describe('POST /api/member/resume/generate', () => {
       profile: mockProfile(),
     } as any);
     vi.mocked(isAnthropicConfigured).mockReturnValue(false);
-    vi.mocked(isAIConfigured).mockReturnValue(true);
-    vi.mocked(chatCompletion).mockResolvedValue('# Test Member\n\n## Experience\nDriver at ABC Corp');
+    vi.mocked(isGroqConfigured).mockReturnValue(true);
+    vi.mocked(claudeChat).mockResolvedValue('# Test Member\n\n## Experience\nDriver at ABC Corp');
     vi.mocked(prisma.profile.upsert).mockResolvedValue({} as any);
 
     const res = await generateResume(makeGenerateRequest());
@@ -396,7 +396,11 @@ describe('POST /api/member/resume/generate', () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.fallbackUsed).toBe(false);
-    expect(chatCompletion).toHaveBeenCalled();
+    expect(claudeChat).toHaveBeenCalledWith(
+      expect.stringContaining('expert resume writer'),
+      expect.stringContaining('Name: Test Member'),
+      { maxTokens: 2000, allowGeminiFallback: false },
+    );
   });
 
   it('keeps the existing resume when AI is not configured', async () => {
