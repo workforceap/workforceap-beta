@@ -414,6 +414,11 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
           await tx.auditEvent.deleteMany({
             where: { actorUserId: id, actorRole: SELF_SERVICE_AUDIT_ACTOR_ROLE },
           });
+          // Legacy send rows use SET NULL on user purge and otherwise retain
+          // identifiers. Remove them before the FK detaches the account.
+          await tx.emailSendLog.deleteMany({
+            where: { OR: [{ userId: id }, { entityId: id }] },
+          });
           // deleteMany (not delete) so a row removed concurrently is a no-op,
           // not a P2025. Cascades run at the database level from here.
           const result = await scoped!.user.deleteMany({ where: { id, billingDeletionOperationId: deletion.operationId } });

@@ -914,6 +914,90 @@ describe('sendBrandedEmail send log', () => {
     assert.ok(buildEmailDedupeKey({ to: 'a@x.org', subject: 'x' }, day1).startsWith('untyped/'));
   });
 
+  it('logs member-claimed mail without names, addresses, member ids or provider error text', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const memberId = '550e8400-e29b-41d4-a716-446655440001';
+    const address = 'jane.doe@personal.example';
+    const key = `counselor-copy:${memberId}:${address}`;
+    const memberClaim = {
+      begin: async () => 'claim-token',
+      release: async () => {},
+      markUncertain: async () => {},
+    };
+    const { entries, store } = captureStore();
+    let providerKey: string | undefined;
+    const resend = { emails: { send: async (_payload: unknown, options: { idempotencyKey: string }) => {
+      providerKey = options.idempotencyKey;
+      return { data: { id: 'resend-message-123' }, error: null };
+    } } } as unknown as import('resend').Resend;
+
+    await sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: address,
+      subject: 'Jane Doe needs a counselor follow-up',
+      html: '<p>Private</p>',
+      idempotencyKey: key,
+      templateKey: 'Jane Doe follow-up',
+      userId: memberId,
+      subjectMemberId: memberId,
+      entityType: 'User',
+      entityId: memberId,
+      memberEffectClaim: true,
+    }, {
+      subjectIsActive: async () => true,
+      memberClaim,
+      sendLogStore: store,
+    });
+
+    assert.equal(providerKey, key, 'the provider still receives the original idempotency key');
+    assert.deepEqual(entries.map((entry) => entry.status), ['sending', 'sent']);
+    for (const entry of entries) {
+      assert.match(entry.dedupeKey, /^member-email\/[0-9a-f]{64}$/);
+      assert.equal(entry.templateKey, 'member_email');
+      assert.equal(entry.subject, null);
+      assert.equal(entry.userId, null);
+      assert.equal(entry.recipientHash, null);
+      assert.equal(entry.recipientDomain, null);
+      assert.equal(entry.idempotencyKey, null);
+      assert.equal(entry.entityType, null);
+      assert.equal(entry.entityId, null);
+      assert.equal(entry.failureReason, null);
+      const serialized = JSON.stringify(entry);
+      for (const secret of ['Jane Doe', address, memberId, key]) assert.ok(!serialized.includes(secret));
+    }
+    assert.equal(entries[0].dedupeKey, entries[1].dedupeKey);
+    assert.equal(entries[1].providerMessageId, 'resend-message-123');
+
+    entries.length = 0;
+    await assert.rejects(
+      sendBrandedEmail({ emails: { send: async () => ({
+        data: null,
+        error: { name: 'validation_error', statusCode: 422, message: `Rejected ${address} for Jane Doe` },
+      }) } } as unknown as import('resend').Resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: address,
+        subject: 'Jane Doe private request',
+        html: '<p>Private</p>',
+        idempotencyKey: `${key}:failure`,
+        templateKey: 'application_received',
+        subjectMemberId: memberId,
+        memberEffectClaim: true,
+      }, {
+        subjectIsActive: async () => true,
+        memberClaim,
+        sendLogStore: store,
+        suppressFailureDiagnostic: true,
+      }),
+      /Rejected/,
+    );
+    assert.deepEqual(entries.map((entry) => entry.status), ['sending', 'failed']);
+    assert.equal(entries[1].templateKey, 'application_received');
+    assert.equal(entries[1].failureClass, 'provider_rejected');
+    assert.equal(entries[1].failureReason, null);
+    assert.ok(!JSON.stringify(entries).includes(address));
+    assert.ok(!JSON.stringify(entries).includes(memberId));
+  });
+
   it('records a skipped fixture recipient and a failed send with the provider error class', async () => {
     process.env.CRON_SECRET = 'test-unsubscribe-secret';
     const { entries, store } = captureStore();

@@ -173,6 +173,15 @@ export async function anonymizeMember(
       data: ANONYMIZED_PROFILE_DATA,
     });
 
+    // Older send logs can hold a subject, address-derived hash/domain, raw
+    // idempotency key or provider error long after the account is erased.
+    // Delete both direct-recipient and explicitly member-entity rows while
+    // the account lifecycle is locked. New claimed sends log without those
+    // fields, even if a bounded log write finishes after this transaction.
+    await tx.emailSendLog.deleteMany({
+      where: { OR: [{ userId }, { entityId: userId }] },
+    });
+
     // An anonymized account must not retain device endpoints. Existing JWTs
     // may still be valid until they expire, so the subscription route also
     // checks the lifecycle barrier before accepting a new endpoint.

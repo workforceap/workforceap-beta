@@ -15,6 +15,7 @@ const mockFindMany = vi.fn();
 const mockUserFindFirst = vi.fn();
 const mockCount = vi.fn();
 const mockAuditEventDeleteMany = vi.fn();
+const mockEmailSendLogDeleteMany = vi.fn();
 const mockAnonymizeMember = vi.fn();
 const mockQueryRaw = vi.fn();
 const mockExecuteRaw = vi.fn();
@@ -135,7 +136,7 @@ vi.mock('@/lib/db/prisma', () => ({
     },
     emailSendLog: {
       findMany: (...args: unknown[]) => mockFindMany(...args),
-      deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
+      deleteMany: (...args: unknown[]) => mockEmailSendLogDeleteMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
     },
     portalWorkflowEvent: {
@@ -596,6 +597,7 @@ describe('cleanupDeletedAccounts', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
+    mockEmailSendLogDeleteMany.mockResolvedValue({ count: 0 });
     mockAnonymizeMember.mockResolvedValue(null);
     mockUserFindFirst.mockResolvedValue({ id: 'eligible' });
     mockBeginBillingDeletion.mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'purge-1' });
@@ -623,6 +625,8 @@ describe('cleanupDeletedAccounts', () => {
     expect(mockDeleteMany).toHaveBeenCalledTimes(2);
     expect(mockDeleteMany).toHaveBeenNthCalledWith(1, { where: { id: 'u1', billingDeletionOperationId: 'purge-1' } });
     expect(mockDeleteMany).toHaveBeenNthCalledWith(2, { where: { id: 'u2', billingDeletionOperationId: 'purge-1' } });
+    expect(mockEmailSendLogDeleteMany).toHaveBeenNthCalledWith(1, { where: { OR: [{ userId: 'u1' }, { entityId: 'u1' }] } });
+    expect(mockEmailSendLogDeleteMany).toHaveBeenNthCalledWith(2, { where: { OR: [{ userId: 'u2' }, { entityId: 'u2' }] } });
     expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(2);
     expect(mockDeleteAuthUserForErasure.mock.invocationCallOrder[0]).toBeLessThan(mockDeleteMany.mock.invocationCallOrder[0]);
     // A purged account is gone; only held accounts go through the anonymiser.
