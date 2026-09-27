@@ -156,6 +156,7 @@ async function recordSuggestAudit(input: {
       to: actualRecipient,
       jobTitle: job.title,
       companyName: job.employer.companyName,
+      subjectMemberIds: claimedMatches.map((m) => m.studentId),
       matches: claimedMatches.map((m) => ({
         name: m.student.fullName,
         program: m.student.enrolledProgram ?? '-',

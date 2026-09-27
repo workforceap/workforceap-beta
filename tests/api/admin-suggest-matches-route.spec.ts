@@ -130,6 +130,7 @@ describe('POST /api/admin/jobs/[id]/suggest-matches', () => {
       to: 'hiring@example.com',
       jobTitle: 'Junior Developer',
       companyName: 'Acme',
+      subjectMemberIds: ['student-1'],
       matches: [{ name: 'Jane Candidate', program: 'Web Development', score: 92 }],
     });
     expect(prisma.$queryRaw).toHaveBeenCalledTimes(2);

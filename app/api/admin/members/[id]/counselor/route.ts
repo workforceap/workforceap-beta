@@ -69,6 +69,7 @@ type Props = { params: Promise<{ id: string }> };export const POST = withApiGuc(
   try {
     const emailResult = await sendCounselorAssignedEmail({
       to: member.email,
+      recipientUserId: memberId,
       memberFullName: member.fullName,
       counselorFullName: counselor.user.fullName,
       orgId: member.organizationId,

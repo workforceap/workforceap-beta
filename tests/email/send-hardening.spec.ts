@@ -48,6 +48,51 @@ const baseArgs = {
   html: '<p>Come back</p>',
 };
 
+describe('member subjects in employer email', () => {
+  it('skips the provider when any named member is inactive', async () => {
+    const calls: Array<{ payload: any; options: any }> = [];
+    const checked: string[] = [];
+    const result = await sendBrandedEmail(fakeResend(calls), {
+      ...baseArgs,
+      to: 'employer@workforceap.org',
+      subjectMemberIds: ['alice', 'bob'],
+    }, {
+      subjectIsActive: async (id) => { checked.push(id); return id !== 'bob'; },
+      sendLogStore: { record: async () => {} },
+    });
+
+    expect(checked).toEqual(['alice', 'bob']);
+    expect(calls).toHaveLength(0);
+    expect(result).toMatchObject({ skipped: true, reason: 'inactive_member' });
+  });
+
+  it('rechecks every named member before retrying after a provider delay', async () => {
+    const checked: string[] = [];
+    let attempts = 0;
+    const resend = { emails: { send: vi.fn(async () => {
+      attempts++;
+      return { data: null, error: { name: 'rate_limit_exceeded', message: 'Try later', retry_after: 1 } };
+    }) } } as unknown as Resend;
+
+    const result = await sendBrandedEmail(resend, {
+      ...baseArgs,
+      to: 'employer@workforceap.org',
+      subjectMemberIds: ['alice', 'bob'],
+    }, {
+      subjectIsActive: async (id) => {
+        checked.push(id);
+        return !(attempts === 1 && id === 'bob');
+      },
+      sleep: async () => {},
+      sendLogStore: { record: async () => {} },
+    });
+
+    expect(checked).toEqual(['alice', 'bob', 'alice', 'bob']);
+    expect(attempts).toBe(1);
+    expect(result).toMatchObject({ skipped: true, reason: 'inactive_member' });
+  });
+});
+
 describe('provider suppression guard', () => {
   const fetchMock = vi.fn<(input: URL | RequestInfo, init?: RequestInit) => Promise<Response>>();
 

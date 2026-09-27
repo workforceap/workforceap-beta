@@ -138,7 +138,13 @@ export const POST = withApiGuc(async (request: Request) => {
           .catch(() => null);
         name = member?.fullName ?? null;
       }
-      const result = await sendEligibilityLink({ to: email, name, url, orgId });
+      const result = await sendEligibilityLink({
+        to: email,
+        name,
+        url,
+        orgId,
+        ...(subjectUserId ? { subjectMemberId: subjectUserId } : {}),
+      });
       if (!result.ok) {
         // The link is still valid; surface the email failure but return the URL
         // so the admin can copy/share it manually.

@@ -77,6 +77,8 @@ export interface SendBrandedEmailRetryOptions {
   sendLogStore?: EmailSendLogStore;
   /** Test seam for the final recipient state check before each provider attempt. */
   recipientIsActive?: (userId: string, recipient: string) => Promise<boolean>;
+  /** Test seam for checking each member whose private details appear in staff mail. */
+  subjectIsActive?: (userId: string, email?: string | null) => Promise<boolean>;
   /**
    * Consult the provider suppression list before sending. Defaults to true
    * for bulk/cron sends (any caller that carries a deadline or runs under a
@@ -204,6 +206,8 @@ export interface SendBrandedEmailArgs {
   recipientUserId?: string;
   /** Member whose private content is sent to staff. Rechecked before every provider attempt. */
   subjectMemberId?: string;
+  /** Members named in a batch message to staff or an employer. */
+  subjectMemberIds?: string[];
   /** Address frozen in the staff message body, if present. */
   subjectMemberEmail?: string | null;
   entityType?: string | null;
@@ -555,17 +559,29 @@ export async function sendBrandedEmail(
   sendLog.write('sending', { attempts: 1 });
 
   for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
-    if (args.recipientUserId || args.subjectMemberId) {
+    if (args.recipientUserId || args.subjectMemberId || args.subjectMemberIds?.length) {
       // A cron or staff batch may have captured this address minutes ago.
       // Staff transcripts likewise contain private member content even though
       // their envelope goes to staff. Recheck after pacing and retry sleeps.
       const recipient = typeof to === 'string' ? to : '';
       let active: boolean;
       try {
-        active = (!args.recipientUserId
-          || await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient))
-          && (!args.subjectMemberId
-            || await memberRecipientIsActive(args.subjectMemberId, args.subjectMemberEmail));
+        active = !args.recipientUserId
+          || await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient);
+        if (active) {
+          const subjectIsActive = retryOptions.subjectIsActive ?? memberRecipientIsActive;
+          const subjects = new Map<string, string | null>();
+          if (args.subjectMemberId) subjects.set(args.subjectMemberId, args.subjectMemberEmail ?? null);
+          for (const id of args.subjectMemberIds ?? []) {
+            if (!subjects.has(id)) subjects.set(id, null);
+          }
+          for (const [id, email] of subjects) {
+            if (!(await subjectIsActive(id, email))) {
+              active = false;
+              break;
+            }
+          }
+        }
       } catch (error) {
         // An unavailable lifecycle lookup is not permission to email a stale
         // address. Record the failure while keeping the provider untouched.

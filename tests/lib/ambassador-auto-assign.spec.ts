@@ -111,7 +111,7 @@ describe('autoAssignAmbassadorFromReferral', () => {
       expect.objectContaining({ data: { counselorUserId: 'amb-1' } }),
     );
     expect(sendCounselorAssignedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: 'student@example.org', counselorFullName: 'Maria García' }),
+      expect.objectContaining({ to: 'student@example.org', recipientUserId: 'member-1', counselorFullName: 'Maria García' }),
     );
     const notifiedUsers = vi.mocked(createNotification).mock.calls.map((c) => c[0].userId).sort();
     expect(notifiedUsers).toEqual(['amb-1', 'member-1']);

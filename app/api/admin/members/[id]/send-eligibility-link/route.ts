@@ -44,6 +44,7 @@ export const POST = withApiGuc(
 
       const result = await sendEligibilityLink({
         to: member.email,
+        recipientUserId: id,
         name: member.fullName,
         url,
         orgId,

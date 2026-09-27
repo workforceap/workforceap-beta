@@ -173,6 +173,7 @@ export async function autoAssignAmbassadorFromReferral(
     try {
       await sendCounselorAssignedEmail({
         to: member.email,
+        recipientUserId: member.id,
         memberFullName: member.fullName ?? '',
         counselorFullName: counselorName,
         orgId: member.organizationId,

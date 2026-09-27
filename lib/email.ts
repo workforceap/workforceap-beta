@@ -476,6 +476,7 @@ export async function sendElevatorSpeechEmail(params: {
  */
 export async function sendCounselorAssignedEmail(params: {
   to: string;
+  recipientUserId: string;
   memberFullName: string;
   counselorFullName: string;
   orgId?: string | null;
@@ -505,6 +506,7 @@ export async function sendCounselorAssignedEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.counselor_assigned,
       to: params.to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine(`${branding.name} — ${params.counselorFullName} is your counselor`),
       html,
     });
@@ -1708,6 +1710,7 @@ export async function sendAIMatchSuggestionEmail(params: {
   jobTitle: string;
   companyName: string;
   matches: { name: string; program: string; score: number }[];
+  subjectMemberIds: string[];
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
@@ -1724,6 +1727,7 @@ export async function sendAIMatchSuggestionEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      subjectMemberIds: params.subjectMemberIds,
       subject: sanitizeEmailSubjectLine(`Top candidate matches for "${params.jobTitle}"`),
       html,
     });
@@ -1749,6 +1753,7 @@ export async function sendMatchActionEmail(
 /** Send application confirmation / first membership welcome after form submit */
 export async function sendApplicationConfirmationEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   eligibility?: EligibilityScreeningFields | null;
   applicationId?: string | null;
@@ -1774,6 +1779,7 @@ export async function sendApplicationConfirmationEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.application_received,
       to: params.to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine(
         'Welcome to Workforce Advancement Project — Your Next Steps',
       ),
@@ -2908,6 +2914,7 @@ export async function sendMemberStuckEmail(params: {
  */
 export async function sendInterviewPrepLink(params: {
   to: string;
+  recipientUserId: string;
   name?: string | null;
   url: string;
   orgId?: string | null;
@@ -2936,6 +2943,7 @@ export async function sendInterviewPrepLink(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine(`Practice for your interview with ${branding.name}`),
       html,
     });
@@ -2963,6 +2971,10 @@ export const ELIGIBILITY_SOFT_DEADLINE_COPY =
  */
 export async function sendEligibilityLink(params: {
   to: string;
+  /** Existing member receiving this email. Omit for a public lead address. */
+  recipientUserId?: string;
+  /** Member bound to a tokenized link sent to another address. */
+  subjectMemberId?: string;
   name?: string | null;
   url: string;
   orgId?: string | null;
@@ -2998,6 +3010,8 @@ export async function sendEligibilityLink(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      subjectMemberId: params.subjectMemberId,
       subject: sanitizeEmailSubjectLine(
         params.softDeadlineReminder
           ? `Please complete your eligibility info by Sept 14 — ${branding.name}`

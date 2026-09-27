@@ -146,6 +146,9 @@ describe('POST /api/admin/members/[id]/counselor', () => {
     expect(body.ok).toBe(true);
     expect(body.counselorName).toBe('Counselor Alice');
     expect(body.notificationEmailSent).toBe(true);
+    expect(sendCounselorAssignedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ to: 'jane@example.com', recipientUserId: UUIDS.member }),
+    );
 
     expect(createNotification).toHaveBeenCalledWith(
       expect.objectContaining({

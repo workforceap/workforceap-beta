@@ -851,6 +851,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       try {
         const result = await sendApplicationConfirmationEmail({
           to: user.email!,
+          recipientUserId: user.id,
           fullName,
           eligibility: eligibilityEmailFields,
           applicationId: createdApplicationId,
