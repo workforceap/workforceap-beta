@@ -18,6 +18,7 @@ describe('admin erasure tombstone', () => {
     const tx = {
       user: { findUnique: vi.fn(async () => existing), update },
       profile: { updateMany: vi.fn(async () => ({ count: 1 })) },
+      pushSubscription: { deleteMany: vi.fn(async () => ({ count: 1 })) },
     };
     const db = { $transaction: async (callback: (client: typeof tx) => unknown) => callback(tx) };
 

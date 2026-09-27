@@ -30,6 +30,7 @@ function fakeDb(user: { email: string; deletedAt: Date | null } | null) {
       update: vi.fn(async (_args: Call) => ({})),
     },
     profile: { updateMany: vi.fn(async (_args: Call) => ({ count: 1 })) },
+    pushSubscription: { deleteMany: vi.fn(async (_args: unknown) => ({ count: 1 })) },
     auditLog: { create: vi.fn(async (_args: Call) => ({})) },
   };
   const $transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx));
@@ -65,6 +66,7 @@ describe('anonymizeMember', () => {
     expect(parseDeletedEmail(String(userWrite.data.email))).toBe(ORIGINAL_EMAIL);
 
     expect(tx.profile.updateMany).toHaveBeenCalledWith({ where: { userId: USER_ID }, data: ANONYMIZED_PROFILE_DATA });
+    expect(tx.pushSubscription.deleteMany).toHaveBeenCalledWith({ where: { userId: USER_ID } });
   });
 
   it('clears every special-category and identifying profile column the policy names', () => {
@@ -149,6 +151,7 @@ describe('anonymizeMember', () => {
     expect(await anonymizeMember(USER_ID, { reason: 'member_self_delete' }, db)).toBeNull();
     expect(tx.user.update).not.toHaveBeenCalled();
     expect(tx.profile.updateMany).not.toHaveBeenCalled();
+    expect(tx.pushSubscription.deleteMany).not.toHaveBeenCalled();
     expect(tx.auditLog.create).not.toHaveBeenCalled();
   });
 
