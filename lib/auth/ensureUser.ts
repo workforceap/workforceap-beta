@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { tryCurrentRequestHeaders } from '@/lib/tenant/currentRequestHeaders';
 import type { HeadersLike } from '@/lib/tenant/resolveOrgFromRequest';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 
 type SupabaseUser = {
   id: string;
@@ -47,10 +48,12 @@ export async function ensureUserInDb(
       // erasure is disabled there; the persisted state check still applies.
       if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, supabaseUser.id);
 
-      const existing = await tx.user.findUnique({
+      // Auth ID is global; an existing row may belong to a different org than
+      // the current request, and provisioning must never rebind that row.
+      const existing = await crossTenantOK(() => tx.user.findUnique({
         where: { id: supabaseUser.id },
         select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
-      });
+      }));
       if (existing) {
         if (existing.deletedAt || existing.billingDeletionPendingAt || existing.billingDeletionOperationId) {
           throw new Error('This account is no longer active.');

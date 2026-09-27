@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { trackEvent } from '@/lib/events/track';
 import type { AIToolType } from '@prisma/client';
 
@@ -36,10 +37,12 @@ export async function saveAIToolResult(
     // The subject may differ from the staff actor. Serialize the result write
     // with deletion of the subject, not merely the actor's earlier ensure.
     if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
-    const subject = await tx.user.findUnique({
+    // A staff actor may run the tool for a member in a different org. Resolve
+    // the globally unique subject ID only to enforce the deletion barrier.
+    const subject = await crossTenantOK(() => tx.user.findUnique({
       where: { id: userId },
       select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
-    });
+    }));
     if (!subject || subject.deletedAt || subject.billingDeletionPendingAt || subject.billingDeletionOperationId) {
       throw new Error('This account is no longer active.');
     }

@@ -91,7 +91,10 @@ const SCOPE_MARKERS = [
 ];
 
 function shouldSkipPath(filePath) {
-  return SKIP_PATHS.some((p) => filePath.includes(p));
+  // SKIP_PATHS uses repository-relative POSIX paths. Normalize Windows paths
+  // before matching so the local ratchet counts the same sites as Linux CI.
+  const normalized = filePath.replace(/\\/g, '/');
+  return SKIP_PATHS.some((p) => normalized.includes(p));
 }
 
 function listSourceFiles(dir, out = []) {

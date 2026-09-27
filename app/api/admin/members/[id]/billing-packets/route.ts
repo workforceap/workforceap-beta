@@ -3,6 +3,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId, getSubjectOrganizationId } from '@/lib/tenant/organization';
+import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -36,10 +37,12 @@ async function resolveAdminSubject(userId: string, memberId: string) {
   if (!subjectOrgId) return null;
   const actorOrgId = superAdmin ? null : await getActorOrganizationId(userId);
   if (!canAdminActInSubjectOrganization({ actorOrgId, subjectOrgId, superAdmin })) return null;
-  const member = await prisma.user.findFirst({
-    where: { id: memberId, organizationId: subjectOrgId, deletedAt: null },
-    select: { id: true, fullName: true, email: true, organizationId: true },
-  });
+  const member = await withTenantScope(subjectOrgId, (db) =>
+    db.user.findFirst({
+      where: { id: memberId, organizationId: subjectOrgId, deletedAt: null },
+      select: { id: true, fullName: true, email: true, organizationId: true },
+    }),
+  );
   return member;
 }
 
@@ -131,10 +134,12 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     }
     const programSlug = enrollment.programSlug;
     const program = getProgramBySlug(programSlug);
-    const catalogRow = await prisma.organizationProgramCatalog.findFirst({
-      where: { organizationId: member.organizationId, programSlug },
-      select: { name: true, cost: true, certCost: true, bookCost: true, miscCost: true },
-    });
+    const catalogRow = await withTenantScope(member.organizationId, (db) =>
+      db.organizationProgramCatalog.findFirst({
+        where: { organizationId: member.organizationId, programSlug },
+        select: { name: true, cost: true, certCost: true, bookCost: true, miscCost: true },
+      }),
+    );
     if (!program && !catalogRow) {
       return NextResponse.json({ error: 'Unknown program for this organization' }, { status: 400 });
     }
