@@ -63,6 +63,7 @@ async function handle(_req: NextRequest) {
     try {
       const delivery = await emailPacer.run(() => sendInactiveNudgeEmail({
         to: member.email,
+        recipientUserId: member.id,
         fullName: member.fullName ?? member.email,
       }));
       if (!delivery.ok) {

@@ -236,6 +236,7 @@ export const POST = withApiGuc(async (request: Request) => {
   after(() => runIfMemberActive(user.id, () =>
     sendCourseEnrolledEmail({
       to: updatedUser.user.email,
+      recipientUserId: user.id,
       fullName: updatedUser.user.fullName,
       programName: programTitle,
     })

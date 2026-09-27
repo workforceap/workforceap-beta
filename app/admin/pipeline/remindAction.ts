@@ -43,8 +43,13 @@ export async function remindStaleApplication(applicationId: string, userId: stri
 
     const emailResult = await sendApplicantFollowupEmail({
       to: application.user.email,
+      recipientUserId: application.userId,
       fullName: application.user.fullName ?? 'there',
     });
+
+    if (!emailResult.ok && emailResult.error === 'inactive_member') {
+      throw new Error('Applicant is no longer active');
+    }
 
     await persistEvent({
       userId,

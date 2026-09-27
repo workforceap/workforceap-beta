@@ -66,6 +66,7 @@ async function handle(_request: Request) {
     | 'request_deadline_exhausted'
     | 'fixture_recipient'
     | 'suppressed_recipient'
+    | 'inactive_member'
     | 'provider_rate_limited'
     | undefined;
 
@@ -89,6 +90,7 @@ async function handle(_request: Request) {
 
       const result = await sendWeeklyRecapEmail({
         to: member.email,
+        recipientUserId: member.id,
         fullName: member.fullName ?? member.email,
         recapSummary,
         idempotencyKey: `weekly-recap:${member.id}:${weekStart.toISOString().slice(0, 10)}`,
@@ -103,7 +105,11 @@ async function handle(_request: Request) {
       if (result?.ok === false) {
         if (result.skipped) {
           skipped++;
-          skipReason = result.error === 'suppressed_recipient' ? 'suppressed_recipient' : 'fixture_recipient';
+          skipReason = result.error === 'inactive_member'
+            ? 'inactive_member'
+            : result.error === 'suppressed_recipient'
+              ? 'suppressed_recipient'
+              : 'fixture_recipient';
           continue;
         }
         // Resend 10 rps (and overlapping bulk crons) can still trip after

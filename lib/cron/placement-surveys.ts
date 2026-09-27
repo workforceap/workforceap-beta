@@ -246,7 +246,7 @@ export async function sendDuePlacementSurveys(
         continue;
       }
 
-      const result = await emailPacer.run(() => sendPreparedPlacementSurveyEmail(deliveryPayload));
+      const result = await emailPacer.run(() => sendPreparedPlacementSurveyEmail(deliveryPayload, placement.userId));
 
       if (!result.ok && 'skipped' in result && result.skipped) {
         skipped.push({ userId: placement.userId, reason: result.error ?? 'Skipped before provider send' });

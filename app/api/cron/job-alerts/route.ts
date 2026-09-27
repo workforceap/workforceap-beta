@@ -104,6 +104,7 @@ async function handle(_request: Request) {
       if (member.email) {
         const delivery = await emailPacer.run(() => sendJobAlertDigestEmail({
           to: member.email,
+          recipientUserId: member.id,
           firstName: (member.fullName ?? '').trim().split(/\s+/)[0] || 'there',
           jobs: jobSummaries,
         }));

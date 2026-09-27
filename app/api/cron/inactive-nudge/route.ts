@@ -64,6 +64,7 @@ async function handle(_request: Request) {
     try {
       const result = await emailPacer.run(() => sendInactiveNudgeEmail({
         to: member.email,
+        recipientUserId: member.id,
         fullName: member.fullName,
       }));
       if (!result.ok && 'skipped' in result && result.skipped) {

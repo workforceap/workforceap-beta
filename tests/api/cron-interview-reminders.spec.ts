@@ -56,6 +56,7 @@ function makeRow(id: string, overrides: Partial<any> = {}) {
     company: 'Acme',
     role: 'Engineer',
     nextInterviewDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    userId: id,
     user: { email: `${id}@x.com`, fullName: `User ${id}` },
     ...overrides,
   };
@@ -80,6 +81,8 @@ describe('GET /api/cron/interview-reminders', () => {
     expect(json.ok).toBe(true);
     expect(json.preSent).toBe(2);
     expect(json.postSent).toBe(1);
+    expect(sendInterviewPrepReminderEmail).toHaveBeenCalledWith(expect.objectContaining({ recipientUserId: 'pre-1' }));
+    expect(sendInterviewDebriefPromptEmail).toHaveBeenCalledWith(expect.objectContaining({ recipientUserId: 'post-1' }));
     expect(setCronRecordsProcessed).toHaveBeenCalledWith(3);
     expect(prisma.jobApplication.update).toHaveBeenCalledTimes(3);
     const updates = (prisma.jobApplication.update as any).mock.calls.map(

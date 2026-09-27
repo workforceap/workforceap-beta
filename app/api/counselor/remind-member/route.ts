@@ -44,8 +44,13 @@ export const POST = withApiGuc(async (request: Request) => {
 
   const emailResult = await sendInactiveNudgeEmail({
     to: member.email,
+    recipientUserId: memberId,
     fullName: member.fullName ?? '',
   });
+
+  if (!emailResult.ok && emailResult.error === 'inactive_member') {
+    return NextResponse.json({ error: 'Member is no longer active' }, { status: 409 });
+  }
 
   await prisma.$executeRaw`
     INSERT INTO member_events (id, user_id, event_name, entity_type, entity_id, metadata, created_at)

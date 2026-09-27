@@ -92,6 +92,7 @@ async function handle(_request: Request) {
 
       const result = await emailPacer.run(() => sendCourseAccountabilityEmail({
         to: enrollment.user.email,
+        recipientUserId: enrollment.userId,
         fullName: enrollment.user.fullName ?? enrollment.user.email,
         programName,
       }));

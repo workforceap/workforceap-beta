@@ -84,6 +84,20 @@ describe('GET /api/cron/weekly-recap', () => {
     expect(json.failed).toBe(0);
     expect(json.total).toBe(2);
     expect(sendWeeklyRecapEmail).toHaveBeenCalledTimes(2);
+    expect(sendWeeklyRecapEmail).toHaveBeenCalledWith(expect.objectContaining({ recipientUserId: 'user-1' }));
+  });
+
+  it('reports a member erased after batch selection as inactive without stamping the recap emailed', async () => {
+    const member = { id: 'user-1', email: 'a@example.com', fullName: 'Alice', enrolledProgram: 'cyber' };
+    vi.mocked(prisma.user.findMany).mockResolvedValue([member] as any);
+    vi.mocked(generateWeeklyRecaps).mockResolvedValue([{ userId: member.id, recapData: { coursesCompleted: 1 } }] as any);
+    vi.mocked(sendWeeklyRecapEmail).mockResolvedValue({ ok: false, skipped: true, error: 'inactive_member' });
+
+    const result = await (await weeklyRecapGET(new Request('http://localhost:3000/api/cron/weekly-recap'))).json();
+
+    expect(result).toMatchObject({ sent: 0, failed: 0, skipped: 1, skipReason: 'inactive_member' });
+    expect(sendWeeklyRecapEmail).toHaveBeenCalledWith(expect.objectContaining({ recipientUserId: member.id }));
+    expect(prisma.weeklyRecap.update).not.toHaveBeenCalled();
   });
 
   it('skips members when recap generation returns nothing', async () => {

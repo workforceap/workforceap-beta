@@ -146,7 +146,9 @@ export const POST = withApiGuc(async (
         {
           ok: false,
           error: result.skipped
-            ? 'The recipient is a fixture address; nothing was sent.'
+            ? result.error === 'inactive_member'
+              ? 'The member is no longer active; nothing was sent.'
+              : 'The recipient was blocked; nothing was sent.'
             : 'The email provider did not accept the re-send. The new failure was recorded.',
           resendDiagnosticId: outcome.id,
         },

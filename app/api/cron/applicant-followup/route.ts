@@ -122,10 +122,12 @@ async function handle(_request: Request) {
         const result = await emailPacer.run(() => stage.stage === 'day3'
           ? sendApplicantFollowupEmail({
               to: app.user.email,
+              recipientUserId: app.user.id,
               fullName: app.user.fullName,
             })
           : sendApplicantChaseEmail({
               to: app.user.email,
+              recipientUserId: app.user.id,
               fullName: app.user.fullName,
               stage: stage.stage,
             }));

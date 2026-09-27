@@ -38,7 +38,7 @@ describe('reserved-seat funding-update cron', () => {
     const result = await GET(request());
     expect(await result.json()).toMatchObject({ sent: 1, counselorFollowups: 1 });
     expect(prisma.courseEnrollment.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ isPrimary: true, fundingSource: null, user: { deletedAt: null, courseraEnrollmentApproved: false } }) }));
-    expect(sendCourseAccountabilityEmail).toHaveBeenCalledExactlyOnceWith({ to: 'eligible@example.org', fullName: 'Jordan Example', programName: 'IT Support' });
+    expect(sendCourseAccountabilityEmail).toHaveBeenCalledExactlyOnceWith({ to: 'eligible@example.org', recipientUserId: 'eligible', fullName: 'Jordan Example', programName: 'IT Support' });
     expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({ title: 'Your IT Support training seat is reserved', data: { link: '/dashboard/program' } }));
     expect(JSON.stringify(vi.mocked(createNotification).mock.calls)).not.toMatch(/haven't started|pick up where|Ready to start/);
     expect(prisma.memberEvent.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ eventName: 'counselor_followup_needed', metadata: expect.objectContaining({ reason: 'funding_enrollment_followup' }) }) }));

@@ -59,7 +59,7 @@ const replayable = {
   to: ['ada@example.org'],
   subject: 'Your WorkforceAP Application is Being Reviewed',
   template: 'applicant_followup',
-  templateParams: { to: 'ada@example.org', fullName: 'Ada Lovelace' },
+  templateParams: { to: 'ada@example.org', fullName: 'Ada Lovelace', recipientUserId: 'member-ada' },
   errorClass: 'header_invalid',
   retryable: true,
   resendable: true,
@@ -91,9 +91,10 @@ describe('resend registry', () => {
 
   it('validates the stored payload before replaying it', () => {
     const kickoff = getResendableTemplate('course_kickoff')!;
-    expect(validateResendParams(kickoff, { to: 'a@example.org', fullName: 'A', programName: 'P' })).toBeNull();
+    expect(validateResendParams(kickoff, { to: 'a@example.org', fullName: 'A', programName: 'P', recipientUserId: 'member-a' })).toBeNull();
     expect(validateResendParams(kickoff, { to: 'a@example.org', fullName: 'A' })).toBe('programName');
     expect(validateResendParams(kickoff, { to: '', fullName: 'A', programName: 'P' })).toBe('to');
+    expect(validateResendParams(kickoff, { to: 'a@example.org', fullName: 'A', programName: 'P' })).toBe('recipientUserId');
     const digest = getResendableTemplate('applicant_aging_digest')!;
     expect(validateResendParams(digest, { to: [], total: 1, buckets: [], oldest: [], queueLink: 'x', memberAdminBaseUrl: 'y' })).toBe('to');
   });
@@ -142,6 +143,15 @@ describe('POST /api/admin/email-failures/[id]/resend', () => {
     expect(sendApplicantFollowupEmail).not.toHaveBeenCalled();
   });
 
+  it('refuses an older member email failure without a stable recipient ID', async () => {
+    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow({
+      ...replayable,
+      templateParams: { to: 'ada@example.org', fullName: 'Ada Lovelace' },
+    }) as never);
+    expect((await call()).status).toBe(422);
+    expect(sendApplicantFollowupEmail).not.toHaveBeenCalled();
+  });
+
   it('refuses to send twice once a re-send succeeded (409)', async () => {
     vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow({ ...replayable, resentAt: '2026-09-19T00:00:00.000Z', resentOk: true }) as never);
     expect((await call()).status).toBe(409);
@@ -154,7 +164,7 @@ describe('POST /api/admin/email-failures/[id]/resend', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ ok: true, resendDiagnosticId: 'diag-2' });
 
-    expect(sendApplicantFollowupEmail).toHaveBeenCalledExactlyOnceWith({ to: 'ada@example.org', fullName: 'Ada Lovelace' });
+    expect(sendApplicantFollowupEmail).toHaveBeenCalledExactlyOnceWith({ to: 'ada@example.org', fullName: 'Ada Lovelace', recipientUserId: 'member-ada' });
 
     expect(prisma.workflowDiagnostic.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
@@ -196,8 +206,16 @@ describe('POST /api/admin/email-failures/[id]/resend', () => {
     vi.mocked(sendApplicantFollowupEmail).mockResolvedValue({ ok: false, skipped: true, error: 'fixture_recipient' });
     const res = await call();
     expect(res.status).toBe(422);
-    expect(await res.json()).toMatchObject({ ok: false, error: expect.stringMatching(/fixture/) });
+    expect(await res.json()).toMatchObject({ ok: false, error: expect.stringMatching(/blocked/) });
     expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({ metadata: expect.objectContaining({ ok: false, skipped: true }) }));
+  });
+
+  it('explains an inactive member skip without implying that the address was a fixture', async () => {
+    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow(replayable) as never);
+    vi.mocked(sendApplicantFollowupEmail).mockResolvedValue({ ok: false, skipped: true, error: 'inactive_member' });
+    const res = await call();
+    expect(res.status).toBe(422);
+    expect(await res.json()).toMatchObject({ ok: false, error: expect.stringMatching(/no longer active/) });
   });
 });
 

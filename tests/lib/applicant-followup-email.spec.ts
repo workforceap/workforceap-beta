@@ -76,6 +76,7 @@ describe('GET /api/cron/applicant-followup', () => {
     // Strict shape: on the old code this carried `expectedDate`.
     expect(sendApplicantFollowupEmail).toHaveBeenCalledWith({
       to: 'applicant@example.test',
+      recipientUserId: 'user-1',
       fullName: 'Ada Lovelace',
     });
     const body = await res.json();

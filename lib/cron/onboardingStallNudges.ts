@@ -358,11 +358,13 @@ export async function sendMemberStallNudges(
         template === 'stuck'
           ? sendMemberStuckEmail({
               to,
+              recipientUserId: member.id,
               firstName,
               counselorName: counselorNames.get(member.id) ?? FALLBACK_COUNSELOR_NAME,
             })
           : sendMemberCheckInEmail({
               to,
+              recipientUserId: member.id,
               firstName,
               dashboardUrl: `${SITE_URL}${STALL_CHECK_IN_PATH}`,
               ctaText: STALL_CHECK_IN_CTA_TEXT,

@@ -151,10 +151,10 @@ describe('GET /api/cron/applicant-followup', () => {
     const res = await GET(request());
     const body = await res.json();
 
-    expect(sendApplicantFollowupEmail).toHaveBeenCalledExactlyOnceWith({ to: 'ada@example.org', fullName: 'Ada Lovelace' });
+    expect(sendApplicantFollowupEmail).toHaveBeenCalledExactlyOnceWith({ to: 'ada@example.org', recipientUserId: 'u-d3', fullName: 'Ada Lovelace' });
     expect(sendApplicantChaseEmail).toHaveBeenCalledTimes(2);
-    expect(sendApplicantChaseEmail).toHaveBeenCalledWith({ to: 'u-d10@example.org', fullName: 'Ada Lovelace', stage: 'day10' });
-    expect(sendApplicantChaseEmail).toHaveBeenCalledWith({ to: 'u-d20@example.org', fullName: 'Ada Lovelace', stage: 'day20' });
+    expect(sendApplicantChaseEmail).toHaveBeenCalledWith({ to: 'u-d10@example.org', recipientUserId: 'u-d10', fullName: 'Ada Lovelace', stage: 'day10' });
+    expect(sendApplicantChaseEmail).toHaveBeenCalledWith({ to: 'u-d20@example.org', recipientUserId: 'u-d20', fullName: 'Ada Lovelace', stage: 'day20' });
     const recipients = [
       ...vi.mocked(sendApplicantFollowupEmail).mock.calls.map(([p]) => p.to),
       ...vi.mocked(sendApplicantChaseEmail).mock.calls.map(([p]) => p.to),
@@ -207,7 +207,7 @@ describe('GET /api/cron/applicant-followup', () => {
       { entityId: 'later', metadata: { stage: 'day3' } },
     ] as never);
     const body = await (await GET(request())).json();
-    expect(sendApplicantChaseEmail).toHaveBeenCalledExactlyOnceWith({ to: 'u-later@example.org', fullName: 'Ada Lovelace', stage: 'day20' });
+    expect(sendApplicantChaseEmail).toHaveBeenCalledExactlyOnceWith({ to: 'u-later@example.org', recipientUserId: 'u-later', fullName: 'Ada Lovelace', stage: 'day20' });
     expect(body.stages.day10).toMatchObject({ matched: 1, sent: 0, skippedAlreadySent: 1 });
     expect(body.stages.day20).toMatchObject({ matched: 1, sent: 1, skippedAlreadySent: 0 });
     expect(trackEvent).toHaveBeenCalledTimes(1);

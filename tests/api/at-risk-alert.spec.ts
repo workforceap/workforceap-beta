@@ -340,6 +340,7 @@ describe('GET /api/cron/at-risk-alerts — the weekly at-risk email from persist
       expect(pacing.run).toHaveBeenCalledTimes(2);
       expect(sendCounselorAtRiskAlertEmail).toHaveBeenCalledOnce();
       expect(sendMemberCheckInEmail).toHaveBeenCalledOnce();
+      expect(sendMemberCheckInEmail).toHaveBeenCalledWith(expect.objectContaining({ recipientUserId: 'user-2' }));
     });
   });
 
@@ -365,6 +366,7 @@ describe('GET /api/cron/at-risk-alerts — the weekly at-risk email from persist
       expect(body.memberNudges.sentCheckIn).toBe(0);
       expect(body.memberNudges.errors).toBe(0);
       expect(body.memberNudges.skippedFixture).toBe(1);
+      expect(body.memberNudges.skippedInactive).toBe(0);
       expect(prisma.atRiskAlert.updateMany).not.toHaveBeenCalled();
       expect(prisma.memberNudgeLog.create).not.toHaveBeenCalled();
     });
