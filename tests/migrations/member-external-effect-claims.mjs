@@ -52,16 +52,23 @@ try {
   assert.equal(sql(`SELECT relrowsecurity FROM pg_class WHERE oid='public.member_external_effect_claims'::regclass;`), 't');
   assert.equal(sql(`SELECT confdeltype FROM pg_constraint WHERE conname='member_external_effect_claims_member_id_fkey';`), 'r');
   assert.equal(sql(`SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='member_external_effect_claims' AND column_name='updated_at';`), '');
+  assert.equal(sql(`SELECT data_type FROM information_schema.columns WHERE table_schema='public' AND table_name='member_external_effect_claims' AND column_name='provider_idempotency_key';`), 'text');
+  assert.match(sql(`SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='member_external_effect_claims_email_key_check';`), /provider_idempotency_key/);
   for (const role of ['anon', 'authenticated']) {
     assert.equal(sql(`SELECT has_table_privilege('${role}', 'public.member_external_effect_claims', 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER');`), 'f');
   }
   sql(`
-    INSERT INTO public.member_external_effect_claims(id, member_id, kind, updated_at)
-    VALUES ('00000000-0000-4000-8000-000000000001', 'member-1', 'notification', CURRENT_TIMESTAMP),
-           ('00000000-0000-4000-8000-000000000002', 'member-1', 'notification', CURRENT_TIMESTAMP),
-           ('00000000-0000-4000-8000-000000000003', 'member-1', 'email', CURRENT_TIMESTAMP);
+    INSERT INTO public.member_external_effect_claims(id, member_id, kind, provider_idempotency_key, updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000001', 'member-1', 'notification', NULL, CURRENT_TIMESTAMP),
+           ('00000000-0000-4000-8000-000000000002', 'member-1', 'notification', NULL, CURRENT_TIMESTAMP),
+           ('00000000-0000-4000-8000-000000000003', 'member-1', 'email', 'email/exact-key', CURRENT_TIMESTAMP);
   `);
   assert.equal(sql(`SELECT count(*) FROM public.member_external_effect_claims WHERE member_id='member-1';`), '3');
+  assert.equal(sql(`SELECT provider_idempotency_key FROM public.member_external_effect_claims WHERE kind='email';`), 'email/exact-key');
+  assert.match(sql(`INSERT INTO public.member_external_effect_claims(id, member_id, kind, updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000004', 'member-1', 'email', CURRENT_TIMESTAMP);`, proofDatabase, false), /23514/);
+  assert.match(sql(`INSERT INTO public.member_external_effect_claims(id, member_id, kind, provider_idempotency_key, updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000005', 'member-1', 'email', '   ', CURRENT_TIMESTAMP);`, proofDatabase, false), /23514/);
   assert.match(sql(`DELETE FROM public.users WHERE id='member-1';`, proofDatabase, false), /23503/);
   sql(`DELETE FROM public.member_external_effect_claims WHERE member_id='member-1';`);
   sql(`DELETE FROM public.users WHERE id='member-1';`);

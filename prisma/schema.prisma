@@ -460,7 +460,7 @@ model Role {
   @@map("roles")
 }
 
-/// Durable external Storage or notification effect. Deletion and identity edits
+/// Durable external Storage, notification, or email effect. Deletion and identity edits
 /// refuse any unresolved row; normal member writes remain available.
 model MemberExternalEffectClaim {
   id        String   @id @db.Uuid
@@ -469,6 +469,7 @@ model MemberExternalEffectClaim {
   kind      String
   status    String   @default("in_flight")
   reason    String?
+  providerIdempotencyKey String? @map("provider_idempotency_key") @db.Text
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

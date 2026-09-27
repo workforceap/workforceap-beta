@@ -72,8 +72,14 @@ export class MemberUploadPersistenceOutcomeError extends Error {
  * is deliberately no time-based lease expiry: a slow Storage request may
  * finish after an arbitrary timeout, so age cannot prove it is safe to erase.
  */
-export async function beginMemberUpload(userId: string, kind: 'storage' | 'notification' | 'email' = 'storage'): Promise<string> {
+export async function beginMemberUpload(userId: string, kind: 'storage' | 'notification' | 'email' = 'storage', providerIdempotencyKey?: string): Promise<string> {
   if (!interactiveTransactionsGuaranteed()) throw new MemberUploadLifecycleError('transactions_unavailable');
+  if (kind === 'email' && !providerIdempotencyKey?.trim()) {
+    throw new Error('Email external-effect claim requires the provider idempotency key');
+  }
+  if (kind !== 'email' && providerIdempotencyKey !== undefined) {
+    throw new Error('Only email external-effect claims may carry a provider idempotency key');
+  }
   const operationId = randomUUID();
   const claimed = await prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, userId);
@@ -90,7 +96,7 @@ export async function beginMemberUpload(userId: string, kind: 'storage' | 'notif
     });
     if (!active) return false;
     await tx.memberExternalEffectClaim.create({
-      data: { id: operationId, memberId: userId, kind },
+      data: { id: operationId, memberId: userId, kind, ...(kind === 'email' ? { providerIdempotencyKey } : {}) },
     });
     return true;
   });

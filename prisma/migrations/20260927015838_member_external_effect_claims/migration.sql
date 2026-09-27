@@ -11,9 +11,12 @@ CREATE TABLE IF NOT EXISTS public.member_external_effect_claims (
   kind TEXT NOT NULL CHECK (kind IN ('storage', 'notification', 'email')),
   status TEXT NOT NULL DEFAULT 'in_flight' CHECK (status IN ('in_flight', 'needs_reconciliation')),
   reason TEXT,
+  provider_idempotency_key TEXT,
   created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   -- Prisma @updatedAt supplies this on create and update; no DB default.
   updated_at TIMESTAMP(3) NOT NULL,
+  CONSTRAINT member_external_effect_claims_email_key_check
+    CHECK (kind <> 'email' OR NULLIF(BTRIM(provider_idempotency_key), '') IS NOT NULL),
   CONSTRAINT member_external_effect_claims_member_id_fkey
     FOREIGN KEY (member_id) REFERENCES public.users(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );

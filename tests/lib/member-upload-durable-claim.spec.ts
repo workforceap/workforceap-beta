@@ -11,7 +11,7 @@ const h = vi.hoisted(() => ({
     billingDeletionOperationId: null as string | null,
     billingDeletionCompletedAt: null as Date | null,
   },
-  claims: [] as Array<{ id: string; memberId: string; kind: string; status: string; reason: string | null }>,
+  claims: [] as Array<{ id: string; memberId: string; kind: string; providerIdempotencyKey?: string; status: string; reason: string | null }>,
 }));
 
 vi.mock('@/lib/db/transactionPolicy', () => ({ interactiveTransactionsGuaranteed: () => true }));
@@ -25,7 +25,7 @@ vi.mock('@/lib/db/prisma', () => {
     $queryRaw: vi.fn(async (parts: TemplateStringsArray) => String(parts[0]).includes('member_external_effect_claims')
       ? h.claims.map(({ id }) => ({ id })).slice(0, 1) : []),
     memberExternalEffectClaim: {
-      create: vi.fn(async ({ data }: { data: { id: string; memberId: string; kind: string } }) => {
+      create: vi.fn(async ({ data }: { data: { id: string; memberId: string; kind: string; providerIdempotencyKey?: string } }) => {
         h.claims.push({ ...data, status: 'in_flight', reason: null });
         return data;
       }),
@@ -83,6 +83,18 @@ beforeEach(() => {
 });
 
 describe('durable member upload claim', () => {
+  it('persists an email provider key in the initial claim row before any provider I/O', async () => {
+    await expect(beginMemberUpload(h.user.id, 'email')).rejects.toThrow('requires the provider idempotency key');
+    expect(h.claims).toHaveLength(0);
+    const key = 'email/synthetic-exact-key';
+    const token = await beginMemberUpload(h.user.id, 'email', key);
+    expect(h.claims).toEqual([expect.objectContaining({
+      id: token, memberId: h.user.id, kind: 'email', status: 'in_flight', providerIdempotencyKey: key,
+    })]);
+    expect(await beginBillingDeletion(h.user.id)).toEqual({ ok: false, reason: 'in_progress' });
+    await releaseMemberUpload(h.user.id, token);
+  });
+
   it.each([
     [400, true], [409, true], [408, false], [429, false], [503, false], [undefined, false],
   ])('classifies Storage status %s as definite=%s', (statusCode, definite) => {

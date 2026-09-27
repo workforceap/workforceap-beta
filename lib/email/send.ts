@@ -82,7 +82,7 @@ export interface SendBrandedEmailRetryOptions {
   subjectIsActive?: (userId: string, email?: string | null) => Promise<boolean>;
   /** Test seam for the durable member effect claim; production uses the billing lifecycle ledger. */
   memberClaim?: {
-    begin(userId: string): Promise<string>;
+    begin(userId: string, providerIdempotencyKey: string): Promise<string>;
     release(userId: string, token: string): Promise<void>;
     markUncertain(userId: string, token: string, reason: string): Promise<void>;
   };
@@ -587,7 +587,7 @@ export async function sendBrandedEmail(
   sendLog.write('sending', { attempts: 1 });
 
   const memberClaim = retryOptions.memberClaim ?? {
-    begin: (userId: string) => beginMemberUpload(userId, 'email'),
+    begin: (userId: string, key: string) => beginMemberUpload(userId, 'email', key),
     release: releaseMemberUpload,
     markUncertain: markMemberExternalEffectUncertain,
   };
@@ -601,7 +601,7 @@ export async function sendBrandedEmail(
     if (memberIds.length === 0) throw new Error('Member email effect claim requires a member id');
     try {
       for (const userId of memberIds) {
-        claims.push({ userId, token: await memberClaim.begin(userId) });
+        claims.push({ userId, token: await memberClaim.begin(userId, idempotencyKey) });
       }
     } catch (error) {
       for (const claim of claims.reverse()) {

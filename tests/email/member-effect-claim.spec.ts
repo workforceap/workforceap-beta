@@ -15,9 +15,11 @@ const args = {
 
 function claimSeam() {
   const held = new Set<string>();
+  const keys = new Map<string, string>();
   return {
     held,
-    begin: vi.fn(async (id: string) => { held.add(id); return `token-${id}`; }),
+    keys,
+    begin: vi.fn(async (id: string, key: string) => { held.add(id); keys.set(id, key); return `token-${id}`; }),
     release: vi.fn(async (id: string) => { held.delete(id); }),
     markUncertain: vi.fn(async (_id: string, _token: string, _reason: string) => {}),
   };
@@ -35,8 +37,10 @@ describe('durable member email claims', () => {
   it('acquires every subject before provider I/O and accepts even if claim release fails', async () => {
     const claim = claimSeam();
     claim.release.mockImplementationOnce(async () => { throw new Error('release unavailable'); });
-    const provider = vi.fn(async () => {
+    const provider = vi.fn(async (_payload: unknown, options: { idempotencyKey: string }) => {
       expect([...claim.held].sort()).toEqual(['member-a', 'member-z']);
+      expect([...claim.keys.values()]).toEqual([options.idempotencyKey, options.idempotencyKey]);
+      expect(options.idempotencyKey).toMatch(/^email\/[0-9a-f]{64}$/);
       return { data: { id: 'accepted' }, error: null };
     });
     const resend = { emails: { send: provider } } as unknown as Resend;
@@ -51,6 +55,19 @@ describe('durable member email claims', () => {
     } finally {
       errorLog.mockRestore();
     }
+  });
+
+  it('records a caller-supplied exact provider key in every claim before egress', async () => {
+    const claim = claimSeam();
+    const key = 'match-job/synthetic-attempt-1';
+    const provider = vi.fn(async (_payload: unknown, options: { idempotencyKey: string }) => {
+      expect(options.idempotencyKey).toBe(key);
+      expect([...claim.keys.entries()]).toEqual([['member-a', key], ['member-z', key]]);
+      return { data: { id: 'accepted' }, error: null };
+    });
+    const resend = { emails: { send: provider } } as unknown as Resend;
+    await sendBrandedEmail(resend, { ...args, idempotencyKey: key }, options(claim));
+    expect(provider).toHaveBeenCalledOnce();
   });
 
   it('skips an inactive subject and releases an earlier claim before provider I/O', async () => {

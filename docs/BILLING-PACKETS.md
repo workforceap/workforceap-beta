@@ -263,8 +263,10 @@ that automatically emails to counselor and the student."
   An already accepted device push cannot be recalled. The application prevents
   a new provider call after erasure wins the lock.
 - Opted-in member-linked email sends claim every member recipient or named
-  subject before Resend I/O. Unknown provider outcomes retain the exact claim
-  for reconciliation, including the send idempotency key in its reason. A
+  subject before Resend I/O. Each email claim stores the exact Resend
+  idempotency key when its row is inserted, including a crash-held `in_flight`
+  row that never reached the provider. Unknown provider outcomes retain the
+  exact claim for reconciliation; its reason records the failure class. A
   definite provider rejection releases the claim after the request settles.
   Existing senders without `memberEffectClaim` retain a final active-member
   lookup but do not have this durable provider boundary.
@@ -305,7 +307,7 @@ Treat a non-null `billing_deletion_operation_id` or any row in
 `member_external_effect_claims` as an active owner regardless of age. The User
 column now belongs only to deletion, Auth identity edit and restore; Storage
 notification and opted-in email owners are distinct rows. Query the exact member's rows with
-`SELECT id, member_id, kind, status, reason, created_at, updated_at FROM
+`SELECT id, member_id, kind, status, reason, provider_idempotency_key, created_at, updated_at FROM
 public.member_external_effect_claims WHERE member_id = '<User ID>';`. Only a
 named operator handling an incident may clear a crash-held token or row.
 Record the tenant, User ID, exact operation ID, kind/status/reason,
@@ -320,6 +322,9 @@ incident and audit trail. Before any write:
 2. Identify whether the User token belongs to deletion, an Auth identity edit
    or restore, or whether an external-effect row belongs to Storage, a
    member-subject notification, or an opted-in email send.
+   For email, use the claim's `provider_idempotency_key` to locate the exact
+   Resend attempt before deciding whether it was accepted, rejected, or never
+   started. A blank reason on an `in_flight` row does not prove no send occurred.
    Verify the exact Auth User ID through Supabase Admin; a 5xx/timeout is
    unknown, not absence. Check
    Storage cleanup, app tombstone, packet send state and any pending provider
