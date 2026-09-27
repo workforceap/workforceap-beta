@@ -18,6 +18,7 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 import { CRON_SCOPED_LOOKUP_CAP } from '@/lib/db/scanCaps';
 import {
   buildMemberClassificationInput,
@@ -263,16 +264,18 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
 
     if (sent) {
       try {
-        await prisma.memberNudgeLog.create({
+        await withActiveMemberWrite(member.id, (tx) => tx.memberNudgeLog.create({
           data: {
             userId: member.id,
             tier: choice.tier,
             kind: choice.kind,
             reasons: classification.reasons as unknown as object,
           },
-        });
+        }));
       } catch (err) {
-        console.error(`[retention-nudges] log write failed for ${member.id}:`, err);
+        if (!(err instanceof MemberLifecycleWriteError)) {
+          console.error(`[retention-nudges] log write failed for ${member.id}:`, err);
+        }
       }
     }
 

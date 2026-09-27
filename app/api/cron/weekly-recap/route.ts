@@ -8,6 +8,7 @@ import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 export const maxDuration = 300;
 import { getWeeklyRecapCronStatus } from './_weeklyRecapCronStatus';
@@ -61,6 +62,7 @@ async function handle(_request: Request) {
   let sent = 0;
   let failed = 0;
   let skipped = 0;
+  let receiptWriteFailures = 0;
   let skipReason:
     | 'pacing_budget_exhausted'
     | 'request_deadline_exhausted'
@@ -126,12 +128,21 @@ async function handle(_request: Request) {
         });
         failed++;
       } else {
-        await prisma.weeklyRecap.update({
-          where: { userId_weekStartDate: { userId: member.id, weekStartDate: weekStart } },
-          data: { emailedAt: new Date() },
-        });
-        // Do not set openedAt here — that field means the member opened the recap in the portal.
+        // The provider has accepted the email even if account erasure wins
+        // before its receipt can be stamped. Preserve that send count.
         sent++;
+        try {
+          await withActiveMemberWrite(member.id, (tx) => tx.weeklyRecap.update({
+            where: { userId_weekStartDate: { userId: member.id, weekStartDate: weekStart } },
+            data: { emailedAt: new Date() },
+          }));
+          // openedAt means the member opened the recap in the portal.
+        } catch (error) {
+          if (!(error instanceof MemberLifecycleWriteError)) {
+            receiptWriteFailures++;
+            captureApiError(error, { route: 'cron/weekly-recap receipt', extra: { userId: member.id } });
+          }
+        }
       }
     } catch (e) {
       captureApiError(e, { route: 'cron/weekly-recap', extra: { userId: member.id } });
@@ -143,6 +154,7 @@ async function handle(_request: Request) {
     sent,
     failed,
     total: members.length,
+    ...(receiptWriteFailures > 0 ? { receiptWriteFailures } : {}),
     ...(skipped > 0 ? { skipped, skipReason } : {}),
   };
   await setCronRecordsProcessed(sent);

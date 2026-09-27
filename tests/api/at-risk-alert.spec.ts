@@ -58,6 +58,10 @@ vi.mock('@/lib/email', () => ({
 vi.mock('@/lib/email/pacing', () => ({
   createBulkEmailCronPacer: pacing.create,
 }));
+vi.mock('@/lib/member/activeWrite', () => ({
+  MemberLifecycleWriteError: class MemberLifecycleWriteError extends Error {},
+  withActiveMemberWrite: vi.fn(),
+}));
 
 vi.mock('@/lib/cron/withCronLogging', () => ({
   withCronLogging: vi.fn((_key: string, handler: any) => {
@@ -81,6 +85,7 @@ import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { calculateAllAtRiskScores, classifyMember, getRiskLevel, loadPersistedAtRiskScores, persistAtRiskAlert } from '@/lib/member/atRiskScoring';
 import { getAtRiskDigestRecipients, sendCounselorAtRiskAlertEmail, sendMemberCheckInEmail, sendMemberStuckEmail } from '@/lib/email';
 import { prisma } from '@/lib/db/prisma';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 import { counselorAtRiskBatchHtml } from '@/emails/counselor-at-risk-alert';
 
 // ─── Helpers ───
@@ -136,6 +141,7 @@ function mockAlerts(overrides: Array<Partial<{ id: string; userId: string; notif
 describe('GET /api/cron/at-risk-alerts — the weekly at-risk email from persisted scores (WAP-30)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(withActiveMemberWrite).mockImplementation(async (_id, write) => write(prisma as never));
     pacing.run.mockImplementation(async (operation) => operation());
     pacing.create.mockReturnValue({
       run: pacing.run,
@@ -414,6 +420,19 @@ describe('GET /api/cron/at-risk-alerts — the weekly at-risk email from persist
       expect(prisma.memberNudgeLog.create).toHaveBeenCalledWith(expect.objectContaining({
         data: expect.objectContaining({ userId: 'user-2', tier: 'red', kind: 'stuck' }),
       }));
+    });
+
+    it('counts an accepted nudge without recreating its log after erasure', async () => {
+      vi.mocked(loadPersistedAtRiskScores).mockResolvedValue([]);
+      vi.mocked(prisma.user.findMany).mockResolvedValue(mockMembers([{ id: 'user-2', email: 'bob@example.org', counselorAssignments: [] }]));
+      vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([]);
+      vi.mocked(classifyMember).mockReturnValue({ tier: 'red', reasons: ['Stalled'], daysSinceLogin: 3 } as never);
+      vi.mocked(prisma.memberNudgeLog.findFirst).mockResolvedValueOnce(null);
+      vi.mocked(withActiveMemberWrite).mockRejectedValueOnce(new MemberLifecycleWriteError());
+
+      const body = await (await runAtRiskAlerts(makeRequest({ 'x-cron-secret': 'super-secret-cron-key' }))).json();
+      expect(body.memberNudges.sentStuck).toBe(1);
+      expect(prisma.memberNudgeLog.create).not.toHaveBeenCalled();
     });
   });
 

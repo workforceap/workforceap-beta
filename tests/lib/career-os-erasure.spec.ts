@@ -67,6 +67,14 @@ it('skips program completion writes and notifications for an erased member', asy
   expect(mocks.notification).not.toHaveBeenCalled();
 });
 
+it('marks program completion notifications with their subject member for a fresh lifecycle claim', async () => {
+  const result = await handleProgramCompletion('member-1', 'synthetic-program', 'Synthetic program');
+  expect(result).toEqual({ created: true, actionId: 'action-1' });
+  expect(mocks.notification).toHaveBeenCalledWith(expect.objectContaining({
+    userId: 'member-1', subjectMemberId: 'member-1',
+  }));
+});
+
 it('creates a learning action while the member stays active', async () => {
   const result = await handleLearningCompletion('member-1', 'Synthetic course');
   expect(result).toMatchObject({ actionId: 'action-1', created: true });

@@ -281,6 +281,7 @@ export async function handleProgramCompletion(
 
     await createNotification({
       userId: memberId,
+      subjectMemberId: memberId,
       type: 'program_complete',
       title: `You finished ${programTitle}!`,
       body: "Congratulations — you're job-ready. Check out jobs matched to your new skills.",
@@ -295,6 +296,7 @@ export async function handleProgramCompletion(
       if (assignment.counselor?.userId) {
         await createNotification({
           userId: assignment.counselor.userId,
+          subjectMemberId: memberId,
           type: 'program_complete',
           title: 'Member finished their program',
           body: `A member you counsel completed ${programTitle}. Their placement window starts now.`,

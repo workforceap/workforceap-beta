@@ -51,7 +51,7 @@ export interface WebPushPayload {
  * best-effort side channel next to the persistent in-app notification.
  * Returns the number of pushes accepted by the push services.
  */
-export async function sendWebPushToUser(userId: string, payload: WebPushPayload): Promise<number> {
+export async function sendWebPushToUser(userId: string, payload: WebPushPayload, activeOperationId?: string): Promise<number> {
   if (!ensureVapid()) return 0;
 
   let subs: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
@@ -62,7 +62,8 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
       where: { id: userId },
       select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
     });
-    if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return 0;
+    if (!member || member.deletedAt || member.billingDeletionPendingAt
+      || (member.billingDeletionOperationId && member.billingDeletionOperationId !== activeOperationId)) return 0;
     subs = await prisma.pushSubscription.findMany({
       where: { userId },
       select: { id: true, endpoint: true, p256dh: true, auth: true },
@@ -90,7 +91,8 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
           where: { id: userId },
           select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
         });
-        if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return;
+        if (!member || member.deletedAt || member.billingDeletionPendingAt
+          || (member.billingDeletionOperationId && member.billingDeletionOperationId !== activeOperationId)) return;
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           body,

@@ -7,6 +7,11 @@ import { notifyDiscord } from '@/lib/notify/discord';
 import { sendWebPushToUser } from '@/lib/push/sendWebPush';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import {
+  beginMemberUpload,
+  MemberUploadLifecycleError,
+  releaseMemberUpload,
+} from '@/lib/member/uploadLifecycle';
 
 export type NotificationType =
   | 'message'
@@ -26,6 +31,8 @@ export type NotificationType =
 
 export interface CreateNotificationInput {
   userId: string;
+  /** Member whose active account permits this notification and operator bridge. */
+  subjectMemberId?: string;
   type: NotificationType;
   title: string;
   body: string;
@@ -69,6 +76,20 @@ export function createNotification(
   input: CreateNotificationInput
 ): Promise<void> {
   const operation = (async () => {
+  let lifecycleClaim: string | null = null;
+  if (input.subjectMemberId) {
+    try {
+      // Deletion sees this durable token until the DB, push, and operator
+      // effects settle. If deletion won first, suppress every effect.
+      lifecycleClaim = await beginMemberUpload(input.subjectMemberId);
+    } catch (error) {
+      if (!(error instanceof MemberUploadLifecycleError)) {
+        captureApiError(error, { route: 'lib/notifications/create.lifecycleClaim', extra: { memberId: input.subjectMemberId } });
+      }
+      return;
+    }
+  }
+  try {
   try {
     const data = (input.data ?? null) as unknown as Prisma.InputJsonValue;
     const existingUnread = input.dedupeUnread
@@ -96,12 +117,16 @@ export function createNotification(
     }
     // Best-effort Web Push companion to the in-app notification. No-ops when
     // VAPID is unconfigured or the user has no subscriptions; never throws.
-    void sendWebPushToUser(input.userId, {
+    const push = sendWebPushToUser(input.userId, {
       title: input.title,
       body: input.body,
       url: typeof input.data?.link === 'string' ? (input.data.link as string) : '/dashboard',
       tag: input.type,
-    });
+    }, input.userId === input.subjectMemberId ? lifecycleClaim ?? undefined : undefined);
+    // A member-linked notification must finish its outbound work before the
+    // deletion barrier can pass. Ordinary notifications keep best-effort push.
+    if (lifecycleClaim) await push;
+    else void push;
   } catch (error) {
     captureApiError(error, {
       route: 'lib/notifications/create.createNotification',
@@ -126,6 +151,14 @@ export function createNotification(
       category: input.type,
       fields: [{ name: 'userId', value: input.userId }],
     });
+  }
+  } finally {
+    if (lifecycleClaim && input.subjectMemberId) {
+      await releaseMemberUpload(input.subjectMemberId, lifecycleClaim).catch((error) => {
+        // An uncertain release leaves the claim held for reconciliation.
+        captureApiError(error, { route: 'lib/notifications/create.lifecycleRelease', extra: { memberId: input.subjectMemberId } });
+      });
+    }
   }
   })();
 
