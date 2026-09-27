@@ -14,11 +14,15 @@
  * should run it, after that workflow's Preview SHA and DEMO project gates.
  *
  * The evidence never contains resume text: only statuses, latencies, lengths,
- * SHA-256 digests, fact-presence booleans and factuality issue kinds.
+ * SHA-256 digests, fact-presence booleans and factuality issue kinds, plus the
+ * synthetic member's run ID, Auth user ID and example.com email, so the
+ * workflow's final verifier can match it to the cleanup receipt.
  *
  *   PLAYWRIGHT_BASE_URL                trusted DEMO Preview origin
  *   RESUME_ACCEPTANCE_MEMBER_EMAIL     the per-run synthetic member
  *   RESUME_ACCEPTANCE_MEMBER_PASSWORD
+ *   RESUME_ACCEPTANCE_MEMBER_ID        its Auth user ID; the signed-in session must match
+ *   RESUME_ACCEPTANCE_RUN_ID           `<run>-<attempt>`; the email must be built from it
  *   RESUME_ACCEPTANCE_SHARED_EMAILS    comma-separated shared accounts to refuse
  *   RESUME_ACCEPTANCE_CONFIRMED        "1" only after the workflow's gates passed
  *   RESUME_ACCEPTANCE_OUTPUT           receipt JSON path (default below)
@@ -38,6 +42,7 @@ import {
   containsFact,
   initialAcceptanceReceipt,
   PAGE_TWO_FACTS,
+  sessionUserIdFromCookies,
   singleBuildBudget,
   SYNTHETIC_RESUME_FILE_NAME,
   SYNTHETIC_RESUME_SOURCE_TEXT,
@@ -46,15 +51,20 @@ import {
 const baseURL = process.env.PLAYWRIGHT_BASE_URL?.trim() ?? '';
 const email = process.env.RESUME_ACCEPTANCE_MEMBER_EMAIL?.trim().toLowerCase() ?? '';
 const password = process.env.RESUME_ACCEPTANCE_MEMBER_PASSWORD?.replace(/\r$/, '') ?? '';
+const expectedMemberId = process.env.RESUME_ACCEPTANCE_MEMBER_ID?.trim().toLowerCase() ?? '';
+const runId = process.env.RESUME_ACCEPTANCE_RUN_ID?.trim() ?? '';
 const confirmed = process.env.RESUME_ACCEPTANCE_CONFIRMED === '1';
 const output = process.env.RESUME_ACCEPTANCE_OUTPUT?.trim() || 'test-results/resume-demo-acceptance.json';
 const workflowMode = process.env.RESUME_ACCEPTANCE_MODE === 'workflow';
 
 /** Only the per-run synthetic member (scripts/resume-demo-member.ts) may be mutated. */
 const SYNTHETIC_MEMBER = /^resume-qa-\d{1,20}-\d{1,4}@example\.com$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 function refusal(): string | null {
-  if (!baseURL || !email || !password || !confirmed) return 'RESUME_ACCEPTANCE_* inputs are not set';
+  if (!baseURL || !email || !password || !expectedMemberId || !runId || !confirmed) {
+    return 'RESUME_ACCEPTANCE_* inputs are not set';
+  }
   const host = hostnameOf(baseURL);
   if (!host) return 'PLAYWRIGHT_BASE_URL is not an http(s) URL';
   // Same exact-hostname rule as the workflow gate (scripts/lib/resume-acceptance-receipt.mjs).
@@ -64,10 +74,12 @@ function refusal(): string | null {
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
   if (!SYNTHETIC_MEMBER.test(email) || shared.includes(email)) return 'refusing a non-synthetic or shared account';
+  if (email !== `resume-qa-${runId}@example.com`) return 'the member email does not belong to this run';
+  if (!UUID.test(expectedMemberId)) return 'RESUME_ACCEPTANCE_MEMBER_ID is not a UUID';
   return null;
 }
 
-/** Evidence keys only; no cookies, tokens, emails or passwords are recorded. */
+/** Evidence keys only; no cookies, tokens or passwords are recorded. */
 type Evidence = Record<string, unknown>;
 const evidence: Evidence = initialAcceptanceReceipt(new Date().toISOString());
 
@@ -163,6 +175,12 @@ test.describe('DEMO Resume Build acceptance (real provider)', () => {
 
   test('one real Build from a two-page PDF retains page-two facts with no claim kinds flagged', async ({ page }) => {
     await login(page);
+    // Prove the session is the disposable member before anything is mutated,
+    // and record it for the final verifier's cross-check with cleanup.
+    const sessionUserId = sessionUserIdFromCookies(await page.context().cookies());
+    if (sessionUserId !== expectedMemberId) evidence.outcome = 'member_mismatch';
+    expect(sessionUserId === expectedMemberId, 'signed-in session is the disposable member').toBe(true);
+    evidence.member = { runId, userId: sessionUserId, email };
     evidence.before = await resumeStatus(page).then(({ enhancedText, ...rest }) => ({
       ...rest,
       hasEnhancedText: Boolean(enhancedText),

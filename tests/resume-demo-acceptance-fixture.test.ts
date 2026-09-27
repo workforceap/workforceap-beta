@@ -15,6 +15,7 @@ import {
   containsFact,
   initialAcceptanceReceipt,
   PAGE_TWO_FACTS,
+  sessionUserIdFromCookies,
   singleBuildBudget,
   SYNTHETIC_RESUME_SOURCE_TEXT,
 } from './fixtures/resumeDemoAcceptance';
@@ -84,5 +85,27 @@ describe('DEMO acceptance fixture (local only)', () => {
     expect(receipt.pass).toBe(false);
     expect(JSON.stringify(receipt)).not.toMatch(/\bspent\b/i);
     expect(receipt.groqQuota).toMatch(/may consume/);
+  });
+
+  it('reads the signed-in member ID from the Supabase session cookie, whole or chunked', () => {
+    const id = '11111111-1111-4111-8111-111111111111';
+    const token = (sub: string) => `h.${Buffer.from(JSON.stringify({ sub })).toString('base64url')}.s`;
+    const session = JSON.stringify({ access_token: token(id), user: { id } });
+    const encoded = `base64-${Buffer.from(session).toString('base64url')}`;
+    const name = 'sb-esbdrgaonplpvzmtrdhw-auth-token';
+    expect(sessionUserIdFromCookies([{ name, value: encoded }, { name: 'other', value: 'x' }])).toBe(id);
+    const cut = Math.floor(encoded.length / 2);
+    expect(sessionUserIdFromCookies([
+      { name: `${name}.1`, value: encoded.slice(cut) },
+      { name: `${name}.0`, value: encoded.slice(0, cut) },
+    ])).toBe(id);
+    expect(sessionUserIdFromCookies([{ name, value: encodeURIComponent(session) }])).toBe(id);
+    // Fail closed: no session, two projects, a gap in the chunks, or an ID that disagrees with the token.
+    expect(sessionUserIdFromCookies([])).toBeNull();
+    expect(sessionUserIdFromCookies([{ name, value: encoded }, { name: 'sb-other-auth-token', value: encoded }])).toBeNull();
+    expect(sessionUserIdFromCookies([{ name: `${name}.1`, value: encoded }])).toBeNull();
+    const forged = JSON.stringify({ access_token: token('22222222-2222-4222-8222-222222222222'), user: { id } });
+    expect(sessionUserIdFromCookies([{ name, value: `base64-${Buffer.from(forged).toString('base64url')}` }])).toBeNull();
+    expect(sessionUserIdFromCookies([{ name, value: 'base64-!!!' }])).toBeNull();
   });
 });

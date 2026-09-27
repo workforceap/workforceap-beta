@@ -35,7 +35,9 @@ The workflow runs these steps in order. It fails closed at each gate.
    - checks that the four page-two facts (employer, title, school, program) are retained in the saved draft;
    - checks that `findUnsupportedResumeClaims` flags no claim kinds against the fixture text. It is a narrow fail-closed validator: prose claims are not assessed, so this does not prove the draft free of unsupported claims. The contact kind comes from the profile, so it is recorded but not asserted.
 
-   The spec refuses any account that is not a `resume-qa-*@example.com` member, the shared `PREVIEW_E2E_MEMBER_EMAIL` account, and exact production hostnames. The workflow sets `RESUME_ACCEPTANCE_MODE=workflow`. In that mode a refusal **fails** the spec instead of skipping it, and a receipt with `pass: false` is always written. Without the flag, locally, the spec stays inert and skips.
+   Right after sign-in, and before any upload or Build, the spec reads the Auth user ID from the Supabase session cookie. It fails (`outcome: member_mismatch`) unless that ID is the one `create` recorded (`RESUME_ACCEPTANCE_MEMBER_ID`). It then records `member: {runId, userId, email}` in the receipt.
+
+   The spec refuses any account that is not a `resume-qa-*@example.com` member, an email not built from this run's `RESUME_ACCEPTANCE_RUN_ID`, the shared `PREVIEW_E2E_MEMBER_EMAIL` account, and exact production hostnames. The workflow sets `RESUME_ACCEPTANCE_MODE=workflow`. In that mode a refusal **fails** the spec instead of skipping it, and a receipt with `pass: false` is always written. Without the flag, locally, the spec stays inert and skips.
 7. **Cleanup:** runs always. `scripts/resume-demo-member.ts cleanup` works only on the recorded ID, in this order:
    0. **Inputs.** If there is no creation marker, the member was never created. Cleanup writes `memberCreated: false` and does nothing else. If there is a marker but the recorded state is missing or unreadable, cleanup **fails closed** and prints manual recovery steps: look up by the exact synthetic email from the marker, then delete by the returned exact ID. It never deletes by pattern.
    1. It looks up the Prisma and Auth users. Auth lookups fail closed. Only the explicit Supabase Auth code `user_not_found` counts as absent. A bare 404 or any other error stops cleanup.
@@ -49,7 +51,7 @@ Guarded-422 preservation is **not** exercised on the live provider, because ther
 
 ## Dispatch
 
-**Shared quota.** `DEMO_SETUP.md:65` documents the Preview `GROQ_API_KEY` as the production key, so every run spends production Groq quota. Authorized by Mike in the Slack thread (2026-09-27 19:08 UTC) for one Build call from the exact-SHA Preview app with a synthetic disposable DEMO member. The boundary is: no production deployment endpoint and no real member data. The following rules apply:
+**Shared quota.** `DEMO_SETUP.md:65` documents the Preview `GROQ_API_KEY` as the production key, so a Build request may consume production Groq quota. Authorized by Mike in the Slack thread (2026-09-27 19:08 UTC) for one Build call from the exact-SHA Preview app with a synthetic disposable DEMO member. The boundary is: no production deployment endpoint and no real member data. The following rules apply:
 
 - **Exactly one Build request per dispatch.** `singleBuildBudget` enforces this, and a mocked test covers it.
   - The request is never retried. That includes 429, 5xx and timeouts, which the Playwright request makes with `maxRetries: 0`.
@@ -57,7 +59,12 @@ Guarded-422 preservation is **not** exercised on the live provider, because ther
   - A failed Build is recorded and the run ends, then cleanup runs.
 - **Never repeat a dispatch without reviewing the previous receipt.** The `resume-demo-acceptance` concurrency group stops two runs from overlapping.
 - The target must be the Preview serving the exact SHA. The job fails closed on an exact production hostname (gate 0) and unless `/api/health` on `PREVIEW_SITE_URL` reports the dispatched commit on the DEMO project (gate 1).
-- A green job requires **both** receipts. The *Verify the acceptance and cleanup receipts* step enforces this, and each receipt has its own upload step with `if-no-files-found: error`.
+- A green job requires **both** receipts, read **together** by one verifier (`verifyAcceptanceRun`, the *Verify the acceptance and cleanup receipts together* step). It passes only when all of these hold:
+  - the acceptance receipt says `pass: true`, `outcome: success` and `buildRequestsMade: 1`, and records the `member` it ran as;
+  - the cleanup receipt says `success: true` **and** `memberCreated: true`, with Auth and Prisma absence verified and every `storage.after` count 0;
+  - both receipts name the same `runId`, `userId` and `email`.
+
+  A no-op cleanup receipt (`memberCreated: false`, a pre-create failure) never passes. Each receipt also has its own upload step with `if-no-files-found: error`.
   - `resume-demo-acceptance.json` must hold `pass: true`, `outcome: success` and `buildRequestsMade: 1`.
   - `resume-demo-cleanup.json` must hold `success: true`, `authAbsenceVerified: true`, `prismaUserAbsenceVerified: true`, and a count of 0 for every member-prefix bucket in `storage.after`.
 - Dispatch stays stopped until Mike has reviewed and merged this workflow and verified the guards. Do not change any environment variables or keys.
@@ -90,11 +97,12 @@ So a run on Preview is served by the **Groq fallback**. The receipt labels it th
 
 ## Receipt (`resume-demo-acceptance-<run id>` artifact)
 
-The receipt never contains resume text, cookies, tokens, passwords or member emails. It records:
+The receipt never contains resume text, cookies, tokens or passwords. It records:
+- `member`: the `runId`, Auth `userId` (read from the signed-in session and checked against the created member) and synthetic `example.com` email, for the cross-check with the cleanup receipt;
 - `providerPath` and `model` (`not exposed by the route`);
 - `groqQuota`, a static disclosure: "Preview GROQ_API_KEY shares production quota (DEMO_SETUP.md:65); a Build request may consume it";
 - `buildRequestLimit` (always 1) and `buildRequestsMade`, which is 0 or 1 and says what was actually attempted;
-- `pass` (boolean) and `outcome`, which is the Build outcome below, or `refused` / `upload_failed` / `not_run`;
+- `pass` (boolean) and `outcome`, which is the Build outcome below, or `refused` / `member_mismatch` / `upload_failed` / `not_run`;
 - `validatorScope`: `findUnsupportedResumeClaims` is a narrow fail-closed validator, and prose claims are not assessed;
 - `upload.status` and `upload.extractionWarning`;
 - `firstBuild`, the only Build, with `status`, `outcome`, `latencyMs`, `error`, and `draft.length` / `draft.sha256`;
@@ -129,7 +137,7 @@ The cleanup receipt is `test-results/resume-demo-cleanup.json`, in the `resume-d
 - `success` and `memberCreated`;
 - `authAbsenceVerified` and `prismaUserAbsenceVerified`;
 - `authUserDeleted` and `databaseUserDeleted`;
-- `userId` and `runId`;
+- `userId`, `email` and `runId`, which must match the acceptance receipt's `member`;
 - `auditRowsRetained: true`.
 
 On failure the receipt holds `success: false` and the error.
@@ -151,6 +159,6 @@ Audit rows (`audit_logs`, `audit_events`) that name the synthetic actor are **ke
 | `PREVIEW_SITE_URL`, `PREVIEW_SUPABASE_URL`, `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`, `PREVIEW_POSTGRES_PRISMA_URL`, `PREVIEW_E2E_MEMBER_EMAIL` repository secrets | Names confirmed present. Values unverified. The job's gates prove at runtime that they point at DEMO. |
 | Exactly one active DEMO `portal-qa-*` organization, whose ID and slug are dispatch inputs | Present: `portal-qa-september-smoke`, confirmed read-only by the owner on 2026-09-27. The job re-checks it at dispatch. |
 | `member-resumes` and `member-files` storage buckets in DEMO | Both exist and are private. The owner checked this read-only on 2026-09-27. Contents were not listed; cleanup counts only the member's own prefixes. |
-| A provider key for Resume Build in the Vercel **Preview** environment | `GROQ_API_KEY` is present for all environments; `ANTHROPIC_API_KEY` is absent (owner, Vercel metadata, 2026-09-27). The Groq key's validity and quota are **unverified until a run**. `DEMO_SETUP.md` says the Preview Groq key is the same key as production, so a run spends production Groq quota. |
+| A provider key for Resume Build in the Vercel **Preview** environment | `GROQ_API_KEY` is present for all environments; `ANTHROPIC_API_KEY` is absent (owner, Vercel metadata, 2026-09-27). The Groq key's validity and quota are **unverified until a run**. `DEMO_SETUP.md` says the Preview Groq key is the same key as production, so a Build request may consume production Groq quota. |
 
 `scripts/sync-portal-test-auth.ts` is **not** used. It is fixed to the five standing QA accounts (including `member-test@workforceap.org`) and refuses reruns.

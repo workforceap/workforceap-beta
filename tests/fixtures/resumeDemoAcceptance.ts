@@ -4,6 +4,7 @@
  * and date is invented. The facts the lane checks for sit on PAGE 2, so a
  * build that only read page 1 cannot pass.
  */
+import { Buffer } from 'node:buffer';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 
 export const SYNTHETIC_RESUME_FILE_NAME = 'synthetic-two-page-resume.pdf';
@@ -129,4 +130,52 @@ export function initialAcceptanceReceipt(startedAt: string): Record<string, unkn
     pass: false,
     outcome: 'not_run',
   };
+}
+
+/**
+ * The Supabase Auth user ID of the signed-in session, read from the
+ * `sb-<ref>-auth-token` cookie that @supabase/ssr writes (whole or chunked as
+ * `.0`, `.1`, …; `base64-` prefixed or URI-encoded JSON). The spec uses it to
+ * prove it ran as the disposable member before any upload or Build. Returns
+ * null when there is no single readable session, or when the session's
+ * `user.id` and access-token `sub` disagree; the value is never logged.
+ */
+export function sessionUserIdFromCookies(cookies: ReadonlyArray<{ name: string; value: string }>): string | null {
+  const pattern = /^(sb-[a-z0-9]+-auth-token)(?:\.(0|[1-9]\d*))?$/;
+  const parts = new Map<string, Array<{ index: number; value: string }>>();
+  for (const cookie of cookies) {
+    const match = cookie.name.match(pattern);
+    if (!match) continue;
+    const list = parts.get(match[1]) ?? [];
+    list.push({ index: match[2] === undefined ? -1 : Number(match[2]), value: cookie.value });
+    parts.set(match[1], list);
+  }
+  if (parts.size !== 1) return null;
+  const chunks = [...parts.values()][0].sort((a, b) => a.index - b.index);
+  const whole = chunks.find((chunk) => chunk.index === -1);
+  const numbered = chunks.filter((chunk) => chunk.index >= 0);
+  if (whole && numbered.length > 0) return null;
+  if (numbered.some((chunk, i) => chunk.index !== i)) return null;
+  const raw = whole ? whole.value : numbered.map((chunk) => chunk.value).join('');
+  let session: { user?: { id?: unknown }; access_token?: unknown } | null = null;
+  try {
+    const text = raw.startsWith('base64-')
+      ? Buffer.from(raw.slice('base64-'.length), 'base64url').toString('utf8')
+      : decodeURIComponent(raw);
+    session = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  const userId = typeof session?.user?.id === 'string' ? session.user.id : null;
+  let sub: string | null = null;
+  if (typeof session?.access_token === 'string') {
+    try {
+      const payload = JSON.parse(Buffer.from(session.access_token.split('.')[1] ?? '', 'base64url').toString('utf8'));
+      sub = typeof payload?.sub === 'string' ? payload.sub : null;
+    } catch {
+      sub = null;
+    }
+  }
+  if (userId && sub && userId !== sub) return null;
+  return userId ?? sub;
 }

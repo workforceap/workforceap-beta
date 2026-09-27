@@ -397,7 +397,13 @@ async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
         (created) => { writeFileSync(stateFile, JSON.stringify(created)); },
         (marker) => { writeFileSync(markerFile, JSON.stringify(marker)); },
       );
-      appendFileSync(env.GITHUB_ENV, `RESUME_ACCEPTANCE_MEMBER_EMAIL=${state.email}\nRESUME_ACCEPTANCE_MEMBER_PASSWORD=${password}\n`);
+      // The spec checks it signed in as exactly this member and records the
+      // ID, email and run ID so the final verifier can match the cleanup receipt.
+      appendFileSync(
+        env.GITHUB_ENV,
+        `RESUME_ACCEPTANCE_MEMBER_EMAIL=${state.email}\nRESUME_ACCEPTANCE_MEMBER_PASSWORD=${password}\n`
+          + `RESUME_ACCEPTANCE_MEMBER_ID=${state.userId}\nRESUME_ACCEPTANCE_RUN_ID=${state.runId}\n`,
+      );
       console.log(`Created synthetic acceptance member ${state.userId} for run ${state.runId}.`);
     } finally {
       await close();
@@ -430,11 +436,11 @@ async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
     try {
       const result = await cleanupFixture(target, state, deps);
       // success only when storage prefixes are empty and Auth and Prisma absence are verified.
-      writeReceipt({ success: true, memberCreated: true, userId: state.userId, runId: state.runId, ...result });
+      writeReceipt({ success: true, memberCreated: true, userId: state.userId, email: state.email, runId: state.runId, ...result });
       console.log(`Cleaned up synthetic acceptance member ${state.userId}: ${JSON.stringify(result)}. Audit rows are retained by design.`);
     } catch (error) {
       writeReceipt({
-        success: false, memberCreated: true, userId: state.userId, runId: state.runId,
+        success: false, memberCreated: true, userId: state.userId, email: state.email, runId: state.runId,
         error: error instanceof Error && Object.getPrototypeOf(error) === Error.prototype ? error.message : 'cleanup failed',
       });
       throw error;

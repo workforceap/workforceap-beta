@@ -17,7 +17,7 @@ name: Resume Build DEMO Acceptance
 # active portal-qa-* fixture organization.
 #
 # Quota: DEMO_SETUP.md:65 documents the Preview GROQ_API_KEY as the production
-# key, so each run spends production Groq quota. The spec therefore makes
+# key, so a Build request may consume production Groq quota. The spec makes
 # exactly ONE Build request and never retries, the concurrency group below
 # stops overlapping runs, and a repeat dispatch needs a review of the previous
 # receipt (docs/RESUME-DEMO-ACCEPTANCE.md, "Dispatch").
@@ -187,11 +187,13 @@ jobs:
           RESUME_QA_CLEANUP_OUTPUT: test-results/resume-demo-cleanup.json
         run: pnpm exec tsx scripts/resume-demo-member.ts cleanup
 
-      # Green only if BOTH receipts pass: acceptance (pass: true, outcome
-      # success, exactly one Build request) AND cleanup (success, Auth and
-      # Prisma absence verified, every member-prefix storage count 0). A
-      # skipped/refused spec or an unverified cleanup fails here.
-      - name: Verify the acceptance and cleanup receipts
+      # The ONE green check, reading both receipts together: acceptance
+      # (pass: true, outcome success, exactly one Build request, the member it
+      # ran as) AND cleanup (success for a created member, Auth and Prisma
+      # absence verified, every member-prefix storage count 0) AND the same
+      # runId, member ID and email in both. A no-op (memberCreated:false)
+      # cleanup, a refused spec or an unverified cleanup fails here.
+      - name: Verify the acceptance and cleanup receipts together
         if: always()
         env:
           RESUME_ACCEPTANCE_OUTPUT: test-results/resume-demo-acceptance.json
