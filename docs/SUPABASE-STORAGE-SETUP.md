@@ -35,12 +35,14 @@ Chat uses **Supabase Realtime** `postgres_changes` on `messages` and `message_th
 >
 > `users` is listed separately because org scoping and the admin helpers read `users.organization_id` (`prisma/migrations/20260909224000_member_message_current_assignment/migration.sql:15-32`, `prisma/migrations/20260616050000_fix_force_rls_recursion_is_admin/migration.sql:41-44`); check it on its own, since its RLS and policy state can differ from the other tables.
 >
-> **Unverified design risk:** the chat policies identify the caller via `app.current_*` session settings, which the server sets inside Prisma transactions (`lib/db/prisma.ts:40-44`). Nothing in the repo sets them for a browser Realtime subscriber, so with RLS on, those policies may deny chat events to browser subscribers. Loosening policies to make live chat work would reopen the exposure.
+> **Unverified design risk:** the chat policies identify the caller via `app.current_*` session settings, which the server sets inside Prisma transactions (`lib/db/prisma.ts:40-44`). Nothing in the repo sets them for a browser Realtime subscriber, so with RLS on, those policies may deny chat events to browser subscribers. Loosening policies without a verified JWT-based design could reopen the exposure.
 >
 > Before publishing, confirm read-only and record the results:
 > - `select relname, relrowsecurity from pg_class where relnamespace = 'public'::regnamespace and relname in ('messages', 'message_threads', 'users', 'organizations', 'roles', 'user_roles');` (expect `true` for all six)
 > - `select tablename, policyname, roles, cmd from pg_policies where schemaname = 'public' and tablename in ('messages', 'message_threads', 'users', 'organizations', 'roles', 'user_roles');`
-> - `select table_name, grantee, privilege_type from information_schema.role_table_grants where table_schema = 'public' and grantee in ('anon', 'authenticated') and privilege_type in ('INSERT', 'UPDATE', 'DELETE') and table_name in ('messages', 'message_threads', 'users', 'organizations', 'roles', 'user_roles');` (expect no rows for `users`, `organizations`, `roles`, `user_roles`)
+> - `select r.role, t.tbl, has_table_privilege(r.role, 'public.' || t.tbl, 'INSERT') as ins, has_table_privilege(r.role, 'public.' || t.tbl, 'UPDATE') as upd, has_table_privilege(r.role, 'public.' || t.tbl, 'DELETE') as del, has_any_column_privilege(r.role, 'public.' || t.tbl, 'INSERT') as col_ins, has_any_column_privilege(r.role, 'public.' || t.tbl, 'UPDATE') as col_upd from (values ('anon'), ('authenticated')) r(role) cross join (values ('users'), ('organizations'), ('roles'), ('user_roles')) t(tbl);` (expect every column `false`)
+>
+> An empty direct-grant listing (e.g. `information_schema.role_table_grants`) is not proof, because rights can come through `PUBLIC`, role membership, or column grants.
 
 ```sql
 ALTER PUBLICATION supabase_realtime ADD TABLE message_threads;
