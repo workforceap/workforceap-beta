@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
 import { trackEvent } from '@/lib/events/track';
 import type { AIToolType } from '@prisma/client';
 
@@ -30,15 +32,27 @@ export async function saveAIToolResult(
     parentToolResultId?: string | null;
   }
 ) {
-  const result = await prisma.aIToolResult.create({
-    data: {
-      userId,
-      toolType,
-      inputSummary,
-      output,
-      parentToolResultId: actor?.parentToolResultId ?? null,
-    },
-    select: { id: true },
+  const result = await prisma.$transaction(async (tx) => {
+    // The subject may differ from the staff actor. Serialize the result write
+    // with deletion of the subject, not merely the actor's earlier ensure.
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
+    const subject = await tx.user.findUnique({
+      where: { id: userId },
+      select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+    });
+    if (!subject || subject.deletedAt || subject.billingDeletionPendingAt || subject.billingDeletionOperationId) {
+      throw new Error('This account is no longer active.');
+    }
+    return tx.aIToolResult.create({
+      data: {
+        userId,
+        toolType,
+        inputSummary,
+        output,
+        parentToolResultId: actor?.parentToolResultId ?? null,
+      },
+      select: { id: true },
+    });
   });
   const onBehalf = actor && actor.actorUserId !== userId;
   const baseMetadata: Record<string, unknown> = { toolType };
