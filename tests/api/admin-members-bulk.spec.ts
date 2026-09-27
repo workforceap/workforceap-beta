@@ -42,6 +42,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
     const { prisma } = await import('@/lib/db/prisma');
     return fn(prisma);
   }),
+  crossTenantOK: vi.fn(async (fn: () => Promise<unknown>) => fn()),
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn() }));
 vi.mock('@/lib/email', () => ({
@@ -77,7 +78,9 @@ vi.mock('@/lib/notifications/create', () => ({
 
 // ─── Prisma mock ───
 const mockTx = {
-  user: { updateMany: vi.fn() },
+  user: { findFirst: vi.fn(), updateMany: vi.fn() },
+  $executeRaw: vi.fn(),
+  $queryRaw: vi.fn(),
   courseEnrollment: {
     findMany: vi.fn(),
     updateMany: vi.fn(),
@@ -163,6 +166,13 @@ const makeRequest = (body: unknown) =>
 describe('Bulk operations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTx.$executeRaw.mockResolvedValue(1);
+    mockTx.$queryRaw.mockResolvedValue([]);
+    mockTx.user.findFirst.mockImplementation(async (args: { select?: { organizationId?: boolean } }) =>
+      args.select?.organizationId
+        ? { organizationId: 'org-1' }
+        : { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null },
+    );
     mockTx.user.updateMany.mockResolvedValue({ count: 1 });
     mockTx.counselor.findFirst.mockImplementation((args) => prisma.counselor.findFirst(args));
     mockTx.courseEnrollment.updateMany.mockResolvedValue({ count: 1 });
@@ -528,6 +538,26 @@ describe('Bulk operations', () => {
       });
       expect(mockTx.counselorAssignment.create).not.toHaveBeenCalled();
       expect(mockTx.messageThread.upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { memberId: uid(1) }, update: { counselorUserId: null } }));
+    });
+
+    it('skips counselor changes while billing delivery is unresolved', async () => {
+      vi.mocked(getUser).mockResolvedValue({ id: uid(99), email: 'admin@example.com' } as any);
+      vi.mocked(isAdmin).mockResolvedValue(true);
+      vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        { id: uid(1), email: 'alice@example.com', fullName: 'Alice', enrolledProgram: null, pipelineBoardStage: null },
+      ] as any);
+      mockTx.$queryRaw.mockResolvedValue([{ id: 'unresolved-send' }]);
+
+      const res = await bulkUpdatePost(
+        makeUpdateRequest({ memberIds: [uid(1)], counselorUserId: null }),
+      );
+
+      expect(res.status).toBe(207);
+      expect(await res.json()).toMatchObject({ updated: 0, total: 1 });
+      expect(mockTx.user.updateMany).not.toHaveBeenCalled();
+      expect(mockTx.counselorAssignment.updateMany).not.toHaveBeenCalled();
+      expect(createNotification).not.toHaveBeenCalled();
     });
 
     describe('counselor handoff and skipped members', () => {

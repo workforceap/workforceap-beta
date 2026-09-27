@@ -8,8 +8,6 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
-import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
-import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import { assertBillingAssignmentMutable } from '@/lib/counselor/billingAssignmentGuard';
 import { notifyCounselorOfStaffAssignment, type StaffAssignedMember } from '@/lib/counselor/staffAssignmentNotify';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
@@ -184,8 +182,7 @@ async function _POST(request: NextRequest) {
           // The send claim takes this key before its User row lock. Take it
           // before the bulk update's User write to preserve that lock order.
           if (counselorUserId !== undefined) {
-            if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, member.id);
-            else await assertBillingAssignmentMutable(tx, member.id);
+            await assertBillingAssignmentMutable(tx, member.id);
           }
           const updated = await tx.user.updateMany({
             where: { id: member.id, organizationId: orgId, deletedAt: null },
