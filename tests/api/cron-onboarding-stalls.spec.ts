@@ -38,6 +38,12 @@ vi.mock('@/lib/email/send', () => ({
   isRecipientSkipReason: (value: unknown) => value === 'fixture_recipient' || value === 'suppressed_recipient',
 }));
 vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn(async () => ({})) }));
+// The lifecycle transaction itself is covered by its own tests. Here the
+// nudge ledger needs an active member so we can verify the cron's writes.
+vi.mock('@/lib/member/activeWrite', () => ({
+  MemberLifecycleWriteError: class MemberLifecycleWriteError extends Error {},
+  withActiveMemberWrite: vi.fn(),
+}));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
 vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn(async () => undefined) }));
 vi.mock('@/lib/cron/cronExecution', () => ({ setCronRecordsProcessed: vi.fn(async () => undefined) }));
@@ -62,6 +68,7 @@ import {
   type StallNudgeBuckets,
 } from '@/lib/cron/onboardingStallNudges';
 import { prisma } from '@/lib/db/prisma';
+import { withActiveMemberWrite } from '@/lib/member/activeWrite';
 import { MEMBER_CHECK_IN_DEFAULT_CTA_TEXT, memberCheckInHtml } from '@/emails/member-check-in';
 import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
@@ -126,6 +133,7 @@ let infoSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(withActiveMemberWrite).mockImplementation(async (_id, write) => write(prisma as never));
   delete process.env[MEMBER_STALL_NUDGES_FLAG];
   ledger({});
   memberFilterReturns('all');
@@ -199,7 +207,7 @@ describe('population: only opted-in members are ever emailed', () => {
       passthroughPacer,
     );
     expect(sendMemberCheckInEmail).toHaveBeenCalledTimes(1);
-    expect(sendMemberCheckInEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'alice@example.com' }));
+    expect(sendMemberCheckInEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'alice@example.com', recipientUserId: 'u-alice' }));
     expect(sendMemberStuckEmail).not.toHaveBeenCalled();
     const sentTo = [...vi.mocked(sendMemberCheckInEmail).mock.calls, ...vi.mocked(sendMemberStuckEmail).mock.calls].map((c) => c[0].to);
     for (const m of everyone.slice(1)) expect(sentTo).not.toContain(m.email);
@@ -212,7 +220,7 @@ describe('population: only opted-in members are ever emailed', () => {
   it('emails the address the member filter returns, not the one the route carried', async () => {
     memberFilterReturns([{ ...alice, email: 'alice.new@example.com' }]);
     await sendMemberStallNudges(buckets({ interview: [alice] }), passthroughPacer);
-    expect(sendMemberStuckEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'alice.new@example.com' }));
+    expect(sendMemberStuckEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'alice.new@example.com', recipientUserId: 'u-alice' }));
   });
 
   it('sends nothing when the member filter read fails', async () => {
@@ -266,6 +274,7 @@ describe('bucket → template mapping', () => {
     expect(sendMemberStuckEmail).toHaveBeenCalledTimes(1);
     expect(sendMemberStuckEmail).toHaveBeenCalledWith({
       to: 'alice@example.com',
+      recipientUserId: 'u-alice',
       firstName: 'Alice',
       counselorName: 'Counselor One',
     });
@@ -275,6 +284,7 @@ describe('bucket → template mapping', () => {
       // and the button says so instead of the default "Open my dashboard".
       expect.objectContaining({
         to: 'bob@example.com',
+        recipientUserId: 'u-bob',
         firstName: 'Bob',
         dashboardUrl: expect.stringMatching(/\/dashboard\/program$/),
         ctaText: STALL_CHECK_IN_CTA_TEXT,
@@ -289,6 +299,8 @@ describe('bucket → template mapping', () => {
     expect(prismaMock.memberNudgeLog.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ userId: 'u-bob', tier: STALL_NUDGE_TIER, kind: 'stall_no_program' }),
     });
+    expect(withActiveMemberWrite).toHaveBeenCalledWith('u-alice', expect.any(Function));
+    expect(withActiveMemberWrite).toHaveBeenCalledWith('u-bob', expect.any(Function));
 
     expect(result.enabled).toBe(true);
     expect(result.sent).toEqual({ interview: 1, no_program: 1, wioa: 0 });
