@@ -50,13 +50,19 @@ export type BeginBillingDeletionResult =
   | { ok: true; pendingAt: Date; operationId: string }
   | { ok: false; reason: 'missing' | 'unresolved_send' | 'in_progress' | 'raced' | 'transaction_unavailable' };
 
+// External Storage/Auth calls cannot share a database transaction. A crashed
+// owner can be replaced only after this quiet period; every later DB write is
+// fenced by its operation token. Repeating deletion for the same User id is
+// safe, whereas releasing the barrier or restoring the account is not.
+export const BILLING_DELETION_TAKEOVER_AFTER_MS = 15 * 60 * 1000;
+
 /**
  * Commit the deletion barrier before touching external Storage. A claim that
  * wins the lock first leaves an unresolved row and blocks deletion. If deletion
  * wins, the claim sees pending state and cannot call the provider.
- * The operation token owns external cleanup. A returned Storage failure
- * releases ownership but keeps the marker; a crashed operation needs manual
- * reconciliation before its token can be cleared.
+ * The operation token owns external cleanup. Returned failures release only
+ * their own token while keeping the deletion marker. An abandoned owner is
+ * replaced after a quiet period so a retry can verify Auth and finish.
  */
 export async function beginBillingDeletion(memberId: string, organizationId?: string, deletedBefore?: Date, expectedDeletedAt?: Date): Promise<BeginBillingDeletionResult> {
   if (!interactiveTransactionsGuaranteed()) return { ok: false, reason: 'transaction_unavailable' };
@@ -69,9 +75,13 @@ export async function beginBillingDeletion(memberId: string, organizationId?: st
       ...(organizationId ? { organizationId } : {}),
       ...(expectedDeletedAt ? { deletedAt: expectedDeletedAt } : deletedBefore ? { deletedAt: { not: null, lt: deletedBefore } } : {}),
     };
-    const member = await scoped.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true, billingDeletionCompletedAt: true } });
+    const member = await scoped.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true, billingDeletionCompletedAt: true, updatedAt: true } });
     if (!member) return { ok: false as const, reason: 'missing' as const };
-    if (member.billingDeletionOperationId) return { ok: false as const, reason: 'in_progress' as const };
+    const abandonedOwner = member.billingDeletionOperationId
+      && member.billingDeletionPendingAt
+      && !member.billingDeletionCompletedAt
+      && member.updatedAt.getTime() < Date.now() - BILLING_DELETION_TAKEOVER_AFTER_MS;
+    if (member.billingDeletionOperationId && !abandonedOwner) return { ok: false as const, reason: 'in_progress' as const };
     // The exact-deletedAt claim is used by the deleted-email repair routes.
     // They may retire an old Auth address, but must not complete a failed
     // GDPR/self-delete operation that still requires hard Auth erasure.
@@ -82,7 +92,11 @@ export async function beginBillingDeletion(memberId: string, organizationId?: st
     const pendingAt = member.billingDeletionPendingAt ?? new Date();
     const operationId = randomUUID();
     const { count } = await scoped.user.updateMany({
-      where: { ...where, billingDeletionOperationId: null },
+      where: {
+        ...where,
+        billingDeletionOperationId: member.billingDeletionOperationId,
+        ...(abandonedOwner ? { billingDeletionPendingAt: member.billingDeletionPendingAt, updatedAt: member.updatedAt } : {}),
+      },
       data: { billingDeletionPendingAt: pendingAt, billingDeletionOperationId: operationId, billingDeletionCompletedAt: null },
     });
     return count === 1 ? { ok: true as const, pendingAt, operationId } : { ok: false as const, reason: 'raced' as const };

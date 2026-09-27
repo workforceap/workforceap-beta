@@ -420,19 +420,27 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
           return result.count === 1 ? 'deleted' : 'billing_deletion_raced';
         });
         if (outcome === 'deleted') deleted += 1;
-        else blocked.push({ id, constraint: outcome });
+        else {
+          await releaseBillingDeletion(id, deletion.operationId);
+          blocked.push({ id, constraint: outcome });
+        }
       } catch (err) {
         const constraint = foreignKeyConstraintName(err);
-        if (!constraint) throw err;
-        // Auth has already been confirmed absent. An FK hold is a known
-        // rollback, so let the next sweep retry after the holding row clears.
-        if (ownedOperationId) await releaseBillingDeletion(id, ownedOperationId);
-        console.error(`[data-cleanup] Soft-deleted account ${id} is still referenced by ${constraint}; skipped.`);
-        blocked.push({ id, constraint });
-        try {
-          await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null });
-        } catch (anonymizeErr) {
-          console.error(`[data-cleanup] Could not anonymise held account ${id}:`, anonymizeErr);
+        // A database error after Auth deletion must not abort the daily sweep
+        // or strand this owner's token. The row remains deleted and a later
+        // sweep verifies Auth again before retrying the app hard delete.
+        if (ownedOperationId) {
+          try { await releaseBillingDeletion(id, ownedOperationId); }
+          catch (releaseError) { console.error(`[data-cleanup] Could not release deletion owner for ${id}:`, releaseError); }
+        }
+        console.error(`[data-cleanup] Could not purge soft-deleted account ${id}:`, err);
+        blocked.push({ id, constraint: constraint ?? 'account_purge_retry_required' });
+        if (constraint) {
+          try {
+            await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null });
+          } catch (anonymizeErr) {
+            console.error(`[data-cleanup] Could not anonymise held account ${id}:`, anonymizeErr);
+          }
         }
       }
     }

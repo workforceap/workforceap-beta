@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { deleteAuthUserForErasure } from '@/lib/admin/authUserLifecycle';
 import { logAuditEvent } from '@/lib/audit/log';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { isAdmin } from '@/lib/auth/roles';
@@ -27,8 +28,14 @@ export const POST = withApiGuc(async () => {
     error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
     code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
     }, { status: 409 });
+    let operationOwned = true;
   
     try {
+      // A role promotion may have won between the initial role read and the
+      // deletion claim. The claim now prevents later role edits.
+      if (await isAdmin(user.id)) {
+        return NextResponse.json({ error: 'Administrator accounts cannot be deleted from member account settings.' }, { status: 403 });
+      }
       const storage = await deleteUserStorageObjects(user.id);
       if (!storage.ok) {
         console.error('[delete-account] storage object delete failed:', storage.error);
@@ -53,19 +60,24 @@ export const POST = withApiGuc(async () => {
       }
   
       // Hard-delete from Supabase Auth so the user cannot log back in
-      const supabaseAdmin = getSupabaseAdmin();
-      const { error } = await supabaseAdmin.auth.admin.deleteUser(user.id);
-      if (error) {
-        console.error('[delete-account] Supabase auth delete error:', error.message);
-        await releaseBillingDeletion(user.id, billingDeletion.operationId);
-        return NextResponse.json({ error: 'Failed to delete account' }, { status: 502 });
+      const authDeleted = await deleteAuthUserForErasure(getSupabaseAdmin(), user.id);
+      if (!authDeleted.ok) {
+        console.error('[delete-account] Supabase auth deletion could not be confirmed:', authDeleted.message);
+        return NextResponse.json({ error: 'Sign-in deletion could not be confirmed. Retry or contact support.', reconciliationRequired: true }, { status: 502 });
       }
       await completeBillingDeletion(user.id, billingDeletion.operationId);
+      operationOwned = false;
 
       return NextResponse.json({ ok: true });
     } catch (err) {
       console.error('[delete-account] error:', err);
-      return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 });
+      return NextResponse.json({ error: 'Account deletion could not be confirmed. Retry or contact support.', reconciliationRequired: true }, { status: 503 });
+    } finally {
+      if (operationOwned) {
+        await releaseBillingDeletion(user.id, billingDeletion.operationId).catch((error) => {
+          console.error('[delete-account] operation release requires reconciliation:', error);
+        });
+      }
     }
   } catch (error) {
     console.error('/member/delete-account:', error);

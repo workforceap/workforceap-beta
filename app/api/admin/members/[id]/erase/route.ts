@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
@@ -13,7 +14,7 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
-import { deleteAuthUserForErasure, disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
+import { deleteAuthUserForErasure, disableAuthUserForIrreversibleErase } from '@/lib/admin/authUserLifecycle';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -37,6 +38,7 @@ export const POST = withApiGuc(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) => {
+  let deletionOwner: { id: string; operationId: string } | null = null;
   try {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -89,6 +91,7 @@ export const POST = withApiGuc(async (
       error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during erasure. Reload and try again.',
       code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
     }, { status: 409 });
+    deletionOwner = { id, operationId: billingDeletion.operationId };
 
     // A staff-role edit may have committed after the first lookup and before
     // the deletion owner was claimed. Re-read under that owner, which blocks
@@ -130,17 +133,17 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED, billingDeletionPending: true }, { status: 502 });
     }
 
-    // Optionally anonymize instead of hard-delete for members that still
-    // have active program enrollments. Admins can pass force=true to
-    // override, but the default is hard-delete.
-    const shouldAnonymize = !force && current.deletedAt == null && current.courseEnrollments.length > 0;
+    // Preserve enrollment rows for non-force erasure while scrubbing the
+    // account irreversibly. Retrying this path must not turn it into a hard
+    // delete just because the first request already set deletedAt.
+    const shouldAnonymize = !force && current.courseEnrollments.length > 0;
 
     if (shouldAnonymize) {
       // Scrub User and Profile PII together while preserving enrollment rows.
       await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
       let authDisabled;
       try {
-        authDisabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, current.email);
+        authDisabled = await disableAuthUserForIrreversibleErase(getSupabaseAdmin(), id);
       } catch (authError) {
         console.error(`[gdpr-erase] Auth retirement outcome unknown for ${id}:`, authError);
         return NextResponse.json({ error: 'Sign-in retirement requires reconciliation.', reconciliationRequired: true }, { status: 503 });
@@ -149,6 +152,7 @@ export const POST = withApiGuc(async (
         return NextResponse.json({ error: 'Sign-in retirement could not be confirmed.', reconciliationRequired: true }, { status: 502 });
       }
       await completeBillingDeletion(id, billingDeletion.operationId);
+      deletionOwner = null;
 
       await logCronRun('gdpr_erase', {
         memberId: id,
@@ -195,6 +199,7 @@ export const POST = withApiGuc(async (
     if (removed.count !== 1) {
       return NextResponse.json({ error: 'Account erasure could not be confirmed.', reconciliationRequired: true }, { status: 503 });
     }
+    deletionOwner = null;
 
     await logCronRun('gdpr_erase', {
       memberId: id,
@@ -223,7 +228,23 @@ export const POST = withApiGuc(async (
     return NextResponse.json({ ok: true, action: 'hard_delete', memberId: id });
   } catch (error) {
     console.error('[admin/members/[id]/erase POST] error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+      return NextResponse.json({
+        error: 'Related records still hold this anonymized account. Resolve the hold and retry erasure.',
+        reconciliationRequired: true,
+      }, { status: 409 });
+    }
+    return NextResponse.json({
+      error: 'Account erasure could not be confirmed. Retry or contact support for reconciliation.',
+      reconciliationRequired: true,
+    }, { status: 503 });
+  } finally {
+    // Never reopen sign/claim or restore: release only this request's owner.
+    // The pending marker remains until a successful retry completes deletion.
+    if (deletionOwner) {
+      await releaseBillingDeletion(deletionOwner.id, deletionOwner.operationId).catch((error) => {
+        console.error('[admin/members/[id]/erase POST] operation release requires reconciliation:', error);
+      });
+    }
   }
 });

@@ -751,6 +751,43 @@ describe('cleanupDeletedAccounts', () => {
     errorSpy.mockRestore();
   });
 
+  it('releases a post-Auth database failure and continues purging other accounts', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'failed' }, { id: 'free' }]).mockResolvedValueOnce([]);
+    mockDeleteMany.mockRejectedValueOnce(new Error('database connection dropped after Auth removal'))
+      .mockResolvedValueOnce({ count: 1 });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({
+      deleted: 1,
+      blocked: [{ id: 'failed', constraint: 'account_purge_retry_required' }],
+    });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('failed', 'purge-1');
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(2);
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it('retries a held account after Auth was already removed on the previous sweep', async () => {
+    mockFindMany
+      .mockResolvedValueOnce([{ id: 'held' }])
+      .mockResolvedValueOnce([{ id: 'held' }]);
+    mockDeleteMany.mockRejectedValueOnce(foreignKeyError('subgroup_leader_id_fkey'))
+      .mockResolvedValueOnce({ count: 1 });
+    mockDeleteAuthUserForErasure.mockResolvedValueOnce({ ok: true, alreadyMissing: false })
+      .mockResolvedValueOnce({ ok: true, alreadyMissing: true });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await cleanupDeletedAccounts()).toEqual({
+      deleted: 0, blocked: [{ id: 'held', constraint: 'subgroup_leader_id_fkey' }],
+    });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('held', 'purge-1');
+    expect(await cleanupDeletedAccounts()).toEqual({ deleted: 1, blocked: [] });
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(2);
+    errorSpy.mockRestore();
+  });
+
   it('keeps the held account in the report when anonymising it fails, and keeps purging', async () => {
     mockFindMany.mockResolvedValueOnce([{ id: 'held' }, { id: 'free' }]).mockResolvedValueOnce([]);
     mockDeleteMany.mockImplementation(async ({ where }: { where: { id: string } }) => {
@@ -768,11 +805,17 @@ describe('cleanupDeletedAccounts', () => {
     errorSpy.mockRestore();
   });
 
-  it('still throws on errors that are not foreign key violations', async () => {
+  it('reports an unknown post-Auth database failure for retry without aborting the sweep', async () => {
     mockFindMany.mockResolvedValueOnce([{ id: 'u1' }]);
     mockDeleteMany.mockRejectedValueOnce(new Error('connection reset'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(cleanupDeletedAccounts()).rejects.toThrow('connection reset');
+    await expect(cleanupDeletedAccounts()).resolves.toEqual({
+      deleted: 0,
+      blocked: [{ id: 'u1', constraint: 'account_purge_retry_required' }],
+    });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('u1', 'purge-1');
+    errorSpy.mockRestore();
   });
 
   it('returns zero when no deleted accounts are expired', async () => {

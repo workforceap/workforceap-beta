@@ -9,6 +9,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { isDeletedEmailMarker, parseDeletedEmail } from '../../_deletedEmail';
+import { isErasedEmailMarker } from '@/lib/member/deletedEmail';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { reenableAuthUserAfterRestore } from '@/lib/admin/authUserLifecycle';
 import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, beginBillingRestore } from '@/lib/billing/erasureGuard';
@@ -59,6 +60,9 @@ export const POST = withApiGuc(async (
     }
     if (!target.deletedAt) {
       return NextResponse.json({ error: 'User is not soft-deleted; nothing to restore.' }, { status: 400 });
+    }
+    if (isErasedEmailMarker(target.email, id)) {
+      return NextResponse.json({ error: 'This account was permanently erased and cannot be restored.' }, { status: 409 });
     }
     if (target.billingDeletionOperationId || (target.billingDeletionPendingAt && !target.billingDeletionCompletedAt)) {
       return NextResponse.json({ error: 'Account deletion is still being completed. Retry deletion or contact support before restoring.' }, { status: 409 });

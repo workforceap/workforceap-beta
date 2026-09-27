@@ -2,7 +2,7 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
 import { DELETED_ACCOUNT_RETENTION_DAYS, getCutoffDate } from '@/lib/retention/config';
-import { buildDeletedEmail } from './deletedEmail';
+import { buildDeletedEmail, buildErasedEmail } from './deletedEmail';
 
 /**
  * WAP-169: the one anonymiser behind every member deletion path.
@@ -15,8 +15,8 @@ import { buildDeletedEmail } from './deletedEmail';
  *
  * What it does, in one transaction:
  *  1. rewrites `users.email` to the recoverable deleted marker
- *     (lib/member/deletedEmail.ts) during the 30-day restore window; a
- *     held row past that window gets an irreversible marker,
+ *     (lib/member/deletedEmail.ts) during the 30-day restore window;
+ *     `admin_erase` and held rows past that window get irreversible markers,
  *     scrubs the name, phone, workspace email and the assessment / career /
  *     WIOA self-report JSON, and sets `deleted_at` when it is not set yet so
  *     the retention purge picks the row up after DELETED_ACCOUNT_RETENTION_DAYS;
@@ -152,9 +152,11 @@ export async function anonymizeMember(
         // Keep the original recoverable only during the restore window. When a
         // foreign key holds an expired row, its app account email must not
         // retain the original indefinitely.
-        email: purgeWindowPassed
-          ? expiredDeletedEmail(userId, deletedAt)
-          : alreadyDeleted ? existing.email : scrambledEmail(userId, existing.email, now),
+        email: options.reason === 'admin_erase'
+          ? buildErasedEmail(userId, deletedAt.getTime())
+          : purgeWindowPassed
+            ? expiredDeletedEmail(userId, deletedAt)
+            : alreadyDeleted ? existing.email : scrambledEmail(userId, existing.email, now),
         fullName: ANONYMIZED_FULL_NAME,
         phone: null,
         workspaceEmail: null,
