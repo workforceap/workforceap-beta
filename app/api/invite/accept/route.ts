@@ -613,6 +613,7 @@ async function acceptExistingUser(
     after(() =>
       sendInvitationAcceptedEmail({
         to: inviter.email,
+        accepterUserId: user.id,
         accepterName: fullName || user.fullName,
         accepterEmail: user.email,
         role: roleLabel,
@@ -890,6 +891,7 @@ async function finishNewUserDbSetup(
     after(() =>
       sendInvitationAcceptedEmail({
         to: inviter.email,
+        accepterUserId: authUserId,
         accepterName: fullName,
         accepterEmail: invitation.email,
         role: roleLabel,

@@ -10,6 +10,7 @@ import {
   sendAIMatchSuggestionEmail,
   sendApplicationConfirmationEmail,
   sendEligibilityScreeningConfirmationEmail,
+  sendInvitationAcceptedEmail,
   sendVoiceCoachTranscriptEmail,
 } from '@/lib/email';
 import { FixtureRecipientSkippedError, MemberEmailOutcomeUncertainError } from '@/lib/email/send';
@@ -115,6 +116,25 @@ describe('member-linked email wrappers', () => {
     expect(mocks.send).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({
       recipientUserId: undefined,
       memberEffectClaim: false,
+    }));
+  });
+
+  it('claims the accepter before emailing their name and address to the inviter', async () => {
+    mocks.send.mockResolvedValueOnce({ data: { id: 'accepted' }, error: null });
+
+    const result = await sendInvitationAcceptedEmail({
+      to: 'inviter@workforceap.org',
+      accepterUserId: 'member-accepted',
+      accepterName: 'Member One',
+      accepterEmail: 'member@workforceap.org',
+      role: 'member',
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(mocks.send).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      subjectMemberId: 'member-accepted',
+      subjectMemberEmail: 'member@workforceap.org',
+      memberEffectClaim: true,
     }));
   });
 });

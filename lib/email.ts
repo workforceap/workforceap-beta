@@ -1454,6 +1454,7 @@ export async function sendPartnerReferralInviteEmail(params: {
 /** Send invitation accepted notification to inviter */
 export async function sendInvitationAcceptedEmail(params: {
   to: string;
+  accepterUserId: string;
   accepterName: string;
   accepterEmail: string;
   role: string;
@@ -1478,6 +1479,9 @@ export async function sendInvitationAcceptedEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.invitation_accepted,
       to: params.to,
+      subjectMemberId: params.accepterUserId,
+      subjectMemberEmail: params.accepterEmail,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`${params.accepterName} accepted your WorkforceAP invitation`),
       html,
     });
