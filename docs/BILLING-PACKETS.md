@@ -147,9 +147,13 @@ that automatically emails to counselor and the student."
     or is claimed, ambiguous or needs_reconciliation, unless that exact row is
     in the attempt's `acknowledgedDuplicates`. Those are frozen when an
     "Email again" is confirmed: row ids, who confirmed, and when. If the locked
-    acceptance write fails, only the write-once provider-result columns are
-    written (never the status). A best-effort locked settle follows at once.
-    If that also fails, `reconcileProviderResults` repairs it. It runs under
+    acceptance write fails, the write-once provider-result columns are persisted
+    first. A narrow compare-and-set then flags a contradictory `not delivered`
+    or rejected row as `needs_reconciliation`; it never turns an uncertain copy
+    into a sendable one. A best-effort locked settle follows at once. If that
+    also fails, the packet's attempt/status compare-and-set can still finalize
+    a delivered current attempt without changing the send row. The next
+    `reconcileProviderResults` repairs any remaining row state. It runs under
     the lock at the start of every locked operation (attempt start, claim,
     reconcile, supersede, completion), and best-effort on the admin list and
     page reads. Accepted rows become `sent`; a recorded "not delivered" or a

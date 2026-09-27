@@ -694,13 +694,16 @@ export async function recordProviderAcceptance(
   } catch (err) {
     // Never lose an acceptance: if the locked write fails (e.g. a transaction
     // timeout), persist it without the lock. Still write-once and CAS-guarded.
-    // Fallback (e.g. lock wait or transaction timeout): persist ONLY the
-    // write-once provider-result columns, never the status, so an unlocked
-    // write cannot race attempt start or a claim. The claim check reads these
-    // columns directly, and the next locked operation (claim) or a read
-    // (nextSendAction) settles the status from them.
-    console.error('[billing-packets send] locked acceptance write failed; recording the provider result only', { sendId, err });
+    // The provider-result columns are authoritative at the next claim. A
+    // narrow terminal -> needs_reconciliation CAS may also flag a contradicted
+    // operator outcome: it only removes sendability and never changes a packet.
+    console.error('[billing-packets send] locked acceptance write failed; recording the provider result via fallback', { sendId, err });
     await prisma.trainingBillingPacketSend.updateMany({ where: { id: sendId, providerResultAt: null }, data: recorded });
+    try {
+      await flagContradictoryAcceptance(prisma, sendId);
+    } catch (flagErr) {
+      console.error('[billing-packets send] could not flag contradictory provider result; left for the next locked repair', { sendId, flagErr });
+    }
     // Best effort: settle and finalize now under the lock (same order as
     // every other locked operation). If this fails too, the next locked
     // operation or admin read repairs it (reconcileProviderResults).
@@ -714,12 +717,43 @@ export async function recordProviderAcceptance(
       );
     } catch (settleErr) {
       console.error('[billing-packets send] best-effort settle after fallback failed; left for the next locked repair', { sendId, settleErr });
+      // The row's acceptance is already durable. Packet completion has its
+      // own attempt/status compare-and-set, so it is safe to finalize without
+      // changing the send row outside the packet lock. A later locked repair
+      // still settles the row status (including a contradictory outcome).
+      try {
+        await finalizeAfterAcceptance(prisma, sendId);
+      } catch (finalizeErr) {
+        console.error('[billing-packets send] packet finalization after fallback failed; left for the next locked repair', { sendId, finalizeErr });
+      }
     }
   }
 }
 
 /** Prefix of the warning set when a provider acceptance contradicts a recorded outcome; such a row stays flagged for an operator. */
 export const CONTRADICTION_NOTE = 'The provider reported this copy delivered AFTER it was recorded as';
+
+type ContradictedStatus = 'reconciled_not_delivered' | 'rejected_definite';
+
+function contradictionMessage(status: ContradictedStatus): string {
+  return `${CONTRADICTION_NOTE} ${status === 'rejected_definite' ? 'rejected' : 'not delivered'}. Check for a duplicate email.`;
+}
+
+/**
+ * The only unlocked status repair allowed after the provider-result fallback:
+ * a conditional transition from a terminal negative outcome to an unsettled
+ * warning. It cannot unlock a new send or overwrite a later reconciliation.
+ * A superseded packet remains superseded, and its replacement checks this row.
+ */
+async function flagContradictoryAcceptance(db: Pick<Prisma.TransactionClient, 'trainingBillingPacketSend'>, sendId: string): Promise<void> {
+  for (const status of ['reconciled_not_delivered', 'rejected_definite'] as const) {
+    const { count } = await db.trainingBillingPacketSend.updateMany({
+      where: { id: sendId, status, providerResultAt: { not: null } },
+      data: { status: 'needs_reconciliation', claimToken: randomUUID(), lastError: contradictionMessage(status) },
+    });
+    if (count === 1) return;
+  }
+}
 
 function isContradiction(row: Pick<TrainingBillingPacketSend, 'lastError' | 'reconciledAt'>): boolean {
   return (row.lastError ?? '').startsWith(CONTRADICTION_NOTE) || row.reconciledAt != null;
@@ -816,7 +850,7 @@ export async function applyRecordedProviderResult(
       data = {
         status: 'needs_reconciliation',
         claimToken: randomUUID(),
-        lastError: `${CONTRADICTION_NOTE} ${row.status === 'rejected_definite' ? 'rejected' : 'not delivered'}. Check for a duplicate email.`,
+        lastError: contradictionMessage(row.status),
       };
     }
     if (!data) return row;

@@ -1887,13 +1887,13 @@ describe('A new attempt never sends over an unacknowledged earlier copy', () => 
     expect(db.sends.find((r) => r.attemptNo === 2)).toMatchObject({ status: 'needs_reconciliation', lastError: expect.stringMatching(/earlier attempt/) });
   });
 
-  it('the same through the unlocked fallback (provider result only, no status): still 409, still one provider call', async () => {
+  it('the same through the unlocked fallback: a contradicted row is flagged and no second provider call occurs', async () => {
     const { old, resume } = await attempt2Paused();
     failLockedTransactions(2); // the locked write and the best-effort settle both fail
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     await recordLateProviderResult(old.id, { delivered: true, detail: 'late', messageId: 'm-old' });
     spy.mockRestore();
-    expect(old).toMatchObject({ status: 'reconciled_not_delivered', providerMessageId: 'm-old' }); // status untouched by the fallback
+    expect(old).toMatchObject({ status: 'needs_reconciliation', providerMessageId: 'm-old', lastError: expect.stringMatching(/AFTER it was recorded as not delivered/) });
     const res = await resume();
     expect(res.status).toBe(409);
     expect((await res.json()).code).toBe('prior_copy_accepted');
@@ -2139,19 +2139,34 @@ describe('Fallback acceptance write: best-effort settle and guaranteed repair', 
     expect(db.packets[0]).toMatchObject({ status: 'sent', sentTo: ['member@example.test'] });
   });
 
-  it('both locked paths fail: the next admin read repairs it (sent, sentTo); no second provider call', async () => {
+  it('both locked paths fail: packet finalizes from the durable acceptance and the next admin read settles its row', async () => {
     const { row } = await ambiguousOneRecipient();
     failLockedTransactions(2);
     const spy = quiet();
     await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
     spy.mockRestore();
     expect(row.status).toBe('ambiguous'); // only the provider-result columns were written
-    expect(db.packets[0].status).toBe('signed');
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sendCount: 1, sentTo: ['member@example.test'] });
+    expect(db.packets[0].sentAt).toBeInstanceOf(Date);
     const res = await listAdminPackets(new Request('http://localhost/x'), params(MEMBER));
     const [p] = (await res.json()).packets;
     expect(p).toMatchObject({ status: 'sent', sentTo: ['member@example.test'] });
     expect(row.status).toBe('sent');
     expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('both locked paths fail on a superseded packet: the accepted row is durable but packet completion cannot overwrite supersede', async () => {
+    const { id, row } = await ambiguousOneRecipient();
+    const replacement = await createPacket(req(body({ supersedesPacketId: id, supersedeReason: 'Correction' } as Partial<Body>)), params(MEMBER));
+    expect(replacement.status).toBe(201);
+    const replacementId = (await replacement.json()).packet.id as string;
+    failLockedTransactions(2);
+    const spy = quiet();
+    await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
+    spy.mockRestore();
+    expect(row).toMatchObject({ status: 'ambiguous', providerMessageId: 'm-late' });
+    expect(db.packets.find((p) => p.id === id)).toMatchObject({ status: 'superseded', sentAt: null, sentTo: [] });
+    expect(db.packets.find((p) => p.id === replacementId)).toMatchObject({ status: 'signed', sentAt: null, sentTo: [] });
   });
 
   it('both locked paths fail: the next locked operation (a send) repairs it instead of resending', async () => {
@@ -2174,7 +2189,8 @@ describe('Fallback acceptance write: best-effort settle and guaranteed repair', 
     const spy = quiet();
     await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
     spy.mockRestore();
-    expect(row.status).toBe('reconciled_not_delivered');
+    expect(row).toMatchObject({ status: 'needs_reconciliation', lastError: expect.stringMatching(/AFTER it was recorded as not delivered/) });
+    expect(db.packets[0]).toMatchObject({ status: 'sent', sentTo: ['member@example.test'] });
     // Read path: the contradiction shows, and the next action is reconciliation.
     const listed = (await (await listAdminPackets(new Request('http://localhost/x'), params(MEMBER))).json()).packets[0];
     expect(listed.sendState.nextAction).toBe('reconcile');
@@ -2203,7 +2219,7 @@ describe('Fallback acceptance write: best-effort settle and guaranteed repair', 
     const spy = quiet();
     await recordLateProviderResult(row.id, { delivered: true, detail: 'late', messageId: 'm-late' });
     spy.mockRestore();
-    expect(row).toMatchObject({ status: 'reconciled_not_delivered', providerMessageId: 'm-late' });
+    expect(row).toMatchObject({ status: 'needs_reconciliation', providerMessageId: 'm-late' });
     expect(row.providerResultAt).toBeInstanceOf(Date);
 
     const blocked = await send(replacementId);
