@@ -63,15 +63,16 @@ async function _POST() {
         skipped += 1;
         continue;
       }
+      let deletionOwner: string | null = null;
       try {
         const authAdmin = getSupabaseAdmin();
         // Restore uses the same lifecycle operation. A stale batch row must
         // never disable a login that has since been restored.
         const deletion = await beginBillingDeletion(u.id, orgId, undefined, u.deletedAt);
         if (!deletion.ok) { skipped += 1; continue; }
+        deletionOwner = deletion.operationId;
         const disabled = await disableAuthUserForSoftDelete(authAdmin, u.id, originalEmail);
         if (!disabled.ok) {
-          await releaseBillingDeletion(u.id, deletion.operationId);
           skipped += 1;
           continue;
         }
@@ -83,11 +84,18 @@ async function _POST() {
         );
         if (changed.count === 1) {
           await completeBillingDeletion(u.id, deletion.operationId);
+          deletionOwner = null;
           freed += 1;
         } else skipped += 1;
       } catch (err) {
         skipped += 1;
         captureApiError(err, { route: 'admin/users/free-deleted-emails', extra: { userId: u.id } });
+      } finally {
+        if (deletionOwner) {
+          await releaseBillingDeletion(u.id, deletionOwner).catch((error) => {
+            captureApiError(error, { route: 'admin/users/free-deleted-emails/release', extra: { userId: u.id } });
+          });
+        }
       }
     }
   

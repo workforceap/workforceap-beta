@@ -18,9 +18,9 @@ vi.mock('@/lib/db/prisma', () => {
   return { prisma: { ...tx, $transaction: async (callback: (client: typeof tx) => unknown) => callback(tx) } };
 });
 
-import { beginBillingDeletion, BILLING_DELETION_TAKEOVER_AFTER_MS } from '@/lib/billing/erasureGuard';
+import { beginBillingDeletion } from '@/lib/billing/erasureGuard';
 
-describe('abandoned billing deletion recovery', () => {
+describe('billing deletion owner fails closed', () => {
   const memberId = '123e4567-e89b-12d3-a456-426614174000';
   const organizationId = '223e4567-e89b-12d3-a456-426614174000';
   const oldOwner = '323e4567-e89b-12d3-a456-426614174000';
@@ -29,12 +29,12 @@ describe('abandoned billing deletion recovery', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.useFakeTimers();
-    vi.setSystemTime(new Date(started.getTime() + BILLING_DELETION_TAKEOVER_AFTER_MS + 1000));
+    vi.setSystemTime(new Date('2028-09-26T01:00:00Z'));
     queryRaw.mockResolvedValue([]);
     updateMany.mockResolvedValue({ count: 1 });
   });
 
-  it('fences an abandoned owner after post-Auth completion failed, then retries under a new token', async () => {
+  it('never steals an old deletion token even years after its last update', async () => {
     findFirst.mockResolvedValue({
       billingDeletionPendingAt: started,
       billingDeletionOperationId: oldOwner,
@@ -42,29 +42,17 @@ describe('abandoned billing deletion recovery', () => {
       updatedAt: started,
     });
 
-    const result = await beginBillingDeletion(memberId, organizationId);
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.operationId).not.toBe(oldOwner);
-    expect(result.pendingAt).toEqual(started);
-    expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: expect.objectContaining({
-        id: memberId,
-        organizationId,
-        billingDeletionOperationId: oldOwner,
-        billingDeletionPendingAt: started,
-        updatedAt: started,
-      }),
-    }));
+    expect(await beginBillingDeletion(memberId, organizationId)).toEqual({ ok: false, reason: 'in_progress' });
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(queryRaw).not.toHaveBeenCalled();
   });
 
-  it('does not take over an active owner or a restore owner', async () => {
+  it('does not mistake a stale identity edit or restore hold for a deletion', async () => {
     findFirst.mockResolvedValueOnce({
       billingDeletionPendingAt: started,
       billingDeletionOperationId: oldOwner,
       billingDeletionCompletedAt: null,
-      updatedAt: new Date(),
+      updatedAt: started,
     }).mockResolvedValueOnce({
       billingDeletionPendingAt: started,
       billingDeletionOperationId: oldOwner,
@@ -77,12 +65,25 @@ describe('abandoned billing deletion recovery', () => {
     expect(updateMany).not.toHaveBeenCalled();
   });
 
-  it('reports a lost compare-and-swap rather than stealing a newer owner', async () => {
+  it('lets a later explicit retry claim only a released token', async () => {
     findFirst.mockResolvedValue({
       billingDeletionPendingAt: started,
-      billingDeletionOperationId: oldOwner,
+      billingDeletionOperationId: null,
       billingDeletionCompletedAt: null,
       updatedAt: started,
+    });
+    const result = await beginBillingDeletion(memberId, organizationId);
+    expect(result.ok).toBe(true);
+    expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: memberId, organizationId, billingDeletionOperationId: null }),
+    }));
+  });
+
+  it('reports a lost compare-and-swap instead of replacing another owner', async () => {
+    findFirst.mockResolvedValue({
+      billingDeletionPendingAt: started,
+      billingDeletionOperationId: null,
+      billingDeletionCompletedAt: null,
     });
     updateMany.mockResolvedValue({ count: 0 });
     expect(await beginBillingDeletion(memberId, organizationId)).toEqual({ ok: false, reason: 'raced' });

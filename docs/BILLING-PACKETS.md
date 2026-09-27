@@ -236,12 +236,46 @@ that automatically emails to counselor and the student."
 - A returned Storage or Auth failure releases the operation token while
   leaving the pending marker in place. Retry can acquire a new token and
   repeat cleanup. A process crash leaves the token held and requires an
-  operator to verify external cleanup before clearing it. Soft-delete routes
+  operator to verify external cleanup before clearing it. There is no timed
+  takeover: an old request can resume after any timeout, and the same token
+  column is also used by Auth identity edits and restores. Soft-delete routes
   set `billing_deletion_completed_at` only after account and Auth cleanup;
   restore requires that completion version and compares it again when
   activating the app row. Restore claims its own operation token before
   changing Auth, so a concurrent erase cannot cross that provider boundary.
   Unknown Auth or failed app activation leaves the token held for reconciliation.
+
+### Reconciling a crash-held lifecycle token
+
+Treat a non-null `billing_deletion_operation_id` as an active owner regardless
+of its age. Only a named operator handling an incident may clear a crash-held
+token. Record the tenant, User ID, exact token, pending/completed/deleted
+timestamps, request or deployment trace, actor, reason and evidence in the
+incident and audit trail. Before any write:
+
+1. Prove the original execution has ended and cannot resume or retry. Check
+   deployment/function logs and any queued job for the exact request and token.
+   If that cannot be proved, leave the token held. A timeout or old `updated_at`
+   is insufficient.
+2. Identify whether the token belongs to deletion, an Auth identity edit, or
+   restore. The column alone does not distinguish them. Verify the exact Auth
+   User ID through Supabase Admin; a 5xx/timeout is unknown, not absence. Check
+   Storage cleanup, app tombstone, packet send state and any pending provider
+   operation. Preserve the hold while any external outcome is uncertain.
+3. Decide and record the route-specific repair. For deletion, keep
+   `billing_deletion_pending_at` and the deleted tombstone in place; never
+   reactivate an erased account or create a replacement Auth identity. Resolve
+   an identity-edit or restore hold using that workflow's Auth/app comparison,
+   not by treating it as a deletion.
+4. In one interactive database transaction, acquire the member lifecycle
+   advisory lock, re-read the same tenant/User/token and verified state, write
+   the audit receipt, and clear **only** that exact operation token with a
+   compare-and-set. Leave pending/completed timestamps unchanged. If the
+   compare-and-set affects anything other than one row, stop and re-investigate.
+   Read back the row and audit receipt before retrying the original operation.
+
+Do not run a bulk age-based token reset or clear a hold merely to make a
+deletion or restore endpoint succeed.
 - Admin name, email and role edits take a temporary lifecycle hold before
   touching Supabase Auth or the app row. Unresolved sends block the edit;
   new claims are blocked until both identity stores are updated. If the Auth result

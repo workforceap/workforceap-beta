@@ -10,15 +10,19 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { ADMIN_USER_ROLES, ensureProfileRole, syncManagedUserRoles } from '@/lib/admin/adminUserProvisioning';
 import { userAuthDeleteFailedResponse } from '@/lib/admin/userDeleteResponse';
 import { buildDeletedEmail, isDeletedEmailMarker, parseDeletedEmail } from '../_deletedEmail';
+import { isErasedEmailMarker } from '@/lib/member/deletedEmail';
 import { disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
 import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, beginBillingIdentityEdit, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
-import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
+import { logAuditEvent } from '@/lib/audit/log';
+
+async function _DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let deletionOwner: { id: string; operationId: string } | null = null;
   try {
     const actor = await getUser();
     if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -39,22 +43,12 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
       }),
     );
     if (!target) return NextResponse.json({ error: 'User not found.' }, { status: 404 });
-    const originalEmail = parseDeletedEmail(target.email) ?? target.email;
-    if (isDeletedEmailMarker(target.email) && !parseDeletedEmail(target.email)) return NextResponse.json({ error: 'The original email cannot be recovered from this deleted account.' }, { status: 409 });
   
     try {
       // See app/api/admin/members/[id]/delete/route.ts — same pattern.
       // Rewrite the email so the @unique constraint doesn't block re-signup.
       const now = new Date();
-      const newEmail = target.deletedAt ? target.email : buildDeletedEmail(id, now.getTime(), target.email);
-      if (!newEmail) {
-        return NextResponse.json(
-          { error: 'Cannot delete user because the email is too long to preserve for restore.' },
-          { status: 400 },
-        );
-      }
-
-      const billingDeletion = await beginBillingDeletion(id, orgId);
+      const billingDeletion = await beginBillingDeletion(id, orgId, undefined, target.deletedAt ?? undefined);
       if (!billingDeletion.ok && billingDeletion.reason === 'transaction_unavailable') return NextResponse.json({
         error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
       }, { status: 503 });
@@ -62,30 +56,48 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
     error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
     code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
       }, { status: 409 });
+      deletionOwner = { id, operationId: billingDeletion.operationId };
 
-      await withTenantScope(orgId, (db) =>
+      // The first lookup is not an update preimage. Read under the committed
+      // owner, then compare-and-set the exact account before touching Auth.
+      const current = await withTenantScope(orgId, (db) => db.user.findFirst({
+        where: { id, billingDeletionOperationId: billingDeletion.operationId },
+        select: { id: true, email: true, deletedAt: true },
+      }));
+      if (!current || current.email !== target.email || current.deletedAt?.getTime() !== target.deletedAt?.getTime()) {
+        return NextResponse.json({ error: 'The account changed during deletion. Reload and try again.' }, { status: 409 });
+      }
+      const originalEmail = parseDeletedEmail(current.email) ?? current.email;
+      if (isErasedEmailMarker(current.email, id) || (isDeletedEmailMarker(current.email) && !parseDeletedEmail(current.email))) {
+        return NextResponse.json({ error: 'The original email cannot be recovered from this deleted account.' }, { status: 409 });
+      }
+      const newEmail = current.deletedAt ? current.email : buildDeletedEmail(id, now.getTime(), current.email);
+      if (!newEmail) return NextResponse.json({ error: 'Cannot delete user because the email is too long to preserve for restore.' }, { status: 400 });
+
+      const changed = await withTenantScope(orgId, (db) =>
         db.user.updateMany({
-          where: { id },
-          data: { deletedAt: now, email: newEmail },
+          where: { id, email: current.email, deletedAt: current.deletedAt, billingDeletionOperationId: billingDeletion.operationId },
+          data: { deletedAt: current.deletedAt ?? now, email: newEmail },
         }),
       );
+      if (changed.count !== 1) return NextResponse.json({ error: 'The account changed during deletion. Reconciliation is required.', reconciliationRequired: true }, { status: 409 });
   
       // Soft delete = lock the login, never destroy it: restore must be able
       // to bring the account back (9/2/26 ops report).
       const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, originalEmail);
       if (!disabled.ok) {
         console.error('[admin/users/:id DELETE] Supabase disable error:', disabled.message);
-        await releaseBillingDeletion(id, billingDeletion.operationId);
         return userAuthDeleteFailedResponse();
       }
       await completeBillingDeletion(id, billingDeletion.operationId);
+      deletionOwner = null;
   
       await auditLog({
         actorUserId: actor.id,
         action: 'admin_user_delete',
         targetType: 'user',
         targetId: id,
-        metadata: { email: target.email },
+        metadata: { email: current.email },
       });
       logAuditEvent({ user: { id: actor.id, role: 'admin' }, verb: 'deleted', object: { type: 'User', id }, result: { success: true } }).catch(() => {});
       return NextResponse.json({ ok: true });
@@ -96,6 +108,12 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
   } catch (error) {
     console.error('/admin/users/[id]:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    if (deletionOwner) {
+      await releaseBillingDeletion(deletionOwner.id, deletionOwner.operationId).catch((error) => {
+        console.error('[admin/users/:id DELETE] operation release requires reconciliation:', error);
+      });
+    }
   }
 }
 export const DELETE = withApiGuc(_DELETE);

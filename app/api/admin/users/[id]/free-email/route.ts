@@ -30,6 +30,7 @@ async function _POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  let deletionOwner: { id: string; operationId: string } | null = null;
   try {
   const actor = await getUser();
   if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -68,12 +69,12 @@ async function _POST(
   const authAdmin = getSupabaseAdmin();
   const deletion = await beginBillingDeletion(id, orgId, undefined, target.deletedAt);
   if (!deletion.ok) return NextResponse.json({ error: 'The account is being restored, deleted, or has an unresolved billing delivery. Reload and try again.' }, { status: 409 });
+  deletionOwner = { id, operationId: deletion.operationId };
 
   const disabled = await disableAuthUserForSoftDelete(authAdmin, id, originalEmail);
   if (!disabled.ok) {
     // Keep the pending barrier after a returned Auth failure. The provider
     // outcome may be ambiguous, so restore requires reconciliation first.
-    await releaseBillingDeletion(id, deletion.operationId);
     return NextResponse.json({ error: 'The sign-in email could not be released. Retry or contact support.', reconciliationRequired: true }, { status: 502 });
   }
   // Also compare-and-set an already-freed row: a no-op email is not proof the
@@ -86,6 +87,7 @@ async function _POST(
   );
   if (changed.count !== 1) return NextResponse.json({ error: 'The account changed during this request. Reconciliation is required.', reconciliationRequired: true }, { status: 409 });
   await completeBillingDeletion(id, deletion.operationId);
+  deletionOwner = null;
 
   auditLog({
     actorUserId: actor.id,
@@ -108,6 +110,12 @@ async function _POST(
   } catch (error) {
     console.error('/admin/users/[id]/free-email error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    if (deletionOwner) {
+      await releaseBillingDeletion(deletionOwner.id, deletionOwner.operationId).catch((error) => {
+        console.error('[admin/users/:id/free-email] operation release requires reconciliation:', error);
+      });
+    }
   }
 }
 export const POST = withApiGuc(_POST);
