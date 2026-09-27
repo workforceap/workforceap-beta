@@ -5,6 +5,7 @@ import type { MilestoneCascade } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { claudeChat } from '@/lib/ai/anthropicChat';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 import { buildDraftPrompt } from './buildDraftPrompt';
 import { parseDraftResponse } from './parseDraftResponse';
@@ -78,7 +79,12 @@ export async function draftCascade(
   const user = await prisma.user
     .findUnique({
       where: { id: cascade.userId },
-      select: { fullName: true },
+      select: {
+        fullName: true,
+        deletedAt: true,
+        billingDeletionPendingAt: true,
+        billingDeletionOperationId: true,
+      },
     })
     .catch(() => null);
 
@@ -88,6 +94,15 @@ export async function draftCascade(
       cascadeId: cascade.id,
       reason: 'user not found (deleted between detection and drafting)',
       retryable: false,
+    };
+  }
+  if (user.deletedAt || user.billingDeletionPendingAt || user.billingDeletionOperationId) {
+    return {
+      ok: false,
+      cascadeId: cascade.id,
+      reason: 'member account is not active',
+      // An upload or identity-edit claim can be brief; deletion is terminal.
+      retryable: !user.deletedAt && !user.billingDeletionPendingAt,
     };
   }
 
@@ -170,7 +185,9 @@ export async function draftCascade(
 
   // 6. Atomic transition: only update if still pending_draft (concurrency
   //    guard — if another tick beat us to it, we silently no-op).
-  const updateResult = await prisma.milestoneCascade.updateMany({
+  let updateResult;
+  try {
+    updateResult = await withActiveMemberWrite(cascade.userId, (tx) => tx.milestoneCascade.updateMany({
     where: { id: cascade.id, status: 'pending_draft' },
     data: {
       status: 'awaiting_approval',
@@ -180,7 +197,20 @@ export async function draftCascade(
       draftPromptVersion: promptVersion,
       draftedAt: new Date(),
     },
-  });
+    }));
+  } catch (error) {
+    if (!(error instanceof MemberLifecycleWriteError)) throw error;
+    const current = await prisma.user.findUnique({
+      where: { id: cascade.userId },
+      select: { deletedAt: true, billingDeletionPendingAt: true },
+    });
+    return {
+      ok: false,
+      cascadeId: cascade.id,
+      reason: 'member account is not active',
+      retryable: !!current && !current.deletedAt && !current.billingDeletionPendingAt,
+    };
+  }
 
   if (updateResult.count === 0) {
     // Lost the race — another tick (or admin action) moved the row. Treat as

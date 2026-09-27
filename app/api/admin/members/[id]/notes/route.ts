@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -76,10 +77,18 @@ export const GET = withApiGuc(_GET);async function _POST(
     );
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
 
-    const note = await prisma.$transaction((tx) => tx.counselorNote.create({
-      data: { memberId: id, authorId: user.id, content: parsed.data.content },
-      include: { author: { select: { fullName: true, email: true } } },
-    }));
+    const note = await withActiveMemberWrite(id, async (tx) => {
+      // The tenant lookup above can become stale before the final write.
+      const currentMember = await tx.user.findFirst({
+        where: { id, organizationId: orgId }, select: { id: true },
+      });
+      if (!currentMember) return null;
+      return tx.counselorNote.create({
+        data: { memberId: id, authorId: user.id, content: parsed.data.content },
+        include: { author: { select: { fullName: true, email: true } } },
+      });
+    });
+    if (!note) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     void auditLog({
       actorUserId: user.id,
       action: 'admin_counselor_note_create',
@@ -95,6 +104,9 @@ export const GET = withApiGuc(_GET);async function _POST(
     }).catch(() => {});
     return NextResponse.json(note, { status: 201 });
   } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     captureApiError(error, { route: 'admin/members/[id]/notes POST' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

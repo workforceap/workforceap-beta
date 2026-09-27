@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
-import { trackEvent } from '@/lib/events/track';
+import { persistEvent } from '@/lib/events/track';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 import { isExcludedPublicEmployerName, isExcludedPublicJobTitle } from '@/lib/jobs/publicJobFilters';
 import { computeReadinessScore, getScoreBreakdowns, sumReadinessPoints } from '@/lib/readiness/score';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
@@ -330,6 +331,20 @@ export function getWeekBounds(date: Date): { start: Date; end: Date } {
   return { start, end };
 }
 
+async function trackGeneratedRecap(userId: string, recapId: string): Promise<void> {
+  try {
+    // Analytics stays best-effort, but its member-linked row must not land
+    // after an account erasure starts.
+    await withActiveMemberWrite(userId, (tx) => persistEvent({
+      userId, eventName: 'weekly_recap_generated', entityType: 'weekly_recap', entityId: recapId,
+    }, tx));
+  } catch (error) {
+    if (!(error instanceof MemberLifecycleWriteError)) {
+      console.error('[generateWeeklyRecap] event write failed for', userId, error);
+    }
+  }
+}
+
 export async function generateWeeklyRecap(userId: string, weekStart: Date, weekEnd?: Date) {
   const end = weekEnd ?? (() => {
     const e = new Date(weekStart);
@@ -523,7 +538,7 @@ export async function generateWeeklyRecap(userId: string, weekStart: Date, weekE
     nextWeekPlan,
   });
 
-  const recapRecord = await prisma.weeklyRecap.upsert({
+  const recapRecord = await withActiveMemberWrite(userId, (tx) => tx.weeklyRecap.upsert({
     where: { userId_weekStartDate: { userId, weekStartDate: weekStart } },
     create: {
       userId,
@@ -539,9 +554,13 @@ export async function generateWeeklyRecap(userId: string, weekStart: Date, weekE
       goalsSnapshotJson: recapData.goalsSnapshot,
       generatedAt: new Date(),
     },
+  })).catch((error: unknown) => {
+    if (error instanceof MemberLifecycleWriteError) return null;
+    throw error;
   });
+  if (!recapRecord) return null;
 
-  await trackEvent({ userId, eventName: 'weekly_recap_generated', entityType: 'weekly_recap', entityId: recapRecord.id });
+  await trackGeneratedRecap(userId, recapRecord.id);
   return recapRecord;
 }
 
@@ -799,12 +818,13 @@ export async function generateWeeklyRecaps(
   // 5. Bulk upsert weeklyRecap records (Prisma lacks native bulk upsert;
   //    we parallelize with a small concurrency cap to avoid connection pool exhaustion)
   const UPSERT_CONCURRENCY = 8;
+  const persistedUserIds = new Set<string>();
   for (let i = 0; i < results.length; i += UPSERT_CONCURRENCY) {
     const chunk = results.slice(i, i + UPSERT_CONCURRENCY);
     await Promise.all(
       chunk.map(async ({ userId, recapData, score }) => {
         try {
-          const record = await prisma.weeklyRecap.upsert({
+          const record = await withActiveMemberWrite(userId, (tx) => tx.weeklyRecap.upsert({
             where: { userId_weekStartDate: { userId, weekStartDate: weekStart } },
             create: {
               userId,
@@ -820,21 +840,21 @@ export async function generateWeeklyRecaps(
               goalsSnapshotJson: recapData.goalsSnapshot as RecapJsonShape['goalsSnapshot'],
               generatedAt: new Date(),
             },
-          });
-          await trackEvent({
-            userId,
-            eventName: 'weekly_recap_generated',
-            entityType: 'weekly_recap',
-            entityId: record.id,
-          });
+          }));
+          persistedUserIds.add(userId);
+          await trackGeneratedRecap(userId, record.id);
         } catch (e) {
-          console.error('[generateWeeklyRecaps] upsert failed for', userId, e);
+          if (!(e instanceof MemberLifecycleWriteError)) {
+            console.error('[generateWeeklyRecaps] upsert failed for', userId, e);
+          }
         }
       })
     );
   }
 
-  return results;
+  // A member can be erased after the batch read. Only return recaps actually
+  // persisted for an active account so the cron cannot send a stale draft.
+  return results.filter((result) => persistedUserIds.has(result.userId));
 }
 
 function groupBy<T extends Record<string, unknown>>(arr: T[], key: keyof T): Map<string, T[]> {

@@ -1,12 +1,13 @@
 import { prisma } from '../db/prisma';
 import { generateResumeBullet } from '../ai/proactiveResumeGenerator';
 import { findBestEmployerMatch } from '../ai/proactiveJobMatcher';
-import { recordWorkflowDiagnostic } from '../diagnostics';
+import { recordWorkflowDiagnostic, type WorkflowDiagnosticParams } from '../diagnostics';
 import { createNotification } from '../notifications/create';
 import { persistEvent } from '../events/track';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '../member/activeWrite';
 
 type LearningCompletionResult = {
-  actionId: string;
+  actionId: string | null;
   created: boolean;
   duplicatedRecentAction: boolean;
   matchedJobId: string | null;
@@ -16,6 +17,21 @@ type LearningCompletionResult = {
 const DUPLICATE_LOOKBACK_MS = 1000 * 60 * 60 * 24 * 7;
 export const CAREER_OS_WORKFLOW = 'career_os_learning_completion';
 
+const inactiveLearningCompletion = (): LearningCompletionResult => ({
+  actionId: null, created: false, duplicatedRecentAction: false,
+  matchedJobId: null, resumeBullet: '',
+});
+
+async function recordActiveMemberDiagnostic(memberId: string, params: WorkflowDiagnosticParams): Promise<boolean> {
+  try {
+    await withActiveMemberWrite(memberId, (tx) => recordWorkflowDiagnostic(params, tx));
+    return true;
+  } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) return false;
+    throw error;
+  }
+}
+
 function normalizeCourseName(courseName: string) {
   return courseName.trim().replace(/\s+/g, ' ');
 }
@@ -24,7 +40,7 @@ export async function handleLearningCompletion(memberId: string, courseName: str
   const normalizedCourseName = normalizeCourseName(courseName);
   const startedAt = Date.now();
 
-  await recordWorkflowDiagnostic({
+  const active = await recordActiveMemberDiagnostic(memberId, {
     workflow: CAREER_OS_WORKFLOW,
     status: 'started',
     entityType: 'user',
@@ -33,27 +49,9 @@ export async function handleLearningCompletion(memberId: string, courseName: str
     method: 'webhook',
     metadata: { courseName: normalizedCourseName },
   });
+  if (!active) return inactiveLearningCompletion();
 
   try {
-    const member = await prisma.user.findUnique({
-      where: { id: memberId },
-      select: { id: true, fullName: true },
-    });
-
-    if (!member) {
-      await recordWorkflowDiagnostic({
-        workflow: CAREER_OS_WORKFLOW,
-        status: 'error',
-        entityType: 'user',
-        entityId: memberId,
-        summary: 'Learning completion received for missing member',
-        method: 'webhook',
-        failureReason: 'member_not_found',
-        metadata: { courseName: normalizedCourseName },
-      });
-      throw new Error(`Member not found: ${memberId}`);
-    }
-
     const duplicateCutoff = new Date(Date.now() - DUPLICATE_LOOKBACK_MS);
     const existingRecentAction = await prisma.memberNextBestAction.findFirst({
       where: {
@@ -82,31 +80,33 @@ export async function handleLearningCompletion(memberId: string, courseName: str
     }
 
     if (existingRecentAction) {
-      await persistEvent({
-        userId: memberId,
-        eventName: 'career_os.learning_completion_duplicate',
-        entityType: 'MemberNextBestAction',
-        entityId: existingRecentAction.id,
-        sourcePage: '/api/webhooks/learning-completion',
-        metadata: {
-          courseName: normalizedCourseName,
-          resumeBullet: bullet,
-          matchedJobId: jobMatch?.id ?? null,
-        },
-      }, prisma);
+      await withActiveMemberWrite(memberId, async (tx) => {
+        await persistEvent({
+          userId: memberId,
+          eventName: 'career_os.learning_completion_duplicate',
+          entityType: 'MemberNextBestAction',
+          entityId: existingRecentAction.id,
+          sourcePage: '/api/webhooks/learning-completion',
+          metadata: {
+            courseName: normalizedCourseName,
+            resumeBullet: bullet,
+            matchedJobId: jobMatch?.id ?? null,
+          },
+        }, tx);
 
-      await recordWorkflowDiagnostic({
-        workflow: CAREER_OS_WORKFLOW,
-        status: 'inspection',
-        entityType: 'MemberNextBestAction',
-        entityId: existingRecentAction.id,
-        summary: 'Skipped duplicate next-best action for recent learning completion',
-        method: 'dedupe_recent_pending_action',
-        metadata: {
-          memberId,
-          courseName: normalizedCourseName,
-          matchedJobId: jobMatch?.id ?? null,
-        },
+        await recordWorkflowDiagnostic({
+          workflow: CAREER_OS_WORKFLOW,
+          status: 'inspection',
+          entityType: 'MemberNextBestAction',
+          entityId: existingRecentAction.id,
+          summary: 'Skipped duplicate next-best action for recent learning completion',
+          method: 'dedupe_recent_pending_action',
+          metadata: {
+            memberId,
+            courseName: normalizedCourseName,
+            matchedJobId: jobMatch?.id ?? null,
+          },
+        }, tx);
       });
 
       return {
@@ -118,7 +118,7 @@ export async function handleLearningCompletion(memberId: string, courseName: str
       };
     }
 
-    const action = await prisma.$transaction(async (tx) => {
+    const action = await withActiveMemberWrite(memberId, async (tx) => {
       await tx.memberNextBestAction.updateMany({
         where: {
           memberId,
@@ -156,25 +156,23 @@ export async function handleLearningCompletion(memberId: string, courseName: str
         },
       }, tx);
 
-      return createdAction;
-    });
+      await recordWorkflowDiagnostic({
+        workflow: CAREER_OS_WORKFLOW,
+        status: 'success',
+        entityType: 'MemberNextBestAction',
+        entityId: createdAction.id,
+        summary: jobMatch ? 'Created matched interview action' : 'Created resume follow-up action',
+        provider: jobMatch ? 'job_matcher' : 'resume_only',
+        method: 'webhook',
+        metadata: {
+          memberId,
+          courseName: normalizedCourseName,
+          matchedJobId: jobMatch?.id ?? null,
+          durationMs: Date.now() - startedAt,
+        },
+      }, tx);
 
-    await recordWorkflowDiagnostic({
-      workflow: CAREER_OS_WORKFLOW,
-      status: 'success',
-      entityType: 'MemberNextBestAction',
-      entityId: action.id,
-      summary: jobMatch
-        ? `Created matched interview action for ${member.fullName ?? member.id}`
-        : `Created resume follow-up action for ${member.fullName ?? member.id}`,
-      provider: jobMatch ? 'job_matcher' : 'resume_only',
-      method: 'webhook',
-      metadata: {
-        memberId,
-        courseName: normalizedCourseName,
-        matchedJobId: jobMatch?.id ?? null,
-        durationMs: Date.now() - startedAt,
-      },
+      return createdAction;
     });
 
     return {
@@ -185,7 +183,8 @@ export async function handleLearningCompletion(memberId: string, courseName: str
       resumeBullet: bullet,
     };
   } catch (error) {
-    await recordWorkflowDiagnostic({
+    if (error instanceof MemberLifecycleWriteError) return inactiveLearningCompletion();
+    const stillActive = await recordActiveMemberDiagnostic(memberId, {
       workflow: CAREER_OS_WORKFLOW,
       status: 'error',
       entityType: 'user',
@@ -195,6 +194,7 @@ export async function handleLearningCompletion(memberId: string, courseName: str
       failureReason: error instanceof Error ? error.message : 'unknown_error',
       metadata: { courseName: normalizedCourseName },
     });
+    if (!stillActive) return inactiveLearningCompletion();
     throw error;
   }
 }
@@ -235,7 +235,7 @@ export async function handleProgramCompletion(
   if (already) return { created: false, actionId: null };
 
   try {
-    const action = await prisma.$transaction(async (tx) => {
+    const action = await withActiveMemberWrite(memberId, async (tx) => {
       // The job-ready kit supersedes any in-flight "keep learning" nudges —
       // there's nothing left to nudge on the training side once a member
       // graduates.
@@ -266,6 +266,16 @@ export async function handleProgramCompletion(
         metadata: { programSlug, programTitle },
       }, tx);
 
+      await recordWorkflowDiagnostic({
+        workflow: 'career_os_program_completion',
+        status: 'success',
+        entityType: 'MemberNextBestAction',
+        entityId: createdAction.id,
+        summary: `Program completion kit created for ${memberId}`,
+        method: 'course_completion',
+        metadata: { memberId, programSlug, programTitle },
+      }, tx);
+
       return createdAction;
     });
 
@@ -293,19 +303,10 @@ export async function handleProgramCompletion(
       }
     }
 
-    await recordWorkflowDiagnostic({
-      workflow: 'career_os_program_completion',
-      status: 'success',
-      entityType: 'MemberNextBestAction',
-      entityId: action.id,
-      summary: `Program completion kit created for ${memberId}`,
-      method: 'course_completion',
-      metadata: { memberId, programSlug, programTitle },
-    });
-
     return { created: true, actionId: action.id };
   } catch (error) {
-    await recordWorkflowDiagnostic({
+    if (error instanceof MemberLifecycleWriteError) return { created: false, actionId: null };
+    const stillActive = await recordActiveMemberDiagnostic(memberId, {
       workflow: 'career_os_program_completion',
       status: 'error',
       entityType: 'user',
@@ -315,6 +316,7 @@ export async function handleProgramCompletion(
       failureReason: error instanceof Error ? error.message : 'unknown_error',
       metadata: { programSlug, programTitle },
     });
+    if (!stillActive) return { created: false, actionId: null };
     throw error;
   }
 }

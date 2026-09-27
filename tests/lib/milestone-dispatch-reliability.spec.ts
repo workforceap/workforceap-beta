@@ -4,16 +4,21 @@ import { Prisma } from '@prisma/client';
 import type { ActionDraft } from '@/lib/milestoneCascade/types';
 import { CASCADE_DISPATCH_LEASE_MS, CASCADE_IDEMPOTENCY_WINDOW_MS, summarizeCascadeDispatch } from '@/lib/milestoneCascade/dispatchState';
 
-const mocks = vi.hoisted(() => ({ findFirst: vi.fn(), updateMany: vi.fn(), send: vi.fn() }));
+const mocks = vi.hoisted(() => ({ findFirst: vi.fn(), updateMany: vi.fn(), send: vi.fn(), activeWrite: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: async (fn: (db: unknown) => Promise<unknown>) => fn({ milestoneCascade: { findFirst: mocks.findFirst, updateMany: mocks.updateMany } }) } }));
 vi.mock('@/lib/email', () => ({ sendMilestoneCascadeEmail: mocks.send }));
+vi.mock('@/lib/member/activeWrite', () => ({
+  MemberLifecycleWriteError: class MemberLifecycleWriteError extends Error {},
+  withActiveMemberWrite: mocks.activeWrite,
+}));
 import { CascadeDispatchError, dispatchApprovedCascade } from '@/lib/milestoneCascade/sendApprovedCascade';
+import { MemberLifecycleWriteError } from '@/lib/member/activeWrite';
 import type { CascadeDispatchState } from '@/lib/milestoneCascade/dispatchState';
 
 type Row = {
-  id: string; status: string; drafts: Prisma.JsonValue; dispatchState: CascadeDispatchState | null;
+  id: string; userId: string; status: string; drafts: Prisma.JsonValue; dispatchState: CascadeDispatchState | null;
   expiresAt: Date; sentAt: Date | null; approvedByUserId: string | null;
-  user: { email: string; deletedAt: Date | null; organizationId: string };
+  user: { email: string; deletedAt: Date | null; billingDeletionPendingAt: Date | null; billingDeletionOperationId: string | null; organizationId: string };
 };
 const draft = (subject: string): ActionDraft => ({ type: 'celebrate_milestone', channel: 'email', subject, body: `Message ${subject}`, rationale: 'Synthetic milestone', confidence: 1 });
 let row: Row;
@@ -27,7 +32,8 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-09-09T18:00:00Z'));
   vi.resetAllMocks(); writeCount = 0; failWrite = null;
-  row = { id: '00000000-0000-4000-8000-000000000001', status: 'awaiting_approval', drafts: JSON.parse(JSON.stringify(initialDrafts)), dispatchState: null, expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000), sentAt: null, approvedByUserId: null, user: { email: 'member@example.invalid', deletedAt: null, organizationId: 'org-1' } };
+  row = { id: '00000000-0000-4000-8000-000000000001', userId: 'member-1', status: 'awaiting_approval', drafts: JSON.parse(JSON.stringify(initialDrafts)), dispatchState: null, expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000), sentAt: null, approvedByUserId: null, user: { email: 'member@example.invalid', deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, organizationId: 'org-1' } };
+  mocks.activeWrite.mockImplementation(async (_userId, write) => write({ milestoneCascade: { updateMany: mocks.updateMany } }));
   mocks.findFirst.mockImplementation(async () => structuredClone(row));
   mocks.updateMany.mockImplementation(async ({ where, data }) => {
     writeCount++;
@@ -158,7 +164,16 @@ describe('durable milestone dispatch', () => {
     await expect(dispatchApprovedCascade(request())).rejects.toMatchObject({ status: 404 });
     expect(mocks.send).not.toHaveBeenCalled();
     row.user.deletedAt = null; await dispatchApprovedCascade(request());
-    for (const [args] of mocks.updateMany.mock.calls) expect(args.where.AND).toEqual([{ user: { organizationId: 'org-1' } }, { user: { deletedAt: null, email: { equals: 'member@example.invalid', mode: 'insensitive' } } }]);
+    expect(mocks.updateMany.mock.calls[0][0].where.AND).toEqual([{ user: { organizationId: 'org-1' } }, { user: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, email: { equals: 'member@example.invalid', mode: 'insensitive' } } }]);
+    for (const [args] of mocks.updateMany.mock.calls.slice(1)) expect(args.where.AND).toEqual([{ user: { organizationId: 'org-1' } }, { user: { deletedAt: null, email: { equals: 'member@example.invalid', mode: 'insensitive' } } }]);
+  });
+
+  it('does not claim or send when erasure wins after the initial cascade read', async () => {
+    mocks.activeWrite.mockRejectedValueOnce(new MemberLifecycleWriteError());
+    await expect(dispatchApprovedCascade(request())).rejects.toMatchObject({ code: 'member_inactive', status: 409 });
+    expect(mocks.activeWrite).toHaveBeenCalledWith(row.userId, expect.any(Function));
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.send).not.toHaveBeenCalled();
   });
 
   it.each(['deleted', 'email-changed'])('does not send if the recipient changes between the initial read and claim: %s', async (change) => {
