@@ -100,9 +100,21 @@ function wrapWords(text: string, size: number, measure: Measure, maxWidth: numbe
     const candidate = current ? `${current} ${word}` : word;
     if (current && measure(candidate, size) > maxWidth) {
       lines.push(current);
-      current = word;
+      current = '';
+    }
+    if (measure(word, size) > maxWidth) {
+      let chunk = '';
+      for (const char of word) {
+        if (chunk && measure(`${chunk}${char}`, size) > maxWidth) {
+          lines.push(chunk);
+          chunk = char;
+        } else {
+          chunk += char;
+        }
+      }
+      current = chunk;
     } else {
-      current = candidate;
+      current = current ? `${current} ${word}` : word;
     }
   }
   if (current) lines.push(current);
@@ -117,13 +129,13 @@ function wrapWords(text: string, size: number, measure: Measure, maxWidth: numbe
  * Only the website may be ellipsized, and only when the contact text still
  * cannot fit at the floor; if even that is not enough the band grows.
  */
-export function letterheadLayout(provider: TrainingProviderIdentity, measure: Measure, maxWidth: number): LetterheadLayout {
+export function letterheadLayout(provider: TrainingProviderIdentity, measure: Measure, maxWidth: number, measureName: Measure = measure): LetterheadLayout {
   const clean = (t: string) => sanitizePdfText(t).replace(/\s+/g, ' ').trim();
   const sep = '  |  ';
   const legalName = clean(provider.legalName);
   let nameSize = 13;
-  while (nameSize > 9 && measure(legalName, nameSize) > maxWidth) nameSize -= 0.5;
-  const nameLines = measure(legalName, nameSize) <= maxWidth ? [legalName] : wrapWords(legalName, nameSize, measure, maxWidth);
+  while (nameSize > 9 && measureName(legalName, nameSize) > maxWidth) nameSize -= 0.5;
+  const nameLines = measureName(legalName, nameSize) <= maxWidth ? [legalName] : wrapWords(legalName, nameSize, measureName, maxWidth);
   const nameBottom = 30 + (nameLines.length - 1) * nameSize * 1.15;
 
   const address = [...provider.addressLines, provider.phone].map(clean).filter(Boolean);
@@ -254,6 +266,7 @@ class Sheet {
       input.provider,
       (t, size) => fonts.regular.widthOfTextAtSize(t, size),
       PAGE_W - MARGIN - this.textX - 100,
+      (t, size) => fonts.bold.widthOfTextAtSize(t, size),
     );
     this.page = this.newPage();
     this.y = PAGE_H - this.header.headerH - 30;
@@ -291,7 +304,7 @@ class Sheet {
     const leading = opts.leading ?? size * 1.45;
     const x = opts.x ?? MARGIN;
     const width = opts.width ?? PAGE_W - MARGIN - x;
-    for (const line of wrap(txt, font, size, width)) {
+    for (const line of wrapTextWithinWidth(txt, font, size, width)) {
       this.ensure(leading);
       if (line.trim()) this.text(line, { x, size, font, color: opts.color });
       this.y -= leading;
@@ -361,16 +374,48 @@ class Sheet {
    * `tail` lines (enclosure, cc) are reserved with the block and printed under
    * it, so a closing never lands alone on a trailing page.
    */
-  static signatureHeight(hasLead: boolean, tailCount = 0): number {
-    return (hasLead ? 18 : 0) + SIG_BOX_H + 4 + 13 * 4 + 12 + tailCount * 12;
+  private signatureLayout(lead: string, tail: string[]) {
+    const { input, fonts } = this;
+    const width = PAGE_W - MARGIN * 2;
+    const leadLines = lead ? wrapTextWithinWidth(lead, fonts.regular, 9.5, width) : [];
+    let typedSize = 20;
+    let typedLines = input.signatureImage ? [] : wrapTextWithinWidth(input.signerName, fonts.italic, typedSize, 260);
+    while (!input.signatureImage && typedSize > 12 && typedLines.length > 2) {
+      typedSize -= 1;
+      typedLines = wrapTextWithinWidth(input.signerName, fonts.italic, typedSize, 260);
+    }
+    const sigBoxH = typedLines.length > 1 ? Math.max(SIG_BOX_H, typedLines.length * typedSize * 1.12 + 20) : SIG_BOX_H;
+    const details = [
+      { lines: wrapTextWithinWidth(input.signerName, fonts.bold, 10.5, width), size: 10.5, font: fonts.bold },
+      { lines: wrapTextWithinWidth(`${input.signerTitle}, ${input.provider.legalName}`, fonts.regular, 9.5, width), size: 9.5, font: fonts.regular },
+      { lines: wrapTextWithinWidth(`${input.provider.email}  |  ${input.provider.phone}`, fonts.regular, 9.5, width), size: 9.5, font: fonts.regular },
+      { lines: wrapTextWithinWidth(
+        `Signed ${formatLongDateOfInstant(input.signedAt)}${input.signatureImage ? ' (electronic signature)' : ' (typed signature)'}`,
+        fonts.regular, 9, width,
+      ), size: 9, font: fonts.regular },
+    ];
+    const tailLines = tail.flatMap((line) => wrapTextWithinWidth(line, fonts.regular, 9, width));
+    const height = (leadLines.length ? (leadLines.length - 1) * 12 + 8 : 0)
+      + sigBoxH + 4 + 13 + details.reduce((sum, detail) => sum + detail.lines.length * 13, 0)
+      + 12 + tailLines.length * 12;
+    return { leadLines, typedSize, typedLines, sigBoxH, details, tailLines, height };
+  }
+
+  /** Reserve the complete closing, including wrapped signer and enclosure lines. */
+  signatureHeight(lead: string, tail: string[] = []): number {
+    return this.signatureLayout(lead, tail).height;
   }
 
   async signature(lead: string, tail: string[] = []) {
     const { input } = this;
-    const sigBoxH = SIG_BOX_H;
-    this.ensure(Sheet.signatureHeight(Boolean(lead), tail.length));
-    if (lead) {
-      this.text(lead, { size: 9.5, color: MUTED });
+    const layout = this.signatureLayout(lead, tail);
+    const sigBoxH = layout.sigBoxH;
+    this.ensure(layout.height);
+    layout.leadLines.forEach((line, i) => {
+      if (i > 0) this.gap(12);
+      this.text(line, { size: 9.5, color: MUTED });
+    });
+    if (layout.leadLines.length) {
       this.gap(8);
     }
 
@@ -387,23 +432,26 @@ class Sheet {
         throw new Error('The drawn signature image is invalid; the signed document cannot be rendered.');
       }
     } else {
-      this.text(input.signerName, { size: 20, font: this.fonts.italic, color: rgb(0.1, 0.15, 0.45), y: sigTop - sigBoxH + 14 });
+      layout.typedLines.forEach((line, i) => {
+        this.text(line, {
+          size: layout.typedSize,
+          font: this.fonts.italic,
+          color: rgb(0.1, 0.15, 0.45),
+          y: layout.typedLines.length === 1 ? sigTop - sigBoxH + 14 : sigTop - 16 - i * layout.typedSize * 1.12,
+        });
+      });
     }
     this.y = sigTop - sigBoxH - 4;
     this.page.drawLine({ start: { x: MARGIN, y: this.y }, end: { x: MARGIN + 260, y: this.y }, thickness: 0.8, color: INK });
     this.gap(13);
-    this.text(input.signerName, { size: 10.5, font: this.fonts.bold });
-    this.gap(13);
-    this.text(`${input.signerTitle}, ${input.provider.legalName}`, { size: 9.5, color: MUTED });
-    this.gap(13);
-    this.text(`${input.provider.email}  |  ${input.provider.phone}`, { size: 9.5, color: MUTED });
-    this.gap(13);
-    this.text(
-      `Signed ${formatLongDateOfInstant(input.signedAt)}${input.signatureImage ? ' (electronic signature)' : ' (typed signature)'}`,
-      { size: 9, color: MUTED },
-    );
+    for (const detail of layout.details) {
+      for (const line of detail.lines) {
+        this.text(line, { size: detail.size, font: detail.font, color: detail.font === this.fonts.bold ? INK : MUTED });
+        this.gap(13);
+      }
+    }
     this.gap(12);
-    for (const line of tail) {
+    for (const line of layout.tailLines) {
       this.text(line, { size: 9, color: MUTED });
       this.gap(12);
     }
@@ -470,9 +518,10 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
   if (input.referenceNumber) meta.push(['Reference / voucher', input.referenceNumber]);
   let metaY = PAGE_H - sheet.header.headerH - 30;
   for (const [k, v] of meta) {
+    const valueLines = wrapTextWithinWidth(v, f.bold, 9.5, 125);
     sheet.text(k, { x: metaX, y: metaY, size: 8.5, color: MUTED });
-    sheet.text(ellipsize(v, f.bold, 9.5, 125), { x: metaX + 105, y: metaY, size: 9.5, font: f.bold });
-    metaY -= 14;
+    valueLines.forEach((line, i) => sheet.text(line, { x: metaX + 105, y: metaY - i * 12, size: 9.5, font: f.bold }));
+    metaY -= Math.max(14, valueLines.length * 12 + 2);
   }
   sheet.y = Math.min(sheet.y - 22, metaY - 6);
   sheet.rule();
@@ -503,8 +552,12 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
   // Line-item table.
   const cols = { idx: MARGIN, desc: MARGIN + 26, hours: PAGE_W - MARGIN - 190, amount: PAGE_W - MARGIN };
   const descW = cols.hours - cols.desc - 14;
-  const drawHeader = () => {
-    sheet.ensure(24);
+  const rows = input.lineItems.map((row) => {
+    const lines = wrapTextWithinWidth(row.description, f.regular, 10, descW);
+    return { row, lines, height: Math.max(1, lines.length) * 13 + 8 };
+  });
+  const drawHeader = (firstRowHeight: number) => {
+    sheet.ensure(20 + firstRowHeight);
     sheet.page.drawRectangle({ x: MARGIN, y: sheet.y - 6, width: PAGE_W - MARGIN * 2, height: 20, color: SHADE });
     sheet.text('#', { x: cols.idx + 4, size: 8.5, font: f.bold, color: MUTED });
     sheet.text('CLASS / ITEM', { x: cols.desc, size: 8.5, font: f.bold, color: MUTED });
@@ -513,14 +566,9 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
     sheet.text('AMOUNT', { x: cols.amount - aw, size: 8.5, font: f.bold, color: MUTED });
     sheet.gap(20);
   };
-  drawHeader();
-  input.lineItems.forEach((row, i) => {
-    const lines = wrap(row.description, f.regular, 10, descW);
-    const rowH = Math.max(1, lines.length) * 13 + 8;
-    if (sheet.y - rowH < FOOTER_H + 12) {
-      sheet.ensure(rowH + 30);
-      drawHeader();
-    }
+  drawHeader(rows[0]?.height ?? 21);
+  rows.forEach(({ row, lines, height: rowH }, i) => {
+    if (sheet.y - rowH < FOOTER_H + 12) drawHeader(rowH);
     sheet.text(String(i + 1), { x: cols.idx + 4, size: 10, color: MUTED });
     lines.forEach((line, li) => sheet.text(line, { x: cols.desc, y: sheet.y - li * 13, size: 10 }));
     const hours = row.hours != null ? `${row.hours}` : '—';
@@ -554,12 +602,13 @@ export async function renderJ5InvoicePdf(input: PacketDocumentInput): Promise<Ui
   // invoice never leaves the closing alone on a page of its own.
   const remitText = `Training is provided at no cost to the participant. This invoice is billed to the funding partner named above. Please remit payment to ${input.provider.legalName}, ${input.provider.addressLines.join(', ')} (EIN ${input.provider.ein}), or contact ${input.provider.email} for electronic payment details. Reference invoice ${input.packetNumber} on all remittances.`;
   const remitLeading = 9 * 1.45;
-  const remitHeight = wrap(remitText, f.regular, 9, PAGE_W - MARGIN * 2).length * remitLeading;
-  sheet.ensure(remitHeight + 6 + Sheet.signatureHeight(true));
+  const remitHeight = wrapTextWithinWidth(remitText, f.regular, 9, PAGE_W - MARGIN * 2).length * remitLeading;
+  const certification = 'I certify that the classes and amounts above are accurate and that the participant is enrolled as stated.';
+  sheet.ensure(remitHeight + 6 + sheet.signatureHeight(certification));
   sheet.paragraph(remitText, { size: 9, color: MUTED });
   sheet.gap(6);
 
-  await sheet.signature('I certify that the classes and amounts above are accurate and that the participant is enrolled as stated.');
+  await sheet.signature(certification);
   sheet.finishFooters();
   return doc.save();
 }
@@ -578,7 +627,7 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   const f = sheet.fonts;
 
   sheet.text(formatLongDate(toIsoDate(input.invoiceDate)), { size: 10.5 });
-  sheet.gap(20);
+  sheet.gap(16);
   for (const line of billToLines(input)) {
     for (const wrapped of wrapTextWithinWidth(line, f.regular, 10.5, PAGE_W - MARGIN * 2)) {
       sheet.ensure(13);
@@ -599,7 +648,7 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
     sheet.ensure(16);
     sheet.text(line, { size: 10.5 });
   });
-  sheet.gap(16);
+  sheet.gap(12);
 
   // Facts block FIRST: generated from the J5 rows and the signed snapshot, and
   // authoritative. The narrative after it is human-reviewed prose, not
@@ -610,20 +659,20 @@ export async function renderJ6CoverLetterPdf(input: PacketDocumentInput): Promis
   for (const line of input.j6Facts) {
     sheet.paragraph(line, { size: 9.5, leading: 12.5, x: MARGIN + 10 });
   }
-  sheet.gap(6);
+  sheet.gap(4);
 
   for (const block of sanitizePdfText(input.coverLetterBody).split(/\n{2,}/)) {
     sheet.paragraph(block, { size: 10.5, leading: 14.6 });
     sheet.gap(6);
   }
 
-  sheet.gap(4);
+  sheet.gap(2);
   // Closing, signature, enclosure and cc are one unit: reserve exactly what
   // they occupy so the letter only breaks when the body genuinely runs long.
   const tail = j6EnclosureLines(input);
-  sheet.ensure(14 + 4 + Sheet.signatureHeight(false, tail.length));
+  sheet.ensure(14 + 2 + sheet.signatureHeight('', tail));
   sheet.text('Respectfully,', { size: 10.5 });
-  sheet.gap(4);
+  sheet.gap(2);
   await sheet.signature('', tail);
 
   sheet.finishFooters();

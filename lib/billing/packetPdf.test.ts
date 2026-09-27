@@ -54,6 +54,42 @@ async function pageCount(bytes: Uint8Array): Promise<number> {
   return (await PDFDocument.load(bytes)).getPageCount();
 }
 
+type PdfText = { str: string; x: number; y: number; width: number };
+
+async function positionedText(bytes: Uint8Array): Promise<PdfText[][]> {
+  const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const task = getDocument({ data: bytes, useSystemFonts: true });
+  try {
+    const pdf = await task.promise;
+    const pages: PdfText[][] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const content = await (await pdf.getPage(i)).getTextContent();
+      pages.push(content.items.filter((item) => 'str' in item).map((item) => ({
+        str: item.str, x: item.transform[4], y: item.transform[5], width: item.width,
+      })));
+    }
+    return pages;
+  } finally {
+    await task.destroy();
+  }
+}
+
+function assertInsideLetterPage(pages: PdfText[][]) {
+  for (const [pageIndex, page] of pages.entries()) {
+    for (const item of page) {
+      if (!item.str.trim()) continue;
+      // pdf.js substitutes the standard fonts in Node; allow a few points for
+      // its width estimate while still catching text that escapes the margin.
+      assert.ok(item.x >= 53.5 && item.x + item.width <= 562, `page ${pageIndex + 1}: ${item.str} at x=${item.x}, width=${item.width}`);
+      assert.ok(item.y >= 26 && item.y <= 770, `page ${pageIndex + 1}: ${item.str} at y=${item.y}`);
+    }
+  }
+}
+
+function compactText(pages: PdfText[][]): string {
+  return pages.flat().map((item) => item.str).join('').replace(/\s/g, '');
+}
+
 describe('J5 / J6 PDF renderers', () => {
   it('renders a one-page J5 and J6 with a typed signature', async () => {
     const j5 = await renderJ5InvoicePdf(input());
@@ -151,6 +187,58 @@ describe('J5 / J6 PDF renderers', () => {
       const text = await extractTextFromResumeBuffer(Buffer.from(pdf), 'pdf');
       for (const marker of ['BILLTOSTART', 'BILLTOEND', 'ATTNSTART', 'ATTNEND', 'ADDRESSSTART', 'ADDRESSEND', 'q'.repeat(10)]) {
         assert.ok(text.includes(marker), `missing ${marker}`);
+      }
+    }
+  });
+
+  it('keeps long unbroken signed facts visible and inside both PDF pages', async () => {
+    const reference = `REFSTART${'W'.repeat(105)}REFEND`;
+    const description = `ROWSTART${'W'.repeat(186)}ROWEND`;
+    const signerName = `SIGNERSTART${'W'.repeat(100)}SIGNEREND`;
+    const signerTitle = `TITLESTART${'W'.repeat(98)}TITLEEND`;
+    const legalName = `LEGALSTART${'W'.repeat(95)}LEGALEND`;
+    const programTitle = `PROGRAMSTART${'W'.repeat(100)}PROGRAMEND`;
+    const narrative = `NARRATIVESTART${'W'.repeat(280)}NARRATIVEEND`;
+    const packet = input({
+      referenceNumber: reference,
+      lineItems: [{ description, hours: 10, amount: 1100 }],
+      totalAmount: 1100,
+      signerName,
+      signerTitle,
+      programTitle,
+      coverLetterBody: narrative,
+      j6Facts: [`Board / ITA / voucher reference: ${reference}`, `1. ${description}: $1,100.00`],
+      provider: { ...getTrainingProviderIdentity(), legalName },
+    });
+    const [j5, j6] = await Promise.all([renderJ5InvoicePdf(packet), renderJ6CoverLetterPdf(packet)]);
+    const [j5Pages, j6Pages] = await Promise.all([positionedText(j5), positionedText(j6)]);
+    for (const pages of [j5Pages, j6Pages]) assertInsideLetterPage(pages);
+    const j5Text = compactText(j5Pages);
+    const j6Text = compactText(j6Pages);
+    for (const value of [reference, description, signerName, signerTitle, legalName]) {
+      assert.ok(j5Text.includes(value), `J5 lost ${value.slice(0, 16)}`);
+      assert.ok(j6Text.includes(value), `J6 lost ${value.slice(0, 16)}`);
+    }
+    // J5 draws the bill-to and participant columns in parallel, so their
+    // extracted text may interleave even though each participant line is intact.
+    assert.ok(j5Text.includes('PROGRAMSTART') && j5Text.includes('PROGRAMEND'));
+    assert.ok(j6Text.includes(programTitle));
+    assert.ok(j6Text.includes(narrative), 'J6 lost unbroken narrative text');
+  });
+
+  it('never leaves a J5 table header behind when the first row moves to another page', async () => {
+    const firstRow = `ROWSTART${'W'.repeat(186)}ROWEND`;
+    for (let addressLines = 28; addressLines <= 44; addressLines++) {
+      const packet = input({
+        billToAddress: Array.from({ length: addressLines }, (_, i) => `Line ${i + 1}`).join('\n'),
+        lineItems: [{ description: firstRow, hours: 10, amount: 1100 }],
+        totalAmount: 1100,
+      });
+      const pages = await positionedText(await renderJ5InvoicePdf(packet));
+      for (const [pageIndex, page] of pages.entries()) {
+        const headerAt = page.findIndex((item) => item.str === 'CLASS / ITEM');
+        if (headerAt < 0) continue;
+        assert.ok(page.slice(headerAt + 1).some((item) => item.str === '1'), `orphan table header with ${addressLines} address lines on page ${pageIndex + 1}`);
       }
     }
   });
