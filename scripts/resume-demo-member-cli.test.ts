@@ -52,11 +52,13 @@ const receiptOf = (files: ReturnType<typeof cliFiles>) => JSON.parse(readFileSyn
 test('[mock] create stopped at the target guard: cleanup writes an informational receipt without the database', async () => {
   const files = cliFiles();
   const env = envFor(files);
-  await assert.rejects(main('create', env), /database URL must identify the approved demo project/);
+  const { calls, fetchImpl } = fakeFetch(200);
+  await assert.rejects(main('create', env, { fetchImpl }), /database URL must identify the approved demo project/);
   assert.equal(existsSync(files.marker), false, 'no marker');
   assert.equal(existsSync(files.state), false, 'no state');
   assert.deepEqual(JSON.parse(readFileSync(files.stage, 'utf8')), { stage: 'target-guard' });
 
+  assert.equal(calls.length, 0, 'no key probe before the target guard passes');
   // Same wrong-scope URL: cleanup decides from the files alone and never reads it.
   await main('cleanup', env);
   assert.deepEqual(receiptOf(files), {
@@ -107,5 +109,77 @@ test('[static] the helper never parses a database URL itself; Prisma gets only t
   assert.equal([...helper.matchAll(/new PrismaClient\(/g)].length, 1);
   assert.match(helper, /new PrismaClient\(\{ datasourceUrl: target\.databaseUrl \}\)/);
   assert.match(helper, /import \{ assertPortalQaOrganization, readPortalQaTarget \} from '\.\/lib\/portal-qa-guard\.cjs';/);
+});
+
+/** A fetch stand-in that records calls and returns the given status with an unread body. */
+function fakeFetch(status: number) {
+  const calls: Array<{ url: string; init: RequestInit }> = [];
+  const fetchImpl = (async (url: string, init: RequestInit) => {
+    calls.push({ url, init });
+    return { status, body: { cancel: async () => {} } } as unknown as Response;
+  }) as unknown as typeof fetch;
+  return { calls, fetchImpl };
+}
+
+const DEMO_DB = `postgres://postgres.${DEMO_REF}:pw@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1`;
+
+test('[mock] create: a rejected DEMO service key stops before any marker or client; cleanup is informational', async () => {
+  const files = cliFiles();
+  const env = envFor(files, DEMO_DB);
+  const { calls, fetchImpl } = fakeFetch(401);
+  await assert.rejects(main('create', env, { fetchImpl }), /DEMO service key check did not pass \(urlProject demo, key rejected\); nothing was created/);
+  assert.equal(calls.length, 1, 'exactly one probe');
+  assert.equal(calls[0].url, `https://${DEMO_REF}.supabase.co/auth/v1/admin/users?page=1&per_page=1`);
+  assert.equal(existsSync(files.marker), false, 'no marker');
+  assert.equal(existsSync(files.state), false, 'no state');
+  assert.deepEqual(JSON.parse(readFileSync(files.stage, 'utf8')), { stage: 'key-probe' });
+
+  await main('cleanup', env, { fetchImpl });
+  assert.equal(calls.length, 1, 'cleanup makes no probe');
+  assert.deepEqual(receiptOf(files), {
+    auditRowsRetained: true, success: true, memberCreated: false, markerFound: false,
+    memberCreationAttempted: 'not-observed', informationalOnly: true, failedStage: 'key-probe',
+  });
+});
+
+test('[mock] create makes zero Auth-create calls when the key probe is rejected or unavailable', async () => {
+  // Any Supabase client call (createUser included) would go through the global
+  // fetch; only the injected probe fetch may ever be called.
+  const realFetch = globalThis.fetch;
+  const otherRequests: string[] = [];
+  globalThis.fetch = (async (input: unknown) => { otherRequests.push(String(input)); throw new Error('unexpected request'); }) as typeof fetch;
+  try {
+    const outcomes: Array<[string, () => ReturnType<typeof fakeFetch>]> = [
+      ['rejected', () => fakeFetch(401)],
+      ['rejected', () => fakeFetch(403)],
+      ['unavailable', () => fakeFetch(500)],
+      ['unavailable', () => fakeFetch(302)],
+      ['unavailable', () => {
+        const calls: Array<{ url: string; init: RequestInit }> = [];
+        const fetchImpl = (async (url: string, init: RequestInit) => { calls.push({ url, init }); throw new TypeError('fetch failed'); }) as unknown as typeof fetch;
+        return { calls, fetchImpl };
+      }],
+    ];
+    for (const [label, make] of outcomes) {
+      const files = cliFiles();
+      const { calls, fetchImpl } = make();
+      await assert.rejects(main('create', envFor(files, DEMO_DB), { fetchImpl }), new RegExp(`key ${label}\\); nothing was created`));
+      assert.equal(calls.length, 1, 'exactly one probe, no retry');
+      assert.equal(existsSync(files.marker), false, 'no pre-create marker');
+      assert.equal(existsSync(files.state), false, 'no state');
+      assert.deepEqual(JSON.parse(readFileSync(files.stage, 'utf8')), { stage: 'key-probe' }, 'never reached clients');
+    }
+    assert.deepEqual(otherRequests, [], 'no Auth (or any other) request');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('[mock] create: a non-DEMO database URL stops at the target guard with zero network calls', async () => {
+  const files = cliFiles();
+  const { calls, fetchImpl } = fakeFetch(200);
+  await assert.rejects(main('create', envFor(files), { fetchImpl }), /database URL must identify the approved demo project/);
+  assert.equal(calls.length, 0);
+  assert.deepEqual(JSON.parse(readFileSync(files.stage, 'utf8')), { stage: 'target-guard' });
 });
 

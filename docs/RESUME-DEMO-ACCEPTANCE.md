@@ -45,8 +45,8 @@ The workflow runs these steps in order. It fails closed at each gate.
 
    The spec refuses any account that is not a `resume-qa-*@example.com` member, an email not built from this run's `RESUME_ACCEPTANCE_RUN_ID`, the shared `PREVIEW_E2E_MEMBER_EMAIL` account, and exact production hostnames. The workflow sets `RESUME_ACCEPTANCE_MODE=workflow`. In that mode a refusal **fails** the spec instead of skipping it, and a receipt with `pass: false` is always written. Without the flag, locally, the spec stays inert and skips.
 7. **Cleanup:** runs always. `scripts/resume-demo-member.ts cleanup` works only on the recorded ID, in this order:
-   0. **Inputs.** `create` first writes a stage file (`RESUME_QA_STAGE_FILE`) saying `target-guard`, before anything else and before any client or Auth call is possible. Once the target guard passes, it rewrites the file as `clients` (with the synthetic email), still before any client is built. Cleanup decides from the local marker, state and stage files, **before** its own target guard, so this step needs no DEMO URL or client:
-   - **No marker, no state, stage still `target-guard`:** create stopped at the guard in this run. Cleanup writes an **informational** receipt: `memberCreated: false` (meaning "no marker found", not "proven absent"), `markerFound: false`, `memberCreationAttempted: "not-observed"`, `informationalOnly: true`, `failedStage: "target-guard"`. It touches nothing. The combined verifier rejects this receipt, so the run stays red.
+   0. **Inputs.** `create` first writes a stage file (`RESUME_QA_STAGE_FILE`) saying `target-guard`, before anything else and before any client or Auth call is possible. Once the target guard passes it writes `key-probe` and runs the same one read-only DEMO service-key probe as the Preview Service Key Check (below). Only if the key is `valid` does it write `clients` (with the synthetic email), still before any client is built. Cleanup decides from the local marker, state and stage files, **before** its own target guard, so this step needs no DEMO URL or client:
+   - **No marker, no state, stage still `target-guard` or `key-probe`:** create stopped before any client in this run. Cleanup writes an **informational** receipt: `memberCreated: false` (meaning "no marker found", not "proven absent"), `markerFound: false`, `memberCreationAttempted: "not-observed"`, `informationalOnly: true`, `failedStage` (`"target-guard"` or `"key-probe"`). It touches nothing. The combined verifier rejects this receipt, so the run stays red.
    - **No marker once create was past the guard, or no readable stage file:** cleanup **fails closed** with manual recovery steps keyed to the exact synthetic email. It writes `memberCreated: "unknown"`.
    - **A marker without a readable state:** cleanup fails closed the same way, using the email in the marker.
    - **A recorded state, but the guard refuses the target:** cleanup touches nothing and writes `success: false` with the recorded IDs.
@@ -208,7 +208,27 @@ The value must never appear in a log, a chat, a file or shell history.
    - `prod`: the value names the production project.
    - `unknown` with `hostClass` `direct` or `pooler`: a Supabase host that the guard does not approve as DEMO, for example another project or a stale value.
    - `unknown` with `hostClass: "other"`: the value isn't a recognized DEMO Supabase URL. This can be an unapproved but parseable host, a wrong scheme, a quoted value, or a malformed or unencoded value. Don't infer a single cause from this category; re-copy the string from the DEMO dashboard.
-6. **Only then ask Mike to authorize the single acceptance rerun.** That rerun is still one Build request and needs his explicit go.
+6. **Check the service key too** (next section). Both checks must be green.
+7. **Only then ask Mike to authorize the single acceptance rerun.** That rerun is still one Build request and needs his explicit go.
 
 The Vercel Preview environment variable `POSTGRES_PRISMA_URL` is a separate value, used by the deployed app. The health gate already reports it as DEMO (`prismaProject demo`). This procedure does not touch it, so do not change it.
+
+## Checking the Preview service key
+
+A DEMO database URL is not enough: the lane's Auth writes use `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`, and a key for another project (or an invalid one) must be caught before any Auth write. The master-only **Preview Service Key Check** (`.github/workflows/preview-service-key-check.yml`) does this without printing the key:
+
+```bash
+gh workflow run preview-service-key-check.yml --ref master --repo workforceap/workforceap-beta
+```
+
+Its one step runs `node scripts/check-preview-service-key.mjs PREVIEW_SUPABASE_URL PREVIEW_SUPABASE_SERVICE_ROLE_KEY`, with those two secrets exposed to that step only. The shared implementation is `scripts/lib/demo-service-key-probe.cjs`:
+
+- `PREVIEW_SUPABASE_URL` must be exactly the canonical DEMO origin and classify as demo in the shared guard. Otherwise nothing is sent (`key: "not-checked"`).
+- A missing key, or one with characters that cannot be an HTTP header value, is refused locally (`missing` / `invalid`) with nothing sent.
+- Otherwise it sends **one** read-only `GET /auth/v1/admin/users?page=1&per_page=1` to the **hardcoded** DEMO origin (the `DEMO_REF` constant in `scripts/lib/supabase-project-guard.cjs`), with the key in the `apikey` and `Authorization` headers, a 10-second timeout, no retry and no redirects followed.
+- The response body is discarded unread. The output is one line, `{"urlProject": ..., "key": ...}`, where `key` is `valid` (HTTP 200), `rejected` (401/403) or `unavailable` (anything else, a redirect, a timeout or a network error). It exits 0 only for `valid`.
+
+`create` runs the same probe as a same-run preflight (stage `key-probe`), after the target guard and before the marker, `createAuthUser` or any fixture write, so a key rotated between the check and the acceptance run is still caught.
+
+If the key is `rejected`, get the DEMO project's service role / secret key from the Supabase dashboard (DEMO project → Project Settings → API keys) and set it with `gh secret set PREVIEW_SUPABASE_SERVICE_ROLE_KEY --repo workforceap/workforceap-beta` at the hidden prompt (or the PowerShell clipboard form), exactly as in step 4 above, then re-run this check.
 

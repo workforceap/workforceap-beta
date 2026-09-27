@@ -91,8 +91,9 @@ jobs:
       # call, the state (exact IDs) right after it.
       RESUME_QA_STATE_FILE: /tmp/resume-qa-fixture.json
       RESUME_QA_MARKER_FILE: /tmp/resume-qa-fixture.marker.json
-      # create's progress (target-guard, then clients). Cleanup writes an
-      # informational receipt only while it still says target-guard.
+      # create's progress (target-guard, key-probe, then clients). Cleanup
+      # writes an informational receipt only while it still says target-guard
+      # or key-probe (no client or Auth write had happened).
       RESUME_QA_STAGE_FILE: /tmp/resume-qa-fixture.stage.json
 
     steps:
