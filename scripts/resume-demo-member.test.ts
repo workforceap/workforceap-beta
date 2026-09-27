@@ -292,7 +292,8 @@ test('[mock] cleanup input: marker plus missing or unreadable state fails closed
 });
 
 test('[mock] cleanup input: no marker and no state is informational ONLY when create stopped at the target guard', () => {
-  assert.deepEqual(resolveCleanupInput(null, null, JSON.stringify({ stage: 'target-guard' })), { kind: 'stopped-at-target-guard' });
+  assert.deepEqual(resolveCleanupInput(null, null, JSON.stringify({ stage: 'target-guard' })), { kind: 'stopped-before-clients', failedStage: 'target-guard' });
+  assert.deepEqual(resolveCleanupInput(null, null, JSON.stringify({ stage: 'key-probe' })), { kind: 'stopped-before-clients', failedStage: 'key-probe' });
   const state = { userId: NEW_ID, email: 'resume-qa-42-1@example.com', organizationId: 'qa-org', runId: '42-1' };
   assert.deepEqual(resolveCleanupInput(JSON.stringify({ runId: '42-1', email: state.email, organizationId: 'qa-org' }), JSON.stringify(state)), { kind: 'state', state });
 });

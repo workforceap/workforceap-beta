@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const WORKFLOWS = ['resume-demo-acceptance.yml', 'preview-db-secret-check.yml'];
+const WORKFLOWS = ['resume-demo-acceptance.yml', 'preview-db-secret-check.yml', 'preview-service-key-check.yml'];
 const workflowPath = (file: string) => join(dirname(fileURLToPath(import.meta.url)), '..', '.github', 'workflows', file);
 
 interface Job { name: string; body: string; hasIf: boolean; needs: string[] }
@@ -87,23 +87,38 @@ test(`[static] ${file}: the workflow has only a workflow_dispatch trigger`, () =
   assert.doesNotMatch(text, /pull_request_target/);
 });
 
-if (file === 'preview-db-secret-check.yml') {
-  test('[static] preview-db-secret-check.yml: one step-scoped parse-only call; nothing installs, connects or echoes', () => {
-    const SECRET_VARS = ['PREVIEW_POSTGRES_PRISMA_URL', 'PREVIEW_DATABASE_URL'];
-    assert.deepEqual([...jobs.keys()], ['policy', 'classify']);
-    const classify = jobs.get('classify')!.body;
-    const command = 'node scripts/classify-preview-db-url.mjs PREVIEW_POSTGRES_PRISMA_URL PREVIEW_DATABASE_URL';
-    assert.equal([...text.matchAll(/node scripts\/classify-preview-db-url\.mjs/g)].length, 1, 'the classifier runs once');
-    assert.ok(classify.split('\n').includes(`        run: ${command}`), 'exact command');
+const PARSE_ONLY: Record<string, { job: string; command: string; secrets: string[]; banned: RegExp }> = {
+  'preview-db-secret-check.yml': {
+    job: 'classify',
+    command: 'node scripts/classify-preview-db-url.mjs PREVIEW_POSTGRES_PRISMA_URL PREVIEW_DATABASE_URL',
+    secrets: ['PREVIEW_POSTGRES_PRISMA_URL', 'PREVIEW_DATABASE_URL'],
+    banned: /pnpm install|npm (ci|install)|prisma|psql|curl|wget|GROQ|ANTHROPIC|SERVICE_ROLE|set -x/,
+  },
+  'preview-service-key-check.yml': {
+    job: 'probe',
+    command: 'node scripts/check-preview-service-key.mjs PREVIEW_SUPABASE_URL PREVIEW_SUPABASE_SERVICE_ROLE_KEY',
+    secrets: ['PREVIEW_SUPABASE_URL', 'PREVIEW_SUPABASE_SERVICE_ROLE_KEY'],
+    banned: /pnpm install|npm (ci|install)|prisma|psql|curl|wget|GROQ|ANTHROPIC|POSTGRES|DATABASE_URL|set -x/,
+  },
+};
+const spec = PARSE_ONLY[file];
+if (spec) {
+  test(`[static] ${file}: one step-scoped call; nothing installs, connects elsewhere or echoes`, () => {
+    assert.deepEqual([...jobs.keys()], ['policy', spec.job]);
+    const job = jobs.get(spec.job)!.body;
+    const script = spec.command.split(' ')[1];
+    assert.equal(text.split(`node ${script}`).length - 1, 1, 'the script runs once');
+    assert.ok(job.split('\n').includes(`        run: ${spec.command}`), 'exact command');
     // The secrets are step-level env of that one step: no workflow- or job-level env block.
     assert.doesNotMatch(text, /^env:/m, 'no workflow-level env');
-    assert.doesNotMatch(classify, /^ {4}env:/m, 'no job-level env');
-    const steps = classify.split(/^ {6}- /m).slice(1);
+    assert.doesNotMatch(job, /^ {4}env:/m, 'no job-level env');
+    const steps = job.split(/^ {6}- /m).slice(1);
     const withSecrets = steps.filter((step) => /secrets\./.test(step));
     assert.equal(withSecrets.length, 1, 'only one step sees any secret');
     const [step] = withSecrets;
-    assert.ok(step.includes(`run: ${command}`), 'that step is the classifier call');
-    for (const name of SECRET_VARS) {
+    assert.ok(step.includes(`run: ${spec.command}`), 'that step is the script call');
+    assert.equal([...step.matchAll(/secrets\./g)].length, spec.secrets.length, 'no other secret');
+    for (const name of spec.secrets) {
       assert.match(step, new RegExp(`^ {10}${name}: \\$\\{\\{ secrets\\.${name} \\}\\}$`, 'm'), `${name} is step env`);
     }
     // No run script interpolates a secret, echoes or expands either variable.
@@ -111,12 +126,14 @@ if (file === 'preview-db-secret-check.yml') {
     const runBlocks = [...text.matchAll(/^( +)run: \|\n((?:\1 {2}.*\n?)+)/gm)].map((match) => match[2]);
     for (const script of [...runLines, ...runBlocks]) {
       assert.doesNotMatch(script, /secrets\./, 'no run script interpolates a secret');
-      for (const name of SECRET_VARS) {
+      for (const name of spec.secrets) {
         assert.doesNotMatch(script, new RegExp(`\\$\\{?${name}`), `no run script expands ${name}`);
         assert.doesNotMatch(script, new RegExp(`(echo|printf|cat|printenv|env)\\b[^\\n]*${name}`), `no step echoes ${name}`);
       }
     }
-    assert.doesNotMatch(text, /pnpm install|npm (ci|install)|prisma|psql|curl|wget|GROQ|ANTHROPIC|SERVICE_ROLE|set -x/);
+    // Checked on the steps (comments may name things the steps must not do).
+    const stepsText = text.split('\n').filter((line) => !/^\s*#/.test(line)).join('\n');
+    assert.doesNotMatch(stepsText, spec.banned);
   });
 }
 }

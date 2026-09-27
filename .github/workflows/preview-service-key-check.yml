@@ -1,0 +1,77 @@
+name: Preview Service Key Check
+
+# Proves, before any acceptance dispatch, that PREVIEW_SUPABASE_SERVICE_ROLE_KEY
+# is accepted by the DEMO project. One step runs
+# scripts/check-preview-service-key.mjs, which:
+# - requires PREVIEW_SUPABASE_URL to be exactly the canonical DEMO origin and to
+#   classify as demo in the shared guard, or sends nothing;
+# - sends ONE read-only GET to the HARDCODED DEMO origin
+#   (/auth/v1/admin/users?page=1&per_page=1) with a short timeout, no retry and
+#   no redirects followed;
+# - discards the response body unread and prints only
+#   {"urlProject": ..., "key": "valid"|"rejected"|"unavailable"|...}.
+# Exit 0 only for "valid". No database, fixture, provider or Auth write, and no
+# other request. The two secrets are env vars of that one step only; nothing
+# echoes them. docs/RESUME-DEMO-ACCEPTANCE.md, "Checking the Preview service key".
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-service-key-check
+  cancel-in-progress: false
+
+jobs:
+  # UNGATED on purpose (no `if`), as in resume-demo-acceptance.yml: anything but
+  # a master dispatch in the trusted repository is visibly red.
+  policy:
+    name: Require a master dispatch in the trusted repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Refuse anything but a workflow_dispatch on master
+        env:
+          RUN_REPOSITORY: ${{ github.repository }}
+          RUN_REF: ${{ github.ref }}
+          RUN_EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$RUN_REPOSITORY" != "workforceap/workforceap-beta" ] || [ "$RUN_REF" != "refs/heads/master" ] || [ "$RUN_EVENT" != "workflow_dispatch" ]; then
+            echo "::error::Preview Service Key Check runs only as a workflow_dispatch on refs/heads/master of workforceap/workforceap-beta (got $RUN_EVENT on $RUN_REF in $RUN_REPOSITORY). Nothing else ran."
+            exit 1
+          fi
+          echo "Trusted master dispatch."
+
+  probe:
+    name: One read-only DEMO key probe (body discarded)
+    needs: policy
+    if: >-
+      !cancelled() && needs.policy.result == 'success' &&
+      github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout trusted master
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      # Node built-ins only (fetch): no install, no database client, no provider.
+      # The secrets are step-scoped env vars named on the command line; no step
+      # echoes them.
+      - name: Probe the DEMO service key without printing any value
+        env:
+          PREVIEW_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          PREVIEW_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/check-preview-service-key.mjs PREVIEW_SUPABASE_URL PREVIEW_SUPABASE_SERVICE_ROLE_KEY

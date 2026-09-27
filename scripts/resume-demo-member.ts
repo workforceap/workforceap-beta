@@ -43,6 +43,7 @@ import {
   type MemberStorageAdmin,
 } from '../lib/gdpr/deleteUserStorage';
 import { assertPortalQaOrganization, readPortalQaTarget } from './lib/portal-qa-guard.cjs';
+import { probeDemoServiceKey } from './lib/demo-service-key-probe.cjs';
 export const RESUME_QA_EMAIL = /^resume-qa-\d{1,20}-\d{1,4}@example\.com$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -50,15 +51,22 @@ export interface PortalQaTarget { organizationId: string; organizationSlug: stri
 export interface FixtureState { userId: string; email: string; organizationId: string; runId: string }
 export interface CreationMarker { runId: string; email: string; organizationId: string }
 
-export type CleanupInput = { kind: 'state'; state: FixtureState } | { kind: 'stopped-at-target-guard' };
+export type CleanupInput =
+  | { kind: 'state'; state: FixtureState }
+  | { kind: 'stopped-before-clients'; failedStage: PreClientStage };
 
 /**
  * Progress `create` records in the stage file (RESUME_QA_STAGE_FILE):
- * `target-guard` is written before anything else, while no client or Auth call
- * is possible; `clients` replaces it once the target guard has passed, before
- * any client is built. No secrets, only the stage and the synthetic email.
+ * - `target-guard` is written before anything else, while no client or Auth
+ *   call is possible;
+ * - `key-probe` once the target guard passed, while the one read-only
+ *   DEMO key probe runs (no client, no write);
+ * - `clients` once the key is valid, before any client is built.
+ * No secrets, only the stage and the synthetic email.
  */
-export interface CreateStage { stage: 'target-guard' | 'clients'; email?: string }
+type PreClientStage = 'target-guard' | 'key-probe';
+export interface CreateStage { stage: PreClientStage | 'clients'; email?: string }
+const PRE_CLIENT_STAGES: readonly string[] = ['target-guard', 'key-probe'];
 
 function readJson(text: string | null): unknown {
   if (text === null) return null;
@@ -90,7 +98,9 @@ export function resolveCleanupInput(markerText: string | null, stateText: string
   const state = readJson(stateText);
   if (isFixtureState(state)) return { kind: 'state', state };
   const stage = readJson(stageText) as Partial<CreateStage> | null | undefined;
-  if (markerText === null && stateText === null && stage?.stage === 'target-guard') return { kind: 'stopped-at-target-guard' };
+  if (markerText === null && stateText === null && typeof stage?.stage === 'string' && PRE_CLIENT_STAGES.includes(stage.stage)) {
+    return { kind: 'stopped-before-clients', failedStage: stage.stage as PreClientStage };
+  }
   const marker = readJson(markerText) as Partial<CreationMarker> | null | undefined;
   const email = [marker?.email, stage?.email].find((value): value is string => typeof value === 'string' && RESUME_QA_EMAIL.test(value))
     ?? (markerText === null ? '<not recorded: resume-qa-<run id>-<run attempt>@example.com>' : '<unreadable marker>');
@@ -399,7 +409,11 @@ function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
 }
 
 /** The CLI (exported for the mocked tests). */
-export async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
+export async function main(
+  command: string | undefined,
+  env: NodeJS.ProcessEnv,
+  { fetchImpl = globalThis.fetch }: { fetchImpl?: typeof fetch } = {},
+) {
   const stateFile = env.RESUME_QA_STATE_FILE?.trim();
   if (!stateFile) throw new Error('Set RESUME_QA_STATE_FILE.');
   const markerFile = env.RESUME_QA_MARKER_FILE?.trim() || `${stateFile}.marker`;
@@ -409,6 +423,13 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
     // First, before anything can fail: no client or Auth call is possible yet.
     writeFileSync(stageFile, JSON.stringify({ stage: 'target-guard' } satisfies CreateStage));
     const target = readPortalQaTarget(env) as PortalQaTarget;
+    // Hard gate before any marker, client or Auth write: one read-only probe
+    // to the hardcoded DEMO origin must accept this service key.
+    writeFileSync(stageFile, JSON.stringify({ stage: 'key-probe' } satisfies CreateStage));
+    const keyCheck = await probeDemoServiceKey({ url: env.NEXT_PUBLIC_SUPABASE_URL, key: env.SUPABASE_SERVICE_ROLE_KEY, fetchImpl });
+    if (keyCheck.urlProject !== 'demo' || keyCheck.key !== 'valid') {
+      throw new Error(`The DEMO service key check did not pass (urlProject ${keyCheck.urlProject}, key ${keyCheck.key}); nothing was created.`);
+    }
     if (!env.GITHUB_ENV) throw new Error('create hands the credentials to later steps through GITHUB_ENV.');
     const identity = syntheticIdentity(env.GITHUB_RUN_ID ?? '', env.GITHUB_RUN_ATTEMPT ?? '');
     // Past the guard: from here on a missing marker can no longer be read as
@@ -455,18 +476,19 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
     // Decided from the local files alone, before the target guard, so it needs
     // no DEMO URL or client. Informational only: the combined verifier still
     // fails the run, and this receipt is never proof that no member exists.
-    if (input.kind === 'stopped-at-target-guard') {
+    if (input.kind === 'stopped-before-clients') {
       writeReceipt({
         success: true,
-        // Means "no marker found in a run whose create stopped at the target
-        // guard", NOT "proven absent". Kept because the verifier keys on it.
+        // Means "no marker found in a run whose create stopped before any
+        // client (at the target guard or the read-only key probe)", NOT
+        // "proven absent". Kept because the verifier keys on it.
         memberCreated: false,
         markerFound: false,
         memberCreationAttempted: 'not-observed',
         informationalOnly: true,
-        failedStage: 'target-guard',
+        failedStage: input.failedStage,
       });
-      console.log('create stopped at the target guard before any client or Auth call; no marker was found and nothing was cleaned up (informational receipt).');
+      console.log(`create stopped at ${input.failedStage} before any client or Auth write; no marker was found and nothing was cleaned up (informational receipt).`);
       return;
     }
     const { state } = input;
