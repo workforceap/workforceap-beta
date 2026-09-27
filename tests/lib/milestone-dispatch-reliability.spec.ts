@@ -5,20 +5,40 @@ import type { ActionDraft } from '@/lib/milestoneCascade/types';
 import { CASCADE_DISPATCH_LEASE_MS, CASCADE_IDEMPOTENCY_WINDOW_MS, summarizeCascadeDispatch } from '@/lib/milestoneCascade/dispatchState';
 
 const mocks = vi.hoisted(() => ({ findFirst: vi.fn(), updateMany: vi.fn(), send: vi.fn(), activeWrite: vi.fn() }));
-vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: async (fn: (db: unknown) => Promise<unknown>) => fn({ milestoneCascade: { findFirst: mocks.findFirst, updateMany: mocks.updateMany } }) } }));
+vi.mock('@/lib/db/prisma', () => {
+  const tx = {
+    $executeRaw: async () => 1,
+    $queryRaw: async (sql: TemplateStringsArray) =>
+      sql.join('').includes('public.milestone_cascades') && row.dispatchState?.claimId ? [{ id: row.id }] : [],
+    user: {
+      findFirst: async () => row.user,
+      updateMany: async ({ data }: { data: { billingDeletionPendingAt: Date; billingDeletionOperationId: string; billingDeletionCompletedAt: null } }) => {
+        if (row.user.billingDeletionOperationId) return { count: 0 };
+        Object.assign(row.user, data);
+        return { count: 1 };
+      },
+    },
+    milestoneCascade: { findFirst: mocks.findFirst, updateMany: mocks.updateMany },
+  };
+  return { prisma: { $transaction: async (fn: (db: typeof tx) => Promise<unknown>) => fn(tx) } };
+});
 vi.mock('@/lib/email', () => ({ sendMilestoneCascadeEmail: mocks.send }));
+vi.mock('@/lib/db/transactionPolicy', () => ({ interactiveTransactionsGuaranteed: () => true }));
+vi.mock('@/lib/tenant/scopeProxy', () => ({ makeScopedProxy: (_orgId: string, tx: unknown) => tx }));
+vi.mock('@/lib/tenant/withTenantScope', () => ({ crossTenantOK: (read: () => unknown) => read() }));
 vi.mock('@/lib/member/activeWrite', () => ({
   MemberLifecycleWriteError: class MemberLifecycleWriteError extends Error {},
   withActiveMemberWrite: mocks.activeWrite,
 }));
 import { CascadeDispatchError, dispatchApprovedCascade } from '@/lib/milestoneCascade/sendApprovedCascade';
 import { MemberLifecycleWriteError } from '@/lib/member/activeWrite';
+import { beginBillingDeletion } from '@/lib/billing/erasureGuard';
 import type { CascadeDispatchState } from '@/lib/milestoneCascade/dispatchState';
 
 type Row = {
   id: string; userId: string; status: string; drafts: Prisma.JsonValue; dispatchState: CascadeDispatchState | null;
   expiresAt: Date; sentAt: Date | null; approvedByUserId: string | null;
-  user: { email: string; deletedAt: Date | null; billingDeletionPendingAt: Date | null; billingDeletionOperationId: string | null; organizationId: string };
+  user: { email: string; deletedAt: Date | null; billingDeletionPendingAt: Date | null; billingDeletionOperationId: string | null; billingDeletionCompletedAt: Date | null; organizationId: string };
 };
 const draft = (subject: string): ActionDraft => ({ type: 'celebrate_milestone', channel: 'email', subject, body: `Message ${subject}`, rationale: 'Synthetic milestone', confidence: 1 });
 let row: Row;
@@ -32,8 +52,11 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-09-09T18:00:00Z'));
   vi.resetAllMocks(); writeCount = 0; failWrite = null;
-  row = { id: '00000000-0000-4000-8000-000000000001', userId: 'member-1', status: 'awaiting_approval', drafts: JSON.parse(JSON.stringify(initialDrafts)), dispatchState: null, expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000), sentAt: null, approvedByUserId: null, user: { email: 'member@example.invalid', deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, organizationId: 'org-1' } };
-  mocks.activeWrite.mockImplementation(async (_userId, write) => write({ milestoneCascade: { updateMany: mocks.updateMany } }));
+  row = { id: '00000000-0000-4000-8000-000000000001', userId: 'member-1', status: 'awaiting_approval', drafts: JSON.parse(JSON.stringify(initialDrafts)), dispatchState: null, expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000), sentAt: null, approvedByUserId: null, user: { email: 'member@example.invalid', deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, organizationId: 'org-1' } };
+  mocks.activeWrite.mockImplementation(async (_userId, write) => {
+    if (row.user.deletedAt || row.user.billingDeletionPendingAt || row.user.billingDeletionOperationId) throw new MemberLifecycleWriteError();
+    return write({ milestoneCascade: { updateMany: mocks.updateMany } });
+  });
   mocks.findFirst.mockImplementation(async () => structuredClone(row));
   mocks.updateMany.mockImplementation(async ({ where, data }) => {
     writeCount++;
@@ -41,7 +64,9 @@ beforeEach(() => {
     const expected = where.dispatchState.equals;
     const stateMatches = row.dispatchState === null ? expected === Prisma.DbNull : JSON.stringify(expected) === JSON.stringify(row.dispatchState);
     const draftsMatch = !where.drafts || JSON.stringify(where.drafts.equals) === JSON.stringify(row.drafts);
-    if (where.status !== row.status || !stateMatches || !draftsMatch || row.user.deletedAt || row.user.email.toLowerCase() !== where.AND[1].user.email.equals) return { count: 0 };
+    const userGate = where.AND?.[1]?.user;
+    if (where.status !== row.status || !stateMatches || !draftsMatch ||
+      (userGate && (row.user.deletedAt || row.user.billingDeletionPendingAt || row.user.billingDeletionOperationId || row.user.email.toLowerCase() !== userGate.email.equals))) return { count: 0 };
     row = { ...row, ...structuredClone(data) };
     return { count: 1 };
   });
@@ -92,6 +117,27 @@ describe('durable milestone dispatch', () => {
     expect(mocks.send).toHaveBeenCalledTimes(1);
     release(); await first;
     expect(mocks.send).toHaveBeenCalledTimes(2);
+  });
+
+  it('refuses erasure after the dispatch claim until the provider receipt is stored', async () => {
+    let releaseProvider!: () => void;
+    mocks.send.mockImplementationOnce(async () => {
+      await new Promise<void>((resolve) => { releaseProvider = resolve; });
+      return { ok: true, messageId: 'receipt-before-erase' };
+    });
+    const dispatch = dispatchApprovedCascade(request());
+    for (let i = 0; i < 30 && !releaseProvider; i++) await Promise.resolve();
+    expect(releaseProvider).toBeTypeOf('function');
+    expect(state().claimId).toBeTruthy();
+
+    expect(await beginBillingDeletion(row.userId, row.user.organizationId))
+      .toEqual({ ok: false, reason: 'in_progress' });
+    expect(row.user.billingDeletionPendingAt).toBeNull();
+    releaseProvider();
+    await dispatch;
+    expect(state().entries[0]).toMatchObject({ status: 'accepted', providerMessageId: 'receipt-before-erase' });
+    expect(state().claimId).toBeNull();
+    expect((await beginBillingDeletion(row.userId, row.user.organizationId)).ok).toBe(true);
   });
 
   it('stops before any provider call when the pre-send checkpoint fails', async () => {
@@ -165,7 +211,27 @@ describe('durable milestone dispatch', () => {
     expect(mocks.send).not.toHaveBeenCalled();
     row.user.deletedAt = null; await dispatchApprovedCascade(request());
     expect(mocks.updateMany.mock.calls[0][0].where.AND).toEqual([{ user: { organizationId: 'org-1' } }, { user: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, email: { equals: 'member@example.invalid', mode: 'insensitive' } } }]);
-    for (const [args] of mocks.updateMany.mock.calls.slice(1)) expect(args.where.AND).toEqual([{ user: { organizationId: 'org-1' } }, { user: { deletedAt: null, email: { equals: 'member@example.invalid', mode: 'insensitive' } } }]);
+    for (const [args] of mocks.updateMany.mock.calls.slice(1)) {
+      expect(args.where.AND).toBeUndefined();
+      expect(args.where).toMatchObject({ id: row.id, status: 'approved', dispatchState: { equals: expect.any(Object) } });
+    }
+  });
+
+  it('persists an accepted receipt after the member is anonymized during the provider call', async () => {
+    mocks.send.mockImplementationOnce(async ({ recipientUserId }) => {
+      expect(recipientUserId).toBe(row.userId);
+      row.user.billingDeletionPendingAt = new Date();
+      row.user.deletedAt = new Date();
+      row.user.email = 'deleted_member-1@deleted.invalid';
+      return { ok: true, messageId: 'provider-accepted-before-erase' };
+    }).mockResolvedValueOnce({ ok: false, skipped: true, error: 'inactive_member' });
+    const args = request();
+    const result = await dispatchApprovedCascade(args);
+    expect(result).toMatchObject({ emailsSent: 1, emailsFailed: 1 });
+    expect(state().entries[0]).toMatchObject({ status: 'accepted', providerMessageId: 'provider-accepted-before-erase' });
+    expect(state().entries[1]).toMatchObject({ status: 'failed', error: 'inactive_member' });
+    expect(mocks.updateMany.mock.calls.slice(1).every(([call]) => !call.where.AND)).toBe(true);
+    expect(row.status).toBe('approved');
   });
 
   it('does not claim or send when erasure wins after the initial cascade read', async () => {
@@ -183,7 +249,7 @@ describe('durable milestone dispatch', () => {
       else row.user.email = 'different@example.invalid';
       return snapshot;
     });
-    await expect(dispatchApprovedCascade(request())).rejects.toMatchObject({ code: 'dispatch_conflict' });
+    await expect(dispatchApprovedCascade(request())).rejects.toMatchObject({ code: change === 'deleted' ? 'member_inactive' : 'dispatch_conflict' });
     expect(mocks.send).not.toHaveBeenCalled();
   });
 

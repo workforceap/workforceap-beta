@@ -25,6 +25,17 @@ export async function hasUnresolvedBillingSend(tx: Prisma.TransactionClient, mem
   return rows.length > 0;
 }
 
+/** Keep a User row until an owned milestone provider attempt records its outcome. */
+export async function hasUnresolvedMilestoneDispatch(tx: Prisma.TransactionClient, memberId: string): Promise<boolean> {
+  const rows = await tx.$queryRaw<Array<{ id: string }>>`
+    SELECT id FROM public.milestone_cascades
+    WHERE user_id = ${memberId}::text
+      AND dispatch_state #>> '{claimId}' IS NOT NULL
+    LIMIT 1
+  `;
+  return rows.length > 0;
+}
+
 /** Resolve a unique User's tenant only after taking its lifecycle lock. */
 export async function scopedBillingUser(tx: Prisma.TransactionClient, userId: string, expectedOrgId?: string): Promise<Prisma.TransactionClient | null> {
   // Callers with only an internal User ID must first discover its tenant.
@@ -81,6 +92,9 @@ export async function beginBillingDeletion(memberId: string, organizationId?: st
       return { ok: false as const, reason: 'in_progress' as const };
     }
     if (await hasUnresolvedBillingSend(tx, memberId)) return { ok: false as const, reason: 'unresolved_send' as const };
+    // The dispatch claim took this same lifecycle lock. Do not let a hard
+    // erase cascade the ledger before its in-flight provider receipt lands.
+    if (await hasUnresolvedMilestoneDispatch(tx, memberId)) return { ok: false as const, reason: 'in_progress' as const };
     // Capture before the update: Prisma returns a value snapshot, but some
     // transaction adapters and test doubles reuse the same mutable object.
     const priorState = { pendingAt: member.billingDeletionPendingAt, completedAt: member.billingDeletionCompletedAt };
@@ -171,6 +185,7 @@ export async function beginBillingIdentityEdit(userId: string, organizationId: s
     const active = await scoped.user.findFirst({ where, select: { id: true } });
     if (!active) return { ok: false as const, reason: 'in_progress' as const };
     if (await hasUnresolvedBillingSend(tx, userId)) return { ok: false as const, reason: 'unresolved_send' as const };
+    if (await hasUnresolvedMilestoneDispatch(tx, userId)) return { ok: false as const, reason: 'in_progress' as const };
     const pendingAt = new Date();
     const operationId = randomUUID();
     const { count } = await scoped.user.updateMany({

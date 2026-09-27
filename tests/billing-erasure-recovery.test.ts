@@ -18,7 +18,7 @@ vi.mock('@/lib/db/prisma', () => {
   return { prisma: { ...tx, $transaction: async (callback: (client: typeof tx) => unknown) => callback(tx) } };
 });
 
-import { beginBillingDeletion } from '@/lib/billing/erasureGuard';
+import { beginBillingDeletion, beginBillingIdentityEdit } from '@/lib/billing/erasureGuard';
 
 describe('billing deletion owner fails closed', () => {
   const memberId = '123e4567-e89b-12d3-a456-426614174000';
@@ -87,5 +87,29 @@ describe('billing deletion owner fails closed', () => {
     });
     updateMany.mockResolvedValue({ count: 0 });
     expect(await beginBillingDeletion(memberId, organizationId)).toEqual({ ok: false, reason: 'raced' });
+  });
+
+  it('holds deletion behind a claimed milestone send until its receipt is settled', async () => {
+    findFirst.mockResolvedValue({
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+      billingDeletionCompletedAt: null,
+    });
+    // Billing sends are clear; the next query sees the owned milestone claim.
+    queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'cascade-1' }]);
+    expect(await beginBillingDeletion(memberId, organizationId)).toEqual({ ok: false, reason: 'in_progress' });
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(queryRaw.mock.calls[1][0].join('')).toContain("dispatch_state #>> '{claimId}' IS NOT NULL");
+
+    queryRaw.mockResolvedValue([]);
+    expect((await beginBillingDeletion(memberId, organizationId)).ok).toBe(true);
+  });
+
+  it('holds recipient identity edits behind an unsettled milestone send', async () => {
+    findFirst.mockResolvedValue({ id: memberId });
+    queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'cascade-1' }]);
+    expect(await beginBillingIdentityEdit(memberId, organizationId, 'member@example.invalid'))
+      .toEqual({ ok: false, reason: 'in_progress' });
+    expect(updateMany).not.toHaveBeenCalled();
   });
 });

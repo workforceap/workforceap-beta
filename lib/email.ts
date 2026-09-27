@@ -1201,6 +1201,7 @@ export async function sendCourseCompletedEmail(params: {
  */
 export async function sendMilestoneCascadeEmail(params: {
   to: string;
+  recipientUserId: string;
   subject: string;
   bodyText: string;
   idempotencyKey?: string;
@@ -1232,10 +1233,14 @@ export async function sendMilestoneCascadeEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.milestone_cascade,
       to: params.to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine(params.subject),
       html,
       idempotencyKey: params.idempotencyKey,
     });
+    if ('skipped' in result && result.skipped === true) {
+      return { ok: false, skipped: true, error: 'reason' in result && typeof result.reason === 'string' ? result.reason : 'inactive_member' };
+    }
     if (params.idempotencyKey && !result.data?.id) return { ok: false, error: 'The email provider did not return an acceptance receipt.' };
     return { ok: true, messageId: result.data?.id };
   } catch (err) {

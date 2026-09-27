@@ -1,8 +1,12 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ send: vi.fn() }));
+const mocks = vi.hoisted(() => ({ send: vi.fn(), user: vi.fn() }));
 vi.mock('resend', () => ({ Resend: class { emails = { send: mocks.send }; } }));
+vi.mock('@/lib/db/prisma', () => ({ prisma: {
+  user: { findUnique: mocks.user },
+  emailSendLog: { upsert: vi.fn(async () => ({})) },
+} }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@/lib/tenant/organizationBranding', () => ({ getOrganizationBranding: vi.fn() }));
 import { sendMilestoneCascadeEmail } from '@/lib/email';
@@ -13,15 +17,30 @@ beforeEach(() => {
   vi.stubEnv('RESEND_API_KEY', 'synthetic-provider-only');
   vi.stubEnv('CRON_SECRET', 'synthetic-unsubscribe-only');
   mocks.send.mockResolvedValue({ data: { id: 'synthetic-receipt' }, error: null });
+  mocks.user.mockResolvedValue({
+    email: 'member@workforceap.org', deletedAt: null,
+    billingDeletionPendingAt: null, billingDeletionOperationId: null,
+  });
 });
 afterEach(() => vi.unstubAllEnvs());
 
 describe('milestone provider idempotency boundary', () => {
-  const message = { to: 'member@workforceap.org', subject: 'Synthetic milestone', bodyText: 'Synthetic body', idempotencyKey: 'milestone/synthetic/0/stable' };
+  const message = { to: 'member@workforceap.org', recipientUserId: 'member-1', subject: 'Synthetic milestone', bodyText: 'Synthetic body', idempotencyKey: 'milestone/synthetic/0/stable' };
   it('threads the exact stable key to Resend and returns its acceptance receipt', async () => {
     const result = await sendMilestoneCascadeEmail(message);
     expect(result).toEqual({ ok: true, messageId: 'synthetic-receipt' });
     expect(mocks.send).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@workforceap.org', subject: message.subject }), { idempotencyKey: message.idempotencyKey });
+    expect(mocks.user).toHaveBeenCalledWith({ where: { id: 'member-1' }, select: {
+      email: true, deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true,
+    } });
+  });
+  it('checks deletion at the sender boundary and never calls Resend for an inactive member', async () => {
+    mocks.user.mockResolvedValue({
+      email: 'member@workforceap.org', deletedAt: new Date(),
+      billingDeletionPendingAt: new Date(), billingDeletionOperationId: null,
+    });
+    expect(await sendMilestoneCascadeEmail(message)).toMatchObject({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.send).not.toHaveBeenCalled();
   });
   it('does not report accepted when Resend returns no receipt', async () => {
     mocks.send.mockResolvedValue({ data: null, error: null });

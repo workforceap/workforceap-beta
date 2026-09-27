@@ -19,11 +19,11 @@ export type DraftDispatchOutcome =
   | { ok: true; kind: 'logged_only'; reason: string }
   | { ok: false; reason: string };
 
-export async function dispatchApprovedDraft(args: { draft: ActionDraft; recipientEmail: string; idempotencyKey?: string }): Promise<DraftDispatchOutcome> {
+export async function dispatchApprovedDraft(args: { draft: ActionDraft; recipientEmail: string; recipientUserId: string; idempotencyKey?: string }): Promise<DraftDispatchOutcome> {
   const { draft } = args;
   if (draft.type !== 'celebrate_milestone') return { ok: true, kind: 'logged_only', reason: `advisory action: ${draft.type}` };
   try {
-    const result = await sendMilestoneCascadeEmail({ to: args.recipientEmail, subject: draft.subject, bodyText: draft.body, idempotencyKey: args.idempotencyKey });
+    const result = await sendMilestoneCascadeEmail({ to: args.recipientEmail, recipientUserId: args.recipientUserId, subject: draft.subject, bodyText: draft.body, idempotencyKey: args.idempotencyKey });
     if (result.ok && args.idempotencyKey && !result.messageId?.trim()) return { ok: false, reason: 'The email provider did not return an acceptance receipt.' };
     return result.ok ? { ok: true, kind: 'sent_email', messageId: result.messageId } : { ok: false, reason: result.error ?? 'Provider acceptance could not be confirmed.' };
   } catch {
@@ -124,7 +124,10 @@ export async function dispatchApprovedCascade(args: {
     const complete = state.entries.every(e => e.status === 'accepted' || e.status === 'advisory');
     try {
       const changed = await prisma.$transaction(tx => tx.milestoneCascade.updateMany({
-        where: { id: row!.id, AND: [args.scopeWhere ?? {}, { user: { deletedAt: null, email: { equals: args.recipientEmail.trim().toLowerCase(), mode: 'insensitive' } } }], status: 'approved', dispatchState: { equals: persisted } },
+        // The tenant and recipient were verified by the owned claim. Once a
+        // provider attempt begins, deletion may anonymize the User row. The
+        // exact claimed state is the CAS guard for truthful receipt writes.
+        where: { id: row!.id, status: 'approved', dispatchState: { equals: persisted } },
         data: { dispatchState: asJson(state), ...(final ? { status: complete ? 'sent' : 'approved', sentAt: complete ? new Date() : null } : {}) },
       }));
       if (changed.count !== 1) throw new Error('Dispatch state changed concurrently');
@@ -143,7 +146,7 @@ export async function dispatchApprovedCascade(args: {
     entry.attempts++;
     entry.error = null;
     await save(); // No outbound request until its idempotency key is durable.
-    const outcome = await dispatchApprovedDraft({ draft: args.drafts[entry.draftIndex], recipientEmail: state.recipientEmail, idempotencyKey: entry.idempotencyKey });
+    const outcome = await dispatchApprovedDraft({ draft: args.drafts[entry.draftIndex], recipientEmail: state.recipientEmail, recipientUserId: row.userId, idempotencyKey: entry.idempotencyKey });
     if (outcome.ok && outcome.kind === 'sent_email') {
       entry.status = 'accepted'; entry.providerMessageId = outcome.messageId ?? null;
     } else {
