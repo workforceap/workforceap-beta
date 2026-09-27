@@ -435,6 +435,7 @@ export async function claimRecipient(args: {
         AND c.active = TRUE
         AND cu.organization_id = ${packet!.organizationId}::text
         AND cu.deleted_at IS NULL
+        AND cu.billing_deletion_pending_at IS NULL
       ORDER BY ca.assigned_at DESC
       LIMIT 1
       FOR UPDATE OF ca, c, cu

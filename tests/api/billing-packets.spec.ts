@@ -117,8 +117,11 @@ vi.mock('@/lib/db/prisma', () => {
             mocks.lockTrace.push('counselor-rows');
             const [memberId, organizationId] = values;
             const c = db.counselor;
+            const counselorUser = db.users.find((u) => u.id === c?.id);
+            const checksPendingDeletion = _sql.join('').includes('cu.billing_deletion_pending_at IS NULL');
             return c && memberId === db.users[0]?.id && c.assigned !== false && c.active !== false
               && !c.deletedAt && (c.organizationId === undefined || c.organizationId === organizationId)
+              && (!checksPendingDeletion || !counselorUser?.billingDeletionPendingAt)
               ? [{ userId: c.id, email: c.email }]
               : [];
           }
@@ -1929,6 +1932,51 @@ describe('Member deletion while preparing a send', () => {
 });
 
 describe('Counselor drift while preparing a send', () => {
+  for (const [label, begin] of [
+    ['deletion', () => beginBillingDeletion(COUNSELOR.id, ORG)],
+    ['identity edit', () => beginBillingIdentityEdit(COUNSELOR.id, ORG, COUNSELOR.email)],
+  ] as const) {
+    it(`refuses every claim if counselor ${label} takes the lifecycle barrier before claim`, async () => {
+      db.counselor = { ...COUNSELOR, organizationId: ORG };
+      db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null });
+      const id = await signOne();
+      let resume!: () => void;
+      mocks.buildGate.value = new Promise<void>((resolve) => { resume = resolve; });
+      const pending = sendPacket(req({}), packetParams(id));
+      await vi.waitFor(() => expect(db.sends.map((row) => row.status)).toEqual(['pending', 'pending']));
+
+      const barrier = await begin();
+      expect(barrier.ok).toBe(true);
+      expect(db.users.find((row) => row.id === COUNSELOR.id)?.billingDeletionPendingAt).toBeInstanceOf(Date);
+      mocks.buildGate.value = null;
+      resume();
+
+      const response = await pending;
+      expect(response.status).toBe(409);
+      expect((await response.json()).code).toBe('counselor_changed');
+      expect(db.sends.map((row) => row.status)).toEqual(['pending', 'pending']);
+      expect(mocks.send).not.toHaveBeenCalled();
+    });
+  }
+
+  it('a claimed counselor copy prevents deletion and identity edit until delivery is settled', async () => {
+    db.counselor = { ...COUNSELOR, organizationId: ORG };
+    db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null });
+    const id = await signOne();
+    let finishCounselor!: (value: unknown) => void;
+    mocks.send.mockImplementation((_resend: unknown, args: { to: string }) => args.to === COUNSELOR.email
+      ? new Promise((resolve) => { finishCounselor = resolve; })
+      : Promise.resolve({ data: { id: 'student-message' }, error: null }));
+    const sending = sendPacket(req({}), packetParams(id));
+    await vi.waitFor(() => expect(db.sends.find((row) => row.recipient === 'counselor')?.status).toBe('claimed'));
+
+    expect(await beginBillingDeletion(COUNSELOR.id, ORG)).toEqual({ ok: false, reason: 'unresolved_send' });
+    expect(await beginBillingIdentityEdit(COUNSELOR.id, ORG, COUNSELOR.email)).toEqual({ ok: false, reason: 'unresolved_send' });
+    expect(db.users.find((row) => row.id === COUNSELOR.id)?.billingDeletionPendingAt).toBeNull();
+    finishCounselor({ data: { id: 'counselor-message' }, error: null });
+    expect((await sending).status).toBe(200);
+  });
+
   it('locks counselor/member lifecycles in sorted order before the member row and packet', async () => {
     const earlierCounselorId = '10000000-0000-4000-8000-000000000003';
     db.counselor = { ...COUNSELOR, id: earlierCounselorId, organizationId: ORG };
