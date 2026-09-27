@@ -70,6 +70,11 @@ vi.mock('@/lib/db/prisma', () => {
   return { prisma: prismaMock };
 });
 
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: vi.fn(async () => undefined),
+  billingLifecyclePending: vi.fn(async () => false),
+}));
+
 vi.mock('@/lib/member/points', () => ({
   awardPoints: vi.fn(),
 }));

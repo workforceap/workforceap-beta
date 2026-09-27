@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
+import { withActiveMemberAIWrite } from '@/lib/ai/activeMemberWrite';
 import { readJsonObjectBody } from '@/lib/api/readJsonBody';
 import { prisma } from '@/lib/db/prisma';
 import { assertPublicHttpUrl, UnsafeUrlError } from '@/lib/http/safeOutboundFetch';
@@ -40,7 +41,7 @@ export const POST = withApiGuc(async (req: NextRequest) => {
     }
   
     // Save URL to profile regardless
-    await prisma.$transaction((tx) => tx.profile.upsert({
+    await withActiveMemberAIWrite(user.id, (tx) => tx.profile.upsert({
       where: { userId: user.id },
       create: { userId: user.id, profileLinkedin: linkedinUrl },
       update: { profileLinkedin: linkedinUrl },
@@ -96,7 +97,7 @@ export const POST = withApiGuc(async (req: NextRequest) => {
         ].join(' ');
   
         // Save as a skill_assessment result so /api/member/skill-profile picks it up
-        await prisma.$transaction((tx) => tx.aIToolResult.create({
+        await withActiveMemberAIWrite(user.id, (tx) => tx.aIToolResult.create({
           data: {
             userId: user.id,
             toolType: 'skill_assessment',

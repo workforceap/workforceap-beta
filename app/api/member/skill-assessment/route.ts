@@ -3,7 +3,7 @@ import { AIToolType } from '@prisma/client';
 
 import { ensureUserInDb } from '@/lib/auth/ensureUser';
 import { getUser } from '@/lib/auth/server';
-import { prisma } from '@/lib/db/prisma';
+import { withActiveMemberAIWrite } from '@/lib/ai/activeMemberWrite';
 import { trackEvent } from '@/lib/events/track';
 import { saveSkillAssessmentSchema } from '@/lib/validation/skillAssessment';
 
@@ -27,7 +27,7 @@ export const POST = withApiGuc(async (request: Request) => {
     try {
       await ensureUserInDb(user);
   
-      const result = await prisma.$transaction((tx) => tx.aIToolResult.create({
+      const result = await withActiveMemberAIWrite(user.id, (tx) => tx.aIToolResult.create({
         data: {
           userId: user.id,
           toolType: AIToolType.skill_assessment,
