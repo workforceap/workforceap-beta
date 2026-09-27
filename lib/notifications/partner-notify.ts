@@ -2,10 +2,11 @@ import { Resend } from 'resend';
 import { prisma } from '@/lib/db/prisma';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
-import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import { classifyEmailSendFailure } from '@/lib/email/failureRecord';
+import { FixtureRecipientSkippedError, MemberEmailOutcomeUncertainError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 
-/** Surface provider rejections and persist safe metadata before returning. */
-async function sendPartnerEmail(resend: Resend, args: { from: string; to: string; subject: string; text: string; subjectMemberId: string }): Promise<void> {
+/** Surface provider rejections without persisting member or partner identity. */
+async function sendPartnerEmail(resend: Resend, args: { from: string; to: string; subject: string; text: string; subjectMemberId: string; kind: 'milestone' | 'assignment' }): Promise<void> {
   try {
     await sendBrandedEmailOrThrowOnSkip(
       resend,
@@ -18,11 +19,15 @@ async function sendPartnerEmail(resend: Resend, args: { from: string; to: string
     );
   } catch (error) {
     if (error instanceof FixtureRecipientSkippedError) return;
+    // The inner send releases its member claim after provider settlement.
+    // This diagnostic may finish later, so construct only safe fields.
+    const classified = error instanceof MemberEmailOutcomeUncertainError ? error.causeValue : error;
+    const { errorClass } = classifyEmailSendFailure(classified);
     await recordWorkflowDiagnostic({
       workflow: 'email_send', status: 'error', provider: 'resend',
-      summary: `Partner email send failed: "${args.subject}"`,
-      failureReason: error instanceof Error ? error.message : 'Email provider request failed.',
-      metadata: { to: [args.to], subject: args.subject },
+      summary: 'Partner member email send failed',
+      failureReason: `partner_member_email_${errorClass}`,
+      metadata: { kind: args.kind, errorClass, deliveryUncertain: error instanceof MemberEmailOutcomeUncertainError },
     });
     throw error;
   }
@@ -121,6 +126,7 @@ export async function sendPartnerMilestoneEmail(
   try {
     const resend = new Resend(resendKey);
     await sendPartnerEmail(resend, {
+      kind: 'milestone',
       subjectMemberId: memberId,
       from: emailFrom,
       to: referral.partner.contactEmail.trim(),
@@ -128,7 +134,7 @@ export async function sendPartnerMilestoneEmail(
       text,
     });
   } catch (err) {
-    console.error('sendPartnerMilestoneEmail failed:', err);
+    console.error('sendPartnerMilestoneEmail failed:', classifyEmailSendFailure(err).errorClass);
     throw err;
   }
 }
@@ -183,6 +189,7 @@ export async function sendPartnerNewMemberAssignedEmail(
     try {
       const resend = new Resend(resendKey);
       await sendPartnerEmail(resend, {
+        kind: 'assignment',
         subjectMemberId: memberId,
         from: emailFrom,
         to: partner.contactEmail.trim(),
@@ -190,11 +197,11 @@ export async function sendPartnerNewMemberAssignedEmail(
         text,
       });
     } catch (err) {
-      console.error('sendPartnerNewMemberAssignedEmail failed:', err);
+      console.error('sendPartnerNewMemberAssignedEmail failed:', classifyEmailSendFailure(err).errorClass);
       throw err;
     }
   } catch (err) {
-    console.error('sendPartnerNewMemberAssignedEmail: load or send failed:', err);
+    console.error('sendPartnerNewMemberAssignedEmail: load or send failed:', classifyEmailSendFailure(err).errorClass);
     throw err;
   }
 }

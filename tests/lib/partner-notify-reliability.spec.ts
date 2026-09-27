@@ -73,24 +73,29 @@ const channels = [
   ['assignment', () => sendPartnerNewMemberAssignedEmail('member-1', 'partner-1')],
 ] as const;
 describe.each(channels)('%s partner email', (_name, action) => {
-  it('surfaces a resolved SDK error and records safe recipient/subject metadata', async () => {
+  it('surfaces a resolved SDK error and records only classified diagnostic metadata', async () => {
     mocks.send.mockResolvedValue({ data: null, error: { message: 'Rate limited', name: 'rate_limit_exceeded', statusCode: 429 } });
     await expect(action()).rejects.toThrow('Rate limited');
-    expect(mocks.diagnostic).toHaveBeenCalledWith(expect.objectContaining({ workflow: 'email_send', status: 'error', provider: 'resend', failureReason: 'Rate limited', metadata: { to: ['partner@workforceap.org'], subject: expect.any(String) } }));
-    expect(JSON.stringify(mocks.diagnostic.mock.calls)).not.toContain('RESEND_API_KEY');
+    expect(mocks.diagnostic).toHaveBeenCalledWith(expect.objectContaining({
+      workflow: 'email_send', status: 'error', provider: 'resend',
+      failureReason: 'partner_member_email_rate_limit',
+      metadata: { kind: _name, errorClass: 'rate_limit', deliveryUncertain: false },
+    }));
+    expect(JSON.stringify(mocks.diagnostic.mock.calls)).not.toMatch(/Synthetic Member|partner@workforceap\.org|Rate limited|RESEND_API_KEY/);
     expect(mocks.claims).toHaveLength(0);
   });
-  it('holds an uncertain transport outcome for reconciliation while retaining its cause', async () => {
+  it('releases a settled uncertain transport claim while retaining its cause for the caller', async () => {
     mocks.send.mockRejectedValue(new Error('Synthetic network failure'));
     await expect(action()).rejects.toMatchObject({
       name: 'MemberEmailOutcomeUncertainError',
       causeValue: expect.objectContaining({ message: 'Synthetic network failure' }),
     });
     expect(mocks.diagnostic).toHaveBeenCalledTimes(1);
-    expect(mocks.claims).toEqual([expect.objectContaining({
-      memberId: 'member-1', kind: 'email', status: 'needs_reconciliation',
-      providerIdempotencyKey: expect.any(String),
-    })]);
+    expect(mocks.claims).toHaveLength(0);
+    expect(mocks.diagnostic).toHaveBeenCalledWith(expect.objectContaining({
+      failureReason: 'partner_member_email_network',
+      metadata: { kind: _name, errorClass: 'network', deliveryUncertain: true },
+    }));
   });
   it('awaits the failure diagnostic before settling', async () => {
     let release!: () => void;

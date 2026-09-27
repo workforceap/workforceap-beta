@@ -19,6 +19,7 @@ describe('admin erasure tombstone', () => {
       user: { findUnique: vi.fn(async () => existing), update },
       profile: { updateMany: vi.fn(async () => ({ count: 1 })) },
       pushSubscription: { deleteMany: vi.fn(async () => ({ count: 1 })) },
+      emailSendLog: { deleteMany: vi.fn(async () => ({ count: 0 })) },
     };
     const db = { $transaction: async (callback: (client: typeof tx) => unknown) => callback(tx) };
 
@@ -27,6 +28,9 @@ describe('admin erasure tombstone', () => {
     const data = update.mock.calls[0]?.[0]?.data;
     expect(data.email).toBe(buildErasedEmail(id, (existing.deletedAt ?? now).getTime()));
     expect(JSON.stringify(data)).not.toContain('private@example.com');
+    expect(tx.emailSendLog.deleteMany).toHaveBeenCalledWith({
+      where: { OR: [{ userId: id }, { entityId: id }] },
+    });
     expect(auditLog).toHaveBeenCalled();
   });
 });
