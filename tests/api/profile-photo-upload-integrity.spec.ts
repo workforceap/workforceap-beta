@@ -28,6 +28,14 @@ vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) }));
 vi.mock('@/lib/member/getMemberState', () => ({ invalidateMemberState: vi.fn(async () => undefined) }));
+vi.mock('@/lib/member/uploadLifecycle', () => {
+  class MemberUploadLifecycleError extends Error {}
+  return {
+    MemberUploadLifecycleError,
+    assertMemberUploadWritable: vi.fn(async () => undefined),
+    isMemberUploadLifecycleError: (error: unknown) => error instanceof MemberUploadLifecycleError,
+  };
+});
 
 const { profile, bucket } = vi.hoisted(() => ({
   profile: {
@@ -50,6 +58,7 @@ vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: vi.fn(() => ({ storag
 
 import { POST } from '@/app/api/member/profile-photo/upload/route';
 import { getUser } from '@/lib/auth/server';
+import { assertMemberUploadWritable, MemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
 
 const PNG_HEADER = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d];
 const ascii = (s: string) => Array.from(s, (c) => c.charCodeAt(0));
@@ -63,6 +72,7 @@ function upload(bytes: number[], name: string) {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getUser).mockResolvedValue({ id: 'user-1', email: 'm@example.test' } as never);
+  profile.findUnique.mockResolvedValue({ profilePhotoPath: 'profile-photos/user-1/photo.webp' } as never);
 });
 
 describe('POST /api/member/profile-photo/upload', () => {
@@ -87,9 +97,9 @@ describe('POST /api/member/profile-photo/upload', () => {
     const res = await upload([...PNG_HEADER, 1, 2, 3, 4], 'photo.png');
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, path: 'profile-photos/user-1/photo.webp' });
+    expect(await res.json()).toEqual({ ok: true, path: expect.stringMatching(/^profile-photos\/user-1\/photo-[a-f0-9-]+\.webp$/) });
     expect(bucket.upload).toHaveBeenCalledTimes(1);
-    expect(bucket.upload.mock.calls[0][2]).toMatchObject({ upsert: true, contentType: 'image/png' });
+    expect(bucket.upload.mock.calls[0][2]).toMatchObject({ upsert: false, contentType: 'image/png' });
   });
 
   it('uploads a real WebP', async () => {
@@ -112,5 +122,16 @@ describe('POST /api/member/profile-photo/upload', () => {
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'Use a JPG, PNG, or WebP photo' });
+  });
+
+  it('removes only the new photo when deletion wins after Storage upload', async () => {
+    vi.mocked(assertMemberUploadWritable).mockRejectedValueOnce(new MemberUploadLifecycleError());
+    const res = await upload([...PNG_HEADER, 1, 2, 3], 'photo.png');
+    const staged = bucket.upload.mock.calls[0][0];
+
+    expect(res.status).toBe(409);
+    expect(bucket.remove).toHaveBeenCalledWith([staged]);
+    expect(bucket.remove).not.toHaveBeenCalledWith(['profile-photos/user-1/photo.webp']);
+    expect(profile.upsert).not.toHaveBeenCalled();
   });
 });

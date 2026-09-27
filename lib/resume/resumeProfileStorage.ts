@@ -8,6 +8,7 @@ import {
   type ResumeProfilePaths,
 } from '@/lib/resume/atomicResumeObjectSwap';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { assertMemberUploadWritable } from '@/lib/member/uploadLifecycle';
 
 const MEMBER_RESUME_BUCKET = 'member-resumes';
 
@@ -45,6 +46,7 @@ export async function swapResumeProfilePathsWithCas(
   expectedPaths: ResumeProfilePaths = {},
 ): Promise<ResumeProfilePaths> {
   return prisma.$transaction(async (tx) => {
+    await assertMemberUploadWritable(tx, userId);
     const previous = await tx.profile.findUnique({
       where: { userId },
       select: {

@@ -25,6 +25,7 @@ import { completeCareerOsResumeActions } from '@/lib/workflows/completeCareerOsA
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
+import { isMemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -150,6 +151,9 @@ export const POST = withApiGuc(async (
         { error: 'This resume changed while the upload was running. Reload and try again.' },
         { status: 409 },
       );
+    }
+    if (isMemberUploadLifecycleError(error)) {
+      return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
     }
     throw error;
   }

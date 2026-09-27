@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
@@ -14,6 +15,9 @@ import {
   resolveProfilePhotoContentType,
 } from '@/lib/portal/memberProfilePhoto';
 import { detectImageSignature } from '@/lib/uploads/imageSignature';
+import { assertMemberUploadWritable, isMemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
+import { removeResumeObjectsWithRetry } from '@/lib/resume/atomicResumeObjectSwap';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -49,16 +53,14 @@ export const POST = withApiGuc(async (request: Request) => {
       return NextResponse.json({ error: 'Use a JPG, PNG, or WebP photo' }, { status: 400 });
     }
 
-    const storagePath = profilePhotoStoragePath(user.id);
-    const previousPath = await prisma.profile.findUnique({
-      where: { userId: user.id },
-      select: { profilePhotoPath: true },
-    });
+    // A unique key lets a rejected upload be removed without touching the
+    // previously committed photo (or an erasure worker's own Storage scan).
+    const storagePath = profilePhotoStoragePath(user.id, randomUUID());
 
     const supabase = getSupabaseAdmin();
     const { error: uploadError } = await supabase.storage
       .from(PROFILE_PHOTO_BUCKET)
-      .upload(storagePath, arrayBuffer, { upsert: true, contentType });
+      .upload(storagePath, arrayBuffer, { upsert: false, contentType });
 
     if (uploadError) {
       console.error('[member/profile-photo/upload] storage upload failed', uploadError);
@@ -68,24 +70,55 @@ export const POST = withApiGuc(async (request: Request) => {
       );
     }
 
-    await prisma.$transaction((tx) =>
-      tx.profile.upsert({
-        where: { userId: user.id },
-        create: { userId: user.id, profilePhotoPath: storagePath },
-        update: { profilePhotoPath: storagePath },
-      }),
-    );
+    let previousPath: string | null;
+    try {
+      previousPath = await prisma.$transaction(async (tx) => {
+        await assertMemberUploadWritable(tx, user.id);
+        const previous = await tx.profile.findUnique({
+          where: { userId: user.id },
+          select: { profilePhotoPath: true },
+        });
+        await tx.profile.upsert({
+          where: { userId: user.id },
+          create: { userId: user.id, profilePhotoPath: storagePath },
+          update: { profilePhotoPath: storagePath },
+        });
+        return previous?.profilePhotoPath ?? null;
+      });
+    } catch (error) {
+      const storage = supabase.storage.from(PROFILE_PHOTO_BUCKET);
+      const cleaned = await removeResumeObjectsWithRetry({
+        paths: [storagePath],
+        removeObjects: (paths) => storage.remove(paths),
+        onCleanupError: (cleanupError) => captureApiError(cleanupError, {
+          route: 'member/profile-photo/upload rejected-object cleanup',
+          userId: user.id,
+          extra: { storagePath },
+        }),
+      });
+      if (!cleaned) throw new Error('Failed to remove rejected profile photo upload');
+      if (isMemberUploadLifecycleError(error)) {
+        return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
+      }
+      throw error;
+    }
 
     if (
-      previousPath?.profilePhotoPath &&
-      previousPath.profilePhotoPath !== storagePath
+      previousPath &&
+      previousPath !== storagePath
     ) {
-      await supabase.storage
-        .from(PROFILE_PHOTO_BUCKET)
-        .remove([previousPath.profilePhotoPath])
-        .catch((error) => {
-          console.error('[member/profile-photo/upload] stale object cleanup failed', error);
+      try {
+        const { error: removeError } = await supabase.storage
+          .from(PROFILE_PHOTO_BUCKET)
+          .remove([previousPath]);
+        if (removeError) throw removeError;
+      } catch (error) {
+        captureApiError(error, {
+          route: 'member/profile-photo/upload previous-object cleanup',
+          userId: user.id,
+          extra: { previousPath },
         });
+      }
     }
 
     await invalidateMemberState(user.id);

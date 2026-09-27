@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
@@ -7,6 +8,9 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
+import { assertMemberUploadWritable, isMemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
+import { removeResumeObjectsWithRetry } from '@/lib/resume/atomicResumeObjectSwap';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 const BUCKET = 'member-files';
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -68,18 +72,15 @@ function storageErrorMessage(error: { message?: string } | null): string {
     try {
       const uploadBytes = new Uint8Array(await file.arrayBuffer());
       const verified = cert.status === 'approved';
-      // A verified certificate's file is the evidence staff checked, so a new
-      // file never overwrites it (WAP-220): it gets its own path, and the old
-      // path stays in the audit entry. Unverified certificates keep the stable
-      // path, since review starts over anyway. Both sit under
-      // cert-files/{userId}/, the prefix GDPR erasure removes.
-      const storagePath = verified
-        ? `cert-files/${user.id}/${cert.id}-${Date.now()}.${ext}`
-        : `cert-files/${user.id}/${cert.id}.${ext}`;
+      // Every upload gets a fresh path. A rejected write can then remove its
+      // staged proof without deleting a prior file or overwriting staff's
+      // verified evidence. GDPR erasure scans this member prefix.
+      const storagePath = `cert-files/${user.id}/${cert.id}-${randomUUID()}.${ext}`;
       const supabase = getSupabaseAdmin();
+      const storage = supabase.storage.from(BUCKET);
   
-      const { error } = await supabase.storage.from(BUCKET).upload(storagePath, uploadBytes, {
-        upsert: !verified,
+      const { error } = await storage.upload(storagePath, uploadBytes, {
+        upsert: false,
         contentType,
       });
   
@@ -95,16 +96,44 @@ function storageErrorMessage(error: { message?: string } | null): string {
       // The status condition closes the read-then-write window (WAP-220): if
       // staff changed the review between the read above and this write, no
       // row matches and the file goes through the review path below instead.
-      const keptVerified = verified
-        ? (
-            await prisma.$transaction((tx) =>
-              tx.userCertification.updateMany({
-                where: { id: cert.id, status: 'approved' },
-                data: { proofUrl: storagePath },
-              }),
-            )
-          ).count > 0
-        : false;
+      let keptVerified: boolean;
+      try {
+        keptVerified = await prisma.$transaction(async (tx) => {
+          await assertMemberUploadWritable(tx, user.id);
+          if (verified) {
+            const result = await tx.userCertification.updateMany({
+              where: { id: cert.id, userId: user.id, status: 'approved' },
+              data: { proofUrl: storagePath },
+            });
+            if (result.count > 0) return true;
+          }
+          // A status change during upload sends the proof for review again.
+          await tx.userCertification.update({
+            where: { id: cert.id, userId: user.id },
+            data: {
+              status: 'pending',
+              proofUrl: storagePath,
+              submittedAt: new Date(),
+            },
+          });
+          return false;
+        });
+      } catch (error) {
+        const cleaned = await removeResumeObjectsWithRetry({
+          paths: [storagePath],
+          removeObjects: (paths) => storage.remove(paths),
+          onCleanupError: (cleanupError) => captureApiError(cleanupError, {
+            route: 'member/certifications/upload rejected-object cleanup',
+            userId: user.id,
+            extra: { storagePath },
+          }),
+        });
+        if (!cleaned) throw new Error('Failed to remove rejected certification proof');
+        if (isMemberUploadLifecycleError(error)) {
+          return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
+        }
+        throw error;
+      }
       if (keptVerified) {
         const hadProof = !!cert.proofUrl;
         const previousProofUrl = cert.proofUrl ?? null;
@@ -128,21 +157,10 @@ function storageErrorMessage(error: { message?: string } | null): string {
       }
 
       // Otherwise proof submitted → enter the admin review queue. We persist the
-      // stable storage path (the `member-files` bucket is private) as
+      // unique storage path (the `member-files` bucket is private) as
       // `proofUrl`; the admin queue mints a short-lived signed URL from it at
       // render time (same pattern as `/api/admin/members/[id]/resume-urls`).
-      // Flip status to `pending` and stamp `submittedAt` so the row surfaces
-      // for review.
-      await prisma.$transaction((tx) =>
-        tx.userCertification.update({
-          where: { id: cert.id },
-          data: {
-            status: 'pending',
-            proofUrl: storagePath,
-            submittedAt: new Date(),
-          },
-        }),
-      );
+      // The pointer and pending status were saved in the locked transaction.
 
       return NextResponse.json({ success: true, storagePath, status: 'pending' });
     } catch (e) {

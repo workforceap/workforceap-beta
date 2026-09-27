@@ -19,6 +19,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { checkResumeUploadRateLimit } from '@/lib/rate-limit';
+import { isMemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
 
 /** Create bucket `member-resumes` in Supabase Dashboard → Storage if it does not exist (private bucket is fine). */
 const BUCKET = 'member-resumes';
@@ -86,6 +87,9 @@ export const POST = withApiGuc(async (request: Request) => {
           { error: 'Your resume changed in another session. Reload and try again.' },
           { status: 409 },
         );
+      }
+      if (isMemberUploadLifecycleError(error)) {
+        return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
       }
       throw error;
     }

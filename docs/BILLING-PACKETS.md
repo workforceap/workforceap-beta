@@ -233,6 +233,14 @@ that automatically emails to counselor and the student."
   marker blocks later signing and claiming. The cleanup request owns a UUID
   operation token, so a second delete or erase returns a conflict while the
   first is working.
+- Resume, profile-photo and certificate uploads stage private Storage objects
+  under unique member-owned keys. Their final profile/proof pointer transaction
+  takes the same lifecycle lock and checks the active User marker. If deletion
+  has committed its barrier first, the pointer stays unchanged and the new
+  object is removed. Member, counselor and admin resume uploads share this
+  check. A failed staged-object cleanup is logged for incident reconciliation;
+  Storage is not part of the database transaction, so inspect the member's
+  Storage prefixes before declaring a deletion reconciled.
 - A returned Storage or Auth failure releases the operation token while
   leaving the pending marker in place. Retry can acquire a new token and
   repeat cleanup. A process crash leaves the token held and requires an
