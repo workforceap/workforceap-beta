@@ -10,7 +10,7 @@ import { hasAdminAccess } from '@/lib/auth/roleAccess';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
-import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, abortBillingDeletedEmailRepairBeforeAuthChange, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 /**
@@ -73,8 +73,17 @@ async function _POST(
 
   const disabled = await disableAuthUserForSoftDelete(authAdmin, id, originalEmail);
   if (!disabled.ok) {
-    // Keep the pending barrier after a returned Auth failure. The provider
-    // outcome may be ambiguous, so restore requires reconciliation first.
+    if (disabled.providerUnchanged && deletion.priorState) {
+      // Auth update was never called. Put back the exact restorable state
+      // claimed under the lifecycle lock. A failed CAS retains its owner.
+      deletionOwner = null;
+      await abortBillingDeletedEmailRepairBeforeAuthChange(id, orgId, target.deletedAt, target.email, {
+        pendingAt: deletion.pendingAt, operationId: deletion.operationId, priorState: deletion.priorState,
+      });
+      return NextResponse.json({ error: 'The sign-in email could not be released. Retry or contact support.', reconciliationRequired: false }, { status: 502 });
+    }
+    // An Auth mutation may have reached the provider. Keep the pending
+    // barrier so restore waits for explicit reconciliation.
     return NextResponse.json({ error: 'The sign-in email could not be released. Retry or contact support.', reconciliationRequired: true }, { status: 502 });
   }
   // Also compare-and-set an already-freed row: a no-op email is not proof the

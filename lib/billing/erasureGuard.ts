@@ -47,7 +47,7 @@ export async function billingLifecyclePending(tx: Prisma.TransactionClient, user
 }
 
 export type BeginBillingDeletionResult =
-  | { ok: true; pendingAt: Date; operationId: string }
+  | { ok: true; pendingAt: Date; operationId: string; priorState?: { pendingAt: Date | null; completedAt: Date | null } }
   | { ok: false; reason: 'missing' | 'unresolved_send' | 'in_progress' | 'raced' | 'transaction_unavailable' };
 
 /**
@@ -81,14 +81,54 @@ export async function beginBillingDeletion(memberId: string, organizationId?: st
       return { ok: false as const, reason: 'in_progress' as const };
     }
     if (await hasUnresolvedBillingSend(tx, memberId)) return { ok: false as const, reason: 'unresolved_send' as const };
+    // Capture before the update: Prisma returns a value snapshot, but some
+    // transaction adapters and test doubles reuse the same mutable object.
+    const priorState = { pendingAt: member.billingDeletionPendingAt, completedAt: member.billingDeletionCompletedAt };
     const pendingAt = member.billingDeletionPendingAt ?? new Date();
     const operationId = randomUUID();
     const { count } = await scoped.user.updateMany({
       where: { ...where, billingDeletionOperationId: null },
       data: { billingDeletionPendingAt: pendingAt, billingDeletionOperationId: operationId, billingDeletionCompletedAt: null },
     });
-    return count === 1 ? { ok: true as const, pendingAt, operationId } : { ok: false as const, reason: 'raced' as const };
+    return count === 1 ? {
+      ok: true as const, pendingAt, operationId,
+      ...(expectedDeletedAt ? { priorState } : {}),
+    } : { ok: false as const, reason: 'raced' as const };
   });
+}
+
+/**
+ * Undo a deleted-email repair claim only when Auth was never mutated. The
+ * exact owner, soft-delete generation, email and claimed marker must still
+ * match; otherwise preserve the hold for explicit reconciliation.
+ */
+export async function abortBillingDeletedEmailRepairBeforeAuthChange(
+  memberId: string,
+  organizationId: string,
+  expectedDeletedAt: Date,
+  expectedEmail: string,
+  claim: { pendingAt: Date; operationId: string; priorState: { pendingAt: Date | null; completedAt: Date | null } },
+): Promise<void> {
+  if (!interactiveTransactionsGuaranteed()) throw new Error('Billing lifecycle writes require interactive transactions');
+  const undone = await prisma.$transaction(async (tx) => {
+    await lockBillingMemberLifecycle(tx, memberId);
+    const scoped = await scopedBillingUser(tx, memberId, organizationId);
+    if (!scoped) return { count: 0 };
+    return scoped.user.updateMany({
+      where: {
+        id: memberId, organizationId, email: expectedEmail, deletedAt: expectedDeletedAt,
+        billingDeletionPendingAt: claim.pendingAt,
+        billingDeletionOperationId: claim.operationId,
+        billingDeletionCompletedAt: null,
+      },
+      data: {
+        billingDeletionPendingAt: claim.priorState.pendingAt,
+        billingDeletionOperationId: null,
+        billingDeletionCompletedAt: claim.priorState.completedAt,
+      },
+    });
+  });
+  if (undone.count !== 1) throw new Error('Billing deleted-email repair rollback could not be confirmed');
 }
 
 /** Release a known failed operation without reopening the member to sign/claim. */

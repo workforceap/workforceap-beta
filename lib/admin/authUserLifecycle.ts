@@ -18,7 +18,7 @@ function matchesSelectedIdentity(actual: { id: string; email?: string }, userId:
 
 export type DisableAuthUserResult =
   | { ok: true; alreadyMissing: boolean }
-  | { ok: false; message: string };
+  | { ok: false; message: string; providerUnchanged?: true };
 
 function isConfirmedMissingAuthUser(error: { status?: number; code?: string }): boolean {
   return error.status === 404 || error.code === 'user_not_found';
@@ -55,9 +55,9 @@ export async function disableAuthUserForSoftDelete(
   const { data, error: lookupError } = await admin.auth.admin.getUserById(userId);
   if (lookupError) return isConfirmedMissingAuthUser(lookupError)
     ? { ok: true, alreadyMissing: true }
-    : { ok: false, message: 'Could not verify the selected sign-in account.' };
+    : { ok: false, message: 'Could not verify the selected sign-in account.', providerUnchanged: true };
   if (!data.user || !matchesSelectedIdentity(data.user, userId, expectedEmail)) {
-    return { ok: false, message: 'The sign-in identity does not match the selected account. No Auth account was changed.' };
+    return { ok: false, message: 'The sign-in identity does not match the selected account. No Auth account was changed.', providerUnchanged: true };
   }
   const { error } = await admin.auth.admin.updateUserById(userId, {
     ban_duration: SOFT_DELETE_BAN_DURATION,

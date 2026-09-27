@@ -42,7 +42,7 @@ describe('verified Supabase auth identity lifecycle', () => {
 
   it('keeps soft-delete and restore closed on a 503 containing not-found wording', async () => {
     api.getUserById.mockResolvedValue({ data: { user: null }, error: { status: 503, message: 'User not found in failed upstream request' } });
-    expect(await disableAuthUserForSoftDelete(admin, id, email)).toMatchObject({ ok: false });
+    expect(await disableAuthUserForSoftDelete(admin, id, email)).toMatchObject({ ok: false, providerUnchanged: true });
     expect(await reenableAuthUserAfterRestore(admin, { id, email })).toMatchObject({ ok: false });
     expectNoMutations();
   });
@@ -73,14 +73,14 @@ describe('verified Supabase auth identity lifecycle', () => {
 
   it.each([{ id: otherId, email }, { id, email: 'somebody-else@example.test' }, { id, email: retiredAuthEmail(otherId) }, null])('refuses a mismatched or missing selected identity: %j', async (user) => {
     api.getUserById.mockResolvedValue({ data: { user }, error: null });
-    expect(await disableAuthUserForSoftDelete(admin, id, email)).toMatchObject({ ok: false });
+    expect(await disableAuthUserForSoftDelete(admin, id, email)).toMatchObject({ ok: false, providerUnchanged: true });
     expect(await reenableAuthUserAfterRestore(admin, { id, email })).toMatchObject({ ok: false });
     expectNoMutations();
   });
 
   it('does not claim deletion or attempt recreation on a provider lookup failure', async () => {
     api.getUserById.mockResolvedValue({ data: { user: null }, error: { status: 503, message: 'Auth unavailable' } });
-    expect(await disableAuthUserForSoftDelete(admin, id, email)).toEqual({ ok: false, message: 'Could not verify the selected sign-in account.' });
+    expect(await disableAuthUserForSoftDelete(admin, id, email)).toEqual({ ok: false, message: 'Could not verify the selected sign-in account.', providerUnchanged: true });
     expect(await reenableAuthUserAfterRestore(admin, { id, email })).toEqual({ ok: false, message: 'Could not verify the selected sign-in account.' });
     expectNoMutations();
   });

@@ -274,7 +274,7 @@ import {
 } from '@/lib/billing/sendAttempts';
 import { listPacketsForMember, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import { prisma as prismaMock } from '@/lib/db/prisma';
-import { beginBillingDeletion, beginBillingIdentityEdit, beginBillingRestore, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { abortBillingDeletedEmailRepairBeforeAuthChange, beginBillingDeletion, beginBillingIdentityEdit, beginBillingRestore, completeBillingDeletion, endBillingIdentityEdit, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const ORG = DEFAULT_ORG_ID;
 const OTHER_ORG = 'aaaaaaaa-0000-4000-8000-000000000009';
@@ -406,6 +406,45 @@ describe('billing deletion barrier ordering', () => {
     const exact = await beginBillingDeletion(MEMBER, ORG, undefined, newDelete);
     expect(exact.ok).toBe(true);
     expect(db.users[0].billingDeletionOperationId).toBe(exact.ok ? exact.operationId : null);
+  });
+
+  it.each([false, true])('returns a deleted-email claim to its prior restorable state before any Auth change: completed=%s', async (completed) => {
+    const deletedAt = new Date('2026-09-01T00:00:00Z');
+    const completedAt = completed ? new Date('2026-09-01T00:01:00Z') : null;
+    const previousPendingAt = completed ? deletedAt : null;
+    db.users[0].deletedAt = deletedAt;
+    db.users[0].billingDeletionPendingAt = previousPendingAt;
+    db.users[0].billingDeletionCompletedAt = completedAt;
+
+    const claim = await beginBillingDeletion(MEMBER, ORG, undefined, deletedAt);
+    expect(claim.ok).toBe(true);
+    if (!claim.ok || !claim.priorState) return;
+    expect(claim.priorState).toEqual({ pendingAt: previousPendingAt, completedAt });
+    expect(db.users[0].billingDeletionCompletedAt).toBeNull();
+
+    await abortBillingDeletedEmailRepairBeforeAuthChange(MEMBER, ORG, deletedAt, 'member@example.test', {
+      pendingAt: claim.pendingAt, operationId: claim.operationId, priorState: claim.priorState,
+    });
+    expect(db.users[0].billingDeletionPendingAt).toEqual(previousPendingAt);
+    expect(db.users[0].billingDeletionCompletedAt).toEqual(completedAt);
+    expect(db.users[0].billingDeletionOperationId).toBeNull();
+    expect((await beginBillingRestore(MEMBER, ORG, {
+      email: 'member@example.test', deletedAt, pendingAt: previousPendingAt, completedAt,
+    })).ok).toBe(true);
+  });
+
+  it('keeps a claimed deletion held if safe rollback loses the exact email CAS', async () => {
+    const deletedAt = new Date('2026-09-01T00:00:00Z');
+    db.users[0].deletedAt = deletedAt;
+    const claim = await beginBillingDeletion(MEMBER, ORG, undefined, deletedAt);
+    expect(claim.ok).toBe(true);
+    if (!claim.ok || !claim.priorState) return;
+    db.users[0].email = 'unexpected@example.test';
+    await expect(abortBillingDeletedEmailRepairBeforeAuthChange(MEMBER, ORG, deletedAt, 'member@example.test', {
+      pendingAt: claim.pendingAt, operationId: claim.operationId, priorState: claim.priorState,
+    })).rejects.toThrow('rollback could not be confirmed');
+    expect(db.users[0].billingDeletionOperationId).toBe(claim.operationId);
+    expect(db.users[0].billingDeletionCompletedAt).toBeNull();
   });
 
   it('does not let deleted-email repair complete an unfinished account erasure', async () => {

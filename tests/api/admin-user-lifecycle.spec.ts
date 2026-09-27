@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(), isAdmin: vi.fn(), isSuperAdmin: vi.fn(),
   target: vi.fn(), collision: vi.fn(), updateMany: vi.fn(), findMany: vi.fn(),
-  restoreAuth: vi.fn(), disableAuth: vi.fn(), beginRestore: vi.fn(), beginDeletion: vi.fn(), completeDeletion: vi.fn(), releaseDeletion: vi.fn(), audit: vi.fn(), event: vi.fn(),
+  restoreAuth: vi.fn(), disableAuth: vi.fn(), beginRestore: vi.fn(), beginDeletion: vi.fn(), completeDeletion: vi.fn(), releaseDeletion: vi.fn(), abortRepair: vi.fn(), audit: vi.fn(), event: vi.fn(),
   org: vi.fn(),
 }));
 const db = vi.hoisted(() => ({ user: { findFirst: mocks.target, updateMany: mocks.updateMany, findMany: mocks.findMany } }));
@@ -32,6 +32,7 @@ vi.mock('@/lib/billing/erasureGuard', () => ({
   beginBillingDeletion: mocks.beginDeletion,
   completeBillingDeletion: mocks.completeDeletion,
   releaseBillingDeletion: mocks.releaseDeletion,
+  abortBillingDeletedEmailRepairBeforeAuthChange: mocks.abortRepair,
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.event, auditRequestMeta: () => ({}) }));
@@ -82,6 +83,7 @@ beforeEach(() => {
   mocks.beginDeletion.mockResolvedValue({ ok: true, operationId: 'email-operation' });
   mocks.completeDeletion.mockResolvedValue(undefined);
   mocks.releaseDeletion.mockResolvedValue(undefined);
+  mocks.abortRepair.mockResolvedValue(undefined);
   mocks.disableAuth.mockResolvedValue({ ok: true, alreadyMissing: false });
   mocks.audit.mockResolvedValue(undefined);
   mocks.event.mockResolvedValue(undefined);
@@ -361,6 +363,41 @@ describe('administrator email release', () => {
     expect(mocks.audit).not.toHaveBeenCalled();
   });
 
+  it('restores the prior completed marker when Auth lookup fails before mutation', async () => {
+    const priorCompletedAt = new Date('2026-09-08T10:01:00Z');
+    const pendingAt = new Date('2026-09-08T10:00:00Z');
+    mocks.beginDeletion.mockResolvedValueOnce({
+      ok: true, operationId: 'email-operation', pendingAt,
+      priorState: { pendingAt, completedAt: priorCompletedAt },
+    });
+    mocks.disableAuth.mockResolvedValueOnce({ ok: false, message: 'Auth lookup unavailable', providerUnchanged: true });
+
+    const response = await freeEmail(req(), ctx());
+    expect(response.status).toBe(502);
+    expect(await response.json()).toMatchObject({ reconciliationRequired: false });
+    expect(mocks.abortRepair).toHaveBeenCalledExactlyOnceWith(ID, 'org-1', deletedAt, marker, {
+      pendingAt, operationId: 'email-operation', priorState: { pendingAt, completedAt: priorCompletedAt },
+    });
+    expect(mocks.releaseDeletion).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('leaves the owner held when the safe rollback loses its compare-and-set', async () => {
+    mocks.beginDeletion.mockResolvedValueOnce({
+      ok: true, operationId: 'email-operation', pendingAt: deletedAt,
+      priorState: { pendingAt: deletedAt, completedAt: deletedAt },
+    });
+    mocks.disableAuth.mockResolvedValueOnce({ ok: false, message: 'Identity mismatch', providerUnchanged: true });
+    mocks.abortRepair.mockRejectedValueOnce(new Error('rollback CAS lost'));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect((await freeEmail(req(), ctx())).status).toBe(500);
+      expect(mocks.releaseDeletion).not.toHaveBeenCalled();
+    } finally {
+      consoleSpy.mockRestore();
+    }
+  });
+
   it('does not claim a released email if its conditional app update loses', async () => {
     mocks.target.mockResolvedValue({ ...deletedRow(), email: 'member@example.com' });
     mocks.updateMany.mockResolvedValue({ count: 0 });
@@ -403,6 +440,25 @@ describe('administrator email release', () => {
     expect(mocks.disableAuth).toHaveBeenCalledTimes(1);
     expect(mocks.updateMany).not.toHaveBeenCalled();
     expect(mocks.completeDeletion).not.toHaveBeenCalled();
+  });
+
+  it('returns a batch row to its prior restorable state on definite pre-change Auth failure', async () => {
+    const row = { ...deletedRow(), email: 'member@example.com' };
+    const pendingAt = new Date('2026-09-08T10:02:00Z');
+    mocks.findMany.mockResolvedValueOnce([row]);
+    mocks.beginDeletion.mockResolvedValueOnce({
+      ok: true, operationId: 'email-operation', pendingAt,
+      priorState: { pendingAt: null, completedAt: null },
+    });
+    mocks.disableAuth.mockResolvedValueOnce({ ok: false, message: 'Identity mismatch', providerUnchanged: true });
+
+    const response = await freeBatch(req());
+    expect(await response.json()).toMatchObject({ freed: 0, skipped: 1 });
+    expect(mocks.abortRepair).toHaveBeenCalledExactlyOnceWith(ID, 'org-1', deletedAt, row.email, {
+      pendingAt, operationId: 'email-operation', priorState: { pendingAt: null, completedAt: null },
+    });
+    expect(mocks.releaseDeletion).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 
   it('skips a batch row whose restore owns the lifecycle marker', async () => {

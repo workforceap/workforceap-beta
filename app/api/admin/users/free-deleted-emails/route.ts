@@ -11,7 +11,7 @@ import { hasAdminAccess } from '@/lib/auth/roleAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
-import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, abortBillingDeletedEmailRepairBeforeAuthChange, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 /**
@@ -73,6 +73,14 @@ async function _POST() {
         deletionOwner = deletion.operationId;
         const disabled = await disableAuthUserForSoftDelete(authAdmin, u.id, originalEmail);
         if (!disabled.ok) {
+          if (disabled.providerUnchanged && deletion.priorState) {
+            // Preserve the prior restore marker only when no Auth update was
+            // attempted. If rollback loses its CAS, retain this owner.
+            deletionOwner = null;
+            await abortBillingDeletedEmailRepairBeforeAuthChange(u.id, orgId, u.deletedAt, u.email, {
+              pendingAt: deletion.pendingAt, operationId: deletion.operationId, priorState: deletion.priorState,
+            });
+          }
           skipped += 1;
           continue;
         }

@@ -4,6 +4,7 @@ const findFirst = vi.fn();
 const findMany = vi.fn();
 const updateMany = vi.fn();
 const release = vi.fn();
+const abortRepair = vi.fn();
 const complete = vi.fn();
 const disableAuth = vi.fn();
 const capture = vi.fn();
@@ -28,6 +29,7 @@ vi.mock('@/lib/billing/erasureGuard', () => ({
   beginBillingDeletion: async () => ({ ok: true, operationId: 'owner-1', pendingAt: new Date() }),
   completeBillingDeletion: (...args: unknown[]) => complete(...args),
   releaseBillingDeletion: (...args: unknown[]) => release(...args),
+  abortBillingDeletedEmailRepairBeforeAuthChange: (...args: unknown[]) => abortRepair(...args),
 }));
 vi.mock('@/lib/admin/authUserLifecycle', () => ({ disableAuthUserForSoftDelete: (...args: unknown[]) => disableAuth(...args) }));
 vi.mock('@/lib/audit', () => ({ auditLog: (...args: unknown[]) => audit(...args) }));
@@ -52,6 +54,7 @@ describe('deleted-email repair owner release', () => {
     disableAuth.mockResolvedValue({ ok: true });
     complete.mockResolvedValue(undefined);
     release.mockResolvedValue(undefined);
+    abortRepair.mockResolvedValue(undefined);
     audit.mockResolvedValue(undefined);
     auditEvent.mockResolvedValue(undefined);
   });
