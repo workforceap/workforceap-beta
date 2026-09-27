@@ -8,6 +8,7 @@ import {
   cleanupFixture,
   createFixture,
   generatePassword,
+  isAuthNotFound,
   syntheticIdentity,
   type FixtureDeps,
   type FixtureState,
@@ -79,6 +80,7 @@ function fakeDeps(organizations: FakeOrganization[] = [{ id: 'qa-org', slug: 'po
     getAuthUser: async (id) => authUsers.get(id) ?? null,
     deleteAuthUser: async (id) => { calls.push(`deleteAuthUser:${id}`); authUsers.delete(id); },
     storage,
+    sleep: async () => {},
   };
   return { deps, calls, users, authUsers, objects, removeErrors };
 }
@@ -135,13 +137,15 @@ test('[mock] cleanup removes only the recorded member, its own objects, DB row a
 
   assert.deepEqual(result, {
     storage: { before: { 'member-resumes': 2, 'member-files': 0 }, removed: 2, after: { 'member-resumes': 0, 'member-files': 0 } },
-    databaseUserDeleted: true,
+    authUserAbsentVerified: true,
+    databaseUserAbsentVerified: true,
     authUserDeleted: true,
+    databaseUserDeleted: true,
   });
   assert.deepEqual(calls, [
     `remove:member-resumes:${NEW_ID}/resume-original-a.pdf,${NEW_ID}/resume-enhanced-b.txt`,
-    `deleteUser:${NEW_ID}`,
     `deleteAuthUser:${NEW_ID}`,
+    `deleteUser:${NEW_ID}`,
   ]);
   assert.ok(users.has(OTHER_ID) && authUsers.has(OTHER_ID));
   assert.ok(objects.has(`member-resumes/${OTHER_ID}/resume-original.pdf`) && objects.has(`member-files/cert-files/${OTHER_ID}/proof.pdf`));
@@ -169,8 +173,10 @@ test('[mock] cleanup after a failed database write still removes the recorded Au
   const result = await cleanupFixture(TARGET, recorded!, deps);
   assert.deepEqual(result, {
     storage: { before: { 'member-resumes': 0, 'member-files': 0 }, removed: 0, after: { 'member-resumes': 0, 'member-files': 0 } },
-    databaseUserDeleted: false,
+    authUserAbsentVerified: true,
+    databaseUserAbsentVerified: true,
     authUserDeleted: true,
+    databaseUserDeleted: false,
   });
   assert.deepEqual(calls, [`deleteAuthUser:${NEW_ID}`]);
   assert.ok(authUsers.has(OTHER_ID));
@@ -215,4 +221,55 @@ test('[mock] a storage remove error is surfaced and keeps the database and Auth 
   assert.deepEqual(calls, [`remove:member-resumes:${NEW_ID}/resume-original-a.pdf`]);
   assert.ok(users.has(NEW_ID) && authUsers.has(NEW_ID));
   assert.ok(objects.has(`member-resumes/${NEW_ID}/resume-original-a.pdf`));
+});
+
+test('[mock] only an explicit not-found counts as an absent Auth user', () => {
+  assert.equal(isAuthNotFound({ status: 404 }), true);
+  assert.equal(isAuthNotFound({ code: 'user_not_found' }), true);
+  for (const error of [{ status: 500 }, { status: 403, code: 'not_admin' }, { status: 401 }, null]) {
+    assert.equal(isAuthNotFound(error), false);
+  }
+});
+
+test('[mock] an Auth lookup error (500/permission) fails cleanup with the exact IDs and leaves Prisma untouched', async () => {
+  const { deps, calls, users } = fakeDeps();
+  const state = await createFixture(TARGET, syntheticIdentity('42', '1'), 'p', deps, () => {});
+  calls.length = 0;
+  const failing = { ...deps, getAuthUser: async () => { throw new Error('500 from Auth'); } };
+
+  await assert.rejects(() => cleanupFixture(TARGET, state, failing), (error: Error) => {
+    assert.match(error.message, /Auth lookup/);
+    assert.match(error.message, new RegExp(`userId=${NEW_ID}`));
+    return true;
+  });
+  assert.deepEqual(calls, []);
+  assert.ok(users.has(NEW_ID));
+});
+
+test('[mock] a transient Auth lookup error is retried and cleanup then succeeds', async () => {
+  const { deps, users, authUsers } = fakeDeps();
+  const state = await createFixture(TARGET, syntheticIdentity('42', '1'), 'p', deps, () => {});
+  let failures = 1;
+  const flaky = {
+    ...deps,
+    getAuthUser: async (id: string) => {
+      if (failures > 0) { failures -= 1; throw new Error('503 from Auth'); }
+      return deps.getAuthUser(id);
+    },
+  };
+  const result = await cleanupFixture(TARGET, state, flaky);
+  assert.equal(result.authUserAbsentVerified, true);
+  assert.ok(!users.has(NEW_ID) && !authUsers.has(NEW_ID));
+});
+
+test('[mock] if the Auth user survives deletion, the Prisma row is kept for a rerun', async () => {
+  const { deps, calls, users } = fakeDeps();
+  const state = await createFixture(TARGET, syntheticIdentity('42', '1'), 'p', deps, () => {});
+  calls.length = 0;
+  const stubborn = { ...deps, deleteAuthUser: async (id: string) => { calls.push(`deleteAuthUser:${id}`); } };
+
+  await assert.rejects(() => cleanupFixture(TARGET, state, stubborn), /Auth user still present/);
+  assert.deepEqual(calls, [`deleteAuthUser:${NEW_ID}`]);
+  assert.ok(!calls.some((call) => call.startsWith("deleteUser:")));
+  assert.ok(users.has(NEW_ID));
 });

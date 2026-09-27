@@ -16,9 +16,11 @@ name: Resume Build DEMO Acceptance
 # that are not the DEMO project and any organization that is not the exact
 # active portal-qa-* fixture organization.
 #
-# STOP before dispatching: DEMO_SETUP.md:65 documents the Preview GROQ_API_KEY
-# as the production key, so a run spends production Groq quota. Dispatch only
-# with Mike's explicit OK (docs/RESUME-DEMO-ACCEPTANCE.md, "Dispatch").
+# Quota: DEMO_SETUP.md:65 documents the Preview GROQ_API_KEY as the production
+# key, so each run spends production Groq quota. The spec therefore makes
+# exactly ONE Build request and never retries, the concurrency group below
+# stops overlapping runs, and a repeat dispatch needs a review of the previous
+# receipt (docs/RESUME-DEMO-ACCEPTANCE.md, "Dispatch").
 
 on:
   workflow_dispatch:
@@ -117,6 +119,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Gate 0: the target must not be an exact production hostname
+      # (scripts/lib/resume-acceptance-receipt.mjs, the same list the spec
+      # uses). The value is never printed.
+      - name: Refuse a production target
+        env:
+          RESUME_ACCEPTANCE_TARGET_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+        run: node scripts/verify-resume-acceptance-receipt.mjs check-target
+
       # Gate 1, before any credential: the Preview serves this exact commit and
       # its /api/health reports the DEMO Supabase project (isolated_preview).
       - name: Verify Preview SHA and DEMO Supabase scope
@@ -152,6 +162,9 @@ jobs:
           PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
           RESUME_ACCEPTANCE_SHARED_EMAILS: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
           RESUME_ACCEPTANCE_CONFIRMED: "1"
+          # Workflow mode: a refusal fails the step instead of skipping, and a
+          # receipt with pass:false is always written.
+          RESUME_ACCEPTANCE_MODE: workflow
           RESUME_ACCEPTANCE_OUTPUT: test-results/resume-demo-acceptance.json
 
       # Always runs once a member may exist: removes exactly the recorded ID.
@@ -167,6 +180,14 @@ jobs:
           RESUME_QA_CLEANUP_OUTPUT: test-results/resume-demo-cleanup.json
         run: pnpm exec tsx scripts/resume-demo-member.ts cleanup
 
+      # A green job needs a receipt that says pass: true with outcome success
+      # and exactly one Build request; a skipped or refused spec fails here.
+      - name: Verify the acceptance receipt
+        if: always()
+        env:
+          RESUME_ACCEPTANCE_OUTPUT: test-results/resume-demo-acceptance.json
+        run: node scripts/verify-resume-acceptance-receipt.mjs receipt
+
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -175,5 +196,5 @@ jobs:
           path: |
             test-results/resume-demo-acceptance.json
             test-results/resume-demo-cleanup.json
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 14

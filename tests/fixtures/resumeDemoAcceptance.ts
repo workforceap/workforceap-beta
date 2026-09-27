@@ -67,6 +67,7 @@ export function containsFact(text: string, fact: string): boolean {
  */
 export type BuildOutcome =
   | 'success'
+  | 'request_failed'
   | 'provider_unconfigured'
   | 'provider_error_or_empty_output'
   | 'provider_threw'
@@ -78,6 +79,7 @@ export type BuildOutcome =
 
 export function classifyBuild(status: number, error: string | null): BuildOutcome {
   const message = error ?? '';
+  if (status === 0) return 'request_failed';
   if (status === 200) return 'success';
   if (status === 503) return 'provider_unconfigured';
   if (status === 502) return 'provider_threw';
@@ -87,4 +89,21 @@ export function classifyBuild(status: number, error: string | null): BuildOutcom
   if (status === 422 && /did not preserve details/i.test(message)) return 'guard_missing_section_422';
   if (status === 422 && /could not read enough text/i.test(message)) return 'source_unreadable_422';
   return 'other_failure';
+}
+
+/**
+ * Hard limit of ONE Build request per dispatch: the Preview's Groq key shares
+ * production quota (DEMO_SETUP.md:65). A second call throws before any
+ * request is made; failures are recorded, never retried.
+ */
+export function singleBuildBudget() {
+  let used = false;
+  return {
+    get used() { return used; },
+    async run<T>(call: () => Promise<T>): Promise<T> {
+      if (used) throw new Error('Build budget exhausted: exactly one Build request is allowed per dispatch.');
+      used = true;
+      return call();
+    },
+  };
 }

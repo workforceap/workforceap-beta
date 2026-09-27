@@ -5,7 +5,9 @@
  *
  * This spec MUTATES the member's resume (upload replaces the original and
  * clears the enhanced draft; Build writes a new draft) and spends provider
- * quota. It is inert unless every RESUME_ACCEPTANCE_* input below is set, and
+ * quota; it makes exactly ONE Build request and never retries (the Preview
+ * Groq key shares production quota, DEMO_SETUP.md:65). It is inert unless
+ * every RESUME_ACCEPTANCE_* input below is set, and
  * it accepts only a per-run synthetic `resume-qa-<run>-<attempt>@example.com`
  * member created by scripts/resume-demo-member.ts. Only the trusted
  * workflow_dispatch workflow `.github/workflows/resume-demo-acceptance.yml`
@@ -19,18 +21,23 @@
  *   RESUME_ACCEPTANCE_MEMBER_PASSWORD
  *   RESUME_ACCEPTANCE_SHARED_EMAILS    comma-separated shared accounts to refuse
  *   RESUME_ACCEPTANCE_CONFIRMED        "1" only after the workflow's gates passed
- *   RESUME_ACCEPTANCE_OUTPUT           evidence JSON path (default below)
+ *   RESUME_ACCEPTANCE_OUTPUT           receipt JSON path (default below)
+ *   RESUME_ACCEPTANCE_MODE             "workflow" (set only by the workflow): any
+ *                                      refusal FAILS instead of skipping, and a
+ *                                      receipt with pass:false is always written
  */
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { test, expect, type APIResponse, type Page } from '@playwright/test';
 import { findUnsupportedResumeClaims } from '../../lib/resume/validateGeneratedResume';
+import { hostnameOf, isProductionHost } from '../../scripts/lib/resume-acceptance-receipt.mjs';
 import {
   buildSyntheticResumePdf,
   classifyBuild,
   containsFact,
   PAGE_TWO_FACTS,
+  singleBuildBudget,
   SYNTHETIC_RESUME_FILE_NAME,
   SYNTHETIC_RESUME_SOURCE_TEXT,
 } from '../fixtures/resumeDemoAcceptance';
@@ -40,20 +47,17 @@ const email = process.env.RESUME_ACCEPTANCE_MEMBER_EMAIL?.trim().toLowerCase() ?
 const password = process.env.RESUME_ACCEPTANCE_MEMBER_PASSWORD?.replace(/\r$/, '') ?? '';
 const confirmed = process.env.RESUME_ACCEPTANCE_CONFIRMED === '1';
 const output = process.env.RESUME_ACCEPTANCE_OUTPUT?.trim() || 'test-results/resume-demo-acceptance.json';
+const workflowMode = process.env.RESUME_ACCEPTANCE_MODE === 'workflow';
 
 /** Only the per-run synthetic member (scripts/resume-demo-member.ts) may be mutated. */
 const SYNTHETIC_MEMBER = /^resume-qa-\d{1,20}-\d{1,4}@example\.com$/;
-const PRODUCTION_HOST = /(^|\.)workforceap\.org$/i;
 
 function refusal(): string | null {
   if (!baseURL || !email || !password || !confirmed) return 'RESUME_ACCEPTANCE_* inputs are not set';
-  let host = '';
-  try {
-    host = new URL(baseURL).hostname;
-  } catch {
-    return 'PLAYWRIGHT_BASE_URL is not a URL';
-  }
-  if (PRODUCTION_HOST.test(host)) return 'refusing a production host';
+  const host = hostnameOf(baseURL);
+  if (!host) return 'PLAYWRIGHT_BASE_URL is not an http(s) URL';
+  // Same exact-hostname rule as the workflow gate (scripts/lib/resume-acceptance-receipt.mjs).
+  if (isProductionHost(host)) return 'refusing a production host';
   const shared = (process.env.RESUME_ACCEPTANCE_SHARED_EMAILS ?? '')
     .split(',')
     .map((value) => value.trim().toLowerCase())
@@ -71,8 +75,14 @@ const evidence: Evidence = {
   // ANTHROPIC_API_KEY is not set, so Build is served by the Groq fallback in
   // lib/ai/anthropicChat.ts. The route does not report the provider or model.
   providerPath: 'Groq fallback; Anthropic not configured on Preview (expected, not reported by the route)',
+  groqQuota: 'The Preview GROQ_API_KEY is the production key (DEMO_SETUP.md:65); this run spent production Groq quota',
+  buildRequestLimit: 1,
   model: 'not exposed by the route',
-  acceptance: 'fail',
+  validatorScope:
+    'findUnsupportedResumeClaims is a narrow fail-closed validator; prose claims are not assessed',
+  buildRequestsMade: 0,
+  pass: false,
+  outcome: 'not_run',
 };
 
 /** Resume text is never recorded: only its length and SHA-256 digest. */
@@ -110,16 +120,26 @@ async function resumeStatus(page: Page) {
   };
 }
 
+/** The only Build request this spec may make (see singleBuildBudget). */
+const buildBudget = singleBuildBudget();
+
 async function build(page: Page) {
-  const started = Date.now();
-  const response = await page.request.post('/api/member/resume/generate', { data: {}, timeout: 120_000 });
-  const body = await jsonOf(response);
-  return {
-    status: response.status(),
-    latencyMs: Date.now() - started,
-    resume: typeof body.resume === 'string' ? body.resume : null,
-    error: typeof body.error === 'string' ? body.error : null,
-  };
+  return buildBudget.run(async () => {
+    const started = Date.now();
+    try {
+      const response = await page.request.post('/api/member/resume/generate', { data: {}, timeout: 120_000, maxRetries: 0 });
+      const body = await jsonOf(response);
+      return {
+        status: response.status(),
+        latencyMs: Date.now() - started,
+        resume: typeof body.resume === 'string' ? body.resume : null,
+        error: typeof body.error === 'string' ? body.error : null,
+      };
+    } catch {
+      // Timeout or network failure: recorded, not retried.
+      return { status: 0, latencyMs: Date.now() - started, resume: null, error: 'request failed or timed out' };
+    }
+  });
 }
 
 function review(draft: string) {
@@ -130,8 +150,8 @@ function review(draft: string) {
     ),
     // Contact values come from the member's profile, which the harness does
     // not know, so they are recorded but not asserted.
-    unsupportedClaims: issues.filter((issue) => issue !== 'unsupported_contact'),
-    contactClaimsNotAsserted: issues.includes('unsupported_contact'),
+    unsupportedClaimKindsFlagged: issues.filter((issue) => issue !== 'unsupported_contact'),
+    contactKindFlaggedNotAsserted: issues.includes('unsupported_contact'),
   };
 }
 
@@ -142,14 +162,20 @@ test.describe('DEMO Resume Build acceptance (real provider)', () => {
 
   test.beforeEach(() => {
     const reason = refusal();
+    if (reason !== null && workflowMode) {
+      // In the workflow a refusal is a failed run, never a green skip.
+      evidence.outcome = 'refused';
+      evidence.refusal = reason;
+      throw new Error(`Acceptance refused: ${reason}`);
+    }
     test.skip(reason !== null, reason ?? '');
   });
 
   test.afterAll(() => {
-    if (refusal() === null) writeEvidence();
+    if (workflowMode || refusal() === null) writeEvidence();
   });
 
-  test('upload a two-page PDF, Build from it, and keep a prior draft on a rejection', async ({ page }) => {
+  test('one real Build from a two-page PDF retains page-two facts with no claim kinds flagged', async ({ page }) => {
     await login(page);
     evidence.before = await resumeStatus(page).then(({ enhancedText, ...rest }) => ({
       ...rest,
@@ -167,11 +193,14 @@ test.describe('DEMO Resume Build acceptance (real provider)', () => {
       extractionWarning: uploadBody.extractionWarning ?? null,
       error: uploadBody.error ?? null,
     };
+    if (upload.status() !== 200) evidence.outcome = 'upload_failed';
     expect(upload.status(), 'upload of the synthetic PDF').toBe(200);
 
-    // 2. First Build with the real provider.
+    // 2. The one Build request of this dispatch.
     const first = await build(page);
+    evidence.buildRequestsMade = buildBudget.used ? 1 : 0;
     const firstOutcome = classifyBuild(first.status, first.error);
+    evidence.outcome = firstOutcome;
     evidence.firstBuild = { status: first.status, outcome: firstOutcome, latencyMs: first.latencyMs, error: first.error, draft: digest(first.resume) };
     if (firstOutcome === 'provider_unconfigured') evidence.prerequisiteMissing = 'Preview provider not configured (ANTHROPIC_API_KEY / GROQ_API_KEY)';
     if (firstOutcome === 'provider_error_or_empty_output') evidence.prerequisiteMissing = 'Provider returned nothing usable (auth, quota or outage on every configured provider)';
@@ -180,42 +209,28 @@ test.describe('DEMO Resume Build acceptance (real provider)', () => {
       // ("draft rejected by factuality check: <kinds>"), never in the response.
       evidence.possibleFalseRejection = { outcome: firstOutcome, error: first.error, kinds: 'server log only' };
     }
+    // A failed Build is recorded and the run ends here; nothing is retried.
     expect(firstOutcome, `first Build outcome (${first.status}): ${first.error ?? ''}`).toBe('success');
     const firstDraft = first.resume ?? '';
     const firstReview = review(firstDraft);
     evidence.firstBuildReview = firstReview;
 
-    // 3. The saved draft is the returned draft, and it uses page-2 facts.
+    // 3. The saved draft is the returned draft, page-two facts are retained,
+    //    and findUnsupportedResumeClaims flags no claim kinds (narrow
+    //    fail-closed validator; prose claims are not assessed).
     const saved = await resumeStatus(page);
     expect(saved.enhancedText?.trim(), 'saved draft equals the returned draft').toBe(firstDraft.trim());
+    evidence.savedDraftMatchesResponse = true;
     for (const [key, present] of Object.entries(firstReview.pageTwoFacts)) {
-      expect(present, `page-2 fact "${key}" in the saved draft`).toBe(true);
+      expect(present, `page-two fact "${key}" retained in the saved draft`).toBe(true);
     }
-    expect(firstReview.unsupportedClaims, 'unsupported history claims in the saved draft').toEqual([]);
+    expect(firstReview.unsupportedClaimKindsFlagged, 'claim kinds flagged by findUnsupportedResumeClaims').toEqual([]);
 
-    // 4. Second Build. The real provider is not forced into a bad draft: the
-    //    guarded-422 preservation is proven deterministically by the mocked
-    //    route test "keeps the prior good draft untouched when a new draft is
-    //    rejected". A natural 422 here is recorded as a possible false
-    //    rejection, and the first draft must still be the saved one.
-    const second = await build(page);
-    const secondOutcome = classifyBuild(second.status, second.error);
-    evidence.secondBuild = { status: second.status, outcome: secondOutcome, latencyMs: second.latencyMs, error: second.error, draft: digest(second.resume) };
-    const after = await resumeStatus(page);
-    if (secondOutcome === 'success') {
-      evidence.guarded422Exercised = false;
-      evidence.secondBuildReview = review(second.resume ?? '');
-    } else {
-      evidence.guarded422Exercised = second.status === 422;
-      if (secondOutcome.startsWith('guard_')) {
-        evidence.possibleFalseRejection = { outcome: secondOutcome, error: second.error, kinds: 'server log only' };
-      }
-      // Whatever the failure, the first draft must still be the saved one.
-      expect(after.enhancedText?.trim(), `prior draft preserved after ${secondOutcome}`).toBe(firstDraft.trim());
-    }
-    // Pass = first Build succeeded, page-2 facts present, no unsupported claims
-    // (all asserted above). The second Build is informational.
-    evidence.acceptance = 'pass';
+    // Pass = Build success + page-two facts retained + no claim kinds flagged.
+    // Guarded-422 preservation is proven only by the mocked route test
+    // tests/api/resume-generate-pdf-factuality.spec.ts:297-318; the live
+    // provider is never called a second time.
+    evidence.pass = true;
     evidence.finishedAt = new Date().toISOString();
   });
 });

@@ -57,8 +57,14 @@ export interface FixtureDeps {
   createMember(input: { id: string; organizationId: string; email: string; fullName: string }): Promise<void>;
   deleteUser(id: string): Promise<void>;
   createAuthUser(input: { email: string; password: string; fullName: string; appMetadata: Record<string, unknown> }): Promise<string>;
+  /**
+   * The Auth user, or null ONLY on an explicit not-found answer. Every other
+   * error (5xx, permission, network) must throw, so cleanup fails closed.
+   */
   getAuthUser(id: string): Promise<{ id: string; email: string | null; appMetadata: Record<string, unknown> } | null>;
   deleteAuthUser(id: string): Promise<void>;
+  /** Backoff between bounded retries; injectable so tests do not wait. */
+  sleep?(ms: number): Promise<void>;
   /** Storage admin client; objects are only ever listed and removed under this member's own ID prefixes. */
   storage: MemberStorageAdmin;
 }
@@ -156,6 +162,35 @@ export async function createFixture(
   return state;
 }
 
+export const CLEANUP_RETRY_DELAYS_MS = [1_000, 3_000] as const;
+
+/** A small fixed number of attempts with backoff; the last error is rethrown. */
+async function withRetry<T>(deps: FixtureDeps, call: () => Promise<T>): Promise<T> {
+  const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await call();
+    } catch (error) {
+      if (attempt >= CLEANUP_RETRY_DELAYS_MS.length) throw error;
+      await sleep(CLEANUP_RETRY_DELAYS_MS[attempt]);
+    }
+  }
+}
+
+function strandedError(state: FixtureState, step: string): Error {
+  return new Error(
+    `Synthetic member cleanup failed at "${step}". Remaining rows were kept for a rerun of cleanup. `
+      + `Manual cleanup IDs: userId=${state.userId} runId=${state.runId} organizationId=${state.organizationId}.`,
+  );
+}
+
+/**
+ * Order: verify every lookup (Auth lookups fail closed), remove the member's
+ * own storage and prove its prefixes are empty, delete the Auth user and prove
+ * it is gone (explicit not-found), and only then delete the Prisma user and
+ * prove it is gone. Any failure throws with the exact recorded IDs and leaves
+ * the Prisma row in place so rerunning cleanup can finish.
+ */
 export async function cleanupFixture(target: PortalQaTarget, state: FixtureState, deps: FixtureDeps) {
   if (!UUID.test(state.userId) || !RESUME_QA_EMAIL.test(state.email) || state.organizationId !== target.organizationId) {
     throw new Error('Refusing cleanup: the recorded state is not a synthetic acceptance member of this organization.');
@@ -168,7 +203,12 @@ export async function cleanupFixture(target: PortalQaTarget, state: FixtureState
   if (dbUser && (dbUser.email.toLowerCase() !== state.email || dbUser.organizationId !== target.organizationId)) {
     throw new Error('Refusing cleanup: the database user with the recorded ID is not the synthetic member.');
   }
-  const authUser = await deps.getAuthUser(state.userId);
+  let authUser: Awaited<ReturnType<FixtureDeps['getAuthUser']>>;
+  try {
+    authUser = await withRetry(deps, () => deps.getAuthUser(state.userId));
+  } catch {
+    throw strandedError(state, 'Auth lookup');
+  }
   if (authUser && (authUser.email?.toLowerCase() !== state.email || authUser.appMetadata.resume_acceptance_fixture !== true)) {
     throw new Error('Refusing cleanup: the Auth user with the recorded ID is not the synthetic member.');
   }
@@ -182,19 +222,49 @@ export async function cleanupFixture(target: PortalQaTarget, state: FixtureState
     .map((path) => ({ bucket: MEMBER_RESUME_BUCKET, path }));
   const removed = await deleteUserStorageObjects(state.userId, { supabaseAdmin: deps.storage, extraPaths });
   if (!removed.ok) {
-    throw new Error(`Synthetic member storage cleanup failed after removing ${removed.deleted.length} object(s); database and Auth rows were kept for a retry.`);
+    throw new Error(`Synthetic member storage cleanup failed after removing ${removed.deleted.length} object(s); database and Auth rows were kept for a retry. Manual cleanup IDs: userId=${state.userId} runId=${state.runId}.`);
   }
   const after = await countMemberStorageObjects(deps.storage, state.userId);
   if (Object.values(after).some((count) => count > 0)) {
-    throw new Error('Synthetic member storage objects remain after cleanup; database and Auth rows were kept for a retry.');
+    throw strandedError(state, 'storage prefixes not empty');
   }
-  if (dbUser) await deps.deleteUser(state.userId);
-  if (authUser) await deps.deleteAuthUser(state.userId);
+
+  if (authUser) {
+    try {
+      await withRetry(deps, () => deps.deleteAuthUser(state.userId));
+    } catch {
+      throw strandedError(state, 'Auth delete');
+    }
+  }
+  let authStillPresent: Awaited<ReturnType<FixtureDeps['getAuthUser']>>;
+  try {
+    authStillPresent = await withRetry(deps, () => deps.getAuthUser(state.userId));
+  } catch {
+    throw strandedError(state, 'Auth absence check');
+  }
+  if (authStillPresent) throw strandedError(state, 'Auth user still present');
+
+  if (dbUser) {
+    try {
+      await withRetry(deps, () => deps.deleteUser(state.userId));
+    } catch {
+      throw strandedError(state, 'database delete');
+    }
+  }
+  if (await deps.findUserById(state.userId)) throw strandedError(state, 'database user still present');
+
   return {
     storage: { before, removed: removed.deleted.length, after },
-    databaseUserDeleted: Boolean(dbUser),
+    authUserAbsentVerified: true,
+    databaseUserAbsentVerified: true,
     authUserDeleted: Boolean(authUser),
+    databaseUserDeleted: Boolean(dbUser),
   };
+}
+
+/** Supabase Auth's explicit not-found answer (HTTP 404 / `user_not_found`). */
+export function isAuthNotFound(error: { status?: number; code?: string } | null | undefined): boolean {
+  return Boolean(error) && (error!.status === 404 || error!.code === 'user_not_found');
 }
 
 function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
@@ -245,7 +315,12 @@ function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
     },
     getAuthUser: async (id) => {
       const { data, error } = await supabase.auth.admin.getUserById(id);
-      if (error || !data.user) return null;
+      if (error) {
+        // Only an explicit not-found means "absent"; anything else fails closed.
+        if (isAuthNotFound(error)) return null;
+        throw new Error('Synthetic member Auth lookup failed.');
+      }
+      if (!data.user) throw new Error('Synthetic member Auth lookup returned no user and no error.');
       return { id: data.user.id, email: data.user.email ?? null, appMetadata: data.user.app_metadata ?? {} };
     },
     deleteAuthUser: async (id) => {
@@ -286,13 +361,21 @@ async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
       return;
     }
     const state = JSON.parse(readFileSync(stateFile, 'utf8')) as FixtureState;
+    const output = env.RESUME_QA_CLEANUP_OUTPUT?.trim();
+    const writeReceipt = (receipt: Record<string, unknown>) => {
+      if (!output) return;
+      mkdirSync(dirname(output), { recursive: true });
+      writeFileSync(output, `${JSON.stringify({ userId: state.userId, runId: state.runId, auditRowsRetained: true, ...receipt }, null, 2)}\n`);
+    };
     const { deps, close } = liveDeps(target, env);
     try {
       const result = await cleanupFixture(target, state, deps);
-      const output = env.RESUME_QA_CLEANUP_OUTPUT?.trim();
-      if (output) mkdirSync(dirname(output), { recursive: true });
-      if (output) writeFileSync(output, `${JSON.stringify({ ...result, auditRowsRetained: true }, null, 2)}\n`);
+      // success only when storage prefixes are empty and Auth and Prisma absence are verified.
+      writeReceipt({ success: true, ...result });
       console.log(`Cleaned up synthetic acceptance member ${state.userId}: ${JSON.stringify(result)}. Audit rows are retained by design.`);
+    } catch (error) {
+      writeReceipt({ success: false, error: error instanceof Error && Object.getPrototypeOf(error) === Error.prototype ? error.message : 'cleanup failed' });
+      throw error;
     } finally {
       await close();
     }

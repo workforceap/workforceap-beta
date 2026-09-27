@@ -14,6 +14,7 @@ import {
   classifyBuild,
   containsFact,
   PAGE_TWO_FACTS,
+  singleBuildBudget,
   SYNTHETIC_RESUME_SOURCE_TEXT,
 } from './fixtures/resumeDemoAcceptance';
 
@@ -63,5 +64,16 @@ describe('DEMO acceptance fixture (local only)', () => {
     expect(classifyBuild(502, 'Resume generation failed.')).toBe('provider_threw');
     expect(classifyBuild(429, 'Resume generation limit reached.')).toBe('app_rate_limited');
     expect(classifyBuild(500, 'Internal server error')).toBe('other_failure');
+    expect(classifyBuild(0, 'request failed or timed out')).toBe('request_failed');
+  });
+
+  it('[mock] allows exactly one Build request per dispatch, even after a failure', async () => {
+    const budget = singleBuildBudget();
+    let calls = 0;
+    const failing = async () => { calls += 1; return { status: 429 }; };
+    await expect(budget.run(failing)).resolves.toEqual({ status: 429 });
+    await expect(budget.run(failing)).rejects.toThrow(/exactly one Build request/);
+    expect(calls).toBe(1);
+    expect(budget.used).toBe(true);
   });
 });
