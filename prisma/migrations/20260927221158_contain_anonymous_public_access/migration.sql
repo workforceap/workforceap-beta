@@ -1,4 +1,6 @@
 -- WAP-12, phase 1: contain anonymous access to existing public objects.
+-- This does not contain authenticated DEMO access while 98 public tables have
+-- RLS off. Disable the DEMO Data API or repair RLS/grants separately.
 -- Authenticated realtime uses public.messages/message_threads. Their grants and
 -- policies need a separate authorization review, so this does not revoke
 -- authenticated grants or FORCE RLS.
