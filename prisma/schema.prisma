@@ -2133,7 +2133,7 @@ model TrainingBillingPacket {
   @@unique([organizationId, packetNumber])
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([memberId, createdAt(sort: Desc)])
-  @@index([organizationId, subjectMemberId, createdAt(sort: Desc)])
+  @@index([organizationId, subjectMemberId, createdAt(sort: Desc)], map: "training_billing_packets_org_subject_created_idx")
   @@index([organizationId, memberId, fundingAttestationKey])
   @@map("training_billing_packets")
 }

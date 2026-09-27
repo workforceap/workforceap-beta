@@ -126,6 +126,11 @@ try {
 
   sql(retentionMigration);
   sql(retentionMigration);
+  assert.match(
+    sql(`SELECT indexdef FROM pg_indexes WHERE schemaname='public' AND tablename='training_billing_packets' AND indexname='training_billing_packets_org_subject_created_idx';`),
+    /\(organization_id, subject_member_id, created_at DESC\)/,
+    'Archive index must match the name and column order declared in Prisma',
+  );
   assert.equal(
     sql(`SELECT confdeltype FROM pg_constraint WHERE conrelid='public.training_billing_packets'::regclass AND conname='training_billing_packets_member_id_fkey';`),
     'n',
