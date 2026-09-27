@@ -144,23 +144,27 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(remove).not.toHaveBeenCalled();
   });
 
-  it('fails closed with 502 and writes nothing when storage objects cannot be deleted', async () => {
+  it('anonymizes before a failed Storage cleanup and leaves the deletion barrier in place', async () => {
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: false, error: 'storage timeout', deleted: [] });
 
     const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
 
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({
-      error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
+      error: 'Account data was anonymized, but stored files remain. Retry erasure or contact support.',
       billingDeletionPending: true,
     });
     expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
+    expect(anonymizeMember).toHaveBeenCalledOnce();
+    expect(vi.mocked(anonymizeMember).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder[0],
+    );
     expect(update).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
     expect(deleteAuthUserForErasure).not.toHaveBeenCalled();
   });
 
-  it('removes resume and certificate blobs before anonymizing an enrolled member', async () => {
+  it('anonymizes an enrolled member before removing resume and certificate blobs', async () => {
     findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
 
     const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
@@ -179,7 +183,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(remove).not.toHaveBeenCalled();
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
     const [updateOrder] = vi.mocked(anonymizeMember).mock.invocationCallOrder;
-    expect(storageOrder).toBeLessThan(updateOrder);
+    expect(updateOrder).toBeLessThan(storageOrder);
   });
 
   it('keeps a deleted tombstone until Auth removal is confirmed, then hard-deletes by owner', async () => {
@@ -195,7 +199,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     const [tombstoneOrder] = vi.mocked(anonymizeMember).mock.invocationCallOrder;
     const [deleteOrder] = remove.mock.invocationCallOrder;
     const [authOrder] = vi.mocked(deleteAuthUserForErasure).mock.invocationCallOrder;
-    expect(storageOrder).toBeLessThan(tombstoneOrder);
+    expect(tombstoneOrder).toBeLessThan(storageOrder);
     expect(tombstoneOrder).toBeLessThan(authOrder);
     expect(authOrder).toBeLessThan(deleteOrder);
   });

@@ -16,7 +16,6 @@ import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, be
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { deleteAuthUserForErasure, disableAuthUserForIrreversibleErase } from '@/lib/admin/authUserLifecycle';
 import {
-  ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
   MEMBER_RESUME_BUCKET,
   deleteUserStorageObjects,
@@ -126,21 +125,26 @@ export const POST = withApiGuc(async (
       ),
     ].filter((row): row is { bucket: string; path: string } => Boolean(row));
 
+    // Keep enrollment rows for non-force erasure, but commit the irreversible
+    // tombstone in every path before the first external Storage call. A crash
+    // during cleanup must never leave a restorable identity with missing files.
+    const shouldAnonymize = !force && current.courseEnrollments.length > 0;
+    const anonymized = await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
+    if (!anonymized) {
+      return NextResponse.json({ error: 'The account changed during erasure. Reload and try again.' }, { status: 409 });
+    }
+
     const storage = await deleteUserStorageObjects(id, { extraPaths });
     if (!storage.ok) {
       console.error(`[gdpr-erase] storage object delete failed for ${id}:`, storage.error);
       await releaseBillingDeletion(id, billingDeletion.operationId);
-      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED, billingDeletionPending: true }, { status: 502 });
+      return NextResponse.json({
+        error: 'Account data was anonymized, but stored files remain. Retry erasure or contact support.',
+        billingDeletionPending: true,
+      }, { status: 502 });
     }
 
-    // Preserve enrollment rows for non-force erasure while scrubbing the
-    // account irreversibly. Retrying this path must not turn it into a hard
-    // delete just because the first request already set deletedAt.
-    const shouldAnonymize = !force && current.courseEnrollments.length > 0;
-
     if (shouldAnonymize) {
-      // Scrub User and Profile PII together while preserving enrollment rows.
-      await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
       let authDisabled;
       try {
         authDisabled = await disableAuthUserForIrreversibleErase(getSupabaseAdmin(), id);
@@ -180,9 +184,8 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ ok: true, action: 'anonymize', memberId: id });
     }
 
-    // Retain a deleted app tombstone while Auth is removed. Existing JWTs
+    // Retain the deleted app tombstone while Auth is removed. Existing JWTs
     // remain denied even if the provider request fails or times out.
-    await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
     let authDeleted;
     try {
       authDeleted = await deleteAuthUserForErasure(getSupabaseAdmin(), id);
