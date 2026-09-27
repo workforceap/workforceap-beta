@@ -1278,6 +1278,7 @@ export async function sendMilestoneCascadeEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.milestone_cascade,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(params.subject),
       html,
       idempotencyKey: params.idempotencyKey,
