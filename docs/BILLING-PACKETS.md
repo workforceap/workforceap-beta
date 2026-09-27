@@ -279,8 +279,15 @@ that automatically emails to counselor and the student."
   happens before any claim is acquired.
   Existing senders without `memberEffectClaim` retain a final active-member
   lookup but do not have this durable provider boundary.
+- Password resets for active app accounts take a separate `notification` claim
+  before Auth self-heal or link creation and hold it through Resend or Supabase
+  mailer acceptance. A failed release leaves the durable row for operator
+  reconciliation without telling the requester to retry a possibly delivered
+  link. A crash-held reset claim follows the same incident procedure below.
 - Preview/Development use flattened Prisma transactions and cannot prove the
   member advisory-lock boundary. External-effect claims fail closed there.
+  Password reset returns the same temporary-unavailable response for known and
+  unknown addresses before account lookup in this mode.
   Authenticated Preview upload, notification, and opted-in email acceptance needs the DEMO schema
   caught up and an interactive database target; a successful build is not that
   acceptance.
