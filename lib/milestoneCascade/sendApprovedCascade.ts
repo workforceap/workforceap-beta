@@ -4,6 +4,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { sendMilestoneCascadeEmail } from '@/lib/email';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 import type { ActionDraft } from './types';
 import {
   CASCADE_DISPATCH_LEASE_MS, CASCADE_IDEMPOTENCY_WINDOW_MS, CascadeDispatchStateSchema, summarizeCascadeDispatch,
@@ -18,11 +19,11 @@ export type DraftDispatchOutcome =
   | { ok: true; kind: 'logged_only'; reason: string }
   | { ok: false; reason: string };
 
-export async function dispatchApprovedDraft(args: { draft: ActionDraft; recipientEmail: string; idempotencyKey?: string }): Promise<DraftDispatchOutcome> {
+export async function dispatchApprovedDraft(args: { draft: ActionDraft; recipientEmail: string; recipientUserId: string; idempotencyKey?: string }): Promise<DraftDispatchOutcome> {
   const { draft } = args;
   if (draft.type !== 'celebrate_milestone') return { ok: true, kind: 'logged_only', reason: `advisory action: ${draft.type}` };
   try {
-    const result = await sendMilestoneCascadeEmail({ to: args.recipientEmail, subject: draft.subject, bodyText: draft.body, idempotencyKey: args.idempotencyKey });
+    const result = await sendMilestoneCascadeEmail({ to: args.recipientEmail, recipientUserId: args.recipientUserId, subject: draft.subject, bodyText: draft.body, idempotencyKey: args.idempotencyKey });
     if (result.ok && args.idempotencyKey && !result.messageId?.trim()) return { ok: false, reason: 'The email provider did not return an acceptance receipt.' };
     return result.ok ? { ok: true, kind: 'sent_email', messageId: result.messageId } : { ok: false, reason: result.error ?? 'Provider acceptance could not be confirmed.' };
   } catch {
@@ -63,7 +64,7 @@ export async function dispatchApprovedCascade(args: {
 }): Promise<DispatchAllResult> {
   const now = new Date();
   const row = await prisma.$transaction(tx => tx.milestoneCascade.findFirst({
-    where: { id: args.cascadeId, AND: [args.scopeWhere ?? {}, { user: { deletedAt: null, email: { equals: args.recipientEmail.trim().toLowerCase(), mode: 'insensitive' } } }] },
+    where: { id: args.cascadeId, AND: [args.scopeWhere ?? {}, { user: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, email: { equals: args.recipientEmail.trim().toLowerCase(), mode: 'insensitive' } } }] },
     include: { user: { select: { email: true, deletedAt: true } } },
   }));
   if (!row || row.user.deletedAt) throw new CascadeDispatchError('Cascade is unavailable.', 'not_found', 404);
@@ -99,15 +100,23 @@ export async function dispatchApprovedCascade(args: {
   if (row.expiresAt <= now && hasRemaining) throw new CascadeDispatchError('Cascade has expired; no further messages will be sent.', 'expired', 409);
   const claimId = randomUUID();
   state = { ...state, claimId, leaseUntil: new Date(now.getTime() + CASCADE_DISPATCH_LEASE_MS).toISOString() };
-  const claim = await prisma.$transaction(tx => tx.milestoneCascade.updateMany({
-    where: { id: row.id, AND: [args.scopeWhere ?? {}, { user: { deletedAt: null, email: { equals: args.recipientEmail.trim().toLowerCase(), mode: 'insensitive' } } }], status: row.status, ...(hasRemaining ? { expiresAt: { gt: now } } : {}),
-      dispatchState: row.dispatchState === null ? { equals: Prisma.DbNull } : { equals: row.dispatchState },
-      ...(row.status === 'awaiting_approval' ? { drafts: { equals: args.sourceDrafts ?? Prisma.DbNull } } : {}),
-    },
-    data: { status: 'approved', dispatchState: asJson(state),
-      ...(row.status === 'awaiting_approval' ? { drafts: args.drafts as unknown as Prisma.InputJsonValue, approvedByUserId: args.approvedByUserId, approvedAt: now } : {}),
-    },
-  }));
+  let claim;
+  try {
+    claim = await withActiveMemberWrite(row.userId, tx => tx.milestoneCascade.updateMany({
+      where: { id: row.id, AND: [args.scopeWhere ?? {}, { user: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, email: { equals: args.recipientEmail.trim().toLowerCase(), mode: 'insensitive' } } }], status: row.status, ...(hasRemaining ? { expiresAt: { gt: now } } : {}),
+        dispatchState: row.dispatchState === null ? { equals: Prisma.DbNull } : { equals: row.dispatchState },
+        ...(row.status === 'awaiting_approval' ? { drafts: { equals: args.sourceDrafts ?? Prisma.DbNull } } : {}),
+      },
+      data: { status: 'approved', dispatchState: asJson(state),
+        ...(row.status === 'awaiting_approval' ? { drafts: args.drafts as unknown as Prisma.InputJsonValue, approvedByUserId: args.approvedByUserId, approvedAt: now } : {}),
+      },
+    }));
+  } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      throw new CascadeDispatchError('The member account is no longer active.', 'member_inactive', 409);
+    }
+    throw error;
+  }
   if (claim.count !== 1) throw new CascadeDispatchError('Another request changed this cascade. Reload before retrying.', 'dispatch_conflict', 409, true);
   let persisted = asJson(state);
   async function save(final = false) {
@@ -115,7 +124,10 @@ export async function dispatchApprovedCascade(args: {
     const complete = state.entries.every(e => e.status === 'accepted' || e.status === 'advisory');
     try {
       const changed = await prisma.$transaction(tx => tx.milestoneCascade.updateMany({
-        where: { id: row!.id, AND: [args.scopeWhere ?? {}, { user: { deletedAt: null, email: { equals: args.recipientEmail.trim().toLowerCase(), mode: 'insensitive' } } }], status: 'approved', dispatchState: { equals: persisted } },
+        // The tenant and recipient were verified by the owned claim. Once a
+        // provider attempt begins, deletion may anonymize the User row. The
+        // exact claimed state is the CAS guard for truthful receipt writes.
+        where: { id: row!.id, status: 'approved', dispatchState: { equals: persisted } },
         data: { dispatchState: asJson(state), ...(final ? { status: complete ? 'sent' : 'approved', sentAt: complete ? new Date() : null } : {}) },
       }));
       if (changed.count !== 1) throw new Error('Dispatch state changed concurrently');
@@ -134,7 +146,7 @@ export async function dispatchApprovedCascade(args: {
     entry.attempts++;
     entry.error = null;
     await save(); // No outbound request until its idempotency key is durable.
-    const outcome = await dispatchApprovedDraft({ draft: args.drafts[entry.draftIndex], recipientEmail: state.recipientEmail, idempotencyKey: entry.idempotencyKey });
+    const outcome = await dispatchApprovedDraft({ draft: args.drafts[entry.draftIndex], recipientEmail: state.recipientEmail, recipientUserId: row.userId, idempotencyKey: entry.idempotencyKey });
     if (outcome.ok && outcome.kind === 'sent_email') {
       entry.status = 'accepted'; entry.providerMessageId = outcome.messageId ?? null;
     } else {

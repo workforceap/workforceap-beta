@@ -7,10 +7,10 @@ import {
 } from '@/lib/resume/prepareResumeUpload';
 import {
   AtomicResumeObjectSwapError,
-  replaceResumeObjectsAtomically,
 } from '@/lib/resume/atomicResumeObjectSwap';
 import {
   isResumeProfileConflict,
+  replaceClaimedResumeObjects,
   swapResumeProfilePathsWithCas,
 } from '@/lib/resume/resumeProfileStorage';
 import { awardPoints } from '@/lib/member/points';
@@ -19,6 +19,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { checkResumeUploadRateLimit } from '@/lib/rate-limit';
+import { isMemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
 
 /** Create bucket `member-resumes` in Supabase Dashboard → Storage if it does not exist (private bucket is fine). */
 const BUCKET = 'member-resumes';
@@ -55,9 +56,9 @@ export const POST = withApiGuc(async (request: Request) => {
 
     const supabase = getSupabaseAdmin();
     const storage = supabase.storage.from(BUCKET);
-    let swapped: Awaited<ReturnType<typeof replaceResumeObjectsAtomically>>;
+    let swapped: Awaited<ReturnType<typeof replaceClaimedResumeObjects>>;
     try {
-      swapped = await replaceResumeObjectsAtomically({
+      swapped = await replaceClaimedResumeObjects({
         userId: user.id,
         uploads: [{
           field: 'resumeOriginalPath',
@@ -68,7 +69,7 @@ export const POST = withApiGuc(async (request: Request) => {
         clearFields: ['resumeEnhancedPath'],
         uploadObject: (path, body, options) => storage.upload(path, body, options),
         removeObjects: (paths) => storage.remove(paths),
-        swapProfilePaths: (nextPaths) => swapResumeProfilePathsWithCas(user.id, nextPaths),
+        swapProfilePaths: (nextPaths, operationId) => swapResumeProfilePathsWithCas(user.id, nextPaths, operationId),
         onCleanupError: (error, paths) => {
           console.error('[member/resume/upload] object cleanup failed', { error, paths });
         },
@@ -86,6 +87,9 @@ export const POST = withApiGuc(async (request: Request) => {
           { error: 'Your resume changed in another session. Reload and try again.' },
           { status: 409 },
         );
+      }
+      if (isMemberUploadLifecycleError(error)) {
+        return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
       }
       throw error;
     }

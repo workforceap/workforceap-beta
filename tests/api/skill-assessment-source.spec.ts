@@ -18,6 +18,10 @@ vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError:
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   $transaction: async (callback: (tx: unknown) => unknown) => callback({ aIToolResult: { create: h.create }, careerProgramMapping: { findMany: h.mappings } }),
 } }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: vi.fn(async () => undefined),
+  billingLifecyclePending: vi.fn(async () => false),
+}));
 
 import { POST } from '@/app/api/member/skill-assessment/route';
 import { GET } from '@/app/api/ai/skill-mapper/route';

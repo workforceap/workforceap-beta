@@ -11,6 +11,7 @@ const MAX_EMAIL_LENGTH = 255;
 const DELETED_EMAIL_SUFFIX = '@deleted.invalid';
 const DELETED_EMAIL_RE = /^deleted_[0-9a-f-]{36}_\d+_(.+)@deleted\.invalid$/i;
 const DELETED_EMAIL_MARKER_RE = /^deleted_[0-9a-f-]{36}_\d+_/i;
+const ERASED_EMAIL_RE = /^erased_([0-9a-f-]{36})_\d+@deleted\.invalid$/i;
 
 export function buildDeletedEmail(userId: string, timestampMs: number, email: string): string | null {
   const deletedEmail = `deleted_${userId}_${timestampMs}_${email}${DELETED_EMAIL_SUFFIX}`;
@@ -27,4 +28,13 @@ export function isDeletedEmail(email: string): boolean {
 
 export function isDeletedEmailMarker(email: string): boolean {
   return DELETED_EMAIL_MARKER_RE.test(email);
+}
+
+/** Admin erasure cannot be reversed: this marker contains no original address. */
+export function buildErasedEmail(userId: string, timestampMs: number): string {
+  return `erased_${userId}_${timestampMs}${DELETED_EMAIL_SUFFIX}`;
+}
+
+export function isErasedEmailMarker(email: string, userId: string): boolean {
+  return ERASED_EMAIL_RE.exec(email)?.[1]?.toLowerCase() === userId.toLowerCase();
 }

@@ -59,6 +59,7 @@ All default to the Workforce Advancement Project identity printed on the officia
 | `BILLING_PROVIDER_ADDRESS` | `207 Settlers Valley Drive, Suite C | Pflugerville, TX 78660` (default; `|` separates lines) | (same) | Letterhead / remit-to |
 | `BILLING_PROVIDER_PHONE` / `BILLING_PROVIDER_EMAIL` / `BILLING_PROVIDER_WEBSITE` / `BILLING_PROVIDER_EIN` | defaults: `512-825-2896`, `michael.brown@workforceap.org`, `www.workforceap.org`, `41-2612389` | (same) | Letterhead; reply-to on the packet emails |
 | `BILLING_SIGNER_NAME` / `BILLING_SIGNER_TITLE` | defaults: `Michael A. Brown, PMP, ChE`, `Executive Director` | (same) | Prefilled signer on /admin/members/[id]/billing (editable per packet) |
+| `BILLING_PACKET_PROVIDER_ORG_ID` | unset (default: `DEFAULT_ORG_ID` from `lib/tenant/organization.ts`, the WorkforceAP org) | (same) | The only organization whose admins may create, sign, send or render J5/J6 packets. Must be a UUID when set; an invalid value disables billing (503) instead of falling back |
 | `BILLING_PACKET_PREFIX` | `WAP` (default) -> invoice numbers `WAP-2026-0001` | (same) | Invoice numbering |
 | `BILLING_DEFAULT_BILL_TO_NAME` / `BILLING_DEFAULT_BILL_TO_ATTENTION` / `BILLING_DEFAULT_BILL_TO_ADDRESS` | defaults: `Workforce Solutions Capital Area`, `Accounts Payable / Training Services`, empty | (same) | Prefilled "Bill to" (editable per packet) |
 

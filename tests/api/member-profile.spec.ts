@@ -65,12 +65,25 @@ vi.mock('@/lib/db/prisma', () => ({
     }),
   },
 }));
+vi.mock('@/lib/member/activeWrite', () => {
+  class MemberLifecycleWriteError extends Error {
+    constructor() { super('This account is no longer active.'); }
+  }
+  return {
+    MemberLifecycleWriteError,
+    withActiveMemberWrite: vi.fn(async (_userId: string, write: (tx: unknown) => Promise<unknown>) => {
+      const { prisma } = await import('@/lib/db/prisma');
+      return prisma.$transaction(write as never);
+    }),
+  };
+});
 
 // ─── Imports after mocks ───
 import { GET as profileGET, PATCH as profilePATCH } from '@/app/api/member/profile/route';
 import { GET as completenessGET } from '@/app/api/member/profile/completeness/route';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const makeRequest = (body?: Record<string, unknown>) =>
   new Request('http://localhost:3000/api/member/profile', {
@@ -216,6 +229,19 @@ describe('PATCH /api/member/profile', () => {
     expect(body.user.phone).toBe('512-555-9999');
     expect(body.profile.address).toBe('456 Oak Ave');
     expect(body.profile.city).toBe('Dallas');
+  });
+
+  it('rejects a stale profile save after account erasure without writing PII', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'user-123', email: 'jane@example.com' } as any);
+    vi.mocked(withActiveMemberWrite).mockRejectedValueOnce(new MemberLifecycleWriteError());
+
+    const res = await profilePATCH(makeRequest({ fullName: 'Jane Updated', address: '456 Oak Ave' }));
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'This account is no longer active.' });
+    expect(withActiveMemberWrite).toHaveBeenCalledWith('user-123', expect.any(Function));
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.profile.upsert).not.toHaveBeenCalled();
   });
 
   it('updates only user fields when no profile fields provided', async () => {

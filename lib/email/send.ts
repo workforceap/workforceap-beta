@@ -34,6 +34,7 @@ import {
   EMAIL_SEND_WORKFLOW,
   EMAIL_TEMPLATE_ENTITY_TYPE,
   buildEmailFailureMetadata,
+  classifyEmailSendFailure,
   type EmailTemplateRef,
 } from '@/lib/email/failureRecord';
 import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
@@ -50,12 +51,15 @@ import {
 } from '@/lib/email/sendLog';
 import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 import { partitionSuppressedRecipients, recordSuppressedRecipientSkip } from '@/lib/email/suppressions';
-import { resolveEmailTemplateKey } from '@/lib/email/templateKeys';
+import { EMAIL_TEMPLATE_KEYS, resolveEmailTemplateKey } from '@/lib/email/templateKeys';
+import { prisma } from '@/lib/db/prisma';
+import { beginMemberUpload, MemberUploadLifecycleError, releaseMemberUpload } from '@/lib/member/uploadLifecycle';
 
 export { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 
 const RESEND_MAX_ATTEMPTS = 3;
 const RESEND_RETRY_BASE_DELAY_MS = 500;
+const KNOWN_EMAIL_TEMPLATE_KEYS: ReadonlySet<string> = new Set(Object.values(EMAIL_TEMPLATE_KEYS));
 /** Never spend more than one minute of a request waiting to retry email. */
 const RESEND_RETRY_MAX_TOTAL_WAIT_MS = 60_000;
 
@@ -74,6 +78,15 @@ export interface SendBrandedEmailRetryOptions {
   suppressFailureDiagnostic?: boolean;
   /** Test seam; production writes the send log through Prisma. */
   sendLogStore?: EmailSendLogStore;
+  /** Test seam for the final recipient state check before each provider attempt. */
+  recipientIsActive?: (userId: string, recipient: string) => Promise<boolean>;
+  /** Test seam for checking each member whose private details appear in staff mail. */
+  subjectIsActive?: (userId: string, email?: string | null) => Promise<boolean>;
+  /** Test seam for the durable member effect claim; production uses the billing lifecycle ledger. */
+  memberClaim?: {
+    begin(userId: string, providerIdempotencyKey: string): Promise<string>;
+    release(userId: string, token: string): Promise<void>;
+  };
   /**
    * Consult the provider suppression list before sending. Defaults to true
    * for bulk/cron sends (any caller that carries a deadline or runs under a
@@ -153,10 +166,10 @@ export function buildDeliverabilityHeaders(unsubscribeUrl?: string): Record<stri
  * configured fixture recipient, or an address the provider itself has already
  * suppressed (hard bounce / complaint) and would not deliver anyway.
  */
-export type SkippedEmailReason = 'fixture_recipient' | 'suppressed_recipient';
+export type SkippedEmailReason = 'fixture_recipient' | 'suppressed_recipient' | 'inactive_member';
 
 export function isRecipientSkipReason(value: unknown): value is SkippedEmailReason {
-  return value === 'fixture_recipient' || value === 'suppressed_recipient';
+  return value === 'fixture_recipient' || value === 'suppressed_recipient' || value === 'inactive_member';
 }
 
 export type FixtureSkippedEmailResult = {
@@ -197,6 +210,16 @@ export interface SendBrandedEmailArgs {
    */
   templateKey?: string | null;
   userId?: string | null;
+  /** Member receiving this message. Rechecked before every provider attempt. */
+  recipientUserId?: string;
+  /** Member whose private content is sent to staff. Rechecked before every provider attempt. */
+  subjectMemberId?: string;
+  /** Members named in a batch message to staff or an employer. */
+  subjectMemberIds?: string[];
+  /** Hold deletion behind a durable claim across provider I/O for this member-linked send. */
+  memberEffectClaim?: boolean;
+  /** Address frozen in the staff message body, if present. */
+  subjectMemberEmail?: string | null;
   entityType?: string | null;
   entityId?: string | null;
 }
@@ -206,10 +229,31 @@ export interface SendBrandedEmailArgs {
  * email problems instead of them dying in server logs. Fire-and-forget: the
  * diagnostic write must never change send behavior or throw.
  *
- * WAP-163: the row carries the typed failure record (template, params, error
- * class, retryable, recipient hash) so it can be listed and re-sent later.
+ * WAP-163: unclaimed failures retain the replayable template record. A member
+ * claim can be released before this fire-and-forget write finishes, so claimed
+ * failures must be safe to persist even after account erasure.
  */
 function recordEmailFailure(args: SendBrandedEmailArgs, error: unknown) {
+  if (args.memberEffectClaim) {
+    const { errorClass, retryable } = classifyEmailSendFailure(error);
+    const candidate = resolveEmailTemplateKey(args);
+    const template = candidate && KNOWN_EMAIL_TEMPLATE_KEYS.has(candidate) ? candidate : null;
+    void recordWorkflowDiagnostic({
+      workflow: EMAIL_SEND_WORKFLOW,
+      status: 'error',
+      entityType: EMAIL_TEMPLATE_ENTITY_TYPE,
+      entityId: template,
+      summary: `Member email send failed: ${template ?? 'untyped'} (${errorClass})`,
+      provider: 'resend',
+      failureReason: `member_email_${errorClass}`,
+      metadata: {
+        to: [], subject: '', template, errorClass, retryable,
+        resendable: false, recipientHash: null, recipientDomain: null,
+        failedAt: new Date().toISOString(),
+      },
+    });
+    return;
+  }
   const metadata = buildEmailFailureMetadata(args, error);
   void recordWorkflowDiagnostic({
     workflow: EMAIL_SEND_WORKFLOW,
@@ -446,6 +490,45 @@ export class FixtureRecipientSkippedError extends Error {
   }
 }
 
+export class MemberEmailOutcomeUncertainError extends Error {
+  readonly causeValue: unknown;
+
+  constructor(causeValue: unknown) {
+    super('Email provider outcome needs reconciliation');
+    this.name = 'MemberEmailOutcomeUncertainError';
+    this.causeValue = causeValue;
+  }
+}
+
+/** The SDK's error-free response still needs a provider receipt to prove acceptance. */
+export class MemberEmailReceiptMissingError extends Error {
+  constructor() {
+    super('Resend did not return an email id');
+    this.name = 'MemberEmailReceiptMissingError';
+  }
+}
+
+function isDefiniteEmailRejection(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const candidate = error as { status?: unknown; statusCode?: unknown; status_code?: unknown };
+  const raw = candidate.status ?? candidate.statusCode ?? candidate.status_code;
+  const status = typeof raw === 'number' || (typeof raw === 'string' && /^\d{3}$/.test(raw)) ? Number(raw) : NaN;
+  return Number.isInteger(status) && status >= 400 && status < 500
+    && status !== 408 && status !== 409;
+}
+
+async function memberRecipientIsActive(userId: string, recipient?: string | null): Promise<boolean> {
+  const member = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+  });
+  return !!member
+    && !member.deletedAt
+    && !member.billingDeletionPendingAt
+    && !member.billingDeletionOperationId
+    && (recipient == null || normalizedRecipientAddress(member.email) === normalizedRecipientAddress(recipient));
+}
+
 export async function sendBrandedEmail(
   resend: Resend,
   args: SendBrandedEmailArgs,
@@ -533,11 +616,88 @@ export async function sendBrandedEmail(
   let totalRetryWaitMs = 0;
   sendLog.write('sending', { attempts: 1 });
 
+  const memberClaim = retryOptions.memberClaim ?? {
+    begin: (userId: string, key: string) => beginMemberUpload(userId, 'email', key),
+    release: releaseMemberUpload,
+  };
+  const claims: Array<{ userId: string; token: string }> = [];
+  if (args.memberEffectClaim) {
+    const memberIds = [...new Set([
+      ...(args.recipientUserId ? [args.recipientUserId] : []),
+      ...(args.subjectMemberId ? [args.subjectMemberId] : []),
+      ...(args.subjectMemberIds ?? []),
+    ])].sort();
+    if (memberIds.length === 0) throw new Error('Member email effect claim requires a member id');
+    try {
+      for (const userId of memberIds) {
+        claims.push({ userId, token: await memberClaim.begin(userId, idempotencyKey) });
+      }
+    } catch (error) {
+      for (const claim of claims.reverse()) {
+        await memberClaim.release(claim.userId, claim.token).catch((releaseError) => {
+          console.error('Member email claim rollback failed:', releaseError);
+        });
+      }
+      if (error instanceof MemberUploadLifecycleError && error.reason === 'member_inactive') {
+        sendLog.write('skipped', { skipReason: 'inactive_member', attempts: 0 });
+        await sendLog.settle();
+        return { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null };
+      }
+      sendLog.fail(error, 0);
+      await sendLog.settle();
+      throw error;
+    }
+  }
+
+  let providerAmbiguous = false;
+  let providerAccepted = false;
+  try {
+
   for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
+    if (args.recipientUserId || args.subjectMemberId || args.subjectMemberIds?.length) {
+      // A cron or staff batch may have captured this address minutes ago.
+      // Staff transcripts likewise contain private member content even though
+      // their envelope goes to staff. Recheck after pacing and retry sleeps.
+      const recipient = typeof to === 'string' ? to : '';
+      let active: boolean;
+      try {
+        active = !args.recipientUserId
+          || await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient);
+        if (active) {
+          const subjectIsActive = retryOptions.subjectIsActive ?? memberRecipientIsActive;
+          const subjects = new Map<string, string | null>();
+          if (args.subjectMemberId) subjects.set(args.subjectMemberId, args.subjectMemberEmail ?? null);
+          for (const id of args.subjectMemberIds ?? []) {
+            if (!subjects.has(id)) subjects.set(id, null);
+          }
+          for (const [id, email] of subjects) {
+            if (!(await subjectIsActive(id, email))) {
+              active = false;
+              break;
+            }
+          }
+        }
+      } catch (error) {
+        // An unavailable lifecycle lookup is not permission to email a stale
+        // address. Record the failure while keeping the provider untouched.
+        sendLog.fail(error, attempt);
+        await sendLog.settle();
+        throw error;
+      }
+      if (!active) {
+        if (args.memberEffectClaim && providerAmbiguous) {
+          throw new MemberEmailOutcomeUncertainError(new Error('Member changed after an unresolved provider attempt'));
+        }
+        sendLog.write('skipped', { skipReason: 'inactive_member', attempts: attempt - 1 });
+        await sendLog.settle();
+        return { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null };
+      }
+    }
     let result: Awaited<ReturnType<Resend['emails']['send']>>;
     try {
       result = await resend.emails.send(payload, { idempotencyKey });
     } catch (err) {
+      if (args.memberEffectClaim && !isDefiniteEmailRejection(err)) providerAmbiguous = true;
       const nowMs = now();
       const delayMs = resendRetryDelayMs(err, attempt, nowMs, random);
       if (
@@ -558,6 +718,19 @@ export async function sendBrandedEmail(
 
     // Resend resolves with { data, error } instead of throwing on API errors.
     if (!result.error) {
+      if (typeof result.data?.id !== 'string' || !result.data.id.trim()) {
+        // A malformed success shape cannot be used as proof of acceptance.
+        // The SDK request has settled, so the lifecycle claim is released in
+        // finally; the delivery result remains unknown to the caller.
+        const missingReceipt = new MemberEmailReceiptMissingError();
+        if (args.memberEffectClaim) providerAmbiguous = true;
+        if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, missingReceipt);
+        sendLog.fail(missingReceipt, attempt);
+        await sendLog.settle();
+        throw missingReceipt;
+      }
+      providerAccepted = true;
+      providerAmbiguous = false;
       sendLog.write('sent', {
         attempts: attempt,
         providerMessageId: result.data?.id ?? null,
@@ -566,6 +739,7 @@ export async function sendBrandedEmail(
       await sendLog.settle();
       return result;
     }
+    if (args.memberEffectClaim && !isDefiniteEmailRejection(result.error)) providerAmbiguous = true;
     const nowMs = now();
     const delayMs = resendRetryDelayMs(result.error, attempt, nowMs, random);
     if (
@@ -582,11 +756,35 @@ export async function sendBrandedEmail(
     if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, result.error);
     sendLog.fail(result.error, attempt);
     await sendLog.settle();
-    throw new Error(message);
+    // Keep the provider's error code so callers can tell e.g. an idempotency
+    // conflict (`invalid_idempotent_request`) from an ordinary failure.
+    throw Object.assign(new Error(message), { providerErrorName: result.error.name ?? null });
   }
   sendLog.fail('Resend retry budget exhausted', RESEND_MAX_ATTEMPTS);
   await sendLog.settle();
   throw new Error('Resend retry budget exhausted');
+  } catch (error) {
+    if (args.memberEffectClaim && providerAmbiguous && !providerAccepted) {
+      const uncertain = error instanceof MemberEmailOutcomeUncertainError
+        ? error
+        : new MemberEmailOutcomeUncertainError(error);
+      sendLog.fail(uncertain, RESEND_MAX_ATTEMPTS);
+      await sendLog.settle();
+      throw uncertain;
+    }
+    throw error;
+  } finally {
+    for (const claim of claims.reverse()) {
+      // All SDK attempts have settled before this finally block. An unknown
+      // delivery result is recorded as a failure, but no local provider call
+      // remains to cross account deletion. A still-running request or crash
+      // never reaches this release and leaves its durable claim held.
+      await memberClaim.release(claim.userId, claim.token).catch((error) => {
+        // The durable row also remains held if release cannot be confirmed.
+        console.error('Member email claim settlement failed:', error);
+      });
+    }
+  }
 }
 
 

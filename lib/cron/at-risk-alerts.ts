@@ -18,6 +18,7 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 import { CRON_SCOPED_LOOKUP_CAP } from '@/lib/db/scanCaps';
 import {
   buildMemberClassificationInput,
@@ -92,6 +93,7 @@ export type RetentionNudgeResult = {
   errors: number;
   skippedPacing: number;
   skippedFixture: number;
+  skippedInactive: number;
 };
 
 /**
@@ -147,6 +149,7 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
   let errors = 0;
   let skippedPacing = 0;
   let skippedFixture = 0;
+  let skippedInactive = 0;
 
   const cooldownCutoff = new Date(Date.now() - NUDGE_COOLDOWN_MS);
 
@@ -159,6 +162,7 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
     sentStuck?: boolean;
     skippedPacing?: boolean;
     skippedFixture?: boolean;
+    skippedInactive?: boolean;
   };
 
   const processMember = async (
@@ -206,12 +210,15 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
       if (choice.kind === 'check_in') {
         const result = await pacer.run(() => sendMemberCheckInEmail({
           to: member.email,
+          recipientUserId: member.id,
           firstName,
           dashboardUrl: `${SITE_URL}/dashboard`,
         }));
-        if ('skipped' in result) return isRecipientSkipReason(result.error)
-          ? { skippedFixture: true }
-          : { skippedPacing: true };
+        if ('skipped' in result) return result.error === 'inactive_member'
+          ? { skippedInactive: true }
+          : isRecipientSkipReason(result.error)
+            ? { skippedFixture: true }
+            : { skippedPacing: true };
         if (result.ok) {
           outcome.sentCheckIn = true;
           sent = true;
@@ -219,13 +226,16 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
       } else if (choice.kind === 'come_back') {
         const result = await pacer.run(() => sendMemberComeBackEmail({
           to: member.email,
+          recipientUserId: member.id,
           firstName,
           counselorName,
           nextBestActionUrl: `${SITE_URL}/dashboard`,
         }));
-        if ('skipped' in result) return isRecipientSkipReason(result.error)
-          ? { skippedFixture: true }
-          : { skippedPacing: true };
+        if ('skipped' in result) return result.error === 'inactive_member'
+          ? { skippedInactive: true }
+          : isRecipientSkipReason(result.error)
+            ? { skippedFixture: true }
+            : { skippedPacing: true };
         if (result.ok) {
           outcome.sentComeBack = true;
           sent = true;
@@ -233,12 +243,15 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
       } else {
         const result = await pacer.run(() => sendMemberStuckEmail({
           to: member.email,
+          recipientUserId: member.id,
           firstName,
           counselorName,
         }));
-        if ('skipped' in result) return isRecipientSkipReason(result.error)
-          ? { skippedFixture: true }
-          : { skippedPacing: true };
+        if ('skipped' in result) return result.error === 'inactive_member'
+          ? { skippedInactive: true }
+          : isRecipientSkipReason(result.error)
+            ? { skippedFixture: true }
+            : { skippedPacing: true };
         if (result.ok) {
           outcome.sentStuck = true;
           sent = true;
@@ -251,16 +264,18 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
 
     if (sent) {
       try {
-        await prisma.memberNudgeLog.create({
+        await withActiveMemberWrite(member.id, (tx) => tx.memberNudgeLog.create({
           data: {
             userId: member.id,
             tier: choice.tier,
             kind: choice.kind,
             reasons: classification.reasons as unknown as object,
           },
-        });
+        }));
       } catch (err) {
-        console.error(`[retention-nudges] log write failed for ${member.id}:`, err);
+        if (!(err instanceof MemberLifecycleWriteError)) {
+          console.error(`[retention-nudges] log write failed for ${member.id}:`, err);
+        }
       }
     }
 
@@ -280,6 +295,7 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
       if (outcome.errors) errors += outcome.errors;
       if (outcome.skippedPacing) skippedPacing++;
       if (outcome.skippedFixture) skippedFixture++;
+      if (outcome.skippedInactive) skippedInactive++;
     }
   }
 
@@ -294,6 +310,7 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
     errors,
     skippedPacing,
     skippedFixture,
+    skippedInactive,
   };
 }
 
@@ -322,6 +339,7 @@ export type DailyAtRiskAlertRunResult = {
 
 /** Synthetic batch id for the staff fallback inbox (members with no counselor). */
 export const STAFF_FALLBACK_COUNSELOR_ID = 'staff-fallback';
+const MAX_NAMED_AT_RISK_MEMBERS = 20;
 
 /**
  * @param precomputedScores Optional scores already in hand (tests, a manual
@@ -386,6 +404,8 @@ export async function runAtRiskCounselorAlerts(
     where: {
       id: { in: criticalScores.map((s) => s.userId) },
       deletedAt: null,
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
     },
     select: {
       id: true,
@@ -514,11 +534,16 @@ export async function runAtRiskCounselorAlerts(
 
   for (const batch of counselorBatches.values()) {
     if (batch.members.length === 0) continue;
+    const namedMembers = [...batch.members]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, MAX_NAMED_AT_RISK_MEMBERS);
 
     const result = await pacer.run(() => sendCounselorAtRiskAlertEmail({
+      subjectMemberIds: namedMembers.map((member) => member.userId),
       to: batch.counselorEmail,
       counselorName: batch.counselorName,
-      members: batch.members.map((m) => ({
+      totalMemberCount: batch.members.length,
+      members: namedMembers.map((m) => ({
         memberName: m.fullName ?? 'Unknown',
         memberEmail: m.email ?? '(no email)',
         score: m.score,

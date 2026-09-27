@@ -132,6 +132,7 @@ const ETHNICITY_OPTIONS = [
     // Try invite first (sends set-password email). Fall back to createUser if invite not supported.
     let authUser: { id: string; email?: string } | null = null;
     let welcomeEmailSent = false;
+    let passwordResetNeeded = false;
   
     const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${siteUrl}/dashboard`,
@@ -161,18 +162,7 @@ const ETHNICITY_OPTIONS = [
         return NextResponse.json({ error: createError.message }, { status: 400 });
       }
       authUser = createData.user;
-      // Optionally trigger password reset so user can set their own.
-      // Track E (Sprint E.1 PR 2) — pass orgId so the reset link uses the
-      // member's tenant domain instead of the platform default.
-      try {
-        const resetResult = await sendPasswordResetEmail(email, '/reset-password', { orgId: organizationId });
-        welcomeEmailSent = !resetResult.error;
-        if (resetResult.error) {
-          console.error('Admin create member password-reset email failed:', resetResult.error);
-        }
-      } catch (emailError) {
-        console.error('Admin create member password-reset email failed:', emailError);
-      }
+      passwordResetNeeded = true;
     }
   
     if (!authUser) {
@@ -281,6 +271,21 @@ const ETHNICITY_OPTIONS = [
         console.error('Failed to clean up auth user after member DB error:', cleanupError);
       });
       return NextResponse.json({ error: 'Failed to create member. Please try again.' }, { status: 500 });
+    }
+
+    // The reset mailer now requires an active app User to hold the erasure
+    // barrier. Send only after the User transaction commits; a DB rollback
+    // must never leave a reset link for an orphaned Auth identity.
+    if (passwordResetNeeded) {
+      try {
+        const resetResult = await sendPasswordResetEmail(email, '/reset-password', { orgId: organizationId });
+        welcomeEmailSent = !resetResult.error && resetResult.via !== 'skipped';
+        if (!welcomeEmailSent) {
+          console.error('Admin create member password-reset email was not confirmed:', resetResult.via);
+        }
+      } catch (emailError) {
+        console.error('Admin create member password-reset email failed:', emailError instanceof Error ? emailError.name : 'unknown');
+      }
     }
   
     after(() =>

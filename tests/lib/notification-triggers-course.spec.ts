@@ -280,6 +280,10 @@ describe('Trigger: course_complete', () => {
     expect(first).toEqual(expect.objectContaining({ alreadyCompleted: true }));
     expect(replay).toEqual(expect.objectContaining({ alreadyCompleted: true }));
     expect(sendCourseCompletedEmail).toHaveBeenCalledTimes(1);
+    expect(sendCourseCompletedEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'jane@example.com',
+      recipientUserId: 'user-1',
+    }));
     expect(sendPartnerMilestoneEmail).toHaveBeenCalledTimes(1);
     expect(awardPoints).toHaveBeenCalledTimes(1);
     expect(detectTrainingMilestone).toHaveBeenCalledWith(

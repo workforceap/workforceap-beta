@@ -2,6 +2,7 @@ import 'server-only';
 
 import { prisma } from '@/lib/db/prisma';
 import { CRON_SCOPED_LOOKUP_CAP } from '@/lib/db/scanCaps';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 /**
  * Shared cross-cron nudge cooldown.
@@ -55,15 +56,17 @@ export async function recordNudgeSent(args: {
   reasons?: unknown;
 }): Promise<void> {
   try {
-    await prisma.memberNudgeLog.create({
+    await withActiveMemberWrite(args.userId, (tx) => tx.memberNudgeLog.create({
       data: {
         userId: args.userId,
         tier: args.tier,
         kind: args.kind,
         ...(args.reasons !== undefined ? { reasons: args.reasons as object } : {}),
       },
-    });
+    }));
   } catch (err) {
-    console.error('[nudgeThrottle] failed to record nudge log:', err);
+    if (!(err instanceof MemberLifecycleWriteError)) {
+      console.error('[nudgeThrottle] failed to record nudge log:', err);
+    }
   }
 }

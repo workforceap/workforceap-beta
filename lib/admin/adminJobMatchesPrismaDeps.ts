@@ -107,6 +107,7 @@ export function createAdminJobMatchesPrismaDeps(
           if (!activeCandidate) continue;
           await createNotification({
             userId: m.studentId,
+            subjectMemberId: m.studentId,
             type: 'job_match',
             title: 'New job match',
             body: `We found a match: ${job?.title ?? 'a new position'}`,

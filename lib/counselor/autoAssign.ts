@@ -1,6 +1,9 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { assertBillingAssignmentMutable, BillingAssignmentInProgressError } from './billingAssignmentGuard';
 import { createNotification } from '@/lib/notifications/create';
 import { hasAdminAccess } from '@/lib/auth/roleAccess';
 
@@ -15,6 +18,7 @@ export type EnsureSelfServeCounselorResult = {
     | 'partner_referred'
     | 'no_counselors'
     | 'member_unavailable'
+    | 'billing_send_in_progress'
     | 'staff_account';
 };
 
@@ -127,28 +131,31 @@ async function notifyNewSelfServeAssignment(input: {
   ]);
   const counselorName = counselor?.fullName?.trim() || 'your counselor';
   const memberLabel = member?.fullName?.trim() || member?.email || 'A member';
-  await Promise.all([
-    createNotification({
-      userId: input.memberId,
-      type: 'task_assigned',
-      title: 'You have a new advisor',
-      body: `${counselorName} has been assigned as your career advisor.`,
-      data: {
-        counselorUserId: input.counselorUserId,
-        threadId: input.threadId,
-      },
-    }),
-    createNotification({
-      userId: input.counselorUserId,
-      type: 'task_assigned',
-      title: 'A new member is on your caseload',
-      body: `${memberLabel} was assigned to you.`,
-      data: {
-        memberId: input.memberId,
-        link: `/counselor/students/${input.memberId}`,
-      },
-    }),
-  ]);
+  // Both notifications describe the same member. The lifecycle token permits
+  // one in-flight notification per member, so complete the first before the
+  // counselor notification tries to acquire its own claim.
+  await createNotification({
+    userId: input.memberId,
+    subjectMemberId: input.memberId,
+    type: 'task_assigned',
+    title: 'You have a new advisor',
+    body: `${counselorName} has been assigned as your career advisor.`,
+    data: {
+      counselorUserId: input.counselorUserId,
+      threadId: input.threadId,
+    },
+  });
+  await createNotification({
+    userId: input.counselorUserId,
+    subjectMemberId: input.memberId,
+    type: 'task_assigned',
+    title: 'A new member is on your caseload',
+    body: `${memberLabel} was assigned to you.`,
+    data: {
+      memberId: input.memberId,
+      link: `/counselor/students/${input.memberId}`,
+    },
+  });
 }
 
 /**
@@ -185,6 +192,10 @@ export async function ensureSelfServeCounselorAssigned(input: {
   }
 
   const result = await prisma.$transaction(async (tx) => {
+    // Claim also takes the lifecycle key before its member row lock. Doing
+    // this before the optimistic User update avoids a lock-order deadlock.
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, input.memberId);
+    else await assertBillingAssignmentMutable(tx, input.memberId);
     const locked = await tx.user.updateMany({
       where: {
         id: input.memberId,
@@ -222,6 +233,11 @@ export async function ensureSelfServeCounselorAssigned(input: {
       reason: 'assigned',
       threadId: assigned.thread.id,
     } as const;
+  }).catch((error: unknown) => {
+    if (error instanceof BillingAssignmentInProgressError) {
+      return { assigned: false, counselorUserId: null, reason: 'billing_send_in_progress' } as const;
+    }
+    throw error;
   });
 
   if (result.reason === 'assigned' && result.counselorUserId) {

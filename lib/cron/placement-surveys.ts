@@ -246,7 +246,7 @@ export async function sendDuePlacementSurveys(
         continue;
       }
 
-      const result = await emailPacer.run(() => sendPreparedPlacementSurveyEmail(deliveryPayload));
+      const result = await emailPacer.run(() => sendPreparedPlacementSurveyEmail(deliveryPayload, placement.userId));
 
       if (!result.ok && 'skipped' in result && result.skipped) {
         skipped.push({ userId: placement.userId, reason: result.error ?? 'Skipped before provider send' });
@@ -280,6 +280,7 @@ export async function sendDuePlacementSurveys(
         // a failed-email run doesn't leave an orphan "survey ready" notice.
         await createNotification({
           userId: placement.userId,
+          subjectMemberId: placement.userId,
           type: 'survey_due',
           title: 'Placement survey ready',
           body: `Your ${wave.replace('_', '-day ')} placement survey is ready. It only takes 2 minutes.`,
@@ -371,6 +372,7 @@ export async function escalateStalePlacementSurveys(
     const surveyUrl = `${SITE_URL}/survey/placement/${encodeURIComponent(token)}`;
 
     const result = await emailPacer.run(() => sendPlacementSurveyEscalationEmail({
+      subjectMemberId: user.id,
       to: counselorEmail,
       counselorName: counselor.user.fullName ?? 'Counselor',
       memberName: user.fullName ?? 'Member',
@@ -403,6 +405,7 @@ export async function escalateStalePlacementSurveys(
       if (counselorUserId) {
         await createNotification({
           userId: counselorUserId,
+          subjectMemberId: user.id,
           type: 'task_assigned',
           title: 'Placement survey follow-up needed',
           body: `${user.fullName ?? 'A member'}'s ${survey.wave.replace('_', '-day ')} placement survey has gone unanswered for 7+ days.`,

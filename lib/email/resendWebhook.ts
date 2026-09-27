@@ -198,7 +198,6 @@ export async function handleResendWebhook(input: HandleResendWebhookInput): Prom
       metadata: {
         event: parsed.event,
         bounceType: parsed.bounceType,
-        providerMessageId: parsed.emailId,
         matchedSendLog: applied.matched,
         recipientCount: parsed.recipients.length,
       },

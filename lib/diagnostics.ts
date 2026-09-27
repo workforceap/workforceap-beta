@@ -42,9 +42,12 @@ export function redactDiagnosticMetadata(
   return copy;
 }
 
-export async function recordWorkflowDiagnostic(params: WorkflowDiagnosticParams): Promise<void> {
+export async function recordWorkflowDiagnostic(
+  params: WorkflowDiagnosticParams,
+  db: Pick<Prisma.TransactionClient, 'workflowDiagnostic'> = prisma,
+): Promise<void> {
   try {
-    await prisma.workflowDiagnostic.create({
+    await db.workflowDiagnostic.create({
       data: {
         workflow: params.workflow,
         status: params.status,

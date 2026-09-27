@@ -70,6 +70,8 @@ async function handle(_request: Request) {
     prisma.user.findMany({
       where: {
         deletedAt: null,
+        billingDeletionPendingAt: null,
+        billingDeletionOperationId: null,
         interviewEligible: true,
         interviewRequestedAt: { not: null, lte: stallThreshold },
         interviewCompletedAt: null,
@@ -81,6 +83,8 @@ async function handle(_request: Request) {
     prisma.user.findMany({
       where: {
         deletedAt: null,
+        billingDeletionPendingAt: null,
+        billingDeletionOperationId: null,
         wioaReviewStatus: { in: ['pending', 'in_review'] },
         updatedAt: { lte: stallThreshold },
       },
@@ -91,6 +95,8 @@ async function handle(_request: Request) {
     prisma.user.findMany({
       where: {
         deletedAt: null,
+        billingDeletionPendingAt: null,
+        billingDeletionOperationId: null,
         enrolledProgram: null,
         createdAt: { lte: noProgramThreshold },
       },
@@ -103,6 +109,8 @@ async function handle(_request: Request) {
     prisma.user.findMany({
       where: {
         deletedAt: null,
+        billingDeletionPendingAt: null,
+        billingDeletionOperationId: null,
         wioaReviewStatus: { in: [...WIOA_AWAITING_REVIEW_STATUSES] },
       },
       select: { wioaQualificationJson: true, updatedAt: true },

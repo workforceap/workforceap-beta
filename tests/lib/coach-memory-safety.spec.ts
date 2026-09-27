@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const mocks = vi.hoisted(() => ({
+  memory: { findUnique: vi.fn(), upsert: vi.fn() },
+  activeWrite: vi.fn(),
+}));
+
 vi.mock('@/lib/db/prisma', () => ({
-  prisma: { coachMemory: { findUnique: vi.fn(), upsert: vi.fn() } },
+  prisma: { coachMemory: mocks.memory },
 }));
 vi.mock('@/lib/ai/anthropicChat', () => ({ claudeChat: vi.fn() }));
+vi.mock('@/lib/ai/activeMemberWrite', () => ({ withActiveMemberAIWrite: mocks.activeWrite }));
 
 import { prisma } from '@/lib/db/prisma';
 import { claudeChat } from '@/lib/ai/anthropicChat';
@@ -24,6 +30,10 @@ const safeMemory = {
 describe('career memory privacy boundaries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.activeWrite.mockImplementation(async (
+      _userId: string,
+      write: (tx: { coachMemory: typeof mocks.memory }) => Promise<unknown>,
+    ) => write({ coachMemory: mocks.memory }));
     vi.mocked(prisma.coachMemory.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.coachMemory.upsert).mockResolvedValue({} as never);
     vi.mocked(claudeChat).mockResolvedValue(JSON.stringify({
@@ -147,5 +157,26 @@ describe('career memory privacy boundaries', () => {
     } finally {
       warn.mockRestore();
     }
+  });
+
+  it('refuses a memory write when erasure wins while the model is still running', async () => {
+    let resolveModel: ((value: string) => void) | undefined;
+    vi.mocked(claudeChat).mockImplementation(() => new Promise((resolve) => {
+      resolveModel = resolve;
+    }));
+    const pending = updateCoachMemory({
+      userId: 'member-1', recentTurns: [{ role: 'user', text: 'Resume practice.' }],
+    });
+    await vi.waitFor(() => expect(claudeChat).toHaveBeenCalledOnce());
+    mocks.activeWrite.mockRejectedValueOnce(new Error('This account is no longer active.'));
+    resolveModel?.(JSON.stringify({
+      summary: safeMemory.summary,
+      last_topic: safeMemory.lastTopic,
+      last_action: safeMemory.lastAction,
+    }));
+
+    await expect(pending).rejects.toThrow('This account is no longer active.');
+    expect(mocks.activeWrite).toHaveBeenCalledExactlyOnceWith('member-1', expect.any(Function));
+    expect(prisma.coachMemory.upsert).not.toHaveBeenCalled();
   });
 });

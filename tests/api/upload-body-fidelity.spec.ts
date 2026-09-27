@@ -57,6 +57,14 @@ vi.mock('@/lib/db/withRequestGuc', () => ({
 }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: h.prisma }));
 vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ storage: h.storage }) }));
+vi.mock('@/lib/member/uploadLifecycle', () => ({
+  assertMemberUploadWritable: vi.fn(async () => undefined),
+  isMemberUploadLifecycleError: vi.fn(() => false),
+  MemberUploadStorageOutcomeError: class extends Error {},
+  MemberUploadPersistenceOutcomeError: class extends Error {},
+  withMemberUploadClaim: (options: { run: (operationId: string, recordAttempt: (path: string) => void) => Promise<unknown> }) =>
+    options.run('claim-1', () => undefined),
+}));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'user-1' })) }));
 vi.mock('@/lib/auth/roles', () => ({
   isAdmin: vi.fn(async () => true),
@@ -125,7 +133,8 @@ type RouteCase = {
   bucket: string;
   filename: string;
   type: string;
-  expectedPath: string;
+  expectedPath: string | RegExp;
+  upsert: boolean;
   /** The real leading bytes of `type`, so the route's signature check passes. */
   header: Buffer;
   post: (request: Request) => Promise<Response>;
@@ -138,7 +147,8 @@ const ROUTES: RouteCase[] = [
     bucket: 'member-files',
     filename: 'certificate.pdf',
     type: 'application/pdf',
-    expectedPath: 'cert-files/user-1/cert-1.pdf',
+    expectedPath: /^cert-files\/user-1\/cert-1-[a-f0-9-]+\.pdf$/,
+    upsert: false,
     header: Buffer.from('%PDF-1.7\n', 'latin1'),
     post: (request) => uploadCertification(request as never),
     extraFields: [{ name: 'certName', value: 'CompTIA A+' }],
@@ -149,6 +159,7 @@ const ROUTES: RouteCase[] = [
     filename: 'logo.png',
     type: 'image/png',
     expectedPath: 'org-1/logo.png',
+    upsert: true,
     header: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     post: (request) => uploadOrgLogo(request as never),
     extraFields: [],
@@ -159,6 +170,7 @@ const ROUTES: RouteCase[] = [
     filename: 'logo.jpg',
     type: 'image/jpeg',
     expectedPath: 'employer-1/logo.jpg',
+    upsert: true,
     header: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
     post: (request) => uploadEmployerLogo(request as never),
     extraFields: [],
@@ -185,8 +197,9 @@ describe.each(ROUTES)('$label body fidelity', (route) => {
     expect(h.uploads).toHaveLength(1);
     const staged = h.uploads[0];
     expect(staged.bucket).toBe(route.bucket);
-    expect(staged.path).toBe(route.expectedPath);
-    expect(staged.options).toMatchObject({ upsert: true, contentType: route.type });
+    if (typeof route.expectedPath === 'string') expect(staged.path).toBe(route.expectedPath);
+    else expect(staged.path).toMatch(route.expectedPath);
+    expect(staged.options).toMatchObject({ upsert: route.upsert, contentType: route.type });
 
     const body = staged.body;
     expect(body).toBeInstanceOf(Uint8Array);

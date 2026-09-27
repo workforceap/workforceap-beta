@@ -12,10 +12,10 @@ test('upload-resume authorizes act-on-behalf before tenant lookup or writes', ()
   const orgIndex = routeSource.indexOf('await getSubjectOrganizationId(authorizedMemberId)');
   const memberLookupIndex = routeSource.indexOf('where: { id: authorizedMemberId }');
   const preparationIndex = routeSource.indexOf('await prepareResumeUpload(file)');
-  const atomicSwapIndex = routeSource.indexOf('await replaceResumeObjectsAtomically({');
+  const atomicSwapIndex = routeSource.indexOf('await replaceClaimedResumeObjects({');
   const uploadIndex = routeSource.indexOf('storage.upload(path, body, options)');
   const profileSwapIndex = routeSource.indexOf(
-    'swapResumeProfilePathsWithCas(authorizedMemberId, nextPaths)',
+    'swapResumeProfilePathsWithCas(authorizedMemberId, nextPaths, operationId)',
   );
 
   assert.notEqual(authIndex, -1);

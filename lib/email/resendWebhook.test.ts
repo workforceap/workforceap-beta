@@ -38,7 +38,7 @@ function fakeStore(options: { matched?: boolean; userId?: string | null } = {}) 
   const applied: ResendWebhookApplyInput[] = [];
   const disabled: Array<{ userId: string | null; recipients: string[] }> = [];
   const receipts: Array<{ status: string; httpStatusCode?: number | null; eventType?: string | null }> = [];
-  const diagnostics: Array<{ status: string; summary: string }> = [];
+  const diagnostics: Array<{ status: string; summary: string; metadata?: Record<string, unknown> }> = [];
   const store: ResendWebhookStore = {
     async applyEvent(input) {
       applied.push(input);
@@ -52,7 +52,7 @@ function fakeStore(options: { matched?: boolean; userId?: string | null } = {}) 
       receipts.push({ status: input.status, httpStatusCode: input.httpStatusCode, eventType: input.eventType });
     },
     async recordDiagnostic(input) {
-      diagnostics.push({ status: input.status, summary: input.summary });
+      diagnostics.push({ status: input.status, summary: input.summary, metadata: input.metadata });
     },
   };
   return { store, applied, disabled, receipts, diagnostics };
@@ -155,6 +155,10 @@ describe('handleResendWebhook', () => {
     assert.equal(diagnostics.length, 1);
     assert.equal(diagnostics[0].status, 'error');
     assert.match(diagnostics[0].summary, /Hard bounce/);
+    assert.deepEqual(diagnostics[0].metadata, {
+      event: 'bounced', bounceType: 'Permanent', matchedSendLog: true, recipientCount: 1,
+    });
+    assert.equal(JSON.stringify(diagnostics[0]).includes('resend-msg-42'), false);
   });
 
   it('records a transient bounce without muting anyone', async () => {
@@ -169,11 +173,15 @@ describe('handleResendWebhook', () => {
 
   it('turns off notification updates on a spam complaint even when no send-log row matched', async () => {
     const body = eventBody('email.complained');
-    const { store, disabled } = fakeStore({ matched: false, userId: null });
+    const { store, disabled, diagnostics } = fakeStore({ matched: false, userId: null });
     const result = await handleResendWebhook({ headers: signedHeaders(body), rawBody: body, secret: SECRET, store, now: () => NOW_MS });
     assert.equal(result.status, 200);
     assert.deepEqual(result.body, { ok: true, event: 'complained', matched: false, notificationsDisabled: 1 });
     assert.deepEqual(disabled, [{ userId: null, recipients: ['Member@Example.org'] }]);
+    assert.deepEqual(diagnostics[0].metadata, {
+      event: 'complained', bounceType: null, matchedSendLog: false, recipientCount: 1,
+    });
+    assert.equal(JSON.stringify(diagnostics[0]).includes('resend-msg-42'), false);
   });
 
   it('acknowledges non-email events without writing anything', async () => {

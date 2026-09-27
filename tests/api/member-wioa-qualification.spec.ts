@@ -1,15 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Prisma } from '@prisma/client';
 
-const mocks = vi.hoisted(() => ({ getUser: vi.fn(), provision: vi.fn(), read: vi.fn(), update: vi.fn(), notify: vi.fn(), audit: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getUser: vi.fn(), provision: vi.fn(), read: vi.fn(), update: vi.fn(), notify: vi.fn(), audit: vi.fn(), activeWrite: vi.fn(), notificationTarget: vi.fn() }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
 vi.mock('@/lib/member/ensureAppUser', () => ({ ensureAppUserProvisioned: mocks.provision }));
+vi.mock('@/lib/member/activeWrite', () => {
+  class MemberLifecycleWriteError extends Error {
+    constructor() { super('This account is no longer active.'); }
+  }
+  return { MemberLifecycleWriteError, withActiveMemberWrite: mocks.activeWrite };
+});
+vi.mock('@/lib/member/activeNotification', () => ({ activeMemberNotificationTarget: mocks.notificationTarget }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: unknown) => handler }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: (callback: (tx: unknown) => unknown) => callback({ user: { findUnique: mocks.read, updateMany: mocks.update } }) } }));
 vi.mock('@/lib/wioa/wioaNotification', () => ({ sendWioaScreeningNotification: mocks.notify }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.audit }));
 import { GET, POST } from '@/app/api/member/wioa-qualification/route';
+import { MemberLifecycleWriteError } from '@/lib/member/activeWrite';
 
 const answers = { ageBracket: '25_54', countyOrZip: ' 78701 ', primaryBarrier: 'transportation', dislocatedWorker: false, lowIncomeSelfReport: false, trainingInterest: true, completedIntakeSelfReport: false, publicAssistanceSelfReport: true };
 const legacy = { version: 1, submittedAt: '2026-09-01T12:00:00Z', answers, signal: 'possible', reasons: ['Original historical note'], eligibilityForm: { employmentStatus: 'unemployed', submittedAt: '2026-09-02T12:00:00Z' } };
@@ -24,6 +32,9 @@ describe('member WIOA versioned save boundary', () => {
     mocks.update.mockResolvedValue({ count: 1 });
     mocks.notify.mockResolvedValue(true);
     mocks.audit.mockResolvedValue(undefined);
+    mocks.activeWrite.mockImplementation((_id: string, write: (tx: unknown) => Promise<unknown>) =>
+      write({ user: { findUnique: mocks.read, updateMany: mocks.update } }));
+    mocks.notificationTarget.mockResolvedValue({ email: 'member@example.test', fullName: 'Test Member' });
   });
 
   it('writes stable reasons, retains only server metadata and notifies after the conditional write', async () => {
@@ -51,6 +62,25 @@ describe('member WIOA versioned save boundary', () => {
     expect(await response.json()).toMatchObject({ errorCode: 'conflict' });
     expect(mocks.notify).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
+  });
+
+  it('rejects a stale Auth request when erasure wins before the final write', async () => {
+    mocks.activeWrite.mockRejectedValueOnce(new MemberLifecycleWriteError());
+    const response = await POST(request(answers));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ errorCode: 'account_inactive' });
+    expect(mocks.provision).toHaveBeenCalledOnce();
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.notify).not.toHaveBeenCalled();
+  });
+
+  it('skips a delayed email after the saved member becomes deletion-pending', async () => {
+    mocks.notificationTarget.mockResolvedValueOnce(null);
+    const response = await POST(request(answers));
+    expect(response.status).toBe(200);
+    expect((await response.json()).emailSent).toBe(false);
+    expect(mocks.update).toHaveBeenCalledOnce();
+    expect(mocks.notify).not.toHaveBeenCalled();
   });
 
   it('uses a null-safe condition for a first screening and reports delivery failure honestly', async () => {

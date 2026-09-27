@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { after } from 'next/server';
 
 vi.mock('next/server', () => ({
   NextResponse: {
@@ -12,6 +13,10 @@ vi.mock('next/server', () => ({
 }));
 vi.mock('@/lib/db/withRequestGuc', () => ({
   withApiGuc: (handler: (request: Request) => Promise<Response>) => handler,
+}));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: vi.fn(),
+  scopedBillingUser: vi.fn(async (tx: unknown) => tx),
 }));
 vi.mock('@/lib/db/prisma', () => {
   const tx = {
@@ -38,6 +43,8 @@ import { POST } from '@/app/api/invite/accept/route';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getUser } from '@/lib/auth/server';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { sendInvitationAcceptedEmail } from '@/lib/email';
 
 const email = 'invitee@example.test';
 const token = 't'.repeat(40);
@@ -138,6 +145,62 @@ describe('public invitation acceptance identity boundary', () => {
       data: expect.objectContaining({ acceptedById: appUserId }),
     }));
     expect(authAdmin.updateUserById).not.toHaveBeenCalled();
+    expect(lockBillingMemberLifecycle).toHaveBeenCalledWith(expect.anything(), appUserId);
+  });
+
+  it('passes the existing accepter identity to the retained inviter notification', async () => {
+    const existing = { id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, organizationId: 'org-1' };
+    vi.mocked(prisma.user.findFirst).mockImplementation(((args: { where?: { id?: string } }) =>
+      Promise.resolve(args.where?.id === 'inviter-1'
+        ? { email: 'inviter@workforceap.org', fullName: 'Inviter' }
+        : existing)) as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+    vi.mocked(sendInvitationAcceptedEmail).mockResolvedValue({ ok: true });
+
+    const response = await POST(inviteRequest());
+    expect(response.status).toBe(200);
+    const callback = vi.mocked(after).mock.calls.at(-1)?.[0] as (() => Promise<unknown>) | undefined;
+    expect(callback).toBeTypeOf('function');
+    await callback!();
+    expect(sendInvitationAcceptedEmail).toHaveBeenCalledWith(expect.objectContaining({
+      accepterUserId: appUserId,
+      accepterEmail: email,
+    }));
+  });
+
+  it('does not grant an admin invitation when deletion claimed the account after preflight', async () => {
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'admin', invitedById: 'inviter-1',
+      subgroupId: null, partnerId: null, counselorAffiliation: null,
+      programSlug: null, status: 'pending', expiresAt: new Date('2999-01-01'),
+    } as never);
+    vi.mocked(prisma.user.findFirst)
+      .mockResolvedValueOnce({ id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, organizationId: 'org-1' } as never)
+      .mockResolvedValueOnce(null);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+
+    const response = await POST(inviteRequest());
+
+    expect(response.status).toBe(409);
+    expect(lockBillingMemberLifecycle).toHaveBeenCalledWith(expect.anything(), appUserId);
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.profile.create).not.toHaveBeenCalled();
+    expect(prisma.userRole.upsert).not.toHaveBeenCalled();
+  });
+
+  it('refuses to reuse an app row owned by deletion in the Auth-only invite path', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: otherAuthId, email } as never);
+    vi.mocked(prisma.user.findFirst)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: otherAuthId, organizationId: 'org-1', deletedAt: null, billingDeletionPendingAt: new Date(), billingDeletionOperationId: 'erase-1' } as never);
+
+    const response = await POST(inviteRequest(''));
+
+    expect(response.status).toBe(409);
+    expect(lockBillingMemberLifecycle).toHaveBeenCalledWith(expect.anything(), otherAuthId);
+    expect(prisma.profile.create).not.toHaveBeenCalled();
+    expect(prisma.userRole.upsert).not.toHaveBeenCalled();
   });
 
   it('still accepts an invitation when Auth creation returns a new identity', async () => {
@@ -152,5 +215,57 @@ describe('public invitation acceptance identity boundary', () => {
       data: expect.objectContaining({ acceptedById: otherAuthId }),
     }));
     expect(authAdmin.updateUserById).not.toHaveBeenCalled();
+  });
+
+  it('passes the new accepter identity to the retained inviter notification', async () => {
+    vi.mocked(prisma.user.findFirst).mockImplementation(((args: { where?: { id?: string } }) =>
+      Promise.resolve(args.where?.id === 'inviter-1'
+        ? { email: 'inviter@workforceap.org', fullName: 'Inviter' }
+        : null)) as never);
+    authAdmin.createUser.mockResolvedValue({
+      data: { user: { id: otherAuthId, email, app_metadata: {} } }, error: null,
+    });
+    vi.mocked(sendInvitationAcceptedEmail).mockResolvedValue({ ok: true });
+
+    const response = await POST(inviteRequest());
+    expect(response.status).toBe(200);
+    const callback = vi.mocked(after).mock.calls.at(-1)?.[0] as (() => Promise<unknown>) | undefined;
+    expect(callback).toBeTypeOf('function');
+    await callback!();
+    expect(sendInvitationAcceptedEmail).toHaveBeenCalledWith(expect.objectContaining({
+      accepterUserId: otherAuthId,
+      accepterEmail: email,
+    }));
+  });
+
+  it('keeps a matching existing account invitation usable on migrated Preview', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, organizationId: 'org-1',
+    } as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+    try {
+      const response = await POST(inviteRequest());
+      expect(response.status).toBe(200);
+      expect(lockBillingMemberLifecycle).not.toHaveBeenCalled();
+      expect(prisma.invitation.updateMany).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('keeps brand-new Auth signup usable on Preview without touching billing locks', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    authAdmin.createUser.mockResolvedValue({
+      data: { user: { id: otherAuthId, email, app_metadata: {} } }, error: null,
+    });
+    try {
+      const response = await POST(inviteRequest());
+      expect(response.status).toBe(200);
+      expect(lockBillingMemberLifecycle).not.toHaveBeenCalled();
+      expect(prisma.user.create).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

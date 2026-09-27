@@ -9,6 +9,9 @@ import { brandedEmailLayout } from '@/lib/email/template';
 import { EMAIL_TEMPLATE_KEYS } from '@/lib/email/templateKeys';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { logger } from '@/lib/observability/logger';
+import { beginMemberUpload, MemberUploadLifecycleError, releaseMemberUpload } from '@/lib/member/uploadLifecycle';
+import { classifyEmailSendFailure } from '@/lib/email/failureRecord';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 export type PasswordResetSendResult = {
   error: { message: string } | null;
@@ -29,7 +32,7 @@ function isUserNotFound(error: { message: string; code?: string }): boolean {
 }
 
 /**
- * Heal the "user in Prisma, not in Supabase Auth" split from a reset request.
+ * Find the exact active app identity for a reset request.
  *
  * Ops (9/5/26): an admin's reset link never arrived and the login answered
  * "Incorrect email or password" for every password. Before 9/2 the admin
@@ -40,50 +43,36 @@ function isUserNotFound(error: { message: string; code?: string }): boolean {
  * as an unknown address and silently skip — so the member could neither sign
  * in nor recover.
  *
- * When an active `users` row exists for the address, re-create the auth user
- * under the SAME id (User.id is the auth id everywhere) with a confirmed email
- * and no password, exactly as admin restore does, so the reset link that
- * follows lets the member set a password and sign in. Soft-deleted rows
- * (`deletedAt` set) are never resurrected here. Returns true when the auth
- * user now exists.
+ * `ILIKE` treats `%` and `_` as wildcards. The exact comparison below prevents
+ * an unauthenticated caller from binding a different identity to its address.
  */
+async function activePrismaUserForReset(normalizedEmail: string) {
+  let row: { id: string; email: string; fullName: string | null; phone: string | null } | null = null;
+  // Explicit $transaction: admin reset-password callers run under a GUC
+  // context, where a bare query is flagged by the Prisma middleware.
+  // `mode: 'insensitive'` compiles to ILIKE on PostgreSQL, so `%` and `_` in
+  // the caller-supplied address are wildcards, not literals. Keep only an
+  // exact match; this also preserves real addresses containing underscores.
+  const candidates = await prisma.$transaction((tx) => tx.user.findMany({
+    where: { email: { equals: normalizedEmail, mode: 'insensitive' }, deletedAt: null,
+      billingDeletionPendingAt: null, billingDeletionOperationId: null },
+    select: { id: true, email: true, fullName: true, phone: true },
+    take: 25,
+  }));
+  row = candidates.find((candidate) => candidate.email.trim().toLowerCase() === normalizedEmail) ?? null;
+  if (!row && candidates.length) {
+    logger.warn('passwordReset: reset lookup matched rows that are not the requested address; refusing self-heal', {
+      candidateCount: candidates.length,
+    });
+  }
+  return row;
+}
+
+/** Restore a missing Auth identity only while the caller owns the lifecycle claim. */
 async function recreateAuthUserFromPrismaRow(
   admin: ReturnType<typeof getSupabaseAdmin>,
-  normalizedEmail: string,
+  row: NonNullable<Awaited<ReturnType<typeof activePrismaUserForReset>>>,
 ): Promise<boolean> {
-  let row: { id: string; email: string; fullName: string | null; phone: string | null } | null = null;
-  try {
-    // Explicit $transaction: admin reset-password callers run under a GUC
-    // context, where a bare query is flagged by the Prisma middleware.
-    //
-    // `mode: 'insensitive'` compiles to ILIKE on PostgreSQL, so `%` and `_` in
-    // the caller-supplied address are WILDCARDS, not literals, and this filter
-    // alone can match a row that is not the requested address at all. This
-    // endpoint is unauthenticated, so matching is never treated as proof of
-    // identity: collect the candidates and then keep only an exact,
-    // case-insensitive match. Selecting the exact row (rather than rejecting
-    // the whole batch) also preserves the self-heal for legitimate addresses
-    // that contain `_`, which would otherwise collide with a same-shaped
-    // address and fail.
-    const candidates = await prisma.$transaction((tx) => tx.user.findMany({
-      where: { email: { equals: normalizedEmail, mode: 'insensitive' }, deletedAt: null },
-      select: { id: true, email: true, fullName: true, phone: true },
-      take: 25,
-    }));
-    row = candidates.find((candidate) => candidate.email.trim().toLowerCase() === normalizedEmail) ?? null;
-    if (!row && candidates.length) {
-      logger.warn('passwordReset: reset lookup matched rows that are not the requested address; refusing self-heal', {
-        candidateCount: candidates.length,
-      });
-    }
-  } catch (err) {
-    logger.warn('passwordReset: could not look up users row for auth self-heal', {
-      err: err instanceof Error ? err.message : String(err),
-    });
-    return false;
-  }
-  if (!row) return false;
-
   const result = await reenableAuthUserAfterRestore(admin, {
     id: row.id,
     // The matched row's own address, never the request string: the two can
@@ -139,11 +128,59 @@ export async function sendPasswordResetEmail(
     throw new Error('Password reset is temporarily unavailable.');
   }
 
+  // Preview flattens transactions and cannot hold the member lifecycle claim.
+  // Fail identically for known and unknown addresses before looking up either.
+  if (!interactiveTransactionsGuaranteed()) {
+    throw new Error('Password reset is temporarily unavailable.');
+  }
+
   const normalizedEmail = email.trim().toLowerCase();
   const branding = await getOrganizationBranding(options.orgId);
   const baseUrl = branding.domain;
   const resetPageUrl = `${baseUrl}${redirectPath}`;
 
+  // Own the same durable lifecycle barrier as erasure and identity edits before
+  // Auth can recreate a missing user or either mail provider can send a link.
+  // A second exact read after claiming closes the lookup-to-claim email-edit
+  // race; the claim then prevents erasure/edit until every provider call ends.
+  const account = await activePrismaUserForReset(normalizedEmail);
+  if (!account) return { error: { message: 'User not found' }, via: 'skipped' };
+  let claimId: string;
+  try {
+    claimId = await beginMemberUpload(account.id, 'notification');
+  } catch (error) {
+    if (error instanceof MemberUploadLifecycleError && error.reason === 'member_inactive') {
+      return { error: { message: 'User not found' }, via: 'skipped' };
+    }
+    throw error;
+  }
+  try {
+    const current = await activePrismaUserForReset(normalizedEmail);
+    if (!current || current.id !== account.id) {
+      return { error: { message: 'User not found' }, via: 'skipped' };
+    }
+    return await sendPasswordResetEmailClaimed(normalizedEmail, resetPageUrl, branding, current, supabaseUrl, supabaseAnonKey);
+  } finally {
+    try {
+      await releaseMemberUpload(account.id, claimId);
+    } catch (error) {
+      // A completed provider call must not become a retryable 503. The durable
+      // row stays held for operator reconciliation if its release failed.
+      logger.error('passwordReset: lifecycle claim release requires reconciliation', {
+        errorClass: error instanceof Error ? error.name : 'unknown',
+      });
+    }
+  }
+}
+
+async function sendPasswordResetEmailClaimed(
+  normalizedEmail: string,
+  resetPageUrl: string,
+  branding: Awaited<ReturnType<typeof getOrganizationBranding>>,
+  account: NonNullable<Awaited<ReturnType<typeof activePrismaUserForReset>>>,
+  supabaseUrl: string,
+  supabaseAnonKey: string,
+): Promise<PasswordResetSendResult> {
   const resend = getResend();
   const canMintOwnLink = !!resend && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -162,7 +199,7 @@ export async function sendPasswordResetEmail(
       if (error && isUserNotFound(error)) {
         // No auth user — but is there an active app account? If so, bring the
         // login back under the same id and mint the link again.
-        if (await recreateAuthUserFromPrismaRow(admin, normalizedEmail)) {
+        if (await recreateAuthUserFromPrismaRow(admin, account)) {
           ({ data, error } = await mintRecoveryLink());
         }
       }
@@ -206,6 +243,8 @@ export async function sendPasswordResetEmail(
         from,
         templateKey: EMAIL_TEMPLATE_KEYS.password_reset,
         to: normalizedEmail,
+        recipientUserId: account.id,
+        memberEffectClaim: true,
         subject: `Reset your ${branding.name} password`,
         html,
         text: `Reset your ${branding.name} password: ${resetLink}\n\nIf you did not request this, ignore this email. Your password will not change.`,
@@ -214,8 +253,8 @@ export async function sendPasswordResetEmail(
       logger.info('passwordReset: recovery email accepted by provider', { via: 'resend' });
       return { error: null, via: 'resend' };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Password reset email could not be sent.';
-      logger.warn('passwordReset: branded delivery failed; trying Supabase mailer', { err: message });
+      const errorClass = classifyEmailSendFailure(err).errorClass;
+      logger.warn('passwordReset: branded delivery failed; trying Supabase mailer', { errorClass });
       // Recorded, not just logged: the Supabase mailer is unbranded and capped at
       // 30/h, so every fallback is a delivery-quality event operators should see.
       void recordWorkflowDiagnostic({
@@ -225,7 +264,7 @@ export async function sendPasswordResetEmail(
         method: 'branded_email',
         fallbackPath: 'supabase_auth_mailer',
         summary: 'Branded password reset failed; fell back to the Supabase mailer',
-        failureReason: message,
+        failureReason: `password_reset_${errorClass}`,
       });
     }
   }

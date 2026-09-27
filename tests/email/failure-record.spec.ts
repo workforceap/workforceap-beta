@@ -167,6 +167,84 @@ describe('sendBrandedEmail failure diagnostic', () => {
     expect(row.metadata).not.toHaveProperty('templateParams');
   });
 
+  it('constructs a non-replayable, private diagnostic before releasing a settled member claim', async () => {
+    let finishDiagnostic!: () => void;
+    const diagnosticPending = new Promise<void>((resolve) => { finishDiagnostic = resolve; });
+    vi.mocked(recordWorkflowDiagnostic).mockImplementationOnce(() => diagnosticPending);
+    const released: string[] = [];
+    const resend = fakeResend(async () => ({
+      data: null,
+      error: { statusCode: 422, name: 'validation_error', message: 'Invalid recipient ada@example.org for Ada Lovelace' },
+    }));
+
+    await expect(sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'ada@example.org',
+      subject: 'Ada Lovelace application update',
+      html: '<p>Ada Lovelace applied</p>',
+      recipientUserId: 'member-ada',
+      memberEffectClaim: true,
+      template: { name: 'applicant_followup', params: { to: 'ada@example.org', fullName: 'Ada Lovelace' } },
+    }, {
+      ...noSleep,
+      recipientIsActive: async () => true,
+      memberClaim: {
+        begin: async () => 'claim-ada',
+        release: async (_memberId, token) => { released.push(token); },
+      },
+      sendLogStore: { record: async () => {} },
+    })).rejects.toThrow('Invalid recipient');
+
+    expect(released).toEqual(['claim-ada']);
+    expect(recordWorkflowDiagnostic).toHaveBeenCalledTimes(1);
+    const row = vi.mocked(recordWorkflowDiagnostic).mock.calls[0][0];
+    expect(row).toMatchObject({
+      entityId: 'applicant_followup',
+      summary: 'Member email send failed: applicant_followup (provider_rejected)',
+      failureReason: 'member_email_provider_rejected',
+      metadata: {
+        to: [], subject: '', template: 'applicant_followup',
+        errorClass: 'provider_rejected', retryable: false, resendable: false,
+        recipientHash: null, recipientDomain: null,
+      },
+    });
+    expect(row).not.toHaveProperty('retainTemplateParams');
+    expect(row.metadata).not.toHaveProperty('templateParams');
+    const persistedPayload = JSON.stringify(row);
+    expect(persistedPayload).not.toContain('ada@example.org');
+    expect(persistedPayload).not.toContain('Ada Lovelace');
+    expect(persistedPayload).not.toContain('member-ada');
+    expect(persistedPayload).not.toContain('Invalid recipient');
+    finishDiagnostic();
+    await diagnosticPending;
+  });
+
+  it('does not persist a dynamic template label for a member-claimed failure', async () => {
+    const resend = fakeResend(async () => ({
+      data: null,
+      error: { statusCode: 422, name: 'validation_error', message: 'Bad address for Ada Lovelace' },
+    }));
+    await expect(sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'ada@example.org',
+      subject: 'Ada Lovelace update',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-ada',
+      memberEffectClaim: true,
+      template: { name: 'Ada Lovelace update', params: { to: 'ada@example.org' } },
+    }, {
+      ...noSleep,
+      recipientIsActive: async () => true,
+      memberClaim: { begin: async () => 'claim-ada', release: async () => {} },
+      sendLogStore: { record: async () => {} },
+    })).rejects.toThrow('Bad address');
+
+    const row = vi.mocked(recordWorkflowDiagnostic).mock.calls[0][0];
+    expect(row.entityId).toBeNull();
+    expect(row.metadata).toMatchObject({ template: null, resendable: false });
+    expect(JSON.stringify(row)).not.toContain('Ada Lovelace');
+  });
+
   it('writes nothing on success and nothing when the caller owns the diagnostic', async () => {
     const ok = fakeResend(async () => ({ data: { id: 'msg' }, error: null }));
     await sendBrandedEmail(ok, { from: 'a@workforceap.org', to: 'b@example.org', subject: 'S', html: '<p>x</p>' }, noSleep);

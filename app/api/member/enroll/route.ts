@@ -26,6 +26,19 @@ import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 import { ensureSelfServeCounselorAssigned } from '@/lib/counselor/autoAssign';
+import { billingLifecyclePending, lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+
+/** Fail closed when a queued enrollment follow-up runs after account erasure. */
+async function runIfMemberActive(userId: string, effect: () => Promise<unknown>): Promise<void> {
+  try {
+    const active = await prisma.$transaction(async (tx) => !(await billingLifecyclePending(tx, userId)));
+    if (active) await effect();
+  } catch (error) {
+    console.error('Enrollment follow-up failed:', error);
+  }
+}
+
 export const POST = withApiGuc(async (request: Request) => {
   try {
   const user = await getUser();
@@ -66,6 +79,11 @@ export const POST = withApiGuc(async (request: Request) => {
 
   const now = new Date();
   const outcome = await prisma.$transaction(async (tx) => {
+    // Deletion takes this key first. Check the persisted marker before the
+    // enrollment lock and every final write, including stale Auth requests.
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, user.id);
+    if (await billingLifecyclePending(tx, user.id)) return { kind: 'inactive' as const };
+
     // Serialize self-serve enrolls per member so a double submit or a retry
     // racing the first request cannot both pass the already-enrolled check
     // and both fire the enrolled email. $executeRaw, never $queryRaw: the
@@ -145,6 +163,10 @@ export const POST = withApiGuc(async (request: Request) => {
     return { kind: 'enrolled' as const, user: u, enrollmentId: enrollment.id };
   });
 
+  if (outcome.kind === 'inactive') {
+    return NextResponse.json({ error: 'This account is no longer active.' }, { status: 409 });
+  }
+
   if (outcome.kind === 'wioa_blocked') {
     const messages: Record<string, string> = {
       WIOA_NOT_STARTED:
@@ -186,62 +208,62 @@ export const POST = withApiGuc(async (request: Request) => {
     }).catch(() => {})
   );
 
-  after(() => awardPoints(user.id, 'program_enrolled', slug).catch(() => {}));
+  after(() => runIfMemberActive(user.id, () => awardPoints(user.id, 'program_enrolled', slug)));
 
   // Member-to-member referral: reward both sides on enrollment (idempotent, non-blocking).
-  after(() =>
+  after(() => runIfMemberActive(user.id, () =>
     cookies()
       .then((store) => rewardReferralOnEnrollment(user.id, store.get(MEMBER_REFERRAL_COOKIE)?.value))
-      .catch(() => {})
-  );
+  ));
 
   // Lifecycle event: program_enrolled
-  after(() =>
+  after(() => runIfMemberActive(user.id, () =>
     trackEvent({
       userId: user.id,
       eventName: 'program_enrolled',
       entityType: 'Program',
       entityId: slug,
       metadata: { programTitle },
-    }).catch(() => {})
-  );
+    })
+  ));
 
-  after(() =>
+  after(() => runIfMemberActive(user.id, () =>
     sendPartnerMilestoneEmail(user.id, 'Program enrollment', {
       Program: programTitle,
-    }).catch((err) => console.error('Partner milestone email failed:', err))
-  );
+    })
+  ));
 
-  after(() =>
+  after(() => runIfMemberActive(user.id, () =>
     sendCourseEnrolledEmail({
       to: updatedUser.user.email,
+      recipientUserId: user.id,
       fullName: updatedUser.user.fullName,
       programName: programTitle,
-    }).catch((err) => console.error('Course enrolled email failed:', err))
-  );
+    })
+  ));
 
   // Sprint R3 — fire-and-forget kickoff email (idempotent per enrollment row).
-  after(() =>
+  after(() => runIfMemberActive(user.id, () =>
     maybeSendCourseKickoffEmail({
       userId: user.id,
       enrollmentId: updatedUser.enrollmentId,
       programSlug: slug,
       email: updatedUser.user.email,
       fullName: updatedUser.user.fullName,
-    }).catch(() => { /* already logged inside */ })
-  );
+    })
+  ));
 
   // Self-serve members get a real WAP counselor on first enroll so
   // "message your counselor" notifies someone. No-op if already assigned
   // or if the org has no active WAP counselors.
   const enrolledOrganizationId = updatedUser.user.organizationId;
   if (enrolledOrganizationId) {
-    after(() =>
+    after(() => runIfMemberActive(user.id, () =>
       ensureSelfServeCounselorAssigned({
         memberId: user.id,
         organizationId: enrolledOrganizationId,
-      }).catch(() => {})
-    );
+      })
+    ));
   }
 
   // Invalidate cached member state so dashboard reflects enrollment immediately

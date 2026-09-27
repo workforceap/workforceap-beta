@@ -248,6 +248,7 @@ export const POST = withApiGuc(
           after(() =>
             sendEligibilityScreeningConfirmationEmail({
               to: notifyMeta.email!,
+              recipientUserId: subjectId,
               fullName: displayName,
               eligibility: extendedMeta,
             }).catch((err) => {
@@ -318,6 +319,7 @@ export const POST = withApiGuc(
           after(() =>
             sendEligibilityScreeningConfirmationEmail({
               to: leadEmail,
+              publicLead: true,
               fullName: leadName,
               eligibility: extendedMeta,
             }).catch((err) => {

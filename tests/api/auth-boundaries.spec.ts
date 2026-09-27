@@ -96,7 +96,38 @@ it('permits the active application identity under its own bootstrap GUC', async 
 it('preserves Auth-only provisioning when no application row exists', async () => {
   mocks.findUser.mockResolvedValue(null);
   expect(await getUser()).toEqual({ id: 'synthetic-user' });
+  mocks.getProviderUser.mockClear();
   expect(await getSession()).not.toBeNull();
+  expect(mocks.getProviderUser).toHaveBeenCalledOnce();
+});
+
+it('keeps the active-row session path without another Auth lookup', async () => {
+  mocks.findUser.mockResolvedValue({ deletedAt: null });
+
+  expect(await getSession()).not.toBeNull();
+  expect(mocks.getProviderUser).not.toHaveBeenCalled();
+});
+
+it('rejects a locally cached session after Auth erasure removed the app row', async () => {
+  mocks.findUser.mockResolvedValue(null);
+  mocks.getProviderUser.mockResolvedValue({ data: { user: null }, error: null });
+
+  expect(await getSession()).toBeNull();
+  expect(mocks.getProviderUser).toHaveBeenCalledOnce();
+});
+
+it('rejects a missing-row session if Auth confirms a different identity', async () => {
+  mocks.findUser.mockResolvedValue(null);
+  mocks.getProviderUser.mockResolvedValue({ data: { user: { id: 'different-user' } }, error: null });
+
+  expect(await getSession()).toBeNull();
+});
+
+it('fails closed when a missing-row identity cannot be confirmed with Auth', async () => {
+  mocks.findUser.mockResolvedValue(null);
+  mocks.getProviderUser.mockResolvedValue({ data: { user: null }, error: { code: 'user_not_found' } });
+
+  expect(await getSession()).toBeNull();
 });
 
 it('rejects deleted sessions in both full-session and GUC bootstrap access', async () => {

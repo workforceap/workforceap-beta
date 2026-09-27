@@ -14,6 +14,195 @@ import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { buildEmailDedupeKey, type EmailSendLogEntry, type EmailSendLogStore } from '@/lib/email/sendLog';
 
 describe('sendBrandedEmail', () => {
+  it('does not report provider acceptance without a Resend message id', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const resend = {
+      emails: { send: async () => ({ data: null, error: null }) },
+    } as unknown as import('resend').Resend;
+    await assert.rejects(
+      sendBrandedEmail(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: 'member@workforceap.org',
+        subject: 'Malformed receipt',
+        html: '<p>Private</p>',
+      }, { sendLogStore: { record: async () => {} } }),
+      /Resend did not return an email id/,
+    );
+  });
+
+  it('releases every member claim after a settled ambiguous provider failure', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const claims: Array<{ memberId: string; key: string; token: string }> = [];
+    const released: string[] = [];
+    const entries: EmailSendLogEntry[] = [];
+    let providerCalls = 0;
+    const resend = {
+      emails: { send: async () => {
+        providerCalls++;
+        return { data: null, error: { name: 'internal_server_error', statusCode: 500, message: 'Provider unavailable' } };
+      } },
+    } as unknown as import('resend').Resend;
+
+    await assert.rejects(sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'staff@workforceap.org',
+      subject: 'Michael Brown <member@workforceap.org> needs help',
+      html: '<p>Private</p>',
+      subjectMemberIds: ['member-2', 'member-1'],
+      memberEffectClaim: true,
+    }, {
+      memberClaim: {
+        begin: async (memberId, key) => {
+          const token = `claim-${memberId}`;
+          claims.push({ memberId, key, token });
+          return token;
+        },
+        release: async (_memberId, token) => { released.push(token); },
+      },
+      subjectIsActive: async () => true,
+      sendLogStore: { record: async (entry) => { entries.push({ ...entry }); } },
+      sleep: async () => {},
+      suppressFailureDiagnostic: true,
+    }), /needs reconciliation/);
+
+    assert.equal(providerCalls, 3, 'the claim stays open through the full retry budget');
+    assert.deepEqual(claims.map(({ memberId }) => memberId), ['member-1', 'member-2']);
+    assert.equal(new Set(claims.map(({ key }) => key)).size, 1);
+    assert.deepEqual(released.sort(), ['claim-member-1', 'claim-member-2']);
+    assert.equal(entries.at(-1)?.status, 'failed');
+  });
+
+  it('keeps the claim while the provider promise is still pending', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerEntered!: () => void;
+    const entered = new Promise<void>((resolve) => { providerEntered = resolve; });
+    let finishProvider!: (value: { data: { id: string }; error: null }) => void;
+    const provider = new Promise<{ data: { id: string }; error: null }>((resolve) => { finishProvider = resolve; });
+    const released: string[] = [];
+    const resend = {
+      emails: { send: async () => { providerEntered(); return provider; } },
+    } as unknown as import('resend').Resend;
+    const pending = sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Your update',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-1',
+      memberEffectClaim: true,
+    }, {
+      memberClaim: {
+        begin: async () => 'claim-1',
+        release: async (_memberId, token) => { released.push(token); },
+      },
+      recipientIsActive: async () => true,
+      sendLogStore: { record: async () => {} },
+    });
+
+    await entered;
+    assert.deepEqual(released, [], 'a provider call in flight keeps the deletion barrier');
+    finishProvider({ data: { id: 'provider-1' }, error: null });
+    const result = await pending;
+    assert.equal(result.data?.id, 'provider-1');
+    assert.deepEqual(released, ['claim-1']);
+  });
+
+  it('treats a malformed member email receipt as uncertain but releases its settled claim', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const released: string[] = [];
+    await assert.rejects(sendBrandedEmail(
+      { emails: { send: async () => ({ data: null, error: null }) } } as unknown as import('resend').Resend,
+      {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: 'member@workforceap.org',
+        subject: 'Your update',
+        html: '<p>Private</p>',
+        recipientUserId: 'member-1',
+        memberEffectClaim: true,
+      },
+      {
+        memberClaim: {
+          begin: async () => 'claim-1',
+          release: async (_memberId, token) => { released.push(token); },
+        },
+        recipientIsActive: async () => true,
+        sendLogStore: { record: async () => {} },
+        suppressFailureDiagnostic: true,
+      },
+    ), /needs reconciliation/);
+    assert.deepEqual(released, ['claim-1']);
+  });
+
+  it('skips a queued member email when the recipient became inactive before provider send', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerCalls = 0;
+    const resend = { emails: { send: async () => {
+      providerCalls++;
+      return { data: { id: 'unexpected' }, error: null };
+    } } } as unknown as import('resend').Resend;
+    const entries: EmailSendLogEntry[] = [];
+    const result = await sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Queued message',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-1',
+    }, {
+      recipientIsActive: async () => false,
+      sendLogStore: { record: async (entry) => { entries.push({ ...entry }); } },
+    });
+
+    assert.deepEqual(result, { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null });
+    assert.equal(providerCalls, 0);
+    assert.equal(entries.at(-1)?.skipReason, 'inactive_member');
+  });
+
+  it('rechecks recipient state after a provider retry delay', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerCalls = 0;
+    let activeChecks = 0;
+    const resend = { emails: { send: async () => {
+      providerCalls++;
+      return { data: null, error: { name: 'rate_limit_exceeded', message: 'Too many requests', retry_after: 1 } };
+    } } } as unknown as import('resend').Resend;
+    const result = await sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Queued message',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-1',
+    }, {
+      recipientIsActive: async () => ++activeChecks === 1,
+      sleep: async () => {},
+      sendLogStore: { record: async () => {} },
+    });
+
+    assert.deepEqual(result, { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null });
+    assert.equal(providerCalls, 1);
+    assert.equal(activeChecks, 2);
+  });
+
+  it('fails closed when the recipient state cannot be read', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerCalls = 0;
+    const resend = { emails: { send: async () => {
+      providerCalls++;
+      return { data: { id: 'unexpected' }, error: null };
+    } } } as unknown as import('resend').Resend;
+    const entries: EmailSendLogEntry[] = [];
+    await assert.rejects(sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Queued message',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-1',
+    }, {
+      recipientIsActive: async () => { throw new Error('lifecycle unavailable'); },
+      sendLogStore: { record: async (entry) => { entries.push({ ...entry }); } },
+    }), /lifecycle unavailable/);
+    assert.equal(providerCalls, 0);
+    assert.equal(entries.at(-1)?.status, 'failed');
+  });
+
   it('skips reserved and configured fixture recipient domains without calling Resend', async () => {
     process.env.CRON_SECRET = 'test-unsubscribe-secret';
     const originalFixtureDomains = process.env.EMAIL_FIXTURE_DOMAINS;
@@ -723,6 +912,91 @@ describe('sendBrandedEmail send log', () => {
     assert.notEqual(buildEmailDedupeKey(args, day1), buildEmailDedupeKey(args, day2));
     assert.equal(buildEmailDedupeKey({ ...args, idempotencyKey: 'weekly-recap:user-1:2026-09-14' }, day1), 'weekly-recap:user-1:2026-09-14');
     assert.ok(buildEmailDedupeKey({ to: 'a@x.org', subject: 'x' }, day1).startsWith('untyped/'));
+  });
+
+  it('logs member-claimed mail without names, addresses, member ids or provider error text', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const memberId = '550e8400-e29b-41d4-a716-446655440001';
+    const address = 'jane.doe@personal.example';
+    const key = `counselor-copy:${memberId}:${address}`;
+    const memberClaim = {
+      begin: async () => 'claim-token',
+      release: async () => {},
+      markUncertain: async () => {},
+    };
+    const { entries, store } = captureStore();
+    let providerKey: string | undefined;
+    const resend = { emails: { send: async (_payload: unknown, options: { idempotencyKey: string }) => {
+      providerKey = options.idempotencyKey;
+      return { data: { id: 'resend-message-123' }, error: null };
+    } } } as unknown as import('resend').Resend;
+
+    const result = await sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: address,
+      subject: 'Jane Doe needs a counselor follow-up',
+      html: '<p>Private</p>',
+      idempotencyKey: key,
+      templateKey: 'Jane Doe follow-up',
+      userId: memberId,
+      subjectMemberId: memberId,
+      entityType: 'User',
+      entityId: memberId,
+      memberEffectClaim: true,
+    }, {
+      subjectIsActive: async () => true,
+      memberClaim,
+      sendLogStore: store,
+    });
+
+    assert.equal(result.data?.id, 'resend-message-123', 'the immediate caller retains the provider receipt');
+    assert.equal(providerKey, key, 'the provider still receives the original idempotency key');
+    assert.deepEqual(entries.map((entry) => entry.status), ['sending', 'sent']);
+    for (const entry of entries) {
+      assert.match(entry.dedupeKey, /^member-email\/[0-9a-f]{64}$/);
+      assert.equal(entry.templateKey, 'member_email');
+      assert.equal(entry.subject, null);
+      assert.equal(entry.userId, null);
+      assert.equal(entry.recipientHash, null);
+      assert.equal(entry.recipientDomain, null);
+      assert.equal(entry.idempotencyKey, null);
+      assert.equal(entry.entityType, null);
+      assert.equal(entry.entityId, null);
+      assert.equal(entry.failureReason, null);
+      const serialized = JSON.stringify(entry);
+      for (const secret of ['Jane Doe', address, memberId, key]) assert.ok(!serialized.includes(secret));
+    }
+    assert.equal(entries[0].dedupeKey, entries[1].dedupeKey);
+    assert.equal(entries[1].providerMessageId, null);
+
+    entries.length = 0;
+    await assert.rejects(
+      sendBrandedEmail({ emails: { send: async () => ({
+        data: null,
+        error: { name: 'validation_error', statusCode: 422, message: `Rejected ${address} for Jane Doe` },
+      }) } } as unknown as import('resend').Resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: address,
+        subject: 'Jane Doe private request',
+        html: '<p>Private</p>',
+        idempotencyKey: `${key}:failure`,
+        templateKey: 'application_received',
+        subjectMemberId: memberId,
+        memberEffectClaim: true,
+      }, {
+        subjectIsActive: async () => true,
+        memberClaim,
+        sendLogStore: store,
+        suppressFailureDiagnostic: true,
+      }),
+      /Rejected/,
+    );
+    assert.deepEqual(entries.map((entry) => entry.status), ['sending', 'failed']);
+    assert.equal(entries[1].templateKey, 'application_received');
+    assert.equal(entries[1].failureClass, 'provider_rejected');
+    assert.equal(entries[1].failureReason, null);
+    assert.ok(!JSON.stringify(entries).includes(address));
+    assert.ok(!JSON.stringify(entries).includes(memberId));
   });
 
   it('records a skipped fixture recipient and a failed send with the provider error class', async () => {

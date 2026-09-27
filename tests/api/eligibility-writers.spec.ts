@@ -7,11 +7,28 @@ const h = vi.hoisted(() => ({
   transaction: vi.fn(), lock: vi.fn(), profile: vi.fn(), screening: vi.fn(), update: vi.fn(),
   consume: vi.fn(), realTransactions: true, failScreening: false, failLeadAudit: false,
   jsonConflict: false, expireAtConsume: false, failPreScreening: false,
+  eraseBeforeActiveWrite: false, notificationTarget: vi.fn(),
   databaseError: null as unknown,
 }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: unknown) => handler }));
 vi.mock('@/lib/auth/server', () => ({ getUser: async () => h.actorId ? { id: h.actorId, email: 'actor@example.test' } : null }));
 vi.mock('@/lib/db/transactionPolicy', () => ({ interactiveTransactionsGuaranteed: () => h.realTransactions }));
+vi.mock('@/lib/member/activeWrite', () => {
+  class MemberLifecycleWriteError extends Error {
+    constructor() { super('This account is no longer active.'); }
+  }
+  return {
+    MemberLifecycleWriteError,
+    withActiveMemberWrite: (_id: string, write: (tx: unknown) => Promise<unknown>) => {
+      if (h.eraseBeforeActiveWrite) {
+        h.store.member.deletedAt = new Date('2026-09-26T00:00:00Z');
+        throw new MemberLifecycleWriteError();
+      }
+      return h.transaction(write);
+    },
+  };
+});
+vi.mock('@/lib/member/activeNotification', () => ({ activeMemberNotificationTarget: h.notificationTarget }));
 vi.mock('@/lib/rate-limit', () => ({ checkPublicQuestionnaireSubmitRateLimit: async () => ({ success: true }) }));
 vi.mock('next/server', async (original) => ({ ...await original<typeof import('next/server')>(), after: h.after }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: async () => {}, auditRequestMeta: () => ({}) }));
@@ -35,6 +52,7 @@ import { PATCH as memberPatch } from '@/app/api/member/eligibility/route';
 import { POST as tokenPost } from '@/app/api/q/[token]/submit/route';
 import { POST as preScreeningPost } from '@/app/api/member/pre-screening/route';
 import { consumeTokenizedLink } from '@/lib/tokenizedLink';
+import { sendEligibilityScreeningConfirmationEmail, sendPreScreeningReadyEmail } from '@/lib/email';
 
 const token = 'local-fixture-questionnaire-token-1234567890';
 const oldSnapshot = { version: 2, submittedAt: '2026-09-01T00:00:00Z', answers: { retained: true }, reasons: [{ code: 'staff_review' }], signal: 'review', extraServerMetadata: { keep: true } };
@@ -95,12 +113,14 @@ beforeEach(() => {
   vi.clearAllMocks();
   h.actorId = 'member-1'; h.realTransactions = true;
   h.failScreening = false; h.failLeadAudit = false; h.jsonConflict = false; h.expireAtConsume = false; h.failPreScreening = false; h.databaseError = null;
+  h.eraseBeforeActiveWrite = false;
   h.store = {
     member: { id: 'member-1', organizationId: 'org-1', deletedAt: null, fullName: 'Fixture Member', email: 'member@example.test', wioaQualificationJson: structuredClone(oldSnapshot), assessmentCompleted: true },
     profile: { city: 'Existing city', state: 'GA', zip: '30301', barrierTypes: ['housing'] }, screening: null, lead: null,
     token: { id: 'link-1', token, type: 'eligibility_questionnaire', orgId: 'org-1', subjectUserId: 'member-1', email: 'member@example.test', consumedAt: null, expiresAt: new Date(Date.now() + 3600_000) },
     preDraft: { saved: true }, preScreening: null,
   };
+  h.notificationTarget.mockResolvedValue({ email: 'member@example.test', fullName: 'Fixture Member' });
   // Mock transaction commit/rollback instead of immediately mutating committed state.
   let transactionTail: Promise<unknown> = Promise.resolve();
   h.transaction.mockImplementation((callback: (tx: unknown) => unknown) => {
@@ -117,6 +137,17 @@ beforeEach(() => {
 });
 
 describe('eligibility persistence', () => {
+  it('passes the authenticated member identity to deferred confirmation', async () => {
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    vi.mocked(sendEligibilityScreeningConfirmationEmail).mockResolvedValue({ ok: true });
+
+    await h.after.mock.calls[0][0]();
+
+    expect(sendEligibilityScreeningConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'member@example.test', recipientUserId: 'member-1',
+    }));
+  });
+
   it('saves the authenticated subject, preserves self-screening/ancillary keys, and keeps its existing qualification rule', async () => {
     const response = await memberPatch(request({ ...questionnaire, userId: 'another-member', organizationId: 'other-org' }));
     expect(response.status).toBe(200);
@@ -179,6 +210,17 @@ describe('eligibility persistence', () => {
 });
 
 describe('token questionnaire', () => {
+  it('passes the bound subject identity to deferred confirmation', async () => {
+    expect((await submitToken()).status).toBe(200);
+    vi.mocked(sendEligibilityScreeningConfirmationEmail).mockResolvedValue({ ok: true });
+
+    await h.after.mock.calls[1][0]();
+
+    expect(sendEligibilityScreeningConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'member@example.test', recipientUserId: 'member-1',
+    }));
+  });
+
   it('writes only the token subject and atomically claims its type, org and expiry', async () => {
     h.actorId = 'different-signed-in-user';
     expect((await submitToken({ ...questionnaire, userId: h.actorId })).status).toBe(200);
@@ -278,5 +320,24 @@ describe('distinct pre-screening workflow', () => {
     expect(h.store.preDraft).toEqual({ saved: true });
     expect(h.store.preScreening).toBeNull();
     expect(h.after).not.toHaveBeenCalled();
+  });
+
+  it('rejects an in-flight save after erasure without restoring phone or address', async () => {
+    h.eraseBeforeActiveWrite = true;
+    const response = await preScreeningPost(request(body, 'POST'));
+    expect(response.status).toBe(409);
+    expect(h.store.member.deletedAt).toBeInstanceOf(Date);
+    expect(h.store.member.phone).toBeUndefined();
+    expect(h.store.profile.profileAddress).toBeUndefined();
+    expect(h.store.preScreening).toBeNull();
+    expect(h.store.preDraft).toEqual({ saved: true });
+    expect(h.after).not.toHaveBeenCalled();
+  });
+
+  it('skips the deferred staff email if erasure starts before after() runs', async () => {
+    expect((await preScreeningPost(request(body, 'POST'))).status).toBe(200);
+    h.notificationTarget.mockResolvedValueOnce(null);
+    await h.after.mock.calls[0][0]();
+    expect(sendPreScreeningReadyEmail).not.toHaveBeenCalled();
   });
 });

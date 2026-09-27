@@ -31,6 +31,11 @@ vi.mock('@/lib/tenant/organization', () => ({
 
 const findFirst = vi.fn();
 const update = vi.fn();
+const deletePushSubscriptions = vi.hoisted(() => vi.fn());
+
+vi.mock('@/lib/db/prisma', () => ({
+  prisma: { pushSubscription: { deleteMany: deletePushSubscriptions } },
+}));
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: vi.fn((_orgId: string, fn: (db: unknown) => Promise<unknown>) =>
@@ -71,12 +76,20 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
   deleteUserStorageObjects: vi.fn(),
 }));
 
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  beginBillingDeletion: vi.fn(),
+  releaseBillingDeletion: vi.fn().mockResolvedValue(undefined),
+  completeBillingDeletion: vi.fn(),
+  BILLING_SEND_IN_PROGRESS_ERROR: 'A billing packet is being sent for this member. Finish or reconcile that send before deleting the account.',
+}));
+
 import { POST } from '@/app/api/admin/members/[id]/delete/route';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, requireAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { beginBillingDeletion, releaseBillingDeletion, completeBillingDeletion } from '@/lib/billing/erasureGuard';
 
 const MEMBER_ID = 'member-1';
 
@@ -101,9 +114,22 @@ describe('POST /api/admin/members/[id]/delete', () => {
       userRoles: [],
     });
     update.mockResolvedValue({ id: MEMBER_ID });
+    deletePushSubscriptions.mockResolvedValue({ count: 1 });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
     supabaseGetUserById.mockResolvedValue({ data: { user: { id: MEMBER_ID, email: 'member@example.com' } }, error: null });
     supabaseUpdateUserById.mockResolvedValue({ error: null });
+  });
+
+  it('refuses to delete files while a billing delivery is claimed', async () => {
+    vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: false, reason: 'unresolved_send' });
+
+    const res = await POST(deleteReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('billing_send_unresolved');
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   it('returns 401 when unauthenticated', async () => {
@@ -128,7 +154,9 @@ describe('POST /api/admin/members/[id]/delete', () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({
       error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
+      billingDeletionPending: true,
     });
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     expect(update).not.toHaveBeenCalled();
     expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
@@ -148,6 +176,8 @@ describe('POST /api/admin/members/[id]/delete', () => {
       ],
     });
     expect(update).toHaveBeenCalled();
+    expect(deletePushSubscriptions).toHaveBeenCalledWith({ where: { userId: MEMBER_ID } });
+    expect(completeBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     // Ordering contract (formerly lib/admin/memberDeleteStorage.test.ts): blobs
     // are removed before the row is rewritten and before the login is locked,
     // so a storage failure can never leave a "deleted" member with files.

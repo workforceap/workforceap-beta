@@ -103,6 +103,13 @@ describe('onboarding-stalls digest: oldest pending WIOA screening', () => {
     expect(body.wioaQueueOverdue).toBe(true);
     expect(vi.mocked(sendOnboardingStallsDigestEmail)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(sendOnboardingStallsDigestEmail).mock.calls[0][0]).toMatchObject({ wioaOldestPendingDays: 125, wioaCount: 1 });
+    expect(vi.mocked(prisma.user.findMany).mock.calls.slice(0, 4).map(([query]) => query?.where)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ interviewEligible: true, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null }),
+        expect.objectContaining({ wioaReviewStatus: { in: ['pending', 'in_review'] }, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null }),
+        expect.objectContaining({ enrolledProgram: null, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null }),
+      ]),
+    );
     expect(vi.mocked(createNotification).mock.calls[0][0]).toMatchObject({
       body: expect.stringContaining(`Oldest pending WIOA screening: 125 days (over the ${WIOA_QUEUE_AGE_ALERT_DAYS}-day threshold).`),
       data: expect.objectContaining({ wioaOldestPendingDays: 125 }),

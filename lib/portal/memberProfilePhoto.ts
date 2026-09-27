@@ -12,8 +12,8 @@ const PROFILE_PHOTO_MIME: Record<string, string> = {
   webp: 'image/webp',
 };
 
-export function profilePhotoStoragePath(userId: string): string {
-  return `profile-photos/${userId}/photo.webp`;
+export function profilePhotoStoragePath(userId: string, versionId?: string): string {
+  return `profile-photos/${userId}/${versionId ? `photo-${versionId}.webp` : 'photo.webp'}`;
 }
 
 export function profilePhotoPrefixForUser(userId: string): string {

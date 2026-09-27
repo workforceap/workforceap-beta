@@ -100,7 +100,7 @@ describe('GET /api/cron/applicant-aging-digest', () => {
     vi.mocked(prisma.application.findMany).mockResolvedValue([]);
     await GET(request());
     expect(prisma.application.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { status: { in: ['PENDING', 'NEEDS_INFO'] }, user: { deletedAt: null } },
+      where: { status: { in: ['PENDING', 'NEEDS_INFO'] }, user: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null } },
       take: APPLICANT_AGING_SCAN_CAP,
     }));
   });

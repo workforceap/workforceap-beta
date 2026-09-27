@@ -4,7 +4,9 @@
  * `template: { name, params }` to `sendBrandedEmail`, so the stored params are
  * exactly what the wrapper received. Security-sensitive mail (password resets,
  * login codes, one-time links) is deliberately absent: replaying a stored
- * token is worse than the missed email.
+ * token is worse than the missed email. Member-addressed replays also require
+ * recipientUserId: historical rows without it cannot be checked against the
+ * current account lifecycle and must be resent from their source workflow.
  */
 import {
   sendAdminPendingApplicantsEmail,
@@ -35,12 +37,12 @@ const str = (key: string): ParamCheck => ({ key, type: 'string' });
 const REGISTRY: Record<string, ResendableTemplate> = {
   applicant_followup: {
     label: 'Applicant Day-3 follow-up',
-    required: [str('to'), str('fullName')],
+    required: [str('to'), str('fullName'), str('recipientUserId')],
     send: (p) => sendApplicantFollowupEmail(p as Parameters<typeof sendApplicantFollowupEmail>[0]),
   },
   applicant_chase: {
     label: 'Applicant Day-10/20 chase',
-    required: [str('to'), str('fullName'), str('stage')],
+    required: [str('to'), str('fullName'), str('stage'), str('recipientUserId')],
     send: (p) => sendApplicantChaseEmail(p as Parameters<typeof sendApplicantChaseEmail>[0]),
   },
   admin_pending_applicants: {
@@ -55,27 +57,27 @@ const REGISTRY: Record<string, ResendableTemplate> = {
   },
   application_accepted: {
     label: 'Application accepted',
-    required: [str('to'), str('fullName')],
+    required: [str('to'), str('fullName'), str('recipientUserId')],
     send: (p) => sendApplicationAcceptedEmail(p as Parameters<typeof sendApplicationAcceptedEmail>[0]),
   },
   application_rejected: {
     label: 'Application update (denied)',
-    required: [str('to'), str('fullName')],
+    required: [str('to'), str('fullName'), str('recipientUserId')],
     send: (p) => sendApplicationRejectedEmail(p as Parameters<typeof sendApplicationRejectedEmail>[0]),
   },
   course_kickoff: {
     label: 'Program next steps',
-    required: [str('to'), str('fullName'), str('programName')],
+    required: [str('to'), str('fullName'), str('programName'), str('recipientUserId')],
     send: (p) => sendCourseKickoffEmail(p as Parameters<typeof sendCourseKickoffEmail>[0]),
   },
   course_enrolled: {
     label: 'Program selection saved',
-    required: [str('to'), str('fullName'), str('programName')],
+    required: [str('to'), str('fullName'), str('programName'), str('recipientUserId')],
     send: (p) => sendCourseEnrolledEmail(p as Parameters<typeof sendCourseEnrolledEmail>[0]),
   },
   enrollment_confirmation: {
     label: 'Enrollment confirmation',
-    required: [str('to'), str('fullName'), str('programName')],
+    required: [str('to'), str('fullName'), str('programName'), str('recipientUserId')],
     send: (p) => sendEnrollmentConfirmationEmail(p as Parameters<typeof sendEnrollmentConfirmationEmail>[0]),
   },
 };

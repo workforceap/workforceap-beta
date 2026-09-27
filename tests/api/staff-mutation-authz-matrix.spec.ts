@@ -119,6 +119,7 @@ vi.mock('@/lib/db/prisma', () => {
   });
   const prisma = {
     $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(prisma)),
+    $executeRaw: vi.fn(async () => 1),
     user: {
       // getActorOrganizationId and the readiness actor-name lookup read the
       // caller's own row (a subject member's row answers too, so a route that
@@ -140,6 +141,7 @@ vi.mock('@/lib/db/prisma', () => {
         return memberRow(where.id!);
       }),
       update: vi.fn(async ({ where }: { where: { id: string } }) => ({ id: where.id })),
+      updateMany: vi.fn(async (_args: { where: Record<string, unknown>; data: Record<string, unknown> }) => ({ count: 1 })),
       deleteMany: vi.fn(async () => ({ count: 0 })),
     },
     placementRecord: {
@@ -299,6 +301,10 @@ const { POST: walkInPOST } = await import('@/app/api/counselor/sessions/walk-in/
 
 const { getUser } = await import('@/lib/auth/server');
 const { prisma } = await import('@/lib/db/prisma');
+const walkInPrismaSpies = prisma as unknown as {
+  $executeRaw: ReturnType<typeof vi.fn>;
+  user: { updateMany: ReturnType<typeof vi.fn> };
+};
 const tenant = (await import('@/lib/tenant/withTenantScope')) as unknown as {
   withTenantScope: ReturnType<typeof vi.fn>;
   scoped: Record<string, Record<string, ReturnType<typeof vi.fn>>>;
@@ -341,6 +347,7 @@ function writeSpies(): Array<[string, ReturnType<typeof vi.fn>]> {
   const p = prisma as unknown as Record<string, Record<string, ReturnType<typeof vi.fn>>>;
   return [
     ['user.update', p.user.update],
+    ['user.updateMany', p.user.updateMany],
     ['placementRecord.upsert', p.placementRecord.upsert],
     ['memberSubgroup.create', p.memberSubgroup.create],
     ['memberSubgroup.deleteMany', p.memberSubgroup.deleteMany],
@@ -744,5 +751,80 @@ describe('POST /api/counselor/sessions/walk-in', () => {
     signInAs('admin-a');
     expect((await run()).status).toBe(200);
     expect(prisma.counselorAssignment.create).not.toHaveBeenCalled();
+  });
+
+  it('refuses a stale deleted-email rewrite when restore commits before its lifecycle lock', async () => {
+    signInAs('counselor-a');
+    const deletedAt = new Date('2026-09-01T00:00:00Z');
+    const oldId = '20000000-0000-4000-8000-000000000001';
+    let currentDeletedAt: Date | null = deletedAt;
+    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ id: oldId, deletedAt } as never);
+    walkInPrismaSpies.$executeRaw.mockImplementationOnce(async () => {
+      // The restore transaction had the lifecycle lock first and reactivated
+      // the row before this pending walk-in transaction acquired it.
+      currentDeletedAt = null;
+      return 1;
+    });
+    walkInPrismaSpies.user.updateMany.mockImplementationOnce(async ({ where }: { where: { id: string; email: string; deletedAt: Date | null } }) => ({
+      count: oldId === where.id && body.email === where.email && currentDeletedAt === where.deletedAt ? 1 : 0,
+    }));
+
+    const response = await run();
+    expect(response.status).toBe(409);
+    expect(prisma.user.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: oldId, email: body.email, deletedAt, billingDeletionOperationId: null,
+        OR: [{ billingDeletionPendingAt: null }, { billingDeletionCompletedAt: { not: null } }],
+      },
+      data: { email: expect.stringMatching(/^deleted_20000000-0000-4000-8000-000000000001_\d+_pat\.walker@example\.test@deleted\.invalid$/) },
+    });
+    expect(supabaseAdmin.inviteUserByEmail).not.toHaveBeenCalled();
+    expect(tenant.scoped.user.create).not.toHaveBeenCalled();
+  });
+
+  it('preserves a recoverable marker for an unchanged soft-delete before inviting', async () => {
+    signInAs('counselor-a');
+    const deletedAt = new Date('2026-09-01T00:00:00Z');
+    const oldId = '20000000-0000-4000-8000-000000000001';
+    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ id: oldId, deletedAt } as never);
+    const response = await run();
+    expect(response.status).toBe(200);
+    expect(prisma.user.updateMany).toHaveBeenCalledWith({
+      where: expect.objectContaining({ id: oldId, email: body.email, deletedAt, billingDeletionOperationId: null }),
+      data: { email: expect.stringMatching(/^deleted_20000000-0000-4000-8000-000000000001_\d+_pat\.walker@example\.test@deleted\.invalid$/) },
+    });
+    expect(prisma.$executeRaw).toHaveBeenCalledOnce();
+    expect(walkInPrismaSpies.$executeRaw.mock.invocationCallOrder[0]).toBeLessThan(walkInPrismaSpies.user.updateMany.mock.invocationCallOrder[0]);
+    expect(walkInPrismaSpies.user.updateMany.mock.invocationCallOrder[0]).toBeLessThan(supabaseAdmin.inviteUserByEmail.mock.invocationCallOrder[0]);
+  });
+
+  it('does not truncate an oversized deleted-email marker or invite a replacement', async () => {
+    signInAs('counselor-a');
+    const longEmail = `${'a'.repeat(239)}@example.test`;
+    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ id: '20000000-0000-4000-8000-000000000001', deletedAt: new Date('2026-09-01T00:00:00Z') } as never);
+    const response = await call(walkInPOST as Handler, 'POST', '/api/counselor/sessions/walk-in', null, { ...body, email: longEmail });
+    expect(response.status).toBe(409);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(supabaseAdmin.inviteUserByEmail).not.toHaveBeenCalled();
+  });
+
+  it('uses the atomic compare-and-set without a lifecycle lock on flattened Preview', async () => {
+    signInAs('counselor-a');
+    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
+      id: '20000000-0000-4000-8000-000000000001', deletedAt: new Date('2026-09-01T00:00:00Z'),
+    } as never);
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    try {
+      const response = await run();
+      expect(response.status).toBe(200);
+      expect(prisma.$executeRaw).not.toHaveBeenCalled();
+      expect(prisma.user.updateMany).toHaveBeenCalledWith({
+        where: expect.objectContaining({ email: body.email, billingDeletionOperationId: null }),
+        data: { email: expect.stringMatching(/^deleted_20000000-0000-4000-8000-000000000001_\d+_/) },
+      });
+      expect(supabaseAdmin.inviteUserByEmail).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

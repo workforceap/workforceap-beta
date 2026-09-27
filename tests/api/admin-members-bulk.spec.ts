@@ -42,6 +42,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
     const { prisma } = await import('@/lib/db/prisma');
     return fn(prisma);
   }),
+  crossTenantOK: vi.fn(async (fn: () => Promise<unknown>) => fn()),
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn() }));
 vi.mock('@/lib/email', () => ({
@@ -51,6 +52,14 @@ vi.mock('@/lib/email', () => ({
 // members use a non-reserved domain so the fixture guard lets them through.
 process.env.UNSUBSCRIBE_TOKEN_SECRET ??= 'test-unsubscribe-secret';
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
+// Route behavior is exercised with the real send adapter; claim ordering and
+// provider settlement have their own focused email tests.
+vi.mock('@/lib/member/uploadLifecycle', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/member/uploadLifecycle')>()),
+  beginMemberUpload: vi.fn(async (id: string) => `synthetic-email-claim-${id}`),
+  releaseMemberUpload: vi.fn(async () => undefined),
+  markMemberExternalEffectUncertain: vi.fn(async () => undefined),
+}));
 vi.mock('@/lib/email/template', () => ({ brandedEmailLayout: vi.fn(() => '<html>email</html>') }));
 vi.mock('@/lib/email/escapeHtml', () => ({
   escapeHtml: vi.fn((s: string) => s),
@@ -77,7 +86,9 @@ vi.mock('@/lib/notifications/create', () => ({
 
 // ─── Prisma mock ───
 const mockTx = {
-  user: { updateMany: vi.fn() },
+  user: { findFirst: vi.fn(), updateMany: vi.fn() },
+  $executeRaw: vi.fn(),
+  $queryRaw: vi.fn(),
   courseEnrollment: {
     findMany: vi.fn(),
     updateMany: vi.fn(),
@@ -100,6 +111,7 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     user: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       updateMany: vi.fn(),
     },
     $transaction: vi.fn(async (fn: any) => {
@@ -146,6 +158,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getResend } from '@/lib/email';
+import { beginMemberUpload } from '@/lib/member/uploadLifecycle';
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
@@ -163,6 +176,13 @@ const makeRequest = (body: unknown) =>
 describe('Bulk operations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTx.$executeRaw.mockResolvedValue(1);
+    mockTx.$queryRaw.mockResolvedValue([]);
+    mockTx.user.findFirst.mockImplementation(async (args: { select?: { organizationId?: boolean } }) =>
+      args.select?.organizationId
+        ? { organizationId: 'org-1' }
+        : { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null },
+    );
     mockTx.user.updateMany.mockResolvedValue({ count: 1 });
     mockTx.counselor.findFirst.mockImplementation((args) => prisma.counselor.findFirst(args));
     mockTx.courseEnrollment.updateMany.mockResolvedValue({ count: 1 });
@@ -174,6 +194,12 @@ describe('Bulk operations', () => {
     vi.mocked(prisma.organizationProgramCatalog.count).mockResolvedValue(0);
     vi.mocked(prisma.organizationProgramCatalog.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.courseProgress.groupBy).mockResolvedValue([] as any);
+    vi.mocked(prisma.user.findUnique).mockImplementation((async (args: { where: { id?: string } }) => ({
+      email: args.where.id === uid(1) ? 'alice@example.org' : 'bob@example.org',
+      deletedAt: null,
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+    })) as never);
   });
 
   // ─── Bulk Email ───
@@ -228,6 +254,7 @@ describe('Bulk operations', () => {
       expect(body.messagesCreated).toBe(2);
       expect(body.total).toBe(2);
       expect(sendMock).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(beginMemberUpload).mock.calls.map(([id]) => id)).toEqual([uid(1), uid(2)]);
       // Each member gets its own campaign-scoped idempotency key.
       const keys = sendMock.mock.calls.map((call) => call[1]?.idempotencyKey as string);
       expect(keys[0]).toMatch(new RegExp(`^bulk-email/[0-9a-f-]{36}/${uid(1)}$`));
@@ -264,7 +291,7 @@ describe('Bulk operations', () => {
         { id: uid(2), email: 'bob@example.org', fullName: 'Bob', enrolledProgram: null, organizationId: 'org-1' },
       ] as any);
       const sendMock = vi.fn()
-        .mockResolvedValueOnce({ data: null, error: { name: 'validation_error', message: 'Recipient rejected' } })
+        .mockResolvedValueOnce({ data: null, error: { name: 'validation_error', message: 'Recipient rejected', statusCode: 422 } })
         .mockResolvedValueOnce({ data: { id: 'email-id' }, error: null });
       vi.mocked(getResend).mockReturnValue({ emails: { send: sendMock } } as any);
 
@@ -528,6 +555,26 @@ describe('Bulk operations', () => {
       });
       expect(mockTx.counselorAssignment.create).not.toHaveBeenCalled();
       expect(mockTx.messageThread.upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { memberId: uid(1) }, update: { counselorUserId: null } }));
+    });
+
+    it('skips counselor changes while billing delivery is unresolved', async () => {
+      vi.mocked(getUser).mockResolvedValue({ id: uid(99), email: 'admin@example.com' } as any);
+      vi.mocked(isAdmin).mockResolvedValue(true);
+      vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        { id: uid(1), email: 'alice@example.com', fullName: 'Alice', enrolledProgram: null, pipelineBoardStage: null },
+      ] as any);
+      mockTx.$queryRaw.mockResolvedValue([{ id: 'unresolved-send' }]);
+
+      const res = await bulkUpdatePost(
+        makeUpdateRequest({ memberIds: [uid(1)], counselorUserId: null }),
+      );
+
+      expect(res.status).toBe(207);
+      expect(await res.json()).toMatchObject({ updated: 0, total: 1 });
+      expect(mockTx.user.updateMany).not.toHaveBeenCalled();
+      expect(mockTx.counselorAssignment.updateMany).not.toHaveBeenCalled();
+      expect(createNotification).not.toHaveBeenCalled();
     });
 
     describe('counselor handoff and skipped members', () => {

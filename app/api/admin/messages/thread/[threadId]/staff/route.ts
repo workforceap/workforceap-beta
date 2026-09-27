@@ -62,6 +62,7 @@ type Props = { params: Promise<{ threadId: string }> };async function _POST(requ
   if (thread.kind === 'member' && thread.memberId) {
     await createNotification({
       userId: thread.memberId,
+      subjectMemberId: thread.memberId,
       type: 'message',
       title: STAFF_MESSAGE_NOTIFICATION_TITLE,
       body: normalized.body.slice(0, 200),

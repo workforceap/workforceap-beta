@@ -30,6 +30,13 @@ Our app has two user stores:
 
 Users created via the member signup flow are added to **both**. If a user exists only in Prisma (e.g. from a seed or manual insert), they cannot log in or reset password.
 
+An Auth identity can briefly exist before its Prisma row is provisioned. Server
+`getUser()` confirms the identity with Supabase Auth and permits that bootstrap
+state. Server `getSession()` rechecks Auth when the Prisma row is missing: a
+locally cached session must not revive a hard-erased identity after Auth has
+removed it. A Prisma row with `deletedAt` set is denied by both helpers even
+if an Auth retirement attempt failed.
+
 **Self-heal (since 9/5/26):** requesting a reset link from `/forgot-password` for an
 active `users` row whose Supabase auth user is missing re-creates the auth user under
 the same id (confirmed email, no password) and then sends the reset link, so the

@@ -7,7 +7,8 @@ import { getUser } from '@/lib/auth/server';
 import { getSupabaseCookieOptions } from '@/lib/supabaseCookieOptions';
 import { cookies } from 'next/headers';
 import { getSupabaseEnv } from '@/lib/supabase/env';
-import { deleteSupabaseAuthUser } from '@/lib/gdpr/deleteAuthUser';
+import { deleteAuthUserForErasure } from '@/lib/admin/authUserLifecycle';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   deleteUserStorageObjects,
@@ -16,8 +17,10 @@ import {
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { persistEvent } from '@/lib/events/track';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 
 export const POST = withApiGuc(async (request: Request) => {
+  let deletionOwner: { id: string; operationId: string } | null = null;
   try {
   const user = await getUser();
   if (!user) {
@@ -72,6 +75,16 @@ export const POST = withApiGuc(async (request: Request) => {
     return NextResponse.json({ error: 'Incorrect password. Account deletion cancelled.' }, { status: 403 });
   }
 
+  const billingDeletion = await beginBillingDeletion(user.id);
+  if (!billingDeletion.ok && billingDeletion.reason === 'transaction_unavailable') return NextResponse.json({
+    error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+  }, { status: 503 });
+  if (!billingDeletion.ok) return NextResponse.json({
+    error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
+    code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+  }, { status: 409 });
+  deletionOwner = { id: user.id, operationId: billingDeletion.operationId };
+
   // Revoke Supabase session first (prevents continued use)
   await supabase.auth.signOut({ scope: 'global' });
 
@@ -80,7 +93,8 @@ export const POST = withApiGuc(async (request: Request) => {
   const storage = await deleteUserStorageObjects(userId);
   if (!storage.ok) {
     console.error('[gdpr/delete] storage object delete failed:', storage.error);
-    return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
+    await releaseBillingDeletion(userId, billingDeletion.operationId);
+    return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED, billingDeletionPending: true }, { status: 502 });
   }
 
   // WAP-169: same anonymiser as /api/member/delete-account and the retention
@@ -102,16 +116,14 @@ export const POST = withApiGuc(async (request: Request) => {
   }, prisma);
 
   // Delete Supabase auth user (irreversible — prevents re-login with old credentials)
-  let deleteAuthError: unknown = null;
+  let authDeletionConfirmed = false;
   try {
-    const result = await deleteSupabaseAuthUser(userId);
-    deleteAuthError = result.error;
+    authDeletionConfirmed = (await deleteAuthUserForErasure(getSupabaseAdmin(), userId)).ok;
   } catch (error) {
-    deleteAuthError = error;
+    console.error('[gdpr/delete] Supabase auth delete outcome unknown:', error);
   }
 
-  if (deleteAuthError) {
-    console.error('[gdpr/delete] Supabase auth delete failed:', deleteAuthError);
+  if (!authDeletionConfirmed) {
     return NextResponse.json(
       {
         error: 'Account data was anonymized, but auth deletion failed. Please contact support to complete account deletion.',
@@ -119,6 +131,8 @@ export const POST = withApiGuc(async (request: Request) => {
       { status: 500 },
     );
   }
+  await completeBillingDeletion(userId, billingDeletion.operationId);
+  deletionOwner = null;
 
   // The actor snapshot is pinned: `users.email` is now the recoverable
   // deleted marker (which embeds the original address for the 30-day restore
@@ -140,6 +154,12 @@ export const POST = withApiGuc(async (request: Request) => {
 
   } catch (error) {
     console.error('/gdpr/delete error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Account deletion could not be confirmed. Retry or contact support.', reconciliationRequired: true }, { status: 503 });
+  } finally {
+    if (deletionOwner) {
+      await releaseBillingDeletion(deletionOwner.id, deletionOwner.operationId).catch((error) => {
+        console.error('[gdpr/delete] operation release requires reconciliation:', error);
+      });
+    }
   }
 });

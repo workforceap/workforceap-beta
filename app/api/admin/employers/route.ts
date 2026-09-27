@@ -8,6 +8,8 @@ import { resolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import { z } from 'zod';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { hasUnresolvedBillingSend, lockBillingMemberLifecycle, scopedBillingUser } from '@/lib/billing/erasureGuard';
 import { auditLog } from '@/lib/audit';
 
 /**
@@ -104,16 +106,25 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
       return NextResponse.json({ error: 'User is already an employer' }, { status: 400 });
     }
 
-    const employer = await withTenantScope(orgId, async (db) => {
-      const existingUser = await db.user.findUnique({
-        where: { id: parsed.data.userId },
+    const employer = await prisma.$transaction(async (tx) => {
+      // Billing lifecycle writes fail closed in flattened Preview. Keep this
+      // ordinary role grant available there while honoring persisted pauses.
+      if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, parsed.data.userId);
+      const scoped = await scopedBillingUser(tx, parsed.data.userId, orgId);
+      const active = scoped && await scoped.user.findFirst({
+        where: {
+          id: parsed.data.userId,
+          deletedAt: null,
+          billingDeletionPendingAt: null,
+          billingDeletionOperationId: null,
+        },
         select: { id: true },
       });
-      if (!existingUser) {
-        throw new Error('USER_NOT_FOUND');
+      if (!active || await hasUnresolvedBillingSend(tx, parsed.data.userId)) {
+        throw new Error('EMPLOYER_ACCOUNT_CHANGED');
       }
 
-      return db.employer.create({
+      const created = await scoped.employer.create({
         data: {
           // organizationId passed explicitly to satisfy Prisma's required-
           // field type; withTenantScope verifies it matches the active scope.
@@ -127,17 +138,17 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
           contactPhone: parsed.data.contactPhone ?? undefined,
         },
       });
+      // The Employer and UserRole writes share the same lifecycle lock.
+      const employerRole = await tx.role.findUnique({ where: { name: 'employer' } });
+      if (employerRole) {
+        await tx.userRole.upsert({
+          where: { userId_roleId: { userId: parsed.data.userId, roleId: employerRole.id } },
+          create: { userId: parsed.data.userId, roleId: employerRole.id },
+          update: {},
+        });
+      }
+      return created;
     });
-
-    // Role and UserRole are platform-level — not tenant-scoped.
-    const employerRole = await prisma.$transaction((tx) => tx.role.findUnique({ where: { name: 'employer' } }));
-    if (employerRole) {
-      await prisma.$transaction((tx) => tx.userRole.upsert({
-        where: { userId_roleId: { userId: parsed.data.userId, roleId: employerRole.id } },
-        create: { userId: parsed.data.userId, roleId: employerRole.id },
-        update: {},
-      }));
-    }
 
     await auditLog({
       actorUserId: user.id,
@@ -148,6 +159,9 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
     });
     return NextResponse.json(employer, { status: 201 });
   } catch (error) {
+    if (error instanceof Error && error.message === 'EMPLOYER_ACCOUNT_CHANGED') {
+      return NextResponse.json({ error: 'This account is being changed or retired. Reload and try again.' }, { status: 409 });
+    }
     if (error instanceof Error && error.message === 'USER_NOT_FOUND') {
       return NextResponse.json({ error: 'User not found' }, { status: 400 });
     }

@@ -45,6 +45,7 @@ export const POST = withApiGuc(
 
       const result = await sendInterviewPrepLink({
         to: member.email,
+        recipientUserId: id,
         name: member.fullName,
         url,
         orgId,

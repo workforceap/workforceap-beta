@@ -220,11 +220,12 @@ export const STRANDING_NOT_SURFACED: Record<string, string> = {
  * subset of the schema would leave the direction that actually matters
  * unchecked.
  *
- * Two groups. The first records **who acted** — repointing those would rewrite
+ * Three groups. The first records **who acted** — repointing those would rewrite
  * history, saying the surviving member approved something the duplicate
  * account approved. The second is member-owned data that arguably SHOULD move
  * and does not; each is a real gap, not a decision, and they are called out in
- * the PR rather than quietly accepted.
+ * the PR rather than quietly accepted. The third is an outstanding operation
+ * on the account being retired; the executor refuses the merge until it ends.
  */
 export const USER_FK_NOT_REPOINTED: Record<string, string> = {
   // --- who acted: moving these would rewrite the audit trail ---
@@ -255,12 +256,16 @@ export const USER_FK_NOT_REPOINTED: Record<string, string> = {
   'advisorSessionNote.memberId': 'advisor notes about the member are not moved today',
   'employerSubscription.userId': 'an employer-side subscription, not member data',
   'memberNudgeLog.userId': 'nudge history is not moved today',
-  'milestoneCascade.userId': 'milestone cascades are not moved today',
+  'milestoneCascade.userId': 'milestone cascades are not moved today; an unresolved dispatch on the secondary blocks its retirement',
   'memberFeedback.userId': 'submitted feedback is not moved today',
   'notification.userId': 'notifications are not moved today; the duplicate account keeps its unread items',
   'pushSubscription.userId': 'a push subscription is bound to a device and login, not worth moving',
   'savedJob.userId': 'saved jobs are not moved today',
   'userTourState.userId': 'product-tour state is per account and not worth moving',
+
+  // --- outstanding provider effects must finish on their original account ---
+  'memberExternalEffectClaim.memberId':
+    'an in-flight or uncertain Storage, notification, or email operation belongs to the original member identity; merge refuses retirement of the secondary until its claim is reconciled and removed',
 };
 
 /**

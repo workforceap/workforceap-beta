@@ -249,6 +249,7 @@ export async function completeMemberCourse(args: {
     try {
       const memberDelivery = await runBulkEmailOperation(() => sendCourseCompletedEmail({
         to: dbUser.email,
+        recipientUserId: args.userId,
         fullName: dbUser.fullName,
         courseName: matchedCourse.name,
       }));
@@ -261,6 +262,7 @@ export async function completeMemberCourse(args: {
 
     await createNotification({
       userId: args.userId,
+      subjectMemberId: args.userId,
       type: 'course_complete',
       title: 'Course completed!',
       body: `You completed ${matchedCourse.name}. Great work!`,
@@ -275,6 +277,7 @@ export async function completeMemberCourse(args: {
       if (assignment.counselor?.userId) {
         await createNotification({
           userId: assignment.counselor.userId,
+          subjectMemberId: args.userId,
           type: 'course_complete',
           title: `${dbUser.fullName ?? 'Member'} completed a course`,
           body: `${dbUser.fullName ?? 'A member'} completed ${matchedCourse.name}.`,

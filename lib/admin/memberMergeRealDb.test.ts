@@ -63,6 +63,7 @@ async function makeFixture(): Promise<Fixture> {
 
 async function cleanup(fixture: Fixture) {
   const ids = [fixture.primaryId, fixture.secondaryId];
+  await prisma.memberExternalEffectClaim.deleteMany({ where: { memberId: { in: ids } } });
   await prisma.memberSubgroup.deleteMany({ where: { memberId: { in: ids } } });
   await prisma.invitation.deleteMany({ where: { invitedById: { in: ids } } });
   await prisma.subgroup.deleteMany({ where: { createdBy: { in: ids } } });
@@ -81,6 +82,23 @@ function merge(fixture: Fixture) {
     executeMemberMerge(tx, fixture.primaryId, fixture.secondaryId, fixture.primaryId),
   );
 }
+
+test('an unresolved secondary external effect blocks retirement before the User row changes', async (t) => {
+  const fixture = await makeFixture();
+  t.after(() => cleanup(fixture));
+  const claimId = randomUUID();
+  await prisma.memberExternalEffectClaim.create({
+    data: { id: claimId, memberId: fixture.secondaryId, kind: 'storage' },
+  });
+
+  await assert.rejects(merge(fixture), /Reconcile the external-effect claim first/);
+  const secondary = await prisma.user.findUnique({
+    where: { id: fixture.secondaryId }, select: { deletedAt: true, email: true },
+  });
+  assert.equal(secondary?.deletedAt, null);
+  assert.equal(secondary?.email, `merge-secondary-${fixture.secondaryId}@example.invalid`);
+  assert.equal(await prisma.memberExternalEffectClaim.count({ where: { id: claimId, memberId: fixture.secondaryId } }), 1);
+});
 
 test('a shared one-off award no longer aborts the merge', async (t) => {
   const fixture = await makeFixture();

@@ -7,6 +7,9 @@ const providers = vi.hoisted(() => ({
   fallbackReset: vi.fn(),
   createClient: vi.fn(),
   resend: {} as object | null,
+  findMany: vi.fn(),
+  beginClaim: vi.fn(),
+  releaseClaim: vi.fn(),
 }));
 vi.mock('@/lib/rate-limit', () => ({
   checkForgotPasswordRateLimit: vi.fn(async () => ({ success: true })),
@@ -17,6 +20,15 @@ vi.mock('@/lib/tenant/organizationBranding', () => ({
   getOrganizationBranding: vi.fn(async () => ({ domain: 'https://training.example.test', name: 'Training fixture', supportEmail: 'help@example.test' })),
 }));
 vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ auth: { admin: { generateLink: providers.generateLink } } }) }));
+vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: (fn: (tx: unknown) => unknown) => fn({ user: { findMany: providers.findMany } }) } }));
+vi.mock('@/lib/member/uploadLifecycle', () => ({
+  beginMemberUpload: providers.beginClaim,
+  releaseMemberUpload: providers.releaseClaim,
+  MemberUploadLifecycleError: class MemberUploadLifecycleError extends Error {
+    reason: string;
+    constructor(reason = 'member_inactive') { super(reason); this.reason = reason; }
+  },
+}));
 vi.mock('@/lib/email', () => ({ getResend: () => providers.resend }));
 vi.mock('@/lib/email/send', () => ({
   sendBrandedEmail: providers.sendEmail,
@@ -24,6 +36,7 @@ vi.mock('@/lib/email/send', () => ({
 }));
 vi.mock('@/lib/email/template', () => ({ brandedEmailLayout: providers.template }));
 vi.mock('@/lib/observability/logger', () => ({ logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
 vi.mock('@supabase/supabase-js', () => ({ createClient: providers.createClient }));
 
 import { POST } from '@/app/api/auth/forgot-password/route';
@@ -33,10 +46,16 @@ import { logger } from '@/lib/observability/logger';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  providers.generateLink.mockReset();
+  providers.sendEmail.mockReset();
+  providers.fallbackReset.mockReset();
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://auth.example.test');
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'fixture-anon');
   vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'fixture-service');
   providers.resend = {};
+  providers.findMany.mockResolvedValue([{ id: 'learner-1', email: 'learner@example.test', fullName: 'Learner', phone: null }]);
+  providers.beginClaim.mockResolvedValue('claim-1');
+  providers.releaseClaim.mockResolvedValue(undefined);
   providers.generateLink.mockResolvedValue({ data: { properties: { hashed_token: 'opaque+token/with=symbols' } }, error: null });
   providers.sendEmail.mockResolvedValue(undefined);
   providers.fallbackReset.mockResolvedValue({ error: null });
@@ -96,6 +115,7 @@ describe('password recovery destination across real route and mailer (mocked pro
   });
 
   it('keeps the same public response for unknown accounts and sends no email', async () => {
+    providers.findMany.mockResolvedValue([]);
     providers.generateLink.mockResolvedValue({ data: null, error: { message: 'User not found' } });
     const response = await POST(request('/dashboard/program'));
     expect(response.status).toBe(200);
@@ -117,6 +137,21 @@ describe('password recovery destination across real route and mailer (mocked pro
       auth: { flowType: 'implicit', autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
     });
     expect(logger.info).toHaveBeenCalledWith('passwordReset: recovery request accepted by provider', { via: 'supabase' });
+  });
+
+  it('keeps the durable claim until the fallback provider settles', async () => {
+    providers.resend = null;
+    let finishFallback!: () => void;
+    providers.fallbackReset.mockImplementation(() => new Promise((resolve) => {
+      finishFallback = () => resolve({ error: null });
+    }));
+
+    const pending = sendPasswordResetEmail('learner@example.test');
+    await vi.waitFor(() => expect(providers.fallbackReset).toHaveBeenCalledOnce());
+    expect(providers.releaseClaim).not.toHaveBeenCalled();
+    finishFallback();
+    expect(await pending).toMatchObject({ via: 'supabase' });
+    expect(providers.releaseClaim).toHaveBeenCalledWith('learner-1', 'claim-1');
   });
 
   it.each(['provider-error', 'missing-link', 'thrown-request'])('tries the fallback when recovery link creation fails: %s', async (failure) => {
@@ -147,6 +182,7 @@ describe('password recovery destination across real route and mailer (mocked pro
   });
 
   it('classifies the provider user_not_found code as unknown without another delivery attempt', async () => {
+    providers.findMany.mockResolvedValue([]);
     providers.generateLink.mockResolvedValueOnce({ data: null, error: { code: 'user_not_found', message: 'Account absent' } });
     const response = await POST(request());
     expect(response.status).toBe(200);

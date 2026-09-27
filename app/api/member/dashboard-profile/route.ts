@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
-import { prisma } from '@/lib/db/prisma';
 import { z } from 'zod';
 
 import { invalidateMemberState } from '@/lib/member/getMemberState';
@@ -8,6 +7,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { isValidPostalCode } from '@/lib/validation/postalCode';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const VALID_BARRIER_TYPES = [
   'justice_involved',
@@ -88,7 +88,7 @@ const updateSchema = z.object({
   } = parsed.data;
   const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
-  await prisma.$transaction(async (tx) => {
+  await withActiveMemberWrite(user.id, async (tx) => {
     await tx.user.update({
       where: { id: user.id },
       data: { fullName, phone: phone || null },
@@ -135,6 +135,9 @@ const updateSchema = z.object({
   return NextResponse.json({ ok: true });
 
   } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     console.error('/member/dashboard-profile error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

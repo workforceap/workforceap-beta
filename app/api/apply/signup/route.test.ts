@@ -998,6 +998,7 @@ describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
     // WS5: confirmation (awaited before response) + admin alert (after()) payloads
     expect(sendApplicationConfirmationEmail).toHaveBeenCalled();
     const confArgs = vi.mocked(sendApplicationConfirmationEmail).mock.calls.at(-1)?.[0];
+    expect(confArgs?.recipientUserId).toBe('user-test-1');
     expect(confArgs?.eligibility).toMatchObject({
       receivingUnemployment: 'yes',
       snapWic: 'yes',

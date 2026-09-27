@@ -6,6 +6,7 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 
 /** `WorkflowDiagnostic.workflow` for push delivery problems (surfaced on /admin/diagnostics). */
 export const WEB_PUSH_WORKFLOW = 'web_push';
+export const WEB_PUSH_DEADLINE_MS = 5_000;
 
 /**
  * Web Push sender. Gracefully no-ops when VAPID keys are unconfigured so
@@ -47,15 +48,36 @@ export interface WebPushPayload {
 }
 
 /**
- * Send a push to every subscription a user has. Never throws — push is a
- * best-effort side channel next to the persistent in-app notification.
+ * Send a push to every subscription a user has. Await each provider attempt
+ * through web-push's own socket timeout; callers holding a lifecycle claim
+ * use a longer outer deadline for any still-unsettled local work.
  * Returns the number of pushes accepted by the push services.
  */
 export async function sendWebPushToUser(userId: string, payload: WebPushPayload): Promise<number> {
-  if (!ensureVapid()) return 0;
+  try {
+    if (!ensureVapid()) return 0;
+  } catch (error) {
+    // VAPID setup failed before subscription lookup or provider egress.
+    void recordWorkflowDiagnostic({
+      workflow: WEB_PUSH_WORKFLOW,
+      status: 'error',
+      actorUserId: userId,
+      provider: 'web-push',
+      summary: 'Web push VAPID setup failed before provider call',
+      failureReason: error instanceof Error ? error.message : String(error),
+    });
+    return 0;
+  }
 
   let subs: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
   try {
+    // A queued notification can reach this point after account erasure. Do
+    // not contact a device for a deleted account or one in deletion cleanup.
+    const member = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+    });
+    if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return 0;
     subs = await prisma.pushSubscription.findMany({
       where: { userId },
       select: { id: true, endpoint: true, p256dh: true, auth: true },
@@ -77,14 +99,45 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
   let delivered = 0;
   await Promise.all(
     subs.map(async (sub) => {
+      // A failed final database read happens before provider egress, so it is
+      // safe to release a claimed notification once its other work settles.
+      let member: { deletedAt: Date | null; billingDeletionPendingAt: Date | null; billingDeletionOperationId: string | null } | null;
       try {
+        // A deletion may have started while the subscription query ran.
+        member = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+        });
+      } catch (err) {
+        void recordWorkflowDiagnostic({
+          workflow: WEB_PUSH_WORKFLOW,
+          status: 'error',
+          actorUserId: userId,
+          provider: 'web-push',
+          summary: 'Web push final account lookup failed before provider call',
+          failureReason: err instanceof Error ? err.message : String(err),
+        });
+        return;
+      }
+      if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return;
+      try {
+        // The web-push request has its own bounded socket timeout. Await that
+        // promise: a second timer at the same deadline can win just before the
+        // library closes the request and strand a reconciliation claim.
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           body,
+          { timeout: WEB_PUSH_DEADLINE_MS },
         );
         delivered += 1;
       } catch (err) {
-        const statusCode = (err as { statusCode?: number }).statusCode;
+        const rawStatusCode = err && typeof err === 'object'
+          ? (err as { statusCode?: number | string }).statusCode
+          : undefined;
+        const statusCode = rawStatusCode === undefined ? NaN : Number(rawStatusCode);
+        // This provider promise settled, so no local request can overtake
+        // account deletion. A caller with a claim retains it only if its
+        // longer outer deadline expires while this promise is still pending.
         if (statusCode === 404 || statusCode === 410) {
           // Subscription expired or was revoked — prune it.
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
@@ -100,7 +153,7 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
             summary: 'Web push send failed',
             failureReason: err instanceof Error ? err.message : String(err),
             metadata: {
-              statusCode: statusCode ?? null,
+              statusCode: Number.isInteger(statusCode) ? statusCode : null,
               endpointHost: (() => { try { return new URL(sub.endpoint).host; } catch { return null; } })(),
               tag: payload.tag ?? null,
             },

@@ -168,6 +168,7 @@ export const POST = withApiGuc(async (request: Request) => {
           if (recipients.length > 0) {
             await sendVoiceCoachArtifactEmail({
               to: recipients,
+              subjectMemberId: onBehalf.subjectUserId,
               memberName: dbUser?.fullName?.trim() || user.email || finalName || 'WorkforceAP member',
               memberEmail: dbUser?.email?.trim() || user.email || null,
               coachLabel: 'Elevator Pitch Builder',
@@ -199,6 +200,7 @@ export const POST = withApiGuc(async (request: Request) => {
         if (recipient) {
           const emailResult = await sendElevatorSpeechEmail({
             to: recipient,
+            recipientUserId: onBehalf.subjectUserId,
             memberName: dbUser?.fullName?.trim() || finalName || recipient,
             targetRole: finalTargetRole,
             strengths: finalStrengths || null,

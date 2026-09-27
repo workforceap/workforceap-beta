@@ -11,6 +11,8 @@ import { hasAdminAccess } from '@/lib/auth/roleAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, abortBillingDeletedEmailRepairBeforeAuthChange, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 /**
  * Batch-rewrite up to 100 soft-deleted users' emails to the sentinel form
@@ -31,6 +33,9 @@ async function _POST() {
     const actor = await getUser();
     if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     if (!(await isAdmin(actor.id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!interactiveTransactionsGuaranteed()) return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
   
     const orgId = await getActorOrganizationId(actor.id);
   
@@ -49,6 +54,7 @@ async function _POST() {
     let skipped = 0;
     const ts = Date.now();
     for (const u of candidates) {
+      if (!u.deletedAt) { skipped += 1; continue; }
       if (u.id === actor.id || hasAdminAccess(u.profile?.role ?? 'member', u.userRoles.map((entry) => entry.role.name))) { skipped += 1; continue; }
       const originalEmail = parseDeletedEmail(u.email) ?? u.email;
       if (isDeletedEmailMarker(u.email) && !parseDeletedEmail(u.email)) { skipped += 1; continue; }
@@ -57,20 +63,47 @@ async function _POST() {
         skipped += 1;
         continue;
       }
+      let deletionOwner: string | null = null;
       try {
-        const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), u.id, originalEmail);
-        if (!disabled.ok) { skipped += 1; continue; }
+        const authAdmin = getSupabaseAdmin();
+        // Restore uses the same lifecycle operation. A stale batch row must
+        // never disable a login that has since been restored.
+        const deletion = await beginBillingDeletion(u.id, orgId, undefined, u.deletedAt);
+        if (!deletion.ok) { skipped += 1; continue; }
+        deletionOwner = deletion.operationId;
+        const disabled = await disableAuthUserForSoftDelete(authAdmin, u.id, originalEmail);
+        if (!disabled.ok) {
+          if (disabled.providerUnchanged && deletion.priorState) {
+            // Preserve the prior restore marker only when no Auth update was
+            // attempted. If rollback loses its CAS, retain this owner.
+            deletionOwner = null;
+            await abortBillingDeletedEmailRepairBeforeAuthChange(u.id, orgId, u.deletedAt, u.email, {
+              pendingAt: deletion.pendingAt, operationId: deletion.operationId, priorState: deletion.priorState,
+            });
+          }
+          skipped += 1;
+          continue;
+        }
         const changed = await withTenantScope(orgId, (db) =>
           db.user.updateMany({
-            where: { id: u.id, email: u.email, deletedAt: u.deletedAt },
+            where: { id: u.id, email: u.email, deletedAt: u.deletedAt, billingDeletionOperationId: deletion.operationId },
             data: { email: newEmail },
           }),
         );
-        if (changed.count === 1) freed += 1;
-        else skipped += 1;
+        if (changed.count === 1) {
+          await completeBillingDeletion(u.id, deletion.operationId);
+          deletionOwner = null;
+          freed += 1;
+        } else skipped += 1;
       } catch (err) {
         skipped += 1;
         captureApiError(err, { route: 'admin/users/free-deleted-emails', extra: { userId: u.id } });
+      } finally {
+        if (deletionOwner) {
+          await releaseBillingDeletion(u.id, deletionOwner).catch((error) => {
+            captureApiError(error, { route: 'admin/users/free-deleted-emails/release', extra: { userId: u.id } });
+          });
+        }
       }
     }
   

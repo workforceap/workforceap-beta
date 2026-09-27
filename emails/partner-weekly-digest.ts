@@ -9,6 +9,7 @@ export function partnerWeeklyDigestHtml(params: {
   weekLabel: string;
   stageLines: string[];
   successLines: string[];
+  additionalSuccessCount?: number;
 }): string {
   const stages = params.stageLines.map((l) => `<li>${escapeHtml(l)}</li>`).join('');
   const successes =
@@ -22,6 +23,7 @@ export function partnerWeeklyDigestHtml(params: {
     <p><strong>Your referrals by stage:</strong></p>
     <ul>${stages}</ul>
     ${successes}
+    ${params.additionalSuccessCount ? `<p>${params.additionalSuccessCount} additional win${params.additionalSuccessCount === 1 ? '' : 's'} — open the partner portal for full detail.</p>` : ''}
     <p>Log in to the partner portal anytime for full detail on each referred member.</p>
   `.trim();
 }

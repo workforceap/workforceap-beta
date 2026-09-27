@@ -102,6 +102,7 @@ async function handle(_req: NextRequest) {
 
       const delivery = await emailPacer.run(() => sendCertCelebrationEmail({
         to: completion.user.email,
+        recipientUserId: completion.userId,
         fullName: completion.user.fullName ?? completion.user.email,
         certName: programName,
         earnedAt: completion.completedAt ?? new Date(),

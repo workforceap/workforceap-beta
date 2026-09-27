@@ -67,6 +67,8 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       await sendBrandedEmailOrThrowOnSkip(resend, {
         from,
         to: recipient.email,
+        subjectMemberId: user.id,
+        memberEffectClaim: true,
         subject: sanitizeEmailSubjectLine(`Help request from ${memberName}`),
         html,
       });

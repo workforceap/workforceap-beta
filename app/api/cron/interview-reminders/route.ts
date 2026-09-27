@@ -43,6 +43,7 @@ async function handle(_request: NextRequest) {
         : 'your scheduled time';
       const r = await emailPacer.run(() => sendInterviewPrepReminderEmail({
         to: row.user.email,
+        recipientUserId: row.userId,
         firstName: row.user.fullName ?? 'there',
         company: row.company,
         role: row.role,
@@ -71,6 +72,7 @@ async function handle(_request: NextRequest) {
     for (const row of postRows) {
       const r = await emailPacer.run(() => sendInterviewDebriefPromptEmail({
         to: row.user.email,
+        recipientUserId: row.userId,
         firstName: row.user.fullName ?? 'there',
         company: row.company,
         role: row.role,

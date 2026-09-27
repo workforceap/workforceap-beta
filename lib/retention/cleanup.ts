@@ -5,6 +5,9 @@ import {
   type EmailFailureSnapshotClient,
 } from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { beginBillingDeletion, lockBillingMemberLifecycle, releaseBillingDeletion, scopedBillingUser } from '@/lib/billing/erasureGuard';
+import { deleteAuthUserForErasure } from '@/lib/admin/authUserLifecycle';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -285,7 +288,7 @@ export async function cleanupUnmatchedCourseraXapiEvents(): Promise<CleanupResul
   return { model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: totalDeleted, batchCount };
 }
 
-/** A soft-deleted account the purge could not remove, and the constraint that stopped it. */
+/** A soft-deleted account the purge could not remove, and the reason that stopped it. */
 export type BlockedAccount = {
   id: string;
   constraint: string;
@@ -333,7 +336,12 @@ export function foreignKeyConstraintName(err: unknown): string | null {
  * the member's own self-service rows are removed first, inside the same
  * transaction as the user row.
  *
- * Each account is purged in its own transaction. An account that is still
+ * Each account first claims a deletion operation under the billing lifecycle
+ * lock. Auth removal is confirmed outside the database transaction, while
+ * the deleted app row remains an access tombstone. The final transaction
+ * deletes only the row still owned by that operation. An account whose
+ * external deletion is incomplete or whose send remains unresolved is
+ * reported and retained for reconciliation. An account that is still
  * held by a foreign key (a subgroup they created, a table added later without
  * a delete rule) is reported by constraint name and skipped, so one held account can no longer
  * stop every other account in the batch from being purged. A held account is
@@ -373,25 +381,71 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
     if (rows.length === 0) break;
 
     for (const { id } of rows) {
+      let ownedOperationId: string | null = null;
       try {
-        await prisma.$transaction(async (tx) => {
+        const deletion = await beginBillingDeletion(id, undefined, cutoff);
+        if (!deletion.ok) {
+          if (deletion.reason !== 'missing') blocked.push({
+            id,
+            constraint: deletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'billing_deletion_incomplete',
+          });
+          continue;
+        }
+        ownedOperationId = deletion.operationId;
+        let authConfirmed = false;
+        try {
+          authConfirmed = (await deleteAuthUserForErasure(getSupabaseAdmin(), id)).ok;
+        } catch (authError) {
+          console.error(`[data-cleanup] Could not confirm Auth removal for ${id}:`, authError);
+        }
+        if (!authConfirmed) {
+          await releaseBillingDeletion(id, deletion.operationId);
+          blocked.push({ id, constraint: 'auth_erasure_unconfirmed' });
+          continue;
+        }
+        const outcome = await prisma.$transaction(async (tx) => {
+          await lockBillingMemberLifecycle(tx, id);
+          const scoped = await scopedBillingUser(tx, id);
+          const account = await scoped?.user.findFirst({
+            where: { id, deletedAt: { not: null, lt: cutoff }, billingDeletionOperationId: deletion.operationId },
+            select: { id: true },
+          });
+          if (!account) return 'billing_deletion_raced';
           await tx.auditEvent.deleteMany({
             where: { actorUserId: id, actorRole: SELF_SERVICE_AUDIT_ACTOR_ROLE },
           });
+          // Legacy send rows use SET NULL on user purge and otherwise retain
+          // identifiers. Remove them before the FK detaches the account.
+          await tx.emailSendLog.deleteMany({
+            where: { OR: [{ userId: id }, { entityId: id }] },
+          });
           // deleteMany (not delete) so a row removed concurrently is a no-op,
           // not a P2025. Cascades run at the database level from here.
-          await tx.user.deleteMany({ where: { id } });
+          const result = await scoped!.user.deleteMany({ where: { id, billingDeletionOperationId: deletion.operationId } });
+          return result.count === 1 ? 'deleted' : 'billing_deletion_raced';
         });
-        deleted += 1;
+        if (outcome === 'deleted') deleted += 1;
+        else {
+          await releaseBillingDeletion(id, deletion.operationId);
+          blocked.push({ id, constraint: outcome });
+        }
       } catch (err) {
         const constraint = foreignKeyConstraintName(err);
-        if (!constraint) throw err;
-        console.error(`[data-cleanup] Soft-deleted account ${id} is still referenced by ${constraint}; skipped.`);
-        blocked.push({ id, constraint });
-        try {
-          await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null });
-        } catch (anonymizeErr) {
-          console.error(`[data-cleanup] Could not anonymise held account ${id}:`, anonymizeErr);
+        // A database error after Auth deletion must not abort the daily sweep
+        // or strand this owner's token. The row remains deleted and a later
+        // sweep verifies Auth again before retrying the app hard delete.
+        if (ownedOperationId) {
+          try { await releaseBillingDeletion(id, ownedOperationId); }
+          catch (releaseError) { console.error(`[data-cleanup] Could not release deletion owner for ${id}:`, releaseError); }
+        }
+        console.error(`[data-cleanup] Could not purge soft-deleted account ${id}:`, err);
+        blocked.push({ id, constraint: constraint ?? 'account_purge_retry_required' });
+        if (constraint) {
+          try {
+            await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null });
+          } catch (anonymizeErr) {
+            console.error(`[data-cleanup] Could not anonymise held account ${id}:`, anonymizeErr);
+          }
         }
       }
     }
@@ -462,7 +516,7 @@ export async function runDataCleanup(): Promise<DataCleanupReport> {
         model: 'user (deleted accounts)',
         deleted: deletedAccounts,
         batchCount: 0,
-        error: `${blockedAccounts.length} account(s) still referenced by: ${[...new Set(blockedAccounts.map((b) => b.constraint))].join(', ')}`,
+        error: `${blockedAccounts.length} account(s) blocked by: ${[...new Set(blockedAccounts.map((b) => b.constraint))].join(', ')}`,
       });
     }
   } catch (err) {

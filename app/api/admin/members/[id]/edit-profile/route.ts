@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
-import { prisma } from '@/lib/db/prisma';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 
@@ -10,6 +9,7 @@ import { invalidateMemberState } from '@/lib/member/getMemberState';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const schema = z.object({
   fullName: z.string().min(1).max(200).optional(),
@@ -56,40 +56,49 @@ const schema = z.object({
     if (!existing) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
 
     try {
-      // Verify the member belongs to this admin's org before touching
-      // Profile (which isn't tenant-scoped via withTenantScope but is
-      // FK-tied to User.organizationId). If the user.update below
-      // doesn't match, Prisma throws P2025 → 404.
-      const user = await withTenantScope(orgId, (db) =>
-        db.user.update({
-          where: { id },
-          data: {
-            ...(fullName !== undefined ? { fullName } : {}),
-            ...(phone !== undefined ? { phone } : {}),
-          },
+      // The initial tenant lookup is only for the 404 UX. Recheck the member
+      // under the deletion lifecycle lock and commit User + Profile together:
+      // an erase cannot slip between two separate profile writes.
+      const user = await withActiveMemberWrite(id, async (tx) => {
+        const current = await tx.user.findFirst({
+          where: { id, organizationId: orgId, deletedAt: null },
+          select: { id: true },
+        });
+        if (!current) throw new MemberLifecycleWriteError();
+        if (fullName !== undefined || phone !== undefined) {
+          await tx.user.update({
+            where: { id, organizationId: orgId },
+            data: {
+              ...(fullName !== undefined ? { fullName } : {}),
+              ...(phone !== undefined ? { phone } : {}),
+            },
+          });
+        }
+
+        if (profilePhone !== undefined || profileAddress !== undefined || profileBio !== undefined || profileLinkedin !== undefined) {
+          await tx.profile.upsert({
+            where: { userId: id },
+            create: {
+              userId: id,
+              profilePhone: profilePhone ?? null,
+              profileAddress: profileAddress ?? null,
+              profileBio: profileBio ?? null,
+              profileLinkedin: profileLinkedin || null,
+            },
+            update: {
+              ...(profilePhone !== undefined ? { profilePhone } : {}),
+              ...(profileAddress !== undefined ? { profileAddress } : {}),
+              ...(profileBio !== undefined ? { profileBio } : {}),
+              ...(profileLinkedin !== undefined ? { profileLinkedin: profileLinkedin || null } : {}),
+            },
+          });
+        }
+        return tx.user.findFirst({
+          where: { id, organizationId: orgId, deletedAt: null },
           select: { id: true, fullName: true, email: true },
-        }),
-      );
-  
-      // Update profile fields if any profile data provided
-      if (profilePhone !== undefined || profileAddress !== undefined || profileBio !== undefined || profileLinkedin !== undefined) {
-        await prisma.$transaction((tx) => tx.profile.upsert({
-          where: { userId: id },
-          create: {
-            userId: id,
-            profilePhone: profilePhone ?? null,
-            profileAddress: profileAddress ?? null,
-            profileBio: profileBio ?? null,
-            profileLinkedin: profileLinkedin || null,
-          },
-          update: {
-            ...(profilePhone !== undefined ? { profilePhone } : {}),
-            ...(profileAddress !== undefined ? { profileAddress } : {}),
-            ...(profileBio !== undefined ? { profileBio } : {}),
-            ...(profileLinkedin !== undefined ? { profileLinkedin: profileLinkedin || null } : {}),
-          },
-        }));
-      }
+        });
+      });
+      if (!user) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
   
       // Invalidate cached member state so dashboard reflects changes immediately
       await invalidateMemberState(id);
@@ -116,6 +125,9 @@ const schema = z.object({
 
       return NextResponse.json({ success: true, user });
     } catch (e) {
+      if (e instanceof MemberLifecycleWriteError) {
+        return NextResponse.json({ error: 'This account is no longer active.' }, { status: 409 });
+      }
       console.error('[admin/edit-profile]', e);
       return NextResponse.json({ error: 'Update failed' }, { status: 500 });
     }

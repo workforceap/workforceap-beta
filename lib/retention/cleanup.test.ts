@@ -12,12 +12,17 @@ import {
 
 const mockDeleteMany = vi.fn();
 const mockFindMany = vi.fn();
+const mockUserFindFirst = vi.fn();
 const mockCount = vi.fn();
 const mockAuditEventDeleteMany = vi.fn();
+const mockEmailSendLogDeleteMany = vi.fn();
 const mockAnonymizeMember = vi.fn();
 const mockQueryRaw = vi.fn();
 const mockExecuteRaw = vi.fn();
 const mockSnapshotCreateMany = vi.fn();
+const mockBeginBillingDeletion = vi.fn();
+const mockReleaseBillingDeletion = vi.fn();
+const mockDeleteAuthUserForErasure = vi.fn();
 
 /**
  * Ordered log of what the cleanup did, shared by the transaction wrapper and
@@ -41,6 +46,16 @@ const workflowDiagnosticOverride: {
 vi.mock('@/lib/member/anonymizeMember', () => ({
   anonymizeMember: (...args: unknown[]) => mockAnonymizeMember(...args),
 }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  beginBillingDeletion: (...args: unknown[]) => mockBeginBillingDeletion(...args),
+  releaseBillingDeletion: (...args: unknown[]) => mockReleaseBillingDeletion(...args),
+  lockBillingMemberLifecycle: vi.fn(async () => undefined),
+  scopedBillingUser: vi.fn(async (tx: unknown) => tx),
+}));
+vi.mock('@/lib/admin/authUserLifecycle', () => ({
+  deleteAuthUserForErasure: (...args: unknown[]) => mockDeleteAuthUserForErasure(...args),
+}));
+vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ syntheticAdmin: true }) }));
 
 /** Shape Prisma gives a violated foreign key (P2003). */
 function foreignKeyError(constraint: string) {
@@ -74,6 +89,7 @@ vi.mock('@/lib/db/prisma', () => ({
     },
     user: {
       findMany: (...args: unknown[]) => mockFindMany(...args),
+      findFirst: (...args: unknown[]) => mockUserFindFirst(...args),
       deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
     },
@@ -120,7 +136,7 @@ vi.mock('@/lib/db/prisma', () => ({
     },
     emailSendLog: {
       findMany: (...args: unknown[]) => mockFindMany(...args),
-      deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
+      deleteMany: (...args: unknown[]) => mockEmailSendLogDeleteMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
     },
     portalWorkflowEvent: {
@@ -581,7 +597,13 @@ describe('cleanupDeletedAccounts', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
+    mockEmailSendLogDeleteMany.mockResolvedValue({ count: 0 });
     mockAnonymizeMember.mockResolvedValue(null);
+    mockUserFindFirst.mockResolvedValue({ id: 'eligible' });
+    mockBeginBillingDeletion.mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'purge-1' });
+    mockReleaseBillingDeletion.mockResolvedValue(undefined);
+    mockDeleteAuthUserForErasure.mockResolvedValue({ ok: true, alreadyMissing: false });
+    mockQueryRaw.mockResolvedValue([]);
   });
 
   it('hard-deletes soft-deleted users past retention, one transaction per account', async () => {
@@ -601,8 +623,12 @@ describe('cleanupDeletedAccounts', () => {
       }),
     );
     expect(mockDeleteMany).toHaveBeenCalledTimes(2);
-    expect(mockDeleteMany).toHaveBeenNthCalledWith(1, { where: { id: 'u1' } });
-    expect(mockDeleteMany).toHaveBeenNthCalledWith(2, { where: { id: 'u2' } });
+    expect(mockDeleteMany).toHaveBeenNthCalledWith(1, { where: { id: 'u1', billingDeletionOperationId: 'purge-1' } });
+    expect(mockDeleteMany).toHaveBeenNthCalledWith(2, { where: { id: 'u2', billingDeletionOperationId: 'purge-1' } });
+    expect(mockEmailSendLogDeleteMany).toHaveBeenNthCalledWith(1, { where: { OR: [{ userId: 'u1' }, { entityId: 'u1' }] } });
+    expect(mockEmailSendLogDeleteMany).toHaveBeenNthCalledWith(2, { where: { OR: [{ userId: 'u2' }, { entityId: 'u2' }] } });
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(2);
+    expect(mockDeleteAuthUserForErasure.mock.invocationCallOrder[0]).toBeLessThan(mockDeleteMany.mock.invocationCallOrder[0]);
     // A purged account is gone; only held accounts go through the anonymiser.
     expect(mockAnonymizeMember).not.toHaveBeenCalled();
   });
@@ -639,6 +665,60 @@ describe('cleanupDeletedAccounts', () => {
     }
   });
 
+  it('skips a deletion with unfinished external cleanup before touching audit rows', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'pending' }, { id: 'free' }]).mockResolvedValueOnce([]);
+    mockBeginBillingDeletion.mockResolvedValueOnce({ ok: false, reason: 'in_progress' })
+      .mockResolvedValueOnce({ ok: true, pendingAt: new Date(), operationId: 'purge-1' });
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 1, blocked: [{ id: 'pending', constraint: 'billing_deletion_incomplete' }] });
+    expect(mockAuditEventDeleteMany).not.toHaveBeenCalledWith({ where: { actorUserId: 'pending', actorRole: 'member' } });
+    expect(mockDeleteMany).toHaveBeenCalledTimes(1);
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free', billingDeletionOperationId: 'purge-1' } });
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(1);
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+  });
+
+  it('skips an unresolved counselor copy even for an old soft-deleted account', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'counselor' }]).mockResolvedValueOnce([]);
+    mockBeginBillingDeletion.mockResolvedValueOnce({ ok: false, reason: 'unresolved_send' });
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 0, blocked: [{ id: 'counselor', constraint: 'billing_send_unresolved' }] });
+    expect(mockAuditEventDeleteMany).not.toHaveBeenCalled();
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+    expect(mockDeleteAuthUserForErasure).not.toHaveBeenCalled();
+  });
+
+  it('rechecks retention eligibility by operation owner after Auth is removed', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'restored' }]).mockResolvedValueOnce([]);
+    mockUserFindFirst.mockResolvedValueOnce(null);
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 0, blocked: [{ id: 'restored', constraint: 'billing_deletion_raced' }] });
+    expect(mockUserFindFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'restored', deletedAt: { not: null, lt: expect.any(Date) }, billingDeletionOperationId: 'purge-1' },
+    }));
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it('retains the deleted app tombstone when Auth removal is unconfirmed', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'auth-held' }]).mockResolvedValueOnce([]);
+    mockDeleteAuthUserForErasure.mockResolvedValueOnce({ ok: false, message: 'provider unavailable' });
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 0, blocked: [{ id: 'auth-held', constraint: 'auth_erasure_unconfirmed' }] });
+    expect(mockBeginBillingDeletion).toHaveBeenCalledWith('auth-held', undefined, expect.any(Date));
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('auth-held', 'purge-1');
+    expect(mockAuditEventDeleteMany).not.toHaveBeenCalled();
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+  });
+
   it('reports an account a foreign key still holds and keeps purging the rest', async () => {
     // A full page: the held account first, then 999 that purge cleanly.
     const page = [{ id: 'held' }, ...Array.from({ length: 999 }, (_, i) => ({ id: `free-${i}` }))];
@@ -655,8 +735,9 @@ describe('cleanupDeletedAccounts', () => {
       deleted: 999,
       blocked: [{ id: 'held', constraint: 'audit_events_actor_user_id_fkey' }],
     });
-    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-0' } });
-    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-998' } });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-0', billingDeletionOperationId: 'purge-1' } });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free-998', billingDeletionOperationId: 'purge-1' } });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('held', 'purge-1');
     // The held account is excluded from the next page so the sweep terminates.
     expect(mockFindMany).toHaveBeenCalledTimes(2);
     expect(mockFindMany).toHaveBeenLastCalledWith(
@@ -674,6 +755,43 @@ describe('cleanupDeletedAccounts', () => {
     errorSpy.mockRestore();
   });
 
+  it('releases a post-Auth database failure and continues purging other accounts', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'failed' }, { id: 'free' }]).mockResolvedValueOnce([]);
+    mockDeleteMany.mockRejectedValueOnce(new Error('database connection dropped after Auth removal'))
+      .mockResolvedValueOnce({ count: 1 });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({
+      deleted: 1,
+      blocked: [{ id: 'failed', constraint: 'account_purge_retry_required' }],
+    });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('failed', 'purge-1');
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(2);
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it('retries a held account after Auth was already removed on the previous sweep', async () => {
+    mockFindMany
+      .mockResolvedValueOnce([{ id: 'held' }])
+      .mockResolvedValueOnce([{ id: 'held' }]);
+    mockDeleteMany.mockRejectedValueOnce(foreignKeyError('subgroup_leader_id_fkey'))
+      .mockResolvedValueOnce({ count: 1 });
+    mockDeleteAuthUserForErasure.mockResolvedValueOnce({ ok: true, alreadyMissing: false })
+      .mockResolvedValueOnce({ ok: true, alreadyMissing: true });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await cleanupDeletedAccounts()).toEqual({
+      deleted: 0, blocked: [{ id: 'held', constraint: 'subgroup_leader_id_fkey' }],
+    });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('held', 'purge-1');
+    expect(await cleanupDeletedAccounts()).toEqual({ deleted: 1, blocked: [] });
+    expect(mockDeleteAuthUserForErasure).toHaveBeenCalledTimes(2);
+    errorSpy.mockRestore();
+  });
+
   it('keeps the held account in the report when anonymising it fails, and keeps purging', async () => {
     mockFindMany.mockResolvedValueOnce([{ id: 'held' }, { id: 'free' }]).mockResolvedValueOnce([]);
     mockDeleteMany.mockImplementation(async ({ where }: { where: { id: string } }) => {
@@ -686,16 +804,22 @@ describe('cleanupDeletedAccounts', () => {
     const result = await cleanupDeletedAccounts();
 
     expect(result).toEqual({ deleted: 1, blocked: [{ id: 'held', constraint: 'chapter_members_user_id_fkey' }] });
-    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free' } });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free', billingDeletionOperationId: 'purge-1' } });
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Could not anonymise held account held'), expect.any(Error));
     errorSpy.mockRestore();
   });
 
-  it('still throws on errors that are not foreign key violations', async () => {
+  it('reports an unknown post-Auth database failure for retry without aborting the sweep', async () => {
     mockFindMany.mockResolvedValueOnce([{ id: 'u1' }]);
     mockDeleteMany.mockRejectedValueOnce(new Error('connection reset'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(cleanupDeletedAccounts()).rejects.toThrow('connection reset');
+    await expect(cleanupDeletedAccounts()).resolves.toEqual({
+      deleted: 0,
+      blocked: [{ id: 'u1', constraint: 'account_purge_retry_required' }],
+    });
+    expect(mockReleaseBillingDeletion).toHaveBeenCalledWith('u1', 'purge-1');
+    errorSpy.mockRestore();
   });
 
   it('returns zero when no deleted accounts are expired', async () => {
@@ -776,6 +900,10 @@ describe('runDataCleanup', () => {
     vi.resetAllMocks();
     mockQueryRaw.mockResolvedValue([{ present: true }]);
     mockExecuteRaw.mockResolvedValue(0);
+    mockUserFindFirst.mockResolvedValue({ id: 'eligible' });
+    mockBeginBillingDeletion.mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'purge-1' });
+    mockReleaseBillingDeletion.mockResolvedValue(undefined);
+    mockDeleteAuthUserForErasure.mockResolvedValue({ ok: true, alreadyMissing: false });
   });
 
   it('includes the unmatched xAPI event purge in the report', async () => {
@@ -822,6 +950,10 @@ describe('runDataCleanup', () => {
       args?.where && 'deletedAt' in args.where && !('id' in args.where) ? [{ id: 'held' }] : [],
     );
     mockDeleteMany.mockRejectedValue(foreignKeyError('audit_events_actor_user_id_fkey'));
+    mockUserFindFirst.mockResolvedValue({ billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null });
+    mockQueryRaw.mockImplementation(async (parts: TemplateStringsArray) =>
+      parts.join('?').includes('training_billing_packet_sends') ? [] : [{ present: true }],
+    );
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

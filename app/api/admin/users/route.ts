@@ -219,20 +219,27 @@ const createSchema = z.object({
         };
       });
   
+      let resetWarning: string | undefined;
       if (sendResetEmail) {
-        const { error } = await sendPasswordResetEmail(email, '/reset-password', { orgId: organizationId });
-        if (error) {
-          return NextResponse.json({
-            success: true,
-            user: created,
-            warning: `User created, but reset email failed: ${error.message}`,
+        try {
+          const reset = await sendPasswordResetEmail(email, '/reset-password', { orgId: organizationId });
+          if (reset.error || reset.via === 'skipped') {
+            resetWarning = 'User created, but the password reset email could not be confirmed. Use the reset action on the user record.';
+          }
+        } catch {
+          // The app user is already committed. A notification failure must not
+          // invite an admin to retry creation or hide that the account exists.
+          captureApiError(new Error('Admin user reset email failed after user creation'), {
+            route: 'admin/users/create',
+            extra: { stage: 'password_reset' },
           });
+          resetWarning = 'User created, but the password reset email could not be confirmed. Use the reset action on the user record.';
         }
       }
   
       void auditLog({ actorUserId: admin.id, action: 'admin_user_created', targetType: 'User', targetId: created.id, metadata: { role: created.role } }).catch(() => {});
       logAuditEvent({ user: { id: admin.id, role: 'admin' }, verb: 'created', object: { type: 'User', id: created.id }, result: { success: true, extensions: { role: created.role } } }).catch(() => {});
-      return NextResponse.json({ success: true, user: created });
+      return NextResponse.json({ success: true, user: created, ...(resetWarning ? { warning: resetWarning } : {}) });
     } catch (error) {
       if (
         error instanceof Error &&

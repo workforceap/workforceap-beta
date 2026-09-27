@@ -7,6 +7,10 @@ const {
   createAssignment,
   updateAssignment,
   updateThread,
+  lockBillingLifecycle,
+  billingLifecyclePending,
+  hasUnresolvedBillingSend,
+  lockMemberRow,
 } = vi.hoisted(() => ({
   findFirstUser: vi.fn(),
   findManyCounselors: vi.fn(),
@@ -14,9 +18,18 @@ const {
   createAssignment: vi.fn(),
   updateAssignment: vi.fn(),
   updateThread: vi.fn(),
+  lockBillingLifecycle: vi.fn(),
+  billingLifecyclePending: vi.fn(),
+  hasUnresolvedBillingSend: vi.fn(),
+  lockMemberRow: vi.fn(),
 }));
 
 vi.mock('server-only', () => ({}));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: lockBillingLifecycle,
+  billingLifecyclePending,
+  hasUnresolvedBillingSend,
+}));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     user: { findFirst: findFirstUser },
@@ -24,6 +37,7 @@ vi.mock('@/lib/db/prisma', () => ({
     messageThread: { update: updateThread },
     $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
       fn({
+        $queryRaw: lockMemberRow,
         counselorAssignment: {
           findUnique: findUniqueAssignment,
           create: createAssignment,
@@ -68,6 +82,10 @@ describe('autoAssignAmbassadorFromReferral', () => {
     findUniqueAssignment.mockResolvedValue(null);
     createAssignment.mockResolvedValue({ id: 'asg-1' });
     updateThread.mockResolvedValue({});
+    lockBillingLifecycle.mockResolvedValue(undefined);
+    billingLifecyclePending.mockResolvedValue(false);
+    hasUnresolvedBillingSend.mockResolvedValue(false);
+    lockMemberRow.mockResolvedValue([{ id: 'member-1', alreadyAssigned: false }]);
   });
 
   it('assigns the student to the uniquely named ambassador and notifies both sides', async () => {
@@ -93,7 +111,7 @@ describe('autoAssignAmbassadorFromReferral', () => {
       expect.objectContaining({ data: { counselorUserId: 'amb-1' } }),
     );
     expect(sendCounselorAssignedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: 'student@example.org', counselorFullName: 'Maria García' }),
+      expect.objectContaining({ to: 'student@example.org', recipientUserId: 'member-1', counselorFullName: 'Maria García' }),
     );
     const notifiedUsers = vi.mocked(createNotification).mock.calls.map((c) => c[0].userId).sort();
     expect(notifiedUsers).toEqual(['amb-1', 'member-1']);
@@ -140,5 +158,36 @@ describe('autoAssignAmbassadorFromReferral', () => {
       partnerAmbassadorReferral: 'Maria García',
     });
     expect(result).toEqual({ assigned: false, reason: 'failed' });
+  });
+
+  it('does not create an assignment while a billing provider call is unresolved', async () => {
+    hasUnresolvedBillingSend.mockResolvedValue(true);
+    const result = await autoAssignAmbassadorFromReferral({
+      memberId: 'member-1', source: 'apply_signup', partnerAmbassadorReferral: 'Maria García',
+    });
+    expect(result).toEqual({ assigned: false, reason: 'billing_send_in_progress' });
+    expect(lockBillingLifecycle).toHaveBeenCalledWith(expect.anything(), 'member-1');
+    expect(lockMemberRow).not.toHaveBeenCalled();
+    expect(createAssignment).not.toHaveBeenCalled();
+    expect(updateAssignment).not.toHaveBeenCalled();
+  });
+
+  it('does not create an assignment while member deletion owns the lifecycle', async () => {
+    billingLifecyclePending.mockResolvedValue(true);
+    const result = await autoAssignAmbassadorFromReferral({
+      memberId: 'member-1', source: 'apply_signup', partnerAmbassadorReferral: 'Maria García',
+    });
+    expect(result).toEqual({ assigned: false, reason: 'billing_send_in_progress' });
+    expect(hasUnresolvedBillingSend).not.toHaveBeenCalled();
+    expect(createAssignment).not.toHaveBeenCalled();
+  });
+
+  it('does not override an assignment created after the initial eligibility lookup', async () => {
+    lockMemberRow.mockResolvedValue([{ id: 'member-1', alreadyAssigned: true }]);
+    const result = await autoAssignAmbassadorFromReferral({
+      memberId: 'member-1', source: 'apply_signup', partnerAmbassadorReferral: 'Maria García',
+    });
+    expect(result).toEqual({ assigned: false, reason: 'already_assigned' });
+    expect(createAssignment).not.toHaveBeenCalled();
   });
 });

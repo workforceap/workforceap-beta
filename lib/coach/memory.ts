@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { claudeChat } from '@/lib/ai/anthropicChat';
+import { withActiveMemberAIWrite } from '@/lib/ai/activeMemberWrite';
 import {
   getSafeCoachMemoryTopic,
   MAX_COACH_MEMORY_SUMMARY_CHARS,
@@ -148,7 +149,9 @@ export async function updateCoachMemory(params: {
     parsed = deriveCoachMemoryFallback(recent, prior);
   }
 
-  await prisma.coachMemory.upsert({
+  // The model call can outlive account erasure. Take the same lifecycle barrier
+  // as other AI writes immediately before persisting its result.
+  await withActiveMemberAIWrite(userId, (tx) => tx.coachMemory.upsert({
     where: { userId },
     create: {
       userId,
@@ -161,5 +164,5 @@ export async function updateCoachMemory(params: {
       lastTopic: parsed.lastTopic,
       lastAction: parsed.lastAction,
     },
-  });
+  }));
 }

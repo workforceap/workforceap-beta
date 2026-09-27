@@ -6,6 +6,7 @@
 import { Resend } from 'resend';
 import {
   FixtureRecipientSkippedError,
+  MemberEmailOutcomeUncertainError,
   buildDeliverabilityHeaders,
   htmlToPlainText,
   isEmailProviderRateLimitError,
@@ -175,6 +176,7 @@ export function getVoiceCoachTranscriptRecipients(extra: string[] = []): string[
 
 export async function sendVoiceCoachTranscriptEmail(params: {
   to: string[];
+  subjectMemberId: string;
   memberName: string;
   memberEmail?: string | null;
   coachLabel: string;
@@ -239,6 +241,9 @@ export async function sendVoiceCoachTranscriptEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_transcript,
       to: recipients,
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
+      subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} transcript — ${params.memberName}`),
       html,
     });
@@ -254,6 +259,7 @@ export async function sendVoiceCoachTranscriptEmail(params: {
 
 export async function sendVoiceCoachArtifactEmail(params: {
   to: string[];
+  subjectMemberId: string;
   memberName: string;
   memberEmail?: string | null;
   coachLabel: string;
@@ -308,6 +314,9 @@ export async function sendVoiceCoachArtifactEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_artifact,
       to: recipients,
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
+      subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} artifact — ${params.memberName}`),
       html,
     });
@@ -323,6 +332,7 @@ export async function sendVoiceCoachArtifactEmail(params: {
 
 export async function sendVoiceInterviewTranscriptEmail(params: {
   to: string[];
+  subjectMemberId: string;
   memberName: string;
   memberEmail?: string | null;
   role: string;
@@ -383,6 +393,9 @@ export async function sendVoiceInterviewTranscriptEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.voice_interview_transcript,
       to: recipients,
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
+      subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`Voice interview transcript — ${params.memberName} — ${params.role}`),
       html,
     });
@@ -398,6 +411,7 @@ export async function sendVoiceInterviewTranscriptEmail(params: {
 
 export async function sendElevatorSpeechEmail(params: {
   to: string;
+  recipientUserId: string;
   memberName: string;
   targetRole: string;
   strengths?: string | null;
@@ -442,6 +456,8 @@ export async function sendElevatorSpeechEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.ai_elevator_speech,
       to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Your AI elevator speech — ${params.targetRole}`),
       html,
     });
@@ -465,6 +481,7 @@ export async function sendElevatorSpeechEmail(params: {
  */
 export async function sendCounselorAssignedEmail(params: {
   to: string;
+  recipientUserId: string;
   memberFullName: string;
   counselorFullName: string;
   orgId?: string | null;
@@ -494,6 +511,8 @@ export async function sendCounselorAssignedEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.counselor_assigned,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`${branding.name} — ${params.counselorFullName} is your counselor`),
       html,
     });
@@ -510,6 +529,7 @@ export async function sendCounselorAssignedEmail(params: {
 /** Send enrollment confirmation when admin approves an application */
 export async function sendEnrollmentConfirmationEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   programName: string;
   counselorContact?: string;
@@ -543,6 +563,8 @@ export async function sendEnrollmentConfirmationEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject,
       html,
       template: { name: 'enrollment_confirmation', params: { ...params } },
@@ -670,11 +692,18 @@ export async function sendOnboardingStallsDigestEmail(params: {
     ctaText: 'Open Members',
     ctaUrl: params.membersQueueLink,
   });
+  const subjectMemberIds = Array.from(new Set([
+    ...params.interviewMembers,
+    ...params.wioaMembers,
+    ...params.noProgramMembers,
+  ].map((member) => member.id)));
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.onboarding_stalls_digest,
       to: recipients,
+      subjectMemberIds,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(
         `Onboarding Stalls: ${params.interviewCount} interview, ${params.wioaCount} WIOA, ${params.noProgramCount} unassigned`
       ),
@@ -698,6 +727,7 @@ export async function sendOnboardingStallsDigestEmail(params: {
  */
 export async function sendApplicationAcceptedEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   orgId?: string | null;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -726,6 +756,8 @@ export async function sendApplicationAcceptedEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject,
       html,
       template: { name: 'application_accepted', params: { ...params } },
@@ -743,6 +775,7 @@ export async function sendApplicationAcceptedEmail(params: {
 /** Send application rejected email to applicant */
 export async function sendApplicationRejectedEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
@@ -761,6 +794,8 @@ export async function sendApplicationRejectedEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'WorkforceAP Application Update',
       html,
       template: { name: 'application_rejected', params: { ...params } },
@@ -810,6 +845,8 @@ export async function sendPreScreeningReadyEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.pre_screening_ready,
       to: getAdminAlertRecipients(),
+      subjectMemberId: params.memberId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`Interview ready: ${name}`),
       html,
     });
@@ -824,6 +861,7 @@ export async function sendPreScreeningReadyEmail(params: {
 }
 
 export async function sendNewApplicationAdminEmail(params: {
+  subjectMemberId?: string;
   applicantName: string;
   applicantEmail: string;
   applicantPhone?: string;
@@ -848,6 +886,8 @@ export async function sendNewApplicationAdminEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.admin_new_application,
       to: getAdminAlertRecipients(),
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: !!params.subjectMemberId,
       subject: sanitizeEmailSubjectLine(`New Application: ${params.applicantName}`),
       html,
     });
@@ -864,6 +904,7 @@ export async function sendNewApplicationAdminEmail(params: {
 /** Confirm a saved program selection without claiming funded enrollment. */
 export async function sendCourseEnrolledEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   programName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -883,6 +924,8 @@ export async function sendCourseEnrolledEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Your ${params.programName} program selection is saved`),
       html,
       template: { name: 'course_enrolled', params: { ...params } },
@@ -905,6 +948,7 @@ export async function sendCourseEnrolledEmail(params: {
  */
 export async function sendCourseKickoffEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   programName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -925,6 +969,8 @@ export async function sendCourseKickoffEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(subject),
       html,
       template: { name: 'course_kickoff', params: { ...params } },
@@ -946,6 +992,7 @@ export async function sendCourseKickoffEmail(params: {
  */
 export async function sendCourseAccountabilityEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   programName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -965,6 +1012,8 @@ export async function sendCourseAccountabilityEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.course_accountability,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(subject),
       html,
     });
@@ -986,6 +1035,7 @@ export async function sendCourseAccountabilityEmail(params: {
  */
 export async function sendCertCelebrationEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   certName: string;
   earnedAt: Date;
@@ -1022,6 +1072,8 @@ export async function sendCertCelebrationEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.cert_celebration,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(subject),
       html,
     });
@@ -1075,6 +1127,7 @@ export function preparePlacementSurveyEmail(params: {
 /** Send one previously frozen placement-survey provider request. */
 export async function sendPreparedPlacementSurveyEmail(
   payload: PlacementSurveyDeliveryPayload,
+  recipientUserId?: string,
 ): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
@@ -1082,7 +1135,7 @@ export async function sendPreparedPlacementSurveyEmail(
     return { ok: false, error: 'Email not configured' };
   }
   try {
-    await sendBrandedEmail(resend, payload);
+    await sendBrandedEmail(resend, { ...payload, recipientUserId, memberEffectClaim: Boolean(recipientUserId) });
     return { ok: true };
   } catch (err) {
     if (err instanceof FixtureRecipientSkippedError) {
@@ -1102,6 +1155,7 @@ export function sendPlacementSurveyEmail(
 
 /** Send escalation alert to counselor when member hasn't responded to a placement survey (any wave) after 7 days */
 export async function sendPlacementSurveyEscalationEmail(params: {
+  subjectMemberId: string;
   to: string;
   counselorName: string;
   memberName: string;
@@ -1127,6 +1181,8 @@ export async function sendPlacementSurveyEscalationEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`Follow-up needed: ${params.memberName} — placement survey not completed`),
       html,
     });
@@ -1143,6 +1199,7 @@ export async function sendPlacementSurveyEscalationEmail(params: {
 /** Send course completion congratulations to member */
 export async function sendCourseCompletedEmail(params: {
   to: string;
+  recipientUserId: string;
   fullName: string;
   courseName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -1163,6 +1220,8 @@ export async function sendCourseCompletedEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.course_completed,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Congratulations! You Completed ${params.courseName}`),
       html,
     });
@@ -1186,6 +1245,7 @@ export async function sendCourseCompletedEmail(params: {
  */
 export async function sendMilestoneCascadeEmail(params: {
   to: string;
+  recipientUserId: string;
   subject: string;
   bodyText: string;
   idempotencyKey?: string;
@@ -1217,10 +1277,15 @@ export async function sendMilestoneCascadeEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.milestone_cascade,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(params.subject),
       html,
       idempotencyKey: params.idempotencyKey,
     });
+    if ('skipped' in result && result.skipped === true) {
+      return { ok: false, skipped: true, error: 'reason' in result && typeof result.reason === 'string' ? result.reason : 'inactive_member' };
+    }
     if (params.idempotencyKey && !result.data?.id) return { ok: false, error: 'The email provider did not return an acceptance receipt.' };
     return { ok: true, messageId: result.data?.id };
   } catch (err) {
@@ -1235,6 +1300,7 @@ export async function sendMilestoneCascadeEmail(params: {
 /** Send weekly recap to member */
 export async function sendWeeklyRecapEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   recapSummary: string;
   idempotencyKey?: string;
@@ -1258,6 +1324,8 @@ export async function sendWeeklyRecapEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.member_weekly_recap,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'Your WorkforceAP Weekly Recap',
       html,
       idempotencyKey: params.idempotencyKey,
@@ -1386,6 +1454,7 @@ export async function sendPartnerReferralInviteEmail(params: {
 /** Send invitation accepted notification to inviter */
 export async function sendInvitationAcceptedEmail(params: {
   to: string;
+  accepterUserId: string;
   accepterName: string;
   accepterEmail: string;
   role: string;
@@ -1410,6 +1479,9 @@ export async function sendInvitationAcceptedEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.invitation_accepted,
       to: params.to,
+      subjectMemberId: params.accepterUserId,
+      subjectMemberEmail: params.accepterEmail,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`${params.accepterName} accepted your WorkforceAP invitation`),
       html,
     });
@@ -1426,6 +1498,7 @@ export async function sendInvitationAcceptedEmail(params: {
 /** Send inactive member nudge */
 export async function sendInactiveNudgeEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
@@ -1445,6 +1518,8 @@ export async function sendInactiveNudgeEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.inactive_nudge,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'We Miss You at WorkforceAP',
       html,
     });
@@ -1465,6 +1540,7 @@ export async function sendInactiveNudgeEmail(params: {
  */
 export async function sendJobAlertDigestEmail(params: {
   to: string;
+  recipientUserId?: string;
   firstName: string;
   jobs: { title: string; company: string; location: string | null }[];
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -1484,6 +1560,8 @@ export async function sendJobAlertDigestEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.job_alert_digest,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`${params.jobs.length} new job${params.jobs.length === 1 ? '' : 's'} match your program`),
       html,
     });
@@ -1669,7 +1747,8 @@ export async function sendAIMatchSuggestionEmail(params: {
   jobTitle: string;
   companyName: string;
   matches: { name: string; program: string; score: number }[];
-}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+  subjectMemberIds: string[];
+}): Promise<{ ok: boolean; skipped?: boolean; uncertain?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
     console.warn('sendAIMatchSuggestionEmail: RESEND_API_KEY not set');
@@ -1685,11 +1764,16 @@ export async function sendAIMatchSuggestionEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      subjectMemberIds: params.subjectMemberIds,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`Top candidate matches for "${params.jobTitle}"`),
       html,
     });
     return { ok: true };
   } catch (err) {
+    if (err instanceof MemberEmailOutcomeUncertainError) {
+      return { ok: false, uncertain: true, error: err.message };
+    }
     if (err instanceof FixtureRecipientSkippedError) {
       return { ok: false, skipped: true, error: err.reason };
     }
@@ -1703,13 +1787,14 @@ export async function sendAIMatchSuggestionEmail(params: {
  */
 export async function sendMatchActionEmail(
   params: Parameters<typeof sendAIMatchSuggestionEmail>[0]
-): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+): Promise<{ ok: boolean; skipped?: boolean; uncertain?: boolean; error?: string }> {
   return sendAIMatchSuggestionEmail(params);
 }
 
 /** Send application confirmation / first membership welcome after form submit */
 export async function sendApplicationConfirmationEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   eligibility?: EligibilityScreeningFields | null;
   applicationId?: string | null;
@@ -1735,6 +1820,8 @@ export async function sendApplicationConfirmationEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.application_received,
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(
         'Welcome to Workforce Advancement Project — Your Next Steps',
       ),
@@ -1752,6 +1839,7 @@ export async function sendApplicationConfirmationEmail(params: {
 
 /** Parent/guardian acknowledgment when an under-18 school student completes apply signup. */
 export async function sendSchoolEnrollmentParentAckEmail(params: {
+  subjectMemberId: string;
   to: string;
   parentGuardianName?: string | null;
   studentName: string;
@@ -1778,6 +1866,8 @@ export async function sendSchoolEnrollmentParentAckEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(
         `${params.studentName} applied for career training — WorkforceAP`,
       ),
@@ -1795,6 +1885,7 @@ export async function sendSchoolEnrollmentParentAckEmail(params: {
 
 /** School partner alert when a referred student completes apply signup. */
 export async function sendSchoolEnrollmentPartnerAckEmail(params: {
+  subjectMemberId: string;
   to: string;
   partnerName: string;
   studentName: string;
@@ -1824,6 +1915,8 @@ export async function sendSchoolEnrollmentPartnerAckEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(
         `[WorkforceAP] New student application — ${params.studentName}`,
       ),
@@ -1844,7 +1937,10 @@ export async function sendEligibilityScreeningConfirmationEmail(params: {
   to: string;
   fullName: string;
   eligibility?: EligibilityScreeningFields | null;
-}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+} & (
+  | { recipientUserId: string; publicLead?: never }
+  | { publicLead: true; recipientUserId?: never }
+)): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
     console.warn('sendEligibilityScreeningConfirmationEmail: RESEND_API_KEY not set');
@@ -1864,6 +1960,8 @@ export async function sendEligibilityScreeningConfirmationEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine('Eligibility questionnaire received — WorkforceAP'),
       html,
     });
@@ -1904,6 +2002,8 @@ export async function sendEligibilityScreeningAdminEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: getAdminAlertRecipients(),
+      subjectMemberId: params.memberId ?? undefined,
+      memberEffectClaim: !!params.memberId,
       subject: sanitizeEmailSubjectLine(`Eligibility screening: ${params.memberName}`),
       html,
     });
@@ -1920,6 +2020,7 @@ export async function sendEligibilityScreeningAdminEmail(params: {
 /** Send Day 3 follow-up email to applicant */
 export async function sendApplicantFollowupEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
@@ -1938,6 +2039,8 @@ export async function sendApplicantFollowupEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'Your WorkforceAP Application is Being Reviewed',
       html,
       template: { name: 'applicant_followup', params: { ...params } },
@@ -1992,6 +2095,7 @@ export async function sendAdminPendingApplicantsEmail(params: {
  */
 export async function sendApplicantChaseEmail(params: {
   to: string;
+  recipientUserId?: string;
   fullName: string;
   stage: ApplicantChaseStage;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -2011,6 +2115,8 @@ export async function sendApplicantChaseEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: APPLICANT_CHASE_SUBJECT[params.stage],
       html,
       template: { name: 'applicant_chase', params: { ...params } },
@@ -2051,6 +2157,8 @@ export async function sendApplicantAgingDigestEmail(params: ApplicantAgingDigest
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: recipients,
+      subjectMemberIds: params.oldest.map((member) => member.memberId),
+      memberEffectClaim: params.oldest.length > 0,
       subject: sanitizeEmailSubjectLine(
         `Aging applications: ${params.total} waiting, oldest ${params.oldest[0]?.daysWaiting ?? 0} days`
       ),
@@ -2256,11 +2364,13 @@ export async function sendWioaReportEmail(params: {
 
 /** Weekly referral outcomes digest for a partner org */
 export async function sendPartnerWeeklyDigestEmail(params: {
+  subjectMemberIds: string[];
   to: string;
   partnerName: string;
   weekLabel: string;
   stageLines: string[];
   successLines: string[];
+  additionalSuccessCount?: number;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
@@ -2274,6 +2384,7 @@ export async function sendPartnerWeeklyDigestEmail(params: {
       weekLabel: params.weekLabel,
       stageLines: params.stageLines,
       successLines: params.successLines,
+      additionalSuccessCount: params.additionalSuccessCount,
     }),
     ctaText: 'Open partner portal',
     ctaUrl: `${SITE_URL}/partner`,
@@ -2282,6 +2393,8 @@ export async function sendPartnerWeeklyDigestEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      subjectMemberIds: params.subjectMemberIds,
+      memberEffectClaim: params.subjectMemberIds.length > 0,
       subject: sanitizeEmailSubjectLine(`WorkforceAP weekly referral update — ${params.partnerName}`),
       html,
     });
@@ -2476,6 +2589,7 @@ export async function sendEmployerRejectedEmail(params: {
 
 /** Notify staff when a member resets their skills assessment to retake */
 export async function sendAssessmentResetNotificationEmail(params: {
+  subjectMemberId: string;
   memberName: string;
   memberEmail: string;
   previousScore: number;
@@ -2500,6 +2614,8 @@ export async function sendAssessmentResetNotificationEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: getAdminAlertRecipients(),
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`Assessment Reset — ${params.memberName}`),
       html,
     });
@@ -2516,6 +2632,7 @@ export async function sendAssessmentResetNotificationEmail(params: {
 /** Send a pre-interview prep bundle containing latest AI tool results */
 export async function sendInterviewPrepBundleEmail(params: {
   to: string;
+  recipientUserId: string;
   memberName: string;
   bundle: {
     items: { toolType: string; title: string; content: string; createdAt: Date }[];
@@ -2564,6 +2681,8 @@ export async function sendInterviewPrepBundleEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine('Your Pre-Interview Prep Bundle — WorkforceAP'),
       html,
     });
@@ -2580,6 +2699,7 @@ export async function sendInterviewPrepBundleEmail(params: {
 /** ~24h before a logged interview — nudge member to review STAR answers in Interview Practice. */
 export async function sendInterviewPrepReminderEmail(params: {
   to: string;
+  recipientUserId?: string;
   firstName: string;
   company: string;
   role: string;
@@ -2602,6 +2722,8 @@ export async function sendInterviewPrepReminderEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Reminder: interview prep for ${params.company}`),
       html,
     });
@@ -2618,6 +2740,7 @@ export async function sendInterviewPrepReminderEmail(params: {
 /** Day after interview — lightweight self-report prompt (accountability loop). */
 export async function sendInterviewDebriefPromptEmail(params: {
   to: string;
+  recipientUserId?: string;
   firstName: string;
   company: string;
   role: string;
@@ -2639,6 +2762,8 @@ export async function sendInterviewDebriefPromptEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Quick check-in: ${params.company} interview`),
       html,
     });
@@ -2657,9 +2782,11 @@ export async function sendInterviewDebriefPromptEmail(params: {
  * One email per counselor per day with all CRITICAL at-risk members.
  */
 export async function sendCounselorAtRiskAlertEmail(params: {
+  subjectMemberIds: string[];
   /** One counselor, or the staff fallback list for members with no counselor. */
   to: string | string[];
   counselorName: string;
+  totalMemberCount?: number;
   members: {
     memberName: string;
     memberEmail: string;
@@ -2677,7 +2804,7 @@ export async function sendCounselorAtRiskAlertEmail(params: {
     return { ok: false, error: 'Email not configured' };
   }
 
-  const memberCount = params.members.length;
+  const memberCount = params.totalMemberCount ?? params.members.length;
   const subjectLine =
     memberCount === 1
       ? '1 member needs attention today'
@@ -2699,6 +2826,8 @@ export async function sendCounselorAtRiskAlertEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      subjectMemberIds: params.subjectMemberIds,
+      memberEffectClaim: params.subjectMemberIds.length > 0,
       subject: sanitizeEmailSubjectLine(`At-Risk Alert: ${subjectLine}`),
       html,
     });
@@ -2719,6 +2848,7 @@ export async function sendCounselorAtRiskAlertEmail(params: {
  */
 export async function sendMemberCheckInEmail(params: {
   to: string;
+  recipientUserId?: string;
   firstName: string;
   dashboardUrl: string;
   /** Button label for both CTAs; must name where `dashboardUrl` goes. */
@@ -2747,6 +2877,8 @@ export async function sendMemberCheckInEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(memberCheckInSubject),
       html,
     });
@@ -2765,6 +2897,7 @@ export async function sendMemberCheckInEmail(params: {
  */
 export async function sendMemberComeBackEmail(params: {
   to: string;
+  recipientUserId?: string;
   firstName: string;
   counselorName: string;
   nextBestActionUrl: string;
@@ -2790,6 +2923,8 @@ export async function sendMemberComeBackEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(memberComeBackSubject(params.counselorName)),
       html,
     });
@@ -2808,6 +2943,7 @@ export async function sendMemberComeBackEmail(params: {
  */
 export async function sendMemberStuckEmail(params: {
   to: string;
+  recipientUserId?: string;
   firstName: string;
   counselorName: string;
   calendarUrl?: string;
@@ -2829,6 +2965,8 @@ export async function sendMemberStuckEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(memberStuckSubject),
       html,
     });
@@ -2849,6 +2987,7 @@ export async function sendMemberStuckEmail(params: {
  */
 export async function sendInterviewPrepLink(params: {
   to: string;
+  recipientUserId: string;
   name?: string | null;
   url: string;
   orgId?: string | null;
@@ -2877,6 +3016,8 @@ export async function sendInterviewPrepLink(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`Practice for your interview with ${branding.name}`),
       html,
     });
@@ -2904,6 +3045,10 @@ export const ELIGIBILITY_SOFT_DEADLINE_COPY =
  */
 export async function sendEligibilityLink(params: {
   to: string;
+  /** Existing member receiving this email. Omit for a public lead address. */
+  recipientUserId?: string;
+  /** Member bound to a tokenized link sent to another address. */
+  subjectMemberId?: string;
   name?: string | null;
   url: string;
   orgId?: string | null;
@@ -2939,6 +3084,9 @@ export async function sendEligibilityLink(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
+      subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: Boolean(params.recipientUserId || params.subjectMemberId),
       subject: sanitizeEmailSubjectLine(
         params.softDeadlineReminder
           ? `Please complete your eligibility info by Sept 14 — ${branding.name}`

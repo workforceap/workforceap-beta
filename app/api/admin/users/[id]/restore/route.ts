@@ -9,8 +9,11 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { isDeletedEmailMarker, parseDeletedEmail } from '../../_deletedEmail';
+import { isErasedEmailMarker } from '@/lib/member/deletedEmail';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { reenableAuthUserAfterRestore } from '@/lib/admin/authUserLifecycle';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, beginBillingRestore } from '@/lib/billing/erasureGuard';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const POST = withApiGuc(async (
@@ -21,6 +24,9 @@ export const POST = withApiGuc(async (
     const actor = await getUser();
     if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     if (!(await isAdmin(actor.id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!interactiveTransactionsGuaranteed()) return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
   
     const { id } = await params;
     const orgId = await getActorOrganizationId(actor.id);
@@ -32,6 +38,9 @@ export const POST = withApiGuc(async (
           id: true,
           email: true,
           deletedAt: true,
+          billingDeletionPendingAt: true,
+          billingDeletionOperationId: true,
+          billingDeletionCompletedAt: true,
           fullName: true,
           phone: true,
           profile: { select: { role: true } },
@@ -51,6 +60,12 @@ export const POST = withApiGuc(async (
     }
     if (!target.deletedAt) {
       return NextResponse.json({ error: 'User is not soft-deleted; nothing to restore.' }, { status: 400 });
+    }
+    if (isErasedEmailMarker(target.email, id)) {
+      return NextResponse.json({ error: 'This account was permanently erased and cannot be restored.' }, { status: 409 });
+    }
+    if (target.billingDeletionOperationId || (target.billingDeletionPendingAt && !target.billingDeletionCompletedAt)) {
+      return NextResponse.json({ error: 'Account deletion is still being completed. Retry deletion or contact support before restoring.' }, { status: 409 });
     }
   
     // If the email was rewritten, try to restore the original.
@@ -82,6 +97,16 @@ export const POST = withApiGuc(async (
         { status: 409 },
       );
     }
+
+    const restoreOperation = await beginBillingRestore(id, orgId, {
+      email: target.email,
+      deletedAt: target.deletedAt,
+      pendingAt: target.billingDeletionPendingAt ?? null,
+      completedAt: target.billingDeletionCompletedAt ?? null,
+    });
+    if (!restoreOperation.ok) {
+      return NextResponse.json({ error: 'Account deletion or another restore is in progress. Reload and try again.' }, { status: 409 });
+    }
   
     // Bring the login back too. Soft delete bans the auth user (or, before
     // 9/2/26, hard-deleted it); either way the member cannot sign in until
@@ -101,7 +126,8 @@ export const POST = withApiGuc(async (
           {
             ok: false,
             authRestored: false,
-            error: 'Sign-in could not be restored. The account remains deleted; retry restore or contact support.',
+            reconciliationRequired: true,
+            error: 'Sign-in restoration could not be confirmed. The account remains deleted; contact support for reconciliation.',
           },
           { status: 502 },
         );
@@ -113,9 +139,10 @@ export const POST = withApiGuc(async (
         {
           ok: false,
           authRestored: false,
-          error: 'Sign-in could not be restored. The account remains deleted; retry restore or contact support.',
+          reconciliationRequired: true,
+          error: 'Sign-in restoration could not be confirmed. The account remains deleted; contact support for reconciliation.',
         },
-        { status: 502 },
+        { status: 503 },
       );
     }
 
@@ -124,28 +151,24 @@ export const POST = withApiGuc(async (
     try {
       const changed = await withTenantScope(orgId, (db) =>
         db.user.updateMany({
-          where: { id, email: target.email, deletedAt: target.deletedAt },
-          data: { deletedAt: null, email: emailToWrite },
+          where: {
+            id, email: target.email, deletedAt: target.deletedAt,
+            billingDeletionPendingAt: target.billingDeletionPendingAt ?? null,
+            billingDeletionOperationId: restoreOperation.operationId,
+            billingDeletionCompletedAt: target.billingDeletionCompletedAt ?? null,
+          },
+          data: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, email: emailToWrite },
         }),
       );
       if (changed.count !== 1) throw new Error('Restore target changed during request');
     } catch (err) {
-      // A concurrent restore may have won the conditional write. Never re-ban
-      // that successfully activated identity as compensation for this request.
-      const current = await withTenantScope(orgId, (db) =>
-        db.user.findFirst({ where: { id }, select: { email: true, deletedAt: true } }),
-      ).catch(() => null);
-      const alreadyRestored = current && !current.deletedAt && current.email.trim().toLowerCase() === emailToWrite;
-      if (!alreadyRestored) {
-        // Auth and app writes are not one transaction. A guessed re-ban here
-        // can lock out a concurrent successful restore. Keep the app failure
-        // visible and retryable; the deleted-account login guard remains active.
-        console.error('[admin/users/:id/restore] account activation requires reconciliation');
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-          return NextResponse.json({ error: 'Email collision on restore. Another account has this address.' }, { status: 409 });
-        }
-        return NextResponse.json({ error: 'Account activation could not be confirmed. Reload and retry restore, or contact support for account reconciliation.' }, { status: 503 });
+      // The restore owner is retained when Auth and the app row disagree.
+      // A second delete or restore cannot race through the provider boundary.
+      console.error('[admin/users/:id/restore] account activation requires reconciliation');
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        return NextResponse.json({ error: 'Email collision on restore. Account reconciliation is required.', reconciliationRequired: true }, { status: 409 });
       }
+      return NextResponse.json({ error: 'Account activation could not be confirmed. Contact support for account reconciliation.', reconciliationRequired: true }, { status: 503 });
     }
 
     await auditLog({

@@ -162,6 +162,17 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
+it('binds member portal link emails to the member id for send-time lifecycle checks', async () => {
+  expect((await interview(req('members/fixture-member/send-interview-link', 'POST'), params())).status).toBe(200);
+  expect(mocks.sendInterview).toHaveBeenCalledWith(
+    expect.objectContaining({ to: fixtureMember.email, recipientUserId: fixtureMember.id }),
+  );
+  expect((await eligibility(req('members/fixture-member/send-eligibility-link', 'POST'), params())).status).toBe(200);
+  expect(mocks.sendEligibility).toHaveBeenCalledWith(
+    expect.objectContaining({ to: fixtureMember.email, recipientUserId: fixtureMember.id }),
+  );
+});
+
 function expectNoDataOrEffects() {
   for (const value of Object.values(db)) {
     if (typeof value === 'function') expect(value).not.toHaveBeenCalled();

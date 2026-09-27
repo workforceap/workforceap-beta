@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(), isAdmin: vi.fn(), isSuperAdmin: vi.fn(),
   target: vi.fn(), collision: vi.fn(), updateMany: vi.fn(), findMany: vi.fn(),
-  restoreAuth: vi.fn(), disableAuth: vi.fn(), audit: vi.fn(), event: vi.fn(),
+  restoreAuth: vi.fn(), disableAuth: vi.fn(), beginRestore: vi.fn(), beginDeletion: vi.fn(), completeDeletion: vi.fn(), releaseDeletion: vi.fn(), abortRepair: vi.fn(), audit: vi.fn(), event: vi.fn(),
   org: vi.fn(),
 }));
 const db = vi.hoisted(() => ({ user: { findFirst: mocks.target, updateMany: mocks.updateMany, findMany: mocks.findMany } }));
@@ -26,6 +26,14 @@ vi.mock('@/lib/admin/authUserLifecycle', () => ({
   reenableAuthUserAfterRestore: mocks.restoreAuth,
   disableAuthUserForSoftDelete: mocks.disableAuth,
 }));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  BILLING_LIFECYCLE_UNAVAILABLE_ERROR: 'Account deletion requires an interactive database transaction.',
+  beginBillingRestore: mocks.beginRestore,
+  beginBillingDeletion: mocks.beginDeletion,
+  completeBillingDeletion: mocks.completeDeletion,
+  releaseBillingDeletion: mocks.releaseDeletion,
+  abortBillingDeletedEmailRepairBeforeAuthChange: mocks.abortRepair,
+}));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.event, auditRequestMeta: () => ({}) }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
@@ -40,7 +48,7 @@ const ACTOR = '10000000-0000-4000-8000-000000000001';
 const deletedAt = new Date('2026-09-08T10:00:00Z');
 const marker = buildDeletedEmail(ID, deletedAt.getTime(), 'Member@Example.com')!;
 function deletedRow() {
-  return { id: ID, email: marker, deletedAt, fullName: 'Synthetic Member', phone: null, profile: { role: 'member' }, userRoles: [] };
+  return { id: ID, email: marker, deletedAt, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, fullName: 'Synthetic Member', phone: null, profile: { role: 'member' }, userRoles: [] };
 }
 const req = () => new Request('http://localhost/api/admin/users/fixture', { method: 'POST' });
 const ctx = (id = ID) => ({ params: Promise.resolve({ id }) });
@@ -71,6 +79,11 @@ beforeEach(() => {
   mocks.updateMany.mockResolvedValue({ count: 1 });
   mocks.findMany.mockResolvedValue([]);
   mocks.restoreAuth.mockResolvedValue({ ok: true, action: 'unbanned' });
+  mocks.beginRestore.mockResolvedValue({ ok: true, operationId: 'restore-operation' });
+  mocks.beginDeletion.mockResolvedValue({ ok: true, operationId: 'email-operation' });
+  mocks.completeDeletion.mockResolvedValue(undefined);
+  mocks.releaseDeletion.mockResolvedValue(undefined);
+  mocks.abortRepair.mockResolvedValue(undefined);
   mocks.disableAuth.mockResolvedValue({ ok: true, alreadyMissing: false });
   mocks.audit.mockResolvedValue(undefined);
   mocks.event.mockResolvedValue(undefined);
@@ -137,23 +150,56 @@ describe('administrator account restore', () => {
       id: ID, email: 'member@example.com', fullName: 'Synthetic Member', phone: null,
     });
     expect(mocks.updateMany).toHaveBeenCalledExactlyOnceWith({
-      where: { id: ID, email: marker, deletedAt }, data: { deletedAt: null, email: 'member@example.com' },
+      where: { id: ID, email: marker, deletedAt, billingDeletionPendingAt: null, billingDeletionOperationId: 'restore-operation', billingDeletionCompletedAt: null },
+      data: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, email: 'member@example.com' },
     });
+    expect(mocks.beginRestore).toHaveBeenCalledWith(ID, 'org-1', {
+      email: marker, deletedAt, pendingAt: null, completedAt: null,
+    });
+    expect(mocks.beginRestore.mock.invocationCallOrder[0]).toBeLessThan(mocks.restoreAuth.mock.invocationCallOrder[0]);
     expect(mocks.restoreAuth.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
   });
 
-  it.each(['failure', 'exception'])('keeps the deleted row retryable when Auth restore returns %s', async (mode) => {
+  it('refuses restore while deletion owns cleanup or has not completed', async () => {
+    for (const state of [
+      { billingDeletionPendingAt: new Date(), billingDeletionOperationId: 'operation-1', billingDeletionCompletedAt: null },
+      { billingDeletionPendingAt: new Date(), billingDeletionOperationId: null, billingDeletionCompletedAt: null },
+    ]) {
+      mocks.target.mockResolvedValueOnce({ ...deletedRow(), ...state });
+      const response = await restore(req(), ctx());
+      expect(response.status).toBe(409);
+    }
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('refuses Auth restoration when a new deletion won the lifecycle operation first', async () => {
+    const pendingAt = new Date('2026-09-08T09:00:00Z');
+    const completedAt = new Date('2026-09-08T10:30:00Z');
+    mocks.target.mockResolvedValueOnce({ ...deletedRow(), billingDeletionPendingAt: pendingAt, billingDeletionCompletedAt: completedAt });
+    mocks.beginRestore.mockResolvedValueOnce({ ok: false });
+    const response = await restore(req(), ctx());
+    expect(response.status).toBe(409);
+    expect(mocks.beginRestore).toHaveBeenCalledWith(ID, 'org-1', {
+      email: marker, deletedAt, pendingAt, completedAt,
+    });
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it.each(['failure', 'exception'])('keeps the restore owner held when Auth returns %s', async (mode) => {
     if (mode === 'failure') mocks.restoreAuth.mockResolvedValueOnce({ ok: false, message: 'Synthetic provider failure' });
     else mocks.restoreAuth.mockRejectedValueOnce(new Error('Synthetic network failure'));
+    mocks.target.mockResolvedValueOnce(deletedRow()).mockResolvedValueOnce({ ...deletedRow(), billingDeletionOperationId: 'restore-operation' });
     const failed = await restore(req(), ctx());
-    expect(failed.status).toBe(502);
-    expect(await failed.json()).toMatchObject({ ok: false, authRestored: false });
+    expect(failed.status).toBe(mode === 'failure' ? 502 : 503);
+    expect(await failed.json()).toMatchObject({ ok: false, authRestored: false, reconciliationRequired: true });
     expect(mocks.updateMany).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
     const retried = await restore(req(), ctx());
-    expect(retried.status).toBe(200);
-    expect(mocks.updateMany).toHaveBeenCalledTimes(1);
+    expect(retried.status).toBe(409);
+    expect(mocks.restoreAuth).toHaveBeenCalledTimes(1);
   });
 
   it('checks global email collisions before Auth without exposing the foreign identity or address', async () => {
@@ -174,12 +220,11 @@ describe('administrator account restore', () => {
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 
-  it('treats a lost compare-and-set as success when another restore activated the same identity', async () => {
-    mocks.target.mockResolvedValueOnce(deletedRow()).mockResolvedValueOnce({ email: 'MEMBER@example.com', deletedAt: null });
+  it('requires reconciliation when the restore owner loses its app compare-and-set', async () => {
     mocks.updateMany.mockResolvedValue({ count: 0 });
     const response = await restore(req(), ctx());
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ ok: true, authRestored: true });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ reconciliationRequired: true });
     expect(mocks.disableAuth).not.toHaveBeenCalled();
   });
 
@@ -192,15 +237,16 @@ describe('administrator account restore', () => {
     expect(mocks.audit).not.toHaveBeenCalled();
   });
 
-  it('preserves Auth after a database failure rather than racing a later successful restore with a re-ban', async () => {
+  it('keeps the owner held after a database failure rather than re-banning Auth', async () => {
     mocks.updateMany.mockRejectedValueOnce(new Error('Write disconnected'));
+    mocks.target.mockResolvedValueOnce(deletedRow()).mockResolvedValueOnce({ ...deletedRow(), billingDeletionOperationId: 'restore-operation' });
     const failed = await restore(req(), ctx());
     expect(failed.status).toBe(503);
     expect((await failed.json()).error).toContain('account reconciliation');
     expect(mocks.disableAuth).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
     const retry = await restore(req(), ctx());
-    expect(retry.status).toBe(200);
+    expect(retry.status).toBe(409);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
   });
 
@@ -219,15 +265,91 @@ describe('administrator account restore', () => {
     expect(mocks.restoreAuth).not.toHaveBeenCalled();
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
+
+  it('cannot restore a held account after its recoverable email expires', async () => {
+    mocks.target.mockResolvedValue({ ...deletedRow(), email: `deleted_${ID}_${deletedAt.getTime()}_@deleted.invalid` });
+    const response = await restore(req(), ctx());
+    expect(response.status).toBe(409);
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
 });
 
 describe('administrator email release', () => {
+  it('returns a clear conflict before Auth or DB reads in flattened Preview', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    try {
+      const single = await freeEmail(req(), ctx());
+      const batch = await freeBatch(req());
+      const restored = await restore(req(), ctx());
+      expect(single.status).toBe(503);
+      expect(batch.status).toBe(503);
+      expect(restored.status).toBe(503);
+      for (const response of [single, batch, restored]) {
+        expect((await response.json()).code).toBe('billing_lifecycle_unavailable');
+      }
+      expect(mocks.target).not.toHaveBeenCalled();
+      expect(mocks.findMany).not.toHaveBeenCalled();
+      expect(mocks.disableAuth).not.toHaveBeenCalled();
+      expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('repairs an already-marked app row by retiring its exact Auth address', async () => {
     const response = await freeEmail(req(), ctx());
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ ok: true, alreadyFreed: true, originalEmail: 'Member@Example.com' });
+    expect(mocks.beginDeletion).toHaveBeenCalledWith(ID, 'org-1', undefined, deletedAt);
     expect(mocks.disableAuth).toHaveBeenCalledWith(expect.anything(), ID, 'Member@Example.com');
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: ID, email: marker, deletedAt, billingDeletionOperationId: 'email-operation' },
+      data: { email: marker },
+    });
+    expect(mocks.completeDeletion).toHaveBeenCalledWith(ID, 'email-operation');
+    expect(mocks.beginDeletion.mock.invocationCallOrder[0]).toBeLessThan(mocks.disableAuth.mock.invocationCallOrder[0]);
+    expect(mocks.disableAuth.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
+    expect(mocks.updateMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.completeDeletion.mock.invocationCallOrder[0]);
+  });
+
+  it('refuses to disable Auth when restore won after the deleted-row read', async () => {
+    mocks.beginDeletion.mockResolvedValueOnce({ ok: false, reason: 'in_progress' });
+    const response = await freeEmail(req(), ctx());
+    expect(response.status).toBe(409);
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
     expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('leaves Auth untouched when an unfinished erasure blocks deleted-email repair', async () => {
+    const unfinished = { ...deletedRow(), email: 'member@example.com', billingDeletionPendingAt: deletedAt, billingDeletionCompletedAt: null };
+    mocks.target.mockResolvedValue(unfinished);
+    mocks.findMany.mockResolvedValue([unfinished]);
+    mocks.beginDeletion.mockResolvedValue({ ok: false, reason: 'in_progress' });
+
+    expect((await freeEmail(req(), ctx())).status).toBe(409);
+    expect(await (await freeBatch(req())).json()).toMatchObject({ freed: 0, skipped: 1 });
+    expect(mocks.beginDeletion).toHaveBeenCalledTimes(2);
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.completeDeletion).not.toHaveBeenCalled();
+  });
+
+  it('keeps restore out while Auth retirement is in flight', async () => {
+    let finishAuth!: (result: { ok: true; alreadyMissing: false }) => void;
+    let held = false;
+    mocks.beginDeletion.mockImplementationOnce(async () => { held = true; return { ok: true, operationId: 'email-operation' }; });
+    mocks.beginRestore.mockImplementationOnce(async () => held ? { ok: false } : { ok: true, operationId: 'restore-operation' });
+    mocks.disableAuth.mockImplementationOnce(() => new Promise((resolve) => { finishAuth = resolve; }));
+
+    const releasing = freeEmail(req(), ctx());
+    await vi.waitFor(() => expect(mocks.disableAuth).toHaveBeenCalledOnce());
+    const restoring = await restore(req(), ctx());
+    expect(restoring.status).toBe(409);
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    finishAuth({ ok: true, alreadyMissing: false });
+    expect((await releasing).status).toBe(200);
+    expect(mocks.completeDeletion).toHaveBeenCalledWith(ID, 'email-operation');
   });
 
   it('does not rewrite the app email when Auth retirement fails', async () => {
@@ -236,7 +358,44 @@ describe('administrator email release', () => {
     const response = await freeEmail(req(), ctx());
     expect(response.status).toBe(502);
     expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.releaseDeletion).toHaveBeenCalledWith(ID, 'email-operation');
+    expect(mocks.completeDeletion).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
+  });
+
+  it('restores the prior completed marker when Auth lookup fails before mutation', async () => {
+    const priorCompletedAt = new Date('2026-09-08T10:01:00Z');
+    const pendingAt = new Date('2026-09-08T10:00:00Z');
+    mocks.beginDeletion.mockResolvedValueOnce({
+      ok: true, operationId: 'email-operation', pendingAt,
+      priorState: { pendingAt, completedAt: priorCompletedAt },
+    });
+    mocks.disableAuth.mockResolvedValueOnce({ ok: false, message: 'Auth lookup unavailable', providerUnchanged: true });
+
+    const response = await freeEmail(req(), ctx());
+    expect(response.status).toBe(502);
+    expect(await response.json()).toMatchObject({ reconciliationRequired: false });
+    expect(mocks.abortRepair).toHaveBeenCalledExactlyOnceWith(ID, 'org-1', deletedAt, marker, {
+      pendingAt, operationId: 'email-operation', priorState: { pendingAt, completedAt: priorCompletedAt },
+    });
+    expect(mocks.releaseDeletion).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('leaves the owner held when the safe rollback loses its compare-and-set', async () => {
+    mocks.beginDeletion.mockResolvedValueOnce({
+      ok: true, operationId: 'email-operation', pendingAt: deletedAt,
+      priorState: { pendingAt: deletedAt, completedAt: deletedAt },
+    });
+    mocks.disableAuth.mockResolvedValueOnce({ ok: false, message: 'Identity mismatch', providerUnchanged: true });
+    mocks.abortRepair.mockRejectedValueOnce(new Error('rollback CAS lost'));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect((await freeEmail(req(), ctx())).status).toBe(500);
+      expect(mocks.releaseDeletion).not.toHaveBeenCalled();
+    } finally {
+      consoleSpy.mockRestore();
+    }
   });
 
   it('does not claim a released email if its conditional app update loses', async () => {
@@ -244,6 +403,8 @@ describe('administrator email release', () => {
     mocks.updateMany.mockResolvedValue({ count: 0 });
     const response = await freeEmail(req(), ctx());
     expect(response.status).toBe(409);
+    expect(mocks.completeDeletion).not.toHaveBeenCalled();
+    expect(mocks.releaseDeletion).toHaveBeenCalledWith(ID, 'email-operation');
     expect(mocks.audit).not.toHaveBeenCalled();
   });
 
@@ -256,6 +417,7 @@ describe('administrator email release', () => {
     expect(response.status).toBe(403);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
     expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.beginDeletion).not.toHaveBeenCalled();
   });
 
   it('protects the caller even if their target profile role is stale', async () => {
@@ -263,6 +425,7 @@ describe('administrator email release', () => {
     const response = await freeEmail(req(), ctx(ACTOR));
     expect(response.status).toBe(403);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
+    expect(mocks.beginDeletion).not.toHaveBeenCalled();
   });
 
   it('counts failed batch provider operations as skipped and preserves admin identities', async () => {
@@ -276,5 +439,48 @@ describe('administrator email release', () => {
     expect(await response.json()).toEqual({ ok: true, freed: 0, skipped: 2, total: 2 });
     expect(mocks.disableAuth).toHaveBeenCalledTimes(1);
     expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.completeDeletion).not.toHaveBeenCalled();
+  });
+
+  it('returns a batch row to its prior restorable state on definite pre-change Auth failure', async () => {
+    const row = { ...deletedRow(), email: 'member@example.com' };
+    const pendingAt = new Date('2026-09-08T10:02:00Z');
+    mocks.findMany.mockResolvedValueOnce([row]);
+    mocks.beginDeletion.mockResolvedValueOnce({
+      ok: true, operationId: 'email-operation', pendingAt,
+      priorState: { pendingAt: null, completedAt: null },
+    });
+    mocks.disableAuth.mockResolvedValueOnce({ ok: false, message: 'Identity mismatch', providerUnchanged: true });
+
+    const response = await freeBatch(req());
+    expect(await response.json()).toMatchObject({ freed: 0, skipped: 1 });
+    expect(mocks.abortRepair).toHaveBeenCalledExactlyOnceWith(ID, 'org-1', deletedAt, row.email, {
+      pendingAt, operationId: 'email-operation', priorState: { pendingAt: null, completedAt: null },
+    });
+    expect(mocks.releaseDeletion).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('skips a batch row whose restore owns the lifecycle marker', async () => {
+    mocks.findMany.mockResolvedValue([{ ...deletedRow(), email: 'member@example.com' }]);
+    mocks.beginDeletion.mockResolvedValueOnce({ ok: false, reason: 'in_progress' });
+    const response = await freeBatch(req());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, freed: 0, skipped: 1, total: 1 });
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
+  });
+
+  it('holds the batch owner through the app email compare-and-set', async () => {
+    mocks.findMany.mockResolvedValue([{ ...deletedRow(), email: 'member@example.com' }]);
+    const response = await freeBatch(req());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, freed: 1, skipped: 0, total: 1 });
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: ID, email: 'member@example.com', deletedAt, billingDeletionOperationId: 'email-operation' },
+      data: { email: expect.stringMatching(/^deleted_20000000-0000-4000-8000-000000000001_\d+_member@example\.com@deleted\.invalid$/) },
+    });
+    expect(mocks.beginDeletion.mock.invocationCallOrder[0]).toBeLessThan(mocks.disableAuth.mock.invocationCallOrder[0]);
+    expect(mocks.disableAuth.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
+    expect(mocks.updateMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.completeDeletion.mock.invocationCallOrder[0]);
   });
 });

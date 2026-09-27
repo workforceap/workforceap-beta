@@ -42,6 +42,14 @@ vi.mock('@/lib/db/withRequestGuc', () => ({
 }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: h.prisma }));
 vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ storage: { from: () => ({ upload: h.upload }) } }) }));
+vi.mock('@/lib/member/uploadLifecycle', () => ({
+  assertMemberUploadWritable: vi.fn(async () => undefined),
+  isMemberUploadLifecycleError: vi.fn(() => false),
+  MemberUploadStorageOutcomeError: class extends Error {},
+  MemberUploadPersistenceOutcomeError: class extends Error {},
+  withMemberUploadClaim: (options: { run: (operationId: string, recordAttempt: (path: string) => void) => Promise<unknown> }) =>
+    options.run('claim-1', () => undefined),
+}));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'user-1' })) }));
 vi.mock('@/lib/auth/roles', () => ({
   isAdmin: vi.fn(async () => true),

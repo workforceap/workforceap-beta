@@ -204,6 +204,7 @@ export async function changeApplicationStatus(args: {
 
       sendEnrollmentConfirmationEmail({
         to: application.user.email,
+        recipientUserId: application.userId,
         fullName: application.user.fullName,
         programName,
         counselorName,
@@ -212,6 +213,7 @@ export async function changeApplicationStatus(args: {
     } else if (statusChanged && status === 'DENIED') {
       sendApplicationRejectedEmail({
         to: application.user.email,
+        recipientUserId: application.userId,
         fullName: application.user.fullName,
       }).catch((err) => console.error('Application rejected email failed:', err));
     }

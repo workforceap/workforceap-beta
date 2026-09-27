@@ -23,6 +23,7 @@ export const VITEST_LIBRARY_SPECS = Object.freeze([
   'lib/marketing/googleItSupportLanding.test.ts',
   'lib/messages/counselorInbox.test.ts',
   'lib/member/atRiskScoring.test.ts',
+  'lib/member/ensureAppUser.test.ts',
   'lib/member/nextBestActions.test.ts',
   'lib/member/dashboardLegacyRedirect.test.ts',
   'lib/member/getMemberState.test.ts',

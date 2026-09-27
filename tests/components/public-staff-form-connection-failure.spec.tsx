@@ -146,6 +146,8 @@ describe('billing packet send', () => {
     id: 'packet-1', packetNumber: 'J5-0001', status: 'signed', programSlug: 'fixture-program', programTitle: 'Fixture program',
     invoiceDate: '2026-09-01T00:00:00.000Z', dueDate: null, billToName: 'Fixture Agency', referenceNumber: null, totalAmount: 1250,
     lineItems: [], signerName: 'Sam Signer', signerTitle: 'Director', signedAt: '2026-09-01T00:00:00.000Z', sentAt: null, sentTo: [], sendCount: 0,
+    recipients: { student: 'student@example.org', counselor: null }, sendState: null, sendBlockedReason: null,
+    supersededAt: null, supersededReason: null, supersededById: null, supersededByPacketId: null, supersedesPacketId: null,
   };
 
   it('maps a dropped connection to the translated connection message', async () => {

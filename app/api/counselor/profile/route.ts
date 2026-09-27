@@ -5,6 +5,8 @@ import { isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
 
 /**
  * Counselor Profile (9/2/26, issue 10): counselors — including Community
@@ -82,33 +84,42 @@ export const PATCH = withApiGuc(async (request: NextRequest) => {
     }
     const { fullName, phone, title } = parsed.data;
 
-    const counselor = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
+      // A send claim takes this lifecycle lock before locking User and
+      // Counselor rows. Match that order so profile edits cannot deadlock a
+      // claim or update an account after deletion has taken ownership.
+      // Preview flattens transactions and disables billing claims; its User
+      // update still checks the committed deletion marker below.
+      if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, user.id);
       const own = await tx.counselor.findFirst({
         where: { userId: user.id, active: true },
         select: { id: true },
       });
-      if (!own) return null;
-      await tx.user.update({
-        where: { id: user.id },
+      if (!own) return { kind: 'missing' as const };
+      const updated = await tx.user.updateMany({
+        where: { id: user.id, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null },
         data: { fullName, phone: phone?.trim() || null },
       });
+      if (updated.count !== 1) return { kind: 'inactive' as const };
       await tx.profile.updateMany({
         where: { userId: user.id },
         data: { profilePhone: phone?.trim() || null },
       });
-      return tx.counselor.update({
+      const counselor = await tx.counselor.update({
         where: { id: own.id },
         data: { title: title?.trim() || null },
         select: { id: true },
       });
+      return { kind: 'updated' as const, counselor };
     });
-    if (!counselor) return NextResponse.json({ error: 'Counselor profile not found' }, { status: 404 });
+    if (result.kind === 'missing') return NextResponse.json({ error: 'Counselor profile not found' }, { status: 404 });
+    if (result.kind === 'inactive') return NextResponse.json({ error: 'Counselor account is being changed or deleted' }, { status: 409 });
 
     auditLog({
       actorUserId: user.id,
       action: 'counselor_profile_update',
       targetType: 'Counselor',
-      targetId: counselor.id,
+      targetId: result.counselor.id,
       metadata: { fullName, title: title ?? null },
     }).catch(() => {});
 

@@ -2,6 +2,12 @@ import { Prisma, type CourseProgressStatus, type User } from '@prisma/client';
 
 import { getLevelForPoints } from '@/lib/member/pointsConfig';
 import {
+  hasUnresolvedBillingSend,
+  hasUnresolvedMemberExternalEffect,
+  hasUnresolvedMilestoneDispatch,
+  lockBillingMemberLifecycle,
+} from '@/lib/billing/erasureGuard';
+import {
   MEMBER_MERGE_PREVIEW_ONLY,
   MEMBER_MERGE_REPOINT_PLAN,
   type CollisionResolution,
@@ -446,6 +452,50 @@ export async function checkMergeConflicts(
 
   if (!primary || !secondary) return conflicts;
 
+  // The secondary account is retired by the merge. An in-flight Storage or
+  // notification operation can finish after that retirement; an unresolved
+  // milestone dispatch can likewise deliver to the old identity. The executor
+  // checks again after taking both lifecycle locks.
+  if (await hasUnresolvedMemberExternalEffect(tx, secondaryId)) {
+    conflicts.push({
+      field: 'memberExternalEffectClaim.memberId',
+      primaryValue: primaryId,
+      secondaryValue: secondaryId,
+      message: 'The duplicate member has an unresolved Storage, notification, or email operation. Reconcile its external-effect claim before merging.',
+    });
+  }
+  if (await hasUnresolvedMilestoneDispatch(tx, secondaryId)) {
+    conflicts.push({
+      field: 'milestoneCascade.userId',
+      primaryValue: primaryId,
+      secondaryValue: secondaryId,
+      message: 'The duplicate member has an unresolved milestone dispatch. Reconcile that dispatch before merging.',
+    });
+  }
+
+  // Billing packets bind a signed approval reference and send history to the
+  // original account. The executor calls this again after locking both member
+  // lifecycles, so a packet cannot appear between this check and retirement.
+  // Even a draft is held here: moving it or leaving it on the secondary would
+  // make the merge result ambiguous to staff and to the primary member.
+  if (primary.organizationId === secondary.organizationId) {
+    const packet = await tx.trainingBillingPacket.findFirst({
+      where: {
+        organizationId: primary.organizationId,
+        memberId: { in: [primaryId, secondaryId] },
+      },
+      select: { id: true, memberId: true, packetNumber: true },
+    });
+    if (packet) {
+      conflicts.push({
+        field: 'trainingBillingPacket.memberId',
+        primaryValue: primaryId,
+        secondaryValue: secondaryId,
+        message: `A billing packet (${packet.packetNumber}) belongs to one of these accounts. Review it before merging; this merge cannot safely move or strand billing approval history.`,
+      });
+    }
+  }
+
   // Critical scalar conflicts
   if (primary.enrolledProgram && secondary.enrolledProgram && primary.enrolledProgram !== secondary.enrolledProgram) {
     conflicts.push({
@@ -691,6 +741,13 @@ export async function executeMemberMerge(
   secondaryId: string,
   actorUserId: string,
 ): Promise<MergeResult> {
+  // A merge retires the secondary account. Hold the same member lock used by
+  // billing claims until this merge transaction commits, so no provider call
+  // can start after the merge begins or outlive the retirement.
+  for (const id of [primaryId, secondaryId].sort()) await lockBillingMemberLifecycle(tx, id);
+  if (await hasUnresolvedBillingSend(tx, secondaryId)) throw new Error('Cannot merge a member while a billing packet delivery is unresolved. Reconcile the send first.');
+  if (await hasUnresolvedMemberExternalEffect(tx, secondaryId)) throw new Error('Cannot merge a member while a Storage, notification, or email operation is unresolved. Reconcile the external-effect claim first.');
+  if (await hasUnresolvedMilestoneDispatch(tx, secondaryId)) throw new Error('Cannot merge a member while a milestone dispatch is unresolved. Reconcile the dispatch first.');
   const [primary, secondary] = await Promise.all([
     tx.user.findUnique({ where: { id: primaryId } }),
     tx.user.findUnique({ where: { id: secondaryId } }),
@@ -699,7 +756,7 @@ export async function executeMemberMerge(
   if (!primary || !secondary) {
     throw new Error('One or both members not found');
   }
-  if (primary.deletedAt || secondary.deletedAt) {
+  if (primary.deletedAt || secondary.deletedAt || primary.billingDeletionPendingAt || secondary.billingDeletionPendingAt) {
     throw new Error('Cannot merge deleted members');
   }
   if (primary.organizationId !== secondary.organizationId) {

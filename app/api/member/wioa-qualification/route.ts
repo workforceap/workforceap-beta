@@ -9,6 +9,8 @@ import { sendWioaScreeningNotification } from '@/lib/wioa/wioaNotification';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
+import { activeMemberNotificationTarget } from '@/lib/member/activeNotification';
 async function _GET() {
   try {
   const user = await getUser();
@@ -57,10 +59,10 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
   // update always targets an existing record (idempotent no-op when present).
   await ensureAppUserProvisioned(user);
 
-  const dbUser = await prisma.$transaction(async (tx) => {
+  const dbUser = await withActiveMemberWrite(user.id, async (tx) => {
     const current = await tx.user.findUnique({
       where: { id: user.id },
-      select: { wioaQualificationJson: true, email: true, fullName: true },
+      select: { wioaQualificationJson: true },
     });
     if (!current) return null;
     const previous = current.wioaQualificationJson;
@@ -90,12 +92,13 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
     process.env.NEXT_PUBLIC_SITE_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.workforceap.org');
 
-  const emailSent = dbUser
+  const target = await activeMemberNotificationTarget(user.id);
+  const emailSent = target
     ? await sendWioaScreeningNotification({
         source: 'member_portal',
         contact: {
-          fullName: dbUser.fullName || 'WorkforceAP member',
-          email: dbUser.email,
+          fullName: target.fullName || 'WorkforceAP member',
+          email: target.email,
         },
         snapshot,
         userId: user.id,
@@ -108,6 +111,9 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
   return NextResponse.json({ ok: true, snapshot, emailSent });
 
   } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      return NextResponse.json({ error: error.message, errorCode: 'account_inactive' }, { status: 409 });
+    }
     console.error('/member/wioa-qualification error:', error);
     return NextResponse.json({ error: 'Internal server error', errorCode: 'save_failed' }, { status: 500 });
   }

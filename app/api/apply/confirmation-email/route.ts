@@ -62,7 +62,7 @@ async function _POST(request: NextRequest) {
         createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       },
       orderBy: { createdAt: 'desc' },
-      select: { id: true },
+      select: { id: true, userId: true },
       take: 1,
     });
     if (!recentApplication) {
@@ -74,6 +74,7 @@ async function _POST(request: NextRequest) {
 
     const result = await sendApplicationConfirmationEmail({
       to: parsed.data.email,
+      recipientUserId: recentApplication.userId,
       fullName: parsed.data.fullName,
       applicationId: recentApplication.id,
     });

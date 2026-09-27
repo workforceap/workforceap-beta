@@ -310,7 +310,7 @@ describe('POST /api/apply/confirmation-email existence oracle', () => {
   });
 
   it('answers the identical body when an application exists and the email is sent', async () => {
-    mocks.applicationFindFirst.mockResolvedValue({ id: 'app-1' });
+    mocks.applicationFindFirst.mockResolvedValue({ id: 'app-1', userId: 'member-1' });
 
     const res = await confirmationEmailPost(confirmationRequest({ email: 'applicant@example.com', fullName: 'Applicant' }));
 
@@ -318,6 +318,7 @@ describe('POST /api/apply/confirmation-email existence oracle', () => {
     expect(await res.json()).toEqual({ ok: true });
     expect(mocks.sendConfirmationEmail).toHaveBeenCalledWith({
       to: 'applicant@example.com',
+      recipientUserId: 'member-1',
       fullName: 'Applicant',
       applicationId: 'app-1',
     });

@@ -30,7 +30,7 @@ type WioaNotificationDependencies = {
 };
 
 /** Production sender: the shared wrapper (retry, guards, diagnostics), not the raw SDK. */
-const sendThroughBrandedWrapper: WioaEmailSender = async (payload) => {
+const sendThroughBrandedWrapper = async (payload: CreateEmailOptions, subjectMemberId?: string): Promise<CreateEmailResponse> => {
   const resend = getResend();
   if (!resend) throw new Error('RESEND_API_KEY not set');
   const text = 'text' in payload && typeof payload.text === 'string' ? payload.text : '';
@@ -38,6 +38,8 @@ const sendThroughBrandedWrapper: WioaEmailSender = async (payload) => {
   return sendBrandedEmailOrThrowOnSkip(resend, {
     from: payload.from,
     to: payload.to,
+    subjectMemberId,
+    memberEffectClaim: !!subjectMemberId,
     subject: payload.subject,
     html,
     ...(text ? { text } : {}),
@@ -55,7 +57,11 @@ export async function sendWioaScreeningNotification(params: {
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) return false;
 
-  const sendEmail = dependencies.sendEmail ?? sendThroughBrandedWrapper;
+  const sendEmail = dependencies.sendEmail
+    ?? ((payload: CreateEmailOptions) => sendThroughBrandedWrapper(
+      payload,
+      params.source === 'member_portal' ? params.userId ?? undefined : undefined,
+    ));
   const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
   const { source, contact, snapshot, userId, adminUrl } = params;
   const { answers, signal, submittedAt } = snapshot;

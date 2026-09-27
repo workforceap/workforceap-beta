@@ -107,6 +107,7 @@ function hasMeaningfulUserPractice(transcript: TranscriptTurn[]) {
       if (recipients.length > 0) {
         await sendVoiceCoachTranscriptEmail({
           to: recipients,
+          subjectMemberId: user.id,
           memberName: dbUser?.fullName?.trim() || user.email || 'WorkforceAP member',
           memberEmail: dbUser?.email?.trim() || user.email || null,
           coachLabel: `Voice Interview${body.role?.trim() ? ` (${body.role.trim()})` : ''}`,

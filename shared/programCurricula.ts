@@ -346,6 +346,16 @@ export const PROGRAM_CURRICULA: Record<string, ProgramCurriculum> = {
   },
 };
 
+/**
+ * True when a program has no in-house curriculum (TWC syllabus or catalog
+ * program) or its curriculum is owner-verified. Same rule as the funder-facing
+ * price list (marketing/src/pages/programs/price-list.astro): draft hours and
+ * tuition never appear on official documents.
+ */
+export function isCurriculumOwnerVerified(curriculum: Pick<ProgramCurriculum, 'status'> | undefined | null): boolean {
+  return !curriculum || curriculum.status === 'owner-verified';
+}
+
 export function getProgramCurriculum(slug: string): ProgramCurriculum | undefined {
   return PROGRAM_CURRICULA[slug];
 }

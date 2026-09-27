@@ -42,6 +42,7 @@ export async function maybeSendCourseKickoffEmail(args: {
 
     const result = await sendCourseKickoffEmail({
       to: args.email,
+      recipientUserId: args.userId,
       fullName: args.fullName ?? args.email,
       programName,
     });

@@ -21,6 +21,7 @@ import {
   recipientHash,
   type EmailTemplateRef,
 } from '@/lib/email/failureRecord';
+import { EMAIL_TEMPLATE_KEYS, resolveEmailTemplateKey } from '@/lib/email/templateKeys';
 
 export const SUPPRESSION_CACHE_TTL_MS = 10 * 60_000;
 export const SUPPRESSION_FETCH_TIMEOUT_MS = 4_000;
@@ -31,6 +32,7 @@ const SUPPRESSIONS_URL = 'https://api.resend.com/suppressions';
 const SUPPRESSION_PAGE_SIZE = 100;
 const SUPPRESSION_MAX_PAGES = 20;
 const WARN_INTERVAL_MS = SUPPRESSION_CACHE_TTL_MS;
+const KNOWN_EMAIL_TEMPLATE_KEYS: ReadonlySet<string> = new Set(Object.values(EMAIL_TEMPLATE_KEYS));
 
 type SuppressionCache = { fetchedAt: number; emails: Set<string> };
 let cache: SuppressionCache | null = null;
@@ -164,13 +166,24 @@ function recipientDomains(addresses: string[]): string[] {
  * Record a send that was skipped because every `to` recipient is on the
  * provider suppression list, so /admin/diagnostics can show the address is
  * dead instead of the cron booking another "success". Fire-and-forget; stores
- * a recipient hash and domain, never the raw address.
+ * a recipient hash and domain for ordinary sends. Member-claimed sends may
+ * finish this diagnostic after account erasure, so their row contains no
+ * recipient-derived fields or dynamic template label.
  */
 export function recordSuppressedRecipientSkip(
-  args: { to: string | string[]; subject: string; template?: EmailTemplateRef },
+  args: {
+    to: string | string[];
+    subject: string;
+    template?: EmailTemplateRef;
+    templateKey?: string | null;
+    memberEffectClaim?: boolean;
+  },
   suppressed: string[],
 ): void {
-  const template = args.template?.name?.trim() || null;
+  const candidate = resolveEmailTemplateKey(args);
+  const template = args.memberEffectClaim
+    ? candidate && KNOWN_EMAIL_TEMPLATE_KEYS.has(candidate) ? candidate : null
+    : args.template?.name?.trim() || null;
   void recordWorkflowDiagnostic({
     workflow: EMAIL_SEND_WORKFLOW,
     status: 'fallback',
@@ -180,12 +193,14 @@ export function recordSuppressedRecipientSkip(
     provider: 'resend',
     method: SUPPRESSED_SKIP_METHOD,
     fallbackPath: SUPPRESSED_SKIP_METHOD,
-    metadata: {
-      template,
-      recipientHash: recipientHash(args.to),
-      recipientDomains: recipientDomains(suppressed),
-      suppressedCount: suppressed.length,
-      skippedAt: new Date().toISOString(),
-    },
+    metadata: args.memberEffectClaim
+      ? { template, suppressedCount: suppressed.length, skippedAt: new Date().toISOString() }
+      : {
+          template,
+          recipientHash: recipientHash(args.to),
+          recipientDomains: recipientDomains(suppressed),
+          suppressedCount: suppressed.length,
+          skippedAt: new Date().toISOString(),
+        },
   });
 }

@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const h = vi.hoisted(() => {
   const upload = vi.fn(async (path: string) => ({ data: { path }, error: null }));
+  const remove = vi.fn(async () => ({ data: [], error: null }));
   const prisma = {
     $transaction: async (arg: unknown) =>
       typeof arg === 'function' ? (arg as (tx: unknown) => unknown)(prisma) : Promise.all(arg as Promise<unknown>[]),
@@ -19,7 +20,7 @@ const h = vi.hoisted(() => {
       updateMany: vi.fn(async () => ({ count: 1 })),
     },
   };
-  return { upload, prisma, auditLog: vi.fn(async () => undefined), logAuditEvent: vi.fn(async () => undefined) };
+  return { upload, remove, prisma, auditLog: vi.fn(async () => undefined), logAuditEvent: vi.fn(async () => undefined) };
 });
 
 vi.mock('next/server', () => {
@@ -38,12 +39,41 @@ vi.mock('@/lib/db/withRequestGuc', () => ({
   withApiGuc: (handler: (...args: unknown[]) => Promise<Response>) => handler,
 }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: h.prisma }));
-vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ storage: { from: () => ({ upload: h.upload }) } }) }));
+vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ storage: { from: () => ({ upload: h.upload, remove: h.remove }) } }) }));
+vi.mock('@/lib/member/uploadLifecycle', () => {
+  class MemberUploadLifecycleError extends Error {}
+  class MemberUploadStorageOutcomeError extends Error {
+    constructor(readonly causeValue: unknown) { super('Storage outcome unknown'); }
+  }
+  class MemberUploadPersistenceOutcomeError extends Error {
+    constructor(readonly causeValue: unknown) { super('Persistence outcome unknown'); }
+  }
+  return {
+    MemberUploadLifecycleError,
+    MemberUploadStorageOutcomeError,
+    MemberUploadPersistenceOutcomeError,
+    assertMemberUploadWritable: vi.fn(async () => undefined),
+    withMemberUploadClaim: async (options: {
+      run: (operationId: string, recordAttempt: (path: string) => void) => Promise<unknown>;
+      removeObjects: (paths: string[]) => Promise<unknown>;
+    }) => {
+      const paths: string[] = [];
+      try {
+        return await options.run('claim-1', (path) => paths.push(path));
+      } catch (error) {
+        await options.removeObjects(paths);
+        throw error;
+      }
+    },
+    isMemberUploadLifecycleError: (error: unknown) => error instanceof MemberUploadLifecycleError,
+  };
+});
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'user-1' })) }));
 vi.mock('@/lib/audit', () => ({ auditLog: h.auditLog }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: h.logAuditEvent }));
 
 import { POST } from '@/app/api/member/certifications/upload/route';
+import { assertMemberUploadWritable, MemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
 
 function uploadRequest(certName = 'CompTIA A+'): Request {
   const fd = new FormData();
@@ -80,7 +110,7 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     expect(h.upload).toHaveBeenCalledTimes(1);
     expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
     expect(h.prisma.userCertification.updateMany).toHaveBeenCalledWith({
-      where: { id: 'cert-1', status: 'approved' },
+      where: { id: 'cert-1', userId: 'user-1', status: 'approved' },
       data: { proofUrl: body.storagePath },
     });
   });
@@ -91,7 +121,7 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     const { storagePath } = await res.json();
 
     // Same extension as the verified file, yet a different object, written without upsert.
-    expect(storagePath).toMatch(/^cert-files\/user-1\/cert-1-\d+\.pdf$/);
+    expect(storagePath).toMatch(/^cert-files\/user-1\/cert-1-[a-f0-9-]+\.pdf$/);
     expect(storagePath).not.toBe('cert-files/user-1/cert-1.pdf');
     const [[path, , opts]] = h.upload.mock.calls as unknown as [[string, unknown, { upsert: boolean }]];
     expect(path).toBe(storagePath);
@@ -138,12 +168,12 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     h.prisma.userCertification.findUnique.mockResolvedValue(cert(status));
     const res = await POST(uploadRequest() as never);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ success: true, storagePath: 'cert-files/user-1/cert-1.pdf', status: 'pending' });
+    expect(await res.json()).toEqual({ success: true, storagePath: expect.stringMatching(/^cert-files\/user-1\/cert-1-[a-f0-9-]+\.pdf$/), status: 'pending' });
 
     const [[args]] = h.prisma.userCertification.update.mock.calls as unknown as [[{ where: unknown; data: Record<string, unknown> }]];
-    expect(args.where).toEqual({ id: 'cert-1' });
+    expect(args.where).toEqual({ id: 'cert-1', userId: 'user-1' });
     expect(args.data.status).toBe('pending');
-    expect(args.data.proofUrl).toBe('cert-files/user-1/cert-1.pdf');
+    expect(args.data.proofUrl).toMatch(/^cert-files\/user-1\/cert-1-[a-f0-9-]+\.pdf$/);
     expect(args.data.submittedAt).toBeInstanceOf(Date);
     expect(h.auditLog).not.toHaveBeenCalled();
   });
@@ -170,5 +200,18 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
     expect(h.prisma.userCertification.updateMany).not.toHaveBeenCalled();
     expect(h.auditLog).not.toHaveBeenCalled();
+  });
+
+  it('removes its staged proof when deletion wins before the pointer transaction', async () => {
+    h.prisma.userCertification.findUnique.mockResolvedValue(cert('approved', 'cert-files/user-1/cert-1.pdf'));
+    vi.mocked(assertMemberUploadWritable).mockRejectedValueOnce(new MemberUploadLifecycleError());
+    const res = await POST(uploadRequest() as never);
+    const staged = h.upload.mock.calls[0][0];
+
+    expect(res.status).toBe(409);
+    expect(h.remove).toHaveBeenCalledWith([staged]);
+    expect(staged).not.toBe('cert-files/user-1/cert-1.pdf');
+    expect(h.prisma.userCertification.updateMany).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
   });
 });

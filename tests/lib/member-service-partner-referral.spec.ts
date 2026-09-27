@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => {
   };
   return {
     tx,
+    transactionState: { committed: false },
     partnerFindFirst: vi.fn(),
     userFindUnique: vi.fn(),
     resolveProvisionOrganizationId: vi.fn(),
@@ -34,7 +35,11 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     partner: { findFirst: mocks.partnerFindFirst },
     user: { findUnique: mocks.userFindUnique },
-    $transaction: (fn: (tx: typeof mocks.tx) => Promise<unknown>) => fn(mocks.tx),
+    $transaction: async (fn: (tx: typeof mocks.tx) => Promise<unknown>) => {
+      const result = await fn(mocks.tx);
+      mocks.transactionState.committed = true;
+      return result;
+    },
   },
 }));
 vi.mock('@/lib/db/withDbRetry', () => ({
@@ -97,6 +102,7 @@ function applicationData(): Record<string, unknown> {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.transactionState.committed = false;
   // clearAllMocks keeps implementations; seedPartner() installs one.
   mocks.partnerFindFirst.mockReset();
   mocks.resolveProvisionOrganizationId.mockResolvedValue('org-A');
@@ -125,6 +131,22 @@ describe('createMember partner attribution (/signup door)', () => {
     const data = applicationData();
     expect(data.referralPartnerId).toBe('partner-A');
     expect(data.referralSource).toBe('partner_ref:acme-ref');
+  });
+
+  it('starts the member-linked admin alert only after the signup transaction commits', async () => {
+    let committedAtSend = false;
+    mocks.sendNewApplicationAdminEmail.mockImplementation(() => {
+      committedAtSend = mocks.transactionState.committed;
+      return Promise.resolve({ ok: true });
+    });
+
+    await createMember(USER_ID, input());
+
+    expect(committedAtSend).toBe(true);
+    expect(mocks.sendNewApplicationAdminEmail).toHaveBeenCalledWith(expect.objectContaining({
+      subjectMemberId: USER_ID,
+      applicationId: 'app-1',
+    }));
   });
 
   it('(b) scopes the partner lookup to the member org; a foreign-org code attributes nothing', async () => {
@@ -218,6 +240,7 @@ describe('createMember partner attribution (/signup door)', () => {
     mocks.userFindUnique.mockResolvedValue(null);
 
     await expect(createMember(USER_ID, input({ referralRef: 'acme' }))).rejects.toThrow('upsert failed');
+    expect(mocks.sendNewApplicationAdminEmail).not.toHaveBeenCalled();
   });
 
   it('(f) resolves when the upsert error is a lost ack and the user row already exists', async () => {
@@ -226,5 +249,6 @@ describe('createMember partner attribution (/signup door)', () => {
     mocks.userFindUnique.mockResolvedValue({ id: USER_ID });
 
     await expect(createMember(USER_ID, input({ referralRef: 'acme' }))).resolves.toBeUndefined();
+    expect(mocks.sendNewApplicationAdminEmail).not.toHaveBeenCalled();
   });
 });

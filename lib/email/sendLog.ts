@@ -21,7 +21,7 @@ import { createHash } from 'node:crypto';
 
 import { prisma } from '@/lib/db/prisma';
 import { classifyEmailSendFailure, recipientHash } from '@/lib/email/failureRecord';
-import { UNTYPED_EMAIL_TEMPLATE_KEY, resolveEmailTemplateKey } from '@/lib/email/templateKeys';
+import { EMAIL_TEMPLATE_KEYS, UNTYPED_EMAIL_TEMPLATE_KEY, resolveEmailTemplateKey } from '@/lib/email/templateKeys';
 
 export type EmailSendLogStatus = 'skipped' | 'sending' | 'sent' | 'failed';
 
@@ -38,7 +38,7 @@ export interface EmailSendLogEntry {
   recipientHash: string | null;
   recipientDomain: string | null;
   recipientCount: number;
-  subject: string;
+  subject: string | null;
   userId: string | null;
   entityType: string | null;
   entityId: string | null;
@@ -64,6 +64,17 @@ export interface EmailSendLogSubject {
   userId?: string | null;
   entityType?: string | null;
   entityId?: string | null;
+  /** A member lifecycle claim protects this send, including staff-facing member content. */
+  memberEffectClaim?: boolean;
+}
+
+const MEMBER_EMAIL_TEMPLATE_KEYS = new Set<string>(Object.values(EMAIL_TEMPLATE_KEYS));
+
+function safeMemberTemplateKey(args: EmailSendLogSubject): string {
+  const key = resolveEmailTemplateKey(args);
+  // Template labels are caller-supplied strings. Only static registry labels
+  // are safe to retain after the member account is erased.
+  return key && MEMBER_EMAIL_TEMPLATE_KEYS.has(key) ? key : 'member_email';
 }
 
 /** `YYYY-MM-DD` in UTC; the day bucket that makes a same-day repeat one row. */
@@ -88,6 +99,14 @@ function recipientDomain(address: string | undefined): string | null {
  */
 export function buildEmailDedupeKey(args: EmailSendLogSubject, atMs: number): string {
   const explicit = args.idempotencyKey?.trim();
+  if (args.memberEffectClaim) {
+    const fallback = `${safeMemberTemplateKey(args)}|${recipientList(args.to).sort().join(',')}|${args.subject}|${utcDayBucket(atMs)}`;
+    const digest = createHash('sha256')
+      .update('email-send-log/member-effect/v1\0')
+      .update(explicit || fallback)
+      .digest('hex');
+    return `member-email/${digest}`;
+  }
   if (explicit) return explicit;
   const templateKey = resolveEmailTemplateKey(args) ?? UNTYPED_EMAIL_TEMPLATE_KEY;
   const recipients = recipientList(args.to).sort().join(',');
@@ -99,6 +118,27 @@ export function buildEmailDedupeKey(args: EmailSendLogSubject, atMs: number): st
 }
 
 export function buildEmailSendLogBase(args: EmailSendLogSubject, atMs: number): Omit<EmailSendLogEntry, 'status'> {
+  if (args.memberEffectClaim) {
+    return {
+      dedupeKey: buildEmailDedupeKey(args, atMs),
+      templateKey: safeMemberTemplateKey(args),
+      provider: 'resend',
+      idempotencyKey: null,
+      providerMessageId: null,
+      recipientHash: null,
+      recipientDomain: null,
+      recipientCount: Math.max(1, recipientList(args.to).length),
+      subject: null,
+      userId: null,
+      entityType: null,
+      entityId: null,
+      attempts: 0,
+      skipReason: null,
+      failureReason: null,
+      failureClass: null,
+      sentAt: null,
+    };
+  }
   const recipients = recipientList(args.to);
   return {
     dedupeKey: buildEmailDedupeKey(args, atMs),
@@ -162,6 +202,7 @@ export function createEmailSendLogWriter(
   budgetMs: number = EMAIL_SEND_LOG_WRITE_BUDGET_MS,
 ): EmailSendLogWriter {
   const base = buildEmailSendLogBase(args, atMs);
+  const privateMemberLog = !!args.memberEffectClaim;
   let tail: Promise<void> = Promise.resolve();
   let attempts = 0;
   let providerMessageId: string | null = null;
@@ -177,10 +218,11 @@ export function createEmailSendLogWriter(
     write(status, patch = {}) {
       try {
         attempts = patch.attempts ?? attempts;
-        providerMessageId = patch.providerMessageId ?? providerMessageId;
+        providerMessageId = privateMemberLog ? null : patch.providerMessageId ?? providerMessageId;
         enqueue({
           ...base,
           ...patch,
+          ...(privateMemberLog ? { failureReason: null } : {}),
           status,
           attempts,
           providerMessageId,
@@ -196,14 +238,14 @@ export function createEmailSendLogWriter(
       } catch {
         failureClass = null;
       }
-      const failureReason = error instanceof Error
+      const failureReason = privateMemberLog ? null : error instanceof Error
         ? error.message
         : typeof error === 'string'
           ? error
           : (error as { message?: unknown } | null)?.message
             ? String((error as { message?: unknown }).message)
             : 'Send threw';
-      this.write('failed', { attempts: failedAttempts, failureReason: failureReason.slice(0, 1_000), failureClass });
+      this.write('failed', { attempts: failedAttempts, failureReason: failureReason?.slice(0, 1_000) ?? null, failureClass });
     },
     settle() {
       return boundedWait(tail, budgetMs);
@@ -214,6 +256,7 @@ export function createEmailSendLogWriter(
 /** Production store: one upsert per transition, keyed by dedupe key. */
 export const prismaEmailSendLogStore: EmailSendLogStore = {
   async record(entry) {
+    const privateMemberLog = entry.dedupeKey.startsWith('member-email/');
     await prisma.emailSendLog.upsert({
       where: { dedupeKey: entry.dedupeKey },
       create: {
@@ -222,7 +265,7 @@ export const prismaEmailSendLogStore: EmailSendLogStore = {
         status: entry.status,
         provider: entry.provider,
         idempotencyKey: entry.idempotencyKey,
-        providerMessageId: entry.providerMessageId,
+        providerMessageId: privateMemberLog ? null : entry.providerMessageId,
         recipientHash: entry.recipientHash,
         recipientDomain: entry.recipientDomain,
         recipientCount: entry.recipientCount,
@@ -241,7 +284,9 @@ export const prismaEmailSendLogStore: EmailSendLogStore = {
         templateKey: entry.templateKey ?? undefined,
         idempotencyKey: entry.idempotencyKey ?? undefined,
         // Only ever set forward; a retry that has no id yet must not erase one.
-        providerMessageId: entry.providerMessageId ?? undefined,
+        // A retry may encounter an earlier row that carried the provider ID.
+        // Never retain a provider lookup key in a member-claimed generic log.
+        providerMessageId: privateMemberLog ? null : entry.providerMessageId ?? undefined,
         userId: entry.userId ?? undefined,
         entityType: entry.entityType ?? undefined,
         entityId: entry.entityId ?? undefined,

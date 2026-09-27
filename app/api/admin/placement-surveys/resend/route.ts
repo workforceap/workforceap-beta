@@ -133,7 +133,7 @@ export const POST = withApiGuc(async (req: NextRequest) => {
       );
     }
 
-    const result = await sendPreparedPlacementSurveyEmail(deliveryPayload);
+    const result = await sendPreparedPlacementSurveyEmail(deliveryPayload, placement.userId);
 
     if (!result.ok) {
       return NextResponse.json({ error: result.error ?? 'Send failed' }, { status: 502 });

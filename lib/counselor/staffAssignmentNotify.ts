@@ -40,7 +40,12 @@ export async function notifyCounselorOfStaffAssignment(input: {
       };
 
   try {
-    await createNotification({ userId: counselorUserId, type: 'task_assigned', ...notification });
+    await createNotification({
+      userId: counselorUserId,
+      subjectMemberId: received.length === 1 ? only.memberId : undefined,
+      type: 'task_assigned',
+      ...notification,
+    });
   } catch (error) {
     console.error(`${logPrefix} assignment committed but counselor notification failed`, error);
   }

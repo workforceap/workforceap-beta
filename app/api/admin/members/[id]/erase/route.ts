@@ -12,8 +12,10 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { deleteAuthUserForErasure, disableAuthUserForIrreversibleErase } from '@/lib/admin/authUserLifecycle';
 import {
-  ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
   MEMBER_RESUME_BUCKET,
   deleteUserStorageObjects,
@@ -24,9 +26,10 @@ import {
  *
  * GDPR right-to-erasure (hard delete).
  *
- * Permanently removes a member and all cascading data after the
- * legal-hold period, or immediately if `force=true` is passed by
- * a super-admin.
+ * Permanently removes a member and cascading account data after the
+ * account retention period, or immediately if `force=true` is passed by
+ * a super-admin. Issued billing packets detach from the deleted account and
+ * remain in the finance archive with their signed snapshot and send history.
  *
  * Records the erasure in WorkflowDiagnostic for compliance auditing.
  */
@@ -34,6 +37,7 @@ export const POST = withApiGuc(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) => {
+  let deletionOwner: { id: string; operationId: string } | null = null;
   try {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -78,47 +82,81 @@ export const POST = withApiGuc(async (
     }
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) return NextResponse.json({ error: 'Administrator accounts cannot be erased from member management.' }, { status: 403 });
 
+    const billingDeletion = await beginBillingDeletion(id, orgId);
+    if (!billingDeletion.ok && billingDeletion.reason === 'transaction_unavailable') return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
+    if (!billingDeletion.ok) return NextResponse.json({
+      error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during erasure. Reload and try again.',
+      code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+    }, { status: 409 });
+    deletionOwner = { id, operationId: billingDeletion.operationId };
+
+    // A staff-role edit may have committed after the first lookup and before
+    // the deletion owner was claimed. Re-read under that owner, which blocks
+    // subsequent role edits, before touching Storage or Auth.
+    const current = await withTenantScope(orgId, (db) =>
+      db.user.findFirst({
+        where: { id },
+        include: {
+          profile: true,
+          userRoles: { select: { role: { select: { name: true } } } },
+          courseEnrollments: true,
+          userCertifications: { select: { proofUrl: true } },
+        },
+      }),
+    );
+    if (!current || hasAdminAccess(current.profile?.role ?? 'member', current.userRoles.map((entry) => entry.role.name))) {
+      await releaseBillingDeletion(id, billingDeletion.operationId);
+      return NextResponse.json({
+        error: !current ? 'The account changed during erasure. Reload and try again.' : 'Administrator accounts cannot be erased from member management.',
+      }, { status: current ? 403 : 409 });
+    }
+
     const extraPaths = [
-      existing.profile?.resumeOriginalPath
-        ? { bucket: MEMBER_RESUME_BUCKET, path: existing.profile.resumeOriginalPath }
+      current.profile?.resumeOriginalPath
+        ? { bucket: MEMBER_RESUME_BUCKET, path: current.profile.resumeOriginalPath }
         : null,
-      existing.profile?.resumeEnhancedPath
-        ? { bucket: MEMBER_RESUME_BUCKET, path: existing.profile.resumeEnhancedPath }
+      current.profile?.resumeEnhancedPath
+        ? { bucket: MEMBER_RESUME_BUCKET, path: current.profile.resumeEnhancedPath }
         : null,
-      ...existing.userCertifications.map((cert) =>
+      ...current.userCertifications.map((cert) =>
         cert.proofUrl ? { bucket: MEMBER_FILES_BUCKET, path: cert.proofUrl } : null,
       ),
     ].filter((row): row is { bucket: string; path: string } => Boolean(row));
 
+    // Keep enrollment rows for non-force erasure, but commit the irreversible
+    // tombstone in every path before the first external Storage call. A crash
+    // during cleanup must never leave a restorable identity with missing files.
+    const shouldAnonymize = !force && current.courseEnrollments.length > 0;
+    const anonymized = await anonymizeMember(id, { reason: 'admin_erase', actorUserId: user.id }, prisma);
+    if (!anonymized) {
+      return NextResponse.json({ error: 'The account changed during erasure. Reload and try again.' }, { status: 409 });
+    }
+
     const storage = await deleteUserStorageObjects(id, { extraPaths });
     if (!storage.ok) {
       console.error(`[gdpr-erase] storage object delete failed for ${id}:`, storage.error);
-      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
+      await releaseBillingDeletion(id, billingDeletion.operationId);
+      return NextResponse.json({
+        error: 'Member identity was anonymized, but stored files remain. Retry erasure or contact support.',
+        billingDeletionPending: true,
+      }, { status: 502 });
     }
 
-    // Optionally anonymize instead of hard-delete for members that still
-    // have active program enrollments. Admins can pass force=true to
-    // override, but the default is hard-delete.
-    const shouldAnonymize = !force && existing.deletedAt == null && existing.courseEnrollments.length > 0;
-
     if (shouldAnonymize) {
-      // Anonymize: scramble PII but keep enrollment records for reporting
-      const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
-      await withTenantScope(orgId, (db) =>
-        db.user.update({
-          where: { id },
-          data: {
-            email: `${hash}@anonymized.invalid`,
-            fullName: 'Anonymized User',
-            phone: null,
-            assessmentAnswers: Prisma.JsonNull,
-            careerRecommendationJson: Prisma.JsonNull,
-            wioaQualificationJson: Prisma.JsonNull,
-            wioaReviewNotes: null,
-            deletedAt: new Date(),
-          },
-        }),
-      );
+      let authDisabled;
+      try {
+        authDisabled = await disableAuthUserForIrreversibleErase(getSupabaseAdmin(), id);
+      } catch (authError) {
+        console.error(`[gdpr-erase] Auth retirement outcome unknown for ${id}:`, authError);
+        return NextResponse.json({ error: 'Sign-in retirement requires reconciliation.', reconciliationRequired: true }, { status: 503 });
+      }
+      if (!authDisabled.ok) {
+        return NextResponse.json({ error: 'Sign-in retirement could not be confirmed.', reconciliationRequired: true }, { status: 502 });
+      }
+      await completeBillingDeletion(id, billingDeletion.operationId);
+      deletionOwner = null;
 
       await logCronRun('gdpr_erase', {
         memberId: id,
@@ -146,15 +184,25 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ ok: true, action: 'anonymize', memberId: id });
     }
 
-    // Hard delete via Prisma cascading relations
-    await withTenantScope(orgId, (db) => db.user.delete({ where: { id } }));
-
-    // Also remove from Supabase Auth so the identity cannot be reused
-    const supabaseAdmin = getSupabaseAdmin();
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
-    if (error) {
-      console.error(`[gdpr-erase] Supabase auth delete error for ${id}:`, error.message);
+    // Retain the deleted app tombstone while Auth is removed. Existing JWTs
+    // remain denied even if the provider request fails or times out.
+    let authDeleted;
+    try {
+      authDeleted = await deleteAuthUserForErasure(getSupabaseAdmin(), id);
+    } catch (authError) {
+      console.error(`[gdpr-erase] Auth deletion outcome unknown for ${id}:`, authError);
+      return NextResponse.json({ error: 'Sign-in deletion requires reconciliation.', reconciliationRequired: true }, { status: 503 });
     }
+    if (!authDeleted.ok) {
+      return NextResponse.json({ error: 'Sign-in deletion could not be confirmed.', reconciliationRequired: true }, { status: 502 });
+    }
+    const removed = await withTenantScope(orgId, (db) => db.user.deleteMany({
+      where: { id, billingDeletionOperationId: billingDeletion.operationId },
+    }));
+    if (removed.count !== 1) {
+      return NextResponse.json({ error: 'Account erasure could not be confirmed.', reconciliationRequired: true }, { status: 503 });
+    }
+    deletionOwner = null;
 
     await logCronRun('gdpr_erase', {
       memberId: id,
@@ -183,7 +231,23 @@ export const POST = withApiGuc(async (
     return NextResponse.json({ ok: true, action: 'hard_delete', memberId: id });
   } catch (error) {
     console.error('[admin/members/[id]/erase POST] error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+      return NextResponse.json({
+        error: 'Related records still hold this anonymized account. Resolve the hold and retry erasure.',
+        reconciliationRequired: true,
+      }, { status: 409 });
+    }
+    return NextResponse.json({
+      error: 'Account erasure could not be confirmed. Retry or contact support for reconciliation.',
+      reconciliationRequired: true,
+    }, { status: 503 });
+  } finally {
+    // Never reopen sign/claim or restore: release only this request's owner.
+    // The pending marker remains until a successful retry completes deletion.
+    if (deletionOwner) {
+      await releaseBillingDeletion(deletionOwner.id, deletionOwner.operationId).catch((error) => {
+        console.error('[admin/members/[id]/erase POST] operation release requires reconciliation:', error);
+      });
+    }
   }
 });

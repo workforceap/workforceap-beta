@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   reenable: vi.fn(),
   sendBrandedEmail: vi.fn(),
   getResend: vi.fn(),
+  beginClaim: vi.fn(),
+  releaseClaim: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase-admin', () => ({
@@ -18,6 +20,14 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 vi.mock('@/lib/admin/authUserLifecycle', () => ({
   reenableAuthUserAfterRestore: mocks.reenable,
+}));
+vi.mock('@/lib/member/uploadLifecycle', () => ({
+  beginMemberUpload: mocks.beginClaim,
+  releaseMemberUpload: mocks.releaseClaim,
+  MemberUploadLifecycleError: class MemberUploadLifecycleError extends Error {
+    reason: string;
+    constructor(reason = 'member_inactive') { super(reason); this.reason = reason; }
+  },
 }));
 vi.mock('@/lib/email', () => ({ getResend: mocks.getResend }));
 // `lib/auth/passwordReset.ts` imports `sendBrandedEmailOrThrowOnSkip` (aliased
@@ -43,6 +53,7 @@ vi.mock('@/lib/observability/logger', () => ({
 }));
 
 import { sendPasswordResetEmail } from '@/lib/auth/passwordReset';
+import { logger } from '@/lib/observability/logger';
 
 const USER_NOT_FOUND = {
   data: { properties: null },
@@ -53,11 +64,19 @@ const MINTED = { data: { properties: { hashed_token: 'hash-1' } }, error: null }
 describe('sendPasswordResetEmail — auth user self-heal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.generateLink.mockReset();
+    mocks.findMany.mockReset();
+    mocks.reenable.mockReset();
+    mocks.sendBrandedEmail.mockReset();
+    mocks.beginClaim.mockReset();
+    mocks.releaseClaim.mockReset();
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service';
     mocks.getResend.mockReturnValue({});
     mocks.sendBrandedEmail.mockResolvedValue(undefined);
+    mocks.beginClaim.mockResolvedValue('claim-1');
+    mocks.releaseClaim.mockResolvedValue(undefined);
   });
 
   it('re-creates a missing Supabase auth user for an active account, then sends the link', async () => {
@@ -74,7 +93,8 @@ describe('sendPasswordResetEmail — auth user self-heal', () => {
 
     expect(result).toEqual({ error: null, via: 'resend' });
     expect(mocks.findMany).toHaveBeenCalledWith({
-      where: { email: { equals: 'admin@example.org', mode: 'insensitive' }, deletedAt: null },
+      where: { email: { equals: 'admin@example.org', mode: 'insensitive' }, deletedAt: null,
+        billingDeletionPendingAt: null, billingDeletionOperationId: null },
       select: { id: true, email: true, fullName: true, phone: true },
       take: 25,
     });
@@ -87,9 +107,11 @@ describe('sendPasswordResetEmail — auth user self-heal', () => {
       phone: null,
     });
     expect(mocks.generateLink).toHaveBeenCalledTimes(2);
+    expect(mocks.beginClaim).toHaveBeenCalledWith('user-1', 'notification');
+    expect(mocks.releaseClaim).toHaveBeenCalledWith('user-1', 'claim-1');
     expect(mocks.sendBrandedEmail).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ to: 'admin@example.org' }),
+      expect.objectContaining({ to: 'admin@example.org', recipientUserId: 'user-1', memberEffectClaim: true }),
     );
   });
 
@@ -101,7 +123,7 @@ describe('sendPasswordResetEmail — auth user self-heal', () => {
 
     expect(result.via).toBe('skipped');
     expect(mocks.reenable).not.toHaveBeenCalled();
-    expect(mocks.generateLink).toHaveBeenCalledTimes(1);
+    expect(mocks.generateLink).not.toHaveBeenCalled();
     expect(mocks.sendBrandedEmail).not.toHaveBeenCalled();
   });
 
@@ -129,15 +151,13 @@ describe('sendPasswordResetEmail — auth user self-heal', () => {
     expect(mocks.sendBrandedEmail).not.toHaveBeenCalled();
   });
 
-  it('reports skipped when the users lookup itself fails', async () => {
+  it('fails closed when the users lookup itself fails', async () => {
     mocks.generateLink.mockResolvedValue(USER_NOT_FOUND);
     mocks.findMany.mockRejectedValue(new Error('database unavailable'));
 
-    const result = await sendPasswordResetEmail('a@b.org');
-
-    expect(result.via).toBe('skipped');
+    await expect(sendPasswordResetEmail('a@b.org')).rejects.toThrow('database unavailable');
     expect(mocks.reenable).not.toHaveBeenCalled();
-    expect(mocks.generateLink).toHaveBeenCalledTimes(1);
+    expect(mocks.generateLink).not.toHaveBeenCalled();
   });
 
   // `mode: 'insensitive'` compiles to ILIKE on PostgreSQL, so `%` and `_` in
@@ -159,7 +179,7 @@ describe('sendPasswordResetEmail — auth user self-heal', () => {
     // The critical assertion: no auth identity is created for anyone.
     expect(mocks.reenable).not.toHaveBeenCalled();
     expect(mocks.sendBrandedEmail).not.toHaveBeenCalled();
-    expect(mocks.generateLink).toHaveBeenCalledTimes(1);
+    expect(mocks.generateLink).not.toHaveBeenCalled();
   });
 
   it('never carries the request string into auth when it differs from the matched row', async () => {
@@ -200,11 +220,81 @@ describe('sendPasswordResetEmail — auth user self-heal', () => {
 
   it('does not touch the auth user when the link mints normally', async () => {
     mocks.generateLink.mockResolvedValue(MINTED);
+    mocks.findMany.mockResolvedValue([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }]);
 
     const result = await sendPasswordResetEmail('jane@example.org');
 
     expect(result).toEqual({ error: null, via: 'resend' });
-    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.findMany).toHaveBeenCalled();
     expect(mocks.reenable).not.toHaveBeenCalled();
+  });
+
+  it('does not touch Auth when erasure owns the lifecycle before the claim', async () => {
+    mocks.findMany.mockResolvedValue([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }]);
+    const { MemberUploadLifecycleError } = await import('@/lib/member/uploadLifecycle');
+    mocks.beginClaim.mockRejectedValue(new MemberUploadLifecycleError());
+
+    expect(await sendPasswordResetEmail('jane@example.org')).toMatchObject({ via: 'skipped' });
+    expect(mocks.generateLink).not.toHaveBeenCalled();
+    expect(mocks.reenable).not.toHaveBeenCalled();
+    expect(mocks.sendBrandedEmail).not.toHaveBeenCalled();
+  });
+
+  it('refuses a changed address after claiming and before Auth I/O', async () => {
+    mocks.findMany
+      .mockResolvedValueOnce([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }])
+      .mockResolvedValueOnce([]);
+
+    expect(await sendPasswordResetEmail('jane@example.org')).toMatchObject({ via: 'skipped' });
+    expect(mocks.releaseClaim).toHaveBeenCalledWith('user-1', 'claim-1');
+    expect(mocks.generateLink).not.toHaveBeenCalled();
+  });
+
+  it('holds the claim through Auth self-heal and the awaited Resend call', async () => {
+    mocks.findMany.mockResolvedValue([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }]);
+    mocks.generateLink.mockResolvedValueOnce(USER_NOT_FOUND).mockResolvedValueOnce(MINTED);
+    mocks.reenable.mockImplementation(async () => {
+      expect(mocks.releaseClaim).not.toHaveBeenCalled();
+      return { ok: true, action: 'recreated' };
+    });
+    let finishSend!: () => void;
+    mocks.sendBrandedEmail.mockImplementation(() => new Promise<void>((resolve) => { finishSend = resolve; }));
+
+    const pending = sendPasswordResetEmail('jane@example.org');
+    await vi.waitFor(() => expect(mocks.sendBrandedEmail).toHaveBeenCalledOnce());
+    expect(mocks.releaseClaim).not.toHaveBeenCalled();
+    finishSend();
+    expect(await pending).toMatchObject({ via: 'resend' });
+    expect(mocks.releaseClaim).toHaveBeenCalledWith('user-1', 'claim-1');
+  });
+
+  it('fails the same way for known and unknown addresses when lifecycle transactions are unavailable', async () => {
+    const prior = process.env.PRISMA_FLATTEN_TX;
+    process.env.PRISMA_FLATTEN_TX = '1';
+    try {
+      mocks.findMany.mockResolvedValue([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }]);
+      for (const address of ['jane@example.org', 'nobody@example.org']) {
+        await expect(sendPasswordResetEmail(address)).rejects.toThrow('Password reset is temporarily unavailable.');
+      }
+      expect(mocks.findMany).not.toHaveBeenCalled();
+      expect(mocks.generateLink).not.toHaveBeenCalled();
+      expect(mocks.beginClaim).not.toHaveBeenCalled();
+    } finally {
+      if (prior === undefined) delete process.env.PRISMA_FLATTEN_TX;
+      else process.env.PRISMA_FLATTEN_TX = prior;
+    }
+  });
+
+  it('does not report a completed provider send as failed when claim release needs reconciliation', async () => {
+    mocks.findMany.mockResolvedValue([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }]);
+    mocks.generateLink.mockResolvedValue(MINTED);
+    mocks.releaseClaim.mockRejectedValue(new Error('database unavailable'));
+
+    await expect(sendPasswordResetEmail('jane@example.org')).resolves.toEqual({ error: null, via: 'resend' });
+    expect(mocks.releaseClaim).toHaveBeenCalledWith('user-1', 'claim-1');
+    expect(logger.error).toHaveBeenCalledWith(
+      'passwordReset: lifecycle claim release requires reconciliation',
+      { errorClass: 'Error' },
+    );
   });
 });

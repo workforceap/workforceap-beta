@@ -7,6 +7,8 @@ import { withTenantScope, counselorInOrg, assertSameTenant } from '@/lib/tenant/
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { hasUnresolvedBillingSend, lockBillingMemberLifecycle, scopedBillingUser } from '@/lib/billing/erasureGuard';
 import { auditLog } from '@/lib/audit';async function _GET() {
   try {
   const user = await getUser();
@@ -117,6 +119,17 @@ const createBody = z.object({
   }
 
   await prisma.$transaction(async (tx) => {
+    // Preview flattens transactions; billing sign/claim/deletion are disabled
+    // there. Production takes the lifecycle lock before this role write.
+    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
+    const scoped = await scopedBillingUser(tx, userId, orgId);
+    const active = scoped && await scoped.user.findFirst({
+      where: { id: userId, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null },
+      select: { id: true },
+    });
+    if (!active || await hasUnresolvedBillingSend(tx, userId)) {
+      throw new Error('COUNSELOR_ACCOUNT_CHANGED');
+    }
     await tx.counselor.create({
       data: {
         userId,
@@ -145,6 +158,9 @@ const createBody = z.object({
   return NextResponse.json({ ok: true });
 
   } catch (error) {
+    if (error instanceof Error && error.message === 'COUNSELOR_ACCOUNT_CHANGED') {
+      return NextResponse.json({ error: 'This account is being changed or retired. Reload and try again.' }, { status: 409 });
+    }
     console.error('/admin/counselors error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

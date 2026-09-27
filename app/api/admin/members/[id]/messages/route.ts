@@ -126,6 +126,7 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest, {
   // reply sent from the admin side never reaches the member's bell.
   await createNotification({
     userId: memberId,
+    subjectMemberId: memberId,
     type: 'message',
     title: STAFF_MESSAGE_NOTIFICATION_TITLE,
     body: normalized.body.slice(0, 200),

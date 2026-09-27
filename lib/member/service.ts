@@ -77,9 +77,9 @@ export async function createMember(
     }
   }
 
-  await withDbRetry(async () => {
+  const createdApplicationId = await withDbRetry(async () => {
     try {
-      await prisma.$transaction(async (tx) => {
+      return await prisma.$transaction(async (tx) => {
         let memberRole = await tx.role.findUnique({ where: { name: 'member' } });
         if (!memberRole) {
           memberRole = await tx.role.create({ data: { name: 'member' } });
@@ -138,13 +138,7 @@ export async function createMember(
           });
         }
 
-        // Best-effort: notify admins of new application (do not block signup)
-        sendNewApplicationAdminEmail({
-          applicantName: data.fullName,
-          applicantEmail: data.email,
-          programInterest: data.programInterest,
-          applicationId: app.id,
-        }).catch((err) => console.error('New application admin email failed:', err));
+        return app.id;
       });
     } catch (err) {
       // The transaction is atomic, so a transient connectivity failure rolls it
@@ -152,8 +146,21 @@ export async function createMember(
       // commit whose ack was lost to a dropped connection: the rows ARE there,
       // so a retry would throw duplicate-PK. If the user row exists, the signup
       // already succeeded — return instead of failing or duplicating.
-      if (await memberAlreadyCreated(userId)) return;
+      if (await memberAlreadyCreated(userId)) return null;
       throw err;
     }
   });
+
+  // The User and Application must commit before their details can leave the
+  // process. A lost commit acknowledgment is treated as signup success above,
+  // but cannot prove a new alert is due, so it does not start another send.
+  if (createdApplicationId) {
+    void sendNewApplicationAdminEmail({
+      subjectMemberId: userId,
+      applicantName: data.fullName,
+      applicantEmail: data.email,
+      programInterest: data.programInterest,
+      applicationId: createdApplicationId,
+    }).catch((err) => console.error('New application admin email failed:', err));
+  }
 }

@@ -7,6 +7,7 @@ import { disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { hasAdminAccess } from '@/lib/auth/roleAccess';
 import { buildDeletedEmail, isDeletedEmailMarker, parseDeletedEmail } from '@/app/api/admin/users/_deletedEmail';
+import { isErasedEmailMarker } from '@/lib/member/deletedEmail';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -14,6 +15,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
+import { BILLING_LIFECYCLE_UNAVAILABLE_ERROR, BILLING_SEND_IN_PROGRESS_ERROR, beginBillingDeletion, completeBillingDeletion, releaseBillingDeletion } from '@/lib/billing/erasureGuard';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -25,6 +27,7 @@ export const POST = withApiGuc(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
+  let deletionOwner: { id: string; operationId: string } | null = null;
   try {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -66,11 +69,38 @@ export const POST = withApiGuc(async (
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) {
       return NextResponse.json({ error: 'Administrator accounts cannot be deleted from member management.' }, { status: 403 });
     }
-    const originalEmail = parseDeletedEmail(existing.email) ?? existing.email;
-    if (isDeletedEmailMarker(existing.email) && !parseDeletedEmail(existing.email)) {
+    const billingDeletion = await beginBillingDeletion(id, orgId);
+    if (!billingDeletion.ok && billingDeletion.reason === 'transaction_unavailable') return NextResponse.json({
+      error: BILLING_LIFECYCLE_UNAVAILABLE_ERROR, code: 'billing_lifecycle_unavailable',
+    }, { status: 503 });
+    if (!billingDeletion.ok) return NextResponse.json({
+    error: billingDeletion.reason === 'unresolved_send' ? BILLING_SEND_IN_PROGRESS_ERROR : 'The account changed during deletion. Reload and try again.',
+    code: billingDeletion.reason === 'unresolved_send' ? 'billing_send_unresolved' : 'account_changed',
+    }, { status: 409 });
+    deletionOwner = { id, operationId: billingDeletion.operationId };
+
+    // A role promotion or email edit may have won after the first read. The
+    // claimed deletion owner blocks later role edits while Storage/Auth run.
+    const current = await withTenantScope(orgId, (db) =>
+      db.user.findFirst({
+        where: { id, billingDeletionOperationId: billingDeletion.operationId },
+        select: {
+          email: true, deletedAt: true,
+          profile: { select: { role: true, resumeOriginalPath: true, resumeEnhancedPath: true } },
+          userRoles: { select: { role: { select: { name: true } } } },
+          userCertifications: { select: { proofUrl: true } },
+        },
+      }),
+    );
+    if (!current) return NextResponse.json({ error: 'The account changed during deletion. Reload and try again.' }, { status: 409 });
+    if (hasAdminAccess(current.profile?.role ?? 'member', current.userRoles.map((entry) => entry.role.name))) {
+      return NextResponse.json({ error: 'Administrator accounts cannot be deleted from member management.' }, { status: 403 });
+    }
+    if (isErasedEmailMarker(current.email, id) || (isDeletedEmailMarker(current.email) && !parseDeletedEmail(current.email))) {
       return NextResponse.json({ error: 'The original email cannot be recovered from this deleted account. Contact support.' }, { status: 409 });
     }
-    const newEmail = existing.deletedAt ? existing.email : buildDeletedEmail(id, now.getTime(), existing.email);
+    const originalEmail = parseDeletedEmail(current.email) ?? current.email;
+    const newEmail = current.deletedAt ? current.email : buildDeletedEmail(id, now.getTime(), current.email);
     if (!newEmail) return NextResponse.json({ error: 'This email is too long to preserve safely for restore.' }, { status: 400 });
 
     // Soft-delete still removes member-resumes / member-files objects so PII
@@ -78,13 +108,13 @@ export const POST = withApiGuc(async (
     // those blobs back. Fail closed before rewriting the row so a storage
     // error cannot leave a "deleted" member with leftover files.
     const extraPaths = [
-      existing.profile?.resumeOriginalPath
-        ? { bucket: MEMBER_RESUME_BUCKET, path: existing.profile.resumeOriginalPath }
+      current.profile?.resumeOriginalPath
+        ? { bucket: MEMBER_RESUME_BUCKET, path: current.profile.resumeOriginalPath }
         : null,
-      existing.profile?.resumeEnhancedPath
-        ? { bucket: MEMBER_RESUME_BUCKET, path: existing.profile.resumeEnhancedPath }
+      current.profile?.resumeEnhancedPath
+        ? { bucket: MEMBER_RESUME_BUCKET, path: current.profile.resumeEnhancedPath }
         : null,
-      ...existing.userCertifications.map((cert) =>
+      ...current.userCertifications.map((cert) =>
         cert.proofUrl ? { bucket: MEMBER_FILES_BUCKET, path: cert.proofUrl } : null,
       ),
     ].filter((row): row is { bucket: string; path: string } => Boolean(row));
@@ -92,7 +122,8 @@ export const POST = withApiGuc(async (
     const storage = await deleteUserStorageObjects(id, { extraPaths });
     if (!storage.ok) {
       console.error(`[admin/members/[id]/delete] storage object delete failed for ${id}:`, storage.error);
-      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
+      await releaseBillingDeletion(id, billingDeletion.operationId);
+      return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED, billingDeletionPending: true }, { status: 502 });
     }
 
     // If the row is already soft-deleted, leave its email rewrite alone —
@@ -100,21 +131,28 @@ export const POST = withApiGuc(async (
     // prefixes if an admin clicks delete twice).
     await withTenantScope(orgId, (db) =>
       db.user.update({
-        where: { id },
+        where: { id, billingDeletionOperationId: billingDeletion.operationId },
         data: {
-          deletedAt: now,
+          deletedAt: current.deletedAt ?? now,
           email: newEmail,
         },
       }),
     );
+
+    // Soft deletion closes device delivery too; a restored account can
+    // subscribe again after sign-in is re-enabled.
+    await prisma.pushSubscription.deleteMany({ where: { userId: id } });
 
     // Soft delete = lock the login, never destroy it (see
     // lib/admin/authUserLifecycle.ts): restore can lift the ban later.
     const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, originalEmail);
     if (!disabled.ok) {
       console.error('[admin/members/[id]/delete] Supabase auth disable error:', disabled.message);
+      await releaseBillingDeletion(id, billingDeletion.operationId);
       return NextResponse.json({ error: 'The account is marked deleted, but its sign-in could not be disabled and its email has not been fully released. Retry this action or contact support.', authDisabled: false }, { status: 502 });
     }
+    await completeBillingDeletion(id, billingDeletion.operationId);
+    deletionOwner = null;
 
     const profileRole = await withDbRetry(() => getProfileRole(user.id)).catch((err) => {
       console.error('[api:admin-member-delete] profileRole lookup failed; degrading to member', err);
@@ -131,9 +169,15 @@ export const POST = withApiGuc(async (
     }).catch((err) => console.error('[audit] member delete:', err));
     auditLog({ actorUserId: user.id, action: 'admin_member_deleted', targetType: 'User', targetId: id, metadata: { orgId } }).catch(() => {});
 
-    return NextResponse.json({ ok: true, originalEmail: existing.email });
+    return NextResponse.json({ ok: true, originalEmail: current.email });
   } catch (error) {
     console.error('[admin/members/[id]/delete POST] error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    if (deletionOwner) {
+      await releaseBillingDeletion(deletionOwner.id, deletionOwner.operationId).catch((error) => {
+        console.error('[admin/members/[id]/delete POST] operation release requires reconciliation:', error);
+      });
+    }
   }
 });

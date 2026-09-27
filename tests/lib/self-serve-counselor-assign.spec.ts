@@ -13,6 +13,9 @@ const {
   assignMemberCounselor,
   createNotification,
   transaction,
+  lockBillingLifecycle,
+  billingLifecyclePending,
+  hasUnresolvedBillingSend,
 } = vi.hoisted(() => ({
   findManyCounselors: vi.fn(),
   groupByAssignments: vi.fn(),
@@ -26,8 +29,16 @@ const {
   assignMemberCounselor: vi.fn(),
   createNotification: vi.fn(),
   transaction: vi.fn(),
+  lockBillingLifecycle: vi.fn(),
+  billingLifecyclePending: vi.fn(),
+  hasUnresolvedBillingSend: vi.fn(),
 }));
 
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: lockBillingLifecycle,
+  billingLifecyclePending,
+  hasUnresolvedBillingSend,
+}));
 vi.mock('@/lib/counselor/assignment', () => ({
   assignMemberCounselor,
 }));
@@ -53,6 +64,7 @@ import {
   pickLeastLoadedWapCounselor,
 } from '@/lib/counselor/autoAssign';
 import { prisma } from '@/lib/db/prisma';
+import { BillingAssignmentInProgressError } from '@/lib/counselor/billingAssignmentGuard';
 
 function fakeTx() {
   return {
@@ -116,6 +128,9 @@ describe('ensureSelfServeCounselorAssigned', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(fakeTx()));
+    lockBillingLifecycle.mockResolvedValue(undefined);
+    billingLifecyclePending.mockResolvedValue(false);
+    hasUnresolvedBillingSend.mockResolvedValue(false);
     findUniqueUser.mockImplementation(async ({ where }: { where: { id: string } }) => {
       if (where.id === 'member-1') return { fullName: 'Sam Student', email: 'sam@example.org' };
       return { fullName: 'Casey Counselor' };
@@ -144,6 +159,33 @@ describe('ensureSelfServeCounselorAssigned', () => {
     updateManyUsers.mockResolvedValue({ count: 1 });
     assignMemberCounselor.mockResolvedValue({ counselor: { userId: 'counselor-1' }, thread: { id: 't1' } });
   }
+
+  it('assigns in migrated Preview after checking pause state without advisory locks', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    givePoolCounselor();
+    try {
+      const result = await ensureSelfServeCounselorAssigned({ memberId: 'member-1', organizationId: 'org-1' });
+      expect(result.reason).toBe('assigned');
+      expect(lockBillingLifecycle).not.toHaveBeenCalled();
+      expect(billingLifecyclePending.mock.invocationCallOrder[0]).toBeLessThan(updateManyUsers.mock.invocationCallOrder[0]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('does not touch the member row in Preview while deletion is pending', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    givePoolCounselor();
+    billingLifecyclePending.mockResolvedValue(true);
+    try {
+      const result = await ensureSelfServeCounselorAssigned({ memberId: 'member-1', organizationId: 'org-1' });
+      expect(result.reason).toBe('billing_send_in_progress');
+      expect(updateManyUsers).not.toHaveBeenCalled();
+      expect(assignMemberCounselor).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 
   it('never self-assigns a counselor account that opens the member inbox', async () => {
     givePoolCounselor();
@@ -219,6 +261,7 @@ describe('ensureSelfServeCounselorAssigned', () => {
         counselorUserId: 'counselor-1',
       },
     );
+    expect(lockBillingLifecycle.mock.invocationCallOrder[0]).toBeLessThan(updateManyUsers.mock.invocationCallOrder[0]);
     expect(createNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'member-1',
@@ -309,5 +352,19 @@ describe('ensureSelfServeCounselorAssigned', () => {
       reason: 'member_unavailable',
     });
     expect(assignMemberCounselor).not.toHaveBeenCalled();
+  });
+
+  it('keeps self-serve assignment pending while a billing send is unresolved', async () => {
+    findFirstAssignment.mockResolvedValue(null);
+    findManyCounselors.mockResolvedValue([
+      { id: 'cns-1', userId: 'counselor-1', createdAt: new Date('2025-01-01') },
+    ]);
+    groupByAssignments.mockResolvedValue([]);
+    updateManyUsers.mockResolvedValue({ count: 1 });
+    assignMemberCounselor.mockRejectedValue(new BillingAssignmentInProgressError());
+
+    await expect(ensureSelfServeCounselorAssigned({ memberId: 'member-1', organizationId: 'org-1' }))
+      .resolves.toEqual({ assigned: false, counselorUserId: null, reason: 'billing_send_in_progress' });
+    expect(createNotification).not.toHaveBeenCalled();
   });
 });

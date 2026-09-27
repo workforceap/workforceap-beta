@@ -851,6 +851,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       try {
         const result = await sendApplicationConfirmationEmail({
           to: user.email!,
+          recipientUserId: user.id,
           fullName,
           eligibility: eligibilityEmailFields,
           applicationId: createdApplicationId,
@@ -898,6 +899,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         after(async () => {
           try {
             const result = await sendNewApplicationAdminEmail({
+              subjectMemberId: user.id,
               applicantName: fullName,
               applicantEmail: user.email!,
               applicantPhone: phone,
@@ -933,6 +935,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
           const parentEmail = parentGuardianEmail.trim();
           after(() =>
             sendSchoolEnrollmentParentAckEmail({
+              subjectMemberId: user.id,
               to: parentEmail,
               parentGuardianName: parentGuardianName,
               studentName: fullName,
@@ -955,6 +958,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
           const partnerEmail = referralPartnerContactEmail;
           after(() =>
             sendSchoolEnrollmentPartnerAckEmail({
+              subjectMemberId: user.id,
               to: partnerEmail,
               partnerName: referralPartnerName ?? schoolDisplayName,
               studentName: fullName,

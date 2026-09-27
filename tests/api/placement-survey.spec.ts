@@ -778,7 +778,7 @@ describe('POST /api/admin/placement-surveys/resend', () => {
       from: 'WorkforceAP <hello@workforceap.org>',
       to: 'alice@example.com',
       idempotencyKey: 'placement-survey/survey-pending/2',
-    }));
+    }), 'user-1');
   });
 
   it('starts a new delivery attempt when the latest survey is completed', async () => {
@@ -874,10 +874,10 @@ describe('POST /api/admin/placement-surveys/resend', () => {
     expect(sendPreparedPlacementSurveyEmail).toHaveBeenCalledTimes(2);
     expect(sendPreparedPlacementSurveyEmail).toHaveBeenNthCalledWith(1, expect.objectContaining({
       idempotencyKey: 'placement-survey/survey-unsent/1',
-    }));
+    }), 'user-1');
     expect(sendPreparedPlacementSurveyEmail).toHaveBeenNthCalledWith(2, expect.objectContaining({
       idempotencyKey: 'placement-survey/survey-unsent/1',
-    }));
+    }), 'user-1');
     expect(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[0][0])
       .toEqual(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[1][0]);
     expect(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[0][0]).toEqual({
@@ -930,6 +930,7 @@ describe('sendDuePlacementSurveys', () => {
   it.each([
     ['fixture suppression', { ok: false, skipped: true, error: 'fixture_recipient' }],
     ['deadline suppression', { ok: false, skipped: true, error: 'request_deadline_exhausted' }],
+    ['inactive member', { ok: false, skipped: true, error: 'inactive_member' }],
   ])('keeps a due survey truthfully unsent and retryable after %s', async (_label, emailResult) => {
     const { sendDuePlacementSurveys } = (await vi.importActual(
       '@/lib/cron/placement-surveys'
@@ -1057,7 +1058,7 @@ describe('sendDuePlacementSurveys', () => {
 
     expect(prisma.placementSurvey.delete).not.toHaveBeenCalled();
     const persistedPayload = vi.mocked(prisma.placementSurvey.create).mock.calls[0][0].data.deliveryPayload;
-    expect(sendPreparedPlacementSurveyEmail).toHaveBeenCalledWith(persistedPayload);
+    expect(sendPreparedPlacementSurveyEmail).toHaveBeenCalledWith(persistedPayload, 'member-due');
   });
 
   it.each([
@@ -1124,6 +1125,8 @@ describe('sendDuePlacementSurveys', () => {
       expect(sendPreparedPlacementSurveyEmail).toHaveBeenCalledTimes(2);
       expect(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[0][0]).toEqual(frozenPayload);
       expect(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[1][0]).toEqual(frozenPayload);
+      expect(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[0][1]).toBe('member-due');
+      expect(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[1][1]).toBe('member-due');
       expect(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[1][0])
         .toEqual(vi.mocked(sendPreparedPlacementSurveyEmail).mock.calls[0][0]);
       expect(retryResult[0].sent).toEqual([{
@@ -1174,7 +1177,7 @@ describe('sendDuePlacementSurveys', () => {
       text: 'Frozen complete provider body',
       headers: { 'List-Unsubscribe': '<https://frozen.example/unsubscribe>' },
       idempotencyKey: 'placement-survey/survey-unsent/1',
-    });
+    }, 'member-due');
     expect(prisma.placementSurvey.update).toHaveBeenCalledWith({
       where: { id: 'survey-unsent' },
       data: { sentAt: expect.any(Date), acceptedAttempt: 1 },

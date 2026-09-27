@@ -176,7 +176,7 @@ describe('POST /api/admin/token-links', () => {
     expect(res.status).toBe(200);
     expect((await res.json()).emailSent).toBe(true);
     expect(sendEligibilityLink).toHaveBeenCalledWith(
-      expect.objectContaining({ to: 'alice@example.com', name: 'Alice Member', orgId: 'org-1' }),
+      expect.objectContaining({ to: 'alice@example.com', name: 'Alice Member', orgId: 'org-1', subjectMemberId: 'member-1' }),
     );
   });
 
@@ -191,6 +191,7 @@ describe('POST /api/admin/token-links', () => {
     const body = await res.json();
     expect(body.emailSent).toBe(false);
     expect(body.url).toContain('/q/tok-123');
+    expect(vi.mocked(sendEligibilityLink).mock.calls[0]?.[0].subjectMemberId).toBeUndefined();
   });
 
   it('returns 429 when rate-limited', async () => {

@@ -12,6 +12,7 @@ import { notifyDiscord } from '@/lib/notify/discord';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { persistEvent } from '@/lib/events/track';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 export const maxDuration = 300;
 /**
@@ -92,25 +93,30 @@ async function handle(_request: Request) {
 
       const result = await emailPacer.run(() => sendCourseAccountabilityEmail({
         to: enrollment.user.email,
+        recipientUserId: enrollment.userId,
         fullName: enrollment.user.fullName ?? enrollment.user.email,
         programName,
       }));
 
       if (result.ok) {
         sent++;
-        await persistEvent({
+        await withActiveMemberWrite(enrollment.userId, (tx) => persistEvent({
           userId: enrollment.userId,
           eventName: 'course_accountability_sent',
           entityType: 'course_enrollment',
           entityId: enrollment.id,
           metadata: { programSlug: enrollment.programSlug, programName },
-        }, prisma)
-          .catch(() => { /* non-fatal */ });
+        }, tx))
+          .catch((error) => {
+            if (error instanceof MemberLifecycleWriteError) throw error;
+            // An accepted provider receipt remains true if analytics fails.
+          });
 
         await recordNudgeSent({ userId: enrollment.userId, tier: 'yellow', kind: 'funding_update' });
 
         await createNotification({
           userId: enrollment.userId,
+          subjectMemberId: enrollment.userId,
           type: 'nudge',
           // One summary embed per run below; per-member posts hit Discord's 30/min limit.
           notifyOperator: false,
@@ -120,7 +126,7 @@ async function handle(_request: Request) {
         });
 
         // Counselor follow-up queue: audit event the counselor view subscribes to.
-        await persistEvent({
+        await withActiveMemberWrite(enrollment.userId, (tx) => persistEvent({
           userId: enrollment.userId,
           eventName: 'counselor_followup_needed',
           entityType: 'course_enrollment',
@@ -130,12 +136,12 @@ async function handle(_request: Request) {
             programSlug: enrollment.programSlug,
             programName,
           },
-        }, prisma)
+        }, tx))
           .then(() => { counselorFollowups++; })
           .catch(() => { /* non-fatal */ });
       }
     } catch (err) {
-      captureApiError(err, {
+      if (!(err instanceof MemberLifecycleWriteError)) captureApiError(err, {
         route: 'cron/course-accountability',
         extra: { enrollmentId: enrollment.id, userId: enrollment.userId },
       });

@@ -1270,7 +1270,24 @@ describe('POST /api/counselor/remind-member', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
-    expect(sendInactiveNudgeEmail).toHaveBeenCalledWith({ to: 'jane@example.com', fullName: 'Jane Doe' });
+    expect(sendInactiveNudgeEmail).toHaveBeenCalledWith({ to: 'jane@example.com', recipientUserId: UUIDS.memberUser, fullName: 'Jane Doe' });
+  });
+
+  it('does not log a reminder after the recipient is erased between member lookup and send', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(true);
+    vi.mocked(getSubjectOrganizationId).mockResolvedValue(UUIDS.orgId);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({ email: 'jane@example.com', fullName: 'Jane Doe' } as any);
+    vi.mocked(sendInactiveNudgeEmail).mockResolvedValue({ ok: false, skipped: true, error: 'inactive_member' });
+
+    const res = await postRemind(makeRequest('http://localhost:3000/api/counselor/remind-member', {
+      method: 'POST',
+      body: JSON.stringify({ userId: UUIDS.memberUser, daysInactive: 14 }),
+    }));
+
+    expect(res.status).toBe(409);
+    expect(sendInactiveNudgeEmail).toHaveBeenCalledWith(expect.objectContaining({ recipientUserId: UUIDS.memberUser }));
+    expect(prisma.$executeRaw).not.toHaveBeenCalled();
   });
 
   it('returns 502 when email fails but logs the action', async () => {

@@ -30,6 +30,7 @@ export async function runCertificationApprovedEffects(input: {
   await Promise.resolve(
     createNotification({
       userId,
+      subjectMemberId: userId,
       type: 'certificate_earned',
       title: `You earned ${certName}!`,
       body: 'Add it to your resume and check out jobs matched to your new credential.',

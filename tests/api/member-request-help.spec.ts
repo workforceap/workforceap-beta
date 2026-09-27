@@ -76,7 +76,11 @@ describe('POST /api/member/request-help', () => {
     expect(body).toEqual({ ok: true, sentTo: 'counselor', sentToName: 'Dana Reyes' });
     // The counselor's address stays on the server.
     expect(JSON.stringify(body)).not.toContain('@');
-    expect(vi.mocked(sendBrandedEmailOrThrowOnSkip).mock.calls[0][1]).toMatchObject({ to: 'dana@workforceap.org' });
+    expect(vi.mocked(sendBrandedEmailOrThrowOnSkip).mock.calls[0][1]).toMatchObject({
+      to: 'dana@workforceap.org',
+      subjectMemberId: 'member-1',
+      memberEffectClaim: true,
+    });
     // The pre-WAP-188 rule: any active assignment. No counselor-active / org /
     // deleted filter until the product owner signs off on that routing change.
     const query = vi.mocked(prisma.counselorAssignment.findFirst).mock.calls[0][0];

@@ -31,6 +31,7 @@ vi.mock('@/lib/tenant/organization', () => ({
   getSubjectOrganizationId: vi.fn(),
 }));
 vi.mock('@/lib/tenant/withTenantScope', () => ({
+  crossTenantOK: (fn: () => unknown) => fn(),
   withTenantScope: vi.fn((_orgId: string, fn: (db: unknown) => unknown) =>
     fn({
       user: {
@@ -45,13 +46,23 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
 }));
 vi.mock('@/lib/db/prisma', () => {
   const prisma: any = {
-    user: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+    user: {
+      findFirst: vi.fn().mockResolvedValue({
+        id: '11111111-1111-1111-1111-111111111111',
+        organizationId: 'org-1',
+        deletedAt: null,
+        billingDeletionPendingAt: null,
+        billingDeletionOperationId: null,
+      }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
     message: { create: vi.fn().mockResolvedValue({ id: 'msg-1' }) },
     counselor: { findFirst: vi.fn() },
     counselorAssignment: { findFirst: vi.fn().mockResolvedValue(null), findUnique: vi.fn(), updateMany: vi.fn(), update: vi.fn(), create: vi.fn() },
     messageThread: { update: vi.fn(), upsert: vi.fn().mockResolvedValue({ id: 'thread-1' }) },
     memberEvent: { create: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) },
     $executeRaw: vi.fn().mockResolvedValue(1),
+    $queryRaw: vi.fn().mockResolvedValue([]),
   };
   prisma.$transaction = vi.fn((arg: any) =>
     typeof arg === 'function' ? arg(prisma) : Promise.all(arg),
@@ -90,6 +101,14 @@ describe('POST /api/counselor/inbox-zero/bulk', () => {
   afterEach(() => vi.restoreAllMocks());
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: MEMBER_ID,
+      organizationId: 'org-1',
+      deletedAt: null,
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+    } as never);
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
     vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
     vi.mocked(getUser).mockResolvedValue({ id: COUNSELOR_ID, email: 'c@wap.org' } as never);
     vi.mocked(isCounselor).mockResolvedValue(true);
@@ -232,6 +251,44 @@ describe('POST /api/counselor/inbox-zero/bulk', () => {
       vi.mocked(getUser).mockResolvedValue({ id: TARGET_COUNSELOR_USER, email: 'pat@wap.org' } as never);
       const res = await POST(makeRequest({ action: 'reassign', memberIds: [MEMBER_ID], counselorUserId: TARGET_COUNSELOR_USER }));
       expect(res.status).toBe(200);
+      expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    it('does not reassign a member whose deletion marker is active', async () => {
+      arrangeTarget();
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.mocked(prisma.user.findFirst)
+        .mockResolvedValueOnce({ id: MEMBER_ID, organizationId: 'org-1' } as never)
+        .mockResolvedValueOnce({
+          deletedAt: null,
+          billingDeletionPendingAt: new Date('2026-09-26T00:00:00Z'),
+          billingDeletionOperationId: null,
+        } as never);
+
+      const res = await POST(makeRequest({ action: 'reassign', memberIds: [MEMBER_ID], counselorUserId: TARGET_COUNSELOR_USER }));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ sent: 0, failed: 1,
+        results: [{ memberId: MEMBER_ID, ok: false, error: 'billing_send_in_progress' }],
+      });
+      expect(prisma.$executeRaw).toHaveBeenCalledOnce();
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+      expect(prisma.user.updateMany).not.toHaveBeenCalled();
+      expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    it('does not reassign a member whose billing send is unresolved', async () => {
+      arrangeTarget();
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: 'claimed-send-1' }]);
+
+      const res = await POST(makeRequest({ action: 'reassign', memberIds: [MEMBER_ID], counselorUserId: TARGET_COUNSELOR_USER }));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ sent: 0, failed: 1,
+        results: [{ memberId: MEMBER_ID, ok: false, error: 'billing_send_in_progress' }],
+      });
+      expect(prisma.$executeRaw).toHaveBeenCalledOnce();
+      expect(prisma.$queryRaw).toHaveBeenCalledOnce();
+      expect(prisma.user.updateMany).not.toHaveBeenCalled();
       expect(createNotification).not.toHaveBeenCalled();
     });
   });

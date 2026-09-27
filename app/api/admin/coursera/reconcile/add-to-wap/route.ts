@@ -175,6 +175,9 @@ const bodySchema = z.object({
     // /api/admin/members/create).
     let supabaseUserId: string;
     let createdSupabaseUser = false;
+    let passwordResetNeeded = false;
+    let welcomeEmailSent = false;
+    let userCommitted = false;
     try {
       const supabase = getSupabaseAdmin();
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
@@ -187,6 +190,7 @@ const bodySchema = z.object({
       if (!inviteError && inviteData.user) {
         supabaseUserId = inviteData.user.id;
         createdSupabaseUser = true;
+        welcomeEmailSent = true;
       } else if (
         inviteError?.message?.toLowerCase().includes('already') ||
         inviteError?.message?.toLowerCase().includes('registered') ||
@@ -231,15 +235,7 @@ const bodySchema = z.object({
         }
         supabaseUserId = data.user.id;
         createdSupabaseUser = true;
-
-        // Invite email didn't go out on this path — send a set-password link
-        // so the account isn't created silently with no way to log in.
-        await sendPasswordResetEmail(email, '/reset-password', { orgId: actorOrgId }).catch((err) => {
-          captureApiError(err, {
-            route: 'admin/coursera/reconcile/add-to-wap',
-            extra: { stage: 'set-password-email', email },
-          });
-        });
+        passwordResetNeeded = true;
       }
     } catch (err) {
       captureApiError(err, { route: 'admin/coursera/reconcile/add-to-wap' });
@@ -334,15 +330,52 @@ const bodySchema = z.object({
           return { ...createdUser, enrollmentId };
         }),
       );
+      userCommitted = true;
+
+      // The fallback reset requires the committed app User for its erasure
+      // claim. A resolved skip/error is still an unconfirmed welcome email.
+      if (passwordResetNeeded) {
+        try {
+          const resetResult = await sendPasswordResetEmail(email, '/reset-password', { orgId: actorOrgId });
+          welcomeEmailSent = !resetResult.error && resetResult.via !== 'skipped';
+          if (!welcomeEmailSent) {
+            captureApiError(new Error('Password reset email was not confirmed'), {
+              route: 'admin/coursera/reconcile/add-to-wap',
+              extra: { stage: 'set-password-email', via: resetResult.via ?? 'unknown' },
+            });
+          }
+        } catch {
+          captureApiError(new Error('Password reset email failed'), {
+            route: 'admin/coursera/reconcile/add-to-wap',
+            extra: { stage: 'set-password-email' },
+          });
+        }
+      }
 
       // Ownership is already committed with the mapping above. Canonical
       // projection is monotonic, tenant-scoped, and retryable, so it runs
       // post-commit without replaying historical xAPI side effects.
-      await promoteCsvProgressToCanonical({
-        organizationId: actorOrgId,
-        userId: result.id,
-        courseraEmail: email,
-      });
+      let progressProjectionPending = false;
+      try {
+        const projection = await promoteCsvProgressToCanonical({
+          organizationId: actorOrgId,
+          userId: result.id,
+          courseraEmail: email,
+        });
+        if (projection.errors > 0) {
+          progressProjectionPending = true;
+          captureApiError(new Error('Coursera progress projection incomplete after account creation'), {
+            route: 'admin/coursera/reconcile/add-to-wap',
+            extra: { stage: 'progress-projection', failure: 'reported-errors', errorCount: projection.errors },
+          });
+        }
+      } catch {
+        progressProjectionPending = true;
+        captureApiError(new Error('Coursera progress projection failed after account creation'), {
+          route: 'admin/coursera/reconcile/add-to-wap',
+          extra: { stage: 'progress-projection', failure: 'exception' },
+        });
+      }
 
       // Sprint R3 — fire-and-forget kickoff email (idempotent per enrollment row).
       if (result.enrollmentId && programSlug) {
@@ -362,13 +395,15 @@ const bodySchema = z.object({
         userId: result.id,
         supabaseUserId,
         email: result.email,
+        welcomeEmailSent,
+        progressProjectionPending,
       });
     } catch (err) {
       captureApiError(err, { route: 'admin/coursera/reconcile/add-to-wap' });
   
       // Best-effort rollback of the Supabase auth user so we don't leak
       // an orphaned auth account on partial failure.
-      if (createdSupabaseUser) {
+      if (createdSupabaseUser && !userCommitted) {
         try {
           const supabase = getSupabaseAdmin();
           await supabase.auth.admin.deleteUser(supabaseUserId);

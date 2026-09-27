@@ -63,6 +63,7 @@ async function handle(_req: NextRequest) {
     try {
       const delivery = await emailPacer.run(() => sendInactiveNudgeEmail({
         to: member.email,
+        recipientUserId: member.id,
         fullName: member.fullName ?? member.email,
       }));
       if (!delivery.ok) {
@@ -76,6 +77,7 @@ async function handle(_req: NextRequest) {
 
       await createNotification({
         userId: member.id,
+        subjectMemberId: member.id,
         type: 'nudge',
         // One summary embed per run below; per-member posts hit Discord's 30/min limit.
         notifyOperator: false,

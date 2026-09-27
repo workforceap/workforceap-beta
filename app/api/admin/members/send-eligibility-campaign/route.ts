@@ -102,6 +102,7 @@ async function _POST(request: NextRequest) {
       if (!member.email) continue;
       const result = await sendEligibilityLink({
         to: member.email,
+        recipientUserId: member.id,
         name: member.fullName,
         url,
         orgId: member.organizationId,

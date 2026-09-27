@@ -1,7 +1,8 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
-import { buildDeletedEmail } from './deletedEmail';
+import { DELETED_ACCOUNT_RETENTION_DAYS, getCutoffDate } from '@/lib/retention/config';
+import { buildDeletedEmail, buildErasedEmail } from './deletedEmail';
 
 /**
  * WAP-169: the one anonymiser behind every member deletion path.
@@ -14,7 +15,8 @@ import { buildDeletedEmail } from './deletedEmail';
  *
  * What it does, in one transaction:
  *  1. rewrites `users.email` to the recoverable deleted marker
- *     (lib/member/deletedEmail.ts) unless the row is already soft-deleted,
+ *     (lib/member/deletedEmail.ts) during the 30-day restore window;
+ *     `admin_erase` and held rows past that window get irreversible markers,
  *     scrubs the name, phone, workspace email and the assessment / career /
  *     WIOA self-report JSON, and sets `deleted_at` when it is not set yet so
  *     the retention purge picks the row up after DELETED_ACCOUNT_RETENTION_DAYS;
@@ -35,6 +37,7 @@ import { buildDeletedEmail } from './deletedEmail';
 export type AnonymizeMemberReason =
   | 'member_self_delete'
   | 'gdpr_account_delete'
+  | 'admin_erase'
   | 'retention_purge_blocked';
 
 export type AnonymizeMemberOptions = {
@@ -109,6 +112,13 @@ function scrambledEmail(userId: string, email: string, now: Date): string {
   );
 }
 
+function expiredDeletedEmail(userId: string, deletedAt: Date): string {
+  // The trailing underscore matches isDeletedEmailMarker but has no original
+  // address for parseDeletedEmail to recover. The first deletion timestamp
+  // makes retries deterministic; the user id makes the value unique.
+  return `deleted_${userId}_${deletedAt.getTime()}_@deleted.invalid`;
+}
+
 /**
  * Returns `null` when no `users` row exists for the id (nothing to anonymise).
  * Throws when any write fails, so callers never report a deletion that did
@@ -132,13 +142,21 @@ export async function anonymizeMember(
 
     const alreadyDeleted = existing.deletedAt !== null;
     const deletedAt = existing.deletedAt ?? now;
+    const purgeWindowPassed = options.reason === 'retention_purge_blocked'
+      && existing.deletedAt !== null
+      && existing.deletedAt < getCutoffDate(DELETED_ACCOUNT_RETENTION_DAYS, now);
 
     await tx.user.update({
       where: { id: userId },
       data: {
-        // A row that is already soft-deleted keeps its marker so the original
-        // address stays parseable for /admin/users/deleted during the window.
-        email: alreadyDeleted ? existing.email : scrambledEmail(userId, existing.email, now),
+        // Keep the original recoverable only during the restore window. When a
+        // foreign key holds an expired row, its app account email must not
+        // retain the original indefinitely.
+        email: options.reason === 'admin_erase'
+          ? buildErasedEmail(userId, deletedAt.getTime())
+          : purgeWindowPassed
+            ? expiredDeletedEmail(userId, deletedAt)
+            : alreadyDeleted ? existing.email : scrambledEmail(userId, existing.email, now),
         fullName: ANONYMIZED_FULL_NAME,
         phone: null,
         workspaceEmail: null,
@@ -154,6 +172,20 @@ export async function anonymizeMember(
       where: { userId },
       data: ANONYMIZED_PROFILE_DATA,
     });
+
+    // Older send logs can hold a subject, address-derived hash/domain, raw
+    // idempotency key or provider error long after the account is erased.
+    // Delete both direct-recipient and explicitly member-entity rows while
+    // the account lifecycle is locked. New claimed sends log without those
+    // fields, even if a bounded log write finishes after this transaction.
+    await tx.emailSendLog.deleteMany({
+      where: { OR: [{ userId }, { entityId: userId }] },
+    });
+
+    // An anonymized account must not retain device endpoints. Existing JWTs
+    // may still be valid until they expire, so the subscription route also
+    // checks the lifecycle barrier before accepting a new endpoint.
+    await tx.pushSubscription.deleteMany({ where: { userId } });
 
     await auditLog(
       {

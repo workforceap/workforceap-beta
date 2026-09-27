@@ -57,7 +57,7 @@ vi.mock('@/lib/db/prisma', () => ({
       const { prisma } = await import('@/lib/db/prisma');
       return typeof arg === 'function' ? arg(prisma) : Promise.all(arg);
     }),
-    application: { findFirst: vi.fn(async () => ({ id: 'app-1' })) },
+    application: { findFirst: vi.fn(async () => ({ id: 'app-1', userId: 'member-1' })) },
     placementSurvey: { findUnique: vi.fn(async () => null), update: vi.fn(async () => ({})) },
     employer: { findFirst: vi.fn(async () => null) },
   },

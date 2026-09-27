@@ -68,6 +68,7 @@ export async function notifyMemberOfBulkFollowUp(args: {
   try {
     await createNotification({
       userId: args.memberId,
+      subjectMemberId: args.memberId,
       type: 'message',
       title: 'New message from your advisor',
       body: args.body.slice(0, 200),

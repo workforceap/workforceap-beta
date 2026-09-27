@@ -48,6 +48,60 @@ const baseArgs = {
   html: '<p>Come back</p>',
 };
 
+describe('member subjects in employer email', () => {
+  it('skips the provider when any named member is inactive', async () => {
+    const calls: Array<{ payload: any; options: any }> = [];
+    const checked: string[] = [];
+    const result = await sendBrandedEmail(fakeResend(calls), {
+      ...baseArgs,
+      to: 'employer@workforceap.org',
+      subjectMemberIds: ['alice', 'bob'],
+    }, {
+      subjectIsActive: async (id) => { checked.push(id); return id !== 'bob'; },
+      sendLogStore: { record: async () => {} },
+    });
+
+    expect(checked).toEqual(['alice', 'bob']);
+    expect(calls).toHaveLength(0);
+    expect(result).toMatchObject({ skipped: true, reason: 'inactive_member' });
+    await expect(sendBrandedEmailOrThrowOnSkip(fakeResend(calls), {
+      ...baseArgs,
+      to: 'employer@workforceap.org',
+      subjectMemberIds: ['alice', 'bob'],
+    }, {
+      subjectIsActive: async (id) => id !== 'bob',
+      sendLogStore: { record: async () => {} },
+    })).rejects.toMatchObject({ name: 'FixtureRecipientSkippedError', reason: 'inactive_member' });
+    expect(calls).toHaveLength(0);
+  });
+
+  it('rechecks every named member before retrying after a provider delay', async () => {
+    const checked: string[] = [];
+    let attempts = 0;
+    const resend = { emails: { send: vi.fn(async () => {
+      attempts++;
+      return { data: null, error: { name: 'rate_limit_exceeded', message: 'Try later', retry_after: 1 } };
+    }) } } as unknown as Resend;
+
+    const result = await sendBrandedEmail(resend, {
+      ...baseArgs,
+      to: 'employer@workforceap.org',
+      subjectMemberIds: ['alice', 'bob'],
+    }, {
+      subjectIsActive: async (id) => {
+        checked.push(id);
+        return !(attempts === 1 && id === 'bob');
+      },
+      sleep: async () => {},
+      sendLogStore: { record: async () => {} },
+    });
+
+    expect(checked).toEqual(['alice', 'bob', 'alice', 'bob']);
+    expect(attempts).toBe(1);
+    expect(result).toMatchObject({ skipped: true, reason: 'inactive_member' });
+  });
+});
+
 describe('provider suppression guard', () => {
   const fetchMock = vi.fn<(input: URL | RequestInfo, init?: RequestInit) => Promise<Response>>();
 
@@ -120,6 +174,40 @@ describe('provider suppression guard', () => {
     // The throwing variant surfaces the same reason to callers that book outcomes.
     await expect(pacer.run(() => sendBrandedEmailOrThrowOnSkip(resend, { ...baseArgs, to: 'dead@bounced.example.org' })))
       .rejects.toMatchObject({ name: 'FixtureRecipientSkippedError', reason: 'suppressed_recipient' });
+  });
+
+  it('records a private suppression skip for member-claimed mail before any claim starts', async () => {
+    const calls: Array<{ payload: any; options: any }> = [];
+    const begin = vi.fn(async () => 'claim');
+    const skipped = await sendBrandedEmail(fakeResend(calls), {
+      ...baseArgs,
+      to: 'dead@bounced.example.org',
+      subject: 'Ada Lovelace is waiting',
+      recipientUserId: 'member-ada',
+      memberEffectClaim: true,
+      template: { name: 'inactive_nudge', params: { fullName: 'Ada Lovelace', to: 'dead@bounced.example.org' } },
+    }, {
+      consultSuppressions: true,
+      memberClaim: { begin, release: async () => {} },
+      sendLogStore: { record: async () => {} },
+    });
+
+    expect(skipped).toMatchObject({ skipped: true, reason: 'suppressed_recipient' });
+    expect(calls).toHaveLength(0);
+    expect(begin).not.toHaveBeenCalled();
+    const row = vi.mocked(recordWorkflowDiagnostic).mock.calls[0][0];
+    expect(row).toMatchObject({
+      entityId: 'inactive_nudge',
+      summary: 'Email skipped: recipient is on the provider suppression list',
+      metadata: { template: 'inactive_nudge', suppressedCount: 1 },
+    });
+    expect(row.metadata).not.toHaveProperty('recipientHash');
+    expect(row.metadata).not.toHaveProperty('recipientDomains');
+    const persistedPayload = JSON.stringify(row);
+    expect(persistedPayload).not.toContain('dead@bounced.example.org');
+    expect(persistedPayload).not.toContain('bounced.example.org');
+    expect(persistedPayload).not.toContain('Ada Lovelace');
+    expect(persistedPayload).not.toContain('member-ada');
   });
 
   it('drops suppressed addresses from a multi-recipient digest but still sends to the rest', async () => {

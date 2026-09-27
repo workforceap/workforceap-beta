@@ -1,0 +1,63 @@
+.itemGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 140px 44px;
+  gap: 0.5rem;
+}
+
+.itemGrid > input,
+.itemField {
+  min-width: 0;
+}
+
+.mobileLabel {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .itemHeading {
+    display: none;
+  }
+
+  .itemRow {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
+  }
+
+  .itemRow > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .mobileLabel {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--color-muted, #64748b);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .itemTotals {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .itemTotals > :last-child {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .itemRow {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+
+  .itemRow > :first-child {
+    grid-column: 1;
+  }
+
+  .itemRow > .itemField {
+    grid-column: 1 / -1;
+  }
+
+  .itemRow > button {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}

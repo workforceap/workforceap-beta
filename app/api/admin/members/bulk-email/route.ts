@@ -133,6 +133,8 @@ async function _POST(request: NextRequest) {
           await sendBrandedEmailOrThrowOnSkip(resend, {
             from: getFrom(),
             to: member.email,
+            recipientUserId: member.id,
+            memberEffectClaim: true,
             subject: sanitizeEmailSubjectLine(subject),
             html,
             idempotencyKey: `bulk-email/${campaignId}/${member.id}`,
@@ -157,6 +159,7 @@ async function _POST(request: NextRequest) {
           });
           await createNotification({
             userId: member.id,
+            subjectMemberId: member.id,
             type: 'broadcast',
             title: subject,
             body: bodyText.slice(0, 200),
