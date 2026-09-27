@@ -2,7 +2,8 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const { resolve } = require('node:path');
-const { DEMO_REF, PROD_REF } = require('./supabase-project-guard.cjs');
+const { DEMO_REF, PROD_REF, projectForUrl } = require('./supabase-project-guard.cjs');
+const { readPortalQaTarget } = require('./portal-qa-guard.cjs');
 const { inspectResumeDemoSecretUrl, classifyPreviewDbUrl } = require('./resume-demo-secret-diagnostic.cjs');
 
 const sentinel = 'SYNTHETIC_SECRET_DO_NOT_ECHO';
@@ -141,4 +142,55 @@ test('CLI requires exactly both allowlisted names and cannot probe another envir
     assert.equal((run.stdout + run.stderr).includes(sentinel), false);
     assert.equal(run.stdout.includes('OTHER_SECRET_URL'), false);
   }
+});
+
+test('shared project and write gates reject connection-target query overrides', () => {
+  const cleanDemo = direct(DEMO_REF);
+  const cleanProd = direct(PROD_REF);
+  assert.equal(projectForUrl(cleanDemo), 'demo');
+  assert.equal(projectForUrl(cleanProd), 'prod');
+  for (const suffix of [
+    '?host=%2Fvar%2Frun%2Fpostgresql', '?HOST=%2Fvar%2Frun%2Fpostgresql',
+    '?ho%73t=%2Fvar%2Frun%2Fpostgresql', '?hostaddr=127.0.0.1',
+    '?port=5433', '?user=other', '?dbname=other', '?database=other',
+    '?password=other', '?service=other', '?servicefile=other', '?passfile=other',
+  ]) {
+    assert.equal(projectForUrl(cleanDemo + suffix), 'unknown', suffix);
+    assert.equal(projectForUrl(cleanProd + suffix), 'unknown', suffix);
+  }
+  assert.equal(projectForUrl(pooler(`postgres.${DEMO_REF}`, '?options=host%3D%2Fvar%2Frun%2Fpostgresql')), 'unknown');
+  assert.equal(projectForUrl(
+    pooler('postgres', `?options=reference%3D${DEMO_REF}%26host%3D%2Fvar%2Frun%2Fpostgresql`),
+  ), 'unknown');
+  assert.equal(projectForUrl(`https://postgres:${sentinel}@db.${DEMO_REF}.supabase.co/postgres`), 'unknown');
+  assert.equal(projectForUrl(`http://${DEMO_REF}.supabase.co`, 'public'), 'unknown');
+  assert.equal(projectForUrl(`https://${DEMO_REF}.supabase.co`, 'public'), 'demo');
+
+  assert.throws(() => readPortalQaTarget({
+    PORTAL_QA_TARGET: 'demo',
+    NEXT_PUBLIC_SUPABASE_URL: `https://${DEMO_REF}.supabase.co`,
+    POSTGRES_PRISMA_URL: `${cleanDemo}?host=%2Fvar%2Frun%2Fpostgresql`,
+    SUPABASE_SERVICE_ROLE_KEY: 'synthetic-admin-key',
+    PORTAL_QA_ORGANIZATION_ID: 'synthetic-qa-org',
+    PORTAL_QA_ORGANIZATION_SLUG: 'portal-qa-synthetic',
+  }), /database URL must identify the approved demo project/);
+});
+
+test('CLI refuses DEMO-looking authority when a query parameter changes the connection target', () => {
+  const script = resolve(__dirname, '../classify-preview-db-url.mjs');
+  const run = spawnSync(process.execPath,
+    [script, 'PREVIEW_POSTGRES_PRISMA_URL', 'PREVIEW_DATABASE_URL'], {
+      env: {
+        PREVIEW_POSTGRES_PRISMA_URL: `${direct(DEMO_REF)}?host=%2Fvar%2Frun%2Fpostgresql`,
+        PREVIEW_DATABASE_URL: direct(DEMO_REF),
+      },
+      encoding: 'utf8',
+    });
+  assert.equal(run.status, 1);
+  const lines = run.stdout.trim().split('\n').map((line) => JSON.parse(line));
+  assert.equal(lines[0].classification, 'unknown');
+  assert.equal(lines[0].hostClass, 'direct');
+  assert.equal(lines[1].classification, 'demo');
+  assert.equal((run.stdout + run.stderr).includes(sentinel), false);
+  assert.equal((run.stdout + run.stderr).includes('/var/run/postgresql'), false);
 });
