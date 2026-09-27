@@ -13,6 +13,7 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { persistEvent } from '@/lib/events/track';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 export const maxDuration = 300;
 /**
@@ -74,17 +75,21 @@ async function handle(_request: Request) {
       if (result.ok) {
         sent++;
         // Record that we sent a nudge so we don't email again this week.
-        await persistEvent({
+        await withActiveMemberWrite(member.id, (tx) => persistEvent({
           userId: member.id,
           eventName: 'inactive_nudge_sent',
           entityType: 'cron',
           metadata: { source: 'inactive-nudge', weekOf: sevenDaysAgo.toISOString() },
-        }, prisma).catch(() => { /* non-fatal */ });
+        }, tx)).catch((error) => {
+          if (error instanceof MemberLifecycleWriteError) throw error;
+          // The email was accepted; analytics failure must not erase that fact.
+        });
 
         await recordNudgeSent({ userId: member.id, tier: 'yellow', kind: 'inactive' });
 
         await createNotification({
           userId: member.id,
+          subjectMemberId: member.id,
           type: 'nudge',
           // One summary embed per run below; per-member posts hit Discord's 30/min limit.
           notifyOperator: false,
@@ -97,7 +102,9 @@ async function handle(_request: Request) {
         });
       }
     } catch (err) {
-      captureApiError(err, { route: 'cron/inactive-nudge', extra: { userId: member.id } });
+      if (!(err instanceof MemberLifecycleWriteError)) {
+        captureApiError(err, { route: 'cron/inactive-nudge', extra: { userId: member.id } });
+      }
     }
   }
 

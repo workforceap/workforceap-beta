@@ -33,6 +33,10 @@ vi.mock('@/lib/email', () => ({
 vi.mock('@/lib/notifications/create', () => ({
   createNotification: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock('@/lib/member/activeWrite', () => ({
+  MemberLifecycleWriteError: class MemberLifecycleWriteError extends Error {},
+  withActiveMemberWrite: vi.fn(),
+}));
 
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
@@ -58,10 +62,12 @@ import { logCronRun } from '@/lib/admin/logCronRun';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { CRON_NUDGE_CANDIDATE_CAP } from '@/lib/cron/cronCaps';
 import { createNotification } from '@/lib/notifications/create';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 describe('GET /api/cron/inactive-nudge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(withActiveMemberWrite).mockImplementation(async (_id, write) => write(prisma as never));
   });
 
   it('sends nudges to inactive eligible members and excludes recently active', async () => {
@@ -104,7 +110,7 @@ describe('GET /api/cron/inactive-nudge', () => {
     // nudge rows were same-title duplicates before this).
     expect(createNotification).toHaveBeenCalledTimes(2);
     for (const call of vi.mocked(createNotification).mock.calls) {
-      expect(call[0]).toMatchObject({ type: 'nudge', dedupeUnread: true, notifyOperator: false });
+      expect(call[0]).toMatchObject({ type: 'nudge', subjectMemberId: call[0].userId, dedupeUnread: true, notifyOperator: false });
     }
   });
 
@@ -123,6 +129,18 @@ describe('GET /api/cron/inactive-nudge', () => {
     const json = await res.json();
     expect(json.inactiveEmailsSent).toBe(2);
     expect(setCronRecordsProcessed).toHaveBeenCalledWith(2);
+  });
+
+  it('keeps the accepted send but creates no event or notification when erasure wins after email', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([{ id: 'erased', email: 'erased@example.org', fullName: 'Erased' }] as never);
+    vi.mocked(sendInactiveNudgeEmail).mockResolvedValue({ ok: true });
+    vi.mocked(withActiveMemberWrite).mockRejectedValueOnce(new MemberLifecycleWriteError());
+
+    const result = await (await GET(new Request('http://localhost/api/cron/inactive-nudge'))).json();
+    expect(result.inactiveEmailsSent).toBe(1);
+    expect(prisma.memberEvent.create).not.toHaveBeenCalled();
+    expect(prisma.memberNudgeLog.create).not.toHaveBeenCalled();
+    expect(createNotification).not.toHaveBeenCalled();
   });
 
   it('continues when sendInactiveNudgeEmail throws', async () => {
@@ -153,7 +171,10 @@ describe('GET /api/cron/inactive-nudge', () => {
 
 
 describe('inactivity email acceptance', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(withActiveMemberWrite).mockImplementation(async (_id, write) => write(prisma as never));
+  });
 
   it('does not consume the cooldown or report a send when the email provider rejects', async () => {
     vi.mocked(prisma.user.findMany).mockResolvedValue([{ id: 'member', email: 'member@example.com', fullName: 'Member' }] as never);
@@ -201,7 +222,7 @@ describe('inactivity email acceptance', () => {
     });
     expect(createNotification).toHaveBeenCalledTimes(1);
     expect(createNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: 'accepted', type: 'nudge', dedupeUnread: true }),
+      expect.objectContaining({ userId: 'accepted', subjectMemberId: 'accepted', type: 'nudge', dedupeUnread: true }),
     );
     expect(setCronRecordsProcessed).toHaveBeenCalledWith(1);
   });

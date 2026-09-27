@@ -92,6 +92,7 @@ async function handle(_request: Request) {
 
       await createNotification({
         userId: member.id,
+        subjectMemberId: member.id,
         type: 'job_match',
         // One summary embed per run below; per-member posts hit Discord's 30/min limit.
         notifyOperator: false,

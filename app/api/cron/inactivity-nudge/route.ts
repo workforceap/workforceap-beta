@@ -77,6 +77,7 @@ async function handle(_req: NextRequest) {
 
       await createNotification({
         userId: member.id,
+        subjectMemberId: member.id,
         type: 'nudge',
         // One summary embed per run below; per-member posts hit Discord's 30/min limit.
         notifyOperator: false,

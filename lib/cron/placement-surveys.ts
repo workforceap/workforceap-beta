@@ -280,6 +280,7 @@ export async function sendDuePlacementSurveys(
         // a failed-email run doesn't leave an orphan "survey ready" notice.
         await createNotification({
           userId: placement.userId,
+          subjectMemberId: placement.userId,
           type: 'survey_due',
           title: 'Placement survey ready',
           body: `Your ${wave.replace('_', '-day ')} placement survey is ready. It only takes 2 minutes.`,
@@ -403,6 +404,7 @@ export async function escalateStalePlacementSurveys(
       if (counselorUserId) {
         await createNotification({
           userId: counselorUserId,
+          subjectMemberId: user.id,
           type: 'task_assigned',
           title: 'Placement survey follow-up needed',
           body: `${user.fullName ?? 'A member'}'s ${survey.wave.replace('_', '-day ')} placement survey has gone unanswered for 7+ days.`,
