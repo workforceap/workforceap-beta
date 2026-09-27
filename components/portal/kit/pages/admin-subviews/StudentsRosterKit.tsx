@@ -4,7 +4,6 @@ import { Fragment, useMemo, useState } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
@@ -50,6 +49,7 @@ import {
   type StudentsRosterFocus,
   type StudentsRosterView,
 } from '@/lib/admin/studentsRosterView';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
@@ -226,9 +226,7 @@ function formatRosterGrade(pct: number | null | undefined): string {
 
 function NavButton({ href, label }: { href: string; label: string }) {
   return (
-    <AstryxLink href={href} as={NextLink as never} isStandalone>
-      <Button label={label} variant="secondary" size="sm" />
-    </AstryxLink>
+    <KitLinkButton href={href} label={label} variant="secondary" size="sm" />
   );
 }
 

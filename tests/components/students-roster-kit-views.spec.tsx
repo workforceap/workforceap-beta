@@ -8,7 +8,9 @@ vi.mock('@astryxdesign/core/Card', () => ({
   Card: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }));
 vi.mock('@astryxdesign/core/Button', () => ({
-  Button: ({ label }: { label: string }) => <span>{label}</span>,
+  // With `href` Astryx renders the button as the link itself (KitLinkButton).
+  Button: ({ label, href }: { label: string; href?: string }) =>
+    href ? <a href={href}>{label}</a> : <span>{label}</span>,
 }));
 vi.mock('@astryxdesign/core/Link', () => ({
   Link: ({ children, href }: { children?: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
