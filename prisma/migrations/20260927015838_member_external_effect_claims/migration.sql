@@ -1,0 +1,27 @@
+-- Durable, independently owned external effects for member Storage and
+-- notifications. Each operation has its own row, so sibling notices do not
+-- exclude one another. A User cannot be hard-deleted with an unresolved row.
+BEGIN;
+SET LOCAL lock_timeout = '2s';
+SET LOCAL statement_timeout = '30s';
+
+CREATE TABLE IF NOT EXISTS public.member_external_effect_claims (
+  id UUID PRIMARY KEY,
+  member_id TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('storage', 'notification')),
+  status TEXT NOT NULL DEFAULT 'in_flight' CHECK (status IN ('in_flight', 'needs_reconciliation')),
+  reason TEXT,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT member_external_effect_claims_member_id_fkey
+    FOREIGN KEY (member_id) REFERENCES public.users(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+CREATE INDEX IF NOT EXISTS member_external_effect_claims_member_id_idx
+  ON public.member_external_effect_claims(member_id);
+
+-- Existing Supabase default privileges can grant new public tables to browser
+-- roles; this ledger is server-only and has no Data API access or RLS policy.
+ALTER TABLE public.member_external_effect_claims ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.member_external_effect_claims FROM PUBLIC, anon, authenticated;
+
+COMMIT;

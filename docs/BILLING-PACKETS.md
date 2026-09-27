@@ -242,21 +242,28 @@ that automatically emails to counselor and the student."
   marker blocks later signing and claiming. The cleanup request owns a UUID
   operation token, so a second delete or erase returns a conflict while the
   first is working.
-- Resume, profile-photo and certificate uploads claim a durable per-member
-  operation token before calling Storage. Deletion refuses an owned token,
-  even if the upload worker crashes. Each upload uses a unique object key, and
-  its final profile/proof pointer transaction verifies that same token under
-  the lifecycle lock. The token is released after a committed pointer update,
-  or after a rejected update's staged objects are confirmed removed. A failed
-  cleanup, uncertain Storage upload result, or uncertain DB commit leaves the
-  token held for operator reconciliation; age never releases it. Member,
-  counselor and admin resume uploads and AI-built enhanced resume saves share
-  this claim path. Inspect the member's Storage prefixes and referencing rows
-  before clearing a crash-held upload token.
-- Member-subject notifications use the same per-member operation token
-  through their database, Web Push and operator bridge effects. An interrupted
-  notification blocks erasure until its row and outbound provider outcomes
-  are reconciled; age alone does not release its token.
+- Resume, profile-photo and certificate uploads and member-subject notifications
+  each insert their own UUID row in `member_external_effect_claims` before an
+  external request. Concurrent notifications can proceed independently.
+  Deletion and Auth identity edits refuse any unresolved row under the member
+  lifecycle lock; ordinary active-member writes do not wait for these rows.
+  The claim table has RLS enabled, no browser-role grants, and a restrictive
+  User foreign key. The final upload pointer transaction verifies its exact
+  storage claim. A completed permanent Storage 4xx rejection is released after
+  confirmed cleanup; HTTP 408/429/5xx, missing status, a failed cleanup, or an
+  uncertain DB commit retain a row marked `needs_reconciliation`. A crash can
+  leave `in_flight`. Member, counselor and admin resume uploads, AI-built
+  enhanced resumes, and application resume copies share this barrier.
+- Member-subject notifications retain their own claims through the notification
+  row, bounded Web Push call, and operator bridge. A provider timeout, network
+  error or ambiguous HTTP result keeps the exact row for reconciliation; an
+  already accepted device push cannot be recalled. The application prevents a
+  new provider call after erasure wins the lock.
+- Preview/Development use flattened Prisma transactions and cannot prove the
+  member advisory-lock boundary. External-effect claims fail closed there.
+  Authenticated Preview upload and notification acceptance needs the DEMO schema
+  caught up and an interactive database target; a successful build is not that
+  acceptance.
 - Member application-onboarding, first-program enrollment and primary-program
   promotion recheck the persisted deletion marker under the member lifecycle
   lock in their final write transaction. A stale authenticated request gets
@@ -285,9 +292,15 @@ that automatically emails to counselor and the student."
 
 ### Reconciling a crash-held lifecycle token
 
-Treat a non-null `billing_deletion_operation_id` as an active owner regardless
-of its age. Only a named operator handling an incident may clear a crash-held
-token. Record the tenant, User ID, exact token, pending/completed/deleted
+Treat a non-null `billing_deletion_operation_id` or any row in
+`member_external_effect_claims` as an active owner regardless of age. The User
+column now belongs only to deletion, Auth identity edit and restore; Storage
+and notification owners are distinct rows. Query the exact member's rows with
+`SELECT id, member_id, kind, status, reason, created_at, updated_at FROM
+public.member_external_effect_claims WHERE member_id = '<User ID>';`. Only a
+named operator handling an incident may clear a crash-held token or row.
+Record the tenant, User ID, exact operation ID, kind/status/reason,
+pending/completed/deleted
 timestamps, request or deployment trace, actor, reason and evidence in the
 incident and audit trail. Before any write:
 
@@ -295,9 +308,9 @@ incident and audit trail. Before any write:
    deployment/function logs and any queued job for the exact request and token.
    If that cannot be proved, leave the token held. A timeout or old `updated_at`
    is insufficient.
-2. Identify whether the token belongs to deletion, an Auth identity edit,
-   restore, a private upload, or a member-subject notification. The column alone
-   does not distinguish them.
+2. Identify whether the User token belongs to deletion, an Auth identity edit
+   or restore, or whether an external-effect row belongs to Storage or a
+   member-subject notification.
    Verify the exact Auth User ID through Supabase Admin; a 5xx/timeout is
    unknown, not absence. Check
    Storage cleanup, app tombstone, packet send state and any pending provider
@@ -308,18 +321,22 @@ incident and audit trail. Before any write:
    an identity-edit or restore hold using that workflow's Auth/app comparison,
    not by treating it as a deletion. For an interrupted upload, prove the
    Storage request and any pointer transaction have ended; inspect the member
-   prefix and referencing profile/proof row before clearing its token. For an
-   interrupted notification, reconcile its row, Web Push and operator bridge
-   outcomes before clearing its token. For an interrupted admin erase, confirm
+   prefix, attempted key and referencing profile/proof/application row before
+   clearing its exact claim row. For an interrupted notification, reconcile its
+   row, Web Push and Discord provider outcomes before clearing its exact claim
+   row. A timeout or HTTP 5xx is not proof of rejection. For an interrupted admin erase, confirm
    the irreversible erased-email tombstone
    before clearing its token. If the
    worker stopped before that tombstone committed, stop and plan a guarded
    repair; clearing the token alone could reopen the original identity.
 4. In one interactive database transaction, acquire the member lifecycle
-   advisory lock, re-read the same tenant/User/token and verified state, write
-   the audit receipt, and clear **only** that exact operation token with a
-   compare-and-set. Leave pending/completed timestamps unchanged. If the
-   compare-and-set affects anything other than one row, stop and re-investigate.
+   advisory lock, re-read the same tenant/User/exact token or claim row and
+   verified state, write the audit receipt, and clear **only** that exact
+   operation. Delete an external-effect row by both `id` and `member_id` only
+   after provider and worker outcomes are proved. Leave deletion
+   pending/completed timestamps unchanged. If the compare-and-set or row delete
+   affects anything other than one row, stop and re-investigate. There is no
+   age-based release or automated claim expiry.
    Read back the row and audit receipt before retrying the original operation.
 
 Do not run a bulk age-based token reset or clear a hold merely to make a

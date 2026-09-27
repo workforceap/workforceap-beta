@@ -21,9 +21,11 @@ import type { Prisma } from '@prisma/client';
 import {
   assertMemberUploadWritable,
   MemberUploadCleanupError,
+  MemberUploadDefiniteStorageError,
   MemberUploadLifecycleError,
   MemberUploadPersistenceOutcomeError,
   MemberUploadStorageOutcomeError,
+  isDefiniteStorageRejection,
   withMemberUploadClaim,
 } from '@/lib/member/uploadLifecycle';
 
@@ -209,13 +211,16 @@ async function _POST(
             recordAttempt(snapshotPath);
             try {
               const { error: copyError } = await storage.copy(currentResumePath, snapshotPath);
-              if (copyError) throw copyError;
+              if (copyError) throw isDefiniteStorageRejection(copyError)
+                ? new MemberUploadDefiniteStorageError(copyError)
+                : new MemberUploadStorageOutcomeError(copyError);
             } catch (copyError) {
               captureApiError(copyError, {
                 route: 'POST /api/jobs/[id]/apply resume snapshot copy',
                 userId: authUser.id,
                 extra: { applicationId },
               });
+              if (copyError instanceof MemberUploadDefiniteStorageError || copyError instanceof MemberUploadStorageOutcomeError) throw copyError;
               throw new MemberUploadStorageOutcomeError(copyError);
             }
         }
@@ -267,7 +272,7 @@ async function _POST(
     if (error instanceof MemberUploadLifecycleError) {
       return handleApiError(ApiError.conflict('This account is no longer accepting applications.'), 'POST /api/jobs/[id]/apply');
     }
-    if (error instanceof MemberUploadStorageOutcomeError || error instanceof MemberUploadCleanupError) {
+    if (error instanceof MemberUploadStorageOutcomeError || error instanceof MemberUploadDefiniteStorageError || error instanceof MemberUploadCleanupError) {
       return handleApiError(ApiError.unavailable('Could not attach your resume. Your application was not submitted; contact support before retrying.'), 'POST /api/jobs/[id]/apply');
     }
     if (error instanceof MemberUploadPersistenceOutcomeError) {

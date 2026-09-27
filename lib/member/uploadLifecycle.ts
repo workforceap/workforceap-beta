@@ -32,6 +32,26 @@ export class MemberUploadStorageOutcomeError extends Error {
   }
 }
 
+/** A completed Storage response rejected the write; verified cleanup can release the claim. */
+export class MemberUploadDefiniteStorageError extends Error {
+  readonly causeValue: unknown;
+
+  constructor(causeValue: unknown) {
+    super('Storage rejected the upload.');
+    this.name = 'MemberUploadDefiniteStorageError';
+    this.causeValue = causeValue;
+  }
+}
+
+/** Only a permanent HTTP rejection proves the attempted Storage write did not land. */
+export function isDefiniteStorageRejection(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const value = error as { status?: unknown; statusCode?: unknown; originalError?: { status?: unknown; statusCode?: unknown } };
+  const raw = value.status ?? value.statusCode ?? value.originalError?.status ?? value.originalError?.statusCode;
+  const status = typeof raw === 'number' || (typeof raw === 'string' && /^\d{3}$/.test(raw)) ? Number(raw) : NaN;
+  return Number.isInteger(status) && status >= 400 && status < 500 && status !== 408 && status !== 429;
+}
+
 /** Do not remove a staged object when its referencing DB commit may have won. */
 export class MemberUploadPersistenceOutcomeError extends Error {
   readonly causeValue: unknown;
@@ -44,28 +64,34 @@ export class MemberUploadPersistenceOutcomeError extends Error {
 }
 
 /**
- * Claim the existing per-member operation token before any Storage request.
- * Deletion already refuses an owned token, even after a worker crash. There
+ * Insert an independent durable operation before any external request.
+ * Deletion refuses any unresolved row, even after a worker crash. There
  * is deliberately no time-based lease expiry: a slow Storage request may
  * finish after an arbitrary timeout, so age cannot prove it is safe to erase.
  */
-export async function beginMemberUpload(userId: string): Promise<string> {
+export async function beginMemberUpload(userId: string, kind: 'storage' | 'notification' = 'storage'): Promise<string> {
+  if (!interactiveTransactionsGuaranteed()) throw new MemberUploadLifecycleError();
   const operationId = randomUUID();
   const claimed = await prisma.$transaction(async (tx) => {
-    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
+    await lockBillingMemberLifecycle(tx, userId);
     const scoped = await scopedBillingUser(tx, userId);
-    if (!scoped) return { count: 0 };
-    return scoped.user.updateMany({
+    if (!scoped) return false;
+    const active = await scoped.user.findFirst({
       where: {
         id: userId,
         deletedAt: null,
         billingDeletionPendingAt: null,
         billingDeletionOperationId: null,
       },
-      data: { billingDeletionOperationId: operationId },
+      select: { id: true },
     });
+    if (!active) return false;
+    await tx.memberExternalEffectClaim.create({
+      data: { id: operationId, memberId: userId, kind },
+    });
+    return true;
   });
-  if (claimed.count !== 1) throw new MemberUploadLifecycleError();
+  if (!claimed) throw new MemberUploadLifecycleError();
   return operationId;
 }
 
@@ -83,30 +109,41 @@ export async function assertMemberUploadWritable(
       id: memberId,
       deletedAt: null,
       billingDeletionPendingAt: null,
-      billingDeletionOperationId: operationId,
+      billingDeletionOperationId: null,
     },
     select: { id: true },
   });
   if (!owned) throw new MemberUploadLifecycleError();
+  const claim = await tx.memberExternalEffectClaim.findFirst({
+    where: { id: operationId, memberId, kind: 'storage', status: 'in_flight' },
+    select: { id: true },
+  });
+  if (!claim) throw new MemberUploadLifecycleError();
 }
 
 /** Release only the token this upload acquired; a crashed worker leaves it held. */
 export async function releaseMemberUpload(userId: string, operationId: string): Promise<void> {
+  if (!interactiveTransactionsGuaranteed()) throw new Error('Member external-effect release requires an interactive transaction');
   const released = await prisma.$transaction(async (tx) => {
-    if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, userId);
-    const scoped = await scopedBillingUser(tx, userId);
-    if (!scoped) return { count: 0 };
-    return scoped.user.updateMany({
-      where: {
-        id: userId,
-        deletedAt: null,
-        billingDeletionPendingAt: null,
-        billingDeletionOperationId: operationId,
-      },
-      data: { billingDeletionOperationId: null },
+    await lockBillingMemberLifecycle(tx, userId);
+    return tx.memberExternalEffectClaim.deleteMany({
+      where: { id: operationId, memberId: userId, status: 'in_flight' },
     });
   });
   if (released.count !== 1) throw new Error('Member upload claim could not be released');
+}
+
+/** A late worker must never release an effect whose provider outcome is unknown. */
+export async function markMemberExternalEffectUncertain(userId: string, operationId: string, reason: string): Promise<void> {
+  if (!interactiveTransactionsGuaranteed()) throw new Error('Member external-effect reconciliation requires an interactive transaction');
+  const marked = await prisma.$transaction(async (tx) => {
+    await lockBillingMemberLifecycle(tx, userId);
+    return tx.memberExternalEffectClaim.updateMany({
+      where: { id: operationId, memberId: userId, status: 'in_flight' },
+      data: { status: 'needs_reconciliation', reason },
+    });
+  });
+  if (marked.count !== 1) throw new Error('Member external-effect reconciliation hold could not be confirmed');
 }
 
 /**
@@ -135,21 +172,28 @@ export async function withMemberUploadClaim<T>(options: {
     if (pointerCommitted) throw error;
     // A caller may be unable to verify whether its DB commit succeeded. In
     // that case neither removing the object nor releasing the claim is safe.
-    if (error instanceof MemberUploadPersistenceOutcomeError) throw error;
+    if (error instanceof MemberUploadPersistenceOutcomeError) {
+      await markMemberExternalEffectUncertain(options.userId, operationId, 'persistence_outcome_unknown');
+      throw error;
+    }
     const cleaned = await removeResumeObjectsWithRetry({
       paths: attemptedPaths,
       removeObjects: options.removeObjects,
       onCleanupError: options.onCleanupError,
     });
-    if (!cleaned) throw new MemberUploadCleanupError(error);
+    if (!cleaned) {
+      await markMemberExternalEffectUncertain(options.userId, operationId, 'storage_cleanup_failed');
+      throw new MemberUploadCleanupError(error);
+    }
     // A timed-out or failed Storage request may finish remotely after its
     // caller sees an error. Even a successful remove at this instant cannot
     // prove that an in-flight upload will not recreate the object later.
     // Keep the token held until an operator confirms that request ended and
     // reconciles this member's Storage prefix.
     const uncertainStorageOutcome = error instanceof MemberUploadStorageOutcomeError
-      || (error instanceof AtomicResumeObjectSwapError && error.phase === 'upload');
-    if (!uncertainStorageOutcome) await releaseMemberUpload(options.userId, operationId);
+      || (error instanceof AtomicResumeObjectSwapError && error.causeValue instanceof MemberUploadStorageOutcomeError);
+    if (uncertainStorageOutcome) await markMemberExternalEffectUncertain(options.userId, operationId, 'storage_outcome_unknown');
+    else await releaseMemberUpload(options.userId, operationId);
     throw error;
   }
 }

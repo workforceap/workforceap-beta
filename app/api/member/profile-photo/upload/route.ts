@@ -15,7 +15,7 @@ import {
   resolveProfilePhotoContentType,
 } from '@/lib/portal/memberProfilePhoto';
 import { detectImageSignature } from '@/lib/uploads/imageSignature';
-import { assertMemberUploadWritable, isMemberUploadLifecycleError, MemberUploadPersistenceOutcomeError, MemberUploadStorageOutcomeError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
+import { assertMemberUploadWritable, isDefiniteStorageRejection, isMemberUploadLifecycleError, MemberUploadDefiniteStorageError, MemberUploadPersistenceOutcomeError, MemberUploadStorageOutcomeError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 export const POST = withApiGuc(async (request: Request) => {
@@ -75,7 +75,9 @@ export const POST = withApiGuc(async (request: Request) => {
             .catch((error) => { throw new MemberUploadStorageOutcomeError(error); });
           if (uploaded.error) {
             uploadError = uploaded.error;
-            throw new MemberUploadStorageOutcomeError(uploaded.error);
+            throw isDefiniteStorageRejection(uploaded.error)
+              ? new MemberUploadDefiniteStorageError(uploaded.error)
+              : new MemberUploadStorageOutcomeError(uploaded.error);
           }
           try {
             return await prisma.$transaction(async (tx) => {
@@ -101,7 +103,8 @@ export const POST = withApiGuc(async (request: Request) => {
       if (isMemberUploadLifecycleError(error)) {
         return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
       }
-      if (error instanceof MemberUploadStorageOutcomeError && uploadError && error.causeValue === uploadError) {
+      if ((error instanceof MemberUploadDefiniteStorageError || error instanceof MemberUploadStorageOutcomeError)
+        && uploadError && error.causeValue === uploadError) {
         console.error('[member/profile-photo/upload] storage upload failed', uploadError);
         return NextResponse.json({ error: profilePhotoStorageErrorMessage(uploadError) }, { status: 500 });
       }

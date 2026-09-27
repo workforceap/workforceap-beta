@@ -51,4 +51,14 @@ describe('member upload lifecycle barrier', () => {
       .rejects.toBeInstanceOf(MemberUploadLifecycleError);
     expect(h.events).toEqual(['marker']);
   });
+
+  it('requires the exact storage claim even when the member remains active', async () => {
+    const tx = { memberExternalEffectClaim: { findFirst: vi.fn(async () => null) } };
+    await expect(assertMemberUploadWritable(tx as never, 'member-1', 'claim-1'))
+      .rejects.toBeInstanceOf(MemberUploadLifecycleError);
+    expect(tx.memberExternalEffectClaim.findFirst).toHaveBeenCalledWith({
+      where: { id: 'claim-1', memberId: 'member-1', kind: 'storage', status: 'in_flight' },
+      select: { id: true },
+    });
+  });
 });

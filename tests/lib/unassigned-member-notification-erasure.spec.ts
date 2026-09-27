@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   counselors: vi.fn(),
   begin: vi.fn(),
   release: vi.fn(),
+  mark: vi.fn(),
   create: vi.fn(),
   push: vi.fn(),
   discord: vi.fn(),
@@ -22,9 +23,13 @@ vi.mock('@/lib/counselor/autoAssign', () => ({ WAP_STAFF_COUNSELOR_AFFILIATION: 
 vi.mock('@/lib/member/uploadLifecycle', () => ({
   beginMemberUpload: mocks.begin,
   releaseMemberUpload: mocks.release,
+  markMemberExternalEffectUncertain: mocks.mark,
   MemberUploadLifecycleError: class MemberUploadLifecycleError extends Error {},
 }));
-vi.mock('@/lib/push/sendWebPush', () => ({ sendWebPushToUser: mocks.push }));
+vi.mock('@/lib/push/sendWebPush', () => ({
+  sendWebPushToUser: mocks.push,
+  WebPushOutcomeUncertainError: class WebPushOutcomeUncertainError extends Error {},
+}));
 vi.mock('@/lib/notify/discord', () => ({ notifyDiscord: mocks.discord }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn() }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
@@ -55,27 +60,25 @@ it('suppresses a stale staff message after member erasure wins the claim', async
   await notifyUnassignedMemberMessage(input);
 
   expect(mocks.begin).toHaveBeenCalledTimes(2);
-  expect(mocks.begin).toHaveBeenCalledWith('member-1');
+  expect(mocks.begin).toHaveBeenCalledWith('member-1', 'notification');
   expect(mocks.create).not.toHaveBeenCalled();
   expect(mocks.push).not.toHaveBeenCalled();
   expect(mocks.discord).not.toHaveBeenCalled();
 });
 
 it('delivers to both staff recipients without overlapping claims for one member', async () => {
-  let claimed = false;
   let serial = 0;
   mocks.begin.mockImplementation(async () => {
-    if (claimed) throw new MemberUploadLifecycleError();
-    claimed = true;
     return `claim-${++serial}`;
   });
-  mocks.release.mockImplementation(async () => { claimed = false; });
 
   await notifyUnassignedMemberMessage(input);
 
   expect(mocks.create.mock.calls.map(([call]) => call.data.userId)).toEqual(['counselor-1', 'counselor-2']);
   expect(mocks.release.mock.calls).toEqual([
     ['member-1', 'claim-1'],
-    ['member-1', 'claim-2'],
+    ['counselor-1', 'claim-2'],
+    ['member-1', 'claim-3'],
+    ['counselor-2', 'claim-4'],
   ]);
 });

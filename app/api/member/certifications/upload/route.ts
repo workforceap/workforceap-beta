@@ -8,7 +8,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
-import { assertMemberUploadWritable, isMemberUploadLifecycleError, MemberUploadPersistenceOutcomeError, MemberUploadStorageOutcomeError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
+import { assertMemberUploadWritable, isDefiniteStorageRejection, isMemberUploadLifecycleError, MemberUploadDefiniteStorageError, MemberUploadPersistenceOutcomeError, MemberUploadStorageOutcomeError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 const BUCKET = 'member-files';
@@ -104,7 +104,9 @@ function storageErrorMessage(error: { message?: string } | null): string {
             }).catch((error) => { throw new MemberUploadStorageOutcomeError(error); });
             if (uploaded.error) {
               storageUploadError = uploaded.error;
-              throw new MemberUploadStorageOutcomeError(uploaded.error);
+              throw isDefiniteStorageRejection(uploaded.error)
+                ? new MemberUploadDefiniteStorageError(uploaded.error)
+                : new MemberUploadStorageOutcomeError(uploaded.error);
             }
             try {
               return await prisma.$transaction(async (tx) => {
@@ -137,7 +139,8 @@ function storageErrorMessage(error: { message?: string } | null): string {
         if (isMemberUploadLifecycleError(error)) {
           return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
         }
-        if (error instanceof MemberUploadStorageOutcomeError && storageUploadError && error.causeValue === storageUploadError) {
+        if ((error instanceof MemberUploadDefiniteStorageError || error instanceof MemberUploadStorageOutcomeError)
+          && storageUploadError && error.causeValue === storageUploadError) {
           console.error('[cert-upload] storage upload failed', storageUploadError);
           return NextResponse.json({ error: storageErrorMessage(storageUploadError) }, { status: 500 });
         }

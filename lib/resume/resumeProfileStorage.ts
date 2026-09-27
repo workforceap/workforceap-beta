@@ -14,6 +14,7 @@ import {
   isMemberUploadLifecycleError,
   MemberUploadPersistenceOutcomeError,
   MemberUploadStorageOutcomeError,
+  isDefiniteStorageRejection,
   withMemberUploadClaim,
 } from '@/lib/member/uploadLifecycle';
 
@@ -158,6 +159,9 @@ export async function replaceClaimedResumeObjects(
       uploadObject: (path, body, uploadOptions) => {
         recordAttempt(path);
         return options.uploadObject(path, body, uploadOptions)
+          .then((result) => result.error && !isDefiniteStorageRejection(result.error)
+            ? { error: new MemberUploadStorageOutcomeError(result.error) }
+            : result)
           .catch((error) => { throw new MemberUploadStorageOutcomeError(error); });
       },
       swapProfilePaths: async (nextPaths) => {

@@ -106,6 +106,7 @@ vi.mock('@/lib/db/prisma', () => {
           return 1;
         },
         $queryRaw: async (_sql: TemplateStringsArray, ...values: unknown[]) => {
+          if (_sql.join('').includes('member_external_effect_claims')) return [];
           if (Array.from(_sql).join('?').includes('training_billing_packet_sends s')) {
             const memberId = values[0];
             return db.sends.filter((s) => {

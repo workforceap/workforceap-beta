@@ -163,6 +163,7 @@ model User {
   billingDeletionPendingAt     DateTime?           @map("billing_deletion_pending_at")
   billingDeletionOperationId    String?             @map("billing_deletion_operation_id") @db.Uuid
   billingDeletionCompletedAt    DateTime?           @map("billing_deletion_completed_at")
+  memberExternalEffectClaims   MemberExternalEffectClaim[]
   createdAt                    DateTime            @default(now()) @map("created_at")
   updatedAt                    DateTime            @updatedAt @map("updated_at")
   interviewEligible            Boolean             @default(false) @map("interview_eligible")
@@ -457,6 +458,22 @@ model Role {
   userRoles UserRole[]
 
   @@map("roles")
+}
+
+/// Durable external Storage or notification effect. Deletion and identity edits
+/// refuse any unresolved row; normal member writes remain available.
+model MemberExternalEffectClaim {
+  id        String   @id @db.Uuid
+  memberId  String   @map("member_id")
+  member    User     @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  kind      String
+  status    String   @default("in_flight")
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([memberId])
+  @@map("member_external_effect_claims")
 }
 
 model UserRole {

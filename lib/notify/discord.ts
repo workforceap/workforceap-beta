@@ -12,7 +12,8 @@ import { createDiscordRateLimiter } from '@/lib/notify/discordRateLimit';
  * without having to poll any admin dashboard.
  *
  * Hard rules:
- * - Never block the caller. Failures swallow + console.error.
+ * - Ordinary callers get best-effort behavior. A member lifecycle owner may
+ *   request a known outcome; an ambiguous provider result then throws.
  * - Skip when no webhook URL is configured.
  * - Skip in non-production unless DISCORD_NOTIFICATIONS_FORCE=1
  *   so local/preview branches don't spam the channel.
@@ -52,6 +53,14 @@ const LEVEL_COLORS: Record<DiscordNotificationLevel, number> = {
 /** `WorkflowDiagnostic.workflow` for the Discord bridge (health + diagnostics views). */
 export const DISCORD_NOTIFICATION_WORKFLOW = 'discord_notification';
 
+/** A webhook request may have been accepted despite a local timeout or 5xx. */
+export class DiscordOutcomeUncertainError extends Error {
+  constructor() {
+    super('Discord notification outcome is uncertain');
+    this.name = 'DiscordOutcomeUncertainError';
+  }
+}
+
 const limiter = createDiscordRateLimiter();
 let droppedSinceDiagnostic = 0;
 let lastDropDiagnosticAtMs = 0;
@@ -88,7 +97,7 @@ function shouldSend(): boolean {
  * Callers should not await this unless they specifically need to
  * serialize on it — it is fire-and-forget by design.
  */
-export async function notifyDiscord(input: DiscordNotificationInput): Promise<void> {
+export async function notifyDiscord(input: DiscordNotificationInput, requireKnownOutcome = false): Promise<void> {
   if (!shouldSend()) return;
 
   const admission = limiter.tryAcquire();
@@ -142,6 +151,7 @@ export async function notifyDiscord(input: DiscordNotificationInput): Promise<vo
     embed.fields = fields;
   }
 
+  let responseStatus: number | null = null;
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -153,6 +163,7 @@ export async function notifyDiscord(input: DiscordNotificationInput): Promise<vo
       // Don't let a hung webhook stall a request handler.
       signal: AbortSignal.timeout(2500),
     });
+    responseStatus = response.status;
     if (!response.ok) {
       if (response.status === 429) {
         const body = await response.json().catch(() => null);
@@ -171,5 +182,8 @@ export async function notifyDiscord(input: DiscordNotificationInput): Promise<vo
       failureReason,
       metadata: { category: input.category ?? null },
     });
+    if (requireKnownOutcome && (responseStatus === null || responseStatus === 408 || responseStatus === 429 || responseStatus >= 500)) {
+      throw new DiscordOutcomeUncertainError();
+    }
   }
 }

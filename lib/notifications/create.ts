@@ -5,13 +5,35 @@ import { prisma } from '@/lib/db/prisma';
 import { Prisma } from '@prisma/client';
 import { notifyDiscord } from '@/lib/notify/discord';
 import { sendWebPushToUser } from '@/lib/push/sendWebPush';
+import { WebPushOutcomeUncertainError } from '@/lib/push/sendWebPush';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import {
   beginMemberUpload,
+  markMemberExternalEffectUncertain,
   MemberUploadLifecycleError,
   releaseMemberUpload,
 } from '@/lib/member/uploadLifecycle';
+
+const NOTIFICATION_EFFECT_DEADLINE_MS = 7_500;
+
+async function boundedClaimedEffect(effect: Promise<unknown>, name: string): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      effect,
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => reject(new Error(`${name} outcome is uncertain`)), NOTIFICATION_EFFECT_DEADLINE_MS);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function boundedOperatorNotification(input: Parameters<typeof notifyDiscord>[0]): Promise<void> {
+  return boundedClaimedEffect(notifyDiscord(input, true), 'Operator notification');
+}
 
 export type NotificationType =
   | 'message'
@@ -77,18 +99,26 @@ export function createNotification(
 ): Promise<void> {
   const operation = (async () => {
   let lifecycleClaim: string | null = null;
+  let recipientClaim: string | null = null;
   if (input.subjectMemberId) {
     try {
       // Deletion sees this durable token until the DB, push, and operator
       // effects settle. If deletion won first, suppress every effect.
-      lifecycleClaim = await beginMemberUpload(input.subjectMemberId);
+      lifecycleClaim = await beginMemberUpload(input.subjectMemberId, 'notification');
+      if (input.userId !== input.subjectMemberId) {
+        recipientClaim = await beginMemberUpload(input.userId, 'notification');
+      }
     } catch (error) {
+      if (lifecycleClaim) await releaseMemberUpload(input.subjectMemberId, lifecycleClaim).catch((releaseError) => {
+        captureApiError(releaseError, { route: 'lib/notifications/create.claimRollback', extra: { memberId: input.subjectMemberId } });
+      });
       if (!(error instanceof MemberUploadLifecycleError)) {
         captureApiError(error, { route: 'lib/notifications/create.lifecycleClaim', extra: { memberId: input.subjectMemberId } });
       }
       return;
     }
   }
+  let retainClaims = false;
   try {
   try {
     const data = (input.data ?? null) as unknown as Prisma.InputJsonValue;
@@ -122,12 +152,16 @@ export function createNotification(
       body: input.body,
       url: typeof input.data?.link === 'string' ? (input.data.link as string) : '/dashboard',
       tag: input.type,
-    }, input.userId === input.subjectMemberId ? lifecycleClaim ?? undefined : undefined);
+    }, input.userId === input.subjectMemberId ? lifecycleClaim ?? undefined : undefined, Boolean(lifecycleClaim));
     // A member-linked notification must finish its outbound work before the
     // deletion barrier can pass. Ordinary notifications keep best-effort push.
-    if (lifecycleClaim) await push;
+    if (lifecycleClaim) await boundedClaimedEffect(push, 'Web Push');
     else void push;
   } catch (error) {
+    // A DB write may have committed despite a lost acknowledgment; a bounded
+    // push may still finish after its timeout. Keep every claimed subject and
+    // recipient row until the exact outcome has been reconciled.
+    if (lifecycleClaim || error instanceof WebPushOutcomeUncertainError) retainClaims = true;
     captureApiError(error, {
       route: 'lib/notifications/create.createNotification',
       extra: { userId: input.userId, type: input.type },
@@ -145,18 +179,28 @@ export function createNotification(
   // Await the operator-visibility bridge so the returned promise preserves
   // existing completion semantics while the same operation is retained below.
   if (input.notifyOperator !== false) {
-    await notifyDiscord({
+    await (lifecycleClaim ? boundedOperatorNotification : notifyDiscord)({
       title: input.title,
       body: input.body,
       category: input.type,
       fields: [{ name: 'userId', value: input.userId }],
     });
   }
+  } catch (error) {
+    retainClaims = true;
+    captureApiError(error, { route: 'lib/notifications/create.operatorOutcome', extra: { memberId: input.subjectMemberId } });
   } finally {
-    if (lifecycleClaim && input.subjectMemberId) {
-      await releaseMemberUpload(input.subjectMemberId, lifecycleClaim).catch((error) => {
-        // An uncertain release leaves the claim held for reconciliation.
-        captureApiError(error, { route: 'lib/notifications/create.lifecycleRelease', extra: { memberId: input.subjectMemberId } });
+    const claims = [
+      ...(lifecycleClaim && input.subjectMemberId ? [{ userId: input.subjectMemberId, token: lifecycleClaim }] : []),
+      ...(recipientClaim ? [{ userId: input.userId, token: recipientClaim }] : []),
+    ];
+    for (const claim of claims) {
+      const settle = retainClaims
+        ? markMemberExternalEffectUncertain(claim.userId, claim.token, 'notification_outcome_unknown')
+        : releaseMemberUpload(claim.userId, claim.token);
+      await settle.catch((error) => {
+        // The row remains held if a release or reconciliation mark is uncertain.
+        captureApiError(error, { route: 'lib/notifications/create.lifecycleSettle', extra: { memberId: claim.userId, token: claim.token } });
       });
     }
   }

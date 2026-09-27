@@ -14,9 +14,11 @@ import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedR
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import {
   MemberUploadCleanupError,
+  MemberUploadDefiniteStorageError,
   MemberUploadLifecycleError,
   MemberUploadPersistenceOutcomeError,
   MemberUploadStorageOutcomeError,
+  isDefiniteStorageRejection,
   withMemberUploadClaim,
 } from '@/lib/member/uploadLifecycle';
 
@@ -113,7 +115,9 @@ export const GET = withApiGuc(async (_request: Request, { params }: Props) => {
           let createdByThisRequest = false;
           try {
             const { error: copyError } = await storage.copy(sourcePath, snapshotPath);
-            if (copyError && !isStorageAlreadyExists(copyError)) throw copyError;
+            if (copyError && !isStorageAlreadyExists(copyError)) throw isDefiniteStorageRejection(copyError)
+              ? new MemberUploadDefiniteStorageError(copyError)
+              : new MemberUploadStorageOutcomeError(copyError);
             createdByThisRequest = !copyError;
           } catch (copyError) {
             captureApiError(copyError, {
@@ -123,6 +127,7 @@ export const GET = withApiGuc(async (_request: Request, { params }: Props) => {
             });
             // Even a failed/timed-out copy may finish after the deletion sweep.
             // Keep the claim; the fixed destination cannot be removed blindly.
+            if (copyError instanceof MemberUploadDefiniteStorageError || copyError instanceof MemberUploadStorageOutcomeError) throw copyError;
             throw new MemberUploadStorageOutcomeError(copyError);
           }
 
@@ -194,6 +199,7 @@ export const GET = withApiGuc(async (_request: Request, { params }: Props) => {
         return NextResponse.json({ error: 'Applicant account is no longer active' }, { status: 409 });
       }
       if (error instanceof MemberUploadStorageOutcomeError
+        || error instanceof MemberUploadDefiniteStorageError
         || error instanceof MemberUploadPersistenceOutcomeError
         || error instanceof MemberUploadCleanupError) {
         return NextResponse.json({ error: 'Could not migrate the shared resume; reconciliation is required' }, { status: 503 });

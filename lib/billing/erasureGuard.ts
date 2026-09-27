@@ -36,6 +36,16 @@ export async function hasUnresolvedMilestoneDispatch(tx: Prisma.TransactionClien
   return rows.length > 0;
 }
 
+/** Storage and notification operations each hold a row until provider outcome is known. */
+export async function hasUnresolvedMemberExternalEffect(tx: Prisma.TransactionClient, memberId: string): Promise<boolean> {
+  const rows = await tx.$queryRaw<Array<{ id: string }>>`
+    SELECT id FROM public.member_external_effect_claims
+    WHERE member_id = ${memberId}::text
+    LIMIT 1
+  `;
+  return rows.length > 0;
+}
+
 /** Resolve a unique User's tenant only after taking its lifecycle lock. */
 export async function scopedBillingUser(tx: Prisma.TransactionClient, userId: string, expectedOrgId?: string): Promise<Prisma.TransactionClient | null> {
   // Callers with only an internal User ID must first discover its tenant.
@@ -85,6 +95,7 @@ export async function beginBillingDeletion(memberId: string, organizationId?: st
     const member = await scoped.user.findFirst({ where, select: { billingDeletionPendingAt: true, billingDeletionOperationId: true, billingDeletionCompletedAt: true } });
     if (!member) return { ok: false as const, reason: 'missing' as const };
     if (member.billingDeletionOperationId) return { ok: false as const, reason: 'in_progress' as const };
+    if (await hasUnresolvedMemberExternalEffect(tx, memberId)) return { ok: false as const, reason: 'in_progress' as const };
     // The exact-deletedAt claim is used by the deleted-email repair routes.
     // They may retire an old Auth address, but must not complete a failed
     // GDPR/self-delete operation that still requires hard Auth erasure.
@@ -184,6 +195,7 @@ export async function beginBillingIdentityEdit(userId: string, organizationId: s
     const where = { id: userId, organizationId, email: expectedEmail, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null };
     const active = await scoped.user.findFirst({ where, select: { id: true } });
     if (!active) return { ok: false as const, reason: 'in_progress' as const };
+    if (await hasUnresolvedMemberExternalEffect(tx, userId)) return { ok: false as const, reason: 'in_progress' as const };
     if (await hasUnresolvedBillingSend(tx, userId)) return { ok: false as const, reason: 'unresolved_send' as const };
     if (await hasUnresolvedMilestoneDispatch(tx, userId)) return { ok: false as const, reason: 'in_progress' as const };
     const pendingAt = new Date();
@@ -223,6 +235,7 @@ export async function beginBillingRestore(userId: string, organizationId: string
     await lockBillingMemberLifecycle(tx, userId);
     const scoped = await scopedBillingUser(tx, userId, organizationId);
     if (!scoped) return { ok: false as const };
+    if (await hasUnresolvedMemberExternalEffect(tx, userId)) return { ok: false as const };
     const operationId = randomUUID();
     const { count } = await scoped.user.updateMany({
       where: {

@@ -96,10 +96,10 @@ describe('billing deletion owner fails closed', () => {
       billingDeletionCompletedAt: null,
     });
     // Billing sends are clear; the next query sees the owned milestone claim.
-    queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'cascade-1' }]);
+    queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'cascade-1' }]);
     expect(await beginBillingDeletion(memberId, organizationId)).toEqual({ ok: false, reason: 'in_progress' });
     expect(updateMany).not.toHaveBeenCalled();
-    expect(queryRaw.mock.calls[1][0].join('')).toContain("dispatch_state #>> '{claimId}' IS NOT NULL");
+    expect(queryRaw.mock.calls[2][0].join('')).toContain("dispatch_state #>> '{claimId}' IS NOT NULL");
 
     queryRaw.mockResolvedValue([]);
     expect((await beginBillingDeletion(memberId, organizationId)).ok).toBe(true);
@@ -107,7 +107,7 @@ describe('billing deletion owner fails closed', () => {
 
   it('holds recipient identity edits behind an unsettled milestone send', async () => {
     findFirst.mockResolvedValue({ id: memberId });
-    queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'cascade-1' }]);
+    queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'cascade-1' }]);
     expect(await beginBillingIdentityEdit(memberId, organizationId, 'member@example.invalid'))
       .toEqual({ ok: false, reason: 'in_progress' });
     expect(updateMany).not.toHaveBeenCalled();

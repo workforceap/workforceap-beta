@@ -12,12 +12,12 @@ vi.mock('web-push', () => ({ default: { setVapidDetails: mock.configure, sendNot
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     user: { findUnique: mock.findUser },
-    pushSubscription: { findMany: mock.findSubscriptions, delete: vi.fn() },
+    pushSubscription: { findMany: mock.findSubscriptions, delete: vi.fn(async () => ({})) },
   },
 }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn() }));
 
-import { sendWebPushToUser } from '@/lib/push/sendWebPush';
+import { WEB_PUSH_DEADLINE_MS, WebPushOutcomeUncertainError, sendWebPushToUser } from '@/lib/push/sendWebPush';
 
 const active = { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null };
 const subscription = { id: 'sub-1', endpoint: 'https://push.example.test/one', p256dh: 'p', auth: 'a' };
@@ -66,5 +66,41 @@ describe('sendWebPushToUser account lifecycle', () => {
 
     expect(await sendWebPushToUser('member-1', { title: 'Hello', body: 'Active' })).toBe(1);
     expect(mock.send).toHaveBeenCalledOnce();
+  });
+
+  it('does not label a failed final account read as an uncertain provider send', async () => {
+    mock.findUser.mockResolvedValueOnce(active).mockRejectedValueOnce(new Error('database unavailable'));
+    expect(await sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1')).toBe(0);
+    expect(mock.send).not.toHaveBeenCalled();
+  });
+
+  it('bounds a hung claimed push and reports an unknown outcome', async () => {
+    vi.useFakeTimers();
+    try {
+      mock.findUser.mockResolvedValue(active);
+      let finish!: () => void;
+      mock.send.mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve; }));
+      const result = expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1'))
+        .rejects.toBeInstanceOf(WebPushOutcomeUncertainError);
+      await vi.advanceTimersByTimeAsync(WEB_PUSH_DEADLINE_MS + 1);
+      await result;
+      finish();
+      await Promise.resolve();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('treats a completed 400 provider rejection as a known non-delivery', async () => {
+    mock.findUser.mockResolvedValue(active);
+    mock.send.mockRejectedValueOnce({ statusCode: 400 });
+    expect(await sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1')).toBe(0);
+  });
+
+  it.each([408, 429, 503])('retains a claimed send for ambiguous HTTP %i', async (statusCode) => {
+    mock.findUser.mockResolvedValue(active);
+    mock.send.mockRejectedValueOnce({ statusCode });
+    await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1'))
+      .rejects.toBeInstanceOf(WebPushOutcomeUncertainError);
   });
 });

@@ -6,6 +6,29 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 
 /** `WorkflowDiagnostic.workflow` for push delivery problems (surfaced on /admin/diagnostics). */
 export const WEB_PUSH_WORKFLOW = 'web_push';
+export const WEB_PUSH_DEADLINE_MS = 5_000;
+
+/** The provider may still deliver after our request times out. Keep the member claim. */
+export class WebPushOutcomeUncertainError extends Error {
+  constructor() {
+    super('Web Push delivery outcome is uncertain; reconcile the member external-effect claim.');
+    this.name = 'WebPushOutcomeUncertainError';
+  }
+}
+
+async function sendWithDeadline(subscription: Parameters<typeof webpush.sendNotification>[0], body: string): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      webpush.sendNotification(subscription, body, { timeout: WEB_PUSH_DEADLINE_MS }),
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => reject(new WebPushOutcomeUncertainError()), WEB_PUSH_DEADLINE_MS);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 /**
  * Web Push sender. Gracefully no-ops when VAPID keys are unconfigured so
@@ -47,11 +70,11 @@ export interface WebPushPayload {
 }
 
 /**
- * Send a push to every subscription a user has. Never throws — push is a
- * best-effort side channel next to the persistent in-app notification.
+ * Send a push to every subscription a user has. Ordinary sends are best
+ * effort; a claimed send reports an uncertain provider outcome to its owner.
  * Returns the number of pushes accepted by the push services.
  */
-export async function sendWebPushToUser(userId: string, payload: WebPushPayload, activeOperationId?: string): Promise<number> {
+export async function sendWebPushToUser(userId: string, payload: WebPushPayload, activeOperationId?: string, requireKnownOutcome = false): Promise<number> {
   if (!ensureVapid()) return 0;
 
   let subs: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
@@ -62,8 +85,7 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
       where: { id: userId },
       select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
     });
-    if (!member || member.deletedAt || member.billingDeletionPendingAt
-      || (member.billingDeletionOperationId && member.billingDeletionOperationId !== activeOperationId)) return 0;
+    if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return 0;
     subs = await prisma.pushSubscription.findMany({
       where: { userId },
       select: { id: true, endpoint: true, p256dh: true, auth: true },
@@ -83,23 +105,41 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
 
   const body = JSON.stringify(payload);
   let delivered = 0;
+  let uncertain = false;
   await Promise.all(
     subs.map(async (sub) => {
+      // A failed final database read happens before provider egress, so it is
+      // safe to release a claimed notification once its other work settles.
+      let member: { deletedAt: Date | null; billingDeletionPendingAt: Date | null; billingDeletionOperationId: string | null } | null;
       try {
         // A deletion may have started while the subscription query ran.
-        const member = await prisma.user.findUnique({
+        member = await prisma.user.findUnique({
           where: { id: userId },
           select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
         });
-        if (!member || member.deletedAt || member.billingDeletionPendingAt
-          || (member.billingDeletionOperationId && member.billingDeletionOperationId !== activeOperationId)) return;
-        await webpush.sendNotification(
+      } catch (err) {
+        void recordWorkflowDiagnostic({
+          workflow: WEB_PUSH_WORKFLOW,
+          status: 'error',
+          actorUserId: userId,
+          provider: 'web-push',
+          summary: 'Web push final account lookup failed before provider call',
+          failureReason: err instanceof Error ? err.message : String(err),
+        });
+        return;
+      }
+      if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return;
+      try {
+        await sendWithDeadline(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           body,
         );
         delivered += 1;
       } catch (err) {
-        const statusCode = (err as { statusCode?: number }).statusCode;
+        const rawStatusCode = (err as { statusCode?: number | string }).statusCode;
+        const statusCode = rawStatusCode === undefined ? NaN : Number(rawStatusCode);
+        if ((activeOperationId || requireKnownOutcome)
+          && (!Number.isInteger(statusCode) || statusCode === 408 || statusCode === 429 || statusCode >= 500)) uncertain = true;
         if (statusCode === 404 || statusCode === 410) {
           // Subscription expired or was revoked — prune it.
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
@@ -115,7 +155,7 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
             summary: 'Web push send failed',
             failureReason: err instanceof Error ? err.message : String(err),
             metadata: {
-              statusCode: statusCode ?? null,
+              statusCode: Number.isInteger(statusCode) ? statusCode : null,
               endpointHost: (() => { try { return new URL(sub.endpoint).host; } catch { return null; } })(),
               tag: payload.tag ?? null,
             },
@@ -124,5 +164,6 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
       }
     }),
   );
+  if (uncertain) throw new WebPushOutcomeUncertainError();
   return delivered;
 }
