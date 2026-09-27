@@ -37,12 +37,15 @@ test('resume drafts are rate-limited and applications use separate immutable sna
   const plainText = source('app/api/member/resume/plain-text/route.ts');
   const apply = source('app/api/(portal)/dashboard/jobs/[id]/apply/route.ts');
   const storage = source('lib/resume/atomicResumeObjectSwap.ts');
+  const lifecycle = source('lib/member/uploadLifecycle.ts');
 
   assert.match(plainText, /checkResumeDraftSaveRateLimit/);
   assert.match(apply, /storage\.copy\(currentResumePath, snapshotPath\)/);
   assert.match(apply, /resumePath: snapshotPath/);
-  assert.match(apply, /removeResumeObjectsWithRetry\(\{/);
-  assert.match(apply, /paths: \[snapshotPath\]/);
+  assert.match(apply, /withMemberUploadClaim\(\{/);
+  assert.match(apply, /recordAttempt\(snapshotPath\)/);
+  assert.match(lifecycle, /removeResumeObjectsWithRetry\(\{/);
+  assert.match(lifecycle, /paths: attemptedPaths/);
   assert.match(storage, /retiredPaths/);
   assert.match(storage, /await cleanup\(\[\.\.\.new Set\(retiredPaths\)\]\)/);
 });
