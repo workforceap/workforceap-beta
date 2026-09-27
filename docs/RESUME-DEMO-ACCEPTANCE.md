@@ -187,11 +187,19 @@ The value must never appear in a log, a chat, a file or shell history.
    - Replace `[YOUR-PASSWORD]` with the DEMO database password, percent-encoded if it contains characters such as `#`, `/`, `?` or `@`.
    - **Do not reset the DEMO database password** to get one. The Vercel Preview `POSTGRES_PRISMA_URL` (Sensitive, unreadable) uses the current password, and a reset would break the Preview deployment. If the password is not known, stop and ask.
 3. **Append the runtime parameters.** Add `?pgbouncer=true&connection_limit=1`, using `&` instead of `?` if the string already has a query. The helper does not require `pool_timeout`; the Vercel runtime contract (`scripts/lib/runtime-pool-contract.cjs`) additionally requires it, so `&pool_timeout=10` is harmless to add.
-4. **Set the secret from the clipboard or a hidden prompt, never as an argument.** Either:
-   ```bash
-   pbpaste | gh secret set PREVIEW_POSTGRES_PRISMA_URL --repo workforceap/workforceap-beta
-   ```
-   or run `gh secret set PREVIEW_POSTGRES_PRISMA_URL --repo workforceap/workforceap-beta` with no `--body` and paste at its hidden prompt. Neither puts the value in shell history or on screen. Clear the clipboard afterwards.
+4. **Set the secret at gh's hidden prompt; never put the value on the command line or in `--body`.**
+   - **Primary, on any platform** (PowerShell, cmd, bash, zsh):
+     ```
+     gh secret set PREVIEW_POSTGRES_PRISMA_URL --repo workforceap/workforceap-beta
+     ```
+     Run it with no `--body` in an interactive terminal. gh shows `Paste your secret:` and reads the value through a password prompt, so the value is not echoed. gh's help lists this as "Paste secret value for the current repository in an interactive prompt".
+   - **PowerShell alternative, from the clipboard:**
+     ```powershell
+     (Get-Clipboard -Raw).Trim() | gh secret set PREVIEW_POSTGRES_PRISMA_URL --repo workforceap/workforceap-beta
+     ```
+     When stdin is piped, gh reads it and strips only trailing CR/LF. PowerShell adds a line ending when it pipes to a native command, and gh removes it. `.Trim()` also removes stray spaces or line breaks copied around the value, which gh would otherwise keep. The connection string must be plain ASCII (percent-encode the password), because Windows PowerShell 5.1 re-encodes piped text.
+   - **History:** PSReadLine and shell history record only the command, never the prompt input or the clipboard contents. That's why the value must never appear in the command itself.
+   - **Afterwards, clear the clipboard:** `Set-Clipboard -Value $null` in PowerShell, or copy something else.
 5. **Check it without revealing it.** Dispatch the read-only secret check from `master`:
    ```bash
    gh workflow run preview-db-secret-check.yml --ref master --repo workforceap/workforceap-beta
