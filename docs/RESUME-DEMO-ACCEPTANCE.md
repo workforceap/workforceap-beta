@@ -226,9 +226,19 @@ Its one step runs `node scripts/check-preview-service-key.mjs PREVIEW_SUPABASE_U
 - `PREVIEW_SUPABASE_URL` must be exactly the canonical DEMO origin and classify as demo in the shared guard. Otherwise nothing is sent (`key: "not-checked"`).
 - A missing key, or one with characters that cannot be an HTTP header value, is refused locally (`missing` / `invalid`) with nothing sent.
 - Otherwise it sends **one** read-only `GET /auth/v1/admin/users?page=1&per_page=1` to the **hardcoded** DEMO origin (the `DEMO_REF` constant in `scripts/lib/supabase-project-guard.cjs`), with the key in the `apikey` and `Authorization` headers, a 10-second timeout, no retry and no redirects followed.
-- The response body is discarded unread. The output is one line, `{"urlProject": ..., "key": ...}`, where `key` is `valid` (HTTP 200), `rejected` (401/403) or `unavailable` (anything else, a redirect, a timeout or a network error). It exits 0 only for `valid`.
+- The response body is discarded unread. `key` is `valid` (HTTP 200), `rejected` (401/403) or `unavailable` (anything else, a redirect, a timeout or a network error). It exits 0 only for `valid`.
+- The check then sends **one** more read-only GET to the same hardcoded endpoint with the key in `apikey` **only** (same timeout, no retry, no redirects, body discarded). The output is one line, `{"urlProject", "key", "keyFormat", "bothHeaders", "apikeyOnly"}`, fixed labels only:
+  - `keyFormat` is a local shape category: `modern-secret` (an `sb_secret_` key), `legacy-jwt` (a three-segment `eyJ….….…` service_role JWT) or `unknown`. The key is never decoded and no part of it, its length or a hash is printed.
+  - `bothHeaders` is the `apikey` + `Authorization: Bearer` request. It is the **gate**: `key` always equals it, because that is what the harness's supabase-js client sends (installed 2.101.1 builds Auth admin headers with both, and its Data API/Storage fetch wrapper adds both). `apikeyOnly` is informational and never makes the check pass.
+  - Both are `not-checked` when nothing was sent (a non-DEMO URL, or a missing/invalid key).
 
-`create` runs the same probe as a same-run preflight (stage `key-probe`), after the target guard and before the marker, `createAuthUser` or any fixture write, so a key rotated between the check and the acceptance run is still caught.
+`create` runs the same both-header gate probe (not the `apikeyOnly` request) as a same-run preflight (stage `key-probe`), after the target guard and before the marker, `createAuthUser` or any fixture write, so a key rotated between the check and the acceptance run is still caught.
 
-If the key is `rejected`, get the DEMO project's service role / secret key from the Supabase dashboard (DEMO project → Project Settings → API keys) and set it with `gh secret set PREVIEW_SUPABASE_SERVICE_ROLE_KEY --repo workforceap/workforceap-beta` at the hidden prompt (or the PowerShell clipboard form), exactly as in step 4 above, then re-run this check.
+A `rejected` gate is a real harness blocker, but on its own it does not prove the key is invalid: Supabase documents `sb_secret_` keys as non-JWTs meant for the `apikey` header. Read `apikeyOnly` before doing anything:
+
+- **`bothHeaders` `rejected`, `apikeyOnly` `valid`:** the check prints a fixed second line saying so and still exits non-zero. Do **not** rotate the key. The fix is the harness's client usage (the headers it sends) together with this probe's gate, in one change, before any Auth write.
+- **Both `rejected`:** the key is refused by DEMO Auth admin with either header form; replace it as below.
+- A legacy service_role JWT (`keyFormat` `legacy-jwt`) is expected to pass with both headers.
+
+If both are `rejected`, get the DEMO project's service role / secret key from the Supabase dashboard (DEMO project → Project Settings → API keys) and set it with `gh secret set PREVIEW_SUPABASE_SERVICE_ROLE_KEY --repo workforceap/workforceap-beta` at the hidden prompt (or the PowerShell clipboard form), exactly as in step 4 above, then re-run this check.
 
