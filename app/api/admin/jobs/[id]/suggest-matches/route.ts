@@ -10,6 +10,7 @@ import { getMatchSuggestionsTestRecipient, isMatchSuggestionsDryRun } from '@/li
 
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
+import { makeScopedProxy } from '@/lib/tenant/scopeProxy';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -156,6 +157,7 @@ export const POST = withApiGuc(async (
     let claimedRows: { id: string }[];
     try {
       claimedRows = await prisma.$transaction(async (tx) => {
+        const scopedTx = makeScopedProxy(orgId, tx);
         const rows = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`
           UPDATE ai_job_matches
           SET status = 'employer_notified'::ai_job_match_status, status_updated_at = ${now}
@@ -171,7 +173,7 @@ export const POST = withApiGuc(async (
         `);
         if (rows.length === 0) return rows;
 
-        const reserved = await tx.job.updateMany({
+        const reserved = await scopedTx.job.updateMany({
           where: {
             id,
             organizationId: orgId,
