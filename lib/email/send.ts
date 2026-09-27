@@ -51,6 +51,7 @@ import {
 import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 import { partitionSuppressedRecipients, recordSuppressedRecipientSkip } from '@/lib/email/suppressions';
 import { resolveEmailTemplateKey } from '@/lib/email/templateKeys';
+import { prisma } from '@/lib/db/prisma';
 
 export { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 
@@ -74,6 +75,8 @@ export interface SendBrandedEmailRetryOptions {
   suppressFailureDiagnostic?: boolean;
   /** Test seam; production writes the send log through Prisma. */
   sendLogStore?: EmailSendLogStore;
+  /** Test seam for the final recipient state check before each provider attempt. */
+  recipientIsActive?: (userId: string, recipient: string) => Promise<boolean>;
   /**
    * Consult the provider suppression list before sending. Defaults to true
    * for bulk/cron sends (any caller that carries a deadline or runs under a
@@ -153,10 +156,10 @@ export function buildDeliverabilityHeaders(unsubscribeUrl?: string): Record<stri
  * configured fixture recipient, or an address the provider itself has already
  * suppressed (hard bounce / complaint) and would not deliver anyway.
  */
-export type SkippedEmailReason = 'fixture_recipient' | 'suppressed_recipient';
+export type SkippedEmailReason = 'fixture_recipient' | 'suppressed_recipient' | 'inactive_member';
 
 export function isRecipientSkipReason(value: unknown): value is SkippedEmailReason {
-  return value === 'fixture_recipient' || value === 'suppressed_recipient';
+  return value === 'fixture_recipient' || value === 'suppressed_recipient' || value === 'inactive_member';
 }
 
 export type FixtureSkippedEmailResult = {
@@ -197,6 +200,8 @@ export interface SendBrandedEmailArgs {
    */
   templateKey?: string | null;
   userId?: string | null;
+  /** Member receiving this message. Rechecked before every provider attempt. */
+  recipientUserId?: string;
   entityType?: string | null;
   entityId?: string | null;
 }
@@ -446,6 +451,18 @@ export class FixtureRecipientSkippedError extends Error {
   }
 }
 
+async function memberRecipientIsActive(userId: string, recipient: string): Promise<boolean> {
+  const member = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+  });
+  return !!member
+    && !member.deletedAt
+    && !member.billingDeletionPendingAt
+    && !member.billingDeletionOperationId
+    && normalizedRecipientAddress(member.email) === normalizedRecipientAddress(recipient);
+}
+
 export async function sendBrandedEmail(
   resend: Resend,
   args: SendBrandedEmailArgs,
@@ -534,6 +551,17 @@ export async function sendBrandedEmail(
   sendLog.write('sending', { attempts: 1 });
 
   for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
+    if (args.recipientUserId) {
+      // A cron or staff batch may have captured this address minutes ago.
+      // Recheck after pacing and retry sleeps, directly before each send.
+      const recipient = typeof to === 'string' ? to : '';
+      const active = await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient);
+      if (!active) {
+        sendLog.write('skipped', { skipReason: 'inactive_member', attempts: attempt - 1 });
+        await sendLog.settle();
+        return { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null };
+      }
+    }
     let result: Awaited<ReturnType<Resend['emails']['send']>>;
     try {
       result = await resend.emails.send(payload, { idempotencyKey });

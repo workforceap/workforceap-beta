@@ -139,6 +139,10 @@ export const POST = withApiGuc(async (
       }),
     );
 
+    // Soft deletion closes device delivery too; a restored account can
+    // subscribe again after sign-in is re-enabled.
+    await prisma.pushSubscription.deleteMany({ where: { userId: id } });
+
     // Soft delete = lock the login, never destroy it (see
     // lib/admin/authUserLifecycle.ts): restore can lift the ban later.
     const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, originalEmail);

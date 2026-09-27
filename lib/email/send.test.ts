@@ -14,6 +14,55 @@ import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { buildEmailDedupeKey, type EmailSendLogEntry, type EmailSendLogStore } from '@/lib/email/sendLog';
 
 describe('sendBrandedEmail', () => {
+  it('skips a queued member email when the recipient became inactive before provider send', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerCalls = 0;
+    const resend = { emails: { send: async () => {
+      providerCalls++;
+      return { data: { id: 'unexpected' }, error: null };
+    } } } as unknown as import('resend').Resend;
+    const entries: EmailSendLogEntry[] = [];
+    const result = await sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Queued message',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-1',
+    }, {
+      recipientIsActive: async () => false,
+      sendLogStore: { record: async (entry) => { entries.push({ ...entry }); } },
+    });
+
+    assert.deepEqual(result, { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null });
+    assert.equal(providerCalls, 0);
+    assert.equal(entries.at(-1)?.skipReason, 'inactive_member');
+  });
+
+  it('rechecks recipient state after a provider retry delay', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerCalls = 0;
+    let activeChecks = 0;
+    const resend = { emails: { send: async () => {
+      providerCalls++;
+      return { data: null, error: { name: 'rate_limit_exceeded', message: 'Too many requests', retry_after: 1 } };
+    } } } as unknown as import('resend').Resend;
+    const result = await sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Queued message',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-1',
+    }, {
+      recipientIsActive: async () => ++activeChecks === 1,
+      sleep: async () => {},
+      sendLogStore: { record: async () => {} },
+    });
+
+    assert.deepEqual(result, { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null });
+    assert.equal(providerCalls, 1);
+    assert.equal(activeChecks, 2);
+  });
+
   it('skips reserved and configured fixture recipient domains without calling Resend', async () => {
     process.env.CRON_SECRET = 'test-unsubscribe-secret';
     const originalFixtureDomains = process.env.EMAIL_FIXTURE_DOMAINS;

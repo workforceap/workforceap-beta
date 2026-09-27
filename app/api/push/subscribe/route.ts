@@ -9,6 +9,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { isWebPushConfigured } from '@/lib/push/sendWebPush';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const subscribeSchema = z.object({
   endpoint: z.string().url().max(1000),
@@ -32,19 +33,26 @@ async function _POST(req: NextRequest) {
   }
 
   const { endpoint, keys } = parsed.data;
-  await prisma.pushSubscription.upsert({
-    where: { endpoint },
-    create: {
-      userId: user.id,
-      endpoint,
-      p256dh: keys.p256dh,
-      auth: keys.auth,
-      userAgent: req.headers.get('user-agent')?.slice(0, 300) ?? null,
-    },
-    // A browser profile can change accounts: re-bind the endpoint to whoever
-    // is signed in now so pushes never go to a previous user of this device.
-    update: { userId: user.id, p256dh: keys.p256dh, auth: keys.auth },
-  });
+  try {
+    await withActiveMemberWrite(user.id, (tx) => tx.pushSubscription.upsert({
+      where: { endpoint },
+      create: {
+        userId: user.id,
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
+        userAgent: req.headers.get('user-agent')?.slice(0, 300) ?? null,
+      },
+      // A browser profile can change accounts: re-bind the endpoint to whoever
+      // is signed in now so pushes never go to a previous user of this device.
+      update: { userId: user.id, p256dh: keys.p256dh, auth: keys.auth },
+    }));
+  } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      return NextResponse.json({ error: 'This account is no longer active.' }, { status: 409 });
+    }
+    throw error;
+  }
 
   return NextResponse.json({ success: true });
 }

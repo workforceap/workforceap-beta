@@ -173,6 +173,11 @@ export async function anonymizeMember(
       data: ANONYMIZED_PROFILE_DATA,
     });
 
+    // An anonymized account must not retain device endpoints. Existing JWTs
+    // may still be valid until they expire, so the subscription route also
+    // checks the lifecycle barrier before accepting a new endpoint.
+    await tx.pushSubscription.deleteMany({ where: { userId } });
+
     await auditLog(
       {
         actorUserId,

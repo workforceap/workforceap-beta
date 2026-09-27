@@ -103,6 +103,7 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     user: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       updateMany: vi.fn(),
     },
     $transaction: vi.fn(async (fn: any) => {
@@ -184,6 +185,12 @@ describe('Bulk operations', () => {
     vi.mocked(prisma.organizationProgramCatalog.count).mockResolvedValue(0);
     vi.mocked(prisma.organizationProgramCatalog.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.courseProgress.groupBy).mockResolvedValue([] as any);
+    vi.mocked(prisma.user.findUnique).mockImplementation(async (args: { where: { id: string } }) => ({
+      email: args.where.id === uid(1) ? 'alice@example.org' : 'bob@example.org',
+      deletedAt: null,
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+    }) as any);
   });
 
   // ─── Bulk Email ───

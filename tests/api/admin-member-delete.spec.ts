@@ -31,6 +31,11 @@ vi.mock('@/lib/tenant/organization', () => ({
 
 const findFirst = vi.fn();
 const update = vi.fn();
+const deletePushSubscriptions = vi.hoisted(() => vi.fn());
+
+vi.mock('@/lib/db/prisma', () => ({
+  prisma: { pushSubscription: { deleteMany: deletePushSubscriptions } },
+}));
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: vi.fn((_orgId: string, fn: (db: unknown) => Promise<unknown>) =>
@@ -109,6 +114,7 @@ describe('POST /api/admin/members/[id]/delete', () => {
       userRoles: [],
     });
     update.mockResolvedValue({ id: MEMBER_ID });
+    deletePushSubscriptions.mockResolvedValue({ count: 1 });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
     vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
     supabaseGetUserById.mockResolvedValue({ data: { user: { id: MEMBER_ID, email: 'member@example.com' } }, error: null });
@@ -170,6 +176,7 @@ describe('POST /api/admin/members/[id]/delete', () => {
       ],
     });
     expect(update).toHaveBeenCalled();
+    expect(deletePushSubscriptions).toHaveBeenCalledWith({ where: { userId: MEMBER_ID } });
     expect(completeBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     // Ordering contract (formerly lib/admin/memberDeleteStorage.test.ts): blobs
     // are removed before the row is rewritten and before the login is locked,

@@ -133,6 +133,7 @@ async function _POST(request: NextRequest) {
           await sendBrandedEmailOrThrowOnSkip(resend, {
             from: getFrom(),
             to: member.email,
+            recipientUserId: member.id,
             subject: sanitizeEmailSubjectLine(subject),
             html,
             idempotencyKey: `bulk-email/${campaignId}/${member.id}`,

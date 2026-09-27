@@ -56,6 +56,13 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
 
   let subs: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
   try {
+    // A queued notification can reach this point after account erasure. Do
+    // not contact a device for a deleted account or one in deletion cleanup.
+    const member = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+    });
+    if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return 0;
     subs = await prisma.pushSubscription.findMany({
       where: { userId },
       select: { id: true, endpoint: true, p256dh: true, auth: true },
@@ -78,6 +85,12 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
   await Promise.all(
     subs.map(async (sub) => {
       try {
+        // A deletion may have started while the subscription query ran.
+        const member = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+        });
+        if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return;
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           body,
