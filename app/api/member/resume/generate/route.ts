@@ -97,7 +97,7 @@ export const POST = withApiGuc(async (request: Request) => {
       );
     }
   
-    const context = [
+    const historyContext = [
       `Name: ${dbUser.fullName ?? 'N/A'}`,
       `Email: ${dbUser.email}`,
       `Phone: ${profile?.profilePhone ?? dbUser.phone ?? 'N/A'}`,
@@ -106,9 +106,13 @@ export const POST = withApiGuc(async (request: Request) => {
       `Bio: ${profile?.profileBio ?? 'N/A'}`,
       `Employment: ${profile?.employmentStatus ?? 'N/A'}`,
       `Education: ${profile?.educationLevel ?? 'N/A'}`,
+    ];
+    // Goals, not history: the factuality check never accepts them as earned claims.
+    const goalContext = [
       `Target program: ${dbUser.enrolledProgram ? programDisplayTitle(dbUser.enrolledProgram) : 'Career training'}`,
       `Program category: ${program?.categoryLabel ?? 'N/A'}`,
-    ].join('\n');
+    ];
+    const context = [...historyContext, ...goalContext].join('\n');
   
     const systemPrompt = `You are an expert resume writer and career coach. Your job is to enhance and rewrite a member's existing resume to be more compelling for their target career.
 
@@ -124,7 +128,8 @@ export const POST = withApiGuc(async (request: Request) => {
   - Include only sections supported by the source. Omit missing Experience, Skills, Education, or Certifications sections rather than describing what was not provided.
   - Never write filler such as "No work history provided", "Not provided", "N/A", or "None" for any section or field. Leave the section out entirely.
   - Do not add generic responsibilities, accomplishments, or strengths (for example "proven track record" or "exceeded targets") that the source does not state. Rephrase only what the source says.
-  - Use only years, numbers, employers, and schools that appear in the source, spelled as in the source.
+  - Use only years, months, numbers, job titles, employers, schools, degrees, and certifications that appear in the resume or profile history, spelled as in the source.
+  - The target program and category are goals. Mention them only as a goal (for example "Pursuing ..."), never as an earned credential, completed training, or job.
   - A target program is a goal, not an earned certification or proof of current enrollment.
   - Return only the resume itself, with no explanation of your process or comments about source quality.
   - Format as clean markdown that renders well
@@ -174,7 +179,13 @@ export const POST = withApiGuc(async (request: Request) => {
       );
     }
 
-    const unsupportedClaims = findUnsupportedResumeClaims(`${resumeText}\n${context}`, cleanedOutput);
+    const unsupportedClaims = findUnsupportedResumeClaims(
+      {
+        history: [resumeText, ...historyContext.filter((line) => !line.endsWith(': N/A'))].join('\n'),
+        goals: goalContext.join('\n'),
+      },
+      cleanedOutput,
+    );
     if (unsupportedClaims.length > 0) {
       // Log only the claim kinds: the draft and source are member data.
       console.warn('[member/resume/generate] draft rejected by factuality check:', unsupportedClaims.join(','));
