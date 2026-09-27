@@ -14,6 +14,13 @@
  *   short timeout.
  * - The response body is never read; only the status maps to a fixed
  *   category. Errors are never surfaced. The key is never returned or logged.
+ *
+ * Limit: the headers mirror what the harness's supabase-js admin client sends
+ * (apikey + Authorization: Bearer <key>), so a 200 proves DEMO Auth admin READ
+ * authorization with the same headers the real run uses. It does NOT prove a
+ * later createUser write will succeed. For a new `sb_secret_` key, the
+ * Bearer behaviour is whatever the gateway does for supabase-js too, so a
+ * refusal shows up here as `rejected`, before any write.
  */
 const { DEMO_REF, projectForUrl } = require('./supabase-project-guard.cjs');
 
