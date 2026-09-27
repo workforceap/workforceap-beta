@@ -32,6 +32,7 @@ vi.mock('@/lib/db/prisma', () => {
   const prismaMock: any = {
     user: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(async () => ({ count: 1 })),
       upsert: vi.fn(),
@@ -63,6 +64,14 @@ vi.mock('@/lib/db/prisma', () => {
     organization: {
       findUnique: vi.fn(),
     },
+    memberExternalEffectClaim: {
+      create: vi.fn(),
+      deleteMany: vi.fn(async () => ({ count: 1 })),
+      updateMany: vi.fn(async () => ({ count: 1 })),
+    },
+    emailSendLog: {
+      upsert: vi.fn(),
+    },
   };
   prismaMock.$transaction = vi.fn(async (arg: any) =>
     typeof arg === 'function' ? arg(prismaMock) : Promise.all(arg)
@@ -73,6 +82,7 @@ vi.mock('@/lib/db/prisma', () => {
 vi.mock('@/lib/billing/erasureGuard', () => ({
   lockBillingMemberLifecycle: vi.fn(async () => undefined),
   billingLifecyclePending: vi.fn(async () => false),
+  scopedBillingUser: vi.fn(async (tx: unknown) => tx),
 }));
 
 vi.mock('@/lib/member/points', () => ({
@@ -242,10 +252,16 @@ describe('POST /api/member/assessment/submit', () => {
     vi.clearAllMocks();
     resendSend.mockReset();
     resendSend.mockResolvedValue({ data: { id: 'email-123' }, error: null });
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.memberExternalEffectClaim.create).mockResolvedValue({ id: 'claim-123' } as any);
+    vi.mocked(prisma.memberExternalEffectClaim.deleteMany).mockResolvedValue({ count: 1 });
+    vi.mocked(prisma.memberExternalEffectClaim.updateMany).mockResolvedValue({ count: 1 });
     vi.stubEnv('RESEND_API_KEY', 'test-resend-key');
     vi.stubEnv('EMAIL_FROM', 'test@workforceap.org');
     vi.stubEnv('EMAIL_TO_ADMIN', '');
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://test.workforceap.org');
+    vi.stubEnv('PRISMA_FLATTEN_TX', '0');
+    vi.stubEnv('VERCEL_ENV', '');
   });
 
   it('submits answers and calculates score for authenticated member', async () => {
@@ -267,6 +283,21 @@ describe('POST /api/member/assessment/submit', () => {
     expect(body.scorePct).toBeLessThanOrEqual(100);
     expect(body.adminEmailSent).toBe(true);
     expect(body.emailsSent).toBe(true);
+    expect(resendSend).toHaveBeenCalledTimes(2);
+    expect(prisma.memberExternalEffectClaim.create).toHaveBeenCalledTimes(2);
+    expect(prisma.memberExternalEffectClaim.deleteMany).toHaveBeenCalledTimes(2);
+    expect(prisma.memberExternalEffectClaim.updateMany).not.toHaveBeenCalled();
+    for (let i = 0; i < 2; i++) {
+      expect(vi.mocked(prisma.memberExternalEffectClaim.create).mock.calls[i][0]).toMatchObject({
+        data: {
+          memberId: UUIDS.user,
+          kind: 'email',
+          providerIdempotencyKey: resendSend.mock.calls[i][1].idempotencyKey,
+        },
+      });
+      expect(vi.mocked(prisma.memberExternalEffectClaim.create).mock.invocationCallOrder[i])
+        .toBeLessThan(resendSend.mock.invocationCallOrder[i]);
+    }
     expect(resendSend.mock.calls[0]?.[0]?.to).toEqual([
       'info@workforceap.org',
       'michael.brown@workforceap.org',
@@ -279,7 +310,7 @@ describe('POST /api/member/assessment/submit', () => {
     vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
     resendSend
-      .mockResolvedValueOnce({ data: null, error: { name: 'validation_error' } })
+      .mockResolvedValueOnce({ data: null, error: { name: 'validation_error', statusCode: 422, message: 'Invalid staff email' } })
       .mockResolvedValueOnce({ data: { id: 'member-email-123' }, error: null });
 
     const res = await submitAssessment(makeRequest(validBody));
@@ -289,6 +320,23 @@ describe('POST /api/member/assessment/submit', () => {
     expect(body.ok).toBe(true);
     expect(body.adminEmailSent).toBe(false);
     expect(body.emailsSent).toBe(true);
+    expect(resendSend).toHaveBeenCalledTimes(2);
+    expect(prisma.memberExternalEffectClaim.create).toHaveBeenCalledTimes(2);
+    expect(prisma.memberExternalEffectClaim.deleteMany).toHaveBeenCalledTimes(2);
+    expect(prisma.memberExternalEffectClaim.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('does not hand either email to Resend if the lifecycle claim finds an inactive member', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+
+    const res = await submitAssessment(makeRequest(validBody));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ adminEmailSent: false, emailsSent: false });
+    expect(prisma.memberExternalEffectClaim.create).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
   });
 
   it('stores results in member profile', async () => {
