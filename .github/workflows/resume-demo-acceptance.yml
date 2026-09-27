@@ -42,9 +42,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # UNGATED on purpose (no `if`): a dispatch with `--ref <other branch>` would
+  # otherwise skip every gated job and could show green with no receipts. This
+  # job runs every time, reads no secrets, and fails the run visibly unless it
+  # is a workflow_dispatch on master of the trusted repository. Every other job
+  # depends on it (checked by scripts/resume-demo-acceptance-workflow.test.ts).
+  policy:
+    name: Require a master dispatch in the trusted repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Refuse anything but a workflow_dispatch on master
+        env:
+          RUN_REPOSITORY: ${{ github.repository }}
+          RUN_REF: ${{ github.ref }}
+          RUN_EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$RUN_REPOSITORY" != "workforceap/workforceap-beta" ] || [ "$RUN_REF" != "refs/heads/master" ] || [ "$RUN_EVENT" != "workflow_dispatch" ]; then
+            echo "::error::Resume Build DEMO Acceptance runs only as a workflow_dispatch on refs/heads/master of workforceap/workforceap-beta (got $RUN_EVENT on $RUN_REF in $RUN_REPOSITORY). Nothing else ran."
+            exit 1
+          fi
+          echo "Trusted master dispatch."
+
   # Same mirror the portal smoke uses: `preview` must serve master's commit.
   mirror:
     name: Refresh the preview mirror
+    needs: policy
     if: github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
     permissions:
       contents: write
@@ -52,9 +76,9 @@ jobs:
 
   acceptance:
     name: Upload and Build as a disposable DEMO member
-    needs: mirror
+    needs: [policy, mirror]
     if: >-
-      !cancelled() && needs.mirror.result == 'success' &&
+      !cancelled() && needs.policy.result == 'success' && needs.mirror.result == 'success' &&
       github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 45

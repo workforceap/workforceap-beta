@@ -13,7 +13,7 @@ const PAGE_ONE = [
   'Rowan Tessaly-Brook',
   'Phone: 555-0147 | rowan.tessaly-brook@example.test',
   'Summary',
-  'Maintenance planner who schedules preventive work and keeps technicians supplied.',
+  'Operations scheduler who plans preventive work and keeps field crews supplied.',
   'Experience',
   'Kestrel Valley Grocers - Stock Associate, 2014-2017',
   '- Received and rotated perishable stock for the overnight crew',
@@ -32,6 +32,8 @@ const PAGE_TWO = [
 
 /** The text the PDF carries, page by page, as the extractor should return it. */
 export const SYNTHETIC_RESUME_SOURCE_TEXT = [...PAGE_ONE, ...PAGE_TWO].join('\n');
+/** Each page's text, so a test can prove every PAGE_TWO_FACTS entry is on page 2 only. */
+export const SYNTHETIC_RESUME_PAGE_TEXT = { one: PAGE_ONE.join('\n'), two: PAGE_TWO.join('\n') } as const;
 
 /** Distinctive facts that exist only on page 2. */
 export const PAGE_TWO_FACTS = {
@@ -133,14 +135,15 @@ export function initialAcceptanceReceipt(startedAt: string): Record<string, unkn
 }
 
 /**
- * The Supabase Auth user ID of the signed-in session, read from the
- * `sb-<ref>-auth-token` cookie that @supabase/ssr writes (whole or chunked as
- * `.0`, `.1`, …; `base64-` prefixed or URI-encoded JSON). The spec uses it to
- * prove it ran as the disposable member before any upload or Build. Returns
- * null when there is no single readable session, or when the session's
- * `user.id` and access-token `sub` disagree; the value is never logged.
+ * The identity claims in the signed-in session's `sb-<ref>-auth-token` cookie,
+ * as @supabase/ssr writes it (whole or chunked as `.0`, `.1`, …; `base64-`
+ * prefixed or URI-encoded JSON): the session's `user.id` and the access
+ * token's `sub`. Either is null when absent or unreadable; the whole result is
+ * null when there is no single readable session cookie. Never logged.
  */
-export function sessionUserIdFromCookies(cookies: ReadonlyArray<{ name: string; value: string }>): string | null {
+export function sessionIdentityFromCookies(
+  cookies: ReadonlyArray<{ name: string; value: string }>,
+): { userId: string | null; sub: string | null } | null {
   const pattern = /^(sb-[a-z0-9]+-auth-token)(?:\.(0|[1-9]\d*))?$/;
   const parts = new Map<string, Array<{ index: number; value: string }>>();
   for (const cookie of cookies) {
@@ -157,7 +160,7 @@ export function sessionUserIdFromCookies(cookies: ReadonlyArray<{ name: string; 
   if (whole && numbered.length > 0) return null;
   if (numbered.some((chunk, i) => chunk.index !== i)) return null;
   const raw = whole ? whole.value : numbered.map((chunk) => chunk.value).join('');
-  let session: { user?: { id?: unknown }; access_token?: unknown } | null = null;
+  let session: { user?: { id?: unknown }; access_token?: unknown } | null;
   try {
     const text = raw.startsWith('base64-')
       ? Buffer.from(raw.slice('base64-'.length), 'base64url').toString('utf8')
@@ -166,9 +169,10 @@ export function sessionUserIdFromCookies(cookies: ReadonlyArray<{ name: string; 
   } catch {
     return null;
   }
-  const userId = typeof session?.user?.id === 'string' ? session.user.id : null;
+  if (!session || typeof session !== 'object') return null;
+  const userId = typeof session.user?.id === 'string' ? session.user.id : null;
   let sub: string | null = null;
-  if (typeof session?.access_token === 'string') {
+  if (typeof session.access_token === 'string') {
     try {
       const payload = JSON.parse(Buffer.from(session.access_token.split('.')[1] ?? '', 'base64url').toString('utf8'));
       sub = typeof payload?.sub === 'string' ? payload.sub : null;
@@ -176,6 +180,47 @@ export function sessionUserIdFromCookies(cookies: ReadonlyArray<{ name: string; 
       sub = null;
     }
   }
-  if (userId && sub && userId !== sub) return null;
-  return userId ?? sub;
+  return { userId, sub };
+}
+
+export type IdentityCheck =
+  | { ok: true }
+  | { ok: false; outcome: 'identity_unproven' | 'member_mismatch'; reason: string };
+
+/**
+ * Proof, before any upload or Build, that the spec is signed in as the
+ * disposable member `create` recorded. All of these must hold:
+ * - the session cookie carries BOTH `user.id` and the access token's `sub`,
+ *   and they are equal;
+ * - both equal the created member ID;
+ * - the app's own authenticated API (GET /api/member/profile, which resolves
+ *   the user server-side through Supabase `auth.getUser()`, so the token is
+ *   verified, not just decoded) returns that same ID and the member's email.
+ * Anything missing or malformed is `identity_unproven`; anything present but
+ * different is `member_mismatch`.
+ */
+export function checkMemberIdentity(
+  observed: {
+    cookie: { userId: string | null; sub: string | null } | null;
+    api: { status: number; userId: string | null; email: string | null };
+  },
+  expected: { userId: string; email: string },
+): IdentityCheck {
+  const { cookie, api } = observed;
+  if (!cookie || !cookie.userId || !cookie.sub) {
+    return { ok: false, outcome: 'identity_unproven', reason: 'session cookie lacks user.id or access-token sub' };
+  }
+  if (cookie.userId !== cookie.sub) {
+    return { ok: false, outcome: 'member_mismatch', reason: 'session user.id and access-token sub differ' };
+  }
+  if (cookie.userId !== expected.userId) {
+    return { ok: false, outcome: 'member_mismatch', reason: 'session is not the created member' };
+  }
+  if (api.status !== 200 || !api.userId || !api.email) {
+    return { ok: false, outcome: 'identity_unproven', reason: `app profile API did not confirm the user (status ${api.status})` };
+  }
+  if (api.userId !== expected.userId || api.email.toLowerCase() !== expected.email.toLowerCase()) {
+    return { ok: false, outcome: 'member_mismatch', reason: 'app profile API returned a different member' };
+  }
+  return { ok: true };
 }

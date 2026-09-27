@@ -18,6 +18,7 @@ lane that makes a real provider call. The unit and route tests mock the provider
 
 The workflow runs these steps in order. It fails closed at each gate.
 
+0. **Policy:** an ungated first job with no secrets and no token permissions. It fails the run visibly unless it is a `workflow_dispatch` on `refs/heads/master` of `workforceap/workforceap-beta`, so a `--ref <branch>` dispatch is red instead of an all-skipped green. Every other job depends on it (static test `scripts/resume-demo-acceptance-workflow.test.ts`).
 1. **Mirror:** points `preview` at `master`, using the same reusable workflow as the portal smoke.
 2. **Wait:** waits for the Vercel Preview build of the dispatched commit.
 3. **Gate 0:** the target must not be an exact production hostname (`workforceap.org`, `www.workforceap.org`). The spec applies the same list. Other `*.workforceap.org` hosts are not assumed to be production.
@@ -35,7 +36,12 @@ The workflow runs these steps in order. It fails closed at each gate.
    - checks that the four page-two facts (employer, title, school, program) are retained in the saved draft;
    - checks that `findUnsupportedResumeClaims` flags no claim kinds against the fixture text. It is a narrow fail-closed validator: prose claims are not assessed, so this does not prove the draft free of unsupported claims. The contact kind comes from the profile, so it is recorded but not asserted.
 
-   Right after sign-in, and before any upload or Build, the spec reads the Auth user ID from the Supabase session cookie. It fails (`outcome: member_mismatch`) unless that ID is the one `create` recorded (`RESUME_ACCEPTANCE_MEMBER_ID`). It then records `member: {runId, userId, email}` in the receipt.
+   Right after sign-in, and before any upload or Build, the spec proves it is the disposable member (`checkMemberIdentity`). All of these must hold:
+   - The Supabase session cookie carries **both** `user.id` and the access token's `sub`, and they are equal.
+   - Both equal the member ID `create` recorded (`RESUME_ACCEPTANCE_MEMBER_ID`).
+   - The app's own `GET /api/member/profile` returns that same ID and the member's email. That endpoint resolves the user server-side through Supabase `auth.getUser()`, so the token is verified, not just decoded.
+
+   Anything missing or malformed fails as `identity_unproven`; anything present but different fails as `member_mismatch`. The spec then records `member: {runId, userId, email}` in the receipt.
 
    The spec refuses any account that is not a `resume-qa-*@example.com` member, an email not built from this run's `RESUME_ACCEPTANCE_RUN_ID`, the shared `PREVIEW_E2E_MEMBER_EMAIL` account, and exact production hostnames. The workflow sets `RESUME_ACCEPTANCE_MODE=workflow`. In that mode a refusal **fails** the spec instead of skipping it, and a receipt with `pass: false` is always written. Without the flag, locally, the spec stays inert and skips.
 7. **Cleanup:** runs always. `scripts/resume-demo-member.ts cleanup` works only on the recorded ID, in this order:
@@ -102,7 +108,7 @@ The receipt never contains resume text, cookies, tokens or passwords. It records
 - `providerPath` and `model` (`not exposed by the route`);
 - `groqQuota`, a static disclosure: "Preview GROQ_API_KEY shares production quota (DEMO_SETUP.md:65); a Build request may consume it";
 - `buildRequestLimit` (always 1) and `buildRequestsMade`, which is 0 or 1 and says what was actually attempted;
-- `pass` (boolean) and `outcome`, which is the Build outcome below, or `refused` / `member_mismatch` / `upload_failed` / `not_run`;
+- `pass` (boolean) and `outcome`, which is the Build outcome below, or `refused` / `identity_unproven` / `member_mismatch` / `upload_failed` / `not_run`;
 - `validatorScope`: `findUnsupportedResumeClaims` is a narrow fail-closed validator, and prose claims are not assessed;
 - `upload.status` and `upload.extractionWarning`;
 - `firstBuild`, the only Build, with `status`, `outcome`, `latencyMs`, `error`, and `draft.length` / `draft.sha256`;

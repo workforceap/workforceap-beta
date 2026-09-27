@@ -21,7 +21,8 @@
  *   PLAYWRIGHT_BASE_URL                trusted DEMO Preview origin
  *   RESUME_ACCEPTANCE_MEMBER_EMAIL     the per-run synthetic member
  *   RESUME_ACCEPTANCE_MEMBER_PASSWORD
- *   RESUME_ACCEPTANCE_MEMBER_ID        its Auth user ID; the signed-in session must match
+ *   RESUME_ACCEPTANCE_MEMBER_ID        its Auth user ID; the session cookie's user.id and
+ *                                      token sub, and GET /api/member/profile, must all match
  *   RESUME_ACCEPTANCE_RUN_ID           `<run>-<attempt>`; the email must be built from it
  *   RESUME_ACCEPTANCE_SHARED_EMAILS    comma-separated shared accounts to refuse
  *   RESUME_ACCEPTANCE_CONFIRMED        "1" only after the workflow's gates passed
@@ -42,7 +43,8 @@ import {
   containsFact,
   initialAcceptanceReceipt,
   PAGE_TWO_FACTS,
-  sessionUserIdFromCookies,
+  checkMemberIdentity,
+  sessionIdentityFromCookies,
   singleBuildBudget,
   SYNTHETIC_RESUME_FILE_NAME,
   SYNTHETIC_RESUME_SOURCE_TEXT,
@@ -175,12 +177,29 @@ test.describe('DEMO Resume Build acceptance (real provider)', () => {
 
   test('one real Build from a two-page PDF retains page-two facts with no claim kinds flagged', async ({ page }) => {
     await login(page);
-    // Prove the session is the disposable member before anything is mutated,
-    // and record it for the final verifier's cross-check with cleanup.
-    const sessionUserId = sessionUserIdFromCookies(await page.context().cookies());
-    if (sessionUserId !== expectedMemberId) evidence.outcome = 'member_mismatch';
-    expect(sessionUserId === expectedMemberId, 'signed-in session is the disposable member').toBe(true);
-    evidence.member = { runId, userId: sessionUserId, email };
+    // Prove the session is the disposable member before anything is mutated
+    // (checkMemberIdentity): the cookie's user.id and token sub, and the app's
+    // own server-verified profile API, must all name the created member.
+    const profile = await page.request.get('/api/member/profile', { maxRetries: 0 });
+    const profileUser = ((await jsonOf(profile)).user ?? {}) as Record<string, unknown>;
+    const identity = checkMemberIdentity(
+      {
+        cookie: sessionIdentityFromCookies(await page.context().cookies()),
+        api: {
+          status: profile.status(),
+          userId: typeof profileUser.id === 'string' ? profileUser.id : null,
+          email: typeof profileUser.email === 'string' ? profileUser.email : null,
+        },
+      },
+      { userId: expectedMemberId, email },
+    );
+    if (!identity.ok) {
+      evidence.outcome = identity.outcome;
+      evidence.identityFailure = identity.reason;
+    }
+    expect(identity.ok, `signed-in session is the disposable member${identity.ok ? '' : `: ${identity.reason}`}`).toBe(true);
+    evidence.identityVerified = { sessionUserIdEqualsTokenSub: true, profileApiConfirmed: true };
+    evidence.member = { runId, userId: expectedMemberId, email };
     evidence.before = await resumeStatus(page).then(({ enhancedText, ...rest }) => ({
       ...rest,
       hasEnhancedText: Boolean(enhancedText),

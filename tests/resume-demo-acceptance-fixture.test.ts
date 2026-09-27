@@ -15,15 +15,17 @@ import {
   containsFact,
   initialAcceptanceReceipt,
   PAGE_TWO_FACTS,
-  sessionUserIdFromCookies,
+  checkMemberIdentity,
+  sessionIdentityFromCookies,
   singleBuildBudget,
+  SYNTHETIC_RESUME_PAGE_TEXT,
   SYNTHETIC_RESUME_SOURCE_TEXT,
 } from './fixtures/resumeDemoAcceptance';
 
 const FAITHFUL_DRAFT = `# Rowan Tessaly-Brook
 
 ## Professional Summary
-Maintenance planner who schedules preventive work and keeps technicians supplied.
+Operations scheduler who plans preventive work and keeps field crews supplied.
 
 ## Experience
 **Maintenance Planner** — Brightwater Turbine Services, June 2017 – August 2024
@@ -87,25 +89,67 @@ describe('DEMO acceptance fixture (local only)', () => {
     expect(receipt.groqQuota).toMatch(/may consume/);
   });
 
-  it('reads the signed-in member ID from the Supabase session cookie, whole or chunked', () => {
-    const id = '11111111-1111-4111-8111-111111111111';
-    const token = (sub: string) => `h.${Buffer.from(JSON.stringify({ sub })).toString('base64url')}.s`;
-    const session = JSON.stringify({ access_token: token(id), user: { id } });
-    const encoded = `base64-${Buffer.from(session).toString('base64url')}`;
+  it('every asserted page-two fact is on page 2 and absent from page 1 in any normalized form', () => {
+    for (const [key, fact] of Object.entries(PAGE_TWO_FACTS)) {
+      expect(containsFact(SYNTHETIC_RESUME_PAGE_TEXT.one, fact), `${key} on page 1`).toBe(false);
+      expect(containsFact(SYNTHETIC_RESUME_PAGE_TEXT.two, fact), `${key} on page 2`).toBe(true);
+    }
+  });
+
+  describe('[mock] member identity proof before upload', () => {
+    const member = { userId: '11111111-1111-4111-8111-111111111111', email: 'resume-qa-123-1@example.com' };
+    const other = '22222222-2222-4222-8222-222222222222';
     const name = 'sb-esbdrgaonplpvzmtrdhw-auth-token';
-    expect(sessionUserIdFromCookies([{ name, value: encoded }, { name: 'other', value: 'x' }])).toBe(id);
-    const cut = Math.floor(encoded.length / 2);
-    expect(sessionUserIdFromCookies([
-      { name: `${name}.1`, value: encoded.slice(cut) },
-      { name: `${name}.0`, value: encoded.slice(0, cut) },
-    ])).toBe(id);
-    expect(sessionUserIdFromCookies([{ name, value: encodeURIComponent(session) }])).toBe(id);
-    // Fail closed: no session, two projects, a gap in the chunks, or an ID that disagrees with the token.
-    expect(sessionUserIdFromCookies([])).toBeNull();
-    expect(sessionUserIdFromCookies([{ name, value: encoded }, { name: 'sb-other-auth-token', value: encoded }])).toBeNull();
-    expect(sessionUserIdFromCookies([{ name: `${name}.1`, value: encoded }])).toBeNull();
-    const forged = JSON.stringify({ access_token: token('22222222-2222-4222-8222-222222222222'), user: { id } });
-    expect(sessionUserIdFromCookies([{ name, value: `base64-${Buffer.from(forged).toString('base64url')}` }])).toBeNull();
-    expect(sessionUserIdFromCookies([{ name, value: 'base64-!!!' }])).toBeNull();
+    const token = (sub?: string) => `h.${Buffer.from(JSON.stringify(sub === undefined ? {} : { sub })).toString('base64url')}.s`;
+    const session = (userId: string | undefined, sub: string | undefined) => JSON.stringify({
+      access_token: token(sub),
+      ...(userId === undefined ? {} : { user: { id: userId } }),
+    });
+    const whole = (value: string) => [{ name, value: `base64-${Buffer.from(value).toString('base64url')}` }];
+    const chunked = (value: string) => {
+      const encoded = `base64-${Buffer.from(value).toString('base64url')}`;
+      const cut = Math.floor(encoded.length / 2);
+      // Out of order on purpose; chunks are joined by index.
+      return [{ name: `${name}.1`, value: encoded.slice(cut) }, { name: `${name}.0`, value: encoded.slice(0, cut) }];
+    };
+    const api: { status: number; userId: string | null; email: string | null } = { status: 200, userId: member.userId, email: member.email };
+    const check = (cookies: Array<{ name: string; value: string }>, apiResult = api) =>
+      checkMemberIdentity({ cookie: sessionIdentityFromCookies(cookies), api: apiResult }, member);
+
+    for (const [variant, cookiesOf] of [['whole', whole], ['chunked', chunked]] as const) {
+      it(`${variant} cookie: both claims equal to the member, confirmed by the app API, passes`, () => {
+        expect(check(cookiesOf(session(member.userId, member.userId)))).toEqual({ ok: true });
+      });
+      it(`${variant} cookie: missing user.id fails as identity_unproven`, () => {
+        expect(check(cookiesOf(session(undefined, member.userId)))).toMatchObject({ ok: false, outcome: 'identity_unproven' });
+      });
+      it(`${variant} cookie: missing sub fails as identity_unproven`, () => {
+        expect(check(cookiesOf(session(member.userId, undefined)))).toMatchObject({ ok: false, outcome: 'identity_unproven' });
+      });
+      it(`${variant} cookie: user.id different from sub fails as member_mismatch`, () => {
+        expect(check(cookiesOf(session(member.userId, other)))).toMatchObject({ ok: false, outcome: 'member_mismatch' });
+      });
+      it(`${variant} cookie: both equal but not the member fails as member_mismatch`, () => {
+        expect(check(cookiesOf(session(other, other)))).toMatchObject({ ok: false, outcome: 'member_mismatch' });
+      });
+    }
+
+    it('the app API must confirm the same member and email', () => {
+      const cookies = whole(session(member.userId, member.userId));
+      expect(check(cookies, { status: 401, userId: null, email: null })).toMatchObject({ ok: false, outcome: 'identity_unproven' });
+      expect(check(cookies, { ...api, userId: other })).toMatchObject({ ok: false, outcome: 'member_mismatch' });
+      expect(check(cookies, { ...api, email: 'someone@example.com' })).toMatchObject({ ok: false, outcome: 'member_mismatch' });
+      expect(check(cookies, { ...api, email: member.email.toUpperCase() })).toEqual({ ok: true });
+    });
+
+    it('an unreadable, ambiguous or gapped session cookie proves nothing', () => {
+      const good = session(member.userId, member.userId);
+      expect(sessionIdentityFromCookies([])).toBeNull();
+      expect(sessionIdentityFromCookies([...whole(good), { name: 'sb-other-auth-token', value: whole(good)[0].value }])).toBeNull();
+      expect(sessionIdentityFromCookies([{ name: `${name}.1`, value: whole(good)[0].value }])).toBeNull();
+      expect(sessionIdentityFromCookies([{ name, value: 'base64-!!!' }])).toBeNull();
+      expect(sessionIdentityFromCookies([{ name, value: encodeURIComponent(good) }])).toEqual({ userId: member.userId, sub: member.userId });
+      expect(check([])).toMatchObject({ ok: false, outcome: 'identity_unproven' });
+    });
   });
 });
