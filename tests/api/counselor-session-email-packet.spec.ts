@@ -98,6 +98,7 @@ describe('session packet portal link', () => {
     expect(sendBrandedEmailOrThrowOnSkip).toHaveBeenCalledTimes(1);
 
     const [, message] = vi.mocked(sendBrandedEmailOrThrowOnSkip).mock.calls[0]!;
+    expect(message).toMatchObject({ recipientUserId: MEMBER_ID, memberEffectClaim: true });
     const html = (message as { html: string }).html;
     const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]!);
     const portalLinks = hrefs.filter((href) => href.includes('/dashboard'));

@@ -14,6 +14,14 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {
 } }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@/lib/tenant/organizationBranding', () => ({ getOrganizationBranding: vi.fn() }));
+// These tests exercise the final address/lifecycle lookup. Claim acquisition
+// and settlement are covered separately by member-effect-claim.spec.ts.
+vi.mock('@/lib/member/uploadLifecycle', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/member/uploadLifecycle')>()),
+  beginMemberUpload: vi.fn(async () => 'synthetic-email-claim'),
+  releaseMemberUpload: vi.fn(async () => undefined),
+  markMemberExternalEffectUncertain: vi.fn(async () => undefined),
+}));
 
 import {
   sendCourseCompletedEmail,

@@ -365,6 +365,7 @@ async function generatePdfBuffer(title: string, text: string): Promise<Buffer> {
         from: getFrom(),
         to: member.email,
         recipientUserId: memberId,
+        memberEffectClaim: true,
         subject,
         html,
         attachments,

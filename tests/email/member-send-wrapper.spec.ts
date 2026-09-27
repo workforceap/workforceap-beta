@@ -6,7 +6,12 @@ vi.mock('@/lib/email/send', async (importOriginal) => ({
   sendBrandedEmailOrThrowOnSkip: mocks.send,
 }));
 
-import { sendAIMatchSuggestionEmail, sendApplicationConfirmationEmail } from '@/lib/email';
+import {
+  sendAIMatchSuggestionEmail,
+  sendApplicationConfirmationEmail,
+  sendEligibilityScreeningConfirmationEmail,
+  sendVoiceCoachTranscriptEmail,
+} from '@/lib/email';
 import { FixtureRecipientSkippedError, MemberEmailOutcomeUncertainError } from '@/lib/email/send';
 
 describe('member-linked email wrappers', () => {
@@ -65,6 +70,51 @@ describe('member-linked email wrappers', () => {
     expect(mocks.send).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
       recipientUserId: 'member-1',
       memberEffectClaim: true,
+    }));
+  });
+
+  it('claims a member named in a staff transcript before the send', async () => {
+    mocks.send.mockResolvedValueOnce({ data: { id: 'accepted' }, error: null });
+
+    const result = await sendVoiceCoachTranscriptEmail({
+      to: ['staff@workforceap.org'],
+      subjectMemberId: 'member-transcript',
+      memberName: 'Member One',
+      memberEmail: 'member@workforceap.org',
+      coachLabel: 'Career Coach',
+      transcriptTurns: [{ role: 'user', text: 'Private details' }],
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(mocks.send).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      subjectMemberId: 'member-transcript',
+      memberEffectClaim: true,
+    }));
+  });
+
+  it('claims an account eligibility confirmation and preserves anonymous lead delivery', async () => {
+    mocks.send.mockResolvedValue({ data: { id: 'accepted' }, error: null });
+
+    const account = await sendEligibilityScreeningConfirmationEmail({
+      to: 'member@workforceap.org',
+      recipientUserId: 'member-eligibility',
+      fullName: 'Member One',
+    });
+    const lead = await sendEligibilityScreeningConfirmationEmail({
+      to: 'lead@example.com',
+      publicLead: true,
+      fullName: 'Public Lead',
+    });
+
+    expect(account).toEqual({ ok: true });
+    expect(lead).toEqual({ ok: true });
+    expect(mocks.send).toHaveBeenNthCalledWith(1, expect.anything(), expect.objectContaining({
+      recipientUserId: 'member-eligibility',
+      memberEffectClaim: true,
+    }));
+    expect(mocks.send).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({
+      recipientUserId: undefined,
+      memberEffectClaim: false,
     }));
   });
 });

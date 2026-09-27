@@ -52,6 +52,14 @@ vi.mock('@/lib/email', () => ({
 // members use a non-reserved domain so the fixture guard lets them through.
 process.env.UNSUBSCRIBE_TOKEN_SECRET ??= 'test-unsubscribe-secret';
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
+// Route behavior is exercised with the real send adapter; claim ordering and
+// provider settlement have their own focused email tests.
+vi.mock('@/lib/member/uploadLifecycle', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/member/uploadLifecycle')>()),
+  beginMemberUpload: vi.fn(async (id: string) => `synthetic-email-claim-${id}`),
+  releaseMemberUpload: vi.fn(async () => undefined),
+  markMemberExternalEffectUncertain: vi.fn(async () => undefined),
+}));
 vi.mock('@/lib/email/template', () => ({ brandedEmailLayout: vi.fn(() => '<html>email</html>') }));
 vi.mock('@/lib/email/escapeHtml', () => ({
   escapeHtml: vi.fn((s: string) => s),
@@ -150,6 +158,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getResend } from '@/lib/email';
+import { beginMemberUpload } from '@/lib/member/uploadLifecycle';
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
@@ -245,6 +254,7 @@ describe('Bulk operations', () => {
       expect(body.messagesCreated).toBe(2);
       expect(body.total).toBe(2);
       expect(sendMock).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(beginMemberUpload).mock.calls.map(([id]) => id)).toEqual([uid(1), uid(2)]);
       // Each member gets its own campaign-scoped idempotency key.
       const keys = sendMock.mock.calls.map((call) => call[1]?.idempotencyKey as string);
       expect(keys[0]).toMatch(new RegExp(`^bulk-email/[0-9a-f-]{36}/${uid(1)}$`));
@@ -281,7 +291,7 @@ describe('Bulk operations', () => {
         { id: uid(2), email: 'bob@example.org', fullName: 'Bob', enrolledProgram: null, organizationId: 'org-1' },
       ] as any);
       const sendMock = vi.fn()
-        .mockResolvedValueOnce({ data: null, error: { name: 'validation_error', message: 'Recipient rejected' } })
+        .mockResolvedValueOnce({ data: null, error: { name: 'validation_error', message: 'Recipient rejected', statusCode: 422 } })
         .mockResolvedValueOnce({ data: { id: 'email-id' }, error: null });
       vi.mocked(getResend).mockReturnValue({ emails: { send: sendMock } } as any);
 

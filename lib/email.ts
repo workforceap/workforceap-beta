@@ -242,6 +242,7 @@ export async function sendVoiceCoachTranscriptEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_transcript,
       to: recipients,
       subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
       subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} transcript — ${params.memberName}`),
       html,
@@ -314,6 +315,7 @@ export async function sendVoiceCoachArtifactEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_artifact,
       to: recipients,
       subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
       subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} artifact — ${params.memberName}`),
       html,
@@ -392,6 +394,7 @@ export async function sendVoiceInterviewTranscriptEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.voice_interview_transcript,
       to: recipients,
       subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: true,
       subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`Voice interview transcript — ${params.memberName} — ${params.role}`),
       html,
@@ -454,6 +457,7 @@ export async function sendElevatorSpeechEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.ai_elevator_speech,
       to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Your AI elevator speech — ${params.targetRole}`),
       html,
     });
@@ -560,6 +564,7 @@ export async function sendEnrollmentConfirmationEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject,
       html,
       template: { name: 'enrollment_confirmation', params: { ...params } },
@@ -752,6 +757,7 @@ export async function sendApplicationAcceptedEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject,
       html,
       template: { name: 'application_accepted', params: { ...params } },
@@ -789,6 +795,7 @@ export async function sendApplicationRejectedEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'WorkforceAP Application Update',
       html,
       template: { name: 'application_rejected', params: { ...params } },
@@ -918,6 +925,7 @@ export async function sendCourseEnrolledEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Your ${params.programName} program selection is saved`),
       html,
       template: { name: 'course_enrolled', params: { ...params } },
@@ -962,6 +970,7 @@ export async function sendCourseKickoffEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(subject),
       html,
       template: { name: 'course_kickoff', params: { ...params } },
@@ -1004,6 +1013,7 @@ export async function sendCourseAccountabilityEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.course_accountability,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(subject),
       html,
     });
@@ -1063,6 +1073,7 @@ export async function sendCertCelebrationEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.cert_celebration,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(subject),
       html,
     });
@@ -1124,7 +1135,7 @@ export async function sendPreparedPlacementSurveyEmail(
     return { ok: false, error: 'Email not configured' };
   }
   try {
-    await sendBrandedEmail(resend, { ...payload, recipientUserId });
+    await sendBrandedEmail(resend, { ...payload, recipientUserId, memberEffectClaim: Boolean(recipientUserId) });
     return { ok: true };
   } catch (err) {
     if (err instanceof FixtureRecipientSkippedError) {
@@ -1210,6 +1221,7 @@ export async function sendCourseCompletedEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.course_completed,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Congratulations! You Completed ${params.courseName}`),
       html,
     });
@@ -1312,6 +1324,7 @@ export async function sendWeeklyRecapEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.member_weekly_recap,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'Your WorkforceAP Weekly Recap',
       html,
       idempotencyKey: params.idempotencyKey,
@@ -1501,6 +1514,7 @@ export async function sendInactiveNudgeEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.inactive_nudge,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'We Miss You at WorkforceAP',
       html,
     });
@@ -1542,6 +1556,7 @@ export async function sendJobAlertDigestEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.job_alert_digest,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`${params.jobs.length} new job${params.jobs.length === 1 ? '' : 's'} match your program`),
       html,
     });
@@ -1941,6 +1956,7 @@ export async function sendEligibilityScreeningConfirmationEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine('Eligibility questionnaire received — WorkforceAP'),
       html,
     });
@@ -2019,6 +2035,7 @@ export async function sendApplicantFollowupEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: 'Your WorkforceAP Application is Being Reviewed',
       html,
       template: { name: 'applicant_followup', params: { ...params } },
@@ -2094,6 +2111,7 @@ export async function sendApplicantChaseEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: APPLICANT_CHASE_SUBJECT[params.stage],
       html,
       template: { name: 'applicant_chase', params: { ...params } },
@@ -2659,6 +2677,7 @@ export async function sendInterviewPrepBundleEmail(params: {
       from: getFrom(),
       to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine('Your Pre-Interview Prep Bundle — WorkforceAP'),
       html,
     });
@@ -2699,6 +2718,7 @@ export async function sendInterviewPrepReminderEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Reminder: interview prep for ${params.company}`),
       html,
     });
@@ -2738,6 +2758,7 @@ export async function sendInterviewDebriefPromptEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(`Quick check-in: ${params.company} interview`),
       html,
     });
@@ -2852,6 +2873,7 @@ export async function sendMemberCheckInEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(memberCheckInSubject),
       html,
     });
@@ -2897,6 +2919,7 @@ export async function sendMemberComeBackEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(memberComeBackSubject(params.counselorName)),
       html,
     });
@@ -2938,6 +2961,7 @@ export async function sendMemberStuckEmail(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(memberStuckSubject),
       html,
     });

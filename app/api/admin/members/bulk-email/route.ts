@@ -134,6 +134,7 @@ async function _POST(request: NextRequest) {
             from: getFrom(),
             to: member.email,
             recipientUserId: member.id,
+            memberEffectClaim: true,
             subject: sanitizeEmailSubjectLine(subject),
             html,
             idempotencyKey: `bulk-email/${campaignId}/${member.id}`,
