@@ -9,7 +9,8 @@ import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const WORKFLOW = join(dirname(fileURLToPath(import.meta.url)), '..', '.github', 'workflows', 'resume-demo-acceptance.yml');
+const WORKFLOWS = ['resume-demo-acceptance.yml', 'preview-db-secret-check.yml'];
+const workflowPath = (file: string) => join(dirname(fileURLToPath(import.meta.url)), '..', '.github', 'workflows', file);
 
 interface Job { name: string; body: string; hasIf: boolean; needs: string[] }
 
@@ -49,10 +50,11 @@ function dependsOn(jobs: Map<string, Job>, name: string, target: string, seen = 
   return job.needs.includes(target) || job.needs.some((need) => dependsOn(jobs, need, target, seen));
 }
 
-const text = readFileSync(WORKFLOW, 'utf8');
+for (const file of WORKFLOWS) {
+const text = readFileSync(workflowPath(file), 'utf8');
 const jobs = parseJobs(text);
 
-test('[static] an ungated policy job refuses anything but a master dispatch in the trusted repository', () => {
+test(`[static] ${file}: an ungated policy job refuses anything but a master dispatch in the trusted repository`, () => {
   const policy = jobs.get('policy');
   assert.ok(policy, 'a policy job exists');
   assert.equal(policy.hasIf, false, 'the policy job has no if: so it always runs');
@@ -68,8 +70,8 @@ test('[static] an ungated policy job refuses anything but a master dispatch in t
   assert.match(policy.body, /exit 1/);
 });
 
-test('[static] mirror needs policy, and every job that references secrets depends on policy', () => {
-  assert.ok(jobs.get('mirror')?.needs.includes('policy'), 'mirror needs policy');
+test(`[static] ${file}: mirror needs policy, and every job that references secrets depends on policy`, () => {
+  if (jobs.has('mirror')) assert.ok(jobs.get('mirror')?.needs.includes('policy'), 'mirror needs policy');
   const withSecrets = [...jobs.values()].filter((job) => /secrets\./.test(job.body));
   assert.ok(withSecrets.length > 0, 'at least one job uses secrets');
   for (const job of jobs.values()) {
@@ -78,9 +80,43 @@ test('[static] mirror needs policy, and every job that references secrets depend
   }
 });
 
-test('[static] the workflow has only a workflow_dispatch trigger', () => {
+test(`[static] ${file}: the workflow has only a workflow_dispatch trigger`, () => {
   const on = text.match(/^on:\n((?: {2}.*\n|\s*\n)+)/m)?.[1] ?? '';
   const triggers = [...on.matchAll(/^ {2}([a-z_]+):/gm)].map((match) => match[1]);
   assert.deepEqual(triggers, ['workflow_dispatch']);
   assert.doesNotMatch(text, /pull_request_target/);
 });
+
+if (file === 'preview-db-secret-check.yml') {
+  test('[static] preview-db-secret-check.yml: one step-scoped parse-only call; nothing installs, connects or echoes', () => {
+    const SECRET_VARS = ['PREVIEW_POSTGRES_PRISMA_URL', 'PREVIEW_DATABASE_URL'];
+    assert.deepEqual([...jobs.keys()], ['policy', 'classify']);
+    const classify = jobs.get('classify')!.body;
+    const command = 'node scripts/classify-preview-db-url.mjs PREVIEW_POSTGRES_PRISMA_URL PREVIEW_DATABASE_URL';
+    assert.equal([...text.matchAll(/node scripts\/classify-preview-db-url\.mjs/g)].length, 1, 'the classifier runs once');
+    assert.ok(classify.split('\n').includes(`        run: ${command}`), 'exact command');
+    // The secrets are step-level env of that one step: no workflow- or job-level env block.
+    assert.doesNotMatch(text, /^env:/m, 'no workflow-level env');
+    assert.doesNotMatch(classify, /^ {4}env:/m, 'no job-level env');
+    const steps = classify.split(/^ {6}- /m).slice(1);
+    const withSecrets = steps.filter((step) => /secrets\./.test(step));
+    assert.equal(withSecrets.length, 1, 'only one step sees any secret');
+    const [step] = withSecrets;
+    assert.ok(step.includes(`run: ${command}`), 'that step is the classifier call');
+    for (const name of SECRET_VARS) {
+      assert.match(step, new RegExp(`^ {10}${name}: \\$\\{\\{ secrets\\.${name} \\}\\}$`, 'm'), `${name} is step env`);
+    }
+    // No run script interpolates a secret, echoes or expands either variable.
+    const runLines = [...text.matchAll(/^ +run: (.*)$/gm)].map((match) => match[1]);
+    const runBlocks = [...text.matchAll(/^( +)run: \|\n((?:\1 {2}.*\n?)+)/gm)].map((match) => match[2]);
+    for (const script of [...runLines, ...runBlocks]) {
+      assert.doesNotMatch(script, /secrets\./, 'no run script interpolates a secret');
+      for (const name of SECRET_VARS) {
+        assert.doesNotMatch(script, new RegExp(`\\$\\{?${name}`), `no run script expands ${name}`);
+        assert.doesNotMatch(script, new RegExp(`(echo|printf|cat|printenv|env)\\b[^\\n]*${name}`), `no step echoes ${name}`);
+      }
+    }
+    assert.doesNotMatch(text, /pnpm install|npm (ci|install)|prisma|psql|curl|wget|GROQ|ANTHROPIC|SERVICE_ROLE|set -x/);
+  });
+}
+}

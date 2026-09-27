@@ -114,3 +114,18 @@ test('[mock] cleanup must prove Auth and Prisma absence and empty member prefixe
     assert.equal(run(PASSING_ACCEPTANCE, cleanup).ok, false, JSON.stringify(cleanup));
   }
 });
+
+test('[mock] the informational target-guard cleanup receipt never passes, even with a passing acceptance', () => {
+  const { run } = receipts();
+  // The exact receipt scripts/resume-demo-member.ts writes when create stopped at the target guard.
+  const informational = {
+    auditRowsRetained: true, success: true, memberCreated: false, markerFound: false,
+    memberCreationAttempted: 'not-observed', informationalOnly: true, failedStage: 'target-guard',
+  };
+  for (const acceptance of [PASSING_ACCEPTANCE, undefined]) {
+    const result = run(acceptance, informational);
+    assert.equal(result.ok, false);
+    assert.match(result.reasons.join('\n'), /no member was created \(pre-create failure\)/);
+  }
+});
+

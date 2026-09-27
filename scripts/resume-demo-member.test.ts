@@ -291,8 +291,61 @@ test('[mock] cleanup input: marker plus missing or unreadable state fails closed
   assert.throws(() => resolveCleanupInput('{', null), /<unreadable marker>/);
 });
 
-test('[mock] cleanup input: no marker and no state is a clean never-created no-op; valid state is used', () => {
-  assert.deepEqual(resolveCleanupInput(null, null), { kind: 'never-created' });
+test('[mock] cleanup input: no marker and no state is informational ONLY when create stopped at the target guard', () => {
+  assert.deepEqual(resolveCleanupInput(null, null, JSON.stringify({ stage: 'target-guard' })), { kind: 'stopped-at-target-guard' });
   const state = { userId: NEW_ID, email: 'resume-qa-42-1@example.com', organizationId: 'qa-org', runId: '42-1' };
   assert.deepEqual(resolveCleanupInput(JSON.stringify({ runId: '42-1', email: state.email, organizationId: 'qa-org' }), JSON.stringify(state)), { kind: 'state', state });
 });
+
+test('[mock] cleanup input: no marker past the target guard, or with no stage, fails closed with recovery text', () => {
+  assert.throws(
+    () => resolveCleanupInput(null, null, JSON.stringify({ stage: 'clients', email: 'resume-qa-42-1@example.com' })),
+    (error: Error) => {
+      assert.match(error.message, /exact email resume-qa-42-1@example\.com/);
+      assert.match(error.message, /Never delete by pattern/);
+      return true;
+    },
+  );
+  for (const stage of [null, '{', JSON.stringify({ stage: 'something-else' })]) {
+    assert.throws(() => resolveCleanupInput(null, null, stage), /Manual recovery: .*resume-qa-<run id>-<run attempt>@example\.com.*Never delete by pattern/);
+  }
+});
+
+test('[mock] the helper target guard accepts a database URL exactly when the shared projectForUrl says demo', () => {
+  // readPortalQaTarget must delegate to scripts/lib/supabase-project-guard.cjs
+  // rather than parse URLs itself, so any fix to projectForUrl (for example the
+  // Prisma `host=` socket override) is inherited here unchanged.
+  const { projectForUrl } = guard as { projectForUrl: (value: string, kind?: string) => string };
+  const urls = [
+    `postgresql://postgres:pw@db.${DEMO_REF}.supabase.co:5432/postgres`,
+    `postgres://postgres.${DEMO_REF}:pw@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1`,
+    `postgres://postgres:pw@aws-1-us-east-2.pooler.supabase.com:6543/postgres?options=reference%3D${DEMO_REF}`,
+    `postgresql://postgres:pw@db.${DEMO_REF}.supabase.co:5432/postgres?host=/var/run/postgresql`,
+    `postgresql://postgres:pw@db.${DEMO_REF}.supabase.co:5432/postgres?host=db.${PROD_REF}.supabase.co`,
+    `postgresql://postgres:pw@db.${PROD_REF}.supabase.co:5432/postgres`,
+    `postgres://postgres.${PROD_REF}:pw@aws-0-us-east-1.pooler.supabase.com:6543/postgres`,
+    'postgresql://postgres:pw@localhost:5432/postgres',
+    'not a url',
+  ];
+  for (const url of urls) {
+    const env = {
+      NODE_ENV: 'test',
+      PORTAL_QA_TARGET: 'demo',
+      NEXT_PUBLIC_SUPABASE_URL: `https://${DEMO_REF}.supabase.co`,
+      POSTGRES_PRISMA_URL: url,
+      SUPABASE_SERVICE_ROLE_KEY: 'unused',
+      PORTAL_QA_ORGANIZATION_ID: 'qa-org',
+      PORTAL_QA_ORGANIZATION_SLUG: 'portal-qa-test',
+    } as NodeJS.ProcessEnv;
+    let accepted: string | null = null;
+    try {
+      accepted = (readPortalQaTarget(env) as { databaseUrl: string }).databaseUrl;
+    } catch (error) {
+      assert.match((error as Error).message, /database URL must identify the approved demo project/, url);
+    }
+    assert.equal(accepted !== null, projectForUrl(url) === 'demo', url);
+    // The URL handed on (to PrismaClient) is exactly the one the guard classified.
+    if (accepted !== null) assert.equal(accepted, url);
+  }
+});
+
