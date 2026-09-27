@@ -52,7 +52,7 @@ import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 import { partitionSuppressedRecipients, recordSuppressedRecipientSkip } from '@/lib/email/suppressions';
 import { resolveEmailTemplateKey } from '@/lib/email/templateKeys';
 import { prisma } from '@/lib/db/prisma';
-import { beginMemberUpload, markMemberExternalEffectUncertain, MemberUploadLifecycleError, releaseMemberUpload } from '@/lib/member/uploadLifecycle';
+import { beginMemberUpload, MemberUploadLifecycleError, releaseMemberUpload } from '@/lib/member/uploadLifecycle';
 
 export { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 
@@ -84,7 +84,6 @@ export interface SendBrandedEmailRetryOptions {
   memberClaim?: {
     begin(userId: string, providerIdempotencyKey: string): Promise<string>;
     release(userId: string, token: string): Promise<void>;
-    markUncertain(userId: string, token: string, reason: string): Promise<void>;
   };
   /**
    * Consult the provider suppression list before sending. Defaults to true
@@ -478,6 +477,14 @@ export class MemberEmailOutcomeUncertainError extends Error {
   }
 }
 
+/** The SDK's error-free response still needs a provider receipt to prove acceptance. */
+export class MemberEmailReceiptMissingError extends Error {
+  constructor() {
+    super('Resend did not return an email id');
+    this.name = 'MemberEmailReceiptMissingError';
+  }
+}
+
 function isDefiniteEmailRejection(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
   const candidate = error as { status?: unknown; statusCode?: unknown; status_code?: unknown };
@@ -589,7 +596,6 @@ export async function sendBrandedEmail(
   const memberClaim = retryOptions.memberClaim ?? {
     begin: (userId: string, key: string) => beginMemberUpload(userId, 'email', key),
     release: releaseMemberUpload,
-    markUncertain: markMemberExternalEffectUncertain,
   };
   const claims: Array<{ userId: string; token: string }> = [];
   if (args.memberEffectClaim) {
@@ -689,6 +695,17 @@ export async function sendBrandedEmail(
 
     // Resend resolves with { data, error } instead of throwing on API errors.
     if (!result.error) {
+      if (typeof result.data?.id !== 'string' || !result.data.id.trim()) {
+        // A malformed success shape cannot be used as proof of acceptance.
+        // The SDK request has settled, so the lifecycle claim is released in
+        // finally; the delivery result remains unknown to the caller.
+        const missingReceipt = new MemberEmailReceiptMissingError();
+        if (args.memberEffectClaim) providerAmbiguous = true;
+        if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, missingReceipt);
+        sendLog.fail(missingReceipt, attempt);
+        await sendLog.settle();
+        throw missingReceipt;
+      }
       providerAccepted = true;
       providerAmbiguous = false;
       sendLog.write('sent', {
@@ -735,11 +752,12 @@ export async function sendBrandedEmail(
     throw error;
   } finally {
     for (const claim of claims.reverse()) {
-      const settle = providerAmbiguous && !providerAccepted
-        ? memberClaim.markUncertain(claim.userId, claim.token, `email_provider_outcome_unknown:${idempotencyKey}`)
-        : memberClaim.release(claim.userId, claim.token);
-      await settle.catch((error) => {
-        // The durable row remains held if settlement cannot be confirmed.
+      // All SDK attempts have settled before this finally block. An unknown
+      // delivery result is recorded as a failure, but no local provider call
+      // remains to cross account deletion. A still-running request or crash
+      // never reaches this release and leaves its durable claim held.
+      await memberClaim.release(claim.userId, claim.token).catch((error) => {
+        // The durable row also remains held if release cannot be confirmed.
         console.error('Member email claim settlement failed:', error);
       });
     }

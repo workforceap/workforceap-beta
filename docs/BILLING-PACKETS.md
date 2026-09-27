@@ -265,9 +265,13 @@ that automatically emails to counselor and the student."
 - Opted-in member-linked email sends claim every member recipient or named
   subject before Resend I/O. Each email claim stores the exact Resend
   idempotency key when its row is inserted, including a crash-held `in_flight`
-  row that never reached the provider. Unknown provider outcomes retain the
-  exact claim for reconciliation; its reason records the failure class. A
-  definite provider rejection releases the claim after the request settles.
+  row that never reached the provider. The claim remains through all SDK
+  retries and is released only after the final provider promise settles. A
+  settled 500, network error, or malformed success receipt remains an unknown
+  delivery in the send log and caller result, but has no local provider call
+  left to race deletion. A crashed or still-running call leaves `in_flight`
+  held for operator reconciliation. An unknown result is never retried with a
+  new key solely to clear a deletion hold.
   Existing senders without `memberEffectClaim` retain a final active-member
   lookup but do not have this durable provider boundary.
 - Preview/Development use flattened Prisma transactions and cannot prove the
@@ -342,9 +346,12 @@ incident and audit trail. Before any write:
    provider receipt available, but do not mistake an unknown delivery result
    for a still-running local request. A timeout or HTTP 5xx is not proof that
    a past notification was rejected. An interrupted email claim requires
-   checking the exact Resend idempotency
-   key and send log for a receipt or unresolved delivery before clearing it.
-   An HTTP 408/409/5xx or network error does not establish non-delivery.
+   proving the original local worker has ended before clearing its exact row.
+   Use the stored Resend idempotency key and send log to find any provider
+   receipt; a settled HTTP 408/409/5xx or network error does not establish
+   non-delivery. Do not retry a held email under a new key: Resend keeps
+   idempotency keys for only 24 hours, and an earlier accepted message could
+   otherwise be sent again.
    For an interrupted admin erase, confirm
    the irreversible erased-email tombstone
    before clearing its token. If the
