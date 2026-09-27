@@ -57,7 +57,7 @@ Defined in `next.config.ts` under `headers()`. Hardened in this PR with these ad
 
 - `object-src 'none'` — blocks all `<object>`, `<embed>`, `<applet>` injection vectors
 - `base-uri 'self'` — prevents `<base>` tag injection from rebasing relative URLs
-- `frame-ancestors 'none'` — prevents the platform from being embedded in any iframe (clickjacking defense). Supersedes `X-Frame-Options: DENY` in modern browsers; we keep both for older clients.
+- `frame-ancestors 'none'` — prevents framing on all routes except the exact authenticated `/api/member/resume/preview` endpoint, which allows same-origin framing for the member PDF viewer. The exception uses `X-Frame-Options: SAMEORIGIN` and `frame-ancestors 'self'`; all other routes keep `DENY` and `'none'` for clickjacking defense.
 - `upgrade-insecure-requests` — forces accidental `http://` references to `https://` on supporting browsers
 
 ### Known security debt
@@ -103,7 +103,7 @@ The `/api/health` endpoint will report `captcha_turnstile: ok` once enabled and 
 |---|---|---|
 | HSTS | ✅ on | `max-age=63072000; includeSubDomains; preload` |
 | X-Content-Type-Options | ✅ on | `nosniff` |
-| X-Frame-Options | ✅ on | `DENY` (plus CSP `frame-ancestors 'none'`) |
+| X-Frame-Options | ✅ on | `DENY` plus CSP `frame-ancestors 'none'` globally; exact member resume preview uses `SAMEORIGIN` plus `'self'` |
 | Referrer-Policy | ✅ on | `strict-origin-when-cross-origin` |
 | Permissions-Policy | ✅ on | camera/mic on self only, geolocation off |
 | Rate limiting | ✅ on | apply signup, login, password reset, admin mutations |
