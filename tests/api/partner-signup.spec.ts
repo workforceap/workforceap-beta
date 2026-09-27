@@ -119,7 +119,7 @@ vi.mock('@/lib/email/sanitizeSubject', () => ({
 }));
 
 const { resendSend } = vi.hoisted(() => ({
-  resendSend: vi.fn().mockResolvedValue({ id: 'email-1' }),
+  resendSend: vi.fn().mockResolvedValue({ data: { id: 'email-1' }, error: null }),
 }));
 vi.mock('resend', () => ({
   Resend: class {
