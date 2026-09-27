@@ -27,11 +27,13 @@ function sql(query, database = proofDatabase, expectSuccess = true) {
 }
 
 let created = false;
+const createdRoles = [];
 try {
   assert.match(sql('SHOW server_version;', 'postgres'), /^16\./, 'PG16 contract target required');
   for (const role of ['anon', 'authenticated']) {
     if (sql(`SELECT count(*) FROM pg_roles WHERE rolname='${role}';`, 'postgres') === '0') {
       sql(`CREATE ROLE ${role} NOLOGIN;`, 'postgres');
+      createdRoles.push(role);
     }
   }
   assert.equal(sql(`SELECT count(*) FROM pg_database WHERE datname='${proofDatabase}';`, 'postgres'), '0');
@@ -64,5 +66,8 @@ try {
   if (created) {
     sql(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='${proofDatabase}' AND pid <> pg_backend_pid();`, 'postgres');
     sql(`DROP DATABASE ${proofDatabase};`, 'postgres');
+  }
+  for (const role of createdRoles.reverse()) {
+    sql(`DROP ROLE ${role};`, 'postgres');
   }
 }
