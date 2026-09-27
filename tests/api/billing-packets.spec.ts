@@ -29,6 +29,8 @@ const mocks = vi.hoisted(() => ({
   afterSendRead: { value: null as null | (() => void) },
   /** Test hook: runs once right after the next send-row findMany. */
   afterSendFindMany: { value: null as null | (() => void) },
+  /** Test hook: an unlocked provider acceptance lands just before supersede closes pending rows. */
+  beforeSupersedePendingClose: { value: null as null | (() => void) },
   /** Test hook: a member changes after the route's first read, before the transaction locks it. */
   beforeMemberLock: { value: null as null | (() => void) },
   /** Ordered log of send-row creates and provider-result writes. */
@@ -245,6 +247,13 @@ vi.mock('@/lib/db/prisma', () => {
         return s;
       }),
       updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Row }) => {
+        if (where.packetId && where.status === 'pending') {
+          const hook = mocks.beforeSupersedePendingClose.value;
+          if (hook) {
+            mocks.beforeSupersedePendingClose.value = null;
+            hook();
+          }
+        }
         const rows = db.sends.filter((s) => matches(s, where));
         if (data.providerResultAt && rows.length) mocks.trace.push('provider_result');
         rows.forEach((s) => Object.assign(s, data));
@@ -382,6 +391,7 @@ beforeEach(() => {
   mocks.buildGate.value = null;
   mocks.afterSendRead.value = null;
   mocks.afterSendFindMany.value = null;
+  mocks.beforeSupersedePendingClose.value = null;
   mocks.beforeMemberLock.value = null;
   mocks.trace.length = 0;
   mocks.lockTrace.length = 0;
@@ -1423,6 +1433,93 @@ describe('Send-state races with supersede (checkpoint 4)', () => {
     expect(res.status).toBe(409);
     expect((await res.json()).code).toBe('superseded_packet');
     expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('a provider result arriving during supersede is never overwritten by the pending-row close', async () => {
+    const oldId = await signOne();
+    const started = await startSendAttempt({
+      packetId: oldId,
+      expectedCurrent: null,
+      now: new Date(),
+      recipients: [{ recipient: 'student', email: 'member@example.test', cc: null }],
+      record: { startedAt: new Date().toISOString(), startedById: ADMIN, from: 'x@example.test', branding: mocks.branding.value as never },
+    });
+    expect(started.ok).toBe(true);
+    const oldRow = db.sends.find((r) => r.packetId === oldId)!;
+    mocks.beforeSupersedePendingClose.value = () => {
+      Object.assign(oldRow, {
+        providerResultAt: new Date(),
+        providerResult: '{"delivered":true}',
+        providerMessageId: 'm-late-before-close',
+      });
+    };
+    const replacement = await resign(oldId);
+    expect(replacement.status).toBe(201);
+    expect(oldRow.status).toBe('pending');
+    expect(oldRow.providerMessageId).toBe('m-late-before-close');
+    expect(prismaMock.trainingBillingPacketSend.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { packetId: oldId, status: 'pending', providerResultAt: null },
+    }));
+    const newId = (await replacement.json()).packet.id as string;
+    const blocked = await send(newId);
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('a replacement rechecks the prior packet under its lock after route preparation', async () => {
+    const oldId = await signOne();
+    const replacement = await resign(oldId);
+    expect(replacement.status).toBe(201);
+    const newId = (await replacement.json()).packet.id as string;
+    const oldRow = { id: 'send-prior', packetId: oldId, attemptNo: 1, recipient: 'student', status: 'reconciled_not_delivered', providerResultAt: null };
+    db.sends.push(oldRow);
+    const g = gate();
+    mocks.brandingGate.value = g.promise;
+    mocks.lockTrace.length = 0;
+    const pending = send(newId);
+    await tick();
+    expect(db.sends.filter((r) => r.packetId === newId)).toHaveLength(0);
+    Object.assign(oldRow, { status: 'needs_reconciliation', lastError: 'late provider contradiction' });
+    mocks.brandingGate.value = null;
+    g.open();
+    const blocked = await pending;
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect(mocks.lockTrace).toEqual(expect.arrayContaining([`billing-packet-send:${newId}`, `billing-packet-send:${oldId}`]));
+    expect(db.sends.filter((r) => r.packetId === newId)).toHaveLength(0);
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('a late contradictory acceptance after replacement attempt start blocks the recipient claim and provider call', async () => {
+    const oldId = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(oldId)).status).toBe(502);
+    const oldRow = db.sends.find((r) => r.packetId === oldId)!;
+    const aged = new Date(Date.now() - IDEMPOTENCY_SAFE_RETRY_MS - 1000);
+    oldRow.claimedAt = aged;
+    oldRow.lastClaimedAt = aged;
+    const replacement = await resign(oldId);
+    expect(replacement.status).toBe(201);
+    const newId = (await replacement.json()).packet.id as string;
+    expect((await send(oldId, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No delivery in Resend log' })).status).toBe(200);
+    expect(oldRow.status).toBe('reconciled_not_delivered');
+
+    const g = gate();
+    mocks.buildGate.value = g.promise;
+    const pending = send(newId);
+    await tick();
+    expect(db.sends.filter((r) => r.packetId === newId).map((r) => r.status)).toEqual(['pending']);
+    mocks.buildGate.value = null;
+    await recordLateProviderResult(oldRow.id as string, { delivered: true, detail: 'late provider acceptance', messageId: 'm-late' });
+    expect(oldRow.status).toBe('needs_reconciliation');
+    const providerCalls = mocks.send.mock.calls.length;
+    g.open();
+    const blocked = await pending;
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect(mocks.send.mock.calls).toHaveLength(providerCalls);
+    expect(db.sends.filter((r) => r.packetId === newId).map((r) => r.status)).toEqual(['pending']);
   });
 
   it('claim first, supersede second: supersede is refused (in_progress) and the send completes', async () => {

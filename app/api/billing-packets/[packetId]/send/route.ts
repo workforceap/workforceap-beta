@@ -76,6 +76,13 @@ function supersededConflict() {
   return conflict('This packet was superseded; it cannot be emailed again. Send its replacement instead.', 'superseded_packet');
 }
 
+function priorPacketUnsettledConflict() {
+  return conflict(
+    'Settle the replaced packet\'s send first: one of its copies has an unresolved or contradictory result. Reconcile it on the replaced packet, then send this one.',
+    'prior_packet_unsettled',
+  );
+}
+
 export const POST = withApiGuc(async (request: Request, context: { params: Promise<{ packetId: string }> }) => {
   const res = await handleSend(request, context);
   // 409/502 only happen after the admin + org checks passed: attach the send state.
@@ -160,16 +167,8 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
 
     // Everything below sends. A superseded packet never sends again (reconcile above still works).
     if (packet.status === 'superseded' || packet.supersededAt) return supersededConflict();
-    // A replacement waits until every copy of the packet it replaced is settled.
-    if (packet.supersedesPacketId) {
-      const prior = await prisma.trainingBillingPacketSend.findMany({ where: { packetId: packet.supersedesPacketId } });
-      if (prior.some((r) => !isTerminalRow(r))) {
-        return conflict(
-          'Settle the replaced packet\'s send first: one of its copies has an unresolved or contradictory result. Reconcile it on the replaced packet, then send this one.',
-          'prior_packet_unsettled',
-        );
-      }
-    }
+    // The attempt start and each recipient claim recheck the replaced packet
+    // under both send locks, after applying any recorded provider result.
 
     // Recipients are exactly the ones printed at signing; any drift means re-sign.
     const live = await resolveAssignedCounselorContact(member.id, packet.organizationId);
@@ -234,6 +233,7 @@ async function handleSend(request: Request, { params }: { params: Promise<{ pack
       });
       if (!started.ok) {
         if (started.reason === 'superseded') return supersededConflict();
+        if (started.reason === 'prior_packet_unsettled') return priorPacketUnsettledConflict();
         if (started.reason === 'member_inactive') return conflict('The member is being deleted or is no longer active; this packet cannot be emailed.', 'member_inactive');
         if (started.reason === 'duplicate') {
           return conflict('A recipient of this attempt already has a delivered copy (just recorded). Refresh, then confirm the duplicate or use "Send to remaining recipients".', 'duplicate_confirmation_required');
@@ -280,6 +280,7 @@ async function sendOne(args: {
   const claim = await claimRecipient({ packetId: packet.id, attemptNo: attempt.attemptNo, recipient, email: email.to, cc: null, now: new Date() });
   const label = recipient === 'student' ? 'student' : 'counselor';
   if (claim.kind === 'superseded') return supersededConflict();
+  if (claim.kind === 'prior_packet_unsettled') return priorPacketUnsettledConflict();
   if (claim.kind === 'member_inactive') return conflict('The member is no longer active; this packet cannot be emailed.', 'member_inactive');
   if (claim.kind === 'snapshot_corrupt') return conflict('The signed snapshot changed or is unreadable. Supersede and re-issue the packet before emailing it.', 'snapshot_corrupt');
   if (claim.kind === 'counselor_changed') return conflict('The counselor assignment changed after this packet was signed. Supersede and re-issue it before emailing.', 'counselor_changed');

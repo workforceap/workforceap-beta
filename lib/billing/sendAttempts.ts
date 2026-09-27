@@ -65,7 +65,22 @@ async function lockPacketSends(tx: Prisma.TransactionClient, packetId: string) {
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`billing-packet-send:${packetId}`}))`;
   // Guaranteed repair of any provider result recorded without its status.
   await reconcileProviderResults(tx, packetId);
-  return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { status: true, supersededAt: true, sendAttemptNo: true, sendAttempt: true, signedSnapshot: true, memberId: true, organizationId: true } });
+  return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { id: true, status: true, supersededAt: true, supersedesPacketId: true, supersededByPacketId: true, sendAttemptNo: true, sendAttempt: true, signedSnapshot: true, memberId: true, organizationId: true } });
+}
+
+/** A replacement may claim no copy until the old packet is repaired and settled. */
+async function priorPacketIsSettled(
+  tx: Prisma.TransactionClient,
+  packet: NonNullable<Awaited<ReturnType<typeof lockPacketSends>>>,
+): Promise<boolean> {
+  if (!packet.supersedesPacketId) return true;
+  // The current packet lock is held first. No old-packet operation takes these
+  // locks in the reverse order; a late acceptance must finish before this read.
+  const prior = await lockPacketSends(tx, packet.supersedesPacketId);
+  if (!prior || prior.status !== 'superseded' || !prior.supersededAt || prior.supersededByPacketId !== packet.id
+    || prior.memberId !== packet.memberId || prior.organizationId !== packet.organizationId) return false;
+  const rows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: packet.supersedesPacketId } });
+  return rows.every(isTerminalRow);
 }
 
 /** The immutable subject ID lets every send take the member lock first. */
@@ -253,7 +268,7 @@ export async function startSendAttempt(args: {
   now: Date;
   /** Recipients the operator confirmed may get a duplicate copy ("Email again"). */
   confirmedDuplicates?: PacketRecipient[];
-}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' | 'superseded' | 'duplicate' | 'member_inactive' }> {
+}): Promise<{ ok: true; record: SendAttemptRecord } | { ok: false; reason: 'raced' | 'not_terminal' | 'superseded' | 'duplicate' | 'member_inactive' | 'prior_packet_unsettled' }> {
   const attemptNo = (args.expectedCurrent ?? 0) + 1;
   const order: PacketRecipient[] = ['student', 'counselor'];
   const record: SendAttemptRecord = {
@@ -274,6 +289,9 @@ export async function startSendAttempt(args: {
       select: { id: true },
     });
     if (!activeMember) return { ok: false as const, reason: 'member_inactive' as const };
+    if (!(await priorPacketIsSettled(tx, current!))) {
+      return { ok: false as const, reason: 'prior_packet_unsettled' as const };
+    }
     if ((current!.sendAttemptNo ?? null) !== (args.expectedCurrent ?? null)) return { ok: false as const, reason: 'raced' as const };
     if (args.expectedCurrent != null) {
       let expected: PacketRecipient[];
@@ -336,6 +354,8 @@ export type ClaimOutcome =
   | { kind: 'needs_reconciliation'; row: TrainingBillingPacketSend }
   /** The packet was superseded: nothing is claimed and nothing may be sent. */
   | { kind: 'superseded' }
+  /** A prior superseded packet has an unresolved or contradictory send copy. */
+  | { kind: 'prior_packet_unsettled' }
   /** The member was deleted or anonymized before this copy was claimed. */
   | { kind: 'member_inactive' }
   /** A snapshot or its recipients changed before this copy was claimed. */
@@ -417,6 +437,7 @@ export async function claimRecipient(args: {
       || snapshot.counselor?.userId !== beforeSnapshot.counselor?.userId
       || !sameEmail(snapshot.member.email, beforeSnapshot.member.email)
       || !sameEmail(snapshot.counselor?.email, beforeSnapshot.counselor?.email)) return { kind: 'snapshot_corrupt' };
+    if (!(await priorPacketIsSettled(tx, packet!))) return { kind: 'prior_packet_unsettled' };
     // The route's earlier viewer/recipient check can be stale while it builds
     // the email. Refuse a claim if deletion or anonymization committed first.
     // The tenant-scoped member row was locked above. A later delete still

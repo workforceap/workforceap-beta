@@ -298,7 +298,7 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
             }
             // Copies never claimed can never go out now: close them as definitely not sent.
             await tx.trainingBillingPacketSend.updateMany({
-              where: { packetId: old.id, status: 'pending' },
+              where: { packetId: old.id, status: 'pending', providerResultAt: null },
               data: { status: 'rejected_definite', lastError: 'Not sent: the packet was superseded.', claimToken: randomUUID() },
             });
             const { count } = await tx.trainingBillingPacket.updateMany({
