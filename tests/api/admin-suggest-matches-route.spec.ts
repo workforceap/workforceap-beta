@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/server', () => ({
   NextResponse: {
@@ -68,6 +68,8 @@ const { getUser } = await import('@/lib/auth/server');
 const { isAdmin } = await import('@/lib/auth/roles');
 const { prisma } = await import('@/lib/db/prisma');
 const { sendMatchActionEmail } = await import('@/lib/email');
+const { isMatchSuggestionsDryRun } = await import('@/lib/admin/matchSuggestionsConfig');
+const { recordWorkflowDiagnostic } = await import('@/lib/diagnostics');
 const { getActorOrganizationId } = await import('@/lib/tenant/organization');
 
 const ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
@@ -107,6 +109,8 @@ function makeJob() {
 }
 
 describe('POST /api/admin/jobs/[id]/suggest-matches', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(prisma.$transaction).mockImplementation(async (arg: any) =>
@@ -120,6 +124,40 @@ describe('POST /api/admin/jobs/[id]/suggest-matches', () => {
     vi.mocked(prisma.job.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(prisma.aIJobMatch.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(sendMatchActionEmail).mockResolvedValue({ ok: true } as any);
+    vi.mocked(isMatchSuggestionsDryRun).mockReturnValue(false);
+  });
+
+  it.each([
+    ['Preview', 'VERCEL_ENV', 'preview'],
+    ['development', 'VERCEL_ENV', 'development'],
+    ['explicit flattening', 'PRISMA_FLATTEN_TX', '1'],
+  ])('fails closed before any writes or email when %s flattens transactions', async (_name, key, value) => {
+    vi.stubEnv(key, value);
+
+    const response = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: 'transactions_unavailable' });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.$queryRaw).not.toHaveBeenCalled();
+    expect(prisma.job.update).not.toHaveBeenCalled();
+    expect(prisma.job.updateMany).not.toHaveBeenCalled();
+    expect(recordWorkflowDiagnostic).not.toHaveBeenCalled();
+    expect(sendMatchActionEmail).not.toHaveBeenCalled();
+  });
+
+  it('still permits a Preview dry run without claiming matches or sending email', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.mocked(isMatchSuggestionsDryRun).mockReturnValue(true);
+
+    const response = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+
+    expect(response.status).toBe(200);
+    expect(prisma.job.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ matchSuggestionsLastStatus: 'dry_run' }),
+    }));
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(sendMatchActionEmail).not.toHaveBeenCalled();
   });
 
   it('emails only rows claimed by this request when another request races it', async () => {

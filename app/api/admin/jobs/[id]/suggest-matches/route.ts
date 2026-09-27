@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import { sendMatchActionEmail } from '@/lib/email';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { getMatchSuggestionsTestRecipient, isMatchSuggestionsDryRun } from '@/lib/admin/matchSuggestionsConfig';
@@ -94,6 +95,13 @@ export const POST = withApiGuc(async (
     if (job.matchSuggestionsLastStatus === 'needs_reconciliation') {
       return NextResponse.json({ error: 'A prior match email needs reconciliation before another send.' }, { status: 409 });
     }
+    const dryRun = isMatchSuggestionsDryRun();
+    if (!dryRun && !interactiveTransactionsGuaranteed()) {
+      return NextResponse.json({
+        error: 'Match suggestions require an interactive database transaction.',
+        code: 'transactions_unavailable',
+      }, { status: 503 });
+    }
     if (job.aiMatches.length === 0) {
       await recordSuggestAudit({
         actorUserId: user.id,
@@ -110,7 +118,6 @@ export const POST = withApiGuc(async (
     const testRecipient = getMatchSuggestionsTestRecipient();
     const actualRecipient = testRecipient ?? intendedRecipient;
     const testMode = Boolean(testRecipient);
-    const dryRun = isMatchSuggestionsDryRun();
     const now = new Date();
     let matchCount = job.aiMatches.length;
 
