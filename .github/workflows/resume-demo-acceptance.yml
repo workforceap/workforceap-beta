@@ -15,6 +15,10 @@ name: Resume Build DEMO Acceptance
 # is read, and gate 2 (inside the helper) refuses Supabase or database URLs
 # that are not the DEMO project and any organization that is not the exact
 # active portal-qa-* fixture organization.
+#
+# STOP before dispatching: DEMO_SETUP.md:65 documents the Preview GROQ_API_KEY
+# as the production key, so a run spends production Groq quota. Dispatch only
+# with Mike's explicit OK (docs/RESUME-DEMO-ACCEPTANCE.md, "Dispatch").
 
 on:
   workflow_dispatch:

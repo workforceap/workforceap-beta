@@ -46,6 +46,8 @@ Guarded-422 preservation is **not** forced on the live provider. It is proven de
 
 ## Dispatch
 
+> **Stop condition before any dispatch:** `DEMO_SETUP.md:65` documents the Preview `GROQ_API_KEY` as the production key. Dispatching therefore spends production Groq quota (two Builds per run). A dispatch requires Mike's explicit OK. Do not change any environment variables or keys to work around this.
+
 Dispatch only after this workflow is on `master`. A workflow file cannot be dispatched from a branch with secrets.
 
 The organization ID and slug are required dispatch inputs, not source constants. The current candidate, confirmed read-only by the owner on 2026-09-27 as the only active `portal-qa-*` organization in DEMO, is ID `008064ba-6be0-4d24-b1a5-87e4824204d3` with slug `portal-qa-september-smoke`. Re-check this before each dispatch; the job re-checks it too.
