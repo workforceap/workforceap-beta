@@ -3,7 +3,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { sendNewJobApplicationEmail } from '@/lib/email';
 import { z } from 'zod';
-import { trackEvent } from '@/lib/events/track';
+import { persistEvent } from '@/lib/events/track';
 import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
 import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import { awardPoints } from '@/lib/member/points';
@@ -26,9 +26,15 @@ import {
   MemberUploadStorageOutcomeError,
   withMemberUploadClaim,
 } from '@/lib/member/uploadLifecycle';
-import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const RESUME_BUCKET = 'member-resumes';
+
+class JobApplicationEffectOutcomeError extends MemberUploadPersistenceOutcomeError {
+  constructor(causeValue: unknown) {
+    super(causeValue);
+    this.name = 'JobApplicationEffectOutcomeError';
+  }
+}
 
 const applySchema = z.object({
   coverLetter: z.string().max(5000).optional(),
@@ -130,9 +136,9 @@ async function _POST(
       snapshotPath = `${authUser.id}/application-${applicationId}-resume.${extension}`;
     }
 
-    const persistApplication = async (operationId?: string): Promise<{ id: string }> => {
+    const persistApplication = async (operationId: string): Promise<{ id: string }> => {
       const write = async (tx: Prisma.TransactionClient) => {
-        if (operationId) await assertMemberUploadWritable(tx, authUser.id, operationId);
+        await assertMemberUploadWritable(tx, authUser.id, operationId);
         const created = await tx.jobPostingApplication.create({
           data: {
             id: applicationId,
@@ -152,9 +158,7 @@ async function _POST(
         return created;
       };
       try {
-        return operationId
-          ? await prisma.$transaction(write)
-          : await withActiveMemberWrite(authUser.id, write);
+        return await prisma.$transaction(write);
       } catch (error) {
         let committedApplication: { id: string } | null;
         try {
@@ -173,10 +177,7 @@ async function _POST(
             userId: authUser.id,
             extra: { applicationId, snapshotRetained: Boolean(snapshotPath) },
           });
-          if (operationId) throw new MemberUploadPersistenceOutcomeError(verificationError);
-          throw ApiError.unavailable(
-            'Could not confirm whether your application was submitted. Check My Applications before retrying.',
-          );
+          throw new MemberUploadPersistenceOutcomeError(verificationError);
         }
 
         if (committedApplication) {
@@ -191,20 +192,20 @@ async function _POST(
       }
     };
 
-    // The durable member token must exist before Storage.copy. Deletion cannot
-    // pass its final Storage sweep while this copy or its DB commit is pending.
-    const app = currentResumePath && snapshotPath && storage
-      ? await withMemberUploadClaim({
+    // Claim every application, even without a resume. The claim prevents erase
+    // from overtaking the DB commit, employer email, and member-side effects.
+    const app = await withMemberUploadClaim({
+      userId: authUser.id,
+      removeObjects: (paths) => storage?.remove(paths) ?? Promise.resolve({ error: null }),
+      onCleanupError: (cleanupError, paths) => {
+        captureApiError(cleanupError, {
+          route: 'POST /api/jobs/[id]/apply resume snapshot rollback',
           userId: authUser.id,
-          removeObjects: (paths) => storage.remove(paths),
-          onCleanupError: (cleanupError, paths) => {
-            captureApiError(cleanupError, {
-              route: 'POST /api/jobs/[id]/apply resume snapshot rollback',
-              userId: authUser.id,
-              extra: { applicationId, orphanedObjectCount: paths.length },
-            });
-          },
-          run: async (operationId, recordAttempt) => {
+          extra: { applicationId, orphanedObjectCount: paths.length },
+        });
+      },
+      run: async (operationId, recordAttempt) => {
+        if (currentResumePath && snapshotPath && storage) {
             recordAttempt(snapshotPath);
             try {
               const { error: copyError } = await storage.copy(currentResumePath, snapshotPath);
@@ -217,50 +218,62 @@ async function _POST(
               });
               throw new MemberUploadStorageOutcomeError(copyError);
             }
-            return persistApplication(operationId);
-          },
-        })
-      : await persistApplication();
-
-    await sendNewJobApplicationEmail({
-      to: job.employer.contactEmail,
-      jobTitle: job.title,
-      applicantName: dbUser.fullName ?? dbUser.email ?? 'Applicant',
-      applicantEmail: dbUser.email,
-      applicationId: app.id,
-    }).catch((error) => console.error('[apply] application email failed after commit', error));
-
-    await trackEvent({
-      userId: authUser.id,
-      eventName: 'application_added',
-      entityType: 'job_application',
-      entityId: app.id,
-      metadata: { jobId: id, jobTitle: job.title },
-      sourcePage: `/dashboard/jobs/${id}`,
-    }).catch((error) => console.error('[apply] application event failed after commit', error));
-
-    // Award points (idempotent on application id)
-    awardPoints(authUser.id, 'job_application', app.id).catch(() => {});
-
-    try {
-      await syncCuratedJobToTracker(
-        authUser.id,
-        { id: job.id, title: job.title, employer: { companyName: job.employer.companyName } },
-        { status: 'APPLIED', markAppliedDate: true, source: 'DIRECT' }
-      );
-    } catch (e) {
-      console.error('[apply] tracker sync:', e);
-    }
+        }
+        const committed = await persistApplication(operationId);
+        try {
+          const email = await sendNewJobApplicationEmail({
+            to: job.employer.contactEmail,
+            jobTitle: job.title,
+            applicantName: dbUser.fullName ?? dbUser.email ?? 'Applicant',
+            applicantEmail: dbUser.email,
+            applicationId: committed.id,
+          });
+          // An unconfigured sender or fixture-recipient skip did not contact
+          // the provider. Any other failure can have an uncertain send result.
+          if (!email.ok && !email.skipped && email.error !== 'Email not configured') {
+            throw new Error(`Employer notification outcome is uncertain: ${email.error ?? 'unknown error'}`);
+          }
+          await persistEvent({
+            userId: authUser.id,
+            eventName: 'application_added',
+            entityType: 'job_application',
+            entityId: committed.id,
+            metadata: { jobId: id, jobTitle: job.title },
+            sourcePage: `/dashboard/jobs/${id}`,
+          }, prisma);
+          // Award points is idempotent on the committed application id.
+          await awardPoints(authUser.id, 'job_application', committed.id);
+          await syncCuratedJobToTracker(
+            authUser.id,
+            { id: job.id, title: job.title, employer: { companyName: job.employer.companyName } },
+            { status: 'APPLIED', markAppliedDate: true, source: 'DIRECT' },
+          );
+        } catch (effectError) {
+          captureApiError(effectError, {
+            route: 'POST /api/jobs/[id]/apply post-commit effects',
+            userId: authUser.id,
+            extra: { applicationId: committed.id, operationId, reconciliationRequired: true },
+          });
+          // The application already references the snapshot. Keep the claim
+          // and object if any downstream provider or DB result is uncertain.
+          throw new JobApplicationEffectOutcomeError(effectError);
+        }
+        return committed;
+      },
+    });
 
     return NextResponse.json({ ok: true, applicationId: app.id });
   } catch (error) {
-    if (error instanceof MemberUploadLifecycleError || error instanceof MemberLifecycleWriteError) {
+    if (error instanceof MemberUploadLifecycleError) {
       return handleApiError(ApiError.conflict('This account is no longer accepting applications.'), 'POST /api/jobs/[id]/apply');
     }
     if (error instanceof MemberUploadStorageOutcomeError || error instanceof MemberUploadCleanupError) {
       return handleApiError(ApiError.unavailable('Could not attach your resume. Your application was not submitted; contact support before retrying.'), 'POST /api/jobs/[id]/apply');
     }
     if (error instanceof MemberUploadPersistenceOutcomeError) {
+      if (error instanceof JobApplicationEffectOutcomeError) {
+        return handleApiError(ApiError.unavailable('Your application was submitted, but confirmation could not finish. Check My Applications and contact support.'), 'POST /api/jobs/[id]/apply');
+      }
       return handleApiError(ApiError.unavailable('Could not confirm whether your application was submitted. Check My Applications before retrying.'), 'POST /api/jobs/[id]/apply');
     }
     return handleApiError(error, 'POST /api/jobs/[id]/apply');

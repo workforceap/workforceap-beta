@@ -165,8 +165,14 @@ export const GET = withApiGuc(async (_request: Request, { params }: Props) => {
           } catch (verificationError) {
             throw new MemberUploadPersistenceOutcomeError(verificationError);
           }
-          if (current?.studentId === application.studentId && current.resumePath === snapshotPath) {
-            return snapshotPath;
+          if (current?.resumePath === snapshotPath) {
+            if (current.studentId === application.studentId) return snapshotPath;
+            // A different owner now references the fixed key. Its provenance
+            // cannot be established here, so neither delete it nor release the
+            // member claim until an operator reconciles the application row.
+            throw new MemberUploadPersistenceOutcomeError(
+              new Error('Application snapshot owner changed during legacy migration'),
+            );
           }
           await cleanupUnreferencedCopy();
           if (writeError) {

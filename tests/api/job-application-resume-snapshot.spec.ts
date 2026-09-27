@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const lifecycle = vi.hoisted(() => ({ claimed: false, releases: 0 }));
+
 vi.mock('next/server', () => ({
   NextResponse: {
     json: (body: unknown, init?: ResponseInit) =>
@@ -57,7 +59,7 @@ vi.mock('@/lib/email', () => ({
 }));
 
 vi.mock('@/lib/events/track', () => ({
-  trackEvent: vi.fn(),
+  persistEvent: vi.fn(),
 }));
 
 vi.mock('@/lib/jobs/syncCuratedJobToTracker', () => ({
@@ -89,26 +91,26 @@ vi.mock('@/lib/member/uploadLifecycle', () => {
       run: (operationId: string, recordAttempt: (path: string) => void) => Promise<unknown>;
       removeObjects: (paths: string[]) => Promise<unknown>;
     }) => {
+      lifecycle.claimed = true;
       const attempted: string[] = [];
       try {
-        return await run('upload-claim', (path) => attempted.push(path));
+        const result = await run('upload-claim', (path) => attempted.push(path));
+        lifecycle.claimed = false;
+        lifecycle.releases += 1;
+        return result;
       } catch (error) {
         if (!(error instanceof MemberUploadPersistenceOutcomeError)) {
           await removeObjects(attempted);
+          if (!(error instanceof MemberUploadStorageOutcomeError)) {
+            lifecycle.claimed = false;
+            lifecycle.releases += 1;
+          }
         }
         throw error;
       }
     }),
   };
 });
-
-vi.mock('@/lib/member/activeWrite', () => ({
-  MemberLifecycleWriteError: class MemberLifecycleWriteError extends Error {},
-  withActiveMemberWrite: vi.fn(async (_userId: string, write: (tx: unknown) => Promise<unknown>) => {
-    const { prisma } = await import('@/lib/db/prisma');
-    return write(prisma);
-  }),
-}));
 
 import { POST as applyForJob } from '@/app/api/(portal)/dashboard/jobs/[id]/apply/route';
 import { GET as getEmployerApplicationResume } from '@/app/api/employer/applications/[id]/resume/route';
@@ -118,11 +120,10 @@ import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 import { sendNewJobApplicationEmail } from '@/lib/email';
-import { trackEvent } from '@/lib/events/track';
+import { persistEvent } from '@/lib/events/track';
 import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
 import { awardPoints } from '@/lib/member/points';
 import { MemberUploadLifecycleError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
-import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const MEMBER_ID = 'member-123';
 const JOB_ID = 'job-123';
@@ -161,6 +162,8 @@ describe('job application resume snapshots', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    lifecycle.claimed = false;
+    lifecycle.releases = 0;
     vi.mocked(inspectStoredEnhancedResume).mockResolvedValue({ readable: true, text: null });
 
     storage = makeStorage();
@@ -193,8 +196,8 @@ describe('job application resume snapshots', () => {
       callback: (tx: typeof prisma) => Promise<unknown>,
     ) => callback(prisma)) as never);
 
-    vi.mocked(sendNewJobApplicationEmail).mockResolvedValue(undefined as never);
-    vi.mocked(trackEvent).mockResolvedValue(undefined as never);
+    vi.mocked(sendNewJobApplicationEmail).mockResolvedValue({ ok: true });
+    vi.mocked(persistEvent).mockResolvedValue(undefined as never);
     vi.mocked(syncCuratedJobToTracker).mockResolvedValue(undefined as never);
     vi.mocked(awardPoints).mockResolvedValue(undefined as never);
   });
@@ -319,7 +322,7 @@ describe('job application resume snapshots', () => {
     const snapshotPath = vi.mocked(storage.copy).mock.calls[0][1];
     expect(storage.remove).toHaveBeenCalledWith([snapshotPath]);
     expect(sendNewJobApplicationEmail).not.toHaveBeenCalled();
-    expect(trackEvent).not.toHaveBeenCalled();
+    expect(persistEvent).not.toHaveBeenCalled();
   });
 
   it('retains the snapshot and continues when a committed row proves acknowledgement was lost', async () => {
@@ -372,7 +375,7 @@ describe('job application resume snapshots', () => {
   });
 
   it('rejects a non-resume application when deletion wins after the initial user read', async () => {
-    vi.mocked(withActiveMemberWrite).mockRejectedValueOnce(new MemberLifecycleWriteError());
+    vi.mocked(withMemberUploadClaim).mockRejectedValueOnce(new MemberUploadLifecycleError());
 
     const response = await applyForJob(
       makeApplyRequest({ shareProfile: true, shareResume: false }),
@@ -381,6 +384,85 @@ describe('job application resume snapshots', () => {
 
     expect(response.status).toBe(409);
     expect(prisma.jobPostingApplication.create).not.toHaveBeenCalled();
+  });
+
+  it('holds the claim through a delayed employer email after the application commits', async () => {
+    let finishEmail!: (value: { ok: boolean }) => void;
+    const pendingEmail = new Promise<{ ok: boolean }>((resolve) => { finishEmail = resolve; });
+    vi.mocked(sendNewJobApplicationEmail).mockReturnValueOnce(pendingEmail);
+
+    const request = applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: true }),
+      applyContext(),
+    );
+    await vi.waitFor(() => expect(sendNewJobApplicationEmail).toHaveBeenCalledOnce());
+
+    expect(prisma.jobPostingApplication.create).toHaveBeenCalledOnce();
+    expect(lifecycle.claimed).toBe(true);
+    expect(lifecycle.releases).toBe(0);
+    expect(storage.remove).not.toHaveBeenCalled();
+
+    finishEmail({ ok: true });
+    const response = await request;
+    expect(response.status).toBe(200);
+    expect(lifecycle.claimed).toBe(false);
+    expect(lifecycle.releases).toBe(1);
+  });
+
+  it('holds the claim through the final tracker write without a shared resume', async () => {
+    let finishTracker!: (value: unknown) => void;
+    const pendingTracker = new Promise<unknown>((resolve) => { finishTracker = resolve; });
+    vi.mocked(syncCuratedJobToTracker).mockReturnValueOnce(pendingTracker as never);
+
+    const request = applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: false }),
+      applyContext(),
+    );
+    await vi.waitFor(() => expect(syncCuratedJobToTracker).toHaveBeenCalledOnce());
+
+    expect(prisma.jobPostingApplication.create).toHaveBeenCalledOnce();
+    expect(getSupabaseAdmin).not.toHaveBeenCalled();
+    expect(lifecycle.claimed).toBe(true);
+    expect(lifecycle.releases).toBe(0);
+
+    finishTracker({});
+    const response = await request;
+    expect(response.status).toBe(200);
+    expect(lifecycle.claimed).toBe(false);
+    expect(lifecycle.releases).toBe(1);
+  });
+
+  it('keeps the committed application and claim when employer email outcome is uncertain', async () => {
+    vi.mocked(sendNewJobApplicationEmail).mockResolvedValueOnce({ ok: false, error: 'timeout' });
+
+    const response = await applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: true }),
+      applyContext(),
+    );
+
+    expect(response.status).toBe(503);
+    expect(prisma.jobPostingApplication.create).toHaveBeenCalledOnce();
+    expect(storage.remove).not.toHaveBeenCalled();
+    expect(lifecycle.claimed).toBe(true);
+    expect(lifecycle.releases).toBe(0);
+    expect(persistEvent).not.toHaveBeenCalled();
+  });
+
+  it('keeps the committed resume and claim when the application event write is uncertain', async () => {
+    vi.mocked(persistEvent).mockRejectedValueOnce(new Error('event commit acknowledgement lost'));
+
+    const response = await applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: true }),
+      applyContext(),
+    );
+
+    expect(response.status).toBe(503);
+    expect(prisma.jobPostingApplication.create).toHaveBeenCalledOnce();
+    expect(sendNewJobApplicationEmail).toHaveBeenCalledOnce();
+    expect(storage.remove).not.toHaveBeenCalled();
+    expect(lifecycle.claimed).toBe(true);
+    expect(lifecycle.releases).toBe(0);
+    expect(awardPoints).not.toHaveBeenCalled();
   });
 });
 
@@ -529,6 +611,24 @@ describe('employer application resume access', () => {
 
     expect(response.status).toBe(503);
     expect(storage.copy).toHaveBeenCalledOnce();
+    expect(storage.remove).not.toHaveBeenCalled();
+  });
+
+  it('does not remove a snapshot now referenced by a different application owner', async () => {
+    const legacyPath = `${MEMBER_ID}/resume-original.pdf`;
+    const snapshotPath = `${MEMBER_ID}/application-application-123-resume.pdf`;
+    vi.mocked(prisma.jobPostingApplication.findFirst)
+      .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never)
+      .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never)
+      .mockResolvedValueOnce({ studentId: 'other-member', resumePath: snapshotPath } as never);
+    vi.mocked(prisma.jobPostingApplication.updateMany).mockResolvedValueOnce({ count: 0 } as never);
+
+    const response = await getEmployerApplicationResume(
+      new Request('http://localhost/api/employer/applications/application-123/resume'),
+      employerContext(),
+    );
+
+    expect(response.status).toBe(503);
     expect(storage.remove).not.toHaveBeenCalled();
   });
 
