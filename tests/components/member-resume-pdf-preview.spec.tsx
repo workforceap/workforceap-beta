@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
@@ -45,6 +45,10 @@ describe('member PDF preview fallback', () => {
   it('replaces a nonempty JSON API error with the download fallback for only that preview', async () => {
     renderWithPdfPreviews();
     const original = await screen.findByTitle('Original resume preview');
+    // ResumeClient.tsx:88-90 resets the failure flag in a passive effect once
+    // previewOriginalPath is set; findByTitle can see the iframe before that
+    // effect flushes, so flush it before the synthetic load.
+    await act(async () => {});
     const jsonError = document.implementation.createHTMLDocument('');
     jsonError.body.textContent = '{"error":"Unauthorized"}';
     Object.defineProperty(jsonError, 'contentType', { value: 'application/json' });
@@ -73,6 +77,9 @@ describe('member PDF preview fallback', () => {
   it('detects a JSON error shown as plain text in the enhanced iframe', async () => {
     renderWithPdfPreviews();
     const enhanced = await screen.findByTitle('Enhanced resume preview');
+    // Same ordering for ResumeClient.tsx:92-94 (previewEnhancedPath): flush
+    // the reset effect before the synthetic load.
+    await act(async () => {});
     const textError = document.implementation.createHTMLDocument('');
     textError.body.textContent = '{"error":"This enhanced resume is not readable"}';
 
