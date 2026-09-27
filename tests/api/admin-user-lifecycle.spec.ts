@@ -367,7 +367,7 @@ describe('administrator email release', () => {
     const response = await freeEmail(req(), ctx());
     expect(response.status).toBe(409);
     expect(mocks.completeDeletion).not.toHaveBeenCalled();
-    expect(mocks.releaseDeletion).not.toHaveBeenCalled();
+    expect(mocks.releaseDeletion).toHaveBeenCalledWith(ID, 'email-operation');
     expect(mocks.audit).not.toHaveBeenCalled();
   });
 
