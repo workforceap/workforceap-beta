@@ -175,6 +175,7 @@ export function getVoiceCoachTranscriptRecipients(extra: string[] = []): string[
 
 export async function sendVoiceCoachTranscriptEmail(params: {
   to: string[];
+  subjectMemberId: string;
   memberName: string;
   memberEmail?: string | null;
   coachLabel: string;
@@ -239,6 +240,8 @@ export async function sendVoiceCoachTranscriptEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_transcript,
       to: recipients,
+      subjectMemberId: params.subjectMemberId,
+      subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} transcript — ${params.memberName}`),
       html,
     });
@@ -254,6 +257,7 @@ export async function sendVoiceCoachTranscriptEmail(params: {
 
 export async function sendVoiceCoachArtifactEmail(params: {
   to: string[];
+  subjectMemberId: string;
   memberName: string;
   memberEmail?: string | null;
   coachLabel: string;
@@ -308,6 +312,8 @@ export async function sendVoiceCoachArtifactEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_artifact,
       to: recipients,
+      subjectMemberId: params.subjectMemberId,
+      subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} artifact — ${params.memberName}`),
       html,
     });
@@ -323,6 +329,7 @@ export async function sendVoiceCoachArtifactEmail(params: {
 
 export async function sendVoiceInterviewTranscriptEmail(params: {
   to: string[];
+  subjectMemberId: string;
   memberName: string;
   memberEmail?: string | null;
   role: string;
@@ -383,6 +390,8 @@ export async function sendVoiceInterviewTranscriptEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.voice_interview_transcript,
       to: recipients,
+      subjectMemberId: params.subjectMemberId,
+      subjectMemberEmail: params.memberEmail,
       subject: sanitizeEmailSubjectLine(`Voice interview transcript — ${params.memberName} — ${params.role}`),
       html,
     });

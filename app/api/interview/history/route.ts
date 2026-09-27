@@ -216,6 +216,7 @@ export const GET = withApiGuc(_GET);async function _POST(req: NextRequest) {
         if (recipientEmails.length > 0) {
           await sendVoiceInterviewTranscriptEmail({
             to: recipientEmails,
+            subjectMemberId: user.id,
             memberName: dbUser?.fullName?.trim() || user.email || 'WorkforceAP member',
             memberEmail: dbUser?.email?.trim() || user.email || null,
             role,

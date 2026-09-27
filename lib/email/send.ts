@@ -202,6 +202,10 @@ export interface SendBrandedEmailArgs {
   userId?: string | null;
   /** Member receiving this message. Rechecked before every provider attempt. */
   recipientUserId?: string;
+  /** Member whose private content is sent to staff. Rechecked before every provider attempt. */
+  subjectMemberId?: string;
+  /** Address frozen in the staff message body, if present. */
+  subjectMemberEmail?: string | null;
   entityType?: string | null;
   entityId?: string | null;
 }
@@ -451,7 +455,7 @@ export class FixtureRecipientSkippedError extends Error {
   }
 }
 
-async function memberRecipientIsActive(userId: string, recipient: string): Promise<boolean> {
+async function memberRecipientIsActive(userId: string, recipient?: string | null): Promise<boolean> {
   const member = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true, deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
@@ -460,7 +464,7 @@ async function memberRecipientIsActive(userId: string, recipient: string): Promi
     && !member.deletedAt
     && !member.billingDeletionPendingAt
     && !member.billingDeletionOperationId
-    && normalizedRecipientAddress(member.email) === normalizedRecipientAddress(recipient);
+    && (recipient == null || normalizedRecipientAddress(member.email) === normalizedRecipientAddress(recipient));
 }
 
 export async function sendBrandedEmail(
@@ -551,13 +555,17 @@ export async function sendBrandedEmail(
   sendLog.write('sending', { attempts: 1 });
 
   for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
-    if (args.recipientUserId) {
+    if (args.recipientUserId || args.subjectMemberId) {
       // A cron or staff batch may have captured this address minutes ago.
-      // Recheck after pacing and retry sleeps, directly before each send.
+      // Staff transcripts likewise contain private member content even though
+      // their envelope goes to staff. Recheck after pacing and retry sleeps.
       const recipient = typeof to === 'string' ? to : '';
       let active: boolean;
       try {
-        active = await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient);
+        active = (!args.recipientUserId
+          || await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient))
+          && (!args.subjectMemberId
+            || await memberRecipientIsActive(args.subjectMemberId, args.subjectMemberEmail));
       } catch (error) {
         // An unavailable lifecycle lookup is not permission to email a stale
         // address. Record the failure while keeping the provider untouched.

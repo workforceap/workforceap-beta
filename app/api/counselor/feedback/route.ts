@@ -157,6 +157,7 @@ Respond with ONLY a JSON array of 3 strings. Example: ["Step one", "Step two", "
         if (recipients.length > 0) {
           await sendVoiceCoachTranscriptEmail({
             to: recipients,
+            subjectMemberId: user.id,
             memberName: dbUser?.fullName?.trim() || user.email || 'WorkforceAP member',
             memberEmail: dbUser?.email?.trim() || user.email || null,
             coachLabel: 'Lilley Career Coach',

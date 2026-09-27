@@ -22,6 +22,9 @@ import {
   sendInactiveNudgeEmail,
   sendInterviewPrepBundleEmail,
   sendPreparedPlacementSurveyEmail,
+  sendVoiceCoachArtifactEmail,
+  sendVoiceCoachTranscriptEmail,
+  sendVoiceInterviewTranscriptEmail,
 } from '@/lib/email';
 
 beforeEach(() => {
@@ -173,6 +176,94 @@ describe('member-addressed email lifecycle', () => {
 
     expect(result).toEqual({ ok: true });
     expect(mocks.findUser).not.toHaveBeenCalled();
+    expect(mocks.send).toHaveBeenCalledOnce();
+  });
+});
+
+describe('member content sent to staff', () => {
+  const staffRecipient = ['staff@workforceap.org'];
+
+  it('drops a queued coach transcript after a soft erase', async () => {
+    mocks.findUser.mockResolvedValue({
+      email: 'erased@deleted.invalid',
+      deletedAt: new Date(),
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+    });
+
+    const result = await sendVoiceCoachTranscriptEmail({
+      to: staffRecipient,
+      subjectMemberId: 'member-coach',
+      memberName: 'Original Name',
+      memberEmail: 'original@workforceap.org',
+      coachLabel: 'Resume Coach',
+      transcriptTurns: [{ role: 'user', text: 'Private conversation' }],
+    });
+
+    expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.findUser).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 'member-coach' } }));
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('drops a staff artifact using a stale Auth email after hard erasure', async () => {
+    mocks.findUser.mockResolvedValue(null);
+
+    const result = await sendVoiceCoachArtifactEmail({
+      to: staffRecipient,
+      subjectMemberId: 'member-artifact',
+      memberName: 'Original Name',
+      memberEmail: 'original@workforceap.org',
+      coachLabel: 'Elevator Pitch Builder',
+      artifactTitle: 'Pitch',
+      artifactBody: 'Private pitch',
+    });
+
+    expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('drops a queued interview transcript when the member address changed', async () => {
+    mocks.findUser.mockResolvedValue({
+      email: 'current@workforceap.org',
+      deletedAt: null,
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+    });
+
+    const result = await sendVoiceInterviewTranscriptEmail({
+      to: staffRecipient,
+      subjectMemberId: 'member-interview',
+      memberName: 'Original Name',
+      memberEmail: 'old@workforceap.org',
+      role: 'Synthetic role',
+      interviewType: 'Practice',
+      transcriptTurns: [{ role: 'user', text: 'Private answer' }],
+      sessionId: 'synthetic-session',
+    });
+
+    expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('still delivers an active member artifact to staff', async () => {
+    mocks.findUser.mockResolvedValue({
+      email: 'member@workforceap.org',
+      deletedAt: null,
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
+    });
+
+    const result = await sendVoiceCoachArtifactEmail({
+      to: staffRecipient,
+      subjectMemberId: 'member-active',
+      memberName: 'Active Member',
+      memberEmail: 'member@workforceap.org',
+      coachLabel: 'Elevator Pitch Builder',
+      artifactTitle: 'Pitch',
+      artifactBody: 'Synthetic pitch',
+    });
+
+    expect(result).toEqual({ ok: true });
     expect(mocks.send).toHaveBeenCalledOnce();
   });
 });
