@@ -112,7 +112,10 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
   const [addedUserIds, setAddedUserIds] = useState<Set<string>>(new Set());
   const [addingEmail, setAddingEmail] = useState<string | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
-  const [addWarning, setAddWarning] = useState(false);
+  const [addWarnings, setAddWarnings] = useState<{
+    welcomeEmail: boolean;
+    progressProjection: boolean;
+  } | null>(null);
   const [programId, setProgramId] = useState<string>(defaultProgramId ?? '');
 
   const runReconcile = useCallback(async () => {
@@ -149,7 +152,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
       }
       setAddingEmail(row.email);
       setAddError(null);
-      setAddWarning(false);
+      setAddWarnings(null);
       try {
         const response = await fetch('/api/admin/coursera/reconcile/add-to-wap', {
           method: 'POST',
@@ -166,6 +169,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
           userId?: string;
           error?: string;
           welcomeEmailSent?: boolean;
+          progressProjectionPending?: boolean;
         };
         if (!response.ok || !json.ok) {
           setAddError(json.error ?? `HTTP ${response.status}`);
@@ -179,7 +183,11 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
           return next;
         });
         await runReconcile();
-        setAddWarning(json.welcomeEmailSent === false);
+        const welcomeEmail = json.welcomeEmailSent === false;
+        const progressProjection = json.progressProjectionPending === true;
+        setAddWarnings(
+          welcomeEmail || progressProjection ? { welcomeEmail, progressProjection } : null,
+        );
       } catch (err) {
         setAddError(err instanceof Error ? err.message : 'Add-to-WAP failed');
       } finally {
@@ -262,7 +270,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
         </div>
       )}
 
-      {addWarning && (
+      {addWarnings && (
         <div
           role="alert"
           style={{
@@ -274,7 +282,13 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
             fontSize: '0.85rem',
           }}
         >
-          <strong>Account created in WorkforceAP.</strong> The welcome email could not be confirmed. Send a password reset from the member record.
+          <strong>Account created in WorkforceAP.</strong>
+          {addWarnings.welcomeEmail && (
+            <> The welcome email could not be confirmed. Send a password reset from the member record.</>
+          )}
+          {addWarnings.progressProjection && (
+            <> Coursera progress could not be fully synced. Run Coursera progress sync to retry.</>
+          )}
         </div>
       )}
 

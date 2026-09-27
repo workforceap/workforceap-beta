@@ -355,11 +355,27 @@ const bodySchema = z.object({
       // Ownership is already committed with the mapping above. Canonical
       // projection is monotonic, tenant-scoped, and retryable, so it runs
       // post-commit without replaying historical xAPI side effects.
-      await promoteCsvProgressToCanonical({
-        organizationId: actorOrgId,
-        userId: result.id,
-        courseraEmail: email,
-      });
+      let progressProjectionPending = false;
+      try {
+        const projection = await promoteCsvProgressToCanonical({
+          organizationId: actorOrgId,
+          userId: result.id,
+          courseraEmail: email,
+        });
+        if (projection.errors > 0) {
+          progressProjectionPending = true;
+          captureApiError(new Error('Coursera progress projection incomplete after account creation'), {
+            route: 'admin/coursera/reconcile/add-to-wap',
+            extra: { stage: 'progress-projection', failure: 'reported-errors', errorCount: projection.errors },
+          });
+        }
+      } catch {
+        progressProjectionPending = true;
+        captureApiError(new Error('Coursera progress projection failed after account creation'), {
+          route: 'admin/coursera/reconcile/add-to-wap',
+          extra: { stage: 'progress-projection', failure: 'exception' },
+        });
+      }
 
       // Sprint R3 — fire-and-forget kickoff email (idempotent per enrollment row).
       if (result.enrollmentId && programSlug) {
@@ -380,6 +396,7 @@ const bodySchema = z.object({
         supabaseUserId,
         email: result.email,
         welcomeEmailSent,
+        progressProjectionPending,
       });
     } catch (err) {
       captureApiError(err, { route: 'admin/coursera/reconcile/add-to-wap' });

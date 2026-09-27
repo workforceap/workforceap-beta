@@ -77,7 +77,7 @@ beforeEach(() => {
   h.upsertEnrollment.mockResolvedValue({ id: 'enrollment-1' });
   h.lockCoursera.mockResolvedValue(undefined);
   h.mapCoursera.mockResolvedValue(undefined);
-  h.promoteCsv.mockResolvedValue(undefined);
+  h.promoteCsv.mockResolvedValue({ errors: 0 });
   h.auditLog.mockResolvedValue(undefined);
   h.logAuditEvent.mockResolvedValue(undefined);
   h.roster.mockResolvedValue({ elements: [{ email: 'jane@example.org', externalId: 'coursera-1' }] });
@@ -135,7 +135,9 @@ describe('Coursera add-to-WAP fallback reset ordering', () => {
     }) as Parameters<typeof addCourseraLearner>[0]);
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ ok: true, userId: 'member-1', welcomeEmailSent: true });
+    expect(await response.json()).toMatchObject({
+      ok: true, userId: 'member-1', welcomeEmailSent: true, progressProjectionPending: false,
+    });
     expect(h.reset).toHaveBeenCalledWith('jane@example.org', '/reset-password', { orgId: 'org-1' });
     expect(h.committed).toBe(true);
   });
@@ -166,15 +168,48 @@ describe('Coursera add-to-WAP fallback reset ordering', () => {
     expect(h.captureApiError.mock.calls[0][1].extra).not.toHaveProperty('email');
   });
 
-  it('keeps the Auth user when post-commit projection fails', async () => {
-    h.promoteCsv.mockRejectedValue(new Error('projection unavailable'));
+  it('reports success with a safe warning when post-commit projection throws', async () => {
+    h.promoteCsv.mockRejectedValue(new Error('Private jane@example.org projection detail'));
     const response = await addCourseraLearner(request('/api/admin/coursera/reconcile/add-to-wap', {
       email: 'jane@example.org', courseraExternalId: 'coursera-1', programId: 'program-1',
     }) as Parameters<typeof addCourseraLearner>[0]);
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toMatchObject({
+      ok: true, userId: 'member-1', welcomeEmailSent: true, progressProjectionPending: true,
+    });
+    expect(JSON.stringify(body)).not.toContain('Private jane@example.org');
     expect(h.committed).toBe(true);
     expect(h.reset).toHaveBeenCalledOnce();
     expect(h.deleteAuth).not.toHaveBeenCalled();
+    expect(h.auditLog).toHaveBeenCalledOnce();
+    expect(h.logAuditEvent).toHaveBeenCalledOnce();
+    expect(h.captureApiError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Coursera progress projection failed after account creation' }),
+      expect.objectContaining({
+        extra: { stage: 'progress-projection', failure: 'exception' },
+      }),
+    );
+    expect(JSON.stringify(h.captureApiError.mock.calls)).not.toContain('Private jane@example.org');
+  });
+
+  it('reports success with a warning when projection returns row errors', async () => {
+    h.promoteCsv.mockResolvedValue({ errors: 2 });
+    const response = await addCourseraLearner(request('/api/admin/coursera/reconcile/add-to-wap', {
+      email: 'jane@example.org', courseraExternalId: 'coursera-1', programId: 'program-1',
+    }) as Parameters<typeof addCourseraLearner>[0]);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      ok: true, userId: 'member-1', progressProjectionPending: true,
+    });
+    expect(h.deleteAuth).not.toHaveBeenCalled();
+    expect(h.captureApiError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Coursera progress projection incomplete after account creation' }),
+      expect.objectContaining({
+        extra: { stage: 'progress-projection', failure: 'reported-errors', errorCount: 2 },
+      }),
+    );
   });
 });

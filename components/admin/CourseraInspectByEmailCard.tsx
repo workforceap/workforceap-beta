@@ -213,6 +213,7 @@ export default function CourseraInspectByEmailCard() {
         userId?: string;
         error?: string;
         welcomeEmailSent?: boolean;
+        progressProjectionPending?: boolean;
       };
       if (!response.ok || !json.ok) {
         setAddResult({ status: 'error', message: json.error ?? `HTTP ${response.status}` });
@@ -220,12 +221,18 @@ export default function CourseraInspectByEmailCard() {
       }
       // Re-run inspect to reflect the new state.
       await runInspect();
+      const warnings: string[] = [];
+      if (json.welcomeEmailSent === false) {
+        warnings.push('The welcome email could not be confirmed. Send a password reset from the member record.');
+      }
+      if (json.progressProjectionPending === true) {
+        warnings.push('Coursera progress could not be fully synced. Run Coursera progress sync to retry.');
+      }
       setAddResult(
-        json.welcomeEmailSent === false
+        warnings.length > 0
           ? {
               status: 'warning',
-              message:
-                'Account created in WorkforceAP, but the welcome email could not be confirmed. Send a password reset from the member record.',
+              message: `Account created in WorkforceAP. ${warnings.join(' ')}`,
             }
           : { status: 'success', message: `Added userId=${json.userId ?? '?'}` },
       );
