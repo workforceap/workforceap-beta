@@ -75,6 +75,7 @@ export const POST = withApiGuc(async () => {
       const target = await activeMemberNotificationTarget(user.id);
       if (target) {
         await sendAssessmentResetNotificationEmail({
+          subjectMemberId: user.id,
           memberName: target.fullName ?? target.email,
           memberEmail: target.email,
           previousScore: dbUser.assessmentScorePct ?? 0,

@@ -5,12 +5,13 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 
 /** Surface provider rejections and persist safe metadata before returning. */
-async function sendPartnerEmail(resend: Resend, args: { from: string; to: string; subject: string; text: string }): Promise<void> {
+async function sendPartnerEmail(resend: Resend, args: { from: string; to: string; subject: string; text: string; subjectMemberId: string }): Promise<void> {
   try {
     await sendBrandedEmailOrThrowOnSkip(
       resend,
       {
         ...args,
+        memberEffectClaim: true,
         html: `<p>${args.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br />')}</p>`,
       },
       { suppressFailureDiagnostic: true },
@@ -120,6 +121,7 @@ export async function sendPartnerMilestoneEmail(
   try {
     const resend = new Resend(resendKey);
     await sendPartnerEmail(resend, {
+      subjectMemberId: memberId,
       from: emailFrom,
       to: referral.partner.contactEmail.trim(),
       subject,
@@ -181,6 +183,7 @@ export async function sendPartnerNewMemberAssignedEmail(
     try {
       const resend = new Resend(resendKey);
       await sendPartnerEmail(resend, {
+        subjectMemberId: memberId,
         from: emailFrom,
         to: partner.contactEmail.trim(),
         subject,

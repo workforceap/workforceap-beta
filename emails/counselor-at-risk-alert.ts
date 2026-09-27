@@ -122,8 +122,9 @@ export function counselorAtRiskBatchHtml(params: {
 
   return `
     <p>Hi ${escapeHtml(counselorName)},</p>
-    <p><strong>${escapeHtml(subjectLine)}</strong> — the following ${memberCount === 1 ? 'member has' : 'members have'} been flagged as critical at-risk (score ≥ 70) and need outreach today:</p>
+    <p><strong>${escapeHtml(subjectLine)}</strong> — ${memberCount === 1 ? 'this member has' : 'these members have'} been flagged as critical at-risk (score ≥ 70) and need outreach today:</p>
     ${memberCards}
+    ${memberCount > members.length ? `<p>${memberCount - members.length} additional member${memberCount - members.length === 1 ? '' : 's'} need attention. Open the at-risk dashboard for the full list.</p>` : ''}
     <p style="margin-top:1.5rem;">
       <a href="${escapeHtml(dashboardUrl)}" style="display:inline-block;padding:0.75rem 1.25rem;background:#231f20;color:#fff;text-decoration:none;border-radius:6px;font-size:0.95rem;font-weight:600;">Open at-risk dashboard</a>
     </p>

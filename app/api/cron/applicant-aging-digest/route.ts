@@ -31,7 +31,7 @@ async function handle(_request: Request) {
   const applications = await prisma.application.findMany({
     where: {
       status: { in: ['PENDING', 'NEEDS_INFO'] },
-      user: { deletedAt: null },
+      user: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null },
     },
     select: {
       id: true,

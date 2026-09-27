@@ -372,6 +372,7 @@ export async function escalateStalePlacementSurveys(
     const surveyUrl = `${SITE_URL}/survey/placement/${encodeURIComponent(token)}`;
 
     const result = await emailPacer.run(() => sendPlacementSurveyEscalationEmail({
+      subjectMemberId: user.id,
       to: counselorEmail,
       counselorName: counselor.user.fullName ?? 'Counselor',
       memberName: user.fullName ?? 'Member',

@@ -233,7 +233,42 @@ describe('GET /api/cron/at-risk-alerts — the weekly at-risk email from persist
 
       const callArgs = vi.mocked(sendCounselorAtRiskAlertEmail).mock.calls[0][0];
       expect(callArgs.members).toHaveLength(2);
-      expect(callArgs.members.map((m: any) => m.score)).toEqual([75, 80]);
+      expect(callArgs.subjectMemberIds).toEqual(['user-2', 'user-1']);
+      expect(callArgs.members.map((m: any) => m.score)).toEqual([80, 75]);
+    });
+
+    it('names only the highest-risk 20 members while keeping the full counselor count and alert updates', async () => {
+      const scores = Array.from({ length: 22 }, (_, i) => ({
+        userId: `user-${i}`,
+        score: 70 + i,
+        factors: [{ description: 'Needs outreach' }],
+        recommendedAction: 'Call',
+      }));
+      const members = scores.map((score) => ({
+        id: score.userId,
+        fullName: `Member ${score.userId}`,
+        email: `${score.userId}@example.com`,
+        counselorAssignments: [{ counselor: { id: 'counselor-1', user: { email: 'c1@example.com', fullName: 'Counselor One' } } }],
+      }));
+      const alerts = scores.map((score) => ({ id: `alert-${score.userId}`, userId: score.userId, notifiedCounselorAt: null }));
+      vi.mocked(loadPersistedAtRiskScores).mockResolvedValue(scores as never);
+      vi.mocked(prisma.user.findMany).mockResolvedValue(members as never);
+      vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValueOnce([]).mockResolvedValueOnce(alerts as never);
+      vi.mocked(prisma.atRiskAlert.createMany).mockResolvedValue({ count: 22 } as never);
+      vi.mocked(prisma.atRiskAlert.updateMany).mockResolvedValue({ count: 22 } as never);
+      vi.mocked(sendCounselorAtRiskAlertEmail).mockResolvedValue({ ok: true });
+
+      const response = await runAtRiskAlerts(makeRequest({ 'x-cron-secret': 'super-secret-cron-key' }));
+      expect(response.status).toBe(200);
+      const email = vi.mocked(sendCounselorAtRiskAlertEmail).mock.calls[0][0];
+      expect(email.totalMemberCount).toBe(22);
+      expect(email.members).toHaveLength(20);
+      expect(email.subjectMemberIds).toHaveLength(20);
+      expect(email.subjectMemberIds?.[0]).toBe('user-21');
+      expect(email.subjectMemberIds).not.toContain('user-0');
+      expect(vi.mocked(prisma.atRiskAlert.updateMany).mock.calls[0][0]?.where).toEqual({
+        id: { in: alerts.map((alert) => alert.id) },
+      });
     });
 
     it('returns empty result when no critical members', async () => {
@@ -614,6 +649,18 @@ describe('authorizeCronRequest', () => {
 });
 
 describe('email template — counselorAtRiskBatchHtml', () => {
+  it('reports the number omitted from the named cards and links to the full dashboard', () => {
+    const html = counselorAtRiskBatchHtml({
+      counselorName: 'Jane',
+      memberCount: 22,
+      members: [{ memberName: 'Highest risk', memberEmail: 'member@example.com', score: 99, level: 'CRITICAL', factors: [], recommendedAction: 'Call', profileUrl: 'https://example.com/counselor/students/highest' }],
+      dashboardUrl: 'https://example.com/counselor/at-risk',
+    });
+    expect(html).toContain('22 members need attention today');
+    expect(html).toContain('21 additional members need attention');
+    expect(html).toContain('https://example.com/counselor/at-risk');
+  });
+
   it('renders singular subject line for 1 member', () => {
     const html = counselorAtRiskBatchHtml({
       counselorName: 'Jane',

@@ -14,6 +14,7 @@ import {
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 
 export const maxDuration = 300;
+const MAX_NAMED_SUCCESS_LINES = 20;
 
 
 /**
@@ -55,7 +56,7 @@ async function handle(_request: Request) {
   }
 
   const allReferrals = await prisma.partnerReferral.findMany({
-    where: { partnerId: { in: partnerIds }, member: { deletedAt: null } },
+    where: { partnerId: { in: partnerIds }, member: { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null } },
     take: partnerDigestReferralTake(partnerIds.length),
     include: {
       member: {
@@ -107,6 +108,8 @@ async function handle(_request: Request) {
 
     const stageCounts: Record<string, number> = {};
     const successLines: string[] = [];
+    const namedSuccessMemberIds = new Set<string>();
+    let totalSuccessLines = 0;
 
     for (const r of referrals) {
       const m = r.member;
@@ -133,13 +136,21 @@ async function handle(_request: Request) {
 
       for (const c of m.userCertifications) {
         if (c.earnedAt >= weekStart) {
-          successLines.push(`${m.fullName} earned certification: ${c.certName}`);
+          totalSuccessLines++;
+          if (successLines.length < MAX_NAMED_SUCCESS_LINES) {
+            successLines.push(`${m.fullName} earned certification: ${c.certName}`);
+            namedSuccessMemberIds.add(m.id);
+          }
         }
       }
       const placed = m.placementRecord;
       if (placed?.placedAt && placed.placedAt >= weekStart) {
         const role = placed.jobTitle ? ` as ${placed.jobTitle}` : '';
-        successLines.push(`${m.fullName} placed${role}`);
+        totalSuccessLines++;
+        if (successLines.length < MAX_NAMED_SUCCESS_LINES) {
+          successLines.push(`${m.fullName} placed${role}`);
+          namedSuccessMemberIds.add(m.id);
+        }
       }
     }
 
@@ -157,11 +168,13 @@ async function handle(_request: Request) {
     try {
       const contactEmail = p.contactEmail.trim();
       const sendResult = await emailPacer.run(() => sendPartnerWeeklyDigestEmail({
+        subjectMemberIds: [...namedSuccessMemberIds],
         to: contactEmail,
         partnerName: p.name,
         weekLabel,
         stageLines,
         successLines,
+        additionalSuccessCount: totalSuccessLines - successLines.length,
       }));
 
       results.push({

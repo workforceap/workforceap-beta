@@ -160,6 +160,8 @@ export const POST = withApiGuc(async (request: Request) => {
         const result = await sendBrandedEmailOrThrowOnSkip(resend, {
           from: emailFrom,
           to: getAssessmentResultRecipients(),
+          subjectMemberId: user.id,
+          memberEffectClaim: true,
           subject: sanitizeEmailSubjectLine(`Training preassessment submitted — ${firstName} ${lastName} (${pct}%)`),
           html: plainTextEmailHtml(adminText),
           text: adminText,
@@ -191,6 +193,8 @@ export const POST = withApiGuc(async (request: Request) => {
           const result = await sendBrandedEmailOrThrowOnSkip(resend, {
             from: emailFrom,
             to: memberTarget.email,
+            recipientUserId: user.id,
+            memberEffectClaim: true,
             subject: 'Assessment Complete — Workforce Advancement Project',
             html: memberHtml,
           });

@@ -339,6 +339,7 @@ export type DailyAtRiskAlertRunResult = {
 
 /** Synthetic batch id for the staff fallback inbox (members with no counselor). */
 export const STAFF_FALLBACK_COUNSELOR_ID = 'staff-fallback';
+const MAX_NAMED_AT_RISK_MEMBERS = 20;
 
 /**
  * @param precomputedScores Optional scores already in hand (tests, a manual
@@ -403,6 +404,8 @@ export async function runAtRiskCounselorAlerts(
     where: {
       id: { in: criticalScores.map((s) => s.userId) },
       deletedAt: null,
+      billingDeletionPendingAt: null,
+      billingDeletionOperationId: null,
     },
     select: {
       id: true,
@@ -531,11 +534,16 @@ export async function runAtRiskCounselorAlerts(
 
   for (const batch of counselorBatches.values()) {
     if (batch.members.length === 0) continue;
+    const namedMembers = [...batch.members]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, MAX_NAMED_AT_RISK_MEMBERS);
 
     const result = await pacer.run(() => sendCounselorAtRiskAlertEmail({
+      subjectMemberIds: namedMembers.map((member) => member.userId),
       to: batch.counselorEmail,
       counselorName: batch.counselorName,
-      members: batch.members.map((m) => ({
+      totalMemberCount: batch.members.length,
+      members: namedMembers.map((m) => ({
         memberName: m.fullName ?? 'Unknown',
         memberEmail: m.email ?? '(no email)',
         score: m.score,
