@@ -9,11 +9,13 @@ import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
 import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { getAssessmentResultRecipients, getResend } from '@/lib/email';
 import { buildAssessmentReviewRows, formatAssessmentReviewText } from '@/lib/assessment/reviewRows';
-import { trackEvent } from '@/lib/events/track';
+import { persistEvent } from '@/lib/events/track';
 import { awardPoints } from '@/lib/member/points';
 import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from '@/lib/member/starterProfileReview';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
+import { activeMemberNotificationTarget } from '@/lib/member/activeNotification';
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -95,31 +97,36 @@ export const POST = withApiGuc(async (request: Request) => {
     // Use updateMany with assessmentCompleted=false in the WHERE clause so the
     // check and write are atomic — prevents a duplicate submission from a race
     // condition overwriting the first submission's answers.
-    const updated = await prisma.$transaction((tx) => tx.user.updateMany({
-      where: { id: user.id, assessmentCompleted: false },
-      data: {
-        assessmentCompleted: true,
-        assessmentCompletedAt: new Date(),
-        assessmentScore: raw,
-        assessmentScorePct: pct,
-        programInterest,
-        assessmentAnswers: answersTyped as unknown as object,
-      },
-    }));
+    const updated = await withActiveMemberWrite(user.id, async (tx) => {
+      const result = await tx.user.updateMany({
+        where: { id: user.id, assessmentCompleted: false },
+        data: {
+          assessmentCompleted: true,
+          assessmentCompletedAt: new Date(),
+          assessmentScore: raw,
+          assessmentScorePct: pct,
+          programInterest,
+          assessmentAnswers: answersTyped as unknown as object,
+        },
+      });
+      if (result.count === 1) {
+        // Keep identifying funnel metadata in the same lifecycle transaction.
+        // Erasure must not commit between the assessment and its event.
+        await persistEvent({
+          userId: user.id,
+          eventName: 'apply_signup_completed',
+          entityType: 'assessment',
+          metadata: { rawScore: raw, scorePct: pct, programInterest },
+          sourcePage: '/dashboard/assessment',
+        }, tx);
+      }
+      return result;
+    });
     if (updated.count === 0) {
       return NextResponse.json({ error: 'Assessment already completed' }, { status: 400 });
     }
   
     awardPoints(user.id, 'assessment_completed').catch(() => {});
-  
-    // Track assessment completion for funnel analytics
-    await trackEvent({
-      userId: user.id,
-      eventName: 'apply_signup_completed',
-      entityType: 'assessment',
-      metadata: { rawScore: raw, scorePct: pct, programInterest },
-      sourcePage: '/dashboard/assessment',
-    });
   
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
       || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.workforceap.org');
@@ -131,14 +138,15 @@ export const POST = withApiGuc(async (request: Request) => {
   
     let memberEmailSent = false;
     let adminEmailSent = false;
-    if (resend) {
+    const adminTarget = resend ? await activeMemberNotificationTarget(user.id) : null;
+    if (resend && adminTarget) {
       try {
         // Ops (9/2/26): staff get the full answer sheet, not just the score, so
         // the WIOA assessment review can start from the email alone.
         const reviewRows = buildAssessmentReviewRows(answersTyped);
         const adminText = [
             `Name: ${firstName} ${lastName}`,
-            `Email: ${dbUser.email}`,
+            `Email: ${adminTarget.email}`,
             `Phone: ${phone}`,
             `Program Interest: ${programInterest}`,
             `Score: ${raw}/${TOTAL_POINTS} (${pct}%)`,
@@ -168,28 +176,31 @@ export const POST = withApiGuc(async (request: Request) => {
       }
   
       try {
-        const memberHtml = brandedEmailLayout({
-          title: 'Assessment Complete',
-          bodyHtml: `
-            <p>Hi ${escapeHtml(firstName)},</p>
-            <p>You've completed your readiness assessment. Your score: <strong>${raw}/${TOTAL_POINTS} (${pct}%)</strong>.</p>
-            <p>You're all set to continue to your training. Log in to your dashboard to access your Coursera courses.</p>
-          `,
-          ctaText: 'Go to Dashboard',
-          ctaUrl: dashboardUrl,
-        });
-        const result = await sendBrandedEmailOrThrowOnSkip(resend, {
-          from: emailFrom,
-          to: dbUser.email,
-          subject: 'Assessment Complete — Workforce Advancement Project',
-          html: memberHtml,
-        });
-        if (!result.data?.id) {
-          console.error('Assessment member email was not accepted by the provider', {
-            errorName: 'missing_delivery_id',
+        const memberTarget = await activeMemberNotificationTarget(user.id);
+        if (memberTarget) {
+          const memberHtml = brandedEmailLayout({
+            title: 'Assessment Complete',
+            bodyHtml: `
+              <p>Hi ${escapeHtml(firstName)},</p>
+              <p>You've completed your readiness assessment. Your score: <strong>${raw}/${TOTAL_POINTS} (${pct}%)</strong>.</p>
+              <p>You're all set to continue to your training. Log in to your dashboard to access your Coursera courses.</p>
+            `,
+            ctaText: 'Go to Dashboard',
+            ctaUrl: dashboardUrl,
           });
-        } else {
-          memberEmailSent = true;
+          const result = await sendBrandedEmailOrThrowOnSkip(resend, {
+            from: emailFrom,
+            to: memberTarget.email,
+            subject: 'Assessment Complete — Workforce Advancement Project',
+            html: memberHtml,
+          });
+          if (!result.data?.id) {
+            console.error('Assessment member email was not accepted by the provider', {
+              errorName: 'missing_delivery_id',
+            });
+          } else {
+            memberEmailSent = true;
+          }
         }
       } catch (err) {
         console.error('Assessment member email failed:', err);
@@ -205,6 +216,9 @@ export const POST = withApiGuc(async (request: Request) => {
       profileReviewPending,
     });
   } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     console.error('/member/assessment/submit:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

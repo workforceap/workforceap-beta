@@ -81,6 +81,7 @@ vi.mock('@/lib/member/points', () => ({
 
 vi.mock('@/lib/events/track', () => ({
   trackEvent: vi.fn(),
+  persistEvent: vi.fn(),
 }));
 
 vi.mock('@/lib/member/starterProfileReview', () => ({
@@ -130,7 +131,8 @@ import { prisma } from '@/lib/db/prisma';
 import { getUser } from '@/lib/auth/server';
 import { getCounselorStarterProfileReview } from '@/lib/member/starterProfileReview';
 import { awardPoints } from '@/lib/member/points';
-import { trackEvent } from '@/lib/events/track';
+import { persistEvent } from '@/lib/events/track';
+import { billingLifecyclePending } from '@/lib/billing/erasureGuard';
 
 const UUIDS = {
   user: '550e8400-e29b-41d4-a716-446655440001',
@@ -334,7 +336,7 @@ describe('POST /api/member/assessment/submit', () => {
     const req = makeRequest(validBody);
     await submitAssessment(req);
 
-    expect(trackEvent).toHaveBeenCalledWith(
+    expect(persistEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: UUIDS.user,
         eventName: 'apply_signup_completed',
@@ -345,8 +347,36 @@ describe('POST /api/member/assessment/submit', () => {
           programInterest: validBody.programInterest,
         }),
         sourcePage: '/dashboard/assessment',
-      })
+      }),
+      prisma,
     );
+  });
+
+  it('aborts the guarded save when its personal event cannot be persisted', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    let transactionOpen = false;
+    vi.mocked(prisma.$transaction).mockImplementation(async (arg: any) => {
+      transactionOpen = true;
+      try { return typeof arg === 'function' ? await arg(prisma) : await Promise.all(arg); }
+      finally { transactionOpen = false; }
+    });
+    vi.mocked(persistEvent).mockImplementationOnce(async () => {
+      expect(transactionOpen).toBe(true);
+      throw new Error('Event write failed');
+    });
+
+    const response = await submitAssessment(makeRequest(validBody));
+    expect(response.status).toBe(500);
+    expect(prisma.user.updateMany).toHaveBeenCalledOnce();
+    expect(persistEvent).toHaveBeenCalledOnce();
+    expect(persistEvent).toHaveBeenCalledWith(expect.objectContaining({
+      eventName: 'apply_signup_completed',
+      metadata: expect.objectContaining({ programInterest: validBody.programInterest }),
+    }), prisma);
+    expect(transactionOpen).toBe(false);
+    expect(resendSend).not.toHaveBeenCalled();
   });
 
   it('returns 400 when assessment already completed', async () => {
@@ -361,6 +391,29 @@ describe('POST /api/member/assessment/submit', () => {
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'Assessment already completed' });
+  });
+
+  it('rejects a stale Auth submission after erasure wins before the final write', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    vi.mocked(billingLifecyclePending).mockResolvedValueOnce(true);
+
+    const response = await submitAssessment(makeRequest(validBody));
+    expect(response.status).toBe(409);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
+  it('skips assessment email after a committed deletion marker appears', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique)
+      .mockResolvedValueOnce(mockUser as any)
+      .mockResolvedValueOnce({ ...mockUser, billingDeletionPendingAt: new Date() } as any);
+    const response = await submitAssessment(makeRequest(validBody));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ emailsSent: false, adminEmailSent: false });
+    expect(prisma.user.updateMany).toHaveBeenCalledOnce();
+    expect(resendSend).not.toHaveBeenCalled();
   });
 
   it('returns 400 for invalid submission data', async () => {
@@ -590,5 +643,33 @@ describe('POST /api/member/assessment/reset', () => {
     const res = await resetAssessment(new Request('http://localhost'));
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'Assessment not completed yet — nothing to reset' });
+  });
+
+  it('does not archive PII when a stale reset request loses the lifecycle barrier', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(billingLifecyclePending).mockResolvedValueOnce(true);
+    const response = await resetAssessment(new Request('http://localhost'));
+    expect(response.status).toBe(409);
+    expect(prisma.workflowDiagnostic.create).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
+  it('skips the reset notification if erasure begins after the atomic reset', async () => {
+    const resetUser = {
+      fullName: 'Jane Doe', email: 'jane@example.org', assessmentCompleted: true,
+      assessmentScore: 80, assessmentScorePct: 85, assessmentCompletedAt: new Date(),
+      assessmentAnswers: { '1': 'A' }, programInterest: 'IT Support',
+    };
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique)
+      .mockResolvedValueOnce(resetUser as any)
+      .mockResolvedValueOnce({ ...resetUser, billingDeletionPendingAt: new Date() } as any);
+
+    const response = await resetAssessment(new Request('http://localhost'));
+    expect(response.status).toBe(200);
+    expect(prisma.workflowDiagnostic.create).toHaveBeenCalledOnce();
+    expect(prisma.user.update).toHaveBeenCalledOnce();
+    expect(resendSend).not.toHaveBeenCalled();
   });
 });

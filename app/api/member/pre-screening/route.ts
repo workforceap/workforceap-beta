@@ -7,6 +7,8 @@ import { sendPreScreeningReadyEmail } from '@/lib/email';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
+import { activeMemberNotificationTarget } from '@/lib/member/activeNotification';
 
 const schema = z.object({
   employmentStatus: z.enum(['Employed', 'Unemployed', 'Underemployed', 'Student']),
@@ -75,7 +77,7 @@ async function _POST(request: Request) {
 
   const organizationId = dbUser.organizationId;
 
-  await prisma.$transaction(async (tx) => {
+  await withActiveMemberWrite(user.id, async (tx) => {
     await tx.preScreeningDraft.deleteMany({ where: { userId: user.id } });
     await tx.preScreeningResponse.create({
       data: {
@@ -111,28 +113,28 @@ async function _POST(request: Request) {
     });
   });
 
-  const dbAfter = await prisma.$transaction((tx) => tx.user.findUnique({
-    where: { id: user.id },
-    select: { fullName: true, email: true },
-  }));
-
   // `after()` so Vercel does not freeze before Resend finishes the admin alert.
-  after(() =>
-    sendPreScreeningReadyEmail({
-      memberName: dbAfter?.fullName ?? undefined,
-      memberEmail: dbAfter?.email ?? user.email ?? '',
+  after(async () => {
+    const target = await activeMemberNotificationTarget(user.id);
+    if (!target) return;
+    await sendPreScreeningReadyEmail({
+      memberName: target.fullName ?? undefined,
+      memberEmail: target.email,
       goal: parsed.data.primaryGoal,
       weeklyHours: parsed.data.weeklyHours,
       barrierSummary: parsed.data.barrier.slice(0, 120),
       memberId: user.id,
-    }).catch((err) => console.error('Pre-screening admin email failed:', err))
-  );
+    }).catch((err) => console.error('Pre-screening admin email failed:', err));
+  });
 
   auditLog({ actorUserId: user.id, action: 'member.preScreening.submit', targetType: 'PreScreening', targetId: user.id }).catch(() => {});
   logAuditEvent({ user: { id: user.id, role: 'member' }, verb: 'create', object: { type: 'PreScreening', id: user.id }, result: { success: true } }).catch(() => {});
   return NextResponse.json({ ok: true });
 
   } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     console.error('/member/pre-screening error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
