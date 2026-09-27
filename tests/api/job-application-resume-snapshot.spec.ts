@@ -72,6 +72,44 @@ vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError:
   captureApiError: vi.fn(),
 }));
 
+vi.mock('@/lib/member/uploadLifecycle', () => {
+  class MemberUploadLifecycleError extends Error {}
+  class MemberUploadCleanupError extends Error {}
+  class MemberUploadStorageOutcomeError extends Error {}
+  class MemberUploadPersistenceOutcomeError extends Error {}
+  return {
+    MemberUploadLifecycleError,
+    MemberUploadCleanupError,
+    MemberUploadStorageOutcomeError,
+    MemberUploadPersistenceOutcomeError,
+    assertMemberUploadWritable: vi.fn(),
+    withMemberUploadClaim: vi.fn(async ({
+      run, removeObjects,
+    }: {
+      run: (operationId: string, recordAttempt: (path: string) => void) => Promise<unknown>;
+      removeObjects: (paths: string[]) => Promise<unknown>;
+    }) => {
+      const attempted: string[] = [];
+      try {
+        return await run('upload-claim', (path) => attempted.push(path));
+      } catch (error) {
+        if (!(error instanceof MemberUploadPersistenceOutcomeError)) {
+          await removeObjects(attempted);
+        }
+        throw error;
+      }
+    }),
+  };
+});
+
+vi.mock('@/lib/member/activeWrite', () => ({
+  MemberLifecycleWriteError: class MemberLifecycleWriteError extends Error {},
+  withActiveMemberWrite: vi.fn(async (_userId: string, write: (tx: unknown) => Promise<unknown>) => {
+    const { prisma } = await import('@/lib/db/prisma');
+    return write(prisma);
+  }),
+}));
+
 import { POST as applyForJob } from '@/app/api/(portal)/dashboard/jobs/[id]/apply/route';
 import { GET as getEmployerApplicationResume } from '@/app/api/employer/applications/[id]/resume/route';
 import { getUser } from '@/lib/auth/server';
@@ -83,6 +121,8 @@ import { sendNewJobApplicationEmail } from '@/lib/email';
 import { trackEvent } from '@/lib/events/track';
 import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
 import { awardPoints } from '@/lib/member/points';
+import { MemberUploadLifecycleError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const MEMBER_ID = 'member-123';
 const JOB_ID = 'job-123';
@@ -202,6 +242,9 @@ describe('job application resume snapshots', () => {
     expect(storage.copy.mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(prisma.$transaction).mock.invocationCallOrder[0],
     );
+    expect(vi.mocked(withMemberUploadClaim).mock.invocationCallOrder[0]).toBeLessThan(
+      storage.copy.mock.invocationCallOrder[0],
+    );
   });
 
   it('shares the original instead of a quarantined legacy AI draft', async () => {
@@ -261,7 +304,7 @@ describe('job application resume snapshots', () => {
     expect(response.status).toBe(503);
     expect(prisma.$transaction).not.toHaveBeenCalled();
     expect(prisma.jobPostingApplication.create).not.toHaveBeenCalled();
-    expect(storage.remove).not.toHaveBeenCalled();
+    expect(storage.remove).toHaveBeenCalledOnce();
   });
 
   it('removes the copied snapshot when the database transaction fails', async () => {
@@ -313,6 +356,31 @@ describe('job application resume snapshots', () => {
     expect(response.status).toBe(503);
     expect(storage.remove).not.toHaveBeenCalled();
     expect(sendNewJobApplicationEmail).not.toHaveBeenCalled();
+  });
+
+  it('does not copy a resume when deletion wins before the upload claim', async () => {
+    vi.mocked(withMemberUploadClaim).mockRejectedValueOnce(new MemberUploadLifecycleError());
+
+    const response = await applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: true }),
+      applyContext(),
+    );
+
+    expect(response.status).toBe(409);
+    expect(storage.copy).not.toHaveBeenCalled();
+    expect(prisma.jobPostingApplication.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects a non-resume application when deletion wins after the initial user read', async () => {
+    vi.mocked(withActiveMemberWrite).mockRejectedValueOnce(new MemberLifecycleWriteError());
+
+    const response = await applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: false }),
+      applyContext(),
+    );
+
+    expect(response.status).toBe(409);
+    expect(prisma.jobPostingApplication.create).not.toHaveBeenCalled();
   });
 });
 
@@ -398,16 +466,17 @@ describe('employer application resume access', () => {
       employerContext(applicationId),
     );
 
-    expect(response.status).toBe(502);
+    expect(response.status).toBe(503);
     expect(prisma.jobPostingApplication.updateMany).not.toHaveBeenCalled();
     expect(storage.remove).not.toHaveBeenCalled();
   });
 
-  it('keeps a bounded deterministic snapshot if the legacy row cannot be updated', async () => {
+  it('cleans a newly copied snapshot when the legacy row clearly was not updated', async () => {
     const applicationId = 'application-persist-failure';
     const legacyPath = `${MEMBER_ID}/resume-original.docx`;
     const snapshotPath = `${MEMBER_ID}/application-${applicationId}-resume.docx`;
     vi.mocked(prisma.jobPostingApplication.findFirst)
+      .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never)
       .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never)
       .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never);
     vi.mocked(prisma.jobPostingApplication.updateMany).mockRejectedValueOnce(
@@ -421,7 +490,104 @@ describe('employer application resume access', () => {
 
     expect(response.status).toBe(502);
     expect(storage.copy).toHaveBeenCalledWith(legacyPath, snapshotPath);
+    expect(vi.mocked(withMemberUploadClaim).mock.invocationCallOrder[0]).toBeLessThan(
+      storage.copy.mock.invocationCallOrder[0],
+    );
+    expect(storage.remove).toHaveBeenCalledWith([snapshotPath]);
+  });
+
+  it('does not copy from a stale employer read when the application vanished before the claim', async () => {
+    const legacyPath = `${MEMBER_ID}/resume-original.pdf`;
+    vi.mocked(prisma.jobPostingApplication.findFirst)
+      .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never)
+      .mockResolvedValueOnce(null);
+
+    const response = await getEmployerApplicationResume(
+      new Request('http://localhost/api/employer/applications/application-123/resume'),
+      employerContext(),
+    );
+
+    expect(response.status).toBe(404);
+    expect(storage.copy).not.toHaveBeenCalled();
+    expect(prisma.jobPostingApplication.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('retains a newly copied snapshot and claim when database verification is unavailable', async () => {
+    const legacyPath = `${MEMBER_ID}/resume-original.pdf`;
+    vi.mocked(prisma.jobPostingApplication.findFirst)
+      .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never)
+      .mockResolvedValueOnce({ studentId: MEMBER_ID, resumePath: legacyPath } as never)
+      .mockRejectedValueOnce(new Error('database unavailable'));
+    vi.mocked(prisma.jobPostingApplication.updateMany).mockRejectedValueOnce(
+      new Error('commit acknowledgement lost'),
+    );
+
+    const response = await getEmployerApplicationResume(
+      new Request('http://localhost/api/employer/applications/application-123/resume'),
+      employerContext(),
+    );
+
+    expect(response.status).toBe(503);
+    expect(storage.copy).toHaveBeenCalledOnce();
     expect(storage.remove).not.toHaveBeenCalled();
+  });
+
+  it('never removes a pre-existing deterministic snapshot after a failed row update', async () => {
+    const legacyPath = `${MEMBER_ID}/resume-original.pdf`;
+    vi.mocked(prisma.jobPostingApplication.findFirst).mockResolvedValue({
+      studentId: MEMBER_ID,
+      resumePath: legacyPath,
+    } as never);
+    storage.copy.mockResolvedValueOnce({
+      data: null,
+      error: { statusCode: '409', message: 'The resource already exists' },
+    });
+    vi.mocked(prisma.jobPostingApplication.updateMany).mockRejectedValueOnce(
+      new Error('database unavailable'),
+    );
+
+    const response = await getEmployerApplicationResume(
+      new Request('http://localhost/api/employer/applications/application-123/resume'),
+      employerContext(),
+    );
+
+    expect(response.status).toBe(502);
+    expect(storage.remove).not.toHaveBeenCalled();
+  });
+
+  it('keeps reconciliation required if cleanup of a new legacy copy fails', async () => {
+    const legacyPath = `${MEMBER_ID}/resume-original.pdf`;
+    vi.mocked(prisma.jobPostingApplication.findFirst).mockResolvedValue({
+      studentId: MEMBER_ID,
+      resumePath: legacyPath,
+    } as never);
+    vi.mocked(prisma.jobPostingApplication.updateMany).mockResolvedValueOnce({ count: 0 } as never);
+    storage.remove.mockResolvedValue({ data: null, error: { message: 'cleanup failed' } });
+
+    const response = await getEmployerApplicationResume(
+      new Request('http://localhost/api/employer/applications/application-123/resume'),
+      employerContext(),
+    );
+
+    expect(response.status).toBe(503);
+    expect(storage.remove).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not copy a legacy resume when deletion wins before the claim', async () => {
+    vi.mocked(prisma.jobPostingApplication.findFirst).mockResolvedValue({
+      studentId: MEMBER_ID,
+      resumePath: `${MEMBER_ID}/resume-original.pdf`,
+    } as never);
+    vi.mocked(withMemberUploadClaim).mockRejectedValueOnce(new MemberUploadLifecycleError());
+
+    const response = await getEmployerApplicationResume(
+      new Request('http://localhost/api/employer/applications/application-123/resume'),
+      employerContext(),
+    );
+
+    expect(response.status).toBe(409);
+    expect(storage.copy).not.toHaveBeenCalled();
+    expect(prisma.jobPostingApplication.updateMany).not.toHaveBeenCalled();
   });
 
   it('repairs the row from a pre-existing deterministic snapshot without recopying', async () => {

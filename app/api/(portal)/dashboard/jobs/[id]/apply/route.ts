@@ -11,13 +11,22 @@ import { handleApiError, ApiError } from '@/lib/api/errors';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import {
   isResumeObjectPathOwnedByUser,
-  removeResumeObjectsWithRetry,
 } from '@/lib/resume/atomicResumeObjectSwap';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { randomUUID } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
+import type { Prisma } from '@prisma/client';
+import {
+  assertMemberUploadWritable,
+  MemberUploadCleanupError,
+  MemberUploadLifecycleError,
+  MemberUploadPersistenceOutcomeError,
+  MemberUploadStorageOutcomeError,
+  withMemberUploadClaim,
+} from '@/lib/member/uploadLifecycle';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const RESUME_BUCKET = 'member-resumes';
 
@@ -119,16 +128,11 @@ async function _POST(
         throw ApiError.conflict('Your saved resume format is invalid. Upload it again before applying.');
       }
       snapshotPath = `${authUser.id}/application-${applicationId}-resume.${extension}`;
-      const { error: copyError } = await storage.copy(currentResumePath, snapshotPath);
-      if (copyError) {
-        console.error('[apply] resume snapshot copy failed', copyError);
-        throw ApiError.unavailable('Could not attach your resume. Your application was not submitted; please try again.');
-      }
     }
 
-    let app: { id: string };
-    try {
-      app = await prisma.$transaction(async (tx) => {
+    const persistApplication = async (operationId?: string): Promise<{ id: string }> => {
+      const write = async (tx: Prisma.TransactionClient) => {
+        if (operationId) await assertMemberUploadWritable(tx, authUser.id, operationId);
         const created = await tx.jobPostingApplication.create({
           data: {
             id: applicationId,
@@ -146,54 +150,77 @@ async function _POST(
           data: { applicationsCount: { increment: 1 } },
         });
         return created;
-      });
-    } catch (error) {
-      let committedApplication: { id: string } | null;
+      };
       try {
-        committedApplication = await prisma.jobPostingApplication.findFirst({
-          where: {
-            id: applicationId,
-            jobId: id,
-            studentId: authUser.id,
-            resumePath: snapshotPath ?? null,
-          },
-          select: { id: true },
-        });
-      } catch (verificationError) {
-        captureApiError(verificationError, {
-          route: 'POST /api/jobs/[id]/apply commit verification',
-          userId: authUser.id,
-          extra: { applicationId, snapshotRetained: Boolean(snapshotPath) },
-        });
-        throw ApiError.unavailable(
-          'Could not confirm whether your application was submitted. Check My Applications before retrying.',
-        );
-      }
-
-      if (committedApplication) {
-        app = committedApplication;
-        captureApiError(error, {
-          route: 'POST /api/jobs/[id]/apply commit acknowledgement recovered',
-          userId: authUser.id,
-          extra: { applicationId },
-        });
-      } else {
-        if (snapshotPath && storage) {
-          await removeResumeObjectsWithRetry({
-            paths: [snapshotPath],
-            removeObjects: (paths) => storage.remove(paths),
-            onCleanupError: (cleanupError, paths) => {
-              captureApiError(cleanupError, {
-                route: 'POST /api/jobs/[id]/apply resume snapshot rollback',
-                userId: authUser.id,
-                extra: { applicationId, orphanedObjectCount: paths.length },
-              });
+        return operationId
+          ? await prisma.$transaction(write)
+          : await withActiveMemberWrite(authUser.id, write);
+      } catch (error) {
+        let committedApplication: { id: string } | null;
+        try {
+          committedApplication = await prisma.jobPostingApplication.findFirst({
+            where: {
+              id: applicationId,
+              jobId: id,
+              studentId: authUser.id,
+              resumePath: snapshotPath ?? null,
             },
+            select: { id: true },
           });
+        } catch (verificationError) {
+          captureApiError(verificationError, {
+            route: 'POST /api/jobs/[id]/apply commit verification',
+            userId: authUser.id,
+            extra: { applicationId, snapshotRetained: Boolean(snapshotPath) },
+          });
+          if (operationId) throw new MemberUploadPersistenceOutcomeError(verificationError);
+          throw ApiError.unavailable(
+            'Could not confirm whether your application was submitted. Check My Applications before retrying.',
+          );
+        }
+
+        if (committedApplication) {
+          captureApiError(error, {
+            route: 'POST /api/jobs/[id]/apply commit acknowledgement recovered',
+            userId: authUser.id,
+            extra: { applicationId },
+          });
+          return committedApplication;
         }
         throw error;
       }
-    }
+    };
+
+    // The durable member token must exist before Storage.copy. Deletion cannot
+    // pass its final Storage sweep while this copy or its DB commit is pending.
+    const app = currentResumePath && snapshotPath && storage
+      ? await withMemberUploadClaim({
+          userId: authUser.id,
+          removeObjects: (paths) => storage.remove(paths),
+          onCleanupError: (cleanupError, paths) => {
+            captureApiError(cleanupError, {
+              route: 'POST /api/jobs/[id]/apply resume snapshot rollback',
+              userId: authUser.id,
+              extra: { applicationId, orphanedObjectCount: paths.length },
+            });
+          },
+          run: async (operationId, recordAttempt) => {
+            recordAttempt(snapshotPath);
+            try {
+              const { error: copyError } = await storage.copy(currentResumePath, snapshotPath);
+              if (copyError) throw copyError;
+            } catch (copyError) {
+              captureApiError(copyError, {
+                route: 'POST /api/jobs/[id]/apply resume snapshot copy',
+                userId: authUser.id,
+                extra: { applicationId },
+              });
+              throw new MemberUploadStorageOutcomeError(copyError);
+            }
+            return persistApplication(operationId);
+          },
+        })
+      : await persistApplication();
 
     await sendNewJobApplicationEmail({
       to: job.employer.contactEmail,
@@ -227,6 +254,15 @@ async function _POST(
 
     return NextResponse.json({ ok: true, applicationId: app.id });
   } catch (error) {
+    if (error instanceof MemberUploadLifecycleError || error instanceof MemberLifecycleWriteError) {
+      return handleApiError(ApiError.conflict('This account is no longer accepting applications.'), 'POST /api/jobs/[id]/apply');
+    }
+    if (error instanceof MemberUploadStorageOutcomeError || error instanceof MemberUploadCleanupError) {
+      return handleApiError(ApiError.unavailable('Could not attach your resume. Your application was not submitted; contact support before retrying.'), 'POST /api/jobs/[id]/apply');
+    }
+    if (error instanceof MemberUploadPersistenceOutcomeError) {
+      return handleApiError(ApiError.unavailable('Could not confirm whether your application was submitted. Check My Applications before retrying.'), 'POST /api/jobs/[id]/apply');
+    }
     return handleApiError(error, 'POST /api/jobs/[id]/apply');
   }
 }
