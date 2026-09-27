@@ -225,7 +225,12 @@ that automatically emails to counselor and the student."
   The admin archive is `GET /api/admin/billing-packets/archive`; it includes
   soft-deleted accounts during the 30-day purge window and detached packets
   after hard deletion. Deleted members and counselors cannot retrieve these PDFs. Other private child
-  records still follow their normal account-delete cascade.
+  records still follow their normal account-delete cascade. In particular,
+  `course_enrollments` and `placement_records` are User cascade children; the
+  invoice archive does not preserve those rows. Before enabling the 30-day
+  purge for a funded participant, the award owner must decide which enrollment,
+  outcome and payment evidence has a separate retention obligation and how to
+  retain it with restricted access and a defined disposal date.
 - Signing and send claims take a member lifecycle transaction lock. Deletion
   takes that lock, refuses an unresolved `claimed`, `ambiguous`, or
   `needs_reconciliation` copy for either the student or the frozen counselor,
