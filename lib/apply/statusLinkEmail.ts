@@ -81,8 +81,6 @@ export async function sendApplicationStatusLinkEmail(params: {
       text: applicationStatusLinkEmailText({ firstName, url: params.url, expiresInMinutes: params.expiresInMinutes, orgName }),
       templateKey: EMAIL_TEMPLATE_KEYS.application_status_link,
       userId: params.userId,
-      recipientUserId: params.userId,
-      memberEffectClaim: true,
       entityType: 'Application',
       entityId: params.applicationId,
     });
