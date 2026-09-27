@@ -388,7 +388,7 @@ describe('POST /api/member/resume/generate', () => {
     } as any);
     vi.mocked(isAnthropicConfigured).mockReturnValue(false);
     vi.mocked(isGroqConfigured).mockReturnValue(true);
-    vi.mocked(claudeChat).mockResolvedValue('# Test Member\n\n## Experience\nDriver at ABC Corp');
+    vi.mocked(claudeChat).mockResolvedValue('# Test Member\n\n## Experience\nLogistics coordinator for four years');
     vi.mocked(prisma.profile.upsert).mockResolvedValue({} as any);
 
     const res = await generateResume(makeGenerateRequest());
