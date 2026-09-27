@@ -46,6 +46,8 @@ export interface AtomicResumeObjectSwapOptions {
    * The callback should perform its read and upsert in one database transaction.
    */
   swapProfilePaths(nextPaths: ResumeProfilePaths): Promise<ResumeProfilePaths>;
+  /** An unknown DB commit must retain the staged key for reconciliation. */
+  isPersistenceOutcomeUnknown?(error: unknown): boolean;
   makeVersionId?: () => string;
   onCleanupError?: (error: unknown, paths: readonly string[]) => void;
 }
@@ -208,6 +210,7 @@ export async function replaceResumeObjectsAtomically(
   try {
     previousPaths = await options.swapProfilePaths(nextPaths);
   } catch (error) {
+    if (options.isPersistenceOutcomeUnknown?.(error)) throw error;
     await cleanup(stagedPaths);
     throw new AtomicResumeObjectSwapError('persist', error);
   }

@@ -9,11 +9,11 @@ import {
 } from '@/lib/resume/prepareResumeUpload';
 import {
   AtomicResumeObjectSwapError,
-  replaceResumeObjectsAtomically,
   type ResumeObjectUpload,
 } from '@/lib/resume/atomicResumeObjectSwap';
 import {
   isResumeProfileConflict,
+  replaceClaimedResumeObjects,
   swapResumeProfilePathsWithCas,
 } from '@/lib/resume/resumeProfileStorage';
 import {
@@ -124,15 +124,15 @@ export const POST = withApiGuc(async (
     });
   }
 
-  let swapped: Awaited<ReturnType<typeof replaceResumeObjectsAtomically>>;
+  let swapped: Awaited<ReturnType<typeof replaceClaimedResumeObjects>>;
   try {
-    swapped = await replaceResumeObjectsAtomically({
+    swapped = await replaceClaimedResumeObjects({
       userId,
       uploads,
       clearFields: preparedOriginal && !safeEnhancedText ? ['resumeEnhancedPath'] : [],
       uploadObject: (path, body, options) => storage.upload(path, body, options),
       removeObjects: (paths) => storage.remove(paths),
-      swapProfilePaths: (nextPaths) => swapResumeProfilePathsWithCas(userId, nextPaths),
+      swapProfilePaths: (nextPaths, operationId) => swapResumeProfilePathsWithCas(userId, nextPaths, operationId),
       onCleanupError: (error, paths) => {
         console.error('[admin/upload-resume] object cleanup failed', { error, paths });
       },

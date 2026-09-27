@@ -15,8 +15,7 @@ import {
   resolveProfilePhotoContentType,
 } from '@/lib/portal/memberProfilePhoto';
 import { detectImageSignature } from '@/lib/uploads/imageSignature';
-import { assertMemberUploadWritable, isMemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
-import { removeResumeObjectsWithRetry } from '@/lib/resume/atomicResumeObjectSwap';
+import { assertMemberUploadWritable, isMemberUploadLifecycleError, MemberUploadPersistenceOutcomeError, MemberUploadStorageOutcomeError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 export const POST = withApiGuc(async (request: Request) => {
@@ -58,47 +57,53 @@ export const POST = withApiGuc(async (request: Request) => {
     const storagePath = profilePhotoStoragePath(user.id, randomUUID());
 
     const supabase = getSupabaseAdmin();
-    const { error: uploadError } = await supabase.storage
-      .from(PROFILE_PHOTO_BUCKET)
-      .upload(storagePath, arrayBuffer, { upsert: false, contentType });
-
-    if (uploadError) {
-      console.error('[member/profile-photo/upload] storage upload failed', uploadError);
-      return NextResponse.json(
-        { error: profilePhotoStorageErrorMessage(uploadError) },
-        { status: 500 },
-      );
-    }
-
+    const storage = supabase.storage.from(PROFILE_PHOTO_BUCKET);
+    let uploadError: { message?: string } | null = null;
     let previousPath: string | null;
     try {
-      previousPath = await prisma.$transaction(async (tx) => {
-        await assertMemberUploadWritable(tx, user.id);
-        const previous = await tx.profile.findUnique({
-          where: { userId: user.id },
-          select: { profilePhotoPath: true },
-        });
-        await tx.profile.upsert({
-          where: { userId: user.id },
-          create: { userId: user.id, profilePhotoPath: storagePath },
-          update: { profilePhotoPath: storagePath },
-        });
-        return previous?.profilePhotoPath ?? null;
-      });
-    } catch (error) {
-      const storage = supabase.storage.from(PROFILE_PHOTO_BUCKET);
-      const cleaned = await removeResumeObjectsWithRetry({
-        paths: [storagePath],
+      previousPath = await withMemberUploadClaim({
+        userId: user.id,
         removeObjects: (paths) => storage.remove(paths),
         onCleanupError: (cleanupError) => captureApiError(cleanupError, {
           route: 'member/profile-photo/upload rejected-object cleanup',
           userId: user.id,
           extra: { storagePath },
         }),
+        run: async (operationId, recordAttempt) => {
+          recordAttempt(storagePath);
+          const uploaded = await storage.upload(storagePath, arrayBuffer, { upsert: false, contentType })
+            .catch((error) => { throw new MemberUploadStorageOutcomeError(error); });
+          if (uploaded.error) {
+            uploadError = uploaded.error;
+            throw new MemberUploadStorageOutcomeError(uploaded.error);
+          }
+          try {
+            return await prisma.$transaction(async (tx) => {
+              await assertMemberUploadWritable(tx, user.id, operationId);
+              const previous = await tx.profile.findUnique({
+                where: { userId: user.id },
+                select: { profilePhotoPath: true },
+              });
+              await tx.profile.upsert({
+                where: { userId: user.id },
+                create: { userId: user.id, profilePhotoPath: storagePath },
+                update: { profilePhotoPath: storagePath },
+              });
+              return previous?.profilePhotoPath ?? null;
+            });
+          } catch (error) {
+            if (isMemberUploadLifecycleError(error)) throw error;
+            throw new MemberUploadPersistenceOutcomeError(error);
+          }
+        },
       });
-      if (!cleaned) throw new Error('Failed to remove rejected profile photo upload');
+    } catch (error) {
       if (isMemberUploadLifecycleError(error)) {
         return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
+      }
+      if (error instanceof MemberUploadStorageOutcomeError && uploadError && error.causeValue === uploadError) {
+        console.error('[member/profile-photo/upload] storage upload failed', uploadError);
+        return NextResponse.json({ error: profilePhotoStorageErrorMessage(uploadError) }, { status: 500 });
       }
       throw error;
     }

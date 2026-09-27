@@ -233,14 +233,17 @@ that automatically emails to counselor and the student."
   marker blocks later signing and claiming. The cleanup request owns a UUID
   operation token, so a second delete or erase returns a conflict while the
   first is working.
-- Resume, profile-photo and certificate uploads stage private Storage objects
-  under unique member-owned keys. Their final profile/proof pointer transaction
-  takes the same lifecycle lock and checks the active User marker. If deletion
-  has committed its barrier first, the pointer stays unchanged and the new
-  object is removed. Member, counselor and admin resume uploads share this
-  check. A failed staged-object cleanup is logged for incident reconciliation;
-  Storage is not part of the database transaction, so inspect the member's
-  Storage prefixes before declaring a deletion reconciled.
+- Resume, profile-photo and certificate uploads claim a durable per-member
+  operation token before calling Storage. Deletion refuses an owned token,
+  even if the upload worker crashes. Each upload uses a unique object key, and
+  its final profile/proof pointer transaction verifies that same token under
+  the lifecycle lock. The token is released after a committed pointer update,
+  or after a rejected update's staged objects are confirmed removed. A failed
+  cleanup, uncertain Storage upload result, or uncertain DB commit leaves the
+  token held for operator reconciliation; age never releases it. Member,
+  counselor and admin resume uploads and AI-built enhanced resume saves share
+  this claim path. Inspect the member's Storage prefixes and referencing rows
+  before clearing a crash-held upload token.
 - Member application-onboarding, first-program enrollment and primary-program
   promotion recheck the persisted deletion marker under the member lifecycle
   lock in their final write transaction. A stale authenticated request gets
@@ -279,17 +282,21 @@ incident and audit trail. Before any write:
    deployment/function logs and any queued job for the exact request and token.
    If that cannot be proved, leave the token held. A timeout or old `updated_at`
    is insufficient.
-2. Identify whether the token belongs to deletion, an Auth identity edit, or
-   restore. The column alone does not distinguish them. Verify the exact Auth
-   User ID through Supabase Admin; a 5xx/timeout is unknown, not absence. Check
+2. Identify whether the token belongs to deletion, an Auth identity edit,
+   restore, or a private upload. The column alone does not distinguish them.
+   Verify the exact Auth User ID through Supabase Admin; a 5xx/timeout is
+   unknown, not absence. Check
    Storage cleanup, app tombstone, packet send state and any pending provider
    operation. Preserve the hold while any external outcome is uncertain.
 3. Decide and record the route-specific repair. For deletion, keep
    `billing_deletion_pending_at` and the deleted tombstone in place; never
    reactivate an erased account or create a replacement Auth identity. Resolve
    an identity-edit or restore hold using that workflow's Auth/app comparison,
-   not by treating it as a deletion. For an interrupted admin erase, confirm
-   the irreversible erased-email tombstone before clearing its token. If the
+   not by treating it as a deletion. For an interrupted upload, prove the
+   Storage request and any pointer transaction have ended; inspect the member
+   prefix and referencing profile/proof row before clearing its token. For an
+   interrupted admin erase, confirm the irreversible erased-email tombstone
+   before clearing its token. If the
    worker stopped before that tombstone committed, stop and plan a guarded
    repair; clearing the token alone could reopen the original identity.
 4. In one interactive database transaction, acquire the member lifecycle

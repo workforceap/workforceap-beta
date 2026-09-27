@@ -11,10 +11,10 @@ import {
 } from '@/lib/resume/prepareResumeUpload';
 import {
   AtomicResumeObjectSwapError,
-  replaceResumeObjectsAtomically,
 } from '@/lib/resume/atomicResumeObjectSwap';
 import {
   isResumeProfileConflict,
+  replaceClaimedResumeObjects,
   swapResumeProfilePathsWithCas,
 } from '@/lib/resume/resumeProfileStorage';
 import { auditLog } from '@/lib/audit';
@@ -94,9 +94,9 @@ export const POST = withApiGuc(async (request: Request) => {
 
     const supabase = getSupabaseAdmin();
     const storage = supabase.storage.from(BUCKET);
-    let swapped: Awaited<ReturnType<typeof replaceResumeObjectsAtomically>>;
+    let swapped: Awaited<ReturnType<typeof replaceClaimedResumeObjects>>;
     try {
-      swapped = await replaceResumeObjectsAtomically({
+      swapped = await replaceClaimedResumeObjects({
         userId: authorizedMemberId,
         uploads: [{
           field: 'resumeOriginalPath',
@@ -107,7 +107,7 @@ export const POST = withApiGuc(async (request: Request) => {
         clearFields: ['resumeEnhancedPath'],
         uploadObject: (path, body, options) => storage.upload(path, body, options),
         removeObjects: (paths) => storage.remove(paths),
-        swapProfilePaths: (nextPaths) => swapResumeProfilePathsWithCas(authorizedMemberId, nextPaths),
+        swapProfilePaths: (nextPaths, operationId) => swapResumeProfilePathsWithCas(authorizedMemberId, nextPaths, operationId),
         onCleanupError: (error, paths) => {
           console.error('[upload-resume] object cleanup failed', { error, paths });
         },

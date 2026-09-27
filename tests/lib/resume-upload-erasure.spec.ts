@@ -36,7 +36,7 @@ describe('resume upload after account deletion', () => {
         uploadObject: h.upload,
         removeObjects: h.remove,
         makeVersionId: () => 'new',
-        swapProfilePaths: (paths) => swapResumeProfilePathsWithCas('member-1', paths),
+        swapProfilePaths: (paths) => swapResumeProfilePathsWithCas('member-1', paths, 'claim-1'),
       });
     } catch (error) {
       rejected = error;

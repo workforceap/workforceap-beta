@@ -128,12 +128,12 @@ test('member, admin, and counselor routes validate/extract before storage or pro
     const source = await readFile(routePath, 'utf8');
     const preparationIndex = source.indexOf('await prepareResumeUpload(');
     const storageClientIndex = source.indexOf('getSupabaseAdmin()');
-    const atomicSwapIndex = source.indexOf('await replaceResumeObjectsAtomically({');
+    const atomicSwapIndex = source.indexOf('await replaceClaimedResumeObjects({');
 
     assert.ok(preparationIndex >= 0, `${routePath}: missing shared preparation`);
     assert.ok(storageClientIndex > preparationIndex, `${routePath}: storage client created too early`);
     assert.ok(atomicSwapIndex > storageClientIndex, `${routePath}: atomic swap occurs before preparation`);
-    assert.match(source, /swapProfilePaths: \(nextPaths\) => swapResumeProfilePathsWithCas\(/);
+    assert.match(source, /swapProfilePaths: \(nextPaths, operationId\) => swapResumeProfilePathsWithCas\(/);
     assert.match(source, /error: error\.message, code: error\.code/);
   }
 });
@@ -147,7 +147,7 @@ test('admin validates enhanced resume text before constructing storage client', 
   const rejectionIndex = source.indexOf('if (!hasSubstantiveResumeText(safeEnhancedText))');
   const storageClientIndex = source.indexOf('getSupabaseAdmin()');
   const enhancedStageIndex = source.indexOf("field: 'resumeEnhancedPath'");
-  const atomicSwapIndex = source.indexOf('await replaceResumeObjectsAtomically({');
+  const atomicSwapIndex = source.indexOf('await replaceClaimedResumeObjects({');
 
   assert.ok(sanitizeIndex >= 0);
   assert.ok(rejectionIndex > sanitizeIndex);

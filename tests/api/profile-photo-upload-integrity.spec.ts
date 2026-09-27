@@ -30,9 +30,29 @@ vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) 
 vi.mock('@/lib/member/getMemberState', () => ({ invalidateMemberState: vi.fn(async () => undefined) }));
 vi.mock('@/lib/member/uploadLifecycle', () => {
   class MemberUploadLifecycleError extends Error {}
+  class MemberUploadStorageOutcomeError extends Error {
+    constructor(readonly causeValue: unknown) { super('Storage outcome unknown'); }
+  }
+  class MemberUploadPersistenceOutcomeError extends Error {
+    constructor(readonly causeValue: unknown) { super('Persistence outcome unknown'); }
+  }
   return {
     MemberUploadLifecycleError,
+    MemberUploadStorageOutcomeError,
+    MemberUploadPersistenceOutcomeError,
     assertMemberUploadWritable: vi.fn(async () => undefined),
+    withMemberUploadClaim: async (options: {
+      run: (operationId: string, recordAttempt: (path: string) => void) => Promise<unknown>;
+      removeObjects: (paths: string[]) => Promise<unknown>;
+    }) => {
+      const paths: string[] = [];
+      try {
+        return await options.run('claim-1', (path) => paths.push(path));
+      } catch (error) {
+        await options.removeObjects(paths);
+        throw error;
+      }
+    },
     isMemberUploadLifecycleError: (error: unknown) => error instanceof MemberUploadLifecycleError,
   };
 });

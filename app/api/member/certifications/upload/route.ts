@@ -8,8 +8,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
-import { assertMemberUploadWritable, isMemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
-import { removeResumeObjectsWithRetry } from '@/lib/resume/atomicResumeObjectSwap';
+import { assertMemberUploadWritable, isMemberUploadLifecycleError, MemberUploadPersistenceOutcomeError, MemberUploadStorageOutcomeError, withMemberUploadClaim } from '@/lib/member/uploadLifecycle';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 const BUCKET = 'member-files';
@@ -78,16 +77,7 @@ function storageErrorMessage(error: { message?: string } | null): string {
       const storagePath = `cert-files/${user.id}/${cert.id}-${randomUUID()}.${ext}`;
       const supabase = getSupabaseAdmin();
       const storage = supabase.storage.from(BUCKET);
-  
-      const { error } = await storage.upload(storagePath, uploadBytes, {
-        upsert: false,
-        contentType,
-      });
-  
-      if (error) {
-        console.error('[cert-upload] storage upload failed', error);
-        return NextResponse.json({ error: storageErrorMessage(error) }, { status: 500 });
-      }
+      let storageUploadError: { message?: string } | null = null;
 
       // An already verified (`approved`) certificate stays verified (Mike,
       // WAP-197): the file is saved as its proof, the review state and dates
@@ -98,39 +88,58 @@ function storageErrorMessage(error: { message?: string } | null): string {
       // row matches and the file goes through the review path below instead.
       let keptVerified: boolean;
       try {
-        keptVerified = await prisma.$transaction(async (tx) => {
-          await assertMemberUploadWritable(tx, user.id);
-          if (verified) {
-            const result = await tx.userCertification.updateMany({
-              where: { id: cert.id, userId: user.id, status: 'approved' },
-              data: { proofUrl: storagePath },
-            });
-            if (result.count > 0) return true;
-          }
-          // A status change during upload sends the proof for review again.
-          await tx.userCertification.update({
-            where: { id: cert.id, userId: user.id },
-            data: {
-              status: 'pending',
-              proofUrl: storagePath,
-              submittedAt: new Date(),
-            },
-          });
-          return false;
-        });
-      } catch (error) {
-        const cleaned = await removeResumeObjectsWithRetry({
-          paths: [storagePath],
+        keptVerified = await withMemberUploadClaim({
+          userId: user.id,
           removeObjects: (paths) => storage.remove(paths),
           onCleanupError: (cleanupError) => captureApiError(cleanupError, {
             route: 'member/certifications/upload rejected-object cleanup',
             userId: user.id,
             extra: { storagePath },
           }),
+          run: async (operationId, recordAttempt) => {
+            recordAttempt(storagePath);
+            const uploaded = await storage.upload(storagePath, uploadBytes, {
+              upsert: false,
+              contentType,
+            }).catch((error) => { throw new MemberUploadStorageOutcomeError(error); });
+            if (uploaded.error) {
+              storageUploadError = uploaded.error;
+              throw new MemberUploadStorageOutcomeError(uploaded.error);
+            }
+            try {
+              return await prisma.$transaction(async (tx) => {
+                await assertMemberUploadWritable(tx, user.id, operationId);
+                if (verified) {
+                  const result = await tx.userCertification.updateMany({
+                    where: { id: cert.id, userId: user.id, status: 'approved' },
+                    data: { proofUrl: storagePath },
+                  });
+                  if (result.count > 0) return true;
+                }
+                // A status change during upload sends the proof for review again.
+                await tx.userCertification.update({
+                  where: { id: cert.id, userId: user.id },
+                  data: {
+                    status: 'pending',
+                    proofUrl: storagePath,
+                    submittedAt: new Date(),
+                  },
+                });
+                return false;
+              });
+            } catch (error) {
+              if (isMemberUploadLifecycleError(error)) throw error;
+              throw new MemberUploadPersistenceOutcomeError(error);
+            }
+          },
         });
-        if (!cleaned) throw new Error('Failed to remove rejected certification proof');
+      } catch (error) {
         if (isMemberUploadLifecycleError(error)) {
           return NextResponse.json({ error: 'This account is no longer accepting uploads.' }, { status: 409 });
+        }
+        if (error instanceof MemberUploadStorageOutcomeError && storageUploadError && error.causeValue === storageUploadError) {
+          console.error('[cert-upload] storage upload failed', storageUploadError);
+          return NextResponse.json({ error: storageErrorMessage(storageUploadError) }, { status: 500 });
         }
         throw error;
       }

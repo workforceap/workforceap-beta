@@ -4,11 +4,18 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   AtomicResumeObjectSwapError,
   replaceResumeObjectsAtomically,
+  type AtomicResumeObjectSwapOptions,
   type ResumeObjectUpload,
   type ResumeProfilePaths,
 } from '@/lib/resume/atomicResumeObjectSwap';
 import { captureApiError } from '@/lib/observability/captureApiError';
-import { assertMemberUploadWritable } from '@/lib/member/uploadLifecycle';
+import {
+  assertMemberUploadWritable,
+  isMemberUploadLifecycleError,
+  MemberUploadPersistenceOutcomeError,
+  MemberUploadStorageOutcomeError,
+  withMemberUploadClaim,
+} from '@/lib/member/uploadLifecycle';
 
 const MEMBER_RESUME_BUCKET = 'member-resumes';
 
@@ -43,10 +50,11 @@ function supplied(
 export async function swapResumeProfilePathsWithCas(
   userId: string,
   nextPaths: ResumeProfilePaths,
+  uploadOperationId: string,
   expectedPaths: ResumeProfilePaths = {},
 ): Promise<ResumeProfilePaths> {
   return prisma.$transaction(async (tx) => {
-    await assertMemberUploadWritable(tx, userId);
+    await assertMemberUploadWritable(tx, userId, uploadOperationId);
     const previous = await tx.profile.findUnique({
       where: { userId },
       select: {
@@ -126,6 +134,45 @@ export async function swapResumeProfilePathsWithCas(
   });
 }
 
+/** Every production resume writer claims the member before its first upload. */
+export async function replaceClaimedResumeObjects(
+  options: Omit<AtomicResumeObjectSwapOptions, 'swapProfilePaths'> & {
+    swapProfilePaths(nextPaths: ResumeProfilePaths, uploadOperationId: string): Promise<ResumeProfilePaths>;
+  },
+): Promise<{ paths: ResumeProfilePaths; previousPaths: ResumeProfilePaths }> {
+  return withMemberUploadClaim({
+    userId: options.userId,
+    removeObjects: options.removeObjects,
+    onCleanupError: options.onCleanupError,
+    run: (operationId, recordAttempt) => replaceResumeObjectsAtomically({
+      ...options,
+      onCleanupError: (error, paths) => {
+        try {
+          options.onCleanupError?.(error, paths);
+        } catch (reportingError) {
+          // A post-commit retirement failure must not look like a failed
+          // pointer swap and cause the new, referenced object to be deleted.
+          console.error('[resume] cleanup error reporting failed', reportingError);
+        }
+      },
+      uploadObject: (path, body, uploadOptions) => {
+        recordAttempt(path);
+        return options.uploadObject(path, body, uploadOptions)
+          .catch((error) => { throw new MemberUploadStorageOutcomeError(error); });
+      },
+      swapProfilePaths: async (nextPaths) => {
+        try {
+          return await options.swapProfilePaths(nextPaths, operationId);
+        } catch (error) {
+          if (error instanceof ResumeProfileConflictError || isMemberUploadLifecycleError(error)) throw error;
+          throw new MemberUploadPersistenceOutcomeError(error);
+        }
+      },
+      isPersistenceOutcomeUnknown: (error) => error instanceof MemberUploadPersistenceOutcomeError,
+    }),
+  });
+}
+
 /** Keep immutable resume snapshots that were explicitly shared with employers. */
 /** Persist a validated enhanced-text resume through the same CAS path as uploads. */
 export async function saveEnhancedResumeText(
@@ -140,14 +187,15 @@ export async function saveEnhancedResumeText(
     contentType: 'text/plain; charset=utf-8',
     body: text,
   };
-  const swapped = await replaceResumeObjectsAtomically({
+  const swapped = await replaceClaimedResumeObjects({
     userId,
     uploads: [upload],
     uploadObject: (path, body, options) => storage.upload(path, body, options),
     removeObjects: (paths) => storage.remove(paths),
-    swapProfilePaths: (nextPaths) => swapResumeProfilePathsWithCas(
+    swapProfilePaths: (nextPaths, operationId) => swapResumeProfilePathsWithCas(
       userId,
       nextPaths,
+      operationId,
       expectedPaths,
     ),
     onCleanupError: (error, paths) => {
