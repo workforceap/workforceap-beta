@@ -154,7 +154,10 @@ export default function CourseraInspectByEmailCard() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<InspectResponse | null>(null);
   const [adding, setAdding] = useState(false);
-  const [addResult, setAddResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [addResult, setAddResult] = useState<{
+    status: 'success' | 'warning' | 'error';
+    message: string;
+  } | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
@@ -209,17 +212,26 @@ export default function CourseraInspectByEmailCard() {
         ok?: boolean;
         userId?: string;
         error?: string;
+        welcomeEmailSent?: boolean;
       };
       if (!response.ok || !json.ok) {
-        setAddResult({ ok: false, message: json.error ?? `HTTP ${response.status}` });
+        setAddResult({ status: 'error', message: json.error ?? `HTTP ${response.status}` });
         return;
       }
-      setAddResult({ ok: true, message: `Added userId=${json.userId ?? '?'}` });
       // Re-run inspect to reflect the new state.
       await runInspect();
+      setAddResult(
+        json.welcomeEmailSent === false
+          ? {
+              status: 'warning',
+              message:
+                'Account created in WorkforceAP, but the welcome email could not be confirmed. Send a password reset from the member record.',
+            }
+          : { status: 'success', message: `Added userId=${json.userId ?? '?'}` },
+      );
     } catch (err) {
       setAddResult({
-        ok: false,
+        status: 'error',
         message: err instanceof Error ? err.message : 'Add-to-WAP failed',
       });
     } finally {
@@ -369,6 +381,37 @@ export default function CourseraInspectByEmailCard() {
           }}
         >
           <strong>Inspect failed:</strong> {error}
+        </div>
+      )}
+
+      {addResult && (
+        <div
+          role={addResult.status === 'success' ? 'status' : 'alert'}
+          style={{
+            padding: '0.6rem 0.9rem',
+            borderRadius: '0.6rem',
+            border:
+              addResult.status === 'warning'
+                ? '1px solid rgba(251, 191, 36, 0.5)'
+                : addResult.status === 'error'
+                  ? '1px solid rgba(239, 68, 68, 0.5)'
+                  : '1px solid rgba(22, 163, 74, 0.5)',
+            background:
+              addResult.status === 'warning'
+                ? 'rgba(251, 191, 36, 0.08)'
+                : addResult.status === 'error'
+                  ? 'rgba(239, 68, 68, 0.06)'
+                  : 'rgba(22, 163, 74, 0.06)',
+            color:
+              addResult.status === 'warning'
+                ? 'rgb(180, 83, 9)'
+                : addResult.status === 'error'
+                  ? 'rgb(190, 18, 60)'
+                  : 'rgb(22, 163, 74)',
+            fontSize: '0.85rem',
+          }}
+        >
+          {addResult.message}
         </div>
       )}
 
@@ -615,17 +658,6 @@ export default function CourseraInspectByEmailCard() {
                   >
                     {syncing ? 'Syncing…' : 'Sync from Coursera'}
                   </button>
-                )}
-                {addResult && (
-                  <span
-                    role={addResult.ok ? 'status' : 'alert'}
-                    style={{
-                      fontSize: '0.85rem',
-                      color: addResult.ok ? 'rgb(22, 163, 74)' : 'rgb(190, 18, 60)',
-                    }}
-                  >
-                    {addResult.ok ? '✓' : '✗'} {addResult.message}
-                  </span>
                 )}
                 {syncResult && (
                   <span

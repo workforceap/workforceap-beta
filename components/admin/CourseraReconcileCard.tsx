@@ -112,6 +112,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
   const [addedUserIds, setAddedUserIds] = useState<Set<string>>(new Set());
   const [addingEmail, setAddingEmail] = useState<string | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
+  const [addWarning, setAddWarning] = useState(false);
   const [programId, setProgramId] = useState<string>(defaultProgramId ?? '');
 
   const runReconcile = useCallback(async () => {
@@ -148,6 +149,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
       }
       setAddingEmail(row.email);
       setAddError(null);
+      setAddWarning(false);
       try {
         const response = await fetch('/api/admin/coursera/reconcile/add-to-wap', {
           method: 'POST',
@@ -163,6 +165,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
           ok?: boolean;
           userId?: string;
           error?: string;
+          welcomeEmailSent?: boolean;
         };
         if (!response.ok || !json.ok) {
           setAddError(json.error ?? `HTTP ${response.status}`);
@@ -176,6 +179,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
           return next;
         });
         await runReconcile();
+        setAddWarning(json.welcomeEmailSent === false);
       } catch (err) {
         setAddError(err instanceof Error ? err.message : 'Add-to-WAP failed');
       } finally {
@@ -255,6 +259,22 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
           }}
         >
           <strong>Add to WorkforceAP failed:</strong> {addError}
+        </div>
+      )}
+
+      {addWarning && (
+        <div
+          role="alert"
+          style={{
+            padding: '0.6rem 0.9rem',
+            borderRadius: '0.6rem',
+            border: '1px solid rgba(251, 191, 36, 0.5)',
+            background: 'rgba(251, 191, 36, 0.08)',
+            color: 'rgb(180, 83, 9)',
+            fontSize: '0.85rem',
+          }}
+        >
+          <strong>Account created in WorkforceAP.</strong> The welcome email could not be confirmed. Send a password reset from the member record.
         </div>
       )}
 
