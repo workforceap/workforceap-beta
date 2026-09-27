@@ -77,13 +77,22 @@ vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError:
 vi.mock('@/lib/member/uploadLifecycle', () => {
   class MemberUploadLifecycleError extends Error {}
   class MemberUploadCleanupError extends Error {}
+  class MemberUploadDefiniteStorageError extends Error {}
   class MemberUploadStorageOutcomeError extends Error {}
   class MemberUploadPersistenceOutcomeError extends Error {}
   return {
     MemberUploadLifecycleError,
     MemberUploadCleanupError,
+    MemberUploadDefiniteStorageError,
     MemberUploadStorageOutcomeError,
     MemberUploadPersistenceOutcomeError,
+    isDefiniteStorageRejection: (error: unknown) => {
+      if (!error || typeof error !== 'object') return false;
+      const value = error as { status?: unknown; statusCode?: unknown; originalError?: { status?: unknown; statusCode?: unknown } };
+      const raw = value.status ?? value.statusCode ?? value.originalError?.status ?? value.originalError?.statusCode;
+      const status = typeof raw === 'number' || (typeof raw === 'string' && /^\d{3}$/.test(raw)) ? Number(raw) : NaN;
+      return Number.isInteger(status) && status >= 400 && status < 500 && status !== 408 && status !== 429;
+    },
     assertMemberUploadWritable: vi.fn(),
     withMemberUploadClaim: vi.fn(async ({
       run, removeObjects,
