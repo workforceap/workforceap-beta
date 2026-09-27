@@ -78,6 +78,8 @@ vi.mock('@/lib/db/prisma', () => ({
       update: vi.fn().mockResolvedValue({}),
       upsert: vi.fn().mockResolvedValue({ id: 'thread-1' }),
     },
+    $executeRaw: vi.fn().mockResolvedValue(1),
+    $queryRaw: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -109,7 +111,10 @@ const makeRequest = (id: string, body: unknown) =>
   });
 
 describe('POST /api/admin/members/[id]/counselor', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
+  });
 
   it('creates task_assigned notification when assigning a counselor', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.admin, fullName: 'Admin Bob' } as any);
@@ -296,6 +301,36 @@ describe('POST /api/admin/members/[id]/counselor', () => {
       expect(res.status).toBe(200);
       expect((await res.json()).ok).toBe(true);
       vi.mocked(createNotification).mockReset();
+    });
+
+    it('blocks assignment when deletion starts after the initial member lookup', async () => {
+      arrange({ previousCounselorUserId: null });
+      const activeMember = { id: UUIDS.member, email: 'jane@example.com', fullName: 'Jane Doe', organizationId: 'org-1' };
+      vi.mocked(prisma.user.findFirst)
+        .mockResolvedValueOnce(activeMember as any) // Route's initial member lookup.
+        .mockResolvedValueOnce(activeMember as any) // Lifecycle tenant lookup.
+        .mockResolvedValueOnce({ deletedAt: null, billingDeletionPendingAt: new Date('2026-09-26T00:00:00Z'), billingDeletionOperationId: 'delete-1' } as any);
+
+      const res = await post();
+      expect(res.status).toBe(409);
+      expect(await res.json()).toMatchObject({ code: 'billing_send_in_progress' });
+      expect(prisma.$executeRaw).toHaveBeenCalledOnce();
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+      expect(prisma.user.updateMany).not.toHaveBeenCalled();
+      expect(sendCounselorAssignedEmail).not.toHaveBeenCalled();
+    });
+
+    it('blocks assignment while a billing send is unresolved', async () => {
+      arrange({ previousCounselorUserId: null });
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: 'claimed-send-1' }]);
+
+      const res = await post();
+      expect(res.status).toBe(409);
+      expect(await res.json()).toMatchObject({ code: 'billing_send_in_progress' });
+      expect(prisma.$executeRaw).toHaveBeenCalledOnce();
+      expect(prisma.$queryRaw).toHaveBeenCalledOnce();
+      expect(prisma.user.updateMany).not.toHaveBeenCalled();
+      expect(sendCounselorAssignedEmail).not.toHaveBeenCalled();
     });
   });
 });
