@@ -253,6 +253,10 @@ that automatically emails to counselor and the student."
   counselor and admin resume uploads and AI-built enhanced resume saves share
   this claim path. Inspect the member's Storage prefixes and referencing rows
   before clearing a crash-held upload token.
+- Member-subject notifications use the same per-member operation token
+  through their database, Web Push and operator bridge effects. An interrupted
+  notification blocks erasure until its row and outbound provider outcomes
+  are reconciled; age alone does not release its token.
 - Member application-onboarding, first-program enrollment and primary-program
   promotion recheck the persisted deletion marker under the member lifecycle
   lock in their final write transaction. A stale authenticated request gets
@@ -292,7 +296,8 @@ incident and audit trail. Before any write:
    If that cannot be proved, leave the token held. A timeout or old `updated_at`
    is insufficient.
 2. Identify whether the token belongs to deletion, an Auth identity edit,
-   restore, or a private upload. The column alone does not distinguish them.
+   restore, a private upload, or a member-subject notification. The column alone
+   does not distinguish them.
    Verify the exact Auth User ID through Supabase Admin; a 5xx/timeout is
    unknown, not absence. Check
    Storage cleanup, app tombstone, packet send state and any pending provider
@@ -304,7 +309,9 @@ incident and audit trail. Before any write:
    not by treating it as a deletion. For an interrupted upload, prove the
    Storage request and any pointer transaction have ended; inspect the member
    prefix and referencing profile/proof row before clearing its token. For an
-   interrupted admin erase, confirm the irreversible erased-email tombstone
+   interrupted notification, reconcile its row, Web Push and operator bridge
+   outcomes before clearing its token. For an interrupted admin erase, confirm
+   the irreversible erased-email tombstone
    before clearing its token. If the
    worker stopped before that tombstone committed, stop and plan a guarded
    repair; clearing the token alone could reopen the original identity.
