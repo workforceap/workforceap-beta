@@ -144,6 +144,17 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(remove).not.toHaveBeenCalled();
   });
 
+  it('does not touch Storage or Auth if the member disappears before the tombstone commits', async () => {
+    vi.mocked(anonymizeMember).mockResolvedValueOnce(null);
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(409);
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(deleteAuthUserForErasure).not.toHaveBeenCalled();
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
+  });
+
   it('anonymizes before a failed Storage cleanup and leaves the deletion barrier in place', async () => {
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: false, error: 'storage timeout', deleted: [] });
 
