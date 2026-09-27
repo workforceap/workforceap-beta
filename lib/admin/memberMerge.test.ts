@@ -88,7 +88,12 @@ function planDelegates(rows: MockRows) {
   return delegates as Record<string, { count: (args: never) => Promise<number> }>;
 }
 
-function makeMockTx(options: { rows?: MockRows; memberPointsRow?: { totalPoints: number } | null } = {}) {
+function makeMockTx(options: {
+  rows?: MockRows;
+  memberPointsRow?: { totalPoints: number } | null;
+  unresolvedExternalEffect?: boolean;
+  unresolvedMilestoneDispatch?: boolean;
+} = {}) {
   const rows: MockRows = options.rows ?? {};
   const memberPointsRow = options.memberPointsRow ?? null;
   const calls: string[] = [];
@@ -127,6 +132,8 @@ function makeMockTx(options: { rows?: MockRows; memberPointsRow?: { totalPoints:
     $queryRaw: async (query: Prisma.Sql | TemplateStringsArray, ...tagValues: unknown[]) => {
       const sql = 'sql' in query ? query.sql : Array.from(query).join('?');
       logCall('$queryRaw', sql);
+      if (sql.includes('member_external_effect_claims')) return options.unresolvedExternalEffect ? [{ id: 'held-effect' }] : [];
+      if (sql.includes('milestone_cascades')) return options.unresolvedMilestoneDispatch ? [{ id: 'held-dispatch' }] : [];
       if (sql.includes('FOR UPDATE')) {
         const ids = ('sql' in query ? query.values : tagValues).filter((value): value is string => typeof value === 'string');
         return [
@@ -249,6 +256,15 @@ describe('checkMergeConflicts', () => {
       expect.objectContaining({ field: 'trainingBillingPacket.memberId', message: expect.stringContaining('INV-1') }),
     ]));
   });
+
+  it.each([
+    { option: 'unresolvedExternalEffect', field: 'memberExternalEffectClaim.memberId' },
+    { option: 'unresolvedMilestoneDispatch', field: 'milestoneCascade.userId' },
+  ] as const)('shows an unresolved secondary $field in the preview', async ({ option, field }) => {
+    const tx = makeMockTx({ [option]: true });
+    const conflicts = await checkMergeConflicts(tx, 'primary', 'secondary');
+    expect(conflicts).toEqual(expect.arrayContaining([expect.objectContaining({ field })]));
+  });
 });
 
 describe('executeMemberMerge', () => {
@@ -269,16 +285,14 @@ describe('executeMemberMerge', () => {
 
   it('fails closed before merge mutations when the secondary owns Coursera data', async () => {
     const tx = makeMockTx();
-    let queryCount = 0;
-    (tx as any).$queryRaw = async () => {
-      queryCount += 1;
-      if (queryCount === 1) return [];
-      return queryCount === 2
-        ? [
-            { id: 'primary', organizationId: 'org-1', deletedAt: null },
-            { id: 'secondary', organizationId: 'org-1', deletedAt: null },
-          ]
-        : [{ source: 'course' }];
+    (tx as any).$queryRaw = async (query: Prisma.Sql | TemplateStringsArray) => {
+      const sql = 'sql' in query ? query.sql : Array.from(query).join('?');
+      if (sql.includes('FOR UPDATE')) return [
+        { id: 'primary', organizationId: 'org-1', deletedAt: null },
+        { id: 'secondary', organizationId: 'org-1', deletedAt: null },
+      ];
+      if (sql.includes('coursera_course_progress')) return [{ source: 'course' }];
+      return [];
     };
 
     await expect(
@@ -297,6 +311,20 @@ describe('executeMemberMerge', () => {
 
     const calls = (tx as unknown as MockTxExtras).calls;
     expect(calls.some((call) => call.startsWith('trainingBillingPacket.findFirst'))).toBe(true);
+    expect(calls.some((call) => call.startsWith('user.update'))).toBe(false);
+    expect(calls.some((call) => call.startsWith('workflowDiagnostic.create'))).toBe(false);
+  });
+
+  it.each([
+    { option: 'unresolvedExternalEffect', error: 'Reconcile the external-effect claim first' },
+    { option: 'unresolvedMilestoneDispatch', error: 'Reconcile the dispatch first' },
+  ] as const)('refuses retirement before mutations when the secondary has an $option', async ({ option, error }) => {
+    const tx = makeMockTx({ [option]: true });
+
+    await expect(executeMemberMerge(tx, 'primary', 'secondary', 'admin-1'))
+      .rejects.toThrow(error);
+
+    const calls = (tx as unknown as MockTxExtras).calls;
     expect(calls.some((call) => call.startsWith('user.update'))).toBe(false);
     expect(calls.some((call) => call.startsWith('workflowDiagnostic.create'))).toBe(false);
   });

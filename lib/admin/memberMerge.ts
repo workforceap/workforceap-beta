@@ -1,7 +1,12 @@
 import { Prisma, type CourseProgressStatus, type User } from '@prisma/client';
 
 import { getLevelForPoints } from '@/lib/member/pointsConfig';
-import { hasUnresolvedBillingSend, lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import {
+  hasUnresolvedBillingSend,
+  hasUnresolvedMemberExternalEffect,
+  hasUnresolvedMilestoneDispatch,
+  lockBillingMemberLifecycle,
+} from '@/lib/billing/erasureGuard';
 import {
   MEMBER_MERGE_PREVIEW_ONLY,
   MEMBER_MERGE_REPOINT_PLAN,
@@ -447,6 +452,27 @@ export async function checkMergeConflicts(
 
   if (!primary || !secondary) return conflicts;
 
+  // The secondary account is retired by the merge. An in-flight Storage or
+  // notification operation can finish after that retirement; an unresolved
+  // milestone dispatch can likewise deliver to the old identity. The executor
+  // checks again after taking both lifecycle locks.
+  if (await hasUnresolvedMemberExternalEffect(tx, secondaryId)) {
+    conflicts.push({
+      field: 'memberExternalEffectClaim.memberId',
+      primaryValue: primaryId,
+      secondaryValue: secondaryId,
+      message: 'The duplicate member has an unresolved Storage or notification operation. Reconcile its external-effect claim before merging.',
+    });
+  }
+  if (await hasUnresolvedMilestoneDispatch(tx, secondaryId)) {
+    conflicts.push({
+      field: 'milestoneCascade.userId',
+      primaryValue: primaryId,
+      secondaryValue: secondaryId,
+      message: 'The duplicate member has an unresolved milestone dispatch. Reconcile that dispatch before merging.',
+    });
+  }
+
   // Billing packets bind a signed approval reference and send history to the
   // original account. The executor calls this again after locking both member
   // lifecycles, so a packet cannot appear between this check and retirement.
@@ -720,6 +746,8 @@ export async function executeMemberMerge(
   // can start after the merge begins or outlive the retirement.
   for (const id of [primaryId, secondaryId].sort()) await lockBillingMemberLifecycle(tx, id);
   if (await hasUnresolvedBillingSend(tx, secondaryId)) throw new Error('Cannot merge a member while a billing packet delivery is unresolved. Reconcile the send first.');
+  if (await hasUnresolvedMemberExternalEffect(tx, secondaryId)) throw new Error('Cannot merge a member while a Storage or notification operation is unresolved. Reconcile the external-effect claim first.');
+  if (await hasUnresolvedMilestoneDispatch(tx, secondaryId)) throw new Error('Cannot merge a member while a milestone dispatch is unresolved. Reconcile the dispatch first.');
   const [primary, secondary] = await Promise.all([
     tx.user.findUnique({ where: { id: primaryId } }),
     tx.user.findUnique({ where: { id: secondaryId } }),
