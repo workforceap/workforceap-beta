@@ -14,8 +14,14 @@ vi.mock('next/server', () => ({
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $transaction: vi.fn(async (arg: any) => { const { prisma } = await import('@/lib/db/prisma'); return typeof arg === 'function' ? arg(prisma) : Promise.all(arg); }),
+    $executeRaw: vi.fn(async () => 1),
     user: {
       findMany: vi.fn(),
+      findFirst: vi.fn(async (args: { select?: { organizationId?: boolean } }) =>
+        args.select?.organizationId
+          ? { organizationId: 'org-1' }
+          : { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null },
+      ),
     },
     weeklyRecap: {
       update: vi.fn(),
@@ -450,6 +456,29 @@ describe('GET /api/cron/weekly-recap', () => {
           },
         }),
       }));
+    });
+
+    it('counts a provider-accepted send without stamping a receipt after member deletion', async () => {
+      vi.mocked(prisma.user.findMany).mockResolvedValue(mockMembers([
+        { id: 'user-1', email: 'alice@example.com', fullName: 'Alice Smith', enrolledProgram: 'cdl' },
+      ]));
+      vi.mocked(generateWeeklyRecaps).mockResolvedValue(mockRecaps([mockRecaps()[0]]));
+      vi.mocked(sendWeeklyRecapEmail).mockResolvedValue({ ok: true });
+      vi.mocked(prisma.user.findFirst)
+        .mockResolvedValueOnce({ organizationId: 'org-1' } as any)
+        .mockResolvedValueOnce({
+          deletedAt: new Date('2026-09-11T00:00:00.000Z'),
+          billingDeletionPendingAt: null,
+          billingDeletionOperationId: null,
+        } as any);
+
+      const body = await (await runWeeklyRecap(
+        makeRequest({ authorization: 'Bearer super-secret-cron-key' }),
+      )).json();
+
+      expect(body).toEqual({ sent: 1, failed: 0, total: 1 });
+      expect(prisma.weeklyRecap.update).not.toHaveBeenCalled();
+      expect(captureApiError).not.toHaveBeenCalled();
     });
 
     it('uses one request deadline for generation, pacing, and truthful tail accounting', async () => {
