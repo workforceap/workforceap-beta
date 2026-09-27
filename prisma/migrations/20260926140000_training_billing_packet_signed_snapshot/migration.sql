@@ -90,6 +90,8 @@ ALTER TABLE "training_billing_packet_sends" ENABLE ROW LEVEL SECURITY;
 -- and owner/server-role grants are untouched here. Apply before any
 -- production packet is created.
 ALTER TABLE "training_billing_packets" ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE "training_billing_packets" FROM PUBLIC;
+REVOKE ALL ON TABLE "training_billing_packet_sends" FROM PUBLIC;
 
 DO $$
 BEGIN

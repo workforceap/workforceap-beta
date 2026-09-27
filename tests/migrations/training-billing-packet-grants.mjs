@@ -16,6 +16,8 @@ const parentMigration = readFileSync('prisma/migrations/20260904020000_training_
 const migration = readFileSync('prisma/migrations/20260926140000_training_billing_packet_signed_snapshot/migration.sql', 'utf8');
 const retentionMigration = readFileSync('prisma/migrations/20260926220743_training_billing_packet_retention_hold/migration.sql', 'utf8');
 const deletionBarrierMigration = readFileSync('prisma/migrations/20260926223506_billing_deletion_pending/migration.sql', 'utf8');
+const claimsMigration = readFileSync('prisma/migrations/20260927015838_member_external_effect_claims/migration.sql', 'utf8');
+const upgradeBridgeMigration = readFileSync('prisma/migrations/20260927041638_billing_release_upgrade_bridge/migration.sql', 'utf8');
 const sourceUrl = process.env.BILLING_PACKET_GRANTS_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';
 const target = new URL(sourceUrl);
 assert.ok(['127.0.0.1', 'localhost'].includes(target.hostname), 'Proof database must be local.');
@@ -70,6 +72,11 @@ function assertLockedDown(label) {
     );
     assert.equal(sql(`SELECT relrowsecurity FROM pg_class WHERE oid = 'public.${table}'::regclass;`), 't', `${label}: RLS is not enabled on ${table}`);
     assert.equal(
+      sql(`SELECT count(*) FROM pg_class c CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) a WHERE c.oid='public.${table}'::regclass AND a.grantee=0;`),
+      '0',
+      `${label}: PUBLIC still holds table privileges on ${table}`,
+    );
+    assert.equal(
       sql(`SELECT has_table_privilege(current_user, 'public.${table}', 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE');`),
       't',
       `${label}: the table owner lost access to ${table}`,
@@ -94,7 +101,7 @@ try {
 
   // Preimage: production's grants (Supabase default privileges hand new tables to the browser roles).
   sql(`
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, PUBLIC;
     CREATE TABLE public.organizations (id TEXT PRIMARY KEY);
     CREATE TABLE public.users (id TEXT PRIMARY KEY, organization_id TEXT, deleted_at TIMESTAMP(3), full_name TEXT, email TEXT);
   `);
@@ -126,6 +133,69 @@ try {
 
   sql(retentionMigration);
   sql(retentionMigration);
+  // The preceding deployed app keeps serving during the production build. Its
+  // Prisma create omits the two historical IDs, so this must work immediately
+  // after the retention migration commits, before any later migration runs.
+  sql(`INSERT INTO public.training_billing_packets (id, organization_id, member_id, program_slug, packet_number, invoice_date, bill_to_name, line_items,
+    total_amount, cover_letter_body, signer_name, signer_title, signed_at, signed_by_id, updated_at)
+    VALUES ('p-old', 'org', 'u', 'x', 'N-2', CURRENT_DATE, 'Synthetic Board', '[]', 1, 'x', 'S', 'T', now(), 'signer', now());`);
+  assert.equal(sql(`SELECT subject_member_id || ':' || signed_by_subject_id FROM public.training_billing_packets WHERE id='p-old';`), 'u:signer', 'Old-app packet insert must remain valid during deploy');
+
+  // Simulate a database that applied the earlier retention SQL without its
+  // insert trigger; the later forward migration must repair that database.
+  sql(`DROP TRIGGER backfill_billing_packet_subject_ids ON public.training_billing_packets;`);
+  sql(claimsMigration);
+  sql(upgradeBridgeMigration);
+  sql(upgradeBridgeMigration);
+  sql(`INSERT INTO public.training_billing_packets (id, organization_id, member_id, program_slug, packet_number, invoice_date, bill_to_name, line_items,
+    total_amount, cover_letter_body, signer_name, signer_title, signed_at, signed_by_id, updated_at)
+    VALUES ('p-bridge', 'org', 'u', 'x', 'N-3', CURRENT_DATE, 'Synthetic Board', '[]', 1, 'x', 'S', 'T', now(), 'signer', now());`);
+  assert.equal(sql(`SELECT subject_member_id || ':' || signed_by_subject_id FROM public.training_billing_packets WHERE id='p-bridge';`), 'u:signer', 'Forward migration must repair old-app packet insert');
+  assertLockedDown('forward upgrade bridge');
+
+  function createLegacyClaimsTable(kinds) {
+    sql(`CREATE TABLE public.member_external_effect_claims (
+      id UUID PRIMARY KEY,
+      member_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+      kind TEXT NOT NULL CHECK (kind IN (${kinds})),
+      status TEXT NOT NULL DEFAULT 'in_flight' CHECK (status IN ('in_flight', 'needs_reconciliation')),
+      reason TEXT,
+      created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    ALTER TABLE public.member_external_effect_claims ENABLE ROW LEVEL SECURITY;
+    GRANT ALL ON TABLE public.member_external_effect_claims TO PUBLIC, anon, authenticated;`);
+  }
+
+  // Exact first-published table shape: no email kind, no provider key, and an
+  // updated_at default. Existing notification claims must survive the repair.
+  sql(`DROP TABLE public.member_external_effect_claims;`);
+  createLegacyClaimsTable("'storage', 'notification'");
+  sql(`INSERT INTO public.member_external_effect_claims (id, member_id, kind)
+    VALUES ('00000000-0000-4000-8000-000000000001', 'u', 'notification');`);
+  sql(upgradeBridgeMigration);
+  sql(upgradeBridgeMigration);
+  assert.equal(sql(`SELECT count(*) FROM public.member_external_effect_claims WHERE member_id='u' AND kind='notification';`), '1', 'Existing claim must survive upgrade');
+  assert.equal(sql(`SELECT data_type FROM information_schema.columns WHERE table_schema='public' AND table_name='member_external_effect_claims' AND column_name='provider_idempotency_key';`), 'text', 'Upgrade must add provider key');
+  assert.equal(sql(`SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='member_external_effect_claims' AND column_name='updated_at';`), '', 'Upgrade must align updated_at with Prisma');
+  assert.equal(sql(`SELECT count(*) FROM pg_class c CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) a WHERE c.oid='public.member_external_effect_claims'::regclass AND a.grantee=0;`), '0', 'Upgrade must revoke PUBLIC claim-table grants');
+  sql(`INSERT INTO public.member_external_effect_claims (id, member_id, kind, provider_idempotency_key, updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000002', 'u', 'email', 'email/exact-key', now());`);
+  assertSqlRejected(`INSERT INTO public.member_external_effect_claims (id, member_id, kind, updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000003', 'u', 'email', now());`, '23514');
+
+  // The intermediate published shape admitted email without a stored provider
+  // key. An unresolved legacy email claim must stop migration for operator
+  // reconciliation; the transaction must not invent a key or delete the row.
+  sql(`DROP TABLE public.member_external_effect_claims;`);
+  createLegacyClaimsTable("'storage', 'notification', 'email'");
+  sql(`INSERT INTO public.member_external_effect_claims (id, member_id, kind)
+    VALUES ('00000000-0000-4000-8000-000000000004', 'u', 'email');`);
+  assertSqlRejected(upgradeBridgeMigration, '23514');
+  assert.equal(sql(`SELECT count(*) FROM public.member_external_effect_claims WHERE kind='email';`), '1', 'Failed upgrade must preserve unresolved email claim');
+  sql(`DELETE FROM public.member_external_effect_claims WHERE kind='email';`); // Synthetic stand-in for attended provider reconciliation.
+  sql(upgradeBridgeMigration);
+  assertLockedDown('legacy claims upgrade');
   assert.match(
     sql(`SELECT indexdef FROM pg_indexes WHERE schemaname='public' AND tablename='training_billing_packets' AND indexname='training_billing_packets_org_subject_created_idx';`),
     /\(organization_id, subject_member_id, created_at DESC\)/,

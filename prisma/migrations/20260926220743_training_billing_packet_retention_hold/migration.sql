@@ -11,6 +11,25 @@ SET LOCAL statement_timeout = '30s';
 ALTER TABLE public.training_billing_packets
   ADD COLUMN IF NOT EXISTS subject_member_id TEXT,
   ADD COLUMN IF NOT EXISTS signed_by_subject_id TEXT;
+
+-- Vercel applies migrations while the preceding application revision is still
+-- serving. Its packet-create route supplies member_id and signed_by_id but not
+-- these new historical columns. Fill them before enforcing NOT NULL so packet
+-- signing remains available throughout the build and deployment overlap.
+CREATE OR REPLACE FUNCTION public.backfill_billing_packet_subject_ids()
+RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS $$
+BEGIN
+  NEW.subject_member_id := COALESCE(NEW.subject_member_id, NEW.member_id);
+  NEW.signed_by_subject_id := COALESCE(NEW.signed_by_subject_id, NEW.signed_by_id);
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.backfill_billing_packet_subject_ids() FROM PUBLIC;
+DROP TRIGGER IF EXISTS backfill_billing_packet_subject_ids ON public.training_billing_packets;
+CREATE TRIGGER backfill_billing_packet_subject_ids
+  BEFORE INSERT ON public.training_billing_packets
+  FOR EACH ROW EXECUTE FUNCTION public.backfill_billing_packet_subject_ids();
+
 UPDATE public.training_billing_packets
   SET subject_member_id = COALESCE(subject_member_id, member_id),
       signed_by_subject_id = COALESCE(signed_by_subject_id, signed_by_id)
