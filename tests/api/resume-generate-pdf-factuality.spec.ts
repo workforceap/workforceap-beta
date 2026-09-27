@@ -83,6 +83,7 @@ async function syntheticTwoPageResumePdf(): Promise<Buffer> {
   first.drawText('- Coordinated inbound receiving for a two-shift crew', { x: 40, y: 672, size: 11, font });
   first.drawText('- Trained new associates on scanner and pallet-jack safety', { x: 40, y: 656, size: 11, font });
   first.drawText('- Reconciled a $1,000 petty-cash float each week', { x: 40, y: 640, size: 11, font });
+  first.drawText('Certified forklift operator; OSHA 10', { x: 40, y: 616, size: 11, font });
   const second = document.addPage([612, 792]);
   second.drawText('Education', { x: 40, y: 740, size: 13, font });
   second.drawText('Lakeshore Community College - A.A.S. Industrial Maintenance, 2018', {
@@ -134,7 +135,7 @@ function storeOriginal(bytes: Buffer, extra: Record<string, Buffer> = {}) {
 function memberWithOriginal(overrides: { enrolledProgram?: string | null; resumeEnhancedPath?: string | null } = {}) {
   const profile = {
     userId: USER_ID,
-    profilePhone: null,
+    profilePhone: '15126291505',
     profileAddress: null,
     address: null,
     profileLinkedin: null,
@@ -165,6 +166,7 @@ function generate() {
 }
 
 const FAITHFUL_DRAFT = `# Avery Quillfeather
+(512) 629-1505 | avery.quillfeather@example.test
 
 ## Professional Summary
 Warehouse lead with experience coordinating inbound receiving and training new associates on equipment safety.
@@ -254,6 +256,9 @@ describe('Resume Build keeps the draft to facts in the source', () => {
     ['the target program claimed as an earned credential', `${FAITHFUL_DRAFT}\n\n## Certifications\n- AWS Certified Cloud Practitioner`],
     ['a filler section for missing data', `${FAITHFUL_DRAFT}\n\n## Certifications\nNo certifications were provided.`],
     ['a filler skills section', `${FAITHFUL_DRAFT}\n\n## Skills\nNot provided`],
+    ['a different phone number', FAITHFUL_DRAFT.replace('(512) 629-1505', '(512) 629-1506')],
+    ['enrollment in the target program stated as fact', FAITHFUL_DRAFT.replace('equipment safety.', 'equipment safety. Enrolled in AWS Cloud Practitioner.')],
+    ['a certification with an invented qualifier', `${FAITHFUL_DRAFT}\n\n## Certifications\n- Certified Project Manager`],
     ['a bracketed placeholder', FAITHFUL_DRAFT.replace('Riverbend Logistics', '[Company Name]')],
   ])('rejects %s without saving', async (_label, draft) => {
     memberWithOriginal({ enrolledProgram: 'aws-cloud-practitioner' });
@@ -272,7 +277,12 @@ describe('Resume Build keeps the draft to facts in the source', () => {
     ['with "$1,000" written as "$1000"', FAITHFUL_DRAFT.replace('$1,000', '$1000')],
     ['with the degree spelled out', FAITHFUL_DRAFT.replace('A.A.S. Industrial Maintenance', 'Associate of Applied Science, Industrial Maintenance')],
     ['with "Attended <school>" prose', FAITHFUL_DRAFT.replace('## Education', '## Education\nAttended Lakeshore Community College')],
-    ['with the target program phrased as a goal', FAITHFUL_DRAFT.replace('equipment safety.', 'equipment safety. Pursuing the AWS Cloud Practitioner program.')],
+    ['with the target program phrased as a goal', FAITHFUL_DRAFT.replace('equipment safety.', 'equipment safety. Interested in the AWS Cloud Practitioner program.')],
+    ['with the degree after "at"', FAITHFUL_DRAFT.replace('A.A.S. Industrial Maintenance — Lakeshore Community College, 2018', 'Associate of Applied Science in Industrial Maintenance at Lakeshore Community College')],
+    ['with the certifications listed', `${FAITHFUL_DRAFT}\n\n## Certifications\n- Certified Forklift Operator\n- OSHA 10-Hour`],
+    ['with the phone as 512-629-1505', FAITHFUL_DRAFT.replace('(512) 629-1505', '512-629-1505')],
+    ['with the phone as 512.629.1505', FAITHFUL_DRAFT.replace('(512) 629-1505', '512.629.1505')],
+    ['with the phone as +1 512 629 1505', FAITHFUL_DRAFT.replace('(512) 629-1505', '+1 512 629 1505')],
   ])('saves a faithful draft %s', async (_label, draft) => {
     memberWithOriginal({ enrolledProgram: 'aws-cloud-practitioner' });
     storeOriginal(twoPagePdf);
