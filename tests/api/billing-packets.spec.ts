@@ -150,7 +150,7 @@ vi.mock('@/lib/db/prisma', () => {
       findUnique: vi.fn(async ({ where }: { where: { id: string } }) => db.users.find((u) => u.id === where.id) ?? null),
       updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Row }) => {
         const rows = db.users.filter((u) => matches(u, where));
-        rows.forEach((u) => Object.assign(u, data));
+        rows.forEach((u) => Object.assign(u, data, { updatedAt: new Date() }));
         return { count: rows.length };
       }),
     },
@@ -364,7 +364,7 @@ beforeEach(() => {
   db.catalog = null;
   db.counselor = null;
   db.users = [
-    { id: MEMBER, fullName: 'Test Member', email: 'member@example.test', organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, enrolledProgram: null },
+    { id: MEMBER, fullName: 'Test Member', email: 'member@example.test', organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, billingDeletionCompletedAt: null, enrolledProgram: null, updatedAt: new Date() },
     { id: ADMIN, fullName: 'Test Admin', email: 'admin@example.test', organizationId: ORG, deletedAt: null, enrolledProgram: null },
   ];
   db.enrollments = [
@@ -490,7 +490,7 @@ describe('billing deletion barrier ordering', () => {
 
   it('unresolved counselor copies block counselor deletion too', async () => {
     db.counselor = { ...COUNSELOR, organizationId: ORG, deletedAt: null };
-    db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null });
+    db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, updatedAt: new Date() });
     const id = await signOne();
     db.sends.push({ id: 'counselor-send', packetId: id, recipient: 'counselor', status: 'ambiguous' });
     expect(await beginBillingDeletion(COUNSELOR.id, ORG)).toEqual({ ok: false, reason: 'unresolved_send' });
@@ -1938,7 +1938,7 @@ describe('Counselor drift while preparing a send', () => {
   ] as const) {
     it(`refuses every claim if counselor ${label} takes the lifecycle barrier before claim`, async () => {
       db.counselor = { ...COUNSELOR, organizationId: ORG };
-      db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null });
+      db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, updatedAt: new Date() });
       const id = await signOne();
       let resume!: () => void;
       mocks.buildGate.value = new Promise<void>((resolve) => { resume = resolve; });
@@ -1961,7 +1961,7 @@ describe('Counselor drift while preparing a send', () => {
 
   it('a claimed counselor copy prevents deletion and identity edit until delivery is settled', async () => {
     db.counselor = { ...COUNSELOR, organizationId: ORG };
-    db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null });
+    db.users.push({ ...COUNSELOR, organizationId: ORG, deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null, updatedAt: new Date() });
     const id = await signOne();
     let finishCounselor!: (value: unknown) => void;
     mocks.send.mockImplementation((_resend: unknown, args: { to: string }) => args.to === COUNSELOR.email
