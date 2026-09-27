@@ -8,28 +8,6 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 export const WEB_PUSH_WORKFLOW = 'web_push';
 export const WEB_PUSH_DEADLINE_MS = 5_000;
 
-/** The provider may still deliver after our request times out. Keep the member claim. */
-export class WebPushOutcomeUncertainError extends Error {
-  constructor() {
-    super('Web Push delivery outcome is uncertain; reconcile the member external-effect claim.');
-    this.name = 'WebPushOutcomeUncertainError';
-  }
-}
-
-async function sendWithDeadline(subscription: Parameters<typeof webpush.sendNotification>[0], body: string): Promise<void> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    await Promise.race([
-      webpush.sendNotification(subscription, body, { timeout: WEB_PUSH_DEADLINE_MS }),
-      new Promise<never>((_resolve, reject) => {
-        timer = setTimeout(() => reject(new WebPushOutcomeUncertainError()), WEB_PUSH_DEADLINE_MS);
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
-}
-
 /**
  * Web Push sender. Gracefully no-ops when VAPID keys are unconfigured so
  * notification creation never depends on push being set up. Prunes
@@ -70,12 +48,26 @@ export interface WebPushPayload {
 }
 
 /**
- * Send a push to every subscription a user has. Ordinary sends are best
- * effort; a claimed send reports an uncertain provider outcome to its owner.
+ * Send a push to every subscription a user has. Await each provider attempt
+ * through web-push's own socket timeout; callers holding a lifecycle claim
+ * use a longer outer deadline for any still-unsettled local work.
  * Returns the number of pushes accepted by the push services.
  */
-export async function sendWebPushToUser(userId: string, payload: WebPushPayload, activeOperationId?: string, requireKnownOutcome = false): Promise<number> {
-  if (!ensureVapid()) return 0;
+export async function sendWebPushToUser(userId: string, payload: WebPushPayload): Promise<number> {
+  try {
+    if (!ensureVapid()) return 0;
+  } catch (error) {
+    // VAPID setup failed before subscription lookup or provider egress.
+    void recordWorkflowDiagnostic({
+      workflow: WEB_PUSH_WORKFLOW,
+      status: 'error',
+      actorUserId: userId,
+      provider: 'web-push',
+      summary: 'Web push VAPID setup failed before provider call',
+      failureReason: error instanceof Error ? error.message : String(error),
+    });
+    return 0;
+  }
 
   let subs: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
   try {
@@ -105,7 +97,6 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
 
   const body = JSON.stringify(payload);
   let delivered = 0;
-  let uncertain = false;
   await Promise.all(
     subs.map(async (sub) => {
       // A failed final database read happens before provider egress, so it is
@@ -130,18 +121,23 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
       }
       if (!member || member.deletedAt || member.billingDeletionPendingAt || member.billingDeletionOperationId) return;
       try {
-        await sendWithDeadline(
+        // The web-push request has its own bounded socket timeout. Await that
+        // promise: a second timer at the same deadline can win just before the
+        // library closes the request and strand a reconciliation claim.
+        await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           body,
+          { timeout: WEB_PUSH_DEADLINE_MS },
         );
         delivered += 1;
       } catch (err) {
-        const rawStatusCode = (err as { statusCode?: number | string }).statusCode;
+        const rawStatusCode = err && typeof err === 'object'
+          ? (err as { statusCode?: number | string }).statusCode
+          : undefined;
         const statusCode = rawStatusCode === undefined ? NaN : Number(rawStatusCode);
-        // A settled provider promise has no local request left to overtake
-        // account deletion, even if the service may have delivered already.
-        // Only our deadline race can leave the underlying request running.
-        if ((activeOperationId || requireKnownOutcome) && err instanceof WebPushOutcomeUncertainError) uncertain = true;
+        // This provider promise settled, so no local request can overtake
+        // account deletion. A caller with a claim retains it only if its
+        // longer outer deadline expires while this promise is still pending.
         if (statusCode === 404 || statusCode === 410) {
           // Subscription expired or was revoked — prune it.
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
@@ -166,6 +162,5 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
       }
     }),
   );
-  if (uncertain) throw new WebPushOutcomeUncertainError();
   return delivered;
 }

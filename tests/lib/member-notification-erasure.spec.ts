@@ -1,12 +1,13 @@
 // @vitest-environment node
 import { beforeEach, expect, it, vi } from 'vitest';
+import { Prisma } from '@prisma/client';
 
 const mocks = vi.hoisted(() => ({
-  begin: vi.fn(), release: vi.fn(), mark: vi.fn(), create: vi.fn(), push: vi.fn(), discord: vi.fn(),
+  begin: vi.fn(), release: vi.fn(), mark: vi.fn(), create: vi.fn(), findFirst: vi.fn(), push: vi.fn(), discord: vi.fn(),
 }));
 vi.mock('server-only', () => ({}));
 vi.mock('next/server', () => ({ after: vi.fn() }));
-vi.mock('@/lib/db/prisma', () => ({ prisma: { notification: { create: mocks.create } } }));
+vi.mock('@/lib/db/prisma', () => ({ prisma: { notification: { create: mocks.create, findFirst: mocks.findFirst } } }));
 vi.mock('@/lib/member/uploadLifecycle', () => ({
   beginMemberUpload: mocks.begin,
   releaseMemberUpload: mocks.release,
@@ -15,7 +16,6 @@ vi.mock('@/lib/member/uploadLifecycle', () => ({
 }));
 vi.mock('@/lib/push/sendWebPush', () => ({
   sendWebPushToUser: mocks.push,
-  WebPushOutcomeUncertainError: class WebPushOutcomeUncertainError extends Error {},
 }));
 vi.mock('@/lib/notify/discord', () => ({ notifyDiscord: mocks.discord }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn() }));
@@ -23,7 +23,6 @@ vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn()
 
 import { createNotification } from '@/lib/notifications/create';
 import { MemberUploadLifecycleError } from '@/lib/member/uploadLifecycle';
-import { WebPushOutcomeUncertainError } from '@/lib/push/sendWebPush';
 
 const input = () => ({ userId: 'member-1', subjectMemberId: 'member-1', type: 'program_complete' as const,
   title: 'Program complete', body: 'Synthetic completion' });
@@ -34,6 +33,7 @@ beforeEach(() => {
   mocks.release.mockResolvedValue(undefined);
   mocks.mark.mockResolvedValue(undefined);
   mocks.create.mockResolvedValue({ id: 'notification-1' });
+  mocks.findFirst.mockResolvedValue(null);
   mocks.push.mockResolvedValue(1);
   mocks.discord.mockResolvedValue(undefined);
 });
@@ -53,7 +53,7 @@ it('holds the lifecycle claim until persistence, push, and Discord settle', asyn
   for (let i = 0; i < 20 && !finishDiscord; i++) await Promise.resolve();
   expect(finishDiscord).toBeTypeOf('function');
   expect(mocks.create).toHaveBeenCalledOnce();
-  expect(mocks.push).toHaveBeenCalledWith('member-1', expect.any(Object), 'claim-1', true);
+  expect(mocks.push).toHaveBeenCalledWith('member-1', expect.any(Object));
   expect(mocks.release).not.toHaveBeenCalled();
   finishDiscord();
   await pending;
@@ -68,6 +68,15 @@ it('holds the subject member claim while notifying their counselor', async () =>
   expect(mocks.release.mock.calls).toEqual([['member-1', 'claim-1'], ['counselor-1', 'claim-2']]);
 });
 
+it('suppresses staff delivery and releases the subject claim when the staff recipient is no longer active', async () => {
+  mocks.begin.mockResolvedValueOnce('claim-1').mockRejectedValueOnce(new MemberUploadLifecycleError());
+  await createNotification({ ...input(), userId: 'counselor-1' });
+  expect(mocks.release).toHaveBeenCalledExactlyOnceWith('member-1', 'claim-1');
+  expect(mocks.create).not.toHaveBeenCalled();
+  expect(mocks.push).not.toHaveBeenCalled();
+  expect(mocks.discord).not.toHaveBeenCalled();
+});
+
 it('persists concurrent sibling notifications under independent claims', async () => {
   let sequence = 0;
   mocks.begin.mockImplementation(async () => `claim-${++sequence}`);
@@ -79,11 +88,41 @@ it('persists concurrent sibling notifications under independent claims', async (
   expect(mocks.release.mock.calls.map((args) => args[1]).sort()).toEqual(['claim-1', 'claim-2']);
 });
 
-it('retains the exact claim when push outcome is unknown', async () => {
-  mocks.push.mockRejectedValueOnce(new WebPushOutcomeUncertainError());
+it('retains the exact claim when push fanout rejects before other sends can be ruled out', async () => {
+  mocks.push.mockRejectedValueOnce(new Error('push fanout failed'));
   await createNotification(input());
   expect(mocks.mark).toHaveBeenCalledExactlyOnceWith('member-1', 'claim-1', 'notification_outcome_unknown');
   expect(mocks.release).not.toHaveBeenCalled();
+});
+
+it('releases the claim when push reports zero attempts after a pre-egress account lookup failure', async () => {
+  mocks.push.mockResolvedValueOnce(0);
+  await createNotification(input());
+  expect(mocks.mark).not.toHaveBeenCalled();
+  expect(mocks.release).toHaveBeenCalledExactlyOnceWith('member-1', 'claim-1');
+});
+
+it.each(['P2002', 'P2003', 'P2011'])('releases a definitely rejected notification write (%s)', async (code) => {
+  mocks.create.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError('database rejected the row', { code, clientVersion: 'test' }));
+  await createNotification(input());
+  expect(mocks.mark).not.toHaveBeenCalled();
+  expect(mocks.release).toHaveBeenCalledExactlyOnceWith('member-1', 'claim-1');
+  expect(mocks.push).not.toHaveBeenCalled();
+});
+
+it('releases a pre-write dedupe lookup failure because no notification insert started', async () => {
+  mocks.findFirst.mockRejectedValueOnce(new Error('database read unavailable'));
+  await createNotification({ ...input(), dedupeUnread: true });
+  expect(mocks.create).not.toHaveBeenCalled();
+  expect(mocks.mark).not.toHaveBeenCalled();
+  expect(mocks.release).toHaveBeenCalledExactlyOnceWith('member-1', 'claim-1');
+});
+
+it('releases after a settled Discord rejection', async () => {
+  mocks.discord.mockRejectedValueOnce(new Error('webhook rejected'));
+  await createNotification(input());
+  expect(mocks.mark).not.toHaveBeenCalled();
+  expect(mocks.release).toHaveBeenCalledExactlyOnceWith('member-1', 'claim-1');
 });
 
 it('keeps the claim when a notification write loses its database acknowledgment', async () => {

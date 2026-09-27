@@ -28,7 +28,6 @@ vi.mock('@/lib/member/uploadLifecycle', () => ({
 }));
 vi.mock('@/lib/push/sendWebPush', () => ({
   sendWebPushToUser: mocks.push,
-  WebPushOutcomeUncertainError: class WebPushOutcomeUncertainError extends Error {},
 }));
 vi.mock('@/lib/notify/discord', () => ({ notifyDiscord: mocks.discord }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn() }));

@@ -5,7 +5,6 @@ import { prisma } from '@/lib/db/prisma';
 import { Prisma } from '@prisma/client';
 import { notifyDiscord } from '@/lib/notify/discord';
 import { sendWebPushToUser } from '@/lib/push/sendWebPush';
-import { WebPushOutcomeUncertainError } from '@/lib/push/sendWebPush';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import {
@@ -17,13 +16,29 @@ import {
 
 const NOTIFICATION_EFFECT_DEADLINE_MS = 7_500;
 
+class NotificationEffectDeadlineError extends Error {
+  constructor(name: string) {
+    super(`${name} outcome is uncertain`);
+    this.name = 'NotificationEffectDeadlineError';
+  }
+}
+
+// These Prisma errors report that this one-row write was rejected. Transport,
+// pooler, timeout, and transaction errors can lose a successful commit receipt.
+const DEFINITE_NOTIFICATION_WRITE_REJECTIONS = new Set(['P2000', 'P2002', 'P2003', 'P2011', 'P2025']);
+
+function isDefiniteNotificationWriteRejection(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientValidationError ||
+    (error instanceof Prisma.PrismaClientKnownRequestError && DEFINITE_NOTIFICATION_WRITE_REJECTIONS.has(error.code));
+}
+
 async function boundedClaimedEffect(effect: Promise<unknown>, name: string): Promise<void> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     await Promise.race([
       effect,
       new Promise<never>((_resolve, reject) => {
-        timer = setTimeout(() => reject(new Error(`${name} outcome is uncertain`)), NOTIFICATION_EFFECT_DEADLINE_MS);
+        timer = setTimeout(() => reject(new NotificationEffectDeadlineError(name)), NOTIFICATION_EFFECT_DEADLINE_MS);
       }),
     ]);
   } finally {
@@ -119,6 +134,8 @@ export function createNotification(
     }
   }
   let retainClaims = false;
+  let writeInFlight = false;
+  let pushInFlight = false;
   try {
   try {
     const data = (input.data ?? null) as unknown as Prisma.InputJsonValue;
@@ -130,11 +147,13 @@ export function createNotification(
         })
       : null;
     if (existingUnread) {
+      writeInFlight = true;
       await prisma.notification.update({
         where: { id: existingUnread.id },
         data: { body: input.body, data, createdAt: new Date() },
       });
     } else {
+      writeInFlight = true;
       await prisma.notification.create({
         data: {
           userId: input.userId,
@@ -145,23 +164,28 @@ export function createNotification(
         },
       });
     }
+    writeInFlight = false;
     // Best-effort Web Push companion to the in-app notification. No-ops when
     // VAPID is unconfigured or the user has no subscriptions; never throws.
+    pushInFlight = true;
     const push = sendWebPushToUser(input.userId, {
       title: input.title,
       body: input.body,
       url: typeof input.data?.link === 'string' ? (input.data.link as string) : '/dashboard',
       tag: input.type,
-    }, input.userId === input.subjectMemberId ? lifecycleClaim ?? undefined : undefined, Boolean(lifecycleClaim));
+    });
     // A member-linked notification must finish its outbound work before the
     // deletion barrier can pass. Ordinary notifications keep best-effort push.
-    if (lifecycleClaim) await boundedClaimedEffect(push, 'Web Push');
+    if (lifecycleClaim) {
+      await boundedClaimedEffect(push, 'Web Push');
+      pushInFlight = false;
+    }
     else void push;
   } catch (error) {
-    // A DB write may have committed despite a lost acknowledgment; a bounded
-    // push may still finish after its timeout. Keep every claimed subject and
-    // recipient row until the exact outcome has been reconciled.
-    if (lifecycleClaim || error instanceof WebPushOutcomeUncertainError) retainClaims = true;
+    // A rejected pre-write read or known constraint/validation failure cannot
+    // have committed this row. An ambiguous write receipt or a push still in
+    // flight must retain both subject and recipient claims.
+    if (lifecycleClaim && ((writeInFlight && !isDefiniteNotificationWriteRejection(error)) || pushInFlight)) retainClaims = true;
     captureApiError(error, {
       route: 'lib/notifications/create.createNotification',
       extra: { userId: input.userId, type: input.type },
@@ -187,7 +211,9 @@ export function createNotification(
     });
   }
   } catch (error) {
-    retainClaims = true;
+    // A settled webhook failure has no request left to race deletion. Only
+    // our outer deadline can leave the local webhook attempt still running.
+    if (lifecycleClaim && error instanceof NotificationEffectDeadlineError) retainClaims = true;
     captureApiError(error, { route: 'lib/notifications/create.operatorOutcome', extra: { memberId: input.subjectMemberId } });
   } finally {
     const claims = [

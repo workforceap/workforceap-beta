@@ -17,7 +17,7 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn() }));
 
-import { WEB_PUSH_DEADLINE_MS, WebPushOutcomeUncertainError, sendWebPushToUser } from '@/lib/push/sendWebPush';
+import { WEB_PUSH_DEADLINE_MS, sendWebPushToUser } from '@/lib/push/sendWebPush';
 
 const active = { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null };
 const subscription = { id: 'sub-1', endpoint: 'https://push.example.test/one', p256dh: 'p', auth: 'a' };
@@ -70,22 +70,47 @@ describe('sendWebPushToUser account lifecycle', () => {
 
   it('does not label a failed final account read as an uncertain provider send', async () => {
     mock.findUser.mockResolvedValueOnce(active).mockRejectedValueOnce(new Error('database unavailable'));
-    expect(await sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1')).toBe(0);
+    expect(await sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' })).toBe(0);
     expect(mock.send).not.toHaveBeenCalled();
   });
 
-  it('bounds a hung claimed push and reports an unknown outcome', async () => {
+  it('awaits the provider promise rather than racing a duplicate local timer', async () => {
     vi.useFakeTimers();
     try {
       mock.findUser.mockResolvedValue(active);
       let finish!: () => void;
       mock.send.mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve; }));
-      const result = expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1'))
-        .rejects.toBeInstanceOf(WebPushOutcomeUncertainError);
+      let settled = false;
+      const result = sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' })
+        .then((count) => { settled = true; return count; });
       await vi.advanceTimersByTimeAsync(WEB_PUSH_DEADLINE_MS + 1);
-      await result;
+      expect(mock.send).toHaveBeenCalledWith(expect.any(Object), expect.any(String), { timeout: WEB_PUSH_DEADLINE_MS });
+      expect(settled).toBe(false);
       finish();
-      await Promise.resolve();
+      expect(await result).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('settles a VAPID configuration failure before loading subscriptions or calling the provider', async () => {
+    vi.resetModules();
+    const { sendWebPushToUser: fromFreshModule } = await import('@/lib/push/sendWebPush');
+    mock.configure.mockImplementationOnce(() => { throw new Error('invalid VAPID key'); });
+    expect(await fromFreshModule('member-1', { title: 'Private', body: 'Claimed' })).toBe(0);
+    expect(mock.findSubscriptions).not.toHaveBeenCalled();
+    expect(mock.send).not.toHaveBeenCalled();
+  });
+
+  it('releases a settled provider socket timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      mock.findUser.mockResolvedValue(active);
+      mock.send.mockImplementationOnce((_subscription, _body, options: { timeout: number }) =>
+        new Promise((_resolve, reject) => setTimeout(() => reject(new Error('provider socket timed out')), options.timeout)));
+      const result = sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' });
+      await vi.advanceTimersByTimeAsync(WEB_PUSH_DEADLINE_MS + 1);
+      expect(await result).toBe(0);
     } finally {
       vi.useRealTimers();
     }
@@ -94,20 +119,27 @@ describe('sendWebPushToUser account lifecycle', () => {
   it('treats a completed 400 provider rejection as a known non-delivery', async () => {
     mock.findUser.mockResolvedValue(active);
     mock.send.mockRejectedValueOnce({ statusCode: 400 });
-    expect(await sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1')).toBe(0);
+    expect(await sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' })).toBe(0);
   });
 
   it.each([408, 429, 503])('releases a settled provider rejection HTTP %i', async (statusCode) => {
     mock.findUser.mockResolvedValue(active);
     mock.send.mockRejectedValueOnce({ statusCode });
-    await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1'))
+    await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }))
       .resolves.toBe(0);
   });
 
   it('releases a settled connection refusal with no local send still running', async () => {
     mock.findUser.mockResolvedValue(active);
     mock.send.mockRejectedValueOnce(Object.assign(new Error('connect refused'), { code: 'ECONNREFUSED' }));
-    await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1'))
+    await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }))
+      .resolves.toBe(0);
+  });
+
+  it.each([null, undefined])('releases a settled provider rejection even without an error object (%s)', async (reason) => {
+    mock.findUser.mockResolvedValue(active);
+    mock.send.mockRejectedValueOnce(reason);
+    await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }))
       .resolves.toBe(0);
   });
 });
