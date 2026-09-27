@@ -1,238 +1,332 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mocks = vi.hoisted(() => ({
+  preRead: vi.fn(),
+  txRead: vi.fn(),
+  upsert: vi.fn(),
+  accountRead: vi.fn(),
+  memberRoleRead: vi.fn(),
+  memberRoleCreate: vi.fn(),
+  memberGrant: vi.fn(),
+  profileUpsert: vi.fn(),
+  transaction: vi.fn(),
+  lock: vi.fn(),
+  interactive: vi.fn(),
+  getUserById: vi.fn(),
+  resolveOrg: vi.fn(),
+  requestHeaders: vi.fn(),
+  organizationFind: vi.fn(),
+}));
+
+const tx = {
+  user: {
+    findUnique: mocks.txRead,
+    upsert: mocks.upsert,
+    findUniqueOrThrow: mocks.accountRead,
+  },
+  role: { findUnique: mocks.memberRoleRead, create: mocks.memberRoleCreate },
+  userRole: { createMany: mocks.memberGrant },
+  profile: { upsert: mocks.profileUpsert },
+  organization: { findUnique: mocks.organizationFind },
+};
+
+vi.mock('@/lib/db/prisma', () => ({
+  prisma: { user: { findUnique: mocks.preRead }, $transaction: mocks.transaction },
+}));
+vi.mock('@/lib/db/transactionPolicy', () => ({
+  interactiveTransactionsGuaranteed: mocks.interactive,
+}));
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: mocks.lock,
+}));
+vi.mock('@/lib/supabase-admin', () => ({
+  getSupabaseAdmin: () => ({ auth: { admin: { getUserById: mocks.getUserById } } }),
+}));
+vi.mock('@/lib/tenant/currentRequestHeaders', () => ({
+  tryCurrentRequestHeaders: mocks.requestHeaders,
+}));
+vi.mock('@/lib/tenant/resolveProvisionOrg', () => ({
+  resolveProvisionOrganizationId: mocks.resolveOrg,
+}));
+vi.mock('@/lib/tenant/withTenantScope', () => ({
+  crossTenantOK: (fn: () => Promise<unknown>) => fn(),
+}));
+
 import { ensureAppUserProvisioned } from './ensureAppUser';
-import { prisma } from '../db/prisma';
 
-const ORG_A = 'org-custom-1';
-const ORG_B = 'org-custom-2';
-const DEFAULT_ORG = 'org-default';
+const ID = '10000000-0000-4000-8000-000000000001';
+const ORG = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const OTHER_ORG = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+const active = { deletedAt: null, billingDeletionPendingAt: null, billingDeletionOperationId: null };
+const activeUser = {
+  id: ID, organizationId: ORG, profile: null, ...active,
+};
 
-function installProvisionMocks(t: { after: (fn: () => void) => void }) {
-  const userDelegate = prisma.user as {
-    findUnique: (...args: unknown[]) => unknown;
-  };
-  const originalFindUnique = userDelegate.findUnique;
-  const originalTransaction = prisma.$transaction.bind(prisma);
+beforeEach(() => {
+  vi.resetAllMocks();
+  mocks.preRead.mockResolvedValue(null);
+  mocks.txRead.mockResolvedValue(null);
+  mocks.upsert.mockResolvedValue(active);
+  mocks.accountRead.mockResolvedValue({
+    userRoles: [], employer: null, partnerUser: null, counselorProfile: null,
+  });
+  mocks.memberRoleRead.mockResolvedValue({ id: 'role-member' });
+  mocks.memberRoleCreate.mockResolvedValue({ id: 'role-member' });
+  mocks.memberGrant.mockResolvedValue({ count: 1 });
+  mocks.profileUpsert.mockResolvedValue({});
+  mocks.transaction.mockImplementation(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx));
+  mocks.lock.mockResolvedValue(undefined);
+  mocks.interactive.mockReturnValue(true);
+  mocks.getUserById.mockResolvedValue({
+    data: { user: {
+      id: ID, email: 'fresh@example.test',
+      user_metadata: { full_name: 'Fresh Member' },
+      app_metadata: { organization_id: ORG },
+    } },
+    error: null,
+  });
+  mocks.resolveOrg.mockResolvedValue(ORG);
+  mocks.requestHeaders.mockResolvedValue(undefined);
+  mocks.organizationFind.mockResolvedValue({ id: ORG, active: true });
+});
 
-  const state = {
-    findUniqueResult: null as { id: string; organizationId: string; profile: { userId: string } | null } | null,
-    postConflictReadback: undefined as { id: string; organizationId: string; profile: { userId: string } | null } | null | undefined,
-    findUniqueCalls: [] as Array<{ where: { id: string } }>,
-    upsertError: null as { code: string; message: string } | null,
-    accountRoles: [] as string[],
-    hasEmployer: false,
-    hasPartner: false,
-    hasCounselor: false,
-    memberGrants: 0,
-    profileCreates: [] as Array<{ userId: string; role: string }>,
-    upserts: [] as Array<{
-      where: Record<string, unknown>;
-      create: Record<string, unknown>;
-      update: Record<string, unknown>;
-    }>,
-  };
+describe('ensureAppUserProvisioned', () => {
+  it('keeps the active User and Profile fast path without Auth or write calls', async () => {
+    mocks.preRead.mockResolvedValue({ ...activeUser, profile: { userId: ID } });
 
-  userDelegate.findUnique = async (...args: unknown[]) => {
-    state.findUniqueCalls.push(args[0] as { where: { id: string } });
-    return state.findUniqueCalls.length > 1 && state.postConflictReadback !== undefined
-      ? state.postConflictReadback
-      : state.findUniqueResult;
-  };
-  type TxCallback = (tx: {
-    user: { upsert: (args: unknown) => Promise<unknown> };
-    role: { findUnique: () => Promise<{ id: string }>; create: () => Promise<{ id: string }> };
-    userRole: { createMany: () => Promise<{ count: number }> };
-    profile: { upsert: () => Promise<unknown> };
-  }) => unknown;
-  (prisma as { $transaction: typeof prisma.$transaction }).$transaction = (async (
-    fn: TxCallback,
-  ) => {
-    const tx = {
-      user: {
-        upsert: async (args: {
-          where: Record<string, unknown>;
-          create: Record<string, unknown>;
-          update: Record<string, unknown>;
-        }) => {
-          state.upserts.push(args);
-          if (state.upsertError) throw state.upsertError;
-          return {};
-        },
-        findUniqueOrThrow: async () => ({
-          userRoles: state.accountRoles.map((name) => ({ role: { name } })),
-          employer: state.hasEmployer ? { id: 'employer-1' } : null,
-          partnerUser: state.hasPartner ? { id: 'partner-user-1' } : null,
-          counselorProfile: state.hasCounselor ? { id: 'counselor-1' } : null,
-        }),
-      },
-      role: {
-        findUnique: async () => ({ id: 'role-member' }),
-        create: async () => ({ id: 'role-member' }),
-      },
-      userRole: {
-        createMany: async () => { state.memberGrants += 1; return { count: 1 }; },
-      },
-      profile: {
-        upsert: async (args: { create: { userId: string; role: string } }) => {
-          state.profileCreates.push(args.create);
-          return {};
-        },
-      },
-    };
-    return fn(tx as unknown as Parameters<TxCallback>[0]);
-  }) as unknown as typeof prisma.$transaction;
+    await ensureAppUserProvisioned({ id: ID, email: 'stale@example.test' });
 
-  t.after(() => {
-    userDelegate.findUnique = originalFindUnique;
-    prisma.$transaction = originalTransaction;
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.getUserById).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
   });
 
-  return state;
-}
+  it.each([
+    ['soft-deleted', { ...activeUser, deletedAt: new Date('2026-09-01'), profile: { userId: ID } }],
+    ['deletion pending', { ...activeUser, billingDeletionPendingAt: new Date('2026-09-01'), profile: { userId: ID } }],
+    ['operation owned', { ...activeUser, billingDeletionOperationId: 'erase-1', profile: { userId: ID } }],
+  ])('rejects the %s fast path before granting access', async (_name, row) => {
+    mocks.preRead.mockResolvedValue(row);
 
-test('ensureAppUserProvisioned is a no-op when user + profile already exist', async (t) => {
-  const state = installProvisionMocks(t);
-  state.findUniqueResult = { id: 'u1', organizationId: ORG_A, profile: { userId: 'u1' } };
+    await expect(ensureAppUserProvisioned({ id: ID })).rejects.toThrow('This account is no longer active.');
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
 
-  await ensureAppUserProvisioned(
-    { id: 'u1', email: 'a@b.c' },
-    { organizationId: ORG_A },
-  );
+  it('keeps read-only audit free of writes or Auth admin lookups', async () => {
+    await ensureAppUserProvisioned({ id: ID, email: 'stale@example.test' }, {
+      organizationId: ORG, readOnlyAudit: true,
+    });
 
-  assert.equal(state.upserts.length, 0);
-  assert.equal(state.memberGrants, 0);
-});
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.getUserById).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
 
-test('orphan provision writes the injected org, not a hardcoded default', async (t) => {
-  const state = installProvisionMocks(t);
-  state.findUniqueResult = null;
+  it('locks before reading and provisions from fresh Auth identity and app metadata', async () => {
+    mocks.resolveOrg.mockResolvedValue(OTHER_ORG);
+    const headers = { get: () => null };
+    await ensureAppUserProvisioned({
+      id: ID,
+      email: 'stale-private@example.test',
+      user_metadata: { full_name: 'Stale Name', organization_id: 'untrusted-org' },
+      app_metadata: { organization_id: 'stale-org' },
+    }, { headers });
 
-  await ensureAppUserProvisioned(
-    { id: 'u-orphan', email: 'orphan@example.com', user_metadata: { full_name: 'Orphan' } },
-    { organizationId: ORG_A },
-  );
+    expect(mocks.lock).toHaveBeenCalledExactlyOnceWith(tx, ID);
+    expect(mocks.getUserById).toHaveBeenCalledExactlyOnceWith(ID);
+    expect(mocks.resolveOrg).toHaveBeenCalledWith(expect.objectContaining({
+      explicitOrganizationId: undefined, headers,
+      appMetadata: { organization_id: ORG },
+    }));
+    expect(mocks.upsert).toHaveBeenCalledExactlyOnceWith({
+      where: { id: ID },
+      create: {
+        id: ID, organizationId: OTHER_ORG,
+        email: 'fresh@example.test', fullName: 'Fresh Member',
+      },
+      update: {},
+      select: {
+        deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true,
+      },
+    });
+    expect(mocks.profileUpsert).toHaveBeenCalledWith({
+      where: { userId: ID },
+      create: { userId: ID, role: 'member' },
+      update: {},
+    });
+    expect(mocks.lock.mock.invocationCallOrder[0]).toBeLessThan(mocks.txRead.mock.invocationCallOrder[0]);
+    expect(mocks.txRead.mock.invocationCallOrder[0]).toBeLessThan(mocks.getUserById.mock.invocationCallOrder[0]);
+    expect(mocks.getUserById.mock.invocationCallOrder[0]).toBeLessThan(mocks.upsert.mock.invocationCallOrder[0]);
+  });
 
-  assert.equal(state.upserts.length, 1);
-  assert.equal(state.upserts[0].create.organizationId, ORG_A);
-  assert.deepEqual(state.upserts[0].update, {});
-  assert.equal(state.memberGrants, 1);
-  assert.deepEqual(state.profileCreates, [{ userId: 'u-orphan', role: 'member' }]);
-});
+  it('uses the locked transaction for a default organization lookup', async () => {
+    mocks.resolveOrg.mockImplementation(async (options: { defaultOrgId: () => Promise<string> }) =>
+      options.defaultOrgId());
+    await ensureAppUserProvisioned({ id: ID, email: 'stale@example.test' });
 
-test('orphan provision uses app metadata rather than user-editable metadata', async (t) => {
-  const state = installProvisionMocks(t);
+    expect(mocks.organizationFind).toHaveBeenCalledExactlyOnceWith({
+      where: { slug: 'workforceap' }, select: { id: true },
+    });
+    expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      create: expect.objectContaining({ organizationId: ORG }),
+    }));
+  });
 
-  await ensureAppUserProvisioned(
-    {
-      id: 'u-auth-orphan',
-      email: 'orphan@example.com',
-      user_metadata: { organization_id: ORG_B },
-      app_metadata: { organization_id: ORG_A },
-    },
-    { headers: { get: () => null } },
-  );
+  it('does not resurrect a hard-erased row from an in-flight stale Auth snapshot', async () => {
+    let releaseDeletion: (() => void) | undefined;
+    const deletionOwnsLock = new Promise<void>((resolve) => { releaseDeletion = resolve; });
+    mocks.lock.mockImplementationOnce(async () => deletionOwnsLock);
+    const staleRequest = ensureAppUserProvisioned({ id: ID, email: 'removed-private@example.test' });
+    await vi.waitFor(() => expect(mocks.lock).toHaveBeenCalledOnce());
+    expect(mocks.txRead).not.toHaveBeenCalled();
 
-  assert.equal(state.upserts[0].create.organizationId, ORG_A);
-  assert.equal(state.memberGrants, 1);
-});
+    // Auth and the app row are gone before the queued request acquires the lock.
+    mocks.getUserById.mockResolvedValueOnce({
+      data: { user: null }, error: { status: 404, message: 'User not found' },
+    });
+    releaseDeletion?.();
 
-test('read-only portal audit never provisions an orphaned user', async (t) => {
-  const state = installProvisionMocks(t);
-  state.findUniqueResult = null;
+    await expect(staleRequest).rejects.toThrow('This sign-in account could not be verified.');
+    expect(mocks.upsert).not.toHaveBeenCalled();
+    expect(mocks.memberGrant).not.toHaveBeenCalled();
+    expect(mocks.profileUpsert).not.toHaveBeenCalled();
+  });
 
-  await ensureAppUserProvisioned(
-    { id: 'u-audit', email: 'audit@example.com' },
-    { organizationId: ORG_A, readOnlyAudit: true },
-  );
+  it('refuses a deletion marker committed between the fast read and locked read', async () => {
+    let releaseDeletion: (() => void) | undefined;
+    const deletionOwnsLock = new Promise<void>((resolve) => { releaseDeletion = resolve; });
+    mocks.preRead.mockResolvedValue(activeUser);
+    mocks.lock.mockImplementationOnce(async () => deletionOwnsLock);
+    const staleRequest = ensureAppUserProvisioned({ id: ID, email: 'stale@example.test' });
+    await vi.waitFor(() => expect(mocks.lock).toHaveBeenCalledOnce());
+    mocks.txRead.mockResolvedValueOnce({
+      ...activeUser, billingDeletionPendingAt: new Date('2026-09-01'),
+    });
+    releaseDeletion?.();
 
-  assert.equal(state.upserts.length, 0);
-  assert.equal(state.memberGrants, 0);
-  assert.equal(state.profileCreates.length, 0);
-});
+    await expect(staleRequest).rejects.toThrow('This account is no longer active.');
+    expect(mocks.getUserById).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
 
-test('existing user without profile is not moved to another org', async (t) => {
-  const state = installProvisionMocks(t);
-  state.findUniqueResult = { id: 'u1', organizationId: ORG_A, profile: null };
+  it('fails closed when fresh Auth lookup errors or returns another identity', async () => {
+    for (const reply of [
+      { data: { user: null }, error: { status: 503, message: 'Auth unavailable' } },
+      { data: { user: { id: 'another-id', email: 'fresh@example.test' } }, error: null },
+    ]) {
+      mocks.getUserById.mockResolvedValueOnce(reply);
+      await expect(ensureAppUserProvisioned({ id: ID, email: 'stale@example.test' }))
+        .rejects.toThrow('This sign-in account could not be verified.');
+    }
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
 
-  await ensureAppUserProvisioned(
-    { id: 'u1', email: 'a@b.c' },
-    { organizationId: DEFAULT_ORG },
-  );
+  it('preserves an active existing User tenant and fills a missing Profile without Auth lookup', async () => {
+    mocks.preRead.mockResolvedValue(activeUser);
+    mocks.txRead.mockResolvedValue(activeUser);
+    await ensureAppUserProvisioned({ id: ID, email: 'member@example.test' }, {
+      organizationId: OTHER_ORG,
+    });
 
-  assert.equal(state.upserts.length, 1);
-  assert.deepEqual(state.upserts[0].update, {});
-  assert.equal(state.upserts[0].create.organizationId, ORG_A);
-  assert.equal(state.memberGrants, 1);
-});
+    expect(mocks.getUserById).not.toHaveBeenCalled();
+    expect(mocks.resolveOrg).not.toHaveBeenCalled();
+    expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      create: expect.objectContaining({ organizationId: ORG }),
+      update: {},
+    }));
+    expect(mocks.memberGrant).toHaveBeenCalledOnce();
+  });
 
-test('existing non-member role with missing profile is restored without a member grant', async (t) => {
-  const state = installProvisionMocks(t);
-  state.findUniqueResult = { id: 'u-staff', organizationId: ORG_A, profile: null };
-  state.accountRoles = ['member', 'admin'];
+  it.each([
+    ['admin role', { userRoles: [{ role: { name: 'member' } }, { role: { name: 'admin' } }], employer: null, partnerUser: null, counselorProfile: null }, 'admin'],
+    ['employer association', { userRoles: [], employer: { id: 'employer-1' }, partnerUser: null, counselorProfile: null }, 'employer'],
+    ['counselor association', { userRoles: [], employer: null, partnerUser: null, counselorProfile: { id: 'counselor-1' } }, 'counselor'],
+  ])('restores missing Profile from an existing %s without member grant', async (_name, account, role) => {
+    mocks.preRead.mockResolvedValue(activeUser);
+    mocks.txRead.mockResolvedValue(activeUser);
+    mocks.accountRead.mockResolvedValue(account);
 
-  await ensureAppUserProvisioned({ id: 'u-staff', email: 'staff@example.com' }, { organizationId: DEFAULT_ORG });
+    await ensureAppUserProvisioned({ id: ID, email: 'member@example.test' });
 
-  assert.equal(state.memberGrants, 0);
-  assert.deepEqual(state.profileCreates, [{ userId: 'u-staff', role: 'admin' }]);
-  assert.deepEqual(state.upserts[0].update, {});
-});
+    expect(mocks.memberGrant).not.toHaveBeenCalled();
+    expect(mocks.profileUpsert).toHaveBeenCalledWith(expect.objectContaining({
+      create: { userId: ID, role },
+    }));
+  });
 
-test('existing employer association without a role row does not become a member', async (t) => {
-  const state = installProvisionMocks(t);
-  state.findUniqueResult = { id: 'u-employer', organizationId: ORG_A, profile: null };
-  state.hasEmployer = true;
+  it('returns when another request completes both app rows before the locked read', async () => {
+    mocks.txRead.mockResolvedValue({ ...activeUser, profile: { userId: ID } });
+    await ensureAppUserProvisioned({ id: ID, email: 'stale@example.test' });
 
-  await ensureAppUserProvisioned({ id: 'u-employer', email: 'employer@example.com' }, { organizationId: DEFAULT_ORG });
+    expect(mocks.lock).toHaveBeenCalledOnce();
+    expect(mocks.getUserById).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
 
-  assert.equal(state.memberGrants, 0);
-  assert.deepEqual(state.profileCreates, [{ userId: 'u-employer', role: 'employer' }]);
-});
+  it('rejects a race that upserts a deletion-pending row', async () => {
+    mocks.upsert.mockResolvedValue({
+      ...active, billingDeletionPendingAt: new Date('2026-09-01'),
+    });
 
-test('existing counselor association without a role row does not become a member', async (t) => {
-  const state = installProvisionMocks(t);
-  state.findUniqueResult = { id: 'u-counselor', organizationId: ORG_A, profile: null };
-  state.hasCounselor = true;
+    await expect(ensureAppUserProvisioned({ id: ID }))
+      .rejects.toThrow('This account is no longer active.');
+    expect(mocks.memberGrant).not.toHaveBeenCalled();
+    expect(mocks.profileUpsert).not.toHaveBeenCalled();
+  });
 
-  await ensureAppUserProvisioned({ id: 'u-counselor', email: 'counselor@example.com' });
+  it('maps email P2002 to identity conflict without treating another Auth ID as equivalent', async () => {
+    mocks.upsert.mockRejectedValueOnce({ code: 'P2002', message: 'private email collision' });
+    mocks.preRead.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
 
-  assert.equal(state.memberGrants, 0);
-  assert.deepEqual(state.profileCreates, [{ userId: 'u-counselor', role: 'counselor' }]);
-});
+    await expect(ensureAppUserProvisioned({ id: ID }))
+      .rejects.toThrow('APP_USER_PROVISION_IDENTITY_CONFLICT');
+    expect(mocks.preRead).toHaveBeenCalledTimes(2);
+    expect(mocks.profileUpsert).not.toHaveBeenCalled();
+  });
 
-test('email P2002 with no rows for this Auth ID reports a sanitized identity conflict', async (t) => {
-  const state = installProvisionMocks(t);
-  state.upsertError = { code: 'P2002', message: 'Unique email belongs to another Auth ID' };
-  state.postConflictReadback = null;
+  it('accepts a concurrent P2002 only after an active same-ID User and Profile committed', async () => {
+    mocks.upsert.mockRejectedValueOnce({ code: 'P2002' });
+    mocks.preRead.mockResolvedValueOnce(null).mockResolvedValueOnce({
+      ...activeUser, profile: { userId: ID },
+    });
 
-  await assert.rejects(
-    ensureAppUserProvisioned({ id: 'u-collision', email: 'synthetic@example.test' }, { organizationId: ORG_A }),
-    { message: 'APP_USER_PROVISION_IDENTITY_CONFLICT' },
-  );
-  assert.equal(state.findUniqueCalls.length, 2);
-  assert.deepEqual(state.findUniqueCalls[1].where, { id: 'u-collision' });
-  assert.equal(state.profileCreates.length, 0);
-});
+    await ensureAppUserProvisioned({ id: ID });
+    expect(mocks.preRead).toHaveBeenCalledTimes(2);
+  });
 
-test('concurrent P2002 succeeds only after this Auth ID has both app rows', async (t) => {
-  const state = installProvisionMocks(t);
-  state.upsertError = { code: 'P2002', message: 'Unique user ID from a concurrent request' };
-  state.postConflictReadback = {
-    id: 'u-race', organizationId: ORG_A, profile: { userId: 'u-race' },
-  };
+  it('does not accept P2002 readback with a missing Profile or deletion marker', async () => {
+    for (const row of [
+      activeUser,
+      { ...activeUser, profile: { userId: ID }, billingDeletionOperationId: 'erase-1' },
+    ]) {
+      mocks.preRead.mockReset()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(row);
+      mocks.upsert.mockRejectedValueOnce({ code: 'P2002' });
+      await expect(ensureAppUserProvisioned({ id: ID }))
+        .rejects.toThrow(row.billingDeletionOperationId
+          ? 'This account is no longer active.'
+          : 'APP_USER_PROVISION_IDENTITY_CONFLICT');
+    }
+  });
 
-  await ensureAppUserProvisioned({ id: 'u-race', email: 'synthetic@example.test' }, { organizationId: ORG_A });
-  assert.equal(state.findUniqueCalls.length, 2);
-  assert.deepEqual(state.findUniqueCalls[1].where, { id: 'u-race' });
-});
+  it('checks persisted state and fresh Auth on flattened Preview without an advisory lock', async () => {
+    mocks.interactive.mockReturnValue(false);
+    await ensureAppUserProvisioned({ id: ID, email: 'stale@example.test' });
+    expect(mocks.lock).not.toHaveBeenCalled();
+    expect(mocks.getUserById).toHaveBeenCalledOnce();
+    expect(mocks.upsert).toHaveBeenCalledOnce();
+  });
 
-test('P2002 with this Auth ID but no profile is not reported as provisioned', async (t) => {
-  const state = installProvisionMocks(t);
-  state.upsertError = { code: 'P2002', message: 'Unique constraint failed' };
-  state.postConflictReadback = { id: 'u-incomplete', organizationId: ORG_A, profile: null };
+  it('rejects a persisted deletion marker on flattened Preview before role writes', async () => {
+    mocks.interactive.mockReturnValue(false);
+    mocks.txRead.mockResolvedValue({
+      ...activeUser, billingDeletionPendingAt: new Date('2026-09-01'),
+    });
 
-  await assert.rejects(
-    ensureAppUserProvisioned({ id: 'u-incomplete', email: 'synthetic@example.test' }, { organizationId: ORG_A }),
-    { message: 'APP_USER_PROVISION_IDENTITY_CONFLICT' },
-  );
-  assert.equal(state.findUniqueCalls.length, 2);
+    await expect(ensureAppUserProvisioned({ id: ID }))
+      .rejects.toThrow('This account is no longer active.');
+    expect(mocks.lock).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
 });

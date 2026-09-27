@@ -1,8 +1,13 @@
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry, isConnectionAcquisitionError } from '@/lib/db/withDbRetry';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { lockBillingMemberLifecycle } from '@/lib/billing/erasureGuard';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { tryCurrentRequestHeaders } from '@/lib/tenant/currentRequestHeaders';
 import type { HeadersLike } from '@/lib/tenant/resolveOrgFromRequest';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
+import { DEFAULT_ORG_SLUG } from '@/lib/tenant/organization';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { ROLE_PRECEDENCE, normalizeRoleName } from '@/lib/auth/roleAccess';
 
 type AuthUser = {
@@ -30,6 +35,16 @@ function isUniqueConstraintError(err: unknown): boolean {
   );
 }
 
+function assertAccountActive(state: {
+  deletedAt: Date | null;
+  billingDeletionPendingAt: Date | null;
+  billingDeletionOperationId: string | null;
+}): void {
+  if (state.deletedAt || state.billingDeletionPendingAt || state.billingDeletionOperationId) {
+    throw new Error('This account is no longer active.');
+  }
+}
+
 /**
  * Self-heal for orphaned Supabase auth users.
  *
@@ -45,11 +60,13 @@ function isUniqueConstraintError(err: unknown): boolean {
  * canonical host — with role 'member', plus a minimal `profiles` row).
  * When an existing user has a non-member role or portal association but no
  * profile, it restores that profile without granting a baseline member role.
- * The write is one transaction. It is idempotent — a no-op when the rows already
- * exist — and tolerates concurrent creation only after confirming that this
- * Auth ID now has both app rows. A unique-email collision with another Auth
- * ID must not be mistaken for a successful provision. Existing
- * `users.organizationId` is never overwritten.
+ * The write is one transaction behind the member deletion lifecycle lock.
+ * Missing app rows are provisioned only from a fresh server-side Auth lookup,
+ * never from the caller's potentially stale user snapshot. It is idempotent —
+ * a no-op when the rows already exist — and tolerates concurrent creation only
+ * after confirming that this Auth ID now has active app rows. A unique-email
+ * collision with another Auth ID must not be mistaken for a successful
+ * provision. Existing `users.organizationId` is never overwritten.
  *
  * Writes are wrapped with withDbRetry using isConnectionAcquisitionError so a
  * transient pooler blip while *acquiring* a connection is retried, but an
@@ -61,35 +78,85 @@ export async function ensureAppUserProvisioned(
 ): Promise<void> {
   // Fast path: rows already present. Read is safe to retry broadly.
   const existing = await withDbRetry(() =>
-    prisma.user.findUnique({
+    crossTenantOK(() => prisma.user.findUnique({
       where: { id: user.id },
-      select: { id: true, organizationId: true, profile: { select: { userId: true } } },
-    }),
+      select: {
+        id: true, organizationId: true, profile: { select: { userId: true } },
+        deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true,
+      },
+    })),
   );
+  if (existing) assertAccountActive(existing);
   if (existing && existing.profile) return;
   if (options.readOnlyAudit) return;
 
-  const email = user.email?.trim() || `${user.id}@placeholder.local`;
-  const fullName =
-    (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim()) ||
-    'Member';
-  const organizationId = existing?.organizationId ?? await withDbRetry(async () =>
-    resolveProvisionOrganizationId({
-      explicitOrganizationId: options.organizationId,
-      headers: options.headers ?? (await tryCurrentRequestHeaders()),
-      appMetadata: user.app_metadata,
-    }),
-  );
+  const requestHeaders = options.headers ?? (await tryCurrentRequestHeaders());
 
   try {
     await withDbRetry(
       () =>
         prisma.$transaction(async (tx) => {
-          await tx.user.upsert({
+          // Deletion takes this lock before marking its operation and touching
+          // Auth. On flattened Preview, erasure is disabled; the persisted
+          // marker and fresh Auth checks still fail closed.
+          if (interactiveTransactionsGuaranteed()) await lockBillingMemberLifecycle(tx, user.id);
+          const current = await crossTenantOK(() => tx.user.findUnique({
+            where: { id: user.id },
+            select: {
+              id: true, organizationId: true, profile: { select: { userId: true } },
+              deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true,
+            },
+          }));
+          if (current) assertAccountActive(current);
+          if (current?.profile) return;
+
+          let authUser: AuthUser = user;
+          if (!current) {
+            const { data, error } = await getSupabaseAdmin().auth.admin.getUserById(user.id);
+            if (error || !data.user || data.user.id !== user.id) {
+              throw new Error('This sign-in account could not be verified.');
+            }
+            authUser = data.user;
+          }
+          const email = authUser.email?.trim().toLowerCase() || `${user.id}@placeholder.local`;
+          const fullName =
+            (typeof authUser.user_metadata?.full_name === 'string' && authUser.user_metadata.full_name.trim()) ||
+            'Member';
+          const organizationId = current?.organizationId ?? await resolveProvisionOrganizationId({
+            explicitOrganizationId: options.organizationId,
+            headers: requestHeaders,
+            appMetadata: authUser.app_metadata,
+            // Resolve the fallback and an uncached custom host on this same
+            // connection. Acquiring a second Prisma connection while holding
+            // the lifecycle lock can stall a cold provision on a small pool.
+            defaultOrgId: async () => {
+              const defaultOrg = await tx.organization.findUnique({
+                where: { slug: DEFAULT_ORG_SLUG }, select: { id: true },
+              });
+              if (!defaultOrg) throw new Error(`Default organization missing (slug=${DEFAULT_ORG_SLUG}). Run migrations and seed the default org — do not guess another tenant.`);
+              return defaultOrg.id;
+            },
+            resolveOrgOptions: {
+              lookup: async (host) => {
+                try {
+                  const hostOrg = await tx.organization.findUnique({
+                    where: { customDomain: host }, select: { id: true, active: true },
+                  });
+                  return hostOrg?.active ? hostOrg.id : null;
+                } catch {
+                  return null;
+                }
+              },
+            },
+          });
+
+          const provisioned = await crossTenantOK(() => tx.user.upsert({
             where: { id: user.id },
             create: { id: user.id, organizationId, email, fullName },
             update: {},
-          });
+            select: { deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true },
+          }));
+          assertAccountActive(provisioned);
 
           // A missing profile is not evidence that this is a member. Existing
           // staff/partner/employer users may still have their role row or portal
@@ -137,11 +204,15 @@ export async function ensureAppUserProvisioned(
     // proves that the former case completed successfully.
     if (isUniqueConstraintError(err)) {
       const committed = await withDbRetry(() =>
-        prisma.user.findUnique({
+        crossTenantOK(() => prisma.user.findUnique({
           where: { id: user.id },
-          select: { id: true, profile: { select: { userId: true } } },
-        }),
+          select: {
+            id: true, profile: { select: { userId: true } },
+            deletedAt: true, billingDeletionPendingAt: true, billingDeletionOperationId: true,
+          },
+        })),
       );
+      if (committed) assertAccountActive(committed);
       if (committed?.id === user.id && committed.profile?.userId === user.id) return;
       throw new Error('APP_USER_PROVISION_IDENTITY_CONFLICT');
     }
