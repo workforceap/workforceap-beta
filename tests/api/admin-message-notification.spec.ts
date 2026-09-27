@@ -82,6 +82,7 @@ describe('admin staff replies notify the member', () => {
     expect(createNotification).toHaveBeenCalledTimes(1);
     expect(createNotification).toHaveBeenCalledWith({
       userId: 'member-1',
+      subjectMemberId: 'member-1',
       type: 'message',
       title: STAFF_MESSAGE_NOTIFICATION_TITLE,
       body: 'Your paperwork is approved.',

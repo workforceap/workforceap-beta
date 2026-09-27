@@ -268,6 +268,7 @@ async function notifyPlacementRecorded(args: {
 
   await createNotification({
     userId,
+    subjectMemberId: userId,
     type: 'placement',
     title: 'Placement recorded',
     body: `We've logged your placement at ${placement.employerName}. Your counselor will follow up to confirm details.`,
@@ -296,6 +297,7 @@ async function notifyCounselorToVerify(args: {
   if (!assignment?.counselor.userId) return;
   await createNotification({
     userId: assignment.counselor.userId,
+    subjectMemberId: args.userId,
     type: 'placement',
     title: 'Member placed — verify details',
     body: args.body,

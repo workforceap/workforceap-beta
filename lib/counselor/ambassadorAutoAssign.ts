@@ -148,6 +148,7 @@ export async function autoAssignAmbassadorFromReferral(
       });
       await createNotification({
         userId: member.id,
+        subjectMemberId: member.id,
         type: 'task_assigned',
         title: 'You have a new advisor',
         body: `${counselorName} has been assigned as your career advisor.`,
@@ -162,6 +163,7 @@ export async function autoAssignAmbassadorFromReferral(
 
     await createNotification({
       userId: candidate.userId,
+      subjectMemberId: member.id,
       type: 'task_assigned',
       title: 'A member you referred just joined',
       body: `${member.fullName?.trim() || member.email} applied and named you as their Community Ambassador. They are now on your My members list.`,

@@ -131,28 +131,31 @@ async function notifyNewSelfServeAssignment(input: {
   ]);
   const counselorName = counselor?.fullName?.trim() || 'your counselor';
   const memberLabel = member?.fullName?.trim() || member?.email || 'A member';
-  await Promise.all([
-    createNotification({
-      userId: input.memberId,
-      type: 'task_assigned',
-      title: 'You have a new advisor',
-      body: `${counselorName} has been assigned as your career advisor.`,
-      data: {
-        counselorUserId: input.counselorUserId,
-        threadId: input.threadId,
-      },
-    }),
-    createNotification({
-      userId: input.counselorUserId,
-      type: 'task_assigned',
-      title: 'A new member is on your caseload',
-      body: `${memberLabel} was assigned to you.`,
-      data: {
-        memberId: input.memberId,
-        link: `/counselor/students/${input.memberId}`,
-      },
-    }),
-  ]);
+  // Both notifications describe the same member. The lifecycle token permits
+  // one in-flight notification per member, so complete the first before the
+  // counselor notification tries to acquire its own claim.
+  await createNotification({
+    userId: input.memberId,
+    subjectMemberId: input.memberId,
+    type: 'task_assigned',
+    title: 'You have a new advisor',
+    body: `${counselorName} has been assigned as your career advisor.`,
+    data: {
+      counselorUserId: input.counselorUserId,
+      threadId: input.threadId,
+    },
+  });
+  await createNotification({
+    userId: input.counselorUserId,
+    subjectMemberId: input.memberId,
+    type: 'task_assigned',
+    title: 'A new member is on your caseload',
+    body: `${memberLabel} was assigned to you.`,
+    data: {
+      memberId: input.memberId,
+      link: `/counselor/students/${input.memberId}`,
+    },
+  });
 }
 
 /**

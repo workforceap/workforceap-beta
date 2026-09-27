@@ -34,22 +34,23 @@ export async function notifyUnassignedMemberMessage(input: {
     });
     const counselorUserIds = Array.from(new Set(counselors.map((row) => row.userId)));
     if (counselorUserIds.length > 0) {
-      await Promise.all(
-        counselorUserIds.map((userId) =>
-          createNotification({
-            userId,
-            type: 'message',
-            title,
-            body: messagePreview,
-            data: {
-              threadId,
-              memberId,
-              link: counselorMemberThreadLink(memberId),
-              unassigned: true,
-            },
-          }),
-        ),
-      );
+      // One durable lifecycle token is available per member. Notify staff in
+      // sequence so an in-flight sibling does not suppress later recipients.
+      for (const userId of counselorUserIds) {
+        await createNotification({
+          userId,
+          subjectMemberId: memberId,
+          type: 'message',
+          title,
+          body: messagePreview,
+          data: {
+            threadId,
+            memberId,
+            link: counselorMemberThreadLink(memberId),
+            unassigned: true,
+          },
+        });
+      }
       return { notifiedUserIds: counselorUserIds, fallback: 'counselors' };
     }
   }
@@ -82,21 +83,20 @@ export async function notifyUnassignedMemberMessage(input: {
     select: { id: true },
   });
   const notifiedUserIds = adminUsers.map((row) => row.id);
-  await Promise.all(
-    notifiedUserIds.map((userId) =>
-      createNotification({
-        userId,
-        type: 'message',
-        title,
-        body: messagePreview,
-        data: {
-          threadId,
-          memberId,
-          link: '/admin/messages',
-          unassigned: true,
-        },
-      }),
-    ),
-  );
+  for (const userId of notifiedUserIds) {
+    await createNotification({
+      userId,
+      subjectMemberId: memberId,
+      type: 'message',
+      title,
+      body: messagePreview,
+      data: {
+        threadId,
+        memberId,
+        link: '/admin/messages',
+        unassigned: true,
+      },
+    });
+  }
   return { notifiedUserIds, fallback: notifiedUserIds.length ? 'admins' : 'none' };
 }

@@ -124,6 +124,7 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
     const link = recipientCounselor ? counselorMemberThreadLink(user.id) : '/admin/messages';
     await createNotification({
       userId: recipientId,
+      subjectMemberId: user.id,
       type: 'message',
       title: `New message from ${senderLabel}`,
       body: messagePreview,

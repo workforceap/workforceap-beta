@@ -102,6 +102,7 @@ export const POST = withApiGuc(async (request: Request) => {
           for (const admin of admins) {
             await createNotification({
               userId: admin.id,
+              subjectMemberId: user.id,
               type: 'task_assigned',
               title: 'Coursera identity claim needs review',
               body: `${wapUser?.fullName ?? 'A member'} (${memberOwnEmail ?? 'unknown email'}) claimed the Coursera email ${courseraEmail}, which doesn't match their account email. Review and confirm the link before their historical progress is backfilled.`,

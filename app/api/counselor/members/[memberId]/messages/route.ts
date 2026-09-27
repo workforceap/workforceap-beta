@@ -181,6 +181,7 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest, {
 
   await createNotification({
     userId: memberId,
+    subjectMemberId: memberId,
     type: 'message',
     title: 'New message from your advisor',
     body: normalized.body.slice(0, 200),

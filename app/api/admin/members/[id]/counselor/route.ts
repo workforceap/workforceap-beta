@@ -80,6 +80,7 @@ type Props = { params: Promise<{ id: string }> };export const POST = withApiGuc(
 
   await createNotification({
     userId: memberId,
+    subjectMemberId: memberId,
     type: 'task_assigned',
     title: 'You have a new advisor',
     body: `${counselor.user.fullName} has been assigned as your career advisor.`,

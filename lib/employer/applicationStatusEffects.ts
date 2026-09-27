@@ -72,6 +72,7 @@ export async function notifyAndRecordPlacement(args: {
 
   await createNotification({
     userId: studentId,
+    subjectMemberId: studentId,
     type: 'application_update',
     title: copy.title,
     body: copy.body(jobTitle) + (nextStatus === 'interview' && interview ? interviewScheduleText(interview) : ''),
@@ -137,6 +138,7 @@ export async function notifyInterviewTimeSet(args: {
   const jobTitle = await jobTitleFor(applicationId);
   await createNotification({
     userId: studentId,
+    subjectMemberId: studentId,
     type: 'application_update',
     title: 'Interview time set',
     body: `The employer set your interview time for ${jobTitle}.${interviewScheduleText(interview)}`,
