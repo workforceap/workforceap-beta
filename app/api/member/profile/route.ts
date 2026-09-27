@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
+import { MemberLifecycleWriteError, withActiveMemberWrite } from '@/lib/member/activeWrite';
 
 const updateSchema = z.object({
   fullName: z.string().min(1).max(200).optional(),
@@ -66,7 +67,7 @@ export const GET = withApiGuc(_GET);async function _PATCH(request: Request) {
 
   const { fullName, phone, address, city, state, zip } = parsed.data;
 
-  await prisma.$transaction(async (tx) => {
+  await withActiveMemberWrite(user.id, async (tx) => {
     const userData: Record<string, unknown> = {};
     if (fullName !== undefined) userData.fullName = fullName;
     if (phone !== undefined) userData.phone = phone;
@@ -141,6 +142,9 @@ export const GET = withApiGuc(_GET);async function _PATCH(request: Request) {
   });
 
   } catch (error) {
+    if (error instanceof MemberLifecycleWriteError) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     console.error('/member/profile error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
