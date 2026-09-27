@@ -271,7 +271,12 @@ that automatically emails to counselor and the student."
   delivery in the send log and caller result, but has no local provider call
   left to race deletion. A crashed or still-running call leaves `in_flight`
   held for operator reconciliation. An unknown result is never retried with a
-  new key solely to clear a deletion hold.
+  new key solely to clear a deletion hold. Member-claimed failure diagnostics
+  contain only an allowlisted template label and failure class. They omit the
+  recipient, provider message, and template parameters and cannot be replayed
+  from the diagnostic row; the write may finish after the claim is released.
+  Suppression-skip diagnostics use the same private fields even when the skip
+  happens before any claim is acquired.
   Existing senders without `memberEffectClaim` retain a final active-member
   lookup but do not have this durable provider boundary.
 - Preview/Development use flattened Prisma transactions and cannot prove the

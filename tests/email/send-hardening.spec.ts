@@ -176,6 +176,40 @@ describe('provider suppression guard', () => {
       .rejects.toMatchObject({ name: 'FixtureRecipientSkippedError', reason: 'suppressed_recipient' });
   });
 
+  it('records a private suppression skip for member-claimed mail before any claim starts', async () => {
+    const calls: Array<{ payload: any; options: any }> = [];
+    const begin = vi.fn(async () => 'claim');
+    const skipped = await sendBrandedEmail(fakeResend(calls), {
+      ...baseArgs,
+      to: 'dead@bounced.example.org',
+      subject: 'Ada Lovelace is waiting',
+      recipientUserId: 'member-ada',
+      memberEffectClaim: true,
+      template: { name: 'inactive_nudge', params: { fullName: 'Ada Lovelace', to: 'dead@bounced.example.org' } },
+    }, {
+      consultSuppressions: true,
+      memberClaim: { begin, release: async () => {} },
+      sendLogStore: { record: async () => {} },
+    });
+
+    expect(skipped).toMatchObject({ skipped: true, reason: 'suppressed_recipient' });
+    expect(calls).toHaveLength(0);
+    expect(begin).not.toHaveBeenCalled();
+    const row = vi.mocked(recordWorkflowDiagnostic).mock.calls[0][0];
+    expect(row).toMatchObject({
+      entityId: 'inactive_nudge',
+      summary: 'Email skipped: recipient is on the provider suppression list',
+      metadata: { template: 'inactive_nudge', suppressedCount: 1 },
+    });
+    expect(row.metadata).not.toHaveProperty('recipientHash');
+    expect(row.metadata).not.toHaveProperty('recipientDomains');
+    const persistedPayload = JSON.stringify(row);
+    expect(persistedPayload).not.toContain('dead@bounced.example.org');
+    expect(persistedPayload).not.toContain('bounced.example.org');
+    expect(persistedPayload).not.toContain('Ada Lovelace');
+    expect(persistedPayload).not.toContain('member-ada');
+  });
+
   it('drops suppressed addresses from a multi-recipient digest but still sends to the rest', async () => {
     const calls: Array<{ payload: any; options: any }> = [];
     const resend = fakeResend(calls);

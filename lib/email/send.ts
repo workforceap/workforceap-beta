@@ -34,6 +34,7 @@ import {
   EMAIL_SEND_WORKFLOW,
   EMAIL_TEMPLATE_ENTITY_TYPE,
   buildEmailFailureMetadata,
+  classifyEmailSendFailure,
   type EmailTemplateRef,
 } from '@/lib/email/failureRecord';
 import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
@@ -50,7 +51,7 @@ import {
 } from '@/lib/email/sendLog';
 import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 import { partitionSuppressedRecipients, recordSuppressedRecipientSkip } from '@/lib/email/suppressions';
-import { resolveEmailTemplateKey } from '@/lib/email/templateKeys';
+import { EMAIL_TEMPLATE_KEYS, resolveEmailTemplateKey } from '@/lib/email/templateKeys';
 import { prisma } from '@/lib/db/prisma';
 import { beginMemberUpload, MemberUploadLifecycleError, releaseMemberUpload } from '@/lib/member/uploadLifecycle';
 
@@ -58,6 +59,7 @@ export { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 
 const RESEND_MAX_ATTEMPTS = 3;
 const RESEND_RETRY_BASE_DELAY_MS = 500;
+const KNOWN_EMAIL_TEMPLATE_KEYS: ReadonlySet<string> = new Set(Object.values(EMAIL_TEMPLATE_KEYS));
 /** Never spend more than one minute of a request waiting to retry email. */
 const RESEND_RETRY_MAX_TOTAL_WAIT_MS = 60_000;
 
@@ -227,10 +229,31 @@ export interface SendBrandedEmailArgs {
  * email problems instead of them dying in server logs. Fire-and-forget: the
  * diagnostic write must never change send behavior or throw.
  *
- * WAP-163: the row carries the typed failure record (template, params, error
- * class, retryable, recipient hash) so it can be listed and re-sent later.
+ * WAP-163: unclaimed failures retain the replayable template record. A member
+ * claim can be released before this fire-and-forget write finishes, so claimed
+ * failures must be safe to persist even after account erasure.
  */
 function recordEmailFailure(args: SendBrandedEmailArgs, error: unknown) {
+  if (args.memberEffectClaim) {
+    const { errorClass, retryable } = classifyEmailSendFailure(error);
+    const candidate = resolveEmailTemplateKey(args);
+    const template = candidate && KNOWN_EMAIL_TEMPLATE_KEYS.has(candidate) ? candidate : null;
+    void recordWorkflowDiagnostic({
+      workflow: EMAIL_SEND_WORKFLOW,
+      status: 'error',
+      entityType: EMAIL_TEMPLATE_ENTITY_TYPE,
+      entityId: template,
+      summary: `Member email send failed: ${template ?? 'untyped'} (${errorClass})`,
+      provider: 'resend',
+      failureReason: `member_email_${errorClass}`,
+      metadata: {
+        to: [], subject: '', template, errorClass, retryable,
+        resendable: false, recipientHash: null, recipientDomain: null,
+        failedAt: new Date().toISOString(),
+      },
+    });
+    return;
+  }
   const metadata = buildEmailFailureMetadata(args, error);
   void recordWorkflowDiagnostic({
     workflow: EMAIL_SEND_WORKFLOW,

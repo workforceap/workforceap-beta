@@ -21,7 +21,6 @@ function claimSeam() {
     keys,
     begin: vi.fn(async (id: string, key: string) => { held.add(id); keys.set(id, key); return `token-${id}`; }),
     release: vi.fn(async (id: string) => { held.delete(id); }),
-    markUncertain: vi.fn(async (_id: string, _token: string, _reason: string) => {}),
   };
 }
 
@@ -49,7 +48,6 @@ describe('durable member email claims', () => {
       const result = await sendBrandedEmail(resend, args, options(claim));
       expect(result.data?.id).toBe('accepted');
       expect(claim.begin.mock.calls.map(([id]) => id)).toEqual(['member-a', 'member-z']);
-      expect(claim.markUncertain).not.toHaveBeenCalled();
       expect(claim.release).toHaveBeenCalledTimes(2);
       expect(errorLog).toHaveBeenCalled();
     } finally {
@@ -108,7 +106,7 @@ describe('durable member email claims', () => {
     expect(provider).not.toHaveBeenCalled();
   });
 
-  it('does not downgrade a prior ambiguous provider attempt to an inactive-member skip', async () => {
+  it('reports a prior ambiguous provider attempt while releasing settled claims', async () => {
     const claim = claimSeam();
     const statuses: string[] = [];
     let activeChecks = 0;
@@ -128,11 +126,11 @@ describe('durable member email claims', () => {
     expect(provider).toHaveBeenCalledTimes(1);
     expect(statuses.at(-1)).toBe('failed');
     expect(statuses).not.toContain('skipped');
-    expect(claim.markUncertain).toHaveBeenCalledTimes(2);
-    expect(claim.release).not.toHaveBeenCalled();
+    expect(claim.release).toHaveBeenCalledTimes(2);
+    expect(claim.held.size).toBe(0);
   });
 
-  it('releases claims on a definite validation rejection without marking unknown outcome', async () => {
+  it('releases claims on a definite validation rejection', async () => {
     const claim = claimSeam();
     const provider = vi.fn(async () => ({
       data: null,
@@ -142,7 +140,6 @@ describe('durable member email claims', () => {
 
     await expect(sendBrandedEmail(resend, args, options(claim))).rejects.toThrow('Bad recipient');
     expect(claim.release).toHaveBeenCalledTimes(2);
-    expect(claim.markUncertain).not.toHaveBeenCalled();
   });
 
   it('treats a first-attempt 429 with status_code as a definite rejection', async () => {
@@ -156,6 +153,5 @@ describe('durable member email claims', () => {
     await expect(sendBrandedEmail(resend, args, { ...options(claim), deadlineAtMs: 0 }))
       .rejects.toThrow('Too many requests');
     expect(claim.release).toHaveBeenCalledTimes(2);
-    expect(claim.markUncertain).not.toHaveBeenCalled();
   });
 });
