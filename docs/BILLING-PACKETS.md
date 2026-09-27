@@ -256,9 +256,11 @@ that automatically emails to counselor and the student."
   enhanced resumes, and application resume copies share this barrier.
 - Member-subject notifications retain their own claims through the notification
   row, bounded Web Push call, and operator bridge. A provider timeout, network
-  error or ambiguous HTTP result keeps the exact row for reconciliation; an
-  already accepted device push cannot be recalled. The application prevents a
-  new provider call after erasure wins the lock.
+  attempt that is still locally running after the deadline keeps the exact row
+  for reconciliation. A settled network error or HTTP rejection releases the
+  claim after the worker ends; it does not prove the provider never delivered.
+  An already accepted device push cannot be recalled. The application prevents
+  a new provider call after erasure wins the lock.
 - Preview/Development use flattened Prisma transactions and cannot prove the
   member advisory-lock boundary. External-effect claims fail closed there.
   Authenticated Preview upload and notification acceptance needs the DEMO schema
@@ -323,8 +325,11 @@ incident and audit trail. Before any write:
    Storage request and any pointer transaction have ended; inspect the member
    prefix, attempted key and referencing profile/proof/application row before
    clearing its exact claim row. For an interrupted notification, reconcile its
-   row, Web Push and Discord provider outcomes before clearing its exact claim
-   row. A timeout or HTTP 5xx is not proof of rejection. For an interrupted admin erase, confirm
+   row and prove the local Web Push and Discord attempts have ended, with no
+   retry that can resume, before clearing its exact claim row. Record any
+   provider receipt available, but do not mistake an unknown delivery result
+   for a still-running local request. A timeout or HTTP 5xx is not proof that
+   a past notification was rejected. For an interrupted admin erase, confirm
    the irreversible erased-email tombstone
    before clearing its token. If the
    worker stopped before that tombstone committed, stop and plan a guarded

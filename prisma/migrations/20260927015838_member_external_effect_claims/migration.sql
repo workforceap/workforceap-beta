@@ -22,6 +22,15 @@ CREATE INDEX IF NOT EXISTS member_external_effect_claims_member_id_idx
 -- Existing Supabase default privileges can grant new public tables to browser
 -- roles; this ledger is server-only and has no Data API access or RLS policy.
 ALTER TABLE public.member_external_effect_claims ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.member_external_effect_claims FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON TABLE public.member_external_effect_claims FROM PUBLIC;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE ALL ON TABLE public.member_external_effect_claims FROM anon;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    REVOKE ALL ON TABLE public.member_external_effect_claims FROM authenticated;
+  END IF;
+END $$;
 
 COMMIT;

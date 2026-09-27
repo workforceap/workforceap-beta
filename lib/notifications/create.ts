@@ -32,7 +32,7 @@ async function boundedClaimedEffect(effect: Promise<unknown>, name: string): Pro
 }
 
 function boundedOperatorNotification(input: Parameters<typeof notifyDiscord>[0]): Promise<void> {
-  return boundedClaimedEffect(notifyDiscord(input, true), 'Operator notification');
+  return boundedClaimedEffect(notifyDiscord(input), 'Operator notification');
 }
 
 export type NotificationType =

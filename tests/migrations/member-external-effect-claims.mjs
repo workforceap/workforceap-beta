@@ -30,20 +30,23 @@ let created = false;
 const createdRoles = [];
 try {
   assert.match(sql('SHOW server_version;', 'postgres'), /^16\./, 'PG16 contract target required');
+  assert.equal(sql(`SELECT count(*) FROM pg_database WHERE datname='${proofDatabase}';`, 'postgres'), '0');
+  sql(`CREATE DATABASE ${proofDatabase};`, 'postgres');
+  created = true;
+  sql(`
+    CREATE TABLE public.users (id TEXT PRIMARY KEY);
+    INSERT INTO public.users(id) VALUES ('member-1');
+  `);
+  // The first application must also work on a plain restore database before
+  // Supabase-specific browser roles are installed.
+  sql(migration);
   for (const role of ['anon', 'authenticated']) {
     if (sql(`SELECT count(*) FROM pg_roles WHERE rolname='${role}';`, 'postgres') === '0') {
       sql(`CREATE ROLE ${role} NOLOGIN;`, 'postgres');
       createdRoles.push(role);
     }
   }
-  assert.equal(sql(`SELECT count(*) FROM pg_database WHERE datname='${proofDatabase}';`, 'postgres'), '0');
-  sql(`CREATE DATABASE ${proofDatabase};`, 'postgres');
-  created = true;
-  sql(`
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
-    CREATE TABLE public.users (id TEXT PRIMARY KEY);
-    INSERT INTO public.users(id) VALUES ('member-1');
-  `);
+  sql(`GRANT ALL ON TABLE public.member_external_effect_claims TO anon, authenticated;`);
   sql(migration);
   sql(migration);
   assert.equal(sql(`SELECT relrowsecurity FROM pg_class WHERE oid='public.member_external_effect_claims'::regclass;`), 't');

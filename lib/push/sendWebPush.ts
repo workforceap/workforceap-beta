@@ -138,8 +138,10 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload,
       } catch (err) {
         const rawStatusCode = (err as { statusCode?: number | string }).statusCode;
         const statusCode = rawStatusCode === undefined ? NaN : Number(rawStatusCode);
-        if ((activeOperationId || requireKnownOutcome)
-          && (!Number.isInteger(statusCode) || statusCode === 408 || statusCode === 429 || statusCode >= 500)) uncertain = true;
+        // A settled provider promise has no local request left to overtake
+        // account deletion, even if the service may have delivered already.
+        // Only our deadline race can leave the underlying request running.
+        if ((activeOperationId || requireKnownOutcome) && err instanceof WebPushOutcomeUncertainError) uncertain = true;
         if (statusCode === 404 || statusCode === 410) {
           // Subscription expired or was revoked — prune it.
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});

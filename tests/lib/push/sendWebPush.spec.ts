@@ -97,10 +97,17 @@ describe('sendWebPushToUser account lifecycle', () => {
     expect(await sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1')).toBe(0);
   });
 
-  it.each([408, 429, 503])('retains a claimed send for ambiguous HTTP %i', async (statusCode) => {
+  it.each([408, 429, 503])('releases a settled provider rejection HTTP %i', async (statusCode) => {
     mock.findUser.mockResolvedValue(active);
     mock.send.mockRejectedValueOnce({ statusCode });
     await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1'))
-      .rejects.toBeInstanceOf(WebPushOutcomeUncertainError);
+      .resolves.toBe(0);
+  });
+
+  it('releases a settled connection refusal with no local send still running', async () => {
+    mock.findUser.mockResolvedValue(active);
+    mock.send.mockRejectedValueOnce(Object.assign(new Error('connect refused'), { code: 'ECONNREFUSED' }));
+    await expect(sendWebPushToUser('member-1', { title: 'Private', body: 'Claimed' }, 'claim-1'))
+      .resolves.toBe(0);
   });
 });
