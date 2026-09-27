@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
@@ -84,6 +84,10 @@ describe('ResumeClient PDF preview fallback', () => {
 
     const frame = await screen.findByTitle('Original resume preview');
     expect(frame).toHaveAttribute('src', pdfOnFile.previewOriginalPath);
+    // ResumeClient.tsx:88-90 resets the failure flag in a passive effect once
+    // previewOriginalPath is set; findByTitle can see the iframe before that
+    // effect flushes, so flush it before the synthetic load.
+    await act(async () => {});
 
     // jsdom never fetches the frame, so stand in for an API error document.
     // Native PDF viewers can expose an empty document and must stay mounted.
