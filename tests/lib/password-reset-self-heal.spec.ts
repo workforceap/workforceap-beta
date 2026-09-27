@@ -53,6 +53,7 @@ vi.mock('@/lib/observability/logger', () => ({
 }));
 
 import { sendPasswordResetEmail } from '@/lib/auth/passwordReset';
+import { logger } from '@/lib/observability/logger';
 
 const USER_NOT_FOUND = {
   data: { properties: null },
@@ -265,5 +266,35 @@ describe('sendPasswordResetEmail — auth user self-heal', () => {
     finishSend();
     expect(await pending).toMatchObject({ via: 'resend' });
     expect(mocks.releaseClaim).toHaveBeenCalledWith('user-1', 'claim-1');
+  });
+
+  it('fails the same way for known and unknown addresses when lifecycle transactions are unavailable', async () => {
+    const prior = process.env.PRISMA_FLATTEN_TX;
+    process.env.PRISMA_FLATTEN_TX = '1';
+    try {
+      mocks.findMany.mockResolvedValue([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }]);
+      for (const address of ['jane@example.org', 'nobody@example.org']) {
+        await expect(sendPasswordResetEmail(address)).rejects.toThrow('Password reset is temporarily unavailable.');
+      }
+      expect(mocks.findMany).not.toHaveBeenCalled();
+      expect(mocks.generateLink).not.toHaveBeenCalled();
+      expect(mocks.beginClaim).not.toHaveBeenCalled();
+    } finally {
+      if (prior === undefined) delete process.env.PRISMA_FLATTEN_TX;
+      else process.env.PRISMA_FLATTEN_TX = prior;
+    }
+  });
+
+  it('does not report a completed provider send as failed when claim release needs reconciliation', async () => {
+    mocks.findMany.mockResolvedValue([{ id: 'user-1', email: 'jane@example.org', fullName: 'Jane', phone: null }]);
+    mocks.generateLink.mockResolvedValue(MINTED);
+    mocks.releaseClaim.mockRejectedValue(new Error('database unavailable'));
+
+    await expect(sendPasswordResetEmail('jane@example.org')).resolves.toEqual({ error: null, via: 'resend' });
+    expect(mocks.releaseClaim).toHaveBeenCalledWith('user-1', 'claim-1');
+    expect(logger.error).toHaveBeenCalledWith(
+      'passwordReset: lifecycle claim release requires reconciliation',
+      { errorClass: 'Error' },
+    );
   });
 });

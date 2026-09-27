@@ -11,6 +11,7 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { logger } from '@/lib/observability/logger';
 import { beginMemberUpload, MemberUploadLifecycleError, releaseMemberUpload } from '@/lib/member/uploadLifecycle';
 import { classifyEmailSendFailure } from '@/lib/email/failureRecord';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 
 export type PasswordResetSendResult = {
   error: { message: string } | null;
@@ -127,6 +128,12 @@ export async function sendPasswordResetEmail(
     throw new Error('Password reset is temporarily unavailable.');
   }
 
+  // Preview flattens transactions and cannot hold the member lifecycle claim.
+  // Fail identically for known and unknown addresses before looking up either.
+  if (!interactiveTransactionsGuaranteed()) {
+    throw new Error('Password reset is temporarily unavailable.');
+  }
+
   const normalizedEmail = email.trim().toLowerCase();
   const branding = await getOrganizationBranding(options.orgId);
   const baseUrl = branding.domain;
@@ -154,7 +161,15 @@ export async function sendPasswordResetEmail(
     }
     return await sendPasswordResetEmailClaimed(normalizedEmail, resetPageUrl, branding, current, supabaseUrl, supabaseAnonKey);
   } finally {
-    await releaseMemberUpload(account.id, claimId);
+    try {
+      await releaseMemberUpload(account.id, claimId);
+    } catch (error) {
+      // A completed provider call must not become a retryable 503. The durable
+      // row stays held for operator reconciliation if its release failed.
+      logger.error('passwordReset: lifecycle claim release requires reconciliation', {
+        errorClass: error instanceof Error ? error.name : 'unknown',
+      });
+    }
   }
 }
 
