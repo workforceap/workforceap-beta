@@ -78,19 +78,21 @@ describe('ResumeClient PDF preview fallback', () => {
     vi.unstubAllGlobals();
   });
 
-  it('offers the original PDF as a download when the inline frame loads empty', async () => {
+  it('offers the original PDF as a download when the preview API returns JSON', async () => {
     stubFetch(() => Response.json({}, { status: 500 }));
     renderPage();
 
     const frame = await screen.findByTitle('Original resume preview');
     expect(frame).toHaveAttribute('src', pdfOnFile.previewOriginalPath);
 
-    // A browser that cannot show the PDF inline leaves an empty same-origin
-    // document; jsdom never fetches the frame, so stand that document in.
-    // (React does not dispatch `error` for iframes, so onLoad is the live path.)
+    // jsdom never fetches the frame, so stand in for an API error document.
+    // Native PDF viewers can expose an empty document and must stay mounted.
+    const jsonError = document.implementation.createHTMLDocument('');
+    jsonError.body.textContent = '{"error":"Preview unavailable"}';
+    Object.defineProperty(jsonError, 'contentType', { value: 'application/json' });
     Object.defineProperty(frame, 'contentDocument', {
       configurable: true,
-      value: { title: '', body: { innerHTML: '' } },
+      value: jsonError,
     });
     fireEvent.load(frame);
 
