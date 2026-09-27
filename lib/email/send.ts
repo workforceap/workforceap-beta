@@ -555,7 +555,16 @@ export async function sendBrandedEmail(
       // A cron or staff batch may have captured this address minutes ago.
       // Recheck after pacing and retry sleeps, directly before each send.
       const recipient = typeof to === 'string' ? to : '';
-      const active = await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient);
+      let active: boolean;
+      try {
+        active = await (retryOptions.recipientIsActive ?? memberRecipientIsActive)(args.recipientUserId, recipient);
+      } catch (error) {
+        // An unavailable lifecycle lookup is not permission to email a stale
+        // address. Record the failure while keeping the provider untouched.
+        sendLog.fail(error, attempt);
+        await sendLog.settle();
+        throw error;
+      }
       if (!active) {
         sendLog.write('skipped', { skipReason: 'inactive_member', attempts: attempt - 1 });
         await sendLog.settle();

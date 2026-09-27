@@ -252,7 +252,7 @@ that automatically emails to counselor and the student."
   run, so callbacks starting after erasure skip member/partner email and
   personal activity writes. A provider request that already started cannot be
   recalled; its delivery must be reconciled separately.
-- A returned Storage or Auth failure releases the operation token while
+- A returned deletion Storage or Auth failure releases the deletion operation token while
   leaving the pending marker in place. Retry can acquire a new token and
   repeat cleanup. A process crash leaves the token held and requires an
   operator to verify external cleanup before clearing it. There is no timed

@@ -63,6 +63,28 @@ describe('sendBrandedEmail', () => {
     assert.equal(activeChecks, 2);
   });
 
+  it('fails closed when the recipient state cannot be read', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerCalls = 0;
+    const resend = { emails: { send: async () => {
+      providerCalls++;
+      return { data: { id: 'unexpected' }, error: null };
+    } } } as unknown as import('resend').Resend;
+    const entries: EmailSendLogEntry[] = [];
+    await assert.rejects(sendBrandedEmail(resend, {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Queued message',
+      html: '<p>Private</p>',
+      recipientUserId: 'member-1',
+    }, {
+      recipientIsActive: async () => { throw new Error('lifecycle unavailable'); },
+      sendLogStore: { record: async (entry) => { entries.push({ ...entry }); } },
+    }), /lifecycle unavailable/);
+    assert.equal(providerCalls, 0);
+    assert.equal(entries.at(-1)?.status, 'failed');
+  });
+
   it('skips reserved and configured fixture recipient domains without calling Resend', async () => {
     process.env.CRON_SECRET = 'test-unsubscribe-secret';
     const originalFixtureDomains = process.env.EMAIL_FIXTURE_DOMAINS;

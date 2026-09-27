@@ -185,12 +185,12 @@ describe('Bulk operations', () => {
     vi.mocked(prisma.organizationProgramCatalog.count).mockResolvedValue(0);
     vi.mocked(prisma.organizationProgramCatalog.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.courseProgress.groupBy).mockResolvedValue([] as any);
-    vi.mocked(prisma.user.findUnique).mockImplementation(async (args: { where: { id: string } }) => ({
+    vi.mocked(prisma.user.findUnique).mockImplementation((async (args: { where: { id?: string } }) => ({
       email: args.where.id === uid(1) ? 'alice@example.org' : 'bob@example.org',
       deletedAt: null,
       billingDeletionPendingAt: null,
       billingDeletionOperationId: null,
-    }) as any);
+    })) as never);
   });
 
   // ─── Bulk Email ───
