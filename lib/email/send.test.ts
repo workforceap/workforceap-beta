@@ -931,7 +931,7 @@ describe('sendBrandedEmail send log', () => {
       return { data: { id: 'resend-message-123' }, error: null };
     } } } as unknown as import('resend').Resend;
 
-    await sendBrandedEmail(resend, {
+    const result = await sendBrandedEmail(resend, {
       from: 'WorkforceAP <hello@workforceap.org>',
       to: address,
       subject: 'Jane Doe needs a counselor follow-up',
@@ -949,6 +949,7 @@ describe('sendBrandedEmail send log', () => {
       sendLogStore: store,
     });
 
+    assert.equal(result.data?.id, 'resend-message-123', 'the immediate caller retains the provider receipt');
     assert.equal(providerKey, key, 'the provider still receives the original idempotency key');
     assert.deepEqual(entries.map((entry) => entry.status), ['sending', 'sent']);
     for (const entry of entries) {
@@ -966,7 +967,7 @@ describe('sendBrandedEmail send log', () => {
       for (const secret of ['Jane Doe', address, memberId, key]) assert.ok(!serialized.includes(secret));
     }
     assert.equal(entries[0].dedupeKey, entries[1].dedupeKey);
-    assert.equal(entries[1].providerMessageId, 'resend-message-123');
+    assert.equal(entries[1].providerMessageId, null);
 
     entries.length = 0;
     await assert.rejects(

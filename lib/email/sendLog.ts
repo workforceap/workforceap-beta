@@ -218,7 +218,7 @@ export function createEmailSendLogWriter(
     write(status, patch = {}) {
       try {
         attempts = patch.attempts ?? attempts;
-        providerMessageId = patch.providerMessageId ?? providerMessageId;
+        providerMessageId = privateMemberLog ? null : patch.providerMessageId ?? providerMessageId;
         enqueue({
           ...base,
           ...patch,
@@ -256,6 +256,7 @@ export function createEmailSendLogWriter(
 /** Production store: one upsert per transition, keyed by dedupe key. */
 export const prismaEmailSendLogStore: EmailSendLogStore = {
   async record(entry) {
+    const privateMemberLog = entry.dedupeKey.startsWith('member-email/');
     await prisma.emailSendLog.upsert({
       where: { dedupeKey: entry.dedupeKey },
       create: {
@@ -264,7 +265,7 @@ export const prismaEmailSendLogStore: EmailSendLogStore = {
         status: entry.status,
         provider: entry.provider,
         idempotencyKey: entry.idempotencyKey,
-        providerMessageId: entry.providerMessageId,
+        providerMessageId: privateMemberLog ? null : entry.providerMessageId,
         recipientHash: entry.recipientHash,
         recipientDomain: entry.recipientDomain,
         recipientCount: entry.recipientCount,
@@ -283,7 +284,9 @@ export const prismaEmailSendLogStore: EmailSendLogStore = {
         templateKey: entry.templateKey ?? undefined,
         idempotencyKey: entry.idempotencyKey ?? undefined,
         // Only ever set forward; a retry that has no id yet must not erase one.
-        providerMessageId: entry.providerMessageId ?? undefined,
+        // A retry may encounter an earlier row that carried the provider ID.
+        // Never retain a provider lookup key in a member-claimed generic log.
+        providerMessageId: privateMemberLog ? null : entry.providerMessageId ?? undefined,
         userId: entry.userId ?? undefined,
         entityType: entry.entityType ?? undefined,
         entityId: entry.entityId ?? undefined,
