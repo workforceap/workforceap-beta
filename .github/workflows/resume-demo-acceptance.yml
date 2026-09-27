@@ -91,6 +91,9 @@ jobs:
       # call, the state (exact IDs) right after it.
       RESUME_QA_STATE_FILE: /tmp/resume-qa-fixture.json
       RESUME_QA_MARKER_FILE: /tmp/resume-qa-fixture.marker.json
+      # create's progress (target-guard, then clients). Cleanup writes an
+      # informational receipt only while it still says target-guard.
+      RESUME_QA_STAGE_FILE: /tmp/resume-qa-fixture.stage.json
 
     steps:
       - name: Checkout trusted master
@@ -196,9 +199,9 @@ jobs:
 
       # Runs whenever the create step ran (even if it or the spec failed), so
       # credentials are still never used before the gates passed. Removes
-      # exactly the recorded ID. With no creation marker it writes a
-      # memberCreated:false receipt; with a marker but no readable state it
-      # fails closed and prints exact-email recovery steps.
+      # exactly the recorded ID. With no marker and create stopped at the target
+      # guard it writes an informational memberCreated:false receipt (no DB);
+      # any other missing marker/state fails closed with exact-email recovery.
       - name: Clean up the disposable synthetic member
         if: always() && steps.create.outcome != 'skipped'
         env:

@@ -45,7 +45,13 @@ The workflow runs these steps in order. It fails closed at each gate.
 
    The spec refuses any account that is not a `resume-qa-*@example.com` member, an email not built from this run's `RESUME_ACCEPTANCE_RUN_ID`, the shared `PREVIEW_E2E_MEMBER_EMAIL` account, and exact production hostnames. The workflow sets `RESUME_ACCEPTANCE_MODE=workflow`. In that mode a refusal **fails** the spec instead of skipping it, and a receipt with `pass: false` is always written. Without the flag, locally, the spec stays inert and skips.
 7. **Cleanup:** runs always. `scripts/resume-demo-member.ts cleanup` works only on the recorded ID, in this order:
-   0. **Inputs.** If there is no creation marker, the member was never created. Cleanup writes `memberCreated: false` and does nothing else. If there is a marker but the recorded state is missing or unreadable, cleanup **fails closed** and prints manual recovery steps: look up by the exact synthetic email from the marker, then delete by the returned exact ID. It never deletes by pattern.
+   0. **Inputs.** `create` first writes a stage file (`RESUME_QA_STAGE_FILE`) saying `target-guard`, before anything else and before any client or Auth call is possible. Once the target guard passes, it rewrites the file as `clients` (with the synthetic email), still before any client is built. Cleanup decides from the local marker, state and stage files, **before** its own target guard, so this step needs no DEMO URL or client:
+   - **No marker, no state, stage still `target-guard`:** create stopped at the guard in this run. Cleanup writes an **informational** receipt: `memberCreated: false` (meaning "no marker found", not "proven absent"), `markerFound: false`, `memberCreationAttempted: "not-observed"`, `informationalOnly: true`, `failedStage: "target-guard"`. It touches nothing. The combined verifier rejects this receipt, so the run stays red.
+   - **No marker once create was past the guard, or no readable stage file:** cleanup **fails closed** with manual recovery steps keyed to the exact synthetic email. It writes `memberCreated: "unknown"`.
+   - **A marker without a readable state:** cleanup fails closed the same way, using the email in the marker.
+   - **A recorded state, but the guard refuses the target:** cleanup touches nothing and writes `success: false` with the recorded IDs.
+
+   Recovery means: look up by the exact synthetic email, then delete by the returned exact ID. Cleanup never deletes by pattern.
    1. It looks up the Prisma and Auth users. Auth lookups fail closed. Only the explicit Supabase Auth code `user_not_found` counts as absent. A bare 404 or any other error stops cleanup.
    2. It removes the member's own storage objects through `deleteUserStorageObjects` (`lib/gdpr/deleteUserStorage.ts`). That helper only lists that ID's prefixes: `member-resumes/<id>/`, `member-files/cert-files/<id>/` and the profile-photo prefix. It only keeps extra paths owned by that ID, and it fails closed on any list or remove error. Cleanup then checks that those prefixes count 0.
    3. It deletes the Auth user, then checks that the Auth user is gone (explicit not-found).
@@ -163,8 +169,38 @@ Audit rows (`audit_logs`, `audit_events`) that name the synthetic actor are **ke
 | --- | --- |
 | Workflow merged to `master` | Needed before any dispatch |
 | `PREVIEW_SITE_URL`, `PREVIEW_SUPABASE_URL`, `PREVIEW_SUPABASE_SERVICE_ROLE_KEY`, `PREVIEW_POSTGRES_PRISMA_URL`, `PREVIEW_E2E_MEMBER_EMAIL` repository secrets | Names confirmed present. Values unverified. The job's gates prove at runtime that they point at DEMO. |
+| `PREVIEW_POSTGRES_PRISMA_URL` identifies the DEMO project | **Failed** in run 36347160066 (2026-09-27). `create` stopped at the target guard ("Portal QA database URL must identify the approved demo project") before any marker, member, upload or Build, so no Build request was made. Replace it and confirm it with the secret check below before any rerun. |
 | Exactly one active DEMO `portal-qa-*` organization, whose ID and slug are dispatch inputs | Present: `portal-qa-september-smoke`, confirmed read-only by the owner on 2026-09-27. The job re-checks it at dispatch. |
 | `member-resumes` and `member-files` storage buckets in DEMO | Both exist and are private. The owner checked this read-only on 2026-09-27. Contents were not listed; cleanup counts only the member's own prefixes. |
 | A provider key for Resume Build in the Vercel **Preview** environment | `GROQ_API_KEY` is present for all environments; `ANTHROPIC_API_KEY` is absent (owner, Vercel metadata, 2026-09-27). The Groq key's validity and quota are **unverified until a run**. `DEMO_SETUP.md` says the Preview Groq key is the same key as production, so a Build request may consume production Groq quota. |
 
 `scripts/sync-portal-test-auth.ts` is **not** used. It is fixed to the five standing QA accounts (including `member-test@workforceap.org`) and refuses reruns.
+
+## Replacing the Preview database secret
+
+The acceptance lane reads exactly one database secret: `PREVIEW_POSTGRES_PRISMA_URL`, which it passes to the helper as `POSTGRES_PRISMA_URL`. It does not set `DATABASE_URL` or `POSTGRES_URL_NON_POOLING`, so the lane itself does not use `PREVIEW_DATABASE_URL`. The secret check below still classifies **both** secrets and fails unless both are DEMO. If only `PREVIEW_DATABASE_URL` fails, replace it the same way from the DEMO project's **Direct connection** string (port 5432, no pooler parameters).
+
+The value must never appear in a log, a chat, a file or shell history.
+
+1. **Open the DEMO project.** In the Supabase dashboard, open the project whose URL contains the DEMO ref `esbdrgaonplpvzmtrdhw`. Stop if the ref is anything else; the production ref is `jqddnyuszufndwwezdwp`.
+2. **Copy the transaction pooler string.** Go to **Connect** → **Transaction pooler** (port **6543**) and copy the URI. It has the form `postgres://postgres.<ref>:[YOUR-PASSWORD]@aws-<n>-<region>.pooler.supabase.com:6543/postgres`.
+   - Replace `[YOUR-PASSWORD]` with the DEMO database password, percent-encoded if it contains characters such as `#`, `/`, `?` or `@`.
+   - **Do not reset the DEMO database password** to get one. The Vercel Preview `POSTGRES_PRISMA_URL` (Sensitive, unreadable) uses the current password, and a reset would break the Preview deployment. If the password is not known, stop and ask.
+3. **Append the runtime parameters.** Add `?pgbouncer=true&connection_limit=1`, using `&` instead of `?` if the string already has a query. The helper does not require `pool_timeout`; the Vercel runtime contract (`scripts/lib/runtime-pool-contract.cjs`) additionally requires it, so `&pool_timeout=10` is harmless to add.
+4. **Set the secret from the clipboard or a hidden prompt, never as an argument.** Either:
+   ```bash
+   pbpaste | gh secret set PREVIEW_POSTGRES_PRISMA_URL --repo workforceap/workforceap-beta
+   ```
+   or run `gh secret set PREVIEW_POSTGRES_PRISMA_URL --repo workforceap/workforceap-beta` with no `--body` and paste at its hidden prompt. Neither puts the value in shell history or on screen. Clear the clipboard afterwards.
+5. **Check it without revealing it.** Dispatch the read-only secret check from `master`:
+   ```bash
+   gh workflow run preview-db-secret-check.yml --ref master --repo workforceap/workforceap-beta
+   ```
+   Its one parse-only step runs `node scripts/classify-preview-db-url.mjs PREVIEW_POSTGRES_PRISMA_URL PREVIEW_DATABASE_URL`, with both secrets exposed to that step only. The classifier uses the same `projectForUrl` as the guard and prints one JSON line per variable with only `name`, `classification`, `hostClass`, `refPresent`, `pgbouncer` and `connectionLimit1`. It opens no database connection and makes no network call. It must end green with `classification: "demo"` for both. `classification` is authoritative. `refPresent` is true only when the URL carries an `options=reference` marker, so a direct or `postgres.<ref>` pooler URL shows `refPresent: false` even when it names the DEMO project. Reading a failure:
+   - `prod`: the value names the production project.
+   - `unknown` with `hostClass` `direct` or `pooler`: a Supabase host that the guard does not approve as DEMO, for example another project or a stale value.
+   - `unknown` with `hostClass: "other"`: the value isn't a recognized DEMO Supabase URL. This can be an unapproved but parseable host, a wrong scheme, a quoted value, or a malformed or unencoded value. Don't infer a single cause from this category; re-copy the string from the DEMO dashboard.
+6. **Only then ask Mike to authorize the single acceptance rerun.** That rerun is still one Build request and needs his explicit go.
+
+The Vercel Preview environment variable `POSTGRES_PRISMA_URL` is a separate value, used by the deployed app. The health gate already reports it as DEMO (`prismaProject demo`). This procedure does not touch it, so do not change it.
+

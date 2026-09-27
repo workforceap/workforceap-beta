@@ -24,7 +24,11 @@
  * Environment: PORTAL_QA_TARGET=demo, NEXT_PUBLIC_SUPABASE_URL,
  * SUPABASE_SERVICE_ROLE_KEY, POSTGRES_PRISMA_URL (or DATABASE_URL), optional
  * POSTGRES_URL_NON_POOLING, PORTAL_QA_ORGANIZATION_ID, PORTAL_QA_ORGANIZATION_SLUG,
- * RESUME_QA_STATE_FILE; `create` also needs GITHUB_RUN_ID, GITHUB_RUN_ATTEMPT, GITHUB_ENV.
+ * RESUME_QA_STATE_FILE (optional RESUME_QA_MARKER_FILE, RESUME_QA_STAGE_FILE,
+ * RESUME_QA_CLEANUP_OUTPUT); `create` also needs GITHUB_RUN_ID, GITHUB_RUN_ATTEMPT,
+ * GITHUB_ENV. `cleanup` reads the marker/state/stage files before the target
+ * guard, so a create that stopped at the guard still gets an informational
+ * receipt without any DEMO URL or client (see resolveCleanupInput).
  */
 import { randomBytes } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -46,7 +50,15 @@ export interface PortalQaTarget { organizationId: string; organizationSlug: stri
 export interface FixtureState { userId: string; email: string; organizationId: string; runId: string }
 export interface CreationMarker { runId: string; email: string; organizationId: string }
 
-export type CleanupInput = { kind: 'state'; state: FixtureState } | { kind: 'never-created' };
+export type CleanupInput = { kind: 'state'; state: FixtureState } | { kind: 'stopped-at-target-guard' };
+
+/**
+ * Progress `create` records in the stage file (RESUME_QA_STAGE_FILE):
+ * `target-guard` is written before anything else, while no client or Auth call
+ * is possible; `clients` replaces it once the target guard has passed, before
+ * any client is built. No secrets, only the stage and the synthetic email.
+ */
+export interface CreateStage { stage: 'target-guard' | 'clients'; email?: string }
 
 function readJson(text: string | null): unknown {
   if (text === null) return null;
@@ -64,17 +76,24 @@ function isFixtureState(value: unknown): value is FixtureState {
 }
 
 /**
- * Decide what cleanup may do from the marker and state files. It is a no-op
- * only when NO marker exists (the member was never created). A marker with a
- * missing or unreadable state fails closed with exact-email recovery steps;
- * nothing is ever deleted by pattern.
+ * Decide what cleanup may do from the marker, state and stage files.
+ * - A valid state: clean up exactly that recorded member.
+ * - No marker, no state, and a stage file that still says `target-guard`:
+ *   create stopped before any client or Auth call in this run, so cleanup only
+ *   writes an INFORMATIONAL receipt. That is "no marker found", never proof
+ *   that no member exists.
+ * - Anything else (a marker without a readable state, or no marker once create
+ *   was past the target guard or left no stage): fail closed with exact-email
+ *   recovery steps. Nothing is ever deleted by pattern.
  */
-export function resolveCleanupInput(markerText: string | null, stateText: string | null): CleanupInput {
+export function resolveCleanupInput(markerText: string | null, stateText: string | null, stageText: string | null = null): CleanupInput {
   const state = readJson(stateText);
   if (isFixtureState(state)) return { kind: 'state', state };
-  if (markerText === null && stateText === null) return { kind: 'never-created' };
+  const stage = readJson(stageText) as Partial<CreateStage> | null | undefined;
+  if (markerText === null && stateText === null && stage?.stage === 'target-guard') return { kind: 'stopped-at-target-guard' };
   const marker = readJson(markerText) as Partial<CreationMarker> | null | undefined;
-  const email = typeof marker?.email === 'string' && RESUME_QA_EMAIL.test(marker.email) ? marker.email : '<unreadable marker>';
+  const email = [marker?.email, stage?.email].find((value): value is string => typeof value === 'string' && RESUME_QA_EMAIL.test(value))
+    ?? (markerText === null ? '<not recorded: resume-qa-<run id>-<run attempt>@example.com>' : '<unreadable marker>');
   throw new Error(
     'Refusing cleanup: a synthetic member may have been created but its recorded ID is missing or unreadable. '
       + `Manual recovery: in the DEMO project, look up the Auth user and the users row by the exact email ${email}, `
@@ -379,15 +398,22 @@ function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
   return { deps, close: () => prisma.$disconnect() };
 }
 
-async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
-  const target = readPortalQaTarget(env) as PortalQaTarget;
+/** The CLI (exported for the mocked tests). */
+export async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
   const stateFile = env.RESUME_QA_STATE_FILE?.trim();
   if (!stateFile) throw new Error('Set RESUME_QA_STATE_FILE.');
   const markerFile = env.RESUME_QA_MARKER_FILE?.trim() || `${stateFile}.marker`;
+  const stageFile = env.RESUME_QA_STAGE_FILE?.trim() || `${stateFile}.stage`;
 
   if (command === 'create') {
+    // First, before anything can fail: no client or Auth call is possible yet.
+    writeFileSync(stageFile, JSON.stringify({ stage: 'target-guard' } satisfies CreateStage));
+    const target = readPortalQaTarget(env) as PortalQaTarget;
     if (!env.GITHUB_ENV) throw new Error('create hands the credentials to later steps through GITHUB_ENV.');
     const identity = syntheticIdentity(env.GITHUB_RUN_ID ?? '', env.GITHUB_RUN_ATTEMPT ?? '');
+    // Past the guard: from here on a missing marker can no longer be read as
+    // "nothing was attempted", so cleanup fails closed without one.
+    writeFileSync(stageFile, JSON.stringify({ stage: 'clients', email: identity.email } satisfies CreateStage));
     const password = generatePassword();
     console.log(`::add-mask::${password}`);
     const { deps, close } = liveDeps(target, env);
@@ -421,17 +447,41 @@ async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
     const readIfPresent = (path: string) => (existsSync(path) ? readFileSync(path, 'utf8') : null);
     let input: CleanupInput;
     try {
-      input = resolveCleanupInput(readIfPresent(markerFile), readIfPresent(stateFile));
+      input = resolveCleanupInput(readIfPresent(markerFile), readIfPresent(stateFile), readIfPresent(stageFile));
     } catch (error) {
       writeReceipt({ success: false, memberCreated: 'unknown', error: (error as Error).message });
       throw error;
     }
-    if (input.kind === 'never-created') {
-      writeReceipt({ success: true, memberCreated: false });
-      console.log('No creation marker: the synthetic acceptance member was never created; nothing to clean up.');
+    // Decided from the local files alone, before the target guard, so it needs
+    // no DEMO URL or client. Informational only: the combined verifier still
+    // fails the run, and this receipt is never proof that no member exists.
+    if (input.kind === 'stopped-at-target-guard') {
+      writeReceipt({
+        success: true,
+        // Means "no marker found in a run whose create stopped at the target
+        // guard", NOT "proven absent". Kept because the verifier keys on it.
+        memberCreated: false,
+        markerFound: false,
+        memberCreationAttempted: 'not-observed',
+        informationalOnly: true,
+        failedStage: 'target-guard',
+      });
+      console.log('create stopped at the target guard before any client or Auth call; no marker was found and nothing was cleaned up (informational receipt).');
       return;
     }
     const { state } = input;
+    let target: PortalQaTarget;
+    try {
+      target = readPortalQaTarget(env) as PortalQaTarget;
+    } catch (error) {
+      // A member may exist but the target cannot be proven DEMO: touch nothing,
+      // and record the exact IDs for a reviewed manual cleanup.
+      writeReceipt({
+        success: false, memberCreated: true, userId: state.userId, email: state.email, runId: state.runId,
+        error: (error as Error).message,
+      });
+      throw error;
+    }
     const { deps, close } = liveDeps(target, env);
     try {
       const result = await cleanupFixture(target, state, deps);
