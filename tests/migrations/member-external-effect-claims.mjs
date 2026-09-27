@@ -58,9 +58,10 @@ try {
   sql(`
     INSERT INTO public.member_external_effect_claims(id, member_id, kind, updated_at)
     VALUES ('00000000-0000-4000-8000-000000000001', 'member-1', 'notification', CURRENT_TIMESTAMP),
-           ('00000000-0000-4000-8000-000000000002', 'member-1', 'notification', CURRENT_TIMESTAMP);
+           ('00000000-0000-4000-8000-000000000002', 'member-1', 'notification', CURRENT_TIMESTAMP),
+           ('00000000-0000-4000-8000-000000000003', 'member-1', 'email', CURRENT_TIMESTAMP);
   `);
-  assert.equal(sql(`SELECT count(*) FROM public.member_external_effect_claims WHERE member_id='member-1';`), '2');
+  assert.equal(sql(`SELECT count(*) FROM public.member_external_effect_claims WHERE member_id='member-1';`), '3');
   assert.match(sql(`DELETE FROM public.users WHERE id='member-1';`, proofDatabase, false), /23503/);
   sql(`DELETE FROM public.member_external_effect_claims WHERE member_id='member-1';`);
   sql(`DELETE FROM public.users WHERE id='member-1';`);

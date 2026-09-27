@@ -6,9 +6,12 @@ import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import { AtomicResumeObjectSwapError, removeResumeObjectsWithRetry } from '@/lib/resume/atomicResumeObjectSwap';
 
 export class MemberUploadLifecycleError extends Error {
-  constructor() {
+  readonly reason: 'member_inactive' | 'transactions_unavailable';
+
+  constructor(reason: 'member_inactive' | 'transactions_unavailable' = 'member_inactive') {
     super('This account is not accepting another upload right now.');
     this.name = 'MemberUploadLifecycleError';
+    this.reason = reason;
   }
 }
 
@@ -69,8 +72,8 @@ export class MemberUploadPersistenceOutcomeError extends Error {
  * is deliberately no time-based lease expiry: a slow Storage request may
  * finish after an arbitrary timeout, so age cannot prove it is safe to erase.
  */
-export async function beginMemberUpload(userId: string, kind: 'storage' | 'notification' = 'storage'): Promise<string> {
-  if (!interactiveTransactionsGuaranteed()) throw new MemberUploadLifecycleError();
+export async function beginMemberUpload(userId: string, kind: 'storage' | 'notification' | 'email' = 'storage'): Promise<string> {
+  if (!interactiveTransactionsGuaranteed()) throw new MemberUploadLifecycleError('transactions_unavailable');
   const operationId = randomUUID();
   const claimed = await prisma.$transaction(async (tx) => {
     await lockBillingMemberLifecycle(tx, userId);

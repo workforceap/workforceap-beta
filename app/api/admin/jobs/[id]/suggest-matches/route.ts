@@ -63,7 +63,16 @@ async function recordSuggestAudit(input: {
         include: {
           employer: { select: { contactEmail: true, companyName: true } },
           aiMatches: {
-            where: { status: 'suggested' },
+            // Filter before take: an erased top-ranked candidate must not
+            // keep active candidates out of the batch on every retry.
+            where: {
+              status: 'suggested',
+              student: {
+                deletedAt: null,
+                billingDeletionPendingAt: null,
+                billingDeletionOperationId: null,
+              },
+            },
             include: {
               student: { select: { id: true, fullName: true, enrolledProgram: true } },
             },
@@ -77,6 +86,9 @@ async function recordSuggestAudit(input: {
     if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     if (job.status !== 'live') {
       return NextResponse.json({ error: 'Match suggestions can only be sent for live jobs' }, { status: 400 });
+    }
+    if (job.matchSuggestionsLastStatus === 'needs_reconciliation') {
+      return NextResponse.json({ error: 'A prior match email needs reconciliation before another send.' }, { status: 409 });
     }
     if (job.aiMatches.length === 0) {
       await recordSuggestAudit({
@@ -152,6 +164,38 @@ async function recordSuggestAudit(input: {
       return NextResponse.json({ error: 'Match suggestions are already being sent or were sent.' }, { status: 409 });
     }
 
+    const releaseClaimedMatches = () => prisma.$transaction((tx) => tx.aIJobMatch.updateMany({
+      where: { id: { in: Array.from(claimedIds) }, status: 'employer_notified' },
+      data: { status: 'suggested', statusUpdatedAt: now },
+    }));
+    // A durable job hold precedes provider I/O. A process crash or unknown
+    // response leaves this marker in place, so a new invocation cannot mail
+    // another batch while the first outcome is unresolved.
+    let reserved: { count: number };
+    try {
+      reserved = await withTenantScope(orgId, (db) => db.job.updateMany({
+        where: {
+          id,
+          OR: [
+            { matchSuggestionsLastStatus: null },
+            { matchSuggestionsLastStatus: { not: 'needs_reconciliation' } },
+          ],
+        },
+        data: {
+          matchSuggestionsLastSentAt: now,
+          matchSuggestionsLastStatus: 'needs_reconciliation',
+          matchSuggestionsLastError: 'Provider outcome not yet confirmed',
+        },
+      }));
+    } catch (error) {
+      await releaseClaimedMatches().catch(() => {});
+      throw error;
+    }
+    if (reserved.count !== 1) {
+      await releaseClaimedMatches();
+      return NextResponse.json({ error: 'A prior match email needs reconciliation before another send.' }, { status: 409 });
+    }
+
     const emailPayload = {
       to: actualRecipient,
       jobTitle: job.title,
@@ -165,11 +209,19 @@ async function recordSuggestAudit(input: {
     };
 
     const sent = await sendMatchActionEmail(emailPayload);
+    if (sent.uncertain) {
+      await recordSuggestAudit({
+        actorUserId: user.id,
+        jobId: id,
+        summary: 'Match email provider outcome needs reconciliation',
+        status: 'fallback',
+        httpStatus: 409,
+        metadata: { outcome: 'needs_reconciliation', matchCount, testMode },
+      });
+      return NextResponse.json({ error: 'Match email outcome needs reconciliation before another send.' }, { status: 409 });
+    }
     if (!sent.ok) {
-      await prisma.$transaction((tx) => tx.aIJobMatch.updateMany({
-        where: { id: { in: Array.from(claimedIds) }, status: 'employer_notified' },
-        data: { status: 'suggested', statusUpdatedAt: now },
-      }));
+      await releaseClaimedMatches();
       await withTenantScope(orgId, (db) =>
         db.job.update({
           where: { id },

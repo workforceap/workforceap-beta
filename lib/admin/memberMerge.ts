@@ -461,7 +461,7 @@ export async function checkMergeConflicts(
       field: 'memberExternalEffectClaim.memberId',
       primaryValue: primaryId,
       secondaryValue: secondaryId,
-      message: 'The duplicate member has an unresolved Storage or notification operation. Reconcile its external-effect claim before merging.',
+      message: 'The duplicate member has an unresolved Storage, notification, or email operation. Reconcile its external-effect claim before merging.',
     });
   }
   if (await hasUnresolvedMilestoneDispatch(tx, secondaryId)) {
@@ -746,7 +746,7 @@ export async function executeMemberMerge(
   // can start after the merge begins or outlive the retirement.
   for (const id of [primaryId, secondaryId].sort()) await lockBillingMemberLifecycle(tx, id);
   if (await hasUnresolvedBillingSend(tx, secondaryId)) throw new Error('Cannot merge a member while a billing packet delivery is unresolved. Reconcile the send first.');
-  if (await hasUnresolvedMemberExternalEffect(tx, secondaryId)) throw new Error('Cannot merge a member while a Storage or notification operation is unresolved. Reconcile the external-effect claim first.');
+  if (await hasUnresolvedMemberExternalEffect(tx, secondaryId)) throw new Error('Cannot merge a member while a Storage, notification, or email operation is unresolved. Reconcile the external-effect claim first.');
   if (await hasUnresolvedMilestoneDispatch(tx, secondaryId)) throw new Error('Cannot merge a member while a milestone dispatch is unresolved. Reconcile the dispatch first.');
   const [primary, secondary] = await Promise.all([
     tx.user.findUnique({ where: { id: primaryId } }),

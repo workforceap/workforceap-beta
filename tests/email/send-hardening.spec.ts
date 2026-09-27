@@ -64,6 +64,15 @@ describe('member subjects in employer email', () => {
     expect(checked).toEqual(['alice', 'bob']);
     expect(calls).toHaveLength(0);
     expect(result).toMatchObject({ skipped: true, reason: 'inactive_member' });
+    await expect(sendBrandedEmailOrThrowOnSkip(fakeResend(calls), {
+      ...baseArgs,
+      to: 'employer@workforceap.org',
+      subjectMemberIds: ['alice', 'bob'],
+    }, {
+      subjectIsActive: async (id) => id !== 'bob',
+      sendLogStore: { record: async () => {} },
+    })).rejects.toMatchObject({ name: 'FixtureRecipientSkippedError', reason: 'inactive_member' });
+    expect(calls).toHaveLength(0);
   });
 
   it('rechecks every named member before retrying after a provider delay', async () => {

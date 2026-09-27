@@ -30,6 +30,7 @@ vi.mock('@/lib/db/prisma', () => ({
     job: {
       findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     aIJobMatch: {
       updateMany: vi.fn(),
@@ -84,6 +85,7 @@ function makeJob() {
     id: JOB_ID,
     title: 'Junior Developer',
     status: 'live',
+    matchSuggestionsLastStatus: null,
     employer: {
       contactEmail: 'hiring@example.com',
       companyName: 'Acme',
@@ -112,6 +114,7 @@ describe('POST /api/admin/jobs/[id]/suggest-matches', () => {
     vi.mocked(getActorOrganizationId).mockResolvedValue(ORG_ID);
     vi.mocked(prisma.job.findUnique).mockResolvedValue(makeJob() as any);
     vi.mocked(prisma.job.update).mockResolvedValue({} as any);
+    vi.mocked(prisma.job.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(prisma.aIJobMatch.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(sendMatchActionEmail).mockResolvedValue({ ok: true } as any);
   });
@@ -134,5 +137,74 @@ describe('POST /api/admin/jobs/[id]/suggest-matches', () => {
       matches: [{ name: 'Jane Candidate', program: 'Web Development', score: 92 }],
     });
     expect(prisma.$queryRaw).toHaveBeenCalledTimes(2);
+    expect(prisma.job.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ matchSuggestionsLastStatus: 'needs_reconciliation' }),
+    }));
+  });
+
+  it('releases claimed matches when the send guard skips an erased member', async () => {
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: 'match-1' }] as any);
+    vi.mocked(sendMatchActionEmail).mockResolvedValue({ ok: false, skipped: true, error: 'inactive_member' });
+
+    const response = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+
+    expect(response.status).toBe(502);
+    expect(prisma.aIJobMatch.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['match-1'] }, status: 'employer_notified' },
+      data: { status: 'suggested', statusUpdatedAt: expect.any(Date) },
+    });
+    expect(prisma.job.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ matchSuggestionsLastStatus: 'failed' }),
+    }));
+  });
+
+  it('holds an unknown provider outcome and blocks another send without releasing match claims', async () => {
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: 'match-1' }] as any);
+    vi.mocked(prisma.job.findUnique)
+      .mockResolvedValueOnce(makeJob() as any)
+      .mockResolvedValueOnce({ ...makeJob(), matchSuggestionsLastStatus: 'needs_reconciliation' } as any);
+    vi.mocked(sendMatchActionEmail).mockResolvedValue({
+      ok: false, uncertain: true, error: 'Email provider outcome needs reconciliation',
+    });
+
+    const first = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+    const second = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+
+    expect(first.status).toBe(409);
+    expect(second.status).toBe(409);
+    expect(prisma.aIJobMatch.updateMany).not.toHaveBeenCalled();
+    expect(sendMatchActionEmail).toHaveBeenCalledTimes(1);
+    expect(prisma.job.update).not.toHaveBeenCalled();
+  });
+
+  it('filters inactive top-ranked candidates before taking the email batch', async () => {
+    const inactive = {
+      ...makeJob().aiMatches[0], id: 'match-inactive', studentId: 'student-inactive', matchScore: 99,
+      student: { id: 'student-inactive', fullName: 'Erased Candidate', enrolledProgram: 'Old' },
+    };
+    const active = makeJob().aiMatches[0];
+    expect(inactive.matchScore).toBeGreaterThan(active.matchScore);
+    vi.mocked(prisma.job.findUnique).mockResolvedValue({ ...makeJob(), aiMatches: [active] } as any);
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: 'match-1' }] as any);
+
+    const response = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+
+    expect(response.status).toBe(200);
+    expect(prisma.job.findUnique).toHaveBeenCalledWith(expect.objectContaining({
+      include: expect.objectContaining({ aiMatches: expect.objectContaining({
+        take: 5,
+        where: expect.objectContaining({
+          student: {
+            deletedAt: null,
+            billingDeletionPendingAt: null,
+            billingDeletionOperationId: null,
+          },
+        }),
+      }) }),
+    }));
+    expect(sendMatchActionEmail).toHaveBeenCalledWith(expect.objectContaining({
+      subjectMemberIds: ['student-1'],
+      matches: [{ name: 'Jane Candidate', program: 'Web Development', score: 92 }],
+    }));
   });
 });

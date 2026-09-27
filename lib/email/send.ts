@@ -52,6 +52,7 @@ import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 import { partitionSuppressedRecipients, recordSuppressedRecipientSkip } from '@/lib/email/suppressions';
 import { resolveEmailTemplateKey } from '@/lib/email/templateKeys';
 import { prisma } from '@/lib/db/prisma';
+import { beginMemberUpload, markMemberExternalEffectUncertain, MemberUploadLifecycleError, releaseMemberUpload } from '@/lib/member/uploadLifecycle';
 
 export { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 
@@ -79,6 +80,12 @@ export interface SendBrandedEmailRetryOptions {
   recipientIsActive?: (userId: string, recipient: string) => Promise<boolean>;
   /** Test seam for checking each member whose private details appear in staff mail. */
   subjectIsActive?: (userId: string, email?: string | null) => Promise<boolean>;
+  /** Test seam for the durable member effect claim; production uses the billing lifecycle ledger. */
+  memberClaim?: {
+    begin(userId: string): Promise<string>;
+    release(userId: string, token: string): Promise<void>;
+    markUncertain(userId: string, token: string, reason: string): Promise<void>;
+  };
   /**
    * Consult the provider suppression list before sending. Defaults to true
    * for bulk/cron sends (any caller that carries a deadline or runs under a
@@ -208,6 +215,8 @@ export interface SendBrandedEmailArgs {
   subjectMemberId?: string;
   /** Members named in a batch message to staff or an employer. */
   subjectMemberIds?: string[];
+  /** Hold deletion behind a durable claim across provider I/O for this member-linked send. */
+  memberEffectClaim?: boolean;
   /** Address frozen in the staff message body, if present. */
   subjectMemberEmail?: string | null;
   entityType?: string | null;
@@ -459,6 +468,25 @@ export class FixtureRecipientSkippedError extends Error {
   }
 }
 
+export class MemberEmailOutcomeUncertainError extends Error {
+  readonly causeValue: unknown;
+
+  constructor(causeValue: unknown) {
+    super('Email provider outcome needs reconciliation');
+    this.name = 'MemberEmailOutcomeUncertainError';
+    this.causeValue = causeValue;
+  }
+}
+
+function isDefiniteEmailRejection(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const candidate = error as { status?: unknown; statusCode?: unknown; status_code?: unknown };
+  const raw = candidate.status ?? candidate.statusCode ?? candidate.status_code;
+  const status = typeof raw === 'number' || (typeof raw === 'string' && /^\d{3}$/.test(raw)) ? Number(raw) : NaN;
+  return Number.isInteger(status) && status >= 400 && status < 500
+    && status !== 408 && status !== 409;
+}
+
 async function memberRecipientIsActive(userId: string, recipient?: string | null): Promise<boolean> {
   const member = await prisma.user.findUnique({
     where: { id: userId },
@@ -558,6 +586,44 @@ export async function sendBrandedEmail(
   let totalRetryWaitMs = 0;
   sendLog.write('sending', { attempts: 1 });
 
+  const memberClaim = retryOptions.memberClaim ?? {
+    begin: (userId: string) => beginMemberUpload(userId, 'email'),
+    release: releaseMemberUpload,
+    markUncertain: markMemberExternalEffectUncertain,
+  };
+  const claims: Array<{ userId: string; token: string }> = [];
+  if (args.memberEffectClaim) {
+    const memberIds = [...new Set([
+      ...(args.recipientUserId ? [args.recipientUserId] : []),
+      ...(args.subjectMemberId ? [args.subjectMemberId] : []),
+      ...(args.subjectMemberIds ?? []),
+    ])].sort();
+    if (memberIds.length === 0) throw new Error('Member email effect claim requires a member id');
+    try {
+      for (const userId of memberIds) {
+        claims.push({ userId, token: await memberClaim.begin(userId) });
+      }
+    } catch (error) {
+      for (const claim of claims.reverse()) {
+        await memberClaim.release(claim.userId, claim.token).catch((releaseError) => {
+          console.error('Member email claim rollback failed:', releaseError);
+        });
+      }
+      if (error instanceof MemberUploadLifecycleError && error.reason === 'member_inactive') {
+        sendLog.write('skipped', { skipReason: 'inactive_member', attempts: 0 });
+        await sendLog.settle();
+        return { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null };
+      }
+      sendLog.fail(error, 0);
+      await sendLog.settle();
+      throw error;
+    }
+  }
+
+  let providerAmbiguous = false;
+  let providerAccepted = false;
+  try {
+
   for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
     if (args.recipientUserId || args.subjectMemberId || args.subjectMemberIds?.length) {
       // A cron or staff batch may have captured this address minutes ago.
@@ -590,6 +656,9 @@ export async function sendBrandedEmail(
         throw error;
       }
       if (!active) {
+        if (args.memberEffectClaim && providerAmbiguous) {
+          throw new MemberEmailOutcomeUncertainError(new Error('Member changed after an unresolved provider attempt'));
+        }
         sendLog.write('skipped', { skipReason: 'inactive_member', attempts: attempt - 1 });
         await sendLog.settle();
         return { ok: false, skipped: true, reason: 'inactive_member', data: null, error: null };
@@ -599,6 +668,7 @@ export async function sendBrandedEmail(
     try {
       result = await resend.emails.send(payload, { idempotencyKey });
     } catch (err) {
+      if (args.memberEffectClaim && !isDefiniteEmailRejection(err)) providerAmbiguous = true;
       const nowMs = now();
       const delayMs = resendRetryDelayMs(err, attempt, nowMs, random);
       if (
@@ -619,6 +689,8 @@ export async function sendBrandedEmail(
 
     // Resend resolves with { data, error } instead of throwing on API errors.
     if (!result.error) {
+      providerAccepted = true;
+      providerAmbiguous = false;
       sendLog.write('sent', {
         attempts: attempt,
         providerMessageId: result.data?.id ?? null,
@@ -627,6 +699,7 @@ export async function sendBrandedEmail(
       await sendLog.settle();
       return result;
     }
+    if (args.memberEffectClaim && !isDefiniteEmailRejection(result.error)) providerAmbiguous = true;
     const nowMs = now();
     const delayMs = resendRetryDelayMs(result.error, attempt, nowMs, random);
     if (
@@ -650,6 +723,27 @@ export async function sendBrandedEmail(
   sendLog.fail('Resend retry budget exhausted', RESEND_MAX_ATTEMPTS);
   await sendLog.settle();
   throw new Error('Resend retry budget exhausted');
+  } catch (error) {
+    if (args.memberEffectClaim && providerAmbiguous && !providerAccepted) {
+      const uncertain = error instanceof MemberEmailOutcomeUncertainError
+        ? error
+        : new MemberEmailOutcomeUncertainError(error);
+      sendLog.fail(uncertain, RESEND_MAX_ATTEMPTS);
+      await sendLog.settle();
+      throw uncertain;
+    }
+    throw error;
+  } finally {
+    for (const claim of claims.reverse()) {
+      const settle = providerAmbiguous && !providerAccepted
+        ? memberClaim.markUncertain(claim.userId, claim.token, `email_provider_outcome_unknown:${idempotencyKey}`)
+        : memberClaim.release(claim.userId, claim.token);
+      await settle.catch((error) => {
+        // The durable row remains held if settlement cannot be confirmed.
+        console.error('Member email claim settlement failed:', error);
+      });
+    }
+  }
 }
 
 

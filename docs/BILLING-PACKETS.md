@@ -242,7 +242,8 @@ that automatically emails to counselor and the student."
   marker blocks later signing and claiming. The cleanup request owns a UUID
   operation token, so a second delete or erase returns a conflict while the
   first is working.
-- Resume, profile-photo and certificate uploads and member-subject notifications
+- Resume, profile-photo and certificate uploads, member-subject notifications,
+  and opted-in member-linked email sends
   each insert their own UUID row in `member_external_effect_claims` before an
   external request. Concurrent notifications can proceed independently.
   Deletion and Auth identity edits refuse any unresolved row under the member
@@ -261,9 +262,15 @@ that automatically emails to counselor and the student."
   claim after the worker ends; it does not prove the provider never delivered.
   An already accepted device push cannot be recalled. The application prevents
   a new provider call after erasure wins the lock.
+- Opted-in member-linked email sends claim every member recipient or named
+  subject before Resend I/O. Unknown provider outcomes retain the exact claim
+  for reconciliation, including the send idempotency key in its reason. A
+  definite provider rejection releases the claim after the request settles.
+  Existing senders without `memberEffectClaim` retain a final active-member
+  lookup but do not have this durable provider boundary.
 - Preview/Development use flattened Prisma transactions and cannot prove the
   member advisory-lock boundary. External-effect claims fail closed there.
-  Authenticated Preview upload and notification acceptance needs the DEMO schema
+  Authenticated Preview upload, notification, and opted-in email acceptance needs the DEMO schema
   caught up and an interactive database target; a successful build is not that
   acceptance.
 - Member application-onboarding, first-program enrollment and primary-program
@@ -297,7 +304,7 @@ that automatically emails to counselor and the student."
 Treat a non-null `billing_deletion_operation_id` or any row in
 `member_external_effect_claims` as an active owner regardless of age. The User
 column now belongs only to deletion, Auth identity edit and restore; Storage
-and notification owners are distinct rows. Query the exact member's rows with
+notification and opted-in email owners are distinct rows. Query the exact member's rows with
 `SELECT id, member_id, kind, status, reason, created_at, updated_at FROM
 public.member_external_effect_claims WHERE member_id = '<User ID>';`. Only a
 named operator handling an incident may clear a crash-held token or row.
@@ -311,8 +318,8 @@ incident and audit trail. Before any write:
    If that cannot be proved, leave the token held. A timeout or old `updated_at`
    is insufficient.
 2. Identify whether the User token belongs to deletion, an Auth identity edit
-   or restore, or whether an external-effect row belongs to Storage or a
-   member-subject notification.
+   or restore, or whether an external-effect row belongs to Storage, a
+   member-subject notification, or an opted-in email send.
    Verify the exact Auth User ID through Supabase Admin; a 5xx/timeout is
    unknown, not absence. Check
    Storage cleanup, app tombstone, packet send state and any pending provider
@@ -329,7 +336,11 @@ incident and audit trail. Before any write:
    retry that can resume, before clearing its exact claim row. Record any
    provider receipt available, but do not mistake an unknown delivery result
    for a still-running local request. A timeout or HTTP 5xx is not proof that
-   a past notification was rejected. For an interrupted admin erase, confirm
+   a past notification was rejected. An interrupted email claim requires
+   checking the exact Resend idempotency
+   key and send log for a receipt or unresolved delivery before clearing it.
+   An HTTP 408/409/5xx or network error does not establish non-delivery.
+   For an interrupted admin erase, confirm
    the irreversible erased-email tombstone
    before clearing its token. If the
    worker stopped before that tombstone committed, stop and plan a guarded

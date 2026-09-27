@@ -47,7 +47,7 @@ export async function sendApplicationStatusLinkEmail(params: {
   url: string;
   expiresInMinutes: number;
   branding: OrganizationBranding;
-  /** Send-log attribution only; never placed in the message. */
+  /** Account bound to the status link and its send-time lifecycle claim. */
   userId: string;
   applicationId: string;
 }): Promise<SendApplicationStatusLinkEmailResult> {
@@ -74,6 +74,8 @@ export async function sendApplicationStatusLinkEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.userId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(APPLICATION_STATUS_LINK_SUBJECT),
       html,
       text: applicationStatusLinkEmailText({ firstName, url: params.url, expiresInMinutes: params.expiresInMinutes, orgName }),

@@ -1,5 +1,5 @@
--- Durable, independently owned external effects for member Storage and
--- notifications. Each operation has its own row, so sibling notices do not
+-- Durable, independently owned external effects for member Storage,
+-- notifications, and email. Each operation has its own row, so sibling effects do not
 -- exclude one another. A User cannot be hard-deleted with an unresolved row.
 BEGIN;
 SET LOCAL lock_timeout = '2s';
@@ -8,7 +8,7 @@ SET LOCAL statement_timeout = '30s';
 CREATE TABLE IF NOT EXISTS public.member_external_effect_claims (
   id UUID PRIMARY KEY,
   member_id TEXT NOT NULL,
-  kind TEXT NOT NULL CHECK (kind IN ('storage', 'notification')),
+  kind TEXT NOT NULL CHECK (kind IN ('storage', 'notification', 'email')),
   status TEXT NOT NULL DEFAULT 'in_flight' CHECK (status IN ('in_flight', 'needs_reconciliation')),
   reason TEXT,
   created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

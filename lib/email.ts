@@ -6,6 +6,7 @@
 import { Resend } from 'resend';
 import {
   FixtureRecipientSkippedError,
+  MemberEmailOutcomeUncertainError,
   buildDeliverabilityHeaders,
   htmlToPlainText,
   isEmailProviderRateLimitError,
@@ -507,6 +508,7 @@ export async function sendCounselorAssignedEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.counselor_assigned,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`${branding.name} — ${params.counselorFullName} is your counselor`),
       html,
     });
@@ -1711,7 +1713,7 @@ export async function sendAIMatchSuggestionEmail(params: {
   companyName: string;
   matches: { name: string; program: string; score: number }[];
   subjectMemberIds: string[];
-}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+}): Promise<{ ok: boolean; skipped?: boolean; uncertain?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
     console.warn('sendAIMatchSuggestionEmail: RESEND_API_KEY not set');
@@ -1728,11 +1730,15 @@ export async function sendAIMatchSuggestionEmail(params: {
       from: getFrom(),
       to: params.to,
       subjectMemberIds: params.subjectMemberIds,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`Top candidate matches for "${params.jobTitle}"`),
       html,
     });
     return { ok: true };
   } catch (err) {
+    if (err instanceof MemberEmailOutcomeUncertainError) {
+      return { ok: false, uncertain: true, error: err.message };
+    }
     if (err instanceof FixtureRecipientSkippedError) {
       return { ok: false, skipped: true, error: err.reason };
     }
@@ -1746,7 +1752,7 @@ export async function sendAIMatchSuggestionEmail(params: {
  */
 export async function sendMatchActionEmail(
   params: Parameters<typeof sendAIMatchSuggestionEmail>[0]
-): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+): Promise<{ ok: boolean; skipped?: boolean; uncertain?: boolean; error?: string }> {
   return sendAIMatchSuggestionEmail(params);
 }
 
@@ -1780,6 +1786,7 @@ export async function sendApplicationConfirmationEmail(params: {
       templateKey: EMAIL_TEMPLATE_KEYS.application_received,
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: Boolean(params.recipientUserId),
       subject: sanitizeEmailSubjectLine(
         'Welcome to Workforce Advancement Project — Your Next Steps',
       ),
@@ -2944,6 +2951,7 @@ export async function sendInterviewPrepLink(params: {
       from: getFrom(),
       to: params.to,
       recipientUserId: params.recipientUserId,
+      memberEffectClaim: true,
       subject: sanitizeEmailSubjectLine(`Practice for your interview with ${branding.name}`),
       html,
     });
@@ -3012,6 +3020,7 @@ export async function sendEligibilityLink(params: {
       to: params.to,
       recipientUserId: params.recipientUserId,
       subjectMemberId: params.subjectMemberId,
+      memberEffectClaim: Boolean(params.recipientUserId || params.subjectMemberId),
       subject: sanitizeEmailSubjectLine(
         params.softDeadlineReminder
           ? `Please complete your eligibility info by Sept 14 — ${branding.name}`

@@ -265,7 +265,7 @@ export const USER_FK_NOT_REPOINTED: Record<string, string> = {
 
   // --- outstanding provider effects must finish on their original account ---
   'memberExternalEffectClaim.memberId':
-    'an in-flight or uncertain Storage/notification operation belongs to the original member identity; merge refuses retirement of the secondary until its claim is reconciled and removed',
+    'an in-flight or uncertain Storage, notification, or email operation belongs to the original member identity; merge refuses retirement of the secondary until its claim is reconciled and removed',
 };
 
 /**
