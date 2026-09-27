@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { hostnameOf, isProductionHost, verifyAcceptanceReceipt } from './resume-acceptance-receipt.mjs';
+import { hostnameOf, isProductionHost, verifyAcceptanceReceipt, verifyCleanupReceipt } from './resume-acceptance-receipt.mjs';
 
 test('[mock] only the exact production hostnames are production', () => {
   assert.equal(isProductionHost('workforceap.org'), true);
@@ -29,4 +29,27 @@ test('[mock] the receipt check fails on a missing, broken, failing or multi-Buil
     verifyAcceptanceReceipt(write('ok.json', JSON.stringify({ pass: true, outcome: 'success', buildRequestsMade: 1 }))),
     { ok: true, reason: 'pass' },
   );
+});
+
+test('[mock] the cleanup receipt check requires verified Auth and Prisma absence and empty member prefixes', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'resume-cleanup-'));
+  const write = (name: string, body: unknown) => {
+    const path = join(dir, name);
+    writeFileSync(path, typeof body === 'string' ? body : JSON.stringify(body));
+    return path;
+  };
+  const good = {
+    success: true, memberCreated: true, authAbsenceVerified: true, prismaUserAbsenceVerified: true,
+    storage: { before: { 'member-resumes': 2, 'member-files': 0 }, removed: 2, after: { 'member-resumes': 0, 'member-files': 0 } },
+  };
+  assert.equal(verifyCleanupReceipt(join(dir, 'missing.json')).ok, false);
+  assert.equal(verifyCleanupReceipt(write('broken.json', '{')).ok, false);
+  assert.equal(verifyCleanupReceipt(write('failed.json', { success: false, error: 'Auth lookup' })).ok, false);
+  assert.equal(verifyCleanupReceipt(write('auth.json', { ...good, authAbsenceVerified: false })).ok, false);
+  assert.equal(verifyCleanupReceipt(write('prisma.json', { ...good, prismaUserAbsenceVerified: undefined })).ok, false);
+  assert.equal(verifyCleanupReceipt(write('left.json', { ...good, storage: { ...good.storage, after: { 'member-resumes': 1, 'member-files': 0 } } })).ok, false);
+  assert.equal(verifyCleanupReceipt(write('nocounts.json', { ...good, storage: undefined })).ok, false);
+  assert.equal(verifyCleanupReceipt(write('unknown.json', { success: true })).ok, false);
+  assert.equal(verifyCleanupReceipt(write('ok.json', good)).ok, true);
+  assert.equal(verifyCleanupReceipt(write('none.json', { success: true, memberCreated: false })).ok, true);
 });

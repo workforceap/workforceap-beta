@@ -62,8 +62,11 @@ jobs:
       contents: read
       deployments: read
     env:
-      # Outside the workspace, so no artifact step can pick it up.
+      # Outside the workspace, so no artifact step can pick them up. The marker
+      # (run id + synthetic email, no secrets) is written BEFORE the Auth create
+      # call, the state (exact IDs) right after it.
       RESUME_QA_STATE_FILE: /tmp/resume-qa-fixture.json
+      RESUME_QA_MARKER_FILE: /tmp/resume-qa-fixture.marker.json
 
     steps:
       - name: Checkout trusted master
@@ -167,7 +170,11 @@ jobs:
           RESUME_ACCEPTANCE_MODE: workflow
           RESUME_ACCEPTANCE_OUTPUT: test-results/resume-demo-acceptance.json
 
-      # Always runs once a member may exist: removes exactly the recorded ID.
+      # Runs whenever the create step ran (even if it or the spec failed), so
+      # credentials are still never used before the gates passed. Removes
+      # exactly the recorded ID. With no creation marker it writes a
+      # memberCreated:false receipt; with a marker but no readable state it
+      # fails closed and prints exact-email recovery steps.
       - name: Clean up the disposable synthetic member
         if: always() && steps.create.outcome != 'skipped'
         env:
@@ -180,21 +187,32 @@ jobs:
           RESUME_QA_CLEANUP_OUTPUT: test-results/resume-demo-cleanup.json
         run: pnpm exec tsx scripts/resume-demo-member.ts cleanup
 
-      # A green job needs a receipt that says pass: true with outcome success
-      # and exactly one Build request; a skipped or refused spec fails here.
-      - name: Verify the acceptance receipt
+      # Green only if BOTH receipts pass: acceptance (pass: true, outcome
+      # success, exactly one Build request) AND cleanup (success, Auth and
+      # Prisma absence verified, every member-prefix storage count 0). A
+      # skipped/refused spec or an unverified cleanup fails here.
+      - name: Verify the acceptance and cleanup receipts
         if: always()
         env:
           RESUME_ACCEPTANCE_OUTPUT: test-results/resume-demo-acceptance.json
+          RESUME_QA_CLEANUP_OUTPUT: test-results/resume-demo-cleanup.json
         run: node scripts/verify-resume-acceptance-receipt.mjs receipt
 
-      - name: Upload evidence
+      # One upload per receipt, each required.
+      - name: Upload the acceptance receipt
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: resume-demo-acceptance-${{ github.run_id }}
-          path: |
-            test-results/resume-demo-acceptance.json
-            test-results/resume-demo-cleanup.json
+          path: test-results/resume-demo-acceptance.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload the cleanup receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resume-demo-cleanup-${{ github.run_id }}
+          path: test-results/resume-demo-cleanup.json
           if-no-files-found: error
           retention-days: 14

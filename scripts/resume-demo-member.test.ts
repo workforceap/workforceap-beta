@@ -9,6 +9,7 @@ import {
   createFixture,
   generatePassword,
   isAuthNotFound,
+  resolveCleanupInput,
   syntheticIdentity,
   type FixtureDeps,
   type FixtureState,
@@ -108,13 +109,15 @@ test('[mock] identity is unmistakably synthetic and the password is per-run rand
   assert.notEqual(password, generatePassword());
 });
 
-test('[mock] create records the Auth ID before the database write and touches no other account', async () => {
+test('[mock] create writes the marker before the Auth call, records the Auth ID before the database write, and touches no other account', async () => {
   const { deps, calls, users } = fakeDeps();
   let recorded: FixtureState | null = null;
-  const state = await createFixture(TARGET, syntheticIdentity('42', '1'), 'x'.repeat(32), deps, (s) => { recorded = s; });
+  const state = await createFixture(TARGET, syntheticIdentity('42', '1'), 'x'.repeat(32), deps, (s) => { recorded = s; }, (marker) => {
+    calls.push(`marker:${marker.email}`);
+  });
   assert.deepEqual(recorded, state);
   assert.equal(state.userId, NEW_ID);
-  assert.deepEqual(calls, ['createAuthUser:resume-qa-42-1@example.com', `createMember:${NEW_ID}`]);
+  assert.deepEqual(calls, ['marker:resume-qa-42-1@example.com', 'createAuthUser:resume-qa-42-1@example.com', `createMember:${NEW_ID}`]);
   assert.equal(users.get(OTHER_ID)?.email, 'member-test@workforceap.org');
 });
 
@@ -137,8 +140,8 @@ test('[mock] cleanup removes only the recorded member, its own objects, DB row a
 
   assert.deepEqual(result, {
     storage: { before: { 'member-resumes': 2, 'member-files': 0 }, removed: 2, after: { 'member-resumes': 0, 'member-files': 0 } },
-    authUserAbsentVerified: true,
-    databaseUserAbsentVerified: true,
+    authAbsenceVerified: true,
+    prismaUserAbsenceVerified: true,
     authUserDeleted: true,
     databaseUserDeleted: true,
   });
@@ -173,8 +176,8 @@ test('[mock] cleanup after a failed database write still removes the recorded Au
   const result = await cleanupFixture(TARGET, recorded!, deps);
   assert.deepEqual(result, {
     storage: { before: { 'member-resumes': 0, 'member-files': 0 }, removed: 0, after: { 'member-resumes': 0, 'member-files': 0 } },
-    authUserAbsentVerified: true,
-    databaseUserAbsentVerified: true,
+    authAbsenceVerified: true,
+    prismaUserAbsenceVerified: true,
     authUserDeleted: true,
     databaseUserDeleted: false,
   });
@@ -223,10 +226,11 @@ test('[mock] a storage remove error is surfaced and keeps the database and Auth 
   assert.ok(objects.has(`member-resumes/${NEW_ID}/resume-original-a.pdf`));
 });
 
-test('[mock] only an explicit not-found counts as an absent Auth user', () => {
-  assert.equal(isAuthNotFound({ status: 404 }), true);
+test('[mock] only an explicit user_not_found code counts as an absent Auth user', () => {
+  assert.equal(isAuthNotFound({ status: 404, code: 'user_not_found' }), true);
   assert.equal(isAuthNotFound({ code: 'user_not_found' }), true);
-  for (const error of [{ status: 500 }, { status: 403, code: 'not_admin' }, { status: 401 }, null]) {
+  // A bare 404 (e.g. a misrouted admin endpoint) fails closed.
+  for (const error of [{ status: 404 }, { status: 404, code: 'not_found' }, { status: 500 }, { status: 403, code: 'not_admin' }, { status: 401 }, null]) {
     assert.equal(isAuthNotFound(error), false);
   }
 });
@@ -258,7 +262,7 @@ test('[mock] a transient Auth lookup error is retried and cleanup then succeeds'
     },
   };
   const result = await cleanupFixture(TARGET, state, flaky);
-  assert.equal(result.authUserAbsentVerified, true);
+  assert.equal(result.authAbsenceVerified, true);
   assert.ok(!users.has(NEW_ID) && !authUsers.has(NEW_ID));
 });
 
@@ -272,4 +276,23 @@ test('[mock] if the Auth user survives deletion, the Prisma row is kept for a re
   assert.deepEqual(calls, [`deleteAuthUser:${NEW_ID}`]);
   assert.ok(!calls.some((call) => call.startsWith("deleteUser:")));
   assert.ok(users.has(NEW_ID));
+});
+
+test('[mock] cleanup input: marker plus missing or unreadable state fails closed with exact-email recovery', () => {
+  const marker = JSON.stringify({ runId: '42-1', email: 'resume-qa-42-1@example.com', organizationId: 'qa-org' });
+  for (const state of [null, '{', JSON.stringify({ userId: NEW_ID })]) {
+    assert.throws(() => resolveCleanupInput(marker, state), (error: Error) => {
+      assert.match(error.message, /exact email resume-qa-42-1@example\.com/);
+      assert.match(error.message, /Never delete by pattern/);
+      return true;
+    });
+  }
+  // An unreadable marker still fails closed, without guessing an email.
+  assert.throws(() => resolveCleanupInput('{', null), /<unreadable marker>/);
+});
+
+test('[mock] cleanup input: no marker and no state is a clean never-created no-op; valid state is used', () => {
+  assert.deepEqual(resolveCleanupInput(null, null), { kind: 'never-created' });
+  const state = { userId: NEW_ID, email: 'resume-qa-42-1@example.com', organizationId: 'qa-org', runId: '42-1' };
+  assert.deepEqual(resolveCleanupInput(JSON.stringify({ runId: '42-1', email: state.email, organizationId: 'qa-org' }), JSON.stringify(state)), { kind: 'state', state });
 });

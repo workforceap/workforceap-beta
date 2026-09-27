@@ -13,6 +13,7 @@ import {
   buildSyntheticResumePdf,
   classifyBuild,
   containsFact,
+  initialAcceptanceReceipt,
   PAGE_TWO_FACTS,
   singleBuildBudget,
   SYNTHETIC_RESUME_SOURCE_TEXT,
@@ -75,5 +76,13 @@ describe('DEMO acceptance fixture (local only)', () => {
     await expect(budget.run(failing)).rejects.toThrow(/exactly one Build request/);
     expect(calls).toBe(1);
     expect(budget.used).toBe(true);
+  });
+
+  it('[mock] a receipt that never reaches Build records zero requests and makes no "spent" claim', () => {
+    const receipt = initialAcceptanceReceipt('2026-09-27T00:00:00.000Z');
+    expect(receipt.buildRequestsMade).toBe(0);
+    expect(receipt.pass).toBe(false);
+    expect(JSON.stringify(receipt)).not.toMatch(/\bspent\b/i);
+    expect(receipt.groqQuota).toMatch(/may consume/);
   });
 });

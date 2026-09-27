@@ -107,3 +107,26 @@ export function singleBuildBudget() {
     },
   };
 }
+
+/** Static disclosure; what was actually attempted is `buildRequestsMade` (0 or 1). */
+export const GROQ_QUOTA_DISCLOSURE =
+  'Preview GROQ_API_KEY shares production quota (DEMO_SETUP.md:65); a Build request may consume it';
+
+/** The receipt as it stands before anything runs: not passed, zero Build requests. */
+export function initialAcceptanceReceipt(startedAt: string): Record<string, unknown> {
+  return {
+    fixture: SYNTHETIC_RESUME_FILE_NAME,
+    startedAt,
+    // Vercel metadata (2026-09-27): GROQ_API_KEY is set for all environments and
+    // ANTHROPIC_API_KEY is not set, so Build is served by the Groq fallback in
+    // lib/ai/anthropicChat.ts. The route does not report the provider or model.
+    providerPath: 'Groq fallback; Anthropic not configured on Preview (expected, not reported by the route)',
+    groqQuota: GROQ_QUOTA_DISCLOSURE,
+    buildRequestLimit: 1,
+    model: 'not exposed by the route',
+    validatorScope: 'findUnsupportedResumeClaims is a narrow fail-closed validator; prose claims are not assessed',
+    buildRequestsMade: 0,
+    pass: false,
+    outcome: 'not_run',
+  };
+}

@@ -36,6 +36,7 @@ import {
   buildSyntheticResumePdf,
   classifyBuild,
   containsFact,
+  initialAcceptanceReceipt,
   PAGE_TWO_FACTS,
   singleBuildBudget,
   SYNTHETIC_RESUME_FILE_NAME,
@@ -68,22 +69,7 @@ function refusal(): string | null {
 
 /** Evidence keys only; no cookies, tokens, emails or passwords are recorded. */
 type Evidence = Record<string, unknown>;
-const evidence: Evidence = {
-  fixture: SYNTHETIC_RESUME_FILE_NAME,
-  startedAt: new Date().toISOString(),
-  // Vercel metadata (2026-09-27): GROQ_API_KEY is set for all environments and
-  // ANTHROPIC_API_KEY is not set, so Build is served by the Groq fallback in
-  // lib/ai/anthropicChat.ts. The route does not report the provider or model.
-  providerPath: 'Groq fallback; Anthropic not configured on Preview (expected, not reported by the route)',
-  groqQuota: 'The Preview GROQ_API_KEY is the production key (DEMO_SETUP.md:65); this run spent production Groq quota',
-  buildRequestLimit: 1,
-  model: 'not exposed by the route',
-  validatorScope:
-    'findUnsupportedResumeClaims is a narrow fail-closed validator; prose claims are not assessed',
-  buildRequestsMade: 0,
-  pass: false,
-  outcome: 'not_run',
-};
+const evidence: Evidence = initialAcceptanceReceipt(new Date().toISOString());
 
 /** Resume text is never recorded: only its length and SHA-256 digest. */
 function digest(text: string | null) {

@@ -44,6 +44,44 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export interface PortalQaTarget { organizationId: string; organizationSlug: string; databaseUrl: string }
 export interface FixtureState { userId: string; email: string; organizationId: string; runId: string }
+export interface CreationMarker { runId: string; email: string; organizationId: string }
+
+export type CleanupInput = { kind: 'state'; state: FixtureState } | { kind: 'never-created' };
+
+function readJson(text: string | null): unknown {
+  if (text === null) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
+function isFixtureState(value: unknown): value is FixtureState {
+  const v = value as Partial<FixtureState> | null;
+  return Boolean(v) && typeof v!.userId === 'string' && typeof v!.email === 'string'
+    && typeof v!.organizationId === 'string' && typeof v!.runId === 'string';
+}
+
+/**
+ * Decide what cleanup may do from the marker and state files. It is a no-op
+ * only when NO marker exists (the member was never created). A marker with a
+ * missing or unreadable state fails closed with exact-email recovery steps;
+ * nothing is ever deleted by pattern.
+ */
+export function resolveCleanupInput(markerText: string | null, stateText: string | null): CleanupInput {
+  const state = readJson(stateText);
+  if (isFixtureState(state)) return { kind: 'state', state };
+  if (markerText === null && stateText === null) return { kind: 'never-created' };
+  const marker = readJson(markerText) as Partial<CreationMarker> | null | undefined;
+  const email = typeof marker?.email === 'string' && RESUME_QA_EMAIL.test(marker.email) ? marker.email : '<unreadable marker>';
+  throw new Error(
+    'Refusing cleanup: a synthetic member may have been created but its recorded ID is missing or unreadable. '
+      + `Manual recovery: in the DEMO project, look up the Auth user and the users row by the exact email ${email}, `
+      + 'confirm app_metadata.resume_acceptance_fixture is true, then remove that exact ID: its member-resumes/<id>/ and '
+      + 'member-files prefixes, the Auth user, then the users row. Never delete by pattern.',
+  );
+}
 
 export interface FixtureDeps {
   findOrganization(id: string): Promise<{ id: string; slug: string; active: boolean } | null>;
@@ -58,7 +96,7 @@ export interface FixtureDeps {
   deleteUser(id: string): Promise<void>;
   createAuthUser(input: { email: string; password: string; fullName: string; appMetadata: Record<string, unknown> }): Promise<string>;
   /**
-   * The Auth user, or null ONLY on an explicit not-found answer. Every other
+   * The Auth user, or null ONLY on an explicit `user_not_found` answer. Every other
    * error (5xx, permission, network) must throw, so cleanup fails closed.
    */
   getAuthUser(id: string): Promise<{ id: string; email: string | null; appMetadata: Record<string, unknown> } | null>;
@@ -138,12 +176,16 @@ export async function createFixture(
   password: string,
   deps: FixtureDeps,
   onAuthCreated: (state: FixtureState) => void,
+  onBeforeAuthCreate: (marker: CreationMarker) => void = () => {},
 ): Promise<FixtureState> {
   if (!RESUME_QA_EMAIL.test(identity.email)) throw new Error('Refusing a non-synthetic acceptance identity.');
   await assertOrganization(target, deps, { requireOnly: true });
   if (await deps.findUserIdByEmail(identity.email)) {
     throw new Error('The synthetic acceptance member for this run already exists. Nothing was changed.');
   }
+  // Durable marker (no secrets) BEFORE the Auth call, so a crash between the
+  // Auth create and the state write can never read as "nothing was created".
+  onBeforeAuthCreate({ runId: identity.runId, email: identity.email, organizationId: target.organizationId });
   const userId = await deps.createAuthUser({
     email: identity.email,
     password,
@@ -251,20 +293,25 @@ export async function cleanupFixture(target: PortalQaTarget, state: FixtureState
       throw strandedError(state, 'database delete');
     }
   }
+  // Explicit post-delete lookup by the exact ID.
   if (await deps.findUserById(state.userId)) throw strandedError(state, 'database user still present');
 
   return {
     storage: { before, removed: removed.deleted.length, after },
-    authUserAbsentVerified: true,
-    databaseUserAbsentVerified: true,
+    authAbsenceVerified: true,
+    prismaUserAbsenceVerified: true,
     authUserDeleted: Boolean(authUser),
     databaseUserDeleted: Boolean(dbUser),
   };
 }
 
-/** Supabase Auth's explicit not-found answer (HTTP 404 / `user_not_found`). */
+/**
+ * Supabase Auth's explicit user-not-found answer: AuthApiError.code
+ * `user_not_found` (@supabase/auth-js ErrorCode). A bare HTTP 404 without that
+ * code (for example a misrouted admin endpoint) is NOT treated as absent.
+ */
 export function isAuthNotFound(error: { status?: number; code?: string } | null | undefined): boolean {
-  return Boolean(error) && (error!.status === 404 || error!.code === 'user_not_found');
+  return error?.code === 'user_not_found';
 }
 
 function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
@@ -336,6 +383,7 @@ async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
   const target = readPortalQaTarget(env) as PortalQaTarget;
   const stateFile = env.RESUME_QA_STATE_FILE?.trim();
   if (!stateFile) throw new Error('Set RESUME_QA_STATE_FILE.');
+  const markerFile = env.RESUME_QA_MARKER_FILE?.trim() || `${stateFile}.marker`;
 
   if (command === 'create') {
     if (!env.GITHUB_ENV) throw new Error('create hands the credentials to later steps through GITHUB_ENV.');
@@ -344,9 +392,11 @@ async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
     console.log(`::add-mask::${password}`);
     const { deps, close } = liveDeps(target, env);
     try {
-      const state = await createFixture(target, identity, password, deps, (created) => {
-        writeFileSync(stateFile, JSON.stringify(created));
-      });
+      const state = await createFixture(
+        target, identity, password, deps,
+        (created) => { writeFileSync(stateFile, JSON.stringify(created)); },
+        (marker) => { writeFileSync(markerFile, JSON.stringify(marker)); },
+      );
       appendFileSync(env.GITHUB_ENV, `RESUME_ACCEPTANCE_MEMBER_EMAIL=${state.email}\nRESUME_ACCEPTANCE_MEMBER_PASSWORD=${password}\n`);
       console.log(`Created synthetic acceptance member ${state.userId} for run ${state.runId}.`);
     } finally {
@@ -356,25 +406,37 @@ async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
   }
 
   if (command === 'cleanup') {
-    if (!existsSync(stateFile)) {
-      console.log('No synthetic acceptance member was recorded; nothing to clean up.');
-      return;
-    }
-    const state = JSON.parse(readFileSync(stateFile, 'utf8')) as FixtureState;
     const output = env.RESUME_QA_CLEANUP_OUTPUT?.trim();
     const writeReceipt = (receipt: Record<string, unknown>) => {
       if (!output) return;
       mkdirSync(dirname(output), { recursive: true });
-      writeFileSync(output, `${JSON.stringify({ userId: state.userId, runId: state.runId, auditRowsRetained: true, ...receipt }, null, 2)}\n`);
+      writeFileSync(output, `${JSON.stringify({ auditRowsRetained: true, ...receipt }, null, 2)}\n`);
     };
+    const readIfPresent = (path: string) => (existsSync(path) ? readFileSync(path, 'utf8') : null);
+    let input: CleanupInput;
+    try {
+      input = resolveCleanupInput(readIfPresent(markerFile), readIfPresent(stateFile));
+    } catch (error) {
+      writeReceipt({ success: false, memberCreated: 'unknown', error: (error as Error).message });
+      throw error;
+    }
+    if (input.kind === 'never-created') {
+      writeReceipt({ success: true, memberCreated: false });
+      console.log('No creation marker: the synthetic acceptance member was never created; nothing to clean up.');
+      return;
+    }
+    const { state } = input;
     const { deps, close } = liveDeps(target, env);
     try {
       const result = await cleanupFixture(target, state, deps);
       // success only when storage prefixes are empty and Auth and Prisma absence are verified.
-      writeReceipt({ success: true, ...result });
+      writeReceipt({ success: true, memberCreated: true, userId: state.userId, runId: state.runId, ...result });
       console.log(`Cleaned up synthetic acceptance member ${state.userId}: ${JSON.stringify(result)}. Audit rows are retained by design.`);
     } catch (error) {
-      writeReceipt({ success: false, error: error instanceof Error && Object.getPrototypeOf(error) === Error.prototype ? error.message : 'cleanup failed' });
+      writeReceipt({
+        success: false, memberCreated: true, userId: state.userId, runId: state.runId,
+        error: error instanceof Error && Object.getPrototypeOf(error) === Error.prototype ? error.message : 'cleanup failed',
+      });
       throw error;
     } finally {
       await close();

@@ -27,7 +27,7 @@ The workflow runs these steps in order. It fails closed at each gate.
    - It then checks the organization given as dispatch inputs. An organization with exactly that ID must exist, its slug must match exactly, and it must be active (`assertPortalQaOrganization`). It must also be the only active `portal-qa-*` organization. Any mismatch fails closed before anything is created.
    - The organization itself is only read, never changed.
    - It then creates **one** member, `resume-qa-<run id>-<attempt>@example.com`, with the member role and a password generated for this run. The password is masked in the log and never printed.
-   - It records the Auth ID before the database write.
+   - It writes a creation marker before the Auth create call. The marker holds the run ID and synthetic email, and no secrets. It then records the exact Auth ID before the database write.
 6. **Spec:** `tests/e2e/resume-demo-acceptance.spec.ts` signs in as that member and does the following:
    - uploads the synthetic PDF, expecting 200;
    - makes exactly **one** Build request with the real provider and never retries it, expecting 200;
@@ -37,10 +37,11 @@ The workflow runs these steps in order. It fails closed at each gate.
 
    The spec refuses any account that is not a `resume-qa-*@example.com` member, the shared `PREVIEW_E2E_MEMBER_EMAIL` account, and exact production hostnames. The workflow sets `RESUME_ACCEPTANCE_MODE=workflow`. In that mode a refusal **fails** the spec instead of skipping it, and a receipt with `pass: false` is always written. Without the flag, locally, the spec stays inert and skips.
 7. **Cleanup:** runs always. `scripts/resume-demo-member.ts cleanup` works only on the recorded ID, in this order:
-   1. It looks up the Prisma and Auth users. Auth lookups fail closed: only an explicit not-found answer (404 / `user_not_found`) counts as absent, and any other error stops cleanup.
+   0. **Inputs.** If there is no creation marker, the member was never created. Cleanup writes `memberCreated: false` and does nothing else. If there is a marker but the recorded state is missing or unreadable, cleanup **fails closed** and prints manual recovery steps: look up by the exact synthetic email from the marker, then delete by the returned exact ID. It never deletes by pattern.
+   1. It looks up the Prisma and Auth users. Auth lookups fail closed. Only the explicit Supabase Auth code `user_not_found` counts as absent. A bare 404 or any other error stops cleanup.
    2. It removes the member's own storage objects through `deleteUserStorageObjects` (`lib/gdpr/deleteUserStorage.ts`). That helper only lists that ID's prefixes: `member-resumes/<id>/`, `member-files/cert-files/<id>/` and the profile-photo prefix. It only keeps extra paths owned by that ID, and it fails closed on any list or remove error. Cleanup then checks that those prefixes count 0.
    3. It deletes the Auth user, then checks that the Auth user is gone (explicit not-found).
-   4. Only after that does it delete the Prisma user, whose profile and member rows cascade, and check that the row is gone.
+   4. Only after that does it delete the Prisma user, whose profile and member rows cascade. It then looks the user up again by the exact ID to check that the row is gone.
 
    Lookups and deletes get a bounded retry: 3 attempts, with 1 s and 3 s backoff. Any failure fails the job, keeps the Prisma row so that rerunning cleanup can finish, and prints the exact recorded IDs for manual cleanup. Cleanup refuses if the recorded ID resolves to anything other than that synthetic email in the exact fixture organization. Cleanup does not require the organization to be the only active one, so a second organization appearing mid-run cannot strand the member. It never touches the organization.
 
@@ -56,7 +57,9 @@ Guarded-422 preservation is **not** exercised on the live provider, because ther
   - A failed Build is recorded and the run ends, then cleanup runs.
 - **Never repeat a dispatch without reviewing the previous receipt.** The `resume-demo-acceptance` concurrency group stops two runs from overlapping.
 - The target must be the Preview serving the exact SHA. The job fails closed on an exact production hostname (gate 0) and unless `/api/health` on `PREVIEW_SITE_URL` reports the dispatched commit on the DEMO project (gate 1).
-- A green job requires `test-results/resume-demo-acceptance.json` with `pass: true`, `outcome: success` and `buildRequestsMade: 1`. The *Verify the acceptance receipt* step enforces this, and the artifact upload uses `if-no-files-found: error`.
+- A green job requires **both** receipts. The *Verify the acceptance and cleanup receipts* step enforces this, and each receipt has its own upload step with `if-no-files-found: error`.
+  - `resume-demo-acceptance.json` must hold `pass: true`, `outcome: success` and `buildRequestsMade: 1`.
+  - `resume-demo-cleanup.json` must hold `success: true`, `authAbsenceVerified: true`, `prismaUserAbsenceVerified: true`, and a count of 0 for every member-prefix bucket in `storage.after`.
 - Dispatch stays stopped until Mike has reviewed and merged this workflow and verified the guards. Do not change any environment variables or keys.
 
 A workflow file cannot be dispatched from a branch with secrets, so dispatch happens only from `master`.
@@ -69,6 +72,7 @@ gh workflow run resume-demo-acceptance.yml --ref master \
   -f qa_organization_slug=portal-qa-september-smoke
 gh run watch "$(gh run list --workflow resume-demo-acceptance.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
 gh run download <run id> -n resume-demo-acceptance-<run id>
+gh run download <run id> -n resume-demo-cleanup-<run id>
 ```
 
 ## Provider path
@@ -88,8 +92,8 @@ So a run on Preview is served by the **Groq fallback**. The receipt labels it th
 
 The receipt never contains resume text, cookies, tokens, passwords or member emails. It records:
 - `providerPath` and `model` (`not exposed by the route`);
-- `groqQuota`, the shared-quota fact from `DEMO_SETUP.md:65`;
-- `buildRequestLimit` (always 1) and `buildRequestsMade`;
+- `groqQuota`, a static disclosure: "Preview GROQ_API_KEY shares production quota (DEMO_SETUP.md:65); a Build request may consume it";
+- `buildRequestLimit` (always 1) and `buildRequestsMade`, which is 0 or 1 and says what was actually attempted;
 - `pass` (boolean) and `outcome`, which is the Build outcome below, or `refused` / `upload_failed` / `not_run`;
 - `validatorScope`: `findUnsupportedResumeClaims` is a narrow fail-closed validator, and prose claims are not assessed;
 - `upload.status` and `upload.extractionWarning`;
@@ -119,11 +123,11 @@ The receipt never contains resume text, cookies, tokens, passwords or member ema
 
 ## Cleanup verification
 
-The cleanup receipt is `test-results/resume-demo-cleanup.json`, in the same artifact. It holds:
+The cleanup receipt is `test-results/resume-demo-cleanup.json`, in the `resume-demo-cleanup-<run id>` artifact. It holds:
 - `storage.before` and `storage.after`, as per-bucket object counts for the member's prefixes (counts only, no paths);
 - `storage.removed`;
-- `success`;
-- `authUserAbsentVerified` and `databaseUserAbsentVerified`;
+- `success` and `memberCreated`;
+- `authAbsenceVerified` and `prismaUserAbsenceVerified`;
 - `authUserDeleted` and `databaseUserDeleted`;
 - `userId` and `runId`;
 - `auditRowsRetained: true`.

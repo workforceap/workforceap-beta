@@ -44,3 +44,31 @@ export function verifyAcceptanceReceipt(path) {
   if (receipt.buildRequestsMade !== 1) return { ok: false, reason: 'receipt does not record exactly one Build request' };
   return { ok: true, reason: 'pass' };
 }
+
+/**
+ * The workflow also fails unless the cleanup receipt exists and proves the
+ * disposable member is gone: success, Auth absence verified, Prisma user
+ * absence verified, and every member-prefix storage count after cleanup is 0.
+ * The only other accepted receipt is `memberCreated: false` (no creation
+ * marker existed), which cannot coexist with a passing acceptance run.
+ */
+export function verifyCleanupReceipt(path) {
+  if (!path || !existsSync(path)) return { ok: false, reason: 'cleanup receipt is missing' };
+  let receipt;
+  try {
+    receipt = JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return { ok: false, reason: 'cleanup receipt is not valid JSON' };
+  }
+  if (receipt?.success !== true) return { ok: false, reason: `cleanup did not succeed (${receipt?.error ?? 'no error recorded'})` };
+  if (receipt.memberCreated === false) return { ok: true, reason: 'no member was created' };
+  if (receipt.memberCreated !== true) return { ok: false, reason: 'cleanup receipt does not say whether a member was created' };
+  if (receipt.authAbsenceVerified !== true) return { ok: false, reason: 'Auth absence was not verified' };
+  if (receipt.prismaUserAbsenceVerified !== true) return { ok: false, reason: 'Prisma user absence was not verified' };
+  const after = receipt.storage?.after;
+  if (!after || typeof after !== 'object' || Object.keys(after).length === 0) {
+    return { ok: false, reason: 'cleanup receipt has no member-prefix storage counts' };
+  }
+  if (Object.values(after).some((count) => count !== 0)) return { ok: false, reason: 'member-prefix storage objects remain' };
+  return { ok: true, reason: 'member removed and verified' };
+}
