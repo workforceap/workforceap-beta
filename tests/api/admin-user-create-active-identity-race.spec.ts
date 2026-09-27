@@ -27,6 +27,7 @@ const effects = vi.hoisted(() => ({
   profile: vi.fn(),
   userRole: vi.fn(),
   reset: vi.fn(),
+  capture: vi.fn(),
   audit: vi.fn(),
   auditEvent: vi.fn(),
 }));
@@ -49,6 +50,7 @@ vi.mock('@/lib/auth/supabaseAdminUsers', () => ({
   findSupabaseAuthUserByEmail: auth.findByEmail,
 }));
 vi.mock('@/lib/auth/passwordReset', () => ({ sendPasswordResetEmail: effects.reset }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: effects.capture }));
 vi.mock('@/lib/audit', () => ({ auditLog: effects.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: effects.auditEvent }));
 
@@ -165,6 +167,47 @@ describe('POST /api/admin/users active identity race boundary', () => {
     expect(effects.userRole).toHaveBeenCalled();
     expect(effects.reset).toHaveBeenCalledWith('own@example.test', '/reset-password', { orgId: 'org-a' });
   });
+
+  it.each(['throw', 'error', 'skip'] as const)(
+    'reports committed creation and audits it when the post-commit reset %s',
+    async (failure) => {
+      const { identity } = transactionStore({
+        id: 'auth-own', organizationId: 'org-a', email: 'own@example.test', fullName: 'Original Name', deletedAt: null,
+      });
+      effects.profile
+        .mockResolvedValueOnce({ id: 'profile-own' })
+        .mockResolvedValueOnce({ role: 'member' });
+      effects.userRole.mockImplementation(async (args: { where?: { name?: string } }) => {
+        const name = args?.where?.name;
+        return name ? { id: `role-${name}`, name } : { count: 1 };
+      });
+      if (failure === 'throw') {
+        effects.reset.mockRejectedValueOnce(new Error('private provider detail'));
+      } else if (failure === 'error') {
+        effects.reset.mockResolvedValueOnce({ error: { message: 'private provider detail' }, via: 'skipped' });
+      } else {
+        effects.reset.mockResolvedValueOnce({ error: null, via: 'skipped' });
+      }
+      effects.audit.mockResolvedValue(undefined);
+      effects.auditEvent.mockResolvedValue(undefined);
+
+      const response = await POST(request() as never);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toEqual({
+        success: true,
+        user: { id: 'auth-own', fullName: 'Loser Request', email: 'own@example.test', role: 'member' },
+        warning: 'User created, but the password reset email could not be confirmed. Use the reset action on the user record.',
+      });
+      expect(JSON.stringify(body)).not.toContain('private provider detail');
+      expect(identity.fullName).toBe('Loser Request');
+      expect(effects.audit).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'admin_user_created', targetId: 'auth-own',
+      }));
+      expect(effects.auditEvent).toHaveBeenCalled();
+    },
+  );
 
   it('rejects an already-retired identity as a generic conflict with no later effects', async () => {
     const { identity, tx } = transactionStore({
