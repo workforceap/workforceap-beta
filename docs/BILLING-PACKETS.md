@@ -241,6 +241,14 @@ that automatically emails to counselor and the student."
   check. A failed staged-object cleanup is logged for incident reconciliation;
   Storage is not part of the database transaction, so inspect the member's
   Storage prefixes before declaring a deletion reconciled.
+- Member application-onboarding, first-program enrollment and primary-program
+  promotion recheck the persisted deletion marker under the member lifecycle
+  lock in their final write transaction. A stale authenticated request gets
+  HTTP 409 before it can recreate an Application, enrollment or legacy program
+  pointer. Enrollment's queued follow-ups check the marker again before they
+  run, so callbacks starting after erasure skip member/partner email and
+  personal activity writes. A provider request that already started cannot be
+  recalled; its delivery must be reconciled separately.
 - A returned Storage or Auth failure releases the operation token while
   leaving the pending marker in place. Retry can acquire a new token and
   repeat cleanup. A process crash leaves the token held and requires an

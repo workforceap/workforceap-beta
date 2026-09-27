@@ -60,6 +60,11 @@ vi.mock('@/lib/platform/trainingEnrollmentGate', () => ({
   isMemberWioaVerified: vi.fn(() => ({ ok: true })),
 }));
 
+vi.mock('@/lib/billing/erasureGuard', () => ({
+  lockBillingMemberLifecycle: vi.fn(async () => undefined),
+  billingLifecyclePending: vi.fn(async () => false),
+}));
+
 vi.mock('@/lib/notifications/partner-notify', () => ({
   sendPartnerMilestoneEmail: vi.fn(() => Promise.resolve()),
 }));
@@ -76,6 +81,10 @@ vi.mock('@/lib/member/points', () => ({
   awardPoints: vi.fn(() => Promise.resolve()),
 }));
 
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
+vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) }));
+vi.mock('@/lib/coursera/courseKickoff', () => ({ maybeSendCourseKickoffEmail: vi.fn(async () => undefined) }));
+
 // ─── Imports after mocks ───
 import { POST as enrollPost } from '@/app/api/member/enroll/route';
 import { GET as listEnrollments } from '@/app/api/member/enrollments/route';
@@ -86,6 +95,10 @@ import { getActivePrograms } from '@/lib/platform/programCatalog';
 import { isMemberWioaVerified } from '@/lib/platform/trainingEnrollmentGate';
 import { NextRequest, after } from 'next/server';
 import { sendCourseEnrolledEmail } from '@/lib/email';
+import { lockBillingMemberLifecycle, billingLifecyclePending } from '@/lib/billing/erasureGuard';
+import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
+import { maybeSendCourseKickoffEmail } from '@/lib/coursera/courseKickoff';
+import { auditLog } from '@/lib/audit';
 
 const UUIDS = {
   user: '550e8400-e29b-41d4-a716-446655440001',
@@ -111,6 +124,8 @@ describe('POST /api/member/enroll', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(prisma.courseEnrollment.findMany).mockResolvedValue([]);
+    vi.mocked(lockBillingMemberLifecycle).mockResolvedValue(undefined);
+    vi.mocked(billingLifecyclePending).mockResolvedValue(false);
   });
 
   it('enrolls member in program', async () => {
@@ -445,6 +460,7 @@ describe('POST /api/member/enroll', () => {
 
       expect(res.status).toBe(200);
       expect(await res.json()).toMatchObject({ ok: true, alreadyEnrolled: true });
+      expect(lockBillingMemberLifecycle).toHaveBeenCalledOnce();
       expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
       expectNoWritesOrSideEffects();
     });
@@ -459,6 +475,39 @@ describe('POST /api/member/enroll', () => {
       expect(prisma.user.update).toHaveBeenCalledTimes(1);
       expect(prisma.courseEnrollment.upsert).toHaveBeenCalledTimes(1);
       expect(after).toHaveBeenCalled();
+    });
+
+    it('refuses a request that waited for deletion before the final write or email', async () => {
+      let releaseDeletion: (() => void) | undefined;
+      const deletion = new Promise<void>((resolve) => { releaseDeletion = resolve; });
+      vi.mocked(lockBillingMemberLifecycle).mockImplementationOnce(async () => deletion);
+      vi.mocked(billingLifecyclePending).mockResolvedValue(true);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(memberRow({ pointer: null }));
+
+      const response = enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+      await vi.waitFor(() => expect(lockBillingMemberLifecycle).toHaveBeenCalledOnce());
+      releaseDeletion?.();
+      const result = await response;
+      expect(result.status).toBe(409);
+      expect(prisma.$executeRaw).not.toHaveBeenCalled();
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(prisma.courseEnrollment.upsert).not.toHaveBeenCalled();
+      expect(after).not.toHaveBeenCalled();
+    });
+
+    it('skips queued email after the member is erased following enrollment commit', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(memberRow({ pointer: null }));
+      const result = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+      expect(result.status).toBe(200);
+      vi.mocked(billingLifecyclePending).mockResolvedValue(true);
+
+      for (const [callback] of vi.mocked(after).mock.calls) {
+        await (callback as () => Promise<unknown>)();
+      }
+      expect(sendCourseEnrolledEmail).not.toHaveBeenCalled();
+      expect(sendPartnerMilestoneEmail).not.toHaveBeenCalled();
+      expect(maybeSendCourseKickoffEmail).not.toHaveBeenCalled();
+      expect(auditLog).toHaveBeenCalled();
     });
   });
 });
