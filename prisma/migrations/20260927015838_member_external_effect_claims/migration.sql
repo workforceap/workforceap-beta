@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS public.member_external_effect_claims (
   status TEXT NOT NULL DEFAULT 'in_flight' CHECK (status IN ('in_flight', 'needs_reconciliation')),
   reason TEXT,
   created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  -- Prisma @updatedAt supplies this on create and update; no DB default.
+  updated_at TIMESTAMP(3) NOT NULL,
   CONSTRAINT member_external_effect_claims_member_id_fkey
     FOREIGN KEY (member_id) REFERENCES public.users(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );

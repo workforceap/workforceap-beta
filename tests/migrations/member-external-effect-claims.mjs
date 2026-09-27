@@ -51,13 +51,14 @@ try {
   sql(migration);
   assert.equal(sql(`SELECT relrowsecurity FROM pg_class WHERE oid='public.member_external_effect_claims'::regclass;`), 't');
   assert.equal(sql(`SELECT confdeltype FROM pg_constraint WHERE conname='member_external_effect_claims_member_id_fkey';`), 'r');
+  assert.equal(sql(`SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='member_external_effect_claims' AND column_name='updated_at';`), '');
   for (const role of ['anon', 'authenticated']) {
     assert.equal(sql(`SELECT has_table_privilege('${role}', 'public.member_external_effect_claims', 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER');`), 'f');
   }
   sql(`
-    INSERT INTO public.member_external_effect_claims(id, member_id, kind)
-    VALUES ('00000000-0000-4000-8000-000000000001', 'member-1', 'notification'),
-           ('00000000-0000-4000-8000-000000000002', 'member-1', 'notification');
+    INSERT INTO public.member_external_effect_claims(id, member_id, kind, updated_at)
+    VALUES ('00000000-0000-4000-8000-000000000001', 'member-1', 'notification', CURRENT_TIMESTAMP),
+           ('00000000-0000-4000-8000-000000000002', 'member-1', 'notification', CURRENT_TIMESTAMP);
   `);
   assert.equal(sql(`SELECT count(*) FROM public.member_external_effect_claims WHERE member_id='member-1';`), '2');
   assert.match(sql(`DELETE FROM public.users WHERE id='member-1';`, proofDatabase, false), /23503/);
