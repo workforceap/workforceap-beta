@@ -68,19 +68,29 @@ async function lockPacketSends(tx: Prisma.TransactionClient, packetId: string) {
   return tx.trainingBillingPacket.findUnique({ where: { id: packetId }, select: { id: true, status: true, supersededAt: true, supersedesPacketId: true, supersededByPacketId: true, sendAttemptNo: true, sendAttempt: true, signedSnapshot: true, memberId: true, organizationId: true } });
 }
 
-/** A replacement may claim no copy until the old packet is repaired and settled. */
+/** A replacement may claim no copy until every replaced packet is repaired and settled. */
 async function priorPacketIsSettled(
   tx: Prisma.TransactionClient,
   packet: NonNullable<Awaited<ReturnType<typeof lockPacketSends>>>,
 ): Promise<boolean> {
-  if (!packet.supersedesPacketId) return true;
-  // The current packet lock is held first. No old-packet operation takes these
-  // locks in the reverse order; a late acceptance must finish before this read.
-  const prior = await lockPacketSends(tx, packet.supersedesPacketId);
-  if (!prior || prior.status !== 'superseded' || !prior.supersededAt || prior.supersededByPacketId !== packet.id
-    || prior.memberId !== packet.memberId || prior.organizationId !== packet.organizationId) return false;
-  const rows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: packet.supersedesPacketId } });
-  return rows.every(isTerminalRow);
+  // The current packet lock is held first. Follow the chain newest to oldest;
+  // every send and supersede takes its own packet lock before any older one.
+  // This also catches a late contradictory provider result on an older ancestor
+  // after its immediate replacement was itself superseded without being sent.
+  const seen = new Set([packet.id]);
+  let successor = packet;
+  while (successor.supersedesPacketId) {
+    const priorId = successor.supersedesPacketId;
+    if (seen.has(priorId)) return false; // Corrupt cycle: fail closed.
+    seen.add(priorId);
+    const prior = await lockPacketSends(tx, priorId);
+    if (!prior || prior.status !== 'superseded' || !prior.supersededAt || prior.supersededByPacketId !== successor.id
+      || prior.memberId !== successor.memberId || prior.organizationId !== successor.organizationId) return false;
+    const rows = await tx.trainingBillingPacketSend.findMany({ where: { packetId: priorId } });
+    if (!rows.every(isTerminalRow)) return false;
+    successor = prior;
+  }
+  return true;
 }
 
 /** The immutable subject ID lets every send take the member lock first. */
@@ -354,7 +364,7 @@ export type ClaimOutcome =
   | { kind: 'needs_reconciliation'; row: TrainingBillingPacketSend }
   /** The packet was superseded: nothing is claimed and nothing may be sent. */
   | { kind: 'superseded' }
-  /** A prior superseded packet has an unresolved or contradictory send copy. */
+  /** An earlier superseded packet has an unresolved or contradictory send copy. */
   | { kind: 'prior_packet_unsettled' }
   /** The member was deleted or anonymized before this copy was claimed. */
   | { kind: 'member_inactive' }

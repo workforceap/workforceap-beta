@@ -1295,6 +1295,29 @@ describe('Supersede and re-issue', () => {
     expect((await send(newId)).status).toBe(200);
   });
 
+  it('an unsent second replacement cannot bypass an unsettled first packet', async () => {
+    const firstId = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(firstId)).status).toBe(502);
+    const secondId = (await (await resign(firstId)).json()).packet.id as string;
+    const thirdResponse = await resign(secondId);
+    expect(thirdResponse.status).toBe(201);
+    const thirdId = (await thirdResponse.json()).packet.id as string;
+
+    mocks.lockTrace.length = 0;
+    const blocked = await send(thirdId);
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect(db.sends.filter((row) => row.packetId === thirdId)).toHaveLength(0);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    const packetLocks = mocks.lockTrace.filter((key) => key.startsWith('billing-packet-send:'));
+    expect(packetLocks).toEqual([`billing-packet-send:${thirdId}`, `billing-packet-send:${secondId}`, `billing-packet-send:${firstId}`]);
+
+    expect((await send(firstId, { action: 'reconcile', recipient: 'student', delivered: true, note: 'Delivered per Resend log' })).status).toBe(200);
+    expect((await send(thirdId)).status).toBe(200);
+    expect(mocks.send).toHaveBeenCalledTimes(2);
+  });
+
   it('members see the current packet first and a superseded one only if it reached, or may have reached, them', async () => {
     const neverSent = await signOne();
     const r1 = await resign(neverSent);
@@ -1521,6 +1544,36 @@ describe('Send-state races with supersede (checkpoint 4)', () => {
     expect((await blocked.json()).code).toBe('prior_packet_unsettled');
     expect(mocks.send.mock.calls).toHaveLength(providerCalls);
     expect(db.sends.filter((r) => r.packetId === newId).map((r) => r.status)).toEqual(['pending']);
+  });
+
+  it('a late contradiction on the first packet blocks a third packet at recipient claim', async () => {
+    const firstId = await signOne();
+    mocks.send.mockRejectedValueOnce(new Error('socket hang up'));
+    expect((await send(firstId)).status).toBe(502);
+    const firstRow = db.sends.find((row) => row.packetId === firstId)!;
+    const aged = new Date(Date.now() - IDEMPOTENCY_SAFE_RETRY_MS - 1000);
+    firstRow.claimedAt = aged;
+    firstRow.lastClaimedAt = aged;
+    const secondId = (await (await resign(firstId)).json()).packet.id as string;
+    const thirdId = (await (await resign(secondId)).json()).packet.id as string;
+    expect((await send(firstId, { action: 'reconcile', recipient: 'student', delivered: false, note: 'No delivery in Resend log' })).status).toBe(200);
+    expect(firstRow.status).toBe('reconciled_not_delivered');
+
+    const g = gate();
+    mocks.buildGate.value = g.promise;
+    const pending = send(thirdId);
+    await tick();
+    expect(db.sends.filter((row) => row.packetId === thirdId).map((row) => row.status)).toEqual(['pending']);
+    mocks.buildGate.value = null;
+    await recordLateProviderResult(firstRow.id as string, { delivered: true, detail: 'late provider acceptance', messageId: 'm-late-chain' });
+    expect(firstRow.status).toBe('needs_reconciliation');
+    const providerCalls = mocks.send.mock.calls.length;
+    g.open();
+    const blocked = await pending;
+    expect(blocked.status).toBe(409);
+    expect((await blocked.json()).code).toBe('prior_packet_unsettled');
+    expect(mocks.send).toHaveBeenCalledTimes(providerCalls);
+    expect(db.sends.filter((row) => row.packetId === thirdId).map((row) => row.status)).toEqual(['pending']);
   });
 
   it('claim first, supersede second: supersede is refused (in_progress) and the send completes', async () => {

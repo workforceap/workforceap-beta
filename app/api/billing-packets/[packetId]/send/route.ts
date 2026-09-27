@@ -78,7 +78,7 @@ function supersededConflict() {
 
 function priorPacketUnsettledConflict() {
   return conflict(
-    'Settle the replaced packet\'s send first: one of its copies has an unresolved or contradictory result. Reconcile it on the replaced packet, then send this one.',
+    'An earlier replaced packet has an unresolved or contradictory send result. Reconcile that packet before sending this one.',
     'prior_packet_unsettled',
   );
 }
