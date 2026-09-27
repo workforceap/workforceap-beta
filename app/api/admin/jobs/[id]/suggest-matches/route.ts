@@ -45,7 +45,11 @@ async function recordSuggestAudit(input: {
       message: err instanceof Error ? err.message : String(err),
     });
   }
-}export const POST = withApiGuc(async (
+}
+
+class MatchSuggestionsHoldConflict extends Error {}
+
+export const POST = withApiGuc(async (
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -140,14 +144,51 @@ async function recordSuggestAudit(input: {
     }
 
     const candidateMatchIds = job.aiMatches.map((m) => m.id);
-    const claimedRows = await prisma.$transaction((tx) => tx.$queryRaw<{ id: string }[]>(Prisma.sql`
-      UPDATE ai_job_matches
-      SET status = 'employer_notified'::ai_job_match_status, status_updated_at = ${now}
-      WHERE id IN (${Prisma.join(candidateMatchIds)})
-        AND job_id = ${id}
-        AND status = 'suggested'::ai_job_match_status
-      RETURNING id
-    `));
+    // Both writes commit together. A crash after claiming rows but before
+    // reserving the hold must leave neither change behind.
+    let claimedRows: { id: string }[];
+    try {
+      claimedRows = await prisma.$transaction(async (tx) => {
+        const rows = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`
+          UPDATE ai_job_matches
+          SET status = 'employer_notified'::ai_job_match_status, status_updated_at = ${now}
+          WHERE id IN (${Prisma.join(candidateMatchIds)})
+            AND job_id = ${id}
+            AND status = 'suggested'::ai_job_match_status
+            AND EXISTS (
+              SELECT 1 FROM jobs
+              WHERE jobs.id = ai_job_matches.job_id
+                AND jobs.organization_id = ${orgId}
+            )
+          RETURNING id
+        `);
+        if (rows.length === 0) return rows;
+
+        const reserved = await tx.job.updateMany({
+          where: {
+            id,
+            organizationId: orgId,
+            status: 'live',
+            OR: [
+              { matchSuggestionsLastStatus: null },
+              { matchSuggestionsLastStatus: { not: 'needs_reconciliation' } },
+            ],
+          },
+          data: {
+            matchSuggestionsLastSentAt: now,
+            matchSuggestionsLastStatus: 'needs_reconciliation',
+            matchSuggestionsLastError: 'Provider outcome not yet confirmed',
+          },
+        });
+        if (reserved.count !== 1) throw new MatchSuggestionsHoldConflict();
+        return rows;
+      });
+    } catch (error) {
+      if (error instanceof MatchSuggestionsHoldConflict) {
+        return NextResponse.json({ error: 'A prior match email needs reconciliation before another send.' }, { status: 409 });
+      }
+      throw error;
+    }
     const claimedIds = new Set(claimedRows.map((row) => row.id));
     const claimedMatches = job.aiMatches.filter((match) => claimedIds.has(match.id));
     matchCount = claimedMatches.length;
@@ -168,34 +209,8 @@ async function recordSuggestAudit(input: {
       where: { id: { in: Array.from(claimedIds) }, status: 'employer_notified' },
       data: { status: 'suggested', statusUpdatedAt: now },
     }));
-    // A durable job hold precedes provider I/O. A process crash or unknown
-    // response leaves this marker in place, so a new invocation cannot mail
-    // another batch while the first outcome is unresolved.
-    let reserved: { count: number };
-    try {
-      reserved = await withTenantScope(orgId, (db) => db.job.updateMany({
-        where: {
-          id,
-          OR: [
-            { matchSuggestionsLastStatus: null },
-            { matchSuggestionsLastStatus: { not: 'needs_reconciliation' } },
-          ],
-        },
-        data: {
-          matchSuggestionsLastSentAt: now,
-          matchSuggestionsLastStatus: 'needs_reconciliation',
-          matchSuggestionsLastError: 'Provider outcome not yet confirmed',
-        },
-      }));
-    } catch (error) {
-      await releaseClaimedMatches().catch(() => {});
-      throw error;
-    }
-    if (reserved.count !== 1) {
-      await releaseClaimedMatches();
-      return NextResponse.json({ error: 'A prior match email needs reconciliation before another send.' }, { status: 409 });
-    }
-
+    // The hold is durable before provider I/O. An unknown outcome leaves it
+    // in place for operator reconciliation.
     const emailPayload = {
       to: actualRecipient,
       jobTitle: job.title,

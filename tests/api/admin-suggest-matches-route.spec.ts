@@ -109,6 +109,9 @@ function makeJob() {
 describe('POST /api/admin/jobs/[id]/suggest-matches', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.$transaction).mockImplementation(async (arg: any) =>
+      typeof arg === 'function' ? arg(prisma) : Promise.all(arg)
+    );
     vi.mocked(getUser).mockResolvedValue({ id: ADMIN_ID } as any);
     vi.mocked(isAdmin).mockResolvedValue(true);
     vi.mocked(getActorOrganizationId).mockResolvedValue(ORG_ID);
@@ -206,5 +209,56 @@ describe('POST /api/admin/jobs/[id]/suggest-matches', () => {
       subjectMemberIds: ['student-1'],
       matches: [{ name: 'Jane Candidate', program: 'Web Development', score: 92 }],
     }));
+  });
+
+  it('rolls back notified matches when the hold cannot commit, even if recovery cannot run', async () => {
+    let committedMatchStatus = 'suggested';
+    const crash = new Error('simulated crash before hold commit');
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
+      let stagedMatchStatus = committedMatchStatus;
+      const tx = {
+        $queryRaw: async () => {
+          stagedMatchStatus = 'employer_notified';
+          return [{ id: 'match-1' }];
+        },
+        job: { updateMany: async () => { throw crash; } },
+        aIJobMatch: { updateMany: async () => { throw crash; } },
+      };
+      const result = await callback(tx);
+      committedMatchStatus = stagedMatchStatus;
+      return result;
+    });
+    // The old two-transaction path could not rely on a compensating write
+    // after a process exit. Make that attempted recovery fail too.
+    vi.mocked(prisma.job.updateMany).mockRejectedValue(crash);
+    vi.mocked(prisma.aIJobMatch.updateMany).mockRejectedValue(crash);
+
+    const response = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+
+    expect(response.status).toBe(500);
+    expect(committedMatchStatus).toBe('suggested');
+    expect(sendMatchActionEmail).not.toHaveBeenCalled();
+  });
+
+  it('rolls back a raced match claim when another request owns the job hold', async () => {
+    let committedMatchStatus = 'suggested';
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
+      let stagedMatchStatus = committedMatchStatus;
+      const result = await callback({
+        $queryRaw: async () => {
+          stagedMatchStatus = 'employer_notified';
+          return [{ id: 'match-1' }];
+        },
+        job: { updateMany: async () => ({ count: 0 }) },
+      });
+      committedMatchStatus = stagedMatchStatus;
+      return result;
+    });
+
+    const response = await POST(makeRequest(), { params: Promise.resolve({ id: JOB_ID }) });
+
+    expect(response.status).toBe(409);
+    expect(committedMatchStatus).toBe('suggested');
+    expect(sendMatchActionEmail).not.toHaveBeenCalled();
   });
 });
