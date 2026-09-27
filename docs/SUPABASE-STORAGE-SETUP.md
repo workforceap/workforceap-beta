@@ -27,6 +27,21 @@ If the bucket is missing, the API returns 500 with instructions to create it.
 
 Chat uses **Supabase Realtime** `postgres_changes` on `messages` and `message_threads`. After migrations, add both tables to the publication if they are not already included:
 
+> **Warning — check RLS and grants before publishing.** Do not run these statements against a project where any of `messages`, `message_threads`, `users`, or the role/org tables (`organizations`, `roles`, `user_roles`) has RLS disabled, grants `anon`/`authenticated` `SELECT` without policies that limit each user to their own threads and organization, or lets `anon`/`authenticated` write `users` or the role/org tables.
+>
+> If a table with RLS off is published and `anon` or `authenticated` holds `SELECT` on it, that role (any holder of the project's browser (anon) key, or any signed-in user) may be able to stream its changes: Realtime Postgres Changes authorizes each event against the subscriber's role and does not go through the Data API, so disabling the Data API does not prevent it. `REPLICA IDENTITY FULL` (`prisma/migrations/20260329120000_member_counselor_chat/migration.sql:69-70`) can expose fuller row images through a published stream, subject to Realtime/RLS behavior.
+>
+> The role/org tables are listed because access decisions rely on them: the chat policies do not read them directly, but their admin branches trust `app.current_role`, which the app derives (with its own admin checks) from `user_roles`/`roles` (`lib/auth/roles.ts:36-111`). If a browser role can write those tables, it can change values the server uses in these access checks.
+>
+> `users` is listed separately because org scoping and the admin helpers read `users.organization_id` (`prisma/migrations/20260909224000_member_message_current_assignment/migration.sql:15-32`, `prisma/migrations/20260616050000_fix_force_rls_recursion_is_admin/migration.sql:41-44`); check it on its own, since its RLS and policy state can differ from the other tables.
+>
+> **Unverified design risk:** the chat policies identify the caller via `app.current_*` session settings, which the server sets inside Prisma transactions (`lib/db/prisma.ts:40-44`). Nothing in the repo sets them for a browser Realtime subscriber, so with RLS on, those policies may deny chat events to browser subscribers. Loosening policies to make live chat work would reopen the exposure.
+>
+> Before publishing, confirm read-only and record the results:
+> - `select relname, relrowsecurity from pg_class where relnamespace = 'public'::regnamespace and relname in ('messages', 'message_threads', 'users', 'organizations', 'roles', 'user_roles');` (expect `true` for all six)
+> - `select tablename, policyname, roles, cmd from pg_policies where schemaname = 'public' and tablename in ('messages', 'message_threads', 'users', 'organizations', 'roles', 'user_roles');`
+> - `select table_name, grantee, privilege_type from information_schema.role_table_grants where table_schema = 'public' and grantee in ('anon', 'authenticated') and privilege_type in ('INSERT', 'UPDATE', 'DELETE') and table_name in ('messages', 'message_threads', 'users', 'organizations', 'roles', 'user_roles');` (expect no rows for `users`, `organizations`, `roles`, `user_roles`)
+
 ```sql
 ALTER PUBLICATION supabase_realtime ADD TABLE message_threads;
 ALTER PUBLICATION supabase_realtime ADD TABLE messages;
