@@ -398,6 +398,7 @@ export async function sendVoiceInterviewTranscriptEmail(params: {
 
 export async function sendElevatorSpeechEmail(params: {
   to: string;
+  recipientUserId: string;
   memberName: string;
   targetRole: string;
   strengths?: string | null;
@@ -442,6 +443,7 @@ export async function sendElevatorSpeechEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.ai_elevator_speech,
       to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine(`Your AI elevator speech — ${params.targetRole}`),
       html,
     });
@@ -1158,6 +1160,7 @@ export async function sendPlacementSurveyEscalationEmail(params: {
 /** Send course completion congratulations to member */
 export async function sendCourseCompletedEmail(params: {
   to: string;
+  recipientUserId: string;
   fullName: string;
   courseName: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -1178,6 +1181,7 @@ export async function sendCourseCompletedEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.course_completed,
       to: params.to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine(`Congratulations! You Completed ${params.courseName}`),
       html,
     });
@@ -1870,7 +1874,10 @@ export async function sendEligibilityScreeningConfirmationEmail(params: {
   to: string;
   fullName: string;
   eligibility?: EligibilityScreeningFields | null;
-}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+} & (
+  | { recipientUserId: string; publicLead?: never }
+  | { publicLead: true; recipientUserId?: never }
+)): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
     console.warn('sendEligibilityScreeningConfirmationEmail: RESEND_API_KEY not set');
@@ -1890,6 +1897,7 @@ export async function sendEligibilityScreeningConfirmationEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to: params.to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine('Eligibility questionnaire received — WorkforceAP'),
       html,
     });
@@ -2546,6 +2554,7 @@ export async function sendAssessmentResetNotificationEmail(params: {
 /** Send a pre-interview prep bundle containing latest AI tool results */
 export async function sendInterviewPrepBundleEmail(params: {
   to: string;
+  recipientUserId: string;
   memberName: string;
   bundle: {
     items: { toolType: string; title: string; content: string; createdAt: Date }[];
@@ -2594,6 +2603,7 @@ export async function sendInterviewPrepBundleEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       to,
+      recipientUserId: params.recipientUserId,
       subject: sanitizeEmailSubjectLine('Your Pre-Interview Prep Bundle — WorkforceAP'),
       html,
     });

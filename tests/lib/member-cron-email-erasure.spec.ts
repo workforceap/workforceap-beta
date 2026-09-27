@@ -15,7 +15,14 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@/lib/tenant/organizationBranding', () => ({ getOrganizationBranding: vi.fn() }));
 
-import { sendInactiveNudgeEmail, sendPreparedPlacementSurveyEmail } from '@/lib/email';
+import {
+  sendCourseCompletedEmail,
+  sendElevatorSpeechEmail,
+  sendEligibilityScreeningConfirmationEmail,
+  sendInactiveNudgeEmail,
+  sendInterviewPrepBundleEmail,
+  sendPreparedPlacementSurveyEmail,
+} from '@/lib/email';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -88,5 +95,84 @@ describe('queued member cron email lifecycle', () => {
 
     expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
     expect(mocks.send).not.toHaveBeenCalled();
+  });
+});
+
+describe('member-addressed email lifecycle', () => {
+  const memberEmail = 'member@workforceap.org';
+  const member = {
+    email: memberEmail,
+    deletedAt: null,
+    billingDeletionPendingAt: null,
+    billingDeletionOperationId: null,
+  };
+
+  it('skips course completion after erasure before the provider sees the stale address', async () => {
+    mocks.findUser.mockResolvedValue({ ...member, deletedAt: new Date() });
+
+    const result = await sendCourseCompletedEmail({
+      to: memberEmail,
+      recipientUserId: 'member-course',
+      fullName: 'Fixture Member',
+      courseName: 'Synthetic course',
+    });
+
+    expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.findUser).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 'member-course' } }));
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('skips the prep bundle when the member changes email after the bundle was fetched', async () => {
+    mocks.findUser.mockResolvedValue({ ...member, email: 'new@workforceap.org' });
+
+    const result = await sendInterviewPrepBundleEmail({
+      to: memberEmail,
+      recipientUserId: 'member-prep',
+      memberName: 'Fixture Member',
+      bundle: { items: [], generatedAt: new Date() },
+    });
+
+    expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('skips account eligibility confirmation while deletion is pending', async () => {
+    mocks.findUser.mockResolvedValue({ ...member, billingDeletionPendingAt: new Date() });
+
+    const result = await sendEligibilityScreeningConfirmationEmail({
+      to: memberEmail,
+      recipientUserId: 'member-eligibility',
+      fullName: 'Fixture Member',
+    });
+
+    expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('skips elevator speech if the member was hard-deleted during generation', async () => {
+    mocks.findUser.mockResolvedValue(null);
+
+    const result = await sendElevatorSpeechEmail({
+      to: memberEmail,
+      recipientUserId: 'member-elevator',
+      memberName: 'Fixture Member',
+      targetRole: 'Synthetic role',
+      pitch: 'A synthetic pitch.',
+    });
+
+    expect(result).toEqual({ ok: false, skipped: true, error: 'inactive_member' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('allows the explicit public lead confirmation without a member identity', async () => {
+    const result = await sendEligibilityScreeningConfirmationEmail({
+      to: 'lead@partner.org',
+      publicLead: true,
+      fullName: 'Public Lead',
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(mocks.findUser).not.toHaveBeenCalled();
+    expect(mocks.send).toHaveBeenCalledOnce();
   });
 });

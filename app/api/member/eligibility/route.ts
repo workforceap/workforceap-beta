@@ -248,6 +248,7 @@ async function _PATCH(request: Request) {
       after(() =>
         sendEligibilityScreeningConfirmationEmail({
           to: notifyMeta.email!,
+          recipientUserId: user.id,
           fullName: displayName,
           eligibility: eligibilityEmailFields,
         }).catch((err) => {

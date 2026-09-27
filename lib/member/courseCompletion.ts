@@ -249,6 +249,7 @@ export async function completeMemberCourse(args: {
     try {
       const memberDelivery = await runBulkEmailOperation(() => sendCourseCompletedEmail({
         to: dbUser.email,
+        recipientUserId: args.userId,
         fullName: dbUser.fullName,
         courseName: matchedCourse.name,
       }));

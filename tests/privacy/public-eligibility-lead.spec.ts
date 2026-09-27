@@ -118,6 +118,7 @@ describe('no-account lead storage (WAP-172)', () => {
     expect(h.adminEmail).toHaveBeenCalledOnce();
     expect(h.adminEmail.mock.calls[0][0]).toMatchObject({ memberId: null, source: 'token', leadRecordId: 'lead-row-1', memberEmail: 'lead@example.test' });
     expect(h.confirmationEmail).toHaveBeenCalledOnce();
+    expect(h.confirmationEmail.mock.calls[0][0]).toMatchObject({ to: 'lead@example.test', publicLead: true });
   });
 
   it('uses the link email and a fallback name when the form carries neither', async () => {

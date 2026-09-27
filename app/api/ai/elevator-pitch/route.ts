@@ -199,6 +199,7 @@ export const POST = withApiGuc(async (request: Request) => {
         if (recipient) {
           const emailResult = await sendElevatorSpeechEmail({
             to: recipient,
+            recipientUserId: onBehalf.subjectUserId,
             memberName: dbUser?.fullName?.trim() || finalName || recipient,
             targetRole: finalTargetRole,
             strengths: finalStrengths || null,

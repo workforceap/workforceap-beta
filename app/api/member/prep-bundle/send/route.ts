@@ -66,6 +66,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
 
   const result = await sendInterviewPrepBundleEmail({
     to: email,
+    recipientUserId: user.id,
     memberName: (user.user_metadata?.full_name as string) || user.email || 'Member',
     bundle: {
       items: itemsToSend,

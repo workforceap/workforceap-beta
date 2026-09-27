@@ -254,6 +254,7 @@ describe('member routes keep upstream error text server-side', () => {
     h.fetchInterviewPrepBundle.mockResolvedValue({ empty: false, items: [{ toolType: 'resume' }] });
     h.sendInterviewPrepBundleEmail.mockResolvedValue({ ok: false, error: UPSTREAM });
     const res = await sendPrepBundle(req('/api/member/prep-bundle/send', 'POST', '{}'));
+    expect(h.sendInterviewPrepBundleEmail).toHaveBeenCalledWith(expect.objectContaining({ recipientUserId: 'user-1' }));
     await expectGeneric(res, 502, 'Unable to send your prep bundle right now. Please try again in a few minutes.');
     expect(consoleError).toHaveBeenCalledWith('[member/prep-bundle/send] email send failed:', UPSTREAM);
   });

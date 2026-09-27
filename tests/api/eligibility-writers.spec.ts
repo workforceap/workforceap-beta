@@ -52,7 +52,7 @@ import { PATCH as memberPatch } from '@/app/api/member/eligibility/route';
 import { POST as tokenPost } from '@/app/api/q/[token]/submit/route';
 import { POST as preScreeningPost } from '@/app/api/member/pre-screening/route';
 import { consumeTokenizedLink } from '@/lib/tokenizedLink';
-import { sendPreScreeningReadyEmail } from '@/lib/email';
+import { sendEligibilityScreeningConfirmationEmail, sendPreScreeningReadyEmail } from '@/lib/email';
 
 const token = 'local-fixture-questionnaire-token-1234567890';
 const oldSnapshot = { version: 2, submittedAt: '2026-09-01T00:00:00Z', answers: { retained: true }, reasons: [{ code: 'staff_review' }], signal: 'review', extraServerMetadata: { keep: true } };
@@ -137,6 +137,17 @@ beforeEach(() => {
 });
 
 describe('eligibility persistence', () => {
+  it('passes the authenticated member identity to deferred confirmation', async () => {
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    vi.mocked(sendEligibilityScreeningConfirmationEmail).mockResolvedValue({ ok: true });
+
+    await h.after.mock.calls[0][0]();
+
+    expect(sendEligibilityScreeningConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'member@example.test', recipientUserId: 'member-1',
+    }));
+  });
+
   it('saves the authenticated subject, preserves self-screening/ancillary keys, and keeps its existing qualification rule', async () => {
     const response = await memberPatch(request({ ...questionnaire, userId: 'another-member', organizationId: 'other-org' }));
     expect(response.status).toBe(200);
@@ -199,6 +210,17 @@ describe('eligibility persistence', () => {
 });
 
 describe('token questionnaire', () => {
+  it('passes the bound subject identity to deferred confirmation', async () => {
+    expect((await submitToken()).status).toBe(200);
+    vi.mocked(sendEligibilityScreeningConfirmationEmail).mockResolvedValue({ ok: true });
+
+    await h.after.mock.calls[1][0]();
+
+    expect(sendEligibilityScreeningConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'member@example.test', recipientUserId: 'member-1',
+    }));
+  });
+
   it('writes only the token subject and atomically claims its type, org and expiry', async () => {
     h.actorId = 'different-signed-in-user';
     expect((await submitToken({ ...questionnaire, userId: h.actorId })).status).toBe(200);
