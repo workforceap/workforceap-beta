@@ -252,6 +252,12 @@ that automatically emails to counselor and the student."
   activating the app row. Restore claims its own operation token before
   changing Auth, so a concurrent erase cannot cross that provider boundary.
   Unknown Auth or failed app activation leaves the token held for reconciliation.
+- Admin irreversible erase records the erased-email tombstone, `deleted_at`,
+  and scrubbed User/Profile identity before its first external Storage delete.
+  The route captures known file paths before scrubbing and then scans the
+  member-owned Storage prefixes. A Storage failure leaves the irreversible
+  tombstone and pending marker for a retry; it does not make the account
+  restorable. Storage cleanup must be confirmed before reporting completion.
 
 ### Reconciling a crash-held lifecycle token
 
@@ -274,7 +280,10 @@ incident and audit trail. Before any write:
    `billing_deletion_pending_at` and the deleted tombstone in place; never
    reactivate an erased account or create a replacement Auth identity. Resolve
    an identity-edit or restore hold using that workflow's Auth/app comparison,
-   not by treating it as a deletion.
+   not by treating it as a deletion. For an interrupted admin erase, confirm
+   the irreversible erased-email tombstone before clearing its token. If the
+   worker stopped before that tombstone committed, stop and plan a guarded
+   repair; clearing the token alone could reopen the original identity.
 4. In one interactive database transaction, acquire the member lifecycle
    advisory lock, re-read the same tenant/User/token and verified state, write
    the audit receipt, and clear **only** that exact operation token with a
