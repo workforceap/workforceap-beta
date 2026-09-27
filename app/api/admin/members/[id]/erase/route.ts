@@ -139,7 +139,7 @@ export const POST = withApiGuc(async (
       console.error(`[gdpr-erase] storage object delete failed for ${id}:`, storage.error);
       await releaseBillingDeletion(id, billingDeletion.operationId);
       return NextResponse.json({
-        error: 'Account data was anonymized, but stored files remain. Retry erasure or contact support.',
+        error: 'Member identity was anonymized, but stored files remain. Retry erasure or contact support.',
         billingDeletionPending: true,
       }, { status: 502 });
     }

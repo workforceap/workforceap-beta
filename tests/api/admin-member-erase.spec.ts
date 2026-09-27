@@ -162,7 +162,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
 
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({
-      error: 'Account data was anonymized, but stored files remain. Retry erasure or contact support.',
+      error: 'Member identity was anonymized, but stored files remain. Retry erasure or contact support.',
       billingDeletionPending: true,
     });
     expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
