@@ -52,7 +52,7 @@ vi.mock('@/lib/supabase-admin', () => ({
 }));
 vi.mock('@/lib/admin/authUserLifecycle', () => ({
   deleteAuthUserForErasure: vi.fn(),
-  disableAuthUserForSoftDelete: vi.fn(),
+  disableAuthUserForIrreversibleErase: vi.fn(),
 }));
 
 vi.mock('@/lib/admin/logCronRun', () => ({
@@ -78,7 +78,7 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 
 vi.mock('@/lib/billing/erasureGuard', () => ({
   beginBillingDeletion: vi.fn(),
-  releaseBillingDeletion: vi.fn(),
+  releaseBillingDeletion: vi.fn().mockResolvedValue(undefined),
   completeBillingDeletion: vi.fn(),
   BILLING_SEND_IN_PROGRESS_ERROR: 'A billing packet is being sent for this member. Finish or reconcile that send before deleting the account.',
 }));
@@ -91,7 +91,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { beginBillingDeletion, releaseBillingDeletion, completeBillingDeletion } from '@/lib/billing/erasureGuard';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
-import { deleteAuthUserForErasure, disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
+import { deleteAuthUserForErasure, disableAuthUserForIrreversibleErase } from '@/lib/admin/authUserLifecycle';
 
 const MEMBER_ID = 'member-1';
 
@@ -128,7 +128,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     update.mockResolvedValue({ id: MEMBER_ID });
     remove.mockResolvedValue({ count: 1 });
     vi.mocked(deleteAuthUserForErasure).mockResolvedValue({ ok: true, alreadyMissing: false });
-    vi.mocked(disableAuthUserForSoftDelete).mockResolvedValue({ ok: true, alreadyMissing: false });
+    vi.mocked(disableAuthUserForIrreversibleErase).mockResolvedValue({ ok: true, alreadyMissing: false });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
     vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
   });
@@ -174,7 +174,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
       ],
     });
     expect(anonymizeMember).toHaveBeenCalledWith(MEMBER_ID, { reason: 'admin_erase', actorUserId: 'admin-1' }, expect.anything());
-    expect(disableAuthUserForSoftDelete).toHaveBeenCalledWith(expect.anything(), MEMBER_ID, 'member@example.com');
+    expect(disableAuthUserForIrreversibleErase).toHaveBeenCalledWith(expect.anything(), MEMBER_ID);
     expect(completeBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
     expect(remove).not.toHaveBeenCalled();
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
@@ -210,12 +210,14 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect((await res.json()).reconciliationRequired).toBe(true);
     expect(anonymizeMember).toHaveBeenCalledOnce();
     expect(remove).not.toHaveBeenCalled();
-    expect(releaseBillingDeletion).not.toHaveBeenCalled();
+    // The operation token is released after the uncertain Auth outcome, but
+    // the pending marker remains so restore and billing claims stay blocked.
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
   });
 
-  it('retains the anonymized tombstone and owner when Auth disable is unconfirmed', async () => {
+  it('retains the anonymized tombstone and pending marker when Auth disable is unconfirmed', async () => {
     findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
-    vi.mocked(disableAuthUserForSoftDelete).mockResolvedValueOnce({ ok: false, message: 'provider unavailable' });
+    vi.mocked(disableAuthUserForIrreversibleErase).mockResolvedValueOnce({ ok: false, message: 'provider unavailable' });
 
     const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
 
@@ -224,6 +226,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(anonymizeMember).toHaveBeenCalledOnce();
     expect(completeBillingDeletion).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
+    expect(releaseBillingDeletion).toHaveBeenCalledWith(MEMBER_ID, 'operation-1');
   });
 
   it.each([false, true])('erases the member while the database detaches issued billing records (force=%s)', async (force) => {

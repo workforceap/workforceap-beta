@@ -73,7 +73,7 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 
 vi.mock('@/lib/billing/erasureGuard', () => ({
   beginBillingDeletion: vi.fn(),
-  releaseBillingDeletion: vi.fn(),
+  releaseBillingDeletion: vi.fn().mockResolvedValue(undefined),
   completeBillingDeletion: vi.fn(),
   BILLING_SEND_IN_PROGRESS_ERROR: 'A billing packet is being sent for this member. Finish or reconcile that send before deleting the account.',
 }));

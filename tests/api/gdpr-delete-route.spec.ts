@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const signInWithPassword = vi.fn();
 const signOut = vi.fn();
+const authLookup = vi.fn();
+const authDelete = vi.fn();
 
 vi.mock('next/server', () => ({
   NextResponse: {
@@ -61,8 +63,10 @@ vi.mock('@/lib/supabase/env', () => ({
   getSupabaseEnv: vi.fn(() => ({ url: 'https://supabase.test', anonKey: 'anon-key' })),
 }));
 
-vi.mock('@/lib/gdpr/deleteAuthUser', () => ({
-  deleteSupabaseAuthUser: vi.fn(),
+vi.mock('@/lib/supabase-admin', () => ({
+  getSupabaseAdmin: vi.fn(() => ({
+    auth: { admin: { getUserById: authLookup, deleteUser: authDelete } },
+  })),
 }));
 
 vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
@@ -74,7 +78,7 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 // (covered in tests/gdpr/anonymize-member.spec.ts).
 vi.mock('@/lib/member/anonymizeMember', () => ({ anonymizeMember: vi.fn() }));
 vi.mock('@/lib/billing/erasureGuard', () => ({
-  beginBillingDeletion: vi.fn(), releaseBillingDeletion: vi.fn(), completeBillingDeletion: vi.fn(),
+  beginBillingDeletion: vi.fn(), releaseBillingDeletion: vi.fn().mockResolvedValue(undefined), completeBillingDeletion: vi.fn(),
   BILLING_SEND_IN_PROGRESS_ERROR: 'Billing send unresolved',
 }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
@@ -82,7 +86,6 @@ vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
 import { POST } from '@/app/api/gdpr/delete/route';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
-import { deleteSupabaseAuthUser } from '@/lib/gdpr/deleteAuthUser';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { logAuditEvent } from '@/lib/audit/log';
@@ -112,7 +115,8 @@ describe('POST /api/gdpr/delete', () => {
       alreadyDeleted: false,
       profileRowsCleared: 1,
     });
-    vi.mocked(deleteSupabaseAuthUser).mockResolvedValue({ error: null } as any);
+    authLookup.mockResolvedValue({ data: { user: { id: 'user-123' } }, error: null });
+    authDelete.mockResolvedValue({ error: null });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] } as any);
   });
 
@@ -134,12 +138,13 @@ describe('POST /api/gdpr/delete', () => {
     // No hand-rolled SQL remains on this path.
     expect(prisma.$executeRaw).not.toHaveBeenCalled();
     expect(deleteUserStorageObjects).toHaveBeenCalledWith('user-123');
-    expect(deleteSupabaseAuthUser).toHaveBeenCalledWith('user-123');
+    expect(authLookup).toHaveBeenCalledWith('user-123');
+    expect(authDelete).toHaveBeenCalledWith('user-123');
     // Ordering contract (formerly lib/gdpr/erase-routes.test.ts): storage
     // objects go first, then the anonymizing writes, then the auth delete.
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
     const [anonymizeOrder] = vi.mocked(anonymizeMember).mock.invocationCallOrder;
-    const [authDeleteOrder] = vi.mocked(deleteSupabaseAuthUser).mock.invocationCallOrder;
+    const [authDeleteOrder] = authDelete.mock.invocationCallOrder;
     expect(storageOrder).toBeLessThan(anonymizeOrder);
     expect(anonymizeOrder).toBeLessThan(authDeleteOrder);
     // The deletion marker is a typed Prisma write (the former raw INSERT bound
@@ -200,7 +205,7 @@ describe('POST /api/gdpr/delete', () => {
     expect(releaseBillingDeletion).toHaveBeenCalledWith('user-123', 'operation-1');
     expect(anonymizeMember).not.toHaveBeenCalled();
     expect(prisma.$executeRaw).not.toHaveBeenCalled();
-    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    expect(authDelete).not.toHaveBeenCalled();
   });
 
   it('does not delete the login when the anonymiser fails', async () => {
@@ -215,8 +220,8 @@ describe('POST /api/gdpr/delete', () => {
       })
     );
 
-    expect(res.status).toBe(500);
-    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    expect(res.status).toBe(503);
+    expect(authDelete).not.toHaveBeenCalled();
     errorSpy.mockRestore();
   });
 });

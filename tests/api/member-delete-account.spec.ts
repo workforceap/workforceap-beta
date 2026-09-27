@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─── Mocks ───
+const authLookup = vi.fn();
+const authDelete = vi.fn();
 vi.mock('next/server', () => ({
   NextResponse: {
     json: (body: unknown, init?: ResponseInit) =>
@@ -39,7 +41,9 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 
 vi.mock('@/lib/supabase-admin', () => ({
-  getSupabaseAdmin: vi.fn(),
+  getSupabaseAdmin: vi.fn(() => ({
+    auth: { admin: { getUserById: authLookup, deleteUser: authDelete } },
+  })),
 }));
 vi.mock('@/lib/auth/roles', () => ({ isAdmin: vi.fn() }));
 
@@ -52,7 +56,7 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 // anonymiser (covered in tests/gdpr/anonymize-member.spec.ts).
 vi.mock('@/lib/member/anonymizeMember', () => ({ anonymizeMember: vi.fn() }));
 vi.mock('@/lib/billing/erasureGuard', () => ({
-  beginBillingDeletion: vi.fn(), releaseBillingDeletion: vi.fn(), completeBillingDeletion: vi.fn(),
+  beginBillingDeletion: vi.fn(), releaseBillingDeletion: vi.fn().mockResolvedValue(undefined), completeBillingDeletion: vi.fn(),
   BILLING_SEND_IN_PROGRESS_ERROR: 'Billing send unresolved',
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => {}) }));
@@ -88,6 +92,8 @@ describe('POST /api/member/delete-account', () => {
     vi.mocked(isAdmin).mockResolvedValue(false);
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] } as any);
     vi.mocked(beginBillingDeletion).mockResolvedValue({ ok: true, pendingAt: new Date(), operationId: 'operation-1' });
+    authLookup.mockResolvedValue({ data: { user: { id: UUIDS.user } }, error: null });
+    authDelete.mockResolvedValue({ error: null });
   });
 
   it('protects administrator accounts from the member self-delete action', async () => {
@@ -104,19 +110,13 @@ describe('POST /api/member/delete-account', () => {
   it('soft-deletes and anonymises the account through the shared anonymiser', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(anonymizeMember).mockResolvedValue(anonymized());
-    vi.mocked(getSupabaseAdmin).mockReturnValue({
-      auth: {
-        admin: {
-          deleteUser: vi.fn().mockResolvedValue({ error: null }),
-        },
-      },
-    } as any);
-
     const res = await deleteAccount(new Request('http://localhost'));
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
     expect(completeBillingDeletion).toHaveBeenCalledWith(UUIDS.user, 'operation-1');
+    expect(authLookup).toHaveBeenCalledWith(UUIDS.user);
+    expect(authDelete).toHaveBeenCalledWith(UUIDS.user);
     expect(anonymizeMember).toHaveBeenCalledTimes(1);
     expect(anonymizeMember).toHaveBeenCalledWith(UUIDS.user, { reason: 'member_self_delete' }, prisma);
     // The route writes no users/profiles row of its own any more.
@@ -134,10 +134,6 @@ describe('POST /api/member/delete-account', () => {
   it('never writes the original email into the three-year audit log', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user, email: 'jane@example.com' } as any);
     vi.mocked(anonymizeMember).mockResolvedValue(anonymized());
-    vi.mocked(getSupabaseAdmin).mockReturnValue({
-      auth: { admin: { deleteUser: vi.fn().mockResolvedValue({ error: null }) } },
-    } as any);
-
     const res = await deleteAccount(new Request('http://localhost'));
 
     expect(res.status).toBe(200);
@@ -150,14 +146,6 @@ describe('POST /api/member/delete-account', () => {
   it('still completes when the account was already soft-deleted', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(anonymizeMember).mockResolvedValue(anonymized({ alreadyDeleted: true }));
-    vi.mocked(getSupabaseAdmin).mockReturnValue({
-      auth: {
-        admin: {
-          deleteUser: vi.fn().mockResolvedValue({ error: null }),
-        },
-      },
-    } as any);
-
     const res = await deleteAccount(new Request('http://localhost'));
 
     expect(res.status).toBe(200);
@@ -168,18 +156,12 @@ describe('POST /api/member/delete-account', () => {
   it('returns an error when Supabase auth deletion fails', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(anonymizeMember).mockResolvedValue(anonymized());
-    vi.mocked(getSupabaseAdmin).mockReturnValue({
-      auth: {
-        admin: {
-          deleteUser: vi.fn().mockResolvedValue({ error: { message: 'Auth service unavailable' } }),
-        },
-      },
-    } as any);
+    authDelete.mockResolvedValue({ error: { message: 'Auth service unavailable' } });
 
     const res = await deleteAccount(new Request('http://localhost'));
 
     expect(res.status).toBe(502);
-    expect(await res.json()).toEqual({ error: 'Failed to delete account' });
+    expect(await res.json()).toEqual({ error: 'Sign-in deletion could not be confirmed. Retry or contact support.', reconciliationRequired: true });
   });
 
   it('returns 401 for unauthenticated user', async () => {
@@ -192,28 +174,20 @@ describe('POST /api/member/delete-account', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('returns 500 when the anonymiser fails, and does not delete the login', async () => {
+  it('requires reconciliation when the anonymiser fails, and does not delete the login', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(anonymizeMember).mockRejectedValue(new Error('DB error'));
 
     const res = await deleteAccount(new Request('http://localhost'));
 
-    expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'Failed to delete account' });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'Account deletion could not be confirmed. Retry or contact support.', reconciliationRequired: true });
     expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
 
   it('returns ok even when user not found in DB', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(anonymizeMember).mockResolvedValue(null);
-    vi.mocked(getSupabaseAdmin).mockReturnValue({
-      auth: {
-        admin: {
-          deleteUser: vi.fn().mockResolvedValue({ error: null }),
-        },
-      },
-    } as any);
-
     const res = await deleteAccount(new Request('http://localhost'));
 
     expect(res.status).toBe(200);
