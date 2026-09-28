@@ -48,6 +48,7 @@ vi.mock('@/lib/db/prisma', () => ({
     $transaction: (cb: (tx: unknown) => unknown) => cb({ user: { findMany: h.userFindMany } }),
     partnerReferral: { findMany: h.partnerReferralFindMany },
     memberEvent: { findMany: vi.fn(async () => []) },
+    partner: { findFirst: vi.fn(async () => ({ partnerType: 'community' })) },
   },
 }));
 vi.mock('@/lib/partner/referralBundle', async (importOriginal) => {

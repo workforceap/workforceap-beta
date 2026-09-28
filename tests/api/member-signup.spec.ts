@@ -253,3 +253,33 @@ describe('POST /api/member/signup partner ref recovery', () => {
     );
   });
 });
+
+describe('POST /api/member/signup partner disclosure acknowledgement', () => {
+  const eventMetadata = () =>
+    (mocks.trackEvent.mock.calls[0]?.[0] as { eventName: string; metadata: Record<string, unknown> } | undefined);
+
+  it('records the disclosure as shown, with the server-attributed partner id and tier', async () => {
+    mocks.createMember.mockResolvedValue({ referralPartnerId: 'partner-9', referralPartnerType: 'referral', referralRef: 'acme' });
+    const response = await POST(request({ ...requiredFields, referralRef: 'acme', partnerDisclosureRef: 'acme' }));
+    expect(response.status).toBe(200);
+    expect(eventMetadata()?.eventName).toBe('apply_signup_completed');
+    expect(eventMetadata()?.metadata).toMatchObject({
+      partner_disclosure_shown: true,
+      partner_disclosure_partner_id: 'partner-9',
+      partner_disclosure_tier: 'restricted',
+    });
+  });
+
+  it('records not-shown when the form disclosed a different (or no) partner', async () => {
+    mocks.createMember.mockResolvedValue({ referralPartnerId: 'partner-9', referralPartnerType: 'community', referralRef: 'acme' });
+    await POST(request({ ...requiredFields, referralRef: 'acme', partnerDisclosureRef: 'someone-else' }));
+    expect(eventMetadata()?.metadata).toMatchObject({ partner_disclosure_shown: false, partner_disclosure_partner_id: 'partner-9', partner_disclosure_tier: 'full' });
+  });
+
+  it('records nothing for an organic signup', async () => {
+    mocks.createMember.mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
+    await POST(request({ ...requiredFields, partnerDisclosureRef: 'acme' }));
+    expect(eventMetadata()?.metadata).not.toHaveProperty('partner_disclosure_shown');
+    expect(eventMetadata()?.metadata).not.toHaveProperty('partner_disclosure_partner_id');
+  });
+});

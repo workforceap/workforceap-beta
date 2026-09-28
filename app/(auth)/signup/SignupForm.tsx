@@ -22,6 +22,8 @@ import { readMarketingAttribution, clearMarketingAttribution } from '@/lib/marke
 import { sanitizeRedirectPath } from '@/lib/auth/safeRedirectPath';
 import { splitLocalePrefix } from '@/lib/i18n/config';
 import { CONSENT_AWARE_SCREEN_MIN_HEIGHT } from '@/lib/consent/reserve';
+import PartnerReferralDisclosure, { type PartnerDisclosureCopy } from '@/components/apply/PartnerReferralDisclosure';
+import type { PartnerReferralDisclosure as PartnerDisclosure } from '@/lib/apply/partnerReferralDisclosureCore';
 
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then((m) => m.Turnstile), { ssr: false });
 
@@ -57,6 +59,9 @@ const VETERAN_OPTION_KEYS: Record<string, string> = {
 
 type SignupFormProps = {
   initialRedirectTo?: string;
+  /** Server-resolved partner disclosure for the page's ref (query or cookie). */
+  partnerDisclosure?: PartnerDisclosure | null;
+  partnerDisclosureCopy?: PartnerDisclosureCopy;
 };
 
 /* ─── styles ─── */
@@ -221,8 +226,14 @@ function strengthColor(score: number, index: number): string {
   return 'var(--color-green)';
 }
 
-export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupFormProps) {
+export default function SignupForm({
+  initialRedirectTo = '/dashboard',
+  partnerDisclosure = null,
+  partnerDisclosureCopy,
+}: SignupFormProps) {
   const tAuth = useTranslations('auth');
+  // Ref whose partner disclosure is on screen; recorded with signup.
+  const [disclosedPartnerRef, setDisclosedPartnerRef] = useState<string | null>(partnerDisclosure?.ref ?? null);
   /* ─── all business logic preserved from MemberSignupForm ─── */
   const redirectTo = sanitizeRedirectPath(initialRedirectTo, '/dashboard');
   const canonicalRedirectTo = splitLocalePrefix(redirectTo).pathnameWithoutLocale;
@@ -270,6 +281,7 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
         body: JSON.stringify({
           ...data,
           referralRef,
+          partnerDisclosureRef: disclosedPartnerRef ?? undefined,
           utmSource: attribution.utmSource,
           utmMedium: attribution.utmMedium,
           utmCampaign: attribution.utmCampaign,
@@ -535,6 +547,13 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
 
             {/* Consent checkboxes */}
             <div style={{ marginBottom: 'var(--space-4)' }}>
+              {partnerDisclosureCopy ? (
+                <PartnerReferralDisclosure
+                  initial={partnerDisclosure}
+                  copy={partnerDisclosureCopy}
+                  onShownRefChange={setDisclosedPartnerRef}
+                />
+              ) : null}
               <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-3)', minHeight: 44 }}>
                 <input
                   type="checkbox"

@@ -21,6 +21,14 @@
 }
 .link { display: block; overflow-wrap: anywhere; padding-block: 0.5rem; }
 .code { margin: 0; color: var(--wa-muted); font-size: var(--wa-type-meta); overflow-wrap: anywhere; }
+.tools {
+  grid-column: 1 / -1;
+  width: fit-content;
+  min-height: 2.75rem;
+  align-content: center;
+  color: var(--wa-accent-text);
+  font-size: var(--wa-type-body);
+}
 
 @media (max-width: 47.99rem) {
   .panel { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }

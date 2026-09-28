@@ -61,3 +61,45 @@ it('skips fixture partner recipients before Resend without a failure diagnostic'
   expect(mocks.send).not.toHaveBeenCalled();
   expect(mocks.diagnostic).not.toHaveBeenCalled();
 });
+
+describe('partner data tier in milestone email (lib/partner/dataAccess.ts)', () => {
+  const sentText = () => (mocks.send.mock.calls[0]?.[0] as { text?: string } | undefined)?.text ?? '';
+
+  it('a referral (restricted) partner never receives employer or role', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Member', profile: null },
+      partner: { name: 'Affiliate', contactEmail: 'partner@workforceap.org', notifyOnPlaced: true, partnerType: 'referral' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Job placement', { Employer: 'SECRET_EMPLOYER', Role: 'SECRET_ROLE' });
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(sentText()).toContain('Milestone: Job placement');
+    expect(sentText()).not.toMatch(/SECRET_/);
+  });
+
+  it('a community partner keeps today’s details', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Member', profile: null },
+      partner: { name: 'Community', contactEmail: 'partner@workforceap.org', notifyOnPlaced: true, partnerType: 'community' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Job placement', { Employer: 'Acme', Role: 'Tech' });
+    expect(sentText()).toContain('Employer: Acme');
+  });
+
+  it('a minor without FERPA consent is never announced to a non-school partner', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Minor', profile: { isMinor: true, dob: null, ferpaConsentGiven: false } },
+      partner: { name: 'Community', contactEmail: 'partner@workforceap.org', notifyOnEnrollment: true, partnerType: 'community' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Program enrollment', { Program: 'IT Support' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('a school partner is still told about its minor student', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Minor', profile: { isMinor: true, dob: null, ferpaConsentGiven: false } },
+      partner: { name: 'School', contactEmail: 'partner@workforceap.org', notifyOnEnrollment: true, partnerType: 'high_school' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Program enrollment', { Program: 'IT Support' });
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+});

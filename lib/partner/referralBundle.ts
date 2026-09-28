@@ -7,8 +7,18 @@ import { getPipelineStage, PIPELINE_STAGE_LABELS, type PipelineStudent } from '@
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { eventNameReadCandidates } from '@/lib/events/names';
 import { PARTNER_PLACEMENT_LABELS } from '@/lib/partner/partnerVisibleEvents';
+import {
+  partnerDataAccess,
+  partnerPlacementSelect,
+  partnerVisiblePlacement,
+  withPartnerMemberVisibility,
+  PARTNER_PROGRESS_STAGE_LABELS,
+  partnerProgressStage,
+  type PartnerDataAccess,
+} from '@/lib/partner/dataAccess';
+import { applicationStatusKey, applicationStatusLabel } from '@/lib/status/applicationStatusVocabulary';
 
-const referralMemberSelect = {
+const referralMemberBaseSelect = {
   id: true,
   fullName: true,
   enrolledProgram: true,
@@ -30,35 +40,36 @@ const referralMemberSelect = {
       enrolledAt: true,
     },
   },
-  placementRecord: {
-    select: {
-      employerName: true,
-      jobTitle: true,
-      salaryOffered: true,
-      placedAt: true,
-      startDateVerified: true,
-      onboardingWindowEnd: true,
-      retentionDecision: true,
-    },
-  },
-  // WAP-171: privacy policy §3.3 lets a referring partner see enrollment
-  // status, progress and outcomes. Ethnicity and veteran status (§1.2
-  // eligibility & demographic data) are never loaded for partner surfaces.
-  profile: {
-    select: {
-      city: true,
-      state: true,
-      zip: true,
-      employmentStatus: true,
-      educationLevel: true,
-    },
-  },
   userCertifications: { select: { certName: true, earnedAt: true } },
   applications: { select: { status: true, submittedAt: true } },
   memberProgramProgress: {
     select: { programSlug: true, averagePercent: true, coursesCompleted: true },
   },
 } as const;
+
+// WAP-171: privacy policy §3.3 lets a referring partner see enrollment
+// status, progress and outcomes. Ethnicity and veteran status (§1.2
+// eligibility & demographic data) are never loaded for partner surfaces.
+const REFERRAL_PROFILE_SELECT = {
+  city: true,
+  state: true,
+  zip: true,
+  employmentStatus: true,
+  educationLevel: true,
+} as const;
+
+/**
+ * The member select for this partner's tier (lib/partner/dataAccess.ts).
+ * Restricted (referral-track) partners never load the profile or any job
+ * detail of a placement — the fields are not read from the database at all.
+ */
+function referralMemberSelect(access: PartnerDataAccess) {
+  return {
+    ...referralMemberBaseSelect,
+    placementRecord: { select: partnerPlacementSelect(access) },
+    ...(access.canSeeProfileDetails ? { profile: { select: REFERRAL_PROFILE_SELECT } } : {}),
+  };
+}
 
 export type ReferralMember = {
   id: string;
@@ -74,9 +85,10 @@ export type ReferralMember = {
     isPrimary: boolean;
     enrolledAt: Date;
   }[];
+  /** Job fields are null for restricted partners (lib/partner/dataAccess.ts). */
   placementRecord: {
-    employerName: string;
-    jobTitle: string;
+    employerName: string | null;
+    jobTitle: string | null;
     salaryOffered: number | null;
     placedAt: Date | null;
     /** Same field the partner payout flow gates on (see lib/partner/payoutEligibility.ts). */
@@ -84,6 +96,7 @@ export type ReferralMember = {
     onboardingWindowEnd: Date | null;
     retentionDecision: string | null;
   } | null;
+  /** Always null for restricted partners. */
   profile: {
     city: string | null;
     state: string | null;
@@ -122,21 +135,42 @@ export function pendingPlacementWindowStart(now: number = Date.now()): Date {
  * @param tenantOrganizationId — Partner portal tenant boundary: partner row
  *   and referred members must belong to this org (defense against orphaned /
  *   cross-tenant referral rows).
+ *
+ * The partner's data tier and minor visibility are resolved here from the
+ * stored partner row — never from the caller — so every page, API route and
+ * export built on this bundle gets the same server-side rule
+ * (lib/partner/dataAccess.ts). `access` is returned so callers can shape
+ * columns and copy without re-deriving it.
  */
 export async function loadPartnerReferralBundle(partnerId: string, tenantOrganizationId: string) {
+  const partnerRow = await prisma.partner.findFirst({
+    where: { id: partnerId, organizationId: tenantOrganizationId },
+    select: { partnerType: true },
+  });
+  const access = partnerDataAccess(partnerRow);
+  if (!partnerRow) {
+    return {
+      referrals: [],
+      members: [] as ReferralMember[],
+      pipelineMembers: [] as PipelineRow[],
+      pendingPlacements: [] as { userId: string; eventName: string; createdAt: Date }[],
+      access,
+    };
+  }
+
   const referrals = await prisma.partnerReferral.findMany({
     take: 500,
     where: {
       partnerId,
       partner: { organizationId: tenantOrganizationId },
-      member: {
+      member: withPartnerMemberVisibility({
         deletedAt: null,
         organizationId: tenantOrganizationId,
         ...MEMBER_ONLY_WHERE,
-      },
+      }, access),
     },
     include: {
-      member: { select: referralMemberSelect },
+      member: { select: referralMemberSelect(access) },
     },
     orderBy: { referredAt: 'desc' },
   });
@@ -171,7 +205,28 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
   const pipelineMembers: PipelineRow[] = [];
 
   for (const r of referrals) {
-    const m = r.member as ReferralMember;
+    const raw = r.member as Omit<ReferralMember, 'placementRecord' | 'profile'> & {
+      placementRecord?: Parameters<typeof partnerVisiblePlacement>[1];
+      profile?: ReferralMember['profile'];
+    };
+    // Project through the tier rule even though the select is already
+    // narrowed: a widened select can never pass job details through.
+    const visiblePlacement = partnerVisiblePlacement(access, raw.placementRecord);
+    const m: ReferralMember = {
+      ...raw,
+      placementRecord: visiblePlacement
+        ? {
+            employerName: visiblePlacement.employerName,
+            jobTitle: visiblePlacement.jobTitle,
+            salaryOffered: visiblePlacement.salaryOffered,
+            placedAt: visiblePlacement.placedAt,
+            startDateVerified: visiblePlacement.startDateVerified,
+            onboardingWindowEnd: visiblePlacement.onboardingWindowEnd,
+            retentionDecision: visiblePlacement.retentionDecision,
+          }
+        : null,
+      profile: access.canSeeProfileDetails ? raw.profile ?? null : null,
+    };
     const assignment = resolveTrainingProgressAssignment(
       m.enrolledProgram,
       m.courseEnrollments,
@@ -240,7 +295,7 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
 
   const members = pipelineMembers.map((p) => p.member);
 
-  return { referrals, members, pipelineMembers, pendingPlacements };
+  return { referrals, members, pipelineMembers, pendingPlacements, access };
 }
 
 export function toPartnerMembersListRows(pipelineMembers: PipelineRow[]) {
@@ -253,8 +308,11 @@ export function toPartnerMembersListRows(pipelineMembers: PipelineRow[]) {
       // `allProgramTitles` and is rendered separately by callers that want
       // the multi-program chip.
       const headlineTitle = allProgramTitles[0] ?? programTitle;
+      // Restricted partners load no employer / job title: "Placed" only.
       const story = m.placementRecord?.startDateVerified === true
-        ? `Placed at ${m.placementRecord.employerName} as ${m.placementRecord.jobTitle}`
+        ? m.placementRecord.employerName && m.placementRecord.jobTitle
+          ? `Placed at ${m.placementRecord.employerName} as ${m.placementRecord.jobTitle}`
+          : PARTNER_PLACEMENT_LABELS.verifiedWithoutDetails
         : m.placementRecord
           ? PARTNER_PLACEMENT_LABELS.pendingVerification
         : progress >= 100
@@ -282,4 +340,49 @@ export function toPartnerMembersListRows(pipelineMembers: PipelineRow[]) {
       };
     },
   );
+}
+
+/**
+ * The status-only row a restricted (referral-track) partner may export: the
+ * allowlist in lib/partner/dataAccess.ts and nothing else. Built from the
+ * already tier-narrowed bundle; no contact, location, employment or job field
+ * exists on the input to leak.
+ */
+export type PartnerStatusOnlyRow = {
+  id: string;
+  fullName: string;
+  applicationStatus: string;
+  applicationSubmittedAt: Date | null;
+  programTitle: string;
+  progressStage: string;
+  certifications: string[];
+  placed: boolean;
+  placedAt: Date | null;
+  referredAt: Date;
+};
+
+export function toPartnerStatusOnlyRows(pipelineMembers: PipelineRow[]): PartnerStatusOnlyRow[] {
+  return pipelineMembers.map(({ member: m, referredAt, progress, programTitle }) => {
+    const latestApplication = [...m.applications].sort(
+      (a, b) => (b.submittedAt?.getTime() ?? 0) - (a.submittedAt?.getTime() ?? 0),
+    )[0];
+    const placed = m.placementRecord?.startDateVerified === true;
+    return {
+      id: m.id,
+      fullName: m.fullName,
+      applicationStatus: applicationStatusLabel(applicationStatusKey(latestApplication?.status), 'member'),
+      applicationSubmittedAt: latestApplication?.submittedAt ?? null,
+      programTitle,
+      progressStage: PARTNER_PROGRESS_STAGE_LABELS[
+        partnerProgressStage({
+          enrolled: m.enrolledAt != null || m.courseEnrollments.length > 0,
+          progressPct: progress,
+        })
+      ],
+      certifications: m.userCertifications.map((c) => c.certName),
+      placed,
+      placedAt: placed ? m.placementRecord?.placedAt ?? null : null,
+      referredAt,
+    };
+  });
 }

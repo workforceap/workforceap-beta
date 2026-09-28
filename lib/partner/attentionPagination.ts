@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { memberOnlyEmailSql, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
+import { minorBirthDateCutoff, PARTNER_SCHOOL_TYPE } from '@/lib/partner/dataAccess';
 
 export const ATTENTION_TIERS = ['all', 'high', 'medium', 'low', 'watch'] as const;
 export type AttentionTier = typeof ATTENTION_TIERS[number];
@@ -69,6 +70,11 @@ export function buildAttentionPageQuery(
       WHERE r.partner_id = ${partnerId} AND p.organization_id = ${organizationId} AND p.active = true
         AND u.organization_id = ${organizationId} AND u.deleted_at IS NULL
         AND ${memberOnlyRoleSql('u')} AND ${memberOnlyEmailSql('u')}
+        -- Minors are hidden from non-school partners unless FERPA consent is
+        -- on file (lib/partner/dataAccess.ts partnerHiddenMemberWhere).
+        AND (p.partner_type = ${PARTNER_SCHOOL_TYPE} OR NOT EXISTS (SELECT 1 FROM profiles minor
+          WHERE minor.user_id = u.id AND minor.ferpa_consent_given = false
+            AND (minor.is_minor = true OR minor.dob > ${minorBirthDateCutoff(asOf)}::date)))
         AND (r.referred_at AT TIME ZONE 'UTC') <= ${asOf}::timestamptz
         AND NOT EXISTS (SELECT 1 FROM placement_records placement
           WHERE placement.user_id = u.id AND placement.start_date_verified = true)

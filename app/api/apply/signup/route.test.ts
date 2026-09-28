@@ -301,6 +301,7 @@ import {
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logger } from '@/lib/observability/logger';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { trackEvent } from '@/lib/events/track';
 
 function makeRequest(overrides: Record<string, unknown> = {}) {
   const body = {
@@ -1488,5 +1489,64 @@ describe('POST /api/apply/signup unmatched partner ref', () => {
     state.partner = null;
     await POST(makeRequest());
     expect(unmatchedRefWarnings()).toHaveLength(0);
+  });
+});
+
+
+/**
+ * Partner disclosure acknowledgement (lib/apply/partnerReferralDisclosureCore.ts):
+ * recorded on the apply_signup_completed event with the server-resolved partner.
+ */
+describe('POST /api/apply/signup partner disclosure acknowledgement', () => {
+  beforeEach(() => {
+    resetState();
+    vi.mocked(trackEvent).mockClear();
+  });
+
+  const signupMetadata = () => {
+    const call = vi.mocked(trackEvent).mock.calls.find(([arg]) => arg.eventName === 'apply_signup_completed');
+    return (call?.[0].metadata ?? {}) as Record<string, unknown>;
+  };
+
+  function partner(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 'partner-affiliate',
+      name: 'Affiliate Partner',
+      partnerType: 'referral',
+      contactEmail: null,
+      notifyOnEnrollment: false,
+      sponsoredEnrollment: false,
+      sponsorshipFundingSource: null,
+      sponsorshipTermLabel: null,
+      sponsorshipStartsAt: null,
+      sponsorshipEndsAt: null,
+      sponsorshipSeatCap: null,
+      schoolDistrict: null,
+      ...overrides,
+    };
+  }
+
+  it('records the disclosure shown for the attributed partner, with its id and tier', async () => {
+    state.partner = partner();
+    const res = await POST(makeRequest({ referralRef: 'affiliate', partnerDisclosureRef: 'affiliate' }));
+    expect(res.status).toBe(200);
+    expect(signupMetadata()).toMatchObject({
+      partner_disclosure_shown: true,
+      partner_disclosure_partner_id: 'partner-affiliate',
+      partner_disclosure_tier: 'restricted',
+    });
+  });
+
+  it('records not-shown when the form disclosed another ref', async () => {
+    state.partner = partner({ partnerType: 'community' });
+    await POST(makeRequest({ referralRef: 'affiliate', partnerDisclosureRef: 'different' }));
+    expect(signupMetadata()).toMatchObject({ partner_disclosure_shown: false, partner_disclosure_tier: 'full' });
+  });
+
+  it('records nothing when the ref matched no active partner', async () => {
+    state.partner = null;
+    await POST(makeRequest({ referralRef: 'unknown', partnerDisclosureRef: 'unknown' }));
+    expect(signupMetadata()).not.toHaveProperty('partner_disclosure_shown');
+    expect(signupMetadata()).not.toHaveProperty('partner_disclosure_partner_id');
   });
 });
