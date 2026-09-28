@@ -4,9 +4,10 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { PROGRAM_SYLLABI } from '@/shared/programSyllabi';
 import {
-  renderJ5QuoteVoucherRequestPdf,
-  renderJ6InvoiceVoucherCoverLetterPdf,
+  renderJ5QuoteVoucherRequestDraftPdf,
+  renderJ6InvoiceVoucherCoverLetterDraftPdf,
   type J5QuoteVoucherRequestFacts,
   type J6InvoiceVoucherCoverLetterFacts,
 } from './documentPdf';
@@ -22,7 +23,8 @@ function j5(overrides: Partial<J5QuoteVoucherRequestFacts> = {}): J5QuoteVoucher
     student: { name: 'Jordan Example', email: 'jordan@example.test' },
     boardName: 'Workforce Solutions Capital',
     counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
-    className: 'Data Analytics Foundations',
+    programSlug: 'data-analytics-professional-certificate-google',
+    className: 'Management Analyst & Business Intelligence Professional Certificate',
     classHours: 160,
     classStartDate: '2026-09-30',
     classEndDate: '2027-02-28',
@@ -33,7 +35,6 @@ function j5(overrides: Partial<J5QuoteVoucherRequestFacts> = {}): J5QuoteVoucher
       addressLine1: '207 Settlers Valley Suite C',
       addressLine2: 'Pflugerville, TX 78660',
     },
-    signature: { mode: 'draft' },
     ...overrides,
   };
 }
@@ -51,6 +52,7 @@ function j6(overrides: Partial<J6InvoiceVoucherCoverLetterFacts> = {}): J6Invoic
     signedVoucher: {
       reference: 'SYNTH-PO-001',
       receivedDate: '2026-09-30',
+      authorizedAmountCents: 750_000,
       sha256: 'a'.repeat(64),
       receivingSignatureAttestationId: 'synthetic-attestation-001',
     },
@@ -79,7 +81,7 @@ async function extract(bytes: Uint8Array): Promise<ExtractedPdf> {
 
 describe('two-stage WAP billing PDFs', () => {
   it('renders a one-page J5 quote before any voucher or finance facts exist', async () => {
-    const bytes = await renderJ5QuoteVoucherRequestPdf(j5());
+    const bytes = await renderJ5QuoteVoucherRequestDraftPdf(j5());
     assert.equal(Buffer.from(bytes.slice(0, 5)).toString(), '%PDF-');
     const pdf = await PDFDocument.load(bytes);
     assert.deepEqual(pdf.getPage(0).getSize(), { width: 612, height: 792 });
@@ -89,7 +91,7 @@ describe('two-stage WAP billing PDFs', () => {
     assert.match(text, /DRAFT - SIGNATURE REQUIRED/u);
     assert.match(text, /Casey Counselor \| casey@example\.test/u);
     assert.match(text, /Jordan Example \| jordan@example\.test/u);
-    assert.match(text, /Data Analytics Foundations/u);
+    assert.match(text, /Management Analyst & Business Intelligence Professional Certificate/u);
     assert.match(text, /160 hours/u);
     assert.match(text, /September 30, 2026/u);
     assert.match(text, /February 28, 2027/u);
@@ -99,10 +101,10 @@ describe('two-stage WAP billing PDFs', () => {
   });
 
   it('renders a separate J6 cover letter that points to the received voucher and keeps 10-14 days as follow-up', async () => {
-    const bytes = await renderJ6InvoiceVoucherCoverLetterPdf(j6());
+    const bytes = await renderJ6InvoiceVoucherCoverLetterDraftPdf(j6());
     if (process.env.WAP_PDF_PREVIEW_DIR) {
       mkdirSync(process.env.WAP_PDF_PREVIEW_DIR, { recursive: true });
-      writeFileSync(join(process.env.WAP_PDF_PREVIEW_DIR, 'J5-synthetic-draft.pdf'), await renderJ5QuoteVoucherRequestPdf(j5()));
+      writeFileSync(join(process.env.WAP_PDF_PREVIEW_DIR, 'J5-synthetic-draft.pdf'), await renderJ5QuoteVoucherRequestDraftPdf(j5()));
       writeFileSync(join(process.env.WAP_PDF_PREVIEW_DIR, 'J6-synthetic-draft.pdf'), bytes);
     }
     const { text } = await extract(bytes);
@@ -118,65 +120,61 @@ describe('two-stage WAP billing PDFs', () => {
     assert.doesNotMatch(text, /Net 14|Net 30|Due Date|class-by-class|syllabus|Training Invoice/iu);
   });
 
-  it('requires a server-verified executive proof for signed mode and prints only its approval marker', async () => {
-    const proof = {
-      source: 'server-verified-executive-action',
-      signerName: 'Michael A. Brown',
-      signerUserId: 'synthetic-executive-user',
-      approvalEventId: 'synthetic-approval-001',
-      approvedAt: '2026-09-27T18:20:00.000Z',
-    } as const;
-    const signed = j5({
-      signature: {
-        mode: 'signed',
-        proof,
-      },
-    });
-    const text = (await extract(await renderJ5QuoteVoucherRequestPdf(signed))).text;
-    assert.match(text, /SIGNED - APPROVAL RECORDED/u);
-    assert.match(text, /Executive approval recorded September 27, 2026/u);
-    assert.match(text, /Approval reference: synthetic-approval-001/u);
-    assert.doesNotMatch(text, /DRAFT - SIGNATURE REQUIRED|typed signature|electronic signature|\/s\//iu);
+  it('never marks a draft signed, including when a JS caller smuggles a signature field', async () => {
+    const text = (await extract(await renderJ5QuoteVoucherRequestDraftPdf(j5()))).text;
+    assert.match(text, /DRAFT - SIGNATURE REQUIRED/u);
+    assert.match(text, /Executive signature required before issue/u);
+    assert.doesNotMatch(text, /SIGNED -|Approval reference|typed signature|electronic signature|\/s\//iu);
     await assert.rejects(
-      renderJ5QuoteVoucherRequestPdf(j5({ signature: { mode: 'signed' } as unknown as J5QuoteVoucherRequestFacts['signature'] })),
-      /server-verified/u,
-    );
-    await assert.rejects(
-      renderJ5QuoteVoucherRequestPdf(j5({ signature: { mode: 'signed', proof: { ...proof, signerName: 'Another Person' } } as unknown as J5QuoteVoucherRequestFacts['signature'] })),
-      /server-verified/u,
+      renderJ5QuoteVoucherRequestDraftPdf({ ...j5(), signature: { mode: 'signed' } } as J5QuoteVoucherRequestFacts),
+      /drafts only/u,
     );
   });
 
   it('uses frozen facts to produce repeatable bytes without wall-clock input', async () => {
     const input = j5();
-    const first = await renderJ5QuoteVoucherRequestPdf(input);
-    const second = await renderJ5QuoteVoucherRequestPdf(input);
+    const first = await renderJ5QuoteVoucherRequestDraftPdf(input);
+    const second = await renderJ5QuoteVoucherRequestDraftPdf(input);
     assert.deepEqual(first, second);
     assert.equal((await PDFDocument.load(first)).getCreationDate()?.toISOString(), '2026-09-27T18:30:00.000Z');
   });
 
-  it('renders the 200-hour AI and Software class and a signed J6 within one page', async () => {
-    const proof = {
-      source: 'server-verified-executive-action',
-      signerName: 'Michael A. Brown',
-      signerUserId: 'synthetic-executive-user',
-      approvalEventId: 'synthetic-j6-approval-002',
-      approvedAt: '2026-10-01T18:20:00.000Z',
-    } as const;
-    const bytes = await renderJ6InvoiceVoucherCoverLetterPdf(j6({
-      className: 'AI and Software Developer',
+  it('snapshots the caller logo and text at invocation, before pdf-lib awaits', async () => {
+    const ownedLogo = new Uint8Array(logoPng);
+    const input = j5({ letterhead: { ...j5().letterhead, logoPng: ownedLogo } });
+    const pending = renderJ5QuoteVoucherRequestDraftPdf(input);
+    ownedLogo.fill(0);
+    (input.student as { name: string }).name = 'Changed After Invocation';
+    const text = (await extract(await pending)).text;
+    assert.match(text, /Jordan Example/u);
+    assert.doesNotMatch(text, /Changed After Invocation/u);
+  });
+
+  it('fits the approved syllabus title for every canonical program', async () => {
+    for (const syllabus of Object.values(PROGRAM_SYLLABI)) {
+      const bytes = await renderJ5QuoteVoucherRequestDraftPdf(j5({
+        programSlug: syllabus.slug,
+        className: syllabus.title,
+        classHours: syllabus.totalHours as 160 | 200,
+      }));
+      assert.equal((await PDFDocument.load(bytes)).getPageCount(), 1, syllabus.slug);
+    }
+  });
+
+  it('renders the approved IBM software program at 200 hours as an unsigned J6 draft', async () => {
+    const bytes = await renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({
+      programSlug: 'software-developer-professional-certificate-ibm',
+      className: 'AI and Software Developer Professional Certificate (IBM)',
       classHours: 200,
-      signature: { mode: 'signed', proof },
     }));
     const { text } = await extract(bytes);
     assert.match(text, /AI and Software Developer/u);
     assert.match(text, /200 hours/u);
-    assert.match(text, /SIGNED - APPROVAL RECORDED/u);
-    assert.match(text, /Approval reference: synthetic-j6-approval-002/u);
+    assert.match(text, /DRAFT - SIGNATURE REQUIRED/u);
   });
 
   it('keeps every text item within the letter page and outside the footer collision zone', async () => {
-    for (const bytes of [await renderJ5QuoteVoucherRequestPdf(j5()), await renderJ6InvoiceVoucherCoverLetterPdf(j6())]) {
+    for (const bytes of [await renderJ5QuoteVoucherRequestDraftPdf(j5()), await renderJ6InvoiceVoucherCoverLetterDraftPdf(j6())]) {
       const { positions } = await extract(bytes);
       assert.ok(positions.length > 25);
       for (const position of positions) {
@@ -188,12 +186,30 @@ describe('two-stage WAP billing PDFs', () => {
   });
 
   it('rejects altered price, dates, missing logo, missing voucher proof and long layout fields', async () => {
-    await assert.rejects(renderJ5QuoteVoucherRequestPdf(j5({ tuitionCents: 700_000 as 750_000 })), /\$7,500/u);
-    await assert.rejects(renderJ5QuoteVoucherRequestPdf(j5({ classEndDate: '2027-03-01' })), /five calendar months/u);
-    await assert.rejects(renderJ5QuoteVoucherRequestPdf(j5({ letterhead: { ...j5().letterhead, logoPng: new Uint8Array() } })), /logo PNG/u);
-    await assert.rejects(renderJ6InvoiceVoucherCoverLetterPdf(j6({ signedVoucher: { ...j6().signedVoucher, sha256: '' } })), /SHA-256/u);
-    await assert.rejects(renderJ6InvoiceVoucherCoverLetterPdf(j6({ classStartedAt: '2026-10-02' })), /class start/u);
-    await assert.rejects(renderJ6InvoiceVoucherCoverLetterPdf(j6({ classStartedAt: '2026-09-29' })), /confirmed class start/u);
-    await assert.rejects(renderJ5QuoteVoucherRequestPdf(j5({ counselor: { ...j5().counselor, email: `${'x'.repeat(170)}@example.test` } })), /does not fit/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ tuitionCents: 700_000 as 750_000 })), /\$7,500/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ classEndDate: '2027-03-01' })), /five calendar months/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ letterhead: { ...j5().letterhead, logoPng: new Uint8Array() } })), /logo PNG/u);
+    await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ signedVoucher: { ...j6().signedVoucher, sha256: '' } })), /SHA-256/u);
+    await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ signedVoucher: { ...j6().signedVoucher, authorizedAmountCents: 700_000 } })), /authorized amount.*\$7,500/u);
+    await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ classStartedAt: '2026-10-02' })), /class start/u);
+    await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ classStartedAt: '2026-09-29' })), /confirmed class start/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ counselor: { ...j5().counselor, email: `${'x'.repeat(170)}@example.test` } })), /does not fit/u);
+  });
+
+  it('rejects mismatched IBM and non-IBM hours, unknown slugs, aliases and title switches', async () => {
+    const ibm = {
+      programSlug: 'software-developer-professional-certificate-ibm',
+      className: 'AI and Software Developer Professional Certificate (IBM)',
+    } as const;
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ ...ibm, classHours: 160 })), /approved 200-hour syllabus/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ classHours: 200 })), /approved 160-hour syllabus/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ programSlug: 'ai-software' })), /approved program syllabus/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ ...ibm, programSlug: 'ai-and-software-development-professional-certificate-ibm', classHours: 200 })), /Canonical program slug/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ className: ibm.className })), /Class name must match/u);
+  });
+
+  it('refuses a runtime stage switch through either stage-specific wrapper', () => {
+    assert.throws(() => renderJ5QuoteVoucherRequestDraftPdf(j6() as unknown as J5QuoteVoucherRequestFacts), /J5 renderer requires J5/u);
+    assert.throws(() => renderJ6InvoiceVoucherCoverLetterDraftPdf(j5() as unknown as J6InvoiceVoucherCoverLetterFacts), /J6 renderer requires J6/u);
   });
 });
