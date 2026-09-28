@@ -66,13 +66,31 @@ export const OUTCOME_UNCERTAIN_MESSAGE =
  */
 export class SideEffects {
   private started = false;
+  private kept = false;
+  /** A side effect may start now (call before the storage write, provider call or first database write). */
   mark(): void {
     this.started = true;
+  }
+  /**
+   * Something outside any still-open transaction has been stored or sent (a
+   * storage write returned, a provider call was made, a statement or
+   * transaction committed). A later billing-rule refusal rolls back only its
+   * own transaction, so after this the request is no longer a clean refusal.
+   */
+  committed(): void {
+    this.started = true;
+    this.kept = true;
   }
   get any(): boolean {
     return this.started;
   }
+  get anyCommitted(): boolean {
+    return this.kept;
+  }
 }
+
+export const REFUSED_AFTER_EFFECTS_MESSAGE =
+  'Part of this request may already have been stored or sent (for a send, copies may already have been sent). Reload the case and reconcile any copy that may have gone out before retrying.';
 
 export function unexpectedErrorResponse(route: string, error: unknown, effects: SideEffects | null): Response {
   console.error(`[billing/two-stage ${route}]`, error);

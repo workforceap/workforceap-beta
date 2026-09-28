@@ -39,6 +39,7 @@ import { archiveErrorCode, financeArchive, type FinanceArchiveRef } from './arch
 import { currentVoucher, dateColumn, isDesignatedSigner, loadCaseSnapshot } from './caseData';
 import { apiError, MAX_UPLOAD_FILE_BYTES, type MultipartUpload } from './http';
 import { artifactView, buildCaseSummary, voucherAttestationView } from './summary';
+import { VOUCHER_DATA_WAITING_MESSAGE } from './blockers';
 import { allGates, GATE_MESSAGES } from './gates';
 
 type Obj = Record<string, unknown>;
@@ -181,6 +182,7 @@ async function archive<P>(ctx: TwoStageContext<P>, kind: FinanceArchiveKind, upl
   ctx.effects.mark();
   try {
     const { ref, reused } = await financeArchive().archiveFinancePdf({ caseId: ctx.billingCase!.id, kind, bytes: validated.upload.bytes });
+    ctx.effects.committed();
     if (ref.sha256 !== validated.upload.sha256 || ref.byteLength !== validated.upload.byteLength) {
       throw apiError(502, 'ARCHIVE_INTEGRITY_MISMATCH', 'An archived file failed its integrity check. Contact an administrator.');
     }
@@ -278,7 +280,7 @@ async function voucherResponse<P>(ctx: TwoStageContext<P>, artifactId: string, r
     memberId: ctx.member.id,
     member: ctx.member,
     assignedCounselor: null,
-    gates: allGates({ financeArchiveReady: true, designatedSigner: snapshot.designatedSignerUserId !== null }),
+    gates: allGates({ financeArchiveReady: null, designatedSigner: snapshot.designatedSignerUserId !== null }),
     viewerIsExecutiveSigner: false,
     viewerIsDesignatedSigner: isDesignatedSigner(snapshot, ctx.user.id),
     now: ctx.now,
@@ -347,7 +349,7 @@ async function receiptTarget<P>(ctx: TwoStageContext<P>, artifactId: string) {
   if (current?.artifact.id !== artifact.id) throw apiError(409, 'VOUCHER_NOT_CURRENT', 'A newer voucher was uploaded for this case. Attest the current voucher.');
   if (!current.attestation) {
     throw apiError(409, 'NOT_READY', 'Record the voucher details (reference, dates, amount) before attesting the receiving signature.', {
-      blockers: [{ code: 'J6_VOUCHER_ATTESTATION_INCOMPLETE', message: 'Confirm the uploaded board-signed voucher: reference, received date, authorized program/class, amount and period.', hardHold: false }],
+      blockers: [{ code: 'J6_VOUCHER_ATTESTATION_INCOMPLETE', message: VOUCHER_DATA_WAITING_MESSAGE, hardHold: false, waitingOn: 'designated_signer' }],
     });
   }
   return { snapshot, artifact, reference: current.attestation.voucherReference ?? '' };

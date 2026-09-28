@@ -52,6 +52,10 @@ export function holdBlockers(holds: readonly HoldReason[]): Blocker[] {
   return holds.map((hold) => ({ code: HOLD_CODE[hold], message: REVIEW_REASON_TEXT[hold], hardHold: true }));
 }
 
+/** J6_VOUCHER_ATTESTATION_INCOMPLETE once a voucher file exists: only the designated signer can record its details. */
+export const VOUCHER_DATA_WAITING_MESSAGE =
+  'Waiting on Michael A. Brown to record the voucher details (reference, received date, authorized program/class, amount and period) for this exact file. A staff account cannot record them.';
+
 export const RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE =
   "Michael A. Brown must attest, signed in as himself, that his receiving signature is on this exact uploaded voucher. A staff confirmation does not count.";
 

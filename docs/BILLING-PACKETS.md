@@ -433,7 +433,7 @@ Adapter refusals (typed `RendererAdapterError`):
 | --- | --- |
 | `409 LOGO_CHANGED` | sha256 of the bytes at `public/images/wap_logo.png` differs from `content.letterhead.logo.sha256`. Save the draft again (new hash). |
 | `422 VOUCHER_REFERENCE_TOO_LONG` | `voucher.reference` over 80 characters (M1 `VOUCHER_REFERENCE_MAX_LENGTH`, also a DB CHECK; one limit for upload, draft save and renderer). |
-| `422 TEXT_NOT_PRINTABLE` | a printed value is empty, not a single trimmed line, over its cap (`TWO_STAGE_TEXT_LIMITS`), outside WinAnsi, or too wide for the one-page layout (`field` names it). |
+| `422 TEXT_NOT_PRINTABLE` | a printed value is empty, not a single trimmed line, over its cap (`TWO_STAGE_TEXT_LIMITS`), outside WinAnsi, has spacing the page would not print as typed (two spaces in a row, a non-breaking space or any whitespace other than a plain space: the renderer wraps on single spaces, so `PO  44871` would print as `PO 44871`), or is too wide for the one-page layout (`field` names it). |
 
 Draft save runs `printableIssues(content)` and a trial render
 (`renderDraftFromContent`), so bad input fails at save with a clear code, not
@@ -471,6 +471,17 @@ the content hash and the archived bytes carry it.
 
 No route ever says "nothing was signed or sent" after a side effect may have
 happened. Per-recipient send outcomes follow the same rule (§5.14).
+
+**Refusal after a committed step.** An M1 refusal rolls back only its own
+transaction. The request tracks, besides "a side effect may have started",
+whether something outside that transaction was already kept: a storage write
+returned, a provider call was made, or a statement or transaction committed
+(every send-store write, the reconcile transaction before the stage
+completes). A refusal after such a step keeps its code and status but adds
+`outcomeUncertain: true` and the copy "Part of this request may already have
+been stored or sent (for a send, copies may already have been sent). Reload
+the case and reconcile any copy that may have gone out before retrying." A
+refusal with nothing kept is a clean refusal, as before.
 
 **Shared DTO module.** `lib/billing/twoStage/dto.ts` is client-safe (type-only
 imports, pure constants) and is the single definition of every request and
@@ -537,7 +548,7 @@ claim row, storage write or provider call, and reported in the case summary
 | --- | --- | --- | --- |
 | Migration applied | `BILLING_TWO_STAGE_MIGRATION_APPLIED === 'true'` (set per environment only after the M1 migration and #2700 bucket are applied there) | every two-stage route | `503 MIGRATION_NOT_APPLIED` |
 | Provider org | `BILLING_PACKET_PROVIDER_ORG_ID` unset (default org) or a UUID | all | `503 PROVIDER_ORG_MISCONFIGURED` |
-| Finance archive | the #2704 private-bucket preflight passes | uploads, file download, sign, send | `503 FINANCE_ARCHIVE_UNAVAILABLE` |
+| Finance archive | the #2704 private-bucket preflight passes | uploads, file download, sign, send | `503 FINANCE_ARCHIVE_UNAVAILABLE`; the case summary never calls Storage and reports this gate as unknown (`enabled: null`, `code: null`), never as closed |
 | Signer configured | `BILLING_EXECUTIVE_SIGNER_USER_ID` is a UUID (the exact signer Auth account) | sign, voucher receipt attestation | `503 SIGNER_NOT_CONFIGURED` |
 | Signed renderer | the signature representation is approved and a signed (non-draft) renderer exists (`SIGNED_RENDERER_AVAILABLE = false` in code) | sign | `503 SIGNED_RENDERER_UNAVAILABLE` |
 | Receipt-signature principal | the provider org has a `billing_designated_signers` row (M1; unset by default) | voucher receipt attestation, J6 sign, J6 send | `503 SIGNER_PRINCIPAL_UNSET` |
@@ -581,7 +592,7 @@ type CaseSummaryResponse = {
   j5: J5StageView;                                          // current, history, blockers, contacts, readiness attestation
   j6: J6StageView;                                          // prior quote, class started, voucher, matches, holds
   payment: PaymentResponse;
-  /** Exactly #2706 TwoStageBillingReadiness (2717102c). Absent key = not checked. */
+  /** @deprecated Use readinessByStage. #2706 TwoStageBillingReadiness (2717102c), both stages merged. Absent key = not checked. */
   readiness: TwoStageBillingReadiness;
   /** The same facts per stage card, for when M4 splits the prop. */
   readinessByStage: { j5: Partial<Record<J5ReadinessKey, boolean>>; j6: Partial<Record<J6ReadinessKey, boolean>> };
@@ -599,7 +610,7 @@ type DesignatedSignerTask = {
   ready: boolean;                                          // false for the receipt until the data exists, and while no signer is designated
   viewerIsDesignatedSigner: boolean;
 };
-type GateState = { enabled: boolean; code: ErrorCode | null; message: string | null };
+type GateState = { enabled: boolean | null; code: GateCode | null; message: string | null };  // null = not checked by this response
 ```
 
 Readiness keys, aligned exactly with #2706 `2717102c` (`ReadinessKey`):
@@ -622,9 +633,14 @@ Readiness keys, aligned exactly with #2706 `2717102c` (`ReadinessKey`):
 
 A key is absent when there is nothing to check yet (for example the J6
 contact keys before any J6 draft is saved), `false` when checked and not
-satisfied. #2706 passes one `readiness` object to both cards, so the four
-shared keys come from the J6 draft once a prior quote exists for the case, and
-from the J5 draft before that; `readinessByStage` has the unshared values.
+satisfied. `readinessByStage` is the per-stage source of truth and the one
+#2706 should read. The combined `readiness` is **deprecated**: it exists only
+because #2706 `2717102c` passes one object to both cards, and it merges the
+stages. For the four shared keys (board, counselor, student email, class
+dates) it shows the J6 value when the J6 has one and the case has a prior
+quote, otherwise the J5 value, so before a J6 draft is saved those keys show
+the J5 draft's facts on the J6 card. It is removed once #2706 reads
+`readinessByStage`.
 The blockers list carries the same facts as stable codes (§6.2).
 
 **Waiting on Michael.** Staff may upload the voucher file; only the
@@ -637,7 +653,10 @@ steps hold back, from `DESIGNATED_SIGNER_READINESS`:
 `voucherReferenceAndReceivedDateVerified` and `voucherTermsVerified` →
 `voucher_data`; `michaelReceivingSignatureAttested` →
 `voucher_receipt_signature`), and `waitingOn: 'designated_signer'` on the
-matching blockers. `originalVoucherHashVerified` never waits on him (the
+matching blockers, whose message then names him (the M1 sentence "Confirm
+the uploaded board-signed voucher…" is replaced by "Waiting on Michael A.
+Brown to record the voucher details … A staff account cannot record them.").
+`originalVoucherHashVerified` never waits on him (the
 server hashes the upload). `viewer.isDesignatedSigner` tells the UI whether
 to offer the steps to the viewer. Before any voucher file exists the upload
 is a staff step and nothing is tagged.
@@ -925,7 +944,14 @@ is `409 ALREADY_SIGNED`.
    attempt n+1 only for roles in `retryFailedRoles`, else
    `FAILED_RETRY_NOT_REQUESTED`; `claim_new` → insert `pending`;
    `retry_same_key` → `ambiguous → pending` with a new token (after 23 h the
-   database refuses → `NEEDS_RECONCILIATION`).
+   database refuses → `NEEDS_RECONCILIATION`). A claim insert refused because
+   another request claimed the role at the same moment (a unique violation,
+   or M1's "no new attempt" / "next attempt" / "first claim" rules) is
+   `IN_FLIGHT`; every other insert refusal (for example
+   `VOUCHER_RECEIPT_SIGNATURE_UNATTESTED` after a re-designation, or a frozen
+   name/address mismatch) is permanent and returns its named refusal (§2),
+   with `outcomeUncertain` when an earlier role's copy was already sent.
+   Every store write marks the request before it runs.
 5. Provider call: `sendBrandedEmailOrThrowOnSkip(resend, { to: frozen email,
    idempotencyKey: sendIdempotencyKey(...), attachments: [{ filename,
    content: Buffer.from(bytes) }] })`, one message per role, no cc/bcc.
@@ -989,6 +1015,18 @@ off the recipient's general notifications: a bounced J5/J6 copy is a billing
 follow-up (`followUp` in the summary), not a reason to mute the student. The
 `emailSendLog` path is unchanged, and a store without the method behaves
 exactly as before.
+
+- **Billing copy by tag.** A copy is also recognized by its `email_send_logs`
+  row (`templateKey` `billing_two_stage` or `entityType`
+  `billing_stage_record`, set by the send port), so a copy whose provider id
+  never reached the billing ledger (a failed settle, the gate off) is still
+  never muted.
+- **Hard bounces only.** Billing evidence is recorded for `delivered`,
+  `complained` and permanent `bounced` events; a transient or undetermined
+  bounce records nothing and raises no follow-up.
+- **Ledger failures.** An error from the billing linkage is caught, recorded
+  as an `email_delivery` diagnostic, and the event is otherwise handled as
+  usual (200), so a billing problem never fails other mail's events.
 
 Non-billing events: the route wires the method through
 `billingDeliveryLinker(prisma)` (`lib/billing/twoStage/api/webhookLinkage.ts`),
@@ -1070,6 +1108,12 @@ line each, with the reason.
 34. **Waiting on Michael:** the summary and voucher responses name each step waiting on the designated signer (`waitingOnDesignatedSigner`, `readinessWaitingOn`, blocker `waitingOn`), because #2706 must show that staff cannot clear those steps.
 35. **Env signer check on the receipt attestation:** redundant for identity once the designated-signer row exists, kept as fail-closed defense (row and env must agree), because a disagreement between them should refuse, not pick a side.
 36. **Webhook before the migration:** the billing linkage never reads the database while the migration gate is closed, because an environment without the billing tables must handle every Resend event exactly as before.
+37. **Refusal after a committed step:** a refusal keeps its code but adds `outcomeUncertain` and reconcile copy once a storage write, provider call or committed statement happened earlier in the request, because a trigger refusal rolls back only its own transaction.
+38. **Claim conflicts:** only a concurrent claim for the same role is `IN_FLIGHT`; other claim-insert refusals are named refusals, because a permanent refusal shown as "being sent" would never resolve.
+39. **Printed spacing:** bound values with double spaces, NBSP or other whitespace are refused at draft save (`TEXT_NOT_PRINTABLE`), and the renderer refuses them too, because wrapping would print them differently from the hashed value.
+40. **Webhook billing copies:** recognized by send-log tags as well as the ledger; only hard bounces are billing evidence; a ledger error is a diagnostic, never a failed event, because general mail handling must not depend on the billing ledger.
+41. **Archive gate in the summary:** reported unknown (`enabled: null`), because the summary does not call Storage and "closed" would be false.
+42. **Combined readiness:** deprecated in favor of `readinessByStage`, because merging the stages shows J5 facts on the J6 card.
 
 ### Not in M3
 

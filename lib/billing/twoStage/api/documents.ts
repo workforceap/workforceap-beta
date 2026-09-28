@@ -78,8 +78,9 @@ export async function caseSummary<P>(ctx: TwoStageContext<P>): Promise<CaseSumma
     memberId: ctx.member.id,
     member: ctx.member,
     assignedCounselor: counselor ? { name: counselor.fullName, email: counselor.email } : null,
-    // The archive gate is checked live only by the routes that touch storage; the summary never calls Storage.
-    gates: allGates({ financeArchiveReady: false, designatedSigner: snapshot.designatedSignerUserId !== null }),
+    // The archive gate is checked live only by the routes that touch storage;
+    // the summary never calls Storage, so it reports the gate as unknown.
+    gates: allGates({ financeArchiveReady: null, designatedSigner: snapshot.designatedSignerUserId !== null }),
     viewerIsExecutiveSigner: viewerIsSigner(ctx) && isDesignatedSigner(snapshot, ctx.user.id),
     viewerIsDesignatedSigner: isDesignatedSigner(snapshot, ctx.user.id),
     now: ctx.now,

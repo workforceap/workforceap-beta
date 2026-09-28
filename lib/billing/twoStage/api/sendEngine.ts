@@ -124,6 +124,20 @@ const OUTCOME_FOR: Record<SettleInput['status'], SendOutcome> = {
 
 const RETRY_WINDOW_MS = 23 * 60 * 60 * 1000;
 
+/**
+ * M1 send-guard refusals on a claim insert that mean another request claimed
+ * this role at the same moment (its latest claim is now pending or accepted,
+ * or the attempt number moved). The store reports these (and a unique
+ * violation) as 'conflict', shown as IN_FLIGHT. Every other insert refusal
+ * (receipt signature, frozen name/address, content hash, record no longer
+ * signed) is permanent and surfaces as a named refusal.
+ */
+const CONCURRENT_CLAIM_REFUSAL = /copy is [a-z_]+: no new attempt|the next attempt for [a-z]+ is \d+|the first claim for a role is attempt 1/u;
+
+export function isConcurrentClaimRefusal(message: string): boolean {
+  return CONCURRENT_CLAIM_REFUSAL.test(message);
+}
+
 export async function runSend(args: {
   stage: BillingStage;
   recordId: string;

@@ -270,6 +270,8 @@ function drawCentered(page: PDFPage, fonts: Fonts, value: string, y: number, siz
 }
 
 function wrap(value: string, font: PDFFont, size: number, width: number, maxLines: number): string[] {
+  // Wrapping joins words with one plain space; refuse spacing it would silently change.
+  if (/[^\S ]| {2}/u.test(value.trim())) throw new Error('PDF text has spacing the layout would not print as typed');
   const words = printable(value).split(/\s+/u);
   const lines: string[] = [];
   let line = '';

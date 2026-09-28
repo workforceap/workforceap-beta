@@ -34,12 +34,13 @@ const prismaResendWebhookStore: ResendWebhookStore = {
   async applyEvent({ providerMessageId, event, eventAt, bounceType }) {
     const row = await prisma.emailSendLog.findUnique({
       where: { providerMessageId },
-      select: { id: true, userId: true, lastEventAt: true },
+      select: { id: true, userId: true, lastEventAt: true, templateKey: true, entityType: true },
     });
     if (!row) return { matched: false, userId: null };
+    const tags = { templateKey: row.templateKey, entityType: row.entityType };
     // Svix retries and reorders; an older event must not overwrite a newer one.
     if (row.lastEventAt && row.lastEventAt.getTime() > eventAt.getTime()) {
-      return { matched: true, userId: row.userId };
+      return { matched: true, userId: row.userId, ...tags };
     }
     await prisma.emailSendLog.update({
       where: { id: row.id },
@@ -49,7 +50,7 @@ const prismaResendWebhookStore: ResendWebhookStore = {
         ...(event === 'bounced' ? { bounceType } : {}),
       },
     });
-    return { matched: true, userId: row.userId };
+    return { matched: true, userId: row.userId, ...tags };
   },
 
   async disableNotifications({ userId, recipients }) {

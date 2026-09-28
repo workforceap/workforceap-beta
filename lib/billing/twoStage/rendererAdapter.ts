@@ -178,13 +178,20 @@ export function printedContentFields(content: TwoStageContent): PrintedField[] {
 export type PrintableIssue = { code: 'TEXT_NOT_PRINTABLE' | 'VOUCHER_REFERENCE_TOO_LONG'; field: string; message: string };
 
 const CONTROL = /[\u0000-\u001f\u007f]/u;
+/**
+ * Spacing the page would not print as typed: the renderer wraps on single
+ * spaces, so a run of spaces, a non-breaking space or any other whitespace
+ * character would print as one plain space and the page would differ from
+ * the hashed value ('PO  44871' printed as 'PO 44871').
+ */
+const SPACING_NOT_PRINTED = /[^\S ]| {2}/u;
 
 /** One printed value against the renderer's rules (single line, trimmed, WinAnsi, length cap). */
 export function printableIssue(field: string, value: string, max: number): PrintableIssue | null {
   if (field === 'voucher.reference' && value.length > VOUCHER_REFERENCE_MAX) {
     return { code: 'VOUCHER_REFERENCE_TOO_LONG', field, message: `The voucher/PO reference is limited to ${VOUCHER_REFERENCE_MAX} characters.` };
   }
-  if (!value || value !== value.trim() || CONTROL.test(value) || value.length > max || !isWinAnsiPrintable(value)) {
+  if (!value || value !== value.trim() || CONTROL.test(value) || SPACING_NOT_PRINTED.test(value) || value.length > max || !isWinAnsiPrintable(value)) {
     return { code: 'TEXT_NOT_PRINTABLE', field, message: `${field} contains characters or a length the PDF cannot print.` };
   }
   return null;

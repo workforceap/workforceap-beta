@@ -266,7 +266,12 @@ export type DesignatedSignerTask = {
   /** Whether the viewing account is the designated signer (so the UI can offer the step to this viewer). */
   viewerIsDesignatedSigner: boolean;
 };
-export type GateState = { enabled: boolean; code: GateCode | null; message: string | null };
+/**
+ * `enabled: null` = not checked by this response: the finance archive is
+ * checked live only by the routes that store or read a file (the case summary
+ * never calls Storage), so the summary reports it as unknown, never closed.
+ */
+export type GateState = { enabled: boolean | null; code: GateCode | null; message: string | null };
 export type Actor = { subjectId: string; displayName: string | null };
 
 export type ApiErrorBody = {
@@ -276,6 +281,8 @@ export type ApiErrorBody = {
   holds?: HoldReason[];
   field?: string;
   fields?: Partial<Record<DraftField, DraftFieldError>>;
+  /** Set on a refusal that came after part of the request was already stored or sent: reload and reconcile before retrying. */
+  outcomeUncertain?: true;
 };
 
 export type ArtifactView = {
@@ -484,7 +491,12 @@ export type CaseSummaryDto = {
   j5: J5StageView;
   j6: J6StageView;
   payment: PaymentDto;
-  /** Exactly #2706 TwoStageBillingReadiness. */
+  /**
+   * @deprecated Use `readinessByStage`. Exactly #2706 `2717102c`
+   * TwoStageBillingReadiness, merging both stages: a shared key shows the J6
+   * value when the J6 has one (and the case has a prior quote), otherwise the
+   * J5 value. Kept until #2706 reads the per-stage values.
+   */
   readiness: TwoStageBillingReadiness;
   readinessByStage: { j5: Partial<Record<J5ReadinessKey, boolean>>; j6: Partial<Record<J6ReadinessKey, boolean>> };
   /** The readiness keys above that are false only because the designated signer has not acted yet. */

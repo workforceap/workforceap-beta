@@ -88,6 +88,49 @@ describe('Resend webhook: two-stage billing delivery linkage', () => {
     assert.equal(disabled.length, 1);
   });
 
+  it('never mutes a billing copy recognized only by its send-log tags (no ledger link: failed settle or gate off)', async () => {
+    for (const tags of [{ templateKey: 'billing_two_stage' }, { entityType: 'billing_stage_record' }]) {
+      const raw = body('email.bounced', { bounce: { type: 'Permanent' } });
+      const { s, disabled, diagnostics } = store(false);
+      s.applyEvent = async () => ({ matched: true, userId: 'student-user', templateKey: null, entityType: null, ...tags });
+      const result = await handleResendWebhook({ headers: signed(raw), rawBody: raw, secret: SECRET, store: s, now: () => NOW_MS });
+      assert.equal(result.status, 200);
+      assert.equal(disabled.length, 0, JSON.stringify(tags));
+      assert.equal(result.body.billingCopy, true);
+      assert.equal(diagnostics[0].status, 'fallback');
+    }
+  });
+
+  it('a billing ledger failure is recorded as a diagnostic and never fails the event or skips general handling', async () => {
+    const raw = body('email.bounced', { bounce: { type: 'Permanent' } });
+    const { s, disabled, diagnostics, applied } = store(false);
+    s.applyBillingDeliveryEvent = async () => {
+      throw new Error('ledger down');
+    };
+    const result = await handleResendWebhook({ headers: signed(raw), rawBody: raw, secret: SECRET, store: s, now: () => NOW_MS });
+    assert.equal(result.status, 200);
+    assert.equal(applied.length, 1);
+    assert.match(diagnostics[0].summary, /could not be recorded/u);
+    assert.equal(diagnostics[0].status, 'error');
+    // Not a billing copy by tag either: the general hard-bounce path still runs.
+    assert.equal(disabled.length, 1);
+    assert.deepEqual(result.body, { ok: true, event: 'bounced', matched: true, notificationsDisabled: 1 });
+  });
+
+  it('records only permanent bounces as billing evidence; transient and undetermined bounces raise no follow-up', async () => {
+    for (const type of ['Transient', 'Undetermined']) {
+      const raw = body('email.bounced', { bounce: { type } });
+      const { s, billing, disabled } = store(true);
+      await handleResendWebhook({ headers: signed(raw), rawBody: raw, secret: SECRET, store: s, now: () => NOW_MS });
+      assert.equal(billing.length, 0, type);
+      assert.equal(disabled.length, 0, type);
+    }
+    const raw = body('email.bounced', { bounce: { type: 'Permanent' } });
+    const { s, billing } = store(true);
+    await handleResendWebhook({ headers: signed(raw), rawBody: raw, secret: SECRET, store: s, now: () => NOW_MS });
+    assert.deepEqual(billing.map((b) => b.kind), ['bounced']);
+  });
+
   it('does not consult the billing ledger for events it does not record (opened, sent)', async () => {
     for (const type of ['email.opened', 'email.sent']) {
       const raw = body(type);

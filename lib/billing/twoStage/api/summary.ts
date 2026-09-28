@@ -48,6 +48,7 @@ import {
   holdBlockers,
   J6_ISSUE_DATE_NOT_TODAY_MESSAGE,
   RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE,
+  VOUCHER_DATA_WAITING_MESSAGE,
   VOUCHER_RECEIPT_FUTURE_MESSAGE,
 } from './blockers';
 import {
@@ -78,8 +79,6 @@ export type SummaryInput = {
   now: Date;
 };
 
-const VOUCHER_DATA_MESSAGE = 'Waiting on Michael A. Brown to record the voucher details (reference, received date, authorized program/class, amount and period) for this exact file.';
-
 /** The blocker codes a designated-signer step clears, tagged `waitingOn` while a voucher file exists. */
 const DESIGNATED_SIGNER_BLOCKERS = new Set<Blocker['code']>(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
 
@@ -96,7 +95,7 @@ function designatedSignerTasks(input: SummaryInput, voucher: ReturnType<typeof c
   const base = { artifactId: voucher.artifact.id, sha256: voucher.artifact.sha256, viewerIsDesignatedSigner: input.viewerIsDesignatedSigner };
   const tasks: DesignatedSignerTask[] = [];
   if (!voucher.attestation) {
-    tasks.push({ ...base, step: 'voucher_data', readinessKeys: keysFor('voucher_data'), blockerCode: 'J6_VOUCHER_ATTESTATION_INCOMPLETE', message: VOUCHER_DATA_MESSAGE, ready: configured });
+    tasks.push({ ...base, step: 'voucher_data', readinessKeys: keysFor('voucher_data'), blockerCode: 'J6_VOUCHER_ATTESTATION_INCOMPLETE', message: VOUCHER_DATA_WAITING_MESSAGE, ready: configured });
   }
   if (!receiptAttested) {
     tasks.push({
@@ -443,7 +442,10 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
   const invoiceRow = snapshot.artifacts.find((f) => f.kind === 'board_invoice') ?? null;
   const signerTasks = designatedSignerTasks(input, voucher, Boolean(receipt));
   const allBlockers = [...blockers, ...signBlockers, ...sendBlockers].map((b) =>
-    voucher && DESIGNATED_SIGNER_BLOCKERS.has(b.code) ? { ...b, waitingOn: 'designated_signer' as const } : b,
+    voucher && DESIGNATED_SIGNER_BLOCKERS.has(b.code)
+      ? // Name who must act: M1's "Confirm the uploaded voucher…" reads like a staff task.
+        { ...b, waitingOn: 'designated_signer' as const, message: b.code === 'J6_VOUCHER_ATTESTATION_INCOMPLETE' ? VOUCHER_DATA_WAITING_MESSAGE : b.message }
+      : b,
   );
   const terms = gate.ok ? gate.training : null;
   const c = contacts(input, current);
@@ -563,9 +565,11 @@ export function caseListItem(snapshot: CaseSnapshot): CaseListItemDto {
 }
 
 /**
- * #2706 passes one readiness object to both cards. Its four shared keys
- * (board, counselor, student email, class dates) come from the J6 once the
- * case has a prior quote, and from the J5 before that.
+ * Deprecated (use `readinessByStage`): #2706 `2717102c` passes one readiness
+ * object to both cards, so this merges the two stages. For the four shared
+ * keys (board, counselor, student email, class dates) it takes the J6 value
+ * when the J6 has one and the case has a prior quote, otherwise the J5 value;
+ * a J6 key that is absent (no J6 draft saved yet) therefore shows the J5 fact.
  */
 export function combinedReadiness(
   j5: Partial<Record<J5ReadinessKey, boolean>>,

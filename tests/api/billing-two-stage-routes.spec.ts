@@ -116,7 +116,8 @@ import { POST as uploadVoucher } from '@/app/api/admin/members/[id]/billing/two-
 import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/sign/route';
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
 import { GET as receiptStatement, POST as receiptAttest } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/[artifactId]/receipt-attestation/route';
-import { J5_READINESS_KEYS, J6_READINESS_KEYS, type CaseSummaryDto, type ReadinessKey } from '@/lib/billing/twoStage/dto';
+import { J5_READINESS_KEYS, J6_READINESS_KEYS, type ApiErrorBody, type CaseSummaryDto, type ReadinessKey } from '@/lib/billing/twoStage/dto';
+import { twoStageRoute } from '@/lib/billing/twoStage/api/access';
 
 const ORIGIN = 'http://localhost';
 const base = `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/cases`;
@@ -424,6 +425,9 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     expect(body.viewer.isDesignatedSigner).toBe(false);
     expect(body.gates.receiptSignaturePrincipal).toMatchObject({ enabled: false, code: 'SIGNER_PRINCIPAL_UNSET' });
     expect(body.gates.signing.enabled).toBe(false);
+    // The summary never calls Storage: the archive gate is unknown, not closed.
+    expect(body.gates.financeArchive).toMatchObject({ enabled: null, code: null });
+    expect(body.j6.blockers.some((b) => b.code === 'FINANCE_ARCHIVE_UNAVAILABLE')).toBe(false);
     expect(body.gates.realEmail.enabled).toBe(false);
     expect(body.j6.voucher?.artifact.downloadPath).toBe(`/api/admin/members/${h.MEMBER}/billing/two-stage/cases/${h.CASE}/files/v1`);
     expect(JSON.stringify(body)).not.toMatch(/https?:\/\/|token=|signedUrl/u);
@@ -458,6 +462,10 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
       michaelReceivingSignatureAttested: 'designated_signer',
     });
     expect(again.j6.blockers.filter((b) => b.waitingOn === 'designated_signer').map((b) => b.code).sort()).toEqual(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
+    // The voucher-data blocker names who must act, never reads like a staff task.
+    const dataBlocker = again.j6.blockers.find((b) => b.code === 'J6_VOUCHER_ATTESTATION_INCOMPLETE')!;
+    expect(dataBlocker.message).toMatch(/^Waiting on Michael A\. Brown/u);
+    expect(dataBlocker.message).not.toMatch(/^Confirm the uploaded/u);
   });
 
   it('archive files are readable only through the admin route: a member-role account and another tenant never reach Storage', async () => {
@@ -476,5 +484,39 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     expect(ok.headers.get('content-type')).toBe('application/pdf');
     expect(ok.headers.get('x-billing-sha256')).toBe('b'.repeat(64));
     expect(ok.headers.get('location')).toBeNull();
+  });
+});
+
+describe('two-stage routes: a billing-rule refusal after a committed step is not a clean refusal', () => {
+  const refusal = () => Object.assign(new Error('VOUCHER_RECEIPT_SIGNATURE_UNATTESTED: a J6 is sent only with a valid receipt-signature attestation on its voucher'), { code: '23514' });
+  const run = (fn: Parameters<typeof twoStageRoute>[2]) => twoStageRoute('test', { mutation: true, caseRoute: true }, fn)(jsonReq(`${base}/${h.CASE}/j6/send`, {}), caseParams());
+
+  it('with nothing kept yet, keeps the named refusal and its plain copy', async () => {
+    const res = await run(async (ctx) => {
+      ctx.effects.mark();
+      throw refusal();
+    });
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as ApiErrorBody;
+    expect(body.code).toBe('VOUCHER_RECEIPT_SIGNATURE_UNATTESTED');
+    expect(body.outcomeUncertain).toBeUndefined();
+  });
+
+  it('after a committed step (a copy sent, a reconcile committed), says the outcome is uncertain and to reconcile first', async () => {
+    const res = await run(async (ctx) => {
+      ctx.effects.committed();
+      throw refusal();
+    });
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as ApiErrorBody;
+    expect(body.code).toBe('VOUCHER_RECEIPT_SIGNATURE_UNATTESTED');
+    expect(body.outcomeUncertain).toBe(true);
+    expect(body.error).toMatch(/copies may already have been sent/u);
+    expect(body.error).toMatch(/reconcile/u);
+    const unnamed = await run(async (ctx) => {
+      ctx.effects.committed();
+      throw Object.assign(new Error('some other rule'), { code: '23514' });
+    });
+    expect(((await unnamed.json()) as ApiErrorBody)).toMatchObject({ code: 'BILLING_RULE_REFUSED', outcomeUncertain: true });
   });
 });

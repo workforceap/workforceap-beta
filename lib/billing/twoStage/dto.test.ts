@@ -28,7 +28,15 @@ function assertType<T extends true>(): T | undefined {
   return undefined;
 }
 
-/** #2706 (2717102c) TwoStageBillingWorkbench ReadinessKey, copied verbatim. */
+/**
+ * Mirror of #2706 `ReadinessKey`, copied verbatim from
+ * app/admin/members/[id]/billing/TwoStageBillingWorkbench.tsx:5-18 at
+ * 2717102c7a116ff9cd3fade3fa3d13cecc6e67ea (`TwoStageBillingReadiness` is :21).
+ * #2706 is a separate unmerged branch, so this test cannot import it: the pin
+ * proves dto.ts equals that snapshot, not the live #2706 file. When #2706
+ * lands, replace this copy with an import of its type (or have #2706 import
+ * `ReadinessKey` from dto.ts) and re-check against the merged head.
+ */
 type Workbench2706ReadinessKey =
   | 'studentApprovedAndReady'
   | 'counselorRequestedQuote'

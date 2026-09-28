@@ -50,10 +50,14 @@ export function envGates(env: Env = process.env): Record<Exclude<GateName, 'fina
   };
 }
 
-export function allGates(args: { financeArchiveReady: boolean; designatedSigner: boolean }, env: Env = process.env): Record<GateName, GateState> {
+export const FINANCE_ARCHIVE_UNCHECKED_MESSAGE = 'Checked when a file is stored or read; this view does not call Storage.';
+
+/** `financeArchiveReady: null` reports the archive gate as unknown (not checked here). */
+export function allGates(args: { financeArchiveReady: boolean | null; designatedSigner: boolean }, env: Env = process.env): Record<GateName, GateState> {
   return {
     ...envGates(env),
-    financeArchive: state(args.financeArchiveReady, 'FINANCE_ARCHIVE_UNAVAILABLE'),
+    financeArchive:
+      args.financeArchiveReady === null ? { enabled: null, code: null, message: FINANCE_ARCHIVE_UNCHECKED_MESSAGE } : state(args.financeArchiveReady, 'FINANCE_ARCHIVE_UNAVAILABLE'),
     receiptSignaturePrincipal: state(args.designatedSigner, 'SIGNER_PRINCIPAL_UNSET'),
   };
 }

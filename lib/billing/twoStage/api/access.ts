@@ -16,8 +16,8 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { checkBillingProviderOrg } from '../../providerOrg';
 import type { BillingStage } from '../constants';
 import { requireMigrationApplied } from './gates';
-import type { ErrorCode } from '../dto';
-import { ApiError, apiError, errorResponse, json, requireSameOriginMutation, SideEffects, unexpectedErrorResponse } from './http';
+import type { ApiErrorBody, ErrorCode } from '../dto';
+import { ApiError, apiError, errorResponse, json, REFUSED_AFTER_EFFECTS_MESSAGE, requireSameOriginMutation, SideEffects, unexpectedErrorResponse } from './http';
 
 export type TwoStageMember = { id: string; organizationId: string; fullName: string; email: string };
 
@@ -116,10 +116,17 @@ export function twoStageRoute<P extends BaseParams>(
       if (error instanceof ApiError) return errorResponse(error);
       if (isBillingRuleRefusal(error)) {
         console.error(`[billing/two-stage ${name}] refused by a billing rule`, (error as Error).message);
-        // The transaction rolled back, so this refusal changed nothing it wrote.
         const named = namedRefusal((error as Error).message);
-        if (named) return json({ code: named.code, error: named.message }, named.status);
-        return json({ code: 'BILLING_RULE_REFUSED', error: 'The billing records refused this change. Reload the case and try again.' }, 409);
+        const code: ErrorCode = named?.code ?? 'BILLING_RULE_REFUSED';
+        const status = named?.status ?? 409;
+        // The refused transaction rolled back, but an earlier step of this
+        // request (a storage write, a provider call, a committed statement)
+        // did not: say so instead of implying nothing changed.
+        if (effects.anyCommitted) {
+          return json<ApiErrorBody>({ code, error: `${named?.message ?? 'The billing records refused this change.'} ${REFUSED_AFTER_EFFECTS_MESSAGE}`, outcomeUncertain: true }, status);
+        }
+        if (named) return json<ApiErrorBody>({ code: named.code, error: named.message }, named.status);
+        return json<ApiErrorBody>({ code: 'BILLING_RULE_REFUSED', error: 'The billing records refused this change. Reload the case and try again.' }, 409);
       }
       return unexpectedErrorResponse(name, error, effects);
     }

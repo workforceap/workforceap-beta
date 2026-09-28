@@ -123,7 +123,11 @@ function j6(
   return built.content;
 }
 
-/** Page text in reading order (top to bottom, then left to right), whitespace collapsed. */
+/**
+ * Page text in reading order (top to bottom, then left to right). Text items
+ * are joined with one space and never collapsed inside, so a bound value
+ * whose spacing the renderer changed would not be found verbatim.
+ */
 async function pageText(bytes: Uint8Array): Promise<string> {
   const pdf = await getDocument({ data: bytes, useSystemFonts: true, disableFontFace: true }).promise;
   try {
@@ -133,9 +137,8 @@ async function pageText(bytes: Uint8Array): Promise<string> {
     // Items within 3 pt vertically are one visual row (a label and its value, the price row).
     items.sort((a, b) => (Math.abs(a.y - b.y) <= 3 ? a.x - b.x : b.y - a.y));
     return items
-      .map((item) => item.str)
+      .map((item) => item.str.trim())
       .join(' ')
-      .replace(/\s+/gu, ' ')
       .trim();
   } finally {
     await pdf.destroy();
@@ -166,7 +169,8 @@ function unsourcedRemainder(text: string, content: TwoStageContent, opts: { rece
     assert.ok(rest.includes(sentence), `fixed sentence not printed: ${sentence}`);
     rest = rest.split(sentence).join(' ');
   }
-  for (const value of contentSourcedStrings(content).map(collapse).sort((a, b) => b.length - a.length)) rest = rest.split(value).join(' ');
+  // Bound values are matched exactly as frozen, never collapsed.
+  for (const value of contentSourcedStrings(content).sort((a, b) => b.length - a.length)) rest = rest.split(value).join(' ');
   for (const label of [...FIXED_PRINTED_TEXT.labels].sort((a, b) => b.length - a.length)) {
     rest = rest.replace(new RegExp(`(?<![\\p{L}\\p{N}])${escape(label)}(?![\\p{L}\\p{N}])`, 'gu'), ' ');
   }
@@ -182,7 +186,7 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
       const content: TwoStageContent = build();
       const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
       for (const { field, value } of printedContentFields(content)) {
-        assert.ok(text.includes(collapse(value)), `${field} (${value}) is not printed verbatim`);
+        assert.ok(text.includes(value), `${field} (${value}) is not printed verbatim`);
       }
       // The M1 constants reach the page unchanged (dashes, spacing, punctuation).
       assert.ok(text.includes(content.title));
@@ -211,7 +215,7 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     ];
     for (const [label, content] of variants) {
       const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
-      for (const { field, value } of printedContentFields(content)) assert.ok(text.includes(collapse(value)), `${label}: ${field}`);
+      for (const { field, value } of printedContentFields(content)) assert.ok(text.includes(value), `${label}: ${field}`);
       assert.match(unsourcedRemainder(text, content), /^[\s|;,]*$/u, label);
     }
   });
@@ -278,6 +282,16 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     const glyph = { ...j5(), student: { name: 'Nguyễn Văn', email: 'jordan@example.test' } };
     assert.deepEqual(printableIssues(glyph).map((i) => [i.code, i.field]), [['TEXT_NOT_PRINTABLE', 'student.name']]);
     assert.throws(() => toRendererFacts(glyph, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }), (e: unknown) => e instanceof RendererAdapterError && e.field === 'student.name');
+  });
+
+  it('refuses spacing the page would not print as typed (double space, NBSP, thin space), before rendering', async () => {
+    for (const reference of ['PO  44871', 'PO\u00a044871', 'PO\u200944871']) {
+      const content = j6({ voucherReference: reference });
+      assert.deepEqual(printableIssues(content).map((i) => [i.code, i.field]), [['TEXT_NOT_PRINTABLE', 'voucher.reference']], JSON.stringify(reference));
+      await assert.rejects(renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'TEXT_NOT_PRINTABLE');
+    }
+    const board = { ...j5(), boardName: 'Capital  Area Workforce Board' };
+    assert.deepEqual(printableIssues(board).map((i) => i.field), ['boardName']);
   });
 
   it('maps a layout refusal from the renderer to TEXT_NOT_PRINTABLE', async () => {

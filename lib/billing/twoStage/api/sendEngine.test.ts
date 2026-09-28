@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { RecipientRole } from '../recipients';
 import type { SendStatus } from '../sendClaims';
-import { classifySend, runSend, type EmailPort, type EmailMessage, type SendClaimRow, type SendStorePort } from './sendEngine';
+import { classifySend, isConcurrentClaimRefusal, runSend, type EmailPort, type EmailMessage, type SendClaimRow, type SendStorePort } from './sendEngine';
 
 const NOW = new Date('2026-10-02T15:00:00.000Z');
 const RECORD = 'rec-j6-1';
@@ -191,5 +191,28 @@ describe('two-stage send engine (fakes only; no provider)', () => {
     const out = await run(racing, email);
     assert.ok(out.every((o) => o.outcome === 'IN_FLIGHT'));
     assert.equal(calls.length, 0);
+  });
+});
+
+describe('claim-insert refusals: only a concurrent claim is a conflict', () => {
+  it('matches exactly the M1 send-guard messages a racing request produces', () => {
+    // Verbatim from billing_stage_send_guard() (prisma/migrations/20260927230000_billing_two_stage_j5_j6).
+    for (const message of [
+      'the finance copy is pending: no new attempt (accepted copies are never re-sent; unresolved ones are retried with the same key or reconciled)',
+      'the student copy is provider_accepted: no new attempt (accepted copies are never re-sent; unresolved ones are retried with the same key or reconciled)',
+      'the next attempt for counselor is 3',
+      'the first claim for a role is attempt 1',
+    ]) {
+      assert.equal(isConcurrentClaimRefusal(message), true, message);
+    }
+    for (const message of [
+      'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED: a J6 is sent only with a valid receipt-signature attestation on its voucher',
+      'a claim carries exactly the frozen name and address of its role',
+      'a claim carries the frozen content hash of its record version',
+      'no new send claim for a sent stage record',
+      'the idempotency key must be the canonical key for this stage, record version, attempt and role',
+    ]) {
+      assert.equal(isConcurrentClaimRefusal(message), false, message);
+    }
   });
 });

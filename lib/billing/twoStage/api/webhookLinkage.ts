@@ -9,7 +9,10 @@ import 'server-only';
  * (the billing tables may not exist) this never touches the database and
  * reports no match, so app/api/webhooks/resend handles the event exactly as
  * it did before M3. With the gate open, a message id that matches no billing
- * send (every non-billing email) also reports no match.
+ * send (every non-billing email) also reports no match. The handler
+ * (lib/email/resendWebhook.ts) catches a failure here, records a diagnostic
+ * and handles the event as usual; it also recognizes a billing copy by its
+ * send-log tags, so an unlinked copy never mutes its recipient.
  */
 import type { ResendWebhookStore } from '@/lib/email/resendWebhook';
 

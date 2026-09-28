@@ -11,6 +11,7 @@ import { auditLog } from '@/lib/audit';
 import { prisma } from '@/lib/db/prisma';
 import { getResend } from '@/lib/email';
 import { escapeHtml } from '@/lib/email/escapeHtml';
+import { BILLING_TWO_STAGE_ENTITY_TYPE, BILLING_TWO_STAGE_TEMPLATE_KEY } from '@/lib/email/resendWebhook';
 import { FixtureRecipientSkippedError, ResendResolvedSendError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { getBillingProviderOrgId } from '../../providerOrg';
 import { stageAttachments, type ArchivedFile } from '../attachments';
@@ -31,7 +32,7 @@ import { verifySignable } from './documents';
 import { SIGNER_CODES } from './evidence';
 import { requireSendGates, requireSignGates, SIGNED_RENDERER_AVAILABLE } from './gates';
 import { apiError } from './http';
-import { runSend, type EmailPort, type SendClaimRow, type SendStorePort } from './sendEngine';
+import { isConcurrentClaimRefusal, runSend, type EmailPort, type SendClaimRow, type SendStorePort } from './sendEngine';
 import { casePaymentDto, deliveryViews, versionView } from './summary';
 
 type Obj = Record<string, unknown>;
@@ -96,6 +97,7 @@ export async function signStage<P>(ctx: TwoStageContext<P>, stage: BillingStage,
   let archived: Awaited<ReturnType<ReturnType<typeof financeArchive>['archiveFinancePdf']>>;
   try {
     archived = await financeArchive().archiveFinancePdf({ caseId: ctx.billingCase!.id, kind, bytes });
+    ctx.effects.committed();
   } catch (error) {
     const code = archiveErrorCode(error);
     if (code === 'INTEGRITY_MISMATCH') throw apiError(502, 'ARCHIVE_INTEGRITY_MISMATCH', 'An archived file failed its integrity check. Contact an administrator.');
@@ -172,8 +174,9 @@ export function resendEmailPort(): EmailPort | null {
         text: message.text,
         attachments: message.attachments.map((a) => ({ filename: a.filename, content: Buffer.from(a.content) })),
         idempotencyKey: message.idempotencyKey,
-        templateKey: 'billing_two_stage',
-        entityType: 'billing_stage_record',
+        // The Resend webhook recognizes a billing copy by these tags (never mutes its recipient).
+        templateKey: BILLING_TWO_STAGE_TEMPLATE_KEY,
+        entityType: BILLING_TWO_STAGE_ENTITY_TYPE,
       });
     },
     readStatus: (error) => (error instanceof ResendResolvedSendError ? error.statusCode : undefined),
@@ -194,9 +197,18 @@ function prismaSendStore<P>(ctx: TwoStageContext<P>, record: RecordWithRelations
     idempotencyKey: r.idempotencyKey,
     providerMessageId: r.providerMessageId,
   });
+  // Every store write marks the request before it runs (an unexpected failure
+  // is then OUTCOME_UNCERTAIN) and records a committed effect once it succeeds
+  // (a later refusal is then not a clean rollback).
+  const write = async <T>(fn: () => Promise<T>): Promise<T> => {
+    ctx.effects.mark();
+    const result = await fn();
+    ctx.effects.committed();
+    return result;
+  };
   const refused = async (fn: () => Promise<boolean>): Promise<boolean> => {
     try {
-      return await fn();
+      return await write(fn);
     } catch (error) {
       if (isBillingRuleRefusal(error)) return false;
       throw error;
@@ -211,7 +223,7 @@ function prismaSendStore<P>(ctx: TwoStageContext<P>, record: RecordWithRelations
       refused(async () => (await prisma.billingStageSend.updateMany({ where: { id: row.id, organizationId: org, claimToken: row.claimToken, status: 'pending' }, data: { status: 'ambiguous' } })).count === 1),
     async insertClaim(input) {
       try {
-        const created = await prisma.billingStageSend.create({
+        const created = await write(() => prisma.billingStageSend.create({
           data: {
             organizationId: org,
             stageRecordId: record.id,
@@ -227,21 +239,26 @@ function prismaSendStore<P>(ctx: TwoStageContext<P>, record: RecordWithRelations
             contentSha256: record.contentSha256,
             attachmentSha256s,
           },
-        });
+        }));
         return toRow(created);
       } catch (error) {
-        if (isUniqueViolation(error) || isBillingRuleRefusal(error)) return 'conflict';
+        // Only a concurrent claim for the same role is a conflict (shown as in
+        // flight). Every other refusal (receipt signature, frozen address,
+        // record no longer signed) is permanent and surfaces as a named refusal.
+        if (isUniqueViolation(error) || (isBillingRuleRefusal(error) && isConcurrentClaimRefusal((error as Error).message))) return 'conflict';
         throw error;
       }
     },
     async reclaimSameKey(row) {
       const token = randomUUID();
       try {
-        const updated = await prisma.billingStageSend.updateMany({
-          where: { id: row.id, organizationId: org, claimToken: row.claimToken, status: 'ambiguous' },
-          // The database re-stamps last_claimed_at on this ambiguous -> pending move.
-          data: { status: 'pending', claimToken: token },
-        });
+        const updated = await write(() =>
+          prisma.billingStageSend.updateMany({
+            where: { id: row.id, organizationId: org, claimToken: row.claimToken, status: 'ambiguous' },
+            // The database re-stamps last_claimed_at on this ambiguous -> pending move.
+            data: { status: 'pending', claimToken: token },
+          }),
+        );
         return updated.count === 1 ? { ...row, status: 'pending', claimToken: token } : 'lost';
       } catch (error) {
         if (isBillingRuleRefusal(error) && /23 h same-key retry window/u.test((error as Error).message)) return 'window_passed';
@@ -264,13 +281,13 @@ function prismaSendStore<P>(ctx: TwoStageContext<P>, record: RecordWithRelations
         return updated.count === 1;
       }),
     async auditAttempt(input) {
-      await auditLog({
+      await write(() => auditLog({
         actorUserId: ctx.user.id,
         action: 'billing.two_stage.send_attempted',
         targetType: 'billing_stage_send',
         targetId: input.sendId,
         metadata: { recordId: record.id, stage: record.stage, role: input.role, attemptNo: input.attemptNo, outcome: input.outcome },
-      });
+      }));
     },
   };
 }
@@ -327,6 +344,7 @@ export async function completeIfDelivered<P>(ctx: TwoStageContext<P>, stage: Bil
       return { role, email: s.email, attemptNo: s.attemptNo, status: s.status, providerMessageId: s.providerMessageId };
     }),
   };
+  ctx.effects.mark();
   await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updated = await tx.billingStageRecord.updateMany({
       where: { id: record.id, organizationId: ctx.member.organizationId, status: 'signed', contentSha256: record.contentSha256 },
@@ -382,7 +400,8 @@ export async function sendStage<P>(ctx: TwoStageContext<P>, stage: BillingStage,
     now: ctx.now,
     store: prismaSendStore(ctx, record, sha256s),
     email: port,
-    onProviderCall: () => ctx.effects.mark(),
+    // From the first provider call on, a copy may have gone out.
+    onProviderCall: () => ctx.effects.committed(),
   });
   await completeIfDelivered(ctx, stage, record.id);
   return sendResponse(ctx, stage, record.id, outcomes);
@@ -437,6 +456,7 @@ export async function reconcile<P>(ctx: TwoStageContext<P>, stage: BillingStage,
     ctx.effects.mark();
     const marked = await prisma.billingStageSend.updateMany({ where: { id: send.id, organizationId: ctx.member.organizationId, claimToken: send.claimToken, status: 'pending' }, data: { status: 'ambiguous' } });
     if (marked.count !== 1) throw apiError(409, 'SEND_CHANGED', 'This copy changed. Reload before reconciling.');
+    ctx.effects.committed();
     status = 'ambiguous';
   }
   if (status !== b.expectedStatus) throw apiError(409, 'SEND_CHANGED', 'This copy changed. Reload before reconciling.');
@@ -455,6 +475,8 @@ export async function reconcile<P>(ctx: TwoStageContext<P>, stage: BillingStage,
       tx,
     );
   });
+  // The reconciliation is committed: a refusal from completing the stage is not a clean rollback.
+  ctx.effects.committed();
   await completeIfDelivered(ctx, stage, record.id);
   const after = await snapshotOf(ctx);
   const fresh = recordIn(after, stage, record.id);
