@@ -21,6 +21,7 @@ const h = vi.hoisted(() => {
     records: [] as Array<Record<string, unknown>>,
     receipt: [] as Array<Record<string, unknown>>,
     designated: null as null | { userId: string },
+    payments: [] as Array<Record<string, unknown>>,
     auditCreate: null as null | (() => never),
   };
   return { ORG, OTHER_ORG, ADMIN, MEMBER, CASE, state };
@@ -35,6 +36,8 @@ const mocks = vi.hoisted(() => ({
   readArchive: vi.fn(),
   txCreate: vi.fn(),
   receiptCreate: vi.fn(),
+  recordUpdate: vi.fn(async (_args: unknown): Promise<{ count: number }> => ({ count: 0 })),
+  paymentCreate: vi.fn(async (_args: unknown): Promise<unknown> => ({ id: 'pay-new' })),
 }));
 
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
@@ -86,8 +89,11 @@ function prismaFake() {
       findMany: byCase('artifacts'),
       findFirst: async ({ where }: { where: Record<string, unknown> }) => h.state.artifacts.find((a) => a.id === where.id && a.caseId === where.caseId && a.organizationId === where.organizationId) ?? null,
     },
-    billingStageRecord: { findMany: byCase('records') },
-    billingPaymentEvent: { findMany: async () => [] },
+    billingStageRecord: { findMany: byCase('records'), updateMany: (args: unknown) => mocks.recordUpdate(args) },
+    billingPaymentEvent: {
+      findMany: async ({ where }: { where: Record<string, unknown> }) => h.state.payments.filter((r) => r.caseId === where.caseId && r.organizationId === where.organizationId),
+      create: (args: unknown) => mocks.paymentCreate(args),
+    },
     billingVoucherReceiptSignature: {
       findMany: byCase('receipt'),
       // The database stamps attested_at (M1 877466f); the fake does the same.
@@ -117,7 +123,9 @@ import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cas
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
 import { GET as receiptStatement, POST as receiptAttest } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/[artifactId]/receipt-attestation/route';
 import { J5_READINESS_KEYS, J6_READINESS_KEYS, type ApiErrorBody, type CaseSummaryDto, type ReadinessKey } from '@/lib/billing/twoStage/dto';
-import { twoStageRoute } from '@/lib/billing/twoStage/api/access';
+import { namedRefusal, twoStageRoute } from '@/lib/billing/twoStage/api/access';
+import { POST as closeRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/versions/[recordId]/close/route';
+import { POST as paymentReceivedRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/payment/received/route';
 
 const ORIGIN = 'http://localhost';
 const base = `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/cases`;
@@ -147,6 +155,7 @@ beforeEach(() => {
   h.state.records = [];
   h.state.receipt = [];
   h.state.designated = null;
+  h.state.payments = [];
   mocks.getUser.mockResolvedValue({ id: h.ADMIN });
   mocks.isAdmin.mockResolvedValue(true);
   mocks.isSuperAdmin.mockResolvedValue(false);
@@ -154,6 +163,10 @@ beforeEach(() => {
   mocks.readArchive.mockReset();
   mocks.txCreate.mockReset();
   mocks.receiptCreate.mockReset();
+  mocks.recordUpdate.mockReset();
+  mocks.recordUpdate.mockImplementation(async () => ({ count: 0 }));
+  mocks.paymentCreate.mockReset();
+  mocks.paymentCreate.mockImplementation(async () => ({ id: 'pay-new' }));
 });
 
 afterEach(() => {
@@ -263,11 +276,11 @@ describe('two-stage routes: sign and send are hard-disabled', () => {
     let res = await receiptAttest(jsonReq(`${base}/${h.CASE}/voucher/v1/receipt-attestation`, {}), caseParams({ artifactId: 'v1' }));
     expect(res.status).toBe(503);
     expect((await res.json()).code).toBe('SIGNER_NOT_CONFIGURED');
-    // Row names the caller, env names someone else: refused, never "pick the row".
+    // Row names the caller, env names someone else: refused (M1 cross-check fails closed), never "pick the row".
     process.env.BILLING_EXECUTIVE_SIGNER_USER_ID = 'b0000000-0000-4000-8000-000000000999';
     res = await receiptAttest(jsonReq(`${base}/${h.CASE}/voucher/v1/receipt-attestation`, {}), caseParams({ artifactId: 'v1' }));
-    expect(res.status).toBe(403);
-    expect((await res.json()).code).toBe('NOT_SIGNER');
+    expect(res.status).toBe(503);
+    expect((await res.json()).code).toBe('SIGNER_NOT_CONFIGURED');
     expect(mocks.archive).not.toHaveBeenCalled();
   });
 
@@ -518,5 +531,100 @@ describe('two-stage routes: a billing-rule refusal after a committed step is not
       throw Object.assign(new Error('some other rule'), { code: '23514' });
     });
     expect(((await unnamed.json()) as ApiErrorBody)).toMatchObject({ code: 'BILLING_RULE_REFUSED', outcomeUncertain: true });
+  });
+});
+
+function stageRecord(over: Record<string, unknown>): Record<string, unknown> {
+  return {
+    id: 'rec-1', organizationId: h.ORG, caseId: h.CASE, stage: 'j5', version: 1, status: 'signed', documentNumber: 'WAP-Q-2026-0001', contentSha256: 'e'.repeat(64),
+    content: {}, priorJ5RecordId: null, voucherArtifactId: null, signedArtifactId: null, signedAt: null, signedBySubjectId: null, sentAt: null, sendReceipt: null,
+    closedBySubjectId: null, closeReason: null, supersededAt: null, voidedAt: null, sendCancelledAt: null, sendCancelledBySubjectId: null, sendCancelReason: null,
+    acceptedRolesAtClose: [], createdBySubjectId: h.ADMIN, createdAt: new Date('2026-09-20T15:00:00Z'), updatedAt: new Date('2026-09-20T15:00:00Z'),
+    recipients: [], sends: [], ...over,
+  };
+}
+
+describe('two-stage routes: closing a version records who and why', () => {
+  const url = `${base}/${h.CASE}/j5/versions/rec-1/close`;
+  const params = () => caseParams({ stage: 'j5', recordId: 'rec-1' });
+
+  it('refuses a close without a reason before any write (422 CLOSE_REASON_REQUIRED)', async () => {
+    h.state.records = [stageRecord({})];
+    for (const reason of [undefined, '', '   ']) {
+      const res = await closeRoute(jsonReq(url, { action: 'void', reason, versionHash: 'e'.repeat(64) }), params());
+      expect(res.status).toBe(422);
+      expect(((await res.json()) as ApiErrorBody).code).toBe('CLOSE_REASON_REQUIRED');
+    }
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+  });
+
+  it('writes the actor and the trimmed reason in the closing update', async () => {
+    h.state.records = [stageRecord({})];
+    await closeRoute(jsonReq(url, { action: 'void', reason: '  Wrong board address  ', versionHash: 'e'.repeat(64) }), params());
+    expect(mocks.recordUpdate).toHaveBeenCalledTimes(1);
+    const { data } = mocks.recordUpdate.mock.calls[0][0] as { data: Record<string, unknown> };
+    expect(data).toMatchObject({ status: 'voided', closedBySubjectId: h.ADMIN, closeReason: 'Wrong board address' });
+    // voided_at is stamped by the database, never passed.
+    expect('voidedAt' in data).toBe(false);
+  });
+
+  it('maps the M1 refusal CLOSE_ACTOR_REASON_REQUIRED to its own code', async () => {
+    h.state.records = [stageRecord({})];
+    mocks.recordUpdate.mockImplementationOnce(async () => {
+      throw Object.assign(new Error('CLOSE_ACTOR_REASON_REQUIRED: closing a signed or sent record records who (closed_by_subject_id) and why (close_reason)'), { code: '23514' });
+    });
+    const res = await closeRoute(jsonReq(url, { action: 'void', reason: 'Duplicate', versionHash: 'e'.repeat(64) }), params());
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as ApiErrorBody;
+    expect(body.code).toBe('CLOSE_ACTOR_REASON_REQUIRED');
+    expect(body.outcomeUncertain).toBeUndefined();
+  });
+});
+
+describe('two-stage routes: payment received is never dated before the J6 was sent', () => {
+  // A J6 sent 2026-09-10 (Chicago), its pending event anchored 10-14 days later.
+  const sentJ6 = () => stageRecord({ id: 'j6-1', stage: 'j6', status: 'sent', documentNumber: 'WAP-I-2026-0001', sentAt: new Date('2026-09-10T15:00:00Z') });
+  const pending = () => ({
+    id: 'pay-1', organizationId: h.ORG, caseId: h.CASE, j6RecordId: 'j6-1', status: 'pending', expectedFollowUpFrom: new Date('2026-09-20T00:00:00Z'), expectedFollowUpTo: new Date('2026-09-24T00:00:00Z'),
+    receivedOn: null, evidence: null, recordedBySubjectId: h.ADMIN, recordedAt: new Date('2026-09-10T15:01:00Z'),
+  });
+  const url = `${base}/${h.CASE}/payment/received`;
+
+  it('refuses a received date before the Chicago send date (422 PAYMENT_RECEIVED_BEFORE_SENT), before any write', async () => {
+    h.state.records = [sentJ6()];
+    h.state.payments = [pending()];
+    const res = await paymentReceivedRoute(jsonReq(url, { j6RecordId: 'j6-1', receivedOn: '2026-09-09', evidence: 'Remittance 1' }), caseParams());
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as ApiErrorBody).code).toBe('PAYMENT_RECEIVED_BEFORE_SENT');
+    expect(mocks.paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it('records a received date on the send date against the J6 holding the pending event; the DB bound maps to the same code', async () => {
+    h.state.records = [sentJ6()];
+    h.state.payments = [pending()];
+    mocks.paymentCreate.mockImplementationOnce(async () => {
+      throw Object.assign(new Error('PAYMENT_RECEIVED_BEFORE_SENT: a payment cannot be received before the J6 was sent'), { code: '23514' });
+    });
+    const res = await paymentReceivedRoute(jsonReq(url, { j6RecordId: 'j6-1', receivedOn: '2026-09-10', evidence: 'Remittance 1' }), caseParams());
+    expect(mocks.paymentCreate).toHaveBeenCalledTimes(1);
+    const { data } = mocks.paymentCreate.mock.calls[0][0] as { data: Record<string, unknown> };
+    expect(data).toMatchObject({ j6RecordId: 'j6-1', status: 'received', evidence: 'Remittance 1' });
+    expect('recordedAt' in data).toBe(false);
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as ApiErrorBody).code).toBe('PAYMENT_RECEIVED_BEFORE_SENT');
+  });
+});
+
+describe('two-stage routes: every M1 named database refusal has its own code', () => {
+  // The CODE: prefixes M1 55a0562 raises (prisma/migrations/20260927230000_billing_two_stage_j5_j6).
+  const M1_CODES = [
+    'CLOSE_ACTOR_REASON_REQUIRED', 'J5_ISSUE_DATE_NOT_SERVER_DATE', 'J5_LINKED_BY_OPEN_J6', 'J6_ISSUE_DATE_NOT_SERVER_DATE', 'J6_SIGNED_BEFORE_CLASS_START',
+    'J6_SIGNED_BEFORE_VOUCHER_RECEIPT', 'LETTERHEAD_FOOTER_MISMATCH', 'PAYMENT_RECEIVED_BEFORE_SENT', 'SEND_FAILED_WITHOUT_PROVIDER_REJECTION', 'SIGNER_DELEGATION_DISABLED',
+    'SIGNER_NOT_DESIGNATED', 'SIGNER_PRINCIPAL_UNSET', 'VOUCHER_ATTESTER_NOT_DESIGNATED', 'VOUCHER_ATTESTER_NOT_SIGNER', 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED',
+    'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL',
+  ];
+  it('maps each to itself', () => {
+    for (const code of M1_CODES) expect(namedRefusal(`${code}: refused by the database`)?.code, code).toBe(code);
+    expect(namedRefusal('billing send status cannot move from pending to sent')).toBeNull();
   });
 });

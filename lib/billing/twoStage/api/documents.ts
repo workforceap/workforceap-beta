@@ -22,7 +22,7 @@ import { authorizeSigner, signerIntentStatement } from '../signing';
 import { canSignJ6 } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { readArchived } from './archive';
-import { holdBlockers, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
+import { holdBlockers, J5_ISSUE_DATE_NOT_TODAY_MESSAGE, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
 import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, loadCaseSnapshot, receiptSignatureState, recordContent, type CaseSnapshot } from './caseData';
 import { allGates, GATE_MESSAGES } from './gates';
 import { apiError, json, NO_STORE_HEADERS } from './http';
@@ -61,12 +61,15 @@ export async function openCase<P>(ctx: TwoStageContext<P>, body: unknown): Promi
   return { case: caseListItem(snapshot!) };
 }
 
-function viewerIsSigner<P>(ctx: TwoStageContext<P>): boolean {
+function viewerIsSigner<P>(ctx: TwoStageContext<P>, snapshot: CaseSnapshot): boolean {
   return authorizeSigner({
     actor: { userId: ctx.user.id, organizationId: ctx.actorOrgId, isActive: true, isAdmin: true },
     providerOrgId: getBillingProviderOrgId(),
     stage: 'j5',
     now: ctx.now,
+    // M1 55a0562: the designated-signer row is the identity; the env var is a cross-check.
+    designatedSignerUserId: snapshot.designatedSignerUserId,
+    env: process.env,
   }).ok;
 }
 
@@ -81,7 +84,7 @@ export async function caseSummary<P>(ctx: TwoStageContext<P>): Promise<CaseSumma
     // The archive gate is checked live only by the routes that touch storage;
     // the summary never calls Storage, so it reports the gate as unknown.
     gates: allGates({ financeArchiveReady: null, designatedSigner: snapshot.designatedSignerUserId !== null }),
-    viewerIsExecutiveSigner: viewerIsSigner(ctx) && isDesignatedSigner(snapshot, ctx.user.id),
+    viewerIsExecutiveSigner: viewerIsSigner(ctx, snapshot) && isDesignatedSigner(snapshot, ctx.user.id),
     viewerIsDesignatedSigner: isDesignatedSigner(snapshot, ctx.user.id),
     now: ctx.now,
   });
@@ -216,6 +219,10 @@ export async function verifySignable<P>(
       .filter((a) => a.kind === 'j5_readiness')
       .sort((a, b) => b.attestedAt.getTime() - a.attestedAt.getTime())[0];
     if (readiness?.id !== content.readiness.attestationId) throw apiError(409, 'DRAFT_STALE', DRAFT_STALE_MESSAGE);
+    // M1 55a0562: a J5 is also dated the server date it is signed (J5_ISSUE_DATE_NOT_SERVER_DATE).
+    if (content.issueDate !== billingToday(ctx.now)) {
+      throw apiError(409, 'DRAFT_STALE', J5_ISSUE_DATE_NOT_TODAY_MESSAGE, { blockers: [{ code: 'J5_ISSUE_DATE_NOT_TODAY', message: J5_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false }] });
+    }
   }
   return { snapshot, record, content, receiptSignatureId };
 }
@@ -276,6 +283,9 @@ export async function paymentReceived<P>(ctx: TwoStageContext<P>, body: unknown)
     throw apiError(409, 'PAYMENT_J6_CHANGED', 'The J6 this payment belongs to changed. Reload before recording it.');
   }
   const receivedOn = typeof b.receivedOn === 'string' ? b.receivedOn : '';
+  // The J6 holding the pending event and its America/Chicago send date (M1 PAYMENT_RECEIVED_BEFORE_SENT).
+  const pendingJ6 = current ? snapshot.records.find((r) => r.id === current.j6RecordId) : undefined;
+  const sentOn = pendingJ6?.sentAt ? billingToday(pendingJ6.sentAt) : null;
   const result = recordPaymentReceived(current, { receivedOn, evidence: typeof b.evidence === 'string' ? b.evidence : '', now: ctx.now });
   if (!result.ok) {
     const code = !current
@@ -286,7 +296,9 @@ export async function paymentReceived<P>(ctx: TwoStageContext<P>, body: unknown)
           ? 'PAYMENT_DATE_INVALID'
           : compareIsoDates(receivedOn, billingToday(ctx.now)) > 0
             ? 'PAYMENT_RECEIVED_IN_FUTURE'
-            : 'PAYMENT_EVIDENCE_REQUIRED';
+            : sentOn && compareIsoDates(receivedOn, sentOn) < 0
+              ? 'PAYMENT_RECEIVED_BEFORE_SENT'
+              : 'PAYMENT_EVIDENCE_REQUIRED';
     throw apiError(code === 'PAYMENT_NOT_TRACKED' || code === 'PAYMENT_ALREADY_RECEIVED' ? 409 : 422, code, result.error);
   }
   ctx.effects.mark();

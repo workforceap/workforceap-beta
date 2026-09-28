@@ -46,6 +46,7 @@ import { VOUCHER_REFERENCE_MAX } from '../rendererAdapter';
 import {
   blockersFromMessages,
   holdBlockers,
+  J5_ISSUE_DATE_NOT_TODAY_MESSAGE,
   J6_ISSUE_DATE_NOT_TODAY_MESSAGE,
   RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE,
   VOUCHER_DATA_WAITING_MESSAGE,
@@ -317,7 +318,11 @@ function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Re
   const gate = checkJ5Prerequisites({ hasOpenJ5, readiness: readinessRow ? toAttestation(readinessRow) : null, programSlug: snapshot.billingCase.programSlug });
   const blockers: Blocker[] = gate.ok ? [] : blockersFromMessages(gate.errors);
   if (!current || current.status === 'superseded' || current.status === 'voided') blockers.push({ code: 'DRAFT_MISSING', message: 'Save a draft first.', hardHold: false });
-  const signBlockers = current?.status === 'draft' ? gateBlockers(input.gates, ['signing', 'signedRenderer']) : [];
+  // M1 55a0562: J5 signing needs the designated signer and the server issue date too.
+  const signBlockers = current?.status === 'draft' ? gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']) : [];
+  if (current?.status === 'draft' && recordContent<J5Content>(current).issueDate !== billingToday(now)) {
+    blockers.push({ code: 'J5_ISSUE_DATE_NOT_TODAY', message: J5_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false });
+  }
   const sendBlockers = current?.status === 'signed' ? gateBlockers(input.gates, ['realEmail']) : [];
   const readinessAttestation = readinessRow && readinessRow.classStartDate
     ? {

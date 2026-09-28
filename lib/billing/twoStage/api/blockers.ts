@@ -62,3 +62,5 @@ export const RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE =
 export const VOUCHER_RECEIPT_FUTURE_MESSAGE = 'The voucher received date is after today; the J6 is issued on or after the day the signed voucher arrived.';
 
 export const J6_ISSUE_DATE_NOT_TODAY_MESSAGE = 'The J6 is dated the day it is signed. Save the draft again today before signing.';
+
+export const J5_ISSUE_DATE_NOT_TODAY_MESSAGE = 'The J5 is dated the day it is signed. Save the draft again today before signing.';

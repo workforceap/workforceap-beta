@@ -73,9 +73,13 @@ export async function signStage<P>(ctx: TwoStageContext<P>, stage: BillingStage,
     providerOrgId: getBillingProviderOrgId(),
     stage,
     now: ctx.now,
+    // M1 55a0562: the designated-signer row is the identity; the env var is a cross-check.
+    designatedSignerUserId: principal,
+    env: process.env,
   });
   if (!signer.ok) throw apiError(signer.status, SIGNER_CODES[signer.reason], signer.message);
-  if (stage === 'j6' && principal?.toLowerCase() !== signer.signerSubjectId) throw apiError(403, 'SIGNER_NOT_DESIGNATED', 'Only the designated signer can sign a J6.');
+  // Both stages: only the designated signer, never a delegate (M1 SIGNER_DELEGATION_DISABLED).
+  if (signer.via !== 'executive' || principal?.toLowerCase() !== signer.signerSubjectId) throw apiError(403, 'SIGNER_NOT_DESIGNATED', 'Only the designated signer can sign.');
 
   const b = asObj(body);
   const request = { recordId: str(b.recordId), version: typeof b.version === 'number' ? b.version : -1, contentSha256: str(b.contentSha256), intentConfirmed: b.intentConfirmed === true, intentText: str(b.intentText) };

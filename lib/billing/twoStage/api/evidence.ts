@@ -40,7 +40,7 @@ import { currentVoucher, dateColumn, isDesignatedSigner, loadCaseSnapshot } from
 import { apiError, MAX_UPLOAD_FILE_BYTES, type MultipartUpload } from './http';
 import { artifactView, buildCaseSummary, voucherAttestationView } from './summary';
 import { VOUCHER_DATA_WAITING_MESSAGE } from './blockers';
-import { allGates, GATE_MESSAGES } from './gates';
+import { allGates, envGates, GATE_MESSAGES } from './gates';
 
 type Obj = Record<string, unknown>;
 const asObj = (v: unknown): Obj => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Obj) : {});
@@ -369,11 +369,16 @@ export async function receiptStatementFor<P>(ctx: TwoStageContext<P>, artifactId
  */
 export async function attestReceiptSignature<P>(ctx: TwoStageContext<P>, artifactId: string, body: unknown): Promise<VoucherReceiptAttestationDto> {
   const principal = await requireDesignatedSigner(ctx);
+  // M3 keeps the env signer as a required second key (fail closed): M1 only
+  // cross-checks it when set, so an unset env is refused here explicitly.
+  if (!envGates().signing.enabled) throw apiError(503, 'SIGNER_NOT_CONFIGURED', GATE_MESSAGES.SIGNER_NOT_CONFIGURED);
   const signer = authorizeSigner({
     actor: { userId: ctx.user.id, organizationId: ctx.actorOrgId, isActive: true, isAdmin: true },
     providerOrgId: getBillingProviderOrgId(),
     stage: 'j6',
     now: ctx.now,
+    designatedSignerUserId: principal,
+    env: process.env,
   });
   if (!signer.ok) throw apiError(signer.status, SIGNER_CODES[signer.reason], signer.message);
   const b = asObj(body);

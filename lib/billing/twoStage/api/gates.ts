@@ -27,7 +27,7 @@ export const GATE_MESSAGES: Readonly<Record<GateCode, string>> = {
   FINANCE_ARCHIVE_UNAVAILABLE: 'The billing finance archive is not available. No file was stored, signed or sent.',
   SIGNER_NOT_CONFIGURED: 'Signing is disabled until the executive signer account is configured.',
   SIGNED_RENDERER_UNAVAILABLE: 'Signed J5/J6 PDFs cannot be produced until the signature representation is approved.',
-  SIGNER_PRINCIPAL_UNSET: 'No signer principal is designated yet; the voucher receipt attestation and J6 signing and sending stay closed.',
+  SIGNER_PRINCIPAL_UNSET: 'No signer principal is designated yet; the voucher receipt attestation, J5 and J6 signing, and J6 sending stay closed.',
   EMAIL_NOT_ENABLED: 'J5/J6 email delivery is not enabled yet.',
 };
 
@@ -75,12 +75,12 @@ export function requireDesignatedSigner(designatedSigner: boolean): void {
   throwIfClosed(state(designatedSigner, 'SIGNER_PRINCIPAL_UNSET'));
 }
 
-/** Sign gates in contract order (signer account, signed renderer, J6: designated principal). */
-export function requireSignGates(stage: BillingStage, designatedSigner: boolean, env: Env = process.env): void {
+/** Sign gates in contract order (signer account, signed renderer, designated principal: both stages since M1 55a0562). */
+export function requireSignGates(_stage: BillingStage, designatedSigner: boolean, env: Env = process.env): void {
   const g = envGates(env);
   throwIfClosed(g.signing);
   throwIfClosed(g.signedRenderer);
-  if (stage === 'j6') requireDesignatedSigner(designatedSigner);
+  requireDesignatedSigner(designatedSigner);
 }
 
 /** Send gates in contract order (real email, J6: designated principal). */

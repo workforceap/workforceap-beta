@@ -76,6 +76,15 @@ const NAMED_REFUSALS: ReadonlyArray<{ code: ErrorCode; status: number; message: 
   { code: 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED', status: 409, message: 'The designated signer has not attested his receiving signature on this exact voucher.' },
   { code: 'LETTERHEAD_FOOTER_MISMATCH', status: 409, message: 'The document does not print the approved WAP footer. Save the draft again.' },
   { code: 'J5_LINKED_BY_OPEN_J6', status: 409, message: 'An open J6 follows this J5. Void or supersede the J6 first.' },
+  // M1 55a0562
+  { code: 'SIGNER_DELEGATION_DISABLED', status: 403, message: 'Delegated signing is disabled; only the designated signer signs, as himself.' },
+  { code: 'J5_ISSUE_DATE_NOT_SERVER_DATE', status: 409, message: 'The J5 is dated the day it is signed. Save the draft again today before signing.' },
+  { code: 'J6_ISSUE_DATE_NOT_SERVER_DATE', status: 409, message: 'The J6 is dated the day it is signed. Save the draft again today before signing.' },
+  { code: 'J6_SIGNED_BEFORE_CLASS_START', status: 409, message: 'The class has not started yet; a J6 is signed only after it starts.' },
+  { code: 'J6_SIGNED_BEFORE_VOUCHER_RECEIPT', status: 409, message: 'A J6 cannot be signed before the day the signed voucher was received.' },
+  { code: 'CLOSE_ACTOR_REASON_REQUIRED', status: 422, message: 'Record why this version is being closed.' },
+  { code: 'PAYMENT_RECEIVED_BEFORE_SENT', status: 422, message: 'The received date cannot be before the J6 was sent.' },
+  { code: 'SEND_FAILED_WITHOUT_PROVIDER_REJECTION', status: 409, message: 'A copy is marked failed only with the provider rejection recorded. Reload the case and reconcile the copy.' },
 ];
 
 export function namedRefusal(message: string): { code: ErrorCode; status: number; message: string } | null {

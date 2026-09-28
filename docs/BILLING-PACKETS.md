@@ -350,7 +350,7 @@ every gate defaults off.
 
 | Source | Ref |
 | --- | --- |
-| M1 model (#2699, draft) | `877466fe` (on `260ad599` → `b76cedee`, master `fde0066`; database-stamped columns omittable in Prisma creates) (schema incl. `BillingDesignatedSigner` and `BillingVoucherReceiptSignature`, migration `20260927230000_billing_two_stage_j5_j6`, `lib/billing/twoStage/*` incl. `voucherReceipt.ts`, `lib/billing/providerOrg.ts`) |
+| M1 model (#2699, draft) | `55a0562c` (on `877466fe` → `260ad599` → `b76cedee`, master `fde0066`; designated signer for both stages, send-failure and close rules, payment lower bound) (schema incl. `BillingDesignatedSigner` and `BillingVoucherReceiptSignature`, migration `20260927230000_billing_two_stage_j5_j6`, `lib/billing/twoStage/*` incl. `voucherReceipt.ts`, `lib/billing/providerOrg.ts`) |
 | M2 draft renderer (#2702, merged) | master `d9e5d1e` `lib/billing/twoStage/documentPdf.ts` (DRAFT only) |
 | Finance archive adapter (#2704, merged) | master `fde0066` `lib/billing/twoStage/storageArchive.ts` (`archiveFinancePdf`, `readFinanceArchivePdf`) |
 | Resend status-preserving error (#2705, merged) | master `5864328` `ResendResolvedSendError` in `lib/email/send.ts` |
@@ -459,8 +459,12 @@ the content hash and the archived bytes carry it.
   logged, not returned, except that the codes M1 puts at the start of its
   message map to their own error: `SIGNER_PRINCIPAL_UNSET` (503),
   `SIGNER_NOT_DESIGNATED`, `VOUCHER_ATTESTER_NOT_SIGNER`,
-  `VOUCHER_ATTESTER_NOT_DESIGNATED` (403), `VOUCHER_RECEIPT_SIGNATURE_UNATTESTED`,
-  `LETTERHEAD_FOOTER_MISMATCH`, `J5_LINKED_BY_OPEN_J6` (409).
+  `VOUCHER_ATTESTER_NOT_DESIGNATED`, `SIGNER_DELEGATION_DISABLED` (403),
+  `VOUCHER_RECEIPT_SIGNATURE_UNATTESTED`, `LETTERHEAD_FOOTER_MISMATCH`,
+  `J5_LINKED_BY_OPEN_J6`, `J5_ISSUE_DATE_NOT_SERVER_DATE`,
+  `J6_ISSUE_DATE_NOT_SERVER_DATE`, `J6_SIGNED_BEFORE_CLASS_START`,
+  `J6_SIGNED_BEFORE_VOUCHER_RECEIPT`, `SEND_FAILED_WITHOUT_PROVIDER_REJECTION`
+  (409), `CLOSE_ACTOR_REASON_REQUIRED`, `PAYMENT_RECEIVED_BEFORE_SENT` (422).
 
 **Unexpected-error copy.** A failure is described by what is provably true:
 
@@ -549,9 +553,9 @@ claim row, storage write or provider call, and reported in the case summary
 | Migration applied | `BILLING_TWO_STAGE_MIGRATION_APPLIED === 'true'` (set per environment only after the M1 migration and #2700 bucket are applied there) | every two-stage route | `503 MIGRATION_NOT_APPLIED` |
 | Provider org | `BILLING_PACKET_PROVIDER_ORG_ID` unset (default org) or a UUID | all | `503 PROVIDER_ORG_MISCONFIGURED` |
 | Finance archive | the #2704 private-bucket preflight passes | uploads, file download, sign, send | `503 FINANCE_ARCHIVE_UNAVAILABLE`; the case summary never calls Storage and reports this gate as unknown (`enabled: null`, `code: null`), never as closed |
-| Signer configured | `BILLING_EXECUTIVE_SIGNER_USER_ID` is a UUID (the exact signer Auth account) | sign, voucher receipt attestation | `503 SIGNER_NOT_CONFIGURED` |
+| Signer configured | `BILLING_EXECUTIVE_SIGNER_USER_ID` is a UUID equal to the designated-signer row (M1 55a0562 makes the row the identity and the env var an optional cross-check; M3 keeps it required as a second key) | sign, voucher receipt attestation | `503 SIGNER_NOT_CONFIGURED` |
 | Signed renderer | the signature representation is approved and a signed (non-draft) renderer exists (`SIGNED_RENDERER_AVAILABLE = false` in code) | sign | `503 SIGNED_RENDERER_UNAVAILABLE` |
-| Receipt-signature principal | the provider org has a `billing_designated_signers` row (M1; unset by default) | voucher receipt attestation, J6 sign, J6 send | `503 SIGNER_PRINCIPAL_UNSET` |
+| Receipt-signature principal | the provider org has a `billing_designated_signers` row (M1; unset by default) | voucher receipt attestation, J5 and J6 sign, J6 send | `503 SIGNER_PRINCIPAL_UNSET` |
 | Real email | `BILLING_TWO_STAGE_EMAIL_ENABLED === 'true'` (after real-email acceptance) | send | `503 EMAIL_NOT_ENABLED` |
 
 The footer facts are confirmed (Mike, 2026-09-28: `www.WorkforceAP.org`,
@@ -845,17 +849,20 @@ by a generic staff checkbox.
 
 - Callable only by the designated signer principal **[M1]**: the organization's
   `billing_designated_signers` row (unset by default) and the §3 signer check
-  (`BILLING_EXECUTIVE_SIGNER_USER_ID`, provider-org admin, active). No row →
-  `503 SIGNER_PRINCIPAL_UNSET`; env signer unset → `503 SIGNER_NOT_CONFIGURED`;
-  anyone else → `403 VOUCHER_ATTESTER_NOT_DESIGNATED` / `403 NOT_SIGNER`.
+  (`authorizeSigner` with `designatedSignerUserId` from that row;
+  `BILLING_EXECUTIVE_SIGNER_USER_ID`, provider-org admin, active). No row →
+  `503 SIGNER_PRINCIPAL_UNSET`; env signer unset or naming another account →
+  `503 SIGNER_NOT_CONFIGURED`; anyone else →
+  `403 VOUCHER_ATTESTER_NOT_DESIGNATED` / `403 NOT_SIGNER`.
 - The designated-signer row is the authority: M1's trigger refuses any other
   attester, and the route checks the row first. The env signer check is
   redundant for identity once the row exists; it is kept deliberately as
   fail-closed defense in depth, so the attestation needs the row **and** the
   env signer to name the same account. A row that names someone other than
   the env signer, or an env signer that was unset, refuses the attestation
-  rather than trusting one side; an M1 signing delegate passes the env check
-  but never the row check.
+  rather than trusting one side. Since M1 `55a0562`, `authorizeSigner` itself
+  takes the row's user id and denies an env value that disagrees; it treats an
+  unset env as fine, so M3 refuses the unset case explicitly.
 - `expectedSha256` must equal the artifact's stored sha256
   (`409 VOUCHER_HASH_MISMATCH`), and the artifact must be the case's current
   voucher (`409 VOUCHER_NOT_CURRENT`).
@@ -909,9 +916,13 @@ attachment (§5.14). A test pins that no route outside
 `POST /cases/[caseId]/[stage]/sign`
 `{ recordId, version, contentSha256, intentConfirmed: true, intentText }`.
 Order: §3 steps 1–9 → gates (`SIGNER_NOT_CONFIGURED`,
-`SIGNED_RENDERER_UNAVAILABLE`, J6 `SIGNER_PRINCIPAL_UNSET`) → signer
-(`authorizeSigner`; a J6 signer must also be the designated principal,
-`403 SIGNER_NOT_DESIGNATED`) → exact echo and intent → freeze checks (§5.9) →
+`SIGNED_RENDERER_UNAVAILABLE`, `SIGNER_PRINCIPAL_UNSET`, both stages since M1
+`55a0562`) → signer (`authorizeSigner` with the designated-signer row; the
+signer must be the designated principal signing as himself, never a delegate,
+`403 SIGNER_NOT_DESIGNATED`; the database also refuses a delegation id,
+`SIGNER_DELEGATION_DISABLED`) → exact echo and intent → freeze checks (§5.9;
+a J5 too is dated the server date it is signed: blocker
+`J5_ISSUE_DATE_NOT_TODAY`, DB `J5_ISSUE_DATE_NOT_SERVER_DATE`) →
 `signedAt = now` (server clock; no route accepts a caller-supplied issue or
 sign date; the database stamps `signed_at` and the transaction rolls back
 unless it falls on the same Chicago day and, for a J6, `content.issueDate`),
@@ -951,7 +962,11 @@ is `409 ALREADY_SIGNED`.
    `VOUCHER_RECEIPT_SIGNATURE_UNATTESTED` after a re-designation, or a frozen
    name/address mismatch) is permanent and returns its named refusal (§2),
    with `outcomeUncertain` when an earlier role's copy was already sent.
-   Every store write marks the request before it runs.
+   Every store write marks the request before it runs. Per M1 `55a0562` an
+   `ambiguous` claim is never settled `failed` (only a same-key retry or
+   reconciliation), `pending → failed` always writes the provider result
+   label, and `pending → needs_reconciliation` happens only with a recorded
+   provider outcome (a 409 from the provider) or from `ambiguous`.
 5. Provider call: `sendBrandedEmailOrThrowOnSkip(resend, { to: frozen email,
    idempotencyKey: sendIdempotencyKey(...), attachments: [{ filename,
    content: Buffer.from(bytes) }] })`, one message per role, no cc/bcc.
@@ -980,9 +995,11 @@ arrived."; `FAILED` "The email provider rejected the {role} copy."
 
 `GET /cases/[caseId]/payment` returns `casePaymentView()` plus the events.
 `POST /cases/[caseId]/payment/received` `{ j6RecordId, receivedOn, evidence }`
-records `received` (`recordPaymentReceived`) against the pending event's J6
-(`409 PAYMENT_J6_CHANGED` otherwise). The follow-up window is an expectation,
-never a due date.
+records `received` (`recordPaymentReceived`) against the J6 that holds the
+pending event (`409 PAYMENT_J6_CHANGED` otherwise), never before that J6's
+America/Chicago send date (`422 PAYMENT_RECEIVED_BEFORE_SENT`, checked before
+the write and by the database). The follow-up window is an expectation, never
+a due date.
 
 #### 5.16 Reconcile, 5.17 close, 5.18 cancel a partial send
 
@@ -994,7 +1011,10 @@ never a due date.
   §5.14 step 8 completion check.
 - `POST /cases/[caseId]/[stage]/versions/[recordId]/close`
   `{ action: 'void' | 'supersede', reason, versionHash }` per M1's closure
-  rules; a signed record with claims → `409 PARTIAL_SEND_REQUIRES_CANCELLATION`;
+  rules; a blank reason → `422 CLOSE_REASON_REQUIRED` before any write; the
+  closing update writes `closed_by_subject_id` (the verified user) and the
+  trimmed `close_reason` (M1 `CLOSE_ACTOR_REASON_REQUIRED`); a signed record
+  with claims → `409 PARTIAL_SEND_REQUIRES_CANCELLATION`;
   a J5 an open J6 follows → `409 J5_LINKED_BY_OPEN_J6`.
 - `POST /cases/[caseId]/[stage]/versions/[recordId]/cancel-send`
   `{ action, reason, versionHash, acknowledgedRolesAlreadyReceived }`: the
@@ -1114,6 +1134,8 @@ line each, with the reason.
 40. **Webhook billing copies:** recognized by send-log tags as well as the ledger; only hard bounces are billing evidence; a ledger error is a diagnostic, never a failed event, because general mail handling must not depend on the billing ledger.
 41. **Archive gate in the summary:** reported unknown (`enabled: null`), because the summary does not call Storage and "closed" would be false.
 42. **Combined readiness:** deprecated in favor of `readinessByStage`, because merging the stages shows J5 facts on the J6 card.
+43. **Designated signer for both stages (M1 `55a0562`):** J5 and J6 signing need the designated-signer row and the signer himself (no delegate), and the env signer stays a required second key in M3, because the row is the identity and a disagreement must refuse.
+44. **New M1 refusals:** every `CODE:` refusal M1 raises maps to its own error (§2), and J5 gets the server-date blocker `J5_ISSUE_DATE_NOT_TODAY`, because staff need the reason, not a generic refusal.
 
 ### Not in M3
 
