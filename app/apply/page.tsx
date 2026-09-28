@@ -36,13 +36,18 @@ export default async function ApplyPage({ searchParams }: PageProps) {
     resolvePartnerReferralDisclosure(landingRef, { headers: await headers(), programSlug: sp.program }),
   ]);
   // Bare /apply clears attribution, so only the explicit ?ref= is disclosed here.
-  const partnerDisclosure = disclosure ? (
-    <PartnerReferralDisclosure
-      initial={disclosure}
-      copy={await getPartnerDisclosureCopy()}
-      reconcileWithPersistedRef={false}
-    />
-  ) : null;
+  const disclosureCopy = disclosure ? await getPartnerDisclosureCopy() : null;
+  // The organic page renders the callout inside the crimson hero (white hero
+  // text); the paid variant renders it in the light form section.
+  const renderPartnerDisclosure = (tone: 'surface' | 'onHero') =>
+    disclosure && disclosureCopy ? (
+      <PartnerReferralDisclosure
+        initial={disclosure}
+        copy={disclosureCopy}
+        reconcileWithPersistedRef={false}
+        tone={tone}
+      />
+    ) : null;
 
   const paidUtmSource = resolvePaidApplyUtmSource(sp, cookieUtm);
 
@@ -55,10 +60,10 @@ export default async function ApplyPage({ searchParams }: PageProps) {
         mobileTrustBar={<ApplyMobileTrustBar />}
         proofBlock={<PaidApplyProofBlock />}
         trustStrip={<TrustStrip variant="apply" />}
-        partnerDisclosure={partnerDisclosure}
+        partnerDisclosure={renderPartnerDisclosure('surface')}
       />
     );
   }
 
-  return <OrganicApplyPage program={sp.program} schoolApply={schoolApply} partnerDisclosure={partnerDisclosure} />;
+  return <OrganicApplyPage program={sp.program} schoolApply={schoolApply} partnerDisclosure={renderPartnerDisclosure('onHero')} />;
 }

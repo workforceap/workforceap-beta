@@ -38,6 +38,7 @@ export default function PartnerReferralDisclosure({
   reconcileWithPersistedRef = true,
   onShownRefChange,
   id,
+  tone = 'surface',
 }: {
   initial: Disclosure | null;
   copy: PartnerDisclosureCopy;
@@ -46,6 +47,11 @@ export default function PartnerReferralDisclosure({
   reconcileWithPersistedRef?: boolean;
   onShownRefChange?: (ref: string | null) => void;
   id?: string;
+  /**
+   * `onHero` for the crimson /apply hero, whose white text would otherwise be
+   * inherited onto the pale callout. `surface` everywhere else.
+   */
+  tone?: 'surface' | 'onHero';
 }) {
   const [disclosure, setDisclosure] = useState<Disclosure | null>(initial);
 
@@ -72,7 +78,13 @@ export default function PartnerReferralDisclosure({
 
   if (!disclosure) return null;
   return (
-    <div className={styles.disclosure} role="note" id={id} data-partner-disclosure={disclosure.tier}>
+    <div
+      className={tone === 'onHero' ? `${styles.disclosure} ${styles.onHero}` : styles.disclosure}
+      role="note"
+      id={id}
+      data-partner-disclosure={disclosure.tier}
+      data-disclosure-tone={tone}
+    >
       <span className={styles.label}>{copy.label}</span>
       <p className={styles.body}>{partnerDisclosureText(copy, disclosure)}</p>
     </div>
