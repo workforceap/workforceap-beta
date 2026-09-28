@@ -88,9 +88,9 @@ function StageCard({
 }) {
   const readyToPrepare = checks.every(({ key }) => readiness[key] === true);
   const actionAvailable = readyToPrepare && Boolean(onPrepare);
-  const reason = readyToPrepare
-    ? 'Draft preparation is being connected to the secure billing workflow.'
-    : 'Verify the required case details before preparing this document.';
+  const reason = onPrepare
+    ? 'Verify the required case details before preparing this document.'
+    : 'Preparation is not yet available. The secure billing workflow is being connected.';
 
   return (
     <section className={styles.stage} aria-labelledby={`billing-${stage}-heading`}>

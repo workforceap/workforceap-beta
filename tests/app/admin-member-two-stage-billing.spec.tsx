@@ -38,6 +38,7 @@ describe('two-stage member billing workbench', () => {
     expect(screen.getByText('Signed WAP cover letter + original signed board voucher')).toBeInTheDocument();
     expect(screen.getByText('Tuition & Fees · $7,500.00')).toBeInTheDocument();
     expect(screen.getByText(/10–14 days/)).toBeInTheDocument();
+    expect(screen.getAllByText('Preparation is not yet available. The secure billing workflow is being connected.')).toHaveLength(2);
 
     fireEvent.click(j5);
     fireEvent.click(j6);
@@ -95,6 +96,6 @@ describe('two-stage member billing workbench', () => {
     );
     expect(screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' })).toBeDisabled();
-    expect(screen.getAllByText('Draft preparation is being connected to the secure billing workflow.')).toHaveLength(2);
+    expect(screen.getAllByText('Preparation is not yet available. The secure billing workflow is being connected.')).toHaveLength(2);
   });
 });
