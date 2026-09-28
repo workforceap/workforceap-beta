@@ -19,6 +19,17 @@ const j5Ready: TwoStageBillingReadiness = {
   programAndClassDatesConfirmed: true,
 };
 
+const j6Ready: TwoStageBillingReadiness = {
+  ...j5Ready,
+  priorQuoteVerified: true,
+  voucherReferenceAndReceivedDateVerified: true,
+  originalVoucherHashVerified: true,
+  michaelReceivingSignatureAttested: true,
+  voucherTermsVerified: true,
+  classStarted: true,
+  financeContactVerified: true,
+};
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -36,6 +47,8 @@ describe('two-stage member billing workbench', () => {
     expect(screen.getByText('Counselor and student')).toBeInTheDocument();
     expect(screen.getByText('Board finance person, counselor, and student')).toBeInTheDocument();
     expect(screen.getByText('Signed WAP cover letter + original signed board voucher')).toBeInTheDocument();
+    expect(screen.getByText(/original voucher, voucher provenance, signer action, and per-recipient send results/)).toBeInTheDocument();
+    expect(screen.getAllByText(/must authenticate and explicitly sign this stage/)).toHaveLength(2);
     expect(screen.getByText('Tuition & Fees · $7,500.00')).toBeInTheDocument();
     expect(screen.getByText(/10–14 days/)).toBeInTheDocument();
     expect(screen.getAllByText('Preparation is not yet available. The secure billing workflow is being connected.')).toHaveLength(2);
@@ -51,7 +64,7 @@ describe('two-stage member billing workbench', () => {
     render(
       <TwoStageBillingWorkbench
         {...contacts}
-        readiness={{ ...j5Ready, signedVoucherArchived: false, classStarted: false, financeContactVerified: false }}
+        readiness={{ ...j5Ready, originalVoucherHashVerified: false, classStarted: false, financeContactVerified: false }}
         onPrepareJ5={prepareJ5}
         onPrepareJ6={prepareJ6}
       />,
@@ -68,30 +81,37 @@ describe('two-stage member billing workbench', () => {
     expect(screen.getByText('A board voucher is not required to prepare J5.')).toBeInTheDocument();
   });
 
-  it('holds J6 until both a signed voucher and class start are verified', () => {
+  it('holds J6 until quote, original voucher proof, attestation, terms, and class start are verified', () => {
     const prepareJ6 = vi.fn();
-    const ready = { ...j5Ready, signedVoucherArchived: true, classStarted: true, financeContactVerified: true };
     const { rerender } = render(
-      <TwoStageBillingWorkbench {...contacts} readiness={{ ...ready, signedVoucherArchived: false }} onPrepareJ6={prepareJ6} />,
+      <TwoStageBillingWorkbench {...contacts} readiness={{ ...j6Ready, originalVoucherHashVerified: false }} onPrepareJ6={prepareJ6} />,
     );
     const j6 = screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' });
     expect(j6).toBeDisabled();
 
-    rerender(<TwoStageBillingWorkbench {...contacts} readiness={{ ...ready, classStarted: false }} onPrepareJ6={prepareJ6} />);
-    expect(j6).toBeDisabled();
+    for (const missing of [
+      'priorQuoteVerified',
+      'voucherReferenceAndReceivedDateVerified',
+      'michaelReceivingSignatureAttested',
+      'voucherTermsVerified',
+      'classStarted',
+    ] as const) {
+      rerender(<TwoStageBillingWorkbench {...contacts} readiness={{ ...j6Ready, [missing]: false }} onPrepareJ6={prepareJ6} />);
+      expect(j6).toBeDisabled();
+    }
 
-    rerender(<TwoStageBillingWorkbench {...contacts} readiness={ready} onPrepareJ6={prepareJ6} />);
+    rerender(<TwoStageBillingWorkbench {...contacts} readiness={j6Ready} onPrepareJ6={prepareJ6} />);
     expect(j6).toBeEnabled();
     fireEvent.click(j6);
     expect(prepareJ6).toHaveBeenCalledOnce();
-    expect(screen.getByText('Michael’s receiving signature on the original voucher verified and archived')).toBeInTheDocument();
+    expect(screen.getByText('Michael’s receiving signature on the voucher explicitly attested')).toBeInTheDocument();
   });
 
   it('never exposes an action solely because the checks pass when no route is connected', () => {
     render(
       <TwoStageBillingWorkbench
         {...contacts}
-        readiness={{ ...j5Ready, signedVoucherArchived: true, classStarted: true, financeContactVerified: true }}
+        readiness={j6Ready}
       />,
     );
     expect(screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' })).toBeDisabled();

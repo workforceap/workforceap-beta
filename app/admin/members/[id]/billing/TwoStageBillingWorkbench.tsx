@@ -9,7 +9,11 @@ type ReadinessKey =
   | 'counselorContactVerified'
   | 'studentEmailVerified'
   | 'programAndClassDatesConfirmed'
-  | 'signedVoucherArchived'
+  | 'priorQuoteVerified'
+  | 'voucherReferenceAndReceivedDateVerified'
+  | 'originalVoucherHashVerified'
+  | 'michaelReceivingSignatureAttested'
+  | 'voucherTermsVerified'
   | 'classStarted'
   | 'financeContactVerified';
 
@@ -28,7 +32,11 @@ const J5_CHECKS: readonly Check[] = [
 ];
 
 const J6_CHECKS: readonly Check[] = [
-  { key: 'signedVoucherArchived', label: 'Michael’s receiving signature on the original voucher verified and archived' },
+  { key: 'priorQuoteVerified', label: 'J5 quote or approved external quote is on file' },
+  { key: 'voucherReferenceAndReceivedDateVerified', label: 'Voucher / PO reference and received date verified' },
+  { key: 'originalVoucherHashVerified', label: 'Original signed voucher uploaded with uploader and file hash recorded' },
+  { key: 'michaelReceivingSignatureAttested', label: 'Michael’s receiving signature on the voucher explicitly attested' },
+  { key: 'voucherTermsVerified', label: 'Voucher matches the approved class, dates, and $7,500 tuition' },
   { key: 'classStarted', label: 'Student has started the class' },
   { key: 'financeContactVerified', label: 'Board finance name and email verified' },
   { key: 'boardConfirmed', label: 'Workforce Solutions board confirmed' },
@@ -114,10 +122,12 @@ function StageCard({
           <dl className={styles.summary}>
             <div><dt>File</dt><dd>{attachments}</dd></div>
             <div><dt>Recipients</dt><dd>{recipients}</dd></div>
-            <div><dt>Archive</dt><dd>Exact signed files, recipients, and send results in the student record</dd></div>
+            <div><dt>Archive</dt><dd>{stage === 'j5'
+              ? 'Exact signed quote, signer action, and per-recipient send results in the student billing record'
+              : 'Exact signed cover letter and original voucher, voucher provenance, signer action, and per-recipient send results in the student billing record'}</dd></div>
           </dl>
           <p className={styles.deliveryGate}>
-            Michael A. Brown, PMP, ChE must approve the executive signature and final WAP letterhead before delivery.
+            Michael A. Brown, PMP, ChE must authenticate and explicitly sign this stage’s final document. Confirm the WAP letterhead before delivery.
           </p>
         </div>
       </div>
@@ -167,7 +177,7 @@ export default function TwoStageBillingWorkbench({
       <p className={styles.contacts}>
         <strong>Contacts on file:</strong> Student {memberEmail || 'email not on file'} · Counselor{' '}
         {counselor ? `${counselor.name} (${counselor.email})` : 'not assigned'}.
-        {' '}Confirm these details before delivery.
+        {' '}Confirm the counselor phone in case review before J5 delivery.
       </p>
 
       <div className={styles.stages}>
