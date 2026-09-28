@@ -191,7 +191,12 @@ export const MEMBER_MERGE_REPOINT_PLAN: RepointSpec[] = [
   { model: 'testimonial', field: 'reviewedBy' },
   { model: 'courseraSkillsetProgress', field: 'userId', uniqueWith: ['skillsetId'], stranded: { noun: 'progress on a Coursera skillset', plural: 'Coursera skillsets with progress', weight: 'state' }, resolution: { strategy: 'preferStronger', rankBy: [{ column: 'progressPct', kind: 'number' }], copy: ['progressPct', 'lastSyncedAt'] } },
   { model: 'subgroup', field: 'leaderId' },
-  { model: 'subgroup', field: 'createdBy' },];
+  { model: 'subgroup', field: 'createdBy' },
+  // Two-stage J5/J6 billing case: the live member link follows the survivor.
+  // subject_member_id keeps the original subject; the database allows the move
+  // only for the merge pair declared by executeMemberMerge (app.billing_member_merge)
+  // and records member_merged_from_id / member_merged_at itself.
+  { model: 'billingCase', field: 'memberId' },];
 
 /**
  * Collidable relations whose stranded rows are deliberately NOT surfaced, and

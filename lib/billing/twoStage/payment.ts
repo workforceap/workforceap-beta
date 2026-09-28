@@ -12,6 +12,18 @@ import { addDays, billingToday, compareIsoDates, isIsoDate } from './dates';
 
 export type PaymentStatus = 'pending' | 'received';
 
+/**
+ * Payment is tracked against a J6 that was actually sent, proven by retained
+ * evidence (sent_at plus a delivered copy for finance, counselor and student),
+ * not by its current status: a sent J6 later superseded by a corrected cover
+ * letter still reconciles a payment that arrives afterwards.
+ */
+export function canTrackPayment(j6: { stage: 'j5' | 'j6'; sentAt: Date | string | null; deliveredRoles: readonly string[] }): boolean {
+  if (j6.stage !== 'j6' || !j6.sentAt) return false;
+  const delivered = new Set(j6.deliveredRoles);
+  return ['finance', 'counselor', 'student'].every((role) => delivered.has(role));
+}
+
 export type PaymentEvent =
   | { status: 'pending'; expectedFollowUpFrom: string; expectedFollowUpTo: string; recordedAt: string }
   | { status: 'received'; receivedOn: string; evidence: string; recordedAt: string };
@@ -59,4 +71,10 @@ export function paymentView(latest: PaymentEvent | null, now: Date): PaymentView
     expectedFollowUpTo: latest.expectedFollowUpTo,
     followUp: compareIsoDates(today, latest.expectedFollowUpFrom) >= 0 ? 'follow_up_now' : 'awaiting',
   };
+}
+
+/** Case-level payment view over the events of every sent J6 on the case: the most recently recorded event wins. */
+export function casePaymentView(events: ReadonlyArray<PaymentEvent & { j6RecordId: string }>, now: Date): PaymentView & { j6RecordId: string | null } {
+  const latest = [...events].sort((a, b) => a.recordedAt.localeCompare(b.recordedAt)).at(-1) ?? null;
+  return { ...paymentView(latest, now), j6RecordId: latest?.j6RecordId ?? null };
 }

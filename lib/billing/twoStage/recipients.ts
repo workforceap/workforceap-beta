@@ -60,3 +60,30 @@ export function j5Recipients(args: { student: Contact; counselor: Contact }): Re
 export function j6Recipients(args: { finance: Contact; counselor: Contact; student: Contact }): RecipientResult {
   return build('j6', args);
 }
+
+/** The frozen recipient snapshot of one stage record (billing_stage_recipients). */
+export type RecipientSnapshot = ReadonlyArray<{ role: RecipientRole; email: string }>;
+
+/**
+ * Service-layer check before any provider call: the copy must go to exactly
+ * the frozen, normalized address for its role, and the snapshot must be the
+ * stage's exact role set. The database enforces the same with a composite FK.
+ */
+export function assertSendMatchesSnapshot(
+  stage: BillingStage,
+  snapshot: RecipientSnapshot,
+  copy: { role: RecipientRole; email: string },
+): { ok: true } | { ok: false; error: string } {
+  const roles = [...snapshot.map((r) => r.role)].sort();
+  const expected = [...STAGE_RECIPIENT_ROLES[stage]].sort();
+  if (roles.length !== expected.length || roles.some((r, i) => r !== expected[i])) {
+    return { ok: false, error: `The frozen ${stage.toUpperCase()} recipients must be exactly ${expected.join(', ')}.` };
+  }
+  const frozen = snapshot.find((r) => r.role === copy.role);
+  if (!frozen) return { ok: false, error: `${copy.role} is not a ${stage.toUpperCase()} recipient.` };
+  if (frozen.email !== normalizeEmail(frozen.email)) return { ok: false, error: 'The frozen recipient address is not normalized.' };
+  if (copy.email !== frozen.email) {
+    return { ok: false, error: `The ${copy.role} copy must go to the address frozen at signing; nothing was sent.` };
+  }
+  return { ok: true };
+}

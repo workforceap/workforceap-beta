@@ -2127,6 +2127,9 @@ model BillingCase {
   subjectMemberId    String   @map("subject_member_id")
   /// canonicalizeProgramSlug() of the enrolled program; fixed for the case.
   programSlug        String   @map("program_slug")
+  /// Set by the database when a member merge repoints memberId (audit).
+  memberMergedFromId String?   @map("member_merged_from_id")
+  memberMergedAt     DateTime? @map("member_merged_at")
   createdBySubjectId String   @map("created_by_subject_id")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
@@ -2137,6 +2140,7 @@ model BillingCase {
   artifacts     BillingArtifact[]
   stageRecords  BillingStageRecord[]
   paymentEvents BillingPaymentEvent[]
+  amountExceptions BillingAmountException[]
 
   @@unique([id, organizationId])
   @@index([organizationId, subjectMemberId, createdAt(sort: Desc)])
@@ -2180,6 +2184,18 @@ model BillingAttestation {
   /// external_j5_reference: the manual quote's reference and date.
   externalReference   String?   @map("external_reference")
   externalQuoteDate   DateTime? @map("external_quote_date") @db.Date
+  /// external_j5_reference: the program and class the manual quote named.
+  quotedProgramSlug   String?   @map("quoted_program_slug")
+  quotedClassName     String?   @map("quoted_class_name")
+  /// voucher_board_signed: the program and class the board voucher authorizes.
+  authorizedProgramSlug String? @map("authorized_program_slug")
+  authorizedClassName   String? @map("authorized_class_name")
+  /// j5_readiness fact 1: the student is approved/ready (must be true).
+  studentReadyConfirmed Boolean? @map("student_ready_confirmed")
+  /// j5_readiness fact 2: the counselor requested the quote (who, when, reference).
+  counselorRequestedBy      String?   @map("counselor_requested_by")
+  counselorRequestedOn      DateTime? @map("counselor_requested_on") @db.Date
+  counselorRequestReference String?   @map("counselor_request_reference")
   attestedBySubjectId String    @map("attested_by_subject_id")
   attestedAt          DateTime  @default(now()) @map("attested_at")
 
@@ -2190,6 +2206,7 @@ model BillingAttestation {
   j6ClassStart BillingStageRecord[] @relation("StageClassStartAttestation")
   j6Voucher   BillingStageRecord[] @relation("StageVoucherAttestation")
   j6ExternalJ5 BillingStageRecord[] @relation("StageExternalJ5Attestation")
+  amountExceptions BillingAmountException[]
 
   @@unique([id, caseId])
   @@index([caseId, kind, attestedAt(sort: Desc)])
@@ -2215,13 +2232,22 @@ model BillingArtifact {
   sha256              String   @db.Char(64)
   storageBucket       String   @map("storage_bucket")
   storageKey          String   @map("storage_key")
+  /// Rendered signed PDFs only: the exact stage record version and frozen
+  /// content hash this PDF renders. Null for uploads (case-level files).
+  stageRecordId         String?  @map("stage_record_id")
+  stage                 String?
+  stageVersion          Int?     @map("stage_version")
+  renderedContentSha256 String?  @map("rendered_content_sha256") @db.Char(64)
   createdBySubjectId  String   @map("created_by_subject_id")
   createdAt           DateTime @default(now()) @map("created_at")
 
   case BillingCase @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  renderedFrom BillingStageRecord? @relation("StageRenderedArtifacts", fields: [stageRecordId, caseId, stage, stageVersion], references: [id, caseId, stage, version], onDelete: Restrict, onUpdate: NoAction, map: "billing_artifacts_stage_record_version_fkey")
+  reconcileEvidenceFor BillingStageSend[]
 
   attestations      BillingAttestation[]
   signedStageRecord BillingStageRecord[] @relation("StageSignedArtifact")
+  amountExceptionEvidence BillingAmountException[]
   voucherFor        BillingStageRecord[] @relation("StageVoucherArtifact")
   boardInvoiceFor   BillingStageRecord[] @relation("StageBoardInvoiceArtifact")
 
@@ -2254,6 +2280,30 @@ model BillingSignerDelegation {
   @@map("billing_signer_delegations")
 }
 
+/// Higher-authority acceptance of a voucher amount that differs from the
+/// $7,500.00 quote. Model hook only: disabled in code (AMOUNT_EXCEPTION_ENABLED
+/// = false), no UI. Must be approved by the J6 signer. A staff review note can
+/// never clear a money mismatch.
+model BillingAmountException {
+  id                   String   @id @default(uuid())
+  organizationId       String   @map("organization_id")
+  caseId               String   @map("case_id")
+  voucherAttestationId String   @map("voucher_attestation_id")
+  acceptedAmountCents  Int      @map("accepted_amount_cents")
+  evidenceArtifactId   String   @map("evidence_artifact_id")
+  approvalReference    String   @map("approval_reference")
+  approvedBySubjectId  String   @map("approved_by_subject_id")
+  approvedAt           DateTime @default(now()) @map("approved_at")
+
+  case               BillingCase          @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  voucherAttestation BillingAttestation   @relation(fields: [voucherAttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  evidenceArtifact   BillingArtifact      @relation(fields: [evidenceArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  stageRecords       BillingStageRecord[]
+
+  @@unique([id, caseId])
+  @@map("billing_amount_exceptions")
+}
+
 /// One J5 (quote/voucher request) or J6 (invoice/voucher cover letter)
 /// document version. status: draft -> signed -> sent, or superseded/voided.
 /// Once signed, content, terms and signature are immutable (trigger); a
@@ -2274,6 +2324,8 @@ model BillingStageRecord {
   contentSha256            String    @map("content_sha256") @db.Char(64)
   /// Always 750000 (Tuition & Fees $7,500.00).
   amountCents              Int       @map("amount_cents")
+  /// Frozen class name (approved syllabus title); must equal content.training.className.
+  className                String    @map("class_name")
   /// 160, or 200 for the IBM AI & Software Developer program.
   contactHours             Int       @map("contact_hours")
   /// J5: the admin-confirmed estimate. J6: the staff-confirmed actual dates.
@@ -2290,6 +2342,8 @@ model BillingStageRecord {
   reviewClearedBySubjectId String?   @map("review_cleared_by_subject_id")
   reviewClearedAt          DateTime? @map("review_cleared_at")
   reviewNote               String?   @map("review_note") @db.Text
+  /// Disabled hook: signer-approved exception for a voucher amount mismatch.
+  amountExceptionId        String?   @map("amount_exception_id")
   readinessAttestationId   String?   @map("readiness_attestation_id")
   classStartAttestationId  String?   @map("class_start_attestation_id")
   voucherArtifactId        String?   @map("voucher_artifact_id")
@@ -2315,8 +2369,9 @@ model BillingStageRecord {
   updatedAt                DateTime  @updatedAt @map("updated_at")
 
   case                 BillingCase              @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  supersedes           BillingStageRecord?      @relation("StageSupersedes", fields: [supersedesRecordId], references: [id], onDelete: Restrict)
-  supersededBy         BillingStageRecord?      @relation("StageSupersedes")
+  supersedes           BillingStageRecord?      @relation("StageSupersedes", fields: [supersedesRecordId, caseId, stage], references: [id, caseId, stage], onDelete: Restrict, onUpdate: NoAction)
+  supersededBy         BillingStageRecord[]     @relation("StageSupersedes")
+  amountException      BillingAmountException?  @relation(fields: [amountExceptionId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
   priorJ5              BillingStageRecord?      @relation("StagePriorJ5", fields: [priorJ5RecordId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
   followingJ6          BillingStageRecord[]     @relation("StagePriorJ5")
   externalJ5Attestation BillingAttestation?     @relation("StageExternalJ5Attestation", fields: [externalJ5AttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
@@ -2328,14 +2383,41 @@ model BillingStageRecord {
   signedArtifact       BillingArtifact?         @relation("StageSignedArtifact", fields: [signedArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
   signedViaDelegation  BillingSignerDelegation? @relation(fields: [signedViaDelegationId], references: [id], onDelete: Restrict)
   sends                BillingStageSend[]
+  recipients           BillingStageRecipient[]
+  renderedArtifacts    BillingArtifact[]        @relation("StageRenderedArtifacts")
   paymentEvents        BillingPaymentEvent[]
 
   @@unique([caseId, stage, version])
   @@unique([organizationId, documentNumber])
   @@unique([id, organizationId, stage])
   @@unique([id, caseId])
+  @@unique([id, caseId, stage])
+  @@unique([id, caseId, stage, version])
   @@index([caseId, stage, createdAt(sort: Desc)])
   @@map("billing_stage_records")
+}
+
+/// Frozen recipient snapshot of one stage record: one normalized address per
+/// role, editable only while the record is a draft. A send row must match it.
+model BillingStageRecipient {
+  stageRecordId  String   @map("stage_record_id")
+  organizationId String   @map("organization_id")
+  /// j5 | j6
+  stage          String
+  /// student | counselor (J5); student | counselor | finance (J6).
+  recipientRole  String   @map("recipient_role")
+  recipientName  String   @map("recipient_name")
+  /// lower(trim(email)).
+  email          String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  stageRecord BillingStageRecord @relation(fields: [stageRecordId, organizationId, stage], references: [id, organizationId, stage], onDelete: Restrict, onUpdate: NoAction)
+  sends       BillingStageSend[]
+
+  @@id([stageRecordId, recipientRole])
+  @@unique([stageRecordId, recipientRole, email], map: "billing_stage_recipients_record_role_email_key")
+  @@unique([stageRecordId, email], map: "billing_stage_recipients_record_email_key")
+  @@map("billing_stage_recipients")
 }
 
 /// One recipient's copy of one stage record in one send attempt. The unique
@@ -2369,10 +2451,13 @@ model BillingStageSend {
   reconciledBySubjectId String?   @map("reconciled_by_subject_id")
   reconciledAt          DateTime? @map("reconciled_at")
   reconcileNote         String?   @map("reconcile_note") @db.Text
+  reconcileEvidenceArtifactId String? @map("reconcile_evidence_artifact_id")
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
 
   stageRecord BillingStageRecord @relation(fields: [stageRecordId, organizationId, stage], references: [id, organizationId, stage], onDelete: Restrict)
+  recipient   BillingStageRecipient @relation(fields: [stageRecordId, recipientRole, email], references: [stageRecordId, recipientRole, email], onDelete: Restrict, onUpdate: NoAction, map: "billing_stage_sends_recipient_snapshot_fkey")
+  reconcileEvidence BillingArtifact? @relation(fields: [reconcileEvidenceArtifactId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
   @@unique([stageRecordId, stage, attemptNo, recipientRole])
   @@map("billing_stage_sends")

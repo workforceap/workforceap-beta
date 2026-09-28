@@ -3,12 +3,13 @@
  * migration 20260927230000_billing_two_stage_j5_j6 so the API can explain a
  * refusal before the database enforces it.
  *
- *   J5:      (none) -> draft -> signed -> sent            [needs j5_readiness only]
+ *   J5:      (none) -> draft -> signed -> sent            [needs j5_readiness: ready + counselor request]
  *   Voucher: none -> received                             [board-signed upload + attestation]
  *   J6:      (none) -> draft [-> review] -> signed -> sent
  *            [needs a prior quote (system J5 sent, or attested external),
  *             the receipt-signed board voucher + attestation, class_started <= today;
- *             a voucher amount/period or date conflict holds it for audited review]
+ *             derived holds: money or class mismatches block signing outright;
+ *             a period or end-date variance needs an audited review]
  *   Payment: not_applicable -> pending -> received        [pending on J6 sent; received needs evidence]
  *
  * Any signed/sent record may be superseded by a new version; drafts and
@@ -43,16 +44,23 @@ export function nextStageStatus(current: StageStatus, event: StageEvent): Transi
 export type Gate = { ok: true } | { ok: false; errors: string[] };
 
 /**
- * J5 may be created before any voucher exists. Its only prerequisites are a
- * j5_readiness attestation (with the admin-confirmed start date), a program
- * with approved contract hours, and no other open J5 on the case. There is
- * deliberately no voucher or funding-approval input.
+ * J5 may be created before any voucher exists. Its prerequisites are a
+ * j5_readiness attestation that records both facts (student approved/ready,
+ * and the counselor's request for the quote), the admin-confirmed start date,
+ * a program with approved contract hours, and no other open J5 on the case.
+ * There is deliberately no voucher or funding-approval input.
  */
 export function checkJ5Prerequisites(input: { hasOpenJ5: boolean; readiness: Attestation | null; programSlug: string }): Gate {
   const errors: string[] = [];
   if (input.hasOpenJ5) errors.push('This case already has an open J5. Supersede or void it to issue a corrected version.');
-  if (!input.readiness || input.readiness.kind !== 'j5_readiness' || !input.readiness.classStartDate) {
+  const r = input.readiness;
+  if (!r || r.kind !== 'j5_readiness' || !r.classStartDate) {
     errors.push('Record the J5 readiness attestation (with the confirmed class start date) first.');
+  } else {
+    if (r.studentReadyConfirmed !== true) errors.push('The readiness attestation must confirm the student is approved and ready.');
+    if (!r.counselorRequestedBy?.trim() || !r.counselorRequestedOn || !r.counselorRequestReference?.trim()) {
+      errors.push('The readiness attestation must record the counselor’s request for the quote (who, when, reference).');
+    }
   }
   const terms = resolveProgramTerms(input.programSlug);
   if (!terms.ok) errors.push(terms.message);
@@ -76,20 +84,36 @@ export type J6Prerequisites = {
   boardInvoice: ArtifactSummary | null;
 };
 
-export type ReviewReason = 'voucher_amount_differs' | 'voucher_period_conflict' | 'end_date_not_contract' | 'hours_differ_from_quote';
+/** Same order and names as the database's billing_stage_record_rules(). */
+export type ReviewReason =
+  | 'voucher_amount_differs'
+  | 'voucher_class_differs'
+  | 'voucher_period_conflict'
+  | 'end_date_not_contract'
+  | 'class_differs_from_quote';
+
+/** Never cleared by a review note. Money: corrected voucher (or the disabled exception). Class: a corrected document. */
+export const BLOCKING_REVIEW_REASONS: ReadonlySet<ReviewReason> = new Set(['voucher_amount_differs', 'voucher_class_differs', 'class_differs_from_quote']);
 
 export const REVIEW_REASON_TEXT: Readonly<Record<ReviewReason, string>> = {
-  voucher_amount_differs: 'The voucher authorizes a different amount than the $7,500.00 quote.',
+  voucher_amount_differs: 'The voucher authorizes a different amount than the $7,500.00 quote. Record a corrected voucher; a review note cannot clear this.',
+  voucher_class_differs: 'The voucher authorizes a different program or class than this J6. Get a corrected voucher.',
   voucher_period_conflict: 'The class dates fall outside the period the voucher authorizes.',
   end_date_not_contract: 'The confirmed end date is not five calendar months after the actual start.',
-  hours_differ_from_quote: 'The contract hours differ from the hours on the J5 quote.',
+  class_differs_from_quote: 'The program, class or hours differ from the quote this J6 follows. Issue a corrected document.',
 };
+
+/**
+ * Higher-authority exception for a voucher amount that differs from the quote.
+ * Modeled (billing_amount_exceptions) but disabled until Mike approves it.
+ */
+export const AMOUNT_EXCEPTION_ENABLED = false;
 
 export type J6Variance = { startShiftDays: number; endShiftDays: number; hoursDelta: number } | null;
 
 export type PriorJ5Summary =
   | { source: 'system'; recordId: string; contentSha256: string; estimate: TrainingTerms }
-  | { source: 'external'; attestationId: string; reference: string; quoteDate: string; copyArtifactId: string | null };
+  | { source: 'external'; attestationId: string; reference: string; quoteDate: string; copyArtifactId: string | null; programSlug: string; className: string };
 
 export type J6Gate =
   | {
@@ -99,7 +123,7 @@ export type J6Gate =
       priorJ5: PriorJ5Summary;
       /** Actual vs the frozen J5 estimate (system J5 only). Informational. */
       variance: J6Variance;
-      /** Non-empty = the J6 is held until an audited staff review clears it. */
+      /** Non-empty = the J6 is held; blocking reasons are never cleared by a review. */
       reviewReasons: ReviewReason[];
       classStarted: Attestation;
       voucher: ArtifactSummary;
@@ -121,18 +145,23 @@ export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
   if (!prior) {
     errors.push('J6 is on hold: send the J5 quote/voucher request first, or record the manually issued quote it follows.');
   } else if (prior.source === 'system') {
-    if (prior.j5.status !== 'sent') errors.push('The J5 quote/voucher request has not been sent yet.');
+    if (prior.j5.status !== 'sent') errors.push('The J5 quote/voucher request has not been sent to both recipients yet.');
     else priorJ5 = { source: 'system', recordId: prior.j5.recordId, contentSha256: prior.j5.contentSha256, estimate: { ...prior.j5.content.training } };
-  } else if (prior.attestation.kind !== 'external_j5_reference' || !prior.attestation.externalReference || !prior.attestation.externalQuoteDate) {
-    errors.push('Record the manually issued quote (reference and date) before creating the J6.');
   } else {
-    priorJ5 = {
-      source: 'external',
-      attestationId: prior.attestation.id,
-      reference: prior.attestation.externalReference,
-      quoteDate: prior.attestation.externalQuoteDate,
-      copyArtifactId: prior.attestation.artifactId,
-    };
+    const a = prior.attestation;
+    if (a.kind !== 'external_j5_reference' || !a.externalReference || !a.externalQuoteDate || !a.quotedProgramSlug || !a.quotedClassName) {
+      errors.push('Record the manually issued quote (reference, date, program and class) before creating the J6.');
+    } else {
+      priorJ5 = {
+        source: 'external',
+        attestationId: a.id,
+        reference: a.externalReference,
+        quoteDate: a.externalQuoteDate,
+        copyArtifactId: a.artifactId,
+        programSlug: a.quotedProgramSlug,
+        className: a.quotedClassName,
+      };
+    }
   }
 
   const { voucher, voucherAttestation, classStarted, boardInvoice } = input;
@@ -146,11 +175,15 @@ export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
     voucherAttestation.artifactId !== voucher.id ||
     !voucherAttestation.voucherReference?.trim() ||
     !voucherAttestation.receivedOn ||
-    voucherAttestation.authorizedAmountCents == null
+    voucherAttestation.authorizedAmountCents == null ||
+    !voucherAttestation.authorizedProgramSlug ||
+    !voucherAttestation.authorizedClassName ||
+    !voucherAttestation.authorizedStartDate ||
+    !voucherAttestation.authorizedEndDate
   ) {
-    errors.push('Confirm the uploaded board-signed voucher: its voucher/PO reference, received date and authorized amount.');
+    errors.push('Confirm the uploaded board-signed voucher: reference, received date, authorized program/class, amount and period.');
   } else if (voucherAttestation.receivingSignaturePresent !== true) {
-    errors.push('J6 cannot use an unsigned voucher: Michael A. Brown\u2019s receiving signature must be on the uploaded document.');
+    errors.push('J6 cannot use an unsigned voucher: Michael A. Brown’s receiving signature must be on the uploaded document.');
   }
   if (boardInvoice && (boardInvoice.kind !== 'board_invoice' || boardInvoice.id === voucher?.id)) {
     errors.push('The optional board invoice must be its own uploaded board invoice file.');
@@ -172,30 +205,69 @@ export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
   }
 
   const training: TrainingTerms = { programSlug: terms.canonicalSlug, className: terms.className, contactHours: terms.hours, classStartDate: start, classEndDate: end };
-  const reviewReasons: ReviewReason[] = [];
-  if (voucherAttestation.authorizedAmountCents !== TUITION_AND_FEES_CENTS) reviewReasons.push('voucher_amount_differs');
-  const authStart = voucherAttestation.authorizedStartDate;
-  const authEnd = voucherAttestation.authorizedEndDate;
-  if ((authStart && compareIsoDates(start, authStart) < 0) || (authEnd && compareIsoDates(end, authEnd) > 0)) reviewReasons.push('voucher_period_conflict');
-  if (end !== classEndDate(start)) reviewReasons.push('end_date_not_contract');
+  const reasons: ReviewReason[] = [];
+  if (voucherAttestation.authorizedAmountCents !== TUITION_AND_FEES_CENTS) reasons.push('voucher_amount_differs');
+  if (voucherAttestation.authorizedProgramSlug !== training.programSlug || voucherAttestation.authorizedClassName !== training.className) {
+    reasons.push('voucher_class_differs');
+  }
+  const authStart = voucherAttestation.authorizedStartDate!;
+  const authEnd = voucherAttestation.authorizedEndDate!;
+  if (compareIsoDates(start, authStart) < 0 || compareIsoDates(end, authEnd) > 0) reasons.push('voucher_period_conflict');
+  if (end !== classEndDate(start)) reasons.push('end_date_not_contract');
   let variance: J6Variance = null;
   if (priorJ5.source === 'system') {
+    const q = priorJ5.estimate;
     variance = {
-      startShiftDays: daysBetween(priorJ5.estimate.classStartDate, start),
-      endShiftDays: daysBetween(priorJ5.estimate.classEndDate, end),
-      hoursDelta: training.contactHours - priorJ5.estimate.contactHours,
+      startShiftDays: daysBetween(q.classStartDate, start),
+      endShiftDays: daysBetween(q.classEndDate, end),
+      hoursDelta: training.contactHours - q.contactHours,
     };
-    if (variance.hoursDelta !== 0) reviewReasons.push('hours_differ_from_quote');
+    if (q.programSlug !== training.programSlug || q.className !== training.className || q.contactHours !== training.contactHours) {
+      reasons.push('class_differs_from_quote');
+    }
+  } else if (priorJ5.programSlug !== training.programSlug || priorJ5.className !== training.className) {
+    reasons.push('class_differs_from_quote');
   }
-  return { ok: true, training, priorJ5, variance, reviewReasons, classStarted, voucher, voucherAttestation };
+  return { ok: true, training, priorJ5, variance, reviewReasons: reasons, classStarted, voucher, voucherAttestation };
 }
 
-/** A J6 with review reasons may be signed only after a recorded staff review. */
-export function canSignJ6(record: { reviewReasons: readonly string[]; reviewClearedAt: string | null; reviewNote: string | null }): Gate {
-  if (record.reviewReasons.length > 0 && (!record.reviewClearedAt || !record.reviewNote?.trim())) {
-    return { ok: false, errors: ['This J6 is held for review. A staff member must record the review before it can be signed.'] };
+export type AmountException = { voucherAttestationId: string; acceptedAmountCents: number; approvedBySubjectId: string };
+
+/**
+ * Whether a J6 may be signed. Any reason needs a recorded staff review first;
+ * a blocking reason is never cleared by that review. The only other unlock is
+ * for a money mismatch: an amount exception approved by the signer, which is
+ * disabled (AMOUNT_EXCEPTION_ENABLED) until Mike approves it.
+ */
+export function canSignJ6(input: {
+  reviewReasons: readonly string[];
+  reviewClearedAt: string | null;
+  reviewNote: string | null;
+  voucherAttestation?: { id: string; authorizedAmountCents: number | null } | null;
+  amountException?: AmountException | null;
+  signerSubjectId?: string | null;
+  exceptionEnabled?: boolean;
+}): Gate {
+  const errors: string[] = [];
+  const reasons = input.reviewReasons as readonly ReviewReason[];
+  if (reasons.length > 0 && (!input.reviewClearedAt || !input.reviewNote?.trim())) {
+    errors.push('This J6 is held for review. A staff member must record the review before it can be signed.');
   }
-  return { ok: true };
+  if (reasons.includes('class_differs_from_quote') || reasons.includes('voucher_class_differs')) {
+    errors.push('The program or class differs from the quote or the voucher. Issue a corrected document; a review cannot clear this.');
+  }
+  if (reasons.includes('voucher_amount_differs')) {
+    const e = input.amountException;
+    const v = input.voucherAttestation;
+    const exceptionOk =
+      (input.exceptionEnabled ?? AMOUNT_EXCEPTION_ENABLED) &&
+      !!e && !!v && !!input.signerSubjectId &&
+      e.voucherAttestationId === v.id &&
+      e.acceptedAmountCents === v.authorizedAmountCents &&
+      e.approvedBySubjectId === input.signerSubjectId;
+    if (!exceptionOk) errors.push('The voucher amount differs from the $7,500.00 quote. Record a corrected voucher; a review note cannot clear this.');
+  }
+  return errors.length > 0 ? { ok: false, errors } : { ok: true };
 }
 
 export type CaseProgress = {

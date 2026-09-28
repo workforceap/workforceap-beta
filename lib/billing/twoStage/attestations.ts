@@ -4,21 +4,25 @@
  * enrollment rows (CourseEnrollment has no approval or start status, and a
  * completed enrollment neither qualifies nor disqualifies a student).
  *
- *  - j5_readiness: the student is ready for a quote/voucher request, with the
- *    admin-confirmed class start date. No funding approval is required: J5
- *    comes before any voucher.
+ *  - j5_readiness: two separately required facts, (1) the student is
+ *    approved/ready and (2) the counselor requested the quote (who, when,
+ *    reference), plus the admin-confirmed class start date. No funding
+ *    approval is required: J5 comes before any voucher.
  *  - class_started: the class has begun on a date that is not in the future,
  *    with the staff-confirmed end date. J6 prints these actual dates; the J5
  *    estimate stays frozen on the J5.
  *  - voucher_board_signed: the uploaded file is the voucher signed by the
- *    board, received on a given date, with Michael's receiving signature
+ *    board for a stated program/class, amount and period, received on a
+ *    given date, with Michael's receiving signature
  *    already on the document (signed by hand on receipt). The app never
  *    stamps, overlays or alters the voucher bytes, and this is not the J6
  *    cover-letter signature, which is its own executive sign action.
  *  - external_j5_reference: a quote/voucher request issued manually before
- *    this system (reference, date, optional uploaded copy). It lets J6
+ *    this system (reference, date, the program/class it quoted, optional
+ *    uploaded copy). It lets J6
  *    proceed without a system J5; no system J5 or signature is fabricated.
  */
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { billingToday, compareIsoDates, formatLongCalendarDate, isIsoDate } from './dates';
 
 export type AttestationKind = 'j5_readiness' | 'class_started' | 'voucher_board_signed' | 'external_j5_reference';
@@ -39,6 +43,14 @@ export type Attestation = {
   receivingSignaturePresent: boolean | null;
   externalReference: string | null;
   externalQuoteDate: string | null;
+  quotedProgramSlug: string | null;
+  quotedClassName: string | null;
+  authorizedProgramSlug: string | null;
+  authorizedClassName: string | null;
+  studentReadyConfirmed: boolean | null;
+  counselorRequestedBy: string | null;
+  counselorRequestedOn: string | null;
+  counselorRequestReference: string | null;
   attestedBySubjectId: string;
   attestedAt: string;
 };
@@ -58,6 +70,14 @@ const EMPTY = {
   receivingSignaturePresent: null,
   externalReference: null,
   externalQuoteDate: null,
+  quotedProgramSlug: null,
+  quotedClassName: null,
+  authorizedProgramSlug: null,
+  authorizedClassName: null,
+  studentReadyConfirmed: null,
+  counselorRequestedBy: null,
+  counselorRequestedOn: null,
+  counselorRequestReference: null,
 } as const;
 
 const MAX_TEXT = 500;
@@ -76,10 +96,17 @@ function notFuture(date: string, now: Date, message: string, errors: string[]): 
   if (compareIsoDates(date, billingToday(now)) > 0) errors.push(message);
 }
 
-export function j5ReadinessStatement(args: { studentName: string; className: string; classStartDate: string }): string {
+export function j5ReadinessStatement(args: {
+  studentName: string;
+  className: string;
+  classStartDate: string;
+  counselorRequestedBy: string;
+  counselorRequestedOn: string;
+}): string {
   return (
-    `I confirm that ${args.studentName} is ready for a Workforce Solutions quote/voucher request for ` +
-    `${args.className}, and that the class start date is ${formatLongCalendarDate(args.classStartDate)}.`
+    `I confirm that ${args.studentName} is approved and ready for ${args.className}, that ` +
+    `${args.counselorRequestedBy} (counselor) requested this quote/voucher request on ` +
+    `${formatLongCalendarDate(args.counselorRequestedOn)}, and that the class start date is ${formatLongCalendarDate(args.classStartDate)}.`
   );
 }
 
@@ -90,9 +117,9 @@ export function classStartedStatement(args: { studentName: string; className: st
   );
 }
 
-export function voucherBoardSignedStatement(args: { boardName: string; voucherReference: string; receivedOn: string }): string {
+export function voucherBoardSignedStatement(args: { boardName: string; voucherReference: string; receivedOn: string; authorizedClassName: string }): string {
   return (
-    `I confirm that the uploaded file is voucher ${args.voucherReference} as signed by ${args.boardName}, received on ` +
+    `I confirm that the uploaded file is voucher ${args.voucherReference} for ${args.authorizedClassName}, as signed by ${args.boardName}, received on ` +
     `${formatLongCalendarDate(args.receivedOn)}, and that Michael A. Brown’s receiving signature is on the uploaded document. ` +
     'The file is stored exactly as uploaded.'
   );
@@ -109,21 +136,39 @@ export function recordJ5Readiness(input: {
   studentName: string;
   className: string;
   classStartDate: string;
+  /** Fact 1: the student is approved/ready. Must be exactly true. */
+  studentReadyConfirmed: boolean;
+  /** Fact 2: the counselor requested the quote. */
+  counselorRequestedBy: string;
+  counselorRequestedOn: string;
+  counselorRequestReference: string;
   evidenceReference: string;
   attestedBySubjectId: string;
   confirmed: boolean;
+  now: Date;
 }): AttestationResult {
   const errors = common(input.evidenceReference, input.attestedBySubjectId, input.confirmed);
   if (!isIsoDate(input.classStartDate)) errors.push('Enter the confirmed class start date (YYYY-MM-DD).');
+  if (input.studentReadyConfirmed !== true) errors.push('Confirm that the student is approved and ready.');
+  const requestedBy = input.counselorRequestedBy.trim();
+  const requestRef = input.counselorRequestReference.trim();
+  if (!requestedBy) errors.push('Enter which counselor requested the quote.');
+  if (!isIsoDate(input.counselorRequestedOn)) errors.push('Enter the date the counselor requested the quote.');
+  else notFuture(input.counselorRequestedOn, input.now, 'The counselor request date cannot be in the future.', errors);
+  if (!requestRef) errors.push('Enter the reference of the counselor\u2019s request (e.g. the request email).');
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
     attestation: {
       kind: 'j5_readiness',
-      statement: j5ReadinessStatement(input),
+      statement: j5ReadinessStatement({ ...input, counselorRequestedBy: requestedBy }),
       evidenceReference: input.evidenceReference.trim(),
       ...EMPTY,
       classStartDate: input.classStartDate,
+      studentReadyConfirmed: true,
+      counselorRequestedBy: requestedBy,
+      counselorRequestedOn: input.counselorRequestedOn,
+      counselorRequestReference: requestRef,
       attestedBySubjectId: input.attestedBySubjectId,
     },
   };
@@ -165,8 +210,11 @@ export function recordVoucherBoardSigned(input: {
   voucherReference: string;
   artifact: { id: string; kind: string };
   authorizedAmountCents: number;
-  authorizedStartDate?: string | null;
-  authorizedEndDate?: string | null;
+  /** The program and class the board voucher authorizes. */
+  authorizedProgramSlug: string;
+  authorizedClassName: string;
+  authorizedStartDate: string;
+  authorizedEndDate: string;
   receivedOn: string;
   /** Staff confirm Michael's receiving signature is on the uploaded document. Must be exactly true. */
   receivingSignaturePresent: boolean;
@@ -183,10 +231,13 @@ export function recordVoucherBoardSigned(input: {
   if (!Number.isSafeInteger(input.authorizedAmountCents) || input.authorizedAmountCents <= 0) {
     errors.push('Enter the amount the board authorized on the voucher.');
   }
-  const start = input.authorizedStartDate ?? null;
-  const end = input.authorizedEndDate ?? null;
-  if ((start && !isIsoDate(start)) || (end && !isIsoDate(end))) errors.push('Authorized dates must be YYYY-MM-DD.');
-  else if (start && end && compareIsoDates(end, start) < 0) errors.push('The authorized end date is before its start.');
+  const authorizedProgram = canonicalizeProgramSlug(input.authorizedProgramSlug ?? '');
+  const authorizedClass = input.authorizedClassName?.trim() ?? '';
+  if (!authorizedProgram || !authorizedClass) errors.push('Enter the program and class the voucher authorizes.');
+  const start = input.authorizedStartDate;
+  const end = input.authorizedEndDate;
+  if (!isIsoDate(start) || !isIsoDate(end)) errors.push('Enter the authorized period from the voucher (YYYY-MM-DD).');
+  else if (compareIsoDates(end, start) <= 0) errors.push('The authorized end date must be after its start.');
   if (!isIsoDate(input.receivedOn)) errors.push('Enter the date the signed voucher was received.');
   else notFuture(input.receivedOn, input.now, 'The received date cannot be in the future.', errors);
   if (input.receivingSignaturePresent !== true) {
@@ -197,12 +248,14 @@ export function recordVoucherBoardSigned(input: {
     ok: true,
     attestation: {
       kind: 'voucher_board_signed',
-      statement: voucherBoardSignedStatement({ boardName: input.boardName, voucherReference: reference, receivedOn: input.receivedOn }),
+      statement: voucherBoardSignedStatement({ boardName: input.boardName, voucherReference: reference, receivedOn: input.receivedOn, authorizedClassName: authorizedClass }),
       evidenceReference: input.evidenceReference.trim(),
       ...EMPTY,
       artifactId: input.artifact.id,
       voucherReference: reference,
       authorizedAmountCents: input.authorizedAmountCents,
+      authorizedProgramSlug: authorizedProgram,
+      authorizedClassName: authorizedClass,
       authorizedStartDate: start,
       authorizedEndDate: end,
       receivedOn: input.receivedOn,
@@ -215,6 +268,9 @@ export function recordVoucherBoardSigned(input: {
 export function recordExternalJ5Reference(input: {
   externalReference: string;
   externalQuoteDate: string;
+  /** The program and class the manual quote named. */
+  quotedProgramSlug: string;
+  quotedClassName: string;
   copy: { id: string; kind: string } | null;
   evidenceReference: string;
   attestedBySubjectId: string;
@@ -227,6 +283,9 @@ export function recordExternalJ5Reference(input: {
   if (!isIsoDate(input.externalQuoteDate)) errors.push('Enter the date the manual quote was issued.');
   else notFuture(input.externalQuoteDate, input.now, 'The manual quote date cannot be in the future.', errors);
   if (input.copy && input.copy.kind !== 'external_j5_copy') errors.push('The optional copy must be an uploaded manual-quote PDF.');
+  const quotedProgram = canonicalizeProgramSlug(input.quotedProgramSlug ?? '');
+  const quotedClass = input.quotedClassName?.trim() ?? '';
+  if (!quotedProgram || !quotedClass) errors.push('Enter the program and class the manual quote named.');
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
@@ -238,6 +297,8 @@ export function recordExternalJ5Reference(input: {
       artifactId: input.copy?.id ?? null,
       externalReference: reference,
       externalQuoteDate: input.externalQuoteDate,
+      quotedProgramSlug: quotedProgram,
+      quotedClassName: quotedClass,
       attestedBySubjectId: input.attestedBySubjectId,
     },
   };

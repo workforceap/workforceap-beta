@@ -126,34 +126,49 @@ primary action, signature and send:
 
 ### Model (migration `20260927230000_billing_two_stage_j5_j6`)
 
+The migration is not applied anywhere live yet, so it is edited in place on
+this branch rather than followed by corrective migrations.
+
 | Table | Purpose |
 | --- | --- |
-| `billing_cases` | One student + program seat. `member_id` is `ON DELETE SET NULL`; `subject_member_id` is immutable. |
-| `billing_attestations` | Append-only staff statements with evidence: `j5_readiness` (planned start), `class_started` (actual start + confirmed end), `voucher_board_signed` (reference, authorized amount/period, received date, Michael's receiving signature present), `external_j5_reference` (manual quote issued before this system). |
-| `billing_artifacts` | Append-only record of each PDF in the private finance bucket: kind, size, SHA-256 and a content-addressed key `cases/{caseId}/{j5\|j6\|voucher\|board-invoice\|external-j5}/{sha256}.pdf`. |
-| `billing_stage_records` | One J5 or J6 version: frozen `content` + `content_sha256`, `amount_cents` = 750000, `contact_hours` 160/200, dates, links, signature fields, send receipt. |
-| `billing_stage_sends` | One row per recipient per attempt, unique on `(stage_record_id, stage, attempt_no, recipient_role)`, with a stage- and version-qualified idempotency key and the SHA-256 of every attachment. |
-| `billing_payment_events` | Append-only `pending` / `received` for a sent J6. |
-| `billing_signer_delegations` | A model hook only. Delegation is disabled in code and no UI creates one. |
+| `billing_cases` | One student + program seat. `subject_member_id` is the immutable original subject. `member_id` is the current live account: `ON DELETE SET NULL` on erasure, or repointed to a merge survivor (audited in `member_merged_from_id` / `member_merged_at`). |
+| `billing_attestations` | Append-only staff statements with evidence. `j5_readiness` records two separate facts (student approved/ready; counselor requested the quote: who, when, reference) plus the planned start. `class_started` holds the actual start and the confirmed end. `voucher_board_signed` holds the reference, the program/class, amount and period the voucher authorizes, the received date, and Michael's receiving signature present. `external_j5_reference` is a manual quote issued before this system (reference, date, program/class quoted). |
+| `billing_artifacts` | Append-only record of each PDF in the private finance bucket, under a content-addressed key. A rendered signed PDF is bound by composite FK to its exact `(stage record, case, stage, version)` and to that version's `content_sha256`; uploads are case-level. |
+| `billing_stage_records` | One J5 or J6 version: frozen `content` + `content_sha256`, `class_name`, `amount_cents` = 750000, `contact_hours` 160/200, dates, links, derived review reasons, signature fields, send receipt. |
+| `billing_stage_recipients` | Frozen recipient snapshot per record: one normalized address per role (J5: counselor, student; J6: finance, counselor, student). Editable only while the record is a draft. |
+| `billing_stage_sends` | One row per recipient per attempt, unique on `(stage_record_id, stage, attempt_no, recipient_role)`. The address is bound to the snapshot by composite FK. The idempotency key is stage- and version-qualified, and each row records the SHA-256 of every attachment. |
+| `billing_payment_events` | Append-only `pending` / `received` for a J6 proven sent. |
+| `billing_amount_exceptions` | Hook only, disabled: signer-approved acceptance of a voucher amount that differs from the quote. |
+| `billing_signer_delegations` | Hook only, disabled. |
 
 The database enforces these rules itself, not just the app:
 
-- J5 needs only a readiness attestation, with no voucher or funding input.
-- J6 needs a class-start attestation, the board-signed voucher (plus its
-  attestation, which must say Michael's receiving signature is present) and a
-  prior quote. The prior quote is either our sent J5 (`system`) or an attested
-  manual quote (`external`). A system J5 is never fabricated.
-- A voucher amount or period that conflicts with the quote, or an end date
-  that isn't start + 5 months, sets `review_required`. Signing is then blocked
-  until a staff review is recorded (who, when, note).
-- A signed record is immutable, and a correction is a new version that
-  supersedes it. At most one draft/signed/sent record is open per case and
-  stage.
-- Artifacts, attestations and payment events are append-only. Send rows can't
-  be deleted, and settled copies are final.
-- Every copy must attach exactly the archived files in order: the signed PDF,
-  then the voucher, then the board invoice.
-- Every link is same-case, and every CHECK treats NULL as a failure.
+- **Drafts and lineage.** Records start as drafts. A correction is exactly version + 1 of a superseded or voided record in the same case and stage, through a composite `(supersedes_record_id, case_id, stage)` FK. Each record has at most one successor, and each case and stage at most one open record.
+- **J5.** It needs only the readiness attestation with both facts: no voucher and no funding input. It quotes the confirmed start and start + 5 calendar months, for the case program.
+- **J6.** It needs, all from the same case:
+  - the class-start attestation, whose dates it prints
+  - the voucher and its attestation
+  - a prior quote: our sent J5, or an attested external quote. No system J5 is ever fabricated.
+- **Derived holds.** `billing_stage_record_rules()` computes the J6 review reasons and refuses any other value:
+  - `voucher_amount_differs`: blocking. Only a corrected voucher attestation unlocks it, or the disabled, signer-approved amount exception. A review note never does.
+  - `voucher_class_differs`: blocking. The voucher authorizes another program or class.
+  - `class_differs_from_quote`: blocking. The program, class or hours differ from our J5 or the external quote.
+  - `voucher_period_conflict` and `end_date_not_contract`: need an audited staff review (who, when, note).
+- **Signing.** It needs the exact recipient snapshot and a PDF rendered from that exact record version and content. A signed record, its recipients and its review are frozen.
+- **Sends.** A copy starts as `claimed` and must go to its role's frozen address. `sent` requires `provider_message_id` and `sent_at`. `reconciled_delivered` / `reconciled_not_delivered` is a separate audited path, only from `ambiguous` / `needs_reconciliation`: who, when, a note and an optional evidence file. Settled copies are final. Every copy attaches exactly the archived SHA-256s, in order: signed PDF, voucher, invoice.
+- **Sent.** A record reaches `sent` only when every required role has a `sent` or `reconciled_delivered` copy and none is still claimed, ambiguous or unreconciled.
+- **Payment.** It is accepted for a J6 proven sent: `sent_at` plus delivered finance, counselor and student copies. So a sent J6 later superseded by a corrected cover letter still reconciles its payment, and an unsent J6 never does.
+- **Integrity.** Artifacts, attestations, amount exceptions and payment events are append-only, and every CHECK treats NULL as a failure.
+
+### External-send gates
+
+Real delivery stays closed until all of these hold:
+
+- the signer is configured and signs as themselves;
+- `BILLING_LETTERHEAD_CONFIRMED=true` (the footer phone and address are pending
+  Mike's confirmation; drafts may use them);
+- the finance bucket preflight passes;
+- email is enabled. In this PR no real email is sent at all.
 
 ### Signing
 
@@ -189,7 +204,7 @@ Files live in a private Supabase Storage bucket, `BILLING_FINANCE_BUCKET`
 - `deleteUserStorage` only traverses member buckets, and a test proves it
   never touches the finance bucket.
 
-### Retention and erasure
+### Retention, erasure and merge
 
 These rows mirror draft #2687's retained-finance model:
 
@@ -197,6 +212,11 @@ These rows mirror draft #2687's retained-finance model:
   `billing_cases.member_id` to NULL and keeps `subject_member_id` and every
   stage record, artifact, send and payment row.
 - Actor columns hold historical subject ids with no foreign key.
+- A member merge (`lib/admin/memberMerge.ts`) repoints `billing_cases.member_id`
+  to the survivor (`memberMergeRepointPlan.ts`). The executor declares the
+  pair for its transaction (`app.billing_member_merge`); the database refuses
+  any other repoint and records the audit columns itself.
+  `subject_member_id` never changes.
 
 Two things are not ported yet: #2687's deletion barrier (blocking erasure
 while a send is unresolved) and a retention/disposal policy.

@@ -13,11 +13,15 @@ import {
   preflightFinanceStorage,
   validateFinanceUpload,
 } from './financeStorage';
-import { expectedFollowUpWindow, paymentView, pendingOnJ6Sent, recordPaymentReceived } from './payment';
+import { canTrackPayment, casePaymentView, expectedFollowUpWindow, paymentView, pendingOnJ6Sent, recordPaymentReceived } from './payment';
+import { assertSendMatchesSnapshot } from './recipients';
+import { letterheadConfirmedForExternalSend } from './letterhead';
 import {
   IDEMPOTENCY_SAFE_RETRY_MS,
   IN_FLIGHT_GRACE_MS,
+  RECONCILE_CLAIMED_MIN_AGE_MS,
   classifyProviderOutcome,
+  markStaleClaimAmbiguous,
   decideClaim,
   deliveryState,
   reconcileSend,
@@ -81,6 +85,10 @@ describe('per-recipient claims: no double sends, unknown outcomes reconciled', (
     assert.equal(reconcileSend(row('needs_reconciliation'), { outcome: 'delivered', bySubjectId: 'staff-1', note: ' ' }, t0).ok, false);
     assert.equal(reconcileSend(row('sent'), { outcome: 'not_delivered', ...by }, t0).ok, false);
     assert.equal(reconcileSend(row('claimed', 60_000), { outcome: 'delivered', ...by }, t0).ok, false);
+    // Even a stale claim is not reconciled directly: it becomes ambiguous first.
+    assert.equal(reconcileSend(row('claimed', RECONCILE_CLAIMED_MIN_AGE_MS + 1), { outcome: 'delivered', ...by }, t0).ok, false);
+    assert.equal(markStaleClaimAmbiguous(row('claimed', RECONCILE_CLAIMED_MIN_AGE_MS + 1), t0), 'ambiguous');
+    assert.equal(markStaleClaimAmbiguous(row('claimed', 1000), t0), null);
   });
 
   it('a stage is sent only when its exact recipient set (2 for J5, 3 for J6) is delivered', () => {
@@ -242,5 +250,47 @@ describe('provider-org restriction', () => {
     assert.equal(checkBillingProviderOrg([], {}).ok, false);
     const bad = checkBillingProviderOrg([DEFAULT_ORG_ID], { BILLING_PACKET_PROVIDER_ORG_ID: 'not-a-uuid' });
     assert.equal(!bad.ok && bad.status, 503);
+  });
+});
+
+describe('recipient snapshot binding (service layer)', () => {
+  const j6 = [
+    { role: 'finance' as const, email: 'finance@example.test' },
+    { role: 'counselor' as const, email: 'counselor@example.test' },
+    { role: 'student' as const, email: 'student@example.test' },
+  ];
+  it('allows a copy only to the frozen address for its role', () => {
+    assert.deepEqual(assertSendMatchesSnapshot('j6', j6, { role: 'finance', email: 'finance@example.test' }), { ok: true });
+    assert.equal(assertSendMatchesSnapshot('j6', j6, { role: 'finance', email: 'finance-typo@example.test' }).ok, false);
+    assert.equal(assertSendMatchesSnapshot('j6', j6, { role: 'student', email: 'counselor@example.test' }).ok, false);
+    assert.equal(assertSendMatchesSnapshot('j6', j6, { role: 'student', email: 'Student@Example.test' }).ok, false);
+  });
+  it('refuses a snapshot that is not exactly the stage roles', () => {
+    assert.equal(assertSendMatchesSnapshot('j5', j6, { role: 'student', email: 'student@example.test' }).ok, false);
+    assert.equal(assertSendMatchesSnapshot('j6', j6.slice(1), { role: 'student', email: 'student@example.test' }).ok, false);
+    assert.equal(assertSendMatchesSnapshot('j6', [...j6.slice(0, 2), { role: 'student', email: ' Student@example.test' }], { role: 'student', email: ' Student@example.test' }).ok, false);
+  });
+});
+
+describe('payment after the J6 is superseded', () => {
+  it('tracks payment for a J6 proven sent, whatever its current status, and never for an unsent J6', () => {
+    assert.equal(canTrackPayment({ stage: 'j6', sentAt: '2026-10-01T15:00:00Z', deliveredRoles: ['finance', 'counselor', 'student'] }), true);
+    assert.equal(canTrackPayment({ stage: 'j6', sentAt: null, deliveredRoles: ['finance', 'counselor', 'student'] }), false);
+    assert.equal(canTrackPayment({ stage: 'j6', sentAt: '2026-10-01T15:00:00Z', deliveredRoles: ['counselor', 'student'] }), false);
+    assert.equal(canTrackPayment({ stage: 'j5', sentAt: '2026-10-01T15:00:00Z', deliveredRoles: ['counselor', 'student', 'finance'] }), false);
+  });
+  it('shows the case-level payment from the latest event across J6 versions', () => {
+    const pending = { ...pendingOnJ6Sent(new Date('2026-10-01T15:00:00Z')), j6RecordId: 'j6-v1' };
+    const received = { status: 'received' as const, receivedOn: '2026-10-12', evidence: 'Synthetic remittance', recordedAt: '2026-10-12T15:00:00.000Z', j6RecordId: 'j6-v1' };
+    assert.deepEqual(casePaymentView([received, pending], new Date('2026-10-20T15:00:00Z')), { status: 'received', receivedOn: '2026-10-12', j6RecordId: 'j6-v1' });
+    assert.equal(casePaymentView([], new Date()).status, 'not_applicable');
+  });
+});
+
+describe('letterhead external-send gate', () => {
+  it('refuses external sends until BILLING_LETTERHEAD_CONFIRMED=true', () => {
+    assert.equal(letterheadConfirmedForExternalSend({}).ok, false);
+    assert.equal(letterheadConfirmedForExternalSend({ BILLING_LETTERHEAD_CONFIRMED: 'yes' }).ok, false);
+    assert.equal(letterheadConfirmedForExternalSend({ BILLING_LETTERHEAD_CONFIRMED: 'true' }).ok, true);
   });
 });

@@ -41,3 +41,15 @@ export const LETTERHEAD_PENDING_CONFIRMATION = Object.freeze({
   phone: 'Billing footer phone (512) 825-2896 (DOCX) vs website (512) 777-1808: pending Mike Brown.',
   address: 'Footer address from providerIdentity.ts / price list; confirm it matches the WAP DOCX footer.',
 });
+
+/**
+ * External-send gate for the letterhead: the footer phone and address are
+ * pending Mike's confirmation, so drafts may use them but no document leaves
+ * WorkforceAP until BILLING_LETTERHEAD_CONFIRMED=true is set server-side. This
+ * sits on top of the fail-closed signer gate and the no-real-email default.
+ */
+export const LETTERHEAD_UNCONFIRMED_ERROR = 'The billing letterhead footer is not confirmed yet, so no J5/J6 can be sent outside WorkforceAP.';
+
+export function letterheadConfirmedForExternalSend(env: Record<string, string | undefined> = process.env): { ok: true } | { ok: false; error: string } {
+  return env.BILLING_LETTERHEAD_CONFIRMED?.trim() === 'true' ? { ok: true } : { ok: false, error: LETTERHEAD_UNCONFIRMED_ERROR };
+}

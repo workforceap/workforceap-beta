@@ -113,12 +113,17 @@ export function reconcileSend(
   now: Date,
 ): { ok: true; status: 'reconciled_delivered' | 'reconciled_not_delivered' } | { ok: false; error: string } {
   if (!input.bySubjectId.trim() || !input.note.trim()) return { ok: false, error: 'Reconciliation needs who reconciled and a note on the evidence.' };
-  const reconcilable =
-    row.status === 'needs_reconciliation' ||
-    row.status === 'ambiguous' ||
-    (row.status === 'claimed' && now.getTime() - row.lastClaimedAt.getTime() >= RECONCILE_CLAIMED_MIN_AGE_MS);
-  if (!reconcilable) return { ok: false, error: `A ${row.status} copy cannot be reconciled now.` };
+  // Manual reconciliation is a separate audited path, only from an unknown
+  // outcome (the database enforces the same). A stale `claimed` row is first
+  // marked ambiguous (see markStaleClaimAmbiguous), never reconciled directly.
+  const reconcilable = row.status === 'needs_reconciliation' || row.status === 'ambiguous';
+  if (!reconcilable) return { ok: false, error: `A ${row.status} copy cannot be reconciled; only an ambiguous copy can.` };
   return { ok: true, status: input.outcome === 'delivered' ? 'reconciled_delivered' : 'reconciled_not_delivered' };
+}
+
+/** A claim older than RECONCILE_CLAIMED_MIN_AGE_MS is treated as an unknown outcome. */
+export function markStaleClaimAmbiguous(row: SendRow, now: Date): 'ambiguous' | null {
+  return row.status === 'claimed' && now.getTime() - row.lastClaimedAt.getTime() >= RECONCILE_CLAIMED_MIN_AGE_MS ? 'ambiguous' : null;
 }
 
 export type DeliveryState = {

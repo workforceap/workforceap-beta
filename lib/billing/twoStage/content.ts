@@ -12,7 +12,7 @@ import { resolveProgramTerms, type ContractHours } from './hours';
 import { WAP_BILLING_LETTERHEAD } from './letterhead';
 import { buildTuitionLineItems, type TuitionLine } from './lineItem';
 import { j5Recipients, j6Recipients, type Contact, type Recipient } from './recipients';
-import { checkJ6Prerequisites, type J6Prerequisites, type J6Variance, type PriorJ5Summary, type ReviewReason } from './stateMachine';
+import { checkJ5Prerequisites, checkJ6Prerequisites, type J6Prerequisites, type J6Variance, type PriorJ5Summary, type ReviewReason } from './stateMachine';
 
 export type CounselorContact = Contact & { phone: string };
 
@@ -42,7 +42,14 @@ type Common = {
 
 export type J5Content = Common & {
   kind: typeof J5_KIND;
-  readiness: { attestationId: string; attestedBySubjectId: string; attestedAt: string; evidenceReference: string };
+  readiness: {
+    attestationId: string;
+    attestedBySubjectId: string;
+    attestedAt: string;
+    evidenceReference: string;
+    studentReadyConfirmed: true;
+    counselorRequest: { requestedBy: string; requestedOn: string; reference: string };
+  };
 };
 
 export type ArtifactRef = { artifactId: string; fileName: string; mimeType: string; byteLength: number; sha256: string };
@@ -56,8 +63,10 @@ export type J6Content = Common & {
     attestationId: string;
     attestedBySubjectId: string;
     authorizedAmountCents: number;
-    authorizedStartDate: string | null;
-    authorizedEndDate: string | null;
+    authorizedProgramSlug: string;
+    authorizedClassName: string;
+    authorizedStartDate: string;
+    authorizedEndDate: string;
     receivedOn: string;
     receivingSignaturePresent: true;
   };
@@ -113,11 +122,9 @@ export function buildJ5Content(input: {
   readiness: Attestation;
 }): ContentResult<J5Content> {
   const errors = basics(input.documentNumber, input.issueDate, input.boardName, input.counselor);
-  if (input.readiness.kind !== 'j5_readiness' || !input.readiness.classStartDate) {
-    errors.push('Record the J5 readiness attestation with the confirmed class start date first.');
-  }
+  const gate = checkJ5Prerequisites({ hasOpenJ5: false, readiness: input.readiness, programSlug: input.programSlug });
+  if (!gate.ok) errors.push(...gate.errors);
   const terms = resolveProgramTerms(input.programSlug);
-  if (!terms.ok) errors.push(terms.message);
   const recipients = j5Recipients({ student: input.student, counselor: input.counselor });
   if (!recipients.ok) errors.push(...recipients.errors);
   if (errors.length > 0 || !terms.ok || !recipients.ok || !input.readiness.classStartDate) return { ok: false, errors };
@@ -146,6 +153,12 @@ export function buildJ5Content(input: {
       attestedBySubjectId: input.readiness.attestedBySubjectId,
       attestedAt: input.readiness.attestedAt,
       evidenceReference: input.readiness.evidenceReference,
+      studentReadyConfirmed: true,
+      counselorRequest: {
+        requestedBy: input.readiness.counselorRequestedBy ?? '',
+        requestedOn: input.readiness.counselorRequestedOn ?? '',
+        reference: input.readiness.counselorRequestReference ?? '',
+      },
     },
   };
   return { ok: true, content, contentSha256: contentSha256(content) };
@@ -201,8 +214,10 @@ export function buildJ6Content(
       attestationId: voucherAttestation.id,
       attestedBySubjectId: voucherAttestation.attestedBySubjectId,
       authorizedAmountCents: voucherAttestation.authorizedAmountCents ?? 0,
-      authorizedStartDate: voucherAttestation.authorizedStartDate,
-      authorizedEndDate: voucherAttestation.authorizedEndDate,
+      authorizedProgramSlug: voucherAttestation.authorizedProgramSlug ?? '',
+      authorizedClassName: voucherAttestation.authorizedClassName ?? '',
+      authorizedStartDate: voucherAttestation.authorizedStartDate ?? '',
+      authorizedEndDate: voucherAttestation.authorizedEndDate ?? '',
       receivedOn: voucherAttestation.receivedOn ?? '',
       receivingSignaturePresent: true,
     },
