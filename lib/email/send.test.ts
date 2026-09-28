@@ -380,6 +380,43 @@ describe('sendBrandedEmail', () => {
         assert.ok(error instanceof ResendResolvedSendError);
         assert.equal(error.message, 'Invalid from address');
         assert.equal(error.statusCode, null);
+        assert.equal(error.providerErrorName, 'validation_error');
+        assert.equal(error.name, 'validation_error');
+        assert.equal(error.code, 'validation_error');
+        return true;
+      },
+    );
+  });
+
+  it('keeps a statusless SDK rate-limit name visible to existing provider classifiers', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const resend = {
+      emails: {
+        // Resend SDK v4 normally returns only name/message for a failed HTTP response.
+        send: async () => ({ data: null, error: { name: 'rate_limit_exceeded', message: 'Please retry later' } }),
+      },
+    } as unknown as import('resend').Resend;
+
+    await assert.rejects(
+      () => sendBrandedEmailOrThrowOnSkip(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: 'applicant@workforceap.org',
+        subject: 'Rate-limit classification',
+        html: '<p>Hi</p>',
+      }, {
+        now: () => 1_000,
+        deadlineAtMs: 1_000,
+        sendLogStore: { async record() {} },
+        suppressFailureDiagnostic: true,
+      }),
+      (error: unknown) => {
+        assert.ok(error instanceof ResendResolvedSendError);
+        assert.equal(error.message, 'Please retry later');
+        assert.equal(error.statusCode, null, 'the SDK did not expose the HTTP response status');
+        assert.equal(error.providerErrorName, 'rate_limit_exceeded');
+        assert.equal(error.name, 'rate_limit_exceeded');
+        assert.equal(error.code, 'rate_limit_exceeded');
+        assert.equal(isEmailProviderRateLimitError(error), true);
         return true;
       },
     );
