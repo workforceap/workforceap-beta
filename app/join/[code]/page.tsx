@@ -24,10 +24,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { code } = await params;
   const model = await resolvePartnerLanding(code, { headers: await headers() });
   if (!model) return { robots: { index: false, follow: false } };
-  const t = await getTranslations('partnerLanding');
+  const [t, mission] = await Promise.all([getTranslations('partnerLanding'), getTranslations('mission')]);
   return buildPageMetadataAsync({
     title: t('metaTitle', { partner: model.name }),
-    description: t('metaDescription', { partner: model.name }),
+    // Shared invite links preview the mission (short form; the page shows it in full).
+    description: mission('summary'),
     path: partnerLandingPath(model.ref),
     // Shared by partners, not a search destination: OG/Twitter tags still apply.
     robots: { index: false, follow: true },

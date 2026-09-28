@@ -1131,7 +1131,6 @@
   },
   "partnerLanding": {
     "metaTitle": "Apply to WorkforceAP with {partner}",
-    "metaDescription": "{partner} invites you to apply to WorkforceAP, a 501(c)(3) nonprofit offering career training, industry-recognized credentials, and job-search support.",
     "eyebrow": "Referred by {partner}",
     "title": "{partner} invited you to WorkforceAP",
     "applyCta": "Start your application",
@@ -1143,6 +1142,12 @@
     "stepsTitle": "Three steps from here",
     "privacyTitle": "What {partner} will see",
     "closingTitle": "Ready when you are"
+  },
+  "mission": {
+    "heading": "Our mission",
+    "aboutHeading": "About WorkforceAP",
+    "statement": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. WorkforceAP equips individuals, nonprofits, counselors, and community ambassadors with workforce-readiness tools, occupational training and professional certification programs, and AI-powered résumé, interview, and job-placement assistance. Our mission is to help people secure meaningful employment, build sustainable careers, and create better lives—at no cost to eligible members through grant- and scholarship-funded memberships.",
+    "summary": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. At no cost to eligible members through grant- and scholarship-funded memberships."
   },
   "training": {
     "myTraining": "My Training",

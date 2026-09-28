@@ -6,11 +6,14 @@ import type { HeadersLike } from '@/lib/tenant/resolveOrgFromRequest';
 import { getActivePrograms } from '@/lib/platform/programCatalog';
 import { partnerShareRef } from '@/lib/partner/shareLinks';
 import { partnerDataAccess, type PartnerDataTier } from '@/lib/partner/dataAccess';
+import { categoryTone, type CategoryTone } from '@/lib/marketing/categoryTone';
 
 export type PartnerLandingProgram = {
   slug: string;
   title: string;
   category: string;
+  /** Fill for the category pill (white text needs a solid tone). */
+  categoryTone: CategoryTone;
   duration: string | null;
   certifications: string[];
 };
@@ -56,6 +59,7 @@ export async function resolvePartnerLanding(
       slug: p.slug,
       title: p.static?.title ?? p.name,
       category: p.static?.categoryLabel ?? p.category,
+      categoryTone: categoryTone(p.static?.categoryColor),
       duration: p.static?.duration ?? p.duration,
       certifications: p.certifications.slice(0, 2),
     }));
