@@ -94,11 +94,13 @@ function StageCard({
   readiness: TwoStageBillingReadiness;
   onPrepare?: () => void;
 }) {
-  const readyToPrepare = checks.every(({ key }) => readiness[key] === true);
-  const actionAvailable = readyToPrepare && Boolean(onPrepare);
-  const reason = onPrepare
-    ? 'Verify the required case details before preparing this document.'
-    : 'Preparation is not yet available. The secure billing workflow is being connected.';
+  const actionAvailable = Boolean(onPrepare);
+  const verified = checks.every(({ key }) => readiness[key] === true);
+  const reason = !onPrepare
+    ? 'Preparation is not yet available. The secure billing workflow is being connected.'
+    : verified
+      ? 'Opens draft preparation; signing and email require separate review.'
+      : 'Opens draft preparation to review the missing details; signing and email stay blocked until verified.';
 
   return (
     <section className={styles.stage} aria-labelledby={`billing-${stage}-heading`}>
@@ -143,7 +145,7 @@ function StageCard({
           Create {stage.toUpperCase()} {heading}
         </button>
         <p id={`billing-${stage}-reason`} className={styles.reason}>
-          {actionAvailable ? 'Opens draft preparation; signing and email require separate review.' : reason}
+          {reason}
         </p>
       </div>
     </section>

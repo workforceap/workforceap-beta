@@ -58,7 +58,7 @@ describe('two-stage member billing workbench', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('allows J5 draft preparation before a voucher exists when its own facts are verified', () => {
+  it('opens J5 or J6 draft review while keeping signature and email separate', () => {
     const prepareJ5 = vi.fn();
     const prepareJ6 = vi.fn();
     render(
@@ -73,21 +73,22 @@ describe('two-stage member billing workbench', () => {
     const j5 = screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' });
     const j6 = screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' });
     expect(j5).toBeEnabled();
-    expect(j6).toBeDisabled();
+    expect(j6).toBeEnabled();
     fireEvent.click(j5);
     fireEvent.click(j6);
     expect(prepareJ5).toHaveBeenCalledOnce();
-    expect(prepareJ6).not.toHaveBeenCalled();
+    expect(prepareJ6).toHaveBeenCalledOnce();
     expect(screen.getByText('A board voucher is not required to prepare J5.')).toBeInTheDocument();
+    expect(screen.getByText(/Opens draft preparation to review the missing details/)).toBeInTheDocument();
   });
 
-  it('holds J6 until quote, original voucher proof, attestation, terms, and class start are verified', () => {
+  it('shows each missing J6 prerequisite before staff opens draft review', () => {
     const prepareJ6 = vi.fn();
     const { rerender } = render(
       <TwoStageBillingWorkbench {...contacts} readiness={{ ...j6Ready, originalVoucherHashVerified: false }} onPrepareJ6={prepareJ6} />,
     );
     const j6 = screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' });
-    expect(j6).toBeDisabled();
+    expect(j6).toBeEnabled();
 
     for (const missing of [
       'priorQuoteVerified',
@@ -97,7 +98,8 @@ describe('two-stage member billing workbench', () => {
       'classStarted',
     ] as const) {
       rerender(<TwoStageBillingWorkbench {...contacts} readiness={{ ...j6Ready, [missing]: false }} onPrepareJ6={prepareJ6} />);
-      expect(j6).toBeDisabled();
+      expect(j6).toBeEnabled();
+      expect(screen.getByText(/Opens draft preparation to review the missing details/)).toBeInTheDocument();
     }
 
     rerender(<TwoStageBillingWorkbench {...contacts} readiness={j6Ready} onPrepareJ6={prepareJ6} />);
@@ -105,6 +107,7 @@ describe('two-stage member billing workbench', () => {
     fireEvent.click(j6);
     expect(prepareJ6).toHaveBeenCalledOnce();
     expect(screen.getByText('Michael’s receiving signature on the voucher explicitly attested')).toBeInTheDocument();
+    expect(screen.getByText('Opens draft preparation; signing and email require separate review.')).toBeInTheDocument();
   });
 
   it('never exposes an action solely because the checks pass when no route is connected', () => {
