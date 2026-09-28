@@ -7,11 +7,12 @@ import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPa
 import { resolveAssignedCounselorContact, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import PageHeader from '@/components/portal/PageHeader';
 import BillingPacketList from '@/components/billing/BillingPacketList';
+import TwoStageBillingWorkbench from './TwoStageBillingWorkbench';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
     title: 'J5 and J6 billing',
-    description: 'Review existing billing documents for a member.',
+    description: 'Prepare separate J5 quote and J6 voucher payment documents for a member.',
     path: '/admin/members',
   });
 }
@@ -58,17 +59,11 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
           </Link>
         }
       />
-      <section className="portal-profile-section-card">
-        <div className="portal-profile-section-card__header">
-          <h2 className="portal-profile-section-card__title">Billing update</h2>
-        </div>
-        <div className="portal-profile-section-card__body">
-          <p style={{ margin: 0 }}>
-            The combined J5 invoice and J6 letter workflow is retired. Separate J5 quote and J6 voucher actions are being prepared.
-            Existing documents remain available below.
-          </p>
-        </div>
-      </section>
+      <TwoStageBillingWorkbench
+        memberName={member.fullName}
+        memberEmail={member.email}
+        counselor={counselor ? { name: counselor.fullName, email: counselor.email } : null}
+      />
       {packets.length > 0 ? (
         <section className="portal-profile-section-card">
           <div className="portal-profile-section-card__header">
