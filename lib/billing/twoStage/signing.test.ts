@@ -74,13 +74,13 @@ describe('authorizeSigner: id-bound, fail closed', () => {
 });
 
 describe('review then sign over the exact version', () => {
-  const target = { id: 'rec-1', version: 1, status: 'draft' as const, contentSha256: 'c'.repeat(64), documentTitle: 'Quote/Voucher Request', documentNumber: 'WAP-Q-2026-0001' };
+  const target = { id: 'rec-1', version: 1, status: 'draft' as const, contentSha256: 'c'.repeat(64), documentTitle: 'Quote / Voucher Request', documentNumber: 'WAP-Q-2026-0001' };
   const intent = signerIntentStatement(target);
   const request = { recordId: 'rec-1', version: 1, contentSha256: 'c'.repeat(64), intentConfirmed: true, intentText: intent };
 
   it('accepts a request that echoes the previewed hash and the exact intent statement', () => {
     assert.deepEqual(validateSignRequest(target, request), { ok: true, intent });
-    assert.match(intent, /^I, Michael A\. Brown, PMP, ChE \u2014 Executive Director, have reviewed Quote\/Voucher Request WAP-Q-2026-0001 \(version cccccccccccc\)/);
+    assert.match(intent, /^I, Michael A\. Brown, PMP, ChE \u2014 Executive Director, have reviewed Quote \/ Voucher Request WAP-Q-2026-0001 \(version cccccccccccc\)/);
   });
 
   it('refuses a stale or different version, an unconfirmed intent, or an already signed record', () => {

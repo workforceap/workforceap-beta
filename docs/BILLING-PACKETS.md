@@ -91,10 +91,10 @@ legitimately runs to two pages, with real content on the second.
 Requested by Mike Brown on 2026-09-27. Two separate stages, each with its own
 primary action, signature and send:
 
-1. **J5 Quote/Voucher Request**, before any voucher exists. It goes to the
+1. **J5 Quote / Voucher Request**, before any voucher exists. It goes to the
    counselor and the student (exactly 2 recipients) and is archived in the
    student's file.
-2. **J6 Invoice/Voucher Cover Letter**, only after the board-signed voucher
+2. **J6 Invoice / Voucher Cover Letter**, only after the board-signed voucher
    has been received and the class has begun. It goes to board finance, the
    counselor and the student (exactly 3), with the voucher attached exactly as
    uploaded, plus the board invoice if one was uploaded.
@@ -119,8 +119,17 @@ primary action, signature and send:
   window of send + 10 to + 14 days. That is a follow-up expectation, not a due
   date or a Net term, and there is no overdue state. It becomes `received`
   only when staff record the date and evidence.
-- Letterhead (`letterhead.ts`): `public/images/wap_logo.png`, the three header
-  lines and the confirmed footer facts from the blank WAP letterhead
+- Printed wording frozen in content matches the approved reference layouts:
+  titles `Quote / Voucher Request` and `Invoice / Voucher Cover Letter`; the J6
+  payment sentences `Please arrange payment by check or wire to Workforce
+  Advancement Project and confirm the expected remittance date.` and `We will
+  follow up in 10 to 14 days if payment has not been recorded.`; the
+  voucher/PO reference is at most 80 characters (attestation, DB CHECK and
+  renderer).
+- Letterhead (`letterhead.ts`): `public/images/wap_logo.png` (its sha256 is
+  frozen; the tagline "Empowering People. Advancing Futures" is part of that
+  image, so it is not a separate frozen field), the printed text lines
+  `Workforce Advancement Project` and `www.WorkforceAP.org`, and the confirmed footer facts from the blank WAP letterhead
   (`www.WorkforceAP.org`, `(512) 825-2896`,
   `207 Settlers Valley Suite C, Pflugerville, TX 78660`), all in one reviewed
   constant that the database checks at signing. The old renderer's magenta

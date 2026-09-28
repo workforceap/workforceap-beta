@@ -152,7 +152,9 @@ describe('recipient sets', () => {
 
 describe('fixed letterhead and signer text', () => {
   it('uses the WAP header lines, billing phone and repo address', () => {
-    assert.deepEqual([...WAP_BILLING_LETTERHEAD.headerLines], ['Workforce Advancement Project', 'Empowering People. Advancing Futures', 'www.WorkforceAP.org']);
+    // The tagline is in the logo image (covered by its sha256), not a separate frozen line.
+    assert.deepEqual([...WAP_BILLING_LETTERHEAD.headerLines], ['Workforce Advancement Project', 'www.WorkforceAP.org']);
+    assert.ok(!JSON.stringify(WAP_BILLING_LETTERHEAD).includes('Empowering People'));
     // Exactly the footer facts on the blank WAP letterhead (Mike Brown, 2026-09-28).
     assert.equal(WAP_BILLING_LETTERHEAD.footer.website, 'www.WorkforceAP.org');
     assert.equal(WAP_BILLING_LETTERHEAD.footer.phone, '(512) 825-2896');

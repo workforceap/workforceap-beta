@@ -80,7 +80,8 @@ export type J6Content = Common & {
   reviewReasons: ReviewReason[];
   classStarted: { attestationId: string; classStartDate: string; classEndDate: string; attestedBySubjectId: string; attestedAt: string };
   /** An expectation for staff follow-up, never a due date or contract term. */
-  paymentFollowUp: { minDays: number; maxDays: number; wording: string };
+  /** The printed payment sentences (instruction, then follow-up); an expectation, never a due date. */
+  paymentFollowUp: { minDays: number; maxDays: number; instruction: string; wording: string };
 };
 
 /** A printed contact block is exactly the normalized recipient for its role. */
@@ -106,7 +107,9 @@ export function recipientRowsForContent(content: J5Content | J6Content): Recipie
 
 export type ContentResult<T> = { ok: true; content: T; contentSha256: string } | { ok: false; errors: string[] };
 
-export const PAYMENT_FOLLOW_UP_WORDING = `We will follow up in ${PAYMENT_FOLLOW_UP_MIN_DAYS}–${PAYMENT_FOLLOW_UP_MAX_DAYS} days.`;
+/** Exactly the approved J6 reference layout (and the #2702 renderer). */
+export const PAYMENT_FOLLOW_UP_WORDING = `We will follow up in ${PAYMENT_FOLLOW_UP_MIN_DAYS} to ${PAYMENT_FOLLOW_UP_MAX_DAYS} days if payment has not been recorded.`;
+export const PAYMENT_INSTRUCTION_WORDING = 'Please arrange payment by check or wire to Workforce Advancement Project and confirm the expected remittance date.';
 
 const HEX64 = /^[0-9a-f]{64}$/;
 
@@ -264,7 +267,7 @@ export function buildJ6Content(
       attestedBySubjectId: classStarted.attestedBySubjectId,
       attestedAt: classStarted.attestedAt,
     },
-    paymentFollowUp: { minDays: PAYMENT_FOLLOW_UP_MIN_DAYS, maxDays: PAYMENT_FOLLOW_UP_MAX_DAYS, wording: PAYMENT_FOLLOW_UP_WORDING },
+    paymentFollowUp: { minDays: PAYMENT_FOLLOW_UP_MIN_DAYS, maxDays: PAYMENT_FOLLOW_UP_MAX_DAYS, instruction: PAYMENT_INSTRUCTION_WORDING, wording: PAYMENT_FOLLOW_UP_WORDING },
   };
   return { ok: true, content, contentSha256: contentSha256(content) };
 }

@@ -21,8 +21,8 @@ export function stageForKind(kind: BillingDocumentKind): BillingStage {
 }
 
 export const DOCUMENT_TITLES: Readonly<Record<BillingDocumentKind, string>> = {
-  [J5_KIND]: 'Quote/Voucher Request',
-  [J6_KIND]: 'Invoice/Voucher Cover Letter',
+  [J5_KIND]: 'Quote / Voucher Request',
+  [J6_KIND]: 'Invoice / Voucher Cover Letter',
 };
 
 /** The one and only line on both documents: `Tuition & Fees $7,500.00`. */

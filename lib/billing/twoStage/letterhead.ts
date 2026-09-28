@@ -18,17 +18,19 @@
 export const WAP_LOGO_PUBLIC_PATH = 'public/images/wap_logo.png';
 
 export type BillingLetterhead = {
-  readonly headerLines: readonly [string, string, string];
+  /**
+   * The letterhead text lines the document prints (the approved layout prints
+   * them in the footer). The tagline "Empowering People. Advancing Futures" is
+   * part of the logo image, covered by the logo sha256, so it is not a
+   * separate frozen field.
+   */
+  readonly headerLines: readonly [string, string];
   readonly footer: { readonly website: string; readonly phone: string; readonly address: string; readonly addressLines: readonly string[] };
   readonly logoPath: string;
 };
 
 export const WAP_BILLING_LETTERHEAD: BillingLetterhead = Object.freeze({
-  headerLines: Object.freeze(['Workforce Advancement Project', 'Empowering People. Advancing Futures', 'www.WorkforceAP.org']) as readonly [
-    string,
-    string,
-    string,
-  ],
+  headerLines: Object.freeze(['Workforce Advancement Project', 'www.WorkforceAP.org']) as readonly [string, string],
   footer: Object.freeze({
     website: 'www.WorkforceAP.org',
     phone: '(512) 825-2896',

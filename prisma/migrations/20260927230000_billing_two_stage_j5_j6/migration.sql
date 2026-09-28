@@ -293,6 +293,8 @@ CREATE TABLE IF NOT EXISTS "billing_attestations" (
                 "quoted_program_slug", "quoted_class_name", "student_ready_confirmed", "counselor_requested_by",
                 "counselor_requested_on", "counselor_request_reference", "authorized_program_slug", "authorized_class_name") = 0
         WHEN 'voucher_board_signed' THEN "artifact_id" IS NOT NULL AND btrim(coalesce("voucher_reference", '')) <> ''
+          -- The printed voucher/PO reference is at most 80 characters (VOUCHER_REFERENCE_MAX_LENGTH, the renderer).
+          AND char_length(btrim("voucher_reference")) <= 80
           AND "authorized_amount_cents" > 0
           AND btrim(coalesce("authorized_program_slug", '')) <> '' AND btrim(coalesce("authorized_class_name", '')) <> ''
           AND "authorized_start_date" IS NOT NULL AND "authorized_end_date" > "authorized_start_date"

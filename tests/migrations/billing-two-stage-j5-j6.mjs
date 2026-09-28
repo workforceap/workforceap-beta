@@ -714,6 +714,11 @@ try {
   rejects(voucherAttestation('att-v-noprog', 'true', { program: 'NULL' }), '23514', 'the authorized program is required');
   rejects(voucherAttestation('att-v-nocls', 'true', { className: `' '` }), '23514', 'the authorized class is required');
   rejects(voucherAttestation('att-v-noper', 'true', { end: 'NULL' }), '23514', 'the authorized period is required');
+  rejects(voucherAttestation('att-v-longref', 'true').replace("'PO-SYN-1'", `'${'P'.repeat(81)}'`), '23514', 'the voucher/PO reference is at most 80 characters');
+  const refMax = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e',
+    "const m0 = await import('./lib/billing/twoStage/attestations.ts'); const m = m0.default ?? m0; console.log(m.VOUCHER_REFERENCE_MAX_LENGTH);"], { encoding: 'utf8' });
+  assert.equal(refMax.status, 0, refMax.stderr);
+  assert.equal(refMax.stdout.trim(), '80', 'DB CHECK limit equals VOUCHER_REFERENCE_MAX_LENGTH');
   rejects(`SET TimeZone = 'UTC'; ${voucherAttestation('att-v-future', 'true', { receivedOn: 'public.billing_today() + 1' })}`, '23514', 'a voucher received after the Chicago business date is refused');
   rejects(voucherAttestation('att-v-admin', 'true').replace(`'${SIGNER}');`, `'${STAFF}');`), '23514', 'another admin cannot attest the board-signed voucher');
   refusedBecause(voucherAttestation('att-v-admin2', 'true').replace(`'${SIGNER}');`, `'${STAFF}');`), 'VOUCHER_ATTESTER_NOT_DESIGNATED:%');

@@ -7,6 +7,7 @@ import {
   recordExternalJ5Reference,
   recordJ5Readiness,
   recordVoucherBoardSigned,
+  VOUCHER_REFERENCE_MAX_LENGTH,
   type Attestation,
   type AttestationDraft,
 } from './attestations';
@@ -106,7 +107,7 @@ describe('J5: allowed before any voucher exists', () => {
     const built = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0001', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people });
     assert.ok(built.ok);
     const c = built.content;
-    assert.equal(c.title, 'Quote/Voucher Request');
+    assert.equal(c.title, 'Quote / Voucher Request');
     assert.deepEqual(c.training, { programSlug: IT_SUPPORT, className: 'IT Support Professional Certificate (IBM)', contactHours: 160, classStartDate: '2026-09-30', classEndDate: '2027-02-28' });
     assert.deepEqual(c.lineItems, [{ label: 'Tuition & Fees', amountCents: 750_000 }]);
     assert.equal(c.totalCents, 750_000);
@@ -344,17 +345,30 @@ describe('J6: gated on the received signed voucher and class start', () => {
     assert.ok(!('finance' in j5.content));
   });
 
-  it('builds the Invoice/Voucher Cover Letter with finance, the voucher ref and one $7,500 line', () => {
+  it('limits the printed voucher/PO reference to 80 characters (renderer and DB CHECK)', () => {
+    const at = (voucherReference: string) => recordVoucherBoardSigned({
+      boardName: people.boardName, voucherReference, artifact: voucherArtifact, authorizedAmountCents: 750_000, authorizedProgramSlug: IT_SUPPORT,
+      authorizedClassName: IT_CLASS, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-03-31', receivedOn: '2026-10-02',
+      receivingSignaturePresent: true, evidenceReference: 'synthetic board email', attestedBySubjectId: STAFF, confirmed: true, now: NOW,
+    });
+    assert.equal(VOUCHER_REFERENCE_MAX_LENGTH, 80);
+    assert.equal(at('P'.repeat(80)).ok, true);
+    assert.equal(at('P'.repeat(81)).ok, false);
+  });
+
+  it('builds the Invoice / Voucher Cover Letter with finance, the voucher ref and one $7,500 line', () => {
     const built = buildJ6Content({ ...j6Input(), logoSha256: LOGO_SHA, documentNumber: 'WAP-I-2026-0001', issueDate: '2026-10-20', ...people, finance: { name: 'Synthetic Finance', email: 'finance@example.test' } });
     assert.ok(built.ok, !built.ok ? built.errors.join('; ') : '');
     const c = built.content;
-    assert.equal(c.title, 'Invoice/Voucher Cover Letter');
+    assert.equal(c.title, 'Invoice / Voucher Cover Letter');
     assert.deepEqual(c.recipients.map((r) => r.role), ['finance', 'counselor', 'student']);
     assert.equal(c.voucher.reference, 'PO-SYN-1');
     assert.equal(c.voucher.sha256, voucherArtifact.sha256);
     assert.equal(c.voucher.receivingSignaturePresent, true);
     assert.deepEqual(c.lineItems, [{ label: 'Tuition & Fees', amountCents: 750_000 }]);
-    assert.equal(c.paymentFollowUp.wording, 'We will follow up in 10–14 days.');
+    assert.equal(c.paymentFollowUp.wording, 'We will follow up in 10 to 14 days if payment has not been recorded.');
+    assert.equal(c.paymentFollowUp.instruction, 'Please arrange payment by check or wire to Workforce Advancement Project and confirm the expected remittance date.');
+    assert.ok(!JSON.stringify(c).includes('Empowering People'), 'the tagline is not a frozen printed field');
     assert.doesNotMatch(JSON.stringify(c), /net ?(14|30)|due date|overdue|paid/i);
   });
 });
@@ -427,7 +441,7 @@ describe('frozen content hash', () => {
     assert.ok(before.ok && after.ok);
     assert.equal(before.content.letterhead.logo.sha256, LOGO_SHA);
     assert.notEqual(after.contentSha256, before.contentSha256);
-    const target = { id: 'rec-1', version: 1, status: 'draft' as const, contentSha256: after.contentSha256, documentTitle: 'Quote/Voucher Request', documentNumber: 'WAP-Q-2026-0009' };
+    const target = { id: 'rec-1', version: 1, status: 'draft' as const, contentSha256: after.contentSha256, documentTitle: 'Quote / Voucher Request', documentNumber: 'WAP-Q-2026-0009' };
     const stale = { recordId: 'rec-1', version: 1, contentSha256: before.contentSha256, intentConfirmed: true, intentText: signerIntentStatement({ ...target, contentSha256: before.contentSha256 }) };
     const r = validateSignRequest(target, stale);
     assert.equal(r.ok, false);

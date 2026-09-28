@@ -117,6 +117,9 @@ export function classStartedStatement(args: { studentName: string; className: st
   );
 }
 
+/** Printed voucher/PO reference limit (the renderer and the DB CHECK use the same 80). */
+export const VOUCHER_REFERENCE_MAX_LENGTH = 80;
+
 export function voucherBoardSignedStatement(args: { boardName: string; voucherReference: string; receivedOn: string; authorizedClassName: string }): string {
   return (
     `I confirm that the uploaded file is voucher ${args.voucherReference} for ${args.authorizedClassName}, as signed by ${args.boardName}, received on ` +
@@ -226,7 +229,7 @@ export function recordVoucherBoardSigned(input: {
   const errors = common(input.evidenceReference, input.attestedBySubjectId, input.confirmed);
   const reference = input.voucherReference.trim();
   if (!reference) errors.push('Enter the voucher/PO reference printed on the board voucher.');
-  if (reference.length > 120) errors.push('Voucher reference is limited to 120 characters.');
+  if (reference.length > VOUCHER_REFERENCE_MAX_LENGTH) errors.push(`Voucher reference is limited to ${VOUCHER_REFERENCE_MAX_LENGTH} characters.`);
   if (input.artifact.kind !== 'board_signed_voucher') errors.push('Attach the uploaded board-signed voucher, not another file.');
   if (!Number.isSafeInteger(input.authorizedAmountCents) || input.authorizedAmountCents <= 0) {
     errors.push('Enter the amount the board authorized on the voucher.');
