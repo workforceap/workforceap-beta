@@ -101,7 +101,7 @@ try {
     name: 'billing-finance',
     public: false,
     fileSizeLimit: 10485760,
-    allowedMimeTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+    allowedMimeTypes: ['application/pdf'],
   };
   const bucket = () => JSON.parse(sql(`
     SELECT json_build_object(
@@ -120,30 +120,25 @@ try {
     FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = 'storage' AND c.relname IN ('buckets', 'objects');
   `), securityBefore, 'Migration must not change RLS or grants.');
-  console.log('PASS private 10 MiB PDF/JPEG/PNG bucket, RLS on, no browser policy or new grant');
+  console.log('PASS private 10 MiB PDF-only bucket, RLS on, no browser policy or new grant');
 
   sql(migration);
   assert.deepEqual(bucket(), expected);
   assert.equal(sql(`SELECT count(*) FROM storage.buckets;`), '1');
   console.log('PASS a second application is idempotent');
 
-  sql(`UPDATE storage.buckets SET allowed_mime_types = ARRAY['image/png', 'application/pdf', 'image/jpeg'] WHERE id = 'billing-finance';`);
-  sql(migration);
-  assert.deepEqual([...bucket().allowedMimeTypes].sort(), expected.allowedMimeTypes);
-  console.log('PASS equivalent MIME sets in a different order remain idempotent');
-
   const conflicts = [
     [`UPDATE storage.buckets SET public = true WHERE id = 'billing-finance';`, 'public bucket'],
     [`UPDATE storage.buckets SET name = 'other-name' WHERE id = 'billing-finance';`, 'different bucket name'],
     [`UPDATE storage.buckets SET file_size_limit = 20971520 WHERE id = 'billing-finance';`, 'different size limit'],
-    [`UPDATE storage.buckets SET allowed_mime_types = ARRAY['application/pdf'] WHERE id = 'billing-finance';`, 'missing allowed MIME types'],
+    [`UPDATE storage.buckets SET allowed_mime_types = ARRAY['application/pdf', 'image/png'] WHERE id = 'billing-finance';`, 'extra allowed MIME type'],
   ];
   for (const [change, description] of conflicts) {
     sql(change);
     expectMigrationFailure(/conflicting privacy or upload settings/);
     sql(`UPDATE storage.buckets SET name = 'billing-finance', public = false,
       file_size_limit = 10485760,
-      allowed_mime_types = ARRAY['application/pdf', 'image/jpeg', 'image/png']
+      allowed_mime_types = ARRAY['application/pdf']
       WHERE id = 'billing-finance';`);
     console.log(`PASS existing ${description} fails closed`);
   }

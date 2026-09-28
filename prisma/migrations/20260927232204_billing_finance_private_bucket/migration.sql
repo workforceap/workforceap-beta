@@ -2,18 +2,14 @@
 -- outside member self-service buckets, whose user-erasure paths can remove
 -- objects. Only the server-side Storage client may access this private bucket.
 --
--- 10 MiB per object accommodates scanned, signed vouchers while bounding
--- uploads. PDFs and PNG/JPEG scans are the only accepted content types.
+-- 10 MiB per object accommodates scanned, signed voucher PDFs while bounding
+-- uploads. The current artifact schema and exact-byte archive accept PDFs only.
 -- No Storage policy or browser grant is created by this migration.
 
 DO $$
 DECLARE
   existing_bucket RECORD;
-  expected_mime_types CONSTANT text[] := ARRAY[
-    'application/pdf',
-    'image/jpeg',
-    'image/png'
-  ]::text[];
+  expected_mime_types CONSTANT text[] := ARRAY['application/pdf']::text[];
 BEGIN
   -- Supabase private buckets still rely on Storage RLS for API operations.
   -- Current projects have RLS enabled and no Storage policies. If that drifts,
