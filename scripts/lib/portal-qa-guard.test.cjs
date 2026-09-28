@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { readPortalQaConfig, assertPortalQaOrganization } = require('./portal-qa-guard.cjs');
+const { readPortalQaTarget, readPortalQaConfig, assertPortalQaOrganization } = require('./portal-qa-guard.cjs');
 const { DEMO_REF, PROD_REF } = require('./supabase-project-guard.cjs');
 
 function environment() {
@@ -59,5 +59,22 @@ test('requires exact live ID, slug, and active fixture organization', () => {
   for (const actual of [null, { id: 'other', slug: 'portal-qa-test', active: true },
     { id: 'qa-org', slug: 'workforceap', active: true }, { id: 'qa-org', slug: 'portal-qa-test', active: false }]) {
     assert.throws(() => assertPortalQaOrganization(actual, expected));
+  }
+});
+
+test('readPortalQaTarget validates the DEMO target and organization without any role passwords', () => {
+  const env = environment();
+  for (const role of ['member', 'partner', 'employer', 'admin', 'counselor']) delete env[`PORTAL_QA_${role.toUpperCase()}_PASSWORD`];
+  const target = readPortalQaTarget(env);
+  assert.deepEqual(target, { organizationId: 'qa-org', organizationSlug: 'portal-qa-test', databaseUrl: env.POSTGRES_PRISMA_URL });
+  for (const change of [
+    { PORTAL_QA_TARGET: undefined },
+    { VERCEL_ENV: 'production' },
+    { NEXT_PUBLIC_SUPABASE_URL: `https://${PROD_REF}.supabase.co` },
+    { POSTGRES_PRISMA_URL: `postgresql://postgres:example@db.${PROD_REF}.supabase.co/postgres` },
+    { SUPABASE_SERVICE_ROLE_KEY: undefined },
+    { PORTAL_QA_ORGANIZATION_SLUG: 'workforceap' },
+  ]) {
+    assert.throws(() => readPortalQaTarget({ ...env, ...change }));
   }
 });

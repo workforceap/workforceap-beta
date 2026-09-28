@@ -1,10 +1,18 @@
 # J5 Training Invoice + J6 Cover Letter packets
 
+**Retired for new work (2026-09-28).** The combined packet does not match the
+current WorkforceAP process. Authorized POST requests to create or send one now
+return `410 LEGACY_BILLING_FLOW_RETIRED`; the admin page shows existing records
+only. GET history and protected PDF downloads remain available. The separate
+J5 Quote/Voucher Request and later J6 Invoice/Voucher Cover Letter with the
+received signed board voucher are under development; neither action is live
+through this legacy route.
+
 Ops request (9/3/26): "Need a J5 invoice and J6 cover letter system that creates a
 signed [document] with the classes and breakdown of prices. Then have a button
 that automatically emails to counselor and the student."
 
-## What it does
+## Retired workflow (historical reference)
 
 - **Admin signing desk**: `/admin/members/[id]/billing` (button "J5 / J6 billing"
   on the member page). Prefilled from the member's enrolled program:

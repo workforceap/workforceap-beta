@@ -5,14 +5,16 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { findMany, count } = vi.hoisted(() => ({
+const { findMany, count, partnerFindFirst } = vi.hoisted(() => ({
   findMany: vi.fn(async (_args: { where: unknown; take?: number }) => [] as unknown[]),
   count: vi.fn(async (_args: { where: unknown; take?: number }) => 0),
+  partnerFindFirst: vi.fn(async (_args: unknown) => ({ partnerType: 'community' }) as { partnerType: string } | null),
 }));
 
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     partnerReferral: { findMany, count },
+    partner: { findFirst: partnerFindFirst },
     memberEvent: { findMany: vi.fn(async () => []) },
   },
 }));
@@ -287,5 +289,13 @@ describe('countPartnerReferrals (h)', () => {
       partner: { organizationId: 'org-1' },
       member: { deletedAt: null, organizationId: 'org-1' },
     });
+    // #2708: the count carries the same minor-visibility filter as the load.
+    expect(JSON.stringify(countArgs.where)).toMatch(/ferpaConsentGiven/);
+  });
+
+  it('counts nothing for a partner row outside this org', async () => {
+    partnerFindFirst.mockResolvedValueOnce(null);
+    await expect(countPartnerReferrals('partner-1', 'org-2')).resolves.toBe(0);
+    expect(count).not.toHaveBeenCalled();
   });
 });

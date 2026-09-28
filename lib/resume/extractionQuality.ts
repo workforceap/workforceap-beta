@@ -85,20 +85,21 @@ export function hasSubstantiveResumeText(text: string): boolean {
 }
 
 export function getResumeExtractionWarning(text: string): string | null {
-  const normalized = text.trim();
+  const normalized = text.replace(/\r\n?/g, '\n').trim();
   if (!normalized) return null;
 
-  const lines = normalized.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  const hasBulletMarkers = /(^|\n)\s*(?:[-*•])\s+\S/m.test(normalized);
+  const lines = normalized.split('\n').map((line) => line.trim()).filter(Boolean);
   const longSingleLineCount = lines.filter((line) => line.length >= 140).length;
-  const mergedHeader = SECTION_HEADERS.some((header) =>
-    new RegExp(`\\b${escaped(header)}\\b[ \\t]+[A-Z][^\\n]{18,}`, 'i').test(normalized),
-  );
-  const lowLineBreakDensity = normalized.length >= 500 && lines.length <= Math.max(6, Math.floor(normalized.length / 220));
-  const bulletLoss = /\b(experience|work history|education|skills)\b/i.test(normalized) && !hasBulletMarkers;
+  const hasVeryLongLine = lines.some((line) => line.length >= 300);
+  const mergedHeader = lines.some((line) => SECTION_HEADERS.some((header) => {
+    const match = new RegExp(`^${escaped(header)}\\b[ \\t]+(.+)$`, 'i').exec(line);
+    const content = match?.[1] ?? '';
+    return content.length >= 19 && /^[A-Z]/.test(content);
+  }));
+  const lowLineBreakDensity = normalized.length >= 500 && normalized.length / lines.length >= 180;
 
-  if (mergedHeader || lowLineBreakDensity || bulletLoss || longSingleLineCount >= 3) {
-    return 'This upload may have flattened headings or bullets during text extraction. If the preview looks collapsed, paste plain text for a more reliable score.';
+  if (mergedHeader || lowLineBreakDensity || hasVeryLongLine || longSingleLineCount >= 3) {
+    return 'This upload may have flattened headings or bullets during text extraction. Review your resume details before using them. If anything is missing, try another file format.';
   }
 
   return null;

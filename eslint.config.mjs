@@ -368,9 +368,8 @@ const config = [
     // no-restricted-syntax, so no other block has to restate it.
     files: ["**/*.{tsx,jsx}"],
     ignores: [
-      // Remove each ignore when #2553 / #2513 merge and the site is
-      // converted to KitLinkButton (WAP-268).
-      "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx", // #2553
+      // Remove the ignore when #2513 merges and the site is converted to
+      // KitLinkButton (WAP-277).
       "components/portal/kit/pages/employer/EmployerHomeKit.tsx", // #2513
     ],
     plugins: { "wap-kit": wapKitPlugin },

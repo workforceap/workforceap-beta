@@ -225,6 +225,6 @@ describe('createMember partner attribution (/signup door)', () => {
     mocks.tx.partnerReferral.upsert.mockRejectedValue(new Error('connection closed'));
     mocks.userFindUnique.mockResolvedValue({ id: USER_ID });
 
-    await expect(createMember(USER_ID, input({ referralRef: 'acme' }))).resolves.toBeUndefined();
+    await expect(createMember(USER_ID, input({ referralRef: 'acme' }))).resolves.toMatchObject({ referralRef: 'acme' });
   });
 });

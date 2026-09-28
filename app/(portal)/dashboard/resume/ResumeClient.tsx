@@ -41,6 +41,16 @@ type ResumeClientProps = {
   layout?: "side-by-side";
 };
 
+function isPdfPreviewErrorDocument(doc: Document | null): boolean {
+  // Native PDF viewers may expose no DOM at all. Treat only a recognizable
+  // API error document as a failure so a working viewer stays mounted.
+  if (!doc) return false;
+  const contentType = doc.contentType.toLowerCase();
+  if (contentType === 'application/json' || contentType.endsWith('+json')) return true;
+  if (/^(401|403|404|500|502)$/.test(doc.title.trim())) return true;
+  return /^\{\s*"error"\s*:/.test(doc.body?.textContent?.trim() ?? '');
+}
+
 export default function ResumeClient({
   completeness,
   witData,
@@ -524,8 +534,7 @@ export default function ResumeClient({
                     onError={() => setOriginalPdfFailed(true)}
                     onLoad={(e) => {
                       try {
-                        const doc = (e.target as HTMLIFrameElement).contentDocument;
-                        if (!doc || doc.title === '404' || doc.body?.innerHTML === '') setOriginalPdfFailed(true);
+                        if (isPdfPreviewErrorDocument(e.currentTarget.contentDocument)) setOriginalPdfFailed(true);
                       } catch { /* cross-origin — assume ok */ }
                     }}
                     style={{
@@ -652,8 +661,7 @@ export default function ResumeClient({
                     onError={() => setEnhancedPdfFailed(true)}
                     onLoad={(e) => {
                       try {
-                        const doc = (e.target as HTMLIFrameElement).contentDocument;
-                        if (!doc || doc.title === '404' || doc.body?.innerHTML === '') setEnhancedPdfFailed(true);
+                        if (isPdfPreviewErrorDocument(e.currentTarget.contentDocument)) setEnhancedPdfFailed(true);
                       } catch { /* cross-origin — assume ok */ }
                     }}
                     style={{

@@ -18,6 +18,7 @@ import { formatPortalDate } from '@/lib/formatDate';
 import CopyReferralLink from '@/components/partner/CopyReferralLink';
 import PartnerReferralShare from '@/components/partner/PartnerReferralShare';
 import { buildPartnerReferralLink } from '@/lib/partner/referralLink';
+import { buildPartnerShareLinks } from '@/lib/partner/shareLinks';
 import PartnerMembersList from '@/components/portal/PartnerMembersList';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
@@ -41,6 +42,7 @@ import { getPartnerPlacementPayoutUsd, isPartnerPlacementPayoutRateConfigured } 
 import { countUnpaidVerifiedPlacements } from '@/lib/partner/unpaidVerifiedPlacements';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import { isReferralPartner } from '@/lib/partner/partnerType';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 import { buildPartnerReferralBadge, isOutcomesSocialProofEnabled } from '@/lib/outcomes/socialProof';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
@@ -179,11 +181,14 @@ export default async function PartnerDashboardPage({
   // count/findMany queries only. NO bundle, NO $transaction, NO external HTTP.
   // v2 kit is the DEFAULT partner overview; legacy via ?ui=legacy.
   if (requestedUi !== 'legacy') {
-    const memberFilter = {
+    // Minors are hidden from non-school partners (lib/partner/dataAccess.ts):
+    // every count and row below shares this population.
+    const access = partnerDataAccess(ctx.partner);
+    const memberFilter = withPartnerMemberVisibility({
       deletedAt: null,
       organizationId: ctx.partner.organizationId,
       ...MEMBER_ONLY_WHERE,
-    };
+    }, access);
     // One pending row and one count per referred member, even if they sent
     // several confirmations. A verified placement is no longer pending.
     const pendingEventFilter = {
@@ -228,10 +233,10 @@ export default async function PartnerDashboardPage({
         prisma.placementRecord.count({
           where: {
             startDateVerified: true,
-            user: {
+            user: withPartnerMemberVisibility({
               partnerReferrals: { some: { partnerId: ctx.partnerId } },
               organizationId: ctx.partner.organizationId,
-            },
+            }, access),
           },
         }),
         prisma.memberEvent.findMany({
@@ -270,7 +275,7 @@ export default async function PartnerDashboardPage({
         prisma.memberEvent.findMany({
           where: {
             eventName: { in: eventNameReadCandidates('partner_payout_sent') },
-            user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
+            user: withPartnerMemberVisibility({ partnerReferrals: { some: { partnerId: ctx.partnerId } } }, access),
           },
           orderBy: { createdAt: 'desc' },
           take: 10,
@@ -444,7 +449,12 @@ export default async function PartnerDashboardPage({
 
           {/* `tour-referral-link`: step 1 of the partner guided tour (lib/tours/registry.ts). */}
           <div data-tour="tour-referral-link">
-            <PartnerReferralShare url={referralApplyUrl} referralCode={refParam} />
+            <PartnerReferralShare
+              url={referralApplyUrl}
+              referralCode={refParam}
+              landingUrl={buildPartnerShareLinks({ referralCode: partnerRow.referralCode, slug: partnerRow.slug ?? ctx.partner.slug, name: ctx.partner.name }).landingUrl}
+              shareToolsHref="/partner/guide#share-tools"
+            />
           </div>
 
           <PartnerKpiGrid

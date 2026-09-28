@@ -2,8 +2,11 @@ const { projectForUrl } = require('./supabase-project-guard.cjs');
 
 const QA_ROLES = ['member', 'partner', 'employer', 'admin', 'counselor'];
 
-/** Validate before constructing clients or making any network/database call. */
-function readPortalQaConfig(env = process.env) {
+/**
+ * The DEMO target and dedicated fixture organization, without any account
+ * secrets. Validate before constructing clients or making any network/database call.
+ */
+function readPortalQaTarget(env = process.env) {
   if (env.VERCEL_ENV === 'production' || env.PORTAL_QA_TARGET !== 'demo') {
     throw new Error('Portal QA seeding requires PORTAL_QA_TARGET=demo and a non-production environment.');
   }
@@ -25,6 +28,12 @@ function readPortalQaConfig(env = process.env) {
   if (!organizationId || !organizationSlug || !/^portal-qa-[a-z0-9-]+$/.test(organizationSlug)) {
     throw new Error('Specify the exact dedicated fixture organization ID and portal-qa-* slug.');
   }
+  return { organizationId, organizationSlug, databaseUrl };
+}
+
+/** Validate before constructing clients or making any network/database call. */
+function readPortalQaConfig(env = process.env) {
+  const { organizationId, organizationSlug, databaseUrl } = readPortalQaTarget(env);
   /** @type {Record<string, string>} */
   const passwords = {};
   for (const role of QA_ROLES) {
@@ -46,4 +55,4 @@ function assertPortalQaOrganization(actual, expected) {
   }
 }
 
-module.exports = { QA_ROLES, readPortalQaConfig, assertPortalQaOrganization };
+module.exports = { QA_ROLES, readPortalQaTarget, readPortalQaConfig, assertPortalQaOrganization };

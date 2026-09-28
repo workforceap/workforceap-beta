@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import { partnerDataAccess, partnerEmailDetails, partnerMayViewMember } from '@/lib/partner/dataAccess';
 
 /** Surface provider rejections and persist safe metadata before returning. */
 async function sendPartnerEmail(resend: Resend, args: { from: string; to: string; subject: string; text: string }): Promise<void> {
@@ -74,13 +75,25 @@ export async function sendPartnerMilestoneEmail(
           notifyOnCourse: true,
           notifyOnCertified: true,
           notifyOnPlaced: true,
+          partnerType: true,
         },
       },
-      member: { select: { fullName: true } },
+      member: {
+        select: {
+          fullName: true,
+          profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } },
+        },
+      },
     },
   });
 
   if (!referral) return;
+  // Same tier + minor rule as the portal (lib/partner/dataAccess.ts): a hidden
+  // minor is never announced, and a restricted (referral-track) partner gets
+  // program / course / certification names only — never employer or role.
+  const access = partnerDataAccess(referral.partner);
+  if (!partnerMayViewMember(access, referral.member.profile)) return;
+  const visibleDetails = partnerEmailDetails(access, details);
   if (!referral.partner.contactEmail?.trim()) return;
 
   // Respect partner notification preferences
@@ -100,8 +113,8 @@ export async function sendPartnerMilestoneEmail(
   const subject = sanitizeEmailSubjectLine(`[WorkforceAP] Update on ${first} - ${milestone}`);
 
   const detailLines: string[] = [];
-  if (details) {
-    for (const [k, v] of Object.entries(details)) {
+  if (visibleDetails) {
+    for (const [k, v] of Object.entries(visibleDetails)) {
       if (v) detailLines.push(`${k}: ${v}`);
     }
   }

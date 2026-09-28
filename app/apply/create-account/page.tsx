@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import ApplyMobileStepNav from '@/components/apply/ApplyMobileStepNav';
 import ApplyMobileTrustBar from '@/components/apply/ApplyMobileTrustBar';
@@ -10,6 +10,8 @@ import { getTranslations } from 'next-intl/server';
 import { APPLY_REFERRAL_COOKIE } from '@/lib/partner/sponsoredEnrollment';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { resolveSchoolApply } from '@/lib/apply/resolveSchoolApply';
+import { resolvePartnerReferralDisclosure } from '@/lib/apply/partnerReferralDisclosure';
+import { getPartnerDisclosureCopy } from '@/lib/apply/partnerDisclosureCopy';
 import '../apply-funnel-depth.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,10 +31,16 @@ export default async function ApplyCreateAccountPage({ searchParams }: {
   const cookieStore = await cookies();
   const params = await searchParams;
   const explicitRef = typeof params?.ref === 'string' ? params.ref : undefined;
-  const schoolApply = await resolveSchoolApply(explicitRef ?? cookieStore.get(APPLY_REFERRAL_COOKIE)?.value ?? null);
+  const pageRef = explicitRef ?? cookieStore.get(APPLY_REFERRAL_COOKIE)?.value ?? null;
+  const schoolApply = await resolveSchoolApply(pageRef);
   const isSchool = Boolean(schoolApply);
   const rawProgram = params?.program;
   const program = typeof rawProgram === 'string' ? getProgramBySlug(rawProgram) : null;
+  // The form re-resolves on the server if the ref it will submit differs.
+  const [partnerDisclosure, partnerDisclosureCopy] = await Promise.all([
+    resolvePartnerReferralDisclosure(pageRef, { headers: await headers(), programSlug: program?.slug }),
+    getPartnerDisclosureCopy(),
+  ]);
   const recoveryContext = {
     referralRef: schoolApply?.referralCode,
     programSlug: program && (!schoolApply?.programSlugs.length || schoolApply.programSlugs.includes(program.slug))
@@ -43,6 +51,8 @@ export default async function ApplyCreateAccountPage({ searchParams }: {
       <Suspense fallback={<p role="status">{t('loadingFallback')}</p>}>
         <ApplyCreateAccountForm
           recoveryContext={recoveryContext}
+          partnerDisclosure={partnerDisclosure}
+          partnerDisclosureCopy={partnerDisclosureCopy}
           readyHeader={(
       <section className="page-hero apply-funnel-step-page__hero afd-hero-wrap">
         <div className="page-hero-content mdx-stage">

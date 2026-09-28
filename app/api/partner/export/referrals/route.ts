@@ -8,8 +8,10 @@ import {
   countPartnerReferrals,
   loadPartnerReferralBundle,
   toPartnerMembersListRows,
+  toPartnerStatusOnlyRows,
 } from '@/lib/partner/referralBundle';
 import { buildPartnerOutcomePacket, partnerOutcomePacketCsv } from '@/lib/partner/outcomePacket';
+import { partnerDataAccess } from '@/lib/partner/dataAccess';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 // Shared escaper (P02): quotes like before and also neutralizes a leading
@@ -38,6 +40,14 @@ export const GET = withApiGuc(async (request: NextRequest) => {
     if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   
     const preset = request.nextUrl.searchParams.get('preset');
+    // Restricted (referral-track) partners have no demographics export at all
+    // (lib/partner/dataAccess.ts). Refuse before loading any member row.
+    if (preset === 'demographics' && partnerDataAccess(ctx.partner).tier === 'restricted') {
+      return NextResponse.json(
+        { error: 'The demographics export is not available for referral partners.' },
+        { status: 403 },
+      );
+    }
   
     try {
     if (preset === 'packet') {
@@ -67,7 +77,43 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       });
     }
 
-    const { pipelineMembers } = await loadPartnerReferralBundle(ctx.partnerId, ctx.partner.organizationId);
+    // `access` comes from the stored partner row inside the loader, so the
+    // column set below cannot be widened by a caller.
+    const bundle = await loadPartnerReferralBundle(ctx.partnerId, ctx.partner.organizationId);
+    const { pipelineMembers } = bundle;
+    const access = bundle.access ?? partnerDataAccess(ctx.partner);
+
+    let headers: string[];
+    let lines: string[];
+    if (access.tier === 'restricted') {
+      // Status only, for every preset: no email, location, employment,
+      // education, employer, job title or salary column exists here.
+      headers = [
+        'Member name',
+        'Application status',
+        'Application submitted',
+        'Program',
+        'Progress stage',
+        'Certifications earned',
+        'Placed',
+        'Placed date',
+        'Referred date',
+      ];
+      lines = [
+        headers.join(','),
+        ...toPartnerStatusOnlyRows(pipelineMembers).map((r) => [
+          csvEscape(r.fullName),
+          csvEscape(r.applicationStatus),
+          r.applicationSubmittedAt ? csvEscape(r.applicationSubmittedAt.toISOString()) : '',
+          csvEscape(r.programTitle),
+          csvEscape(r.progressStage),
+          csvEscape(r.certifications.join('; ')),
+          r.placed ? 'Yes' : 'No',
+          r.placedAt ? csvEscape(r.placedAt.toISOString()) : '',
+          csvEscape(r.referredAt.toLocaleDateString()),
+        ].join(',')),
+      ];
+    } else {
     const rows = toPartnerMembersListRows(pipelineMembers);
   
     const emails = await prisma.$transaction((tx) => tx.user.findMany({
@@ -107,10 +153,10 @@ export const GET = withApiGuc(async (request: NextRequest) => {
       'Retention decision',
     ];
   
-    const headers =
+    headers =
       preset === 'outcomes' ? outcomesHeaders : preset === 'demographics' ? demographicsHeaders : baseHeaders;
   
-    const lines = [
+    lines = [
       headers.join(','),
       ...pipelineMembers.map((p, i) => {
         const r = rows[i];
@@ -152,7 +198,8 @@ export const GET = withApiGuc(async (request: NextRequest) => {
         return base.join(',');
       }),
     ];
-  
+    }
+
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const brandingLines = [
       `# Workforce Advancement Project — Partner ${

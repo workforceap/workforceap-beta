@@ -4,8 +4,7 @@ import { readJsonObjectBody } from '@/lib/api/readJsonBody';
 import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
-import { chatCompletion, isAIConfigured } from '@/lib/ai/groq';
-import { claudeChat, isAnthropicConfigured } from '@/lib/ai/anthropicChat';
+import { generateResumeBuildText, isResumeBuildAIConfigured } from '@/lib/ai/resumeBuildProviders';
 import { cleanLongFormPlainText } from '@/lib/ai/postProcess';
 import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
@@ -19,7 +18,10 @@ import {
   saveEnhancedResumeText,
 } from '@/lib/resume/resumeProfileStorage';
 import { getResumeProfileRevision } from '@/lib/resume/resumeProfileRevision';
-import { hasContradictoryMissingResumeSection } from '@/lib/resume/validateGeneratedResume';
+import {
+  findUnsupportedResumeClaims,
+  hasContradictoryMissingResumeSection,
+} from '@/lib/resume/validateGeneratedResume';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -95,7 +97,7 @@ export const POST = withApiGuc(async (request: Request) => {
       );
     }
   
-    const context = [
+    const historyContext = [
       `Name: ${dbUser.fullName ?? 'N/A'}`,
       `Email: ${dbUser.email}`,
       `Phone: ${profile?.profilePhone ?? dbUser.phone ?? 'N/A'}`,
@@ -104,9 +106,13 @@ export const POST = withApiGuc(async (request: Request) => {
       `Bio: ${profile?.profileBio ?? 'N/A'}`,
       `Employment: ${profile?.employmentStatus ?? 'N/A'}`,
       `Education: ${profile?.educationLevel ?? 'N/A'}`,
+    ];
+    // Goals, not history: the factuality check never accepts them as earned claims.
+    const goalContext = [
       `Target program: ${dbUser.enrolledProgram ? programDisplayTitle(dbUser.enrolledProgram) : 'Career training'}`,
       `Program category: ${program?.categoryLabel ?? 'N/A'}`,
-    ].join('\n');
+    ];
+    const context = [...historyContext, ...goalContext].join('\n');
   
     const systemPrompt = `You are an expert resume writer and career coach. Your job is to enhance and rewrite a member's existing resume to be more compelling for their target career.
 
@@ -120,6 +126,10 @@ export const POST = withApiGuc(async (request: Request) => {
   - Strengthen the language with accurate action verbs while preserving every factual claim
   - Add an ATS-friendly professional summary based on their actual experience
   - Include only sections supported by the source. Omit missing Experience, Skills, Education, or Certifications sections rather than describing what was not provided.
+  - Never write filler such as "No work history provided", "Not provided", "N/A", or "None" for any section or field. Leave the section out entirely.
+  - Do not add generic responsibilities, accomplishments, or strengths (for example "proven track record" or "exceeded targets") that the source does not state. Rephrase only what the source says.
+  - Use only years, months, numbers, job titles, employers, schools, degrees, and certifications that appear in the resume or profile history, spelled as in the source.
+  - The target program and category are goals. Mention them only as a goal (for example "Pursuing ..."), never as an earned credential, completed training, or job.
   - A target program is a goal, not an earned certification or proof of current enrollment.
   - Return only the resume itself, with no explanation of your process or comments about source quality.
   - Format as clean markdown that renders well
@@ -131,9 +141,7 @@ export const POST = withApiGuc(async (request: Request) => {
   
     let output = '';
     try {
-      const anthropicConfigured = isAnthropicConfigured();
-      const groqConfigured = isAIConfigured();
-      if (!anthropicConfigured && !groqConfigured) {
+      if (!isResumeBuildAIConfigured()) {
         return NextResponse.json(
           { error: 'Resume generation is temporarily unavailable. Your existing resume was kept.' },
           { status: 503 },
@@ -148,17 +156,7 @@ export const POST = withApiGuc(async (request: Request) => {
         );
       }
 
-      if (anthropicConfigured) {
-        output = (await claudeChat(systemPrompt, userContent, { maxTokens: 2000 })) ?? '';
-      } else {
-        output = (await chatCompletion(
-          [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userContent },
-          ],
-          { maxTokens: 2000, temperature: 0.5 }
-        )) ?? '';
-      }
+      output = (await generateResumeBuildText(systemPrompt, userContent)) ?? '';
     } catch (err) {
       console.error('[member/resume/generate] AI generation failed:', err);
       return NextResponse.json(
@@ -177,6 +175,22 @@ export const POST = withApiGuc(async (request: Request) => {
     if (hasContradictoryMissingResumeSection(resumeText, cleanedOutput)) {
       return NextResponse.json(
         { error: 'The generated draft did not preserve details from your source resume, so your existing resume was kept.' },
+        { status: 422 },
+      );
+    }
+
+    const unsupportedClaims = findUnsupportedResumeClaims(
+      {
+        history: [resumeText, ...historyContext.filter((line) => !line.endsWith(': N/A'))].join('\n'),
+        goals: goalContext.join('\n'),
+      },
+      cleanedOutput,
+    );
+    if (unsupportedClaims.length > 0) {
+      // Log only the claim kinds: the draft and source are member data.
+      console.warn('[member/resume/generate] draft rejected by factuality check:', unsupportedClaims.join(','));
+      return NextResponse.json(
+        { error: 'The generated draft included details that are not in your resume or profile, so your existing resume was kept. Try again, or add the missing details to your profile first.' },
         { status: 422 },
       );
     }
