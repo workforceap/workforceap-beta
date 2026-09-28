@@ -141,6 +141,12 @@ describe('billing finance Storage archive', () => {
       assertCode('STORAGE_UNAVAILABLE'),
     );
     await assert.rejects(
+      archiveFinancePdf({ caseId: CASE_ID, kind: 'j6_signed_pdf', bytes: PDF }, {
+        admin: storage.admin, env: { BILLING_FINANCE_BUCKET: 'another-private-bucket' },
+      }),
+      assertCode('STORAGE_UNAVAILABLE'),
+    );
+    await assert.rejects(
       archiveFinancePdf({ caseId: CASE_ID, kind: 'j6_signed_pdf', bytes: new TextEncoder().encode('<html>') }, { admin: storage.admin }),
       assertCode('INVALID_INPUT'),
     );

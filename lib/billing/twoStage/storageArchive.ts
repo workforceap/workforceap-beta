@@ -54,15 +54,14 @@ type Options = { admin?: Admin; env?: Record<string, string | undefined> };
 
 const SAFE_CASE_ID = /^[A-Za-z0-9-]{1,64}$/;
 const SHA256_HEX = /^[0-9a-f]{64}$/;
-const SAFE_BUCKET = /^[a-z0-9][a-z0-9-]{1,62}$/;
-const FORBIDDEN_BUCKETS = new Set(['member-resumes', 'member-files', 'employer-logos']);
-
 function configuredBucket(env: Record<string, string | undefined>): string {
   const bucket = env.BILLING_FINANCE_BUCKET?.trim() || FINANCE_ARCHIVE_BUCKET;
-  if (!SAFE_BUCKET.test(bucket) || FORBIDDEN_BUCKETS.has(bucket)) {
+  // The dedicated bucket migration proves its private policy boundary. A
+  // different private bucket may grant browser access through Storage RLS.
+  if (bucket !== FINANCE_ARCHIVE_BUCKET) {
     throw new FinanceArchiveError('STORAGE_UNAVAILABLE');
   }
-  return bucket;
+  return FINANCE_ARCHIVE_BUCKET;
 }
 
 function assertCaseId(caseId: string): void {
