@@ -50,6 +50,9 @@ export function recordPaymentReceived(
   if (current.status === 'received') return { ok: false, error: 'Payment is already recorded as received.' };
   if (!isIsoDate(input.receivedOn)) return { ok: false, error: 'Enter the date the payment was received.' };
   if (compareIsoDates(input.receivedOn, billingToday(input.now)) > 0) return { ok: false, error: 'The received date cannot be in the future.' };
+  // Not before the J6 was sent: the pending window is anchored at send date + MIN days (as in the database).
+  const sentOn = addDays(current.expectedFollowUpFrom, -PAYMENT_FOLLOW_UP_MIN_DAYS);
+  if (compareIsoDates(input.receivedOn, sentOn) < 0) return { ok: false, error: 'The received date cannot be before the J6 was sent.' };
   const evidence = input.evidence.trim();
   if (!evidence) return { ok: false, error: 'Record the payment evidence (e.g. remittance advice or deposit reference).' };
   return { ok: true, event: { status: 'received', receivedOn: input.receivedOn, evidence, recordedAt: input.now.toISOString() } };

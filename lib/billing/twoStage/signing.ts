@@ -4,9 +4,15 @@ import 'server-only';
  * Signing gate for two-stage documents. Only the executive signer, Michael
  * A. Brown, may sign, as his own authenticated action.
  *
- *  - Identity binding: `BILLING_EXECUTIVE_SIGNER_USER_ID` (server-only env,
- *    a Supabase Auth user UUID). Unset, empty, malformed or different from the
- *    verified session user means deny. No default id ships anywhere.
+ *  - Identity binding: the single source of truth is the database row
+ *    `billing_designated_signers` (one per organization, unset by default,
+ *    written only by an ops-reviewed change, read-only to the app). The route
+ *    reads it and passes `designatedSignerUserId`; the database triggers
+ *    enforce the same row at sign/send, so the two can never disagree.
+ *    `BILLING_EXECUTIVE_SIGNER_USER_ID` (server env) is only an optional
+ *    cross-check: when set it must equal the database row, else deny. Unset,
+ *    blank or different from the verified session user means deny. No
+ *    default id ships anywhere.
  *  - The caller must also be an active admin of the provider organization.
  *    Being an admin is necessary, never sufficient.
  *  - The printed name/title are server constants, never request input. There
@@ -71,11 +77,16 @@ export function authorizeSigner(input: {
   env?: Record<string, string | undefined>;
   delegation?: SignerDelegation | null;
   delegationEnabled?: boolean;
+  /** The provider organization's billing_designated_signers.user_id (null/undefined = unset: deny). */
+  designatedSignerUserId?: string | null;
 }): SignerDecision {
-  const signerUserId = readExecutiveSignerUserId(input.env);
-  if (!signerUserId || !input.providerOrgId) {
-    return { ok: false, status: 503, reason: 'signer_not_configured', message: 'Signing is disabled until the executive signer account is configured.' };
-  }
+  const designated = input.designatedSignerUserId?.trim().toLowerCase() || null;
+  const envSigner = input.env?.[SIGNER_ENV]?.trim() ? readExecutiveSignerUserId(input.env) ?? 'invalid' : null;
+  const notConfigured: SignerDecision = { ok: false, status: 503, reason: 'signer_not_configured', message: 'Signing is disabled until the executive signer account is configured.' };
+  if (!designated || !input.providerOrgId) return notConfigured;
+  // The env var, when present, is a cross-check only: any disagreement fails closed.
+  if (envSigner !== null && envSigner !== designated) return notConfigured;
+  const signerUserId = designated;
   const actor = input.actor;
   if (!actor || !actor.organizationId || actor.organizationId.toLowerCase() !== input.providerOrgId.toLowerCase()) {
     return { ok: false, status: 403, reason: 'not_provider_org', message: 'Only the training-provider organization can sign J5/J6 documents.' };

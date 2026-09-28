@@ -73,6 +73,31 @@ RETURNS INTERVAL LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
   SELECT interval '23 hours'
 $$;
 
+-- Legacy program slug aliases -> canonical WAP catalog key. Exactly
+-- PROGRAM_SLUG_ALIASES in lib/content/programSlug.ts (the PG16 proof checks parity).
+CREATE OR REPLACE FUNCTION public.billing_program_slug_aliases()
+RETURNS JSONB LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT jsonb_build_object(
+    'ai-practitioner-professional-certificate', 'ai-practitioner-professional-certificate-aws',
+    'ai-professional-practitioner-certificate', 'ai-practitioner-professional-certificate-aws',
+    'ai-professional-developer-certificate-ibm', 'ai-practitioner-professional-certificate-aws',
+    'ai-and-software-development-professional-certificate-ibm', 'software-developer-professional-certificate-ibm',
+    'construction-readiness-certificate-osha-10', 'core-construction-training-certificate',
+    'logistics-and-supply-chain-certificate-clt', 'certified-logistics-technician-clt',
+    'production-technology-certificate-cpt', 'certified-production-technician-cpt',
+    'medical-billing-coding-and-health-information-technology', 'health-information-technology-mchit',
+    'medical-billing-and-coding-certificate', 'health-information-technology-mchit',
+    'it-automation-with-python-professional-certificate-google', 'it-automation-with-python-google',
+    'comptia-a-plus', 'comptia-a-professional-certificate',
+    'management-and-data-analyst-professional-certificate-google-ibm', 'data-analytics-professional-certificate-google',
+    'data-science-and-database-administrator-dba-professional-certificate-ibm', 'data-science-professional-certificate-ibm')
+$$;
+-- canonicalizeProgramSlug(): trim, lowercase, then map a legacy alias to its canonical key.
+CREATE OR REPLACE FUNCTION public.billing_canonical_program_slug(raw TEXT)
+RETURNS TEXT LANGUAGE sql IMMUTABLE SET search_path = pg_catalog, public AS $$
+  SELECT coalesce(public.billing_program_slug_aliases() ->> lower(btrim(raw)), lower(btrim(raw)))
+$$;
+
 -- The letterhead footer facts every signed document prints, exactly as on the
 -- blank WAP letterhead (WAP_BILLING_LETTERHEAD.footer in letterhead.ts; parity proven).
 CREATE OR REPLACE FUNCTION public.billing_letterhead_footer()
@@ -122,7 +147,9 @@ CREATE TABLE IF NOT EXISTS "billing_cases" (
     CONSTRAINT "billing_cases_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "billing_cases_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "billing_cases_member_id_fkey" FOREIGN KEY ("member_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "billing_cases_subject_check" CHECK (coalesce((btrim("subject_member_id") <> '' AND btrim("program_slug") <> '' AND btrim("created_by_subject_id") <> ''), false)),
+    CONSTRAINT "billing_cases_subject_check" CHECK (coalesce((btrim("subject_member_id") <> '' AND btrim("program_slug") <> '' AND btrim("created_by_subject_id") <> ''
+      -- Stored canonical (the insert trigger canonicalizes a legacy alias).
+      AND "program_slug" = public.billing_canonical_program_slug("program_slug")), false)),
     -- member_id is the current live account: the original subject, the survivor
     -- of a recorded member merge (billing_case_identity_guard), or NULL after
     -- erasure. subject_member_id never changes.
@@ -687,9 +714,14 @@ BEGIN
       SELECT 1 FROM public.billing_payment_events e WHERE e.j6_record_id = NEW.j6_record_id AND e.status = 'pending') THEN
     RAISE EXCEPTION 'this J6 already has its pending payment event' USING ERRCODE = '23514';
   END IF;
+  -- received is recorded against the J6 that has the pending event, and not
+  -- before that J6 was sent (its America/Chicago send date).
   IF NEW.status = 'received' AND NOT EXISTS (
-      SELECT 1 FROM public.billing_payment_events e WHERE e.case_id = NEW.case_id AND e.status = 'pending') THEN
+      SELECT 1 FROM public.billing_payment_events e WHERE e.j6_record_id = NEW.j6_record_id AND e.status = 'pending') THEN
     RAISE EXCEPTION 'payment is marked received only after it was pending for a sent J6' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.status = 'received' AND NEW.received_on < (SELECT public.billing_sent_on(r.sent_at) FROM public.billing_stage_records r WHERE r.id = NEW.j6_record_id) THEN
+    RAISE EXCEPTION 'PAYMENT_RECEIVED_BEFORE_SENT: a payment cannot be received before the J6 was sent' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
 END;
@@ -742,6 +774,7 @@ CREATE OR REPLACE FUNCTION public.billing_case_identity_guard()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
+    NEW.program_slug := public.billing_canonical_program_slug(NEW.program_slug);
     IF NEW.member_merged_at IS NOT NULL OR NEW.member_merged_from_id IS NOT NULL THEN
       RAISE EXCEPTION 'a new billing case starts on its own subject' USING ERRCODE = '23514';
     END IF;
@@ -866,6 +899,11 @@ BEGIN
     RAISE EXCEPTION 'J5_LINKED_BY_OPEN_J6: an open J6 follows this J5; void or send it first' USING ERRCODE = '23514';
   END IF;
   IF NEW.status IN ('superseded', 'voided') AND NEW.status IS DISTINCT FROM OLD.status THEN
+    -- Closing a signed or sent record needs who and why; they are frozen with the record.
+    IF OLD.status IN ('signed', 'sent')
+       AND (coalesce(btrim(NEW.closed_by_subject_id), '') = '' OR coalesce(btrim(NEW.close_reason), '') = '') THEN
+      RAISE EXCEPTION 'CLOSE_ACTOR_REASON_REQUIRED: closing a signed or sent record records who (closed_by_subject_id) and why (close_reason)' USING ERRCODE = '23514';
+    END IF;
     -- The closure time is the database wall clock (a caller value is overwritten).
     IF NEW.status = 'superseded' THEN NEW.superseded_at := public.billing_utc_now(); END IF;
     IF NEW.status = 'voided' THEN NEW.voided_at := public.billing_utc_now(); END IF;
@@ -891,6 +929,8 @@ BEGIN
       RAISE EXCEPTION 'a partial-send cancellation applies only to a signed record with send claims' USING ERRCODE = '23514';
     END IF;
     NEW.accepted_roles_at_close := accepted_roles;
+  ELSIF NEW.closed_by_subject_id IS DISTINCT FROM OLD.closed_by_subject_id OR NEW.close_reason IS DISTINCT FROM OLD.close_reason THEN
+    RAISE EXCEPTION 'closed_by_subject_id and close_reason are written only when the record is closed' USING ERRCODE = '23514';
   ELSIF NEW.accepted_roles_at_close IS DISTINCT FROM OLD.accepted_roles_at_close
      OR NEW.send_cancelled_at IS DISTINCT FROM OLD.send_cancelled_at
      OR NEW.send_cancelled_by_subject_id IS DISTINCT FROM OLD.send_cancelled_by_subject_id
@@ -1041,9 +1081,26 @@ BEGIN
   END IF;
   IF NEW.status IS DISTINCT FROM OLD.status AND NOT (
        (OLD.status = 'pending' AND NEW.status IN ('provider_accepted', 'failed', 'ambiguous', 'needs_reconciliation'))
-    OR (OLD.status = 'ambiguous' AND NEW.status IN ('pending', 'provider_accepted', 'failed', 'needs_reconciliation', 'reconciled_delivered', 'reconciled_failed'))
+    -- An ambiguous claim never becomes a plain `failed` (that would unlock a fresh
+    -- key for a copy that may have been delivered): it is retried with the same
+    -- key, accepted, or settled by audited reconciliation.
+    OR (OLD.status = 'ambiguous' AND NEW.status IN ('pending', 'provider_accepted', 'needs_reconciliation', 'reconciled_delivered', 'reconciled_failed'))
     OR (OLD.status = 'needs_reconciliation' AND NEW.status IN ('reconciled_delivered', 'reconciled_failed'))) THEN
     RAISE EXCEPTION 'billing send status cannot move from % to %', OLD.status, NEW.status USING ERRCODE = '23514';
+  END IF;
+  -- `failed` means the provider definitively rejected the copy: the rejection is
+  -- recorded by this very update (a leftover error from an earlier attempt does not count).
+  IF OLD.status = 'pending' AND NEW.status = 'failed'
+     AND NOT (coalesce(btrim(NEW.provider_result), '') <> '' AND NEW.provider_result IS DISTINCT FROM OLD.provider_result)
+     AND NOT (coalesce(btrim(NEW.last_error), '') <> '' AND NEW.last_error IS DISTINCT FROM OLD.last_error) THEN
+    RAISE EXCEPTION 'SEND_FAILED_WITHOUT_PROVIDER_REJECTION: record the provider rejection (provider_result or last_error) to mark a copy failed' USING ERRCODE = '23514';
+  END IF;
+  -- pending -> needs_reconciliation needs a recorded provider outcome (e.g. a 409) or the stale age.
+  IF OLD.status = 'pending' AND NEW.status = 'needs_reconciliation'
+     AND NOT (coalesce(btrim(NEW.provider_result), '') <> '' AND NEW.provider_result IS DISTINCT FROM OLD.provider_result)
+     AND NOT (coalesce(btrim(NEW.last_error), '') <> '' AND NEW.last_error IS DISTINCT FROM OLD.last_error)
+     AND public.billing_utc_now() - OLD.last_claimed_at < public.billing_stale_claim_age() THEN
+    RAISE EXCEPTION 'a pending claim with no provider outcome may still be in flight; it needs reconciliation only after 15 min' USING ERRCODE = '23514';
   END IF;
   -- Marking a pending claim ambiguous without any provider outcome (the stale
   -- sweep) waits for the stale age; with a provider outcome it may happen at once.
@@ -1100,6 +1157,42 @@ DROP TRIGGER IF EXISTS billing_delivery_events_append_only ON public.billing_del
 CREATE TRIGGER billing_delivery_events_append_only
   BEFORE UPDATE OR DELETE ON public.billing_delivery_events
   FOR EACH ROW EXECUTE FUNCTION public.billing_append_only();
+
+-- Signer delegations (disabled: signing refuses any signed_via_delegation_id):
+-- the principal is the designated signer, the delegate a user of the
+-- organization; rows are append-only except a one-time DB-stamped revoked_at.
+CREATE OR REPLACE FUNCTION public.billing_signer_delegation_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'signer delegations are never deleted; revoke them' USING ERRCODE = '23514';
+  END IF;
+  IF TG_OP = 'INSERT' THEN
+    IF NOT EXISTS (SELECT 1 FROM public.billing_designated_signers d
+                   WHERE d.organization_id = NEW.organization_id AND d.user_id = NEW.principal_subject_id) THEN
+      RAISE EXCEPTION 'SIGNER_NOT_DESIGNATED: only the designated signer can delegate' USING ERRCODE = '23514';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM public.users u WHERE u.id = NEW.delegate_subject_id AND u.organization_id = NEW.organization_id) THEN
+      RAISE EXCEPTION 'the delegate must be a user of the organization' USING ERRCODE = '23514';
+    END IF;
+    IF NEW.revoked_at IS NOT NULL THEN
+      RAISE EXCEPTION 'a delegation starts unrevoked' USING ERRCODE = '23514';
+    END IF;
+    NEW.created_at := public.billing_utc_now();
+    RETURN NEW;
+  END IF;
+  IF OLD.revoked_at IS NOT NULL OR NEW.revoked_at IS NULL
+     OR (to_jsonb(NEW) - 'revoked_at') IS DISTINCT FROM (to_jsonb(OLD) - 'revoked_at') THEN
+    RAISE EXCEPTION 'a signer delegation is append-only; only a one-time revocation is allowed' USING ERRCODE = '23514';
+  END IF;
+  NEW.revoked_at := public.billing_utc_now();
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS billing_signer_delegation_guard ON public.billing_signer_delegations;
+CREATE TRIGGER billing_signer_delegation_guard
+  BEFORE INSERT OR UPDATE OR DELETE ON public.billing_signer_delegations
+  FOR EACH ROW EXECUTE FUNCTION public.billing_signer_delegation_guard();
 
 -- Designated signer: a member of its organization; the database stamps the time;
 -- never edited in place (delete and re-designate through an ops-reviewed change).
@@ -1226,6 +1319,7 @@ CREATE OR REPLACE FUNCTION public.billing_stage_record_links_guard()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 DECLARE
   ins BOOLEAN := TG_OP = 'INSERT';
+  prior_status TEXT;
 BEGIN
   -- Each link is checked on INSERT and whenever that link itself changes. A
   -- later status move of a linked row (e.g. the prior J5 being superseded) or
@@ -1266,10 +1360,16 @@ BEGIN
         AND f.stage_record_id = NEW.id AND f.stage_version = NEW.version AND f.rendered_content_sha256 = NEW.content_sha256) THEN
     RAISE EXCEPTION 'signed_artifact_id must be the PDF rendered from this exact record version and content' USING ERRCODE = '23514';
   END IF;
-  IF NEW.prior_j5_record_id IS NOT NULL AND (ins OR NEW.prior_j5_record_id IS DISTINCT FROM OLD.prior_j5_record_id)
-     AND NOT EXISTS (SELECT 1 FROM public.billing_stage_records r
-      WHERE r.id = NEW.prior_j5_record_id AND r.case_id = NEW.case_id AND r.stage = 'j5' AND r.status = 'sent') THEN
-    RAISE EXCEPTION 'prior_j5_record_id must be this case''s sent J5' USING ERRCODE = '23514';
+  -- The prior J5 row is locked FOR SHARE (it conflicts with the J5's own
+  -- UPDATE lock), so a concurrent J5 supersede/void either waits for this J6 and
+  -- then sees it (J5_LINKED_BY_OPEN_J6), or commits first and this re-read sees
+  -- it is no longer sent.
+  IF NEW.prior_j5_record_id IS NOT NULL AND (ins OR NEW.prior_j5_record_id IS DISTINCT FROM OLD.prior_j5_record_id) THEN
+    SELECT r.status INTO prior_status FROM public.billing_stage_records r
+      WHERE r.id = NEW.prior_j5_record_id AND r.case_id = NEW.case_id AND r.stage = 'j5' FOR SHARE;
+    IF prior_status IS DISTINCT FROM 'sent' THEN
+      RAISE EXCEPTION 'prior_j5_record_id must be this case''s sent J5' USING ERRCODE = '23514';
+    END IF;
   END IF;
   IF NEW.external_j5_attestation_id IS NOT NULL AND (ins OR NEW.external_j5_attestation_id IS DISTINCT FROM OLD.external_j5_attestation_id)
      AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
@@ -1288,8 +1388,8 @@ CREATE TRIGGER billing_stage_record_links_guard
 -- lib/billing/twoStage/hours.ts (expectedContractHours); the PG16 proof checks
 -- that both agree for every approved syllabus.
 CREATE OR REPLACE FUNCTION public.billing_contract_hours(program_slug TEXT)
-RETURNS INTEGER LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
-  SELECT CASE program_slug WHEN 'software-developer-professional-certificate-ibm' THEN 200 ELSE 160 END
+RETURNS INTEGER LANGUAGE sql IMMUTABLE SET search_path = pg_catalog, public AS $$
+  SELECT CASE public.billing_canonical_program_slug(program_slug) WHEN 'software-developer-professional-certificate-ibm' THEN 200 ELSE 160 END
 $$;
 
 -- Stage rules the database derives itself rather than trusting the app:
@@ -1414,10 +1514,30 @@ BEGIN
     -- as content.issueDate (no caller backdating), on or after both the actual
     -- class start and the current voucher's receipt (its attested received_on
     -- and its DB-stamped upload date).
+    -- Every sign (J5 and J6): the designated signer signs as himself, on the
+    -- server date. Delegated signing is disabled in the database.
+    IF TG_OP = 'UPDATE' AND OLD.status = 'draft' AND NEW.status = 'signed' THEN
+      SELECT d.user_id INTO designated_signer FROM public.billing_designated_signers d WHERE d.organization_id = NEW.organization_id;
+      IF designated_signer IS NULL THEN
+        RAISE EXCEPTION 'SIGNER_PRINCIPAL_UNSET: no signer is designated for this organization; signing stays closed' USING ERRCODE = '23514';
+      END IF;
+      IF NEW.signed_by_subject_id IS DISTINCT FROM designated_signer THEN
+        RAISE EXCEPTION 'SIGNER_NOT_DESIGNATED: only the designated signer signs' USING ERRCODE = '23514';
+      END IF;
+      IF NEW.signed_via_delegation_id IS NOT NULL THEN
+        RAISE EXCEPTION 'SIGNER_DELEGATION_DISABLED: delegated signing is disabled' USING ERRCODE = '23514';
+      END IF;
+      IF NEW.stage = 'j5' AND NEW.content ->> 'issueDate' IS DISTINCT FROM to_char(public.billing_today(), 'YYYY-MM-DD') THEN
+        RAISE EXCEPTION 'J5_ISSUE_DATE_NOT_SERVER_DATE: a J5 is issued on the server date it is signed (America/Chicago)' USING ERRCODE = '23514';
+      END IF;
+    END IF;
     IF NEW.stage = 'j6' AND TG_OP = 'UPDATE' AND OLD.status = 'draft' AND NEW.status = 'signed' THEN
       IF NEW.content ->> 'issueDate' IS DISTINCT FROM to_char(public.billing_today(), 'YYYY-MM-DD') THEN
         RAISE EXCEPTION 'J6_ISSUE_DATE_NOT_SERVER_DATE: a J6 is issued on the server date it is signed (America/Chicago)' USING ERRCODE = '23514';
       END IF;
+      -- Defence in depth: both receipt dates are already capped at today (the
+      -- attestation dates guard and the DB-stamped upload time), so this only
+      -- fires if those guards were bypassed; kept deliberately.
       IF EXISTS (SELECT 1 FROM public.billing_artifacts f JOIN public.billing_attestations a ON a.id = NEW.voucher_attestation_id
                  WHERE f.id = NEW.voucher_artifact_id
                    AND (public.billing_sent_on(f.created_at) > public.billing_today() OR a.received_on > public.billing_today())) THEN
@@ -1570,7 +1690,8 @@ REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_ap
   public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT),
   public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(),
   public.billing_designated_signer_guard(), public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_voucher_receipt_signature_guard(),
-  public.billing_letterhead_footer(), public.billing_artifact_stamp() FROM PUBLIC;
+  public.billing_letterhead_footer(), public.billing_artifact_stamp(), public.billing_signer_delegation_guard(),
+  public.billing_program_slug_aliases(), public.billing_canonical_program_slug(TEXT) FROM PUBLIC;
 
 DO $$
 DECLARE
@@ -1595,7 +1716,8 @@ BEGIN
         'public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT), '
         'public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(), '
         'public.billing_designated_signer_guard(), public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_voucher_receipt_signature_guard(), '
-        'public.billing_letterhead_footer(), public.billing_artifact_stamp() FROM %I', browser_role);
+        'public.billing_letterhead_footer(), public.billing_artifact_stamp(), public.billing_signer_delegation_guard(), '
+        'public.billing_program_slug_aliases(), public.billing_canonical_program_slug(TEXT) FROM %I', browser_role);
     END IF;
   END LOOP;
 END;
@@ -1625,7 +1747,8 @@ BEGIN
       public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP),
       public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT),
       public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(),
-      public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_letterhead_footer() TO service_role;
+      public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_letterhead_footer(),
+      public.billing_program_slug_aliases(), public.billing_canonical_program_slug(TEXT) TO service_role;
   END IF;
 END;
 $$;

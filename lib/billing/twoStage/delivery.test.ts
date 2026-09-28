@@ -361,6 +361,9 @@ describe('payment tracking', () => {
     assert.equal(recordPaymentReceived(null, { receivedOn: '2026-10-12', evidence: 'x', now }).ok, false);
     assert.equal(recordPaymentReceived(pending, { receivedOn: '2026-10-12', evidence: ' ', now }).ok, false);
     assert.equal(recordPaymentReceived(pending, { receivedOn: '2026-10-21', evidence: 'remittance', now }).ok, false);
+    // Not before the J6 send date (2026-10-01, America/Chicago), matching the database.
+    assert.equal(recordPaymentReceived(pending, { receivedOn: '2026-09-30', evidence: 'remittance', now }).ok, false);
+    assert.equal(recordPaymentReceived(pending, { receivedOn: '2026-10-01', evidence: 'remittance', now }).ok, true);
     const r = recordPaymentReceived(pending, { receivedOn: '2026-10-12', evidence: 'Synthetic remittance advice', now });
     assert.ok(r.ok);
     assert.equal(recordPaymentReceived(r.event, { receivedOn: '2026-10-13', evidence: 'again', now }).ok, false);

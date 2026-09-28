@@ -22,13 +22,19 @@ const actor = (over: Partial<SignerActor> = {}): SignerActor => ({ userId: SIGNE
 
 describe('authorizeSigner: id-bound, fail closed', () => {
   it('allows only the configured executive signer, as an active provider-org admin', () => {
-    assert.deepEqual(authorizeSigner({ actor: actor(), providerOrgId: ORG, stage: 'j5', now: NOW, env }), { ok: true, via: 'executive', signerSubjectId: SIGNER_ID, delegationId: null });
-    assert.equal(authorizeSigner({ actor: actor({ userId: SIGNER_ID.toUpperCase() }), providerOrgId: ORG, stage: 'j6', now: NOW, env }).ok, true);
+    assert.deepEqual(authorizeSigner({ actor: actor(), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID }), { ok: true, via: 'executive', signerSubjectId: SIGNER_ID, delegationId: null });
+    assert.equal(authorizeSigner({ actor: actor({ userId: SIGNER_ID.toUpperCase() }), providerOrgId: ORG, stage: 'j6', now: NOW, env, designatedSignerUserId: SIGNER_ID }).ok, true);
   });
 
-  it('denies everyone while the signer id is unset, empty or malformed (no default ships)', () => {
-    for (const bad of [{}, { BILLING_EXECUTIVE_SIGNER_USER_ID: '' }, { BILLING_EXECUTIVE_SIGNER_USER_ID: '   ' }, { BILLING_EXECUTIVE_SIGNER_USER_ID: 'michael.brown@workforceap.org' }, { BILLING_EXECUTIVE_SIGNER_USER_ID: 'Michael A. Brown' }]) {
-      const d = authorizeSigner({ actor: actor(), providerOrgId: ORG, stage: 'j5', now: NOW, env: bad });
+  it('the database designation is the source of truth; unset, or an env cross-check that disagrees, denies (no default ships)', () => {
+    for (const designatedSignerUserId of [undefined, null, '', '   ']) {
+      const d = authorizeSigner({ actor: actor(), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId });
+      assert.equal(!d.ok && d.reason, 'signer_not_configured', String(designatedSignerUserId));
+    }
+    // No env at all is fine: the database row alone decides.
+    assert.equal(authorizeSigner({ actor: actor(), providerOrgId: ORG, stage: 'j5', now: NOW, designatedSignerUserId: SIGNER_ID }).ok, true);
+    for (const bad of [{ BILLING_EXECUTIVE_SIGNER_USER_ID: OTHER_MICHAEL }, { BILLING_EXECUTIVE_SIGNER_USER_ID: 'michael.brown@workforceap.org' }, { BILLING_EXECUTIVE_SIGNER_USER_ID: 'Michael A. Brown' }]) {
+      const d = authorizeSigner({ actor: actor(), providerOrgId: ORG, stage: 'j5', now: NOW, env: bad, designatedSignerUserId: SIGNER_ID });
       assert.equal(d.ok, false);
       assert.equal(!d.ok && d.reason, 'signer_not_configured');
       assert.equal(!d.ok && d.status, 503);
@@ -41,22 +47,22 @@ describe('authorizeSigner: id-bound, fail closed', () => {
     const first = actor({ userId: OTHER_MICHAEL });
     const second = actor({ userId: '33333333-3333-4333-8333-333333333333' });
     for (const a of [first, second]) {
-      const d = authorizeSigner({ actor: a, providerOrgId: ORG, stage: 'j5', now: NOW, env });
+      const d = authorizeSigner({ actor: a, providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID });
       assert.equal(!d.ok && d.reason, 'not_signer');
     }
     const unset = authorizeSigner({ actor: first, providerOrgId: ORG, stage: 'j5', now: NOW, env: {} });
     assert.equal(!unset.ok && unset.reason, 'signer_not_configured');
-    assert.equal(authorizeSigner({ actor: first, providerOrgId: ORG, stage: 'j5', now: NOW, env: { BILLING_EXECUTIVE_SIGNER_USER_ID: OTHER_MICHAEL } }).ok, true);
+    assert.equal(authorizeSigner({ actor: first, providerOrgId: ORG, stage: 'j5', now: NOW, designatedSignerUserId: OTHER_MICHAEL }).ok, true);
   });
 
   it('denies a generic admin, a non-admin signer, an inactive signer, another tenant, or no session', () => {
     const reasons = [
-      authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env }),
-      authorizeSigner({ actor: actor({ isAdmin: false }), providerOrgId: ORG, stage: 'j5', now: NOW, env }),
-      authorizeSigner({ actor: actor({ isActive: false }), providerOrgId: ORG, stage: 'j5', now: NOW, env }),
-      authorizeSigner({ actor: actor({ organizationId: '99999999-9999-4999-8999-999999999999' }), providerOrgId: ORG, stage: 'j5', now: NOW, env }),
-      authorizeSigner({ actor: null, providerOrgId: ORG, stage: 'j5', now: NOW, env }),
-      authorizeSigner({ actor: actor(), providerOrgId: null, stage: 'j5', now: NOW, env }),
+      authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID }),
+      authorizeSigner({ actor: actor({ isAdmin: false }), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID }),
+      authorizeSigner({ actor: actor({ isActive: false }), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID }),
+      authorizeSigner({ actor: actor({ organizationId: '99999999-9999-4999-8999-999999999999' }), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID }),
+      authorizeSigner({ actor: null, providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID }),
+      authorizeSigner({ actor: actor(), providerOrgId: null, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID }),
     ].map((d) => (d.ok ? 'ok' : d.reason));
     assert.deepEqual(reasons, ['not_signer', 'not_admin', 'inactive', 'not_provider_org', 'not_provider_org', 'signer_not_configured']);
   });
@@ -64,12 +70,12 @@ describe('authorizeSigner: id-bound, fail closed', () => {
   it('keeps delegation disabled: even a valid, approved delegation is refused', () => {
     assert.equal(SIGNER_DELEGATION_ENABLED, false);
     const delegation = { id: 'del-1', principalSubjectId: SIGNER_ID, delegateSubjectId: OTHER_MICHAEL, stage: 'j5' as const, validFrom: new Date('2026-10-01'), validUntil: new Date('2026-11-01'), revokedAt: null };
-    const d = authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env, delegation });
+    const d = authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID, delegation });
     assert.equal(!d.ok && d.reason, 'not_signer');
     // The hook works only if explicitly enabled (not in this PR), for the named stage and window.
-    assert.equal(authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env, delegation, delegationEnabled: true }).ok, true);
-    assert.equal(authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j6', now: NOW, env, delegation, delegationEnabled: true }).ok, false);
-    assert.equal(authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env, delegation: { ...delegation, revokedAt: NOW }, delegationEnabled: true }).ok, false);
+    assert.equal(authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID, delegation, delegationEnabled: true }).ok, true);
+    assert.equal(authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j6', now: NOW, env, designatedSignerUserId: SIGNER_ID, delegation, delegationEnabled: true }).ok, false);
+    assert.equal(authorizeSigner({ actor: actor({ userId: OTHER_MICHAEL }), providerOrgId: ORG, stage: 'j5', now: NOW, env, designatedSignerUserId: SIGNER_ID, delegation: { ...delegation, revokedAt: NOW }, delegationEnabled: true }).ok, false);
   });
 });
 
