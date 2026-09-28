@@ -5,20 +5,11 @@ import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId, getSubjectOrganizationId } from '@/lib/tenant/organization';
 import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
-import { auditLog } from '@/lib/audit';
-import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
-import { getProgramBySlug } from '@/lib/content/programs';
-import { createPacketSchema, sumLineItems } from '@/lib/billing/packetSchema';
-import { isUniqueViolation, nextPacketNumber } from '@/lib/billing/packetNumber';
-import { getPacketNumberPrefix } from '@/lib/billing/providerIdentity';
-import { resolveProgramTitle, serializeBillingPacket } from '@/lib/billing/packetAccess';
+import { serializeBillingPacket } from '@/lib/billing/packetAccess';
 
 /**
- * J5 invoice + J6 cover letter packets for one member.
- *   GET  -> list (newest first)
- *   POST -> create a signed packet from the admin form
- * Admin only; org admins stay inside their tenant, super-admins may act on
- * the subject tenant (same rule as the member program route).
+ * Read-only history for the retired combined J5-invoice/J6-letter packet.
+ * New requests use the separate J5 quote and J6 voucher workflow.
  */
 async function resolveAdminSubject(userId: string, memberId: string) {
   const superAdmin = await isSuperAdmin(userId);
@@ -26,15 +17,10 @@ async function resolveAdminSubject(userId: string, memberId: string) {
   if (!subjectOrgId) return null;
   const actorOrgId = superAdmin ? null : await getActorOrganizationId(userId);
   if (!canAdminActInSubjectOrganization({ actorOrgId, subjectOrgId, superAdmin })) return null;
-  const member = await prisma.user.findFirst({
+  return prisma.user.findFirst({
     where: { id: memberId, organizationId: subjectOrgId, deletedAt: null },
-    select: { id: true, fullName: true, email: true, organizationId: true },
+    select: { id: true, organizationId: true },
   });
-  return member;
-}
-
-function isoToDate(iso: string): Date {
-  return new Date(`${iso}T00:00:00.000Z`);
 }
 
 export const GET = withApiGuc(async (_request: Request, { params }: { params: Promise<{ id: string }> }) => {
@@ -58,7 +44,7 @@ export const GET = withApiGuc(async (_request: Request, { params }: { params: Pr
   }
 });
 
-export const POST = withApiGuc(async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
+export const POST = withApiGuc(async (_request: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -67,100 +53,13 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
     const member = await resolveAdminSubject(user.id, id);
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
 
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-    }
-    const parsed = createPacketSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Validation failed' }, { status: 400 });
-    }
-    const input = parsed.data;
-
-    // The program must be one this org can bill for: the static catalog or the
-    // organization's own catalog row.
-    const program = getProgramBySlug(input.programSlug);
-    const catalogRow = program
-      ? null
-      : await prisma.organizationProgramCatalog.findFirst({
-          where: { organizationId: member.organizationId, programSlug: input.programSlug },
-          select: { name: true },
-        });
-    if (!program && !catalogRow) {
-      return NextResponse.json({ error: 'Unknown program for this organization' }, { status: 400 });
-    }
-    const programTitle = resolveProgramTitle(input.programSlug, catalogRow?.name);
-
-    const totalAmount = sumLineItems(input.lineItems);
-    if (totalAmount <= 0) {
-      return NextResponse.json({ error: 'The invoice total must be greater than zero' }, { status: 400 });
-    }
-    const now = new Date();
-    const prefix = getPacketNumberPrefix();
-
-    let created = null;
-    for (let attempt = 0; attempt < 3 && !created; attempt++) {
-      try {
-        created = await prisma.$transaction(async (tx) => {
-          const packetNumber = await nextPacketNumber(tx, { organizationId: member.organizationId, prefix, now });
-          return tx.trainingBillingPacket.create({
-            data: {
-              organizationId: member.organizationId,
-              memberId: member.id,
-              programSlug: input.programSlug,
-              packetNumber,
-              status: 'signed',
-              invoiceDate: isoToDate(input.invoiceDate),
-              dueDate: input.dueDate ? isoToDate(input.dueDate) : null,
-              billToName: input.billToName,
-              billToAttention: input.billToAttention || null,
-              billToAddress: input.billToAddress || null,
-              billToEmail: input.billToEmail || null,
-              referenceNumber: input.referenceNumber || null,
-              lineItems: input.lineItems.map((row) => ({ description: row.description, hours: row.hours ?? null, amount: row.amount })),
-              totalAmount,
-              coverLetterBody: input.coverLetterBody,
-              signerName: input.signerName,
-              signerTitle: input.signerTitle,
-              signatureImage: input.signatureImage ?? null,
-              signedAt: now,
-              signedById: user.id,
-            },
-          });
-        });
-      } catch (err) {
-        if (!isUniqueViolation(err) || attempt === 2) throw err;
-      }
-    }
-    if (!created) return NextResponse.json({ error: 'Could not allocate an invoice number' }, { status: 500 });
-
-    // Dual audit (WAP-18): a signed billing packet is a financial record.
-    // Metadata carries identifiers and totals only — bill-to details stay on the packet row.
-    void auditLog({
-      actorUserId: user.id,
-      action: 'admin_billing_packet_create',
-      targetType: 'training_billing_packet',
-      targetId: created.id,
-      metadata: {
-        memberId: member.id,
-        programSlug: input.programSlug,
-        packetNumber: created.packetNumber,
-        totalAmount,
-        orgId: member.organizationId,
+    return NextResponse.json(
+      {
+        code: 'LEGACY_BILLING_FLOW_RETIRED',
+        error: 'The combined J5 invoice and J6 letter workflow has been retired. Use the separate J5 quote and J6 voucher workflow when it is available.',
       },
-    }).catch(() => {});
-    void logAuditEvent({
-      user: { id: user.id, role: 'admin' },
-      verb: 'created',
-      object: { type: 'TrainingBillingPacket', id: created.id },
-      result: { success: true, extensions: { memberId: member.id, programSlug: input.programSlug, totalAmount } },
-      request: auditRequestMeta(request),
-      orgId: member.organizationId,
-    }).catch(() => {});
-
-    return NextResponse.json({ ok: true, packet: serializeBillingPacket(created, programTitle) }, { status: 201 });
+      { status: 410 },
+    );
   } catch (error) {
     console.error('[admin/members/billing-packets POST]', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
