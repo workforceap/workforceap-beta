@@ -59,8 +59,8 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 /** The send route may take up to its 60 s maxDuration. */
 const SEND_TIMEOUT_MS = 65_000;
 
-export const READ_UNREACHABLE_MESSAGE = 'The billing service could not be reached. Reload to try again.';
-export const MUTATION_UNKNOWN_MESSAGE =
+const READ_UNREACHABLE_MESSAGE = 'The billing service could not be reached. Reload to try again.';
+const MUTATION_UNKNOWN_MESSAGE =
   'The request did not finish, so its result is not known. Reload the case and check its status before trying again.';
 
 function isErrorBody(value: unknown): value is ApiErrorBody {
@@ -114,7 +114,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<ApiR
   };
 }
 
-export function twoStageBase(memberId: string): string {
+function twoStageBase(memberId: string): string {
   return `/api/admin/members/${encodeURIComponent(memberId)}/billing/two-stage`;
 }
 

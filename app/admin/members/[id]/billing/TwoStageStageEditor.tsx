@@ -36,7 +36,7 @@ const FIELD_LABELS: Readonly<Record<DraftField, string>> = {
 const FIELD_HINTS: Readonly<Partial<Record<DraftField, string>>> = {
   boardName: 'The board that issues the voucher, for example “Workforce Solutions Capital Area”.',
   'counselor.name': 'Any counselor can be entered; it does not have to be the assigned one.',
-  'counselor.phone': 'Printed on the document. Not stored anywhere else.',
+  'counselor.phone': 'Printed on the document with the counselor’s name and email.',
 };
 
 const INPUT_TYPES: Readonly<Partial<Record<DraftField, 'email' | 'tel' | 'text'>>> = {
@@ -80,7 +80,7 @@ function FieldBlockers({ blockers }: { blockers: readonly Blocker[] }) {
   );
 }
 
-export type TwoStageStageEditorProps = {
+type TwoStageStageEditorProps = {
   memberId: string;
   caseId: string;
   stage: BillingStage;
@@ -114,6 +114,9 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
   const [saved, setSaved] = useState<DraftSaveDto | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const loaded = useRef(false);
+  // Read at load only: a summary refresh must not reset what staff are typing.
+  const j5CurrentRef = useRef(j5Current);
+  j5CurrentRef.current = j5Current;
   const seq = useRef(0);
   const reviewAbort = useRef<AbortController | null>(null);
 
@@ -163,7 +166,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
       sources[f] = field.source;
     }
     // A J6 starts from the counselor printed on the J5 when nothing else is on file.
-    const j5Counselor = stage === 'j6' ? j5Current?.recipients.find((r) => r.role === 'counselor') : undefined;
+    const j5Counselor = stage === 'j6' ? j5CurrentRef.current?.recipients.find((r) => r.role === 'counselor') : undefined;
     if (j5Counselor) {
       const fill: Array<[DraftField, string | null]> = [
         ['counselor.name', j5Counselor.name],
@@ -182,7 +185,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
     setReview(dto);
     // The live-review effect checks the loaded values (including any J5 prefill) once.
     loaded.current = true;
-  }, [memberId, caseId, stage, j5Current]);
+  }, [memberId, caseId, stage]);
 
   useEffect(() => {
     void load();
@@ -238,7 +241,9 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
       ? 'Checking the draft…'
       : !review.complete
         ? 'Complete the highlighted fields and the steps listed before saving. Nothing is saved until then.'
-        : null;
+        : current && review.versionHashIfSaved === current.versionHash
+          ? 'No changes to save.'
+          : null;
   const saveBlockers = saveError?.body?.code === 'DRAFT_INCOMPLETE' ? saveError.body.blockers ?? [] : [];
   const reviewBlockers = review?.blockers ?? [];
   const invoiceChoices = boardInvoices.filter((a) => a.kind === 'board_invoice');

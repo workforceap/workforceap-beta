@@ -551,6 +551,35 @@ function ClosePanel({ ctx, stage, view }: { ctx: PanelContext; stage: BillingSta
   );
 }
 
+/**
+ * M1 is adding the designated signer's signature image (a PNG only Michael
+ * uploads, signed in as himself). Until dto.ts carries its code, this slot
+ * looks for it by name. It shows only to the designated signer and only while
+ * the server reports the asset missing; everyone else sees the blocker text.
+ */
+const SIGNATURE_ASSET_MISSING = 'SIGNATURE_ASSET_MISSING';
+
+function signatureAssetMissing(view: J5StageView | J6StageView, gates: CaseSummaryDto['gates']): string | null {
+  const blocker = view.blockers.find((b) => String(b.code) === SIGNATURE_ASSET_MISSING);
+  if (blocker) return blocker.message;
+  const gate = Object.values(gates).find((g) => g.enabled === false && String(g.code) === SIGNATURE_ASSET_MISSING);
+  return gate ? gate.message ?? 'Upload your signature image before signing.' : null;
+}
+
+function SignatureAssetSlot({ message }: { message: string }) {
+  return (
+    <div className={styles.signatureSlot} role="group" aria-label="Your signature">
+      <p className={styles.sectionLabel}>Your signature</p>
+      <p className={styles.panelFact}>{message}</p>
+      <ActionButton
+        label="Upload your signature (PNG)"
+        reason="The signature upload opens when its server route is released; nothing is stored from this page yet."
+        variant="secondary"
+      />
+    </div>
+  );
+}
+
 export function StageLifecycle({
   ctx,
   stage,
@@ -579,6 +608,7 @@ export function StageLifecycle({
   }, [hash]);
 
   const isDraft = current?.status === 'draft';
+  const signatureMissing = signatureAssetMissing(view, ctx.gates);
   const freezeReason = isDraft ? null : current ? `This version is ${current.status}; only a draft is reviewed for signature.` : 'Save a draft first.';
 
   const signGate = closedGate(ctx.gates, ACTION_GATES.sign);
@@ -646,6 +676,8 @@ export function StageLifecycle({
           <CheckField label="I have reviewed this exact version and make this statement." checked={intentChecked} onChange={setIntentChecked} />
         </div>
       ) : null}
+
+      {viewer.isDesignatedSigner && signatureMissing ? <SignatureAssetSlot message={signatureMissing} /> : null}
 
       <ActionButton
         label={`Sign ${stage.toUpperCase()}`}

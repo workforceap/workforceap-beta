@@ -18,7 +18,6 @@ export const CASE_ID = '22222222-2222-4222-8222-222222222222';
 export const J5_RECORD_ID = '33333333-3333-4333-8333-333333333333';
 export const VOUCHER_ID = '44444444-4444-4444-8444-444444444444';
 export const HASH_A = 'a'.repeat(64);
-export const HASH_B = 'b'.repeat(64);
 export const VOUCHER_SHA = 'c0ffee'.padEnd(64, '0');
 
 export const GATE_TEXT = {
@@ -30,7 +29,7 @@ export const GATE_TEXT = {
 
 const open: GateState = { enabled: true, code: null, message: null };
 
-export function closedGates(): CaseSummaryDto['gates'] {
+function closedGates(): CaseSummaryDto['gates'] {
   return {
     migration: open,
     providerOrg: open,

@@ -56,7 +56,7 @@ type StageReadiness = Partial<Record<ReadinessKey, boolean>>;
 
 const GATE_CODE_SET: ReadonlySet<string> = new Set(GATE_CODES);
 
-export type TwoStageBillingWorkbenchProps = {
+type TwoStageBillingWorkbenchProps = {
   memberName: string;
   /** Shown only until the case summary is loaded; afterwards contacts come from the summary. */
   memberEmail: string | null;
@@ -186,7 +186,7 @@ function RecipientList({ stage, view }: { stage: BillingStage; view: StageView |
   return (
     <>
       <span>{rolesSentence(roles)}</span>
-      <span className={styles.recipientNote}> Each recipient gets their own copy; nobody is copied in secret.</span>
+      <span className={styles.recipientNote}>Each recipient gets their own copy of the email.</span>
       {view ? (
         <ul className={styles.recipientList} aria-label={`${stage.toUpperCase()} recipients`}>
           {rows.map((r) => {

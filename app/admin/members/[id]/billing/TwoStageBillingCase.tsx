@@ -11,7 +11,7 @@ import styles from './TwoStageBillingWorkbench.module.css';
 
 export type EnrolledProgram = { slug: string; title: string };
 
-export type TwoStageBillingCaseProps = {
+type TwoStageBillingCaseProps = {
   memberId: string;
   memberName: string;
   memberEmail: string | null;

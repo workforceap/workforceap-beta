@@ -242,4 +242,31 @@ describe('two-stage billing actions', () => {
     expect(within(tasks).queryByRole('button')).toBeNull();
     expect(within(tasks).queryByRole('textbox')).toBeNull();
   });
+
+  it('shows the signature upload step only to the designated signer while the server reports it missing', async () => {
+    const withBlocker = (viewer: CaseSummaryDto['viewer']) => {
+      const summary = j5DraftSummary({ viewer });
+      summary.j5 = {
+        ...summary.j5,
+        // Not in dto.ts yet: M1 adds the signer signature asset and its code.
+        blockers: [...summary.j5.blockers, { code: 'SIGNATURE_ASSET_MISSING' as never, message: 'Upload your signature image before signing.', hardHold: false }],
+      };
+      return summary;
+    };
+    mockCase(() => withBlocker({ isExecutiveSigner: true, isDesignatedSigner: true }));
+    const { unmount } = renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    const slot = within(lifecycle('J5')).getByRole('group', { name: 'Your signature' });
+    expect(within(slot).getByText('Upload your signature image before signing.')).toBeInTheDocument();
+    expect(within(slot).getByRole('button', { name: 'Upload your signature (PNG)' })).toBeDisabled();
+    unmount();
+    vi.unstubAllGlobals();
+
+    mockCase(() => withBlocker({ isExecutiveSigner: false, isDesignatedSigner: false }));
+    renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    expect(within(lifecycle('J5')).queryByRole('group', { name: 'Your signature' })).toBeNull();
+    // Staff still see why signing waits.
+    expect(within(screen.getByRole('region', { name: 'Quote / Voucher Request' })).getByText('Upload your signature image before signing.')).toBeInTheDocument();
+  });
 });

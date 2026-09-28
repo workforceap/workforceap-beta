@@ -487,6 +487,27 @@
   min-width: 0;
 }
 
+.recipientNote {
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.signatureSlot {
+  display: grid;
+  gap: 0.5rem;
+  padding: var(--wa-pad-sm);
+  border: 1px dashed color-mix(in srgb, var(--wa-info) 45%, var(--wa-border));
+  border-radius: var(--wa-radius-sm);
+  background: color-mix(in srgb, var(--wa-info) 6%, var(--wa-surface));
+}
+
+.freeze a,
+.panelFact a {
+  color: var(--wa-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Waiting on Michael */
 .signerTasks {
   display: grid;
@@ -670,6 +691,9 @@
 .checkField input {
   width: 1.1rem;
   height: 1.1rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
   margin-top: 0.15rem;
   flex: 0 0 auto;
   accent-color: var(--wa-accent);
