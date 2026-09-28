@@ -29,6 +29,14 @@ loaded, not in the UI:
   refuses `preset=demographics` (403) for restricted partners.
 - Partner milestone emails drop `Employer` / `Role`; the weekly digest drops
   the job title.
+- The weekly digest announces a placement only once its start date is
+  verified, in the portal's wording (`partnerPlacementLabel`), and counts only
+  verified placements as the Placed stage. An unverified member self-report is
+  never announced.
+- The signup acknowledgement to a sponsoring partner
+  (`sendSchoolEnrollmentPartnerAckEmail`) is sent to any sponsoring partner
+  type, so it follows the same rule: restricted partners get no applicant
+  email or grade.
 
 The partner payout flow does not depend on the removed fields: eligibility is
 `placedAt` + `startDateVerified` ([`payoutEligibility.ts`](../lib/partner/payoutEligibility.ts)),
@@ -44,6 +52,29 @@ context, share counts, emails) unless `Profile.ferpaConsentGiven` is true.
 alone does not unhide a minor: it is consent for training activation, not for
 sharing records with a third party. The Prisma filter is
 `withPartnerMemberVisibility`; the attention queue's raw SQL mirrors it.
+
+The rule also covers partner writes and partner-bound email:
+
+- `/api/partner/outreach` lists no outreach about a hidden member, and
+  outreach POST, `/api/partner/referrals` POST and
+  `/api/partner/referrals/[memberId]` PATCH answer 404 for one, the same
+  answer as for a member the partner never referred.
+- A hidden member's own placement confirmation writes no partner timeline
+  event, and the attention timeline leaves out any older event whose actor is
+  a hidden member.
+- The signup acknowledgement, the new-member-assigned email and milestone
+  emails are not sent about a hidden member. At signup the applicant has no
+  FERPA consent yet, so an under-18 applicant is never announced to a
+  non-school partner.
+- The "Payout due" count uses the same population as the Placed tile.
+
+Two details the real-database suite
+([`partnerVisibility.realdb.test.ts`](../lib/partner/partnerVisibility.realdb.test.ts))
+pins: the hidden-member condition is NULL-safe (`dob IS NOT NULL AND dob >
+cutoff`), because Prisma negates a to-one filter in SQL and a bare
+`dob > cutoff` hid every adult with no saved date of birth; and on Feb 29 the
+cutoff clamps to Feb 28, bound in SQL as a `YYYY-MM-DD` date so the session
+time zone cannot move it.
 
 ## Disclosure at signup
 

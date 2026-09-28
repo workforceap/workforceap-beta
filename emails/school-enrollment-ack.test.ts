@@ -52,4 +52,19 @@ describe('schoolEnrollmentPartnerAckHtml', () => {
     assert.ok(html.includes('by hand and emails you when it&rsquo;s done'));
     assert.ok(html.includes('https://www.workforceap.org/partner'));
   });
+
+  it('leaves the email line out when the partner tier has no member contact', () => {
+    const html = schoolEnrollmentPartnerAckHtml({
+      partnerName: 'Neighborhood Referral Network',
+      studentName: 'Jamie Student',
+      studentEmail: null,
+      programInterest: 'IT Support Professional Certificate (IBM)',
+      gradeLevel: null,
+      partnerPortalUrl: 'https://www.workforceap.org/partner',
+    });
+    assert.ok(html.includes('Jamie Student'));
+    assert.ok(!html.includes('Email:</strong>'));
+    assert.ok(!html.includes('Grade:'));
+    assert.ok(!html.includes('@example.com'));
+  });
 });

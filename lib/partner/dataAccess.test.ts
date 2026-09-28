@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   isMinorProfile,
   minorBirthDateCutoff,
+  minorBirthDateCutoffIsoDate,
   partnerDataAccess,
   partnerDisclosureMessageKey,
   partnerEmailDetails,
@@ -84,6 +85,29 @@ test('a minor is the isMinor flag or a saved date of birth under 18', () => {
   assert.equal(minorBirthDateCutoff(NOW).toISOString(), '2008-09-28T00:00:00.000Z');
 });
 
+test('on Feb 29 the cutoff clamps to Feb 28, so a Mar 1 birthday 18 years back is still a minor', () => {
+  const leapDay = new Date('2028-02-29T15:00:00Z');
+  // 2010 has no Feb 29; Date.UTC would roll to Mar 1 2010.
+  assert.equal(minorBirthDateCutoff(leapDay).toISOString(), '2010-02-28T00:00:00.000Z');
+  assert.equal(minorBirthDateCutoffIsoDate(leapDay), '2010-02-28');
+  assert.equal(isMinorProfile({ isMinor: false, dob: '2010-02-28' }, leapDay), false, '18 on Feb 28 2028');
+  assert.equal(isMinorProfile({ isMinor: false, dob: '2010-03-01' }, leapDay), true, 'turns 18 on Mar 1 2028');
+  // Every other day is unchanged, including the day after.
+  assert.equal(minorBirthDateCutoffIsoDate(new Date('2028-03-01T00:00:00Z')), '2010-03-01');
+  assert.equal(minorBirthDateCutoffIsoDate(new Date('2028-02-28T23:59:59Z')), '2010-02-28');
+  assert.equal(minorBirthDateCutoffIsoDate(new Date('2026-12-31T23:59:59Z')), '2008-12-31');
+  // The Prisma filter uses the same clamped cutoff.
+  const hidden = partnerHiddenMemberWhere(partnerDataAccess({ partnerType: 'community' }), leapDay);
+  assert.deepEqual(hidden?.profile, {
+    is: { ferpaConsentGiven: false, OR: [{ isMinor: true }, { dob: { not: null, gt: new Date('2010-02-28T00:00:00.000Z') } }] },
+  });
+});
+
+test('the SQL cutoff is a YYYY-MM-DD calendar date, never a timestamp', () => {
+  assert.equal(minorBirthDateCutoffIsoDate(NOW), '2008-09-28');
+  assert.match(minorBirthDateCutoffIsoDate(new Date('2026-01-01T00:30:00Z')), /^\d{4}-\d{2}-\d{2}$/);
+});
+
 test('minors are hidden from non-school partners unless FERPA consent is on file', () => {
   const minor = { isMinor: true, ferpaConsentGiven: false };
   const consented = { isMinor: true, ferpaConsentGiven: true };
@@ -107,7 +131,7 @@ test('the Prisma filter appends to NOT and never overwrites existing exclusions'
     profile: {
       is: {
         ferpaConsentGiven: false,
-        OR: [{ isMinor: true }, { dob: { gt: new Date('2008-09-28T00:00:00.000Z') } }],
+        OR: [{ isMinor: true }, { dob: { not: null, gt: new Date('2008-09-28T00:00:00.000Z') } }],
       },
     },
   });

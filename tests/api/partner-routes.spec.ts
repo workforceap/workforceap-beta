@@ -450,6 +450,9 @@ describe('POST /api/partner/referrals', () => {
             deletedAt: null,
             ...MEMBER_ONLY_WHERE,
           }),
+          // The partner minor rule rides alongside it, never replacing it
+          // (lib/partner/dataAccess.ts; tests/api/partner-hidden-member-routes.spec.ts).
+          AND: [{ member: { NOT: [expect.objectContaining({ profile: expect.any(Object) })] } }],
         }),
       })
     );
