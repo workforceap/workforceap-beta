@@ -160,9 +160,9 @@ function contentSourcedStrings(content: TwoStageContent): string[] {
 }
 
 /** Remove the fixed sentences, then content values, then fixed labels; return what is left. */
-function unsourcedRemainder(text: string, content: TwoStageContent): string {
+function unsourcedRemainder(text: string, content: TwoStageContent, opts: { receiptPending?: boolean } = {}): string {
   let rest = ` ${text} `;
-  for (const sentence of fixedPrintedText(content).map(collapse).sort((a, b) => b.length - a.length)) {
+  for (const sentence of fixedPrintedText(content, opts).map(collapse).sort((a, b) => b.length - a.length)) {
     assert.ok(rest.includes(sentence), `fixed sentence not printed: ${sentence}`);
     rest = rest.split(sentence).join(' ');
   }
@@ -202,12 +202,12 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
   it('changing any bound letterhead, title, signer or payment string changes the PDF text', async () => {
     const base = j6();
     const variants: Array<[string, J6Content]> = [
-      ['header', { ...base, letterhead: { ...base.letterhead, headerLines: ['Synthetic Org', 'Synthetic tagline', 'www.synthetic.test'] } }],
+      ['header', { ...base, letterhead: { ...base.letterhead, headerLines: ['Synthetic Org', 'www.synthetic.test'] } }],
       ['footer', { ...base, letterhead: { ...base.letterhead, footer: { website: 'www.synthetic.test', phone: '(555) 000-1111', address: '1 Synthetic Way, Austin, TX 78701', addressLines: ['1 Synthetic Way', 'Austin, TX 78701'] } } }],
       ['title', { ...base, title: 'Synthetic Cover Letter' }],
       ['signer', { ...base, signer: { name: 'Synthetic Signer', title: 'Director', line: 'Synthetic Signer — Director' } }],
       ['one-line address', { ...base, letterhead: { ...base.letterhead, footer: { ...base.letterhead.footer, addressLines: ['207 Settlers Valley Suite C, Pflugerville, TX 78660'] } } }],
-      ['payment', { ...base, paymentFollowUp: { ...base.paymentFollowUp, wording: 'Synthetic follow-up wording.' } }],
+      ['payment', { ...base, paymentFollowUp: { ...base.paymentFollowUp, instruction: 'Synthetic instruction.', wording: 'Synthetic follow-up wording.' } }],
     ];
     for (const [label, content] of variants) {
       const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
@@ -224,19 +224,10 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
       j6: string[];
     };
     const a = ref.approvedFrozenStrings;
-    // Frozen content exactly as the approved references print it. Where an M1 constant still
-    // differs (see the todo below) the fixture overrides the frozen value; the renderer only ever
-    // prints what the content holds.
-    const approved = <T extends TwoStageContent>(content: T, title: string): T => ({
-      ...content,
-      title,
-      letterhead: { ...content.letterhead, headerLines: [a.organizationName, content.letterhead.headerLines[1], a.website], footer: { website: a.website, phone: a.phone, address: a.addressLines.join(', '), addressLines: a.addressLines } },
-      signer: { name: a.signerName, title: a.signerTitle, line: `${a.signerName} — ${a.signerTitle}` },
-    });
+    // M1 now freezes exactly the approved strings (checked below), so the content is used as built.
     const refContacts = { student: ref.contacts.student, counselor: ref.contacts.counselor, boardName: ref.contacts.boardName };
-    const quote = approved(j5({ ...refContacts, issueDate: '2026-09-27' }), a.titleJ5);
-    const letterBase = j6({ voucherReference: ref.contacts.voucherReference, ...refContacts, finance: ref.contacts.finance });
-    const letter = approved({ ...letterBase, paymentFollowUp: { ...letterBase.paymentFollowUp, wording: a.paymentFollowUp } }, a.titleJ6);
+    const quote = j5({ ...refContacts, issueDate: '2026-09-27' });
+    const letter = j6({ voucherReference: ref.contacts.voucherReference, ...refContacts, finance: ref.contacts.finance });
     for (const [content, lines] of [[quote, ref.j5], [letter, ref.j6]] as const) {
       const expected = collapse(lines.map((line) => line.replace('{className}', content.training.className)).join(' '));
       const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
@@ -248,17 +239,21 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     assert.equal(a.phone, '(512) 825-2896');
   });
 
-  it('M1 frozen constants equal the approved reference strings', { todo: 'M1 (#2699) still freezes Quote/Voucher Request (unspaced) and the short payment wording' }, () => {
+  it('M1 frozen constants equal the approved reference strings', () => {
     const ref = JSON.parse(readFileSync(join(process.cwd(), 'tests/fixtures/billing/two-stage-layout-reference.json'), 'utf8')) as { approvedFrozenStrings: Record<string, unknown> };
     const a = ref.approvedFrozenStrings;
     const quote = j5();
     const letter = j6();
     assert.equal(quote.title, a.titleJ5);
     assert.equal(letter.title, a.titleJ6);
+    assert.equal(quote.letterhead.headerLines[0], a.organizationName);
     assert.equal(quote.letterhead.footer.phone, a.phone);
     assert.deepEqual(quote.letterhead.footer.addressLines, a.addressLines);
     assert.equal(quote.letterhead.footer.website, a.website);
+    assert.equal(quote.signer.name, a.signerName);
+    assert.equal(quote.signer.title, a.signerTitle);
     assert.equal(letter.paymentFollowUp.wording, a.paymentFollowUp);
+    assert.equal(letter.paymentFollowUp.instruction, a.paymentInstruction);
   });
 
   it('refuses logo bytes that differ from the frozen hash (LOGO_CHANGED)', () => {
@@ -267,13 +262,13 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     assert.throws(() => toRendererFacts(j5(), { logoPng: other, frozenAt: '2026-10-01T18:30:00.000Z' }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'LOGO_CHANGED');
   });
 
-  it('refuses to preview a held J6 (PREVIEW_UNAVAILABLE_HELD) and lists the holds', () => {
+  it('renders a held J6 DRAFT for review with the on-hold badge (open holds never block a preview)', async () => {
     const held = j6({ authorizedEndDate: '2027-01-31' });
     assert.deepEqual(held.reviewReasons, ['voucher_period_conflict']);
-    assert.throws(
-      () => toRendererFacts(held, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }),
-      (e: unknown) => e instanceof RendererAdapterError && e.code === 'PREVIEW_UNAVAILABLE_HELD' && e.holds.includes('voucher_period_conflict'),
-    );
+    const text = await pageText(await renderDraftFromContent(held, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
+    assert.ok(text.startsWith('DRAFT - ON HOLD - NOT SIGNABLE'));
+    assert.doesNotMatch(text, /DRAFT - SIGNATURE REQUIRED/u);
+    assert.match(unsourcedRemainder(text, held), /^[\s|;,]*$/u);
   });
 
   it('flags a voucher reference over 80 characters and unprintable glyphs with the field', () => {
@@ -291,15 +286,25 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     await assert.rejects(renderDraftFromContent(wide, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'TEXT_NOT_PRINTABLE');
   });
 
-  it('J6 needs the designated signer receipt-signature id, never the staff voucher attestation', () => {
+  it('J6 DRAFT without the designated signer receipt attestation prints the pending enclosure line', async () => {
     const content = j6();
-    assert.throws(
-      () => toRendererFacts(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }),
-      (e: unknown) => e instanceof RendererAdapterError && e.code === 'RECEIVING_SIGNATURE_NOT_ATTESTED',
-    );
+    const pendingFacts = toRendererFacts(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' });
+    assert.ok(pendingFacts.stage === 'j6' && pendingFacts.signedVoucher.receivingSignatureAttestationId === null);
+    const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: null }));
+    assert.ok(text.includes(`Enclosure for issued packet: received, signed training voucher ${content.voucher.reference} (receiving signature not yet attested)`));
+    assert.match(unsourcedRemainder(text, content, { receiptPending: true }), /^[\s|;,]*$/u);
+    // With the attestation the pending note is gone, and the staff voucher attestation id is never used in its place.
     const facts = toRendererFacts(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' });
     assert.ok(facts.stage === 'j6' && facts.signedVoucher.receivingSignatureAttestationId === 'rsig-0001');
     assert.notEqual(content.voucher.attestationId, 'rsig-0001');
+    const signedText = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
+    assert.doesNotMatch(signedText, /not yet attested/u);
+  });
+
+  it('wraps a long voucher reference on the pending enclosure line instead of overflowing', async () => {
+    const content = j6({ voucherReference: 'PO-2026-WSCA-000123-ITSUPPORT-REISSUED-B' });
+    const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }));
+    assert.ok(text.includes('(receiving signature not yet attested)'));
   });
 
   it('J5 renderer input never carries J6 voucher or finance facts', () => {

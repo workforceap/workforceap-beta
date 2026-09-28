@@ -387,13 +387,12 @@ the reference PDFs themselves are not committed.
 | TRAINING DETAILS: Student, Class, Training hours, Class start, Class end (J6: Voucher / PO) | `student.name`, `training.className`, `training.contactHours`, `training.classStartDate`, `training.classEndDate`; J6 `voucher.reference` (the current voucher version) |
 | The single `Tuition & Fees $7,500.00` row | `lineItems[0].label`, `totalCents` |
 | J5 voucher-return and file-retention sentence; `Copy: {student} \| {email}` | fixed template with `headerLines[0]`; `student.name`, `student.email` |
-| J6 payment sentence ending with the follow-up wording | fixed template with `headerLines[0]`, then `paymentFollowUp.wording` |
+| J6 payment sentences | `paymentFollowUp.instruction`, then `paymentFollowUp.wording` (both frozen by M1) |
 | J6 `Enclosure for issued packet: received, signed training voucher {PO}` | fixed template with `voucher.reference` |
 | Signature block: `Respectfully,`, `Executive signature required before issue` (while unsigned), signer name, `{title}, {organization}` | `signer.name`, `signer.title`, `headerLines[0]` |
 | Footer: organization; website \| phone; address | `headerLines[0]`; `letterhead.footer.website`, `letterhead.footer.phone`; `footer.addressLines` joined with ` \| ` |
 
-Not printed but bound: the tagline (`headerLines[1]`; the logo artwork
-carries it), the document number (PDF metadata only; the release prints no
+Not printed but bound: the document number (PDF metadata only; the release prints no
 quote reference), J6 counselor/student emails and the counselor phone, and
 every evidence id. The phone prints exactly as frozen: the approved display
 string is `(512) 825-2896` (Mike, 2026-09-28), and the renderer never
@@ -407,19 +406,33 @@ the template sentences with `{org}`, `{student}`, `{voucher}` placeholders).
 checks both directions: every printed content field appears verbatim, and
 after removing content values and the fixed list nothing is left but
 separators. Changing a bound value changes the page; adding hard-coded text
-fails the test. A third test renders content holding the approved strings and
-compares the whole page, in reading order, with the reference fixture,
-including the Sep 30 → Feb 28 end date (start + 5 calendar months, clamped).
-Where an M1 constant still differs from the approved string (title spacing,
-footer address, payment wording), a `todo` test names it until M1 freezes it.
+fails the test. A third test renders real M1 content and compares the whole
+page, in reading order, with the reference fixture, including the Sep 30 →
+Feb 28 end date (start + 5 calendar months, clamped); a fourth pins M1's
+frozen strings (titles `Quote / Voucher Request` / `Invoice / Voucher Cover
+Letter`, organization, website, phone `(512) 825-2896`, address, signer,
+payment instruction and follow-up wording) to the fixture.
+
+**Open gates never block a DRAFT.** Staff review the layout before every
+fact is in place:
+
+- A held J6 renders with the badge `DRAFT - ON HOLD - NOT SIGNABLE` instead
+  of `DRAFT - SIGNATURE REQUIRED` (renderer input `openHolds`; the renderer
+  then does not re-throw the end-date and voucher-amount contract checks the
+  hold already reports).
+- Without the designated signer's receipt attestation on the voucher's exact
+  bytes, the enclosure line reads `Enclosure for issued packet: received,
+  signed training voucher {PO} (receiving signature not yet attested)`
+  (renderer input `receivingSignatureAttestationId: null`). The staff
+  voucher attestation id is never used in its place. Parity tests cover both.
+- Freeze, sign and send still enforce every gate and hold.
 
 Adapter refusals (typed `RendererAdapterError`):
 
 | Code | When |
 | --- | --- |
 | `409 LOGO_CHANGED` | sha256 of the bytes at `public/images/wap_logo.png` differs from `content.letterhead.logo.sha256`. Save the draft again (new hash). |
-| `409 PREVIEW_UNAVAILABLE_HELD` | a J6 with any hold (`content.reviewReasons` non-empty). A held J6 has no signable version to review; `holds` lists why. |
-| `422 VOUCHER_REFERENCE_TOO_LONG` | `voucher.reference` over 80 characters (one limit: upload, draft save, renderer). |
+| `422 VOUCHER_REFERENCE_TOO_LONG` | `voucher.reference` over 80 characters (M1 `VOUCHER_REFERENCE_MAX_LENGTH`, also a DB CHECK; one limit for upload, draft save and renderer). |
 | `422 TEXT_NOT_PRINTABLE` | a printed value is empty, not a single trimmed line, over its cap (`TWO_STAGE_TEXT_LIMITS`), outside WinAnsi, or too wide for the one-page layout (`field` names it). |
 
 Draft save runs `printableIssues(content)` and a trial render
@@ -603,7 +616,8 @@ The blockers list carries the same facts as stable codes (§6.2).
 
 #### 5.4 J5 readiness, 5.5 J6 class started
 
-`POST /cases/[caseId]/j5/readiness` and `POST /cases/[caseId]/j6/class-started`
+`POST /cases/[caseId]/attestations/j5-readiness` and
+`POST /cases/[caseId]/attestations/class-started`
 record the M1 attestations (`recordJ5Readiness`, `recordClassStarted`) with
 the member name, the approved class name and `attestedBySubjectId = user.id`.
 Append-only; a correction is a new attestation, and a draft that links the
@@ -613,7 +627,7 @@ older one becomes stale. Errors: `422 ATTESTATION_INVALID` (with `blockers`),
 
 #### 5.6 External prior quote
 
-`POST /cases/[caseId]/j6/external-quote` (multipart: `attestation` JSON part
+`POST /cases/[caseId]/attestations/external-quote` (multipart: `attestation` JSON part
 and an optional `file` PDF copy). The attestation is validated first
 (`recordExternalJ5Reference`), so a bad form stores nothing; then the upload
 pipeline of §5.10 with `kind: 'external_j5_copy'`. If a case has both a sent
@@ -689,10 +703,13 @@ Becoming signable is a separate, server-checked step: freeze (§5.9) and sign
 `GET /cases/[caseId]/[stage]/draft/preview?recordId=…&versionHash=…` returns
 the DRAFT PDF through the adapter (`application/pdf`, `inline`,
 `X-Billing-Version-Hash`, `X-Frame-Options: SAMEORIGIN`,
-`Content-Security-Policy: frame-ancestors 'self'`). Not archived. Errors:
+`Content-Security-Policy: frame-ancestors 'self'`). Not archived. Never
+blocked by an open gate or hold (§1): the blockers that freeze/sign/send
+would enforce travel with it as stable codes in `X-Billing-Blocker-Codes`
+(for example `RECEIVING_SIGNATURE_NOT_ATTESTED`, `HOLD_VOUCHER_PERIOD_CONFLICT`)
+and `X-Billing-Holds`; the full text is in the case summary. Errors:
 `404 RECORD_NOT_FOUND`, `409 VERSION_STALE`, `409 NOT_A_DRAFT`,
-`409 LOGO_CHANGED`, `409 PREVIEW_UNAVAILABLE_HELD` (with `holds`),
-`409 RECEIVING_SIGNATURE_NOT_ATTESTED` (J6), `422 TEXT_NOT_PRINTABLE`.
+`409 LOGO_CHANGED`, `422 TEXT_NOT_PRINTABLE`.
 
 #### 5.9 Freeze (verified checkpoint, no write)
 
@@ -719,12 +736,25 @@ stored "ready for signature" status; any later save changes the hash.
 
 #### 5.10 Voucher upload
 
-`POST /cases/[caseId]/voucher` (multipart: `file`, `attestation` JSON part).
-The `attestation` part is staff data entry (board, reference ≤ 80, received
-date, authorized amount, program/class, period, evidence). Its
-`receivingSignaturePresent` is required by M1's `recordVoucherBoardSigned`,
-but it is a staff statement only and never satisfies
+`POST /cases/[caseId]/voucher` (multipart: `file`, optional `attestation`
+JSON part). Any admin may upload the original file. M1 (`b76cedee`) lets
+only the designated signer record a `voucher_board_signed` attestation (the
+data entry: board, reference ≤ 80, received date, authorized amount,
+program/class, period, evidence), so the `attestation` part is accepted only
+from him (`503 SIGNER_PRINCIPAL_UNSET` / `403 VOUCHER_ATTESTER_NOT_DESIGNATED`,
+checked before any storage write); staff upload the file alone. Its
+`receivingSignaturePresent` field is required by M1's
+`recordVoucherBoardSigned` but never satisfies
 `michaelReceivingSignatureAttested` (§5.10a).
+
+**Current voucher**: the file of the newest voucher event, an upload or a
+data-entry attestation naming a file. A new upload replaces the previous
+voucher at once, and every attestation of the older file (data entry and
+receipt signature) stops applying: the response (`current: true`) and the
+summary show `attestation: null`, `receiptAttestation: null` and the
+blockers `J6_VOUCHER_ATTESTATION_INCOMPLETE` and
+`RECEIVING_SIGNATURE_NOT_ATTESTED`. Re-uploading the bytes of an older file
+reuses its row; attesting it makes it current again.
 
 PDF only in this release (#2700 and `storageArchive` accept only
 `application/pdf`): the file part must declare `application/pdf` and start
@@ -745,20 +775,15 @@ attestation + audit. If the transaction fails after the archive write, the
 content-addressed object stays without a row and a retry reuses it
 (`500 OUTCOME_UNCERTAIN` tells staff to reload first).
 
-A new voucher (different bytes) is a different artifact; the latest voucher
-attestation then names it, and any principal receipt attestation made for the
-previous hash no longer applies: the response and the summary show
-`receiptAttestation: null` and the blocker `RECEIVING_SIGNATURE_NOT_ATTESTED`.
-
 Errors: `422 UPLOAD_EMPTY`, `413 UPLOAD_TOO_LARGE`, `413 PAYLOAD_TOO_LARGE`,
 `415 VOUCHER_PDF_ONLY` (board invoice and external copy: `415 UPLOAD_NOT_PDF`),
 `422 ATTESTATION_INVALID`,
 `422 VOUCHER_REFERENCE_TOO_LONG`, `503 FINANCE_ARCHIVE_UNAVAILABLE`,
 `502 ARCHIVE_INTEGRITY_MISMATCH`.
 
-Correct the data entry without re-uploading:
+Voucher data entry for an uploaded file (designated signer only):
 `POST /cases/[caseId]/voucher/[artifactId]/attestation` (JSON) appends a new
-staff attestation for the same artifact.
+attestation for that exact artifact.
 
 #### 5.10a Michael's receiving-signature attestation (signer principal only)
 
@@ -795,10 +820,16 @@ by a generic staff checkbox.
 - J6 readiness uses M1 `voucherReceiptSignatureStatus()` over these rows for
   the current voucher; `canSignJ6` requires it. Until the principal is
   designated, J6 sign and send stay closed (`SIGNER_PRINCIPAL_UNSET`).
+- `GET` on the same path returns the exact statement text to show him.
 - The J6 preview passes that attestation's id to the renderer as
-  `receivingSignatureAttestationId`; without one the preview is
-  `409 RECEIVING_SIGNATURE_NOT_ATTESTED` (the staff attestation id is never
-  used in its place).
+  `receivingSignatureAttestationId`; without one the DRAFT prints the
+  pending enclosure line (the staff attestation id is never used in its
+  place).
+- M1 schema gap (reported to the coordinator, not patched in M3): the
+  generated Prisma type requires `attested_at` while M1's trigger refuses a
+  supplied value, so a Prisma `create` cannot insert this row. M3 inserts it
+  with one parameterized SQL statement in the same transaction; it becomes a
+  `create` once the column is marked database-generated.
 
 #### 5.11 Board invoice upload, 5.12 file download
 
@@ -821,9 +852,13 @@ attachment (§5.14). A test pins that no route outside
 
 `POST /cases/[caseId]/[stage]/sign`
 `{ recordId, version, contentSha256, intentConfirmed: true, intentText }`.
-Order: §3 through step 11 → gates (signed renderer; J6: receiving-signature
-method; finance archive) → freeze checks (§5.9) → `signedAt = now` (server
-clock; no route accepts a caller-supplied issue or sign date),
+Order: §3 steps 1–9 → gates (`SIGNER_NOT_CONFIGURED`,
+`SIGNED_RENDERER_UNAVAILABLE`, J6 `SIGNER_PRINCIPAL_UNSET`) → signer
+(`authorizeSigner`; a J6 signer must also be the designated principal,
+`403 SIGNER_NOT_DESIGNATED`) → exact echo and intent → freeze checks (§5.9) →
+`signedAt = now` (server clock; no route accepts a caller-supplied issue or
+sign date; the database stamps `signed_at` and the transaction rolls back
+unless it falls on the same Chicago day and, for a J6, `content.issueDate`),
 `buildSignatureBlock` → render the signed PDF (`frozenAt = signedAt`) → #2704
 archive (before the transaction; storage is not transactional) → one
 transaction: artifact row (`source: 'rendered'`, bound to the record version
@@ -970,18 +1005,52 @@ line each, with the reason.
 18. **`provider_message_id` uniqueness:** M1 adds the unique partial index on #2699; the webhook branch looks up by it and ignores a message id that matches more than one row.
 19. **Bounce side effect:** a bounce or complaint on a J5/J6 copy never mutes the recipient's general notifications; it flags billing follow-up, because a board mailbox problem must not silence a student.
 20. **Gate error codes:** M3 maps M1 messages to stable codes with a pinning test (§6.2), because changing M1's return type is not needed for this release.
-21. **DTO decisions:** the renderer prints header lines, title (as M1 freezes it; approved spacing `Quote / Voucher Request`), signer line and payment wording from content (§1), and the voucher reference limit is 80 everywhere, because the printed page must equal the hashed content and 81–120 characters do not fit the layout.
-22. **Reviewed draft workflow:** the buttons open a draft editor; `draft/review` accepts partial facts and returns per-field errors and blockers without writing, and `PUT draft` persists only a complete validated set, because M1 frozen content cannot be partial; persisting incomplete drafts would need an M1 draft-inputs table.
+21. **DTO decisions:** the renderer prints the organization, website, footer, title (`Quote / Voucher Request`, frozen by M1 `260ad59`), signer name/title and both payment sentences from content (§1), and the voucher reference limit is M1's `VOUCHER_REFERENCE_MAX_LENGTH` (80, a DB CHECK too), because the printed page must equal the hashed content.
+22. **Reviewed draft workflow:** the buttons open a draft editor even with facts missing; incomplete facts live client-side and go through `POST draft/review` (partial fields, per-field errors and blockers, no write); `PUT draft` persists only a complete, validated set (`422 DRAFT_INCOMPLETE`, nothing saved, otherwise), because M1 frozen content cannot be partial; persisting incomplete drafts would need an M1 draft-inputs table.
 23. **Ambiguous-error copy:** `INTERNAL_ERROR` only before any side effect; after one, `OUTCOME_UNCERTAIN` asks staff to reload and reconcile, because "nothing was signed or sent" can be false after a provider or database failure.
-24. **Held J6 preview:** refused for any hold (`409 PREVIEW_UNAVAILABLE_HELD`), because a held J6 cannot be signed, so there is no version to review.
+24. **DRAFT preview never gated:** a held J6 renders with `DRAFT - ON HOLD - NOT SIGNABLE`, a missing receipt attestation as a pending enclosure line, and the blockers travel in `X-Billing-Blocker-Codes`, because staff review the layout before Michael attests; freeze, sign and send enforce every gate.
 25. **Michael's receiving signature:** only the designated signer principal can attest it, on the voucher's exact sha256 (§5.10a); a replaced voucher clears it, and J6 sign and send stay closed until M1's designated signer principal is set (`SIGNER_PRINCIPAL_UNSET`), per Mike's 2026-09-28 requirement.
-26. **Layout:** the renderer matches Mike's synthetic J5/J6 references (no tagline or document number printed; signer name, then `{title}, {organization}`; J6 enclosure line), because they are the approved layout; the fixture test compares whole pages.
+26. **Layout:** the renderer matches Mike's synthetic J5/J6 references (no document number printed; M1 dropped the unprinted tagline; signer name, then `{title}, {organization}`; J6 enclosure line), because they are the approved layout; the fixture test compares whole pages.
 27. **Phone string:** `(512) 825-2896` frozen and printed verbatim, because Mike chose that display string and the renderer must not reformat bound text.
 28. **J6 issue/sign dates:** server date only, on or after both class start and voucher receipt, surfaced as two blockers, because a J6 must never predate the class start or the voucher it encloses.
 29. **Archive visibility:** staff-only archive route, no member-facing path or signed URL, student copy by email only, per Mike's retention decision.
 30. **Voucher upload format:** PDF only (declared MIME and `%PDF-` magic bytes; `VOUCHER_PDF_ONLY`), original bytes untouched, because #2700 and `storageArchive` store PDFs only.
+31. **Designated signer gate:** J6 sign/send and the receipt attestation are gated on M1's `billing_designated_signers` row (`SIGNER_PRINCIPAL_UNSET`), replacing the earlier env gate, because the database enforces the same principal.
+32. **Voucher upload by staff:** file-only uploads are open to any admin; the voucher data entry and the receipt signature are the designated signer's, per M1's rule that only he attests a board-signed voucher.
+33. **Gate order on sign/send:** the release gates are checked right after the §3 access checks, before the signer, intent or record checks, so a disabled route answers 503 without reading any record or file.
 
 ### Not in M3
 
 Signed renderer; fresh MFA step-up; persisted incomplete drafts; migration
 apply in any environment; real email; production backup/restore proof.
+
+### Route index (M3)
+
+Under `/api/admin/members/[id]/billing/two-stage/cases`; files under
+`app/api/admin/members/[id]/billing/two-stage/cases/`. Every route runs the
+§3 checks; mutations need a same-site Origin.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET / POST | `/` | list; open a case |
+| GET | `/[caseId]` | `CaseSummaryDto` |
+| POST | `/[caseId]/attestations/j5-readiness` | |
+| POST | `/[caseId]/attestations/class-started` | |
+| POST | `/[caseId]/attestations/external-quote` | multipart |
+| POST | `/[caseId]/voucher` | multipart, PDF only; `attestation` part designated signer only |
+| POST | `/[caseId]/voucher/[artifactId]/attestation` | designated signer only |
+| GET / POST | `/[caseId]/voucher/[artifactId]/receipt-attestation` | statement; designated signer principal only |
+| POST | `/[caseId]/board-invoice` | multipart, PDF only |
+| GET | `/[caseId]/files/[artifactId]` | the only archive read path; staff only |
+| GET | `/[caseId]/payment` | |
+| POST | `/[caseId]/payment/received` | |
+| POST | `/[caseId]/[stage]/draft/review` | partial facts; never writes |
+| PUT | `/[caseId]/[stage]/draft` | complete set only |
+| GET | `/[caseId]/[stage]/draft/preview` | DRAFT PDF, never gated; blocker codes in headers |
+| POST | `/[caseId]/[stage]/freeze` | writes nothing |
+| POST | `/[caseId]/[stage]/sign` | **disabled** (gates default off) |
+| POST | `/[caseId]/[stage]/send` | **disabled** (gates default off); `maxDuration = 60` |
+| POST | `/[caseId]/[stage]/sends/[sendId]/reconcile` | audited |
+| POST | `/[caseId]/[stage]/versions/[recordId]/close` | audited |
+| POST | `/[caseId]/[stage]/versions/[recordId]/cancel-send` | audited |
+| POST | `/api/webhooks/resend` (existing) | billing branch: `applyBillingDeliveryEvent` |

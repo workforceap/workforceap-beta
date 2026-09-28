@@ -156,13 +156,14 @@ export const ERROR_CODES = [
   'PROGRAM_TERMS_UNAVAILABLE',
   'ATTESTATION_INVALID',
   'DRAFT_INCOMPLETE',
+  'J5_PREREQUISITES_MISSING',
+  'J6_PREREQUISITES_MISSING',
   'DRAFT_CONFLICT',
   'DRAFT_STALE',
   'STAGE_ALREADY_OPEN',
   'NOT_A_DRAFT',
   'NOT_READY',
   'LOGO_CHANGED',
-  'PREVIEW_UNAVAILABLE_HELD',
   'TEXT_NOT_PRINTABLE',
   'VOUCHER_REFERENCE_TOO_LONG',
   'RECIPIENT_SNAPSHOT_MISMATCH',
@@ -190,6 +191,7 @@ export const ERROR_CODES = [
   'VOUCHER_ATTESTER_NOT_SIGNER',
   'VOUCHER_ATTESTER_NOT_DESIGNATED',
   'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED',
+  'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL',
   'LETTERHEAD_FOOTER_MISMATCH',
   'RECEIPT_SIGNATURE_METHOD_UNAVAILABLE',
   // sending, reconciliation, closure
@@ -338,7 +340,8 @@ export type VoucherReceiptAttestationView = {
   sha256: Sha256Hex;
   attestedBy: Actor;
   attestedAt: IsoInstant;
-  method: 'principal_attestation';
+  /** M1 VOUCHER_RECEIPT_SIGNATURE_METHODS. `approved_signature_representation` is refused by M3 in this release. */
+  method: 'present_on_original' | 'approved_signature_representation';
 };
 
 export type VoucherMatch = {
@@ -545,7 +548,10 @@ export type VoucherAttestationPart = {
 export type VoucherUploadDto = {
   artifact: ArtifactView;
   reused: boolean;
-  attestation: VoucherAttestationView;
+  /** The data-entry attestation (designated signer only in M1); null for a file-only staff upload. */
+  attestation: VoucherAttestationView | null;
+  /** Whether this file is now the case's current voucher (the newest upload or attestation). */
+  current: boolean;
   /** Null after an upload: a new voucher hash needs its own principal attestation. */
   receiptAttestation: VoucherReceiptAttestationView | null;
   matches: VoucherMatch[] | null;
@@ -553,7 +559,9 @@ export type VoucherUploadDto = {
 };
 export type BoardInvoiceUploadDto = { artifact: ArtifactView; reused: boolean };
 
-export type VoucherReceiptAttestationRequest = { expectedSha256: Sha256Hex; statementConfirmed: true; statementText: string };
+export type VoucherReceiptAttestationRequest = { expectedSha256: Sha256Hex; method: 'present_on_original'; statementConfirmed: true; statementText: string };
+/** GET …/voucher/[artifactId]/receipt-attestation: the exact statement the designated signer confirms. */
+export type VoucherReceiptStatementDto = { artifactId: string; sha256: Sha256Hex; statementText: string };
 export type VoucherReceiptAttestationDto = { receiptAttestation: VoucherReceiptAttestationView };
 
 export type FreezeRequest = { recordId: string; versionHash: Sha256Hex };

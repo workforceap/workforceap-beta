@@ -6,6 +6,7 @@ import 'server-only';
  * from the frozen content, which the version hash binds:
  *
  *   letterhead.headerLines[0]  -> organization name (footer, signer caption, body sentences)
+ *   paymentFollowUp.instruction + .wording -> J6 payment sentences
  *   letterhead.footer.website  -> website (footer)
  *   letterhead.footer          -> footer phone and address line(s)
  *   title                      -> document title (and PDF metadata title)
@@ -15,8 +16,8 @@ import 'server-only';
  *   issueDate, contacts, board, training terms, voucher reference
  *
  * The approved layout (Mike Brown's synthetic J5/J6 references, 2026-09-28)
- * prints neither the tagline (headerLines[1]; the logo artwork carries it) nor
- * the document number; both stay bound in the content hash.
+ * does not print the document number; it stays bound in the content hash and
+ * the PDF metadata title.
  *
  * The only other printed text is the reviewed fixed wording in
  * FIXED_PRINTED_TEXT (labels and template sentences). The parity tests
@@ -26,11 +27,15 @@ import 'server-only';
  * No I/O here: the route reads the logo bytes and passes them in; the
  * adapter only checks them against the hash frozen in the content.
  */
+import { VOUCHER_REFERENCE_MAX_LENGTH } from './attestations';
 import { sha256Hex } from './canonical';
 import { stageForKind, TUITION_AND_FEES_CENTS } from './constants';
 import type { J5Content, J6Content } from './content';
 import {
+  DRAFT_BADGE,
+  DRAFT_ON_HOLD_BADGE,
   isWinAnsiPrintable,
+  RECEIVING_SIGNATURE_PENDING_SUFFIX,
   renderJ5QuoteVoucherRequestDraftPdf,
   renderJ6InvoiceVoucherCoverLetterDraftPdf,
   TWO_STAGE_TEXT_LIMITS,
@@ -45,8 +50,6 @@ export type TwoStageContent = J5Content | J6Content;
 
 export type RendererAdapterCode =
   | 'LOGO_CHANGED'
-  | 'PREVIEW_UNAVAILABLE_HELD'
-  | 'RECEIVING_SIGNATURE_NOT_ATTESTED'
   | 'TEXT_NOT_PRINTABLE'
   | 'VOUCHER_REFERENCE_TOO_LONG'
   | 'CONTENT_NOT_RENDERABLE';
@@ -64,12 +67,8 @@ export class RendererAdapterError extends Error {
   }
 }
 
-/**
- * The voucher/PO reference limit, one value for draft save, upload and the
- * renderer (M1 recordVoucherBoardSigned allows 120; the printed layout does
- * not, so M3 refuses 81-120 at upload with VOUCHER_REFERENCE_TOO_LONG).
- */
-export const VOUCHER_REFERENCE_MAX = TWO_STAGE_TEXT_LIMITS.voucherReference;
+/** The voucher/PO reference limit: M1's VOUCHER_REFERENCE_MAX_LENGTH (80; a DB CHECK too), the same in upload, draft save and the renderer. */
+export const VOUCHER_REFERENCE_MAX = VOUCHER_REFERENCE_MAX_LENGTH;
 
 /**
  * Reviewed fixed wording the draft renderer prints besides content values.
@@ -79,7 +78,8 @@ export const VOUCHER_REFERENCE_MAX = TWO_STAGE_TEXT_LIMITS.voucherReference;
  */
 export const FIXED_PRINTED_TEXT = Object.freeze({
   labels: Object.freeze([
-    'DRAFT - SIGNATURE REQUIRED',
+    DRAFT_ON_HOLD_BADGE,
+    DRAFT_BADGE,
     'TRAINING DETAILS',
     'Training hours',
     'Class start',
@@ -102,8 +102,7 @@ export const FIXED_PRINTED_TEXT = Object.freeze({
   ]),
   j6: Object.freeze([
     "{org} requests payment for {student}'s training under signed voucher {voucher}. The student began class on {classStartedOn}. Please process the tuition and fees amount shown below under your board's procedures.",
-    'Please arrange payment by check or wire to {org} and confirm the expected remittance date. {paymentFollowUp}',
-    'Enclosure for issued packet: received, signed training voucher {voucher}',
+    'Enclosure for issued packet: received, signed training voucher {voucher}{receiptPending}',
     'Payment for {student} training',
   ]),
 });
@@ -116,8 +115,12 @@ export function printedLongDate(isoDate: string): string {
   return `${MONTHS[m - 1]} ${d}, ${y}`;
 }
 
-/** The fixed template sentences for this content, filled with its values. */
-export function fixedPrintedText(content: TwoStageContent): string[] {
+/**
+ * The fixed template sentences for this content, filled with its values.
+ * `receiptPending`: the J6 DRAFT has no designated-signer receipt attestation
+ * yet, so the enclosure line says so.
+ */
+export function fixedPrintedText(content: TwoStageContent, opts: { receiptPending?: boolean } = {}): string[] {
   const vars: Record<string, string> = {
     org: content.letterhead.headerLines[0],
     student: content.student.name,
@@ -127,7 +130,7 @@ export function fixedPrintedText(content: TwoStageContent): string[] {
   if (content.kind === 'j6_invoice_cover_letter') {
     vars.voucher = content.voucher.reference;
     vars.classStartedOn = printedLongDate(content.classStarted.classStartDate);
-    vars.paymentFollowUp = content.paymentFollowUp.wording;
+    vars.receiptPending = opts.receiptPending ? ` ${RECEIVING_SIGNATURE_PENDING_SUFFIX}` : '';
   }
   const templates = content.kind === 'j5_quote_voucher_request' ? FIXED_PRINTED_TEXT.j5 : FIXED_PRINTED_TEXT.j6;
   return templates.map((t) => t.replace(/\{(\w+)\}/gu, (_, key: string) => vars[key]));
@@ -165,6 +168,7 @@ export function printedContentFields(content: TwoStageContent): PrintedField[] {
       { field: 'finance.name', value: content.finance.name, max: L.personName },
       { field: 'finance.email', value: content.finance.email, max: L.email },
       { field: 'voucher.reference', value: content.voucher.reference, max: L.voucherReference },
+      { field: 'paymentFollowUp.instruction', value: content.paymentFollowUp.instruction, max: L.paymentFollowUpWording },
       { field: 'paymentFollowUp.wording', value: content.paymentFollowUp.wording, max: L.paymentFollowUpWording },
     );
   }
@@ -193,13 +197,6 @@ export function printableIssues(content: TwoStageContent): PrintableIssue[] {
   return fields.flatMap(({ field, value, max }) => printableIssue(field, value, max) ?? []);
 }
 
-/**
- * Build the renderer input from frozen content. Throws RendererAdapterError:
- * LOGO_CHANGED (bytes differ from the frozen hash), PREVIEW_UNAVAILABLE_HELD
- * (a held J6 has no signable version to review), TEXT_NOT_PRINTABLE /
- * VOUCHER_REFERENCE_TOO_LONG, or CONTENT_NOT_RENDERABLE (shape problems M1
- * should never produce).
- */
 export type RenderOptions = {
   logoPng: Uint8Array;
   /**
@@ -207,16 +204,26 @@ export type RenderOptions = {
    * draft preview; for a signed PDF, the instant the sign route renders it.
    */
   frozenAt: string;
-  /** J6: the designated signer's receipt-signature attestation id on this exact voucher hash. */
+  /**
+   * J6: the designated signer's receipt-signature attestation id on this
+   * exact voucher hash. Absent or null renders the DRAFT enclosure line as
+   * pending; the staff voucher attestation id is never used in its place.
+   */
   receiptSignatureId?: string | null;
 };
+
+/**
+ * Build the renderer input from frozen content. Throws RendererAdapterError:
+ * LOGO_CHANGED (bytes differ from the frozen hash), TEXT_NOT_PRINTABLE /
+ * VOUCHER_REFERENCE_TOO_LONG, or CONTENT_NOT_RENDERABLE (shape problems M1
+ * should never produce). Open gates never block a DRAFT: a held J6 renders
+ * with the on-hold badge and a missing receipt attestation as a pending
+ * enclosure line; freeze, sign and send enforce both.
+ */
 
 export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): TwoStageDocumentFacts {
   if (sha256Hex(opts.logoPng) !== content.letterhead.logo.sha256) {
     throw new RendererAdapterError('LOGO_CHANGED', 'The letterhead logo changed. Save the draft again to review the new version.');
-  }
-  if (content.kind === 'j6_invoice_cover_letter' && content.reviewReasons.length > 0) {
-    throw new RendererAdapterError('PREVIEW_UNAVAILABLE_HELD', 'This J6 cannot be previewed while it is on hold.', { holds: content.reviewReasons });
   }
   try {
     assertSingleTuitionLine(content.lineItems);
@@ -225,7 +232,7 @@ export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): 
   }
   if (content.totalCents !== TUITION_AND_FEES_CENTS) throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'The total must be $7,500.00.', { field: 'totalCents' });
   const { headerLines, footer } = content.letterhead;
-  if (headerLines.length !== 3) throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'The letterhead needs exactly three header lines.', { field: 'letterhead.headerLines' });
+  if (headerLines.length < 1 || !headerLines[0]) throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'The letterhead needs the organization name.', { field: 'letterhead.headerLines' });
   if (footer.addressLines.length < 1 || footer.addressLines.length > 2) {
     throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'The letterhead footer needs one or two address lines.', { field: 'letterhead.footer.addressLines' });
   }
@@ -234,13 +241,7 @@ export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): 
   }
   const issue = printableIssues(content)[0];
   if (issue) throw new RendererAdapterError(issue.code, issue.message, { field: issue.field });
-  const receiptSignatureId = opts.receiptSignatureId?.trim() ?? '';
-  if (content.kind === 'j6_invoice_cover_letter' && !receiptSignatureId) {
-    throw new RendererAdapterError(
-      'RECEIVING_SIGNATURE_NOT_ATTESTED',
-      "Michael A. Brown must attest his receiving signature on this exact voucher before the J6 can be previewed.",
-    );
-  }
+  const receiptSignatureId = opts.receiptSignatureId?.trim() || null;
 
   const common = {
     documentNumber: content.documentNumber,
@@ -276,7 +277,9 @@ export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): 
     stage: stageForKind(content.kind) as 'j6',
     financePerson: { name: content.finance.name, email: content.finance.email },
     classStartedAt: content.classStarted.classStartDate,
+    paymentInstruction: content.paymentFollowUp.instruction,
     paymentFollowUpWording: content.paymentFollowUp.wording,
+    openHolds: [...content.reviewReasons],
     signedVoucher: {
       reference: content.voucher.reference,
       receivedDate: content.voucher.receivedOn,

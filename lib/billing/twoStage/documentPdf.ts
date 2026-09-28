@@ -91,8 +91,17 @@ export type J6InvoiceVoucherCoverLetterFacts = CommonFacts & {
   readonly stage: 'j6';
   readonly financePerson: Person;
   readonly classStartedAt: string;
+  /** The printed payment instruction sentence (how to pay). */
+  readonly paymentInstruction: string;
   /** The printed payment follow-up sentence (an expectation, never a due date). */
   readonly paymentFollowUpWording: string;
+  /**
+   * DRAFT review only: the J6 hard holds this version carries. A held J6 can
+   * never be signed, but staff review its layout; the badge then reads
+   * `DRAFT - ON HOLD - NOT SIGNABLE`, and the contract checks a hold already
+   * reports (end date, voucher amount) are not re-thrown here.
+   */
+  readonly openHolds?: readonly string[];
   /** The received, executive-signed voucher remains a separate attachment. */
   readonly signedVoucher: {
     readonly reference: string;
@@ -100,7 +109,12 @@ export type J6InvoiceVoucherCoverLetterFacts = CommonFacts & {
     /** Structured value read from the received voucher, before PDF rendering. */
     readonly authorizedAmountCents: number;
     readonly sha256: string;
-    readonly receivingSignatureAttestationId: string;
+    /**
+     * The designated signer's receipt-signature attestation on this voucher's
+     * exact bytes, or null while it is still pending: the DRAFT then says so
+     * on the enclosure line (a signable version always has one).
+     */
+    readonly receivingSignatureAttestationId: string | null;
   };
 };
 
@@ -203,7 +217,10 @@ function validateFacts(input: TwoStageDocumentFacts): Date {
   if (input.className !== syllabus.title) throw new Error('Class name must match the approved program syllabus');
   isoDate(input.classStartDate, 'classStartDate');
   isoDate(input.classEndDate, 'classEndDate');
-  if (input.classEndDate !== fiveMonthsLater(input.classStartDate)) throw new Error('Class end must be five calendar months after start');
+  const holds: readonly string[] = input.stage === 'j6' ? input.openHolds ?? [] : [];
+  if (input.classEndDate !== fiveMonthsLater(input.classStartDate) && !holds.includes('end_date_not_contract')) {
+    throw new Error('Class end must be five calendar months after start');
+  }
   if (input.tuitionCents !== 750_000) throw new Error('Tuition & Fees must equal $7,500.00');
   if (!(input.letterhead?.logoPng instanceof Uint8Array) || input.letterhead.logoPng.length === 0) throw new Error('Approved WAP logo PNG is required');
   required(input.letterhead.businessPhone, 'letterhead.businessPhone', L.phone);
@@ -216,6 +233,7 @@ function validateFacts(input: TwoStageDocumentFacts): Date {
   } else {
     required(input.financePerson?.name, 'financePerson.name', L.personName);
     required(input.financePerson?.email, 'financePerson.email', L.email);
+    required(input.paymentInstruction, 'paymentInstruction', L.paymentFollowUpWording);
     required(input.paymentFollowUpWording, 'paymentFollowUpWording', L.paymentFollowUpWording);
     const started = isoDate(input.classStartedAt, 'classStartedAt');
     if (started < isoDate(input.classStartDate, 'classStartDate')) throw new Error('J6 class start cannot precede the confirmed class start date');
@@ -223,9 +241,9 @@ function validateFacts(input: TwoStageDocumentFacts): Date {
     const voucher = input.signedVoucher;
     required(voucher?.reference, 'signedVoucher.reference', L.voucherReference);
     if (isoDate(voucher.receivedDate, 'signedVoucher.receivedDate') > issueDate) throw new Error('Voucher receipt cannot follow J6 issue');
-    if (voucher.authorizedAmountCents !== 750_000) throw new Error('Signed voucher authorized amount must equal $7,500.00');
+    if (voucher.authorizedAmountCents !== 750_000 && !holds.includes('voucher_amount_differs')) throw new Error('Signed voucher authorized amount must equal $7,500.00');
     if (!/^[0-9a-f]{64}$/iu.test(voucher.sha256)) throw new Error('Signed voucher SHA-256 is required');
-    required(voucher.receivingSignatureAttestationId, 'signedVoucher.receivingSignatureAttestationId', L.attestationId);
+    if (voucher.receivingSignatureAttestationId !== null) required(voucher.receivingSignatureAttestationId, 'signedVoucher.receivingSignatureAttestationId', L.attestationId);
   }
   return frozenAt;
 }
@@ -301,10 +319,14 @@ function details(page: PDFPage, fonts: Fonts, rows: ReadonlyArray<readonly [stri
   return bottom;
 }
 
-function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeight: number, logo: Awaited<ReturnType<PDFDocument['embedPng']>>): void {
+export const DRAFT_BADGE = 'DRAFT - SIGNATURE REQUIRED';
+export const DRAFT_ON_HOLD_BADGE = 'DRAFT - ON HOLD - NOT SIGNABLE';
+export const RECEIVING_SIGNATURE_PENDING_SUFFIX = '(receiving signature not yet attested)';
+
+function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeight: number, logo: Awaited<ReturnType<PDFDocument['embedPng']>>, held: boolean): void {
   const scale = Math.min(183 / logoWidth, 88 / logoHeight);
   page.drawImage(logo, { x: LEFT, y: 682, width: logoWidth * scale, height: logoHeight * scale });
-  const status = 'DRAFT - SIGNATURE REQUIRED';
+  const status = held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE;
   const statusW = fonts.bold.widthOfTextAtSize(status, 7.5) + 22;
   page.drawRectangle({ x: RIGHT - statusW, y: 749, width: statusW, height: 22, color: rgb(1, 0.94, 0.84) });
   drawText(page, fonts, status, RIGHT - statusW + 11, 756, statusW - 22, 7.5, true, rgb(110 / 255, 68 / 255, 12 / 255));
@@ -351,7 +373,7 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
   };
   const logo = await doc.embedPng(logoBytes);
   const page = doc.addPage([PAGE_W, PAGE_H]);
-  drawLetterhead(page, fonts, logo.width, logo.height, logo);
+  drawLetterhead(page, fonts, logo.width, logo.height, logo, facts.stage === 'j6' && (facts.openHolds?.length ?? 0) > 0);
   drawFooter(page, fonts, facts);
 
   drawText(page, fonts, facts.stage.toUpperCase(), LEFT, 642, 50, 9.5, true, RED);
@@ -396,9 +418,12 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
     y -= 5;
     drawText(page, fonts, `Copy: ${facts.student.name} | ${facts.student.email}`, LEFT, y, CONTENT_W, 8.4, false, MUTED);
   } else {
-    y = paragraph(page, fonts, `Please arrange payment by check or wire to ${org} and confirm the expected remittance date. ${facts.paymentFollowUpWording}`, y, 2);
+    y = paragraph(page, fonts, `${facts.paymentInstruction} ${facts.paymentFollowUpWording}`, y, 2);
     y -= 4;
-    drawText(page, fonts, `Enclosure for issued packet: received, signed training voucher ${facts.signedVoucher.reference}`, LEFT, y, CONTENT_W, 8.4, false, MUTED);
+    const pending = facts.signedVoucher.receivingSignatureAttestationId === null ? ` ${RECEIVING_SIGNATURE_PENDING_SUFFIX}` : '';
+    const enclosure = wrap(`Enclosure for issued packet: received, signed training voucher ${facts.signedVoucher.reference}${pending}`, fonts.regular, 8.4, CONTENT_W, 2);
+    enclosure.forEach((line, index) => drawText(page, fonts, line, LEFT, y - index * 11, CONTENT_W, 8.4, false, MUTED));
+    y -= (enclosure.length - 1) * 11;
   }
   drawSignature(page, fonts, facts, y - 21);
   return doc.save({ useObjectStreams: false });

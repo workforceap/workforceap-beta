@@ -55,6 +55,7 @@ function j6(overrides: Partial<J6InvoiceVoucherCoverLetterFacts> = {}): J6Invoic
     title: 'Invoice / Voucher Cover Letter',
     financePerson: { name: 'Morgan Finance', email: 'morgan@example.test' },
     classStartedAt: '2026-09-30',
+    paymentInstruction: 'Please arrange payment by check or wire to Workforce Advancement Project and confirm the expected remittance date.',
     paymentFollowUpWording: 'We will follow up in 10 to 14 days if payment has not been recorded.',
     signedVoucher: {
       reference: 'SYNTH-PO-001',

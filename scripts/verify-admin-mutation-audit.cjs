@@ -30,6 +30,11 @@ const DELEGATED_AUDIT_HELPERS = {
   '@/lib/admin/applicationReview': 'lib/admin/applicationReview.ts',
   '@/lib/admin/courseraEnrollmentApproval': 'lib/admin/courseraEnrollmentApproval.ts',
   '@/lib/coursera/enrollPort': 'lib/coursera/enrollPort.ts',
+  // Two-stage J5/J6 billing (M3): every write runs auditLog(…, tx) in the same transaction.
+  '@/lib/billing/twoStage/api/documents': 'lib/billing/twoStage/api/documents.ts',
+  '@/lib/billing/twoStage/api/draft': 'lib/billing/twoStage/api/draft.ts',
+  '@/lib/billing/twoStage/api/evidence': 'lib/billing/twoStage/api/evidence.ts',
+  '@/lib/billing/twoStage/api/stageActions': 'lib/billing/twoStage/api/stageActions.ts',
 };
 
 /**

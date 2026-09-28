@@ -48,6 +48,19 @@ export interface ResendWebhookStore {
   disableNotifications(input: { userId: string | null; recipients: string[] }): Promise<number>;
   /** Raw receipt for /admin/webhook-events. */
   logReceipt(input: LogWebhookEventInput): Promise<void>;
+  /**
+   * Optional (two-stage J5/J6 billing): link a delivered / bounced /
+   * complained event to the billing send ledger by provider message id
+   * (billing_delivery_events, separate from email_send_logs). `matched` is
+   * true when the message is a billing J5/J6 copy. Stores without it behave
+   * exactly as before.
+   */
+  applyBillingDeliveryEvent?(input: {
+    providerMessageId: string;
+    kind: 'delivered' | 'bounced' | 'complained';
+    occurredAt: Date;
+    providerEventId: string | null;
+  }): Promise<{ matched: boolean }>;
   /** Operator-visible diagnostic (hard bounce / complaint). */
   recordDiagnostic(input: {
     status: 'error' | 'fallback';
@@ -183,8 +196,28 @@ export async function handleResendWebhook(input: HandleResendWebhookInput): Prom
     bounceType: parsed.bounceType,
   });
 
+  let billingCopy = false;
+  if (input.store.applyBillingDeliveryEvent && (parsed.event === 'delivered' || parsed.event === 'bounced' || parsed.event === 'complained')) {
+    const billing = await input.store.applyBillingDeliveryEvent({
+      providerMessageId: parsed.emailId,
+      kind: parsed.event,
+      occurredAt: parsed.createdAt,
+      providerEventId: msgId,
+    });
+    billingCopy = billing.matched;
+  }
+
   let notificationsDisabled = 0;
-  if (isHardDeliveryFailure(parsed.event, parsed.bounceType)) {
+  if (billingCopy && isHardDeliveryFailure(parsed.event, parsed.bounceType)) {
+    // A bounced or complained J5/J6 copy is a billing follow-up (flagged on the
+    // case), never a reason to mute the recipient's general notifications.
+    await input.store.recordDiagnostic({
+      status: 'fallback',
+      summary: parsed.event === 'complained' ? 'Billing J5/J6 copy: spam complaint recorded for follow-up' : 'Billing J5/J6 copy: hard bounce recorded for follow-up',
+      failureReason: parsed.event === 'complained' ? 'complained' : `bounced:${parsed.bounceType ?? 'unknown'}`,
+      metadata: { event: parsed.event, bounceType: parsed.bounceType, providerMessageId: parsed.emailId, billingCopy: true },
+    });
+  } else if (isHardDeliveryFailure(parsed.event, parsed.bounceType)) {
     notificationsDisabled = await input.store.disableNotifications({
       userId: applied.userId,
       recipients: parsed.recipients,
@@ -213,6 +246,7 @@ export async function handleResendWebhook(input: HandleResendWebhookInput): Prom
       event: parsed.event,
       matched: applied.matched,
       notificationsDisabled,
+      ...(billingCopy ? { billingCopy: true } : {}),
     },
   };
 }
