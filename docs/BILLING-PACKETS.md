@@ -350,7 +350,7 @@ every gate defaults off.
 
 | Source | Ref |
 | --- | --- |
-| M1 model (#2699, draft) | `b76cedee`, on master `fde0066` (schema incl. `BillingDesignatedSigner` and `BillingVoucherReceiptSignature`, migration `20260927230000_billing_two_stage_j5_j6`, `lib/billing/twoStage/*` incl. `voucherReceipt.ts`, `lib/billing/providerOrg.ts`) |
+| M1 model (#2699, draft) | `877466fe` (on `260ad599` → `b76cedee`, master `fde0066`; database-stamped columns omittable in Prisma creates) (schema incl. `BillingDesignatedSigner` and `BillingVoucherReceiptSignature`, migration `20260927230000_billing_two_stage_j5_j6`, `lib/billing/twoStage/*` incl. `voucherReceipt.ts`, `lib/billing/providerOrg.ts`) |
 | M2 draft renderer (#2702, merged) | master `d9e5d1e` `lib/billing/twoStage/documentPdf.ts` (DRAFT only) |
 | Finance archive adapter (#2704, merged) | master `fde0066` `lib/billing/twoStage/storageArchive.ts` (`archiveFinancePdf`, `readFinanceArchivePdf`) |
 | Resend status-preserving error (#2705, merged) | master `5864328` `ResendResolvedSendError` in `lib/email/send.ts` |
@@ -864,11 +864,9 @@ by a generic staff checkbox.
   `receivingSignatureAttestationId`; without one the DRAFT prints the
   pending enclosure line (the staff attestation id is never used in its
   place).
-- M1 schema gap (reported to the coordinator, not patched in M3): the
-  generated Prisma type requires `attested_at` while M1's trigger refuses a
-  supplied value, so a Prisma `create` cannot insert this row. M3 inserts it
-  with one parameterized SQL statement in the same transaction; it becomes a
-  `create` once the column is marked database-generated.
+- The row is a Prisma `create` in that transaction without `attested_at`:
+  M1 `877466f` gives every database-stamped column a default, and the
+  trigger stamps it (overwriting any supplied value).
 
 #### 5.11 Board invoice upload, 5.12 file download
 

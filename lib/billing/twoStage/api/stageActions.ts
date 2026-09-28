@@ -223,9 +223,7 @@ function prismaSendStore<P>(ctx: TwoStageContext<P>, record: RecordWithRelations
             idempotencyKey: input.idempotencyKey,
             status: 'pending',
             claimToken: randomUUID(),
-            // Overwritten by the database clock (billing_stage_send_guard).
-            claimedAt: ctx.now,
-            lastClaimedAt: ctx.now,
+            // claimed_at / last_claimed_at are stamped by the database clock (M1 877466f).
             contentSha256: record.contentSha256,
             attachmentSha256s,
           },
@@ -241,7 +239,8 @@ function prismaSendStore<P>(ctx: TwoStageContext<P>, record: RecordWithRelations
       try {
         const updated = await prisma.billingStageSend.updateMany({
           where: { id: row.id, organizationId: org, claimToken: row.claimToken, status: 'ambiguous' },
-          data: { status: 'pending', claimToken: token, lastClaimedAt: ctx.now },
+          // The database re-stamps last_claimed_at on this ambiguous -> pending move.
+          data: { status: 'pending', claimToken: token },
         });
         return updated.count === 1 ? { ...row, status: 'pending', claimToken: token } : 'lost';
       } catch (error) {
@@ -258,7 +257,8 @@ function prismaSendStore<P>(ctx: TwoStageContext<P>, record: RecordWithRelations
             status: input.status,
             providerResult: input.providerResult,
             lastError: input.lastError,
-            ...(input.status === 'provider_accepted' ? { acceptedAt: new Date(), providerMessageId: input.providerMessageId } : {}),
+            // accepted_at is stamped by the database on the move to provider_accepted.
+            ...(input.status === 'provider_accepted' ? { providerMessageId: input.providerMessageId } : {}),
           },
         });
         return updated.count === 1;
@@ -446,7 +446,8 @@ export async function reconcile<P>(ctx: TwoStageContext<P>, stage: BillingStage,
   await prisma.$transaction(async (tx) => {
     const updated = await tx.billingStageSend.updateMany({
       where: { id: send.id, organizationId: ctx.member.organizationId, claimToken: send.claimToken, status },
-      data: { status: decided.status, reconciledBySubjectId: ctx.user.id, reconciledAt: ctx.now, reconcileNote: note, reconcileEvidenceArtifactId: evidenceArtifactId },
+      // reconciled_at is stamped by the database.
+      data: { status: decided.status, reconciledBySubjectId: ctx.user.id, reconcileNote: note, reconcileEvidenceArtifactId: evidenceArtifactId },
     });
     if (updated.count !== 1) throw apiError(409, 'SEND_CHANGED', 'This copy changed. Reload before reconciling.');
     await auditLog(
@@ -493,8 +494,8 @@ async function closeWith<P>(
     const updated = await tx.billingStageRecord.updateMany({
       where: { id: record.id, organizationId: ctx.member.organizationId, status: record.status, contentSha256: record.contentSha256 },
       data: {
+        // voided_at / superseded_at are stamped by the database.
         status: input.action === 'void' ? 'voided' : 'superseded',
-        ...(input.action === 'void' ? { voidedAt: ctx.now } : { supersededAt: ctx.now }),
         closedBySubjectId: ctx.user.id,
         closeReason: input.reason,
         ...extra,

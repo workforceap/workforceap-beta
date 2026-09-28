@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => ({
   archive: vi.fn(),
   readArchive: vi.fn(),
   txCreate: vi.fn(),
+  receiptCreate: vi.fn(),
 }));
 
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
@@ -87,7 +88,16 @@ function prismaFake() {
     },
     billingStageRecord: { findMany: byCase('records') },
     billingPaymentEvent: { findMany: async () => [] },
-    billingVoucherReceiptSignature: { findMany: byCase('receipt') },
+    billingVoucherReceiptSignature: {
+      findMany: byCase('receipt'),
+      // The database stamps attested_at (M1 877466f); the fake does the same.
+      create: async ({ data }: { data: Record<string, unknown> }) => {
+        mocks.receiptCreate(data);
+        const row = { ...data, id: 'rs-new', representationArtifactId: null, representationSha256: null, attestedAt: new Date('2026-09-29T18:00:00Z') };
+        h.state.receipt.push(row);
+        return row;
+      },
+    },
     billingDesignatedSigner: { findFirst: async () => h.state.designated },
     $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(db),
   };
@@ -105,7 +115,7 @@ import { GET as downloadFile } from '@/app/api/admin/members/[id]/billing/two-st
 import { POST as uploadVoucher } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/route';
 import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/sign/route';
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
-import { POST as receiptAttest } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/[artifactId]/receipt-attestation/route';
+import { GET as receiptStatement, POST as receiptAttest } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/[artifactId]/receipt-attestation/route';
 import { J5_READINESS_KEYS, J6_READINESS_KEYS, type CaseSummaryDto, type ReadinessKey } from '@/lib/billing/twoStage/dto';
 
 const ORIGIN = 'http://localhost';
@@ -142,6 +152,7 @@ beforeEach(() => {
   mocks.archive.mockReset();
   mocks.readArchive.mockReset();
   mocks.txCreate.mockReset();
+  mocks.receiptCreate.mockReset();
 });
 
 afterEach(() => {
@@ -257,6 +268,26 @@ describe('two-stage routes: sign and send are hard-disabled', () => {
     expect(res.status).toBe(403);
     expect((await res.json()).code).toBe('NOT_SIGNER');
     expect(mocks.archive).not.toHaveBeenCalled();
+  });
+
+  it('the designated signer attests the exact file with a Prisma create that leaves attested_at to the database', async () => {
+    h.state.designated = { userId: h.ADMIN };
+    process.env.BILLING_EXECUTIVE_SIGNER_USER_ID = h.ADMIN;
+    const sha = 'b'.repeat(64);
+    h.state.artifacts = [{ id: 'v1', organizationId: h.ORG, caseId: h.CASE, kind: 'board_signed_voucher', source: 'uploaded', fileName: 'v.pdf', mimeType: 'application/pdf', byteLength: 5, sha256: sha, storageBucket: 'billing-finance', storageKey: 'k', createdBySubjectId: h.ADMIN, createdAt: new Date('2026-09-29T15:00:00Z') }];
+    h.state.attestations = [{ id: 'att-voucher', organizationId: h.ORG, caseId: h.CASE, kind: 'voucher_board_signed', artifactId: 'v1', voucherReference: 'SYNTH-PO-001', attestedBySubjectId: h.ADMIN, attestedAt: new Date('2026-09-29T16:00:00Z') }];
+    const url = `${base}/${h.CASE}/voucher/v1/receipt-attestation`;
+    const statement = await receiptStatement(new Request(url), caseParams({ artifactId: 'v1' }));
+    expect(statement.status).toBe(200);
+    const { statementText } = (await statement.json()) as { statementText: string };
+    const res = await receiptAttest(jsonReq(url, { expectedSha256: sha, method: 'present_on_original', statementConfirmed: true, statementText }), caseParams({ artifactId: 'v1' }));
+    expect(res.status).toBe(201);
+    expect(mocks.receiptCreate).toHaveBeenCalledTimes(1);
+    const data = mocks.receiptCreate.mock.calls[0][0] as Record<string, unknown>;
+    expect(data).toEqual({ organizationId: h.ORG, caseId: h.CASE, voucherArtifactId: 'v1', voucherSha256: sha, attestedByUserId: h.ADMIN, method: 'present_on_original', statement: statementText });
+    expect('attestedAt' in data).toBe(false);
+    const body = (await res.json()) as { receiptAttestation: { attestationId: string; sha256: string; attestedAt: string } };
+    expect(body.receiptAttestation).toMatchObject({ attestationId: 'rs-new', sha256: sha, attestedAt: '2026-09-29T18:00:00.000Z' });
   });
 });
 

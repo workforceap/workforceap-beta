@@ -18,7 +18,6 @@ import {
   type AttestationDraft,
 } from '../attestations';
 import { classEndDate } from '../dates';
-import { randomUUID } from 'node:crypto';
 import { getBillingProviderOrgId } from '../../providerOrg';
 import { AUTHORIZED_SIGNER } from '../constants';
 import type {
@@ -385,14 +384,18 @@ export async function attestReceiptSignature<P>(ctx: TwoStageContext<P>, artifac
   if (b.statementConfirmed !== true || s(b.statementText) !== statement) throw apiError(422, 'INTENT_NOT_CONFIRMED', 'Confirm the receiving-signature statement to attest it.');
   ctx.effects.mark();
   const row = await prisma.$transaction(async (tx) => {
-    const created = await insertReceiptSignature(tx, {
-      organizationId: ctx.member.organizationId,
-      caseId: ctx.billingCase!.id,
-      voucherArtifactId: artifact.id,
-      voucherSha256: artifact.sha256,
-      attestedByUserId: principal,
-      method: 'present_on_original',
-      statement,
+    // attested_at is stamped by the database (M1 877466f); it is never passed.
+    const created = await tx.billingVoucherReceiptSignature.create({
+      data: {
+        organizationId: ctx.member.organizationId,
+        caseId: ctx.billingCase!.id,
+        voucherArtifactId: artifact.id,
+        voucherSha256: artifact.sha256,
+        attestedByUserId: principal,
+        method: 'present_on_original',
+        statement,
+      },
+      select: { id: true, voucherArtifactId: true, voucherSha256: true, attestedByUserId: true, attestedAt: true },
     });
     await auditLog(
       {
@@ -416,26 +419,6 @@ export async function attestReceiptSignature<P>(ctx: TwoStageContext<P>, artifac
       method: 'present_on_original',
     },
   };
-}
-
-/**
- * Insert one billing_voucher_receipt_signatures row without attested_at: M1's
- * trigger stamps it and refuses a supplied value, but the generated Prisma
- * type requires the column (no default), so a Prisma `create` cannot express
- * this insert. Parameterized SQL, same transaction; switch to `create` once
- * the schema marks the column database-generated.
- */
-async function insertReceiptSignature(
-  tx: Prisma.TransactionClient,
-  row: { organizationId: string; caseId: string; voucherArtifactId: string; voucherSha256: string; attestedByUserId: string; method: 'present_on_original'; statement: string },
-): Promise<{ id: string; voucherArtifactId: string; voucherSha256: string; attestedByUserId: string; attestedAt: Date }> {
-  const rows = await tx.$queryRaw<Array<{ id: string; voucher_artifact_id: string; voucher_sha256: string; attested_by_user_id: string; attested_at: Date }>>`
-    INSERT INTO billing_voucher_receipt_signatures
-      (id, organization_id, case_id, voucher_artifact_id, voucher_sha256, attested_by_user_id, method, statement)
-    VALUES (${randomUUID()}, ${row.organizationId}, ${row.caseId}, ${row.voucherArtifactId}, ${row.voucherSha256}, ${row.attestedByUserId}, ${row.method}, ${row.statement})
-    RETURNING id, voucher_artifact_id, voucher_sha256, attested_by_user_id, attested_at`;
-  const r = rows[0];
-  return { id: r.id, voucherArtifactId: r.voucher_artifact_id, voucherSha256: r.voucher_sha256, attestedByUserId: r.attested_by_user_id, attestedAt: r.attested_at };
 }
 
 const SIGNER_CODES = {
