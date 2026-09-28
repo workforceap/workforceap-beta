@@ -8,6 +8,7 @@ import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 
 const patchSchema = z.object({
   assignedPartnerUserId: z.string().uuid().nullable(),
@@ -26,8 +27,15 @@ const patchSchema = z.object({
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
-  const referral = await prisma.$transaction((tx) => tx.partnerReferral.findUnique({
-    where: { partnerId_memberId: { partnerId: partnerCtx.partnerId, memberId } },
+  // A member hidden from this partner (lib/partner/dataAccess.ts) is a 404,
+  // the same answer as a member it never referred.
+  const access = partnerDataAccess(partnerCtx.partner);
+  const referral = await prisma.$transaction((tx) => tx.partnerReferral.findFirst({
+    where: {
+      partnerId: partnerCtx.partnerId,
+      memberId,
+      member: withPartnerMemberVisibility({}, access),
+    },
     include: { member: { select: { fullName: true } } },
   }));
   if (!referral) return NextResponse.json({ error: 'Referral not found' }, { status: 404 });

@@ -141,7 +141,9 @@ describe('referral bundle loader', () => {
         profile: {
           is: expect.objectContaining({
             ferpaConsentGiven: false,
-            OR: [{ isMinor: true }, { dob: { gt: expect.any(Date) } }],
+            // NULL-safe: a missing dob must not make the negated condition NULL
+            // (lib/partner/partnerVisibility.realdb.test.ts).
+            OR: [{ isMinor: true }, { dob: { not: null, gt: expect.any(Date) } }],
           }),
         },
       });

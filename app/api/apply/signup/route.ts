@@ -24,6 +24,7 @@ import { logger } from '@/lib/observability/logger';
 import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
 import { activeReferralPartnerWhere } from '@/lib/partner/referralPartnerLookup';
 import { partnerDisclosureAcknowledgement } from '@/lib/apply/partnerReferralDisclosureCore';
+import { partnerDataAccess, partnerMayViewMember } from '@/lib/partner/dataAccess';
 import { withApiGuc, withSystemGuc } from '@/lib/db/withRequestGuc';
 import { withDbRetry, isConnectionAcquisitionError } from '@/lib/db/withDbRetry';
 import { autoAssignAmbassadorFromReferral } from '@/lib/counselor/ambassadorAutoAssign';
@@ -575,6 +576,12 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     })));
 
     let createdApplicationId: string | null = null;
+    /**
+     * Minor facts of the profile as saved, for the partner visibility rule.
+     * Assigned inside the transaction callback; the `as` keeps TypeScript from
+     * narrowing the variable to `null` across that callback.
+     */
+    let savedProfileMinorFacts = null as { isMinor: boolean | null; dob: Date | null } | null;
     // Whether the awaited applicant receipt below went out. Reported to the
     // client so the confirmation page retries the receipt only when this send
     // failed, instead of sending a second copy on every signup (WAP-240).
@@ -724,8 +731,9 @@ export const POST = withApiGuc(async (request: NextRequest) => {
               }
             : {};
 
-        await tx.profile.upsert({
+        const savedProfile = await tx.profile.upsert({
           where: { userId: user.id },
+          select: { isMinor: true, dob: true },
           create: {
             userId: user.id,
             profilePhone: phone,
@@ -764,6 +772,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
             ...schoolFields,
           },
         });
+        savedProfileMinorFacts = {
+          isMinor: savedProfile?.isMinor ?? null,
+          dob: savedProfile?.dob ?? null,
+        };
   
         const application = await tx.application.create({
           data: {
@@ -960,9 +972,26 @@ export const POST = withApiGuc(async (request: NextRequest) => {
           );
         }
 
+        // Same tier + minor rule as the partner portal (lib/partner/dataAccess.ts).
+        // `isSchoolSignup` is also true for a sponsoring partner of any type
+        // (the school apply variant), so this email can reach a referral-track
+        // (restricted) or community partner, not only a high school:
+        //  - a minor with no FERPA consent on file is hidden from every
+        //    non-school partner, so the email is not sent at all. A brand-new
+        //    signup has no consent yet; `ageGroup` or the saved profile flags
+        //    the minor, so a returning applicant's earlier flag still counts;
+        //  - a restricted partner was told it "will not see your email", so the
+        //    address (and the grade, an education detail) is left out.
+        const partnerAccess = partnerDataAccess({ partnerType: referralPartnerType });
+        const partnerMaySeeApplicant = partnerMayViewMember(partnerAccess, {
+          isMinor: ageGroup === 'under_18' || savedProfileMinorFacts?.isMinor === true,
+          dob: savedProfileMinorFacts?.dob ?? null,
+          ferpaConsentGiven: false,
+        });
         if (
           referralPartnerContactEmail &&
-          referralPartnerNotifyOnEnrollment
+          referralPartnerNotifyOnEnrollment &&
+          partnerMaySeeApplicant
         ) {
           const partnerEmail = referralPartnerContactEmail;
           after(() =>
@@ -970,9 +999,9 @@ export const POST = withApiGuc(async (request: NextRequest) => {
               to: partnerEmail,
               partnerName: referralPartnerName ?? schoolDisplayName,
               studentName: fullName,
-              studentEmail: user.email!,
+              studentEmail: partnerAccess.canSeeContact ? user.email! : null,
               programInterest: programInterestSummary,
-              gradeLevel: gradeLevel?.trim() || null,
+              gradeLevel: partnerAccess.canSeeProfileDetails ? gradeLevel?.trim() || null : null,
             }).catch((err) => {
               logger.error('School enrollment partner ack email failed', { err });
               captureApiError(err, {
