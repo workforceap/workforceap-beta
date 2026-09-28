@@ -29,7 +29,8 @@ type Common = {
   title: string;
   documentNumber: string;
   issueDate: string;
-  letterhead: { headerLines: string[]; footer: { phone: string; addressLines: string[] } };
+  /** logo.sha256 binds the exact logo PNG bytes into the version hash. */
+  letterhead: { headerLines: string[]; footer: { phone: string; addressLines: string[] }; logo: { path: string; sha256: string } };
   student: Contact;
   boardName: string;
   counselor: CounselorContact;
@@ -86,10 +87,13 @@ export type ContentResult<T> = { ok: true; content: T; contentSha256: string } |
 
 export const PAYMENT_FOLLOW_UP_WORDING = `We will follow up in ${PAYMENT_FOLLOW_UP_MIN_DAYS}–${PAYMENT_FOLLOW_UP_MAX_DAYS} days.`;
 
-function letterhead(): Common['letterhead'] {
+const HEX64 = /^[0-9a-f]{64}$/;
+
+function letterhead(logoSha256: string): Common['letterhead'] {
   return {
     headerLines: [...WAP_BILLING_LETTERHEAD.headerLines],
     footer: { phone: WAP_BILLING_LETTERHEAD.footer.phone, addressLines: [...WAP_BILLING_LETTERHEAD.footer.addressLines] },
+    logo: { path: WAP_BILLING_LETTERHEAD.logoPath, sha256: logoSha256 },
   };
 }
 
@@ -102,8 +106,9 @@ function lineItems(): { lineItems: TuitionLine[]; totalCents: number } {
   return { lineItems: items, totalCents: items[0].amountCents };
 }
 
-function basics(documentNumber: string, issueDate: string, boardName: string, counselor: CounselorContact): string[] {
+function basics(documentNumber: string, issueDate: string, boardName: string, counselor: CounselorContact, logoSha256: string): string[] {
   const errors: string[] = [];
+  if (!HEX64.test(logoSha256)) errors.push('The letterhead logo hash (sha256 of the exact PNG bytes) is required.');
   if (!documentNumber.trim()) errors.push('Document number is required.');
   if (!isIsoDate(issueDate)) errors.push('Issue date must be YYYY-MM-DD.');
   if (!boardName.trim()) errors.push('Workforce Solutions board is required.');
@@ -114,6 +119,8 @@ function basics(documentNumber: string, issueDate: string, boardName: string, co
 /** J5 Quote/Voucher Request. Needs only the readiness attestation: no voucher, no funding approval. */
 export function buildJ5Content(input: {
   documentNumber: string;
+  /** sha256 of the exact logo PNG bytes the renderer will embed. */
+  logoSha256: string;
   issueDate: string;
   student: Contact;
   boardName: string;
@@ -121,7 +128,7 @@ export function buildJ5Content(input: {
   programSlug: string;
   readiness: Attestation;
 }): ContentResult<J5Content> {
-  const errors = basics(input.documentNumber, input.issueDate, input.boardName, input.counselor);
+  const errors = basics(input.documentNumber, input.issueDate, input.boardName, input.counselor, input.logoSha256);
   const gate = checkJ5Prerequisites({ hasOpenJ5: false, readiness: input.readiness, programSlug: input.programSlug });
   if (!gate.ok) errors.push(...gate.errors);
   const terms = resolveProgramTerms(input.programSlug);
@@ -136,7 +143,7 @@ export function buildJ5Content(input: {
     title: DOCUMENT_TITLES[J5_KIND],
     documentNumber: input.documentNumber.trim(),
     issueDate: input.issueDate,
-    letterhead: letterhead(),
+    letterhead: letterhead(input.logoSha256),
     student: { name: input.student.name.trim(), email: recipients.recipients.find((r) => r.role === 'student')!.email },
     boardName: input.boardName.trim(),
     counselor: {
@@ -172,6 +179,8 @@ export function buildJ5Content(input: {
 export function buildJ6Content(
   input: J6Prerequisites & {
     documentNumber: string;
+    /** sha256 of the exact logo PNG bytes the renderer will embed. */
+    logoSha256: string;
     issueDate: string;
     student: Contact;
     boardName: string;
@@ -179,7 +188,7 @@ export function buildJ6Content(
     finance: Contact;
   },
 ): ContentResult<J6Content> {
-  const errors = basics(input.documentNumber, input.issueDate, input.boardName, input.counselor);
+  const errors = basics(input.documentNumber, input.issueDate, input.boardName, input.counselor, input.logoSha256);
   const gate = checkJ6Prerequisites(input);
   if (!gate.ok) errors.push(...gate.errors);
   const recipients = j6Recipients({ finance: input.finance, counselor: input.counselor, student: input.student });
@@ -195,7 +204,7 @@ export function buildJ6Content(
     title: DOCUMENT_TITLES[J6_KIND],
     documentNumber: input.documentNumber.trim(),
     issueDate: input.issueDate,
-    letterhead: letterhead(),
+    letterhead: letterhead(input.logoSha256),
     student: { name: input.student.name.trim(), email: email('student') },
     boardName: input.boardName.trim(),
     counselor: { name: input.counselor.name.trim(), phone: input.counselor.phone.trim(), email: email('counselor') },

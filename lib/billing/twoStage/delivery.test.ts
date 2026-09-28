@@ -22,6 +22,7 @@ import {
   RECONCILE_CLAIMED_MIN_AGE_MS,
   classifyProviderOutcome,
   markStaleClaimAmbiguous,
+  recordDeliveryEvidence,
   decideClaim,
   deliveryState,
   reconcileSend,
@@ -91,13 +92,45 @@ describe('per-recipient claims: no double sends, unknown outcomes reconciled', (
     assert.equal(markStaleClaimAmbiguous(row('claimed', 1000), t0), null);
   });
 
-  it('a stage is sent only when its exact recipient set (2 for J5, 3 for J6) is delivered', () => {
-    const j5 = deliveryState('j5', [{ role: 'counselor', status: 'sent' }, { role: 'student', status: 'ambiguous' }]);
+  it('a stage is sent only when ONE attempt delivered its exact recipient set (2 for J5, 3 for J6)', () => {
+    const j5 = deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1 }, { role: 'student', status: 'ambiguous', attemptNo: 1 }]);
     assert.deepEqual([j5.expected, j5.delivered, j5.unsettled, j5.complete], [['counselor', 'student'], ['counselor'], ['student'], false]);
-    assert.equal(deliveryState('j5', [{ role: 'counselor', status: 'sent' }, { role: 'student', status: 'reconciled_delivered' }]).complete, true);
-    const j6 = deliveryState('j6', [{ role: 'finance', status: 'sent' }, { role: 'counselor', status: 'sent' }]);
+    assert.equal(deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1 }, { role: 'student', status: 'reconciled_delivered', attemptNo: 1 }]).complete, true);
+    const j6 = deliveryState('j6', [{ role: 'finance', status: 'sent', attemptNo: 1 }, { role: 'counselor', status: 'sent', attemptNo: 1 }]);
     assert.deepEqual([j6.expected.length, j6.missing, j6.complete], [3, ['student'], false]);
-    assert.throws(() => deliveryState('j5', [{ role: 'finance', status: 'sent' }]));
+    assert.throws(() => deliveryState('j5', [{ role: 'finance', status: 'sent', attemptNo: 1 }]));
+  });
+
+  it('does not add up deliveries across attempts', () => {
+    const mixed = deliveryState('j5', [
+      { role: 'student', status: 'sent', attemptNo: 1 },
+      { role: 'counselor', status: 'rejected_definite', attemptNo: 1 },
+      { role: 'counselor', status: 'sent', attemptNo: 2 },
+    ]);
+    assert.equal(mixed.complete, false);
+    assert.equal(mixed.completeAttemptNo, null);
+    const full = deliveryState('j5', [
+      { role: 'student', status: 'sent', attemptNo: 1 },
+      { role: 'counselor', status: 'rejected_definite', attemptNo: 1 },
+      { role: 'counselor', status: 'sent', attemptNo: 2 },
+      { role: 'student', status: 'sent', attemptNo: 2 },
+    ]);
+    assert.equal(full.complete, true);
+    assert.equal(full.completeAttemptNo, 2);
+  });
+
+  it('acceptance gates sent; a later bounce flags follow-up without unsending', () => {
+    const acceptedOnly = deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1 }, { role: 'student', status: 'sent', attemptNo: 1 }]);
+    assert.equal(acceptedOnly.complete, true);
+    assert.deepEqual(acceptedOnly.followUp, []);
+    const bounced = deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1, deliveryStatus: 'delivered' }, { role: 'student', status: 'sent', attemptNo: 1, deliveryStatus: 'bounced' }]);
+    assert.equal(bounced.complete, true);
+    assert.deepEqual(bounced.followUp, ['student']);
+    const evidence = { status: 'bounced' as const, at: new Date(), source: 'synthetic webhook' };
+    assert.ok(recordDeliveryEvidence({ status: 'sent', deliveryStatus: null }, evidence).ok);
+    assert.equal(recordDeliveryEvidence({ status: 'sent', deliveryStatus: 'delivered' }, evidence).ok, false);
+    assert.equal(recordDeliveryEvidence({ status: 'ambiguous', deliveryStatus: null }, evidence).ok, false);
+    assert.equal(recordDeliveryEvidence({ status: 'sent', deliveryStatus: null }, { ...evidence, source: ' ' }).ok, false);
   });
 });
 

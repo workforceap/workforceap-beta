@@ -2140,7 +2140,6 @@ model BillingCase {
   artifacts     BillingArtifact[]
   stageRecords  BillingStageRecord[]
   paymentEvents BillingPaymentEvent[]
-  amountExceptions BillingAmountException[]
 
   @@unique([id, organizationId])
   @@index([organizationId, subjectMemberId, createdAt(sort: Desc)])
@@ -2206,7 +2205,6 @@ model BillingAttestation {
   j6ClassStart BillingStageRecord[] @relation("StageClassStartAttestation")
   j6Voucher   BillingStageRecord[] @relation("StageVoucherAttestation")
   j6ExternalJ5 BillingStageRecord[] @relation("StageExternalJ5Attestation")
-  amountExceptions BillingAmountException[]
 
   @@unique([id, caseId])
   @@index([caseId, kind, attestedAt(sort: Desc)])
@@ -2247,7 +2245,6 @@ model BillingArtifact {
 
   attestations      BillingAttestation[]
   signedStageRecord BillingStageRecord[] @relation("StageSignedArtifact")
-  amountExceptionEvidence BillingAmountException[]
   voucherFor        BillingStageRecord[] @relation("StageVoucherArtifact")
   boardInvoiceFor   BillingStageRecord[] @relation("StageBoardInvoiceArtifact")
 
@@ -2278,30 +2275,6 @@ model BillingSignerDelegation {
 
   @@index([organizationId, delegateSubjectId])
   @@map("billing_signer_delegations")
-}
-
-/// Higher-authority acceptance of a voucher amount that differs from the
-/// $7,500.00 quote. Model hook only: disabled in code (AMOUNT_EXCEPTION_ENABLED
-/// = false), no UI. Must be approved by the J6 signer. A staff review note can
-/// never clear a money mismatch.
-model BillingAmountException {
-  id                   String   @id @default(uuid())
-  organizationId       String   @map("organization_id")
-  caseId               String   @map("case_id")
-  voucherAttestationId String   @map("voucher_attestation_id")
-  acceptedAmountCents  Int      @map("accepted_amount_cents")
-  evidenceArtifactId   String   @map("evidence_artifact_id")
-  approvalReference    String   @map("approval_reference")
-  approvedBySubjectId  String   @map("approved_by_subject_id")
-  approvedAt           DateTime @default(now()) @map("approved_at")
-
-  case               BillingCase          @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  voucherAttestation BillingAttestation   @relation(fields: [voucherAttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
-  evidenceArtifact   BillingArtifact      @relation(fields: [evidenceArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
-  stageRecords       BillingStageRecord[]
-
-  @@unique([id, caseId])
-  @@map("billing_amount_exceptions")
 }
 
 /// One J5 (quote/voucher request) or J6 (invoice/voucher cover letter)
@@ -2342,8 +2315,6 @@ model BillingStageRecord {
   reviewClearedBySubjectId String?   @map("review_cleared_by_subject_id")
   reviewClearedAt          DateTime? @map("review_cleared_at")
   reviewNote               String?   @map("review_note") @db.Text
-  /// Disabled hook: signer-approved exception for a voucher amount mismatch.
-  amountExceptionId        String?   @map("amount_exception_id")
   readinessAttestationId   String?   @map("readiness_attestation_id")
   classStartAttestationId  String?   @map("class_start_attestation_id")
   voucherArtifactId        String?   @map("voucher_artifact_id")
@@ -2371,7 +2342,6 @@ model BillingStageRecord {
   case                 BillingCase              @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
   supersedes           BillingStageRecord?      @relation("StageSupersedes", fields: [supersedesRecordId, caseId, stage], references: [id, caseId, stage], onDelete: Restrict, onUpdate: NoAction)
   supersededBy         BillingStageRecord[]     @relation("StageSupersedes")
-  amountException      BillingAmountException?  @relation(fields: [amountExceptionId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
   priorJ5              BillingStageRecord?      @relation("StagePriorJ5", fields: [priorJ5RecordId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
   followingJ6          BillingStageRecord[]     @relation("StagePriorJ5")
   externalJ5Attestation BillingAttestation?     @relation("StageExternalJ5Attestation", fields: [externalJ5AttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
@@ -2442,11 +2412,17 @@ model BillingStageSend {
   claimToken            String    @map("claim_token")
   claimedAt             DateTime  @map("claimed_at")
   lastClaimedAt         DateTime  @map("last_claimed_at")
-  sentAt                DateTime? @map("sent_at")
+  /// Provider acceptance (status 'sent' requires it with providerMessageId).
+  acceptedAt            DateTime? @map("accepted_at")
   /// sha256 of every attachment in this copy, in order.
   attachmentSha256s     String[]  @default([]) @map("attachment_sha256s")
   providerMessageId     String?   @map("provider_message_id")
   providerResult        String?   @map("provider_result") @db.Text
+  /// Later delivery evidence, recorded once: delivered | bounced | complained.
+  /// Never unsends the stage; a bounce/complaint flags follow-up.
+  deliveryStatus        String?   @map("delivery_status")
+  deliveryEvidenceAt    DateTime? @map("delivery_evidence_at")
+  deliveryEvidenceSource String?  @map("delivery_evidence_source")
   lastError             String?   @map("last_error") @db.Text
   reconciledBySubjectId String?   @map("reconciled_by_subject_id")
   reconciledAt          DateTime? @map("reconciled_at")

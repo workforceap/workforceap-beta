@@ -69,6 +69,27 @@ export type SendRow = {
   lastClaimedAt: Date;
 };
 
+/**
+ * Two separate facts per copy:
+ *  - provider acceptance (status 'sent': accepted_at + provider_message_id), or
+ *    an audited reconciled_delivered. This is what gates a stage's 'sent'
+ *    (all required roles in one attempt).
+ *  - later delivery evidence (delivered / bounced / complained, with time and
+ *    source), recorded once. A bounce or complaint never unsends the stage; it
+ *    flags the case for follow-up.
+ */
+export type DeliveryEvidence = { status: 'delivered' | 'bounced' | 'complained'; at: Date; source: string };
+
+export function recordDeliveryEvidence(
+  row: { status: SendStatus; deliveryStatus: DeliveryEvidence['status'] | null },
+  evidence: DeliveryEvidence,
+): { ok: true; evidence: DeliveryEvidence } | { ok: false; error: string } {
+  if (!DELIVERED.has(row.status)) return { ok: false, error: 'Delivery evidence applies only to an accepted or reconciled copy.' };
+  if (row.deliveryStatus) return { ok: false, error: 'Delivery evidence is already recorded for this copy.' };
+  if (!evidence.source.trim()) return { ok: false, error: 'Record where the delivery evidence came from.' };
+  return { ok: true, evidence };
+}
+
 export type ClaimDecision =
   | { action: 'claim_new' }
   | { action: 'retry_same_key' }
@@ -136,15 +157,29 @@ export type DeliveryState = {
   complete: boolean;
 };
 
-/** Delivery of one attempt against the stage's exact recipient set. */
-export function deliveryState(stage: BillingStage, rows: ReadonlyArray<Pick<SendRow, 'role' | 'status'>>): DeliveryState {
+/**
+ * Delivery against the stage's exact recipient set. A stage is complete only
+ * when ONE attempt delivered every required role (sent or reconciled_delivered)
+ * and no copy of any attempt is still unsettled; deliveries spread across
+ * attempts do not add up. Mirrors billing_stage_record_rules() in the migration.
+ */
+export function deliveryState(
+  stage: BillingStage,
+  rows: ReadonlyArray<Pick<SendRow, 'role' | 'status'> & { attemptNo: number; deliveryStatus?: DeliveryEvidence['status'] | null }>,
+): DeliveryState & { completeAttemptNo: number | null; followUp: RecipientRole[] } {
   const expected = [...STAGE_RECIPIENT_ROLES[stage]];
-  const byRole = new Map(rows.map((r) => [r.role, r.status] as const));
   const extra = rows.filter((r) => !expected.includes(r.role));
   if (extra.length > 0) throw new Error(`Unexpected ${stage.toUpperCase()} recipient(s): ${extra.map((r) => r.role).join(', ')}`);
-  const delivered = expected.filter((role) => DELIVERED.has(byRole.get(role) as SendStatus));
-  const failed = expected.filter((role) => ['rejected_definite', 'reconciled_not_delivered'].includes(byRole.get(role) ?? ''));
-  const missing = expected.filter((role) => !byRole.has(role));
-  const unsettled = expected.filter((role) => byRole.has(role) && !SETTLED.has(byRole.get(role) as SendStatus));
-  return { expected, delivered, unsettled, failed, missing, complete: delivered.length === expected.length };
+  const deliveredRoles = new Set(rows.filter((r) => DELIVERED.has(r.status)).map((r) => r.role));
+  const delivered = expected.filter((role) => deliveredRoles.has(role));
+  const unsettled = expected.filter((role) => rows.some((r) => r.role === role && !SETTLED.has(r.status)));
+  const failed = expected.filter((role) => !deliveredRoles.has(role) && rows.some((r) => r.role === role && ['rejected_definite', 'reconciled_not_delivered'].includes(r.status)));
+  const missing = expected.filter((role) => !rows.some((r) => r.role === role));
+  const attempts = [...new Set(rows.map((r) => r.attemptNo))].sort((x, y) => x - y);
+  const completeAttemptNo =
+    unsettled.length > 0
+      ? null
+      : attempts.find((n) => expected.every((role) => rows.some((r) => r.attemptNo === n && r.role === role && DELIVERED.has(r.status)))) ?? null;
+  const followUp = expected.filter((role) => rows.some((r) => r.role === role && (r.deliveryStatus === 'bounced' || r.deliveryStatus === 'complained')));
+  return { expected, delivered, unsettled, failed, missing, complete: completeAttemptNo !== null, completeAttemptNo, followUp };
 }

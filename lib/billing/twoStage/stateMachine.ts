@@ -8,8 +8,8 @@
  *   J6:      (none) -> draft [-> review] -> signed -> sent
  *            [needs a prior quote (system J5 sent, or attested external),
  *             the receipt-signed board voucher + attestation, class_started <= today;
- *             derived holds: money or class mismatches block signing outright;
- *             a period or end-date variance needs an audited review]
+ *             derived holds (amount, voucher class/period, contract end, class vs
+ *             quote) block signing until corrected evidence clears them]
  *   Payment: not_applicable -> pending -> received        [pending on J6 sent; received needs evidence]
  *
  * Any signed/sent record may be superseded by a new version; drafts and
@@ -92,22 +92,27 @@ export type ReviewReason =
   | 'end_date_not_contract'
   | 'class_differs_from_quote';
 
-/** Never cleared by a review note. Money: corrected voucher (or the disabled exception). Class: a corrected document. */
-export const BLOCKING_REVIEW_REASONS: ReadonlySet<ReviewReason> = new Set(['voucher_amount_differs', 'voucher_class_differs', 'class_differs_from_quote']);
+/**
+ * Every reason is a hard hold with no bypass: no review note and no exception
+ * clears it. Each clears only when corrected structured evidence (a corrected
+ * voucher attestation or class_started attestation, or a corrected document)
+ * makes it disappear. Mirrors billing_stage_record_rules() in the migration.
+ */
+export const BLOCKING_REVIEW_REASONS: ReadonlySet<ReviewReason> = new Set([
+  'voucher_amount_differs',
+  'voucher_class_differs',
+  'voucher_period_conflict',
+  'end_date_not_contract',
+  'class_differs_from_quote',
+]);
 
 export const REVIEW_REASON_TEXT: Readonly<Record<ReviewReason, string>> = {
   voucher_amount_differs: 'The voucher authorizes a different amount than the $7,500.00 quote. Record a corrected voucher; a review note cannot clear this.',
   voucher_class_differs: 'The voucher authorizes a different program or class than this J6. Get a corrected voucher.',
-  voucher_period_conflict: 'The class dates fall outside the period the voucher authorizes.',
-  end_date_not_contract: 'The confirmed end date is not five calendar months after the actual start.',
+  voucher_period_conflict: 'The class dates fall outside the period the voucher authorizes. Record a corrected voucher (period) or class-start attestation.',
+  end_date_not_contract: 'The confirmed end date is not five calendar months after the actual start. Record corrected class dates.',
   class_differs_from_quote: 'The program, class or hours differ from the quote this J6 follows. Issue a corrected document.',
 };
-
-/**
- * Higher-authority exception for a voucher amount that differs from the quote.
- * Modeled (billing_amount_exceptions) but disabled until Mike approves it.
- */
-export const AMOUNT_EXCEPTION_ENABLED = false;
 
 export type J6Variance = { startShiftDays: number; endShiftDays: number; hoursDelta: number } | null;
 
@@ -123,7 +128,7 @@ export type J6Gate =
       priorJ5: PriorJ5Summary;
       /** Actual vs the frozen J5 estimate (system J5 only). Informational. */
       variance: J6Variance;
-      /** Non-empty = the J6 is held; blocking reasons are never cleared by a review. */
+      /** Non-empty = the J6 is held; no reason is ever cleared by a review. */
       reviewReasons: ReviewReason[];
       classStarted: Attestation;
       voucher: ArtifactSummary;
@@ -231,41 +236,18 @@ export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
   return { ok: true, training, priorJ5, variance, reviewReasons: reasons, classStarted, voucher, voucherAttestation };
 }
 
-export type AmountException = { voucherAttestationId: string; acceptedAmountCents: number; approvedBySubjectId: string };
-
 /**
- * Whether a J6 may be signed. Any reason needs a recorded staff review first;
- * a blocking reason is never cleared by that review. The only other unlock is
- * for a money mismatch: an amount exception approved by the signer, which is
- * disabled (AMOUNT_EXCEPTION_ENABLED) until Mike approves it.
+ * Whether a J6 may be signed: only with no hold at all, and only once its class
+ * has started (start <= today in America/Chicago). A review note never clears
+ * a hold; there is no amount exception.
  */
-export function canSignJ6(input: {
-  reviewReasons: readonly string[];
-  reviewClearedAt: string | null;
-  reviewNote: string | null;
-  voucherAttestation?: { id: string; authorizedAmountCents: number | null } | null;
-  amountException?: AmountException | null;
-  signerSubjectId?: string | null;
-  exceptionEnabled?: boolean;
-}): Gate {
+export function canSignJ6(input: { reviewReasons: readonly string[]; classStartDate: string; now: Date }): Gate {
   const errors: string[] = [];
-  const reasons = input.reviewReasons as readonly ReviewReason[];
-  if (reasons.length > 0 && (!input.reviewClearedAt || !input.reviewNote?.trim())) {
-    errors.push('This J6 is held for review. A staff member must record the review before it can be signed.');
+  for (const reason of input.reviewReasons as readonly ReviewReason[]) {
+    errors.push(`${REVIEW_REASON_TEXT[reason] ?? reason} A review note cannot clear this.`);
   }
-  if (reasons.includes('class_differs_from_quote') || reasons.includes('voucher_class_differs')) {
-    errors.push('The program or class differs from the quote or the voucher. Issue a corrected document; a review cannot clear this.');
-  }
-  if (reasons.includes('voucher_amount_differs')) {
-    const e = input.amountException;
-    const v = input.voucherAttestation;
-    const exceptionOk =
-      (input.exceptionEnabled ?? AMOUNT_EXCEPTION_ENABLED) &&
-      !!e && !!v && !!input.signerSubjectId &&
-      e.voucherAttestationId === v.id &&
-      e.acceptedAmountCents === v.authorizedAmountCents &&
-      e.approvedBySubjectId === input.signerSubjectId;
-    if (!exceptionOk) errors.push('The voucher amount differs from the $7,500.00 quote. Record a corrected voucher; a review note cannot clear this.');
+  if (compareIsoDates(input.classStartDate, billingToday(input.now)) > 0) {
+    errors.push('The class has not started yet; a J6 is signed only after it starts.');
   }
   return errors.length > 0 ? { ok: false, errors } : { ok: true };
 }

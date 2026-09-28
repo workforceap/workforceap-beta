@@ -131,14 +131,13 @@ this branch rather than followed by corrective migrations.
 
 | Table | Purpose |
 | --- | --- |
-| `billing_cases` | One student + program seat. `subject_member_id` is the immutable original subject. `member_id` is the current live account: `ON DELETE SET NULL` on erasure, or repointed to a merge survivor (audited in `member_merged_from_id` / `member_merged_at`). |
+| `billing_cases` | One student + program seat. `subject_member_id` is the immutable original subject. `member_id` is the current live account, and must belong to the case organization. It is set NULL on erasure (`ON DELETE SET NULL`), or repointed to a merge survivor (audited in `member_merged_from_id` / `member_merged_at`). |
 | `billing_attestations` | Append-only staff statements with evidence. `j5_readiness` records two separate facts (student approved/ready; counselor requested the quote: who, when, reference) plus the planned start. `class_started` holds the actual start and the confirmed end. `voucher_board_signed` holds the reference, the program/class, amount and period the voucher authorizes, the received date, and Michael's receiving signature present. `external_j5_reference` is a manual quote issued before this system (reference, date, program/class quoted). |
 | `billing_artifacts` | Append-only record of each PDF in the private finance bucket, under a content-addressed key. A rendered signed PDF is bound by composite FK to its exact `(stage record, case, stage, version)` and to that version's `content_sha256`; uploads are case-level. |
 | `billing_stage_records` | One J5 or J6 version: frozen `content` + `content_sha256`, `class_name`, `amount_cents` = 750000, `contact_hours` 160/200, dates, links, derived review reasons, signature fields, send receipt. |
 | `billing_stage_recipients` | Frozen recipient snapshot per record: one normalized address per role (J5: counselor, student; J6: finance, counselor, student). Editable only while the record is a draft. |
-| `billing_stage_sends` | One row per recipient per attempt, unique on `(stage_record_id, stage, attempt_no, recipient_role)`. The address is bound to the snapshot by composite FK. The idempotency key is stage- and version-qualified, and each row records the SHA-256 of every attachment. |
+| `billing_stage_sends` | One row per recipient per attempt, unique on `(stage_record_id, stage, attempt_no, recipient_role)`. The address is bound to the snapshot by composite FK. The idempotency key is stage- and version-qualified, and each row records the SHA-256 of every attachment. Provider acceptance (`accepted_at`, `provider_message_id`) is kept separate from later delivery evidence (`delivery_status` = delivered, bounced or complained, with its time and source). |
 | `billing_payment_events` | Append-only `pending` / `received` for a J6 proven sent. |
-| `billing_amount_exceptions` | Hook only, disabled: signer-approved acceptance of a voucher amount that differs from the quote. |
 | `billing_signer_delegations` | Hook only, disabled. |
 
 The database enforces these rules itself, not just the app:
@@ -149,16 +148,24 @@ The database enforces these rules itself, not just the app:
   - the class-start attestation, whose dates it prints
   - the voucher and its attestation
   - a prior quote: our sent J5, or an attested external quote. No system J5 is ever fabricated.
-- **Derived holds.** `billing_stage_record_rules()` computes the J6 review reasons and refuses any other value:
-  - `voucher_amount_differs`: blocking. Only a corrected voucher attestation unlocks it, or the disabled, signer-approved amount exception. A review note never does.
-  - `voucher_class_differs`: blocking. The voucher authorizes another program or class.
-  - `class_differs_from_quote`: blocking. The program, class or hours differ from our J5 or the external quote.
-  - `voucher_period_conflict` and `end_date_not_contract`: need an audited staff review (who, when, note).
-- **Signing.** It needs the exact recipient snapshot and a PDF rendered from that exact record version and content. A signed record, its recipients and its review are frozen.
-- **Sends.** A copy starts as `claimed` and must go to its role's frozen address. `sent` requires `provider_message_id` and `sent_at`. `reconciled_delivered` / `reconciled_not_delivered` is a separate audited path, only from `ambiguous` / `needs_reconciliation`: who, when, a note and an optional evidence file. Settled copies are final. Every copy attaches exactly the archived SHA-256s, in order: signed PDF, voucher, invoice.
-- **Sent.** A record reaches `sent` only when every required role has a `sent` or `reconciled_delivered` copy and none is still claimed, ambiguous or unreconciled.
+- **Hours.** `contact_hours` must equal `billing_contract_hours(case program)`: 200 for `software-developer-professional-certificate-ibm` and 160 for every other program. The PG16 proof checks this matches `hours.ts` for every approved syllabus.
+- **Derived holds.** `billing_stage_record_rules()` computes the J6 review reasons and refuses any other value. Every reason is a hard hold with no bypass: no review note clears it, and there is no amount-exception path. A reason clears only when corrected structured evidence makes it disappear:
+  - `voucher_amount_differs`: the voucher amount is not 750000 cents.
+  - `voucher_class_differs`: the voucher authorizes another program or class.
+  - `voucher_period_conflict`: the class dates fall outside the voucher period.
+  - `end_date_not_contract`: the actual end is not start + 5 calendar months, the same rule the PDF renderer enforces.
+  - `class_differs_from_quote`: the program, class or hours differ from our J5 or the external quote.
+- **Signing.** It needs:
+  - no hold;
+  - for a J6, a class start on or before today in America/Chicago;
+  - the exact recipient snapshot;
+  - a PDF rendered from that exact record version and content.
+
+  A recipient change locks the parent record, so it is serialized against a concurrent sign. A signed record and its recipients are frozen. The frozen content includes the SHA-256 of the exact logo PNG bytes, so a new logo changes the version hash and a sign request that carries the old hash is refused.
+- **Sends.** A copy starts as `claimed` and must go to its role's frozen address. `sent` means the provider accepted the copy and requires `accepted_at` plus `provider_message_id`. Later delivery evidence is recorded once and never unsends the stage; a bounce or complaint flags the case for follow-up. `reconciled_delivered` / `reconciled_not_delivered` is a separate audited path, only from `ambiguous` / `needs_reconciliation`: who, when, a note and an optional evidence file. Settled copies are final. Every copy attaches exactly the archived SHA-256s, in order: signed PDF, voucher, invoice.
+- **Sent.** A record reaches `sent` only when a single attempt has a `sent` or `reconciled_delivered` copy for every required role, and no copy in any attempt is still claimed, ambiguous or unreconciled.
 - **Payment.** It is accepted for a J6 proven sent: `sent_at` plus delivered finance, counselor and student copies. So a sent J6 later superseded by a corrected cover letter still reconciles its payment, and an unsent J6 never does.
-- **Integrity.** Artifacts, attestations, amount exceptions and payment events are append-only, and every CHECK treats NULL as a failure.
+- **Integrity.** Artifacts, attestations and payment events are append-only, and every CHECK treats NULL as a failure.
 
 ### External-send gates
 

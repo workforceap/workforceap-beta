@@ -58,7 +58,6 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'billingAttestation',
   'billingArtifact',
   'billingSignerDelegation',
-  'billingAmountException',
   'billingStageRecord',
   'billingStageRecipient',
   'billingStageSend',

@@ -1,7 +1,7 @@
 -- Two-stage J5 quote/voucher request + J6 invoice/voucher cover letter
 -- (docs/BILLING-PACKETS.md "Two-stage J5/J6"). Mike Brown, 2026-09-27.
 --
--- Purely additive: nine new tables, their constraints, triggers and grants.
+-- Purely additive: eight new tables, their constraints, triggers and grants.
 -- training_billing_packets (20260904020000) is not touched, so an older app
 -- revision still inserting legacy packets keeps working during the
 -- Vercel migrate/build overlap, and existing packet rows are preserved.
@@ -206,33 +206,6 @@ CREATE TABLE IF NOT EXISTS "billing_signer_delegations" (
 );
 CREATE INDEX IF NOT EXISTS "billing_signer_delegations_organization_id_delegate_subject_idx" ON "billing_signer_delegations"("organization_id", "delegate_subject_id");
 
--- ------------------------------------------ amount exceptions (hook)
--- A higher-authority exception accepting a voucher whose authorized amount
--- differs from the $7,500.00 quote. Model hook only: disabled in code
--- (AMOUNT_EXCEPTION_ENABLED = false) and no UI creates one. A staff review
--- note can never clear a money mismatch; only a corrected voucher
--- attestation or one of these (approved by the J6 signer) can.
-CREATE TABLE IF NOT EXISTS "billing_amount_exceptions" (
-    "id" TEXT NOT NULL,
-    "organization_id" TEXT NOT NULL,
-    "case_id" TEXT NOT NULL,
-    "voucher_attestation_id" TEXT NOT NULL,
-    "accepted_amount_cents" INTEGER NOT NULL,
-    "evidence_artifact_id" TEXT NOT NULL,
-    "approval_reference" TEXT NOT NULL,
-    "approved_by_subject_id" TEXT NOT NULL,
-    "approved_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "billing_amount_exceptions_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "billing_amount_exceptions_case_id_organization_id_fkey" FOREIGN KEY ("case_id", "organization_id") REFERENCES "billing_cases"("id", "organization_id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "billing_amount_exceptions_voucher_attestation_id_case_id_fkey" FOREIGN KEY ("voucher_attestation_id", "case_id") REFERENCES "billing_attestations"("id", "case_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
-    CONSTRAINT "billing_amount_exceptions_evidence_artifact_id_case_id_fkey" FOREIGN KEY ("evidence_artifact_id", "case_id") REFERENCES "billing_artifacts"("id", "case_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
-    CONSTRAINT "billing_amount_exceptions_check" CHECK (coalesce((
-      "accepted_amount_cents" > 0 AND btrim("approval_reference") <> '' AND btrim("approved_by_subject_id") <> ''
-    ), false))
-);
-CREATE UNIQUE INDEX IF NOT EXISTS "billing_amount_exceptions_id_case_id_key" ON "billing_amount_exceptions"("id", "case_id");
-
 -- -------------------------------------------------------- stage records
 CREATE TABLE IF NOT EXISTS "billing_stage_records" (
     "id" TEXT NOT NULL,
@@ -259,7 +232,6 @@ CREATE TABLE IF NOT EXISTS "billing_stage_records" (
     "review_cleared_by_subject_id" TEXT,
     "review_cleared_at" TIMESTAMP(3),
     "review_note" TEXT,
-    "amount_exception_id" TEXT,
     "readiness_attestation_id" TEXT,
     "class_start_attestation_id" TEXT,
     "voucher_artifact_id" TEXT,
@@ -283,7 +255,6 @@ CREATE TABLE IF NOT EXISTS "billing_stage_records" (
 
     CONSTRAINT "billing_stage_records_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "billing_stage_records_case_id_organization_id_fkey" FOREIGN KEY ("case_id", "organization_id") REFERENCES "billing_cases"("id", "organization_id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "billing_stage_records_amount_exception_id_case_id_fkey" FOREIGN KEY ("amount_exception_id", "case_id") REFERENCES "billing_amount_exceptions"("id", "case_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
     CONSTRAINT "billing_stage_records_external_j5_attestation_id_case_id_fkey" FOREIGN KEY ("external_j5_attestation_id", "case_id") REFERENCES "billing_attestations"("id", "case_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
     CONSTRAINT "billing_stage_records_readiness_attestation_id_case_id_fkey" FOREIGN KEY ("readiness_attestation_id", "case_id") REFERENCES "billing_attestations"("id", "case_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
     CONSTRAINT "billing_stage_records_class_start_attestation_id_case_id_fkey" FOREIGN KEY ("class_start_attestation_id", "case_id") REFERENCES "billing_attestations"("id", "case_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
@@ -321,8 +292,8 @@ CREATE TABLE IF NOT EXISTS "billing_stage_records" (
           OR ("prior_j5_source" = 'external' AND "prior_j5_record_id" IS NULL AND "external_j5_attestation_id" IS NOT NULL)))
     ), false)),
     -- review_reasons are derived by billing_stage_record_rules() from the linked
-    -- attestations and must match exactly. A recorded staff review is needed to
-    -- sign with any reason; it never unlocks a money or class mismatch (see rules).
+    -- attestations and must match exactly. A recorded staff review never
+    -- unlocks signing; every reason is a hard hold (see rules).
     CONSTRAINT "billing_stage_records_review_check" CHECK (coalesce((
       (("review_cleared_at" IS NULL AND "review_cleared_by_subject_id" IS NULL AND "review_note" IS NULL)
         OR ("review_required" AND "review_cleared_at" IS NOT NULL AND "review_cleared_by_subject_id" IS NOT NULL
@@ -418,10 +389,13 @@ CREATE TABLE IF NOT EXISTS "billing_stage_sends" (
     "claim_token" TEXT NOT NULL,
     "claimed_at" TIMESTAMP(3) NOT NULL,
     "last_claimed_at" TIMESTAMP(3) NOT NULL,
-    "sent_at" TIMESTAMP(3),
+    "accepted_at" TIMESTAMP(3),
     "attachment_sha256s" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "provider_message_id" TEXT,
     "provider_result" TEXT,
+    "delivery_status" TEXT,
+    "delivery_evidence_at" TIMESTAMP(3),
+    "delivery_evidence_source" TEXT,
     "last_error" TEXT,
     "reconciled_by_subject_id" TEXT,
     "reconciled_at" TIMESTAMP(3),
@@ -441,8 +415,14 @@ CREATE TABLE IF NOT EXISTS "billing_stage_sends" (
     CONSTRAINT "billing_stage_sends_status_check" CHECK (coalesce((
       "attempt_no" >= 1 AND btrim("email") <> ''
       AND "status" IN ('claimed', 'sent', 'rejected_definite', 'ambiguous', 'needs_reconciliation', 'reconciled_delivered', 'reconciled_not_delivered')
-      -- sent = provider acceptance evidence; manual reconciliation is its own audited status.
-      AND ("status" <> 'sent' OR ("sent_at" IS NOT NULL AND btrim(coalesce("provider_message_id", '')) <> ''))
+      -- status 'sent' = the provider ACCEPTED the copy (accepted_at + provider_message_id).
+      -- This, or an audited reconciled_delivered, is what gates a stage's 'sent'.
+      AND ("status" <> 'sent' OR ("accepted_at" IS NOT NULL AND btrim(coalesce("provider_message_id", '')) <> ''))
+      -- Later delivery evidence (provider webhook or operator) is recorded
+      -- separately and never unsends the stage; a bounce/complaint flags follow-up.
+      AND (("delivery_status" IS NULL AND "delivery_evidence_at" IS NULL AND "delivery_evidence_source" IS NULL)
+        OR ("delivery_status" IN ('delivered', 'bounced', 'complained') AND "delivery_evidence_at" IS NOT NULL
+          AND btrim(coalesce("delivery_evidence_source", '')) <> '' AND "status" IN ('sent', 'reconciled_delivered')))
       AND ("status" NOT IN ('reconciled_delivered', 'reconciled_not_delivered')
         OR ("reconciled_by_subject_id" IS NOT NULL AND "reconciled_at" IS NOT NULL AND btrim(coalesce("reconcile_note", '')) <> ''))
     ), false))
@@ -519,10 +499,6 @@ DROP TRIGGER IF EXISTS billing_attestations_append_only ON public.billing_attest
 CREATE TRIGGER billing_attestations_append_only
   BEFORE UPDATE OR DELETE ON public.billing_attestations
   FOR EACH ROW EXECUTE FUNCTION public.billing_append_only();
-DROP TRIGGER IF EXISTS billing_amount_exceptions_append_only ON public.billing_amount_exceptions;
-CREATE TRIGGER billing_amount_exceptions_append_only
-  BEFORE UPDATE OR DELETE ON public.billing_amount_exceptions
-  FOR EACH ROW EXECUTE FUNCTION public.billing_append_only();
 DROP TRIGGER IF EXISTS billing_payment_events_append_only ON public.billing_payment_events;
 CREATE TRIGGER billing_payment_events_append_only
   BEFORE UPDATE OR DELETE ON public.billing_payment_events
@@ -540,6 +516,10 @@ BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NEW.member_merged_at IS NOT NULL OR NEW.member_merged_from_id IS NOT NULL THEN
       RAISE EXCEPTION 'a new billing case starts on its own subject' USING ERRCODE = '23514';
+    END IF;
+    IF NEW.member_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM public.users u WHERE u.id = NEW.member_id AND u.organization_id = NEW.organization_id) THEN
+      RAISE EXCEPTION 'the billing case member must belong to the case organization' USING ERRCODE = '23514';
     END IF;
     RETURN NEW;
   END IF;
@@ -609,7 +589,7 @@ BEGIN
     OR NEW.review_required IS DISTINCT FROM OLD.review_required OR NEW.review_reasons IS DISTINCT FROM OLD.review_reasons
     OR NEW.review_cleared_by_subject_id IS DISTINCT FROM OLD.review_cleared_by_subject_id
     OR NEW.review_cleared_at IS DISTINCT FROM OLD.review_cleared_at OR NEW.review_note IS DISTINCT FROM OLD.review_note
-    OR NEW.class_name IS DISTINCT FROM OLD.class_name OR NEW.amount_exception_id IS DISTINCT FROM OLD.amount_exception_id
+    OR NEW.class_name IS DISTINCT FROM OLD.class_name
     OR NEW.readiness_attestation_id IS DISTINCT FROM OLD.readiness_attestation_id
     OR NEW.class_start_attestation_id IS DISTINCT FROM OLD.class_start_attestation_id
     OR NEW.voucher_artifact_id IS DISTINCT FROM OLD.voucher_artifact_id
@@ -654,6 +634,14 @@ BEGIN
     RAISE EXCEPTION 'billing send identity is immutable' USING ERRCODE = '23514';
   END IF;
   IF OLD.status IN ('sent', 'rejected_definite', 'reconciled_delivered', 'reconciled_not_delivered') THEN
+    -- The only change to a settled copy: recording delivery evidence once.
+    IF OLD.delivery_status IS NULL AND NEW.delivery_status IS NOT NULL
+       AND ROW(NEW.status, NEW.accepted_at, NEW.provider_message_id, NEW.provider_result, NEW.attachment_sha256s,
+               NEW.claim_token, NEW.reconciled_by_subject_id, NEW.reconciled_at, NEW.reconcile_note, NEW.reconcile_evidence_artifact_id)
+         IS NOT DISTINCT FROM ROW(OLD.status, OLD.accepted_at, OLD.provider_message_id, OLD.provider_result, OLD.attachment_sha256s,
+               OLD.claim_token, OLD.reconciled_by_subject_id, OLD.reconciled_at, OLD.reconcile_note, OLD.reconcile_evidence_artifact_id) THEN
+      RETURN NEW;
+    END IF;
     RAISE EXCEPTION 'a settled billing send is final' USING ERRCODE = '23514';
   END IF;
   IF NEW.status IS DISTINCT FROM OLD.status AND NOT (
@@ -675,11 +663,16 @@ CREATE OR REPLACE FUNCTION public.billing_stage_recipient_guard()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 DECLARE
   rec_id TEXT := CASE WHEN TG_OP = 'DELETE' THEN OLD.stage_record_id ELSE NEW.stage_record_id END;
+  rec_status TEXT;
 BEGIN
   IF TG_OP = 'UPDATE' AND (NEW.stage_record_id IS DISTINCT FROM OLD.stage_record_id OR NEW.recipient_role IS DISTINCT FROM OLD.recipient_role) THEN
     RAISE EXCEPTION 'a recipient row cannot move' USING ERRCODE = '23514';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.billing_stage_records r WHERE r.id = rec_id AND r.status = 'draft') THEN
+  -- Lock the parent record so a concurrent sign (an UPDATE of that row) is
+  -- serialized with this change: either the sign sees the committed snapshot,
+  -- or this change waits for the sign and then sees the record is no longer a draft.
+  SELECT r.status INTO rec_status FROM public.billing_stage_records r WHERE r.id = rec_id FOR UPDATE;
+  IF rec_status IS DISTINCT FROM 'draft' THEN
     RAISE EXCEPTION 'recipients are frozen once the document is signed' USING ERRCODE = '23514';
   END IF;
   RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
@@ -745,21 +738,36 @@ CREATE TRIGGER billing_stage_record_links_guard
   BEFORE INSERT OR UPDATE ON public.billing_stage_records
   FOR EACH ROW EXECUTE FUNCTION public.billing_stage_record_links_guard();
 
+-- Contract hours by canonical program slug. The same rule as
+-- lib/billing/twoStage/hours.ts (expectedContractHours); the PG16 proof checks
+-- that both agree for every approved syllabus.
+CREATE OR REPLACE FUNCTION public.billing_contract_hours(program_slug TEXT)
+RETURNS INTEGER LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT CASE program_slug WHEN 'software-developer-professional-certificate-ibm' THEN 200 ELSE 160 END
+$$;
+
 -- Stage rules the database derives itself rather than trusting the app:
 --  * new records start as drafts; supersede lineage is version + 1 of a closed
 --    record in the same case and stage (the composite FK keeps case/stage);
---  * printed program and dates come from the case and the attestations;
+--  * printed program, hours (billing_contract_hours) and dates come from the
+--    case and the attestations;
+--  * a J6 is signed only once its class has actually started (start <= today
+--    in America/Chicago, the business time zone);
 --  * J6 review_reasons are computed from the voucher attestation, the class
 --    dates and the prior quote, and must match exactly (never trusted);
---  * blocking reasons can never be cleared by a review note:
---      voucher_amount_differs   (only a corrected voucher attestation, or the
---                                disabled signer-approved amount exception)
+--  * every reason is a hard hold with no bypass: no review note or exception
+--    clears it; it clears only when corrected structured evidence (a corrected
+--    voucher attestation or class_started attestation, or a corrected
+--    document) makes it disappear:
+--      voucher_amount_differs   (voucher amount is not 750000 cents)
 --      voucher_class_differs    (the voucher authorizes another program/class)
+--      voucher_period_conflict  (class dates outside the voucher period)
+--      end_date_not_contract    (actual end is not start + 5 calendar months)
 --      class_differs_from_quote (J6 program/class/hours differ from the quote)
---    clearable by an audited review: voucher_period_conflict, end_date_not_contract;
 --  * signing needs the frozen recipient snapshot for exactly the stage's roles;
---  * status 'sent' requires a delivered copy (sent or reconciled_delivered) for
---    every required role and no copy still claimed, ambiguous or unreconciled.
+--  * status 'sent' requires ONE send attempt in which every required role has a
+--    delivered copy (sent or reconciled_delivered), and no copy of any attempt
+--    still claimed, ambiguous or unreconciled.
 CREATE OR REPLACE FUNCTION public.billing_stage_record_rules()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 DECLARE
@@ -799,6 +807,9 @@ BEGIN
   SELECT c.program_slug INTO case_program FROM public.billing_cases c WHERE c.id = NEW.case_id;
   IF NEW.content #>> '{training,programSlug}' IS DISTINCT FROM case_program THEN
     RAISE EXCEPTION 'the document program must be the case program' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.contact_hours IS DISTINCT FROM public.billing_contract_hours(case_program) THEN
+    RAISE EXCEPTION 'contract hours for % are %', case_program, public.billing_contract_hours(case_program) USING ERRCODE = '23514';
   END IF;
 
   required_roles := CASE NEW.stage WHEN 'j5' THEN ARRAY['counselor', 'student'] ELSE ARRAY['finance', 'counselor', 'student'] END;
@@ -847,21 +858,13 @@ BEGIN
      IS DISTINCT FROM (SELECT coalesce(array_agg(x ORDER BY x), ARRAY[]::TEXT[]) FROM unnest(reasons) x) THEN
     RAISE EXCEPTION 'review_reasons must be exactly %', reasons USING ERRCODE = '23514';
   END IF;
-  IF NEW.amount_exception_id IS NOT NULL AND NOT ('voucher_amount_differs' = ANY(reasons)) THEN
-    RAISE EXCEPTION 'an amount exception applies only to a voucher amount mismatch' USING ERRCODE = '23514';
-  END IF;
 
   IF NEW.status IN ('signed', 'sent') THEN
-    IF 'class_differs_from_quote' = ANY(reasons) OR 'voucher_class_differs' = ANY(reasons) THEN
-      RAISE EXCEPTION 'the J6 program or class differs from the quote or the voucher; issue a corrected document instead' USING ERRCODE = '23514';
+    IF cardinality(reasons) > 0 THEN
+      RAISE EXCEPTION 'the J6 is held (%): record corrected voucher or class evidence; a review note cannot clear this', reasons USING ERRCODE = '23514';
     END IF;
-    IF 'voucher_amount_differs' = ANY(reasons) AND NOT EXISTS (
-        SELECT 1 FROM public.billing_amount_exceptions e
-        WHERE e.id = NEW.amount_exception_id AND e.case_id = NEW.case_id
-          AND e.voucher_attestation_id = NEW.voucher_attestation_id
-          AND e.accepted_amount_cents = v_amount
-          AND e.approved_by_subject_id = NEW.signed_by_subject_id) THEN
-      RAISE EXCEPTION 'the voucher amount differs from the quote: record a corrected voucher attestation (a review note cannot clear this)' USING ERRCODE = '23514';
+    IF NEW.stage = 'j6' AND NEW.class_start_date > (now() AT TIME ZONE 'America/Chicago')::date THEN
+      RAISE EXCEPTION 'a J6 is signed only after the class has started (America/Chicago date)' USING ERRCODE = '23514';
     END IF;
     IF (SELECT coalesce(array_agg(p.recipient_role ORDER BY p.recipient_role), ARRAY[]::TEXT[]) FROM public.billing_stage_recipients p
         WHERE p.stage_record_id = NEW.id)
@@ -871,12 +874,15 @@ BEGIN
   END IF;
 
   IF NEW.status = 'sent' AND (TG_OP = 'INSERT' OR OLD.status <> 'sent') THEN
-    IF (SELECT count(DISTINCT s.recipient_role) FROM public.billing_stage_sends s
+    IF NOT EXISTS (
+        SELECT 1 FROM public.billing_stage_sends s
         WHERE s.stage_record_id = NEW.id AND s.status IN ('sent', 'reconciled_delivered')
-          AND s.recipient_role = ANY(required_roles)) <> cardinality(required_roles)
+          AND s.recipient_role = ANY(required_roles)
+        GROUP BY s.attempt_no
+        HAVING count(DISTINCT s.recipient_role) = cardinality(required_roles))
        OR EXISTS (SELECT 1 FROM public.billing_stage_sends s
         WHERE s.stage_record_id = NEW.id AND s.status IN ('claimed', 'ambiguous', 'needs_reconciliation')) THEN
-      RAISE EXCEPTION 'a stage is sent only when every required recipient has a delivered copy and none is unsettled' USING ERRCODE = '23514';
+      RAISE EXCEPTION 'a stage is sent only when one attempt delivered every required recipient and no copy is unsettled' USING ERRCODE = '23514';
     END IF;
   END IF;
   RETURN NEW;
@@ -922,17 +928,16 @@ ALTER TABLE public.billing_signer_delegations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_stage_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_stage_sends ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_payment_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.billing_amount_exceptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_stage_recipients ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
   public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
-  public.billing_payment_events, public.billing_amount_exceptions, public.billing_stage_recipients FROM PUBLIC;
+  public.billing_payment_events, public.billing_stage_recipients FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(),
   public.billing_case_identity_guard(), public.billing_stage_record_guard(),
   public.billing_stage_send_guard(), public.billing_stage_record_links_guard(),
   public.billing_stage_send_attachments_guard(), public.billing_stage_record_rules(),
-  public.billing_stage_recipient_guard() FROM PUBLIC;
+  public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT) FROM PUBLIC;
 
 DO $$
 DECLARE
@@ -943,13 +948,13 @@ BEGIN
       EXECUTE format(
         'REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations, '
         'public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends, '
-        'public.billing_payment_events, public.billing_amount_exceptions, public.billing_stage_recipients FROM %I', browser_role);
+        'public.billing_payment_events, public.billing_stage_recipients FROM %I', browser_role);
       EXECUTE format(
         'REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(), '
         'public.billing_case_identity_guard(), public.billing_stage_record_guard(), '
         'public.billing_stage_send_guard(), public.billing_stage_record_links_guard(), '
         'public.billing_stage_send_attachments_guard(), public.billing_stage_record_rules(), '
-        'public.billing_stage_recipient_guard() FROM %I', browser_role);
+        'public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT) FROM %I', browser_role);
     END IF;
   END LOOP;
 END;
