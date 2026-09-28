@@ -67,7 +67,13 @@ describe('per-recipient claims: no double sends, unknown outcomes reconciled', (
 
   it('an ambiguous claim is retried with the SAME key inside the window, or held for reconciliation after it', () => {
     assert.deepEqual(decideClaim(row('ambiguous', 60_000), t0), { action: 'retry_same_key' });
-    assert.deepEqual(decideClaim(row('pending', IN_FLIGHT_GRACE_MS + 1), t0), { action: 'retry_same_key' });
+    // A pending claim is never retried directly: in flight until 15 min, then marked ambiguous first.
+    assert.equal(IN_FLIGHT_GRACE_MS, RECONCILE_CLAIMED_MIN_AGE_MS);
+    assert.equal(RECONCILE_CLAIMED_MIN_AGE_MS, 15 * 60 * 1000);
+    assert.deepEqual(decideClaim(row('pending', 2 * 60 * 1000 + 1), t0), { action: 'in_flight' });
+    assert.deepEqual(decideClaim(row('pending', RECONCILE_CLAIMED_MIN_AGE_MS - 1), t0), { action: 'in_flight' });
+    assert.deepEqual(decideClaim(row('pending', RECONCILE_CLAIMED_MIN_AGE_MS), t0), { action: 'mark_ambiguous' });
+    assert.equal(markStaleClaimAmbiguous(row('pending', RECONCILE_CLAIMED_MIN_AGE_MS), t0), 'ambiguous');
     assert.deepEqual(decideClaim(row('ambiguous', IDEMPOTENCY_SAFE_RETRY_MS + 1), t0), { action: 'needs_reconciliation' });
     // Boundary shared with the database (now - claimed_at < 23 h): 23 h exactly is past the window.
     assert.equal(IDEMPOTENCY_SAFE_RETRY_MS, 23 * 60 * 60 * 1000);
@@ -445,9 +451,8 @@ describe('payment after the J6 is superseded', () => {
 });
 
 describe('letterhead external-send gate', () => {
-  it('refuses external sends until BILLING_LETTERHEAD_CONFIRMED=true', () => {
-    assert.equal(letterheadConfirmedForExternalSend({}).ok, false);
-    assert.equal(letterheadConfirmedForExternalSend({ BILLING_LETTERHEAD_CONFIRMED: 'yes' }).ok, false);
-    assert.equal(letterheadConfirmedForExternalSend({ BILLING_LETTERHEAD_CONFIRMED: 'true' }).ok, true);
+  it('is retired: the confirmed footer never blocks a send, whatever BILLING_LETTERHEAD_CONFIRMED says', () => {
+    assert.equal(letterheadConfirmedForExternalSend({}).ok, true);
+    assert.equal(letterheadConfirmedForExternalSend({ BILLING_LETTERHEAD_CONFIRMED: 'false' }).ok, true);
   });
 });

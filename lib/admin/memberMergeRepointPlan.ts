@@ -242,6 +242,7 @@ export const USER_FK_NOT_REPOINTED: Record<string, string> = {
   'courseraCanonicalCourseMapping.createdById': 'who created a catalog mapping',
   'advisorSessionNote.authorId': 'who wrote the note; the member side is advisorSessionNote.memberId',
   'chapter.leaderId': 'who leads a chapter — a staff role, not member data',
+  'billingDesignatedSigner.userId': 'the designated billing signer principal (a staff identity set by an ops-reviewed change, not member data)',
 
   // --- member-owned and NOT moved today: gaps, listed so they are visible ---
   'referralCode.userId':

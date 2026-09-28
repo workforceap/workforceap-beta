@@ -21,6 +21,9 @@ import { billingToday, classEndDate, compareIsoDates, daysBetween, formatLongCal
 import { resolveProgramTerms } from './hours';
 import type { J5Content, TrainingTerms } from './content';
 import { currentCasePaymentEvent } from './payment';
+import type { VoucherReceiptSignatureStatus } from './voucherReceipt';
+
+export const VOUCHER_RECEIPT_SIGNATURE_UNATTESTED = 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED';
 
 export type StageStatus = 'draft' | 'signed' | 'sent' | 'superseded' | 'voided';
 export type StageEvent = 'edit_draft' | 'sign' | 'mark_sent' | 'supersede' | 'void';
@@ -42,7 +45,8 @@ export function nextStageStatus(current: StageStatus, event: StageEvent): Transi
   return next ? { ok: true, status: next } : { ok: false, error: `A ${current} document cannot ${event.replace('_', ' ')}.` };
 }
 
-export type Gate = { ok: true } | { ok: false; errors: string[] };
+/** `codes` carries machine-readable blocker codes where a gate has them. */
+export type Gate = { ok: true } | { ok: false; errors: string[]; codes?: string[] };
 
 /**
  * J5 may be created before any voucher exists. Its prerequisites are a
@@ -242,15 +246,28 @@ export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
  * has started (start <= today in America/Chicago). A review note never clears
  * a hold; there is no amount exception.
  */
-export function canSignJ6(input: { reviewReasons: readonly string[]; classStartDate: string; now: Date }): Gate {
+export function canSignJ6(input: {
+  reviewReasons: readonly string[];
+  classStartDate: string;
+  now: Date;
+  /** From voucherReceiptSignatureStatus(); absent means unattested (fail closed). */
+  voucherReceiptSignature?: VoucherReceiptSignatureStatus;
+}): Gate {
   const errors: string[] = [];
+  const codes: string[] = [];
+  const receipt = input.voucherReceiptSignature;
+  if (!receipt || !receipt.ok) {
+    codes.push(VOUCHER_RECEIPT_SIGNATURE_UNATTESTED);
+    if (receipt && !receipt.ok && receipt.code !== VOUCHER_RECEIPT_SIGNATURE_UNATTESTED) codes.push(receipt.code);
+    errors.push(receipt && !receipt.ok ? receipt.error : 'The designated signer has not attested his receiving signature on this voucher.');
+  }
   for (const reason of input.reviewReasons as readonly ReviewReason[]) {
     errors.push(`${REVIEW_REASON_TEXT[reason] ?? reason} A review note cannot clear this.`);
   }
   if (compareIsoDates(input.classStartDate, billingToday(input.now)) > 0) {
     errors.push('The class has not started yet; a J6 is signed only after it starts.');
   }
-  return errors.length > 0 ? { ok: false, errors } : { ok: true };
+  return errors.length > 0 ? { ok: false, errors, ...(codes.length > 0 ? { codes } : {}) } : { ok: true };
 }
 
 export type CaseProgress = {

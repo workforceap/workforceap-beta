@@ -153,9 +153,12 @@ describe('recipient sets', () => {
 describe('fixed letterhead and signer text', () => {
   it('uses the WAP header lines, billing phone and repo address', () => {
     assert.deepEqual([...WAP_BILLING_LETTERHEAD.headerLines], ['Workforce Advancement Project', 'Empowering People. Advancing Futures', 'www.WorkforceAP.org']);
+    // Exactly the footer facts on the blank WAP letterhead (Mike Brown, 2026-09-28).
+    assert.equal(WAP_BILLING_LETTERHEAD.footer.website, 'www.WorkforceAP.org');
     assert.equal(WAP_BILLING_LETTERHEAD.footer.phone, '(512) 825-2896');
     assert.notEqual(WAP_BILLING_LETTERHEAD.footer.phone, '(512) 777-1808');
-    assert.deepEqual([...WAP_BILLING_LETTERHEAD.footer.addressLines], ['207 Settlers Valley Drive, Suite C', 'Pflugerville, TX 78660']);
+    assert.equal(WAP_BILLING_LETTERHEAD.footer.address, '207 Settlers Valley Suite C, Pflugerville, TX 78660');
+    assert.equal(WAP_BILLING_LETTERHEAD.footer.addressLines.join(', '), WAP_BILLING_LETTERHEAD.footer.address);
     assert.equal(WAP_BILLING_LETTERHEAD.logoPath, 'public/images/wap_logo.png');
   });
 

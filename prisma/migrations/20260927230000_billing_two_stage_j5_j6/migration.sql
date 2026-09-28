@@ -1,7 +1,7 @@
 -- Two-stage J5 quote/voucher request + J6 invoice/voucher cover letter
 -- (docs/BILLING-PACKETS.md "Two-stage J5/J6"). Mike Brown, 2026-09-27.
 --
--- Purely additive: nine new tables, their constraints, triggers and grants.
+-- Purely additive: eleven new tables, their constraints, triggers and grants.
 -- training_billing_packets (20260904020000) is not touched, so an older app
 -- revision still inserting legacy packets keeps working during the
 -- Vercel migrate/build overlap, and existing packet rows are preserved.
@@ -38,9 +38,11 @@ CREATE OR REPLACE FUNCTION public.billing_chicago_date(ts TIMESTAMPTZ)
 RETURNS DATE LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
   SELECT (ts AT TIME ZONE 'America/Chicago')::date
 $$;
+-- Wall-clock (clock_timestamp(), not the transaction-start now()), so a long or
+-- held transaction cannot see a stale "today". VOLATILE: never used in a CHECK.
 CREATE OR REPLACE FUNCTION public.billing_today()
-RETURNS DATE LANGUAGE sql STABLE SET search_path = pg_catalog, public AS $$
-  SELECT public.billing_chicago_date(now())
+RETURNS DATE LANGUAGE sql VOLATILE SET search_path = pg_catalog, public AS $$
+  SELECT public.billing_chicago_date(clock_timestamp())
 $$;
 -- Send-claim statuses and delivery evidence kinds, shared by the CHECKs below
 -- and asserted equal to SEND_STATUSES / DELIVERY_EVENT_KINDS in
@@ -71,10 +73,28 @@ RETURNS INTERVAL LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
   SELECT interval '23 hours'
 $$;
 
--- The database clock in UTC, as the app's TIMESTAMP(3) columns store it.
+-- The letterhead footer facts every signed document prints, exactly as on the
+-- blank WAP letterhead (WAP_BILLING_LETTERHEAD.footer in letterhead.ts; parity proven).
+CREATE OR REPLACE FUNCTION public.billing_letterhead_footer()
+RETURNS JSONB LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT jsonb_build_object('website', 'www.WorkforceAP.org', 'phone', '(512) 825-2896',
+                            'address', '207 Settlers Valley Suite C, Pflugerville, TX 78660')
+$$;
+
+-- A pending claim with no provider outcome is marked ambiguous only after this
+-- age since last_claimed_at (RECONCILE_CLAIMED_MIN_AGE_MS in sendClaims.ts; parity proven).
+CREATE OR REPLACE FUNCTION public.billing_stale_claim_age()
+RETURNS INTERVAL LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT interval '15 minutes'
+$$;
+
+-- The database wall clock in UTC, as the app's TIMESTAMP(3) columns store it.
+-- clock_timestamp(), not now(): transition decisions (the 23 h retry bound) and
+-- DB-stamped times (sent_at, claimed_at, audit stamps) must not use the time
+-- the transaction started. VOLATILE: used only in triggers, never in a CHECK.
 CREATE OR REPLACE FUNCTION public.billing_utc_now()
-RETURNS TIMESTAMP LANGUAGE sql STABLE SET search_path = pg_catalog AS $$
-  SELECT (now() AT TIME ZONE 'UTC')::timestamp
+RETURNS TIMESTAMP LANGUAGE sql VOLATILE SET search_path = pg_catalog AS $$
+  SELECT (clock_timestamp() AT TIME ZONE 'UTC')::timestamp
 $$;
 
 CREATE OR REPLACE FUNCTION public.billing_send_statuses()
@@ -144,7 +164,7 @@ CREATE TABLE IF NOT EXISTS "billing_artifacts" (
       AND (("kind" IN ('j5_signed_pdf', 'j6_signed_pdf') AND "source" = 'rendered'
             AND "stage_record_id" IS NOT NULL AND "stage" = left("kind", 2) AND "stage_version" >= 1
             AND "rendered_content_sha256" ~ '^[0-9a-f]{64}$')
-        OR ("kind" IN ('board_signed_voucher', 'board_invoice', 'external_j5_copy') AND "source" = 'uploaded'
+        OR ("kind" IN ('board_signed_voucher', 'board_invoice', 'external_j5_copy', 'voucher_receipt_signature') AND "source" = 'uploaded'
             AND num_nonnulls("stage_record_id", "stage", "stage_version", "rendered_content_sha256") = 0))
     ), false)),
     -- Bytes live only in the private finance bucket `billing-finance`
@@ -157,13 +177,68 @@ CREATE TABLE IF NOT EXISTS "billing_artifacts" (
       AND "storage_key" = 'cases/' || "case_id" || '/' || CASE "kind"
             WHEN 'j5_signed_pdf' THEN 'j5' WHEN 'j6_signed_pdf' THEN 'j6'
             WHEN 'board_signed_voucher' THEN 'voucher' WHEN 'board_invoice' THEN 'board-invoice'
-            WHEN 'external_j5_copy' THEN 'external-j5' END || '/' || "sha256" || '.pdf'
+            WHEN 'external_j5_copy' THEN 'external-j5' WHEN 'voucher_receipt_signature' THEN 'receipt-signature' END || '/' || "sha256" || '.pdf'
     ), false)),
     CONSTRAINT "billing_artifacts_file_name_check" CHECK (coalesce((btrim("file_name") <> '' AND length("file_name") <= 200), false))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_artifacts_id_case_id_key" ON "billing_artifacts"("id", "case_id");
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_artifacts_storage_bucket_storage_key_key" ON "billing_artifacts"("storage_bucket", "storage_key");
 CREATE INDEX IF NOT EXISTS "billing_artifacts_case_id_kind_created_at_idx" ON "billing_artifacts"("case_id", "kind", "created_at" DESC);
+-- An attestation can name an exact (artifact, bytes) pair.
+CREATE UNIQUE INDEX IF NOT EXISTS "billing_artifacts_id_sha256_key" ON "billing_artifacts"("id", "sha256");
+
+-- ------------------------------------------------- designated signer
+-- The one auth principal per organization who may sign and attest his
+-- receiving signature on board vouchers (Michael). Unset by default, so every
+-- J6 sign and send fails closed until an ops-reviewed change designates him.
+-- service_role may read but never write it.
+CREATE TABLE IF NOT EXISTS "billing_designated_signers" (
+    "organization_id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "designated_by" TEXT NOT NULL,
+    "note" TEXT NOT NULL,
+    "designated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "billing_designated_signers_pkey" PRIMARY KEY ("organization_id"),
+    CONSTRAINT "billing_designated_signers_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "billing_designated_signers_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "billing_designated_signers_check" CHECK (coalesce((btrim("designated_by") <> '' AND btrim("note") <> ''), false))
+);
+CREATE INDEX IF NOT EXISTS "billing_designated_signers_user_id_idx" ON "billing_designated_signers"("user_id");
+
+-- ------------------------------------------ voucher receipt signatures
+-- The designated signer's attestation that his receiving signature is on the
+-- exact uploaded voucher bytes (present_on_original), or an approved signature
+-- representation (its own uploaded artifact + hash). Bound to (voucher
+-- artifact id, sha256) by composite FK: a replacement voucher is a new
+-- artifact, so an older attestation never applies to it. Append-only (the row
+-- is the audit record); attested_at is the database wall clock. A generic staff
+-- flag (voucher_board_signed.receiving_signature_present) never satisfies it.
+CREATE TABLE IF NOT EXISTS "billing_voucher_receipt_signatures" (
+    "id" TEXT NOT NULL,
+    "organization_id" TEXT NOT NULL,
+    "case_id" TEXT NOT NULL,
+    "voucher_artifact_id" TEXT NOT NULL,
+    "voucher_sha256" CHAR(64) NOT NULL,
+    "attested_by_user_id" TEXT NOT NULL,
+    "method" TEXT NOT NULL,
+    "representation_artifact_id" TEXT,
+    "representation_sha256" CHAR(64),
+    "statement" TEXT NOT NULL,
+    "attested_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "billing_voucher_receipt_signatures_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "billing_voucher_receipt_signatures_case_fkey" FOREIGN KEY ("case_id", "organization_id") REFERENCES "billing_cases"("id", "organization_id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "billing_voucher_receipt_signatures_voucher_fkey" FOREIGN KEY ("voucher_artifact_id", "voucher_sha256") REFERENCES "billing_artifacts"("id", "sha256") ON DELETE RESTRICT ON UPDATE NO ACTION,
+    CONSTRAINT "billing_voucher_receipt_signatures_voucher_case_fkey" FOREIGN KEY ("voucher_artifact_id", "case_id") REFERENCES "billing_artifacts"("id", "case_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
+    CONSTRAINT "billing_voucher_receipt_signatures_representation_fkey" FOREIGN KEY ("representation_artifact_id", "representation_sha256") REFERENCES "billing_artifacts"("id", "sha256") ON DELETE RESTRICT ON UPDATE NO ACTION,
+    CONSTRAINT "billing_voucher_receipt_signatures_check" CHECK (coalesce((
+      btrim("statement") <> '' AND btrim("attested_by_user_id") <> ''
+      AND (("method" = 'present_on_original' AND "representation_artifact_id" IS NULL AND "representation_sha256" IS NULL)
+        OR ("method" = 'approved_signature_representation' AND "representation_artifact_id" IS NOT NULL AND "representation_sha256" IS NOT NULL))
+    ), false))
+);
+CREATE INDEX IF NOT EXISTS "billing_voucher_receipt_signatures_voucher_artifact_id_idx" ON "billing_voucher_receipt_signatures"("voucher_artifact_id");
 
 -- --------------------------------------------------------- attestations
 CREATE TABLE IF NOT EXISTS "billing_attestations" (
@@ -431,7 +506,8 @@ CREATE TABLE IF NOT EXISTS "billing_stage_recipients" (
     "recipient_role" TEXT NOT NULL,
     "recipient_name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    -- Printed phone for this contact, if the document prints one (the counselor).
+    -- Printed phone: required (nonblank after normalization) for the counselor,
+    -- whose phone J5 and J6 print; NULL for every other role.
     "phone" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -442,6 +518,8 @@ CREATE TABLE IF NOT EXISTS "billing_stage_recipients" (
         OR ("stage" = 'j6' AND "recipient_role" IN ('student', 'counselor', 'finance')))
       AND btrim("recipient_name") <> ''
       AND "email" = lower(btrim("email")) AND "email" ~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'
+      AND (("recipient_role" = 'counselor' AND coalesce(public.billing_normalize_name("phone"), '') <> '')
+        OR ("recipient_role" <> 'counselor' AND "phone" IS NULL))
     ), false))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_recipients_record_role_email_key" ON "billing_stage_recipients"("stage_record_id", "recipient_role", "email");
@@ -498,6 +576,9 @@ CREATE TABLE IF NOT EXISTS "billing_stage_sends" (
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_idempotency_key_key" ON "billing_stage_sends"("idempotency_key");
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_stage_record_id_stage_attempt_no_recipi_key" ON "billing_stage_sends"("stage_record_id", "stage", "attempt_no", "recipient_role");
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_id_organization_id_key" ON "billing_stage_sends"("id", "organization_id");
+-- A provider message id identifies one copy (webhook lookup is unambiguous).
+CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_provider_message_id_key" ON "billing_stage_sends"("provider_message_id")
+  WHERE "provider_message_id" IS NOT NULL;
 -- At most one accepted copy per role of a record: an accepted role is never re-sent.
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_one_accepted_per_role" ON "billing_stage_sends"("stage_record_id", "recipient_role")
   WHERE "status" IN ('provider_accepted', 'reconciled_delivered');
@@ -611,6 +692,19 @@ CREATE TRIGGER billing_payment_event_j6_only
   BEFORE INSERT ON public.billing_payment_events
   FOR EACH ROW EXECUTE FUNCTION public.billing_payment_event_j6_only();
 
+-- Artifact upload/render time is the database wall clock (never caller-supplied).
+CREATE OR REPLACE FUNCTION public.billing_artifact_stamp()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+BEGIN
+  NEW.created_at := public.billing_utc_now();
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS billing_artifact_stamp ON public.billing_artifacts;
+CREATE TRIGGER billing_artifact_stamp
+  BEFORE INSERT ON public.billing_artifacts
+  FOR EACH ROW EXECUTE FUNCTION public.billing_artifact_stamp();
+
 -- Artifacts, attestations and payment events are append-only.
 CREATE OR REPLACE FUNCTION public.billing_append_only()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
@@ -675,7 +769,7 @@ BEGIN
       RAISE EXCEPTION 'a billing case moves to another member only through a recorded member merge' USING ERRCODE = '23514';
     END IF;
     NEW.member_merged_from_id := OLD.member_id;
-    NEW.member_merged_at := now();
+    NEW.member_merged_at := public.billing_utc_now();
   ELSE
     NEW.member_merged_from_id := OLD.member_merged_from_id;
     NEW.member_merged_at := OLD.member_merged_at;
@@ -731,6 +825,15 @@ BEGIN
      AND NOT (OLD.status = 'signed' AND NEW.status = 'sent') THEN
     RAISE EXCEPTION 'sent_at and send_receipt are set only by the signed -> sent transition' USING ERRCODE = '23514';
   END IF;
+  -- signed_at is the database wall clock at draft -> signed; a caller value is refused.
+  IF OLD.status = 'draft' AND NEW.status = 'signed' THEN
+    IF NEW.signed_at IS NOT NULL THEN
+      RAISE EXCEPTION 'signed_at is set by the database at signing; do not supply it' USING ERRCODE = '23514';
+    END IF;
+    NEW.signed_at := public.billing_utc_now();
+  ELSIF NEW.signed_at IS DISTINCT FROM OLD.signed_at THEN
+    RAISE EXCEPTION 'signed_at is set only at signing' USING ERRCODE = '23514';
+  END IF;
   -- sent_at is the database's own UTC clock at the signed -> sent transition;
   -- a caller-supplied value (backdated or future) is refused, so the payment
   -- follow-up window cannot be shifted.
@@ -748,6 +851,13 @@ BEGIN
   -- in accepted_roles_at_close so the next version can show them. The row lock
   -- taken by this UPDATE serializes with claim inserts and claim status moves
   -- (both lock the record FOR SHARE).
+  -- A J5 that an open (draft or signed) J6 follows cannot be closed: void or
+  -- send that J6 first. A sent J6 keeps its historical link.
+  IF NEW.stage = 'j5' AND NEW.status IN ('superseded', 'voided') AND NEW.status IS DISTINCT FROM OLD.status
+     AND EXISTS (SELECT 1 FROM public.billing_stage_records j
+                 WHERE j.prior_j5_record_id = NEW.id AND j.stage = 'j6' AND j.status IN ('draft', 'signed')) THEN
+    RAISE EXCEPTION 'J5_LINKED_BY_OPEN_J6: an open J6 follows this J5; void or send it first' USING ERRCODE = '23514';
+  END IF;
   IF NEW.status IN ('superseded', 'voided') AND NEW.status IS DISTINCT FROM OLD.status THEN
     required_roles := CASE NEW.stage WHEN 'j5' THEN ARRAY['counselor', 'student'] ELSE ARRAY['counselor', 'finance', 'student'] END;
     SELECT count(*) > 0, coalesce(bool_or(s.status IN ('pending', 'ambiguous', 'needs_reconciliation')), false)
@@ -766,7 +876,7 @@ BEGIN
       IF btrim(coalesce(NEW.send_cancelled_by_subject_id, '')) = '' OR btrim(coalesce(NEW.send_cancel_reason, '')) = '' THEN
         RAISE EXCEPTION 'closing a partly sent record needs the audited partial-send cancellation (who and why)' USING ERRCODE = '23514';
       END IF;
-      NEW.send_cancelled_at := now();
+      NEW.send_cancelled_at := public.billing_utc_now();
     ELSIF num_nonnulls(NEW.send_cancelled_at, NEW.send_cancelled_by_subject_id, NEW.send_cancel_reason) > 0 THEN
       RAISE EXCEPTION 'a partial-send cancellation applies only to a signed record with send claims' USING ERRCODE = '23514';
     END IF;
@@ -850,6 +960,10 @@ BEGIN
     IF rec_status IS DISTINCT FROM 'signed' THEN
       RAISE EXCEPTION 'no new send claim for a % stage record', coalesce(rec_status, 'missing') USING ERRCODE = '23514';
     END IF;
+    IF NEW.stage = 'j6' AND NOT EXISTS (SELECT 1 FROM public.billing_stage_records r
+        WHERE r.id = NEW.stage_record_id AND public.billing_voucher_receipt_signed(r.organization_id, r.voucher_artifact_id)) THEN
+      RAISE EXCEPTION 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED: a J6 is sent only with a valid receipt-signature attestation on its voucher' USING ERRCODE = '23514';
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM public.billing_stage_recipients p
         WHERE p.stage_record_id = NEW.stage_record_id AND p.recipient_role = NEW.recipient_role
           AND p.email = NEW.email AND p.recipient_name = NEW.recipient_name) THEN
@@ -914,6 +1028,12 @@ BEGIN
     OR (OLD.status = 'needs_reconciliation' AND NEW.status IN ('reconciled_delivered', 'reconciled_failed'))) THEN
     RAISE EXCEPTION 'billing send status cannot move from % to %', OLD.status, NEW.status USING ERRCODE = '23514';
   END IF;
+  -- Marking a pending claim ambiguous without any provider outcome (the stale
+  -- sweep) waits for the stale age; with a provider outcome it may happen at once.
+  IF OLD.status = 'pending' AND NEW.status = 'ambiguous' AND NEW.last_error IS NULL AND NEW.provider_result IS NULL
+     AND public.billing_utc_now() - OLD.last_claimed_at < public.billing_stale_claim_age() THEN
+    RAISE EXCEPTION 'a pending claim with no provider outcome may still be in flight; it is marked ambiguous only after 15 min' USING ERRCODE = '23514';
+  END IF;
   IF OLD.status = 'ambiguous' AND NEW.status = 'pending' THEN
     IF NEW.claim_token IS NOT DISTINCT FROM OLD.claim_token THEN
       RAISE EXCEPTION 'a same-key retry re-claims with a new claim token' USING ERRCODE = '23514';
@@ -963,6 +1083,74 @@ CREATE TRIGGER billing_delivery_events_append_only
   BEFORE UPDATE OR DELETE ON public.billing_delivery_events
   FOR EACH ROW EXECUTE FUNCTION public.billing_append_only();
 
+-- Designated signer: a member of its organization; the database stamps the time;
+-- never edited in place (delete and re-designate through an ops-reviewed change).
+CREATE OR REPLACE FUNCTION public.billing_designated_signer_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    RAISE EXCEPTION 'a signer designation is never edited; delete it and designate again' USING ERRCODE = '23514';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.users u WHERE u.id = NEW.user_id AND u.organization_id = NEW.organization_id) THEN
+    RAISE EXCEPTION 'the designated signer must be a user of that organization' USING ERRCODE = '23514';
+  END IF;
+  NEW.designated_at := public.billing_utc_now();
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS billing_designated_signer_guard ON public.billing_designated_signers;
+CREATE TRIGGER billing_designated_signer_guard
+  BEFORE INSERT OR UPDATE ON public.billing_designated_signers
+  FOR EACH ROW EXECUTE FUNCTION public.billing_designated_signer_guard();
+
+-- Whether an organization's voucher artifact carries the designated signer's
+-- receipt-signature attestation on its exact bytes (the current designation).
+CREATE OR REPLACE FUNCTION public.billing_voucher_receipt_signed(org_id TEXT, voucher_id TEXT)
+RETURNS BOOLEAN LANGUAGE sql VOLATILE SET search_path = pg_catalog, public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.billing_voucher_receipt_signatures v
+    JOIN public.billing_artifacts a ON a.id = v.voucher_artifact_id AND a.sha256 = v.voucher_sha256
+    JOIN public.billing_designated_signers d ON d.organization_id = v.organization_id AND d.user_id = v.attested_by_user_id
+    WHERE v.organization_id = org_id AND v.voucher_artifact_id = voucher_id AND a.kind = 'board_signed_voucher')
+$$;
+
+CREATE OR REPLACE FUNCTION public.billing_voucher_receipt_signature_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+DECLARE
+  designated TEXT;
+BEGIN
+  IF NEW.attested_at IS NOT NULL THEN
+    RAISE EXCEPTION 'attested_at is set by the database; do not supply it' USING ERRCODE = '23514';
+  END IF;
+  SELECT d.user_id INTO designated FROM public.billing_designated_signers d WHERE d.organization_id = NEW.organization_id;
+  IF designated IS NULL THEN
+    RAISE EXCEPTION 'SIGNER_PRINCIPAL_UNSET: no signer is designated for this organization' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.attested_by_user_id IS DISTINCT FROM designated THEN
+    RAISE EXCEPTION 'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL: only the designated signer attests the receiving signature' USING ERRCODE = '23514';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.billing_artifacts a WHERE a.id = NEW.voucher_artifact_id AND a.case_id = NEW.case_id
+                   AND a.organization_id = NEW.organization_id AND a.kind = 'board_signed_voucher' AND a.source = 'uploaded') THEN
+    RAISE EXCEPTION 'the attestation names an uploaded board-signed voucher of this case' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.representation_artifact_id IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM public.billing_artifacts a WHERE a.id = NEW.representation_artifact_id AND a.case_id = NEW.case_id
+        AND a.kind = 'voucher_receipt_signature' AND a.source = 'uploaded') THEN
+    RAISE EXCEPTION 'an approved signature representation is an uploaded voucher_receipt_signature file of this case' USING ERRCODE = '23514';
+  END IF;
+  NEW.attested_at := public.billing_utc_now();
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS billing_voucher_receipt_signature_guard ON public.billing_voucher_receipt_signatures;
+CREATE TRIGGER billing_voucher_receipt_signature_guard
+  BEFORE INSERT ON public.billing_voucher_receipt_signatures
+  FOR EACH ROW EXECUTE FUNCTION public.billing_voucher_receipt_signature_guard();
+DROP TRIGGER IF EXISTS billing_voucher_receipt_signatures_append_only ON public.billing_voucher_receipt_signatures;
+CREATE TRIGGER billing_voucher_receipt_signatures_append_only
+  BEFORE UPDATE OR DELETE ON public.billing_voucher_receipt_signatures
+  FOR EACH ROW EXECUTE FUNCTION public.billing_append_only();
+
 -- Attestation dates: nothing is attested as having happened after today
 -- (America/Chicago).
 CREATE OR REPLACE FUNCTION public.billing_attestation_dates_guard()
@@ -970,6 +1158,13 @@ RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 DECLARE
   today DATE := public.billing_today();
 BEGIN
+  -- The board-signed voucher is attested only by the organization's designated
+  -- signer (Michael); unset means refused (fail closed).
+  IF NEW.kind = 'voucher_board_signed' AND NOT EXISTS (
+      SELECT 1 FROM public.billing_designated_signers d
+      WHERE d.organization_id = NEW.organization_id AND d.user_id = NEW.attested_by_subject_id) THEN
+    RAISE EXCEPTION 'VOUCHER_ATTESTER_NOT_DESIGNATED: only the designated signer attests a board-signed voucher' USING ERRCODE = '23514';
+  END IF;
   IF (NEW.kind = 'class_started' AND NEW.class_start_date > today)
      OR (NEW.kind = 'voucher_board_signed' AND NEW.received_on > today)
      OR (NEW.kind = 'j5_readiness' AND NEW.counselor_requested_on > today)
@@ -1012,47 +1207,55 @@ CREATE TRIGGER billing_stage_recipient_guard
 -- Every link on a stage record points at the right kind of row in the same case.
 CREATE OR REPLACE FUNCTION public.billing_stage_record_links_guard()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+DECLARE
+  ins BOOLEAN := TG_OP = 'INSERT';
 BEGIN
-  -- Links are checked when set; a later status move of a linked row (e.g. the
-  -- J5 being superseded) does not retroactively invalidate this record.
-  IF TG_OP = 'UPDATE' AND ROW(NEW.readiness_attestation_id, NEW.class_start_attestation_id, NEW.voucher_artifact_id,
-        NEW.voucher_attestation_id, NEW.board_invoice_artifact_id, NEW.signed_artifact_id, NEW.prior_j5_record_id,
-        NEW.external_j5_attestation_id)
-      IS NOT DISTINCT FROM ROW(OLD.readiness_attestation_id, OLD.class_start_attestation_id, OLD.voucher_artifact_id,
-        OLD.voucher_attestation_id, OLD.board_invoice_artifact_id, OLD.signed_artifact_id, OLD.prior_j5_record_id,
-        OLD.external_j5_attestation_id) THEN
-    RETURN NEW;
-  END IF;
-  IF NEW.readiness_attestation_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
+  -- Each link is checked on INSERT and whenever that link itself changes. A
+  -- later status move of a linked row (e.g. the prior J5 being superseded) or
+  -- a change to another column never re-validates it, so void / supersede /
+  -- other edits of this record are never blocked by an older link.
+  IF NEW.readiness_attestation_id IS NOT NULL AND (ins OR NEW.readiness_attestation_id IS DISTINCT FROM OLD.readiness_attestation_id)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
       WHERE a.id = NEW.readiness_attestation_id AND a.case_id = NEW.case_id AND a.kind = 'j5_readiness') THEN
     RAISE EXCEPTION 'readiness_attestation_id must be a j5_readiness attestation' USING ERRCODE = '23514';
   END IF;
-  IF NEW.class_start_attestation_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
+  IF NEW.class_start_attestation_id IS NOT NULL AND (ins OR NEW.class_start_attestation_id IS DISTINCT FROM OLD.class_start_attestation_id)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
       WHERE a.id = NEW.class_start_attestation_id AND a.case_id = NEW.case_id AND a.kind = 'class_started') THEN
     RAISE EXCEPTION 'class_start_attestation_id must be a class_started attestation' USING ERRCODE = '23514';
   END IF;
-  IF NEW.voucher_artifact_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_artifacts f
+  IF NEW.voucher_artifact_id IS NOT NULL AND (ins OR NEW.voucher_artifact_id IS DISTINCT FROM OLD.voucher_artifact_id)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_artifacts f
       WHERE f.id = NEW.voucher_artifact_id AND f.case_id = NEW.case_id AND f.kind = 'board_signed_voucher') THEN
     RAISE EXCEPTION 'voucher_artifact_id must be an uploaded board-signed voucher' USING ERRCODE = '23514';
   END IF;
-  IF NEW.voucher_attestation_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
+  IF NEW.voucher_attestation_id IS NOT NULL
+     AND (ins OR NEW.voucher_attestation_id IS DISTINCT FROM OLD.voucher_attestation_id OR NEW.voucher_artifact_id IS DISTINCT FROM OLD.voucher_artifact_id)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
       WHERE a.id = NEW.voucher_attestation_id AND a.case_id = NEW.case_id AND a.kind = 'voucher_board_signed' AND a.artifact_id = NEW.voucher_artifact_id) THEN
     RAISE EXCEPTION 'voucher_attestation_id must attest this voucher artifact' USING ERRCODE = '23514';
   END IF;
-  IF NEW.board_invoice_artifact_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_artifacts f
+  IF NEW.board_invoice_artifact_id IS NOT NULL AND (ins OR NEW.board_invoice_artifact_id IS DISTINCT FROM OLD.board_invoice_artifact_id)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_artifacts f
       WHERE f.id = NEW.board_invoice_artifact_id AND f.case_id = NEW.case_id AND f.kind = 'board_invoice') THEN
     RAISE EXCEPTION 'board_invoice_artifact_id must be an uploaded board invoice' USING ERRCODE = '23514';
   END IF;
-  IF NEW.signed_artifact_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_artifacts f
+  -- The signed PDF binds this exact version and content: re-checked when the link
+  -- or the content hash changes (the content is frozen once signed).
+  IF NEW.signed_artifact_id IS NOT NULL
+     AND (ins OR NEW.signed_artifact_id IS DISTINCT FROM OLD.signed_artifact_id OR NEW.content_sha256 IS DISTINCT FROM OLD.content_sha256)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_artifacts f
       WHERE f.id = NEW.signed_artifact_id AND f.case_id = NEW.case_id AND f.kind = NEW.stage || '_signed_pdf'
         AND f.stage_record_id = NEW.id AND f.stage_version = NEW.version AND f.rendered_content_sha256 = NEW.content_sha256) THEN
     RAISE EXCEPTION 'signed_artifact_id must be the PDF rendered from this exact record version and content' USING ERRCODE = '23514';
   END IF;
-  IF NEW.prior_j5_record_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_stage_records r
+  IF NEW.prior_j5_record_id IS NOT NULL AND (ins OR NEW.prior_j5_record_id IS DISTINCT FROM OLD.prior_j5_record_id)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_stage_records r
       WHERE r.id = NEW.prior_j5_record_id AND r.case_id = NEW.case_id AND r.stage = 'j5' AND r.status = 'sent') THEN
     RAISE EXCEPTION 'prior_j5_record_id must be this case''s sent J5' USING ERRCODE = '23514';
   END IF;
-  IF NEW.external_j5_attestation_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
+  IF NEW.external_j5_attestation_id IS NOT NULL AND (ins OR NEW.external_j5_attestation_id IS DISTINCT FROM OLD.external_j5_attestation_id)
+     AND NOT EXISTS (SELECT 1 FROM public.billing_attestations a
       WHERE a.id = NEW.external_j5_attestation_id AND a.case_id = NEW.case_id AND a.kind = 'external_j5_reference') THEN
     RAISE EXCEPTION 'external_j5_attestation_id must be an external_j5_reference attestation' USING ERRCODE = '23514';
   END IF;
@@ -1112,6 +1315,7 @@ DECLARE
   q_hours INTEGER;
   reasons TEXT[] := ARRAY[]::TEXT[];
   required_roles TEXT[];
+  designated_signer TEXT;
 BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NEW.status <> 'draft' THEN
@@ -1189,8 +1393,46 @@ BEGIN
     IF cardinality(reasons) > 0 THEN
       RAISE EXCEPTION 'the J6 is held (%): record corrected voucher or class evidence; a review note cannot clear this', reasons USING ERRCODE = '23514';
     END IF;
+    -- J6 issue/sign date: the server date (America/Chicago) at signing, printed
+    -- as content.issueDate (no caller backdating), on or after both the actual
+    -- class start and the current voucher's receipt (its attested received_on
+    -- and its DB-stamped upload date).
+    IF NEW.stage = 'j6' AND TG_OP = 'UPDATE' AND OLD.status = 'draft' AND NEW.status = 'signed' THEN
+      IF NEW.content ->> 'issueDate' IS DISTINCT FROM to_char(public.billing_today(), 'YYYY-MM-DD') THEN
+        RAISE EXCEPTION 'J6_ISSUE_DATE_NOT_SERVER_DATE: a J6 is issued on the server date it is signed (America/Chicago)' USING ERRCODE = '23514';
+      END IF;
+      IF EXISTS (SELECT 1 FROM public.billing_artifacts f JOIN public.billing_attestations a ON a.id = NEW.voucher_attestation_id
+                 WHERE f.id = NEW.voucher_artifact_id
+                   AND (public.billing_sent_on(f.created_at) > public.billing_today() OR a.received_on > public.billing_today())) THEN
+        RAISE EXCEPTION 'J6_SIGNED_BEFORE_VOUCHER_RECEIPT: a J6 is signed only on or after the voucher was received' USING ERRCODE = '23514';
+      END IF;
+    END IF;
     IF NEW.stage = 'j6' AND NEW.class_start_date > public.billing_today() THEN
-      RAISE EXCEPTION 'a J6 is signed only after the class has started (America/Chicago date)' USING ERRCODE = '23514';
+      RAISE EXCEPTION 'J6_SIGNED_BEFORE_CLASS_START: a J6 is signed only after the class has started (America/Chicago date)' USING ERRCODE = '23514';
+    END IF;
+    -- The frozen letterhead footer is exactly the confirmed WAP footer facts.
+    IF jsonb_build_object('website', NEW.content #>> '{letterhead,footer,website}', 'phone', NEW.content #>> '{letterhead,footer,phone}',
+                          'address', NEW.content #>> '{letterhead,footer,address}') IS DISTINCT FROM public.billing_letterhead_footer() THEN
+      RAISE EXCEPTION 'LETTERHEAD_FOOTER_MISMATCH: the signed content must print the WAP footer (www.WorkforceAP.org, (512) 825-2896, 207 Settlers Valley Suite C, Pflugerville, TX 78660)' USING ERRCODE = '23514';
+    END IF;
+    -- J6 principal binding: the organization's designated signer (fail closed when
+    -- unset) is the signer, and is the principal who attested this exact voucher.
+    IF NEW.stage = 'j6' THEN
+      SELECT d.user_id INTO designated_signer FROM public.billing_designated_signers d WHERE d.organization_id = NEW.organization_id;
+      IF designated_signer IS NULL THEN
+        RAISE EXCEPTION 'SIGNER_PRINCIPAL_UNSET: no signer is designated for this organization; J6 signing stays closed' USING ERRCODE = '23514';
+      END IF;
+      IF NEW.signed_by_subject_id IS DISTINCT FROM designated_signer THEN
+        RAISE EXCEPTION 'SIGNER_NOT_DESIGNATED: only the designated signer signs a J6' USING ERRCODE = '23514';
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM public.billing_attestations a
+          WHERE a.id = NEW.voucher_attestation_id AND a.kind = 'voucher_board_signed' AND a.artifact_id = NEW.voucher_artifact_id
+            AND a.attested_by_subject_id = designated_signer AND a.attested_by_subject_id = NEW.signed_by_subject_id) THEN
+        RAISE EXCEPTION 'VOUCHER_ATTESTER_NOT_SIGNER: the voucher attestation must be by the designated signer who signs this J6' USING ERRCODE = '23514';
+      END IF;
+    END IF;
+    IF NEW.stage = 'j6' AND NOT public.billing_voucher_receipt_signed(NEW.organization_id, NEW.voucher_artifact_id) THEN
+      RAISE EXCEPTION 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED: the designated signer has not attested his receiving signature on this exact voucher' USING ERRCODE = '23514';
     END IF;
     IF (SELECT coalesce(array_agg(p.recipient_role ORDER BY p.recipient_role), ARRAY[]::TEXT[]) FROM public.billing_stage_recipients p
         WHERE p.stage_record_id = NEW.id)
@@ -1219,7 +1461,10 @@ BEGIN
            OR jsonb_typeof(NEW.content -> req.role) IS DISTINCT FROM 'object'
            OR public.billing_normalize_name(NEW.content -> req.role ->> 'name') IS DISTINCT FROM public.billing_normalize_name(p.recipient_name)
            OR public.billing_normalize_email(NEW.content -> req.role ->> 'email') IS DISTINCT FROM public.billing_normalize_email(p.email)
-           OR public.billing_normalize_name(NEW.content -> req.role ->> 'phone') IS DISTINCT FROM public.billing_normalize_name(p.phone))
+           OR public.billing_normalize_name(NEW.content -> req.role ->> 'phone') IS DISTINCT FROM public.billing_normalize_name(p.phone)
+           -- The counselor phone is printed on J5 and J6: both sides must carry one.
+           OR (req.role = 'counselor' AND (coalesce(public.billing_normalize_name(NEW.content -> 'counselor' ->> 'phone'), '') = ''
+                                           OR coalesce(public.billing_normalize_name(p.phone), '') = '')))
        OR (NEW.stage = 'j5' AND NEW.content ? 'finance') THEN
       RAISE EXCEPTION 'every printed contact (student, counselor, finance: name, email, phone) must equal its frozen recipient' USING ERRCODE = '23514';
     END IF;
@@ -1290,10 +1535,13 @@ ALTER TABLE public.billing_stage_sends ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_payment_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_stage_recipients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_delivery_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_designated_signers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_voucher_receipt_signatures ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
   public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
-  public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events FROM PUBLIC;
+  public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events,
+  public.billing_designated_signers, public.billing_voucher_receipt_signatures FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(),
   public.billing_case_identity_guard(), public.billing_stage_record_guard(),
   public.billing_stage_send_guard(), public.billing_stage_record_links_guard(),
@@ -1303,7 +1551,9 @@ REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_ap
   public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(),
   public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP),
   public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT),
-  public.billing_idempotency_retry_window(), public.billing_utc_now() FROM PUBLIC;
+  public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(),
+  public.billing_designated_signer_guard(), public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_voucher_receipt_signature_guard(),
+  public.billing_letterhead_footer(), public.billing_artifact_stamp() FROM PUBLIC;
 
 DO $$
 DECLARE
@@ -1314,7 +1564,8 @@ BEGIN
       EXECUTE format(
         'REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations, '
         'public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends, '
-        'public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events FROM %I', browser_role);
+        'public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events, '
+        'public.billing_designated_signers, public.billing_voucher_receipt_signatures FROM %I', browser_role);
       EXECUTE format(
         'REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(), '
         'public.billing_case_identity_guard(), public.billing_stage_record_guard(), '
@@ -1325,7 +1576,9 @@ BEGIN
         'public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(), '
         'public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP), '
         'public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT), '
-        'public.billing_idempotency_retry_window(), public.billing_utc_now() FROM %I', browser_role);
+        'public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(), '
+        'public.billing_designated_signer_guard(), public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_voucher_receipt_signature_guard(), '
+        'public.billing_letterhead_footer(), public.billing_artifact_stamp() FROM %I', browser_role);
     END IF;
   END LOOP;
 END;
@@ -1341,15 +1594,21 @@ BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
     REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
       public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
-      public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events FROM service_role;
+      public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events,
+      public.billing_voucher_receipt_signatures FROM service_role;
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
       public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
-      public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events TO service_role;
+      public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events,
+      public.billing_voucher_receipt_signatures TO service_role;
+    -- The designation is read-only for the app.
+    REVOKE ALL ON TABLE public.billing_designated_signers FROM service_role;
+    GRANT SELECT ON TABLE public.billing_designated_signers TO service_role;
     GRANT EXECUTE ON FUNCTION public.billing_contract_hours(TEXT), public.billing_chicago_date(TIMESTAMPTZ),
       public.billing_today(), public.billing_send_statuses(), public.billing_delivery_event_kinds(),
       public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP),
       public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT),
-      public.billing_idempotency_retry_window(), public.billing_utc_now() TO service_role;
+      public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(),
+      public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_letterhead_footer() TO service_role;
   END IF;
 END;
 $$;

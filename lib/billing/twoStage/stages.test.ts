@@ -14,7 +14,8 @@ import { contentSha256 } from './canonical';
 import { signerIntentStatement, validateSignRequest } from './signing';
 import { resolveProgramTerms } from './hours';
 import { buildJ5Content, buildJ6Content, formatStageDocumentNumber, recipientRowsForContent, type J5Content } from './content';
-import { canSignJ6, checkJ5Prerequisites, checkJ6Prerequisites, nextStageStatus, summarizeCase, type J6Prerequisites } from './stateMachine';
+import { VOUCHER_RECEIPT_SIGNATURE_UNATTESTED, canSignJ6, checkJ5Prerequisites, checkJ6Prerequisites, nextStageStatus, summarizeCase, type J6Prerequisites } from './stateMachine';
+import { voucherReceiptSignatureStatus, type VoucherReceiptSignature } from './voucherReceipt';
 
 const NOW = new Date('2026-10-20T15:00:00Z');
 const STAFF = 'staff-synthetic';
@@ -226,7 +227,7 @@ describe('J6: gated on the received signed voucher and class start', () => {
   });
 
   const START = '2026-09-30';
-  const sign = (reviewReasons: readonly string[], classStartDate = START, now = NOW) => canSignJ6({ reviewReasons, classStartDate, now });
+  const sign = (reviewReasons: readonly string[], classStartDate = START, now = NOW) => canSignJ6({ reviewReasons, classStartDate, now, voucherReceiptSignature: { ok: true } });
 
   it('a $7,000 voucher can never be signed; there is no review or exception bypass; a corrected voucher unlocks it', () => {
     const va = voucherAttestation({ authorizedAmountCents: 700_000 });
@@ -255,6 +256,33 @@ describe('J6: gated on the received signed voucher and class start', () => {
     const fixed = checkJ6Prerequisites(j6Input({ classStarted: { ...classStarted, classEndDate: '2027-02-28' }, voucherAttestation: voucherAttestation() }));
     assert.ok(fixed.ok);
     assert.deepEqual(fixed.reviewReasons, []);
+  });
+
+  it('a J6 is never signable without the designated signer\'s receipt-signature attestation on the exact voucher hash', () => {
+    const H = 'a'.repeat(64);
+    const voucher = { artifactId: 'art-voucher', sha256: H };
+    const att = (over: Partial<VoucherReceiptSignature> = {}): VoucherReceiptSignature => ({
+      voucherArtifactId: 'art-voucher', voucherSha256: H, attestedByUserId: 'michael', method: 'present_on_original', representation: null, attestedAt: '2026-10-01T15:00:00.000Z', ...over,
+    });
+    const status = (designated: string | null, attestations: VoucherReceiptSignature[], v = voucher) => voucherReceiptSignatureStatus({ voucher: v, designatedSignerUserId: designated, attestations });
+    assert.deepEqual(status('michael', [att()]), { ok: true });
+    const code = (s: ReturnType<typeof status>) => (!s.ok ? s.code : 'ok');
+    assert.equal(code(status(null, [att()])), 'SIGNER_PRINCIPAL_UNSET');
+    assert.equal(code(status('  ', [att()])), 'SIGNER_PRINCIPAL_UNSET');
+    assert.equal(code(status('michael', [])), 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED');
+    assert.equal(code(status('michael', [att({ attestedByUserId: 'staff' })])), 'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL');
+    assert.equal(code(status('michael', [att({ voucherSha256: 'b'.repeat(64) })])), 'VOUCHER_RECEIPT_SIGNATURE_HASH_MISMATCH');
+    // A replacement voucher is a new artifact: the old attestation no longer applies.
+    assert.equal(code(status('michael', [att()], { artifactId: 'art-voucher-2', sha256: 'c'.repeat(64) })), 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED');
+    assert.equal(code(status('michael', [att({ method: 'approved_signature_representation' })])), 'VOUCHER_RECEIPT_SIGNATURE_METHOD_INVALID');
+    assert.deepEqual(status('michael', [att({ method: 'approved_signature_representation', representation: { artifactId: 'art-sig', sha256: 'd'.repeat(64) } })]), { ok: true });
+    // canSignJ6: absent (a generic staff flag is not an input at all) or failing means blocked, with the code.
+    const blocked = canSignJ6({ reviewReasons: [], classStartDate: START, now: NOW });
+    assert.equal(blocked.ok, false);
+    assert.deepEqual(!blocked.ok && blocked.codes, [VOUCHER_RECEIPT_SIGNATURE_UNATTESTED]);
+    const wrong = canSignJ6({ reviewReasons: [], classStartDate: START, now: NOW, voucherReceiptSignature: status('michael', [att({ attestedByUserId: 'staff' })]) });
+    assert.deepEqual(!wrong.ok && wrong.codes, [VOUCHER_RECEIPT_SIGNATURE_UNATTESTED, 'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL']);
+    assert.equal(canSignJ6({ reviewReasons: [], classStartDate: START, now: NOW, voucherReceiptSignature: status('michael', [att()]) }).ok, true);
   });
 
   it('a J6 cannot be signed before its class starts (America/Chicago)', () => {

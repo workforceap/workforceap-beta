@@ -16,7 +16,7 @@ function twoStageModels(): string[] {
 describe('two-stage billing tenant scoping', () => {
   it('registers every two-stage model that carries organizationId', () => {
     const models = twoStageModels();
-    assert.equal(models.length, 9);
+    assert.equal(models.length, 11);
     for (const model of models) assert.ok(TENANT_SCOPED_MODELS.has(model), `${model} must be tenant-scoped`);
   });
 

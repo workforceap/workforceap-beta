@@ -5,21 +5,21 @@
  * Pflugerville address. Replaces the old renderer's magenta band for these
  * documents only.
  *
- * One configurable place for the footer contact. It is deliberately a code
- * constant, not an env override, so it can only change through review, and
- * each signed document freezes the values it was signed with.
- *
- * Pending Mike's confirmation:
- *  - phone: (512) 825-2896 per Mike and the DOCX; the public /contact page
- *    shows (512) 777-1808. Never switch to the website number silently.
- *  - address: taken from the repo (lib/billing/providerIdentity.ts default and
- *    marketing/src/pages/programs/price-list.astro), not guessed.
+ * One place for the footer. It is deliberately a code constant, not an env
+ * override, so it can only change through review, and each signed document
+ * freezes the values it was signed with. The footer facts are exactly those on
+ * the blank WAP letterhead, confirmed by Mike Brown (2026-09-28):
+ * www.WorkforceAP.org, the display phone (512) 825-2896 (with the space, as
+ * printed; Mike Brown 2026-09-28) and 207 Settlers Valley Suite C,
+ * Pflugerville, TX 78660. The database checks a
+ * signed document's frozen footer against the same values
+ * (public.billing_letterhead_footer()).
  */
 export const WAP_LOGO_PUBLIC_PATH = 'public/images/wap_logo.png';
 
 export type BillingLetterhead = {
   readonly headerLines: readonly [string, string, string];
-  readonly footer: { readonly phone: string; readonly addressLines: readonly string[] };
+  readonly footer: { readonly website: string; readonly phone: string; readonly address: string; readonly addressLines: readonly string[] };
   readonly logoPath: string;
 };
 
@@ -30,26 +30,28 @@ export const WAP_BILLING_LETTERHEAD: BillingLetterhead = Object.freeze({
     string,
   ],
   footer: Object.freeze({
+    website: 'www.WorkforceAP.org',
     phone: '(512) 825-2896',
-    addressLines: Object.freeze(['207 Settlers Valley Drive, Suite C', 'Pflugerville, TX 78660']),
+    address: '207 Settlers Valley Suite C, Pflugerville, TX 78660',
+    /** The same address on two printed lines (joined with ', ' it is exactly `address`). */
+    addressLines: Object.freeze(['207 Settlers Valley Suite C', 'Pflugerville, TX 78660']),
   }),
   logoPath: WAP_LOGO_PUBLIC_PATH,
 });
 
-/** Open confirmations, surfaced to reviewers and in docs/BILLING-PACKETS.md. */
-export const LETTERHEAD_PENDING_CONFIRMATION = Object.freeze({
-  phone: 'Billing footer phone (512) 825-2896 (DOCX) vs website (512) 777-1808: pending Mike Brown.',
-  address: 'Footer address from providerIdentity.ts / price list; confirm it matches the WAP DOCX footer.',
-});
+/** No open letterhead confirmations remain (kept for compatibility). */
+export const LETTERHEAD_PENDING_CONFIRMATION = Object.freeze({});
 
 /**
- * External-send gate for the letterhead: the footer phone and address are
- * pending Mike's confirmation, so drafts may use them but no document leaves
- * WorkforceAP until BILLING_LETTERHEAD_CONFIRMED=true is set server-side. This
- * sits on top of the fail-closed signer gate and the no-real-email default.
+ * Retired gate (kept for compatibility): the footer facts are confirmed, so
+ * the letterhead no longer blocks external sends. Sign and send stay closed on
+ * the remaining gates: the designated signer principal, the approved signature
+ * representation, the voucher receipt-signature attestation, and the
+ * release/acceptance gates.
  */
 export const LETTERHEAD_UNCONFIRMED_ERROR = 'The billing letterhead footer is not confirmed yet, so no J5/J6 can be sent outside WorkforceAP.';
 
-export function letterheadConfirmedForExternalSend(env: Record<string, string | undefined> = process.env): { ok: true } | { ok: false; error: string } {
-  return env.BILLING_LETTERHEAD_CONFIRMED?.trim() === 'true' ? { ok: true } : { ok: false, error: LETTERHEAD_UNCONFIRMED_ERROR };
+/** @deprecated Always ok: the letterhead footer is confirmed. */
+export function letterheadConfirmedForExternalSend(_env: Record<string, string | undefined> = process.env): { ok: true } | { ok: false; error: string } {
+  return { ok: true };
 }

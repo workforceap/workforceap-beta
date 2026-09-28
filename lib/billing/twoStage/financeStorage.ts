@@ -31,7 +31,7 @@ export function financeBucketName(env: Record<string, string | undefined> = proc
   return raw === DEFAULT_FINANCE_BUCKET && BUCKET_NAME.test(raw) && !FORBIDDEN_FINANCE_BUCKETS.has(raw) ? raw : null;
 }
 
-export type ArtifactKind = 'j5_signed_pdf' | 'j6_signed_pdf' | 'board_signed_voucher' | 'board_invoice' | 'external_j5_copy';
+export type ArtifactKind = 'j5_signed_pdf' | 'j6_signed_pdf' | 'board_signed_voucher' | 'board_invoice' | 'external_j5_copy' | 'voucher_receipt_signature';
 
 export const ARTIFACT_KEY_SEGMENT: Readonly<Record<ArtifactKind, string>> = {
   j5_signed_pdf: 'j5',
@@ -39,6 +39,8 @@ export const ARTIFACT_KEY_SEGMENT: Readonly<Record<ArtifactKind, string>> = {
   board_signed_voucher: 'voucher',
   board_invoice: 'board-invoice',
   external_j5_copy: 'external-j5',
+  /** An approved representation of Michael's receiving signature (billing_voucher_receipt_signatures). */
+  voucher_receipt_signature: 'receipt-signature',
 };
 
 const SAFE_ID = /^[A-Za-z0-9-]{1,64}$/;

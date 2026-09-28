@@ -120,9 +120,16 @@ primary action, signature and send:
   date or a Net term, and there is no overdue state. It becomes `received`
   only when staff record the date and evidence.
 - Letterhead (`letterhead.ts`): `public/images/wap_logo.png`, the three header
-  lines, footer phone `(512) 825-2896` and the address from the repo, all in
-  one reviewed constant. Both the phone and the address are pending Mike's
-  confirmation. The old renderer's magenta band is not used.
+  lines and the confirmed footer facts from the blank WAP letterhead
+  (`www.WorkforceAP.org`, `(512) 825-2896`,
+  `207 Settlers Valley Suite C, Pflugerville, TX 78660`), all in one reviewed
+  constant that the database checks at signing. The old renderer's magenta
+  band is not used.
+- J6 issue/sign date: the server date (America/Chicago) at signing, printed as
+  `content.issueDate`, on or after both the actual class start and the current
+  voucher's receipt (attested `received_on` and DB-stamped upload date). No
+  caller backdating (`J6_ISSUE_DATE_NOT_SERVER_DATE`,
+  `J6_SIGNED_BEFORE_CLASS_START`, `J6_SIGNED_BEFORE_VOUCHER_RECEIPT`).
 
 ### Model (migration `20260927230000_billing_two_stage_j5_j6`)
 
@@ -159,15 +166,17 @@ The database enforces these rules itself, not just the app:
 - **Signing.** It needs:
   - no hold;
   - for a J6, a class start on or before today in America/Chicago;
-  - the exact recipient snapshot, equal to the recipients printed in the signed content: the same `(role, name, email)` set after the shared normalization (trim ASCII whitespace, lowercase the email, collapse whitespace inside the name; `billing_normalize_*` in SQL, `normalizeEmail` / `normalizeRecipientName` in `recipients.ts`), with no extra, missing or duplicated role; and every printed contact block (`content.student`, `.counselor`, `.finance`: name, email and the counselor phone, stored in `billing_stage_recipients.phone`) must equal its frozen row with the same normalizers (a J5 prints no finance block). `recipientRowsForContent()` in `content.ts` derives the rows from the content, and the M3 sign route writes both in one trusted transaction;
+  - the exact recipient snapshot, equal to the recipients printed in the signed content: the same `(role, name, email)` set after the shared normalization (trim ASCII whitespace, lowercase the email, collapse whitespace inside the name; `billing_normalize_*` in SQL, `normalizeEmail` / `normalizeRecipientName` in `recipients.ts`), with no extra, missing or duplicated role; and every printed contact block (`content.student`, `.counselor`, `.finance`: name, email and the counselor phone, stored in `billing_stage_recipients.phone`, which a CHECK requires to be nonblank for the counselor and NULL for other roles, and which the sign trigger also requires on the printed block) must equal its frozen row with the same normalizers (a J5 prints no finance block). `recipientRowsForContent()` in `content.ts` derives the rows from the content, and the M3 sign route writes both in one trusted transaction;
   - a PDF rendered from that exact record version and content.
 
   A recipient change locks the parent record, so it is serialized against a concurrent sign. A signed record and its recipients are frozen. The frozen content includes the SHA-256 of the exact logo PNG bytes, so a new logo changes the version hash and a sign request that carries the old hash is refused.
-- **Sends.** Claims are per recipient role, only while the record is `signed` (never after it is sent or closed). A claim starts `pending` and must carry this version's content hash, its role's frozen address and the canonical key. `provider_accepted` requires `accepted_at` plus `provider_message_id`; a call that resolves without a message id, or throws without a preserved HTTP status, is `ambiguous`, never accepted or failed. A role gets attempt n + 1 (a fresh key) only after its latest claim is `failed` or `reconciled_failed`. An `ambiguous` claim is retried with the same key (back to `pending` with a new claim token) only while `billing_utc_now() - claimed_at < billing_idempotency_retry_window()` (23 h, equal to `IDEMPOTENCY_SAFE_RETRY_MS`); after that it can only be reconciled. `claimed_at` and `last_claimed_at` are the database clock. A claim's `recipient_name` and email must equal the frozen snapshot for its role. An accepted role is never re-sent (at most one accepted claim per role). `reconciled_delivered` / `reconciled_failed` is a separate audited path, only from `ambiguous` / `needs_reconciliation`: who, when, a note and an optional evidence file. Settled claims are final, and on any update every column is frozen except the ones that status move writes. Every copy attaches exactly the archived SHA-256s, in order: signed PDF, voucher, invoice. Delivery evidence goes to `billing_delivery_events`, never unsends the stage, and a bounce or complaint flags the case for follow-up.
+- **Sends.** Claims are per recipient role, only while the record is `signed` (never after it is sent or closed). A claim starts `pending` and must carry this version's content hash, its role's frozen address and the canonical key. `provider_accepted` requires `accepted_at` plus `provider_message_id`; a call that resolves without a message id, or throws without a preserved HTTP status, is `ambiguous`, never accepted or failed. A role gets attempt n + 1 (a fresh key) only after its latest claim is `failed` or `reconciled_failed`. An `ambiguous` claim is retried with the same key (back to `pending` with a new claim token) only while `billing_utc_now() - claimed_at < billing_idempotency_retry_window()` (23 h, equal to `IDEMPOTENCY_SAFE_RETRY_MS`); after that it can only be reconciled. `claimed_at` and `last_claimed_at` are the database clock. A claim's `recipient_name` and email must equal the frozen snapshot for its role. A `pending` claim is never retried directly: without a provider outcome it is marked `ambiguous` only after `billing_stale_claim_age()` (15 min since `last_claimed_at`, equal to `RECONCILE_CLAIMED_MIN_AGE_MS`; `decideClaim` returns `in_flight` until then and `mark_ambiguous` after), and then the ambiguous rules apply. `provider_message_id` is unique across claims (partial unique index), so webhook lookup is unambiguous. An accepted role is never re-sent (at most one accepted claim per role). `reconciled_delivered` / `reconciled_failed` is a separate audited path, only from `ambiguous` / `needs_reconciliation`: who, when, a note and an optional evidence file. Settled claims are final, and on any update every column is frozen except the ones that status move writes. Every copy attaches exactly the archived SHA-256s, in order: signed PDF, voucher, invoice. Delivery evidence goes to `billing_delivery_events`, never unsends the stage, and a bounce or complaint flags the case for follow-up.
 - **Sent.** A record reaches `sent` only when every required role has exactly one accepted claim (`provider_accepted` or `reconciled_delivered`) matching this version's content hash, attachments and frozen address, and no claim of any role is still `pending`, `ambiguous` or `needs_reconciliation`. Attempt numbers may differ across roles. `sent_at` and `send_receipt` are written only by that validated `signed` -> `sent` transition, and `sent_at` is the database's own UTC clock (a caller-supplied value is refused); a signed record superseded or voided without being sent keeps them NULL.
 - **Closure.** A `signed` record with any send claim (accepted or not) can be superseded or voided only after it completes `signed` -> `sent`, or through the audited partial-send cancellation: every claim resolved, at least one required role still without an accepted copy (otherwise it must be sent), and who (`send_cancelled_by_subject_id`) and why (`send_cancel_reason`) recorded; the database stamps `send_cancelled_at`. On every closure the database records `accepted_roles_at_close`, the roles that received that version, so the next version can show, for example, "finance already received v1" (`rolesThatReceivedEarlierVersions` in `sendClaims.ts`). A claim changes status only while its record is `signed`, so nothing is accepted after closure. Delivery evidence stays writable for accepted copies of sent (and later superseded) records.
 - **Reconciliation evidence** must be a file of the same case and organization as the send's record.
+- **Prior-J5 link.** Links are validated on insert and whenever that link column changes, never on other edits or status moves, so voiding or superseding a J6 is never blocked by an older link. A J5 that an open (draft or signed) J6 follows cannot be superseded or voided (`J5_LINKED_BY_OPEN_J6`): void or send that J6 first. A sent J6 keeps its historical link.
 - **Payment.** It is accepted for a J6 proven sent: `sent_at` plus delivered finance, counselor and student copies. So a sent J6 later superseded by a corrected cover letter still reconciles its payment, and an unsent J6 never does. A `pending` event's window is anchored to that J6's send date: `billing_sent_on(sent_at)` (America/Chicago) + 10 to + 14 days, the same as `expectedFollowUpWindow()` in `payment.ts`. Transitions are case-level and monotonic: one `pending` per sent J6; `received` only after a `pending` on the case; `received` is terminal (no later `pending`, no second `received`; there is no correction kind in M1). The case summary (`summarizeCase` / `casePaymentView`) shows `received` once any event is received, otherwise the latest pending on an ever-sent J6, whatever the latest J6 version's status.
+- **Clock.** `billing_utc_now()` and `billing_today()` read the wall clock (`clock_timestamp()`, VOLATILE), not the transaction-start `now()`, so a long or held transaction cannot make a stale decision: the 23 h retry bound, the 15-minute stale age, `signed_at` (stamped at `draft` -> `signed`; a caller value is refused), `sent_at`, `claimed_at` / `last_claimed_at`, merge and cancellation stamps, and every "today" check use them. They are called only from triggers; no CHECK depends on the clock. `billing_chicago_date()` and `billing_sent_on()` are pure date conversions and stay IMMUTABLE.
 - **Business dates.** Every "today" guard (J6 class start at signing, attested class start / voucher received / counselor request / external quote dates, payment received) uses `billing_today()` = `(now() AT TIME ZONE 'America/Chicago')::date`, never `CURRENT_DATE` or the session time zone.
 - **Integrity.** Artifacts, attestations, delivery events and payment events are append-only, and every CHECK treats NULL as a failure.
 - **Privileges.** RLS is on and PUBLIC, `anon` and `authenticated` hold nothing. `service_role` gets SELECT, INSERT, UPDATE and DELETE (no TRUNCATE, which would bypass the row triggers), plus EXECUTE on `billing_contract_hours` and the helpers the CHECKs and triggers call, the same convention as the legacy packet grants.
@@ -176,11 +185,55 @@ The database enforces these rules itself, not just the app:
 
 Real delivery stays closed until all of these hold:
 
-- the signer is configured and signs as themselves;
-- `BILLING_LETTERHEAD_CONFIRMED=true` (the footer phone and address are pending
-  Mike's confirmation; drafts may use them);
+- a signer principal is designated (`billing_designated_signers`, unset by
+  default and never writable by the app) and signs as themselves;
+- the signature representation and Michael's exact auth principal are
+  approved (open decision);
+- the J6 voucher carries the designated signer's receipt-signature
+  attestation on its exact bytes (`billing_voucher_receipt_signatures`);
 - the finance bucket preflight passes;
-- email is enabled. In this PR no real email is sent at all.
+- the release/acceptance gates pass (isolated restore rehearsal, DEMO
+  acceptance). In this PR no real email is sent at all.
+
+The letterhead footer is confirmed and no longer gates sending. The footer
+facts are exactly those on the blank WAP letterhead: `www.WorkforceAP.org`,
+`(512) 825-2896` (the display string, with the space), `207 Settlers Valley Suite C, Pflugerville, TX 78660`.
+Frozen content carries them, and the database refuses to sign any other
+footer (`billing_letterhead_footer()`). `BILLING_LETTERHEAD_CONFIRMED` is no
+longer read.
+
+### Receipt signature and J6 principal binding
+
+- **Original bytes.** The voucher artifact keeps the original uploaded bytes'
+  SHA-256 and content-addressed key. The row is append-only and the bytes are
+  never re-encoded.
+- **Receipt-signature attestation.** A `billing_voucher_receipt_signatures`
+  row is bound by composite FK to `(voucher artifact id, sha256)`. It records:
+  - the attesting auth user;
+  - the method: `present_on_original`, or `approved_signature_representation`
+    with its own uploaded `voucher_receipt_signature` artifact and hash;
+  - a DB-stamped `attested_at` (a caller value is refused).
+
+  The row is append-only, so it is the audit record. Only the designated signer
+  may insert one; unset means refused (`SIGNER_PRINCIPAL_UNSET`). A replacement
+  voucher is a new artifact, so an older attestation never applies to it.
+- **Generic flag.** `voucher_board_signed.receiving_signature_present` alone
+  never satisfies the requirement.
+- **J6 sign and send.** J6 sign, `signed -> sent`, and every J6 send claim
+  require:
+  - a designated signer;
+  - `signed_by_subject_id` equal to that signer;
+  - the `voucher_board_signed` attestation of the current voucher attested by
+    that same principal;
+  - a valid receipt-signature attestation on the current voucher hash.
+
+  The failure codes are `SIGNER_PRINCIPAL_UNSET`, `SIGNER_NOT_DESIGNATED`,
+  `VOUCHER_ATTESTER_NOT_SIGNER` and `VOUCHER_RECEIPT_SIGNATURE_UNATTESTED`.
+- **Attesting the voucher.** Inserting a `voucher_board_signed` attestation by
+  anyone but the designated signer is refused (`VOUCHER_ATTESTER_NOT_DESIGNATED`).
+- **Pure code.** `voucherReceiptSignatureStatus()` in `voucherReceipt.ts` and
+  `canSignJ6({ voucherReceiptSignature })` apply the same rule. The blocker code
+  is `VOUCHER_RECEIPT_SIGNATURE_UNATTESTED`, and a missing input fails closed.
 
 ### Signing
 
@@ -226,6 +279,18 @@ These rows mirror draft #2687's retained-finance model:
   `billing_cases.member_id` to NULL and keeps `subject_member_id` and every
   stage record, artifact, send and payment row.
 - Actor columns hold historical subject ids with no foreign key.
+- **Visibility (Mike Brown, 2026-09-28).** J5, J6 and voucher evidence live in
+  a staff-restricted billing archive linked to the student (`billing_cases`).
+  The student's required copy is delivered by email. The member portal never
+  exposes archive rows or files. No RLS policy and no grant gives `anon`,
+  `authenticated` or a member any read path to `billing_artifacts`,
+  `billing_attestations`, `billing_voucher_receipt_signatures` or any other
+  billing table (asserted by the PG16 proof), and the finance bucket is
+  private. The archive survives member erasure as described above.
+- **PDF-only for this release.** Every archived file, including the voucher
+  and an approved signature representation, must be `application/pdf` stored
+  under a `.pdf` content-addressed key (`billing_artifacts_kind_check`,
+  `billing_artifacts_storage_check`). No JPEG/PNG uploads.
 - A member merge (`lib/admin/memberMerge.ts`) repoints `billing_cases.member_id`
   to the survivor (`memberMergeRepointPlan.ts`). The executor declares the
   pair for its transaction (`app.billing_member_merge`); the database refuses

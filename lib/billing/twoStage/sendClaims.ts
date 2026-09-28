@@ -49,10 +49,17 @@ export const UNRESOLVED: ReadonlySet<SendStatus> = new Set(['pending', 'ambiguou
 
 /** Resend keeps idempotency keys for 24 hours; stay inside that with a margin. */
 export const IDEMPOTENCY_SAFE_RETRY_MS = 23 * 60 * 60 * 1000;
-/** A claim this fresh may still be in flight: nobody else takes it over. */
-export const IN_FLIGHT_GRACE_MS = 2 * 60 * 1000;
-/** A still-`pending` claim older than this is treated as an unknown outcome. */
-export const RECONCILE_CLAIMED_MIN_AGE_MS = 15 * 60 * 1000;
+/**
+ * A still-`pending` claim older than this (since last_claimed_at) is marked
+ * `ambiguous`; before that it may still be in flight and nobody takes it over.
+ * Equal to public.billing_stale_claim_age() (PG16 parity). A `pending` claim is
+ * never retried directly: it becomes `ambiguous` first, then the ambiguous
+ * rules (same key inside 23 h, else reconciliation) apply.
+ */
+const STALE_CLAIM_AGE_MS = 15 * 60 * 1000;
+export const RECONCILE_CLAIMED_MIN_AGE_MS: number = STALE_CLAIM_AGE_MS;
+/** Kept for compatibility: the in-flight grace is the same 15-minute stale age. */
+export const IN_FLIGHT_GRACE_MS: number = STALE_CLAIM_AGE_MS;
 
 export function sendIdempotencyKey(args: { stage: BillingStage; recordId: string; version: number; attemptNo: number; role: RecipientRole }): string {
   if (!STAGE_RECIPIENT_ROLES[args.stage].includes(args.role)) throw new Error(`${args.role} is not a ${args.stage.toUpperCase()} recipient`);
@@ -142,6 +149,8 @@ export type ClaimDecision =
   | { action: 'retry_same_key' }
   | { action: 'skip_delivered' }
   | { action: 'in_flight' }
+  /** A stale `pending` claim: mark it `ambiguous` (markStaleClaimAmbiguous), then decide again. */
+  | { action: 'mark_ambiguous' }
   | { action: 'needs_reconciliation' }
   | { action: 'new_attempt_required' };
 
@@ -162,9 +171,8 @@ export function decideClaim(latest: SendRow | null, now: Date): ClaimDecision {
     case 'needs_reconciliation':
       return { action: 'needs_reconciliation' };
     case 'pending':
-      if (now.getTime() - latest.lastClaimedAt.getTime() < IN_FLIGHT_GRACE_MS) return { action: 'in_flight' };
-      // A stale claim is treated like an unknown outcome.
-      return retryInsideWindow(latest, now);
+      // Never retried directly (the database refuses pending -> pending).
+      return markStaleClaimAmbiguous(latest, now) ? { action: 'mark_ambiguous' } : { action: 'in_flight' };
     case 'ambiguous':
       return retryInsideWindow(latest, now);
     default:

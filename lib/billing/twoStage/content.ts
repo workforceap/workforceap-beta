@@ -30,7 +30,7 @@ type Common = {
   documentNumber: string;
   issueDate: string;
   /** logo.sha256 binds the exact logo PNG bytes into the version hash. */
-  letterhead: { headerLines: string[]; footer: { phone: string; addressLines: string[] }; logo: { path: string; sha256: string } };
+  letterhead: { headerLines: string[]; footer: { website: string; phone: string; address: string; addressLines: string[] }; logo: { path: string; sha256: string } };
   student: Contact;
   boardName: string;
   counselor: CounselorContact;
@@ -113,7 +113,12 @@ const HEX64 = /^[0-9a-f]{64}$/;
 function letterhead(logoSha256: string): Common['letterhead'] {
   return {
     headerLines: [...WAP_BILLING_LETTERHEAD.headerLines],
-    footer: { phone: WAP_BILLING_LETTERHEAD.footer.phone, addressLines: [...WAP_BILLING_LETTERHEAD.footer.addressLines] },
+    footer: {
+      website: WAP_BILLING_LETTERHEAD.footer.website,
+      phone: WAP_BILLING_LETTERHEAD.footer.phone,
+      address: WAP_BILLING_LETTERHEAD.footer.address,
+      addressLines: [...WAP_BILLING_LETTERHEAD.footer.addressLines],
+    },
     logo: { path: WAP_BILLING_LETTERHEAD.logoPath, sha256: logoSha256 },
   };
 }

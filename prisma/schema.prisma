@@ -55,6 +55,7 @@ model Organization {
   trainingBillingPackets TrainingBillingPacket[]
   billingCases           BillingCase[]
   billingSignerDelegations BillingSignerDelegation[]
+  billingDesignatedSigner  BillingDesignatedSigner?
 
   @@index([stripeSubscriptionId])
   @@map("organizations")
@@ -281,6 +282,7 @@ model User {
   trainingBillingPackets      TrainingBillingPacket[] @relation("MemberBillingPackets")
   billingPacketsSigned        TrainingBillingPacket[] @relation("BillingPacketSigner")
   billingCases                BillingCase[]         @relation("MemberBillingCases")
+  billingSignerDesignations   BillingDesignatedSigner[]
 
   mentorProfile       Mentor?
   mentorSessions      MentorSession[] @relation("MentorSessionMember")
@@ -2140,6 +2142,7 @@ model BillingCase {
   artifacts     BillingArtifact[]
   stageRecords  BillingStageRecord[]
   paymentEvents BillingPaymentEvent[]
+  voucherReceiptSignatures BillingVoucherReceiptSignature[]
 
   @@unique([id, organizationId])
   @@index([organizationId, subjectMemberId, createdAt(sort: Desc)])
@@ -2244,14 +2247,63 @@ model BillingArtifact {
   reconcileEvidenceFor BillingStageSend[]
 
   attestations      BillingAttestation[]
+  receiptSignaturesOnVoucher     BillingVoucherReceiptSignature[] @relation("ReceiptSignatureVoucher")
+  receiptSignaturesOnVoucherCase BillingVoucherReceiptSignature[] @relation("ReceiptSignatureVoucherCase")
+  receiptSignatureRepresentations BillingVoucherReceiptSignature[] @relation("ReceiptSignatureRepresentation")
   signedStageRecord BillingStageRecord[] @relation("StageSignedArtifact")
   voucherFor        BillingStageRecord[] @relation("StageVoucherArtifact")
   boardInvoiceFor   BillingStageRecord[] @relation("StageBoardInvoiceArtifact")
 
   @@unique([id, caseId])
+  @@unique([id, sha256])
   @@unique([storageBucket, storageKey])
   @@index([caseId, kind, createdAt(sort: Desc)])
   @@map("billing_artifacts")
+}
+
+/// The one auth principal per organization who signs and attests receiving
+/// signatures on board vouchers. Unset by default (J6 sign/send fail closed);
+/// written only by an ops-reviewed change, read-only for service_role.
+model BillingDesignatedSigner {
+  organizationId String   @id @map("organization_id")
+  userId         String   @map("user_id")
+  designatedBy   String   @map("designated_by")
+  note           String
+  /// Stamped by the database.
+  designatedAt   DateTime @map("designated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("billing_designated_signers")
+}
+
+/// The designated signer's attestation that his receiving signature is on the
+/// exact voucher bytes (present_on_original) or an approved signature
+/// representation (approved_signature_representation + its artifact). Bound to
+/// (voucher artifact id, sha256); append-only; attested_at stamped by the DB.
+model BillingVoucherReceiptSignature {
+  id                       String   @id @default(uuid())
+  organizationId           String   @map("organization_id")
+  caseId                   String   @map("case_id")
+  voucherArtifactId        String   @map("voucher_artifact_id")
+  voucherSha256            String   @map("voucher_sha256") @db.Char(64)
+  attestedByUserId         String   @map("attested_by_user_id")
+  /// present_on_original | approved_signature_representation
+  method                   String
+  representationArtifactId String?  @map("representation_artifact_id")
+  representationSha256     String?  @map("representation_sha256") @db.Char(64)
+  statement                String
+  attestedAt               DateTime @map("attested_at")
+
+  case           BillingCase      @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "billing_voucher_receipt_signatures_case_fkey")
+  voucher        BillingArtifact  @relation("ReceiptSignatureVoucher", fields: [voucherArtifactId, voucherSha256], references: [id, sha256], onDelete: Restrict, onUpdate: NoAction, map: "billing_voucher_receipt_signatures_voucher_fkey")
+  voucherInCase  BillingArtifact  @relation("ReceiptSignatureVoucherCase", fields: [voucherArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction, map: "billing_voucher_receipt_signatures_voucher_case_fkey")
+  representation BillingArtifact? @relation("ReceiptSignatureRepresentation", fields: [representationArtifactId, representationSha256], references: [id, sha256], onDelete: Restrict, onUpdate: NoAction, map: "billing_voucher_receipt_signatures_representation_fkey")
+
+  @@index([voucherArtifactId])
+  @@map("billing_voucher_receipt_signatures")
 }
 
 /// Explicitly approved signing delegation. Model hook only: disabled in code
