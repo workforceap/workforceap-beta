@@ -183,6 +183,11 @@ export function currentVoucher(
   return { artifact, attestation };
 }
 
+/** Whether `userId` is the organization's billing_designated_signers principal (false while none is configured). */
+export function isDesignatedSigner(snapshot: Pick<CaseSnapshot, 'designatedSignerUserId'>, userId: string): boolean {
+  return snapshot.designatedSignerUserId !== null && snapshot.designatedSignerUserId.toLowerCase() === userId.toLowerCase();
+}
+
 export type ReceiptSignatureState = {
   status: VoucherReceiptSignatureStatus;
   /** The valid designated-signer attestation on the current voucher's exact bytes, or null. */

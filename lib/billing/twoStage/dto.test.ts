@@ -2,15 +2,20 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   BLOCKER_CODES,
+  DESIGNATED_SIGNER_READINESS,
+  DESIGNATED_SIGNER_STEPS,
   DRAFT_FIELDS,
   ERROR_CODES,
   GATE_CODES,
   GATE_NAMES,
   J5_READINESS_KEYS,
   J6_READINESS_KEYS,
+  type Blocker,
   type CaseSummaryDto,
+  type DesignatedSignerStep,
   type DraftPatch,
   type J5DraftInput,
+  type J6ReadinessKey,
   type ReadinessKey,
   type TwoStageBillingReadiness,
 } from './dto';
@@ -45,6 +50,11 @@ assertType<Equal<CaseSummaryDto['readiness'], TwoStageBillingReadiness>>();
 // The summary re-exports M1's progress type rather than redefining it.
 assertType<Equal<CaseSummaryDto['progress'], CaseProgress>>();
 assertType<Equal<keyof CaseSummaryDto['gates'], (typeof GATE_NAMES)[number]>>();
+// What waits on the designated signer is typed from the same step list and J6 readiness keys.
+assertType<Equal<CaseSummaryDto['waitingOnDesignatedSigner'][number]['step'], DesignatedSignerStep>>();
+assertType<Equal<keyof CaseSummaryDto['readinessWaitingOn'], keyof typeof DESIGNATED_SIGNER_READINESS>>();
+assertType<Equal<Extract<keyof typeof DESIGNATED_SIGNER_READINESS, J6ReadinessKey>, keyof typeof DESIGNATED_SIGNER_READINESS>>();
+assertType<Equal<Blocker['waitingOn'], 'designated_signer' | undefined>>();
 // A partial draft may omit any field, including nested ones.
 const emptyPatch: DraftPatch<'j5'> = {};
 const nestedPatch: DraftPatch<'j6'> = { counselor: { phone: '(555) 010-0201' }, boardInvoiceArtifactId: null };
@@ -52,11 +62,22 @@ const fullJ5: J5DraftInput = { boardName: 'B', student: { name: 'S', email: 's@e
 const fullAsPatch: DraftPatch<'j5'> = fullJ5;
 
 describe('two-stage DTO module', () => {
-  it('exports only frozen-shape constant lists at runtime (types erase to nothing)', async () => {
+  it('exports only constant string lists and string maps at runtime (types erase to nothing)', async () => {
     const mod: Record<string, unknown> = await import('./dto');
     for (const [name, value] of Object.entries(mod)) {
-      assert.ok(Array.isArray(value) && value.every((v) => typeof v === 'string'), `${name} is not a string list`);
+      const strings = Array.isArray(value) ? value : value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype ? Object.values(value) : null;
+      assert.ok(strings !== null && strings.every((v) => typeof v === 'string'), `${name} is not a string list or string map`);
     }
+  });
+
+  it('designated-signer readiness keys are J6 readiness keys, each mapped to a designated-signer step', () => {
+    for (const [key, step] of Object.entries(DESIGNATED_SIGNER_READINESS)) {
+      assert.ok((J6_READINESS_KEYS as readonly string[]).includes(key), key);
+      assert.ok((DESIGNATED_SIGNER_STEPS as readonly string[]).includes(step), step);
+    }
+    assert.equal(DESIGNATED_SIGNER_READINESS.michaelReceivingSignatureAttested, 'voucher_receipt_signature');
+    // The file hash is staff-verifiable (server sha256 of the upload); it never waits on the signer.
+    assert.ok(!('originalVoucherHashVerified' in DESIGNATED_SIGNER_READINESS));
   });
 
   it('readiness keys equal #2706 and split into the two stage cards', () => {

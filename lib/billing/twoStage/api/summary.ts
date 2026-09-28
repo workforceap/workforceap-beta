@@ -17,6 +17,8 @@ import type {
   ContactField,
   ContactView,
   CounselorContactView,
+  DesignatedSignerReadinessKey,
+  DesignatedSignerTask,
   GateName,
   GateState,
   HoldReason,
@@ -31,7 +33,9 @@ import type {
   VoucherAttestationView,
   VoucherMatch,
   VoucherReceiptAttestationView,
+  WaitingOn,
 } from '../dto';
+import { DESIGNATED_SIGNER_READINESS } from '../dto';
 import { resolveProgramTerms } from '../hours';
 import { formatUsdCents } from '../lineItem';
 import { casePaymentView, type PaymentEvent } from '../payment';
@@ -69,8 +73,50 @@ export type SummaryInput = {
   assignedCounselor: { name: string; email: string } | null;
   gates: Record<GateName, GateState>;
   viewerIsExecutiveSigner: boolean;
+  /** The viewer is the organization's billing_designated_signers principal. */
+  viewerIsDesignatedSigner: boolean;
   now: Date;
 };
+
+const VOUCHER_DATA_MESSAGE = 'Waiting on Michael A. Brown to record the voucher details (reference, received date, authorized program/class, amount and period) for this exact file.';
+
+/** The blocker codes a designated-signer step clears, tagged `waitingOn` while a voucher file exists. */
+const DESIGNATED_SIGNER_BLOCKERS = new Set<Blocker['code']>(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
+
+/**
+ * Steps waiting on the designated signer for the current voucher file, in
+ * order: voucher data first, then the receiving signature on its exact hash.
+ * Staff can upload the file; nothing a staff account does satisfies these.
+ */
+function designatedSignerTasks(input: SummaryInput, voucher: ReturnType<typeof currentVoucher>, receiptAttested: boolean): DesignatedSignerTask[] {
+  if (!voucher) return [];
+  const configured = input.snapshot.designatedSignerUserId !== null;
+  const keysFor = (step: DesignatedSignerTask['step']) =>
+    (Object.keys(DESIGNATED_SIGNER_READINESS) as DesignatedSignerReadinessKey[]).filter((k) => DESIGNATED_SIGNER_READINESS[k] === step);
+  const base = { artifactId: voucher.artifact.id, sha256: voucher.artifact.sha256, viewerIsDesignatedSigner: input.viewerIsDesignatedSigner };
+  const tasks: DesignatedSignerTask[] = [];
+  if (!voucher.attestation) {
+    tasks.push({ ...base, step: 'voucher_data', readinessKeys: keysFor('voucher_data'), blockerCode: 'J6_VOUCHER_ATTESTATION_INCOMPLETE', message: VOUCHER_DATA_MESSAGE, ready: configured });
+  }
+  if (!receiptAttested) {
+    tasks.push({
+      ...base,
+      step: 'voucher_receipt_signature',
+      readinessKeys: keysFor('voucher_receipt_signature'),
+      blockerCode: 'RECEIVING_SIGNATURE_NOT_ATTESTED',
+      message: RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE,
+      ready: configured && voucher.attestation !== null,
+    });
+  }
+  return tasks;
+}
+
+/** The readiness keys that are false only because a designated-signer step is outstanding. */
+function readinessWaitingOn(tasks: readonly DesignatedSignerTask[]): Partial<Record<DesignatedSignerReadinessKey, WaitingOn>> {
+  const out: Partial<Record<DesignatedSignerReadinessKey, WaitingOn>> = {};
+  for (const task of tasks) for (const key of task.readinessKeys) out[key] = 'designated_signer';
+  return out;
+}
 
 export function basePath(memberId: string, caseId: string): string {
   return `/api/admin/members/${memberId}/billing/two-stage/cases/${caseId}`;
@@ -347,7 +393,7 @@ function matchesFor(content: { training: J6Content['training']; priorJ5: J6Conte
   ];
 }
 
-function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Record<J6ReadinessKey, boolean>> } {
+function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Record<J6ReadinessKey, boolean>>; signerTasks: DesignatedSignerTask[] } {
   const { snapshot, now } = input;
   const records = stageRecords(snapshot, 'j6');
   const current = records[0] ?? null;
@@ -395,7 +441,10 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
       }
     : null;
   const invoiceRow = snapshot.artifacts.find((f) => f.kind === 'board_invoice') ?? null;
-  const allBlockers = [...blockers, ...signBlockers, ...sendBlockers];
+  const signerTasks = designatedSignerTasks(input, voucher, Boolean(receipt));
+  const allBlockers = [...blockers, ...signBlockers, ...sendBlockers].map((b) =>
+    voucher && DESIGNATED_SIGNER_BLOCKERS.has(b.code) ? { ...b, waitingOn: 'designated_signer' as const } : b,
+  );
   const terms = gate.ok ? gate.training : null;
   const c = contacts(input, current);
   const view: J6StageView = {
@@ -462,7 +511,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
     ...(classStartedRow ? { programAndClassDatesConfirmed: gate.ok ? !gate.reviewReasons.includes('end_date_not_contract') : false } : {}),
     ...draftContactReadiness(current),
   };
-  return { view, readiness };
+  return { view, readiness, signerTasks };
 }
 
 function paymentDto(snapshot: CaseSnapshot, now: Date): PaymentDto {
@@ -543,12 +592,14 @@ export function buildCaseSummary(input: SummaryInput): CaseSummaryDto {
     },
     progress: caseProgress(snapshot),
     gates: input.gates,
-    viewer: { isExecutiveSigner: input.viewerIsExecutiveSigner },
+    viewer: { isExecutiveSigner: input.viewerIsExecutiveSigner, isDesignatedSigner: input.viewerIsDesignatedSigner },
     j5: j5.view,
     j6: j6.view,
     payment: paymentDto(snapshot, now),
     readiness: combinedReadiness(j5.readiness, j6.readiness, j6Active),
     readinessByStage: { j5: j5.readiness, j6: j6.readiness },
+    readinessWaitingOn: readinessWaitingOn(j6.signerTasks),
+    waitingOnDesignatedSigner: j6.signerTasks,
   };
 }
 

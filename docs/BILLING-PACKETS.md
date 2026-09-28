@@ -577,7 +577,7 @@ type CaseSummaryResponse = {
   progress: CaseProgress;                                   // summarizeCase()
   gates: Record<'migration' | 'providerOrg' | 'financeArchive' | 'signing' | 'signedRenderer'
     | 'receiptSignaturePrincipal' | 'realEmail', GateState>;
-  viewer: { isExecutiveSigner: boolean };
+  viewer: { isExecutiveSigner: boolean; isDesignatedSigner: boolean };
   j5: J5StageView;                                          // current, history, blockers, contacts, readiness attestation
   j6: J6StageView;                                          // prior quote, class started, voucher, matches, holds
   payment: PaymentResponse;
@@ -585,6 +585,19 @@ type CaseSummaryResponse = {
   readiness: TwoStageBillingReadiness;
   /** The same facts per stage card, for when M4 splits the prop. */
   readinessByStage: { j5: Partial<Record<J5ReadinessKey, boolean>>; j6: Partial<Record<J6ReadinessKey, boolean>> };
+  /** Readiness keys that are false only because the designated signer has not acted yet. */
+  readinessWaitingOn: Partial<Record<DesignatedSignerReadinessKey, 'designated_signer'>>;
+  /** Steps waiting on the designated signer, in order; empty when none are waiting. */
+  waitingOnDesignatedSigner: DesignatedSignerTask[];
+};
+type DesignatedSignerTask = {
+  step: 'voucher_data' | 'voucher_receipt_signature';
+  artifactId: string; sha256: string;                      // the current voucher file the step must name
+  readinessKeys: DesignatedSignerReadinessKey[];
+  blockerCode: 'J6_VOUCHER_ATTESTATION_INCOMPLETE' | 'RECEIVING_SIGNATURE_NOT_ATTESTED';
+  message: string;
+  ready: boolean;                                          // false for the receipt until the data exists, and while no signer is designated
+  viewerIsDesignatedSigner: boolean;
 };
 type GateState = { enabled: boolean; code: ErrorCode | null; message: string | null };
 ```
@@ -613,6 +626,21 @@ satisfied. #2706 passes one `readiness` object to both cards, so the four
 shared keys come from the J6 draft once a prior quote exists for the case, and
 from the J5 draft before that; `readinessByStage` has the unshared values.
 The blockers list carries the same facts as stable codes (§6.2).
+
+**Waiting on Michael.** Staff may upload the voucher file; only the
+designated signer records its data (`voucher_data`) and attests his
+receiving signature on its exact sha256 (`voucher_receipt_signature`). While
+a voucher file exists and either is outstanding, the summary says so in three
+places, all from `dto.ts`: `waitingOnDesignatedSigner` (the steps, in order,
+naming the file and hash), `readinessWaitingOn` (the readiness keys those
+steps hold back, from `DESIGNATED_SIGNER_READINESS`:
+`voucherReferenceAndReceivedDateVerified` and `voucherTermsVerified` →
+`voucher_data`; `michaelReceivingSignatureAttested` →
+`voucher_receipt_signature`), and `waitingOn: 'designated_signer'` on the
+matching blockers. `originalVoucherHashVerified` never waits on him (the
+server hashes the upload). `viewer.isDesignatedSigner` tells the UI whether
+to offer the steps to the viewer. Before any voucher file exists the upload
+is a staff step and nothing is tagged.
 
 #### 5.4 J5 readiness, 5.5 J6 class started
 
@@ -785,6 +813,9 @@ Voucher data entry for an uploaded file (designated signer only):
 `POST /cases/[caseId]/voucher/[artifactId]/attestation` (JSON) appends a new
 attestation for that exact artifact.
 
+Both responses carry `waitingOnDesignatedSigner` for the current voucher
+(§5.3), so a staff upload immediately shows what now waits on Michael.
+
 #### 5.10a Michael's receiving-signature attestation (signer principal only)
 
 Mike, 2026-09-28: the received-and-signed board voucher cannot be satisfied
@@ -797,7 +828,15 @@ by a generic staff checkbox.
   `billing_designated_signers` row (unset by default) and the §3 signer check
   (`BILLING_EXECUTIVE_SIGNER_USER_ID`, provider-org admin, active). No row →
   `503 SIGNER_PRINCIPAL_UNSET`; env signer unset → `503 SIGNER_NOT_CONFIGURED`;
-  anyone else → `403 SIGNER_NOT_DESIGNATED` / `403 NOT_SIGNER`.
+  anyone else → `403 VOUCHER_ATTESTER_NOT_DESIGNATED` / `403 NOT_SIGNER`.
+- The designated-signer row is the authority: M1's trigger refuses any other
+  attester, and the route checks the row first. The env signer check is
+  redundant for identity once the row exists; it is kept deliberately as
+  fail-closed defense in depth, so the attestation needs the row **and** the
+  env signer to name the same account. A row that names someone other than
+  the env signer, or an env signer that was unset, refuses the attestation
+  rather than trusting one side; an M1 signing delegate passes the env check
+  but never the row check.
 - `expectedSha256` must equal the artifact's stored sha256
   (`409 VOUCHER_HASH_MISMATCH`), and the artifact must be the case's current
   voucher (`409 VOUCHER_NOT_CURRENT`).
@@ -953,6 +992,18 @@ follow-up (`followUp` in the summary), not a reason to mute the student. The
 `emailSendLog` path is unchanged, and a store without the method behaves
 exactly as before.
 
+Non-billing events: the route wires the method through
+`billingDeliveryLinker(prisma)` (`lib/billing/twoStage/api/webhookLinkage.ts`),
+which returns "no match" without any database read while the migration gate
+(`BILLING_TWO_STAGE_MIGRATION_APPLIED`) is closed, so an environment without
+the billing tables handles every event as before. With the gate open, a
+message id that matches no billing send reports no match and the handler
+takes the pre-M3 path. `webhookLinkage.test.ts` pins this: for `sent`,
+`delivered`, `delivery_delayed`, permanent and transient `bounced`,
+`complained` and `opened`, the store with the real linker (gate closed, and
+gate open with no billing match) gives the same response and the same store
+calls as the pre-M3 store.
+
 ### 6. Blockers and error codes
 
 #### 6.1 J6 holds
@@ -1018,6 +1069,9 @@ line each, with the reason.
 31. **Designated signer gate:** J6 sign/send and the receipt attestation are gated on M1's `billing_designated_signers` row (`SIGNER_PRINCIPAL_UNSET`), replacing the earlier env gate, because the database enforces the same principal.
 32. **Voucher upload by staff:** file-only uploads are open to any admin; the voucher data entry and the receipt signature are the designated signer's, per M1's rule that only he attests a board-signed voucher.
 33. **Gate order on sign/send:** the release gates are checked right after the §3 access checks, before the signer, intent or record checks, so a disabled route answers 503 without reading any record or file.
+34. **Waiting on Michael:** the summary and voucher responses name each step waiting on the designated signer (`waitingOnDesignatedSigner`, `readinessWaitingOn`, blocker `waitingOn`), because #2706 must show that staff cannot clear those steps.
+35. **Env signer check on the receipt attestation:** redundant for identity once the designated-signer row exists, kept as fail-closed defense (row and env must agree), because a disagreement between them should refuse, not pick a side.
+36. **Webhook before the migration:** the billing linkage never reads the database while the migration gate is closed, because an environment without the billing tables must handle every Resend event exactly as before.
 
 ### Not in M3
 

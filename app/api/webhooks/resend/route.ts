@@ -13,6 +13,7 @@
  */
 import { NextResponse } from 'next/server';
 
+import { billingDeliveryLinker } from '@/lib/billing/twoStage/api/webhookLinkage';
 import { prisma } from '@/lib/db/prisma';
 import { withSystemGuc } from '@/lib/db/withRequestGuc';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
@@ -66,26 +67,9 @@ const prismaResendWebhookStore: ResendWebhookStore = {
     return result.count;
   },
 
-  // Two-stage J5/J6 billing copies: evidence in billing_delivery_events, by
-  // provider message id, only for an accepted copy. An id that matches more
-  // than one claim is ignored (never guessed); a repeated Svix event is a no-op.
-  async applyBillingDeliveryEvent({ providerMessageId, kind, occurredAt, providerEventId }) {
-    const sends = await prisma.billingStageSend.findMany({
-      where: { providerMessageId, status: { in: ['provider_accepted', 'reconciled_delivered'] } },
-      select: { id: true, organizationId: true },
-      take: 2,
-    });
-    if (sends.length !== 1) return { matched: false };
-    const [send] = sends;
-    try {
-      await prisma.billingDeliveryEvent.create({
-        data: { organizationId: send.organizationId, sendId: send.id, kind, occurredAt, source: 'resend_webhook', providerEventId },
-      });
-    } catch (error) {
-      if ((error as { code?: string } | null)?.code !== 'P2002') throw error;
-    }
-    return { matched: true };
-  },
+  // Two-stage J5/J6 billing copies (evidence in billing_delivery_events). A
+  // no-op without a database read while the billing migration gate is closed.
+  applyBillingDeliveryEvent: billingDeliveryLinker(prisma),
 
   logReceipt: logWebhookEvent,
 

@@ -37,7 +37,7 @@ import { resolveProgramTerms } from '../hours';
 import { VOUCHER_REFERENCE_MAX } from '../rendererAdapter';
 import type { TwoStageContext } from './access';
 import { archiveErrorCode, financeArchive, type FinanceArchiveRef } from './archive';
-import { currentVoucher, dateColumn, loadCaseSnapshot } from './caseData';
+import { currentVoucher, dateColumn, isDesignatedSigner, loadCaseSnapshot } from './caseData';
 import { apiError, MAX_UPLOAD_FILE_BYTES, type MultipartUpload } from './http';
 import { artifactView, buildCaseSummary, voucherAttestationView } from './summary';
 import { allGates, GATE_MESSAGES } from './gates';
@@ -281,6 +281,7 @@ async function voucherResponse<P>(ctx: TwoStageContext<P>, artifactId: string, r
     assignedCounselor: null,
     gates: allGates({ financeArchiveReady: true, designatedSigner: snapshot.designatedSignerUserId !== null }),
     viewerIsExecutiveSigner: false,
+    viewerIsDesignatedSigner: isDesignatedSigner(snapshot, ctx.user.id),
     now: ctx.now,
   });
   const attestation = snapshot.attestations
@@ -295,6 +296,7 @@ async function voucherResponse<P>(ctx: TwoStageContext<P>, artifactId: string, r
     receiptAttestation: isCurrent ? summary.j6.voucher?.receiptAttestation ?? null : null,
     matches: isCurrent ? summary.j6.matches : null,
     holds: isCurrent ? summary.j6.holds : [],
+    waitingOnDesignatedSigner: isCurrent ? summary.waitingOnDesignatedSigner : [],
   };
 }
 

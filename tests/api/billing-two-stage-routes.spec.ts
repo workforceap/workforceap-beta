@@ -244,6 +244,20 @@ describe('two-stage routes: sign and send are hard-disabled', () => {
     expect(res.status).toBe(403);
     expect((await res.json()).code).toBe('VOUCHER_ATTESTER_NOT_DESIGNATED');
   });
+
+  it('the receipt attestation needs the designated-signer row and the env signer to name the same account (fail closed)', async () => {
+    h.state.designated = { userId: h.ADMIN };
+    // Row names the caller, env signer unset: refused.
+    let res = await receiptAttest(jsonReq(`${base}/${h.CASE}/voucher/v1/receipt-attestation`, {}), caseParams({ artifactId: 'v1' }));
+    expect(res.status).toBe(503);
+    expect((await res.json()).code).toBe('SIGNER_NOT_CONFIGURED');
+    // Row names the caller, env names someone else: refused, never "pick the row".
+    process.env.BILLING_EXECUTIVE_SIGNER_USER_ID = 'b0000000-0000-4000-8000-000000000999';
+    res = await receiptAttest(jsonReq(`${base}/${h.CASE}/voucher/v1/receipt-attestation`, {}), caseParams({ artifactId: 'v1' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).code).toBe('NOT_SIGNER');
+    expect(mocks.archive).not.toHaveBeenCalled();
+  });
 });
 
 describe('two-stage routes: uploads', () => {
@@ -370,6 +384,13 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     expect(j6.originalVoucherHashVerified).toBe(true);
     expect(j6.michaelReceivingSignatureAttested).toBe(false);
     expect(body.j6.blockers.map((b) => b.code)).toContain('RECEIVING_SIGNATURE_NOT_ATTESTED');
+    // Staff uploaded and the voucher data exists: only Michael's receiving signature is outstanding, and it says so.
+    expect(body.j6.blockers.find((b) => b.code === 'RECEIVING_SIGNATURE_NOT_ATTESTED')?.waitingOn).toBe('designated_signer');
+    expect(body.readinessWaitingOn).toEqual({ michaelReceivingSignatureAttested: 'designated_signer' });
+    expect(body.waitingOnDesignatedSigner).toEqual([
+      expect.objectContaining({ step: 'voucher_receipt_signature', artifactId: 'v1', sha256: 'b'.repeat(64), readinessKeys: ['michaelReceivingSignatureAttested'], ready: false, viewerIsDesignatedSigner: false }),
+    ]);
+    expect(body.viewer.isDesignatedSigner).toBe(false);
     expect(body.gates.receiptSignaturePrincipal).toMatchObject({ enabled: false, code: 'SIGNER_PRINCIPAL_UNSET' });
     expect(body.gates.signing.enabled).toBe(false);
     expect(body.gates.realEmail.enabled).toBe(false);
@@ -385,6 +406,9 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     again = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
     expect(again.readinessByStage.j6.michaelReceivingSignatureAttested).toBe(true);
     expect(again.j6.voucher?.receiptAttestation?.attestationId).toBe('rs-1');
+    expect(again.waitingOnDesignatedSigner).toEqual([]);
+    expect(again.readinessWaitingOn).toEqual({});
+    expect(again.j6.blockers.some((b) => b.waitingOn)).toBe(false);
 
     // A replacement voucher clears it.
     h.state.artifacts.push({ ...h.state.artifacts[0], id: 'v2', sha256: 'd'.repeat(64), createdAt: new Date('2026-09-30T15:00:00Z') });
@@ -392,6 +416,17 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     expect(again.j6.voucher?.artifact.id).toBe('v2');
     expect(again.j6.voucher?.receiptAttestation).toBeNull();
     expect(again.readinessByStage.j6.michaelReceivingSignatureAttested).toBe(false);
+    // The new file waits on Michael twice, in order: its voucher data, then his receiving signature on its hash.
+    expect(again.waitingOnDesignatedSigner.map((t) => [t.step, t.artifactId, t.ready])).toEqual([
+      ['voucher_data', 'v2', true],
+      ['voucher_receipt_signature', 'v2', false],
+    ]);
+    expect(again.readinessWaitingOn).toEqual({
+      voucherReferenceAndReceivedDateVerified: 'designated_signer',
+      voucherTermsVerified: 'designated_signer',
+      michaelReceivingSignatureAttested: 'designated_signer',
+    });
+    expect(again.j6.blockers.filter((b) => b.waitingOn === 'designated_signer').map((b) => b.code).sort()).toEqual(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
   });
 
   it('archive files are readable only through the admin route: a member-role account and another tenant never reach Storage', async () => {

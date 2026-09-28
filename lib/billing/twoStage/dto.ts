@@ -54,6 +54,26 @@ export type ReadinessKey = J5ReadinessKey | J6ReadinessKey;
 export type TwoStageBillingReadiness = Partial<Record<ReadinessKey, boolean>>;
 
 // ---------------------------------------------------------------------------
+// Steps only the designated signer principal can complete. Staff may upload
+// the voucher file; only the designated signer (Michael, signed in as
+// himself) records its data and attests his receiving signature on its
+// exact sha256.
+
+export const DESIGNATED_SIGNER_STEPS = ['voucher_data', 'voucher_receipt_signature'] as const;
+export type DesignatedSignerStep = (typeof DESIGNATED_SIGNER_STEPS)[number];
+
+/** The J6 readiness keys that only the designated signer's own attestation can turn true. */
+export const DESIGNATED_SIGNER_READINESS = {
+  voucherReferenceAndReceivedDateVerified: 'voucher_data',
+  voucherTermsVerified: 'voucher_data',
+  michaelReceivingSignatureAttested: 'voucher_receipt_signature',
+} as const satisfies Partial<Record<J6ReadinessKey, DesignatedSignerStep>>;
+export type DesignatedSignerReadinessKey = keyof typeof DESIGNATED_SIGNER_READINESS;
+
+/** Who the next action on a blocker belongs to. Absent on a blocker means staff. */
+export type WaitingOn = 'designated_signer';
+
+// ---------------------------------------------------------------------------
 // Codes.
 
 export const GATE_NAMES = [
@@ -224,7 +244,28 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 // ---------------------------------------------------------------------------
 // Shared shapes.
 
-export type Blocker = { code: BlockerCode; message: string; hardHold: boolean };
+export type Blocker = {
+  code: BlockerCode;
+  message: string;
+  hardHold: boolean;
+  /** Present only when the designated signer, not staff, must act (voucher data, receiving signature). */
+  waitingOn?: WaitingOn;
+};
+
+/** One step waiting on the designated signer for the case's current voucher file. */
+export type DesignatedSignerTask = {
+  step: DesignatedSignerStep;
+  /** The current voucher file the step must name; the receipt attestation binds to `sha256`. */
+  artifactId: string;
+  sha256: Sha256Hex;
+  readinessKeys: DesignatedSignerReadinessKey[];
+  blockerCode: BlockerCode;
+  message: string;
+  /** False for the receiving signature until the voucher data is recorded, and while no designated signer is configured. */
+  ready: boolean;
+  /** Whether the viewing account is the designated signer (so the UI can offer the step to this viewer). */
+  viewerIsDesignatedSigner: boolean;
+};
 export type GateState = { enabled: boolean; code: GateCode | null; message: string | null };
 export type Actor = { subjectId: string; displayName: string | null };
 
@@ -439,13 +480,17 @@ export type CaseSummaryDto = {
   case: { id: string; programSlug: string; className: string | null; contactHours: 160 | 200 | null; createdAt: IsoInstant; createdBy: Actor };
   progress: CaseProgress;
   gates: Record<GateName, GateState>;
-  viewer: { isExecutiveSigner: boolean };
+  viewer: { isExecutiveSigner: boolean; isDesignatedSigner: boolean };
   j5: J5StageView;
   j6: J6StageView;
   payment: PaymentDto;
   /** Exactly #2706 TwoStageBillingReadiness. */
   readiness: TwoStageBillingReadiness;
   readinessByStage: { j5: Partial<Record<J5ReadinessKey, boolean>>; j6: Partial<Record<J6ReadinessKey, boolean>> };
+  /** The readiness keys above that are false only because the designated signer has not acted yet. */
+  readinessWaitingOn: Partial<Record<DesignatedSignerReadinessKey, WaitingOn>>;
+  /** Steps waiting on the designated signer, in the order they must happen; empty when none are waiting. */
+  waitingOnDesignatedSigner: DesignatedSignerTask[];
 };
 
 // ---------------------------------------------------------------------------
@@ -556,6 +601,8 @@ export type VoucherUploadDto = {
   receiptAttestation: VoucherReceiptAttestationView | null;
   matches: VoucherMatch[] | null;
   holds: HoldReason[];
+  /** For the current voucher: what now waits on the designated signer (empty for a replaced file). */
+  waitingOnDesignatedSigner: DesignatedSignerTask[];
 };
 export type BoardInvoiceUploadDto = { artifact: ArtifactView; reused: boolean };
 

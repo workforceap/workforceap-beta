@@ -23,7 +23,7 @@ import { canSignJ6 } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { readArchived } from './archive';
 import { holdBlockers, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
-import { currentVoucher, dateColumn, isoDate, loadCaseSnapshot, receiptSignatureState, recordContent, type CaseSnapshot } from './caseData';
+import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, loadCaseSnapshot, receiptSignatureState, recordContent, type CaseSnapshot } from './caseData';
 import { allGates, GATE_MESSAGES } from './gates';
 import { apiError, json, NO_STORE_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
@@ -80,7 +80,8 @@ export async function caseSummary<P>(ctx: TwoStageContext<P>): Promise<CaseSumma
     assignedCounselor: counselor ? { name: counselor.fullName, email: counselor.email } : null,
     // The archive gate is checked live only by the routes that touch storage; the summary never calls Storage.
     gates: allGates({ financeArchiveReady: false, designatedSigner: snapshot.designatedSignerUserId !== null }),
-    viewerIsExecutiveSigner: viewerIsSigner(ctx) && snapshot.designatedSignerUserId?.toLowerCase() === ctx.user.id.toLowerCase(),
+    viewerIsExecutiveSigner: viewerIsSigner(ctx) && isDesignatedSigner(snapshot, ctx.user.id),
+    viewerIsDesignatedSigner: isDesignatedSigner(snapshot, ctx.user.id),
     now: ctx.now,
   });
 }
