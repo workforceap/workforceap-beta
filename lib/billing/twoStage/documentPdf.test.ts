@@ -29,8 +29,13 @@ function j5(overrides: Partial<J5QuoteVoucherRequestFacts> = {}): J5QuoteVoucher
     classStartDate: '2026-09-30',
     classEndDate: '2027-02-28',
     tuitionCents: 750_000,
+    tuitionLabel: 'Tuition & Fees',
+    title: 'Quote / Voucher Request',
+    signer: { name: 'Michael A. Brown, PMP, ChE', title: 'Executive Director' },
     letterhead: {
       logoPng,
+      organizationName: 'Workforce Advancement Project',
+      website: 'www.WorkforceAP.org',
       businessPhone: '(512) 825-2896',
       addressLine1: '207 Settlers Valley Suite C',
       addressLine2: 'Pflugerville, TX 78660',
@@ -47,8 +52,10 @@ function j6(overrides: Partial<J6InvoiceVoucherCoverLetterFacts> = {}): J6Invoic
     documentNumber: 'SYNTH-J6-001',
     issueDate: '2026-10-01',
     frozenAt: '2026-10-01T18:30:00.000Z',
+    title: 'Invoice / Voucher Cover Letter',
     financePerson: { name: 'Morgan Finance', email: 'morgan@example.test' },
     classStartedAt: '2026-09-30',
+    paymentFollowUpWording: 'We will follow up in 10 to 14 days if payment has not been recorded.',
     signedVoucher: {
       reference: 'SYNTH-PO-001',
       receivedDate: '2026-09-30',
@@ -111,9 +118,9 @@ describe('two-stage WAP billing PDFs', () => {
     assert.match(text, /\bJ6\b/u);
     assert.match(text, /Invoice \/ Voucher Cover Letter/u);
     assert.match(text, /Morgan Finance \| morgan@example\.test/u);
-    assert.match(text, /Copy: Casey Counselor; Jordan Example/u);
+    assert.match(text, /COPY\s+Casey Counselor; Jordan Example/u);
     assert.match(text, /signed voucher SYNTH-PO-001/u);
-    assert.match(text, /Enclosure: received, signed training voucher SYNTH-PO-001/u);
+    assert.match(text, /Enclosure for issued packet: received, signed training voucher SYNTH-PO-001/u);
     assert.match(text, /follow up in 10 to 14 days/u);
     assert.equal((text.match(/Tuition & Fees/gu) ?? []).length, 1);
     assert.match(text, /\$7,500\.00/u);

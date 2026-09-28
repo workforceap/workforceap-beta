@@ -7,7 +7,46 @@ import { getProgramSyllabus } from '@/shared/programSyllabi';
  * stages. They never sign or create a final document. A later, authorized
  * server workflow must apply Michael's approved signature method and archive
  * the exact final bytes before delivery.
+ *
+ * Every variable string on the page (organization name, website, footer
+ * phone and address, title, signer name and title, payment wording,
+ * line-item label, contacts, terms) comes from the input,
+ * which `rendererAdapter.ts` builds from the frozen M1 content, so the PDF
+ * prints exactly what the version hash binds. The only other text is the
+ * reviewed fixed wording listed in `rendererAdapter.ts` FIXED_PRINTED_TEXT.
  */
+
+/** Length caps the one-page layout accepts (also enforced at draft save). */
+export const TWO_STAGE_TEXT_LIMITS = Object.freeze({
+  documentNumber: 64,
+  title: 60,
+  organizationName: 60,
+  website: 60,
+  signerTitle: 60,
+  personName: 90,
+  email: 254,
+  phone: 40,
+  boardName: 100,
+  programSlug: 120,
+  className: 110,
+  addressLine: 100,
+  tuitionLabel: 40,
+  paymentFollowUpWording: 120,
+  voucherReference: 80,
+  attestationId: 100,
+});
+
+/**
+ * Helvetica's WinAnsi encoding: printable ASCII, Latin-1 and the CP1252
+ * extras (curly quotes, dashes, euro, ...). Anything else would be replaced
+ * or dropped by the font, so it is refused instead of silently altered.
+ */
+const NOT_WIN_ANSI = /[^\x20-\x7e\u00a0-\u00ff\u20ac\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\u017d\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\u0161\u203a\u0153\u017e\u0178]/u;
+
+/** True when `value` prints unchanged with the standard PDF font. */
+export function isWinAnsiPrintable(value: string): boolean {
+  return !NOT_WIN_ANSI.test(value);
+}
 
 type Person = { readonly name: string; readonly email: string };
 
@@ -25,11 +64,22 @@ type CommonFacts = {
   readonly classStartDate: string;
   readonly classEndDate: string; // exactly five calendar months after start
   readonly tuitionCents: 750_000;
+  /** The printed line-item label (`Tuition & Fees`). */
+  readonly tuitionLabel: string;
+  /** The printed document title, e.g. `Quote / Voucher Request`. */
+  readonly title: string;
+  /** Printed under the signature line as `name` and `title, organizationName`. This draft renderer never draws a signature. */
+  readonly signer: { readonly name: string; readonly title: string };
   readonly letterhead: {
     readonly logoPng: Uint8Array;
+    /** Printed in the footer, the signer caption and the body sentences. */
+    readonly organizationName: string;
+    /** Printed in the footer next to the phone. */
+    readonly website: string;
     readonly businessPhone: string;
     readonly addressLine1: string;
-    readonly addressLine2: string;
+    /** Optional second footer address line. */
+    readonly addressLine2?: string;
   };
 };
 
@@ -41,6 +91,8 @@ export type J6InvoiceVoucherCoverLetterFacts = CommonFacts & {
   readonly stage: 'j6';
   readonly financePerson: Person;
   readonly classStartedAt: string;
+  /** The printed payment follow-up sentence (an expectation, never a due date). */
+  readonly paymentFollowUpWording: string;
   /** The received, executive-signed voucher remains a separate attachment. */
   readonly signedVoucher: {
     readonly reference: string;
@@ -79,10 +131,11 @@ function required(value: unknown, label: string, max = 180): string {
 
 function printable(value: string): string {
   // Helvetica's WinAnsi encoding does not cover every Unicode character. Do
-  // not silently replace a student's name or a voucher reference with '?'.
-  const text = value.replace(/[\u2018\u2019]/gu, "'").replace(/[\u2013\u2014]/gu, '-').replace(/\u00a0/gu, ' ');
-  if (/[^\x20-\x7e\u00a1-\u00ff\u20ac]/u.test(text)) throw new Error('PDF text contains a glyph unsupported by the standard font');
-  return text;
+  // not silently replace a student's name or a voucher reference with '?',
+  // and print covered characters (dashes, curly quotes) exactly as given so
+  // the page matches the hashed content character for character.
+  if (!isWinAnsiPrintable(value)) throw new Error('PDF text contains a glyph unsupported by the standard font');
+  return value;
 }
 
 function isoDate(value: string, label: string): Date {
@@ -107,6 +160,14 @@ function fiveMonthsLater(value: string): string {
   return new Date(Date.UTC(year, month, Math.min(start.getUTCDate(), lastDay))).toISOString().slice(0, 10);
 }
 
+/** "$7,500.00" from whole cents, locale-independent. */
+function formatCents(cents: number): string {
+  const dollars = Math.floor(cents / 100)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/gu, ',');
+  return `$${dollars}.${String(cents % 100).padStart(2, '0')}`;
+}
+
 function longDate(value: string): string {
   const date = isoDate(value, 'date');
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
@@ -115,16 +176,21 @@ function longDate(value: string): string {
 function validateFacts(input: TwoStageDocumentFacts): Date {
   if (input.stage !== 'j5' && input.stage !== 'j6') throw new Error('Unknown billing stage');
   if ('signature' in input || 'signed' in input) throw new Error('This renderer produces drafts only');
-  required(input.documentNumber, 'documentNumber', 64);
+  const L = TWO_STAGE_TEXT_LIMITS;
+  required(input.documentNumber, 'documentNumber', L.documentNumber);
+  required(input.title, 'title', L.title);
+  required(input.tuitionLabel, 'tuitionLabel', L.tuitionLabel);
+  required(input.signer?.name, 'signer.name', L.personName);
+  required(input.signer?.title, 'signer.title', L.signerTitle);
   const issueDate = isoDate(input.issueDate, 'issueDate');
   const frozenAt = utcInstant(input.frozenAt, 'frozenAt');
-  required(input.student?.name, 'student.name', 90);
-  required(input.student?.email, 'student.email', 254);
-  required(input.boardName, 'boardName', 100);
-  required(input.counselor?.name, 'counselor.name', 90);
-  required(input.counselor?.email, 'counselor.email', 254);
-  required(input.counselor?.phone, 'counselor.phone', 40);
-  const rawSlug = required(input.programSlug, 'programSlug', 120);
+  required(input.student?.name, 'student.name', L.personName);
+  required(input.student?.email, 'student.email', L.email);
+  required(input.boardName, 'boardName', L.boardName);
+  required(input.counselor?.name, 'counselor.name', L.personName);
+  required(input.counselor?.email, 'counselor.email', L.email);
+  required(input.counselor?.phone, 'counselor.phone', L.phone);
+  const rawSlug = required(input.programSlug, 'programSlug', L.programSlug);
   const canonicalSlug = canonicalizeProgramSlug(rawSlug);
   if (rawSlug !== canonicalSlug) throw new Error('Canonical program slug is required');
   const syllabus = getProgramSyllabus(canonicalSlug);
@@ -133,30 +199,33 @@ function validateFacts(input: TwoStageDocumentFacts): Date {
   if (syllabus.totalHours !== contractHours || input.classHours !== syllabus.totalHours) {
     throw new Error(`Class hours must match the approved ${contractHours}-hour syllabus`);
   }
-  required(input.className, 'className', 110);
+  required(input.className, 'className', L.className);
   if (input.className !== syllabus.title) throw new Error('Class name must match the approved program syllabus');
   isoDate(input.classStartDate, 'classStartDate');
   isoDate(input.classEndDate, 'classEndDate');
   if (input.classEndDate !== fiveMonthsLater(input.classStartDate)) throw new Error('Class end must be five calendar months after start');
   if (input.tuitionCents !== 750_000) throw new Error('Tuition & Fees must equal $7,500.00');
   if (!(input.letterhead?.logoPng instanceof Uint8Array) || input.letterhead.logoPng.length === 0) throw new Error('Approved WAP logo PNG is required');
-  required(input.letterhead.businessPhone, 'letterhead.businessPhone', 40);
-  required(input.letterhead.addressLine1, 'letterhead.addressLine1', 100);
-  required(input.letterhead.addressLine2, 'letterhead.addressLine2', 100);
+  required(input.letterhead.businessPhone, 'letterhead.businessPhone', L.phone);
+  required(input.letterhead.addressLine1, 'letterhead.addressLine1', L.addressLine);
+  if (input.letterhead.addressLine2 !== undefined) required(input.letterhead.addressLine2, 'letterhead.addressLine2', L.addressLine);
+  required(input.letterhead.organizationName, 'letterhead.organizationName', L.organizationName);
+  required(input.letterhead.website, 'letterhead.website', L.website);
   if (input.stage === 'j5') {
     if ('signedVoucher' in input || 'financePerson' in input) throw new Error('J5 must precede the voucher and finance stage');
   } else {
-    required(input.financePerson?.name, 'financePerson.name', 90);
-    required(input.financePerson?.email, 'financePerson.email', 254);
+    required(input.financePerson?.name, 'financePerson.name', L.personName);
+    required(input.financePerson?.email, 'financePerson.email', L.email);
+    required(input.paymentFollowUpWording, 'paymentFollowUpWording', L.paymentFollowUpWording);
     const started = isoDate(input.classStartedAt, 'classStartedAt');
     if (started < isoDate(input.classStartDate, 'classStartDate')) throw new Error('J6 class start cannot precede the confirmed class start date');
     if (started > issueDate) throw new Error('J6 requires class start to be recorded before issue');
     const voucher = input.signedVoucher;
-    required(voucher?.reference, 'signedVoucher.reference', 80);
+    required(voucher?.reference, 'signedVoucher.reference', L.voucherReference);
     if (isoDate(voucher.receivedDate, 'signedVoucher.receivedDate') > issueDate) throw new Error('Voucher receipt cannot follow J6 issue');
     if (voucher.authorizedAmountCents !== 750_000) throw new Error('Signed voucher authorized amount must equal $7,500.00');
     if (!/^[0-9a-f]{64}$/iu.test(voucher.sha256)) throw new Error('Signed voucher SHA-256 is required');
-    required(voucher.receivingSignatureAttestationId, 'signedVoucher.receivingSignatureAttestationId', 100);
+    required(voucher.receivingSignatureAttestationId, 'signedVoucher.receivingSignatureAttestationId', L.attestationId);
   }
   return frozenAt;
 }
@@ -244,18 +313,19 @@ function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeig
 
 function drawFooter(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts): void {
   page.drawLine({ start: { x: LEFT, y: 72 }, end: { x: RIGHT, y: 72 }, thickness: 0.6, color: RULE });
-  drawCentered(page, fonts, 'Workforce Advancement Project', 56, 8.2, true, INK);
-  drawCentered(page, fonts, `www.WorkforceAP.org  |  ${input.letterhead.businessPhone}`, 43, 7.5);
-  drawCentered(page, fonts, `${input.letterhead.addressLine1}  |  ${input.letterhead.addressLine2}`, 31, 7.5);
+  const { organizationName, website, businessPhone, addressLine1, addressLine2 } = input.letterhead;
+  drawCentered(page, fonts, organizationName, 56, 8.2, true, INK);
+  drawCentered(page, fonts, `${website}  |  ${businessPhone}`, 43, 7.5);
+  drawCentered(page, fonts, addressLine2 === undefined ? addressLine1 : `${addressLine1}  |  ${addressLine2}`, 31, 7.5);
 }
 
-function drawSignature(page: PDFPage, fonts: Fonts, y: number): void {
+function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts, y: number): void {
   if (y < 167) throw new Error('Signature area would collide with the footer');
   drawText(page, fonts, 'Respectfully,', LEFT, y, CONTENT_W, 9.3);
   page.drawLine({ start: { x: LEFT, y: y - 32 }, end: { x: LEFT + 245, y: y - 32 }, thickness: 0.7, color: MUTED });
   drawText(page, fonts, 'Executive signature required before issue', LEFT, y - 44, 350, 7.9, false, MUTED);
-  drawText(page, fonts, 'Michael A. Brown, PMP, ChE', LEFT, y - 58, 350, 9.5, true);
-  drawText(page, fonts, 'Executive Director, Workforce Advancement Project', LEFT, y - 71, 350, 8.4);
+  drawText(page, fonts, input.signer.name, LEFT, y - 58, 350, 9.5, true);
+  drawText(page, fonts, `${input.signer.title}, ${input.letterhead.organizationName}`, LEFT, y - 71, 350, 8.4);
   if (y - 71 < 78) throw new Error('Signature block overlaps the footer');
 }
 
@@ -267,11 +337,11 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
   const logoBytes = new Uint8Array(facts.letterhead?.logoPng ?? []);
   const frozenAt = validateFacts(facts);
   const doc = await PDFDocument.create();
-  const title = facts.stage === 'j5' ? 'J5 Quote / Voucher Request' : 'J6 Invoice / Voucher Cover Letter';
-  doc.setTitle(`${title} - ${facts.documentNumber}`);
-  doc.setAuthor('Workforce Advancement Project');
-  doc.setCreator('Workforce Advancement Project billing');
-  doc.setProducer('Workforce Advancement Project billing');
+  const org = facts.letterhead.organizationName;
+  doc.setTitle(`${facts.stage.toUpperCase()} ${facts.title} - ${facts.documentNumber}`);
+  doc.setAuthor(org);
+  doc.setCreator(`${org} billing`);
+  doc.setProducer(`${org} billing`);
   doc.setSubject(`${facts.student.name} - ${facts.className}`);
   doc.setCreationDate(frozenAt);
   doc.setModificationDate(frozenAt);
@@ -286,7 +356,7 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
 
   drawText(page, fonts, facts.stage.toUpperCase(), LEFT, 642, 50, 9.5, true, RED);
   drawRight(page, fonts, longDate(facts.issueDate), RIGHT, 642, 9, false, MUTED);
-  drawText(page, fonts, facts.stage === 'j5' ? 'Quote / Voucher Request' : 'Invoice / Voucher Cover Letter', LEFT, 621, CONTENT_W, 19, true);
+  drawText(page, fonts, facts.title, LEFT, 621, CONTENT_W, 19, true);
   let y = 590;
   if (facts.stage === 'j5') {
     y = recipientRow(page, fonts, 'TO', `${facts.counselor.name} | ${facts.counselor.email}`, y);
@@ -294,14 +364,14 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
     y = recipientRow(page, fonts, 'BOARD', facts.boardName, y);
     y = recipientRow(page, fonts, 'RE', facts.student.name, y);
     y -= 12;
-    y = paragraph(page, fonts, `At your request, Workforce Advancement Project is providing this training quote for ${facts.student.name}. Please issue a training voucher for the program below through your board's authorization process. This is a quote and voucher request, not an invoice.`, y, 3);
+    y = paragraph(page, fonts, `At your request, ${org} is providing this training quote for ${facts.student.name}. Please issue a training voucher for the program below through your board's authorization process. This is a quote and voucher request, not an invoice.`, y, 3);
   } else {
     y = recipientRow(page, fonts, 'TO', `${facts.financePerson.name} | ${facts.financePerson.email}`, y);
     y = recipientRow(page, fonts, 'BOARD', facts.boardName, y);
     y = recipientRow(page, fonts, 'COPY', `${facts.counselor.name}; ${facts.student.name}`, y);
     y = recipientRow(page, fonts, 'RE', `Payment for ${facts.student.name} training`, y);
     y -= 12;
-    y = paragraph(page, fonts, `Workforce Advancement Project requests payment for ${facts.student.name}'s training under signed voucher ${facts.signedVoucher.reference}. The student began class on ${longDate(facts.classStartedAt)}. Please process the tuition and fees amount shown below under your board's procedures.`, y, 3);
+    y = paragraph(page, fonts, `${org} requests payment for ${facts.student.name}'s training under signed voucher ${facts.signedVoucher.reference}. The student began class on ${longDate(facts.classStartedAt)}. Please process the tuition and fees amount shown below under your board's procedures.`, y, 3);
   }
   y -= 9;
   drawText(page, fonts, 'TRAINING DETAILS', LEFT, y, CONTENT_W, 8.1, true, MUTED);
@@ -318,21 +388,19 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
   y -= 13;
   const priceBottom = y - 37;
   page.drawRectangle({ x: LEFT, y: priceBottom, width: CONTENT_W, height: 37, color: PRICE_PALE });
-  drawText(page, fonts, 'Tuition & Fees', LEFT + 13, priceBottom + 13, 210, 10.2, true);
-  drawRight(page, fonts, '$7,500.00', RIGHT - 13, priceBottom + 13, 10.4, true);
+  drawText(page, fonts, facts.tuitionLabel, LEFT + 13, priceBottom + 13, 210, 10.2, true);
+  drawRight(page, fonts, formatCents(facts.tuitionCents), RIGHT - 13, priceBottom + 13, 10.4, true);
   y = priceBottom - 18;
   if (facts.stage === 'j5') {
-    y = paragraph(page, fonts, "Please send the issued voucher and any authorization details to Workforce Advancement Project. A copy of this request will be retained in the student's file.", y, 2);
+    y = paragraph(page, fonts, `Please send the issued voucher and any authorization details to ${org}. A copy of this request will be retained in the student's file.`, y, 2);
     y -= 5;
     drawText(page, fonts, `Copy: ${facts.student.name} | ${facts.student.email}`, LEFT, y, CONTENT_W, 8.4, false, MUTED);
   } else {
-    y = paragraph(page, fonts, 'Please arrange payment by check or wire to Workforce Advancement Project and confirm the expected remittance date. We will follow up in 10 to 14 days if payment has not been recorded.', y, 2);
+    y = paragraph(page, fonts, `Please arrange payment by check or wire to ${org} and confirm the expected remittance date. ${facts.paymentFollowUpWording}`, y, 2);
     y -= 4;
-    drawText(page, fonts, `Enclosure: received, signed training voucher ${facts.signedVoucher.reference}`, LEFT, y, CONTENT_W, 8.4, false, MUTED);
-    y -= 13;
-    drawText(page, fonts, `Copy: ${facts.counselor.name}; ${facts.student.name}. Both documents retained in the student's file.`, LEFT, y, CONTENT_W, 8.1, false, MUTED);
+    drawText(page, fonts, `Enclosure for issued packet: received, signed training voucher ${facts.signedVoucher.reference}`, LEFT, y, CONTENT_W, 8.4, false, MUTED);
   }
-  drawSignature(page, fonts, y - 21);
+  drawSignature(page, fonts, facts, y - 21);
   return doc.save({ useObjectStreams: false });
 }
 
