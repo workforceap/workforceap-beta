@@ -1,7 +1,15 @@
 .panel {
   display: grid;
+  /* One track that may shrink below the longest unbreakable URL: an implicit
+     `auto` track grows to its min-content and pushes the rows past a 390px
+     viewport. Children may shrink too (grid items default to min-width: auto). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--wa-pad);
   box-shadow: none;
+}
+
+.panel > * {
+  min-width: 0;
 }
 
 .intro p {
@@ -86,6 +94,7 @@
   color: var(--wa-muted);
   font-size: var(--wa-type-meta);
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .error {
