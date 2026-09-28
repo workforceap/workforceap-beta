@@ -19,13 +19,25 @@ export type RecipientResult = { ok: true; recipients: Recipient[] } | { ok: fals
 
 const EMAIL = /^[^\s@<>(),;:"[\]]+@[^\s@<>(),;:"[\]]+\.[^\s@<>(),;:"[\]]+$/;
 
+/**
+ * Shared with the database (public.billing_normalize_email / _name; the PG16
+ * proof checks parity): trim ASCII whitespace only (space, tab, LF, VT, FF,
+ * CR); lowercase the email; collapse whitespace runs inside a name to one space.
+ */
+const EDGE_WS = /^[ \t\n\v\f\r]+|[ \t\n\v\f\r]+$/g;
+const INNER_WS = /[ \t\n\v\f\r]+/g;
+
 export function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
+  return email.replace(EDGE_WS, '').toLowerCase();
+}
+
+export function normalizeRecipientName(name: string): string {
+  return name.replace(EDGE_WS, '').replace(INNER_WS, ' ');
 }
 
 export function isPlausibleEmail(email: string): boolean {
-  const trimmed = email.trim();
-  return trimmed.length <= 254 && EMAIL.test(trimmed);
+  const normalized = normalizeEmail(email);
+  return normalized.length <= 254 && EMAIL.test(normalized);
 }
 
 const ROLE_LABEL: Record<RecipientRole, string> = { student: 'Student', counselor: 'Counselor', finance: 'Board finance' };
@@ -35,7 +47,7 @@ function build(stage: BillingStage, contacts: Partial<Record<RecipientRole, Cont
   const recipients: Recipient[] = [];
   for (const role of STAGE_RECIPIENT_ROLES[stage]) {
     const contact = contacts[role];
-    const name = contact?.name?.trim() ?? '';
+    const name = normalizeRecipientName(contact?.name ?? '');
     const email = contact?.email ?? '';
     if (!name) errors.push(`${ROLE_LABEL[role]} name is required.`);
     if (!isPlausibleEmail(email)) errors.push(`${ROLE_LABEL[role]} email is missing or not valid.`);

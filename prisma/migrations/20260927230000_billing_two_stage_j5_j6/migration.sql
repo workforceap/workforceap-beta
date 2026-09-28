@@ -45,6 +45,25 @@ $$;
 -- Send-claim statuses and delivery evidence kinds, shared by the CHECKs below
 -- and asserted equal to SEND_STATUSES / DELIVERY_EVENT_KINDS in
 -- lib/billing/twoStage/sendClaims.ts by the PG16 proof.
+-- The calendar date (America/Chicago) of a TIMESTAMP(3) column the app writes in UTC.
+CREATE OR REPLACE FUNCTION public.billing_sent_on(sent_at TIMESTAMP)
+RETURNS DATE LANGUAGE sql IMMUTABLE SET search_path = pg_catalog, public AS $$
+  SELECT public.billing_chicago_date(sent_at AT TIME ZONE 'UTC')
+$$;
+
+-- Recipient normalization shared with lib/billing/twoStage/recipients.ts
+-- (normalizeEmail / normalizeRecipientName; the PG16 proof checks parity):
+-- trim ASCII whitespace (space, tab, LF, VT, FF, CR); email lowercased; runs
+-- of whitespace inside a name collapsed to one space.
+CREATE OR REPLACE FUNCTION public.billing_normalize_email(value TEXT)
+RETURNS TEXT LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT lower(regexp_replace(value, '^[ \t\n\v\f\r]+|[ \t\n\v\f\r]+$', '', 'g'))
+$$;
+CREATE OR REPLACE FUNCTION public.billing_normalize_name(value TEXT)
+RETURNS TEXT LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT regexp_replace(regexp_replace(value, '^[ \t\n\v\f\r]+|[ \t\n\v\f\r]+$', '', 'g'), '[ \t\n\v\f\r]+', ' ', 'g')
+$$;
+
 CREATE OR REPLACE FUNCTION public.billing_send_statuses()
 RETURNS TEXT[] LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
   SELECT ARRAY['pending', 'provider_accepted', 'ambiguous', 'needs_reconciliation', 'failed', 'reconciled_delivered', 'reconciled_failed']::TEXT[]
@@ -115,13 +134,13 @@ CREATE TABLE IF NOT EXISTS "billing_artifacts" (
         OR ("kind" IN ('board_signed_voucher', 'board_invoice', 'external_j5_copy') AND "source" = 'uploaded'
             AND num_nonnulls("stage_record_id", "stage", "stage_version", "rendered_content_sha256") = 0))
     ), false)),
-    -- Bytes live in the private finance bucket (BILLING_FINANCE_BUCKET, default
-    -- billing-finance; provisioned separately) under a server-generated,
+    -- Bytes live only in the private finance bucket `billing-finance`
+    -- (provisioned separately, #2700/#2704) under a server-generated,
     -- content-addressed key; never a member or public bucket, never a member prefix.
     CONSTRAINT "billing_artifacts_storage_check" CHECK (coalesce((
       "byte_length" BETWEEN 1 AND 10485760
       AND "sha256" ~ '^[0-9a-f]{64}$'
-      AND btrim("storage_bucket") <> '' AND "storage_bucket" NOT IN ('member-resumes', 'member-files', 'employer-logos')
+      AND "storage_bucket" = 'billing-finance'
       AND "storage_key" = 'cases/' || "case_id" || '/' || CASE "kind"
             WHEN 'j5_signed_pdf' THEN 'j5' WHEN 'j6_signed_pdf' THEN 'j6'
             WHEN 'board_signed_voucher' THEN 'voucher' WHEN 'board_invoice' THEN 'board-invoice'
@@ -272,6 +291,10 @@ CREATE TABLE IF NOT EXISTS "billing_stage_records" (
     "voided_at" TIMESTAMP(3),
     "closed_by_subject_id" TEXT,
     "close_reason" TEXT,
+    "accepted_roles_at_close" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "send_cancelled_at" TIMESTAMP(3),
+    "send_cancelled_by_subject_id" TEXT,
+    "send_cancel_reason" TEXT,
     "created_by_subject_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -336,6 +359,18 @@ CREATE TABLE IF NOT EXISTS "billing_stage_records" (
       OR ("status" = 'superseded' AND "superseded_at" IS NOT NULL AND "signed_at" IS NOT NULL AND "voided_at" IS NULL
         AND (("sent_at" IS NULL) = ("send_receipt" IS NULL)))
       OR ("status" = 'voided' AND "voided_at" IS NOT NULL AND "superseded_at" IS NULL)
+    ), false)),
+    -- accepted_roles_at_close (computed by billing_stage_record_guard) records which
+    -- roles had an accepted copy of this version when it was closed; empty while open.
+    -- An audited partial-send cancellation is all-or-nothing, only on a closed record
+    -- that was never sent.
+    CONSTRAINT "billing_stage_records_close_check" CHECK (coalesce((
+      ("status" IN ('superseded', 'voided') OR cardinality(coalesce("accepted_roles_at_close", ARRAY[]::TEXT[])) = 0)
+      AND "accepted_roles_at_close" IS NOT NULL
+      AND ((num_nonnulls("send_cancelled_at", "send_cancelled_by_subject_id", "send_cancel_reason") = 0)
+        OR ("send_cancelled_at" IS NOT NULL AND btrim(coalesce("send_cancelled_by_subject_id", '')) <> ''
+          AND btrim(coalesce("send_cancel_reason", '')) <> ''
+          AND "status" IN ('superseded', 'voided') AND "sent_at" IS NULL))
     ), false))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_records_supersedes_record_id_key" ON "billing_stage_records"("supersedes_record_id");
@@ -524,6 +559,15 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'payment status is tracked only for a J6 that was sent to finance, counselor and student' USING ERRCODE = '23514';
   END IF;
+  -- A pending follow-up window is anchored to that J6's own send date
+  -- (America/Chicago) + 10 .. + 14 days, exactly as payment.ts computes it.
+  IF NEW.status = 'pending' AND NOT EXISTS (
+      SELECT 1 FROM public.billing_stage_records r
+      WHERE r.id = NEW.j6_record_id
+        AND NEW.expected_follow_up_from = public.billing_sent_on(r.sent_at) + 10
+        AND NEW.expected_follow_up_to = public.billing_sent_on(r.sent_at) + 14) THEN
+    RAISE EXCEPTION 'the expected follow-up window is the J6 send date (America/Chicago) + 10 to + 14 days' USING ERRCODE = '23514';
+  END IF;
   IF NEW.received_on IS NOT NULL AND NEW.received_on > public.billing_today() THEN
     RAISE EXCEPTION 'a payment cannot be received in the future (America/Chicago date)' USING ERRCODE = '23514';
   END IF;
@@ -586,6 +630,12 @@ BEGIN
      OR NEW.created_by_subject_id IS DISTINCT FROM OLD.created_by_subject_id THEN
     RAISE EXCEPTION 'billing case identity is immutable' USING ERRCODE = '23514';
   END IF;
+  -- member_id becomes NULL only through erasure: the users FK's ON DELETE SET
+  -- NULL runs after the user row is gone. A live member cannot be detached.
+  IF NEW.member_id IS NULL AND OLD.member_id IS NOT NULL
+     AND EXISTS (SELECT 1 FROM public.users u WHERE u.id = OLD.member_id) THEN
+    RAISE EXCEPTION 'a billing case is detached from its member only by erasing that member' USING ERRCODE = '23514';
+  END IF;
   IF NEW.member_id IS NOT NULL AND NEW.member_id IS DISTINCT FROM OLD.member_id THEN
     IF OLD.member_id IS NULL
        OR current_setting('app.billing_member_merge', true) IS DISTINCT FROM OLD.member_id || '>' || NEW.member_id
@@ -612,6 +662,11 @@ CREATE TRIGGER billing_case_identity_guard
 -- later records are never deleted.
 CREATE OR REPLACE FUNCTION public.billing_stage_record_guard()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+DECLARE
+  required_roles TEXT[];
+  has_claims BOOLEAN;
+  has_unresolved BOOLEAN;
+  accepted_roles TEXT[];
 BEGIN
   IF TG_OP = 'DELETE' THEN
     IF OLD.status <> 'draft' THEN
@@ -643,6 +698,43 @@ BEGIN
   IF (NEW.sent_at IS DISTINCT FROM OLD.sent_at OR NEW.send_receipt IS DISTINCT FROM OLD.send_receipt)
      AND NOT (OLD.status = 'signed' AND NEW.status = 'sent') THEN
     RAISE EXCEPTION 'sent_at and send_receipt are set only by the signed -> sent transition' USING ERRCODE = '23514';
+  END IF;
+  -- Closure (-> superseded | voided). A signed record with ANY send claim
+  -- (accepted or not) is closed only after it completes signed -> sent, or
+  -- through the audited partial-send cancellation: every claim resolved, at
+  -- least one role still without an accepted copy (otherwise it must be sent),
+  -- and who + why recorded. The roles that received this version are recorded
+  -- in accepted_roles_at_close so the next version can show them. The row lock
+  -- taken by this UPDATE serializes with claim inserts and claim status moves
+  -- (both lock the record FOR SHARE).
+  IF NEW.status IN ('superseded', 'voided') AND NEW.status IS DISTINCT FROM OLD.status THEN
+    required_roles := CASE NEW.stage WHEN 'j5' THEN ARRAY['counselor', 'student'] ELSE ARRAY['counselor', 'finance', 'student'] END;
+    SELECT count(*) > 0, coalesce(bool_or(s.status IN ('pending', 'ambiguous', 'needs_reconciliation')), false)
+      INTO has_claims, has_unresolved
+      FROM public.billing_stage_sends s WHERE s.stage_record_id = NEW.id;
+    SELECT coalesce(array_agg(DISTINCT s.recipient_role ORDER BY s.recipient_role), ARRAY[]::TEXT[]) INTO accepted_roles
+      FROM public.billing_stage_sends s
+      WHERE s.stage_record_id = NEW.id AND s.status IN ('provider_accepted', 'reconciled_delivered');
+    IF OLD.status = 'signed' AND has_claims THEN
+      IF has_unresolved THEN
+        RAISE EXCEPTION 'resolve every send claim (accepted, failed or reconciled) before closing this signed record' USING ERRCODE = '23514';
+      END IF;
+      IF accepted_roles @> required_roles THEN
+        RAISE EXCEPTION 'every recipient has this version: complete signed -> sent, then supersede it' USING ERRCODE = '23514';
+      END IF;
+      IF btrim(coalesce(NEW.send_cancelled_by_subject_id, '')) = '' OR btrim(coalesce(NEW.send_cancel_reason, '')) = '' THEN
+        RAISE EXCEPTION 'closing a partly sent record needs the audited partial-send cancellation (who and why)' USING ERRCODE = '23514';
+      END IF;
+      NEW.send_cancelled_at := now();
+    ELSIF num_nonnulls(NEW.send_cancelled_at, NEW.send_cancelled_by_subject_id, NEW.send_cancel_reason) > 0 THEN
+      RAISE EXCEPTION 'a partial-send cancellation applies only to a signed record with send claims' USING ERRCODE = '23514';
+    END IF;
+    NEW.accepted_roles_at_close := accepted_roles;
+  ELSIF NEW.accepted_roles_at_close IS DISTINCT FROM OLD.accepted_roles_at_close
+     OR NEW.send_cancelled_at IS DISTINCT FROM OLD.send_cancelled_at
+     OR NEW.send_cancelled_by_subject_id IS DISTINCT FROM OLD.send_cancelled_by_subject_id
+     OR NEW.send_cancel_reason IS DISTINCT FROM OLD.send_cancel_reason THEN
+    RAISE EXCEPTION 'closure audit columns are written only when the record is closed' USING ERRCODE = '23514';
   END IF;
   IF OLD.status <> 'draft' AND (
        NEW.content_version IS DISTINCT FROM OLD.content_version OR NEW.content IS DISTINCT FROM OLD.content
@@ -696,6 +788,13 @@ DECLARE
 BEGIN
   IF TG_OP = 'DELETE' THEN
     RAISE EXCEPTION 'billing send rows are never deleted' USING ERRCODE = '23514';
+  END IF;
+  -- Reconciliation evidence is a file of the same case (and organization).
+  IF NEW.reconcile_evidence_artifact_id IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM public.billing_artifacts a
+      JOIN public.billing_stage_records r ON r.case_id = a.case_id AND r.organization_id = a.organization_id
+      WHERE a.id = NEW.reconcile_evidence_artifact_id AND r.id = NEW.stage_record_id) THEN
+    RAISE EXCEPTION 'reconciliation evidence must be a file of the same case' USING ERRCODE = '23514';
   END IF;
   IF TG_OP = 'INSERT' THEN
     IF NEW.status <> 'pending' THEN
@@ -768,6 +867,16 @@ BEGIN
   END IF;
   IF OLD.status = 'ambiguous' AND NEW.status = 'pending' AND NEW.claim_token IS NOT DISTINCT FROM OLD.claim_token THEN
     RAISE EXCEPTION 'a same-key retry re-claims with a new claim token' USING ERRCODE = '23514';
+  END IF;
+  -- A claim settles only while its record is signed (locked, so it serializes
+  -- with closure and with signed -> sent). A closed record keeps no unresolved
+  -- claim, and a sent one never had one, so a late acceptance after closure is
+  -- refused; delivery evidence for accepted copies goes to billing_delivery_events.
+  IF NEW.status IS DISTINCT FROM OLD.status THEN
+    SELECT r.status INTO rec_status FROM public.billing_stage_records r WHERE r.id = NEW.stage_record_id FOR SHARE;
+    IF rec_status IS DISTINCT FROM 'signed' THEN
+      RAISE EXCEPTION 'a send claim of a % stage record cannot change status', coalesce(rec_status, 'missing') USING ERRCODE = '23514';
+    END IF;
   END IF;
   RETURN NEW;
 END;
@@ -1032,6 +1141,18 @@ BEGIN
        IS DISTINCT FROM (SELECT array_agg(x ORDER BY x) FROM unnest(required_roles) x) THEN
       RAISE EXCEPTION 'freeze exactly the % recipients before signing', array_to_string(required_roles, ', ') USING ERRCODE = '23514';
     END IF;
+    -- The frozen snapshot is exactly the recipients printed in the signed
+    -- content: same (role, normalized name, normalized email) set, no extra,
+    -- missing or duplicated role.
+    IF (SELECT coalesce(jsonb_agg(jsonb_build_array(p.recipient_role, public.billing_normalize_name(p.recipient_name), public.billing_normalize_email(p.email))
+                                  ORDER BY p.recipient_role), '[]'::jsonb)
+        FROM public.billing_stage_recipients p WHERE p.stage_record_id = NEW.id)
+       IS DISTINCT FROM
+       (SELECT coalesce(jsonb_agg(jsonb_build_array(x ->> 'role', public.billing_normalize_name(x ->> 'name'), public.billing_normalize_email(x ->> 'email'))
+                                  ORDER BY x ->> 'role', x ->> 'email', x ->> 'name'), '[]'::jsonb)
+        FROM jsonb_array_elements(CASE WHEN jsonb_typeof(NEW.content -> 'recipients') = 'array' THEN NEW.content -> 'recipients' ELSE '[]'::jsonb END) x) THEN
+      RAISE EXCEPTION 'the frozen recipients must equal the recipients in the signed content (role, name, email)' USING ERRCODE = '23514';
+    END IF;
   END IF;
 
   IF NEW.status = 'sent' AND (TG_OP = 'INSERT' OR OLD.status <> 'sent') THEN
@@ -1110,7 +1231,8 @@ REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_ap
   public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT),
   public.billing_chicago_date(TIMESTAMPTZ), public.billing_today(), public.billing_send_statuses(),
   public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(),
-  public.billing_stage_expected_attachments(TEXT) FROM PUBLIC;
+  public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP),
+  public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT) FROM PUBLIC;
 
 DO $$
 DECLARE
@@ -1130,7 +1252,8 @@ BEGIN
         'public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT), '
         'public.billing_chicago_date(TIMESTAMPTZ), public.billing_today(), public.billing_send_statuses(), '
         'public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(), '
-        'public.billing_stage_expected_attachments(TEXT) FROM %I', browser_role);
+        'public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP), '
+        'public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT) FROM %I', browser_role);
     END IF;
   END LOOP;
 END;
@@ -1152,7 +1275,8 @@ BEGIN
       public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events TO service_role;
     GRANT EXECUTE ON FUNCTION public.billing_contract_hours(TEXT), public.billing_chicago_date(TIMESTAMPTZ),
       public.billing_today(), public.billing_send_statuses(), public.billing_delivery_event_kinds(),
-      public.billing_stage_expected_attachments(TEXT) TO service_role;
+      public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP),
+      public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT) TO service_role;
   END IF;
 END;
 $$;

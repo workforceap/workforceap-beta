@@ -2335,6 +2335,12 @@ model BillingStageRecord {
   voidedAt                 DateTime? @map("voided_at")
   closedBySubjectId        String?   @map("closed_by_subject_id")
   closeReason              String?   @map("close_reason") @db.Text
+  /// Roles that had an accepted copy of this version when it was closed (computed by the DB; empty while open).
+  acceptedRolesAtClose     String[]  @default([]) @map("accepted_roles_at_close")
+  /// Audited partial-send cancellation: closing a signed, never-sent record that has send claims.
+  sendCancelledAt          DateTime? @map("send_cancelled_at")
+  sendCancelledBySubjectId String?   @map("send_cancelled_by_subject_id")
+  sendCancelReason         String?   @map("send_cancel_reason") @db.Text
   createdBySubjectId       String    @map("created_by_subject_id")
   createdAt                DateTime  @default(now()) @map("created_at")
   updatedAt                DateTime  @updatedAt @map("updated_at")

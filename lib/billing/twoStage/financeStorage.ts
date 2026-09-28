@@ -4,8 +4,9 @@
  * policies) is provisioned in Mike Brown's separate slice; this module only
  * names it, builds keys, validates uploads and checks the bucket before use.
  *
- *  - Bucket: BILLING_FINANCE_BUCKET (server-side env), default `billing-finance`.
- *    Never `member-resumes`, `member-files` or `employer-logos`, which
+ *  - Bucket: exactly `billing-finance` (the database CHECK pins it, matching
+ *    #2704). BILLING_FINANCE_BUCKET may be set, but any other value fails
+ *    closed; never `member-resumes`, `member-files` or `employer-logos`, which
  *    lib/gdpr/deleteUserStorage.ts (or the public logo flow) owns.
  *  - Keys are server-generated and content-addressed:
  *    cases/{caseId}/{j5|j6|voucher|board-invoice|external-j5}/{sha256}.pdf
@@ -24,10 +25,10 @@ export const FINANCE_STORAGE_UNAVAILABLE = 'The billing finance archive is not a
 
 const BUCKET_NAME = /^[a-z0-9][a-z0-9-]{1,62}$/;
 
-/** The configured finance bucket, or null when the setting is unsafe (fail closed). */
+/** The finance bucket, or null when BILLING_FINANCE_BUCKET names anything but `billing-finance` (fail closed). */
 export function financeBucketName(env: Record<string, string | undefined> = process.env): string | null {
   const raw = env.BILLING_FINANCE_BUCKET?.trim() || DEFAULT_FINANCE_BUCKET;
-  return BUCKET_NAME.test(raw) && !FORBIDDEN_FINANCE_BUCKETS.has(raw) ? raw : null;
+  return raw === DEFAULT_FINANCE_BUCKET && BUCKET_NAME.test(raw) && !FORBIDDEN_FINANCE_BUCKETS.has(raw) ? raw : null;
 }
 
 export type ArtifactKind = 'j5_signed_pdf' | 'j6_signed_pdf' | 'board_signed_voucher' | 'board_invoice' | 'external_j5_copy';

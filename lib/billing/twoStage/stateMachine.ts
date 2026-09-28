@@ -259,21 +259,28 @@ export type CaseProgress = {
   payment: 'not_applicable' | 'pending' | 'received';
 };
 
-type RecordLite = { stage: 'j5' | 'j6'; status: StageStatus; version: number };
+type RecordLite = { id: string; stage: 'j5' | 'j6'; status: StageStatus; version: number; sentAt: Date | string | null };
 
-/** Summary for the admin page: the latest version per stage, voucher and payment state. */
+/**
+ * Summary for the admin page: the latest version per stage, voucher and
+ * payment state. Payment is case-level: the most recently recorded payment
+ * event on any J6 that was ever sent (sent_at set), whatever the latest J6
+ * version's status is. A sent v2 superseded by a draft or voided v3 still
+ * shows v2's pending/received payment.
+ */
 export function summarizeCase(input: {
   records: RecordLite[];
   hasVoucherAttestation: boolean;
-  latestPaymentStatus: 'pending' | 'received' | null;
+  paymentEvents: ReadonlyArray<{ j6RecordId: string; status: 'pending' | 'received'; recordedAt: string }>;
 }): CaseProgress {
   const latest = (stage: 'j5' | 'j6') =>
     input.records.filter((r) => r.stage === stage).sort((a, b) => b.version - a.version)[0]?.status ?? 'none';
-  const j6 = latest('j6');
+  const everSent = new Set(input.records.filter((r) => r.stage === 'j6' && r.sentAt).map((r) => r.id));
+  const payment = [...input.paymentEvents].filter((e) => everSent.has(e.j6RecordId)).sort((a, b) => a.recordedAt.localeCompare(b.recordedAt)).at(-1);
   return {
     j5: latest('j5'),
     voucher: input.hasVoucherAttestation ? 'received' : 'none',
-    j6,
-    payment: j6 === 'sent' || j6 === 'superseded' ? input.latestPaymentStatus ?? 'not_applicable' : 'not_applicable',
+    j6: latest('j6'),
+    payment: payment?.status ?? 'not_applicable',
   };
 }

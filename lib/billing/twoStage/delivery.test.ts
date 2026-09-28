@@ -14,7 +14,7 @@ import {
   validateFinanceUpload,
 } from './financeStorage';
 import { canTrackPayment, casePaymentView, expectedFollowUpWindow, paymentView, pendingOnJ6Sent, recordPaymentReceived } from './payment';
-import { assertSendMatchesSnapshot } from './recipients';
+import { assertSendMatchesSnapshot, isPlausibleEmail, normalizeEmail, normalizeRecipientName } from './recipients';
 import { letterheadConfirmedForExternalSend } from './letterhead';
 import {
   IDEMPOTENCY_SAFE_RETRY_MS,
@@ -23,6 +23,7 @@ import {
   classifyProviderOutcome,
   markStaleClaimAmbiguous,
   outcomeFromThrown,
+  rolesThatReceivedEarlierVersions,
   recordDeliveryEvidence,
   decideClaim,
   deliveryState,
@@ -113,6 +114,18 @@ describe('per-recipient claims: no double sends, unknown outcomes reconciled', (
     assert.equal(classifyProviderOutcome(outcomeFromThrown(new FakeTypedProviderError(422))), 'ambiguous', 'no status reader: ambiguous');
     assert.equal(classifyProviderOutcome({ kind: 'thrown', error: new Error('x'), status: null }), 'ambiguous');
     assert.equal(classifyProviderOutcome({ kind: 'thrown', error: new Error('x'), status: 422 }), 'failed');
+  });
+
+  it('a returned provider error without an explicit status is ambiguous, whatever its name says', () => {
+    // Resend SDK v4.8.0 returns { name, message } with no status, and turns fetch failures into application_error.
+    assert.equal(classifyProviderOutcome({ kind: 'provider_error', error: { name: 'validation_error', message: 'Invalid `to` field' }, status: null }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'provider_error', error: { name: 'validation_error' }, status: undefined }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'provider_error', error: { name: 'application_error', message: 'fetch failed' }, status: null }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'provider_error', error: { name: 'not_found', message: '404' }, status: null }), 'ambiguous');
+    // Only an explicitly supplied status decides.
+    assert.equal(classifyProviderOutcome({ kind: 'provider_error', error: { name: 'validation_error' }, status: 422 }), 'failed');
+    assert.equal(classifyProviderOutcome({ kind: 'provider_error', error: { name: 'rate_limit_exceeded' }, status: 429 }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'provider_error', error: { name: 'validation_error' }, status: 408 }), 'ambiguous');
   });
 
   it('the TS status and evidence unions are the stored values (the PG16 proof checks the SQL side)', () => {
@@ -266,8 +279,9 @@ describe('finance archive storage', () => {
   it('uses a configurable private bucket and never a member or public bucket', () => {
     assert.equal(financeBucketName({}), DEFAULT_FINANCE_BUCKET);
     assert.equal(DEFAULT_FINANCE_BUCKET, 'billing-finance');
-    assert.equal(financeBucketName({ BILLING_FINANCE_BUCKET: 'billing-finance-demo' }), 'billing-finance-demo');
-    for (const bad of ['member-files', 'member-resumes', 'employer-logos', 'Bad Name', '../x']) {
+    assert.equal(financeBucketName({ BILLING_FINANCE_BUCKET: 'billing-finance' }), 'billing-finance');
+    // Pinned to billing-finance (the DB CHECK and #2704): any other name fails closed.
+    for (const bad of ['billing-finance-demo', 'public-billing', 'member-files', 'member-resumes', 'employer-logos', 'Bad Name', '../x']) {
       assert.equal(financeBucketName({ BILLING_FINANCE_BUCKET: bad }), null, bad);
     }
   });
@@ -313,6 +327,15 @@ describe('finance archive storage', () => {
 describe('payment tracking', () => {
   const sentAt = new Date('2026-10-01T15:00:00Z');
 
+  it('anchors the window to the America/Chicago send date at the midnight boundaries (the PG16 proof checks SQL parity)', () => {
+    // CDT (UTC-5): 04:59Z is still the previous Chicago day, 05:00Z is the new one.
+    assert.deepEqual(expectedFollowUpWindow(new Date('2026-10-02T04:59:00Z')), { expectedFollowUpFrom: '2026-10-11', expectedFollowUpTo: '2026-10-15' });
+    assert.deepEqual(expectedFollowUpWindow(new Date('2026-10-02T05:00:00Z')), { expectedFollowUpFrom: '2026-10-12', expectedFollowUpTo: '2026-10-16' });
+    // CST (UTC-6) after the November change.
+    assert.deepEqual(expectedFollowUpWindow(new Date('2026-12-02T05:59:00Z')), { expectedFollowUpFrom: '2026-12-11', expectedFollowUpTo: '2026-12-15' });
+    assert.deepEqual(expectedFollowUpWindow(new Date('2026-12-02T06:00:00Z')), { expectedFollowUpFrom: '2026-12-12', expectedFollowUpTo: '2026-12-16' });
+  });
+
   it('pending carries an expected follow-up window of send + 10 to + 14 days', () => {
     assert.deepEqual(expectedFollowUpWindow(sentAt), { expectedFollowUpFrom: '2026-10-11', expectedFollowUpTo: '2026-10-15' });
     // Sent late evening in Texas (after midnight UTC): the Texas send date counts.
@@ -353,6 +376,30 @@ describe('provider-org restriction', () => {
     assert.equal(checkBillingProviderOrg([], {}).ok, false);
     const bad = checkBillingProviderOrg([DEFAULT_ORG_ID], { BILLING_PACKET_PROVIDER_ORG_ID: 'not-a-uuid' });
     assert.equal(!bad.ok && bad.status, 503);
+  });
+});
+
+describe('recipient normalization (shared with billing_normalize_email / _name)', () => {
+  it('trims ASCII whitespace, lowercases email, collapses whitespace inside names', () => {
+    assert.equal(normalizeEmail(' \tStudent@Example.TEST\n'), 'student@example.test');
+    assert.equal(normalizeRecipientName('  Ada \t  Lovelace\n'), 'Ada Lovelace');
+    assert.equal(normalizeRecipientName('Ada\r\nLovelace'), 'Ada Lovelace');
+    // Non-ASCII spaces are not whitespace for either side, and make an email implausible.
+    assert.equal(isPlausibleEmail('\u00a0student@example.test'), false);
+  });
+});
+
+describe('prior-version receipts', () => {
+  it('lists which roles received which earlier versions (from accepted_roles_at_close)', () => {
+    assert.deepEqual(
+      rolesThatReceivedEarlierVersions([
+        { version: 2, acceptedRolesAtClose: ['finance', 'student'] },
+        { version: 1, acceptedRolesAtClose: ['finance'] },
+        { version: 3, acceptedRolesAtClose: [] },
+      ]),
+      [{ role: 'finance', versions: [1, 2] }, { role: 'student', versions: [2] }],
+    );
+    assert.deepEqual(rolesThatReceivedEarlierVersions([{ version: 1, acceptedRolesAtClose: null }]), []);
   });
 });
 

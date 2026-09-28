@@ -72,6 +72,14 @@ export type ProviderOutcome =
    * supplied it (see outcomeFromThrown); a plain Error has none.
    */
   | { kind: 'thrown'; error: unknown; status?: number | null }
+  /**
+   * A provider error returned (not thrown), e.g. the Resend SDK's
+   * `{ name, message }`, which usually carries no HTTP status and also covers
+   * transport failures (`application_error`). `status` is only what the
+   * adapter explicitly supplied, else null. `name` and `message` are never
+   * used to infer a definite rejection.
+   */
+  | { kind: 'provider_error'; error: { name?: string | null; message?: string | null }; status: number | null | undefined }
   | { kind: 'timeout' }
   | { kind: 'network_error' };
 
@@ -103,6 +111,8 @@ export function classifyProviderOutcome(outcome: ProviderOutcome): ClassifiedOut
     case 'http_error':
       return classifyStatus(outcome.status);
     case 'thrown':
+    case 'provider_error':
+      // Only an explicitly supplied status counts; never the error name or message.
       return classifyStatus(outcome.status);
     default:
       return 'ambiguous';
@@ -274,4 +284,20 @@ export function deliveryState(
   const unresolved = rows.some((r) => UNRESOLVED.has(r.status));
   const followUp = accepted.filter((role) => events.some((e) => e.role === role && (e.kind === 'bounced' || e.kind === 'complained')));
   return { expected, accepted, held, plan, complete: accepted.length === expected.length && !unresolved, followUp };
+}
+
+/**
+ * Which roles already received an earlier version of this stage (from each
+ * closed version's accepted_roles_at_close), e.g. "finance already received
+ * v1" while v2 is prepared. Informational: the new version still goes to
+ * every role of its own frozen snapshot.
+ */
+export function rolesThatReceivedEarlierVersions(
+  prior: ReadonlyArray<{ version: number; acceptedRolesAtClose: readonly RecipientRole[] | null | undefined }>,
+): Array<{ role: RecipientRole; versions: number[] }> {
+  const byRole = new Map<RecipientRole, number[]>();
+  for (const record of [...prior].sort((a, b) => a.version - b.version)) {
+    for (const role of record.acceptedRolesAtClose ?? []) byRole.set(role, [...(byRole.get(role) ?? []), record.version]);
+  }
+  return [...byRole.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([role, versions]) => ({ role, versions }));
 }

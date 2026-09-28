@@ -328,18 +328,37 @@ describe('stage state machine', () => {
   });
 
   it('summarizes the latest version per stage, voucher and payment', () => {
-    assert.deepEqual(summarizeCase({ records: [], hasVoucherAttestation: false, latestPaymentStatus: null }), { j5: 'none', voucher: 'none', j6: 'none', payment: 'not_applicable' });
+    assert.deepEqual(summarizeCase({ records: [], hasVoucherAttestation: false, paymentEvents: [] }), { j5: 'none', voucher: 'none', j6: 'none', payment: 'not_applicable' });
     assert.deepEqual(
       summarizeCase({
         records: [
-          { stage: 'j5', status: 'superseded', version: 1 },
-          { stage: 'j5', status: 'sent', version: 2 },
-          { stage: 'j6', status: 'sent', version: 1 },
+          { id: 'q1', stage: 'j5', status: 'superseded', version: 1, sentAt: '2026-09-01T15:00:00Z' },
+          { id: 'q2', stage: 'j5', status: 'sent', version: 2, sentAt: '2026-09-02T15:00:00Z' },
+          { id: 'i1', stage: 'j6', status: 'sent', version: 1, sentAt: '2026-10-01T15:00:00Z' },
         ],
         hasVoucherAttestation: true,
-        latestPaymentStatus: 'pending',
+        paymentEvents: [{ j6RecordId: 'i1', status: 'pending', recordedAt: '2026-10-01T15:00:00.000Z' }],
       }),
       { j5: 'sent', voucher: 'received', j6: 'sent', payment: 'pending' },
+    );
+  });
+
+  it('keeps case payment on an ever-sent J6: v1 sent -> v2 sent (supersedes v1) -> v3 draft or voided', () => {
+    const base = [
+      { id: 'i1', stage: 'j6' as const, status: 'superseded' as const, version: 1, sentAt: '2026-10-01T15:00:00Z' },
+      { id: 'i2', stage: 'j6' as const, status: 'superseded' as const, version: 2, sentAt: '2026-10-03T15:00:00Z' },
+    ];
+    const pending = { j6RecordId: 'i2', status: 'pending' as const, recordedAt: '2026-10-03T15:00:00.000Z' };
+    const received = { j6RecordId: 'i2', status: 'received' as const, recordedAt: '2026-10-14T15:00:00.000Z' };
+    for (const v3 of ['draft', 'voided', 'signed'] as const) {
+      const records = [...base, { id: 'i3', stage: 'j6' as const, status: v3, version: 3, sentAt: null }];
+      assert.deepEqual(summarizeCase({ records, hasVoucherAttestation: true, paymentEvents: [pending] }), { j5: 'none', voucher: 'received', j6: v3, payment: 'pending' });
+      assert.equal(summarizeCase({ records, hasVoucherAttestation: true, paymentEvents: [pending, received] }).payment, 'received');
+    }
+    // An event on a never-sent J6 never shows (the database refuses it anyway).
+    assert.equal(
+      summarizeCase({ records: [{ id: 'i9', stage: 'j6', status: 'superseded', version: 1, sentAt: null }], hasVoucherAttestation: true, paymentEvents: [{ j6RecordId: 'i9', status: 'pending', recordedAt: '2026-10-01T15:00:00.000Z' }] }).payment,
+      'not_applicable',
     );
   });
 });
