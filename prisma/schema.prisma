@@ -2390,11 +2390,14 @@ model BillingStageRecipient {
   @@map("billing_stage_recipients")
 }
 
-/// One recipient's copy of one stage record in one send attempt. The unique
-/// (record, stage, attempt, role) row is the claim; idempotencyKey is
-/// stage- and version-qualified so a J5 retry can never collide with a J6 send.
-/// status: claimed | sent | rejected_definite | ambiguous |
-/// needs_reconciliation | reconciled_delivered | reconciled_not_delivered.
+/// One recipient role's claim for one signed stage record version. Attempts are
+/// per role: attempt n + 1 (a fresh canonical idempotency key) only after that
+/// role's latest claim definitively failed; an ambiguous claim is retried with
+/// the same key or reconciled; an accepted role is never re-sent.
+/// status (public.billing_send_statuses() = SEND_STATUSES): pending |
+/// provider_accepted | ambiguous | needs_reconciliation | failed |
+/// reconciled_delivered | reconciled_failed. Delivery evidence is in
+/// BillingDeliveryEvent.
 model BillingStageSend {
   id                    String    @id @default(uuid())
   organizationId        String    @map("organization_id")
@@ -2412,17 +2415,14 @@ model BillingStageSend {
   claimToken            String    @map("claim_token")
   claimedAt             DateTime  @map("claimed_at")
   lastClaimedAt         DateTime  @map("last_claimed_at")
-  /// Provider acceptance (status 'sent' requires it with providerMessageId).
+  /// Provider acceptance (status 'provider_accepted' requires it with providerMessageId).
   acceptedAt            DateTime? @map("accepted_at")
+  /// The record version's frozen content hash this copy renders.
+  contentSha256         String    @map("content_sha256") @db.Char(64)
   /// sha256 of every attachment in this copy, in order.
   attachmentSha256s     String[]  @default([]) @map("attachment_sha256s")
   providerMessageId     String?   @map("provider_message_id")
   providerResult        String?   @map("provider_result") @db.Text
-  /// Later delivery evidence, recorded once: delivered | bounced | complained.
-  /// Never unsends the stage; a bounce/complaint flags follow-up.
-  deliveryStatus        String?   @map("delivery_status")
-  deliveryEvidenceAt    DateTime? @map("delivery_evidence_at")
-  deliveryEvidenceSource String?  @map("delivery_evidence_source")
   lastError             String?   @map("last_error") @db.Text
   reconciledBySubjectId String?   @map("reconciled_by_subject_id")
   reconciledAt          DateTime? @map("reconciled_at")
@@ -2434,9 +2434,30 @@ model BillingStageSend {
   stageRecord BillingStageRecord @relation(fields: [stageRecordId, organizationId, stage], references: [id, organizationId, stage], onDelete: Restrict)
   recipient   BillingStageRecipient @relation(fields: [stageRecordId, recipientRole, email], references: [stageRecordId, recipientRole, email], onDelete: Restrict, onUpdate: NoAction, map: "billing_stage_sends_recipient_snapshot_fkey")
   reconcileEvidence BillingArtifact? @relation(fields: [reconcileEvidenceArtifactId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  deliveryEvents    BillingDeliveryEvent[]
 
   @@unique([stageRecordId, stage, attemptNo, recipientRole])
+  @@unique([id, organizationId])
   @@map("billing_stage_sends")
+}
+
+/// Append-only delivery evidence for an accepted copy (webhook or operator):
+/// delivered | bounced | complained. Recordable after the stage is sent and
+/// never unsends it; a bounce or complaint flags follow-up.
+model BillingDeliveryEvent {
+  id              String   @id @default(uuid())
+  organizationId  String   @map("organization_id")
+  sendId          String   @map("send_id")
+  kind            String
+  occurredAt      DateTime @map("occurred_at")
+  source          String
+  providerEventId String?  @unique @map("provider_event_id")
+  recordedAt      DateTime @default(now()) @map("recorded_at")
+
+  send BillingStageSend @relation(fields: [sendId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([sendId])
+  @@map("billing_delivery_events")
 }
 
 /// Append-only payment tracking for a sent J6. status: pending (with the

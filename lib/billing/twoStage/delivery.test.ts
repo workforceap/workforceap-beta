@@ -22,11 +22,15 @@ import {
   RECONCILE_CLAIMED_MIN_AGE_MS,
   classifyProviderOutcome,
   markStaleClaimAmbiguous,
+  outcomeFromThrown,
   recordDeliveryEvidence,
   decideClaim,
   deliveryState,
   reconcileSend,
   sendIdempotencyKey,
+  DELIVERY_EVENT_KINDS,
+  SEND_STATUSES,
+  type ClaimRow,
   type SendRow,
 } from './sendClaims';
 
@@ -53,84 +57,150 @@ describe('per-recipient claims: no double sends, unknown outcomes reconciled', (
   const at = (ms: number) => new Date(t0.getTime() + ms);
   const row = (status: SendRow['status'], claimedAgoMs = 0, lastAgoMs = claimedAgoMs): SendRow => ({ role: 'student', status, claimedAt: at(-claimedAgoMs), lastClaimedAt: at(-lastAgoMs) });
 
-  it('claims once, skips delivered copies and never re-sends them', () => {
+  it('claims once, skips accepted copies and never re-sends them', () => {
     assert.deepEqual(decideClaim(null, t0), { action: 'claim_new' });
-    assert.deepEqual(decideClaim(row('sent'), t0), { action: 'skip_delivered' });
+    assert.deepEqual(decideClaim(row('provider_accepted'), t0), { action: 'skip_delivered' });
     assert.deepEqual(decideClaim(row('reconciled_delivered'), t0), { action: 'skip_delivered' });
-    assert.deepEqual(decideClaim(row('claimed', 1000), t0), { action: 'in_flight' });
+    assert.deepEqual(decideClaim(row('pending', 1000), t0), { action: 'in_flight' });
   });
 
-  it('retries an ambiguous or stale claim with the same key inside the window, then needs reconciliation', () => {
+  it('an ambiguous claim is retried with the SAME key inside the window, or held for reconciliation after it', () => {
     assert.deepEqual(decideClaim(row('ambiguous', 60_000), t0), { action: 'retry_same_key' });
-    assert.deepEqual(decideClaim(row('claimed', IN_FLIGHT_GRACE_MS + 1), t0), { action: 'retry_same_key' });
+    assert.deepEqual(decideClaim(row('pending', IN_FLIGHT_GRACE_MS + 1), t0), { action: 'retry_same_key' });
     assert.deepEqual(decideClaim(row('ambiguous', IDEMPOTENCY_SAFE_RETRY_MS + 1), t0), { action: 'needs_reconciliation' });
     assert.deepEqual(decideClaim(row('needs_reconciliation'), t0), { action: 'needs_reconciliation' });
-    assert.deepEqual(decideClaim(row('rejected_definite'), t0), { action: 'new_attempt_required' });
+    // Only a definitive failure mints a new attempt (fresh key).
+    assert.deepEqual(decideClaim(row('failed'), t0), { action: 'new_attempt_required' });
+    assert.deepEqual(decideClaim(row('reconciled_failed'), t0), { action: 'new_attempt_required' });
+    const key = { stage: 'j6' as const, recordId: 'j6-1', version: 2, role: 'finance' as const };
+    assert.equal(sendIdempotencyKey({ ...key, attemptNo: 1 }), 'billing-two-stage:j6:j6-1:v2:a1:finance');
+    assert.notEqual(sendIdempotencyKey({ ...key, attemptNo: 2 }), sendIdempotencyKey({ ...key, attemptNo: 1 }));
   });
 
-  it('classifies provider outcomes; unknowns are ambiguous, key conflicts need a person', () => {
-    assert.equal(classifyProviderOutcome({ kind: 'accepted', messageId: 'msg-1' }), 'sent');
+  it('classifies provider outcomes; only a message id is acceptance, only a typed status is a definite rejection', () => {
+    assert.equal(classifyProviderOutcome({ kind: 'accepted', messageId: 'msg-1' }), 'provider_accepted');
+    // The email wrapper can resolve without data.id: uncertain, never accepted.
     assert.equal(classifyProviderOutcome({ kind: 'accepted', messageId: '' }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'accepted', messageId: null }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'accepted', messageId: undefined }), 'ambiguous');
+    // A plain Error thrown by the wrapper lost the HTTP status: ambiguous, never failed.
+    assert.equal(classifyProviderOutcome({ kind: 'thrown', error: new Error('Resend error: invalid recipient') }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'thrown', error: 'unknown' }), 'ambiguous');
     assert.equal(classifyProviderOutcome({ kind: 'timeout' }), 'ambiguous');
     assert.equal(classifyProviderOutcome({ kind: 'network_error' }), 'ambiguous');
     assert.equal(classifyProviderOutcome({ kind: 'http_error', status: 503 }), 'ambiguous');
     assert.equal(classifyProviderOutcome({ kind: 'http_error', status: 429 }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'http_error', status: Number.NaN }), 'ambiguous');
     assert.equal(classifyProviderOutcome({ kind: 'http_error', status: 409 }), 'needs_reconciliation');
-    assert.equal(classifyProviderOutcome({ kind: 'http_error', status: 422 }), 'rejected_definite');
+    assert.equal(classifyProviderOutcome({ kind: 'http_error', status: 422 }), 'failed');
+  });
+
+  it('a typed, status-preserving thrown error can be definitive; a plain Error or missing status never is', () => {
+    // Local stand-in for the email wrapper's future typed error (M3 plugs in the real export).
+    class FakeTypedProviderError extends Error {
+      constructor(readonly status: number) {
+        super(`synthetic provider error ${status}`);
+      }
+    }
+    const readStatus = (e: unknown) => (e instanceof FakeTypedProviderError ? e.status : undefined);
+    const classify = (e: unknown, reader: typeof readStatus | undefined = readStatus) => classifyProviderOutcome(outcomeFromThrown(e, reader));
+    for (const status of [400, 401, 403, 404, 422]) assert.equal(classify(new FakeTypedProviderError(status)), 'failed', String(status));
+    for (const status of [408, 429, 500, 502, 503]) assert.equal(classify(new FakeTypedProviderError(status)), 'ambiguous', String(status));
+    assert.equal(classify(new FakeTypedProviderError(409)), 'needs_reconciliation');
+    // A plain Error (what the wrapper throws today) and anything without a status stay ambiguous.
+    assert.equal(classify(new Error('Resend error: 422 invalid recipient')), 'ambiguous');
+    assert.equal(classify(Object.assign(new Error('duck-typed'), { status: 422 })), 'ambiguous');
+    assert.equal(classifyProviderOutcome(outcomeFromThrown(new FakeTypedProviderError(422))), 'ambiguous', 'no status reader: ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'thrown', error: new Error('x'), status: null }), 'ambiguous');
+    assert.equal(classifyProviderOutcome({ kind: 'thrown', error: new Error('x'), status: 422 }), 'failed');
+  });
+
+  it('the TS status and evidence unions are the stored values (the PG16 proof checks the SQL side)', () => {
+    assert.deepEqual([...SEND_STATUSES], ['pending', 'provider_accepted', 'ambiguous', 'needs_reconciliation', 'failed', 'reconciled_delivered', 'reconciled_failed']);
+    assert.deepEqual([...DELIVERY_EVENT_KINDS], ['delivered', 'bounced', 'complained']);
   });
 
   it('reconciliation needs who and a note, and only settles unknown copies', () => {
     const by = { bySubjectId: 'staff-1', note: 'Synthetic provider log shows delivery' };
-    assert.deepEqual(reconcileSend(row('needs_reconciliation'), { outcome: 'delivered', ...by }, t0), { ok: true, status: 'reconciled_delivered' });
-    assert.deepEqual(reconcileSend(row('ambiguous'), { outcome: 'not_delivered', ...by }, t0), { ok: true, status: 'reconciled_not_delivered' });
-    assert.equal(reconcileSend(row('needs_reconciliation'), { outcome: 'delivered', bySubjectId: 'staff-1', note: ' ' }, t0).ok, false);
-    assert.equal(reconcileSend(row('sent'), { outcome: 'not_delivered', ...by }, t0).ok, false);
-    assert.equal(reconcileSend(row('claimed', 60_000), { outcome: 'delivered', ...by }, t0).ok, false);
+    assert.deepEqual(reconcileSend(row('needs_reconciliation'), { outcome: 'delivered', ...by }), { ok: true, status: 'reconciled_delivered' });
+    assert.deepEqual(reconcileSend(row('ambiguous'), { outcome: 'not_delivered', ...by }), { ok: true, status: 'reconciled_failed' });
+    assert.equal(reconcileSend(row('needs_reconciliation'), { outcome: 'delivered', bySubjectId: 'staff-1', note: ' ' }).ok, false);
+    assert.equal(reconcileSend(row('provider_accepted'), { outcome: 'not_delivered', ...by }).ok, false);
+    assert.equal(reconcileSend(row('pending', 60_000), { outcome: 'delivered', ...by }).ok, false);
     // Even a stale claim is not reconciled directly: it becomes ambiguous first.
-    assert.equal(reconcileSend(row('claimed', RECONCILE_CLAIMED_MIN_AGE_MS + 1), { outcome: 'delivered', ...by }, t0).ok, false);
-    assert.equal(markStaleClaimAmbiguous(row('claimed', RECONCILE_CLAIMED_MIN_AGE_MS + 1), t0), 'ambiguous');
-    assert.equal(markStaleClaimAmbiguous(row('claimed', 1000), t0), null);
+    assert.equal(reconcileSend(row('pending', RECONCILE_CLAIMED_MIN_AGE_MS + 1), { outcome: 'delivered', ...by }).ok, false);
+    assert.equal(markStaleClaimAmbiguous(row('pending', RECONCILE_CLAIMED_MIN_AGE_MS + 1), t0), 'ambiguous');
+    assert.equal(markStaleClaimAmbiguous(row('pending', 1000), t0), null);
+  });
+});
+
+describe('per-role completion (mirrors the migration sent invariant)', () => {
+  const CONTENT = 'a'.repeat(64);
+  const FILES = ['b'.repeat(64), 'c'.repeat(64), 'd'.repeat(64)];
+  const snapshot = [
+    { role: 'finance' as const, email: 'finance@example.test' },
+    { role: 'counselor' as const, email: 'counselor@example.test' },
+    { role: 'student' as const, email: 'student@example.test' },
+  ];
+  const version = { contentSha256: CONTENT, attachmentSha256s: FILES, snapshot };
+  const claim = (role: ClaimRow['role'], status: ClaimRow['status'], attemptNo = 1, over: Partial<ClaimRow> = {}): ClaimRow => ({
+    role, status, attemptNo, contentSha256: CONTENT, email: `${role}@example.test`, attachmentSha256s: FILES, ...over,
   });
 
-  it('a stage is sent only when ONE attempt delivered its exact recipient set (2 for J5, 3 for J6)', () => {
-    const j5 = deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1 }, { role: 'student', status: 'ambiguous', attemptNo: 1 }]);
-    assert.deepEqual([j5.expected, j5.delivered, j5.unsettled, j5.complete], [['counselor', 'student'], ['counselor'], ['student'], false]);
-    assert.equal(deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1 }, { role: 'student', status: 'reconciled_delivered', attemptNo: 1 }]).complete, true);
-    const j6 = deliveryState('j6', [{ role: 'finance', status: 'sent', attemptNo: 1 }, { role: 'counselor', status: 'sent', attemptNo: 1 }]);
-    assert.deepEqual([j6.expected.length, j6.missing, j6.complete], [3, ['student'], false]);
-    assert.throws(() => deliveryState('j5', [{ role: 'finance', status: 'sent', attemptNo: 1 }]));
-  });
-
-  it('does not add up deliveries across attempts', () => {
-    const mixed = deliveryState('j5', [
-      { role: 'student', status: 'sent', attemptNo: 1 },
-      { role: 'counselor', status: 'rejected_definite', attemptNo: 1 },
-      { role: 'counselor', status: 'sent', attemptNo: 2 },
+  it('finance fails definitively while student and counselor are accepted: retry finance only, then the stage completes', () => {
+    const rows = [claim('student', 'provider_accepted'), claim('counselor', 'provider_accepted'), claim('finance', 'failed')];
+    const before = deliveryState('j6', version, rows);
+    assert.equal(before.complete, false);
+    assert.deepEqual(before.plan, [
+      { role: 'finance', action: 'claim', attemptNo: 2, freshKey: true },
+      { role: 'counselor', action: 'accepted', attemptNo: 1 },
+      { role: 'student', action: 'accepted', attemptNo: 1 },
     ]);
-    assert.equal(mixed.complete, false);
-    assert.equal(mixed.completeAttemptNo, null);
-    const full = deliveryState('j5', [
-      { role: 'student', status: 'sent', attemptNo: 1 },
-      { role: 'counselor', status: 'rejected_definite', attemptNo: 1 },
-      { role: 'counselor', status: 'sent', attemptNo: 2 },
-      { role: 'student', status: 'sent', attemptNo: 2 },
-    ]);
-    assert.equal(full.complete, true);
-    assert.equal(full.completeAttemptNo, 2);
+    const after = deliveryState('j6', version, [...rows, claim('finance', 'provider_accepted', 2)]);
+    assert.equal(after.complete, true);
+    assert.deepEqual(after.accepted, ['finance', 'counselor', 'student']);
+    assert.ok(after.plan.every((p) => p.action === 'accepted'));
   });
 
-  it('acceptance gates sent; a later bounce flags follow-up without unsending', () => {
-    const acceptedOnly = deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1 }, { role: 'student', status: 'sent', attemptNo: 1 }]);
-    assert.equal(acceptedOnly.complete, true);
-    assert.deepEqual(acceptedOnly.followUp, []);
-    const bounced = deliveryState('j5', [{ role: 'counselor', status: 'sent', attemptNo: 1, deliveryStatus: 'delivered' }, { role: 'student', status: 'sent', attemptNo: 1, deliveryStatus: 'bounced' }]);
-    assert.equal(bounced.complete, true);
-    assert.deepEqual(bounced.followUp, ['student']);
-    const evidence = { status: 'bounced' as const, at: new Date(), source: 'synthetic webhook' };
-    assert.ok(recordDeliveryEvidence({ status: 'sent', deliveryStatus: null }, evidence).ok);
-    assert.equal(recordDeliveryEvidence({ status: 'sent', deliveryStatus: 'delivered' }, evidence).ok, false);
-    assert.equal(recordDeliveryEvidence({ status: 'ambiguous', deliveryStatus: null }, evidence).ok, false);
-    assert.equal(recordDeliveryEvidence({ status: 'sent', deliveryStatus: null }, { ...evidence, source: ' ' }).ok, false);
+  it('an ambiguous finance claim is held: no new attempt and not sent', () => {
+    for (const status of ['ambiguous', 'pending', 'needs_reconciliation'] as const) {
+      const s = deliveryState('j6', version, [claim('student', 'provider_accepted'), claim('counselor', 'provider_accepted'), claim('finance', status)]);
+      assert.equal(s.complete, false, status);
+      assert.deepEqual(s.held, ['finance']);
+      assert.deepEqual(s.plan.find((p) => p.role === 'finance'), { role: 'finance', action: 'held', attemptNo: 1, status });
+    }
+    // An unresolved earlier claim keeps the stage open even beside an accepted one.
+    const s = deliveryState('j5', { ...version, snapshot: snapshot.slice(1) }, [claim('student', 'provider_accepted'), claim('counselor', 'provider_accepted'), claim('student', 'ambiguous', 2)]);
+    assert.equal(s.complete, false);
+  });
+
+  it('a claim with the wrong content hash, attachments or address never counts', () => {
+    for (const over of [{ contentSha256: 'e'.repeat(64) }, { email: 'finance-typo@example.test' }, { email: 'counselor@example.test' }, { attachmentSha256s: FILES.slice(0, 2) }]) {
+      const s = deliveryState('j6', version, [claim('student', 'provider_accepted'), claim('counselor', 'provider_accepted'), claim('finance', 'provider_accepted', 1, over)]);
+      assert.equal(s.complete, false, JSON.stringify(over));
+      assert.deepEqual(s.accepted, ['counselor', 'student']);
+    }
+  });
+
+  it('J5 needs exactly counselor and student; other roles are refused', () => {
+    const j5 = { ...version, snapshot: snapshot.slice(1) };
+    assert.equal(deliveryState('j5', j5, [claim('counselor', 'provider_accepted'), claim('student', 'reconciled_delivered')]).complete, true);
+    assert.equal(deliveryState('j5', j5, [claim('counselor', 'provider_accepted')]).complete, false);
+    assert.throws(() => deliveryState('j5', j5, [claim('finance', 'provider_accepted')]));
+  });
+
+  it('stage sent, then a counselor bounce: the stage stays sent and follow-up is flagged', () => {
+    const rows = [claim('student', 'provider_accepted'), claim('counselor', 'provider_accepted'), claim('finance', 'provider_accepted')];
+    const s = deliveryState('j6', version, rows, [{ role: 'counselor', kind: 'bounced' }, { role: 'finance', kind: 'delivered' }]);
+    assert.equal(s.complete, true);
+    assert.deepEqual(s.followUp, ['counselor']);
+    const evidence = { kind: 'bounced' as const, at: new Date(), source: 'synthetic webhook', providerEventId: 'evt-1' };
+    assert.ok(recordDeliveryEvidence({ status: 'provider_accepted' }, evidence).ok);
+    assert.ok(recordDeliveryEvidence({ status: 'reconciled_delivered' }, evidence).ok);
+    assert.equal(recordDeliveryEvidence({ status: 'provider_accepted' }, evidence, [{ providerEventId: 'evt-1' }]).ok, false);
+    assert.equal(recordDeliveryEvidence({ status: 'ambiguous' }, evidence).ok, false);
+    assert.equal(recordDeliveryEvidence({ status: 'failed' }, evidence).ok, false);
+    assert.equal(recordDeliveryEvidence({ status: 'provider_accepted' }, { ...evidence, source: ' ' }).ok, false);
   });
 });
 

@@ -1,7 +1,7 @@
 -- Two-stage J5 quote/voucher request + J6 invoice/voucher cover letter
 -- (docs/BILLING-PACKETS.md "Two-stage J5/J6"). Mike Brown, 2026-09-27.
 --
--- Purely additive: eight new tables, their constraints, triggers and grants.
+-- Purely additive: nine new tables, their constraints, triggers and grants.
 -- training_billing_packets (20260904020000) is not touched, so an older app
 -- revision still inserting legacy packets keeps working during the
 -- Vercel migrate/build overlap, and existing packet rows are preserved.
@@ -30,6 +30,29 @@ BEGIN;
 
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
+
+-- ------------------------------------------------------------- helpers
+-- The business date: WorkforceAP is in Texas. Every "today" guard uses this,
+-- never CURRENT_DATE (which follows the session TimeZone).
+CREATE OR REPLACE FUNCTION public.billing_chicago_date(ts TIMESTAMPTZ)
+RETURNS DATE LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT (ts AT TIME ZONE 'America/Chicago')::date
+$$;
+CREATE OR REPLACE FUNCTION public.billing_today()
+RETURNS DATE LANGUAGE sql STABLE SET search_path = pg_catalog, public AS $$
+  SELECT public.billing_chicago_date(now())
+$$;
+-- Send-claim statuses and delivery evidence kinds, shared by the CHECKs below
+-- and asserted equal to SEND_STATUSES / DELIVERY_EVENT_KINDS in
+-- lib/billing/twoStage/sendClaims.ts by the PG16 proof.
+CREATE OR REPLACE FUNCTION public.billing_send_statuses()
+RETURNS TEXT[] LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT ARRAY['pending', 'provider_accepted', 'ambiguous', 'needs_reconciliation', 'failed', 'reconciled_delivered', 'reconciled_failed']::TEXT[]
+$$;
+CREATE OR REPLACE FUNCTION public.billing_delivery_event_kinds()
+RETURNS TEXT[] LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT ARRAY['delivered', 'bounced', 'complained']::TEXT[]
+$$;
 
 -- ---------------------------------------------------------------- cases
 CREATE TABLE IF NOT EXISTS "billing_cases" (
@@ -310,7 +333,8 @@ CREATE TABLE IF NOT EXISTS "billing_stage_records" (
         AND "signed_artifact_id" IS NOT NULL AND "superseded_at" IS NULL AND "voided_at" IS NULL
         AND (("status" = 'signed' AND "sent_at" IS NULL AND "send_receipt" IS NULL)
           OR ("status" = 'sent' AND "sent_at" IS NOT NULL AND "send_receipt" IS NOT NULL)))
-      OR ("status" = 'superseded' AND "superseded_at" IS NOT NULL AND "signed_at" IS NOT NULL AND "voided_at" IS NULL)
+      OR ("status" = 'superseded' AND "superseded_at" IS NOT NULL AND "signed_at" IS NOT NULL AND "voided_at" IS NULL
+        AND (("sent_at" IS NULL) = ("send_receipt" IS NULL)))
       OR ("status" = 'voided' AND "voided_at" IS NOT NULL AND "superseded_at" IS NULL)
     ), false))
 );
@@ -390,12 +414,10 @@ CREATE TABLE IF NOT EXISTS "billing_stage_sends" (
     "claimed_at" TIMESTAMP(3) NOT NULL,
     "last_claimed_at" TIMESTAMP(3) NOT NULL,
     "accepted_at" TIMESTAMP(3),
+    "content_sha256" CHAR(64) NOT NULL,
     "attachment_sha256s" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "provider_message_id" TEXT,
     "provider_result" TEXT,
-    "delivery_status" TEXT,
-    "delivery_evidence_at" TIMESTAMP(3),
-    "delivery_evidence_source" TEXT,
     "last_error" TEXT,
     "reconciled_by_subject_id" TEXT,
     "reconciled_at" TIMESTAMP(3),
@@ -414,21 +436,44 @@ CREATE TABLE IF NOT EXISTS "billing_stage_sends" (
     ), false)),
     CONSTRAINT "billing_stage_sends_status_check" CHECK (coalesce((
       "attempt_no" >= 1 AND btrim("email") <> ''
-      AND "status" IN ('claimed', 'sent', 'rejected_definite', 'ambiguous', 'needs_reconciliation', 'reconciled_delivered', 'reconciled_not_delivered')
-      -- status 'sent' = the provider ACCEPTED the copy (accepted_at + provider_message_id).
-      -- This, or an audited reconciled_delivered, is what gates a stage's 'sent'.
-      AND ("status" <> 'sent' OR ("accepted_at" IS NOT NULL AND btrim(coalesce("provider_message_id", '')) <> ''))
-      -- Later delivery evidence (provider webhook or operator) is recorded
-      -- separately and never unsends the stage; a bounce/complaint flags follow-up.
-      AND (("delivery_status" IS NULL AND "delivery_evidence_at" IS NULL AND "delivery_evidence_source" IS NULL)
-        OR ("delivery_status" IN ('delivered', 'bounced', 'complained') AND "delivery_evidence_at" IS NOT NULL
-          AND btrim(coalesce("delivery_evidence_source", '')) <> '' AND "status" IN ('sent', 'reconciled_delivered')))
-      AND ("status" NOT IN ('reconciled_delivered', 'reconciled_not_delivered')
+      AND "status" = ANY(public.billing_send_statuses())
+      -- provider_accepted = the provider ACCEPTED the copy (accepted_at + provider_message_id).
+      -- This, or an audited reconciled_delivered, is what counts toward a stage's 'sent'.
+      -- Later delivery evidence lives in billing_delivery_events (append-only).
+      AND ("status" <> 'provider_accepted' OR ("accepted_at" IS NOT NULL AND btrim(coalesce("provider_message_id", '')) <> ''))
+      AND ("status" NOT IN ('reconciled_delivered', 'reconciled_failed')
         OR ("reconciled_by_subject_id" IS NOT NULL AND "reconciled_at" IS NOT NULL AND btrim(coalesce("reconcile_note", '')) <> ''))
     ), false))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_idempotency_key_key" ON "billing_stage_sends"("idempotency_key");
 CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_stage_record_id_stage_attempt_no_recipi_key" ON "billing_stage_sends"("stage_record_id", "stage", "attempt_no", "recipient_role");
+CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_id_organization_id_key" ON "billing_stage_sends"("id", "organization_id");
+-- At most one accepted copy per role of a record: an accepted role is never re-sent.
+CREATE UNIQUE INDEX IF NOT EXISTS "billing_stage_sends_one_accepted_per_role" ON "billing_stage_sends"("stage_record_id", "recipient_role")
+  WHERE "status" IN ('provider_accepted', 'reconciled_delivered');
+
+-- ----------------------------------------------------- delivery events
+-- Delivery evidence after provider acceptance (webhook or operator). Append-only,
+-- recordable after the stage is sent, and never unsends it; a bounce or
+-- complaint flags the case for follow-up.
+CREATE TABLE IF NOT EXISTS "billing_delivery_events" (
+    "id" TEXT NOT NULL,
+    "organization_id" TEXT NOT NULL,
+    "send_id" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "occurred_at" TIMESTAMP(3) NOT NULL,
+    "source" TEXT NOT NULL,
+    "provider_event_id" TEXT,
+    "recorded_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "billing_delivery_events_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "billing_delivery_events_send_id_organization_id_fkey" FOREIGN KEY ("send_id", "organization_id") REFERENCES "billing_stage_sends"("id", "organization_id") ON DELETE RESTRICT ON UPDATE NO ACTION,
+    CONSTRAINT "billing_delivery_events_check" CHECK (coalesce((
+      "kind" = ANY(public.billing_delivery_event_kinds()) AND btrim("source") <> ''
+    ), false))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "billing_delivery_events_provider_event_id_key" ON "billing_delivery_events"("provider_event_id");
+CREATE INDEX IF NOT EXISTS "billing_delivery_events_send_id_idx" ON "billing_delivery_events"("send_id");
 
 -- ------------------------------------------------------- payment events
 CREATE TABLE IF NOT EXISTS "billing_payment_events" (
@@ -460,9 +505,12 @@ CREATE INDEX IF NOT EXISTS "billing_payment_events_case_id_recorded_at_idx" ON "
 
 -- ------------------------------------------------------------- triggers
 -- Payment events belong to a J6 that was actually sent, proven by retained
--- evidence (sent_at plus a delivered copy for finance, counselor and student),
+-- evidence (sent_at plus an accepted copy for finance, counselor and student),
 -- not by its current status: a sent J6 later superseded by a corrected cover
--- letter still reconciles a payment that arrives afterwards.
+-- letter still reconciles a payment that arrives afterwards. sent_at can only
+-- have been written by the validated signed -> sent transition
+-- (billing_stage_record_guard), so a signed J6 superseded without being sent
+-- has sent_at NULL and is never billable.
 CREATE OR REPLACE FUNCTION public.billing_payment_event_j6_only()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 BEGIN
@@ -471,10 +519,13 @@ BEGIN
     WHERE r.id = NEW.j6_record_id AND r.case_id = NEW.case_id AND r.stage = 'j6'
       AND r.sent_at IS NOT NULL AND r.status IN ('sent', 'superseded')
       AND (SELECT count(DISTINCT s.recipient_role) FROM public.billing_stage_sends s
-           WHERE s.stage_record_id = r.id AND s.status IN ('sent', 'reconciled_delivered')
+           WHERE s.stage_record_id = r.id AND s.status IN ('provider_accepted', 'reconciled_delivered')
              AND s.recipient_role IN ('finance', 'counselor', 'student')) = 3
   ) THEN
     RAISE EXCEPTION 'payment status is tracked only for a J6 that was sent to finance, counselor and student' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.received_on IS NOT NULL AND NEW.received_on > public.billing_today() THEN
+    RAISE EXCEPTION 'a payment cannot be received in the future (America/Chicago date)' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
 END;
@@ -517,7 +568,12 @@ BEGIN
     IF NEW.member_merged_at IS NOT NULL OR NEW.member_merged_from_id IS NOT NULL THEN
       RAISE EXCEPTION 'a new billing case starts on its own subject' USING ERRCODE = '23514';
     END IF;
-    IF NEW.member_id IS NOT NULL AND NOT EXISTS (
+    -- A new case names a live member of its organization as its own subject.
+    -- member_id becomes NULL only later, through erasure (users FK SET NULL).
+    IF NEW.member_id IS NULL OR NEW.subject_member_id IS DISTINCT FROM NEW.member_id THEN
+      RAISE EXCEPTION 'a new billing case names a live member as its subject (member_id = subject_member_id)' USING ERRCODE = '23514';
+    END IF;
+    IF NOT EXISTS (
         SELECT 1 FROM public.users u WHERE u.id = NEW.member_id AND u.organization_id = NEW.organization_id) THEN
       RAISE EXCEPTION 'the billing case member must belong to the case organization' USING ERRCODE = '23514';
     END IF;
@@ -579,6 +635,15 @@ BEGIN
   IF OLD.status IN ('superseded', 'voided') THEN
     RAISE EXCEPTION 'a closed billing stage record is immutable' USING ERRCODE = '23514';
   END IF;
+  -- The sent proof (sent_at, send_receipt) is written only by the genuine
+  -- signed -> sent transition, which billing_stage_record_rules() validates
+  -- against the per-role accepted copies. A signed record that is superseded
+  -- or voided without being sent keeps both NULL; a sent record that is later
+  -- superseded keeps its proof unchanged.
+  IF (NEW.sent_at IS DISTINCT FROM OLD.sent_at OR NEW.send_receipt IS DISTINCT FROM OLD.send_receipt)
+     AND NOT (OLD.status = 'signed' AND NEW.status = 'sent') THEN
+    RAISE EXCEPTION 'sent_at and send_receipt are set only by the signed -> sent transition' USING ERRCODE = '23514';
+  END IF;
   IF OLD.status <> 'draft' AND (
        NEW.content_version IS DISTINCT FROM OLD.content_version OR NEW.content IS DISTINCT FROM OLD.content
     OR NEW.content_sha256 IS DISTINCT FROM OLD.content_sha256 OR NEW.amount_cents IS DISTINCT FROM OLD.amount_cents
@@ -598,9 +663,7 @@ BEGIN
     OR NEW.signed_at IS DISTINCT FROM OLD.signed_at OR NEW.signed_by_subject_id IS DISTINCT FROM OLD.signed_by_subject_id
     OR NEW.signature_method IS DISTINCT FROM OLD.signature_method OR NEW.signer_intent IS DISTINCT FROM OLD.signer_intent
     OR NEW.signed_via_delegation_id IS DISTINCT FROM OLD.signed_via_delegation_id
-    OR NEW.signed_artifact_id IS DISTINCT FROM OLD.signed_artifact_id
-    OR (OLD.sent_at IS NOT NULL AND NEW.sent_at IS DISTINCT FROM OLD.sent_at)
-    OR (OLD.send_receipt IS NOT NULL AND NEW.send_receipt IS DISTINCT FROM OLD.send_receipt)) THEN
+    OR NEW.signed_artifact_id IS DISTINCT FROM OLD.signed_artifact_id) THEN
     RAISE EXCEPTION 'a signed billing stage record is immutable; supersede it with a new version' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
@@ -612,43 +675,99 @@ CREATE TRIGGER billing_stage_record_guard
   FOR EACH ROW EXECUTE FUNCTION public.billing_stage_record_guard();
 
 -- Send rows: identity is fixed, settled rows are final, rows are never deleted.
--- Send rows: a copy starts as `claimed`; identity is fixed; settled rows are
--- final; rows are never deleted. Manual reconciliation is a distinct audited
--- path, allowed only from an unknown outcome (ambiguous / needs_reconciliation).
+-- Send claims are per recipient role of one signed record version:
+--  * a claim starts `pending`, carries the record's frozen content hash and the
+--    canonical idempotency key for its (stage, record, version, attempt, role);
+--  * attempt 1 is the first claim for a role; attempt n + 1 (a fresh key) only
+--    after that role's latest claim definitively failed (failed / reconciled_failed);
+--    an accepted or unresolved role gets no new claim;
+--  * an ambiguous claim is retried with the SAME key (ambiguous -> pending, with a
+--    new claim token), or settled by audited reconciliation;
+--  * identity is fixed, settled claims are final, rows are never deleted.
 CREATE OR REPLACE FUNCTION public.billing_stage_send_guard()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+DECLARE
+  rec_version INTEGER;
+  rec_content TEXT;
+  rec_status TEXT;
+  latest_attempt INTEGER;
+  mutable TEXT[];
+  latest_status TEXT;
 BEGIN
   IF TG_OP = 'DELETE' THEN
     RAISE EXCEPTION 'billing send rows are never deleted' USING ERRCODE = '23514';
   END IF;
   IF TG_OP = 'INSERT' THEN
-    IF NEW.status <> 'claimed' THEN
-      RAISE EXCEPTION 'a billing send starts as claimed' USING ERRCODE = '23514';
+    IF NEW.status <> 'pending' THEN
+      RAISE EXCEPTION 'a billing send starts as pending' USING ERRCODE = '23514';
+    END IF;
+    -- Serialize with the record's own transitions (sign / sent).
+    SELECT r.version, r.content_sha256, r.status INTO rec_version, rec_content, rec_status
+      FROM public.billing_stage_records r WHERE r.id = NEW.stage_record_id FOR SHARE;
+    -- New claims only while the record is signed and not yet sent. Once the
+    -- stage is sent (or closed) no copy is added; delivery evidence for the
+    -- existing copies still goes to billing_delivery_events.
+    IF rec_status IS DISTINCT FROM 'signed' THEN
+      RAISE EXCEPTION 'no new send claim for a % stage record', coalesce(rec_status, 'missing') USING ERRCODE = '23514';
+    END IF;
+    IF NEW.content_sha256 IS DISTINCT FROM rec_content THEN
+      RAISE EXCEPTION 'a claim carries the frozen content hash of its record version' USING ERRCODE = '23514';
+    END IF;
+    IF NEW.idempotency_key IS DISTINCT FROM format('billing-two-stage:%s:%s:v%s:a%s:%s',
+         NEW.stage, NEW.stage_record_id, rec_version, NEW.attempt_no, NEW.recipient_role) THEN
+      RAISE EXCEPTION 'the idempotency key must be the canonical key for this stage, record version, attempt and role' USING ERRCODE = '23514';
+    END IF;
+    SELECT s.attempt_no, s.status INTO latest_attempt, latest_status FROM public.billing_stage_sends s
+      WHERE s.stage_record_id = NEW.stage_record_id AND s.recipient_role = NEW.recipient_role
+      ORDER BY s.attempt_no DESC LIMIT 1;
+    IF latest_attempt IS NULL THEN
+      IF NEW.attempt_no <> 1 THEN
+        RAISE EXCEPTION 'the first claim for a role is attempt 1' USING ERRCODE = '23514';
+      END IF;
+    ELSIF latest_status NOT IN ('failed', 'reconciled_failed') THEN
+      RAISE EXCEPTION 'the % copy is %: no new attempt (accepted copies are never re-sent; unresolved ones are retried with the same key or reconciled)', NEW.recipient_role, latest_status USING ERRCODE = '23514';
+    ELSIF NEW.attempt_no <> latest_attempt + 1 THEN
+      RAISE EXCEPTION 'the next attempt for % is %', NEW.recipient_role, latest_attempt + 1 USING ERRCODE = '23514';
     END IF;
     RETURN NEW;
   END IF;
   IF NEW.id IS DISTINCT FROM OLD.id OR NEW.organization_id IS DISTINCT FROM OLD.organization_id
      OR NEW.stage_record_id IS DISTINCT FROM OLD.stage_record_id OR NEW.stage IS DISTINCT FROM OLD.stage
      OR NEW.attempt_no IS DISTINCT FROM OLD.attempt_no OR NEW.recipient_role IS DISTINCT FROM OLD.recipient_role
-     OR NEW.email IS DISTINCT FROM OLD.email OR NEW.idempotency_key IS DISTINCT FROM OLD.idempotency_key THEN
+     OR NEW.email IS DISTINCT FROM OLD.email OR NEW.idempotency_key IS DISTINCT FROM OLD.idempotency_key
+     OR NEW.content_sha256 IS DISTINCT FROM OLD.content_sha256 THEN
     RAISE EXCEPTION 'billing send identity is immutable' USING ERRCODE = '23514';
   END IF;
-  IF OLD.status IN ('sent', 'rejected_definite', 'reconciled_delivered', 'reconciled_not_delivered') THEN
-    -- The only change to a settled copy: recording delivery evidence once.
-    IF OLD.delivery_status IS NULL AND NEW.delivery_status IS NOT NULL
-       AND ROW(NEW.status, NEW.accepted_at, NEW.provider_message_id, NEW.provider_result, NEW.attachment_sha256s,
-               NEW.claim_token, NEW.reconciled_by_subject_id, NEW.reconciled_at, NEW.reconcile_note, NEW.reconcile_evidence_artifact_id)
-         IS NOT DISTINCT FROM ROW(OLD.status, OLD.accepted_at, OLD.provider_message_id, OLD.provider_result, OLD.attachment_sha256s,
-               OLD.claim_token, OLD.reconciled_by_subject_id, OLD.reconciled_at, OLD.reconcile_note, OLD.reconcile_evidence_artifact_id) THEN
-      RETURN NEW;
+  -- Every other column is frozen except the ones the status move itself
+  -- writes: an update without a status move changes nothing but updated_at;
+  -- recipient_name, claimed_at, created_at and attachment_sha256s never change.
+  mutable := ARRAY['updated_at'];
+  IF NEW.status IS DISTINCT FROM OLD.status THEN
+    mutable := mutable || ARRAY['status', 'provider_result', 'last_error'];
+    IF OLD.status = 'ambiguous' AND NEW.status = 'pending' THEN
+      mutable := mutable || ARRAY['claim_token', 'last_claimed_at'];
     END IF;
-    RAISE EXCEPTION 'a settled billing send is final' USING ERRCODE = '23514';
+    IF NEW.status = 'provider_accepted' THEN
+      mutable := mutable || ARRAY['accepted_at', 'provider_message_id'];
+    END IF;
+    IF NEW.status IN ('reconciled_delivered', 'reconciled_failed') THEN
+      mutable := mutable || ARRAY['reconciled_by_subject_id', 'reconciled_at', 'reconcile_note', 'reconcile_evidence_artifact_id'];
+    END IF;
+  END IF;
+  IF (to_jsonb(NEW) - mutable) IS DISTINCT FROM (to_jsonb(OLD) - mutable) THEN
+    RAISE EXCEPTION 'billing send columns other than % are frozen for this update', array_to_string(mutable, ', ') USING ERRCODE = '23514';
+  END IF;
+  IF OLD.status IN ('provider_accepted', 'failed', 'reconciled_delivered', 'reconciled_failed') THEN
+    RAISE EXCEPTION 'a settled billing send is final (delivery evidence goes to billing_delivery_events)' USING ERRCODE = '23514';
   END IF;
   IF NEW.status IS DISTINCT FROM OLD.status AND NOT (
-       (OLD.status = 'claimed' AND NEW.status IN ('sent', 'rejected_definite', 'ambiguous', 'needs_reconciliation'))
-    OR (OLD.status = 'ambiguous' AND NEW.status IN ('claimed', 'sent', 'rejected_definite', 'needs_reconciliation', 'reconciled_delivered', 'reconciled_not_delivered'))
-    OR (OLD.status = 'needs_reconciliation' AND NEW.status IN ('reconciled_delivered', 'reconciled_not_delivered'))) THEN
+       (OLD.status = 'pending' AND NEW.status IN ('provider_accepted', 'failed', 'ambiguous', 'needs_reconciliation'))
+    OR (OLD.status = 'ambiguous' AND NEW.status IN ('pending', 'provider_accepted', 'failed', 'needs_reconciliation', 'reconciled_delivered', 'reconciled_failed'))
+    OR (OLD.status = 'needs_reconciliation' AND NEW.status IN ('reconciled_delivered', 'reconciled_failed'))) THEN
     RAISE EXCEPTION 'billing send status cannot move from % to %', OLD.status, NEW.status USING ERRCODE = '23514';
+  END IF;
+  IF OLD.status = 'ambiguous' AND NEW.status = 'pending' AND NEW.claim_token IS NOT DISTINCT FROM OLD.claim_token THEN
+    RAISE EXCEPTION 'a same-key retry re-claims with a new claim token' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
 END;
@@ -657,6 +776,48 @@ DROP TRIGGER IF EXISTS billing_stage_send_guard ON public.billing_stage_sends;
 CREATE TRIGGER billing_stage_send_guard
   BEFORE INSERT OR UPDATE OR DELETE ON public.billing_stage_sends
   FOR EACH ROW EXECUTE FUNCTION public.billing_stage_send_guard();
+
+-- Delivery evidence attaches only to an accepted copy, including after the
+-- stage is sent (nothing here touches the stage record).
+CREATE OR REPLACE FUNCTION public.billing_delivery_event_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.billing_stage_sends s
+                 WHERE s.id = NEW.send_id AND s.status IN ('provider_accepted', 'reconciled_delivered')) THEN
+    RAISE EXCEPTION 'delivery evidence applies only to an accepted or reconciled-delivered copy' USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS billing_delivery_event_guard ON public.billing_delivery_events;
+CREATE TRIGGER billing_delivery_event_guard
+  BEFORE INSERT ON public.billing_delivery_events
+  FOR EACH ROW EXECUTE FUNCTION public.billing_delivery_event_guard();
+DROP TRIGGER IF EXISTS billing_delivery_events_append_only ON public.billing_delivery_events;
+CREATE TRIGGER billing_delivery_events_append_only
+  BEFORE UPDATE OR DELETE ON public.billing_delivery_events
+  FOR EACH ROW EXECUTE FUNCTION public.billing_append_only();
+
+-- Attestation dates: nothing is attested as having happened after today
+-- (America/Chicago).
+CREATE OR REPLACE FUNCTION public.billing_attestation_dates_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+DECLARE
+  today DATE := public.billing_today();
+BEGIN
+  IF (NEW.kind = 'class_started' AND NEW.class_start_date > today)
+     OR (NEW.kind = 'voucher_board_signed' AND NEW.received_on > today)
+     OR (NEW.kind = 'j5_readiness' AND NEW.counselor_requested_on > today)
+     OR (NEW.kind = 'external_j5_reference' AND NEW.external_quote_date > today) THEN
+    RAISE EXCEPTION 'a % attestation cannot record a date after today (America/Chicago)', NEW.kind USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS billing_attestation_dates_guard ON public.billing_attestations;
+CREATE TRIGGER billing_attestation_dates_guard
+  BEFORE INSERT ON public.billing_attestations
+  FOR EACH ROW EXECUTE FUNCTION public.billing_attestation_dates_guard();
 
 -- The recipient snapshot changes only while its record is a draft.
 CREATE OR REPLACE FUNCTION public.billing_stage_recipient_guard()
@@ -765,9 +926,9 @@ $$;
 --      end_date_not_contract    (actual end is not start + 5 calendar months)
 --      class_differs_from_quote (J6 program/class/hours differ from the quote)
 --  * signing needs the frozen recipient snapshot for exactly the stage's roles;
---  * status 'sent' requires ONE send attempt in which every required role has a
---    delivered copy (sent or reconciled_delivered), and no copy of any attempt
---    still claimed, ambiguous or unreconciled.
+--  * status 'sent' requires, per required role, exactly one accepted copy
+--    (provider_accepted or reconciled_delivered) matching this version, and no
+--    copy of any role still pending, ambiguous or awaiting reconciliation.
 CREATE OR REPLACE FUNCTION public.billing_stage_record_rules()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 DECLARE
@@ -863,7 +1024,7 @@ BEGIN
     IF cardinality(reasons) > 0 THEN
       RAISE EXCEPTION 'the J6 is held (%): record corrected voucher or class evidence; a review note cannot clear this', reasons USING ERRCODE = '23514';
     END IF;
-    IF NEW.stage = 'j6' AND NEW.class_start_date > (now() AT TIME ZONE 'America/Chicago')::date THEN
+    IF NEW.stage = 'j6' AND NEW.class_start_date > public.billing_today() THEN
       RAISE EXCEPTION 'a J6 is signed only after the class has started (America/Chicago date)' USING ERRCODE = '23514';
     END IF;
     IF (SELECT coalesce(array_agg(p.recipient_role ORDER BY p.recipient_role), ARRAY[]::TEXT[]) FROM public.billing_stage_recipients p
@@ -874,15 +1035,20 @@ BEGIN
   END IF;
 
   IF NEW.status = 'sent' AND (TG_OP = 'INSERT' OR OLD.status <> 'sent') THEN
-    IF NOT EXISTS (
-        SELECT 1 FROM public.billing_stage_sends s
-        WHERE s.stage_record_id = NEW.id AND s.status IN ('sent', 'reconciled_delivered')
-          AND s.recipient_role = ANY(required_roles)
-        GROUP BY s.attempt_no
-        HAVING count(DISTINCT s.recipient_role) = cardinality(required_roles))
+    -- Per role: exactly one accepted claim that matches this version's content
+    -- hash, attachments and frozen address (attempt numbers may differ across
+    -- roles); and no claim of any role still unresolved.
+    IF EXISTS (
+        SELECT 1 FROM unnest(required_roles) AS req(role)
+        WHERE (SELECT count(*) FROM public.billing_stage_sends s
+               JOIN public.billing_stage_recipients p ON p.stage_record_id = s.stage_record_id AND p.recipient_role = s.recipient_role
+               WHERE s.stage_record_id = NEW.id AND s.recipient_role = req.role
+                 AND s.status IN ('provider_accepted', 'reconciled_delivered')
+                 AND s.content_sha256 = NEW.content_sha256 AND s.email = p.email
+                 AND s.attachment_sha256s = public.billing_stage_expected_attachments(NEW.id)) <> 1)
        OR EXISTS (SELECT 1 FROM public.billing_stage_sends s
-        WHERE s.stage_record_id = NEW.id AND s.status IN ('claimed', 'ambiguous', 'needs_reconciliation')) THEN
-      RAISE EXCEPTION 'a stage is sent only when one attempt delivered every required recipient and no copy is unsettled' USING ERRCODE = '23514';
+        WHERE s.stage_record_id = NEW.id AND s.status IN ('pending', 'ambiguous', 'needs_reconciliation')) THEN
+      RAISE EXCEPTION 'a stage is sent only when every required recipient has one accepted copy of this version and no copy is unresolved' USING ERRCODE = '23514';
     END IF;
   END IF;
   RETURN NEW;
@@ -893,23 +1059,26 @@ CREATE TRIGGER billing_stage_record_rules
   BEFORE INSERT OR UPDATE ON public.billing_stage_records
   FOR EACH ROW EXECUTE FUNCTION public.billing_stage_record_rules();
 
--- Each recipient's copy carries exactly the archived bytes: the signed PDF,
--- then (J6) the board-signed voucher and the optional board invoice.
-CREATE OR REPLACE FUNCTION public.billing_stage_send_attachments_guard()
-RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
-DECLARE
-  expected TEXT[];
-BEGIN
-  SELECT array_remove(ARRAY[s.sha256::text, v.sha256::text, i.sha256::text], NULL) INTO expected
+-- The exact files every copy of a signed record carries, in order: the signed
+-- PDF, then (J6) the board-signed voucher and the optional board invoice.
+CREATE OR REPLACE FUNCTION public.billing_stage_expected_attachments(record_id TEXT)
+RETURNS TEXT[] LANGUAGE sql STABLE SET search_path = pg_catalog, public AS $$
+  SELECT array_remove(ARRAY[s.sha256::text, v.sha256::text, i.sha256::text], NULL)
     FROM public.billing_stage_records r
     JOIN public.billing_artifacts s ON s.id = r.signed_artifact_id
     LEFT JOIN public.billing_artifacts v ON v.id = r.voucher_artifact_id
     LEFT JOIN public.billing_artifacts i ON i.id = r.board_invoice_artifact_id
-    WHERE r.id = NEW.stage_record_id AND r.status IN ('signed', 'sent');
-  IF expected IS NULL THEN
+    WHERE r.id = record_id
+$$;
+
+-- Each recipient's copy carries exactly the archived bytes of a signed record.
+CREATE OR REPLACE FUNCTION public.billing_stage_send_attachments_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.billing_stage_records r WHERE r.id = NEW.stage_record_id AND r.status IN ('signed', 'sent')) THEN
     RAISE EXCEPTION 'only a signed stage record can be sent' USING ERRCODE = '23514';
   END IF;
-  IF NEW.attachment_sha256s IS DISTINCT FROM expected THEN
+  IF NEW.attachment_sha256s IS DISTINCT FROM public.billing_stage_expected_attachments(NEW.stage_record_id) THEN
     RAISE EXCEPTION 'a send must attach exactly the archived signed bytes' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
@@ -929,15 +1098,19 @@ ALTER TABLE public.billing_stage_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_stage_sends ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_payment_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_stage_recipients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_delivery_events ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
   public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
-  public.billing_payment_events, public.billing_stage_recipients FROM PUBLIC;
+  public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(),
   public.billing_case_identity_guard(), public.billing_stage_record_guard(),
   public.billing_stage_send_guard(), public.billing_stage_record_links_guard(),
   public.billing_stage_send_attachments_guard(), public.billing_stage_record_rules(),
-  public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT) FROM PUBLIC;
+  public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT),
+  public.billing_chicago_date(TIMESTAMPTZ), public.billing_today(), public.billing_send_statuses(),
+  public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(),
+  public.billing_stage_expected_attachments(TEXT) FROM PUBLIC;
 
 DO $$
 DECLARE
@@ -948,15 +1121,39 @@ BEGIN
       EXECUTE format(
         'REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations, '
         'public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends, '
-        'public.billing_payment_events, public.billing_stage_recipients FROM %I', browser_role);
+        'public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events FROM %I', browser_role);
       EXECUTE format(
         'REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(), '
         'public.billing_case_identity_guard(), public.billing_stage_record_guard(), '
         'public.billing_stage_send_guard(), public.billing_stage_record_links_guard(), '
         'public.billing_stage_send_attachments_guard(), public.billing_stage_record_rules(), '
-        'public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT) FROM %I', browser_role);
+        'public.billing_stage_recipient_guard(), public.billing_contract_hours(TEXT), '
+        'public.billing_chicago_date(TIMESTAMPTZ), public.billing_today(), public.billing_send_statuses(), '
+        'public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(), '
+        'public.billing_stage_expected_attachments(TEXT) FROM %I', browser_role);
     END IF;
   END LOOP;
+END;
+$$;
+
+-- Server-side consumers: same convention as #2701 (training_billing_packets):
+-- service_role gets SELECT/INSERT/UPDATE/DELETE (no TRUNCATE, REFERENCES or
+-- TRIGGER; TRUNCATE would bypass the row triggers) and EXECUTE on the helpers
+-- that CHECK constraints and trigger bodies call in the invoker's context.
+-- The triggers still guard every row it writes. Prisma connects as the owner.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+    REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
+      public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
+      public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events FROM service_role;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
+      public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
+      public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events TO service_role;
+    GRANT EXECUTE ON FUNCTION public.billing_contract_hours(TEXT), public.billing_chicago_date(TIMESTAMPTZ),
+      public.billing_today(), public.billing_send_statuses(), public.billing_delivery_event_kinds(),
+      public.billing_stage_expected_attachments(TEXT) TO service_role;
+  END IF;
 END;
 $$;
 
