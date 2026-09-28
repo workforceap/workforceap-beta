@@ -12,6 +12,7 @@ import {
   partnerDigestReferralTake,
 } from '@/lib/cron/cronCaps';
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { partnerDataAccess, partnerMayViewMember, partnerVisiblePlacement } from '@/lib/partner/dataAccess';
 
 export const maxDuration = 300;
 
@@ -34,6 +35,7 @@ async function handle(_request: Request) {
       id: true,
       name: true,
       contactEmail: true,
+      partnerType: true,
     },
   });
 
@@ -74,6 +76,8 @@ async function handle(_request: Request) {
           placementRecord: {
             select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true },
           },
+          // Minor visibility only (lib/partner/dataAccess.ts); never rendered.
+          profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } },
           userCertifications: { select: { certName: true, earnedAt: true } },
           applications: { select: { status: true, submittedAt: true } },
           memberProgramProgress: {
@@ -99,7 +103,10 @@ async function handle(_request: Request) {
       continue;
     }
 
-    const referrals = referralsByPartner.get(p.id) ?? [];
+    // Same tier + minor rule as the partner portal (lib/partner/dataAccess.ts).
+    const access = partnerDataAccess(p);
+    const referrals = (referralsByPartner.get(p.id) ?? [])
+      .filter((r) => partnerMayViewMember(access, r.member.profile, now));
     if (referrals.length === 0) {
       results.push({ partnerId: p.id, name: p.name, emailSent: false, error: 'no_referrals' });
       continue;
@@ -136,7 +143,7 @@ async function handle(_request: Request) {
           successLines.push(`${m.fullName} earned certification: ${c.certName}`);
         }
       }
-      const placed = m.placementRecord;
+      const placed = partnerVisiblePlacement(access, m.placementRecord);
       if (placed?.placedAt && placed.placedAt >= weekStart) {
         const role = placed.jobTitle ? ` as ${placed.jobTitle}` : '';
         successLines.push(`${m.fullName} placed${role}`);

@@ -691,7 +691,9 @@ describe('GET /api/partner/earnings', () => {
     expect(body.estimatedTotal).toBe(750);
     expect(body.placements).toHaveLength(1);
     expect(body.placements[0].memberName).toBe('Alice');
-    expect(body.placements[0].employerName).toBe('Acme');
+    // Referral (payout) partners are the status-only tier: placed + date, no job details.
+    expect(body.placements[0]).toEqual({ memberId: UUIDS.member, memberName: 'Alice', placedAt: '2026-03-01T00:00:00.000Z' });
+    expect(JSON.stringify(body)).not.toContain('Acme');
   });
 
   it('omits unverified placement details and payout while enforcing the referral tenant', async () => {
@@ -729,13 +731,15 @@ describe('GET /api/partner/earnings', () => {
           member: expect.objectContaining({
             organizationId: UUIDS.org,
             deletedAt: null,
-            ...MEMBER_ONLY_WHERE,
+            email: MEMBER_ONLY_WHERE.email,
+            // Member-only exclusions kept, plus the hidden-minor rule (lib/partner/dataAccess.ts).
+            NOT: [...MEMBER_ONLY_WHERE.NOT, { profile: { is: expect.objectContaining({ ferpaConsentGiven: false }) } }],
           }),
         }),
         include: {
           member: {
             select: expect.objectContaining({
-              placementRecord: { select: expect.objectContaining({ startDateVerified: true }) },
+              placementRecord: { select: { placedAt: true, startDateVerified: true } },
             }),
           },
         },

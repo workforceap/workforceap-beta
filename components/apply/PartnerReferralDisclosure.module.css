@@ -1,0 +1,28 @@
+/* Brand tokens (css/wa-brand-tokens.css) load on every route, so this
+   callout reads the same on /apply, /apply/create-account, /signup and the
+   /join landing page. */
+.disclosure {
+  margin: 0 0 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  border-inline-start: 4px solid var(--wa-accent);
+  background: var(--wa-accent-soft);
+  color: inherit;
+  text-align: start;
+  line-height: 1.55;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--wa-accent-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.body {
+  margin: 0;
+  font-size: 0.9375rem;
+}

@@ -26,9 +26,11 @@ type PaidApplyVariantProps = {
   mobileTrustBar?: ReactNode;
   proofBlock?: ReactNode;
   trustStrip?: ReactNode;
+  /** "You were referred by {partner}…" — resolved server-side from ?ref=. */
+  partnerDisclosure?: ReactNode;
 };
 
-export default function PaidApplyVariant({ utmSource, stepNav, mobileTrustBar, proofBlock, trustStrip }: PaidApplyVariantProps) {
+export default function PaidApplyVariant({ utmSource, stepNav, mobileTrustBar, proofBlock, trustStrip, partnerDisclosure }: PaidApplyVariantProps) {
   const t = useTranslations('apply');
   const showStickyCta = useApplyStickyCtaVisibility(`#${PAID_APPLY_ELIGIBILITY_ID}`);
 
@@ -82,6 +84,7 @@ export default function PaidApplyVariant({ utmSource, stepNav, mobileTrustBar, p
         <p className="paid-apply-form-kicker" role="note">
           {t('paidFormKicker')}
         </p>
+        {partnerDisclosure}
         {proofBlock}
         {trustStrip}
         <Suspense fallback={<ApplyPageSkeleton />}>

@@ -22,6 +22,8 @@ import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logger } from '@/lib/observability/logger';
 import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
+import { activeReferralPartnerWhere } from '@/lib/partner/referralPartnerLookup';
+import { partnerDisclosureAcknowledgement } from '@/lib/apply/partnerReferralDisclosureCore';
 import { withApiGuc, withSystemGuc } from '@/lib/db/withRequestGuc';
 import { withDbRetry, isConnectionAcquisitionError } from '@/lib/db/withDbRetry';
 import { autoAssignAmbassadorFromReferral } from '@/lib/counselor/ambassadorAutoAssign';
@@ -162,6 +164,13 @@ const applySignupSchema = z.object({
   utmContent: z.string().max(200).optional().nullable(),
   utmTerm: z.string().max(200).optional().nullable(),
   referrer: z.string().max(500).optional().nullable(),
+  /**
+   * The partner ref whose disclosure ("{partner} will be able to see …") the
+   * applicant was shown on the form. Recorded, never trusted: the partner is
+   * always resolved server-side and only a match with the attributed partner
+   * counts as shown.
+   */
+  partnerDisclosureRef: z.string().max(100).optional().nullable(),
   /** Cloudflare Turnstile token, verified server-side when NEXT_PUBLIC_CAPTCHA_ENABLED=true. */
   turnstileToken: z.string().optional().nullable(),
 });
@@ -251,6 +260,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       utmContent,
       utmTerm,
       referrer,
+      partnerDisclosureRef,
       turnstileToken,
     } = parsed.data;
 
@@ -402,11 +412,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
 
     if (refRaw) {
       const partner = await withDbRetry(() => prisma.$transaction((tx) => tx.partner.findFirst({
-        where: {
-          active: true,
-          organizationId,
-          OR: [{ referralCode: refRaw }, { slug: refRaw }],
-        },
+        where: activeReferralPartnerWhere(refRaw, organizationId),
         select: {
           id: true,
           name: true,
@@ -839,6 +845,12 @@ export const POST = withApiGuc(async (request: NextRequest) => {
           curriculum_assignment_pending: curriculumAssignmentPending,
           ...getConversionValuePayload('apply_signup_completed'),
           ...attributionMetadata,
+          ...partnerDisclosureAcknowledgement({
+            attributedPartnerId: referralPartnerId,
+            attributedPartnerType: referralPartnerType,
+            attributedRef: refRaw ?? null,
+            shownRef: partnerDisclosureRef,
+          }),
         },
         sourcePage: '/apply/create-account',
       });
