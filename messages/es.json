@@ -921,6 +921,9 @@
     "accountContactConsent": "Acepto que me contacten",
     "accountContactConsentRest": "por WorkforceAP sobre mi solicitud por correo o teléfono. *",
     "accountConsentHint": "Requerido para que un asesor pueda dar seguimiento a tu próximo paso. Consulta nuestra",
+    "partnerDisclosureLabel": "Tu organización de referencia",
+    "partnerDisclosureRestricted": "Te refirió {partner}. {partner} podrá ver el estado de tu solicitud y tu progreso en WorkforceAP: tu nombre, el estado de tu solicitud y la fecha en que la enviaste, el programa en el que te inscribas, cuánto has avanzado, los nombres de las certificaciones que obtengas y si comienzas un empleo y cuándo. {partner} no verá tu correo electrónico, número de teléfono, dirección, situación laboral ni nivel educativo, empleador, puesto ni salario.",
+    "partnerDisclosureFull": "Te refirió {partner}. {partner} podrá ver el estado de tu solicitud y tu progreso en WorkforceAP, junto con algunos datos de contacto y de perfil: tu nombre y correo electrónico; tu ciudad, estado y código postal; tu situación laboral y nivel educativo; el programa en el que te inscribas y cuánto has avanzado; las certificaciones que obtengas; y, cuando WorkforceAP confirme una colocación laboral, tu empleador, puesto, salario y el seguimiento de ese empleo.",
     "accountCreating": "Creando tu cuenta…",
     "accountSubmitCta": "Guardar mi lugar y crear acceso",
     "accountProfileLater": "Puedes volver después para completar tu perfil.",
@@ -1125,6 +1128,21 @@
     "missingContact": "Contactar a WorkforceAP",
     "missingHome": "Volver al inicio",
     "missingMetaTitle": "Página de inscripción escolar no encontrada"
+  },
+  "partnerLanding": {
+    "metaTitle": "Postúlate a WorkforceAP con {partner}",
+    "metaDescription": "{partner} te invita a postularte a WorkforceAP, una organización sin fines de lucro 501(c)(3) que ofrece capacitación profesional, credenciales reconocidas en la industria y apoyo en la búsqueda de empleo.",
+    "eyebrow": "Referido por {partner}",
+    "title": "{partner} te invitó a WorkforceAP",
+    "applyCta": "Comienza tu solicitud",
+    "applyCtaNote": "Al postularte desde esta página, tu solicitud queda vinculada a {partner}.",
+    "programsEyebrow": "Programas destacados",
+    "programsTitle": "Capacitación profesional para explorar",
+    "programsBody": "Algunos de los programas disponibles en WorkforceAP. Eliges tu programa al postularte.",
+    "stepsEyebrow": "Cómo funciona",
+    "stepsTitle": "Tres pasos desde aquí",
+    "privacyTitle": "Lo que {partner} podrá ver",
+    "closingTitle": "Cuando estés listo"
   },
   "training": {
     "myTraining": "Mi Entrenamiento",

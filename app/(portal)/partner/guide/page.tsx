@@ -9,6 +9,10 @@ import { prisma } from '@/lib/db/prisma';
 import PartnerReferralShare from '@/components/partner/PartnerReferralShare';
 import PartnerReferralResourcesSection from '@/components/partner/PartnerReferralResourcesSection';
 import { buildPartnerReferralLink } from '@/lib/partner/referralLink';
+import PartnerShareToolkit from '@/components/partner/PartnerShareToolkit';
+import { buildPartnerShareLinks } from '@/lib/partner/shareLinks';
+import { loadPartnerShareChannelCounts } from '@/lib/partner/shareChannelCounts';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 import PageHeader from '@/components/portal/PageHeader';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,20 +49,32 @@ export default async function PartnerGuidePage() {
   const ctx = await getPartnerForUser(user.id);
   if (!ctx) redirect(await unlinkedPartnerHref(user.id));
 
-  // Referral impact stats
-  const [totalReferred, assessmentCount, placedCount] = await Promise.all([
-    prisma.application.count({ where: { referralPartnerId: ctx.partnerId } }),
-    prisma.user.count({
+  // Referral impact stats — minors hidden from non-school partners are not
+  // counted either (lib/partner/dataAccess.ts).
+  const access = partnerDataAccess(ctx.partner);
+  const [totalReferred, assessmentCount, placedCount, channelCounts] = await Promise.all([
+    prisma.application.count({
       where: {
-        applications: { some: { referralPartnerId: ctx.partnerId } },
-        assessmentCompleted: true,
+        referralPartnerId: ctx.partnerId,
+        user: withPartnerMemberVisibility({}, access),
       },
     }),
     prisma.user.count({
-      where: {
+      where: withPartnerMemberVisibility({
+        applications: { some: { referralPartnerId: ctx.partnerId } },
+        assessmentCompleted: true,
+      }, access),
+    }),
+    prisma.user.count({
+      where: withPartnerMemberVisibility({
         applications: { some: { referralPartnerId: ctx.partnerId } },
         placementRecord: { is: { startDateVerified: true } },
-      },
+      }, access),
+    }),
+    // Counts only; a failure hides the column rather than showing zeros.
+    loadPartnerShareChannelCounts(ctx.partnerId, ctx.partner.organizationId, access).catch((err: unknown) => {
+      console.error('[partner guide] share channel counts failed', err);
+      return null;
     }),
   ]);
 
@@ -70,6 +86,11 @@ export default async function PartnerGuidePage() {
   const { referralCode, url: referralApplyUrl } = buildPartnerReferralLink({
     referralCode: partner?.referralCode,
     slug: partner?.slug ?? ctx.partner.slug,
+  });
+  const shareLinks = buildPartnerShareLinks({
+    referralCode: partner?.referralCode,
+    slug: partner?.slug ?? ctx.partner.slug,
+    name: partnerName,
   });
 
   return (
@@ -85,6 +106,10 @@ export default async function PartnerGuidePage() {
       />
 
       <PartnerReferralShare url={referralApplyUrl} referralCode={referralCode} />
+
+      <div style={{ marginBottom: '2rem' }}>
+        <PartnerShareToolkit links={shareLinks} channelCounts={channelCounts} />
+      </div>
 
       {/* Who is WorkforceAP for */}
       <section className="portal-card portal-card--flat" style={{ padding: '2rem', marginBottom: '2rem' }}>
