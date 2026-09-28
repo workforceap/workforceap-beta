@@ -446,6 +446,41 @@ export class FixtureRecipientSkippedError extends Error {
   }
 }
 
+/**
+ * Resend resolves API rejections as `{ data: null, error }`. Keep the HTTP
+ * status, when its error body includes one, so callers can distinguish a
+ * definite rejection from an uncertain provider outcome. The SDK does not
+ * always attach the response status; `null` must remain an unknown outcome.
+ */
+export class ResendResolvedSendError extends Error {
+  readonly statusCode: number | null;
+  readonly providerErrorName: string | null;
+  /** Original provider code, or its SDK error name when no code is supplied. */
+  readonly code: string | null;
+
+  constructor(message: string, providerError: unknown) {
+    super(message);
+    const record = asRecord(providerError);
+    this.statusCode = resolvedResendStatusCode(providerError);
+    this.providerErrorName = typeof record?.name === 'string' ? record.name : null;
+    // Existing rate-limit and failure classifiers inspect Error.name first.
+    // `instanceof ResendResolvedSendError` remains the typed-error discriminator.
+    this.name = this.providerErrorName ?? 'ResendResolvedSendError';
+    this.code = typeof record?.code === 'string' ? record.code : this.providerErrorName;
+  }
+}
+
+function resolvedResendStatusCode(error: unknown): number | null {
+  const record = asRecord(error);
+  const value = record?.statusCode ?? record?.status ?? record?.status_code;
+  const status = typeof value === 'number'
+    ? value
+    : typeof value === 'string' && /^\d{3}$/.test(value) ? Number(value) : null;
+  return status !== null && Number.isInteger(status) && status >= 100 && status <= 599
+    ? status
+    : null;
+}
+
 export async function sendBrandedEmail(
   resend: Resend,
   args: SendBrandedEmailArgs,
@@ -582,7 +617,7 @@ export async function sendBrandedEmail(
     if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, result.error);
     sendLog.fail(result.error, attempt);
     await sendLog.settle();
-    throw new Error(message);
+    throw new ResendResolvedSendError(message, result.error);
   }
   sendLog.fail('Resend retry budget exhausted', RESEND_MAX_ATTEMPTS);
   await sendLog.settle();
