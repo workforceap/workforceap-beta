@@ -197,7 +197,8 @@ CREATE TABLE IF NOT EXISTS "billing_designated_signers" (
     "user_id" TEXT NOT NULL,
     "designated_by" TEXT NOT NULL,
     "note" TEXT NOT NULL,
-    "designated_at" TIMESTAMP(3) NOT NULL,
+    -- Stamped by the trigger (wall clock); the DEFAULT only lets clients omit it.
+    "designated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "billing_designated_signers_pkey" PRIMARY KEY ("organization_id"),
     CONSTRAINT "billing_designated_signers_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -225,7 +226,8 @@ CREATE TABLE IF NOT EXISTS "billing_voucher_receipt_signatures" (
     "representation_artifact_id" TEXT,
     "representation_sha256" CHAR(64),
     "statement" TEXT NOT NULL,
-    "attested_at" TIMESTAMP(3) NOT NULL,
+    -- Stamped by the trigger (wall clock); the DEFAULT only lets clients omit it.
+    "attested_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "billing_voucher_receipt_signatures_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "billing_voucher_receipt_signatures_case_fkey" FOREIGN KEY ("case_id", "organization_id") REFERENCES "billing_cases"("id", "organization_id") ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -541,8 +543,9 @@ CREATE TABLE IF NOT EXISTS "billing_stage_sends" (
     "idempotency_key" TEXT NOT NULL,
     "status" TEXT NOT NULL,
     "claim_token" TEXT NOT NULL,
-    "claimed_at" TIMESTAMP(3) NOT NULL,
-    "last_claimed_at" TIMESTAMP(3) NOT NULL,
+    -- Stamped by the trigger (wall clock); the DEFAULTs only let clients omit them.
+    "claimed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "last_claimed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "accepted_at" TIMESTAMP(3),
     "content_sha256" CHAR(64) NOT NULL,
     "attachment_sha256s" TEXT[] DEFAULT ARRAY[]::TEXT[],
@@ -649,6 +652,8 @@ RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 BEGIN
   -- Serialize payment events per case (the transition rules below read them).
   PERFORM 1 FROM public.billing_cases c WHERE c.id = NEW.case_id FOR UPDATE;
+  -- The recorded time is the database wall clock (it orders the case's events).
+  NEW.recorded_at := public.billing_utc_now();
   IF NOT EXISTS (
     SELECT 1 FROM public.billing_stage_records r
     WHERE r.id = NEW.j6_record_id AND r.case_id = NEW.case_id AND r.stage = 'j6'
@@ -861,6 +866,9 @@ BEGIN
     RAISE EXCEPTION 'J5_LINKED_BY_OPEN_J6: an open J6 follows this J5; void or send it first' USING ERRCODE = '23514';
   END IF;
   IF NEW.status IN ('superseded', 'voided') AND NEW.status IS DISTINCT FROM OLD.status THEN
+    -- The closure time is the database wall clock (a caller value is overwritten).
+    IF NEW.status = 'superseded' THEN NEW.superseded_at := public.billing_utc_now(); END IF;
+    IF NEW.status = 'voided' THEN NEW.voided_at := public.billing_utc_now(); END IF;
     required_roles := CASE NEW.stage WHEN 'j5' THEN ARRAY['counselor', 'student'] ELSE ARRAY['counselor', 'finance', 'student'] END;
     SELECT count(*) > 0, coalesce(bool_or(s.status IN ('pending', 'ambiguous', 'needs_reconciliation')), false)
       INTO has_claims, has_unresolved
@@ -1021,6 +1029,13 @@ BEGIN
   IF (to_jsonb(NEW) - mutable) IS DISTINCT FROM (to_jsonb(OLD) - mutable) THEN
     RAISE EXCEPTION 'billing send columns other than % are frozen for this update', array_to_string(mutable, ', ') USING ERRCODE = '23514';
   END IF;
+  -- Acceptance and reconciliation times are the database wall clock.
+  IF NEW.status IS DISTINCT FROM OLD.status AND NEW.status = 'provider_accepted' THEN
+    NEW.accepted_at := public.billing_utc_now();
+  END IF;
+  IF NEW.status IS DISTINCT FROM OLD.status AND NEW.status IN ('reconciled_delivered', 'reconciled_failed') THEN
+    NEW.reconciled_at := public.billing_utc_now();
+  END IF;
   IF OLD.status IN ('provider_accepted', 'failed', 'reconciled_delivered', 'reconciled_failed') THEN
     RAISE EXCEPTION 'a settled billing send is final (delivery evidence goes to billing_delivery_events)' USING ERRCODE = '23514';
   END IF;
@@ -1073,6 +1088,7 @@ BEGIN
                  WHERE s.id = NEW.send_id AND s.status IN ('provider_accepted', 'reconciled_delivered')) THEN
     RAISE EXCEPTION 'delivery evidence applies only to an accepted or reconciled-delivered copy' USING ERRCODE = '23514';
   END IF;
+  NEW.recorded_at := public.billing_utc_now();
   RETURN NEW;
 END;
 $$;
@@ -1121,9 +1137,6 @@ RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 DECLARE
   designated TEXT;
 BEGIN
-  IF NEW.attested_at IS NOT NULL THEN
-    RAISE EXCEPTION 'attested_at is set by the database; do not supply it' USING ERRCODE = '23514';
-  END IF;
   SELECT d.user_id INTO designated FROM public.billing_designated_signers d WHERE d.organization_id = NEW.organization_id;
   IF designated IS NULL THEN
     RAISE EXCEPTION 'SIGNER_PRINCIPAL_UNSET: no signer is designated for this organization' USING ERRCODE = '23514';
@@ -1160,6 +1173,8 @@ RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 DECLARE
   today DATE := public.billing_today();
 BEGIN
+  -- When a statement was attested is the database wall clock, never caller-supplied.
+  NEW.attested_at := public.billing_utc_now();
   -- The board-signed voucher is attested only by the organization's designated
   -- signer (Michael); unset means refused (fail closed).
   IF NEW.kind = 'voucher_board_signed' AND NOT EXISTS (

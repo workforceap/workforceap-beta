@@ -2270,7 +2270,7 @@ model BillingDesignatedSigner {
   designatedBy   String   @map("designated_by")
   note           String
   /// Stamped by the database.
-  designatedAt   DateTime @map("designated_at")
+  designatedAt   DateTime @default(now()) @map("designated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -2295,7 +2295,7 @@ model BillingVoucherReceiptSignature {
   representationArtifactId String?  @map("representation_artifact_id")
   representationSha256     String?  @map("representation_sha256") @db.Char(64)
   statement                String
-  attestedAt               DateTime @map("attested_at")
+  attestedAt               DateTime @default(now()) @map("attested_at")
 
   case           BillingCase      @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "billing_voucher_receipt_signatures_case_fkey")
   voucher        BillingArtifact  @relation("ReceiptSignatureVoucher", fields: [voucherArtifactId, voucherSha256], references: [id, sha256], onDelete: Restrict, onUpdate: NoAction, map: "billing_voucher_receipt_signatures_voucher_fkey")
@@ -2473,8 +2473,8 @@ model BillingStageSend {
   status                String
   /// Rotated on every claim/reconciliation; final transitions compare-and-set on it.
   claimToken            String    @map("claim_token")
-  claimedAt             DateTime  @map("claimed_at")
-  lastClaimedAt         DateTime  @map("last_claimed_at")
+  claimedAt             DateTime  @default(now()) @map("claimed_at")
+  lastClaimedAt         DateTime  @default(now()) @map("last_claimed_at")
   /// Provider acceptance (status 'provider_accepted' requires it with providerMessageId).
   acceptedAt            DateTime? @map("accepted_at")
   /// The record version's frozen content hash this copy renders.

@@ -206,15 +206,15 @@ const SIGNED = (artifact) => ({
 });
 
 /** Claim one role's copy of a record version: starts `pending`, canonical per-role-attempt key. */
-function sendInsert({ id, record, stage, version = 1, attempt = 1, role, status = 'pending', key, attachments = [], email = null, content = null, name = null, claimedAt = 'now()' }) {
+function sendInsert({ id, record, stage, version = 1, attempt = 1, role, status = 'pending', key, attachments = [], email = null, content = null, name = null, claimedAt = null }) {
   const nameSql = name ? `'${name}'` : `(SELECT recipient_name FROM public.billing_stage_recipients WHERE stage_record_id = '${record}' AND recipient_role = '${role}')`;
   const hashes = attachments.length > 0 ? `ARRAY[${attachments.map((h) => `'${h}'`).join(', ')}]` : 'ARRAY[]::TEXT[]';
   const contentSql = content ? `'${content}'` : `(SELECT content_sha256 FROM public.billing_stage_records WHERE id = '${record}')`;
-  return `INSERT INTO public.billing_stage_sends (id, organization_id, stage_record_id, stage, attempt_no, recipient_role, recipient_name, email, idempotency_key, status, claim_token, claimed_at, last_claimed_at, content_sha256, attachment_sha256s, updated_at)
-    VALUES ('${id}', '${ORG}', '${record}', '${stage}', ${attempt}, '${role}', ${nameSql}, '${email ?? `${role}@example.test`}', '${key ?? `billing-two-stage:${stage}:${record}:v${version}:a${attempt}:${role}`}', '${status}', 'tok-${id}', ${claimedAt}, ${claimedAt}, ${contentSql}, ${hashes}, now());`;
+  return `INSERT INTO public.billing_stage_sends (id, organization_id, stage_record_id, stage, attempt_no, recipient_role, recipient_name, email, idempotency_key, status, claim_token, ${claimedAt ? 'claimed_at, last_claimed_at, ' : ''}content_sha256, attachment_sha256s, updated_at)
+    VALUES ('${id}', '${ORG}', '${record}', '${stage}', ${attempt}, '${role}', ${nameSql}, '${email ?? `${role}@example.test`}', '${key ?? `billing-two-stage:${stage}:${record}:v${version}:a${attempt}:${role}`}', '${status}', 'tok-${id}', ${claimedAt ? `${claimedAt}, ${claimedAt}, ` : ''}${contentSql}, ${hashes}, now());`;
 }
 /** The provider accepted the copy: provider_accepted needs accepted_at and the provider message id. */
-const accepted = (where) => `UPDATE public.billing_stage_sends SET status = 'provider_accepted', accepted_at = now(), provider_message_id = 'synthetic-msg-' || id, updated_at = now() WHERE ${where};`;
+const accepted = (where) => `UPDATE public.billing_stage_sends SET status = 'provider_accepted', accepted_at = '2000-01-01', provider_message_id = 'synthetic-msg-' || id, updated_at = now() WHERE ${where};`;
 const setStatus = (id, status, extra = '') => `UPDATE public.billing_stage_sends SET status = '${status}'${extra ? `, ${extra}` : ''}, updated_at = now() WHERE id = '${id}';`;
 
 function privilegeMatrix(role) {
@@ -680,7 +680,7 @@ try {
   rejects(`UPDATE public.billing_stage_sends SET status = 'reconciled_delivered' WHERE id='s-j5-counselor';`, '23514', 'reconciliation needs who, when and a note');
   sql(artifactInsert({ id: 'art-other-case', kind: 'board_invoice', source: 'uploaded', text: '%PDF-1.7 synthetic other-case evidence', caseId: 'case-ibm' }));
   rejects(`UPDATE public.billing_stage_sends SET status = 'reconciled_delivered', reconciled_by_subject_id = '${STAFF}', reconciled_at = now(), reconcile_note = 'Synthetic', reconcile_evidence_artifact_id = 'art-other-case', updated_at = now() WHERE id='s-j5-counselor';`, '23514', 'reconciliation evidence from another case is refused');
-  sql(`UPDATE public.billing_stage_sends SET status = 'reconciled_delivered', reconciled_by_subject_id = '${STAFF}', reconciled_at = now(), reconcile_note = 'Synthetic provider log shows delivery', reconcile_evidence_artifact_id = 'art-upload', updated_at = now() WHERE id='s-j5-counselor';`);
+  sql(`UPDATE public.billing_stage_sends SET status = 'reconciled_delivered', reconciled_by_subject_id = '${STAFF}', reconciled_at = '2000-01-01', reconcile_note = 'Synthetic provider log shows delivery', reconcile_evidence_artifact_id = 'art-upload', updated_at = now() WHERE id='s-j5-counselor';`);
   rejects(`UPDATE public.billing_stage_sends SET status = 'needs_reconciliation' WHERE id='s-j5-counselor';`, '23514', 'a reconciled copy is final');
   rejects(`UPDATE public.billing_stage_sends SET email = 'other@example.test' WHERE id='s-j5-student';`, '23514', 'send identity is immutable');
   rejects(`DELETE FROM public.billing_stage_sends WHERE id='s-j5-student';`, '23514', 'send rows are never deleted');
@@ -819,7 +819,9 @@ try {
   refusedBecause(receipt('rs-staff', { by: STAFF }), 'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL:%');
   rejects(receipt('rs-hash', { sha: 'e'.repeat(64) }), '23503', 'the attestation is bound to the exact voucher bytes');
   rejects(receipt('rs-inv', { voucher: 'art-invoice', sha: sql(`SELECT sha256 FROM public.billing_artifacts WHERE id = 'art-invoice';`) }), '23514', 'only a board-signed voucher');
-  rejects(receipt('rs-when', { attestedAt: `'2000-01-01'` }), '23514', 'attested_at is stamped by the database');
+  // attested_at is stamped by the database: a caller value is overwritten (Prisma omits it via its DEFAULT).
+  sql(receipt('rs-when', { attestedAt: `'2000-01-01'` }));
+  assert.equal(sql(`SELECT (attested_at > '2020-01-01')::text FROM public.billing_voucher_receipt_signatures WHERE id = 'rs-when';`), 'true', 'a supplied attested_at is overwritten by the DB clock');
   rejects(receipt('rs-rep0', { method: 'approved_signature_representation' }), '23514', 'a representation needs its artifact and hash');
   rejects(receipt('rs-rep-bad', { method: 'approved_signature_representation', repId: `'art-invoice'`, repSha: `(SELECT sha256 FROM public.billing_artifacts WHERE id = 'art-invoice')` }), '23514', 'a representation is a voucher_receipt_signature file');
   sql(artifactInsert({ id: 'art-rsig', kind: 'voucher_receipt_signature', source: 'uploaded', text: '%PDF-1.7 synthetic approved signature representation' }));
@@ -1175,7 +1177,7 @@ try {
   sql(stageInsert({ id: 'j6-v4', stage: 'j6', version: 4, doc: 'WAP-I-2026-0009', ...j6Dates, extra: { ...j6Links, voucher_attestation_id: `'att-voucher-fix'`, supersedes_record_id: `'j6-v3'` } }));
   const openJ6 = sql(`SELECT string_agg(id, ',' ORDER BY id) FROM public.billing_stage_records WHERE stage = 'j6' AND prior_j5_record_id = 'j5-v1' AND status IN ('draft', 'signed');`).split(',').filter(Boolean);
   assert.ok(openJ6.length > 0, 'fixture: open J6 drafts follow j5-v1');
-  const closeJ5 = `UPDATE public.billing_stage_records SET status='superseded', superseded_at = now(), closed_by_subject_id = '${STAFF}', close_reason = 'Synthetic corrected quote', updated_at = now() WHERE id='j5-v1';`;
+  const closeJ5 = `UPDATE public.billing_stage_records SET status='superseded', superseded_at = '2000-01-01', closed_by_subject_id = '${STAFF}', close_reason = 'Synthetic corrected quote', updated_at = now() WHERE id='j5-v1';`;
   refusedBecause(closeJ5, 'J5_LINKED_BY_OPEN_J6:%');
   // Defence in depth: even if the J5 were closed underneath an open J6 (fixture bypass, rolled back),
   // that J6 can still be edited and voided: the prior-J5 link is not re-validated.
@@ -1232,6 +1234,37 @@ try {
       (SELECT string_agg(sha256, ',' ORDER BY id) FROM public.billing_artifacts))::text;`), archiveBefore);
   rejects(`UPDATE public.billing_cases SET member_id = '${STAFF}' WHERE id='case-1';`, '23514', 'a detached case cannot be re-pointed at another account');
   pass('purging the member detaches member_id, keeps subject_member_id and the whole finance archive');
+
+  // ------------------------------------------------ DB-stamped columns
+  // Prisma-shaped inserts omit every DB-stamped column (the helpers above do); supplied values are overwritten.
+  sql(`${readinessInsert('att-stamp-check', { attested_at: `'2000-01-01'` })}
+       INSERT INTO public.billing_delivery_events (id, organization_id, send_id, kind, occurred_at, source, provider_event_id, recorded_at)
+         VALUES ('ev-stamp', '${ORG}', 's-j6-finance-a2', 'delivered', now(), 'synthetic webhook', 'evt-stamp', '2000-01-01');`);
+  assert.equal(
+    sql(`SELECT
+      (SELECT count(*) FROM public.billing_attestations WHERE attested_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_artifacts WHERE created_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_designated_signers WHERE designated_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_voucher_receipt_signatures WHERE attested_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_stage_records WHERE signed_at < '2020-01-01' OR sent_at < '2020-01-01' OR superseded_at < '2020-01-01'
+           OR voided_at < '2020-01-01' OR send_cancelled_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_stage_sends WHERE claimed_at < '2020-01-01' OR last_claimed_at < '2020-01-01' OR accepted_at < '2020-01-01' OR reconciled_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_delivery_events WHERE recorded_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_payment_events WHERE recorded_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_cases WHERE member_merged_at < '2020-01-01');`),
+    '0',
+    'every DB-stamped column holds the DB clock even where the caller supplied 2000-01-01',
+  );
+  assert.equal(
+    sql(`SELECT string_agg(table_name || '.' || column_name, ',' ORDER BY table_name, column_name) FROM information_schema.columns
+         WHERE table_schema = 'public' AND is_nullable = 'NO' AND column_default IS NULL
+           AND (table_name, column_name) IN (('billing_attestations','attested_at'), ('billing_artifacts','created_at'), ('billing_designated_signers','designated_at'),
+             ('billing_voucher_receipt_signatures','attested_at'), ('billing_stage_sends','claimed_at'), ('billing_stage_sends','last_claimed_at'),
+             ('billing_delivery_events','recorded_at'), ('billing_payment_events','recorded_at'));`),
+    '',
+    'every NOT NULL DB-stamped column has a DEFAULT, so a Prisma create can omit it',
+  );
+  pass('DB-stamped columns (attested_at x2, created_at upload, designated_at, signed_at, sent_at, superseded_at, voided_at, send_cancelled_at, claimed_at, last_claimed_at, accepted_at, reconciled_at, recorded_at x2, member_merged_at) are omittable in Prisma-shaped inserts and hold the DB clock');
 
   // ------------------------------------------------------- re-run
   const recordCount = sql(`SELECT count(*) FROM public.billing_stage_records;`);
