@@ -7,7 +7,10 @@ import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPa
 import { resolveAssignedCounselorContact, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import PageHeader from '@/components/portal/PageHeader';
 import BillingPacketList from '@/components/billing/BillingPacketList';
-import TwoStageBillingWorkbench from './TwoStageBillingWorkbench';
+import { resolveProgramTitle } from '@/lib/billing/packetDocument';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
+import TwoStageBillingCase, { type EnrolledProgram } from './TwoStageBillingCase';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -27,10 +30,34 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
   const member = await withAdminPageScope(scope, (db) =>
     db.user.findFirst({
       where: { id },
-      select: { id: true, fullName: true, email: true, organizationId: true, deletedAt: true },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        organizationId: true,
+        deletedAt: true,
+        enrolledProgram: true,
+        courseEnrollments: { select: { id: true, programSlug: true, isPrimary: true, enrolledAt: true }, orderBy: { enrolledAt: 'asc' } },
+      },
     }),
   );
   if (!member || member.deletedAt) notFound();
+
+  // The case opens for the member's enrolled program: the primary enrollment
+  // (or the one matching the legacy pointer) first, then any other enrollment.
+  const { primaryProgramSlug } = resolveActiveDashboardProgram({
+    enrollments: member.courseEnrollments,
+    legacyEnrolledProgram: member.enrolledProgram,
+  });
+  const enrolledSlugs = [primaryProgramSlug, ...member.courseEnrollments.map((row) => row.programSlug)].filter(
+    (slug): slug is string => Boolean(slug),
+  );
+  const enrolledPrograms: EnrolledProgram[] = [];
+  for (const slug of enrolledSlugs) {
+    if (!enrolledPrograms.some((p) => programSlugsEquivalent(p.slug, slug))) {
+      enrolledPrograms.push({ slug, title: resolveProgramTitle(slug) });
+    }
+  }
 
   const [packets, counselor] = await Promise.all([
     withAdminPageScope(scope, (db) =>
@@ -59,10 +86,12 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
           </Link>
         }
       />
-      <TwoStageBillingWorkbench
+      <TwoStageBillingCase
+        memberId={member.id}
         memberName={member.fullName}
         memberEmail={member.email}
         counselor={counselor ? { name: counselor.fullName, email: counselor.email } : null}
+        enrolledPrograms={enrolledPrograms}
       />
       {packets.length > 0 ? (
         <section className="portal-profile-section-card">

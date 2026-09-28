@@ -3,6 +3,19 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import TwoStageBillingWorkbench, {
   type TwoStageBillingReadiness,
 } from '@/app/admin/members/[id]/billing/TwoStageBillingWorkbench';
+import { J5_READINESS_KEYS, J6_READINESS_KEYS, type CaseSummaryDto } from '@/lib/billing/twoStage/dto';
+
+/**
+ * M4 replaced the single `readiness` prop (one object for both cards) with
+ * the server's per-stage `readinessByStage`, so each card shows only its own
+ * stage's facts. These #2706 cases keep their meaning by giving each card the
+ * keys of its own stage from the same fixture.
+ */
+function byStage(readiness: TwoStageBillingReadiness): CaseSummaryDto['readinessByStage'] {
+  const pick = <K extends string>(keys: readonly K[]) =>
+    Object.fromEntries(keys.filter((k) => k in readiness).map((k) => [k, readiness[k as keyof TwoStageBillingReadiness]])) as Partial<Record<K, boolean>>;
+  return { j5: pick(J5_READINESS_KEYS), j6: pick(J6_READINESS_KEYS) };
+}
 
 const contacts = {
   memberName: 'Case Student',
@@ -64,7 +77,7 @@ describe('two-stage member billing workbench', () => {
     render(
       <TwoStageBillingWorkbench
         {...contacts}
-        readiness={{ ...j5Ready, originalVoucherHashVerified: false, classStarted: false, financeContactVerified: false }}
+        readinessByStage={byStage({ ...j5Ready, originalVoucherHashVerified: false, classStarted: false, financeContactVerified: false })}
         onPrepareJ5={prepareJ5}
         onPrepareJ6={prepareJ6}
       />,
@@ -85,7 +98,7 @@ describe('two-stage member billing workbench', () => {
   it('shows each missing J6 prerequisite before staff opens draft review', () => {
     const prepareJ6 = vi.fn();
     const { rerender } = render(
-      <TwoStageBillingWorkbench {...contacts} readiness={{ ...j6Ready, originalVoucherHashVerified: false }} onPrepareJ6={prepareJ6} />,
+      <TwoStageBillingWorkbench {...contacts} readinessByStage={byStage({ ...j6Ready, originalVoucherHashVerified: false })} onPrepareJ6={prepareJ6} />,
     );
     const j6 = screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' });
     expect(j6).toBeEnabled();
@@ -97,12 +110,12 @@ describe('two-stage member billing workbench', () => {
       'voucherTermsVerified',
       'classStarted',
     ] as const) {
-      rerender(<TwoStageBillingWorkbench {...contacts} readiness={{ ...j6Ready, [missing]: false }} onPrepareJ6={prepareJ6} />);
+      rerender(<TwoStageBillingWorkbench {...contacts} readinessByStage={byStage({ ...j6Ready, [missing]: false })} onPrepareJ6={prepareJ6} />);
       expect(j6).toBeEnabled();
       expect(screen.getByText(/Opens draft preparation to review the missing details/)).toBeInTheDocument();
     }
 
-    rerender(<TwoStageBillingWorkbench {...contacts} readiness={j6Ready} onPrepareJ6={prepareJ6} />);
+    rerender(<TwoStageBillingWorkbench {...contacts} readinessByStage={byStage(j6Ready)} onPrepareJ6={prepareJ6} />);
     expect(j6).toBeEnabled();
     fireEvent.click(j6);
     expect(prepareJ6).toHaveBeenCalledOnce();
@@ -114,7 +127,7 @@ describe('two-stage member billing workbench', () => {
     render(
       <TwoStageBillingWorkbench
         {...contacts}
-        readiness={j6Ready}
+        readinessByStage={byStage(j6Ready)}
       />,
     );
     expect(screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' })).toBeDisabled();
