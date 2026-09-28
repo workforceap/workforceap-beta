@@ -7,6 +7,7 @@ import {
   isEmailProviderRateLimitError,
   isFixtureEmailRecipient,
   isTransientProviderError,
+  ResendResolvedSendError,
   sendBrandedEmail,
   sendBrandedEmailOrThrowOnSkip,
 } from '@/lib/email/send';
@@ -321,6 +322,89 @@ describe('sendBrandedEmail', () => {
           html: '<p>Hi</p>',
         }),
       /Invalid from address/,
+    );
+  });
+
+  it('preserves explicit Resend HTTP statuses for a caller to classify', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    for (const statusCode of [422, 408, 429, 503]) {
+      let attempts = 0;
+      const resend = {
+        emails: {
+          send: async () => {
+            attempts++;
+            return { data: null, error: { name: 'provider_error', message: `Rejected ${statusCode}`, statusCode } };
+          },
+        },
+      } as unknown as import('resend').Resend;
+
+      await assert.rejects(
+        () => sendBrandedEmailOrThrowOnSkip(resend, {
+          from: 'WorkforceAP <hello@workforceap.org>',
+          to: 'applicant@workforceap.org',
+          subject: 'Status preservation',
+          html: '<p>Hi</p>',
+        }, {
+          now: () => 1_000,
+          deadlineAtMs: 1_000,
+          sendLogStore: { async record() {} },
+          suppressFailureDiagnostic: true,
+        }),
+        (error: unknown) => {
+          assert.ok(error instanceof ResendResolvedSendError);
+          assert.equal(error.message, `Rejected ${statusCode}`);
+          assert.equal(error.statusCode, statusCode);
+          return true;
+        },
+      );
+      assert.equal(attempts, 1, 'the caller deadline still prevents provider retries');
+    }
+  });
+
+  it('does not infer an HTTP status from a Resend error name', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const resend = {
+      emails: {
+        send: async () => ({ data: null, error: { name: 'validation_error', message: 'Invalid from address' } }),
+      },
+    } as unknown as import('resend').Resend;
+
+    await assert.rejects(
+      () => sendBrandedEmailOrThrowOnSkip(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: 'applicant@workforceap.org',
+        subject: 'Unknown status',
+        html: '<p>Hi</p>',
+      }, { sendLogStore: { async record() {} }, suppressFailureDiagnostic: true }),
+      (error: unknown) => {
+        assert.ok(error instanceof ResendResolvedSendError);
+        assert.equal(error.message, 'Invalid from address');
+        assert.equal(error.statusCode, null);
+        return true;
+      },
+    );
+  });
+
+  it('keeps a thrown transport error unchanged', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const transportError = new TypeError('fetch failed');
+    const resend = {
+      emails: { send: async () => { throw transportError; } },
+    } as unknown as import('resend').Resend;
+
+    await assert.rejects(
+      () => sendBrandedEmailOrThrowOnSkip(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: 'applicant@workforceap.org',
+        subject: 'Transport failure',
+        html: '<p>Hi</p>',
+      }, {
+        now: () => 1_000,
+        deadlineAtMs: 1_000,
+        sendLogStore: { async record() {} },
+        suppressFailureDiagnostic: true,
+      }),
+      (error: unknown) => error === transportError,
     );
   });
 
