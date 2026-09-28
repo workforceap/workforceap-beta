@@ -69,6 +69,10 @@ describe('per-recipient claims: no double sends, unknown outcomes reconciled', (
     assert.deepEqual(decideClaim(row('ambiguous', 60_000), t0), { action: 'retry_same_key' });
     assert.deepEqual(decideClaim(row('pending', IN_FLIGHT_GRACE_MS + 1), t0), { action: 'retry_same_key' });
     assert.deepEqual(decideClaim(row('ambiguous', IDEMPOTENCY_SAFE_RETRY_MS + 1), t0), { action: 'needs_reconciliation' });
+    // Boundary shared with the database (now - claimed_at < 23 h): 23 h exactly is past the window.
+    assert.equal(IDEMPOTENCY_SAFE_RETRY_MS, 23 * 60 * 60 * 1000);
+    assert.deepEqual(decideClaim(row('ambiguous', IDEMPOTENCY_SAFE_RETRY_MS - 1), t0), { action: 'retry_same_key' });
+    assert.deepEqual(decideClaim(row('ambiguous', IDEMPOTENCY_SAFE_RETRY_MS), t0), { action: 'needs_reconciliation' });
     assert.deepEqual(decideClaim(row('needs_reconciliation'), t0), { action: 'needs_reconciliation' });
     // Only a definitive failure mints a new attempt (fresh key).
     assert.deepEqual(decideClaim(row('failed'), t0), { action: 'new_attempt_required' });
@@ -434,6 +438,9 @@ describe('payment after the J6 is superseded', () => {
     const received = { status: 'received' as const, receivedOn: '2026-10-12', evidence: 'Synthetic remittance', recordedAt: '2026-10-12T15:00:00.000Z', j6RecordId: 'j6-v1' };
     assert.deepEqual(casePaymentView([received, pending], new Date('2026-10-20T15:00:00Z')), { status: 'received', receivedOn: '2026-10-12', j6RecordId: 'j6-v1' });
     assert.equal(casePaymentView([], new Date()).status, 'not_applicable');
+    // Monotonic: a later pending never regresses a received case.
+    const laterPending = { ...pendingOnJ6Sent(new Date('2026-10-20T15:00:00Z')), j6RecordId: 'j6-v2' };
+    assert.equal(casePaymentView([pending, received, laterPending], new Date('2026-10-25T15:00:00Z')).status, 'received');
   });
 });
 

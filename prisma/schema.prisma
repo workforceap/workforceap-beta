@@ -2385,6 +2385,8 @@ model BillingStageRecipient {
   recipientName  String   @map("recipient_name")
   /// lower(trim(email)).
   email          String
+  /// Printed phone for this contact, when the document prints one (the counselor).
+  phone          String?
   createdAt      DateTime @default(now()) @map("created_at")
 
   stageRecord BillingStageRecord @relation(fields: [stageRecordId, organizationId, stage], references: [id, organizationId, stage], onDelete: Restrict, onUpdate: NoAction)

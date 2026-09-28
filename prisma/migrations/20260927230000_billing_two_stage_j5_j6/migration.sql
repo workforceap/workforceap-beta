@@ -64,6 +64,19 @@ RETURNS TEXT LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
   SELECT regexp_replace(regexp_replace(value, '^[ \t\n\v\f\r]+|[ \t\n\v\f\r]+$', '', 'g'), '[ \t\n\v\f\r]+', ' ', 'g')
 $$;
 
+-- The provider keeps idempotency keys for 24 h; a same-key retry stays inside
+-- 23 h of the claim (IDEMPOTENCY_SAFE_RETRY_MS in sendClaims.ts; parity proven).
+CREATE OR REPLACE FUNCTION public.billing_idempotency_retry_window()
+RETURNS INTERVAL LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
+  SELECT interval '23 hours'
+$$;
+
+-- The database clock in UTC, as the app's TIMESTAMP(3) columns store it.
+CREATE OR REPLACE FUNCTION public.billing_utc_now()
+RETURNS TIMESTAMP LANGUAGE sql STABLE SET search_path = pg_catalog AS $$
+  SELECT (now() AT TIME ZONE 'UTC')::timestamp
+$$;
+
 CREATE OR REPLACE FUNCTION public.billing_send_statuses()
 RETURNS TEXT[] LANGUAGE sql IMMUTABLE SET search_path = pg_catalog AS $$
   SELECT ARRAY['pending', 'provider_accepted', 'ambiguous', 'needs_reconciliation', 'failed', 'reconciled_delivered', 'reconciled_failed']::TEXT[]
@@ -418,6 +431,8 @@ CREATE TABLE IF NOT EXISTS "billing_stage_recipients" (
     "recipient_role" TEXT NOT NULL,
     "recipient_name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    -- Printed phone for this contact, if the document prints one (the counselor).
+    "phone" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "billing_stage_recipients_pkey" PRIMARY KEY ("stage_record_id", "recipient_role"),
@@ -549,6 +564,8 @@ CREATE INDEX IF NOT EXISTS "billing_payment_events_case_id_recorded_at_idx" ON "
 CREATE OR REPLACE FUNCTION public.billing_payment_event_j6_only()
 RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 BEGIN
+  -- Serialize payment events per case (the transition rules below read them).
+  PERFORM 1 FROM public.billing_cases c WHERE c.id = NEW.case_id FOR UPDATE;
   IF NOT EXISTS (
     SELECT 1 FROM public.billing_stage_records r
     WHERE r.id = NEW.j6_record_id AND r.case_id = NEW.case_id AND r.stage = 'j6'
@@ -570,6 +587,21 @@ BEGIN
   END IF;
   IF NEW.received_on IS NOT NULL AND NEW.received_on > public.billing_today() THEN
     RAISE EXCEPTION 'a payment cannot be received in the future (America/Chicago date)' USING ERRCODE = '23514';
+  END IF;
+  -- Transitions (case-level, monotonic): one pending per sent J6; received
+  -- only after a pending on the case; received is terminal for the case (no
+  -- later pending on any of its J6 versions, no second received). There is
+  -- no correction kind in M1; a wrong received is an operator escalation.
+  IF EXISTS (SELECT 1 FROM public.billing_payment_events e WHERE e.case_id = NEW.case_id AND e.status = 'received') THEN
+    RAISE EXCEPTION 'payment for this case is already received; no later pending or second received' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.status = 'pending' AND EXISTS (
+      SELECT 1 FROM public.billing_payment_events e WHERE e.j6_record_id = NEW.j6_record_id AND e.status = 'pending') THEN
+    RAISE EXCEPTION 'this J6 already has its pending payment event' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.status = 'received' AND NOT EXISTS (
+      SELECT 1 FROM public.billing_payment_events e WHERE e.case_id = NEW.case_id AND e.status = 'pending') THEN
+    RAISE EXCEPTION 'payment is marked received only after it was pending for a sent J6' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
 END;
@@ -699,6 +731,15 @@ BEGIN
      AND NOT (OLD.status = 'signed' AND NEW.status = 'sent') THEN
     RAISE EXCEPTION 'sent_at and send_receipt are set only by the signed -> sent transition' USING ERRCODE = '23514';
   END IF;
+  -- sent_at is the database's own UTC clock at the signed -> sent transition;
+  -- a caller-supplied value (backdated or future) is refused, so the payment
+  -- follow-up window cannot be shifted.
+  IF OLD.status = 'signed' AND NEW.status = 'sent' THEN
+    IF NEW.sent_at IS NOT NULL THEN
+      RAISE EXCEPTION 'sent_at is set by the database at the sent transition; do not supply it' USING ERRCODE = '23514';
+    END IF;
+    NEW.sent_at := public.billing_utc_now();
+  END IF;
   -- Closure (-> superseded | voided). A signed record with ANY send claim
   -- (accepted or not) is closed only after it completes signed -> sent, or
   -- through the audited partial-send cancellation: every claim resolved, at
@@ -809,6 +850,14 @@ BEGIN
     IF rec_status IS DISTINCT FROM 'signed' THEN
       RAISE EXCEPTION 'no new send claim for a % stage record', coalesce(rec_status, 'missing') USING ERRCODE = '23514';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM public.billing_stage_recipients p
+        WHERE p.stage_record_id = NEW.stage_record_id AND p.recipient_role = NEW.recipient_role
+          AND p.email = NEW.email AND p.recipient_name = NEW.recipient_name) THEN
+      RAISE EXCEPTION 'a claim carries exactly the frozen name and address of its role' USING ERRCODE = '23514';
+    END IF;
+    -- The claim clock is the database's: the same-key retry window runs from it.
+    NEW.claimed_at := public.billing_utc_now();
+    NEW.last_claimed_at := NEW.claimed_at;
     IF NEW.content_sha256 IS DISTINCT FROM rec_content THEN
       RAISE EXCEPTION 'a claim carries the frozen content hash of its record version' USING ERRCODE = '23514';
     END IF;
@@ -865,8 +914,15 @@ BEGIN
     OR (OLD.status = 'needs_reconciliation' AND NEW.status IN ('reconciled_delivered', 'reconciled_failed'))) THEN
     RAISE EXCEPTION 'billing send status cannot move from % to %', OLD.status, NEW.status USING ERRCODE = '23514';
   END IF;
-  IF OLD.status = 'ambiguous' AND NEW.status = 'pending' AND NEW.claim_token IS NOT DISTINCT FROM OLD.claim_token THEN
-    RAISE EXCEPTION 'a same-key retry re-claims with a new claim token' USING ERRCODE = '23514';
+  IF OLD.status = 'ambiguous' AND NEW.status = 'pending' THEN
+    IF NEW.claim_token IS NOT DISTINCT FROM OLD.claim_token THEN
+      RAISE EXCEPTION 'a same-key retry re-claims with a new claim token' USING ERRCODE = '23514';
+    END IF;
+    -- Past the provider key window a retry could deliver twice: reconcile instead.
+    IF public.billing_utc_now() - OLD.claimed_at >= public.billing_idempotency_retry_window() THEN
+      RAISE EXCEPTION 'the 23 h same-key retry window has passed; reconcile this claim instead' USING ERRCODE = '23514';
+    END IF;
+    NEW.last_claimed_at := public.billing_utc_now();
   END IF;
   -- A claim settles only while its record is signed (locked, so it serializes
   -- with closure and with signed -> sent). A closed record keeps no unresolved
@@ -1153,6 +1209,20 @@ BEGIN
         FROM jsonb_array_elements(CASE WHEN jsonb_typeof(NEW.content -> 'recipients') = 'array' THEN NEW.content -> 'recipients' ELSE '[]'::jsonb END) x) THEN
       RAISE EXCEPTION 'the frozen recipients must equal the recipients in the signed content (role, name, email)' USING ERRCODE = '23514';
     END IF;
+    -- Every printed contact block (content.student / .counselor / .finance:
+    -- name, email and phone) equals its frozen recipient row, with the same
+    -- normalizers (phone uses the name normalizer). A J5 prints no finance block.
+    IF EXISTS (
+        SELECT 1 FROM unnest(required_roles) AS req(role)
+        LEFT JOIN public.billing_stage_recipients p ON p.stage_record_id = NEW.id AND p.recipient_role = req.role
+        WHERE p.stage_record_id IS NULL
+           OR jsonb_typeof(NEW.content -> req.role) IS DISTINCT FROM 'object'
+           OR public.billing_normalize_name(NEW.content -> req.role ->> 'name') IS DISTINCT FROM public.billing_normalize_name(p.recipient_name)
+           OR public.billing_normalize_email(NEW.content -> req.role ->> 'email') IS DISTINCT FROM public.billing_normalize_email(p.email)
+           OR public.billing_normalize_name(NEW.content -> req.role ->> 'phone') IS DISTINCT FROM public.billing_normalize_name(p.phone))
+       OR (NEW.stage = 'j5' AND NEW.content ? 'finance') THEN
+      RAISE EXCEPTION 'every printed contact (student, counselor, finance: name, email, phone) must equal its frozen recipient' USING ERRCODE = '23514';
+    END IF;
   END IF;
 
   IF NEW.status = 'sent' AND (TG_OP = 'INSERT' OR OLD.status <> 'sent') THEN
@@ -1232,7 +1302,8 @@ REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_ap
   public.billing_chicago_date(TIMESTAMPTZ), public.billing_today(), public.billing_send_statuses(),
   public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(),
   public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP),
-  public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT) FROM PUBLIC;
+  public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT),
+  public.billing_idempotency_retry_window(), public.billing_utc_now() FROM PUBLIC;
 
 DO $$
 DECLARE
@@ -1253,7 +1324,8 @@ BEGIN
         'public.billing_chicago_date(TIMESTAMPTZ), public.billing_today(), public.billing_send_statuses(), '
         'public.billing_delivery_event_kinds(), public.billing_delivery_event_guard(), public.billing_attestation_dates_guard(), '
         'public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP), '
-        'public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT) FROM %I', browser_role);
+        'public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT), '
+        'public.billing_idempotency_retry_window(), public.billing_utc_now() FROM %I', browser_role);
     END IF;
   END LOOP;
 END;
@@ -1276,7 +1348,8 @@ BEGIN
     GRANT EXECUTE ON FUNCTION public.billing_contract_hours(TEXT), public.billing_chicago_date(TIMESTAMPTZ),
       public.billing_today(), public.billing_send_statuses(), public.billing_delivery_event_kinds(),
       public.billing_stage_expected_attachments(TEXT), public.billing_sent_on(TIMESTAMP),
-      public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT) TO service_role;
+      public.billing_normalize_email(TEXT), public.billing_normalize_name(TEXT),
+      public.billing_idempotency_retry_window(), public.billing_utc_now() TO service_role;
   END IF;
 END;
 $$;

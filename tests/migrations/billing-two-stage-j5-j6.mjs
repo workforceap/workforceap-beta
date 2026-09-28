@@ -133,23 +133,30 @@ function artifactInsert({ id, kind, source, text, caseId = 'case-1', bucket = 'b
 /** Freeze the recipient snapshot of a draft record (one normalized address per role). */
 function recipientsInsert(record, stage, roles, { caseEmails = {} } = {}) {
   return roles
-    .map((role) => `INSERT INTO public.billing_stage_recipients (stage_record_id, organization_id, stage, recipient_role, recipient_name, email)
-      VALUES ('${record}', '${ORG}', '${stage}', '${role}', 'Synthetic ${role}', '${caseEmails[role] ?? `${role}@example.test`}');`)
+    .map((role) => `INSERT INTO public.billing_stage_recipients (stage_record_id, organization_id, stage, recipient_role, recipient_name, email, phone)
+      VALUES ('${record}', '${ORG}', '${stage}', '${role}', 'Synthetic ${role}', '${caseEmails[role] ?? `${role}@example.test`}', ${role === 'counselor' ? `'${COUNSELOR_PHONE}'` : 'NULL'});`)
     .join('\n');
 }
 
 const HASH = 'a'.repeat(64);
+const COUNSELOR_PHONE = '(512) 555-0100';
 
 const PROGRAM = 'it-support-professional-certificate-ibm';
 const CLASS = 'IT Support Professional Certificate (IBM)';
 
+/** The printed contact blocks (content.student / .counselor / .finance): the same values recipientsInsert freezes. */
+const contentContacts = (stage) => ({
+  student: { name: 'Synthetic student', email: 'student@example.test' },
+  counselor: { name: 'Synthetic counselor', email: 'counselor@example.test', phone: COUNSELOR_PHONE },
+  ...(stage === 'j6' ? { finance: { name: 'Synthetic finance', email: 'finance@example.test' } } : {}),
+});
 /** The recipients printed in the content: the same rows recipientsInsert freezes. */
 const contentRecipients = (stage) =>
   (stage === 'j5' ? ['counselor', 'student'] : ['finance', 'counselor', 'student']).map((role) => ({ role, name: `Synthetic ${role}`, email: `${role}@example.test` }));
 
 /** A stage record whose frozen content prints exactly its frozen columns and its recipients. */
 function stageInsert({ id, stage, version = 1, doc, caseId = 'case-1', className = CLASS, program = PROGRAM, hours = 160, start = '2026-09-30', end = '2027-02-28', amount = 750000, extra = {} }) {
-  const content = JSON.stringify({ synthetic: true, totalCents: amount, training: { programSlug: program, className, contactHours: hours, classStartDate: start, classEndDate: end }, recipients: contentRecipients(stage) });
+  const content = JSON.stringify({ synthetic: true, totalCents: amount, training: { programSlug: program, className, contactHours: hours, classStartDate: start, classEndDate: end }, ...contentContacts(stage), recipients: contentRecipients(stage) });
   const cols = {
     id: `'${id}'`,
     organization_id: `'${ORG}'`,
@@ -193,11 +200,12 @@ const SIGNED = (artifact) => ({
 });
 
 /** Claim one role's copy of a record version: starts `pending`, canonical per-role-attempt key. */
-function sendInsert({ id, record, stage, version = 1, attempt = 1, role, status = 'pending', key, attachments = [], email = null, content = null }) {
+function sendInsert({ id, record, stage, version = 1, attempt = 1, role, status = 'pending', key, attachments = [], email = null, content = null, name = null, claimedAt = 'now()' }) {
+  const nameSql = name ? `'${name}'` : `(SELECT recipient_name FROM public.billing_stage_recipients WHERE stage_record_id = '${record}' AND recipient_role = '${role}')`;
   const hashes = attachments.length > 0 ? `ARRAY[${attachments.map((h) => `'${h}'`).join(', ')}]` : 'ARRAY[]::TEXT[]';
   const contentSql = content ? `'${content}'` : `(SELECT content_sha256 FROM public.billing_stage_records WHERE id = '${record}')`;
   return `INSERT INTO public.billing_stage_sends (id, organization_id, stage_record_id, stage, attempt_no, recipient_role, recipient_name, email, idempotency_key, status, claim_token, claimed_at, last_claimed_at, content_sha256, attachment_sha256s, updated_at)
-    VALUES ('${id}', '${ORG}', '${record}', '${stage}', ${attempt}, '${role}', 'Synthetic ${role}', '${email ?? `${role}@example.test`}', '${key ?? `billing-two-stage:${stage}:${record}:v${version}:a${attempt}:${role}`}', '${status}', 'tok-${id}', now(), now(), ${contentSql}, ${hashes}, now());`;
+    VALUES ('${id}', '${ORG}', '${record}', '${stage}', ${attempt}, '${role}', ${nameSql}, '${email ?? `${role}@example.test`}', '${key ?? `billing-two-stage:${stage}:${record}:v${version}:a${attempt}:${role}`}', '${status}', 'tok-${id}', ${claimedAt}, ${claimedAt}, ${contentSql}, ${hashes}, now());`;
 }
 /** The provider accepted the copy: provider_accepted needs accepted_at and the provider message id. */
 const accepted = (where) => `UPDATE public.billing_stage_sends SET status = 'provider_accepted', accepted_at = now(), provider_message_id = 'synthetic-msg-' || id, updated_at = now() WHERE ${where};`;
@@ -551,15 +559,17 @@ try {
   const j5Hash = sql(`SELECT sha256 FROM public.billing_artifacts WHERE id='art-j5';`);
   rejects(sendInsert({ id: 's-j5-wrong', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [HASH] }), '23514', 'a copy must attach the archived signed bytes');
   rejects(sendInsert({ id: 's-j5-direct', record: 'j5-v1', stage: 'j5', role: 'student', status: 'provider_accepted', attachments: [j5Hash] }), '23514', 'a copy starts as pending');
-  rejects(sendInsert({ id: 's-j5-addr', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], email: 'attacker@example.test' }), '23503', 'a copy goes only to the frozen address for its role');
-  rejects(sendInsert({ id: 's-j5-swap', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], email: 'counselor@example.test' }), '23503', 'a role cannot use another role\'s address');
+  rejects(sendInsert({ id: 's-j5-name', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], name: 'Someone Else' }), '23514', 'a claim carries the frozen recipient name of its role');
+  rejects(sendInsert({ id: 's-j5-name2', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], name: 'Synthetic counselor' }), '23514', 'a claim cannot carry another role\'s name');
+  rejects(sendInsert({ id: 's-j5-addr', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], email: 'attacker@example.test' }), '235(03|14)', 'a copy goes only to the frozen address for its role');
+  rejects(sendInsert({ id: 's-j5-swap', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], email: 'counselor@example.test' }), '235(03|14)', 'a role cannot use another role\'s address');
   rejects(sendInsert({ id: 's-j5-content', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], content: HASH }), '23514', 'a claim for other content never exists');
   rejects(sendInsert({ id: 's-j5-key', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash], key: 'other-key' }), '23514', 'the key is the canonical per-role-attempt key');
   rejects(sendInsert({ id: 's-j5-a2', record: 'j5-v1', stage: 'j5', attempt: 2, role: 'student', attachments: [j5Hash] }), '23514', 'the first claim for a role is attempt 1');
   sql(sendInsert({ id: 's-j5-student', record: 'j5-v1', stage: 'j5', role: 'student', attachments: [j5Hash] }));
   rejects(setStatus('s-j5-student', 'provider_accepted', 'accepted_at = now()'), '23514', 'provider_accepted requires the provider message id');
   sql(accepted(`id = 's-j5-student'`));
-  const markJ5Sent = `UPDATE public.billing_stage_records SET status='sent', sent_at = now(), send_receipt = '{"synthetic":"j5 receipt"}'::jsonb, updated_at = now() WHERE id='j5-v1';`;
+  const markJ5Sent = `UPDATE public.billing_stage_records SET status='sent', send_receipt = '{"synthetic":"j5 receipt"}'::jsonb, updated_at = now() WHERE id='j5-v1';`;
   rejects(markJ5Sent, '23514', 'J5 is not sent while the counselor copy is missing');
   sql(sendInsert({ id: 's-j5-counselor', record: 'j5-v1', stage: 'j5', role: 'counselor', attachments: [j5Hash] }));
   rejects(setStatus('s-j5-counselor', 'reconciled_delivered', `reconciled_by_subject_id = '${STAFF}', reconciled_at = now(), reconcile_note = 'x'`), '23514', 'a pending copy cannot be reconciled directly');
@@ -571,6 +581,19 @@ try {
   sql(setStatus('s-j5-counselor', 'pending', `claim_token = 'tok-retry-1', last_claimed_at = now()`));
   assert.equal(sql(`SELECT idempotency_key FROM public.billing_stage_sends WHERE id = 's-j5-counselor';`), 'billing-two-stage:j5:j5-v1:v1:a1:counselor');
   sql(setStatus('s-j5-counselor', 'ambiguous', `last_error = 'synthetic timeout again'`));
+  // Same-key retry window (23 h from the first claim, the database clock). Fixture-only backdating.
+  const backdate = (id, age) => `SET session_replication_role = replica; UPDATE public.billing_stage_sends SET claimed_at = public.billing_utc_now() - interval '${age}' WHERE id = '${id}'; SET session_replication_role = DEFAULT;`;
+  sql(backdate('s-j5-counselor', '22 hours 58 minutes'));
+  sql(setStatus('s-j5-counselor', 'pending', `claim_token = 'tok-retry-2'`));
+  sql(setStatus('s-j5-counselor', 'ambiguous', `last_error = 'synthetic timeout at 22h58m'`));
+  sql(backdate('s-j5-counselor', '23 hours 1 minute'));
+  rejects(setStatus('s-j5-counselor', 'pending', `claim_token = 'tok-retry-3'`), '23514', 'past 23 h a same-key retry is refused (the provider key may have expired)');
+  const retryWindow = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e',
+    "const m0 = await import('./lib/billing/twoStage/sendClaims.ts'); const m = m0.default ?? m0; console.log(m.IDEMPOTENCY_SAFE_RETRY_MS);"], { encoding: 'utf8' });
+  assert.equal(retryWindow.status, 0, retryWindow.stderr);
+  assert.equal(sql(`SELECT (extract(epoch FROM public.billing_idempotency_retry_window()) * 1000)::bigint;`), retryWindow.stdout.trim(), 'the DB retry window equals IDEMPOTENCY_SAFE_RETRY_MS');
+  // The claim clock is the database's: a caller-supplied claimed_at is overwritten.
+  assert.equal(sql(`SELECT (abs(extract(epoch FROM (claimed_at - public.billing_utc_now()))) < 3600)::text FROM public.billing_stage_sends WHERE id = 's-j5-student';`), 'true');
   // Every non-status column is frozen except what the status move itself writes.
   for (const [column, value, why] of [
     ['recipient_name', `'Someone else'`, 'recipient_name'],
@@ -592,14 +615,14 @@ try {
   sql(`UPDATE public.billing_stage_sends SET updated_at = now() WHERE id = 's-j5-counselor';`);
   rejects(sendInsert({ id: 's-j5-dup', record: 'j5-v1', stage: 'j5', attempt: 2, role: 'student', attachments: [j5Hash] }), '23514', 'an accepted role is never re-sent');
   rejects(sendInsert({ id: 's-j5-fin', record: 'j5-v1', stage: 'j5', role: 'finance', attachments: [j5Hash] }), '235(03|14)', 'J5 has no finance recipient');
-  rejects(sendInsert({ id: 's-j5-as-j6', record: 'j5-v1', stage: 'j6', role: 'finance', attachments: [j5Hash] }), '23503', 'a send row stage must equal its record stage');
+  rejects(sendInsert({ id: 's-j5-as-j6', record: 'j5-v1', stage: 'j6', role: 'finance', attachments: [j5Hash] }), '235(03|14)', 'a send row stage must equal its record stage');
   assert.equal(
     sql(`SELECT bool_and(s.attachment_sha256s = ARRAY[a.sha256::text] AND a.storage_key LIKE '%/' || s.attachment_sha256s[1] || '.pdf')
          FROM public.billing_stage_sends s JOIN public.billing_stage_records r ON r.id = s.stage_record_id
          JOIN public.billing_artifacts a ON a.id = r.signed_artifact_id WHERE s.stage_record_id = 'j5-v1';`),
     't',
   );
-  pass('J5 claims: per role, pending first, canonical key, this version\'s content and frozen address, archived bytes; an ambiguous role is held or retried with the SAME key; an accepted role is never re-sent; missing/ambiguous copies keep it not-sent');
+  pass('J5 claims: per role, pending first, canonical key, this version\'s content and frozen address, archived bytes; an ambiguous role is held or retried with the SAME key; an accepted role is never re-sent; the claim name is the frozen name; the 23 h same-key window uses the DB clock (22h58m retried, 23h01m refused, parity with IDEMPOTENCY_SAFE_RETRY_MS); missing/ambiguous copies keep it not-sent');
 
   // ------------------------------------------------- reconciliation
   rejects(setStatus('s-j5-student', 'pending', `claim_token = 'x'`), '23514', 'an accepted copy is final');
@@ -614,9 +637,12 @@ try {
   rejects(`UPDATE public.billing_stage_sends SET status = 'needs_reconciliation' WHERE id='s-j5-counselor';`, '23514', 'a reconciled copy is final');
   rejects(`UPDATE public.billing_stage_sends SET email = 'other@example.test' WHERE id='s-j5-student';`, '23514', 'send identity is immutable');
   rejects(`DELETE FROM public.billing_stage_sends WHERE id='s-j5-student';`, '23514', 'send rows are never deleted');
+  rejects(`UPDATE public.billing_stage_records SET status='sent', sent_at = public.billing_utc_now() - interval '5 days', send_receipt = '{"synthetic":"j5 receipt"}'::jsonb, updated_at = now() WHERE id='j5-v1';`, '23514', 'a caller-backdated sent_at is refused');
+  rejects(`UPDATE public.billing_stage_records SET status='sent', sent_at = public.billing_utc_now() + interval '5 days', send_receipt = '{"synthetic":"j5 receipt"}'::jsonb, updated_at = now() WHERE id='j5-v1';`, '23514', 'a caller-supplied future sent_at is refused');
   sql(markJ5Sent);
+  assert.equal(sql(`SELECT (abs(extract(epoch FROM (sent_at - public.billing_utc_now()))) < 60)::text FROM public.billing_stage_records WHERE id='j5-v1';`), 'true', 'sent_at is the database UTC clock');
   refusedBecause(sendInsert({ id: 's-j5-after-sent', record: 'j5-v1', stage: 'j5', attempt: 2, role: 'counselor', attachments: [j5Hash] }), 'no new send claim for a sent stage record');
-  pass('manual reconciliation is a separate audited path (only from ambiguous/needs_reconciliation, who/when/note, optional evidence file); settled copies are final; J5 is sent only once both copies are delivered; once sent, no new claim of any role');
+  pass('manual reconciliation is a separate audited path (only from ambiguous/needs_reconciliation, who/when/note, optional evidence file); settled copies are final; J5 is sent only once both copies are delivered, with sent_at set by the DB clock (caller backdated/future values refused); once sent, no new claim of any role');
 
   // ---------------------------------------- J6 prerequisites and linkage
   sql(`
@@ -772,11 +798,11 @@ try {
   const j6Hashes = sql(`SELECT string_agg(sha256, ',' ORDER BY ord) FROM (VALUES ('art-j6', 1), ('art-voucher', 2), ('art-invoice', 3)) v(id, ord) JOIN public.billing_artifacts a USING (id);`).split(',');
   rejects(sendInsert({ id: 's-j6-noinv', record: 'j6-v2', stage: 'j6', version: 2, role: 'finance', attachments: j6Hashes.slice(0, 2) }), '23514', 'the board invoice on the record is attached');
   rejects(sendInsert({ id: 's-j6-order', record: 'j6-v2', stage: 'j6', version: 2, role: 'finance', attachments: [j6Hashes[1], j6Hashes[0], j6Hashes[2]] }), '23514', 'cover letter, then voucher, then invoice');
-  rejects(sendInsert({ id: 's-j6-badfin', record: 'j6-v2', stage: 'j6', version: 2, role: 'finance', attachments: j6Hashes, email: 'finance-typo@example.test' }), '23503', 'finance gets only its frozen address');
+  rejects(sendInsert({ id: 's-j6-badfin', record: 'j6-v2', stage: 'j6', version: 2, role: 'finance', attachments: j6Hashes, email: 'finance-typo@example.test' }), '235(03|14)', 'finance gets only its frozen address');
   for (const role of ['student', 'counselor', 'finance']) sql(sendInsert({ id: `s-j6-${role}`, record: 'j6-v2', stage: 'j6', version: 2, role, attachments: j6Hashes }));
   assert.equal(sql(`SELECT count(DISTINCT idempotency_key) FROM public.billing_stage_sends;`), '5');
   assert.equal(sql(`SELECT count(DISTINCT email) FROM public.billing_stage_sends WHERE stage_record_id='j6-v2';`), '3');
-  const markJ6Sent = `UPDATE public.billing_stage_records SET status='sent', sent_at = '2026-09-21 15:00', send_receipt = '{"synthetic":true}'::jsonb, updated_at = now() WHERE id='j6-v2';`;
+  const markJ6Sent = `UPDATE public.billing_stage_records SET status='sent', send_receipt = '{"synthetic":true}'::jsonb, updated_at = now() WHERE id='j6-v2';`;
   rejects(markJ6Sent, '23514', 'J6 is not sent while copies are pending');
   sql(accepted(`stage_record_id = 'j6-v2' AND recipient_role IN ('student', 'counselor')`));
   rejects(markJ6Sent, '23514', 'J6 is not sent until finance also has its copy');
@@ -802,11 +828,18 @@ try {
 
   // --------------------------------------------------------- payment
   const pending = (id, record) => `INSERT INTO public.billing_payment_events (id, organization_id, case_id, j6_record_id, status, expected_follow_up_from, expected_follow_up_to, recorded_by_subject_id)
-      VALUES ('${id}', '${ORG}', 'case-1', '${record}', 'pending', '2026-10-01', '2026-10-05', '${STAFF}');`;
+      SELECT '${id}', '${ORG}', 'case-1', '${record}', 'pending', public.billing_sent_on(sent_at) + 10, public.billing_sent_on(sent_at) + 14, '${STAFF}'
+      FROM public.billing_stage_records WHERE id = '${record}' AND sent_at IS NOT NULL
+      UNION ALL SELECT '${id}', '${ORG}', 'case-1', '${record}', 'pending', DATE '2026-10-01', DATE '2026-10-05', '${STAFF}'
+      FROM public.billing_stage_records WHERE id = '${record}' AND sent_at IS NULL;`;
   rejects(pending('pay-early', 'j6-v2'), '23514', 'payment is tracked only for a sent J6');
   rejects(pending('pay-j5', 'j5-v1'), '23514', 'payment is never tracked on a J5');
   sql(markJ6Sent);
   rejects(`UPDATE public.billing_stage_records SET send_receipt = '{"rewritten":true}'::jsonb WHERE id='j6-v2';`, '23514', 'the send receipt is frozen once written');
+  rejects(`UPDATE public.billing_stage_records SET sent_at = sent_at - interval '20 days' WHERE id='j6-v2';`, '23514', 'sent_at cannot be moved after the transition');
+  const received = (id, record) => `INSERT INTO public.billing_payment_events (id, organization_id, case_id, j6_record_id, status, received_on, evidence, recorded_by_subject_id)
+      VALUES ('${id}', '${ORG}', 'case-1', '${record}', 'received', public.billing_today(), 'Synthetic remittance advice', '${STAFF}');`;
+  rejects(received('pay-before-pending', 'j6-v2'), '23514', 'received needs a prior pending on the case');
   // Delivery evidence is its own append-only table, recordable after the stage is sent.
   const event = (id, send, kind, { source = `'synthetic provider webhook'`, providerEventId = `'evt-${id}'` } = {}) => `INSERT INTO public.billing_delivery_events (id, organization_id, send_id, kind, occurred_at, source, provider_event_id)
       VALUES ('${id}', '${ORG}', '${send}', '${kind}', now(), ${source}, ${providerEventId});`;
@@ -828,13 +861,13 @@ try {
   pass('the stage became sent with per-role accepted copies; a counselor bounce webhook is recorded afterwards (append-only), the stage stays sent and follow-up is flagged');
   rejects(
     `INSERT INTO public.billing_payment_events (id, organization_id, case_id, j6_record_id, status, expected_follow_up_from, expected_follow_up_to, recorded_by_subject_id)
-      VALUES ('pay-wide', '${ORG}', 'case-1', 'j6-v2', 'pending', '2026-10-01', '2026-10-21', '${STAFF}');`,
+      SELECT 'pay-wide', '${ORG}', 'case-1', 'j6-v2', 'pending', public.billing_sent_on(sent_at) + 10, public.billing_sent_on(sent_at) + 30, '${STAFF}' FROM public.billing_stage_records WHERE id = 'j6-v2';`,
     '23514',
     'the expected follow-up window is exactly +10..+14 days',
   );
   rejects(
     `INSERT INTO public.billing_payment_events (id, organization_id, case_id, j6_record_id, status, expected_follow_up_from, expected_follow_up_to, recorded_by_subject_id)
-      VALUES ('pay-shifted', '${ORG}', 'case-1', 'j6-v2', 'pending', '2026-10-21', '2026-10-25', '${STAFF}');`,
+      SELECT 'pay-shifted', '${ORG}', 'case-1', 'j6-v2', 'pending', public.billing_sent_on(sent_at) + 30, public.billing_sent_on(sent_at) + 34, '${STAFF}' FROM public.billing_stage_records WHERE id = 'j6-v2';`,
     '23514',
     'a 4-day window shifted to send + 30..+34 is refused: it is anchored to the J6 send date',
   );
@@ -850,6 +883,7 @@ try {
     'the DB follow-up window equals expectedFollowUpWindow() in payment.ts',
   );
   sql(pending('pay-pending', 'j6-v2'));
+  rejects(pending('pay-pending-2', 'j6-v2'), '23514', 'one pending per sent J6');
   // Regression: the sent J6 is superseded by a corrected cover letter before the payment arrives.
   sql(`UPDATE public.billing_stage_records SET status='superseded', superseded_at = now(), closed_by_subject_id = '${STAFF}', close_reason = 'Synthetic corrected cover', updated_at = now() WHERE id='j6-v2';`);
   assert.equal(
@@ -870,17 +904,33 @@ try {
   sql(clearReview);
   rejects(signJ6('j6-v3', 'art-j6-v3'), '23514', 'a voucher-period conflict is never cleared by a review note');
   sql(`UPDATE public.billing_stage_records SET ${set({ class_start_attestation_id: `'att-start-long'`, class_end_date: `'2027-03-10'`, voucher_attestation_id: `'att-voucher-fix'`, review_reasons: `ARRAY['end_date_not_contract']`,
-    content: `'${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-03-10' }, recipients: contentRecipients('j6') })}'::jsonb` })}, updated_at = now() WHERE id='j6-v3';`);
+    content: `'${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-03-10' }, ...contentContacts('j6'), recipients: contentRecipients('j6') })}'::jsonb` })}, updated_at = now() WHERE id='j6-v3';`);
   rejects(signJ6('j6-v3', 'art-j6-v3'), '23514', 'an end date that is not start + 5 months is never cleared by a review note');
   // Corrected class evidence and voucher: both holds disappear.
   sql(`UPDATE public.billing_stage_records SET ${set({ class_start_attestation_id: `'att-start'`, class_end_date: `'2027-02-20'`, review_required: 'false', review_reasons: 'ARRAY[]::TEXT[]', review_cleared_at: 'NULL', review_cleared_by_subject_id: 'NULL', review_note: 'NULL',
-    content: `'${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-02-20' }, recipients: contentRecipients('j6') })}'::jsonb` })}, updated_at = now() WHERE id='j6-v3';`);
+    content: `'${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-02-20' }, ...contentContacts('j6'), recipients: contentRecipients('j6') })}'::jsonb` })}, updated_at = now() WHERE id='j6-v3';`);
   pass('voucher-period and contract-end holds are hard: a cleared review never unlocks signing; corrected voucher/class evidence clears them');
   // A signed J6 that was never sent cannot acquire a sent proof by any other transition.
   const j6v3Hashes = () => sql(`SELECT array_to_string(public.billing_stage_expected_attachments('j6-v3'), ',');`).split(',');
   rejects(sendInsert({ id: 's-j6-v3-draft', record: 'j6-v3', stage: 'j6', version: 3, role: 'finance', attachments: j6Hashes }), '23514', 'no claim for a draft record');
   // Privacy: the frozen recipient rows must equal the recipients printed in the signed content.
-  const v3Content = (recipients) => `UPDATE public.billing_stage_records SET content = '${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-02-20' }, recipients })}'::jsonb, updated_at = now() WHERE id='j6-v3';`;
+  const v3Content = (recipients, contacts = contentContacts('j6')) => `UPDATE public.billing_stage_records SET content = '${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-02-20' }, ...contacts, recipients })}'::jsonb, updated_at = now() WHERE id='j6-v3';`;
+  // Every printed contact block must equal its frozen row as well.
+  const c6 = contentContacts('j6');
+  for (const [why, contacts] of [
+    ['a printed student email that differs from the frozen row', { ...c6, student: { ...c6.student, email: 'other-student@example.test' } }],
+    ['a printed finance name that differs from the frozen row', { ...c6, finance: { ...c6.finance, name: 'Someone In Finance' } }],
+    ['a printed counselor phone that differs from the frozen row', { ...c6, counselor: { ...c6.counselor, phone: '(512) 555-0199' } }],
+    ['a missing printed finance block', { student: c6.student, counselor: c6.counselor }],
+    ['swapped printed student and counselor blocks', { ...c6, student: c6.counselor, counselor: { ...c6.student, phone: COUNSELOR_PHONE } }],
+  ]) {
+    sql(v3Content(contentRecipients('j6'), contacts));
+    rejects(signJ6('j6-v3', 'art-j6-v3'), '23514', `${why} blocks signing`);
+  }
+  sql(v3Content(contentRecipients('j6')));
+  sql(`UPDATE public.billing_stage_recipients SET phone = '(512) 555-0199' WHERE stage_record_id = 'j6-v3' AND recipient_role = 'counselor';`);
+  rejects(signJ6('j6-v3', 'art-j6-v3'), '23514', 'a frozen counselor phone edited after the content was built blocks signing');
+  sql(`UPDATE public.billing_stage_recipients SET phone = '${COUNSELOR_PHONE}' WHERE stage_record_id = 'j6-v3' AND recipient_role = 'counselor';`);
   sql(`UPDATE public.billing_stage_recipients SET email = 'finance-other@example.test' WHERE stage_record_id = 'j6-v3' AND recipient_role = 'finance';`);
   rejects(signJ6('j6-v3', 'art-j6-v3'), '23514', 'a recipient email edited after the content was built blocks signing');
   sql(`UPDATE public.billing_stage_recipients SET email = 'finance@example.test' WHERE stage_record_id = 'j6-v3' AND recipient_role = 'finance';
@@ -897,7 +947,7 @@ try {
   // Normalization is shared: extra whitespace and case in the content still match the frozen rows.
   sql(v3Content(contentRecipients('j6').map((r) => ({ ...r, name: `  ${r.name.replace(' ', ' \t ')} `, email: ` ${r.email.toUpperCase()}` }))));
   sql(signJ6('j6-v3', 'art-j6-v3'));
-  pass('signing requires the frozen recipient rows to equal the signed content recipients (normalized role/name/email): edited email, swapped names, extra, missing or different addresses are refused');
+  pass('signing requires the frozen recipient rows to equal the signed content recipients and every printed contact block (normalized role/name/email/phone): edited email or phone, swapped names or blocks, extra, missing or different addresses are refused');
   const closeV3 = (status, extra) => `UPDATE public.billing_stage_records SET status='${status}', ${status}_at = now(), closed_by_subject_id = '${STAFF}', close_reason = 'Synthetic', ${extra}updated_at = now() WHERE id='j6-v3';`;
   rejects(closeV3('superseded', `sent_at = '2026-09-21 15:00', send_receipt = '{"forged":true}'::jsonb, `), '23514', 'signed -> superseded cannot forge sent_at and a receipt');
   rejects(closeV3('superseded', `sent_at = '2026-09-21 15:00', `), '23514', 'signed -> superseded cannot forge sent_at alone');
@@ -945,7 +995,12 @@ try {
     'payment against a signed-then-superseded, never-sent J6 is refused',
   );
   rejects(`UPDATE public.billing_payment_events SET evidence = 'edited' WHERE id='pay-received';`, '23514', 'payment events are append-only');
-  pass('payment: only for a J6 proven sent (sent_at + delivered finance/counselor/student copies), still reconcilable after it is superseded; never for an unsent J6; received needs evidence; append-only');
+  // Received is terminal for the case: no later pending on that J6 (the summary cannot regress) and no second received.
+  // (Inside one transaction that rolls back: hide the earlier pending so only the received-is-terminal rule can refuse it.)
+  rejects(`BEGIN; SET LOCAL session_replication_role = replica; DELETE FROM public.billing_payment_events WHERE id = 'pay-pending'; SET LOCAL session_replication_role = DEFAULT; ${pending('pay-after-received', 'j6-v2')} COMMIT;`, '23514', 'a pending after received is refused');
+  rejects(received('pay-received-2', 'j6-v2'), '23514', 'a second received is refused');
+  assert.equal(sql(`SELECT string_agg(status, ',' ORDER BY recorded_at, id) FROM public.billing_payment_events WHERE case_id = 'case-1';`), 'pending,received', 'the case events stay pending -> received');
+  pass('payment: only for a J6 proven sent (sent_at + delivered finance/counselor/student copies), still reconcilable after it is superseded; never for an unsent J6; received needs evidence and a prior pending; one pending per J6; received is terminal (no later pending, no second received); append-only; the window derives from the DB sent_at');
 
   // ------------------------------------------------- member merge repoint
   sql(`

@@ -73,8 +73,18 @@ export function paymentView(latest: PaymentEvent | null, now: Date): PaymentView
   };
 }
 
-/** Case-level payment view over the events of every sent J6 on the case: the most recently recorded event wins. */
+/**
+ * The case's current payment event, monotonic like the database rules: once
+ * any event is `received`, the case stays received (the database refuses a
+ * later pending); otherwise the latest pending.
+ */
+export function currentCasePaymentEvent<T extends { status: PaymentStatus; recordedAt: string }>(events: ReadonlyArray<T>): T | null {
+  const byTime = [...events].sort((a, b) => a.recordedAt.localeCompare(b.recordedAt));
+  return byTime.filter((e) => e.status === 'received').at(-1) ?? byTime.at(-1) ?? null;
+}
+
+/** Case-level payment view over the events of every sent J6 on the case. */
 export function casePaymentView(events: ReadonlyArray<PaymentEvent & { j6RecordId: string }>, now: Date): PaymentView & { j6RecordId: string | null } {
-  const latest = [...events].sort((a, b) => a.recordedAt.localeCompare(b.recordedAt)).at(-1) ?? null;
+  const latest = currentCasePaymentEvent(events);
   return { ...paymentView(latest, now), j6RecordId: latest?.j6RecordId ?? null };
 }

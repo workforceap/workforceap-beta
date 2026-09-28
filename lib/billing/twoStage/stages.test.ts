@@ -13,7 +13,7 @@ import {
 import { contentSha256 } from './canonical';
 import { signerIntentStatement, validateSignRequest } from './signing';
 import { resolveProgramTerms } from './hours';
-import { buildJ5Content, buildJ6Content, formatStageDocumentNumber, type J5Content } from './content';
+import { buildJ5Content, buildJ6Content, formatStageDocumentNumber, recipientRowsForContent, type J5Content } from './content';
 import { canSignJ6, checkJ5Prerequisites, checkJ6Prerequisites, nextStageStatus, summarizeCase, type J6Prerequisites } from './stateMachine';
 
 const NOW = new Date('2026-10-20T15:00:00Z');
@@ -292,6 +292,30 @@ describe('J6: gated on the received signed voucher and class start', () => {
     assert.equal(missing.ok, false);
   });
 
+  it('prints every contact block from the normalized recipient; the recipient rows come from those blocks', () => {
+    const messy = {
+      student: { name: '  Synthetic \t Student ', email: ' Student@Example.TEST' },
+      counselor: { name: 'Synthetic  Counselor', email: 'COUNSELOR@example.test ', phone: ' (512)  555-0100 ' },
+    };
+    const built = buildJ6Content({ ...j6Input(), logoSha256: LOGO_SHA, documentNumber: 'WAP-I-2026-0009', issueDate: '2026-10-20', ...people, ...messy, finance: { name: 'Synthetic   Finance', email: 'Finance@Example.test' } });
+    assert.ok(built.ok, !built.ok ? built.errors.join('; ') : '');
+    const c = built.content;
+    assert.deepEqual(c.student, { name: 'Synthetic Student', email: 'student@example.test' });
+    assert.deepEqual(c.counselor, { name: 'Synthetic Counselor', email: 'counselor@example.test', phone: '(512) 555-0100' });
+    assert.deepEqual(c.finance, { name: 'Synthetic Finance', email: 'finance@example.test' });
+    assert.deepEqual(recipientRowsForContent(c), [
+      { role: 'finance', name: 'Synthetic Finance', email: 'finance@example.test', phone: null },
+      { role: 'counselor', name: 'Synthetic Counselor', email: 'counselor@example.test', phone: '(512) 555-0100' },
+      { role: 'student', name: 'Synthetic Student', email: 'student@example.test', phone: null },
+    ]);
+    // Each printed block equals content.recipients for its role.
+    for (const r of c.recipients) assert.deepEqual({ name: r.name, email: r.email }, { name: (c as unknown as Record<string, { name: string }>)[r.role].name, email: r.email });
+    const j5 = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0009', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people, ...messy });
+    assert.ok(j5.ok);
+    assert.deepEqual(recipientRowsForContent(j5.content).map((r) => r.role), ['counselor', 'student']);
+    assert.ok(!('finance' in j5.content));
+  });
+
   it('builds the Invoice/Voucher Cover Letter with finance, the voucher ref and one $7,500 line', () => {
     const built = buildJ6Content({ ...j6Input(), logoSha256: LOGO_SHA, documentNumber: 'WAP-I-2026-0001', issueDate: '2026-10-20', ...people, finance: { name: 'Synthetic Finance', email: 'finance@example.test' } });
     assert.ok(built.ok, !built.ok ? built.errors.join('; ') : '');
@@ -355,6 +379,9 @@ describe('stage state machine', () => {
       assert.deepEqual(summarizeCase({ records, hasVoucherAttestation: true, paymentEvents: [pending] }), { j5: 'none', voucher: 'received', j6: v3, payment: 'pending' });
       assert.equal(summarizeCase({ records, hasVoucherAttestation: true, paymentEvents: [pending, received] }).payment, 'received');
     }
+    // Monotonic: once received, a later pending (refused by the database) never regresses the summary.
+    const lateV3Pending = { j6RecordId: 'i2', status: 'pending' as const, recordedAt: '2026-10-20T15:00:00.000Z' };
+    assert.equal(summarizeCase({ records: base, hasVoucherAttestation: true, paymentEvents: [pending, received, lateV3Pending] }).payment, 'received');
     // An event on a never-sent J6 never shows (the database refuses it anyway).
     assert.equal(
       summarizeCase({ records: [{ id: 'i9', stage: 'j6', status: 'superseded', version: 1, sentAt: null }], hasVoucherAttestation: true, paymentEvents: [{ j6RecordId: 'i9', status: 'pending', recordedAt: '2026-10-01T15:00:00.000Z' }] }).payment,

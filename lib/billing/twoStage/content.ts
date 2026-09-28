@@ -11,7 +11,7 @@ import { classEndDate, isIsoDate } from './dates';
 import { resolveProgramTerms, type ContractHours } from './hours';
 import { WAP_BILLING_LETTERHEAD } from './letterhead';
 import { buildTuitionLineItems, type TuitionLine } from './lineItem';
-import { j5Recipients, j6Recipients, type Contact, type Recipient } from './recipients';
+import { j5Recipients, j6Recipients, normalizeRecipientName, type Contact, type Recipient, type RecipientRole } from './recipients';
 import { checkJ5Prerequisites, checkJ6Prerequisites, type J6Prerequisites, type J6Variance, type PriorJ5Summary, type ReviewReason } from './stateMachine';
 
 export type CounselorContact = Contact & { phone: string };
@@ -83,6 +83,27 @@ export type J6Content = Common & {
   paymentFollowUp: { minDays: number; maxDays: number; wording: string };
 };
 
+/** A printed contact block is exactly the normalized recipient for its role. */
+function printed(recipients: readonly Recipient[], role: RecipientRole): Contact {
+  const r = recipients.find((x) => x.role === role)!;
+  return { name: r.name, email: r.email };
+}
+
+export type RecipientRow = { role: RecipientRole; name: string; email: string; phone: string | null };
+
+/**
+ * The billing_stage_recipients rows for a built content: one per role, taken
+ * from the printed contact blocks (name, email and the counselor phone). M3
+ * writes these rows and the content in one trusted transaction; the database
+ * refuses a sign where any printed contact differs from its row.
+ */
+export function recipientRowsForContent(content: J5Content | J6Content): RecipientRow[] {
+  return content.recipients.map((r) => {
+    const block = (content as unknown as Record<string, { name: string; email: string; phone?: string }>)[r.role];
+    return { role: r.role, name: block.name, email: block.email, phone: block.phone ?? null };
+  });
+}
+
 export type ContentResult<T> = { ok: true; content: T; contentSha256: string } | { ok: false; errors: string[] };
 
 export const PAYMENT_FOLLOW_UP_WORDING = `We will follow up in ${PAYMENT_FOLLOW_UP_MIN_DAYS}–${PAYMENT_FOLLOW_UP_MAX_DAYS} days.`;
@@ -144,13 +165,9 @@ export function buildJ5Content(input: {
     documentNumber: input.documentNumber.trim(),
     issueDate: input.issueDate,
     letterhead: letterhead(input.logoSha256),
-    student: { name: input.student.name.trim(), email: recipients.recipients.find((r) => r.role === 'student')!.email },
+    student: printed(recipients.recipients, 'student'),
     boardName: input.boardName.trim(),
-    counselor: {
-      name: input.counselor.name.trim(),
-      phone: input.counselor.phone.trim(),
-      email: recipients.recipients.find((r) => r.role === 'counselor')!.email,
-    },
+    counselor: { ...printed(recipients.recipients, 'counselor'), phone: normalizeRecipientName(input.counselor.phone) },
     training: { programSlug: terms.canonicalSlug, className: terms.className, contactHours: terms.hours, classStartDate: start, classEndDate: classEndDate(start) },
     ...lineItems(),
     signer: signer(),
@@ -195,7 +212,6 @@ export function buildJ6Content(
   if (!recipients.ok) errors.push(...recipients.errors);
   if (errors.length > 0 || !gate.ok || !recipients.ok) return { ok: false, errors };
 
-  const email = (role: Recipient['role']) => recipients.recipients.find((r) => r.role === role)!.email;
   const { voucher, voucherAttestation, classStarted } = gate;
   const boardInvoice = input.boardInvoice;
   const content: J6Content = {
@@ -205,10 +221,10 @@ export function buildJ6Content(
     documentNumber: input.documentNumber.trim(),
     issueDate: input.issueDate,
     letterhead: letterhead(input.logoSha256),
-    student: { name: input.student.name.trim(), email: email('student') },
+    student: printed(recipients.recipients, 'student'),
     boardName: input.boardName.trim(),
-    counselor: { name: input.counselor.name.trim(), phone: input.counselor.phone.trim(), email: email('counselor') },
-    finance: { name: input.finance.name.trim(), email: email('finance') },
+    counselor: { ...printed(recipients.recipients, 'counselor'), phone: normalizeRecipientName(input.counselor.phone) },
+    finance: printed(recipients.recipients, 'finance'),
     training: gate.training,
     ...lineItems(),
     signer: signer(),

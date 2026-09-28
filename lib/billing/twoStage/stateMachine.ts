@@ -20,6 +20,7 @@ import { TUITION_AND_FEES_CENTS } from './constants';
 import { billingToday, classEndDate, compareIsoDates, daysBetween, formatLongCalendarDate } from './dates';
 import { resolveProgramTerms } from './hours';
 import type { J5Content, TrainingTerms } from './content';
+import { currentCasePaymentEvent } from './payment';
 
 export type StageStatus = 'draft' | 'signed' | 'sent' | 'superseded' | 'voided';
 export type StageEvent = 'edit_draft' | 'sign' | 'mark_sent' | 'supersede' | 'void';
@@ -276,7 +277,7 @@ export function summarizeCase(input: {
   const latest = (stage: 'j5' | 'j6') =>
     input.records.filter((r) => r.stage === stage).sort((a, b) => b.version - a.version)[0]?.status ?? 'none';
   const everSent = new Set(input.records.filter((r) => r.stage === 'j6' && r.sentAt).map((r) => r.id));
-  const payment = [...input.paymentEvents].filter((e) => everSent.has(e.j6RecordId)).sort((a, b) => a.recordedAt.localeCompare(b.recordedAt)).at(-1);
+  const payment = currentCasePaymentEvent(input.paymentEvents.filter((e) => everSent.has(e.j6RecordId)));
   return {
     j5: latest('j5'),
     voucher: input.hasVoucherAttestation ? 'received' : 'none',
