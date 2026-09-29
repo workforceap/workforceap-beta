@@ -218,16 +218,19 @@ describe('webhook events paint from --wa-* tokens (D11)', () => {
 });
 
 describe('placement confirmation strip paints from --wa-* tokens (D13)', () => {
-  it('banner copy, buttons and the error alert read --wa-on-success on the success fill', async () => {
+  // WAP-194 moved the strip off the solid success fill onto a kit card (the
+  // success tone edge), so the D13 contract is now "--wa-* only, no hex".
+  it('banner copy, buttons and the error alert read --wa-* tokens on a kit card', async () => {
     const { default: Strip } = await import('@/app/(portal)/dashboard/PlacementConfirmationStrip');
     const { container } = render(<Strip offers={[{ id: 'o1', company: 'Acme' }]} />);
     fireEvent.click(screen.getByRole('button', { name: /notify my team/ }));
     await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
     expect(unexpectedHex(container)).toEqual([]);
     const styles = paintedValues(container).join('\n');
-    expect(styles).toContain('background: var(--wa-success-dark)');
-    expect((styles.match(/var\(--wa-on-success\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
+    expect(styles).toContain('color: var(--wa-success-dark)');
+    expect(styles).toContain('color: var(--wa-danger-text)');
     expect(styles).not.toMatch(/var\(--color-green/);
+    expect(container.querySelector('.wa-kit-card.wa-kit-tone--ok')).not.toBeNull();
   });
 });
 
@@ -422,10 +425,10 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     const { default: WorkspaceSidebarSections } = await import('@/components/portal/WorkspaceSidebarSections');
     const items = [
       { href: '/partner', label: 'Overview', group: 'primary' as const, exact: true, badgeKey: 'jobs_pending' as const },
-      { href: '/partner/milestones', label: 'Milestones', group: 'primary' as const, badgeKey: 'jobs_live' as const },
+      { href: '/partner/milestones', label: 'Milestones', group: 'primary' as const, badgeKey: 'jobs_draft' as const },
     ];
     const { container } = render(
-      <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_live: 3 }}
+      <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_draft: 3 }}
         translateLabel={(s) => s} childToggleLabel={() => 'toggle'} onNavigate={() => {}} storageKey={`m13-${scheme}`} forceExpanded />,
     );
     const active = container.querySelector<HTMLAnchorElement>('a.workspace-sidebar-link.active')!;
@@ -485,7 +488,7 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
   });
 
   it.each(['light', 'dark'] as const)('%s: a solid --wa-accent chip reads through --wa-on-accent-control (M14)', async (scheme) => {
-    vi.stubGlobal('fetch', vi.fn(async () => json({ milestones: [{ id: 'm1', kind: 'placement', label: 'Placed', memberId: 'u1', memberName: 'Ada', at: '2026-09-01T00:00:00Z' }] })));
+    vi.stubGlobal('fetch', vi.fn(async () => json({ milestones: [{ id: 'm1', kind: 'placement_pending', label: 'Pending verification', memberId: 'u1', memberName: 'Ada', at: '2026-09-01T00:00:00Z' }] })));
     const { default: PartnerMilestonesMobile } = await import('@/components/partner/PartnerMilestonesMobile');
     const { container } = render(
       <NextIntlClientProvider locale="en" messages={messages}><PartnerMilestonesMobile /></NextIntlClientProvider>,

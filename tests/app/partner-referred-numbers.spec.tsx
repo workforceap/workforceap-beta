@@ -159,7 +159,7 @@ vi.mock('@/lib/db/prisma', () => ({
       ),
     },
     placementRecord: { count: vi.fn(async () => 0) },
-    memberEvent: { findMany: vi.fn(async () => []) },
+    memberEvent: { findMany: vi.fn(async () => []), count: vi.fn(async () => 0) },
   },
 }));
 

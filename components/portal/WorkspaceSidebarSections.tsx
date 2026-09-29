@@ -7,6 +7,7 @@ import {
   type NavBadgeKey,
   type PortalNavItem,
   GROUP_ORDER,
+  NAV_GROUP_ALWAYS_OPEN,
   NAV_GROUP_COLLAPSED_BY_DEFAULT,
   NAV_GROUP_LABELS,
   badgeTotalForItem,
@@ -28,6 +29,9 @@ import {
  *
  * Keyboard: Enter/Space toggle (native button); ArrowRight opens, ArrowLeft
  * closes — the tree-view convention.
+ *
+ * A section in `NAV_GROUP_ALWAYS_OPEN` (Daily work, the admin queues) is not
+ * a disclosure: its header is a plain label and its rows always show.
  */
 export type WorkspaceSidebarSectionsProps = {
   items: PortalNavItem[];
@@ -40,6 +44,20 @@ export type WorkspaceSidebarSectionsProps = {
   storageKey: string;
   forceExpanded?: boolean;
 };
+
+/**
+ * Per-browser key for the rail's open/closed sections. The version is part of
+ * the key: bump it when the default layout changes, so section state saved
+ * against the old layout stops overriding the new defaults. v2 (WAP-198):
+ * WAP-190 added the always-open Daily work section and collapsed the rest by
+ * default; admins who had toggled sections before kept their old layout.
+ * The v1 key (`wa_nav_sections_<role>`) is no longer read.
+ */
+const NAV_SECTIONS_STORAGE_VERSION = 2;
+
+export function navSectionsStorageKey(portalRole: string): string {
+  return `wa_nav_sections_v${NAV_SECTIONS_STORAGE_VERSION}_${portalRole}`;
+}
 
 const sectionId = (group: string) => `section:${group}`;
 const parentId = (href: string) => `item:${href}`;
@@ -167,14 +185,20 @@ export default function WorkspaceSidebarSections({
         if (inGroup.length === 0) return null;
         const groupLabel = NAV_GROUP_LABELS[group];
         const sid = sectionId(group);
+        const alwaysOpen = Boolean(NAV_GROUP_ALWAYS_OPEN[group]);
         const sectionDefaultOpen = !NAV_GROUP_COLLAPSED_BY_DEFAULT[group];
-        const sectionOpen = groupLabel ? isExpanded(sid, sectionDefaultOpen) : true;
+        const collapsible = Boolean(groupLabel) && !alwaysOpen;
+        const sectionOpen = collapsible ? isExpanded(sid, sectionDefaultOpen) : true;
         const panelId = domId(sid);
         const sectionBadge = inGroup.reduce((total, item) => total + badgeTotalForItem(badges, item), 0);
         const topLevel = inGroup.filter((item) => !item.parentHref);
         return (
           <li key={group} className="workspace-sidebar-group workspace-sidebar-group--section" data-section={group} data-expanded={sectionOpen ? 'true' : 'false'}>
-            {groupLabel ? (
+            {groupLabel && !collapsible ? (
+              <div className="workspace-sidebar-section-label" id={`${panelId}-label`} data-section={group}>
+                {translateLabel(groupLabel)}
+              </div>
+            ) : groupLabel ? (
               <button
                 type="button"
                 className="workspace-sidebar-section-btn wa-kit-focus wa-kit-focus--on-dark"
@@ -191,7 +215,12 @@ export default function WorkspaceSidebarSections({
                 <ChevronDown size={16} aria-hidden className="workspace-sidebar-section-btn__chevron" />
               </button>
             ) : null}
-            <ul id={panelId} className="workspace-sidebar-list" hidden={groupLabel ? !sectionOpen : undefined}>
+            <ul
+              id={panelId}
+              className="workspace-sidebar-list"
+              hidden={collapsible ? !sectionOpen : undefined}
+              aria-labelledby={groupLabel && !collapsible ? `${panelId}-label` : undefined}
+            >
               {topLevel.map((item) => {
                 const children = navChildrenOf(inGroup, item.href);
                 if (children.length === 0) {

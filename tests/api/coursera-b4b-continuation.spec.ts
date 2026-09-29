@@ -17,7 +17,10 @@ vi.mock('@/lib/coursera/curriculumMapping', () => ({
   loadCurriculumMappingsForCourseraIds: vi.fn(async () => ({})), resolveProviderCourseMappings: vi.fn(),
 }));
 vi.mock('@/lib/coursera/learnerProgress', () => ({ invalidateLearnerProgressCacheForEmail: vi.fn() }));
-vi.mock('@/lib/coursera/programContentsCache', () => ({ loadB4BContents: vi.fn(async () => []) }));
+vi.mock('@/lib/coursera/programContentsCache', () => ({
+  loadB4BContents: vi.fn(async () => []),
+  loadB4BContentsChecked: vi.fn(async () => ({ ok: true, value: [] })),
+}));
 vi.mock('@/lib/coursera/seedCanonicalMappingsFromB4B', () => ({ seedCanonicalMappingsFromB4B: vi.fn(async () => ({})) }));
 vi.mock('@/lib/cron/withCronLogging', () => ({ withCronLogging: (_key: string, handle: unknown) => handle }));
 vi.mock('@/lib/cron/cronExecution', () => ({ setCronRecordsProcessed: vi.fn(), markCronDiagnosticLogged: vi.fn() }));

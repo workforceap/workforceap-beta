@@ -15,12 +15,31 @@ import type { ProgramCourse } from '@/lib/content/programs';
  * minute-to-minute; a stale UI for an hour is preferable to a network
  * round-trip per page render.
  *
- * Failure mode: if B4B credentials are missing or the call fails, we
- * return an empty list and let callers fall back to their next data
- * source (Course DB → static catalog). We never throw.
+ * Failure mode: if B4B credentials are missing or the call fails,
+ * `loadB4BPrograms` / `loadB4BContents` return an empty list and let callers
+ * fall back to their next data source (Course DB → static catalog). They
+ * never throw. A failure is NOT cached for the hour (WAP-276): it used to be
+ * stored as `[]`, so one provider error made every catalog check read
+ * "unavailable" for an hour. A failure is held for FAILURE_TTL_MS so an
+ * outage doesn't turn every render into a provider call. Callers that must
+ * tell "provider failed" from "catalog is empty" use the `*Checked` variants.
  */
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
+const FAILURE_TTL_MS = 60 * 1000;
+
+/** A provider read that says whether it failed, instead of collapsing to []. */
+export type B4BLoad<T> = { ok: true; value: T } | { ok: false; error: string };
+
+type CachedFailure = { error: string; at: number };
+
+function failureFresh(failure: CachedFailure | null): failure is CachedFailure {
+  return failure !== null && Date.now() - failure.at < FAILURE_TTL_MS;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 export type B4BProgramWithContents = {
   id: string;
@@ -34,7 +53,8 @@ type B4BProgramWithUrl = B4BProgram & { url?: string };
 
 let cachedPrograms: B4BProgramWithContents[] | null = null;
 let cachedAt = 0;
-let inFlight: Promise<B4BProgramWithContents[]> | null = null;
+let programsFailure: CachedFailure | null = null;
+let inFlight: Promise<B4BLoad<B4BProgramWithContents[]>> | null = null;
 
 function isFresh(): boolean {
   return cachedPrograms !== null && Date.now() - cachedAt < CACHE_TTL_MS;
@@ -65,10 +85,10 @@ function normalizeContent(
   return { id: raw.id, slug, name, contentType: raw.contentType?.trim() || 'Unknown' };
 }
 
-async function fetchPrograms(): Promise<B4BProgramWithContents[]> {
+async function fetchPrograms(): Promise<B4BLoad<B4BProgramWithContents[]>> {
   try {
     const page = await listPrograms({ excludeContent: false, limit: 100 });
-    return (page.elements as B4BProgramWithUrl[]).map((p) => ({
+    return { ok: true, value: (page.elements as B4BProgramWithUrl[]).map((p) => ({
       id: p.id,
       slug: p.slug?.trim() ?? null,
       name: (p.name ?? '').trim(),
@@ -81,30 +101,42 @@ async function fetchPrograms(): Promise<B4BProgramWithContents[]> {
                 c !== null,
             )
         : [],
-    }));
+    })) };
   } catch (error) {
     console.warn(
-      '[coursera/programContentsCache] listPrograms failed; returning empty list:',
-      error instanceof Error ? error.message : error,
+      '[coursera/programContentsCache] listPrograms failed:',
+      errorMessage(error),
     );
-    return [];
+    return { ok: false, error: errorMessage(error) };
   }
 }
 
-export async function loadB4BPrograms(): Promise<B4BProgramWithContents[]> {
-  if (isFresh()) return cachedPrograms!;
+/** Programs, or the provider error. Only a successful read is cached for the hour. */
+export async function loadB4BProgramsChecked(): Promise<B4BLoad<B4BProgramWithContents[]>> {
+  if (isFresh()) return { ok: true, value: cachedPrograms! };
+  if (failureFresh(programsFailure)) return { ok: false, error: programsFailure.error };
   if (inFlight) return inFlight;
   inFlight = (async () => {
-    const programs = await fetchPrograms();
-    cachedPrograms = programs;
-    cachedAt = Date.now();
-    return programs;
+    const result = await fetchPrograms();
+    if (result.ok) {
+      cachedPrograms = result.value;
+      cachedAt = Date.now();
+      programsFailure = null;
+    } else {
+      programsFailure = { error: result.error, at: Date.now() };
+    }
+    return result;
   })();
   try {
     return await inFlight;
   } finally {
     inFlight = null;
   }
+}
+
+export async function loadB4BPrograms(): Promise<B4BProgramWithContents[]> {
+  const result = await loadB4BProgramsChecked();
+  return result.ok ? result.value : [];
 }
 
 /**
@@ -180,18 +212,19 @@ export type B4BContentEntry = {
 
 let cachedContents: B4BContentEntry[] | null = null;
 let contentsCachedAt = 0;
-let contentsInFlight: Promise<B4BContentEntry[]> | null = null;
+let contentsFailure: CachedFailure | null = null;
+let contentsInFlight: Promise<B4BLoad<B4BContentEntry[]>> | null = null;
 
 function contentsFresh(): boolean {
   return cachedContents !== null && Date.now() - contentsCachedAt < CACHE_TTL_MS;
 }
 
-async function fetchContents(): Promise<B4BContentEntry[]> {
+async function fetchContents(): Promise<B4BLoad<B4BContentEntry[]>> {
   try {
     // B4B paginates; 1000 is plenty for our org and stays well under the
     // 500 hard cap we picked for admin routes. Drain in one shot.
     const page = await listContents({ limit: 1000 });
-    return (page.elements as B4BContent[])
+    return { ok: true, value: (page.elements as B4BContent[])
       .map((c) => {
         if (!c.id) return null;
         const name = (c.name ?? '').trim();
@@ -204,24 +237,31 @@ async function fetchContents(): Promise<B4BContentEntry[]> {
           contentType: c.contentType ?? 'Course',
         } as B4BContentEntry;
       })
-      .filter((c): c is B4BContentEntry => c !== null);
+      .filter((c): c is B4BContentEntry => c !== null) };
   } catch (error) {
     console.warn(
-      '[coursera/programContentsCache] listContents failed; returning empty list:',
-      error instanceof Error ? error.message : error,
+      '[coursera/programContentsCache] listContents failed:',
+      errorMessage(error),
     );
-    return [];
+    return { ok: false, error: errorMessage(error) };
   }
 }
 
-export async function loadB4BContents(): Promise<B4BContentEntry[]> {
-  if (contentsFresh()) return cachedContents!;
+/** Contents, or the provider error. Only a successful read is cached for the hour. */
+export async function loadB4BContentsChecked(): Promise<B4BLoad<B4BContentEntry[]>> {
+  if (contentsFresh()) return { ok: true, value: cachedContents! };
+  if (failureFresh(contentsFailure)) return { ok: false, error: contentsFailure.error };
   if (contentsInFlight) return contentsInFlight;
   contentsInFlight = (async () => {
-    const contents = await fetchContents();
-    cachedContents = contents;
-    contentsCachedAt = Date.now();
-    return contents;
+    const result = await fetchContents();
+    if (result.ok) {
+      cachedContents = result.value;
+      contentsCachedAt = Date.now();
+      contentsFailure = null;
+    } else {
+      contentsFailure = { error: result.error, at: Date.now() };
+    }
+    return result;
   })();
   try {
     return await contentsInFlight;
@@ -230,12 +270,19 @@ export async function loadB4BContents(): Promise<B4BContentEntry[]> {
   }
 }
 
+export async function loadB4BContents(): Promise<B4BContentEntry[]> {
+  const result = await loadB4BContentsChecked();
+  return result.ok ? result.value : [];
+}
+
 /** Test-only cache reset. */
 export function _resetB4BProgramContentsCacheForTesting(): void {
   cachedPrograms = null;
   cachedAt = 0;
+  programsFailure = null;
   inFlight = null;
   cachedContents = null;
   contentsCachedAt = 0;
+  contentsFailure = null;
   contentsInFlight = null;
 }

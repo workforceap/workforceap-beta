@@ -18,6 +18,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 require('./scripts/ensure-prisma-env.cjs');
 
+// Keep the preview's single same-origin framing exception aligned with the
+// default policy. All other CSP directives stay identical on both routes.
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://va.vercel-insights.com https://va.vercel-scripts.com https://challenges.cloudflare.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.zippopotam.us https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://va.vercel-insights.com https://vitals.vercel-insights.com https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io https://api.elevenlabs.io wss://api.elevenlabs.io https://livekit.rtc.elevenlabs.io wss://livekit.rtc.elevenlabs.io wss://*.livekit.cloud wss://*.elevenlabs.io https://*.elevenlabs.io",
+  "img-src 'self' data: blob: https://*.supabase.co https://*.public.blob.vercel-storage.com https://images.unsplash.com https://www.google-analytics.com https://www.googletagmanager.com https://api.dicebear.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
+  "form-action 'self' https://formspree.io",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'none'",
+  "upgrade-insecure-requests",
+].join('; ');
+
+const previewContentSecurityPolicy = contentSecurityPolicy.replace(
+  "frame-ancestors 'none'",
+  "frame-ancestors 'self'",
+);
+
 const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', 'react-markdown', 'remark-gfm', '@elevenlabs/client'],
@@ -102,21 +124,18 @@ const nextConfig: NextConfig = {
             //     browsers.
             //   - `img-src` is an explicit allowlist (was `https:` wildcard).
             //     Add new hosts here as needed instead of widening back to `https:`.
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://va.vercel-insights.com https://va.vercel-scripts.com https://challenges.cloudflare.com",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.zippopotam.us https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://va.vercel-insights.com https://vitals.vercel-insights.com https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io https://api.elevenlabs.io wss://api.elevenlabs.io https://livekit.rtc.elevenlabs.io wss://livekit.rtc.elevenlabs.io wss://*.livekit.cloud wss://*.elevenlabs.io https://*.elevenlabs.io",
-              "img-src 'self' data: blob: https://*.supabase.co https://*.public.blob.vercel-storage.com https://images.unsplash.com https://www.google-analytics.com https://www.googletagmanager.com https://api.dicebear.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
-              "form-action 'self' https://formspree.io",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "frame-ancestors 'none'",
-              "upgrade-insecure-requests",
-            ].join('; '),
+            value: contentSecurityPolicy,
           },
+        ],
+      },
+      // Next applies later matching config headers over earlier ones. Scope
+      // the exception to this exact authenticated PDF endpoint; sibling APIs
+      // and all portal HTML keep DENY / frame-ancestors 'none'.
+      {
+        source: '/api/member/resume/preview',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: previewContentSecurityPolicy },
         ],
       },
       // Authenticated HTML routes should never be cached by browsers or
@@ -195,6 +214,11 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // This old public sign-up URL lives beneath the authenticated /partner
+      // route tree. Redirect before middleware and the partner layout can send
+      // a signed-in visitor through login or back to the portal home.
+      { source: '/partner/signup', destination: '/partners#partner-signup', permanent: false },
+      { source: '/:locale(en|es|fr|pt)/partner/signup', destination: '/:locale/partners#partner-signup', permanent: false },
       // Legacy blog slug redirects — destinations must be live Astro posts under
       // marketing/src/pages/blog (or /blog). Prior targets (our-mission,
       // new-member-guide, career-change-guide, it-certifications-guide,

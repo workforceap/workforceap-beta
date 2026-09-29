@@ -9,7 +9,7 @@ import PortalPagination from '@/components/portal/PortalPagination';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDirectoryNavigation } from './useDirectoryNavigation';
 import { directoryRoleLabel } from '@/lib/admin/roleLabels';
-import { describeMissingRequired, missingRequiredLabels } from '@/lib/forms/requiredFields';
+import { QuickCreateUserForm } from './QuickCreateUserForm';
 
 type UserRow = {
   id: string;
@@ -88,17 +88,8 @@ export default function AdminUsersManager({
     },
     [attachVisibleTrap]
   );
-  const [creating, setCreating] = useState(false);
-  /** Quick-create failure, rendered inline in the create form (audit 2026-09-20). */
-  const [createError, setCreateError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'ok' | 'err' | 'warn'; text: string } | null>(null);
   const [draft, setDraft] = useState<{ fullName: string; email: string; role: string }>({ fullName: '', email: '', role: 'member' });
-  const [createDraft, setCreateDraft] = useState<{ fullName: string; email: string; role: string; sendResetEmail: boolean }>({
-    fullName: '',
-    email: '',
-    role: canManageRoles ? 'admin' : 'member',
-    sendResetEmail: true,
-  });
 
   // The server searches all accounts before pagination; do not filter this page again.
   const filtered = users;
@@ -188,135 +179,20 @@ export default function AdminUsersManager({
     }
   }
 
-  async function createUser() {
-    setMessage(null);
-    const missing = missingRequiredLabels([
-      { label: 'Full name', ok: createDraft.fullName.trim().length > 0 },
-      { label: 'Email', ok: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(createDraft.email.trim()) },
-    ]);
-    if (missing.length > 0) {
-      setCreateError(describeMissingRequired(missing, { leadIn: 'Before you can create this account' }));
-      return;
-    }
-    setCreating(true);
-    setCreateError(null);
-    try {
-      const res = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(createDraft),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setCreateError(typeof data.error === 'string' && data.error ? data.error : 'Could not create user.');
-        return;
-      }
-
-      if (data.user) {
-        setUsers((prev) => [{
-          ...data.user,
-          createdAt: new Date().toISOString(),
-          memberHref: data.user.role === 'member' ? `/admin/members/${data.user.id}` : null,
-        }, ...prev]);
-      }
-
-      setCreateDraft({
-        fullName: '',
-        email: '',
-        role: canManageRoles ? 'admin' : 'member',
-        sendResetEmail: true,
-      });
-
-      setMessage({
-        type: data.warning ? 'warn' : 'ok',
-        text: data.warning ?? 'User created.',
-      });
-    } catch {
-      setCreateError('Network error while creating user. Check your connection and try again.');
-    } finally {
-      setCreating(false);
-    }
-  }
-
   return (
     <div className="admin-users-manager" aria-busy={pending}>
-      <details className="admin-users-create">
-        <summary>Create an account</summary>
-      <section className="portal-card portal-card--flat" style={{ padding: '1rem', display: 'grid', gap: '0.85rem' }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: '1.05rem' }}>Quick create</h2>
-          <p style={{ margin: '0.35rem 0 0', color: 'var(--color-on-surface-variant)' }}>
-            Fast access setup for admins, staff, or a basic member login. Use Add member for full enrollment intake.
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-          <input
-            type="text"
-            aria-label="Full name"
-            value={createDraft.fullName}
-            onChange={(e) => setCreateDraft((prev) => ({ ...prev, fullName: e.target.value }))}
-            placeholder="Full name"
-            style={{ padding: '0.65rem 0.8rem', borderRadius: '0.65rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container-lowest)', color: 'var(--color-on-surface)' }}
-          />
-          <input
-            type="email"
-            aria-label="Email"
-            value={createDraft.email}
-            onChange={(e) => setCreateDraft((prev) => ({ ...prev, email: e.target.value }))}
-            placeholder="name@workforceap.org"
-            style={{ padding: '0.65rem 0.8rem', borderRadius: '0.65rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container-lowest)', color: 'var(--color-on-surface)' }}
-          />
-          <select
-            aria-label="Role"
-            value={createDraft.role}
-            onChange={(e) => setCreateDraft((prev) => ({ ...prev, role: e.target.value }))}
-            style={{ padding: '0.65rem 0.8rem', borderRadius: '0.65rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container-lowest)', color: 'var(--color-on-surface)' }}
-          >
-            <option value="member">{directoryRoleLabel('member')}</option>
-            {canManageRoles ? <option value="admin">{directoryRoleLabel('admin')}</option> : null}
-            {canManageRoles ? <option value="case_manager">{directoryRoleLabel('case_manager')}</option> : null}
-            {canManageRoles ? <option value="super_admin">{directoryRoleLabel('super_admin')}</option> : null}
-          </select>
-        </div>
-
-        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-          <input
-            type="checkbox"
-            checked={createDraft.sendResetEmail}
-            onChange={(e) => setCreateDraft((prev) => ({ ...prev, sendResetEmail: e.target.checked }))}
-          />
-          Send password setup email right away
-        </label>
-
-        {createError ? (
-          <p
-            id="admin-users-create-error"
-            role="alert"
-            className="admin-inline-feedback admin-inline-feedback--error"
-            style={{ margin: 0 }}
-            data-testid="admin-users-create-error"
-          >
-            {createError}
-          </p>
-        ) : null}
-
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={creating}
-            aria-describedby={createError ? 'admin-users-create-error' : undefined}
-            onClick={() => void createUser()}
-          >
-            {creating ? 'Creating…' : 'Create user'}
-          </button>
-          <a href="/admin/members/new" className="btn btn-outline">Full member intake</a>
-          <a href="/admin/invites/new" className="btn btn-outline">Invite instead</a>
-        </div>
-      </section>
-      </details>
+      <QuickCreateUserForm
+        canManageRoles={canManageRoles}
+        onCreated={(created, warning) => {
+          setUsers((prev) => [{
+            ...created,
+            createdAt: new Date().toISOString(),
+            memberHref: created.role === 'member' ? `/admin/members/${created.id}` : null,
+          }, ...prev]);
+          setMessage({ type: warning ? 'warn' : 'ok', text: warning ?? 'User created.' });
+        }}
+        onStart={() => setMessage(null)}
+      />
 
       <div className="wa-kit-people-filters">
         <TextInput label="Search all accounts" value={query} onChange={search} placeholder="Name or email" hasClear isLoading={pending} />

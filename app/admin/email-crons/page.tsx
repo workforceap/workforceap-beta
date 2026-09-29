@@ -14,6 +14,7 @@ import {
   type EmailCronRow,
   type EmailCronDisplayStatus,
 } from '@/components/portal/kit/pages/admin-subviews/EmailCronsKit';
+import { EmailCronActivateAll } from '@/components/portal/kit/pages/admin-subviews/EmailCronActivateAll';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -123,6 +124,7 @@ export default async function AdminEmailCronsPage({
         schedule: c.scheduleLabel,
         lastRun: timeAgo(c.lastRunAt),
         status,
+        enabled: c.enabled,
       };
     });
 
@@ -141,6 +143,16 @@ export default async function AdminEmailCronsPage({
           enabled={enabledCount}
           failing={failing}
           lastRun={timeAgo(lastRunIso)}
+          manageable
+          headerAction={<EmailCronActivateAll total={cronData.length} enabled={enabledCount} />}
+          notice={
+            cronSecretMissing ? (
+              <p role="alert" className="wa-kit-card wa-mb-5" style={{ color: 'var(--wa-danger)' }}>
+                CRON_SECRET is not configured, so scheduled and manual runs fail with 401. Add a 32+ character
+                CRON_SECRET in Vercel project settings and redeploy.
+              </p>
+            ) : undefined
+          }
         />
       </DesignSurface>
     );

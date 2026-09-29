@@ -2,8 +2,8 @@
  * Resolve the organization to stamp on apply signup and orphan provision.
  *
  * `getDefaultOrganizationId()` is the last resort only. Custom-domain
- * hosts, trusted `x-wap-org-id` (with `x-wap-host`), auth metadata, and
- * a unique program-catalog row win first so a second tenant is not
+ * hosts, trusted `x-wap-org-id` (with `x-wap-host`), server-controlled Auth
+ * app metadata, and a unique program-catalog row win first so a second tenant is not
  * silently written into `workforceap` (`clm_secrets_apply_always_default_org`,
  * `clm_secrets_orphan_user_default_org`).
  *
@@ -23,8 +23,8 @@ export type ResolveProvisionOptions = {
   headers?: HeadersLike;
   /** Trusted caller-supplied org (already resolved). */
   explicitOrganizationId?: string | null;
-  /** Supabase `user_metadata` — only `organization_id` / `organizationId` / `org_id`. */
-  metadata?: Record<string, unknown> | null;
+  /** Supabase `app_metadata` — never user-editable `user_metadata`. */
+  appMetadata?: Record<string, unknown> | null;
   programSlug?: string | null;
   tryResolveOrg?: typeof tryResolveOrgFromRequest;
   lookupProgramOrg?: (programSlug: string) => Promise<string | null>;
@@ -34,12 +34,12 @@ export type ResolveProvisionOptions = {
 
 const TRUSTED_METADATA_ORG_KEYS = ['organization_id', 'organizationId', 'org_id'] as const;
 
-export function extractTrustedMetadataOrgId(
-  metadata: Record<string, unknown> | null | undefined,
+export function extractTrustedAppMetadataOrgId(
+  appMetadata: Record<string, unknown> | null | undefined,
 ): string | null {
-  if (!metadata || typeof metadata !== 'object') return null;
+  if (!appMetadata || typeof appMetadata !== 'object') return null;
   for (const key of TRUSTED_METADATA_ORG_KEYS) {
-    const raw = metadata[key];
+    const raw = appMetadata[key];
     if (typeof raw === 'string' && raw.trim()) return raw.trim();
   }
   return null;
@@ -63,7 +63,7 @@ const defaultProgramLookup = async (programSlug: string): Promise<string | null>
  * Order:
  *  1. explicitOrganizationId
  *  2. request host / x-wap-org-id (custom domain only)
- *  3. trusted auth metadata claim
+ *  3. server-controlled Auth app metadata claim
  *  4. unique active program-catalog org for `programSlug`
  *  5. default org (`workforceap`)
  */
@@ -79,7 +79,7 @@ export async function resolveProvisionOrganizationId(
     if (fromRequest) return fromRequest;
   }
 
-  const fromMeta = extractTrustedMetadataOrgId(input.metadata);
+  const fromMeta = extractTrustedAppMetadataOrgId(input.appMetadata);
   if (fromMeta) return fromMeta;
 
   if (input.programSlug) {

@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { prisma } from '@/lib/db/prisma';
 import { formatPortalTime } from '@/lib/formatDate';
 import { getOrCreateMemberCounselorThread, serializeMessage } from '@/lib/messages/counselorThread';
@@ -42,6 +43,8 @@ export default async function MemberMessagesPage({
     : '';
   const user = await getUser();
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/dashboard/messages${feedbackQuery ? `?${feedbackQuery}` : ''}`)}`);
+  const access = await getMemberDashboardAccess(user.id);
+  if (access.redirectTo) redirect(access.redirectTo);
 
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
@@ -177,11 +180,10 @@ export default async function MemberMessagesPage({
         activeName={activeName}
         activeRole={activeRole}
         activeInitials={counselorInitials}
-        activeOnline={Boolean(thread.counselorUserId)}
         otherInitials={counselorInitials}
         messages={kitMessages}
         feedbackDraft={feedbackDraft}
-        feedbackNotice={hasRequestedFeedback && !feedbackDraft ? 'We could not load that assigned course. You can still write your message below.' : undefined}
+        feedbackNotice={hasRequestedFeedback && !feedbackDraft ? t('feedbackUnavailable') : undefined}
       />
     );
   }

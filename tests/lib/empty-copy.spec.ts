@@ -71,6 +71,13 @@ describe('empty.* copy', () => {
       expect(group.title).toMatch(/load/i);
       expect(group.action).toMatch(/^(Try again|Retry)$/);
     }
+    // Overview (WAP-206): a failed count is unknown, never zero, and every failure offers Try again.
+    for (const key of ['countsTitle', 'tileCaption', 'queueTitle', 'sessions', 'breakdown'] as const) {
+      expect(c.overviewUnavailable[key]).toMatch(/load/i);
+    }
+    expect(c.overviewUnavailable.countsBody).toMatch(/unknown, not zero/);
+    expect(c.overviewUnavailable.queueBody).toMatch(/not an empty queue/);
+    expect(c.overviewUnavailable.action).toBe('Try again');
     // First: the counselor's own first action lives on the page.
     expect(c.placements.title).toBe('No placements yet');
     expect(c.placements.action).toBe('Record placement');
@@ -165,8 +172,9 @@ describe('empty.* copy', () => {
   });
 
   it('training surfaces: certificates keep the #2471 sentence; unpublished curricula are unavailable with a counselor route', () => {
-    // #2471 / item 4 words survive verbatim as the legacy body; the kit body
-    // drops only the self-add clause (the kit view has no add form).
+    // #2471 / item 4 words survive verbatim as the body (legacy view, and the
+    // default kit view since WAP-188 gave it the add form); `bodyKit` drops only
+    // the self-add clause for kit renders without the form (the /dev proofs).
     expect(en.empty.certificates.title).toBe('No certificates yet');
     expect(en.empty.certificates.body).toBe(
       'No certificates are recorded yet. When Coursera reports a completed course we add it here as a pending certificate; our team verifies it before it counts as earned. Completed Coursera courses show in My program, and you can also add a certificate you earned elsewhere below.',

@@ -12,6 +12,7 @@ import {
   type InviteRow,
 } from '@/components/portal/kit/pages/admin-subviews/InvitesKit';
 import InvitesLegacyClient from './InvitesLegacyClient';
+import { InviteRowActions } from '@/components/admin/InviteRowActions';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -144,8 +145,8 @@ export default async function AdminInvitesPage({
 
   const action = (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-      {/* Manage = the legacy table with per-row resend/revoke controls, which the
-          read-only kit table doesn't carry. Keep them reachable. */}
+      {/* Manage = the legacy table: status filters, sorting and invite-link copy.
+          Resend / Revoke now live on the kit rows below. */}
       <Link
         href="/admin/invites?ui=legacy"
         className="btn btn-outline"
@@ -174,6 +175,11 @@ export default async function AdminInvitesPage({
         pending={pending}
         rate={rate}
         action={action}
+        rowActions={(row) =>
+          // Resend/revoke routes accept only live pending invites; an expired
+          // pending row already surfaces as 'expired' here.
+          row.status === 'pending' ? <InviteRowActions id={row.id} email={row.email} /> : null
+        }
       />
     </>
   );

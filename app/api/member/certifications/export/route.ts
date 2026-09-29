@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { withCsvBranding } from '@/lib/export/brandingHeader';
+import { csvRow } from '@/lib/csv';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const GET = withApiGuc(async () => {
@@ -17,8 +18,8 @@ export const GET = withApiGuc(async () => {
   }));
 
   const rows = [
-    'Certificate Name,Earned Date',
-    ...certs.map((c) => `"${c.certName}","${c.earnedAt.toISOString().split('T')[0]}"`)
+    csvRow(['Certificate Name', 'Earned Date']),
+    ...certs.map((c) => csvRow([c.certName, c.earnedAt.toISOString().split('T')[0]])),
   ].join('\n');
 
   const csv = withCsvBranding(rows, 'My Certificates', `${certs.length} certificate${certs.length !== 1 ? 's' : ''} on file`);
@@ -27,6 +28,7 @@ export const GET = withApiGuc(async () => {
     headers: {
       'Content-Type': 'text/csv',
       'Content-Disposition': 'attachment; filename="workforceap-certificates.csv"',
+      'Cache-Control': 'no-store',
     },
   });
 

@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [master]
     types: [opened, edited, synchronize, labeled, unlabeled, reopened]
+  # Merge queue (WAP-201): the check must report on the queue commit when it is
+  # a required check, or the queue waits forever. It already ran against the
+  # PR (and re-runs on every label change), so on merge_group it passes.
+  merge_group:
 
 jobs:
   locked-stakes-check:
@@ -19,6 +23,11 @@ jobs:
           script: |
             const { execFileSync } = require('node:child_process');
             const path = require('node:path');
+
+            if (context.eventName === 'merge_group') {
+              core.info('merge_group: this check already passed on the pull request; the queue commit adds no new PR files or labels to review.');
+              return;
+            }
 
             const pr = context.payload.pull_request;
             if (!pr) {

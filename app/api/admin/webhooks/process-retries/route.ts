@@ -5,32 +5,30 @@ import { getPendingRetryEvents } from '@/lib/webhooks/retry';
 import { processRetryEvent, type RetryResult } from './_processRetries';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
-import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
+import { withCronLogging } from '@/lib/cron/withCronLogging';
+import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 // WAP-177 fix 4: bounded like the /api/cron/* routes this shares a schedule with.
 export const maxDuration = 300;
 
 /**
- * Admin endpoint to process pending webhook retries.
- * Invoked on a schedule by Vercel cron (see vercel.json, guarded by
- * CRON_SECRET via authorizeCronRequest — same pattern as /api/cron/*
- * routes) or manually from the admin UI (session-based admin auth).
+ * Processes pending webhook retries.
  *
- * Vercel cron issues GET requests, so both GET and POST run the same
- * processing logic (matching the GET+POST convention used by every route
- * under /api/cron/*).
+ * - GET is the scheduled run (Vercel cron issues GET; see vercel.json).
+ *   withCronLogging authorizes CRON_SECRET and records a CronExecution under
+ *   `cron_webhook_process_retries`, so /admin/crons shows its last run and
+ *   failures (X03 part 2).
+ * - POST is a manual run and requires an admin session. It records no
+ *   CronExecution, so the board keeps showing the scheduled cadence.
+ *
+ * Each row is claimed before it is replayed (see processRetryEvent), so an
+ * overlapping cron run and manual run never replay the same row twice.
  *
  * Returns summary of processed retries without exposing raw payload data.
  */
-async function handle(request: NextRequest) {
+async function coreHandler(request: NextRequest, actor: { id: string } | null) {
   try {
-    const user = await getUser();
-    const isAuthedAdmin = !!user && (await isAdmin(user.id));
-    if (!isAuthedAdmin && authorizeCronRequest(request)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const source = searchParams.get('source') || undefined;
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
@@ -42,6 +40,9 @@ async function handle(request: NextRequest) {
     for (const event of pending) {
       results.push(await processRetryEvent(event));
     }
+
+    // No-op outside a cron execution (the manual POST path).
+    await setCronRecordsProcessed(results.length);
 
     const byResult = results.reduce((acc, r) => {
       acc[r.result] = (acc[r.result] || 0) + 1;
@@ -57,8 +58,8 @@ async function handle(request: NextRequest) {
     // The cron fires every 10 minutes and an empty queue is the steady state,
     // so recording every run buried real admin actions under thousands of
     // `processed: 0` rows. Only a batch that actually did work is an event.
-    const actorId = user?.id ?? null;
-    const triggeredBy = user ? 'admin' : 'cron';
+    const actorId = actor?.id ?? null;
+    const triggeredBy = actor ? 'admin' : 'cron';
     if (results.length > 0) {
       void auditLog({
         actorUserId: actorId,
@@ -67,7 +68,7 @@ async function handle(request: NextRequest) {
         targetId: triggeredBy,
         metadata: { processed: results.length, triggeredBy, summary: byResult },
       }).catch(() => {});
-      logAuditEvent({ user: { id: actorId ?? 'cron', role: user ? 'admin' : 'system' }, verb: 'created', object: { type: 'WebhookRetryBatch', id: triggeredBy }, result: { success: true } }).catch(() => {});
+      logAuditEvent({ user: { id: actorId ?? 'cron', role: actor ? 'admin' : 'system' }, verb: 'created', object: { type: 'WebhookRetryBatch', id: triggeredBy }, result: { success: true } }).catch(() => {});
     }
     return NextResponse.json({
       processed: results.length,
@@ -80,5 +81,19 @@ async function handle(request: NextRequest) {
   }
 }
 
-export const GET = handle;
-export const POST = handle;
+export const GET = withCronLogging('cron_webhook_process_retries', (request: NextRequest) =>
+  coreHandler(request, null),
+);
+
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getUser();
+    if (!user || !(await isAdmin(user.id))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return coreHandler(request, user);
+  } catch (error) {
+    captureApiError(error, { route: '/api/admin/webhooks/process-retries' });
+    return NextResponse.json({ error: 'Failed to process retries' }, { status: 500 });
+  }
+}

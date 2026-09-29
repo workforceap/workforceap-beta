@@ -10,6 +10,7 @@ import {
   type JobTailorResponse,
 } from '@/lib/ai/jobTailor';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 
 function fail(error: string, status: number) {
   return NextResponse.json({ ok: false, error } satisfies JobTailorResponse, { status });
@@ -41,7 +42,7 @@ export const POST = withApiGuc(
       // GUC query (see lib/db/prisma.ts override).
       const job = await prisma.$transaction((tx) =>
         tx.job.findFirst({
-          where: { id: jobId, status: 'live' },
+          where: { id: jobId, status: 'live', AND: [ACTIVE_EMPLOYER_JOB_WHERE] },
           select: {
             id: true,
             title: true,

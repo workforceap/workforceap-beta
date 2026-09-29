@@ -19,6 +19,7 @@ const SUPER_ADMIN_FALLBACK_EMPLOYER_EMAIL = 'employer-preview@example.com';
 const SUPER_ADMIN_FALLBACK_EMPLOYER_NAME = 'WorkforceAP Example Employer';
 
 type RoleContext = {
+  userExists: boolean;
   deletedAt: Date | null;
   profileRole: string | null;
   userRoleNames: string[];
@@ -48,11 +49,19 @@ const loadRoleContext = cache(async function loadRoleContext(userId: string): Pr
     )
   );
   return {
+    userExists: !!user,
     deletedAt: user?.deletedAt ?? null,
     profileRole: user?.profile?.role ?? null,
     userRoleNames: user?.userRoles.map((entry) => entry.role.name) ?? [],
   };
 });
+
+/** Persisted identity facts for member entitlement checks. The effective-role
+ * default and baseline `member` row cannot establish that a member profile exists. */
+export async function getStoredRoleIdentity(userId: string): Promise<Pick<RoleContext, 'userExists' | 'deletedAt' | 'profileRole'>> {
+  const { userExists, deletedAt, profileRole } = await loadRoleContext(userId);
+  return { userExists, deletedAt, profileRole };
+}
 
 export const getUserRoles = cache(async function getUserRoles(userId: string): Promise<string[]> {
   const context = await loadRoleContext(userId);

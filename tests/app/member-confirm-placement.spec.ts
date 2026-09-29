@@ -82,6 +82,11 @@ describe('confirmPlacement records the member-reported placement', () => {
         actorUserId: MEMBER_ID,
       }),
     );
+    expect(recordPartnerWorkflowEvent).toHaveBeenCalledWith(expect.objectContaining({
+      kind: 'placement_confirmation_submitted',
+      headline: 'Placement reported, pending verification',
+    }));
+    expect(JSON.stringify(vi.mocked(recordPartnerWorkflowEvent).mock.calls)).not.toContain('Acme');
   });
 
   it('writes the record after the tracker row is ACCEPTED and before the claim event, which carries the outcome', async () => {
@@ -155,5 +160,58 @@ describe('confirmPlacement records the member-reported placement', () => {
     await expect(confirmPlacement(APPLICATION_ID)).rejects.toThrow(/Application not found/);
 
     expect(mocks.recordPlacement).not.toHaveBeenCalled();
+  });
+});
+
+describe('confirmPlacement and the partner minor rule (lib/partner/dataAccess.ts)', () => {
+  const referralFor = (partnerType: string, profile: Record<string, unknown> | null) => ({
+    partnerId: 'partner-1',
+    partner: { partnerType },
+    member: { profile },
+  });
+
+  it.each([
+    ['a community partner, minor flag, no consent', 'community', { isMinor: true, dob: null, ferpaConsentGiven: false }],
+    ['a referral partner, dob under 18, no consent', 'referral', { isMinor: false, dob: new Date(Date.UTC(new Date().getUTCFullYear() - 15, 5, 1)), ferpaConsentGiven: false }],
+  ])('writes no partner event naming a hidden member: %s', async (_label, partnerType, profile) => {
+    vi.mocked(prisma.partnerReferral.findFirst).mockResolvedValue(referralFor(partnerType, profile) as never);
+
+    const result = await confirmPlacement(APPLICATION_ID);
+
+    expect(recordPartnerWorkflowEvent).not.toHaveBeenCalled();
+    // The member's own placement still goes through in full.
+    expect(result.placementOutcome).toBe('created');
+    expect(persistEvent).toHaveBeenCalledWith(expect.objectContaining({ eventName: 'placement_confirmation_submitted' }), prisma);
+    expect(revalidatePath).toHaveBeenCalledWith('/partner/attention');
+  });
+
+  it.each([
+    ['an adult under a referral partner', 'referral', { isMinor: false, dob: new Date('1990-01-01'), ferpaConsentGiven: false }],
+    ['a minor with FERPA consent under a community partner', 'community', { isMinor: true, dob: null, ferpaConsentGiven: true }],
+    ['a minor under a high-school partner', 'high_school', { isMinor: true, dob: null, ferpaConsentGiven: false }],
+    ['a member with no profile row', 'community', null],
+  ])('still notifies the partner for a visible member: %s', async (_label, partnerType, profile) => {
+    vi.mocked(prisma.partnerReferral.findFirst).mockResolvedValue(referralFor(partnerType, profile) as never);
+
+    await confirmPlacement(APPLICATION_ID);
+
+    expect(recordPartnerWorkflowEvent).toHaveBeenCalledTimes(1);
+    expect(recordPartnerWorkflowEvent).toHaveBeenCalledWith(expect.objectContaining({
+      partnerId: 'partner-1',
+      actorUserId: MEMBER_ID,
+      kind: 'placement_confirmation_submitted',
+    }));
+  });
+
+  it('reads the partner type and the minor facts with the referral', async () => {
+    await confirmPlacement(APPLICATION_ID);
+    expect(prisma.partnerReferral.findFirst).toHaveBeenCalledWith({
+      where: { memberId: MEMBER_ID },
+      select: {
+        partnerId: true,
+        partner: { select: { partnerType: true } },
+        member: { select: { profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } } } },
+      },
+    });
   });
 });

@@ -15,9 +15,10 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
  * Mockup: workforceap-admin-full.html "invites" view.
  * Target route: /admin/invites
  *
- * Server-rendered (no interactivity): all counts + rows are aggregated in the
- * page loader and land here as plain data. Uses DataTable mobile="cards" so the
- * wide table stacks on mobile instead of squishing.
+ * Server-rendered: all counts + rows are aggregated in the page loader and land
+ * here as plain data; interactive per-row controls arrive via `rowActions`.
+ * Uses DataTable mobile="cards" so the wide table stacks on mobile instead of
+ * squishing.
  */
 export interface InviteRow {
   id: string;
@@ -42,6 +43,11 @@ export interface InvitesKitProps {
   rate: number;
   /** Right-aligned header action (e.g. "Send Invites"). */
   action?: ReactNode;
+  /**
+   * Per-row controls (e.g. Resend / Revoke for pending invites). When set, the
+   * table gains an Actions column and each mobile card a footer row.
+   */
+  rowActions?: (row: InviteRow) => ReactNode;
 }
 
 const STATUS_COLOR: Record<InviteRow['status'], TokenColor> = {
@@ -65,6 +71,7 @@ export function InvitesKit({
   pending,
   rate,
   action,
+  rowActions,
 }: InvitesKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Sent', value: sent },
@@ -114,6 +121,13 @@ export function InvitesKit({
       ),
     },
   ];
+  if (rowActions) {
+    columns.push({
+      key: 'actions',
+      header: 'Actions',
+      render: (row) => rowActions(row),
+    });
+  }
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
@@ -132,7 +146,7 @@ export function InvitesKit({
         columns={columns}
         rows={invites}
         rowKey={(row) => row.id}
-        minWidth={520}
+        minWidth={rowActions ? 720 : 520}
         mobile="cards"
         cardRender={(row) => (
           <Card className="wa-kit-card--sm">
@@ -177,6 +191,7 @@ export function InvitesKit({
               </span>
               <span>Sent {row.sent}</span>
             </div>
+            {rowActions ? <div style={{ margin: '12px 0 0' }}>{rowActions(row)}</div> : null}
           </Card>
         )}
         emptyTitle="No invitations yet"

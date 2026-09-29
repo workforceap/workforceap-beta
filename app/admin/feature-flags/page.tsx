@@ -72,6 +72,7 @@ export default async function AdminFeatureFlagsPage({
     description: f.description?.trim() || '—',
     enabled: f.enabled,
     rolloutPercentage: f.rolloutPercentage,
+    allowedRoles: f.allowedRoles,
     updated: formatUpdated(f.updatedAt),
   }));
 
@@ -89,6 +90,7 @@ export default async function AdminFeatureFlagsPage({
         off={off}
         recentlyChanged={recentlyChanged}
         notice={notice}
+        manageable
       />
     </DesignSurface>
   );

@@ -25,7 +25,9 @@ export interface KanbanColumnData {
  */
 export function KanbanBoard({ columns }: { columns: KanbanColumnData[] }) {
   return (
-    <div className="wa-overflow-x-auto">
+    // An overflowing scroller is a keyboard tab stop; the kit ring keeps it
+    // visible (WAP-253 item 4). No clipping ancestor here, unlike DataTable.
+    <div className="wa-overflow-x-auto wa-kit-focus">
       <div style={{ display: 'flex', gap: 12, minWidth: 'min-content' }}>
         {columns.map((col) => (
           <Card key={col.label}>

@@ -116,4 +116,29 @@ describe('diagnoseMemberCoursera tenant boundary', () => {
       expect(call).toContain('org-1');
     }
   });
+
+  it('warns when progress events were dropped for an unmapped course (WAP-276)', async () => {
+    mocks.scopedFindFirst.mockResolvedValue({
+      id: 'member-1',
+      email: 'member@example.com',
+      fullName: 'Member One',
+      organizationId: 'org-1',
+      enrolledProgram: 'primary-program',
+      courseraEnrollmentApproved: true,
+    });
+    mocks.courseProgressCount.mockResolvedValue(2);
+    // First raw read is the xAPI aggregate row, second the latest-events list.
+    mocks.rawQuery
+      .mockResolvedValueOnce([{ total: 10, ignored: 7, unresolved: 3, processed: 0, errored: 0 }])
+      .mockResolvedValueOnce([]);
+
+    const result = await diagnoseMemberCoursera('member-1');
+
+    expect(result.ok).toBe(true);
+    const verdict = (result as { verdict: Array<{ status: string; title: string }> }).verdict;
+    expect(verdict).toContainEqual(
+      expect.objectContaining({ status: 'warn', title: '3 of 10 xAPI progress events had an unmapped course' }),
+    );
+    expect(verdict.map((v) => v.title)).not.toContain('10 xAPI events received · 2 CourseProgress rows');
+  });
 });

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getUser } from '@/lib/auth/server';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
@@ -9,6 +10,7 @@ import { counselorAffiliationLabel } from '@/lib/counselor/counselorLabels';
 import { getCounselorCommandCenter } from '@/lib/counselor/commandCenter';
 import CounselorCommandCenter from '@/components/portal/counselor/CounselorCommandCenter';
 import CounselorPriorityQueue from '@/components/portal/counselor/CounselorPriorityQueue';
+import { CounselorBulkFollowUp } from '@/components/portal/counselor/CounselorBulkFollowUp';
 import AtRiskSummaryWidget from '@/components/portal/counselor/AtRiskSummaryWidget';
 import { getCounselorPriorityQueue } from '@/lib/counselor/priorityQueue';
 import { getCounselorAttention } from '@/lib/attention/counselor';
@@ -30,6 +32,7 @@ import {
 import PortalCard from '@/components/portal/ui/PortalCard';
 import {
   CounselorHomeKit,
+  type CounselorHomeLoadFailedCopy,
   type CounselorQueueRow,
   type CounselorSessionRow,
 } from '@/components/portal/kit/pages/counselor/CounselorHomeKit';
@@ -60,7 +63,7 @@ export default async function CounselorPortalPage({
   if (!user) redirect('/login?redirectTo=/counselor/overview');
 
   const allowed = (await isCounselor(user.id)) || (await isAdmin(user.id));
-  if (!allowed) redirect('/dashboard');
+  if (!allowed) redirect(await deniedPortalHomeHref(user.id, 'counselor'));
 
   const requestedUi = (await searchParams)?.ui ?? null;
 
@@ -87,31 +90,30 @@ export default async function CounselorPortalPage({
         })
       : 0;
 
-    let kitCenter;
+    // A failed load is unknown, not zero (WAP-206): null reaches the kit,
+    // which says "Couldn't load" instead of "0 awaiting reply".
+    let kitCenter: Awaited<ReturnType<typeof getCounselorCommandCenter>> | null = null;
     try {
       kitCenter = await getCounselorCommandCenter(user.id, {
         isAdmin: kitIsAdmin && !kitCounselor,
         perSectionLimit: 5,
       });
-    } catch {
+    } catch (err) {
+      console.error('[counselor:kit] command center failed:', err);
       kitLoadErrors.push('counselor-command-center-load-failed');
-      kitCenter = {
-        needsReply: [],
-        atRisk: [],
-        interviewing: [],
-        totals: { needsReplyCount: 0, atRiskCount: 0, interviewingCount: 0, slaBreachCount: 0 },
-      };
     }
 
     // One attention queue (lib/attention) feeds the "Needs attention" list,
     // the risk-alert tile and the on-track count, and is the same queue Inbox
     // zero, Triage and the Work queue render — so the four pages agree.
     let kitAttention = emptyAttentionQueue();
+    let kitAttentionLoaded = true;
     try {
       kitAttention = await getCounselorAttention(user.id, { isAdmin: kitIsAdmin && !kitCounselor });
     } catch (err) {
       console.error('[counselor:kit] attention queue failed:', err);
       kitLoadErrors.push('counselor-priority-queue-load-failed');
+      kitAttentionLoaded = false;
     }
     const kitQueue = toPriorityQueue(kitAttention);
 
@@ -126,12 +128,25 @@ export default async function CounselorPortalPage({
       hoursWaitingReply: row.hoursWaitingReply,
     }));
 
-    const kitSessions: CounselorSessionRow[] = kitCenter.interviewing.map((row) => ({
+    const kitSessions: CounselorSessionRow[] | null = kitCenter && kitCenter.interviewing.map((row) => ({
       memberId: row.memberId,
       memberName: row.memberName,
       role: row.role,
       lastRunAt: row.lastRunAt,
     }));
+
+    const tEmpty = await getTranslations('empty');
+    const loadFailedCopy: CounselorHomeLoadFailedCopy = {
+      countsTitle: tEmpty('counselor.overviewUnavailable.countsTitle'),
+      countsBody: tEmpty('counselor.overviewUnavailable.countsBody'),
+      tileCaption: tEmpty('counselor.overviewUnavailable.tileCaption'),
+      queueTitle: tEmpty('counselor.overviewUnavailable.queueTitle'),
+      queueBody: tEmpty('counselor.overviewUnavailable.queueBody'),
+      queueSecondary: tEmpty('counselor.overviewUnavailable.queueSecondary'),
+      sessions: tEmpty('counselor.overviewUnavailable.sessions'),
+      breakdown: tEmpty('counselor.overviewUnavailable.breakdown'),
+      action: tEmpty('counselor.overviewUnavailable.action'),
+    };
 
     return (
       <>
@@ -140,18 +155,28 @@ export default async function CounselorPortalPage({
         ))}
         <CounselorHomeKit
         assignedCount={assignedCount}
-        atRiskCount={kitAttention.totals.byReason.risk_alert}
-        needsReplyCount={kitCenter.totals.needsReplyCount}
-        onTrackCount={kitQueue.totals.ontrack}
-        slaBreachCount={kitCenter.totals.slaBreachCount}
-        queueRows={kitQueueRows}
-        queueTotal={countNeedsAttention(kitQueue.totals)}
+        atRiskCount={kitAttentionLoaded ? kitAttention.totals.byReason.risk_alert : null}
+        needsReplyCount={kitCenter ? kitCenter.totals.needsReplyCount : null}
+        onTrackCount={kitAttentionLoaded ? kitQueue.totals.ontrack : null}
+        slaBreachCount={kitCenter ? kitCenter.totals.slaBreachCount : null}
+        queueRows={kitAttentionLoaded ? kitQueueRows : null}
+        queueTotal={kitAttentionLoaded ? countNeedsAttention(kitQueue.totals) : undefined}
         sessions={kitSessions}
-        bucketCounts={{
-          critical: kitQueue.totals.critical,
-          warning: kitQueue.totals.warning,
-          ontrack: kitQueue.totals.ontrack,
-        }}
+        bucketCounts={
+          kitAttentionLoaded
+            ? {
+                critical: kitQueue.totals.critical,
+                warning: kitQueue.totals.warning,
+                ontrack: kitQueue.totals.ontrack,
+              }
+            : null
+        }
+        retryHref="/counselor/overview"
+        todayHref="/counselor/today"
+        loadFailedCopy={loadFailedCopy}
+        bulkFollowUp={
+          kitAttentionLoaded ? <CounselorBulkFollowUp rows={kitQueue.rows} totals={kitQueue.totals} /> : undefined
+        }
         />
       </>
     );

@@ -6,7 +6,7 @@
  *
  * Why this exists: in a fresh / partially-migrated environment the
  * `coursera_canonical_course_mappings` table can be empty, in which case every
- * inbound xAPI statement falls into the `completion_status='ignored'` bucket
+ * inbound xAPI statement falls into the `completion_status='unresolved_course'` bucket (`'ignored'` before WAP-276)
  * (see `lib/xapi/inboundStatementPipeline.ts`) and never promotes to
  * `course_progress`. The /admin/coursera/health page flags this in red. Rather
  * than ask an operator to manually click "Map this" once per course in the

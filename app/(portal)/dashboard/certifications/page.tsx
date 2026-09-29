@@ -180,6 +180,10 @@ export default async function DashboardCertificationsPage({
         earned={earned}
         inProgress={inProgress}
         continueHref={inProgress.length > 0 ? MEMBER_PROGRAM_HREF : undefined}
+        // WAP-188 Phase A: the self-report form used to render only on
+        // ?ui=legacy. Same component, same route (a `pending` row for staff
+        // review); the kit frames it with the pending-review copy.
+        addCertificateForm={<CertificationAddForm />}
       />
     );
   }

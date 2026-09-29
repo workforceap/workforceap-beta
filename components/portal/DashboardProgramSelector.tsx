@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState, useTransition, type FocusEvent, type KeyboardEvent } from 'react';
+import { ChevronDown, ChevronUp, GraduationCap } from 'lucide-react';
 
 /**
  * Compact multi-program selector for the home `/dashboard` hero. Mirrors the
@@ -11,6 +12,16 @@ import { useState, useTransition } from 'react';
  * Renders only when the member has 2+ `CourseEnrollment` rows. Selecting
  * a different program reloads the page with `?program=<slug>` so the
  * server component re-fetches the hero copy and progress for that program.
+ * It is a view switch only: it never writes an enrollment (locked stake
+ * "Public members do not freely change programs/classes").
+ *
+ * Painted from `--wa-*` tokens with lucide icons (WAP-194), since it now sits
+ * inside the kit home's Certification path card.
+ *
+ * A disclosure, not a listbox (WAP-229): the trigger controls a plain list of
+ * buttons that Tab walks, and the current program carries `aria-current`.
+ * Escape, a pointer outside, and focus leaving the switcher all close it;
+ * Escape and a switch put focus back on the trigger.
  */
 export type DashboardProgramOption = {
   id: string;
@@ -35,6 +46,34 @@ export default function DashboardProgramSelector({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [open]);
+
+  function closeToTrigger() {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (!open || e.key !== 'Escape' || e.nativeEvent.isComposing) return;
+    e.preventDefault();
+    e.stopPropagation();
+    closeToTrigger();
+  }
+
+  function onBlur(e: FocusEvent<HTMLDivElement>) {
+    if (open && !e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+  }
 
   const totalPrograms = options.length;
   const activeIndex = Math.max(
@@ -44,7 +83,7 @@ export default function DashboardProgramSelector({
   const ordinal = activeIndex + 1;
 
   function selectProgram(slug: string) {
-    setOpen(false);
+    closeToTrigger();
     if (slug === activeProgramSlug) return;
     startTransition(() => {
       router.push(`${pathname}?program=${encodeURIComponent(slug)}`);
@@ -52,67 +91,70 @@ export default function DashboardProgramSelector({
   }
 
   return (
-    <div style={{ position: 'relative', display: 'inline-flex', alignSelf: 'flex-start' }}>
+    <div
+      ref={rootRef}
+      onKeyDown={onKeyDown}
+      onBlur={onBlur}
+      style={{ position: 'relative', display: 'inline-flex', alignSelf: 'flex-start' }}
+    >
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
+        onClick={() => {
+          if (!isPending) setOpen((v) => !v);
+        }}
         aria-expanded={open}
-        disabled={isPending}
+        aria-controls={open ? menuId : undefined}
+        // aria-disabled, not disabled: a disabled button drops the focus a switch just put on it.
+        aria-disabled={isPending || undefined}
         data-testid="dashboard-program-selector"
+        className="wa-kit-focus"
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.5rem 0.875rem',
-          borderRadius: '999px',
-          border: '1px solid color-mix(in srgb, var(--color-accent) 14%, var(--outline-variant))',
-          background: 'rgba(255,255,255,0.92)',
-          color: 'var(--color-on-surface)',
-          fontSize: '0.8125rem',
+          gap: 6,
+          padding: '8px 14px',
+          borderRadius: 999,
+          border: '1px solid var(--wa-control-border)',
+          background: 'var(--wa-surface)',
+          color: 'var(--wa-text)',
+          fontSize: 'var(--wa-type-meta)',
           fontWeight: 700,
           cursor: isPending ? 'wait' : 'pointer',
           letterSpacing: '0.02em',
-          minHeight: '44px',
+          minHeight: 44,
         }}
       >
-        <span
-          aria-hidden
-          className="material-symbols-outlined"
-          style={{ fontSize: '0.95rem', color: 'var(--wa-accent-text)' }}
-        >
-          school
-        </span>
+        <GraduationCap size={16} aria-hidden style={{ color: 'var(--wa-accent-text)' }} />
         <span>
           {ordinal} of {totalPrograms} programs
         </span>
-        <span
-          aria-hidden
-          className="material-symbols-outlined"
-          style={{ fontSize: '0.95rem', color: 'var(--color-on-surface-variant)' }}
-        >
-          {open ? 'expand_less' : 'expand_more'}
-        </span>
+        {open ? (
+          <ChevronUp size={16} aria-hidden style={{ color: 'var(--wa-muted)' }} />
+        ) : (
+          <ChevronDown size={16} aria-hidden style={{ color: 'var(--wa-muted)' }} />
+        )}
       </button>
 
       {open && (
         <ul
-          role="listbox"
+          id={menuId}
           aria-label="Switch active program"
+          data-testid="dashboard-program-selector-menu"
           style={{
             position: 'absolute',
-            top: 'calc(100% + 0.35rem)',
+            top: 'calc(100% + 6px)',
             left: 0,
-            zIndex: 30,
+            zIndex: 'var(--z-sticky)',
             margin: 0,
-            padding: '0.35rem',
+            padding: 6,
             minWidth: '14rem',
-            maxWidth: '18rem',
+            maxWidth: 'min(18rem, calc(100vw - 32px))',
             listStyle: 'none',
             background: 'var(--wa-surface)',
-            border: '1px solid var(--outline-variant, rgba(0,0,0,0.12))',
-            borderRadius: '0.6rem',
-            boxShadow: '0 12px 28px rgba(17, 24, 39, 0.12)',
+            border: '1px solid var(--wa-border)',
+            borderRadius: 'var(--wa-radius-sm)',
+            boxShadow: 'var(--wa-shadow-lg)',
           }}
         >
           {options.map((opt) => {
@@ -121,30 +163,31 @@ export default function DashboardProgramSelector({
               <li key={opt.id}>
                 <button
                   type="button"
-                  role="option"
-                  aria-selected={isActive}
+                  aria-current={isActive ? 'true' : undefined}
                   onClick={() => selectProgram(opt.programSlug)}
+                  className="wa-kit-focus"
                   style={{
                     width: '100%',
                     display: 'flex',
+                    // WAP-253: the Primary badge drops under a long title
+                    // instead of squeezing it into a narrow column.
+                    flexWrap: 'wrap',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '0.5rem',
-                    padding: '0.65rem 0.75rem',
-                    borderRadius: '0.4rem',
+                    gap: 8,
+                    padding: '10px 12px',
+                    borderRadius: 'var(--wa-radius-sm)',
                     border: 'none',
-                    background: isActive
-                      ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)'
-                      : 'transparent',
-                    color: 'var(--color-on-surface)',
-                    fontSize: '0.8125rem',
+                    background: isActive ? 'var(--wa-accent-soft)' : 'transparent',
+                    color: 'var(--wa-text)',
+                    fontSize: 'var(--wa-type-meta)',
                     fontWeight: isActive ? 700 : 500,
                     cursor: 'pointer',
                     textAlign: 'left',
                     minHeight: '44px',
                   }}
                 >
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ flex: '1 1 10rem', minWidth: 0, overflowWrap: 'anywhere' }}>
                     {opt.programTitle}
                   </span>
                   {opt.isPrimary && (
@@ -152,11 +195,11 @@ export default function DashboardProgramSelector({
                       aria-label="Primary program"
                       title="Primary program"
                       style={{
-                        fontSize: '0.8125rem',
+                        fontSize: 'var(--wa-type-meta)',
                         fontWeight: 700,
-                        padding: '0.125rem 0.4rem',
-                        borderRadius: '999px',
-                        background: 'rgba(173,44,77,0.12)',
+                        padding: '2px 6px',
+                        borderRadius: 999,
+                        background: 'var(--wa-accent-soft)',
                         color: 'var(--wa-accent-text)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',

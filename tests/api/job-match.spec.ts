@@ -28,6 +28,7 @@ vi.mock('@/lib/db/prisma', () => {
   };
   const user = {
     findUnique: vi.fn(),
+    findMany: vi.fn(),
   };
   return { prisma: { $transaction: vi.fn(async (arg: any) => { const { prisma } = await import('@/lib/db/prisma'); return typeof arg === 'function' ? arg(prisma) : Promise.all(arg); }), job, user } };
 });
@@ -55,6 +56,7 @@ import { GET as getJobDetail } from '@/app/api/(portal)/dashboard/jobs/[id]/rout
 import { prisma } from '@/lib/db/prisma';
 import { getUser } from '@/lib/auth/server';
 import { getProgramBySlug } from '@/lib/content/programs';
+import { matchStudentsForJob } from '@/lib/ai/matchStudents';
 import {
   MATCH_WEIGHTS,
   scoreProgramAlignment,
@@ -329,7 +331,7 @@ describe('GET /api/(portal)/dashboard/jobs/[id]', () => {
 
     expect(prisma.job.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: UUIDS.job1, status: 'live' },
+        where: expect.objectContaining({ id: UUIDS.job1, status: 'live' }),
       })
     );
   });
@@ -421,6 +423,130 @@ describe('scoreCertifications', () => {
   it('matches via substring inclusion', () => {
     const result = scoreCertifications(['CompTIA A+ Certification'], ['comptia a+']);
     expect(result.score).toBe(1);
+  });
+});
+
+describe('scoreCertifications verification status (V08)', () => {
+  const preferred = ['comptia a+', 'network+'];
+
+  it('an approved certification gives a Verified reason', () => {
+    const result = scoreCertifications([{ certName: 'CompTIA A+', status: 'approved' }], preferred);
+    expect(result.score).toBe(0.5);
+    expect(result.reason).toBe('Verified certification(s): comptia a+');
+  });
+
+  it('a pending certification is reported, not yet verified, and never Verified', () => {
+    const result = scoreCertifications([{ certName: 'CompTIA A+', status: 'pending' }], preferred);
+    expect(result.score).toBe(0.5);
+    expect(result.reason).toBe('Reported certification(s), not yet verified: comptia a+');
+    expect(result.reason).not.toMatch(/^Verified/);
+  });
+
+  it('a rejected certification gives no reason and zero certification score', () => {
+    const result = scoreCertifications([{ certName: 'CompTIA A+', status: 'rejected' }], preferred);
+    expect(result).toEqual({ score: 0, reason: null });
+  });
+
+  it('a mixed set produces both phrases in one reason', () => {
+    const result = scoreCertifications(
+      [
+        { certName: 'CompTIA A+', status: 'approved' },
+        { certName: 'Network+', status: 'pending' },
+        { certName: 'Security+', status: 'rejected' },
+      ],
+      [...preferred, 'security+'],
+    );
+    expect(result.score).toBeCloseTo(2 / 3);
+    expect(result.reason).toBe(
+      'Verified certification(s): comptia a+ · Reported certification(s), not yet verified: network+',
+    );
+  });
+
+  it('a preferred cert matched by both an approved and a pending row reads as verified only', () => {
+    const result = scoreCertifications(
+      [
+        { certName: 'CompTIA A+', status: 'pending' },
+        { certName: 'CompTIA A+ Core 1', status: 'approved' },
+      ],
+      ['comptia a+'],
+    );
+    expect(result.reason).toBe('Verified certification(s): comptia a+');
+  });
+
+  it('plain strings keep today\'s score and use the reported wording, never Verified', () => {
+    const result = scoreCertifications(['CompTIA A+', 'Network+'], preferred);
+    expect(result.score).toBe(1);
+    expect(result.reason).toBe('Reported certification(s), not yet verified: comptia a+, network+');
+    expect(scoreCertifications(['CompTIA A+'], preferred).score).toBe(0.5);
+  });
+
+  it('an object without a status is treated as reported', () => {
+    const result = scoreCertifications([{ certName: 'CompTIA A+' }], ['comptia a+']);
+    expect(result.score).toBe(1);
+    expect(result.reason).toBe('Reported certification(s), not yet verified: comptia a+');
+  });
+});
+
+describe('matchStudentsForJob certification status (V08)', () => {
+  const job = { requirements: [], suggestedPrograms: [], preferredCertifications: ['CompTIA A+', 'Network+'] };
+
+  function student(certs: Array<{ certName: string; status: 'pending' | 'approved' | 'rejected' }>) {
+    return {
+      id: UUIDS.user,
+      enrolledProgram: 'it-cyber',
+      assessmentScorePct: null,
+      memberProgramProgress: [],
+      courseProgress: [],
+      userCertifications: certs,
+      profile: null,
+    };
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getProgramBySlug).mockReturnValue(undefined);
+  });
+
+  it('selects certification status and excludes rejected certifications in the query', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([] as any);
+    await matchStudentsForJob('org-1', job);
+    const args = vi.mocked(prisma.user.findMany).mock.calls[0][0] as any;
+    expect(args.where).toEqual(expect.objectContaining({ organizationId: 'org-1' }));
+    expect(args.select.userCertifications).toEqual({
+      where: { status: { not: 'rejected' } },
+      select: { certName: true, status: true },
+    });
+  });
+
+  it('a rejected certification lowers matchScore relative to the same certification approved', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValueOnce([
+      student([{ certName: 'CompTIA A+', status: 'approved' }]),
+    ] as any);
+    const [approved] = await matchStudentsForJob('org-1', job);
+
+    vi.mocked(prisma.user.findMany).mockResolvedValueOnce([
+      student([{ certName: 'CompTIA A+', status: 'rejected' }]),
+    ] as any);
+    const [rejected] = await matchStudentsForJob('org-1', job);
+
+    expect(rejected.matchScore).toBeLessThan(approved.matchScore);
+    // The matcher lowercases the job's preferred certification names (unchanged).
+    expect(approved.matchReasons).toContain('Verified certification(s): comptia a+');
+    expect(rejected.matchReasons.join(' ')).not.toMatch(/certification/i);
+  });
+
+  it('a member with one approved and one pending matching certification gets both phrases', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([
+      student([
+        { certName: 'CompTIA A+', status: 'approved' },
+        { certName: 'Network+', status: 'pending' },
+      ]),
+    ] as any);
+    const [match] = await matchStudentsForJob('org-1', job);
+    expect(match.matchReasons).toContain(
+      'Verified certification(s): comptia a+ · Reported certification(s), not yet verified: network+',
+    );
+    expect(match.matchReasons.some((r) => /Verified certification\(s\):[^·]*network\+/.test(r))).toBe(false);
   });
 });
 

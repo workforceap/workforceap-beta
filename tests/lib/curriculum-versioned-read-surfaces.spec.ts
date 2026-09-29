@@ -16,7 +16,8 @@ describe('curriculum-versioned portal reads', () => {
     'app/(portal)/partner/referred-members/[memberId]/page.tsx',
     'app/(portal)/employer/candidates/[studentId]/page.tsx',
     'app/api/member/coursera/route.ts',
-    'app/(portal)/dashboard/page.tsx',
+    // The member home's single loader (the page itself holds no course list since WAP-195).
+    'lib/member/loadMemberDashboardHome.ts',
     'app/admin/members/[id]/stakeholder/page.tsx',
     'app/(portal)/dashboard/program/employer-screening/page.tsx',
     'app/(portal)/dashboard/guide/page.tsx',
@@ -74,14 +75,16 @@ describe('curriculum-versioned portal reads', () => {
   });
 
   it('uses the assigned denominator for next-course and readiness decisions', () => {
-    const dashboard = readRepo('app/(portal)/dashboard/page.tsx');
+    const dashboard = readRepo('lib/member/loadMemberDashboardHome.ts');
     const stakeholder = readRepo('app/admin/members/[id]/stakeholder/page.tsx');
     const employerScreening = readRepo(
       'app/(portal)/dashboard/program/employer-screening/page.tsx',
     );
     const guide = readRepo('app/(portal)/dashboard/guide/page.tsx');
 
-    expect(dashboard).toContain('curriculumCourses.find');
+    // The member home reconciles progress against the pinned version's courses.
+    expect(dashboard).toContain('getProgramCoursesForCurriculumVersion(program, pinnedCurriculumVersion)');
+    expect(dashboard).toContain('reconcileProgramProgress({\n    validatedCourses,');
     expect(dashboard).not.toContain('program.courses.find');
     expect(stakeholder).toContain('curriculumCourses.map');
     expect(stakeholder).not.toContain('program.courses.map');
@@ -109,11 +112,10 @@ describe('curriculum-versioned portal reads', () => {
   });
 
   it('resolves dashboard curriculum assignments across historical program aliases', () => {
-    const dashboard = readRepo('app/(portal)/dashboard/page.tsx');
+    const dashboard = readRepo('lib/member/loadMemberDashboardHome.ts');
 
-    expect(dashboard).toContain(
-      'programSlugsEquivalent(enrollment.programSlug, enrolledProgram)',
-    );
+    expect(dashboard).toContain('canonicalizeProgramSlug(rawSlug)');
+    expect(dashboard).toContain('programSlugsEquivalent(row.programSlug, slug)');
   });
 
   it('keeps staff views and exports on the learner assigned denominator', () => {

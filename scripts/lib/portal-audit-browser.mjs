@@ -136,9 +136,6 @@ export async function waitForPortalReady(page, timeout = PORTAL_AUDIT_READY_TIME
     undefined,
     { timeout }
   );
-  await page.evaluate(
-    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  );
   await page.waitForFunction(
     () => {
       const bodyText = document.body?.innerText?.replace(/\s+/g, ' ').trim() ?? '';
@@ -151,9 +148,119 @@ export async function waitForPortalReady(page, timeout = PORTAL_AUDIT_READY_TIME
   );
 }
 
+/** The shared portal shell can look ready while its streamed route is still a skeleton. */
+export function hasPortalRouteContent() {
+  const main = document.querySelector('main#main-content');
+  if (!main) return false;
+  const visible = (element) => {
+    if (element.closest('[hidden], [aria-hidden="true"]')) return false;
+    const style = window.getComputedStyle(element);
+    return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+  };
+  if ([...main.querySelectorAll('.portal-route-loading')].some(visible)) return false;
+  return [...main.querySelectorAll('h1')].some(visible);
+}
+
+/** Bounded route-content wait for static audits; failure remains classified from the final DOM. */
+export async function waitForPortalRouteContent(page, timeout = PORTAL_AUDIT_READY_TIMEOUT_MS) {
+  await page.waitForFunction(hasPortalRouteContent, undefined, { timeout });
+}
+
+/** Start before navigation so a fast dashboard API response cannot escape the audit. */
+export function observeAdminDashboardMetrics(page, trustedOrigin, responseTimeout, contentTimeout) {
+  return page.waitForResponse((response) => {
+    if (response.request().method() !== 'GET') return false;
+    try {
+      const url = new URL(response.url());
+      const pageUrl = new URL(page.url());
+      return pageUrl.origin === trustedOrigin && pageUrl.pathname === '/admin/dashboard' &&
+        url.origin === trustedOrigin && url.pathname === '/api/admin/metrics';
+    } catch {
+      return false;
+    }
+  }, { timeout: responseTimeout }).then(
+    async (response) => {
+      if (response.status() !== 200) return 'admin_metrics_api_http_error';
+      try {
+        await page.locator('[data-portal-loading-state="admin-metrics"]')
+          .waitFor({ state: 'hidden', timeout: contentTimeout });
+      } catch {
+        return 'admin_metrics_loading_not_cleared';
+      }
+      try {
+        await page.locator('main#main-content [data-portal-data-ready="admin-metrics"]')
+          .waitFor({ state: 'visible', timeout: contentTimeout });
+        return null;
+      } catch {
+        return 'admin_metrics_content_not_ready';
+      }
+    },
+    () => 'admin_metrics_api_response_missing',
+  );
+}
+
+/** An intermediate canceled navigation must not preempt the final redirect commit. */
+export async function waitForRedirectTargetCommit(page, matchesTarget, timeout) {
+  const deadline = Date.now() + timeout;
+  while (true) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) throw new Error('Exact redirect target did not commit before timeout');
+    try {
+      await page.waitForURL(matchesTarget, { waitUntil: 'commit', timeout: remaining });
+      return;
+    } catch (error) {
+      const message = error?.message ?? String(error);
+      if (!/net::ERR_ABORTED|interrupted by another navigation/.test(message) || page.isClosed()) {
+        throw error;
+      }
+      // Retry only within the original timeout. The caller still checks the
+      // exact URL, document status, page errors, data requests, and write guard.
+      // Yield to the browser event loop so a subsequent commit can arrive even
+      // when Playwright rejects the canceled navigation immediately.
+      const pause = Math.min(25, deadline - Date.now());
+      if (pause > 0) await new Promise((resolve) => setTimeout(resolve, pause));
+    }
+  }
+}
+
+/** A route-specific target marker must replace the source page's heading. */
+export async function waitForVisibleActionTarget(
+  page,
+  selector,
+  sourceHeadingText,
+  timeout = PORTAL_AUDIT_READY_TIMEOUT_MS
+) {
+  const sourceHeading = typeof sourceHeadingText === 'string' ? sourceHeadingText.trim() : '';
+  if (!sourceHeading) return false;
+  try {
+    await page.locator(selector)
+      .filter({ hasNotText: sourceHeading })
+      .first()
+      .waitFor({ state: 'visible', timeout });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** A full-page login redirect can replace the execution context during inspection. */
+export async function evaluatePortalPageAfterNavigation(page, evaluator, timeout = PORTAL_AUDIT_READY_TIMEOUT_MS) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await page.evaluate(evaluator);
+    } catch (error) {
+      const navigationDestroyedContext =
+        error instanceof Error &&
+        /Execution context was destroyed, most likely because of a navigation/.test(error.message);
+      if (!navigationDestroyedContext || attempt === 2) throw error;
+      await waitForPortalReady(page, timeout);
+    }
+  }
+}
+
 /** Collect route-level layout and accessible-name signals in the page. */
 export async function inspectPortalPage(page, dynamicPatterns = []) {
-  const inspection = await page.evaluate(() => {
+  const inspection = await evaluatePortalPageAfterNavigation(page, () => {
     const isVisible = (element) => {
       if (!(element instanceof HTMLElement || element instanceof SVGElement)) return false;
       if (element.closest('[hidden], [aria-hidden="true"]')) return false;
@@ -203,6 +310,9 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
     );
     const viewportWidth = window.innerWidth || document.documentElement?.clientWidth || 0;
     const visibleH1Count = [...document.querySelectorAll('h1')].filter(isVisible).length;
+    const routeLoadingVisible = [
+      ...document.querySelectorAll('main#main-content .portal-route-loading'),
+    ].some(isVisible);
     const errorFallbackStates = [
       ...document.querySelectorAll('[data-portal-error-state]'),
     ]
@@ -212,14 +322,21 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
     ].map((element) => element.getAttribute('data-portal-audit-suppressed') || 'unknown');
     const normalizedBodyText = (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim();
 
+    const partnerSignupForm = document.getElementById('partner-signup-form');
     return {
       bodyText: document.body?.innerText ?? '',
       readOnlyAuditDocument:
         document.documentElement?.getAttribute('data-portal-read-only-audit') === '1',
-      appReady: normalizedBodyText.length >= 20 && (visibleH1Count > 0 || controls.length > 0),
+      appReady: !routeLoadingVisible && normalizedBodyText.length >= 20 &&
+        (visibleH1Count > 0 || controls.length > 0),
       errorFallbackDetected: errorFallbackStates.length > 0,
       errorFallbackStates: [...new Set(errorFallbackStates)],
       auditSuppressedStates: [...new Set(auditSuppressedStates)],
+      publicPartnerSignupFormPresent:
+        partnerSignupForm instanceof HTMLFormElement &&
+        isVisible(partnerSignupForm) &&
+        Boolean(partnerSignupForm.querySelector('input[name="organization_name"]')) &&
+        Boolean(partnerSignupForm.querySelector('button[type="submit"]')),
       h1Count: visibleH1Count,
       horizontalOverflowPx: Math.max(0, Math.ceil(rootWidth - viewportWidth)),
       interactiveControlCount: controls.length,

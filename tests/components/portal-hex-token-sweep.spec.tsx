@@ -128,7 +128,8 @@ describe('SessionRunClient paints from --wa-* tokens', () => {
     const { default: SessionRunClient } = await import('@/components/portal/sessions/SessionRunClient');
     const { container } = render(
       <SessionRunClient memberId="m1" memberFullName="Ada Lovelace" memberEmail="ada@example.org" memberPhone={null}
-        memberTargetRole="Data Analyst" sessionId="s1" existingResume={'Experienced analyst. '.repeat(20)} isFreshWalkIn />,
+        memberTargetRole="Data Analyst" sessionId="s1" existingResume={'Experienced analyst. '.repeat(20)}
+        originalResume={'Experienced analyst. '.repeat(20)} isFreshWalkIn />,
     );
     // Idle: tool grid + card icon tiles.
     expect(unexpectedHex(container)).toEqual([]);

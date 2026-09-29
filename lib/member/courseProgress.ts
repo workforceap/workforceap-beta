@@ -427,8 +427,9 @@ export async function upsertCourseProgressFromXapiStatement(args: {
   // per-item progress that must not be applied as the course's percent.
   // Without this guard a single lecture's `result.progress: 1` would mark the
   // entire course 100% complete and inflate program rollups. Item-level
-  // events still bump status to IN_PROGRESS via inferCourseProgressStatus
-  // and update startedAt — they just don't drive percentComplete.
+  // start/progress events still bump status to IN_PROGRESS via
+  // inferCourseProgressStatus and update startedAt. Item completion verbs are
+  // ignored rather than completing the whole course.
   const isCourseLevel = parsed.activityType === 'course';
   const incomingPercent = !isCourseLevel
     ? null

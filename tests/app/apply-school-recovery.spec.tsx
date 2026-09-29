@@ -6,8 +6,11 @@ import { ApplyResumeGate } from '@/components/apply/ApplyReadiness';
 import { applyRecoveryHref } from '@/lib/apply/applyRecoveryHref';
 import { APPLY_FLOW_DRAFT_KEY } from '@/lib/apply/applyProgramStorage';
 const h = vi.hoisted(() => ({ school: vi.fn(), results: vi.fn(), account: vi.fn() }));
-vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'server-ref-cookie' }) }) }));
+vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'server-ref-cookie' }) }), headers: async () => new Headers() }));
 vi.mock('@/lib/apply/resolveSchoolApply', () => ({ resolveSchoolApply: h.school }));
+// Partner disclosure is covered by tests/app/partner-referral-disclosure.spec.tsx.
+vi.mock('@/lib/apply/partnerReferralDisclosure', () => ({ resolvePartnerReferralDisclosure: async () => null }));
+vi.mock('@/lib/apply/partnerDisclosureCopy', () => ({ getPartnerDisclosureCopy: async () => ({ label: 'label', restricted: 'restricted', full: 'full' }) }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: async () => ({}) }));
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useFormatter: () => ({ dateTime: () => 'Saved date' }) }));

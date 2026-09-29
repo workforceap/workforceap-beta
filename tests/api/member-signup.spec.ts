@@ -15,10 +15,19 @@ const mocks = vi.hoisted(() => ({
   checkSignupRateLimit: vi.fn(),
   checkSignupEmailRateLimit: vi.fn(),
   trackEvent: vi.fn(),
+  cookieSet: vi.fn(),
+  /** Request cookies the route can see through `next/headers`. */
+  cookies: {} as Record<string, string>,
 }));
 
 vi.mock('@supabase/ssr', () => ({ createServerClient: () => ({ auth: { signUp: mocks.signUp } }) }));
-vi.mock('next/headers', () => ({ cookies: async () => ({ getAll: () => [] }) }));
+vi.mock('next/headers', () => ({
+  cookies: async () => ({
+    getAll: () => Object.entries(mocks.cookies).map(([name, value]) => ({ name, value })),
+    get: (name: string) => (name in mocks.cookies ? { name, value: mocks.cookies[name] } : undefined),
+    set: mocks.cookieSet,
+  }),
+}));
 vi.mock('@/lib/member/service', () => ({ createMember: mocks.createMember }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn({ user: { findMany: mocks.findEmail } }), user: { findUnique: mocks.findUser } } }));
 vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ auth: { admin: { deleteUser: mocks.deleteUser } } }) }));
@@ -30,6 +39,7 @@ vi.mock('@/lib/turnstile/verifyTurnstile', () => ({ verifyTurnstileResponse: vi.
 vi.mock('@/lib/events/track', () => ({ trackEvent: mocks.trackEvent }));
 
 import { POST } from '@/app/api/member/signup/route';
+import { PARTNER_REF_COOKIE } from '@/lib/apply/applyReferralCapture';
 
 const requiredFields = {
   fullName: 'Test User',
@@ -50,6 +60,7 @@ function request(body: Record<string, unknown> = requiredFields) {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.cookies = {};
   // Synthetic values satisfy config checks; every provider boundary is mocked.
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://supabase.invalid');
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'test-anon-key');
@@ -173,5 +184,102 @@ describe('POST /api/member/signup response contract (mocked providers)', () => {
     expect(mocks.createMember).toHaveBeenCalledTimes(1);
     expect(mocks.deleteUser).not.toHaveBeenCalled();
     expect(mocks.trackEvent).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Middleware plants `wap_partner_ref` httpOnly on `/enroll/<slug>`, so the
+ * browser cannot read it back into the request body. `/api/apply/signup`
+ * already falls back to the cookie; this door must too, or every enroll-link
+ * student who finishes at `/signup` is attributed to nobody.
+ */
+describe('POST /api/member/signup partner ref recovery', () => {
+  it('falls back to the httpOnly partner ref cookie when the body carries none', async () => {
+    mocks.cookies[PARTNER_REF_COOKIE] = 'Concordia-HS';
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(200);
+    expect(mocks.createMember).toHaveBeenCalledExactlyOnceWith(
+      'new-member-id',
+      expect.objectContaining({ referralRef: 'concordia-hs' }),
+    );
+    // A shared device's next applicant must not inherit this school ref.
+    // document.cookie cannot remove middleware's httpOnly cookie.
+    expect(mocks.cookieSet).toHaveBeenCalledExactlyOnceWith(
+      PARTNER_REF_COOKIE,
+      '',
+      expect.objectContaining({ httpOnly: true, path: '/', maxAge: 0 }),
+    );
+  });
+
+  it('keeps the successful signup response if post-commit cookie cleanup fails', async () => {
+    mocks.cookies[PARTNER_REF_COOKIE] = 'concordia-hs';
+    mocks.cookieSet.mockImplementationOnce(() => { throw new Error('cookie write unavailable'); });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      const response = await POST(request());
+
+      expect(response.status).toBe(200);
+      expect(mocks.createMember).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('prefers the body ref over a stale cookie', async () => {
+    mocks.cookies[PARTNER_REF_COOKIE] = 'stale-partner';
+
+    const response = await POST(request({ ...requiredFields, referralRef: 'Acme-Ref' }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.createMember).toHaveBeenCalledExactlyOnceWith(
+      'new-member-id',
+      expect.objectContaining({ referralRef: 'acme-ref' }),
+    );
+  });
+
+  it('ignores a malformed cookie value instead of passing it on', async () => {
+    mocks.cookies[PARTNER_REF_COOKIE] = 'not a ref!!';
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(200);
+    expect(mocks.createMember).toHaveBeenCalledExactlyOnceWith(
+      'new-member-id',
+      expect.not.objectContaining({ referralRef: expect.anything() }),
+    );
+  });
+});
+
+describe('POST /api/member/signup partner disclosure acknowledgement', () => {
+  const eventMetadata = () =>
+    (mocks.trackEvent.mock.calls[0]?.[0] as { eventName: string; metadata: Record<string, unknown> } | undefined);
+
+  it('records the disclosure as shown, with the server-attributed partner id and tier', async () => {
+    mocks.createMember.mockResolvedValue({ referralPartnerId: 'partner-9', referralPartnerType: 'referral', referralRef: 'acme' });
+    const response = await POST(request({ ...requiredFields, referralRef: 'acme', partnerDisclosureRef: 'acme' }));
+    expect(response.status).toBe(200);
+    expect(eventMetadata()?.eventName).toBe('apply_signup_completed');
+    expect(eventMetadata()?.metadata).toMatchObject({
+      partner_disclosure_shown: true,
+      partner_disclosure_partner_id: 'partner-9',
+      partner_disclosure_tier: 'restricted',
+    });
+  });
+
+  it('records not-shown when the form disclosed a different (or no) partner', async () => {
+    mocks.createMember.mockResolvedValue({ referralPartnerId: 'partner-9', referralPartnerType: 'community', referralRef: 'acme' });
+    await POST(request({ ...requiredFields, referralRef: 'acme', partnerDisclosureRef: 'someone-else' }));
+    expect(eventMetadata()?.metadata).toMatchObject({ partner_disclosure_shown: false, partner_disclosure_partner_id: 'partner-9', partner_disclosure_tier: 'full' });
+  });
+
+  it('records nothing for an organic signup', async () => {
+    mocks.createMember.mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
+    await POST(request({ ...requiredFields, partnerDisclosureRef: 'acme' }));
+    expect(eventMetadata()?.metadata).not.toHaveProperty('partner_disclosure_shown');
+    expect(eventMetadata()?.metadata).not.toHaveProperty('partner_disclosure_partner_id');
   });
 });

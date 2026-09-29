@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
+import type { Prisma } from '@prisma/client';
 import { Suspense } from 'react';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
-import { isExcludedPublicEmployerName, isExcludedPublicJobTitle } from '@/lib/jobs/publicJobFilters';
+import {
+  isExcludedPublicEmployerName,
+  isExcludedPublicJobTitle,
+  PUBLIC_JOB_EXCLUSION_WHERE,
+} from '@/lib/jobs/publicJobFilters';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
-import { getAgeGroup } from '@/lib/util/ageCalculation';
+import { resolveJobBoardAgeGroup } from '@/lib/jobs/jobBoardAgeGroup';
 import { Briefcase } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
@@ -21,6 +26,7 @@ import { displayJobLocation, isActiveApplicationStatus } from '@/lib/member/jobP
 import { buildExternalJobBoards, buildExternalJobSearchQuery } from '@/lib/member/externalJobSearchQuery';
 import type { CareerMatchResult } from '@/lib/onet/types';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -63,6 +69,8 @@ export default async function JobsPage({
     createdAt: Date;
     status: 'SAVED' | 'APPLIED' | 'PHONE_SCREEN' | 'INTERVIEWING' | 'OFFER' | 'ACCEPTED' | 'REJECTED';
   }> = [];
+  // KPI counts per status over every row (WAP-261), not over the capped rows.
+  let statusCounts: Partial<Record<(typeof pipelineRows)[number]['status'], number>> = {};
   let pipelineLoadFailed = false;
   const needsPipeline = requestedUi !== 'legacy' && !!user;
 
@@ -70,7 +78,7 @@ export default async function JobsPage({
     // Only the job-board query below depends on the profile (ageGroup); the
     // applied-IDs and pipeline reads are independent of it and of each
     // other, so run all three together instead of one round trip at a time.
-    const [profileResult, appliedResult, pipelineResult] = await Promise.allSettled([
+    const [profileResult, appliedResult, pipelineResult, statusCountResult] = await Promise.allSettled([
       prisma.profile.findUnique({
         where: { userId: user.id },
         select: {
@@ -118,21 +126,28 @@ export default async function JobsPage({
             })),
           )
         : Promise.resolve(pipelineRows),
+      needsPipeline
+        ? prisma.jobApplication.groupBy({
+            by: ['status'],
+            where: { userId: user.id },
+            _count: { _all: true },
+          })
+        : Promise.resolve([]),
     ]);
 
+    // Fails closed (WAP-260): a failed read or a minor with no date of birth
+    // gets the youth board, never the adult one.
+    ageGroup = resolveJobBoardAgeGroup(
+      profileResult.status === 'fulfilled' ? profileResult.value : 'failed',
+    );
     if (profileResult.status === 'fulfilled') {
       const profile = profileResult.value;
-      if (profile?.dob) {
-        ageGroup = getAgeGroup(profile.dob);
-      }
       profileCity = profile?.city?.trim() || null;
       profileState = profile?.state?.trim() || null;
       externalSearch = buildExternalJobSearchQuery({
         careerRecommendation: (profile?.user?.careerRecommendationJson ?? null) as CareerMatchResult | null,
         programSlug: profile?.user?.courseEnrollments[0]?.programSlug ?? profile?.user?.enrolledProgram ?? null,
       });
-    } else {
-      ageGroup = 'adult18plus';
     }
 
     if (appliedResult.status === 'fulfilled') {
@@ -141,8 +156,12 @@ export default async function JobsPage({
         .filter((id): id is string => id !== null);
     } /* non-critical — badge just will not show */
 
-    pipelineLoadFailed = needsPipeline && pipelineResult.status === 'rejected';
-    pipelineRows = pipelineResult.status === 'fulfilled' ? pipelineResult.value : [];
+    pipelineLoadFailed =
+      needsPipeline && (pipelineResult.status === 'rejected' || statusCountResult.status === 'rejected');
+    pipelineRows = pipelineResult.status === 'fulfilled' && !pipelineLoadFailed ? pipelineResult.value : [];
+    if (statusCountResult.status === 'fulfilled' && !pipelineLoadFailed) {
+      statusCounts = Object.fromEntries(statusCountResult.value.map((g) => [g.status, g._count._all]));
+    }
   }
 
   const primaryLocation = [profileCity, profileState].filter(Boolean).join(', ') || 'Austin, TX';
@@ -167,34 +186,43 @@ export default async function JobsPage({
     employer: { companyName: string; logoUrl: string | null };
   }> = [];
   let initialTotal = 0;
+  let openRolesLoadFailed = false;
 
   try {
-    const jobs = await prisma.job.findMany({
-      where: {
-        status: 'live',
-        AND: [
-          ...(ageGroup === 'under14' ? [{ id: 'impossible-match' }] : []),
-          ...(ageGroup === 'youth14to17' ? [{
-            youthAppropriate: true,
-            OR: [
-              { minimumAge: null },
-              { minimumAge: { lte: 17 } },
-            ],
-          }] : []),
-          {
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gte: new Date() } },
-            ],
-          },
-        ],
-      },
-      orderBy: { updatedAt: 'desc' },
-      take: 20,
-      include: {
-        employer: { select: { companyName: true, logoUrl: true } },
-      },
-    });
+    const liveJobsWhere: Prisma.JobWhereInput = {
+      status: 'live',
+      AND: [
+        ACTIVE_EMPLOYER_JOB_WHERE,
+        PUBLIC_JOB_EXCLUSION_WHERE,
+        ...(ageGroup === 'under14' ? [{ id: 'impossible-match' }] : []),
+        ...(ageGroup === 'youth14to17' ? [{
+          youthAppropriate: true,
+          OR: [
+            { minimumAge: null },
+            { minimumAge: { lte: 17 } },
+          ],
+        }] : []),
+        {
+          OR: [
+            { expiresAt: null },
+            { expiresAt: { gte: new Date() } },
+          ],
+        },
+      ],
+    };
+    // The count uses the same `where`, so "N live openings" is every
+    // matching job, not the 20 listed here (WAP-261).
+    const [jobs, liveJobsCount] = await Promise.all([
+      prisma.job.findMany({
+        where: liveJobsWhere,
+        orderBy: { updatedAt: 'desc' },
+        take: 20,
+        include: {
+          employer: { select: { companyName: true, logoUrl: true } },
+        },
+      }),
+      prisma.job.count({ where: liveJobsWhere }),
+    ]);
     const visible = jobs
       .filter(
         (j) => !isExcludedPublicEmployerName(j.employer.companyName) && !isExcludedPublicJobTitle(j.title),
@@ -207,11 +235,14 @@ export default async function JobsPage({
         },
       }));
     initialJobs = visible;
-    initialTotal = visible.length;
-  } catch {
-    // Fallback to empty state if query fails
+    initialTotal = Math.max(liveJobsCount, visible.length);
+  } catch (err) {
+    // Unknown, not empty (WAP-261): the kit says "couldn't load" instead of
+    // "no live openings".
+    console.error('[dashboard/jobs] live openings unavailable', err);
     initialJobs = [];
     initialTotal = 0;
+    openRolesLoadFailed = true;
   }
 
   // ── v2 KIT is the DEFAULT member job-pipeline view (real data); legacy
@@ -222,14 +253,12 @@ export default async function JobsPage({
     // `pipelineRows` was already fetched above (in parallel with the
     // profile + applied-IDs reads) since `needsPipeline` is known purely
     // from `requestedUi`/`user`, before any DB round trip.
-    const savedCount = pipelineRows.filter((r) => r.status === 'SAVED').length;
-    const appliedCount = pipelineRows.filter((r) =>
-      r.status === 'APPLIED' || r.status === 'PHONE_SCREEN',
-    ).length;
-    const interviewingCount = pipelineRows.filter((r) => r.status === 'INTERVIEWING').length;
-    const offersCount = pipelineRows.filter((r) =>
-      r.status === 'OFFER' || r.status === 'ACCEPTED',
-    ).length;
+    const countOf = (...statuses: Array<keyof typeof statusCounts>) =>
+      statuses.reduce((sum, status) => sum + (statusCounts[status] ?? 0), 0);
+    const savedCount = countOf('SAVED');
+    const appliedCount = countOf('APPLIED', 'PHONE_SCREEN');
+    const interviewingCount = countOf('INTERVIEWING');
+    const offersCount = countOf('OFFER', 'ACCEPTED');
 
     // Map the JobApplicationStatus enum to the kit's stage label + tone.
     const STAGE_META: Record<
@@ -249,8 +278,10 @@ export default async function JobsPage({
 
     // "N active applications" is the same definition the home tile uses
     // (ACTIVE_APPLICATION_STATUSES) and is counted on every row, never on the
-    // 20-row table below.
-    const activeApplicationCount = pipelineRows.filter((r) => isActiveApplicationStatus(r.status)).length;
+    // 200 rows fetched for the table below.
+    const activeApplicationCount = (Object.keys(statusCounts) as Array<keyof typeof statusCounts>)
+      .filter((status) => isActiveApplicationStatus(status))
+      .reduce((sum, status) => sum + (statusCounts[status] ?? 0), 0);
     // Pipeline table excludes pure "saved" rows (those feed the Saved KPI only).
     const applications = pipelineRows
       .filter((r) => r.status !== 'SAVED')
@@ -275,6 +306,7 @@ export default async function JobsPage({
         studentId: user!.id,
         job: {
           status: 'live',
+          AND: [ACTIVE_EMPLOYER_JOB_WHERE],
           OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
         },
       },
@@ -357,6 +389,9 @@ export default async function JobsPage({
         recommended={recommended}
         openRoles={openRoles}
         openRolesTotal={initialTotal}
+        pipelineLoadFailed={pipelineLoadFailed}
+        openRolesLoadFailed={openRolesLoadFailed}
+        recommendationsLoadFailed={recommendationLoadFailed}
         />
       </div>
     );

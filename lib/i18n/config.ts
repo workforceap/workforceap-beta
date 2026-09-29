@@ -24,6 +24,9 @@ export const WAP_LOCALE_COOKIE = 'wap-locale';
 /** Middleware sets this request header so layouts/metadata can read active locale. */
 export const WAP_LOCALE_HEADER = 'x-wap-locale';
 
+/** Present only when the browser URL has an explicit /en, /es, /fr, or /pt prefix. */
+export const WAP_EXPLICIT_LOCALE_HEADER = 'x-wap-explicit-locale';
+
 export function isAppLocale(value: string): value is AppLocale {
   return (APP_LOCALES as readonly string[]).includes(value);
 }
@@ -52,6 +55,8 @@ export const LOCALEABLE_PATH_PREFIXES: readonly string[] = [
   '/invite',
   '/partner-signup',
   '/lp',
+  // Partner landing pages (`/join/<code>`, Next-owned; see app/join/[code]).
+  '/join',
 ];
 
 export function isLocaleableMarketingPath(pathname: string): boolean {

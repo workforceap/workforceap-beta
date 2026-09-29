@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import WorkspaceShell from '@/components/portal/WorkspaceShell';
 import DashboardFooter from '@/components/portal/DashboardFooter';
+import TourProviderWrapper from '@/components/onboarding/TourProviderWrapper';
+import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
 import { MEMBER_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
 import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
 
@@ -52,6 +54,15 @@ const DEV_ALIASES: Record<string, string[]> = {
   ],
 };
 
+/** Fixture member for the header identity block (the tour's `tour-account` step). */
+const DEV_MEMBER_IDENTITY: MemberShellIdentity = {
+  name: 'Alex Rivera',
+  email: 'alex.rivera@example.test',
+  initials: 'AR',
+  avatarUrl: null,
+  href: '/dev/member/profile',
+};
+
 export default function DevMemberShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
   const seenHref = new Set<string>();
@@ -70,20 +81,29 @@ export default function DevMemberShell({ children }: { children: ReactNode }) {
       return true;
     });
 
+  // WAP-230: the same tour provider as live /dashboard (PortalLayoutClient), so
+  // `?onboarding=tour` and `?tour=member.home` run the guided tour here. The
+  // identity block and the help menu are its account and help anchors.
+  // Signed out (the usual lab case) the tour's progress POSTs get a 401,
+  // which the tour ignores.
   return (
-    <WorkspaceShell
-      portalRole="member"
-      navItems={navItems}
-      workspaceLabel={PRODUCT_COPY.memberWorkspace}
-      contextLabel="Design preview"
-      minimalMobileHeader
-      superAdmin={pathname.startsWith('/dev/member/missions')}
-      marketingSiteHref="/en"
-      marketingSiteLabel="WorkforceAP.org"
-      navHrefMap={DEV_HREF}
-      footer={<DashboardFooter />}
-    >
-      {children}
-    </WorkspaceShell>
+    <TourProviderWrapper>
+      <WorkspaceShell
+        portalRole="member"
+        navItems={navItems}
+        identity={DEV_MEMBER_IDENTITY}
+        helpTourKey="member.home"
+        workspaceLabel={PRODUCT_COPY.memberWorkspace}
+        contextLabel="Design preview"
+        minimalMobileHeader
+        superAdmin={pathname.startsWith('/dev/member/missions')}
+        marketingSiteHref="/en"
+        marketingSiteLabel="WorkforceAP.org"
+        navHrefMap={DEV_HREF}
+        footer={<DashboardFooter />}
+      >
+        {children}
+      </WorkspaceShell>
+    </TourProviderWrapper>
   );
 }

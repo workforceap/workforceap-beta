@@ -65,6 +65,7 @@ import {
   employerApprovedHtml,
   employerRejectedHtml,
   wioaReportHtml,
+  MEMBER_CHECK_IN_DEFAULT_CTA_TEXT,
   memberCheckInHtml,
   memberCheckInSubject,
   memberComeBackHtml,
@@ -1797,7 +1798,8 @@ export async function sendSchoolEnrollmentPartnerAckEmail(params: {
   to: string;
   partnerName: string;
   studentName: string;
-  studentEmail: string;
+  /** Null for a restricted (referral-track) partner: no member contact. */
+  studentEmail: string | null;
   programInterest: string;
   gradeLevel?: string | null;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
@@ -2002,7 +2004,7 @@ export async function sendApplicantChaseEmail(params: {
   const first = params.fullName.trim().split(/\s+/)[0] || 'there';
   const html = brandedEmailLayout({
     title: APPLICANT_CHASE_TITLE[params.stage],
-    bodyHtml: applicantChaseHtml({ firstName: first, stage: params.stage, dashboardUrl: `${SITE_URL}/dashboard` }),
+    bodyHtml: applicantChaseHtml({ firstName: first, stage: params.stage, programUrl: `${SITE_URL}/dashboard/program` }),
     ctaText: 'Open my dashboard',
     ctaUrl: `${SITE_URL}/dashboard`,
   });
@@ -2720,19 +2722,26 @@ export async function sendMemberCheckInEmail(params: {
   to: string;
   firstName: string;
   dashboardUrl: string;
+  /** Button label for both CTAs; must name where `dashboardUrl` goes. */
+  ctaText?: string;
+  /** Line above the in-body button. */
+  leadText?: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
     console.warn('sendMemberCheckInEmail: RESEND_API_KEY not set');
     return { ok: false, error: 'Email not configured' };
   }
+  const ctaText = params.ctaText ?? MEMBER_CHECK_IN_DEFAULT_CTA_TEXT;
   const html = brandedEmailLayout({
     title: 'Quick check-in',
     bodyHtml: memberCheckInHtml({
       firstName: params.firstName,
       dashboardUrl: params.dashboardUrl,
+      ctaText,
+      leadText: params.leadText,
     }),
-    ctaText: 'Open my dashboard',
+    ctaText,
     ctaUrl: params.dashboardUrl,
   });
   try {

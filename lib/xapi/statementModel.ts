@@ -34,8 +34,29 @@ function extractCourseSlugFromObjectId(objectId: string | null) {
   }
 }
 
-/** Activity type derived from `object.definition.type`. Coursera emits two
- *  distinct shapes — course-level events (one per course) and item-level events
+function activityPath(objectId: string | null): string {
+  if (!objectId) return '';
+  try {
+    return new URL(objectId).pathname;
+  } catch {
+    return objectId.split(/[?#]/, 1)[0];
+  }
+}
+
+function isItemObjectId(objectId: string | null): boolean {
+  return /(?:^|\/)item(?:\/|$)/i.test(activityPath(objectId));
+}
+
+function isCourseObjectId(objectId: string | null): boolean {
+  // An untyped statement needs an object that names the course itself.
+  // Coursera uses both /learn/<slug> and /course/<courseId> course URLs;
+  // nested item/activity URLs must not pass. A courseId extension also
+  // appears on every item in that course.
+  return /\/(?:learn|course)\/[^/]+\/?$/i.test(activityPath(objectId));
+}
+
+/** Activity type derived from definition, object path, and itemType. Coursera emits
+ *  two distinct shapes — course-level events (one per course) and item-level events
  *  (one per quiz/lecture/assignment inside a course). They have different
  *  semantics: a `completed` verb on an *item* means a single lesson finished,
  *  not the whole course. The pipeline must distinguish these. */
@@ -168,10 +189,12 @@ export function parseXapiStatement(statement: Record<string, unknown>): ParsedXa
   );
 
   const definitionType = readNonEmptyString(definition?.type)?.toLowerCase() ?? '';
-  const activityType: XapiActivityType = definitionType.endsWith('/activities/course')
-    ? 'course'
-    : definitionType.endsWith('/activities/item')
-      ? 'item'
+  // Item markers take precedence over a conflicting course definition: the
+  // courseId extension accompanies item events and must not complete a course.
+  const activityType: XapiActivityType = definitionType.endsWith('/activities/item') || itemType || isItemObjectId(objectId)
+    ? 'item'
+    : definitionType.endsWith('/activities/course')
+      ? 'course'
       : 'unknown';
 
   // courseSlug is best-effort. Prefer the URL-tail heuristic only for course-
@@ -216,20 +239,20 @@ function readNonEmptyString(value: unknown): string | null {
  *  record. Coursera fires `completed` on individual items (lectures,
  *  assignments) too — those are NOT course completions and must be excluded
  *  here, otherwise a single quiz completion would mark the whole course done.
- *  Item-level events are still tracked as progress signals (see
+ *  Item-level start/progress events are still tracked as progress signals (see
  *  isXapiCourseProgressVerb), they just don't trigger course-completion
  *  side effects. */
 export function isXapiCompletionVerb(parsed: ParsedXapiStatement): boolean {
   // Item-level activities never represent a course completion. Skip them
   // regardless of verb.
-  if (parsed.activityType === 'item') return false;
+  if (parsed.activityType === 'item' || parsed.itemType || isItemObjectId(parsed.courseObjectId ?? null)) return false;
 
-  // Guard: if we cannot confidently resolve a course (missing Coursera's
-  // canonical courseId and not classified as a course-level activity), do not
-  // emit course-completion side effects. This prevents legacy/reconstructed
-  // statements missing payload/context.extensions from marking completion and
-  // then failing downstream with catalog errors.
-  if (parsed.activityType === 'unknown' && !(parsed.courseraCourseId ?? '').trim()) {
+  // An untyped statement must name the course object as well as carry the
+  // canonical courseId. Item statements carry courseId too, so it alone is
+  // insufficient evidence for course-completion side effects.
+  if (parsed.activityType === 'unknown' && (
+    !(parsed.courseraCourseId ?? '').trim() || !isCourseObjectId(parsed.courseObjectId ?? null)
+  )) {
     return false;
   }
 

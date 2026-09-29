@@ -21,7 +21,7 @@ import {
   STUDENT_ROSTER_ACTIVITY_LABELS,
 } from '@/lib/admin/studentsRosterFacts';
 import { relativeLastActiveCaption } from '@/lib/admin/trainingProgressRoster';
-import { initialsFrom } from '@/lib/admin/studentsRosterView';
+import { initialsFrom, ROSTER_PROGRAM_PLACEHOLDERS } from '@/lib/admin/studentsRosterView';
 import {
   inheritMemberOrg,
   inheritUserOrg,
@@ -254,9 +254,9 @@ export async function loadStudentsRoster(scope: AdminPageTenantOk): Promise<Stud
     const displayProgramSlug = enrichment?.programSlug ?? null;
     const programTitle = displayProgramSlug
       ? `${programDisplayTitle(displayProgramSlug)}${enrichment?.assignmentSource === 'legacy' ? ' (legacy assignment)' : ''}`
-      : !enrichment ? 'Program unavailable'
-        : enrichment.assignmentSource === 'unresolved' ? 'Assignment needs review'
-          : 'Unassigned';
+      : !enrichment ? ROSTER_PROGRAM_PLACEHOLDERS.unavailable
+        : enrichment.assignmentSource === 'unresolved' ? ROSTER_PROGRAM_PLACEHOLDERS.needsReview
+          : ROSTER_PROGRAM_PLACEHOLDERS.unassigned;
 
     const progress = Math.round(enrichment?.averagePercent ?? 0);
 

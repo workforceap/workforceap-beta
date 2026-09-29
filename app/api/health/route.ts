@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { publicApiCorsHeaders } from '@/lib/http/publicApiCors';
 import { checkPublicHealthRateLimit } from '@/lib/rate-limit';
+import supabaseProjectGuard from '@/scripts/lib/supabase-project-guard.cjs';
 
 const HEALTH_CORS = publicApiCorsHeaders('GET, HEAD, OPTIONS');
 
@@ -21,9 +22,9 @@ export const dynamic = 'force-dynamic';
  *
  * `?deep=true` is ignored. Dependency timing lives on `/api/health/ready`.
  *
- * `version` (first seven characters of the deployed commit) and `supabaseRef`
- * (project ref behind the public Supabase URL) let the trusted portal audit
- * refuse a target that serves the wrong commit or the wrong database.
+ * `version`, `supabaseRef` (the public Auth URL), and `prismaProject` (the
+ * server's effective Prisma URL classification) let the trusted portal audit
+ * refuse a target that serves the wrong commit or database configuration.
  */
 
 function liveVersion(): string {
@@ -52,6 +53,13 @@ function supabaseProjectRef(): string | null {
   }
 }
 
+/** Classify the runtime Prisma datasource without exposing its URL or credentials. */
+function prismaProject(): string {
+  // schema.prisma binds Prisma Client to POSTGRES_PRISMA_URL. DATABASE_URL is
+  // only a build/local fallback and cannot attest the deployed server client.
+  return supabaseProjectGuard.projectForUrl(process.env.POSTGRES_PRISMA_URL);
+}
+
 export async function OPTIONS() {
   try {
     return new NextResponse(null, { status: 204, headers: HEALTH_CORS });
@@ -77,6 +85,7 @@ export async function GET(request: Request) {
       probe: 'live' as const,
       version: liveVersion(),
       supabaseRef: supabaseProjectRef(),
+      prismaProject: prismaProject(),
       timestamp: new Date().toISOString(),
       note: 'Liveness only. Use GET /api/health/ready for Prisma/org readiness and 504-adjacent dependency alerts.',
     };

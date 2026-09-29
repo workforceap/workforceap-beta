@@ -26,6 +26,8 @@ export type ReplayPendingXapiResult = {
     errored: number;
     /** Resolver matched, but the verb isn't a course completion (item-level, progressed, etc.). */
     ignored: number;
+    /** Resolver matched a course-progress statement whose course didn't resolve: no progress written. */
+    unresolvedCourse: number;
     /** Resolver couldn't bind the actor identity to a WAP user. */
     unmatched: number;
   };
@@ -230,7 +232,7 @@ async function _replayRows(
   let skippedUnparsed = 0;
   let skippedUnresolvedOrganization = 0;
   let completionsEmitted = 0;
-  const breakdown = { completedOk: 0, errored: 0, ignored: 0, unmatched: 0 };
+  const breakdown = { completedOk: 0, errored: 0, ignored: 0, unresolvedCourse: 0, unmatched: 0 };
 
   for (const row of rows) {
     const organizationId = normalizePersistedXapiOrganizationId(row.organizationId);
@@ -271,6 +273,7 @@ async function _replayRows(
       if (status === 'completed') breakdown.completedOk += 1;
       else if (status === 'error') breakdown.errored += 1;
       else if (status === 'ignored') breakdown.ignored += 1;
+      else if (status === 'unresolved_course') breakdown.unresolvedCourse += 1;
       else if (status === 'unmatched') breakdown.unmatched += 1;
     }
   }

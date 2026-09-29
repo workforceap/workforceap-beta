@@ -1,4 +1,5 @@
 import { NextResponse, after } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { getUser } from '@/lib/auth/server';
 import { readJsonObjectBody } from '@/lib/api/readJsonBody';
 import { prisma } from '@/lib/db/prisma';
@@ -22,7 +23,7 @@ import {
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { logAuditEvent } from '@/lib/audit/log';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
-import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 import { ensureSelfServeCounselorAssigned } from '@/lib/counselor/autoAssign';
 export const POST = withApiGuc(async (request: Request) => {
@@ -59,53 +60,59 @@ export const POST = withApiGuc(async (request: Request) => {
     );
   }
 
-  const existing = await prisma.$transaction((tx) => tx.user.findUnique({
-    where: { id: user.id },
-    select: {
-      enrolledProgram: true,
-      wioaReviewStatus: true,
-      // Multi-program: read enrolledByAdminId from the primary enrollment row
-      // (the WIOA gate cares whether an admin override is in play, which is
-      // tracked on the primary row). Returns at most one row via the partial
-      // unique index `course_enrollments_user_primary_uidx`.
-      courseEnrollments: {
-        where: { isPrimary: true },
-        select: { enrolledByAdminId: true },
-        take: 1,
-      },
-    },
-  }));
-
   // Grant-funded programs (Digital Literacy) are not WIOA-gated. Module open
   // and completion already treat them as ungated; enroll must match.
   const fundingSource = programView.static?.fundingSource ?? 'WIOA';
-  if (fundingSource === 'WIOA') {
-    const gate = isMemberWioaVerified({
-      wioaReviewStatus: existing?.wioaReviewStatus,
-      enrolledByAdminId: existing?.courseEnrollments?.[0]?.enrolledByAdminId,
-    });
-    if (!gate.ok) {
-      const messages: Record<string, string> = {
-        WIOA_NOT_STARTED:
-          "Before you can enroll, you'll need to complete a brief eligibility screening. It takes about 5 minutes.",
-        WIOA_PENDING:
-          "Your eligibility screening is under review. We'll let you know once it's approved.",
-        WIOA_NOT_ELIGIBLE:
-          "Unfortunately, you're not eligible for this program based on current WIOA criteria. Let's find the right path.",
-      };
-      return NextResponse.json(
-        { error: messages[gate.code] ?? 'Enrollment not available', code: gate.code },
-        { status: 400 }
-      );
-    }
-  }
-
-  if (existing?.enrolledProgram) {
-    return NextResponse.json({ error: 'Already enrolled in a program. Changes require admin.' }, { status: 400 });
-  }
 
   const now = new Date();
-  const updatedUser = await prisma.$transaction(async (tx) => {
+  const outcome = await prisma.$transaction(async (tx) => {
+    // Serialize self-serve enrolls per member so a double submit or a retry
+    // racing the first request cannot both pass the already-enrolled check
+    // and both fire the enrolled email. $executeRaw, never $queryRaw: the
+    // lock returns void (lib/db/advisoryLockRawQuery.test.ts).
+    const lockKey = `member-program-enroll:${user.id}`;
+    await tx.$executeRaw(Prisma.sql`
+      SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
+    `);
+
+    const existing = await tx.user.findUnique({
+      where: { id: user.id },
+      select: {
+        enrolledProgram: true,
+        wioaReviewStatus: true,
+        // Multi-program: the primary enrollment row is the canonical
+        // assignment (resolveActiveDashboardProgram reads it first), and its
+        // enrolledByAdminId tells the WIOA gate whether an admin override is
+        // in play. Returns at most one row via the partial unique index
+        // `course_enrollments_user_primary_uidx`.
+        courseEnrollments: {
+          where: { isPrimary: true },
+          select: { enrolledByAdminId: true, programSlug: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (fundingSource === 'WIOA') {
+      const gate = isMemberWioaVerified({
+        wioaReviewStatus: existing?.wioaReviewStatus,
+        enrolledByAdminId: existing?.courseEnrollments?.[0]?.enrolledByAdminId,
+      });
+      if (!gate.ok) return { kind: 'wioa_blocked' as const, code: gate.code };
+    }
+
+    // Primary row first, then the legacy pointer. A member with a primary row
+    // but a NULL pointer is still enrolled: re-running the write would
+    // re-stamp enrolledAt and every side effect (same program) or hit the
+    // one-primary-row unique index as a 500 (different program).
+    const assignedProgramSlug =
+      existing?.courseEnrollments?.[0]?.programSlug ?? existing?.enrolledProgram ?? null;
+    if (assignedProgramSlug) {
+      return programSlugsEquivalent(assignedProgramSlug, slug)
+        ? { kind: 'already_enrolled' as const }
+        : { kind: 'enrolled_elsewhere' as const };
+    }
+
     const u = await tx.user.update({
       where: { id: user.id },
       data: {
@@ -115,10 +122,9 @@ export const POST = withApiGuc(async (request: Request) => {
       select: { email: true, fullName: true, organizationId: true },
     });
     // Multi-program: self-serve enroll is the user's first program, so the
-    // row is marked isPrimary = true. Composite-keyed upsert prevents
-    // duplicate (userId, programSlug) rows if the request retries.
-    // Code above this transaction blocks if existing.enrolledProgram is
-    // already set, so there shouldn't be a competing primary row.
+    // row is marked isPrimary = true. The check above ran under the lock, so
+    // no competing primary row exists; the composite-keyed upsert still
+    // prevents duplicate (userId, programSlug) rows.
     const enrollment = await upsertEquivalentCourseEnrollment(tx, {
       userId: user.id,
       programSlug: slug,
@@ -136,8 +142,39 @@ export const POST = withApiGuc(async (request: Request) => {
         enrolledByAdminId: null,
       },
     });
-    return { user: u, enrollmentId: enrollment.id };
+    return { kind: 'enrolled' as const, user: u, enrollmentId: enrollment.id };
   });
+
+  if (outcome.kind === 'wioa_blocked') {
+    const messages: Record<string, string> = {
+      WIOA_NOT_STARTED:
+        "Before you can enroll, you'll need to complete a brief eligibility screening. It takes about 5 minutes.",
+      WIOA_PENDING:
+        "Your eligibility screening is under review. We'll let you know once it's approved.",
+      WIOA_NOT_ELIGIBLE:
+        "Unfortunately, you're not eligible for this program based on current WIOA criteria. Let's find the right path.",
+    };
+    return NextResponse.json(
+      { error: messages[outcome.code] ?? 'Enrollment not available', code: outcome.code },
+      { status: 400 }
+    );
+  }
+
+  // A retry of a request that already enrolled this member in this program:
+  // no writes, no emails, no points, no audit rows.
+  if (outcome.kind === 'already_enrolled') {
+    return NextResponse.json({ ok: true, programSlug: slug, alreadyEnrolled: true });
+  }
+
+  // Self-serve reassignment stays admin-only (docs/PRODUCT_STAKES.md stake 2).
+  if (outcome.kind === 'enrolled_elsewhere') {
+    return NextResponse.json(
+      { error: 'Already enrolled in a program. Changes require admin.', code: 'ALREADY_ENROLLED' },
+      { status: 400 }
+    );
+  }
+
+  const updatedUser = outcome;
 
   after(() =>
     auditLog({

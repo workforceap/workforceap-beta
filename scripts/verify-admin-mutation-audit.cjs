@@ -30,6 +30,13 @@ const DELEGATED_AUDIT_HELPERS = {
   '@/lib/admin/applicationReview': 'lib/admin/applicationReview.ts',
   '@/lib/admin/courseraEnrollmentApproval': 'lib/admin/courseraEnrollmentApproval.ts',
   '@/lib/coursera/enrollPort': 'lib/coursera/enrollPort.ts',
+  // Two-stage J5/J6 billing (M3): every write runs auditLog(…, tx) in the same transaction.
+  '@/lib/billing/twoStage/api/documents': 'lib/billing/twoStage/api/documents.ts',
+  '@/lib/billing/twoStage/api/draft': 'lib/billing/twoStage/api/draft.ts',
+  '@/lib/billing/twoStage/api/evidence': 'lib/billing/twoStage/api/evidence.ts',
+  '@/lib/billing/twoStage/api/stageActions': 'lib/billing/twoStage/api/stageActions.ts',
+  // The signature image upload audits (billing.two_stage.signature_asset_approved) in the same transaction as the insert.
+  '@/lib/billing/twoStage/api/signature': 'lib/billing/twoStage/api/signature.ts',
 };
 
 /**
@@ -37,6 +44,7 @@ const DELEGATED_AUDIT_HELPERS = {
  * and every entry justified; adding a real data mutation here defeats the gate.
  */
 const ALLOWLIST = {
+  'app/api/admin/members/[id]/billing-packets/route.ts': 'retired POST returns 410 after auth and tenant checks; it never persists or sends',
   'app/api/admin/email-templates/[id]/preview/route.ts': 'renders a template preview; no persistence',
   'app/api/admin/email-crons/[id]/dry-run/route.ts': 'counts recipients for a dry run; no persistence',
   'app/api/admin/blog/ai/review/route.ts': 'returns AI review text; no persistence',

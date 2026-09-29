@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
 import { BLOG_TOPIC_SUGGESTIONS } from '@/lib/content/blogTopicSuggestions';
 import { collectInvalidFieldLabels, describeMissingRequired, focusFirstInvalid } from '@/lib/forms/requiredFields';
+import ConfirmDialog from '@/components/admin/ConfirmDialog';
 
 
 const MarkdownPreview = dynamic(async () => {
@@ -54,6 +55,29 @@ export default function BlogPostEditor({
   aiEnabled?: boolean;
 }) {
   const router = useRouter();
+  // Delete lives here because the default /admin/blog kit rows open this
+  // editor; it used to exist only in the ?ui=legacy row menu (WAP-193).
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function handleDelete() {
+    if (!post) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/admin/blog/${post.id}`, { method: 'DELETE' });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(data.error ?? 'Could not delete the post.');
+      setConfirmDelete(false);
+      router.push('/admin/blog');
+      router.refresh();
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : 'Could not delete the post.');
+    } finally {
+      setDeleting(false);
+    }
+  }
   const [slug, setSlug] = useState(post?.slug ?? '');
   const [title, setTitle] = useState(post?.title ?? '');
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? '');
@@ -216,6 +240,7 @@ export default function BlogPostEditor({
   const labelStyle = { display: 'block', marginBottom: '0.25rem', fontWeight: 500 } as const;
 
   return (
+    <>
     <form
       ref={editorFormRef}
       noValidate
@@ -633,7 +658,45 @@ export default function BlogPostEditor({
             Preview →
           </Link>
         )}
+        {mode === 'edit' && post && (
+          <button
+            type="button"
+            className="admin-secondary-button"
+            onClick={() => setConfirmDelete(true)}
+            disabled={saving || deleting}
+            style={{
+              marginLeft: 'auto',
+              padding: '0.5rem 1.25rem',
+              borderRadius: '6px',
+              fontWeight: 600,
+              color: 'var(--color-error)',
+              cursor: saving || deleting ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {deleting ? 'Deleting…' : 'Delete post'}
+          </button>
+        )}
       </div>
+      {deleteError ? (
+        <p role="alert" style={{ margin: '0.75rem 0 0', color: 'var(--color-error)' }}>
+          {deleteError}
+        </p>
+      ) : null}
     </form>
+      {mode === 'edit' && post ? (
+        <ConfirmDialog
+          open={confirmDelete}
+          title="Delete this post?"
+          body={`“${post.title}” will be removed permanently${post.published ? ' and taken off the public blog' : ''}.`}
+          confirmLabel="Delete post"
+          danger
+          busy={deleting}
+          onConfirm={() => void handleDelete()}
+          onCancel={() => {
+            if (!deleting) setConfirmDelete(false);
+          }}
+        />
+      ) : null}
+    </>
   );
 }

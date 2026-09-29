@@ -14,12 +14,15 @@ export default function PortalHeaderActions({
   badges,
   hidePublicSite,
   readOnlyAudit,
+  knownIsAdmin,
   helpTourKey,
   helpGuideHref,
 }: {
   badges?: Partial<Record<NavBadgeKey, number>>;
   hidePublicSite?: boolean;
   readOnlyAudit?: boolean;
+  /** Server-resolved effective role is exactly admin; undefined uses the shared browser snapshot. */
+  knownIsAdmin?: boolean;
   /** Registry tour the Help menu can (re)open; the menu is absent when null (flag off / no tour for this persona). */
   helpTourKey?: TourKey | null;
   /** Optional guide page linked from the Help menu. */
@@ -32,7 +35,7 @@ export default function PortalHeaderActions({
       <NotificationBell badges={badges} readOnlyAudit={readOnlyAudit} />
       {/* One bell at every breakpoint; only the other actions are hidden. */}
       <div className="portal-shell-header__actions portal-header-actions-desktop">
-        <DevViewToggle />
+        <DevViewToggle knownIsAdmin={knownIsAdmin} />
         {!hidePublicSite ? (
           <Link href="/" prefetch={false} className="wa-shell-text-action wa-kit-focus">
             {PRODUCT_COPY.publicSiteLabel}

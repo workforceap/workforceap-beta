@@ -31,7 +31,9 @@ vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: (req: Request)
 vi.mock('@/lib/auth/server', () => ({ getUser: async () => ({ id: 'admin-1' }) }));
 vi.mock('@/lib/auth/roles', () => ({ isAdmin: async () => true }));
 vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: async () => 'org-1' }));
-vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => false }));
+vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({
+  isReadOnlyPortalAuditHeader: (headers: Headers) => headers.get('x-workforceap-read-only-audit') === '1',
+}));
 vi.mock('@/lib/admin/metrics', () => ({
   getAdminMetrics: async () => ({
     totalMembers: 40,
@@ -61,17 +63,20 @@ function mockDatabase(present: boolean): void {
 
 let warn: ReturnType<typeof vi.spyOn>;
 let error: ReturnType<typeof vi.spyOn>;
+let info: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
   vi.resetModules();
   db.$queryRaw.mockReset();
   warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   error = vi.spyOn(console, 'error').mockImplementation(() => {});
+  info = vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 
 afterEach(() => {
   warn.mockRestore();
   error.mockRestore();
+  info.mockRestore();
 });
 
 type Payload = {
@@ -82,9 +87,11 @@ type Payload = {
 };
 
 /** Fresh module graph per request so the once-per-process "table present" memo starts clean. */
-async function getPayload(): Promise<Payload> {
+async function getPayload(readOnlyAudit = false): Promise<Payload> {
   const { GET } = await import('@/app/api/admin/metrics/route');
-  const response = await GET(new Request('http://localhost/api/admin/metrics') as never);
+  const response = await GET(new Request('http://localhost/api/admin/metrics', {
+    headers: readOnlyAudit ? { 'x-workforceap-read-only-audit': '1' } : {},
+  }) as never);
   expect(response.status).toBe(200);
   return (await response.json()) as Payload;
 }
@@ -122,5 +129,38 @@ describe('GET /api/admin/metrics when coursera_xapi_events is present (productio
     }
     expect(warn).not.toHaveBeenCalled();
     expect(error).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/admin/metrics audit timing', () => {
+  it('records ten fixed supplemental durations only for an audit request without changing the response', async () => {
+    mockDatabase(true);
+    const ordinary = await getPayload();
+    expect(info.mock.calls.some((call: unknown[]) => call[0] === '[admin/metrics] read-only audit timing')).toBe(false);
+
+    const audited = await getPayload(true);
+    expect(audited).toEqual(ordinary);
+    const timingLog = info.mock.calls.find((call: unknown[]) => call[0] === '[admin/metrics] read-only audit timing');
+    expect(timingLog).toBeDefined();
+    const timing = timingLog?.[1] as Record<string, number | Record<string, number>>;
+    const queryDurations = timing.supplementalQueriesMs as Record<string, number>;
+    expect(Object.keys(queryDurations).sort()).toEqual([
+      'aiToolUsersMs',
+      'assessmentCompletedMs',
+      'avgSalaryMs',
+      'dashboardActivatedMs',
+      'dashboardViewsMs',
+      'jobApplicationUsersMs',
+      'recentPlacementsMs',
+      'weeklyDashboardViewsMs',
+      'weeklyEnrollmentsMs',
+      'weeklySignupsMs',
+    ]);
+    expect(Object.values(queryDurations).every((duration) => Number.isInteger(duration) && duration >= 0)).toBe(true);
+    expect(timing.supplementalMs).toBeGreaterThanOrEqual(Math.max(...Object.values(queryDurations)));
+    const stageNames = ['authMs', 'tenantMs', 'coreMs', 'supplementalMs', 'workQueueMs', 'courseraMs'];
+    const accountedMs = stageNames.reduce((sum, name) => sum + Number(timing[name] ?? 0), 0);
+    expect(timing.unaccountedMs).toBe(Math.max(0, Number(timing.totalMs) - accountedMs));
+    expect(JSON.stringify(timing)).not.toMatch(/org-1|admin-1|SELECT|FROM|COUNT/);
   });
 });

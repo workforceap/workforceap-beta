@@ -2,8 +2,12 @@ import { notFound } from 'next/navigation';
 import { MemberProgressKit } from '@/components/portal/kit/pages/member/MemberProgressKit';
 import { ReadinessProgressSummary } from '@/components/portal/ReadinessProgressSummary';
 import { buildReadinessProgressView } from '@/lib/readiness/progressView';
-import { SCREENSHOT_86_BREAKDOWN, zeroScoreBreakdown } from '@/lib/readiness/progressView.fixtures';
-import { READINESS_SCORE_LOAD_ERROR, buildFactualReadinessRecap } from '@/lib/readiness/progressSummary';
+import { SCREENSHOT_MEMBER_BREAKDOWN, zeroScoreBreakdown } from '@/lib/readiness/progressView.fixtures';
+import {
+  READINESS_SCORE_LOAD_ERROR,
+  buildFactualReadinessRecap,
+  buildReadinessRecapBreakdown,
+} from '@/lib/readiness/progressSummary';
 
 /**
  * Storybook-lite showcase — MemberProgressKit (readiness ring + category
@@ -24,7 +28,7 @@ export default async function DevMemberProgressPage({
   const { state } = await searchParams;
   const empty = state === 'empty';
   const error = state === 'error';
-  const view = buildReadinessProgressView(SCREENSHOT_86_BREAKDOWN);
+  const view = buildReadinessProgressView(SCREENSHOT_MEMBER_BREAKDOWN);
   const emptyView = buildReadinessProgressView(zeroScoreBreakdown());
   const factual = buildFactualReadinessRecap(empty ? emptyView : view);
 
@@ -42,6 +46,7 @@ export default async function DevMemberProgressPage({
         <ReadinessProgressSummary
           factualSummary={error ? READINESS_SCORE_LOAD_ERROR : factual}
           nextAction={empty || error ? null : view.priorityAction}
+          breakdown={error ? null : buildReadinessRecapBreakdown(empty ? emptyView : view)}
           coachHref="/dev/member/toolkit"
           enableGeneration={false}
           loadFailed={error}

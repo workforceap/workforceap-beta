@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, ProgressRing, PageOpener, KitEmptyState } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
+import CourseraLaunchErrorNotice from '@/components/portal/CourseraLaunchErrorNotice';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
 
 /**
@@ -122,8 +123,9 @@ export function MemberProgramKit({
   missionsHref = '#',
 }: MemberProgramKitProps) {
   // The page states the course denominator once; the workspace view must show it where it states the count too.
-  if (trainingWorkspace) return <MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} />;
-  return <MemberProgramOverview programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} />;
+  // A failed Coursera launch lands here with ?error=; say what happened on both views.
+  if (trainingWorkspace) return <><CourseraLaunchErrorNotice /><MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} /></>;
+  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} /></>;
 }
 
 /** Program overview (no pinned workspace): hooks live here so the early workspace return above stays hook-free. */

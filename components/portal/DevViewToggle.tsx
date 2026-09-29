@@ -6,12 +6,13 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const STORAGE_KEY = 'dev_view_mode';
 
-export default function DevViewToggle() {
+export default function DevViewToggle({ knownIsAdmin }: { knownIsAdmin?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
-  // Shared current-user snapshot (WAP-27): no dedicated /api/auth/me call here.
-  const { user } = useCurrentUser();
-  const isAdmin = user?.role === 'admin';
+  // The admin layout already resolved the effective role. Other callers retain
+  // the shared browser snapshot until they can supply the same server fact.
+  const { user } = useCurrentUser({ enabled: knownIsAdmin === undefined });
+  const isAdmin = knownIsAdmin ?? (user?.role === 'admin');
   const [mode, setMode] = useState<'student' | 'admin'>('student');
 
   useEffect(() => {

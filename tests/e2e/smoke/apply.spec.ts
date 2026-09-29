@@ -1,9 +1,58 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Apply page smoke test — verifies the public application page loads
  * and renders the form area and sidebar.
+ *
+ * Since #2383 the results and create-account steps render their trust bar
+ * and step nav only once the browser holds saved apply state; a cold visit
+ * gets the ApplyResumeGate (`.apply-missing-session`) instead. The later-step
+ * tests seed that state before navigation, in the formats written by
+ * lib/apply/applyBrowserState.ts (saveEligibilityForNextStep and
+ * saveSelectedPrograms).
  */
+
+// Keys and shapes mirror lib/apply/applyBrowserState.ts and
+// lib/apply/applyProgramStorage.ts. Kept literal so the spec does not pull app
+// code into the Playwright bundle.
+const APPLY_STORAGE_KEY = 'apply_eligibility';
+const APPLY_PROGRAM_RANKED_KEY = 'apply_program_ranked_slugs';
+/** A real catalog slug (lib/content/programs.ts) so getProgramBySlug accepts it. */
+const SMOKE_PROGRAM_SLUG = 'comptia-a-professional-certificate';
+const SMOKE_ELIGIBILITY = {
+  firstName: 'Smoke',
+  lastName: 'Test',
+  email: 'smoke@example.com',
+  phone: '5125550100',
+  qualifies: true,
+  q1: 'yes',
+  q2: 'no',
+};
+
+async function seedApplyState(page: Page, { programs }: { programs: boolean }) {
+  await page.addInitScript(
+    ({ eligibilityKey, rankedKey, eligibility, slug, withPrograms }) => {
+      window.sessionStorage.setItem(eligibilityKey, JSON.stringify(eligibility));
+      if (!withPrograms) return;
+      // Same binding as eligibilitySnapshot(): the eligibility record with keys sorted.
+      const snapshot = JSON.stringify(
+        Object.fromEntries(Object.entries(eligibility).sort(([a], [b]) => a.localeCompare(b))),
+      );
+      window.sessionStorage.setItem(
+        rankedKey,
+        JSON.stringify({ version: 1, slugs: [slug], eligibilitySnapshot: snapshot }),
+      );
+    },
+    {
+      eligibilityKey: APPLY_STORAGE_KEY,
+      rankedKey: APPLY_PROGRAM_RANKED_KEY,
+      eligibility: SMOKE_ELIGIBILITY,
+      slug: SMOKE_PROGRAM_SLUG,
+      withPrograms: programs,
+    },
+  );
+}
+
 test.describe('Apply smoke', () => {
   test('apply page loads with hero and form area', async ({ page }) => {
     await page.goto('/apply');
@@ -53,6 +102,7 @@ test.describe('Apply smoke', () => {
 
   test('apply results step shows mobile trust bar', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
+    await seedApplyState(page, { programs: false });
     await page.goto('/apply/results');
 
     await expect(page.locator('.apply-mobile-trust-bar')).toBeVisible();
@@ -64,10 +114,22 @@ test.describe('Apply smoke', () => {
 
   test('create account step shows final mobile progress count', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
+    await seedApplyState(page, { programs: true });
     await page.goto('/apply/create-account');
 
     await expect(page.locator('.apply-mobile-step-nav')).toBeVisible();
     await expect(page.locator('.apply-mobile-step-nav__summary')).toContainText(/step 3 of 3 · about 2 min/i);
     await expect(page.locator('.apply-mobile-step-nav__item--active')).toContainText(/account/i);
+  });
+
+  test('cold visits to later steps show the resume gate, not the step chrome', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    for (const path of ['/apply/results', '/apply/create-account']) {
+      await page.goto(path);
+      await expect(page.locator('.apply-missing-session'), path).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.apply-missing-session a[href$="/apply"]').first(), path).toBeVisible();
+      await expect(page.locator('.apply-mobile-trust-bar'), path).toHaveCount(0);
+      await expect(page.locator('.apply-mobile-step-nav'), path).toHaveCount(0);
+    }
   });
 });

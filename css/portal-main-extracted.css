@@ -125,39 +125,6 @@
 .job-readiness-breakdown li { margin-bottom: 0.25rem; }
 .job-readiness-breakdown li.done { color: var(--color-green); }
 
-/* Goals module */
-.goals-module {
-    background: var(--color-light);
-    padding: 1.5rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-gray-200);
-}
-.goals-module-title { font-size: 1rem; margin: 0 0 1rem; font-weight: 600; }
-.goals-list { list-style: none; padding: 0; margin: 0 0 1rem; }
-.goals-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--color-gray-200);
-}
-.goals-item:last-child { border-bottom: none; }
-.goals-item-content { display: flex; gap: 0.5rem; align-items: center; }
-.goals-item-title { font-weight: 500; }
-.goals-item-progress { font-size: 0.85rem; color: var(--color-on-surface-variant); }
-.goals-empty { font-size: 0.9rem; color: var(--color-on-surface-variant); margin-bottom: 1rem; }
-.goals-form { margin-top: 0.5rem; }
-.goals-form .form-select, .goals-form .form-input {
-    display: block;
-    width: 100%;
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
-    border: 1px solid var(--color-gray-300);
-    border-radius: var(--radius-sm);
-}
-.goals-form-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-.goals-hint { font-size: 0.85rem; color: var(--color-on-surface-variant); margin-top: 0.5rem; }
-
 /* Resource progress */
 .resource-progress-summary, .weekly-recap-preview {
     background: var(--color-light);
@@ -1241,6 +1208,18 @@ html {
     z-index: 60;
     min-width: 0;
 }
+/* Base meta row. Declared BEFORE the phone block below on purpose (WAP-208):
+   the phone rules (flex: 1 1 auto, tighter gap, overflow-x: auto) have the
+   same specificity, so a base rule later in the file used to win and pinned
+   flex-shrink: 0 — the staff header ran 8px past a 390px screen and cut off
+   the bell. */
+.workspace-shell-header__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    flex-shrink: 0;
+    min-width: 0;
+}
 @media (max-width: 768px) {
     /* Single-row header: avoid wrapped meta/actions sandwiching the viewport */
     .workspace-shell-header {
@@ -1289,7 +1268,13 @@ html {
     }
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .super-admin-view-switcher--with-badge {
         padding-block: 0;
+        /* Even inline padding now that the "Admin" chip is hidden below. */
+        padding-inline: 0.25rem;
     }
+    /* The switcher's "Admin" chip goes too (WAP-208): its trigger already names
+       the view ("View: Member. Switch portal view"), and at 390px the chip
+       pushed the pill past the meta row's clip edge. */
+    .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .super-admin-view-switcher__badge,
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-tier-badge,
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-attribution,
     .workspace-shell-header--minimal-mobile .workspace-shell-header__meta .workspace-shell-impersonating-chip {
@@ -1506,13 +1491,6 @@ html.dark .workspace-shell-header,
     }
 }
 
-.workspace-shell-header__meta {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem 0.75rem;
-    flex-shrink: 0;
-    min-width: 0;
-}
 .workspace-shell-header__meta .portal-shell-header__actions {
     gap: 0.5rem 0.75rem;
 }
@@ -10095,6 +10073,18 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
 .workspace-sidebar-section-btn__label {
     flex: 1 1 auto;
     min-width: 0;
+}
+/* An always-open section (Daily work): the same box as a section button, no disclosure. */
+.workspace-sidebar-section-label {
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+    margin: 0 0 0.2rem;
+    padding: 0.35rem 0.6rem;
+    color: var(--wa-sidebar-label);
+    font-size: var(--wa-type-meta);
+    font-weight: 700;
+    line-height: 1.4;
 }
 .workspace-sidebar-section-btn__chevron,
 .workspace-sidebar-children-toggle > svg {

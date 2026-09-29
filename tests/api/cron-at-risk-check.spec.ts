@@ -139,6 +139,70 @@ describe('GET /api/cron/at-risk-check', () => {
     );
   });
 
+  it('excludes member-reported escalations in the query so they cannot starve the take:100 batch', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([] as any);
+    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
+
+    const res = await atRiskGET(makeAuthorizedCronRequest());
+    expect(res.status).toBe(200);
+    const args = vi.mocked(prisma.atRiskAlert.findMany).mock.calls[0]?.[0] as any;
+    expect(args.take).toBe(100);
+    expect(args.where.status).toEqual({ in: ['open', 'acknowledged'] });
+    expect(args.where.NOT).toEqual({
+      OR: [
+        { factors: { array_contains: [{ name: 'first90_trouble_reported' }] } },
+        { factors: { array_contains: [{ name: 'placement_survey_job_loss_reported' }] } },
+      ],
+    });
+    expect(args.select).toEqual(expect.objectContaining({ id: true, factors: true }));
+    expect(prisma.atRiskAlert.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('never resolves a returned row that carries a member-reported factor, but still resolves scorer-only stale alerts', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+      { userId: 'user-low', score: 10, factors: [], recommendedAction: '' },
+    ] as any);
+    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([
+      {
+        id: 'alert-member-reported',
+        factors: [
+          { name: 'no_login_7_days', weight: 25, description: 'No login in 7 days' },
+          { name: 'first90_trouble_reported', weight: 1, description: 'Member said they are having trouble' },
+        ],
+      },
+      {
+        id: 'alert-job-loss',
+        factors: [{ name: 'placement_survey_job_loss_reported', weight: 1, description: 'Lost job' }],
+      },
+      {
+        id: 'alert-scorer-only',
+        factors: [{ name: 'no_login_7_days', weight: 25, description: 'No login in 7 days' }],
+      },
+    ] as any);
+
+    const res = await atRiskGET(makeAuthorizedCronRequest());
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.alertsResolved).toBe(1);
+    expect(prisma.atRiskAlert.updateMany).toHaveBeenCalledTimes(1);
+    expect(prisma.atRiskAlert.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['alert-scorer-only'] } },
+      data: { status: 'resolved', resolvedAt: expect.any(Date) },
+    });
+  });
+
+  it('does not call updateMany when every returned row is member-reported', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([] as any);
+    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([
+      { id: 'alert-member-reported', factors: [{ name: 'first90_trouble_reported' }] },
+    ] as any);
+
+    const res = await atRiskGET(makeAuthorizedCronRequest());
+    const json = await res.json();
+    expect(json.alertsResolved).toBe(0);
+    expect(prisma.atRiskAlert.updateMany).not.toHaveBeenCalled();
+  });
+
   it('sends no email: the weekly at-risk-alerts cron reads the persisted rows instead', async () => {
     vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
       { userId: 'user-1', score: 85, factors: [{ description: 'No login' }], recommendedAction: 'Call' },

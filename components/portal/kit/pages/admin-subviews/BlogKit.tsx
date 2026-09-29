@@ -1,10 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import NextLink from 'next/link';
 import { Plus, Sparkles } from 'lucide-react';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
@@ -13,6 +10,7 @@ import {
   type Column,
   type KitTone,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Blog — admin marketing & resource posts rendered as a dense table.
@@ -106,22 +104,20 @@ export function BlogKit({ posts = DEFAULT_POSTS }: BlogKitProps) {
         lede="Marketing & resource posts"
         action={
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <AstryxLink href="/admin/blog/ai" as={NextLink as never} isStandalone>
-              <Button
-                label="AI Assistant"
-                variant="secondary"
-                size="sm"
-                icon={<Sparkles size={14} aria-hidden="true" />}
-              />
-            </AstryxLink>
-            <AstryxLink href="/admin/blog/new" as={NextLink as never} isStandalone>
-              <Button
-                label="New Post"
-                variant="primary"
-                size="sm"
-                icon={<Plus size={14} aria-hidden="true" />}
-              />
-            </AstryxLink>
+            <KitLinkButton
+              href="/admin/blog/ai"
+              label="AI Assistant"
+              variant="secondary"
+              size="sm"
+              icon={<Sparkles size={14} aria-hidden="true" />}
+            />
+            <KitLinkButton
+              href="/admin/blog/new"
+              label="New Post"
+              variant="primary"
+              size="sm"
+              icon={<Plus size={14} aria-hidden="true" />}
+            />
           </div>
         }
       />

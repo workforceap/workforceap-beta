@@ -13,6 +13,7 @@ import {
   profilePhotoStoragePath,
   resolveProfilePhotoContentType,
 } from '@/lib/portal/memberProfilePhoto';
+import { detectImageSignature } from '@/lib/uploads/imageSignature';
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -27,7 +28,7 @@ export const POST = withApiGuc(async (request: Request) => {
     }
 
     const file = formData.get('file');
-    if (!(file instanceof File)) {
+    if (!(file instanceof File) || file.size === 0) {
       return NextResponse.json({ error: 'Provide a photo file' }, { status: 400 });
     }
 
@@ -35,7 +36,15 @@ export const POST = withApiGuc(async (request: Request) => {
       return NextResponse.json({ error: 'Photo is too large (max 5 MB)' }, { status: 413 });
     }
 
-    const contentType = resolveProfilePhotoContentType(file.name);
+    if (!resolveProfilePhotoContentType(file.name)) {
+      return NextResponse.json({ error: 'Use a JPG, PNG, or WebP photo' }, { status: 400 });
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    // The bytes decide the type. The editor always names its crop
+    // `profile-photo.webp`, but WebKit cannot encode WebP from a canvas and
+    // hands back PNG, so the name alone is not a reliable type.
+    const contentType = detectImageSignature(new Uint8Array(arrayBuffer, 0, Math.min(12, arrayBuffer.byteLength)));
     if (!contentType) {
       return NextResponse.json({ error: 'Use a JPG, PNG, or WebP photo' }, { status: 400 });
     }
@@ -46,7 +55,6 @@ export const POST = withApiGuc(async (request: Request) => {
       select: { profilePhotoPath: true },
     });
 
-    const arrayBuffer = await file.arrayBuffer();
     const supabase = getSupabaseAdmin();
     const { error: uploadError } = await supabase.storage
       .from(PROFILE_PHOTO_BUCKET)

@@ -56,7 +56,7 @@ describe('/admin/guide', () => {
     ]);
     const faq = screen.getByRole('region', { name: 'Common questions' });
     expect(within(faq).getAllByRole('heading', { level: 3 }).length).toBeGreaterThanOrEqual(4);
-    expect(screen.getByRole('link', { name: 'Back to Command Center' })).toHaveAttribute('href', '/admin');
+    expect(screen.getByRole('link', { name: 'Back to Today' })).toHaveAttribute('href', '/admin');
   });
 
   it('sends signed-out visitors to login with a return path and non-admins to the dashboard', async () => {

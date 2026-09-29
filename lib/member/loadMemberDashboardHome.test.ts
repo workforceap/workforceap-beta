@@ -6,8 +6,13 @@ import path from 'node:path';
 
 import {
   MEMBER_DASHBOARD_HOME_PRISMA_BUDGET,
+  STALE_TRAINING_COUNSELOR_ACTION,
+  secondaryProgramAction,
+  buildFirst90Card,
+  dashboardViewFacts,
   deriveNextBadge,
   loadMemberDashboardHome,
+  youthNoticeAgeFromDob,
   mapGoalSummaries,
   mapPipelineRows,
   mapPointsLedger,
@@ -34,7 +39,7 @@ function makeRow(overrides: Record<string, unknown> = {}) {
     enrolledProgram: null,
     assessmentCompleted: false,
     organization: { courses: [] },
-    courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+    courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', isPrimary: true }],
     courseProgress: [],
     memberProgramProgress: [],
     // A live streak: the last activity is today, so the stored counter holds.
@@ -51,6 +56,7 @@ function makeRow(overrides: Record<string, unknown> = {}) {
     ],
     jobApplications: [
       {
+        id: 'app-1',
         role: 'Help Desk Tech',
         company: 'Acme',
         status: 'INTERVIEWING',
@@ -110,12 +116,14 @@ function mockDb(opts: {
 }) {
   let findUniqueCalls = 0;
   let txCalls = 0;
+  let lastSelect: Record<string, unknown> | undefined;
   // `args` is `unknown` to match the loader's own DashboardHomeTx signature.
   const findUnique = async (args: unknown) => {
     findUniqueCalls += 1;
+    const select = (args as { select?: Record<string, unknown> } | undefined)?.select;
+    lastSelect = select;
     if (opts.missFirst && findUniqueCalls === 1) return null;
     const row = opts.row === undefined ? makeRow() : opts.row;
-    const select = (args as { select?: Record<string, unknown> } | undefined)?.select;
     if (!row || !select) return row;
     return projectSelect(row, select) as typeof row;
   };
@@ -128,6 +136,8 @@ function mockDb(opts: {
   return {
     db,
     counts: () => ({ findUniqueCalls, txCalls }),
+    /** The `select` of the last read: the mock ignores `where`/`take`, so bounds are pinned here. */
+    select: () => lastSelect,
   };
 }
 
@@ -325,7 +335,7 @@ test('a completion recorded under a Coursera id counts, and "Next:" skips it', a
       row: makeRow({
         nextBestActions: [],
         assessmentCompleted: true,
-        courseEnrollments: [{ programSlug: slug }],
+        courseEnrollments: [{ programSlug: slug, isPrimary: true }],
         courseProgress: [
           row('introduction-to-software-engineering', 'FkAMrrwEEey8ogoy0lwspQ', 'COMPLETED', 100),
           // Written before the id binding existed: synthetic slug, real Coursera id.
@@ -396,7 +406,7 @@ test('loadMemberDashboardHome shows saved progress when the member has no assign
 test('loadMemberDashboardHome never reports 100% from one completed alias row in a multi-course program', async () => {
   const { db } = mockDb({
     row: makeRow({
-      courseEnrollments: [{ programSlug: 'comptia-a-professional-certificate' }],
+      courseEnrollments: [{ programSlug: 'comptia-a-professional-certificate', isPrimary: true }],
       enrolledProgram: null,
       memberProgramProgress: [{
         programSlug: 'comptia-a-plus',
@@ -656,25 +666,30 @@ test('loadMemberDashboardHome names the next incomplete course when NBA rows are
   assert.ok(view.nextLesson && view.nextLesson.length > 0);
 });
 
-test('kit-default dashboard page calls the loader and has no prisma. on that branch', () => {
-  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
-  const kitStart = src.indexOf("if (args.requestedUi !== 'legacy')");
-  const legacyStart = src.indexOf('await loadMemberCareerBriefBundleSafe');
-  assert.ok(kitStart > 0, 'kit branch missing');
-  assert.ok(legacyStart > kitStart, 'legacy branch missing');
-  const kitBlock = src.slice(kitStart, legacyStart);
-  assert.match(kitBlock, /loadMemberDashboardHome/);
-  assert.doesNotMatch(kitBlock, /prisma\./);
-  assert.doesNotMatch(kitBlock, /maybeAutoSyncCourseraOnDashboard/);
-  assert.doesNotMatch(kitBlock, /fetchLearnerProgressFromB4B/);
-  assert.doesNotMatch(kitBlock, /getMemberState/);
+test('the dashboard page (one implementation since WAP-195) calls the loader and nothing fat', () => {
+  // The whole page is the kit home now, so the whole file is the block that
+  // must stay lean: every read goes through loadMemberDashboardHome (plus the
+  // approval-wait estimate), never a direct prisma read, B4B or getMemberState.
+  // Code only: the page's comments may name what it deliberately does not call.
+  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+  assert.match(src, /await loadMemberDashboardHome\(/);
+  assert.doesNotMatch(src, /prisma\./);
+  assert.doesNotMatch(src, /from '@\/lib\/db\/prisma'/);
+  assert.doesNotMatch(src, /maybeAutoSyncCourseraOnDashboard/);
+  assert.doesNotMatch(src, /fetchLearnerProgressFromB4B/);
+  assert.doesNotMatch(src, /getMemberState/);
+  assert.doesNotMatch(src, /loadMemberCareerBriefBundleSafe/);
+  assert.doesNotMatch(src, /requestedUi|'legacy'/, 'no ?ui=legacy branch may come back');
+  assert.doesNotMatch(src, /export const maxDuration/, 'the 60s ceiling was only for the retired legacy fan-out');
 });
 
 
 test('lean loader uses real starter-profile gaps and keeps the one-operation budget', async () => {
   const { db, counts } = mockDb({ row: makeRow({ nextBestActions: [],
     applications: [{ status: 'APPROVED', submittedAt: new Date('2026-09-01T12:00:00Z') }],
-    courseEnrollments: [{ programSlug: FIXTURE_PROGRAM_SLUG, enrolledByAdminId: 'staff' }],
+    courseEnrollments: [{ programSlug: FIXTURE_PROGRAM_SLUG, isPrimary: true, enrolledByAdminId: 'staff' }],
     wioaReviewStatus: 'verified', wioaReviewedAt: new Date('2026-09-03T12:00:00Z'),
     courseraEnrollmentApproved: false,
   }) });
@@ -723,7 +738,7 @@ const ableToStart = (enrolledDaysAgo: number, assessedDaysAgo: number) => ({
   assessmentCompleted: true,
   enrolledAt: daysAgo(enrolledDaysAgo),
   assessmentCompletedAt: daysAgo(assessedDaysAgo),
-  courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+  courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', isPrimary: true }],
 });
 
 async function staleFlagFor(overrides: Record<string, unknown>) {
@@ -758,7 +773,7 @@ test('courseProgressStale: nothing is claimed before the member can start', asyn
       assessmentCompleted: false,
       enrolledAt: daysAgo(120),
       assessmentCompletedAt: null,
-      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm' }],
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', isPrimary: true }],
       courseProgress: [],
     }),
     false,
@@ -1046,4 +1061,624 @@ test('the home view carries no wait estimate and names the awaited step from the
   const missing = await loadMemberDashboardHome({ userId: 'ghost', fallbackDisplayName: 'Pat' }, mockDb({ row: null }).db);
   assert.deepEqual(missing.counselorContext, { counselor: null, waitEstimate: null, awaiting: null });
   assert.equal(missing.organizationId, null);
+});
+
+/**
+ * "Up next" + the recommended tool read real facts from the same user read
+ * (resume on file, unread counselor messages, interview practice, placement)
+ * instead of the constants the kit home used to pass. `mockDb` projects the
+ * fixture through the real `select`, so dropping any of those relations from
+ * `userSelect()` fails these.
+ */
+const readyToTrain = (overrides: Record<string, unknown> = {}) =>
+  makeRow({
+    nextBestActions: [],
+    assessmentCompleted: true,
+    applications: [{ status: 'APPROVED', submittedAt: null }],
+    jobApplications: [],
+    ...overrides,
+  });
+
+test('up next: a member with no resume and no practice sees both, never the hero or the counselor floor twice', async () => {
+  const { db, counts } = mockDb({ row: readyToTrain() });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.doThisNext?.id, 'continue_training');
+  const ids = view.upNext.map((action) => action.id);
+  assert.deepEqual(ids, ['upload_resume', 'interview_practice', 'career_readiness']);
+  assert.ok(!ids.includes(view.doThisNext!.id));
+  assert.ok(!ids.includes('default_counselor'));
+  const paths = [view.doThisNext!.href, ...view.upNext.map((a) => a.href)].map((href) => href.split('?')[0]);
+  assert.equal(new Set(paths).size, paths.length, 'no two rows open the same page');
+  // Both matching tools are already rows, so the tool card does not repeat them.
+  assert.equal(view.recommendedTool, null);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+});
+
+test('up next: a saved resume and a finished practice session retire those rows', async () => {
+  const { db } = mockDb({
+    row: readyToTrain({
+      profile: { resumeOriginalPath: 'member-files/u1/resume.pdf', resumeEnhancedPath: null },
+      // A finished practice session is now a filtered count (the relation itself carries First 90 check-ins).
+      _count: { userCertifications: 1, jobApplications: 2, memberEvents: 1 },
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  const ids = view.upNext.map((action) => action.id);
+  assert.ok(!ids.includes('upload_resume'), ids.join(','));
+  assert.ok(!ids.includes('interview_practice'), ids.join(','));
+  assert.equal(view.recommendedTool?.slug, 'job-match-scorer');
+});
+
+test('up next: unread counselor messages count only what arrived after the member last read', async () => {
+  const { db } = mockDb({
+    row: readyToTrain({
+      messageThreadsAsMember: [
+        {
+          memberLastReadAt: daysAgo(2),
+          messages: [{ createdAt: daysAgo(0) }, { createdAt: daysAgo(1) }, { createdAt: daysAgo(3) }],
+        },
+      ],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  // Weight 88 outranks continuing training (86): a reply waiting is the next thing.
+  assert.equal(view.doThisNext?.id, 'counselor_messages');
+  assert.match(view.doThisNext?.body ?? '', /2 unread messages/);
+});
+
+test('up next: a thread with nothing unread adds no messages row', async () => {
+  const { db } = mockDb({
+    row: readyToTrain({
+      messageThreadsAsMember: [{ memberLastReadAt: daysAgo(0), messages: [{ createdAt: daysAgo(1) }] }],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.notEqual(view.doThisNext?.id, 'counselor_messages');
+  assert.ok(!view.upNext.some((action) => action.id === 'counselor_messages'));
+});
+
+test('recommended tool: an interview in the pipeline names interview prep', async () => {
+  const { db } = mockDb({ row: makeRow({ nextBestActions: [] }) });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.pipeline[0]?.stage, 'Interviewing');
+  assert.equal(view.recommendedTool?.slug, 'interview-prep');
+});
+
+test('placement: a separated member is steered back to jobs; a working one gets no tool', async () => {
+  const separated = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: readyToTrain({
+        placementRecord: { placedAt: daysAgo(120), retentionDecision: 'not_retained', retentionStatus: null },
+      }),
+    }).db,
+  );
+  assert.equal(separated.doThisNext?.id, 'placement_job_loss_reactivate');
+  assert.equal(separated.recommendedTool?.slug, 'job-match-scorer');
+
+  const working = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: readyToTrain({
+        placementRecord: { placedAt: daysAgo(10), retentionDecision: null, retentionStatus: null },
+      }),
+    }).db,
+  );
+  assert.equal(working.recommendedTool, null);
+});
+
+test('a persisted action keeps the hero and the heuristics fill the rows beneath it', async () => {
+  const { db } = mockDb({ row: makeRow({ assessmentCompleted: true, jobApplications: [] }) });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.doThisNext?.id, 'nba-1');
+  // The persisted hero already opens My Program, so continue_training is not repeated.
+  assert.ok(!view.upNext.some((action) => action.href.split('?')[0] === view.doThisNext!.href));
+  assert.ok(view.upNext.length > 0);
+});
+
+test('the zeroed view has no rows beyond the hero and names no tool', async () => {
+  const view = await loadMemberDashboardHome({ userId: 'ghost' }, mockDb({ row: null }).db);
+  assert.equal(view.doThisNext?.id, 'choose_program');
+  assert.equal(view.recommendedTool, null);
+  assert.ok(!view.upNext.some((action) => action.id === 'default_counselor'));
+});
+
+/**
+ * WAP-188 Phase A: the pieces only the `?ui=legacy` home had (placement
+ * confirmation, First 90 Days, the youth notice, the stalled-training
+ * counselor strip, every persisted action, the view / activation events) now
+ * come from the loader's one nested read. `mockDb` projects each fixture
+ * through the real `select`, so dropping a field from `userSelect()` fails
+ * the case that needs it; `select()` pins the bounds the mock ignores.
+ */
+const jobRow = (id: string, status: string, updatedDaysAgo: number, overrides: Record<string, unknown> = {}) => ({
+  id,
+  role: `Role ${id}`,
+  company: `Company ${id}`,
+  status,
+  updatedAt: daysAgo(updatedDaysAgo),
+  ...overrides,
+});
+
+test('placement strip: an OFFER below the pipeline card still reaches the strip, from the same single read', async () => {
+  const { db, counts, select } = mockDb({
+    row: makeRow({
+      jobApplications: [
+        jobRow('a1', 'SAVED', 1),
+        jobRow('a2', 'APPLIED', 2),
+        jobRow('a3', 'APPLIED', 3),
+        jobRow('a4', 'PHONE_SCREEN', 4),
+        jobRow('a5', 'OFFER', 9, { role: 'IT Support Specialist', company: 'Acme Health' }),
+      ],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  // The card is unchanged: the four most recently updated open rows.
+  assert.deepEqual(view.pipeline.map((row) => row.company), ['Company a1', 'Company a2', 'Company a3', 'Company a4']);
+  assert.deepEqual(view.jobOffers, [{ id: 'a5', role: 'IT Support Specialist', company: 'Acme Health' }]);
+  // The offer is an open application too, so the tool pick agrees with the strip.
+  assert.equal(view.recommendedTool?.slug, 'salary-negotiation');
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+  assert.ok(view.prismaOpCount <= MEMBER_DASHBOARD_HOME_PRISMA_BUDGET);
+  const jobs = select()!.jobApplications as { take: number; where: unknown; select: Record<string, unknown> };
+  assert.ok(jobs.take > view.pipeline.length, 'the read reaches past the card');
+  assert.deepEqual(jobs.where, { status: { notIn: ['REJECTED', 'ACCEPTED'] } });
+  assert.equal(jobs.select.id, true, 'the strip confirms by application id');
+});
+
+test('placement strip: no OFFER row means no strip', async () => {
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, mockDb({ row: makeRow() }).db);
+  assert.deepEqual(view.jobOffers, []);
+  const empty = await loadMemberDashboardHome({ userId: 'ghost' }, mockDb({ row: null }).db);
+  assert.deepEqual(empty.jobOffers, []);
+});
+
+test('First 90 Days: a placed member gets the current stage, with earlier check-ins marked done', async () => {
+  const { db, counts, select } = mockDb({
+    row: readyToTrain({
+      placementRecord: { placedAt: daysAgo(20), retentionDecision: null, retentionStatus: null, employerName: 'Acme Health' },
+      memberEvents: [{ entityId: 'week_1', metadata: { response: 'have_questions' }, createdAt: daysAgo(15) }],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.deepEqual(view.first90, {
+    stage: 'day_30',
+    daysSincePlacement: 20,
+    employerName: 'Acme Health',
+    currentStageResponse: null,
+    completedStages: ['week_1'],
+  });
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+  const events = select()!.memberEvents as { where: unknown; take: number };
+  assert.deepEqual(events.where, { eventName: 'first90_check_in_submitted' });
+  assert.equal(events.take, 12);
+});
+
+test('First 90 Days: past the window, or never placed, there is no card', async () => {
+  const past = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: readyToTrain({
+        placementRecord: { placedAt: daysAgo(120), retentionDecision: null, retentionStatus: null, employerName: 'Acme Health' },
+      }),
+    }).db,
+  );
+  assert.equal(past.first90, null);
+  const never = await loadMemberDashboardHome({ userId: 'member-1' }, mockDb({ row: readyToTrain() }).db);
+  assert.equal(never.first90, null);
+});
+
+test('buildFirst90Card builds what the legacy home built', () => {
+  const now = new Date('2026-09-23T12:00:00.000Z');
+  const card = buildFirst90Card(
+    { placedAt: new Date('2026-09-18T12:00:00.000Z'), employerName: null },
+    [
+      // Newest first: the first response per stage wins, as on the legacy home.
+      { entityId: 'week_1', metadata: { response: 'going_well' }, createdAt: new Date('2026-09-20T12:00:00.000Z') },
+      { entityId: 'week_1', metadata: { response: 'having_trouble' }, createdAt: new Date('2026-09-19T12:00:00.000Z') },
+      { entityId: 'not_a_stage', metadata: { response: 'going_well' }, createdAt: new Date('2026-09-19T12:00:00.000Z') },
+    ],
+    now,
+  );
+  assert.deepEqual(card, {
+    stage: 'week_1',
+    daysSincePlacement: 5,
+    employerName: '',
+    currentStageResponse: 'going_well',
+    completedStages: ['week_1'],
+  });
+  assert.equal(buildFirst90Card({ placedAt: new Date('2026-09-30T12:00:00.000Z') }, [], now), null, 'a future start date is not in the window');
+  assert.equal(buildFirst90Card(null, [], now), null);
+});
+
+test('youth notice: the legacy age maths from profile.dob, shown only under 18', async () => {
+  const YEAR_MS = 365.25 * DAY_MS;
+  const now = Date.now();
+  assert.equal(youthNoticeAgeFromDob(new Date(now - 16.5 * YEAR_MS), now), 16);
+  assert.equal(youthNoticeAgeFromDob(new Date(now - 17.9 * YEAR_MS), now), 17);
+  assert.equal(youthNoticeAgeFromDob(new Date(now - 18.1 * YEAR_MS), now), null);
+  assert.equal(youthNoticeAgeFromDob(new Date(now + 30 * DAY_MS), now), null, 'a future date of birth is bad data');
+  assert.equal(youthNoticeAgeFromDob(new Date('not a date'), now), null);
+  assert.equal(youthNoticeAgeFromDob(null, now), null);
+
+  const { db, select } = mockDb({
+    row: makeRow({ profile: { resumeOriginalPath: null, resumeEnhancedPath: null, dob: new Date(now - 15.5 * YEAR_MS) } }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.youthNoticeAge, 15);
+  assert.equal((select()!.profile as { select: Record<string, unknown> }).select.dob, true);
+  const adult = await loadMemberDashboardHome({ userId: 'member-1' }, mockDb({ row: makeRow() }).db);
+  assert.equal(adult.youthNoticeAge, null);
+});
+
+test('dashboard view facts: the legacy stage letters, checklist and activation inputs', () => {
+  const base = {
+    applicationExists: true,
+    assignedProgramSlug: FIXTURE_PROGRAM_SLUG,
+    assessmentCompleted: true,
+    completedCount: 2,
+    programTitle: 'IT Support',
+  };
+  assert.deepEqual(dashboardViewFacts(base), { state: 'D', checklistAllDone: true, completedCount: 2, programTitle: 'IT Support' });
+  assert.equal(dashboardViewFacts({ ...base, applicationExists: false }).state, 'A');
+  assert.equal(dashboardViewFacts({ ...base, assessmentCompleted: false }).state, 'C');
+  assert.equal(dashboardViewFacts({ ...base, assessmentCompleted: false }).checklistAllDone, false);
+  assert.equal(dashboardViewFacts({ ...base, completedCount: 0 }).checklistAllDone, false);
+  // Legacy read training only for an assigned program: no program, nothing completed, no title.
+  assert.deepEqual(dashboardViewFacts({ ...base, assignedProgramSlug: null }), { state: 'B', checklistAllDone: false, completedCount: 0 });
+});
+
+test('dashboard view facts come from the same read, and the zeroed view writes none', async () => {
+  const program = getProgramBySlug(canonicalizeProgramSlug(FIXTURE_PROGRAM_SLUG));
+  assert.ok(program);
+  const view = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: readyToTrain({
+        courseProgress: [progressRow({ courseSlug: program.courses[0]!.slug, percentComplete: 100, status: 'COMPLETED' })],
+      }),
+    }).db,
+  );
+  assert.deepEqual(view.dashboardViewFacts, { state: 'D', checklistAllDone: true, completedCount: 1, programTitle: program.title });
+  const noApplication = await loadMemberDashboardHome({ userId: 'member-1' }, mockDb({ row: makeRow() }).db);
+  assert.equal(noApplication.dashboardViewFacts?.state, 'A');
+  const missing = await loadMemberDashboardHome({ userId: 'ghost' }, mockDb({ row: null }).db);
+  assert.equal(missing.dashboardViewFacts, null);
+});
+
+const persistedRow = (id: string, ctaHref: string, priority: number) => ({
+  id,
+  title: `Staff step ${id}`,
+  description: 'Added by your counselor.',
+  ctaHref,
+  ctaLabel: 'Open',
+  priority,
+});
+
+test('up next: every persisted action shows, the first as the hero and the rest ahead of the heuristics, one row per page', async () => {
+  const { db, counts } = mockDb({
+    row: readyToTrain({
+      nextBestActions: [
+        persistedRow('p1', '/dashboard/program', 9),
+        persistedRow('p2', '/dashboard/readiness', 8),
+        // The dead training stub resolves to My Program: the hero's page, so it is not repeated.
+        persistedRow('p3', '/dashboard/training?program=x', 7),
+      ],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(view.doThisNext?.id, 'p1');
+  assert.deepEqual(view.upNext.map((action) => action.id), ['p2', 'upload_resume', 'interview_practice']);
+  const paths = [view.doThisNext!.href, ...view.upNext.map((action) => action.href)].map((href) => href.split(/[?#]/)[0]);
+  assert.equal(new Set(paths).size, paths.length, 'no two rows open the same page');
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+});
+
+test('up next: the persisted rows alone can fill the list, and it still stops at three', async () => {
+  const view = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: readyToTrain({
+        nextBestActions: [
+          persistedRow('p1', '/dashboard/jobs', 9),
+          persistedRow('p2', '/dashboard/readiness', 8),
+          persistedRow('p3', '/dashboard/profile', 7),
+        ],
+      }),
+    }).db,
+  );
+  assert.equal(view.doThisNext?.id, 'p1');
+  assert.deepEqual(view.upNext.map((action) => action.id).slice(0, 2), ['p2', 'p3']);
+  assert.equal(view.upNext.length, 3);
+});
+
+const stalledTraining = (overrides: Record<string, unknown> = {}) =>
+  readyToTrain({ ...ableToStart(90, 90), courseProgress: [progressRow({ lastActivityAt: daysAgo(30) })], ...overrides });
+
+test('up next: stalled training adds the counselor row once, after the persisted rows and before the heuristics', async () => {
+  const stalled = await loadMemberDashboardHome({ userId: 'member-1' }, mockDb({ row: stalledTraining() }).db);
+  assert.equal(stalled.courseProgressStale, true);
+  assert.deepEqual(stalled.upNext[0], STALE_TRAINING_COUNSELOR_ACTION);
+  assert.ok(stalled.upNext.length <= 3);
+  assert.equal(stalled.upNext.filter((action) => action.href.split(/[?#]/)[0] === '/dashboard/messages').length, 1);
+
+  const withStaff = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: stalledTraining({
+        nextBestActions: [persistedRow('p1', '/dashboard/program', 9), persistedRow('p2', '/dashboard/readiness', 8)],
+      }),
+    }).db,
+  );
+  assert.deepEqual(withStaff.upNext.map((action) => action.id).slice(0, 2), ['p2', STALE_TRAINING_COUNSELOR_ACTION.id]);
+  assert.equal(withStaff.upNext.length, 3);
+});
+
+test('up next: no counselor row when Messages is already on screen, training is recent, or the program is finished', async () => {
+  const unread = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: stalledTraining({
+        messageThreadsAsMember: [{ memberLastReadAt: daysAgo(3), messages: [{ createdAt: daysAgo(1) }] }],
+      }),
+    }).db,
+  );
+  assert.equal(unread.doThisNext?.id, 'counselor_messages');
+  assert.ok(!unread.upNext.some((action) => action.id === STALE_TRAINING_COUNSELOR_ACTION.id));
+
+  const staffMessages = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: stalledTraining({
+        nextBestActions: [persistedRow('p1', '/dashboard/program', 9), persistedRow('p2', '/dashboard/messages', 8)],
+      }),
+    }).db,
+  );
+  assert.ok(!staffMessages.upNext.some((action) => action.id === STALE_TRAINING_COUNSELOR_ACTION.id));
+
+  const recent = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({ row: stalledTraining({ courseProgress: [progressRow({ lastActivityAt: daysAgo(2) })] }) }).db,
+  );
+  assert.equal(recent.courseProgressStale, false);
+  assert.ok(!recent.upNext.some((action) => action.id === STALE_TRAINING_COUNSELOR_ACTION.id));
+
+  const program = getProgramBySlug(canonicalizeProgramSlug(FIXTURE_PROGRAM_SLUG));
+  assert.ok(program);
+  const finished = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({
+      row: stalledTraining({
+        staleTrainingDetectedAt: daysAgo(5),
+        courseProgress: program.courses.map((course) =>
+          progressRow({ courseSlug: course.slug, courseId: null, percentComplete: 100, status: 'COMPLETED', lastActivityAt: daysAgo(30) }),
+        ),
+      }),
+    }).db,
+  );
+  assert.equal(finished.courseProgressStale, true, 'the flag alone still says stale');
+  assert.equal(finished.programStatus, 'Complete');
+  assert.ok(!finished.upNext.some((action) => action.id === STALE_TRAINING_COUNSELOR_ACTION.id));
+});
+
+// ── WAP-194: every enrollment, `?program=`, and the first-login wizard, all on the one read ──
+
+const SECONDARY_PROGRAM_SLUG = 'comptia-a-professional-certificate';
+
+/** A member with two enrollments, primary first (the order the loader asks Postgres for). */
+function twoProgramRow(overrides: Record<string, unknown> = {}) {
+  return makeRow({
+    assessmentCompleted: true,
+    nextBestActions: [],
+    courseEnrollments: [
+      { id: 'enr-primary', programSlug: FIXTURE_PROGRAM_SLUG, isPrimary: true, curriculumVersion: 'legacy-v1', enrolledAt: new Date('2026-08-01T00:00:00Z') },
+      { id: 'enr-second', programSlug: SECONDARY_PROGRAM_SLUG, isPrimary: false, curriculumVersion: 'legacy-v1', enrolledAt: new Date('2026-09-01T00:00:00Z') },
+    ],
+    ...overrides,
+  });
+}
+
+test('WAP-194: the loader reads every enrollment inside the same nested read, still one Prisma operation', async () => {
+  const { db, counts, select } = mockDb({ row: twoProgramRow() });
+  const view = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+  assert.equal(view.prismaOpCount, 1);
+  assert.ok(view.prismaOpCount <= MEMBER_DASHBOARD_HOME_PRISMA_BUDGET);
+  assert.equal(MEMBER_DASHBOARD_HOME_PRISMA_BUDGET, 2);
+
+  const enrollments = select()?.courseEnrollments as { where?: unknown; take?: number; orderBy?: unknown; select?: Record<string, unknown> };
+  assert.equal(enrollments.where, undefined, 'no isPrimary filter: the switch needs every enrollment');
+  assert.deepEqual(enrollments.orderBy, [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }]);
+  assert.ok((enrollments.take ?? 0) >= 2);
+  for (const column of ['id', 'programSlug', 'curriculumVersion', 'isPrimary', 'enrolledByAdminId', 'enrolledAt']) {
+    assert.equal(enrollments.select?.[column], true, `courseEnrollments must select ${column}`);
+  }
+
+  // Both enrollments reach the switch, primary first, titled as the catalog titles them.
+  assert.ok(view.programSwitch);
+  assert.deepEqual(view.programSwitch.options.map((option) => [option.id, option.programSlug, option.isPrimary]), [
+    ['enr-primary', FIXTURE_PROGRAM_SLUG, true],
+    ['enr-second', SECONDARY_PROGRAM_SLUG, false],
+  ]);
+  assert.match(view.programSwitch.options[1]!.programTitle, /CompTIA A\+/);
+  // No request: the home describes the primary program, exactly as before.
+  assert.equal(view.programSwitch.activeProgramSlug, FIXTURE_PROGRAM_SLUG);
+  assert.equal(view.programSwitch.viewingSecondary, false);
+  assert.equal(view.programHref, '/dashboard/program');
+  assert.equal(view.resumeHref, '/dashboard/program');
+  assert.match(view.nextLessonHref ?? '', /^\/dashboard\/program\?course=/);
+});
+
+test('WAP-194: ?program= names one of the member\'s own enrollments and the home describes it', async () => {
+  const { db, counts } = mockDb({ row: twoProgramRow() });
+  const view = await loadMemberDashboardHome({ userId: 'member-1', requestedProgramSlug: SECONDARY_PROGRAM_SLUG }, db);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+  assert.equal(view.prismaOpCount, 1);
+  assert.match(view.programTitle ?? '', /CompTIA A\+/);
+  assert.equal(view.programSwitch?.activeProgramSlug, SECONDARY_PROGRAM_SLUG);
+  assert.equal(view.programSwitch?.viewingSecondary, true);
+  const secondary = getProgramBySlug(canonicalizeProgramSlug(SECONDARY_PROGRAM_SLUG));
+  assert.ok(secondary);
+  assert.equal(view.certModulesTotal, secondary.courses.length);
+  assert.equal(view.nextLesson, secondary.courses[0]!.name);
+
+  // My Program honors ?program= for the member's own enrollments (WAP-196),
+  // so every program link on a secondary view opens that program there.
+  const secondarySlugQuery = `program=${encodeURIComponent(SECONDARY_PROGRAM_SLUG)}`;
+  assert.equal(
+    view.nextLessonHref,
+    `/dashboard/program?${secondarySlugQuery}&course=${encodeURIComponent(secondary.courses[0]!.slug)}`,
+  );
+  assert.equal(view.programHref, `/dashboard/program?${secondarySlugQuery}`);
+  assert.equal(view.resumeHref, `/dashboard/program?${secondarySlugQuery}`);
+  for (const action of [view.doThisNext, ...view.upNext]) {
+    if (!action || action.href.split(/[?#]/)[0] !== '/dashboard/program') continue;
+    assert.ok(action.href.includes(secondarySlugQuery), `${action.id} opens the program on screen`);
+  }
+  const training = [view.doThisNext, ...view.upNext].find((action) => action?.id === 'continue_training');
+  assert.ok(training, 'the next-course step is still offered');
+  assert.ok(training.href.startsWith(`/dashboard/program?${secondarySlugQuery}`));
+  assert.match(training.title, new RegExp(secondary.courses[0]!.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});
+
+test('WAP-194: ?program= validation falls back to the primary for an unknown, foreign or blank slug', async () => {
+  for (const requestedProgramSlug of ['not-a-program', 'ux-design-professional-certificate-google', '', '   ', null, undefined]) {
+    const view = await loadMemberDashboardHome({ userId: 'member-1', requestedProgramSlug }, mockDb({ row: twoProgramRow() }).db);
+    assert.equal(view.programSwitch?.activeProgramSlug, FIXTURE_PROGRAM_SLUG, `"${String(requestedProgramSlug)}" falls back to the primary`);
+    assert.equal(view.programSwitch?.viewingSecondary, false);
+    assert.equal(view.programHref, '/dashboard/program');
+    assert.doesNotMatch(view.programTitle ?? '', /CompTIA/);
+  }
+  // Asking for the primary by name is the primary view.
+  const primary = await loadMemberDashboardHome({ userId: 'member-1', requestedProgramSlug: FIXTURE_PROGRAM_SLUG }, mockDb({ row: twoProgramRow() }).db);
+  assert.equal(primary.programSwitch?.viewingSecondary, false);
+});
+
+test('WAP-194: one enrollment shows no switch, and a request cannot conjure a program the member is not in', async () => {
+  const single = await loadMemberDashboardHome(
+    { userId: 'member-1', requestedProgramSlug: SECONDARY_PROGRAM_SLUG },
+    mockDb({ row: makeRow() }).db,
+  );
+  assert.equal(single.programSwitch, null);
+  assert.doesNotMatch(single.programTitle ?? '', /CompTIA/);
+  assert.equal(single.programHref, '/dashboard/program');
+
+  // No enrollment and no legacy program: nothing to switch to, nothing chosen.
+  const none = await loadMemberDashboardHome(
+    { userId: 'member-1', requestedProgramSlug: SECONDARY_PROGRAM_SLUG },
+    mockDb({ row: makeRow({ courseEnrollments: [], enrolledProgram: null }) }).db,
+  );
+  assert.equal(none.programSwitch, null);
+  assert.equal(none.programTitle, undefined);
+});
+
+test('WAP-194: a secondary WorkforceAP module links to its own module page with the stored program slug', async () => {
+  const { DIGITAL_LITERACY_PROGRAM_SLUG } = await import('@/shared/digitalLiteracyPathway');
+  const view = await loadMemberDashboardHome(
+    { userId: 'member-1', requestedProgramSlug: DIGITAL_LITERACY_PROGRAM_SLUG },
+    mockDb({
+      row: twoProgramRow({
+        courseEnrollments: [
+          { id: 'enr-primary', programSlug: FIXTURE_PROGRAM_SLUG, isPrimary: true, curriculumVersion: 'legacy-v1' },
+          { id: 'enr-dl', programSlug: DIGITAL_LITERACY_PROGRAM_SLUG, isPrimary: false, curriculumVersion: 'legacy-v1' },
+        ],
+      }),
+    }).db,
+  );
+  assert.equal(view.programSwitch?.viewingSecondary, true);
+  assert.match(view.nextLessonHref ?? '', /^\/dashboard\/learning\/modules\//);
+  assert.ok(
+    (view.nextLessonHref ?? '').endsWith(`?program=${encodeURIComponent(DIGITAL_LITERACY_PROGRAM_SLUG)}`),
+    'the module page resolves the enrollment from this slug',
+  );
+});
+
+test('WAP-194: the first-login wizard and tour gate come from the same read', async () => {
+  const intake = {
+    fullName: 'Alex Rivera',
+    phone: '5125550100',
+    programInterest: 'Intake interest',
+    onboardingCurrentStep: 2,
+    profile: {
+      profilePhone: null,
+      profileAddress: '1 Main St',
+      city: 'Austin',
+      state: 'TX',
+      zip: '78701',
+      referralSource: 'Friend',
+    },
+    applications: [{ status: 'PENDING', submittedAt: new Date('2026-09-10T00:00:00Z'), programInterest: 'Application interest' }],
+  };
+  const { db, select } = mockDb({ row: makeRow({ ...intake, onboardingCompletedAt: null, tourCompletedAt: null }) });
+  const fresh = await loadMemberDashboardHome({ userId: 'member-1' }, db);
+  assert.equal(fresh.prismaOpCount, 1);
+  for (const column of ['onboardingCompletedAt', 'onboardingCurrentStep', 'tourCompletedAt', 'programInterest']) {
+    assert.equal(select()?.[column], true, `userSelect() must ask for ${column}`);
+  }
+  assert.deepEqual(fresh.onboarding, {
+    showWizard: true,
+    showTour: false,
+    wizard: {
+      initialFullName: 'Alex Rivera',
+      // No profile phone: the account phone, as the legacy home read it.
+      initialPhone: '5125550100',
+      initialAddress: '1 Main St',
+      initialCity: 'Austin',
+      initialState: 'TX',
+      initialZip: '78701',
+      initialProgramInterest: 'Application interest',
+      initialReferralSource: 'Friend',
+      initialStep: 2,
+    },
+  });
+
+  const noApplicationInterest = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({ row: makeRow({ ...intake, applications: [], onboardingCompletedAt: null }) }).db,
+  );
+  assert.equal(noApplicationInterest.onboarding?.wizard.initialProgramInterest, 'Intake interest');
+
+  const tour = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({ row: makeRow({ ...intake, onboardingCompletedAt: new Date(), tourCompletedAt: null }) }).db,
+  );
+  assert.equal(tour.onboarding?.showWizard, false);
+  assert.equal(tour.onboarding?.showTour, true);
+
+  const done = await loadMemberDashboardHome(
+    { userId: 'member-1' },
+    mockDb({ row: makeRow({ ...intake, onboardingCompletedAt: new Date(), tourCompletedAt: new Date() }) }).db,
+  );
+  assert.equal(done.onboarding?.showWizard, false);
+  assert.equal(done.onboarding?.showTour, false);
+
+  // No member row: nothing for the wizard to write to and nothing to switch.
+  const empty = await loadMemberDashboardHome({ userId: 'ghost' }, mockDb({ row: null }).db);
+  assert.equal(empty.onboarding, null);
+  assert.equal(empty.programSwitch, null);
+});
+
+test('WAP-196: secondaryProgramAction points My Program steps at the program on screen', () => {
+  const myProgram = { id: 'continue_training', title: 'Continue training: X', body: 'Open My Program', href: '/dashboard/program?course=intro', cta: 'Open My Program', variant: 'urgent' as const, weight: 86 };
+  const rewritten = secondaryProgramAction(myProgram, 'digital-literacy');
+  assert.equal(rewritten.href, '/dashboard/program?program=digital-literacy&course=intro');
+  assert.equal(rewritten.title, myProgram.title);
+  assert.equal(rewritten.cta, myProgram.cta);
+  for (const href of ['/dashboard/program/start', '/dashboard/messages', '/dashboard/assessment']) {
+    const action = { ...myProgram, href };
+    assert.equal(secondaryProgramAction(action, 'digital-literacy'), action, `${href} is not a program link`);
+  }
+});
+
+test('WAP-194: the dashboard page passes ?program= to the loader and mounts the four pieces on the kit home', () => {
+  // Since WAP-195 the whole page is the kit home, so the whole file is the block.
+  const kitBlock = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
+  assert.match(kitBlock, /requestedProgramSlug: args\.requestedProgramSlug/);
+  assert.match(kitBlock, /<PWAInstallPrompt \/>/);
+  assert.match(kitBlock, /<PortalEntryClient[\s\S]*portal="member"/);
+  assert.match(kitBlock, /showStaffViewBanner=\{staffViewer\}/);
+  assert.match(kitBlock, /programSwitch=\{home\.programSwitch\}/);
+  assert.match(kitBlock, /getTourOffer\(user\.id, 'member\.home'\)/);
+  // My Program stays untouched (locked stake; WAP-196 is separate).
+  assert.doesNotMatch(kitBlock, /dashboard\/program\/page/);
 });

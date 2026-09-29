@@ -8,6 +8,7 @@ import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { memberProgramProgressPct } from '@/lib/partner/memberProgress';
 import { getPipelineStage, PIPELINE_STAGE_LABELS, type PipelineStudent } from '@/lib/pipeline/stage';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { subgroupPlacementSummary } from '@/lib/subgroup/memberPayload';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const GET = withApiGuc(async (
@@ -40,7 +41,6 @@ export const GET = withApiGuc(async (
           id: true,
           fullName: true,
           email: true,
-          phone: true,
           enrolledProgram: true,
           courseEnrollments: {
             orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
@@ -52,7 +52,7 @@ export const GET = withApiGuc(async (
           assessmentCompleted: true,
           profile: { select: { profileLinkedin: true } },
           placementRecord: {
-            select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true },
+            select: { employerName: true, jobTitle: true, placedAt: true },
           },
           userCertifications: { select: { certName: true, earnedAt: true } },
           applications: { select: { status: true, submittedAt: true } },
@@ -112,13 +112,12 @@ export const GET = withApiGuc(async (
     id: m.id,
     fullName: m.fullName,
     email: m.email,
-    phone: m.phone,
     linkedIn: m.profile?.profileLinkedin,
     enrolledProgram: assignment.programSlug ? programDisplayTitle(assignment.programSlug) : assignment.programSlug,
     enrolledAt: m.enrolledAt,
     progressPct: pct,
     stage: PIPELINE_STAGE_LABELS[stage],
-    placementRecord: m.placementRecord,
+    placementRecord: subgroupPlacementSummary(m.placementRecord),
     userCertifications: m.userCertifications,
     coursesCompleted,
   });

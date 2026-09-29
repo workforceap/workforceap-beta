@@ -50,12 +50,24 @@ function makeDeps(
   };
 }
 
-test('Coursera launch route redirects unauthenticated members to login with training redirect', async () => {
+test('Coursera launch route redirects unauthenticated members to login and back to My Program', async () => {
   const handler = createCourseraLaunchHandler(makeDeps({ getUser: async () => null }));
 
   const res = await handler(new Request('https://workforceap.test/api/member/coursera/launch'));
 
-  assert.equal(res.redirectedTo, 'https://workforceap.test/login?redirectTo=%2Fdashboard%2Ftraining');
+  assert.equal(res.redirectedTo, 'https://workforceap.test/login?redirectTo=%2Fdashboard%2Fprogram');
+});
+
+test('Coursera launch route keeps the requested course through a signed-out login', async () => {
+  const handler = createCourseraLaunchHandler(makeDeps({ getUser: async () => null }));
+
+  const res = await handler(new Request(
+    'https://workforceap.test/api/member/coursera/launch?course=second-course',
+  ));
+
+  const loginUrl = new URL(res.redirectedTo);
+  assert.equal(loginUrl.pathname, '/login');
+  assert.equal(loginUrl.searchParams.get('redirectTo'), '/dashboard/program?course=second-course');
 });
 
 test('Coursera launch route uses DB course override for requested course deep link', async () => {
@@ -137,7 +149,10 @@ test('Coursera launch route keeps an unmapped requested course inside WorkforceA
 
   const res = await handler(new Request('https://workforceap.test/api/member/coursera/launch?course=second-course'));
 
-  assert.equal(res.redirectedTo, 'https://workforceap.test/dashboard/training?error=launch_failed');
+  assert.equal(
+    res.redirectedTo,
+    'https://workforceap.test/dashboard/training?error=launch_failed&course=second-course',
+  );
 });
 
 test('Coursera launch route rejects a hand-edited course outside the assigned curriculum', async () => {
@@ -156,7 +171,7 @@ test('Coursera launch route rejects a hand-edited course outside the assigned cu
   assert.equal(courseLookupCalled, false);
   assert.equal(
     res.redirectedTo,
-    'https://workforceap.test/dashboard/training?error=course_not_assigned',
+    'https://workforceap.test/dashboard/training?error=course_not_assigned&course=retired-course',
   );
 });
 
@@ -264,7 +279,7 @@ test('Coursera launch route blocks a dormant approved curriculum before provider
   assert.equal(providerLookupCalled, false);
   assert.equal(
     res.redirectedTo,
-    'https://workforceap.test/dashboard/training?error=curriculum_track_pending',
+    'https://workforceap.test/dashboard/training?error=curriculum_track_pending&course=introduction-to-management-consulting',
   );
 });
 
@@ -353,7 +368,7 @@ test('Coursera launch route fails closed when a validated collection disappears'
 
   assert.equal(
     res.redirectedTo,
-    'https://workforceap.test/dashboard/training?error=launch_failed',
+    'https://workforceap.test/dashboard/training?error=launch_failed&course=introduction-to-management-consulting',
   );
 });
 
@@ -428,4 +443,40 @@ test('Coursera launch route redirects to training error when no launch URL resol
   const res = await handler(new Request('https://workforceap.test/api/member/coursera/launch'));
 
   assert.equal(res.redirectedTo, 'https://workforceap.test/dashboard/training?error=launch_failed');
+});
+
+test('WAP-196: a launch from a secondary program opens that program, not the primary', async () => {
+  const resolved: Array<string | null | undefined> = [];
+  const handler = createCourseraLaunchHandler(makeDeps({
+    // The real resolver honors the slug only for the member's own enrollments.
+    resolveActiveProgram: async (_userId, legacy, requestedProgramSlug) => {
+      resolved.push(requestedProgramSlug);
+      return requestedProgramSlug === 'second-program' ? 'second-program' : legacy;
+    },
+    getProgramBySlug: (slug) => ({
+      courses: slug === 'second-program' ? [{ slug: 'second-program-course' }] : [{ slug: 'first-course' }],
+    }),
+    findCourse: async ({ programSlug }) =>
+      programSlug === 'second-program' ? { courseraSlug: 'second-program-course', courseraUrlType: 'course' } : null,
+  }));
+
+  const res = await handler(new Request(
+    'https://workforceap.test/api/member/coursera/launch?course=second-program-course&program=second-program',
+  ));
+
+  assert.deepEqual(resolved, ['second-program']);
+  assert.equal(res.redirectedTo, 'https://www.coursera.org/learn/second-program-course');
+});
+
+test('WAP-196: a signed-out launch keeps the program and course through login', async () => {
+  const handler = createCourseraLaunchHandler(makeDeps({ getUser: async () => null }));
+
+  const res = await handler(new Request(
+    'https://workforceap.test/api/member/coursera/launch?course=second-course&program=second-program',
+  ));
+
+  assert.equal(
+    new URL(res.redirectedTo).searchParams.get('redirectTo'),
+    '/dashboard/program?program=second-program&course=second-course',
+  );
 });

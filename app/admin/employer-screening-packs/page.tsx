@@ -14,6 +14,7 @@ import {
   type ScreeningPackRow,
 } from '@/components/portal/kit/pages/admin-subviews/ScreeningPacksKit';
 import EmployerScreeningPacksAdmin from './EmployerScreeningPacksAdmin';
+import { NewScreeningPackForm, NEW_SCREENING_PACK_ID } from '@/components/admin/NewScreeningPackForm';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Admin – Employer screening packs',
@@ -136,7 +137,14 @@ async function renderKit() {
 
   return (
     <DesignSurface surface="dense">
-      <ScreeningPacksKit packs={packRows} totalPacks={total} activePacks={active} />
+      <ScreeningPacksKit
+        packs={packRows}
+        totalPacks={total}
+        activePacks={active}
+        manageable
+        createForm={<NewScreeningPackForm programOptions={PROGRAMS.map((p) => ({ slug: p.slug, title: p.title }))} />}
+        createFormHref={`#${NEW_SCREENING_PACK_ID}`}
+      />
     </DesignSurface>
   );
 }

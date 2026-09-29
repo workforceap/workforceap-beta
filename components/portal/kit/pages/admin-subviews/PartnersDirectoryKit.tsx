@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Handshake, Building2, HeartHandshake, Users, Plus, GraduationCap } from 'lucide-react';
 import { partnerDirectoryMeta } from '@/lib/partner/adminSchoolPartner';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
@@ -15,6 +14,7 @@ import {
   type KitColor,
 } from '@/components/portal/kit';
 import { PARTNERS_DIRECTORY_EMPTY } from '@/lib/admin/directoryEmptyState';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Partners directory — responsive card grid of partner orgs (workforce centers,
@@ -115,9 +115,7 @@ export function PartnersDirectoryKit({
         title="Partners"
         lede="Workforce centers, nonprofits, referral orgs, and partner schools"
         action={
-          <AstryxLink as={Link as never} href="/admin/partners/new" isStandalone>
-            <Button label="Add Partner" variant="primary" size="sm" icon={<Plus size={14} aria-hidden="true" />} />
-          </AstryxLink>
+          <KitLinkButton href="/admin/partners/new" label="Add Partner" variant="primary" size="sm" icon={<Plus size={14} aria-hidden="true" />} />
         }
       />
 

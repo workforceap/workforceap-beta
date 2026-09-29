@@ -42,6 +42,9 @@ export const PORTAL_CLIENT_NAMESPACES = [
   // KitEmptyState copy (docs/KIT_GUIDE.md §6) read by client surfaces: the home
   // pipeline table and MatchedRoles, the jobs listing, the application tracker.
   'empty',
+  // components/portal/kit/pages/member/MemberMessagesKit — /dashboard/messages
+  // inbox chrome, composer and send errors (WAP-262).
+  'messages',
 ] as const;
 
 /**

@@ -24,6 +24,9 @@ vi.mock('next/headers', () => ({
   cookies: vi.fn(() =>
     Promise.resolve({
       getAll: vi.fn(() => []),
+      // The route reads the `wap_partner_ref` cookie to recover partner
+      // attribution; no request here carries one.
+      get: vi.fn(() => undefined),
     })
   ),
 }));
@@ -141,7 +144,7 @@ describe('POST /api/member/signup — member onboarding', () => {
       },
     } as any);
 
-    vi.mocked(createMember).mockResolvedValue(undefined);
+    vi.mocked(createMember).mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
 
     const res = await signupPOST(makeRequest(validSignupBody));
 
@@ -224,7 +227,7 @@ describe('POST /api/member/signup — member onboarding', () => {
       },
     } as any);
 
-    vi.mocked(createMember).mockResolvedValue(undefined);
+    vi.mocked(createMember).mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
 
     const res = await signupPOST(
       makeRequest({ ...validSignupBody, phone: '' })
@@ -480,7 +483,7 @@ describe('Onboarding profile creation via createMember', () => {
       },
     } as any);
 
-    vi.mocked(createMember).mockResolvedValue(undefined);
+    vi.mocked(createMember).mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
 
     const body = {
       fullName: 'Profile Test',

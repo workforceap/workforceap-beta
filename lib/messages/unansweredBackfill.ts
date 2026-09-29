@@ -1,4 +1,5 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
+import { counselorMemberThreadLink } from './staffLinks';
 
 /**
  * Historical repair for WAP-168 fix 2.
@@ -149,7 +150,7 @@ export function planBackfillEntry(
       recipientUserIds: [row.counselorUserId],
       route: 'counselor',
       title: `Unanswered message from ${row.memberLabel}`,
-      link: '/counselor',
+      link: counselorMemberThreadLink(row.memberId),
     };
   }
   const recipientUserIds = input.adminUserIds.filter((id) => id !== row.memberId);

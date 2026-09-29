@@ -23,9 +23,7 @@ import {
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
-import NextLink from 'next/link';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Programs catalog — program card grid (dense).
@@ -218,14 +216,13 @@ export function ProgramsCatalogKit({
         kicker="Catalog"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/programs?ui=legacy" as={NextLink as never} isStandalone>
-            <Button
-              label="Manage catalog"
-              variant="primary"
-              size="sm"
-              icon={<SlidersHorizontal className="h-4 w-4" aria-hidden />}
-            />
-          </AstryxLink>
+          <KitLinkButton
+            href="/admin/programs?ui=legacy"
+            label="Manage catalog"
+            variant="primary"
+            size="sm"
+            icon={<SlidersHorizontal className="h-4 w-4" aria-hidden />}
+          />
         }
       />
 

@@ -85,6 +85,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireAdmin, requireAdminOrCounselor, isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { trackEvent } from '@/lib/events/track';
 
 const makePostRequest = (body?: Record<string, unknown>) =>
   new Request('http://localhost:3000/api/member/feedback', {
@@ -169,6 +170,38 @@ describe('POST /api/member/feedback', () => {
     const body = await res.json();
     expect(body.feedback.rating).toBe(5);
     expect(body.feedback.comment).toBeNull();
+  });
+
+  describe('feedback_submitted sourcePage (WAP-197)', () => {
+    beforeEach(() => {
+      vi.mocked(getUser).mockResolvedValue({ id: 'user-123', email: 'jane@example.com' } as any);
+      vi.mocked(prisma.memberFeedback.create).mockResolvedValue({ id: 'fb-3', type: 'general', rating: 4 } as any);
+    });
+    const trackedSourcePage = () => vi.mocked(trackEvent).mock.calls[0]?.[0]?.sourcePage;
+
+    it('records the member page the feedback came from', async () => {
+      const res = await memberFeedbackPOST(makePostRequest({ type: 'general', rating: 4, sourcePage: '/dashboard/help' }));
+      expect(res.status).toBe(200);
+      expect(trackedSourcePage()).toBe('/dashboard/help');
+    });
+
+    it('defaults to /dashboard when the client sends no page', async () => {
+      await memberFeedbackPOST(makePostRequest({ type: 'general', rating: 4 }));
+      expect(trackedSourcePage()).toBe('/dashboard');
+    });
+
+    it.each([
+      'https://evil.example/dashboard',
+      '/dashboard/help?x=1',
+      '/dashboard/../admin',
+      '/admin/feedback',
+      '/dashboard//help',
+      42,
+    ])('falls back to /dashboard for %s without failing the submission', async (sourcePage) => {
+      const res = await memberFeedbackPOST(makePostRequest({ type: 'general', rating: 4, sourcePage }));
+      expect(res.status).toBe(200);
+      expect(trackedSourcePage()).toBe('/dashboard');
+    });
   });
 
   it('returns 500 on db error', async () => {

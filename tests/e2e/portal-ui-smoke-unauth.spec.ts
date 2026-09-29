@@ -17,11 +17,11 @@ test.describe('Portal UI smoke (unauth)', () => {
   test('login page shows new labels and portal destination links', async ({ page }) => {
     await page.goto('/login');
     // Client component — wait for hydration before checking visible elements
-    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByLabel(/institutional id/i)).toBeVisible();
-    await expect(page.getByLabel(/access key/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: /recover key/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /request credentials/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /sign in to your account/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Password' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /forgot password/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /get started/i })).toBeVisible();
     await expect(page.getByRole('navigation', { name: /choose portal destination/i })).toBeVisible();
     await page.screenshot({ path: artifactPath('login_page.png'), fullPage: true });
   });

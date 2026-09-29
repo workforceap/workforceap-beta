@@ -85,10 +85,24 @@ function buildBadgeNotifications(badges: Partial<Record<NavBadgeKey, number>>, r
   return items;
 }
 
-function getNotificationLink(n: NotificationItem): string {
+/**
+ * A message row without `data.link` opens the inbox of the portal the bell is
+ * in. Staff never land on the member inbox (/dashboard/messages).
+ */
+function getMessageThreadLink(data: Record<string, unknown>, role: string): string {
+  if (role === 'counselor') {
+    return typeof data.memberId === 'string' && data.memberId
+      ? `/counselor/messages?memberId=${encodeURIComponent(data.memberId)}`
+      : '/counselor/messages';
+  }
+  if (role === 'admin') return '/admin/messages';
+  return '/dashboard/messages';
+}
+
+function getNotificationLink(n: NotificationItem, role: string): string {
   const data = n.data ?? {};
   if (data.link && typeof data.link === 'string') return data.link;
-  if (data.threadId && typeof data.threadId === 'string') return '/dashboard/messages';
+  if (data.threadId && typeof data.threadId === 'string') return getMessageThreadLink(data, role);
   if (data.jobId && typeof data.jobId === 'string') return '/dashboard/jobs';
   if (data.courseSlug && typeof data.courseSlug === 'string') return '/dashboard/program';
   if (data.surveyId && typeof data.surveyId === 'string') return '/survey/placement';
@@ -311,7 +325,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                 />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <a href={getNotificationLink(n)} onClick={() => { if (!n.readAt) void markRead(n.id); setOpen(false); }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <a href={getNotificationLink(n, role)} onClick={() => { if (!n.readAt) void markRead(n.id); setOpen(false); }} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>{n.title}</p>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{n.body}</p>
                 </a>

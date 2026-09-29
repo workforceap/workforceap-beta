@@ -64,8 +64,8 @@ Purpose: protect decisions that agents should not casually rewrite.
 - Do not imply completion before real completion.
 - Prefer truthful status language like `recommended`, `unlocked`, or `in progress`.
 - Key files:
-  - `components/portal/DashboardHomeClient.tsx`
-  - `components/portal/MemberNextStepsStrip.tsx`
+  - `components/portal/kit/pages/member/MemberHomeKit.tsx`
+  - `lib/member/loadMemberDashboardHome.ts`
 
 ---
 

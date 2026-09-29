@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db/prisma';
 import { sendCounselorAssignedEmail } from '@/lib/email';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
 import { createNotification } from '@/lib/notifications/create';
+import { notifyCounselorOfStaffAssignment } from '@/lib/counselor/staffAssignmentNotify';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -59,7 +60,7 @@ type Props = { params: Promise<{ id: string }> };export const POST = withApiGuc(
     return NextResponse.json({ error: 'Counselor not found or inactive' }, { status: 400 });
   }
 
-  const { thread } = await prisma.$transaction((tx) => assignMemberCounselor(tx, {
+  const { thread, previousCounselorUserId, previousCounselorName } = await prisma.$transaction((tx) => assignMemberCounselor(tx, {
     memberId, organizationId: orgId, counselorUserId: counselor.userId,
   }));
 
@@ -84,8 +85,20 @@ type Props = { params: Promise<{ id: string }> };export const POST = withApiGuc(
     data: { counselorId: counselor.id, counselorUserId: counselor.userId, threadId: thread.id },
   });
 
-  void auditLog({ actorUserId: user.id, action: 'admin_member_counselor_assign', targetType: 'user', targetId: memberId, metadata: { counselorUserId: counselor.userId, counselorName: counselor.user.fullName } }).catch(() => {});
-  logAuditEvent({ user: { id: user.id, role: 'admin' }, verb: 'updated', object: { type: 'CounselorAssignment', id: memberId }, result: { success: true, extensions: { counselorUserId: counselor.userId } } }).catch(() => {});
+  await notifyCounselorOfStaffAssignment({
+    counselorUserId: counselor.userId,
+    actorUserId: user.id,
+    members: [{ memberId, memberName: member.fullName, previousCounselorUserId }],
+    logPrefix: '[admin/member/counselor]',
+  });
+
+  const handoff = {
+    counselorUserId: counselor.userId,
+    previousCounselorUserId,
+    previousCounselorName,
+  };
+  void auditLog({ actorUserId: user.id, action: 'admin_member_counselor_assign', targetType: 'user', targetId: memberId, metadata: { ...handoff, counselorName: counselor.user.fullName } }).catch(() => {});
+  logAuditEvent({ user: { id: user.id, role: 'admin' }, verb: 'updated', object: { type: 'CounselorAssignment', id: memberId }, result: { success: true, extensions: handoff } }).catch(() => {});
 
   return NextResponse.json({
     ok: true,

@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { CheckCircle2, Download, Award } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, KpiStrip, KitEmptyState, ProgressBar, PageOpener } from '@/components/portal/kit';
@@ -14,7 +15,19 @@ import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
  *
  * Target route: app/(portal)/dashboard/certificates
  * Surface: warm (member-facing).
+ *
+ * `addCertificateForm` (WAP-188 Phase A): the route passes the self-report
+ * form (`CertificationAddForm`, POST /api/member/certifications → a `pending`
+ * row in the staff review queue) and the kit frames it in its own card at
+ * `#add-certificate`. With the form present the empty state uses the
+ * `empty.certificates.body` sentence (it names the form below) and one of its
+ * actions jumps to the form (the second, after "Continue course", while a
+ * course is in progress); proofs that omit the slot keep `bodyKit`, which
+ * promises no form.
  */
+
+/** Anchor of the self-report card on the default (kit) My Certificates view. */
+export const MEMBER_CERTIFICATES_ADD_FORM_ID = 'add-certificate';
 
 interface EarnedCert {
   id: string;
@@ -48,6 +61,8 @@ export interface MemberCertificatesKitProps {
   counselorHref?: string;
   /** Resume link for the in-progress course. When set and a course is in progress, it becomes the primary CTA. */
   continueHref?: string;
+  /** Self-report form rendered in the "Add a certificate you earned elsewhere" card. Omitted = no card. */
+  addCertificateForm?: ReactNode;
 }
 
 /**
@@ -77,10 +92,25 @@ export function MemberCertificatesKit({
   inProgress = [],
   counselorHref = '/dashboard/messages',
   continueHref,
+  addCertificateForm,
 }: MemberCertificatesKitProps) {
   // The real next step for a member mid-course is the course, not a message.
   const continueIsPrimary = Boolean(continueHref) && inProgress.length > 0;
+  const hasAddForm = Boolean(addCertificateForm);
   const te = useTranslations('empty');
+  const addAction = { href: `#${MEMBER_CERTIFICATES_ADD_FORM_ID}`, label: te('certificates.action') };
+  // Mid-course: resume first. Otherwise the self-report form when it is on the
+  // page, else the counselor. The second slot is the next-best real step.
+  const emptyPrimary = continueIsPrimary
+    ? { href: continueHref!, label: te('certificates.continue') }
+    : hasAddForm
+      ? addAction
+      : { href: counselorHref, label: te('certificates.counselor') };
+  const emptySecondary = continueIsPrimary
+    ? hasAddForm
+      ? addAction
+      : { href: counselorHref, label: te('certificates.counselor') }
+    : { href: MEMBER_PROGRAM_HREF, label: te('certificates.secondary') };
   const kpiItems = [
     { label: 'Earned', value: earnedCount },
     { label: 'In progress', value: inProgressCount },
@@ -108,24 +138,18 @@ export function MemberCertificatesKit({
             <h2 className="sr-only">Earned certificates</h2>
             {earned.length === 0 ? (
               <div className="wa-kit-card">
-                {/* `empty.certificates` (KIT_GUIDE §6): `first` — the kit view has no
-                    self-add form, so the body stops at "show in My program" and the
-                    actions are the real next steps: resume the in-progress course
-                    (which lives in My program) or message the counselor. */}
+                {/* `empty.certificates` (KIT_GUIDE §6): `first`. With the self-report
+                    card below, the body is the full sentence ("…add a certificate you
+                    earned elsewhere below") and an action jumps to it; without it the
+                    body stops at "show in My program". The other actions are the real
+                    next steps: resume the in-progress course (in My program) or
+                    message the counselor. */}
                 <KitEmptyState
                   kind="first"
                   title={te('certificates.title')}
-                  description={te('certificates.bodyKit')}
-                  primaryAction={
-                    continueIsPrimary
-                      ? { href: continueHref!, label: te('certificates.continue') }
-                      : { href: counselorHref, label: te('certificates.counselor') }
-                  }
-                  secondaryAction={
-                    continueIsPrimary
-                      ? { href: counselorHref, label: te('certificates.counselor') }
-                      : { href: MEMBER_PROGRAM_HREF, label: te('certificates.secondary') }
-                  }
+                  description={te(hasAddForm ? 'certificates.body' : 'certificates.bodyKit')}
+                  primaryAction={emptyPrimary}
+                  secondaryAction={emptySecondary}
                 />
               </div>
             ) : (
@@ -186,6 +210,27 @@ export function MemberCertificatesKit({
                 );
               })}
             </div>
+          ) : null}
+
+          {hasAddForm ? (
+            <section
+              id={MEMBER_CERTIFICATES_ADD_FORM_ID}
+              aria-labelledby={`${MEMBER_CERTIFICATES_ADD_FORM_ID}-title`}
+              className="wa-kit-card"
+              style={{ scrollMarginTop: 'var(--wa-pad)' }}
+            >
+              <h2
+                id={`${MEMBER_CERTIFICATES_ADD_FORM_ID}-title`}
+                style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}
+              >
+                Add a certificate you earned elsewhere
+              </h2>
+              <p className="wa-kit-lede" style={{ marginTop: 4, marginBottom: 16 }}>
+                Earned a certificate outside WorkforceAP, like CPR or OSHA 10? Add it here. Our staff check every
+                certificate you add. Until they do, it shows as pending and does not count as earned.
+              </p>
+              {addCertificateForm}
+            </section>
           ) : null}
         </div>
       </div>

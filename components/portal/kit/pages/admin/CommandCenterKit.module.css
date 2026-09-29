@@ -88,6 +88,23 @@
   overflow-wrap: anywhere;
 }
 
+/* Queues-first layout (the admin Today): the decision list and the work
+   queue lead, then the numbers. */
+.lead,
+.queueBlock {
+  margin-bottom: calc(var(--wa-pad) * 1.75);
+}
+
+.commandCenter .queueLink {
+  color: var(--wa-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.commandCenter .queueLink:hover {
+  text-decoration: underline;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

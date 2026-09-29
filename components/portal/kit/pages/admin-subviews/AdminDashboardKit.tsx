@@ -267,7 +267,7 @@ export function AdminDashboardKit({
 
       <MfaStatusBanner />
 
-      <div className="wa-mb-6">
+      <div className="wa-mb-6" data-portal-data-ready="admin-metrics">
         <KpiStrip items={kpis} cols={6} />
       </div>
 

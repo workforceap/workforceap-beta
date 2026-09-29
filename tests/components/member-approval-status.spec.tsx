@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import messages from '@/messages/en.json';
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
-import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
 import { buildMemberApprovalStatus } from '@/lib/member/memberApprovalStatus';
 import {
   approvalDismissStorageKey,
@@ -125,14 +124,8 @@ describe('truthful member status surfaces', () => {
     expect(container.textContent).not.toMatch(/status\.(application|intake)\./i);
   });
 
-  it('labels recorded course progress without claiming a certificate', () => {
-    render(<NextIntlClientProvider locale="en" messages={messages}>
-      <MemberFirstCertProgressBar progress={{ percent: 50, stageLabel: 'Recorded course progress', isComplete: false, stepsComplete: 1, stepsTotal: 2 }} />
-    </NextIntlClientProvider>);
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50');
-    expect(screen.getByText('1 of 2 courses complete')).toBeInTheDocument();
-    expect(screen.queryByText(/certification earned/i)).not.toBeInTheDocument();
-  });
+  // The first-cert progress-bar case moved to MemberHomeKit.test.tsx with the
+  // legacy home's bar (WAP-195): the kit certification-path card is the live surface.
 });
 
 // Presentation follow-up: the card fills the first screen of /dashboard even

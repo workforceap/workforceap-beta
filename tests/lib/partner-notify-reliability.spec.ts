@@ -61,3 +61,86 @@ it('skips fixture partner recipients before Resend without a failure diagnostic'
   expect(mocks.send).not.toHaveBeenCalled();
   expect(mocks.diagnostic).not.toHaveBeenCalled();
 });
+
+describe('partner data tier in milestone email (lib/partner/dataAccess.ts)', () => {
+  const sentText = () => (mocks.send.mock.calls[0]?.[0] as { text?: string } | undefined)?.text ?? '';
+
+  it('a referral (restricted) partner never receives employer or role', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Member', profile: null },
+      partner: { name: 'Affiliate', contactEmail: 'partner@workforceap.org', notifyOnPlaced: true, partnerType: 'referral' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Job placement', { Employer: 'SECRET_EMPLOYER', Role: 'SECRET_ROLE' });
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(sentText()).toContain('Milestone: Job placement');
+    expect(sentText()).not.toMatch(/SECRET_/);
+  });
+
+  it('a community partner keeps today’s details', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Member', profile: null },
+      partner: { name: 'Community', contactEmail: 'partner@workforceap.org', notifyOnPlaced: true, partnerType: 'community' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Job placement', { Employer: 'Acme', Role: 'Tech' });
+    expect(sentText()).toContain('Employer: Acme');
+  });
+
+  it('a minor without FERPA consent is never announced to a non-school partner', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Minor', profile: { isMinor: true, dob: null, ferpaConsentGiven: false } },
+      partner: { name: 'Community', contactEmail: 'partner@workforceap.org', notifyOnEnrollment: true, partnerType: 'community' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Program enrollment', { Program: 'IT Support' });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('a school partner is still told about its minor student', async () => {
+    mocks.referral.mockResolvedValue({
+      member: { fullName: 'Synthetic Minor', profile: { isMinor: true, dob: null, ferpaConsentGiven: false } },
+      partner: { name: 'School', contactEmail: 'partner@workforceap.org', notifyOnEnrollment: true, partnerType: 'high_school' },
+    });
+    await sendPartnerMilestoneEmail('member-1', 'Program enrollment', { Program: 'IT Support' });
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('new-member assignment email and the partner minor rule', () => {
+  const minor = { isMinor: true, dob: null, ferpaConsentGiven: false };
+  const partnerOf = (partnerType: string) => ({ name: 'Synthetic Partner', contactEmail: 'partner@workforceap.org', partnerType });
+
+  it.each(['community', 'referral'])('a minor without FERPA consent is never announced to a %s partner', async (partnerType) => {
+    mocks.member.mockResolvedValue({ fullName: 'Synthetic Minor', profile: minor });
+    mocks.partner.mockResolvedValue(partnerOf(partnerType));
+    await sendPartnerNewMemberAssignedEmail('member-1', 'partner-1');
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('a saved date of birth under 18 counts as a minor too', async () => {
+    const dob = new Date(Date.UTC(new Date().getUTCFullYear() - 16, 0, 1));
+    mocks.member.mockResolvedValue({ fullName: 'Synthetic Minor', profile: { isMinor: false, dob, ferpaConsentGiven: false } });
+    mocks.partner.mockResolvedValue(partnerOf('community'));
+    await sendPartnerNewMemberAssignedEmail('member-1', 'partner-1');
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['a minor with FERPA consent, community partner', { ...minor, ferpaConsentGiven: true }, 'community'],
+    ['a minor, high-school partner', minor, 'high_school'],
+    ['an adult, community partner', { isMinor: false, dob: new Date('1990-01-01'), ferpaConsentGiven: false }, 'community'],
+  ])('still announces %s', async (_label, profile, partnerType) => {
+    mocks.member.mockResolvedValue({ fullName: 'Synthetic Member', profile });
+    mocks.partner.mockResolvedValue(partnerOf(partnerType));
+    await sendPartnerNewMemberAssignedEmail('member-1', 'partner-1');
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('loads the minor facts and the partner type it decides on', async () => {
+    await sendPartnerNewMemberAssignedEmail('member-1', 'partner-1');
+    expect(mocks.member).toHaveBeenCalledWith(expect.objectContaining({
+      select: expect.objectContaining({ profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } } }),
+    }));
+    expect(mocks.partner).toHaveBeenCalledWith(expect.objectContaining({
+      select: expect.objectContaining({ partnerType: true }),
+    }));
+  });
+});

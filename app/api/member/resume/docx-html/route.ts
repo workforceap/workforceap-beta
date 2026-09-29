@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { isResumeObjectPathOwnedByUser } from '@/lib/resume/atomicResumeObjectSwap';
 import { extractTextFromResumeBuffer } from '@/lib/resume/extractTextFromResumeBuffer';
+import { hasSubstantiveResumeText, sanitizeResumePlainText } from '@/lib/resume/extractionQuality';
 import { resumePlainTextPreviewHtml } from '@/lib/resume/resumePreviewHtml';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -53,8 +54,15 @@ function storageErrorMessage(error: { message?: string } | null): string {
   const buf = Buffer.from(await data.arrayBuffer());
   try {
     const text = await extractTextFromResumeBuffer(buf, lower.endsWith('.docx') ? 'docx' : 'doc');
+    const safeText = variant === 'enhanced' ? sanitizeResumePlainText(text) : text;
+    if (variant === 'enhanced' && !hasSubstantiveResumeText(safeText)) {
+      return NextResponse.json(
+        { error: 'This enhanced resume is not readable. Your original file was kept.' },
+        { status: 422 },
+      );
+    }
     return NextResponse.json({
-      html: resumePlainTextPreviewHtml(text),
+      html: resumePlainTextPreviewHtml(safeText),
     });
   } catch {
     return NextResponse.json(

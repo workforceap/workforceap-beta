@@ -49,7 +49,7 @@ const PUBLIC_FILES = [
 
 // Portal-only fallbacks live beside the shared ones; they render inside the
 // member workspace and are outside the WAP-110 public/shell scope.
-const PORTAL_ONLY = new Set(['components/error/DashboardErrorFallback.tsx']);
+const PORTAL_ONLY = new Set<string>([]);
 
 function walk(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

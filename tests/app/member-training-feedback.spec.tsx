@@ -5,10 +5,17 @@ vi.mock('next/navigation', () => ({ redirect: vi.fn((url: string) => { throw new
 vi.mock('next/headers', () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: vi.fn(() => false) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
+vi.mock('@/lib/auth/memberDashboardAccess', () => ({ getMemberDashboardAccess: vi.fn(async () => ({ redirectTo: null })) }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findUnique: vi.fn() }, message: { findMany: vi.fn(), count: vi.fn() } } }));
 vi.mock('@/lib/messages/counselorThread', () => ({ getOrCreateMemberCounselorThread: vi.fn(), serializeMessage: vi.fn() }));
 vi.mock('@/lib/member/loadTrainingWorkspace', () => ({ loadTrainingWorkspace: vi.fn() }));
-vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
+vi.mock('next-intl/server', async () => {
+  const en = (await import('@/messages/en.json')).default as Record<string, Record<string, unknown>>;
+  return { getTranslations: vi.fn(async (ns: string) => (key: string) => {
+    const value = en[ns]?.[key];
+    return typeof value === 'string' ? value : key;
+  }) };
+});
 vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({ MemberMessagesKit: () => null }));
 vi.mock('@/components/portal/MemberCounselorChatClient', () => ({ default: () => null }));
 vi.mock('@/components/portal/MemberMessagesMobileClient', () => ({ default: () => null }));

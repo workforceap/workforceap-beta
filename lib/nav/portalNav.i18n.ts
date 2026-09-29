@@ -50,7 +50,7 @@ export const MEMBER_PORTAL_NAV_ITEMS_I18N: PortalNavItem[] = [
     Icon: Briefcase,
     tourTarget: 'tour-jobs',
   },
-  { href: '/dashboard/readiness', label: 'nav:myProgress', group: 'primary', tab: 'jobs', Icon: CheckCircle },
+  { href: '/dashboard/readiness', label: 'nav:myProgress', group: 'insights', tab: 'jobs', Icon: CheckCircle },
   { href: '/dashboard/ai-tools', label: 'nav:careerToolkit', group: 'primary', tab: 'me', Icon: Sparkles, tourTarget: 'tour-ai-tools' },
   { href: '/dashboard/certifications', label: 'nav:certifications', group: 'manage', tab: 'program', Icon: Award, aliases: ['/certifications'] },
   { href: '/dashboard/career-brief', label: 'nav:careerPlan', group: 'insights', tab: 'program', Icon: ClipboardList },
@@ -129,8 +129,4 @@ export const MEMBER_PORTAL_NAV_ITEMS_I18N: PortalNavItem[] = [
     aliases: ['/profile', '/account'],
     tourTarget: 'tour-profile',
   },
-  // "My Account" is the member's home base: send it to the dashboard, not to
-  // Account Settings (which surprised members). Account settings stay reachable
-  // via the Profile item above (/dashboard/profile contains the #settings card).
-  { href: '/dashboard', label: 'nav:myAccount', group: 'manage', tab: 'me', Icon: Home },
 ];

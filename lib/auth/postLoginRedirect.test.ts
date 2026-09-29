@@ -49,6 +49,25 @@ test('resolveRoleAwarePostLoginRedirect keeps super_admin on /admin', () => {
   assert.equal(resolveRoleAwarePostLoginRedirect('/dashboard', 'super_admin'), '/admin');
   assert.equal(resolveRoleAwarePostLoginRedirect('/employer', 'super_admin'), '/admin');
   assert.equal(resolveRoleAwarePostLoginRedirect('/es/dashboard', 'super_admin'), '/es/admin');
+  assert.equal(resolveRoleAwarePostLoginRedirect('/administrator', 'super_admin'), '/admin');
+});
+
+test('resolveRoleAwarePostLoginRedirect keeps a super_admin /admin deep link, query and locale included (WAP-190)', () => {
+  // The weekly applicant-aging digest links the Applications queue; sign-in must not flatten it to /admin.
+  assert.equal(
+    resolveRoleAwarePostLoginRedirect('/admin/command-center?queue=applications', 'super_admin'),
+    '/admin/command-center?queue=applications',
+  );
+  assert.equal(resolveRoleAwarePostLoginRedirect('/admin/members/m-1?tab=eligibility', 'super_admin'), '/admin/members/m-1?tab=eligibility');
+  assert.equal(resolveRoleAwarePostLoginRedirect('/es/admin/wioa-screening', 'super_admin'), '/es/admin/wioa-screening');
+  assert.equal(resolveRoleAwarePostLoginRedirect('/admin', 'super_admin'), '/admin');
+});
+
+test('resolveRoleAwarePostLoginRedirect keeps an admin deep link for org admins too', () => {
+  assert.equal(
+    resolveRoleAwarePostLoginRedirect('/admin/command-center?queue=applications', 'admin'),
+    '/admin/command-center?queue=applications',
+  );
 });
 
 test('resolveRoleAwarePostLoginRedirect sends admins to /admin from member home only', () => {

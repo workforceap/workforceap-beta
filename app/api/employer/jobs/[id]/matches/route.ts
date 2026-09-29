@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { employerVisibleMatchReasons } from '@/lib/employer/matchReasons';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const GET = withApiGuc(async (_request: Request, ctx: { params: Promise<{ id: string }> }) => {
@@ -29,7 +30,12 @@ export const GET = withApiGuc(async (_request: Request, ctx: { params: Promise<{
     take: 100,
   }));
 
-  return NextResponse.json({ job, matches });
+  // Rows stored before 2026-09-23 can still carry the staff-only
+  // assessment-score reason; employers never receive it.
+  return NextResponse.json({
+    job,
+    matches: matches.map((m) => ({ ...m, matchReasons: employerVisibleMatchReasons(m.matchReasons) })),
+  });
 
   } catch (error) {
     console.error('/employer/jobs/[id]/matches error:', error);

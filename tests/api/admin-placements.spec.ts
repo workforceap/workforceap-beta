@@ -52,6 +52,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope, assertSameTenant } from '@/lib/tenant/withTenantScope';
+import { auditLog } from '@/lib/audit';
 
 const postReq = (body: unknown) =>
   new Request('http://localhost:3000/api/admin/placements', {
@@ -405,5 +406,100 @@ describe('PATCH /api/admin/placements', () => {
     const res = await PATCH(patchReq({ id: 'pl-1', jobTitle: 'Senior Dev' }) as unknown as NextRequest);
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: 'Internal server error' });
+  });
+});
+
+// O02: a retention status written here must be one the outcome classifier
+// (lib/analytics/retentionOutcome.ts) and the placement-survey sync understand.
+describe('PATCH /api/admin/placements retentionStatus vocabulary (O02)', () => {
+  let findFirst: ReturnType<typeof vi.fn>;
+  let update: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(true);
+    vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+    findFirst = vi.fn().mockResolvedValue({
+      id: 'pl-1',
+      userId: 'u1',
+      placedAt: new Date('2026-01-15'),
+      salaryOffered: 52000,
+      employerName: 'Hospital',
+      jobTitle: 'Nurse',
+      retentionStatus: null,
+    });
+    update = vi.fn(async ({ where, data }: any) => ({ id: where.id, userId: 'u1', ...data }));
+    vi.mocked(withTenantScope).mockImplementation(async (_orgId: string, fn: any) =>
+      fn({ placementRecord: { findFirst, update } }),
+    );
+  });
+
+  it("stores 'left' as 'separated' and audits after.retentionStatus = 'separated'", async () => {
+    const res = await PATCH(patchReq({ id: 'pl-1', retentionStatus: 'left' }) as unknown as NextRequest);
+    expect(res.status).toBe(200);
+    expect(update).toHaveBeenCalledWith({ where: { id: 'pl-1' }, data: { retentionStatus: 'separated' } });
+    expect(auditLog).toHaveBeenCalledTimes(1);
+    const meta = vi.mocked(auditLog).mock.calls[0]![0].metadata as any;
+    expect(meta.before).toEqual({ retentionStatus: null });
+    expect(meta.after).toEqual({ retentionStatus: 'separated' });
+    expect((await res.json()).placement.retentionStatus).toBe('separated');
+  });
+
+  it("stores 'unknown' as 'pending'", async () => {
+    const res = await PATCH(patchReq({ id: 'pl-1', retentionStatus: 'unknown' }) as unknown as NextRequest);
+    expect(res.status).toBe(200);
+    expect(update).toHaveBeenCalledWith({ where: { id: 'pl-1' }, data: { retentionStatus: 'pending' } });
+    expect((vi.mocked(auditLog).mock.calls[0]![0].metadata as any).after).toEqual({ retentionStatus: 'pending' });
+  });
+
+  it.each(['retained_90d', 'retained_180d', 'separated', 'pending'])('passes %s through unchanged', async (status) => {
+    const res = await PATCH(
+      patchReq({ id: 'pl-1', retentionStatus: status, jobTitle: 'Senior Nurse' }) as unknown as NextRequest,
+    );
+    expect(res.status).toBe(200);
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'pl-1' },
+      data: { retentionStatus: status, jobTitle: 'Senior Nurse' },
+    });
+    expect((vi.mocked(auditLog).mock.calls[0]![0].metadata as any).after).toEqual({
+      retentionStatus: status,
+      jobTitle: 'Senior Nurse',
+    });
+  });
+
+  it.each(['active', 'retained', 'employed', ''])(
+    "refuses %j with 400 'Invalid fields' and writes nothing",
+    async (status) => {
+      const res = await PATCH(patchReq({ id: 'pl-1', retentionStatus: status }) as unknown as NextRequest);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe('Invalid fields');
+      expect(findFirst).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+      expect(auditLog).not.toHaveBeenCalled();
+    },
+  );
+
+  it('still returns 404 for another org placement, with no write or audit', async () => {
+    findFirst.mockResolvedValue(null);
+    const res = await PATCH(patchReq({ id: 'pl-other-org', retentionStatus: 'left' }) as unknown as NextRequest);
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'Placement not found' });
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: 'pl-other-org', user: { organizationId: 'org-1' } }),
+      }),
+    );
+    expect(update).not.toHaveBeenCalled();
+    expect(auditLog).not.toHaveBeenCalled();
+  });
+
+  it('still returns 403 for a non-admin, with no write or audit', async () => {
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    const res = await PATCH(patchReq({ id: 'pl-1', retentionStatus: 'separated' }) as unknown as NextRequest);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'Forbidden' });
+    expect(update).not.toHaveBeenCalled();
+    expect(auditLog).not.toHaveBeenCalled();
   });
 });

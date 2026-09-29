@@ -28,6 +28,7 @@ export type MemberState = {
   userId: string;
   email: string;
   fullName: string | null;
+  contactPhone: string | null;
 
   // Application
   application: MemberApplicationStatusView | null;
@@ -397,6 +398,7 @@ async function _getMemberStateUncached(
     userId: user.id,
     email: user.email,
     fullName: user.fullName,
+    contactPhone: profile?.profilePhone?.trim() || user.phone?.trim() || null,
     application,
     enrolledProgram: surfacedProgram,
     programName: surfacedProgram ? programDisplayTitle(surfacedProgram) : null,

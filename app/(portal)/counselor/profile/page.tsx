@@ -66,13 +66,13 @@ export default async function CounselorProfilePage() {
         <div style={{ display: 'grid', gap: '1.25rem', maxWidth: 640 }}>
           <section className="portal-card portal-card--padded">
             <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Your role</h2>
-            <dl style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: '0.35rem 1rem', margin: 0 }}>
+            <dl className="counselor-profile-facts">
               <dt style={{ color: 'var(--color-on-surface-variant)' }}>Affiliation</dt>
-              <dd style={{ margin: 0, fontWeight: 600 }}>{affiliationLabel}</dd>
+              <dd style={{ fontWeight: 600 }}>{affiliationLabel}</dd>
               <dt style={{ color: 'var(--color-on-surface-variant)' }}>Sign-in email</dt>
-              <dd style={{ margin: 0 }}>{counselor.user.email}</dd>
+              <dd>{counselor.user.email}</dd>
               <dt style={{ color: 'var(--color-on-surface-variant)' }}>Members assigned to you</dt>
-              <dd style={{ margin: 0 }}>
+              <dd>
                 {counselor._count.assignments}{' '}
                 <Link href="/counselor/students" style={{ fontSize: '0.9rem' }}>
                   Open my members →

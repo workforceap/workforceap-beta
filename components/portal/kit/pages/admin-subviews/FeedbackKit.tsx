@@ -7,7 +7,9 @@ import {
   type Column,
   type KpiItem,
 } from '@/components/portal/kit';
+import Link from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
+import { FEEDBACK_TYPES, type FeedbackFilters } from '@/lib/admin/feedbackFilters';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 
 /**
@@ -50,6 +52,74 @@ export interface FeedbackKitProps {
   critical: number;
   /** Avg rating caption, e.g. "4.3" or "—". */
   avgRating: string;
+  /**
+   * Filters + paging for the table (WAP-193 slice 2; they used to exist only
+   * at ?ui=legacy). A plain GET form, so it works without client JS. The KPIs
+   * above stay whole-scope; the table shows `matching` rows.
+   */
+  filters?: {
+    values: FeedbackFilters;
+    /** Rows matching the filters (whole scope when none are set). */
+    matching: number;
+    pageSize: number;
+    prevHref: string | null;
+    nextHref: string | null;
+  };
+}
+
+const fieldLabel = { fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 4 } as const;
+const fieldControl = { minHeight: 44, width: '100%' } as const;
+
+function FeedbackFilterBar({ filters }: { filters: NonNullable<FeedbackKitProps['filters']> }) {
+  const { values, matching, pageSize, prevHref, nextHref } = filters;
+  const firstRow = matching === 0 ? 0 : (values.page - 1) * pageSize + 1;
+  const lastRow = Math.min(values.page * pageSize, matching);
+  return (
+    <div className="wa-mb-5" style={{ display: 'grid', gap: 12 }}>
+      <form method="get" action="/admin/feedback" aria-label="Filter feedback"
+        style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', alignItems: 'end' }}>
+        <label>
+          <span style={fieldLabel}>Type</span>
+          <select name="type" defaultValue={values.type ?? ''} className="wa-kit-focus" style={fieldControl}>
+            <option value="">All types</option>
+            {FEEDBACK_TYPES.map((type) => (
+              <option key={type} value={type}>{titleCase(type)}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span style={fieldLabel}>Rating</span>
+          <select name="rating" defaultValue={values.rating ? String(values.rating) : ''} className="wa-kit-focus" style={fieldControl}>
+            <option value="">All ratings</option>
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <option key={rating} value={rating}>{rating === 1 ? '1 star' : `${rating} stars`}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span style={fieldLabel}>From</span>
+          <input type="date" name="from" defaultValue={values.from ?? ''} className="wa-kit-focus" style={fieldControl} />
+        </label>
+        <label>
+          <span style={fieldLabel}>To</span>
+          <input type="date" name="to" defaultValue={values.to ?? ''} className="wa-kit-focus" style={fieldControl} />
+        </label>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="submit" className="wa-kit-cta wa-kit-focus">Apply</button>
+          <Link href="/admin/feedback" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">Clear</Link>
+        </div>
+      </form>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--wa-muted)' }}>
+        <span role="status">
+          {matching === 0 ? 'No feedback matches these filters.' : `Showing ${firstRow}–${lastRow} of ${matching}`}
+        </span>
+        <nav aria-label="Feedback pages" style={{ display: 'flex', gap: 8 }}>
+          {prevHref ? <Link href={prevHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">Previous</Link> : null}
+          {nextHref ? <Link href={nextHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">Next</Link> : null}
+        </nav>
+      </div>
+    </div>
+  );
 }
 
 const SENTIMENT_COLOR: Record<FeedbackSentiment, TokenColor> = {
@@ -76,6 +146,7 @@ export function FeedbackKit({
   recent,
   critical,
   avgRating,
+  filters,
 }: FeedbackKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Total', value: total },
@@ -178,6 +249,8 @@ export function FeedbackKit({
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />
       </div>
+
+      {filters ? <FeedbackFilterBar filters={filters} /> : null}
 
       <DataTable<FeedbackRow>
         columns={columns}

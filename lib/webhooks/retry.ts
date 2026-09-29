@@ -60,6 +60,27 @@ export async function getPendingRetryEvents(source?: string, limit = 50) {
   });
 }
 
+/**
+ * How long a claimed row stays out of the pending queue. Longer than the
+ * route's 300 s maxDuration, so a run that dies mid-row leaves the row
+ * reclaimable by a later run rather than stuck.
+ */
+const RETRY_CLAIM_LEASE_MS = 10 * 60_000;
+
+/**
+ * Claim a pending row before replaying it. The update only matches while the
+ * row is still `retrying` with the due date this run read, so when a cron run
+ * and a manual admin run select the same row, exactly one of them wins.
+ * Moving nextRetryAt forward is the lease; retryCount is untouched.
+ */
+export async function claimRetryEvent(event: { id: string; nextRetryAt: Date | null }): Promise<boolean> {
+  const { count } = await prisma.webhookEvent.updateMany({
+    where: { id: event.id, status: 'retrying', nextRetryAt: event.nextRetryAt },
+    data: { nextRetryAt: new Date(Date.now() + RETRY_CLAIM_LEASE_MS) },
+  });
+  return count === 1;
+}
+
 export async function getWebhookStats(since?: Date) {
   const where = since ? { createdAt: { gte: since } } : {};
 

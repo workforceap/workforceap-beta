@@ -1224,7 +1224,7 @@ a.home-program-card:active {
     align-items: center;
     min-height: 44px;
     padding: var(--space-1) var(--space-2);
-    color: var(--color-accent);
+    color: var(--wa-accent-text);
     font-weight: 700;
     text-decoration: underline;
     text-underline-offset: 2px;

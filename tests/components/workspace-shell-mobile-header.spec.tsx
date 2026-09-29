@@ -22,7 +22,7 @@ import messages from '@/messages/en.json';
  */
 
 const viewport = vi.hoisted(() => ({ wide: true }));
-vi.mock('next/navigation', () => ({ usePathname: () => '/employer' }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/employer', useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/components/super-admin-view-switcher', () => ({
   default: ({ initialIsSuperAdmin }: { initialIsSuperAdmin?: boolean }) =>
     initialIsSuperAdmin ? <button type="button" data-testid="super-admin-switcher">Admin</button> : null,

@@ -134,30 +134,14 @@ beforeEach(() => {
 });
 
 describe('POST /api/admin/members/[id]/billing-packets', () => {
-  it('creates a signed packet with a per-year invoice number and the summed total', async () => {
+  it('retains history but refuses to create a combined signed packet', async () => {
     const res = await createPacket(req(validBody), params(MEMBER));
-    expect(res.status).toBe(201);
-    const body = await res.json();
-    expect(body.packet.packetNumber).toBe('WAP-2026-0007');
-    expect(body.packet.totalAmount).toBe(1300);
-    expect(body.packet.status).toBe('signed');
-    expect(body.packet.programTitle).toMatch(/IT Support/);
-    const data = mocks.packetCreate.mock.calls[0][0].data;
-    expect(data.signedById).toBe(ADMIN);
-    expect(data.signatureImage).toBeNull();
-    expect(data.invoiceDate).toEqual(new Date('2026-09-04T00:00:00.000Z'));
-    expect(data.billToAttention).toBe('Accounts Payable');
-    expect(data.billToAddress).toBeNull();
-  });
-
-  it('rejects an unsigned packet', async () => {
-    const res = await createPacket(req({ ...validBody, signatureTyped: false }), params(MEMBER));
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toMatch(/Sign the documents/);
+    expect(res.status).toBe(410);
+    expect((await res.json()).code).toBe('LEGACY_BILLING_FLOW_RETIRED');
     expect(mocks.packetCreate).not.toHaveBeenCalled();
   });
 
-  it('refuses an org admin acting on another tenant', async () => {
+  it('refuses an org admin acting on another tenant before revealing retirement state', async () => {
     mocks.getSubjectOrganizationId.mockResolvedValue('other-org');
     const res = await createPacket(req(validBody), params(MEMBER));
     expect(res.status).toBe(404);
@@ -169,7 +153,13 @@ describe('POST /api/admin/members/[id]/billing-packets', () => {
     expect(res.status).toBe(401);
   });
 
-  it('lists packets newest first', async () => {
+  it('requires an admin before disclosing the retirement state', async () => {
+    mocks.isAdmin.mockResolvedValue(false);
+    const res = await createPacket(req(validBody), params(MEMBER));
+    expect(res.status).toBe(403);
+  });
+
+  it('lists historical packets newest first', async () => {
     mocks.packetFindMany.mockResolvedValue([packetRow]);
     const res = await listPackets(new Request('http://localhost/api/x'), params(MEMBER));
     expect(res.status).toBe(200);
@@ -178,73 +168,49 @@ describe('POST /api/admin/members/[id]/billing-packets', () => {
     expect(body.packets[0].lineItems).toEqual([{ description: 'Intro to IT', hours: 10, amount: 1300 }]);
     expect(body.packets[0].invoiceDate).toBe('2026-09-04');
   });
+
+  it('does not list another tenant’s historical packets', async () => {
+    mocks.getSubjectOrganizationId.mockResolvedValue('other-org');
+    const res = await listPackets(new Request('http://localhost/api/x'), params(MEMBER));
+    expect(res.status).toBe(404);
+    expect(mocks.packetFindMany).not.toHaveBeenCalled();
+  });
 });
 
 describe('POST /api/billing-packets/[packetId]/send', () => {
-  it('emails the student and the assigned counselor, then marks the packet sent', async () => {
+  it('refuses to send an authorized historical packet without calling the email provider', async () => {
     mocks.packetFindUnique.mockResolvedValue(packetRow);
-    mocks.assignmentFindFirst.mockResolvedValue({
-      counselor: { user: { id: COUNSELOR, fullName: 'Casey Counselor', email: 'casey@example.org' } },
-    });
-    mocks.userFindUnique.mockResolvedValue({ email: 'admin@workforceap.org' });
-    mocks.sendBillingPacketEmails.mockResolvedValue({
-      sentTo: ['tarrance@example.com', 'casey@example.org', 'admin@workforceap.org'],
-      counselor: { fullName: 'Casey Counselor', email: 'casey@example.org' },
-      studentSent: true,
-      counselorSent: true,
-      errors: [],
-    });
-    mocks.packetUpdate.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
-      ...packetRow,
-      status: data.status,
-      sentAt: new Date(),
-      sentTo: data.sentTo,
-      sendCount: 1,
-    }));
-
     const res = await sendPacket(req({}), packetParams(PACKET));
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.counselorMissing).toBe(false);
-    expect(body.sentTo).toEqual(['tarrance@example.com', 'casey@example.org', 'admin@workforceap.org']);
-    expect(body.packet.status).toBe('sent');
-    const sendArgs = mocks.sendBillingPacketEmails.mock.calls[0][0];
-    expect(sendArgs.counselor.email).toBe('casey@example.org');
-    expect(sendArgs.ccEmail).toBe('admin@workforceap.org');
-    expect(mocks.packetUpdate.mock.calls[0][0].data.sendCount).toEqual({ increment: 1 });
+    expect(res.status).toBe(410);
+    expect((await res.json()).code).toBe('LEGACY_BILLING_FLOW_RETIRED');
+    expect(mocks.sendBillingPacketEmails).not.toHaveBeenCalled();
+    expect(mocks.packetUpdate).not.toHaveBeenCalled();
   });
 
-  it('reports a missing counselor and still sends to the student', async () => {
-    mocks.packetFindUnique.mockResolvedValue(packetRow);
-    mocks.assignmentFindFirst.mockResolvedValue(null);
-    mocks.userFindUnique.mockResolvedValue({ email: 'admin@workforceap.org' });
-    mocks.sendBillingPacketEmails.mockResolvedValue({ sentTo: ['tarrance@example.com'], counselor: null, studentSent: true, counselorSent: false, errors: [] });
-    mocks.packetUpdate.mockResolvedValue({ ...packetRow, status: 'sent', sentAt: new Date(), sentTo: ['tarrance@example.com'], sendCount: 1 });
-
-    const res = await sendPacket(req({}), packetParams(PACKET));
-    expect(res.status).toBe(200);
-    expect((await res.json()).counselorMissing).toBe(true);
-  });
-
-  it('is admin-only: a counselor cannot trigger the send', async () => {
+  it('remains admin-only', async () => {
     mocks.isAdmin.mockResolvedValue(false);
     mocks.packetFindUnique.mockResolvedValue(packetRow);
     const res = await sendPacket(req({}), packetParams(PACKET));
     expect(res.status).toBe(403);
-    expect(mocks.sendBillingPacketEmails).not.toHaveBeenCalled();
+    mocks.packetFindUnique.mockResolvedValue(null);
+    const missing = await sendPacket(req({}), packetParams('e0000000-0000-4000-8000-000000000005'));
+    expect(missing.status).toBe(403);
+    expect(mocks.packetFindUnique).not.toHaveBeenCalled();
   });
 
-  it('returns 502 when nothing could be delivered', async () => {
-    mocks.packetFindUnique.mockResolvedValue(packetRow);
-    mocks.assignmentFindFirst.mockResolvedValue(null);
-    mocks.userFindUnique.mockResolvedValue({ email: 'admin@workforceap.org' });
-    mocks.sendBillingPacketEmails.mockResolvedValue({ sentTo: [], counselor: null, studentSent: false, counselorSent: false, errors: ['Email is not configured (RESEND_API_KEY missing).'] });
+  it('hides a missing packet from an authorized admin', async () => {
+    mocks.packetFindUnique.mockResolvedValue(null);
+    const res = await sendPacket(req({}), packetParams('e0000000-0000-4000-8000-000000000005'));
+    expect(res.status).toBe(404);
+  });
+
+  it('requires a sign-in before looking up a packet', async () => {
+    mocks.getUser.mockResolvedValue(null);
     const res = await sendPacket(req({}), packetParams(PACKET));
-    expect(res.status).toBe(502);
-    expect(mocks.packetUpdate).not.toHaveBeenCalled();
+    expect(res.status).toBe(401);
+    expect(mocks.packetFindUnique).not.toHaveBeenCalled();
   });
 });
-
 describe('GET /api/billing-packets/[packetId]/pdf', () => {
   it('lets the member download their own J6 as a PDF', async () => {
     mocks.isAdmin.mockResolvedValue(false);

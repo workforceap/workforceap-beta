@@ -157,8 +157,6 @@ describe('focus ring recipe — portal CSS modules and inline styles', () => {
       'CounselorMessagesInboxClient.module.css',
       'InterestProfilerClient.module.css',
       'MemberLabWorkspace.module.css',
-      'ProactiveInsightCard.module.css',
-      'TodayHero.module.css',
       'WioaQualificationClient.module.css',
     ]) {
       expect(modules).toContain(rel);
@@ -178,7 +176,8 @@ describe('focus ring recipe — portal CSS modules and inline styles', () => {
     expect(offenders).toEqual([]);
     // The module rules moved onto the recipe all declare the ring shadow (the
     // parser above counts top-level :focus / :focus-visible blocks only).
-    expect(ringRules).toBeGreaterThanOrEqual(14);
+    // 12 since WAP-195 deleted TodayHero / ProactiveInsightCard with their two rings.
+    expect(ringRules).toBeGreaterThanOrEqual(12);
   });
 
   it.each([

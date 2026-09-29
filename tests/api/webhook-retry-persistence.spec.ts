@@ -11,13 +11,25 @@ vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError:
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     xapiStatement: { findUnique: vi.fn(), create: vi.fn(), updateMany: vi.fn() },
-    webhookEvent: { create: vi.fn(), update: vi.fn(), findMany: vi.fn() },
+    webhookEvent: { create: vi.fn(), update: vi.fn(), updateMany: vi.fn(), findMany: vi.fn() },
   },
+}));
+vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn() }));
+vi.mock('@/lib/cron/isCronEnabled', () => ({ isCronEnabled: vi.fn() }));
+vi.mock('@/lib/cron/cronExecution', () => ({
+  startCronExecution: vi.fn(),
+  completeCronExecution: vi.fn(),
+  runWithCronExecution: vi.fn(),
+  getCronRecordsProcessed: vi.fn(),
+  hasCronDiagnosticBeenLogged: vi.fn(),
+  setCronRecordsProcessed: vi.fn(),
 }));
 import { prisma } from '@/lib/db/prisma';
 import { handleLearningCompletion } from '@/lib/workflows/careerOS';
 import { captureApiError } from '@/lib/observability/captureApiError';
-import { markWebhookForRetry, getPendingRetryEvents } from '@/lib/webhooks/retry';
+import { markWebhookForRetry, getPendingRetryEvents, claimRetryEvent } from '@/lib/webhooks/retry';
+import { isCronEnabled } from '@/lib/cron/isCronEnabled';
+import { startCronExecution, completeCronExecution, runWithCronExecution } from '@/lib/cron/cronExecution';
 import { WebhookStatusPersistenceError } from '@/lib/webhooks/logEvent';
 import { processRetryEvent } from '@/app/api/admin/webhooks/process-retries/_processRetries';
 import { POST } from '@/app/api/webhooks/learning-completion/route';
@@ -42,6 +54,10 @@ describe('durable webhook retry outcomes', () => {
     vi.mocked(prisma.xapiStatement.updateMany).mockResolvedValue({ count: 1 });
     vi.mocked(prisma.webhookEvent.create).mockResolvedValue({ id: 'retry-1' } as never);
     vi.mocked(prisma.webhookEvent.update).mockResolvedValue({} as never);
+    vi.mocked(prisma.webhookEvent.updateMany).mockResolvedValue({ count: 1 });
+    vi.mocked(isCronEnabled).mockResolvedValue(true);
+    vi.mocked(startCronExecution).mockResolvedValue('exec-1');
+    vi.mocked(runWithCronExecution).mockImplementation((_id, fn) => fn());
   });
   afterEach(() => vi.unstubAllEnvs());
 
@@ -143,6 +159,58 @@ describe('durable webhook retry outcomes', () => {
     }) as NextRequest);
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: 'Failed to process retries' });
-    expect(captureApiError).toHaveBeenCalledOnce();
+    expect(captureApiError).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({
+      route: '/api/admin/webhooks/process-retries',
+    }));
+    expect(completeCronExecution).toHaveBeenCalledWith('exec-1', 'FAILED', 'Cron handler returned HTTP 500');
+  });
+
+  it('claims a row by its observed due date and leases it for ten minutes', async () => {
+    const before = Date.now();
+    expect(await claimRetryEvent(event)).toBe(true);
+    const args = vi.mocked(prisma.webhookEvent.updateMany).mock.calls[0][0] as any;
+    expect(args.where).toEqual({ id: 'retry-1', status: 'retrying', nextRetryAt: event.nextRetryAt });
+    const lease = (args.data.nextRetryAt as Date).getTime();
+    expect(lease).toBeGreaterThanOrEqual(before + 10 * 60_000);
+    expect(lease).toBeLessThanOrEqual(Date.now() + 10 * 60_000);
+    expect(Object.keys(args.data)).toEqual(['nextRetryAt']);
+
+    vi.mocked(prisma.webhookEvent.updateMany).mockResolvedValueOnce({ count: 0 });
+    expect(await claimRetryEvent(event)).toBe(false);
+  });
+
+  it('a row another run already claimed is never replayed', async () => {
+    vi.mocked(prisma.webhookEvent.updateMany).mockResolvedValueOnce({ count: 0 });
+    vi.mocked(prisma.xapiStatement.findUnique).mockResolvedValueOnce({ processed: false, payload } as never);
+    expect((await processRetryEvent(event)).result).toBe('claimed_elsewhere');
+    expect(prisma.xapiStatement.findUnique).not.toHaveBeenCalled();
+    expect(handleLearningCompletion).not.toHaveBeenCalled();
+    expect(prisma.webhookEvent.update).not.toHaveBeenCalled();
+  });
+
+  it('overlapping runs replay a due row once', async () => {
+    let claimed = false;
+    vi.mocked(prisma.webhookEvent.updateMany).mockImplementation((async () => {
+      if (claimed) return { count: 0 };
+      claimed = true;
+      return { count: 1 };
+    }) as never);
+    vi.mocked(prisma.xapiStatement.findUnique).mockResolvedValue({ processed: false, payload } as never);
+    vi.mocked(handleLearningCompletion).mockResolvedValue({} as never);
+    const results = await Promise.all([processRetryEvent(event), processRetryEvent(event)]);
+    expect(results.map((r) => r.result).sort()).toEqual(['claimed_elsewhere', 'success']);
+    expect(handleLearningCompletion).toHaveBeenCalledTimes(1);
+  });
+
+  it('dead-letters a row whose stored payload is missing instead of re-selecting it forever', async () => {
+    vi.mocked(prisma.xapiStatement.findUnique).mockResolvedValueOnce(null);
+    expect((await processRetryEvent(event)).result).toBe('skipped');
+    expect(handleLearningCompletion).not.toHaveBeenCalled();
+    expect(prisma.webhookEvent.update).toHaveBeenCalledWith({
+      where: { id: 'retry-1' },
+      data: expect.objectContaining({
+        status: 'dead_letter', errorMessage: 'not_reprocessable: invalid_payload', nextRetryAt: null,
+      }),
+    });
   });
 });

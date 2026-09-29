@@ -7618,7 +7618,11 @@ body { animation: fadeIn 0.4s ease; }
     font-size: 0.95rem;
 }
 .apply-step-back-nav a {
-    color: var(--color-accent);
+    /* WAP-192: 44px tap target and dark-mode-readable accent text. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--wa-accent-text);
     font-weight: 600;
 }
 .apply-missing-session .apply-step-desc {

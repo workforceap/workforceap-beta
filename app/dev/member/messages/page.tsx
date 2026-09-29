@@ -64,7 +64,6 @@ export default async function DevMemberMessagesPage({
       activeName="Counselor"
       activeRole="Career counselor"
       activeInitials="CS"
-      activeOnline
       messages={[
         {
           id: 'm1',

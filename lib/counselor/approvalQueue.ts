@@ -81,6 +81,8 @@ export type ApprovalQueueRow = {
   awaiting: string;
   /** Application: the program applied for (slug). Intake: null. */
   programInterest: string | null;
+  /** Application: the `applications.id` being decided. Intake: null. */
+  applicationId: string | null;
   /** Intake: the current review status in counselor wording. Application: null. */
   detail: string | null;
   /** When the item entered the waiting state; null when no timestamp is stored. */
@@ -219,6 +221,7 @@ export function buildApprovalQueue(
         kind: 'application',
         awaiting: APPROVAL_AWAITING_LABEL.application,
         programInterest: app.programInterest,
+        applicationId: app.id,
         detail: null,
         waitingSince: app.submittedAt ?? app.createdAt,
       }, now, slaBusinessDays));
@@ -230,6 +233,7 @@ export function buildApprovalQueue(
         kind: 'intake',
         awaiting: APPROVAL_AWAITING_LABEL.intake,
         programInterest: null,
+        applicationId: null,
         detail: COUNSELOR_WIOA_INTAKE_LABELS[m.wioaReviewStatus],
         waitingSince: intakeWaitingSince(m),
       }, now, slaBusinessDays));

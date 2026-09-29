@@ -11,7 +11,7 @@ import PageHeader from '@/components/portal/PageHeader';
  * /admin/guide — the admin counterpart of /counselor/guide: what the admin
  * workspace is for, where each part of it lives, and the questions staff ask
  * in their first week. Static copy; the live numbers stay on the pages that
- * own them (Command Center, Detailed overview) so this page never disagrees
+ * own them (Today, Detailed overview) so this page never disagrees
  * with them. `AdminPortalShell` links here from the header Help menu
  * (`ADMIN_GUIDE_HREF`), the way `CounselorPortalShell` does for
  * /counselor/guide.
@@ -20,7 +20,7 @@ import PageHeader from '@/components/portal/PageHeader';
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
     title: 'Admin workspace guide',
-    description: 'How the WorkforceAP admin workspace fits together: Command Center, Detailed overview, Students, Programs, Training progress, Messages, and Settings.',
+    description: 'How the WorkforceAP admin workspace fits together: Today, Detailed overview, Students, Programs, Training progress, Messages, and Settings.',
     path: '/admin/guide',
   });
 }
@@ -38,8 +38,8 @@ const WORKSPACE = [
   {
     href: '/admin',
     icon: 'bolt',
-    label: 'Command Center',
-    desc: 'Where the day starts. What needs a decision, who is stuck, and the health rows a human should look at, ranked by urgency.',
+    label: 'Today',
+    desc: 'Where the day starts. Every application and intake check waiting on a staff decision, oldest first, then who is stuck and who needs a reply; the organization’s numbers sit below. The Daily work section of the sidebar holds the queues themselves.',
   },
   {
     href: '/admin/overview',
@@ -57,7 +57,7 @@ const WORKSPACE = [
     href: '/admin/programs',
     icon: 'menu_book',
     label: 'Programs',
-    desc: 'The program catalog: each program’s syllabus, who is enrolled, and pending program change requests.',
+    desc: 'The program catalog: each program’s syllabus and who is enrolled. Pending program change requests have their own Daily work row, Program requests.',
   },
   {
     href: '/admin/training-progress',
@@ -92,8 +92,8 @@ const FAQS = [
     a: 'Open the member from Students. The Overview tab of the record has a card for each: Counselor assignment, Partner assignment, and Subgroup assignment. Changes save immediately and show on the counselor’s roster.',
   },
   {
-    q: 'Why does a number on Command Center differ from Detailed overview?',
-    a: 'Command Center counts what needs action today. Detailed overview counts the whole organization over the date range you pick. Each tile shows the rule it counts, so compare the rules before comparing the numbers.',
+    q: 'Why does a number on Today differ from Detailed overview?',
+    a: 'Today counts what needs action now. Detailed overview counts the whole organization over the date range you pick. Each tile shows the rule it counts, so compare the rules before comparing the numbers.',
   },
   {
     q: 'How do I find members who are falling behind?',
@@ -123,7 +123,7 @@ export default async function AdminGuidePage() {
         subtitle="What each part of the workspace is for, and where to go for the work in front of you."
         action={
           <Link href="/admin" className="btn btn-outline btn-sm">
-            Back to Command Center
+            Back to Today
           </Link>
         }
       />

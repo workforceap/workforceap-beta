@@ -35,7 +35,16 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
+import MemberAdvisorCard from '@/components/portal/kit/pages/member/MemberAdvisorCard';
+import type { AssignedCounselor } from '@/lib/member/counselorContext';
+import First90DaysCard, { type First90DaysCardProps } from '@/components/portal/First90DaysCard';
+import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+import PlacementConfirmationStrip from '@/app/(portal)/dashboard/PlacementConfirmationStrip';
+import StaffViewBanner from '@/components/portal/StaffViewBanner';
+import DashboardProgramSelector, { type DashboardProgramOption } from '@/components/portal/DashboardProgramSelector';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
+import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 
 /**
@@ -44,14 +53,27 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  * Faithful port of the approved Command Center mockup onto the portal design
  * kit (warm surface + --wa-* tokens + wa-kit-* classes + lucide icons). Layout
  * order, top to bottom:
- *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`.
- *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard, kit variant).
+ *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`,
+ *      then, for staff viewing a member home, the staff-view notice
+ *      (`showStaffViewBanner`), then the youth notice for a member under 18
+ *      (`youthNoticeAge`).
+ *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard).
+ *      Under it, only when they apply: the placement confirmation strip for
+ *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
+ *      while a placement is inside its window (`first90`) — the two
+ *      post-offer surfaces the `?ui=legacy` home used to own (WAP-188). Then
+ *      an "Up next" list of the following steps beside one AI Career Tools
+ *      pick for the member's stage (both from the loader; either may be
+ *      empty, and the row disappears when both are).
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
  *   4. A mixed row: certification progress ring, weekly-activity area chart,
- *      and a points ledger.
+ *      and a points ledger. With more than one enrollment the certification
+ *      card carries the view-only program switch (`programSwitch`), which
+ *      reloads `/dashboard?program=<slug>` and never changes an enrollment.
  *   5. The application pipeline table + a Next Badge tile with segmented
- *      progress.
+ *      progress. Goals fold into that tile and link to the goals section on
+ *      the career brief; with none, a quiet "Set a goal" link goes there.
  * A quiet "quick links" row (Learning Hub / AI Career Tools) closes out the
  * page — those destinations also live in the primary portal nav, so they get
  * a low-key footer instead of competing bento tiles.
@@ -172,9 +194,44 @@ export interface MemberHomeKitProps {
   longestStreak?: number;
   /** Up to a few active goals, folded into the Next Badge tile. */
   goals?: GoalSummary[];
+  /** Where "Open goals" / "Set a goal" go: the goals section of the career brief (kit page, not `?ui=legacy`). */
   goalsHref?: string;
+  /**
+   * OFFER applications for the placement confirmation strip — the one
+   * member-initiated path to a (member-reported) placement record. Empty
+   * renders nothing.
+   */
+  jobOffers?: Array<{ id: string; role: string; company: string }>;
+  /** First 90 Days check-in card props while a placement is inside its window. `null` renders nothing. */
+  first90?: First90DaysCardProps | null;
+  /** The member's age when under 18 (from `profile.dob`); shows the youth notice. `null` renders nothing. */
+  youthNoticeAge?: number | null;
+  /**
+   * The viewer is staff (`canBypassMemberAssessment`) looking at a member
+   * home: shows `StaffViewBanner`, as the legacy home and My Program do.
+   */
+  showStaffViewBanner?: boolean;
+  /**
+   * View-only enrolled-program switch (`DashboardProgramSelector`) for a
+   * member with more than one enrollment. `null` or a single option renders
+   * nothing. `viewingSecondary` marks a non-primary enrollment on screen; its
+   * program links carry `?program=` into My Program (WAP-196).
+   */
+  programSwitch?: {
+    options: DashboardProgramOption[];
+    activeProgramSlug: string;
+    viewingSecondary?: boolean;
+    /** Page the switch reloads with `?program=`; defaults to `/dashboard` (the dev showcase passes its own). */
+    pathname?: string;
+  } | null;
   /** Dominant next-best-action banner rendered above the bento grid. `null`/omitted renders nothing (no empty shell). */
   doThisNext?: NextBestAction | null;
+  /** Active assigned counselor (resolveAssignedCounselor). Null hides the advisor card. */
+  advisor?: AssignedCounselor | null;
+  /** The steps after `doThisNext`, most important first. Empty renders nothing. */
+  upNext?: NextBestAction[];
+  /** One AI Career Tools pick for the member's stage. `null` renders nothing. */
+  recommendedTool?: MemberToolRecommendation | null;
   /** Ungated Digital Literacy lesson 1. Shown when the member has no enrolled program. */
   ungatedDigitalBasicsHref?: string | null;
   /** Sparkline + delta chip for the course-progress stat tile. Omit to hide both. */
@@ -250,6 +307,20 @@ const HOME_TEXT_LINK: CSSProperties = {
   textDecoration: 'none',
   flexShrink: 0,
   gap: 6,
+};
+
+/** One "Up next" row: title + reason on the left, the action on the right; the whole row is the link. */
+const UP_NEXT_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: '4px 12px',
+  minHeight: 44,
+  padding: '10px 0',
+  borderTop: '1px solid var(--wa-border)',
+  textDecoration: 'none',
+  color: 'inherit',
 };
 
 function KitCardHead({ title, linkLabel, linkHref }: { title: string; linkLabel?: string; linkHref?: string }) {
@@ -521,8 +592,16 @@ export function MemberHomeKit({
   currentStreak = 0,
   longestStreak = 0,
   goals = [],
-  goalsHref = '/dashboard?ui=legacy&tab=learning#goals',
+  goalsHref = '/dashboard/career-brief#goals',
+  jobOffers = [],
+  first90 = null,
+  youthNoticeAge = null,
+  showStaffViewBanner = false,
+  programSwitch = null,
   doThisNext = null,
+  advisor = null,
+  upNext = [],
+  recommendedTool = null,
   ungatedDigitalBasicsHref = null,
   courseSpark,
   activeJobsSpark,
@@ -581,6 +660,7 @@ export function MemberHomeKit({
     { key: 'points', icon: Star, label: 'Points', value: points.toLocaleString(), spark: pointsSpark },
   ];
 
+  const showProgramSwitch = Boolean(programSwitch && programSwitch.options.length > 1 && programSwitch.activeProgramSlug);
   const hasModuleRow = typeof certModulesDone === 'number' && typeof certModulesTotal === 'number' && certModulesTotal > 0;
 
   return (
@@ -604,6 +684,8 @@ export function MemberHomeKit({
           }
         />
 
+        {showStaffViewBanner ? <StaffViewBanner page="dashboard" /> : null}
+
         {noProgram ? (
           <div
             className="wa-kit-card wa-flex wa-items-center wa-gap-3"
@@ -617,9 +699,31 @@ export function MemberHomeKit({
           </div>
         ) : null}
 
+        {youthNoticeAge !== null && youthNoticeAge < 18 ? <YouthDashboardNotice age={youthNoticeAge} /> : null}
+
         {/* 2. Dominant next-best-action banner. Renders nothing when there's no
             pending action (see MemberDoThisNextCard). */}
-        <MemberDoThisNextCard action={doThisNext} variant="kit" paddingX="0" />
+        <MemberDoThisNextCard action={doThisNext} />
+
+        {/* Post-offer surfaces, each only when it applies: confirm an accepted
+            offer (writes a member-reported placement and alerts the
+            counselor), then the First 90 Days check-in (a trouble report
+            escalates to the counselor). Both call their own server actions.
+            The kit variant drops their legacy gutter so they sit flush in
+            this column like the kit cards around them. */}
+        {jobOffers.length > 0 ? (
+          <ErrorBoundary>
+            <PlacementConfirmationStrip offers={jobOffers} variant="kit" />
+          </ErrorBoundary>
+        ) : null}
+        {first90 ? (
+          <ErrorBoundary>
+            <First90DaysCard {...first90} variant="kit" />
+          </ErrorBoundary>
+        ) : null}
+
+        {/* Stitch member layout: who to ask, right under the next step. */}
+        <MemberAdvisorCard advisor={advisor} />
 
         {!programTitle && ungatedDigitalBasicsHref ? (
           <div className="wa-kit-card" style={{ display: 'grid', gap: 10 }}>
@@ -636,6 +740,73 @@ export function MemberHomeKit({
             >
               Start this lesson
             </Link>
+          </div>
+        ) : null}
+
+        {upNext.length > 0 || recommendedTool ? (
+          <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
+            {upNext.length > 0 ? (
+              <div className={cx('wa-kit-card', recommendedTool ? 'lg:wa-col-span-7' : 'lg:wa-col-span-12')}>
+                <KitCardHead title="Up next" />
+                <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }} aria-label="Up next">
+                  {upNext.map((action) => (
+                    <li key={action.id}>
+                      <Link
+                        href={resolveMemberProgramHref(action.href)}
+                        className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                        style={UP_NEXT_ROW}
+                      >
+                        <span style={{ minWidth: 0 }}>
+                          <span style={{ display: 'block', fontWeight: 700, color: 'var(--wa-text)' }}>{action.title}</span>
+                          <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>
+                            {action.body}
+                          </span>
+                        </span>
+                        <span style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}>
+                          {action.cta} <ArrowRight size={13} aria-hidden />
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ) : null}
+            {recommendedTool ? (
+              <div
+                className={cx('wa-kit-card', upNext.length > 0 ? 'lg:wa-col-span-5' : 'lg:wa-col-span-12')}
+                style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+                data-testid="recommended-tool"
+                data-tool={recommendedTool.slug}
+              >
+                <p
+                  className="wa-kit-meta wa-flex wa-items-center wa-gap-2"
+                  style={{ margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}
+                >
+                  <Wand2 size={13} aria-hidden /> Recommended tool
+                </p>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', textWrap: 'balance' }}>
+                  {recommendedTool.title}
+                </h3>
+                <p className="wa-kit-lede" style={{ margin: 0 }}>
+                  {recommendedTool.body}
+                </p>
+                <div className="wa-flex wa-items-center wa-gap-4 wa-flex-wrap" style={{ marginTop: 'auto' }}>
+                  <Link
+                    href={recommendedTool.href}
+                    className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+                  >
+                    {recommendedTool.cta} <ArrowRight size={13} aria-hidden />
+                  </Link>
+                  <a
+                    href={toolkitHref}
+                    className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                    style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}
+                  >
+                    All AI Career Tools
+                  </a>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -662,6 +833,15 @@ export function MemberHomeKit({
           <div className="lg:wa-col-span-4 wa-min-w-0">
           <div className="wa-kit-card wa-kit-cert-path">
             <KitCardHead title="Certification path" linkLabel="Open plan" linkHref={programHref} />
+            {showProgramSwitch && programSwitch ? (
+              <div data-testid="home-program-switch" style={{ display: 'grid', gap: 6, marginBottom: 14 }}>
+                <DashboardProgramSelector
+                  options={programSwitch.options}
+                  activeProgramSlug={programSwitch.activeProgramSlug}
+                  pathname={programSwitch.pathname}
+                />
+              </div>
+            ) : null}
             <div className="wa-kit-cert-path-body">
               <ProgressRing pct={pct} size={112} tone={pct >= 100 ? 'ok' : undefined} label="Course completion" />
               <div className="wa-kit-cert-path-copy">
@@ -910,7 +1090,16 @@ export function MemberHomeKit({
                   Open goals
                 </a>
               </div>
-            ) : null}
+            ) : (
+              // No active goal: one quiet way to set one, not an empty goals block.
+              <a
+                href={goalsHref}
+                className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                style={{ ...HOME_TEXT_LINK, alignSelf: 'flex-start', fontSize: 'var(--wa-type-meta)' }}
+              >
+                <Target size={14} aria-hidden /> Set a goal
+              </a>
+            )}
           </div>
         </div>
 

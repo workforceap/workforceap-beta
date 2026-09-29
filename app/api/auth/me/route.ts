@@ -77,7 +77,7 @@ export const GET = withApiGuc(async (request: Request) => {
           employer: null,
           counselor: null,
           superAdmin: true,
-          canAccessMemberDashboard: false,
+          canAccessMemberDashboard: true,
           availablePortals,
         },
         { headers: { 'Cache-Control': 'no-store' } }
@@ -109,8 +109,7 @@ export const GET = withApiGuc(async (request: Request) => {
       hasAdmin: adminAccess,
     }));
 
-    const partnerExclusive = !!partnerCtx;
-    const canAccessMemberDashboard = !partnerExclusive;
+    const canAccessMemberDashboard = availablePortals.some(({ role }) => role === 'member');
 
     return NextResponse.json(
       {

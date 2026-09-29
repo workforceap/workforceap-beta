@@ -18,17 +18,17 @@ const action = {
   weight: 90,
 };
 
-function show(variant: 'legacy' | 'kit') {
+function show() {
   return render(
     <NextIntlClientProvider locale="en" messages={messages}>
-      <MemberDoThisNextCard action={action} variant={variant} />
+      <MemberDoThisNextCard action={action} />
     </NextIntlClientProvider>,
   );
 }
 
 describe('MemberDoThisNextCard destination', () => {
-  it.each(['legacy', 'kit'] as const)('%s variant rewrites the dead training stub to My Program', (variant) => {
-    const { container, unmount } = show(variant);
+  it('rewrites the dead training stub to My Program', () => {
+    const { container, unmount } = show();
     const cta = screen.getByRole('link', { name: /Resume training/ });
     expect(cta.getAttribute('href')).toBe('/dashboard/program?program=google-it-support');
     expect(container.querySelector('a[href^="/dashboard/training"]')).toBeNull();

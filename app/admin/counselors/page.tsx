@@ -9,6 +9,7 @@ import {
 import { loadCounselorRoster, parseCounselorRosterQuery, COUNSELOR_PAGE_SIZE } from '@/lib/admin/counselorRoster';
 import PageHeader from '@/components/portal/PageHeader';
 import AdminCounselorsClient from '@/components/admin/AdminCounselorsClient';
+import { AddCounselorForm } from '@/components/admin/AddCounselorForm';
 import {
   CounselorsRosterKit,
   type CounselorRow,
@@ -60,8 +61,10 @@ export default async function AdminCounselorsPage({
   const requestedUi = typeof params.ui === 'string' ? params.ui : null;
 
   // Legacy → the original add-counselor form + flat roster list.
-  if (requestedUi === 'legacy') {
-    const partners = await withAdminPageScope(scope, (db) =>
+  // Active partners for the add-counselor form's affiliation picker
+  // (tenant-scoped for org admins via withAdminPageScope).
+  const loadPartners = () =>
+    withAdminPageScope(scope, (db) =>
       db.partner.findMany({
         take: 5000,
         where: { active: true },
@@ -69,6 +72,9 @@ export default async function AdminCounselorsPage({
         select: { id: true, name: true },
       }),
     );
+
+  if (requestedUi === 'legacy') {
+    const partners = await loadPartners();
 
     return (
       <div className="admin-main-content">
@@ -84,10 +90,17 @@ export default async function AdminCounselorsPage({
   // --- DEFAULT: real (lean) caseload & performance roster (design kit) ---
 
   const query = parseCounselorRosterQuery(params);
-  const roster = await withAdminPageScope(scope, (db) => loadCounselorRoster(db, scope, query)).catch((error: unknown) => {
-    console.error('[admin/counselors] roster load failed', error);
-    return null;
-  });
+  const [roster, partners] = await Promise.all([
+    withAdminPageScope(scope, (db) => loadCounselorRoster(db, scope, query)).catch((error: unknown) => {
+      console.error('[admin/counselors] roster load failed', error);
+      return null;
+    }),
+    // A partner-list failure only hides the add form; the roster still renders.
+    loadPartners().catch((error: unknown) => {
+      console.error('[admin/counselors] partner list load failed', error);
+      return null;
+    }),
+  ]);
   if (!roster) {
     return <div className="admin-main-content" data-portal-error-state="admin-counselors-assignment-load">
       <PageHeader title="Counselors & Advisors" subtitle="Counselor reporting is temporarily unavailable." />
@@ -148,6 +161,7 @@ export default async function AdminCounselorsPage({
         avgCaseload={avgCaseload}
         atRiskOwned={atRiskOwned}
         avgResponse="—"
+        addCounselor={partners ? <AddCounselorForm partners={partners} /> : undefined}
       />
     </>
   );

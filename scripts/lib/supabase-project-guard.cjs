@@ -6,6 +6,15 @@ const REFS = {
   prod: PROD_REF,
 };
 
+// Prisma can use query parameters in place of URL authority fields. In
+// particular, ?host=/path/to/socket ignores the hostname in the authority.
+// Never approve a project from that hostname when a connection target or
+// identity can be overridden by a query parameter.
+const CONNECTION_TARGET_OVERRIDE_KEYS = new Set([
+  'host', 'hostaddr', 'port', 'user', 'dbname', 'database',
+  'password', 'service', 'servicefile', 'passfile',
+]);
+
 function parseUrl(value) {
   if (!value) return null;
   try {
@@ -20,14 +29,29 @@ function projectForUrl(value, kind = 'database') {
   const parsed = parseUrl(value);
   if (!parsed) return 'unknown';
 
+  if (kind === 'database') {
+    if (!['postgres:', 'postgresql:'].includes(parsed.protocol)) return 'unknown';
+    for (const key of parsed.searchParams.keys()) {
+      if (CONNECTION_TARGET_OVERRIDE_KEYS.has(key.toLowerCase())) return 'unknown';
+    }
+  } else if (kind === 'public' && parsed.protocol !== 'https:') {
+    return 'unknown';
+  }
+
   const hostname = parsed.hostname.toLowerCase();
-  const username = decodeURIComponent(parsed.username || '').toLowerCase();
+  let username;
+  try {
+    username = decodeURIComponent(parsed.username || '').toLowerCase();
+  } catch {
+    return 'unknown';
+  }
   const isSupabasePooler =
     hostname === 'pooler.supabase.com' || hostname.endsWith('.pooler.supabase.com');
   const rawPoolerOptions = parsed.searchParams.getAll('options');
-  const optionReferences = rawPoolerOptions.flatMap((value) =>
-    new URLSearchParams(value).getAll('reference')
-  );
+  const optionParameters = rawPoolerOptions.map((option) => new URLSearchParams(option));
+  if (optionParameters.some((params) => [...params.keys()].some((key) =>
+    CONNECTION_TARGET_OVERRIDE_KEYS.has(key.toLowerCase())))) return 'unknown';
+  const optionReferences = optionParameters.flatMap((params) => params.getAll('reference'));
 
   for (const [project, ref] of Object.entries(REFS)) {
     const exactPublicHost = hostname === `${ref}.supabase.co`;

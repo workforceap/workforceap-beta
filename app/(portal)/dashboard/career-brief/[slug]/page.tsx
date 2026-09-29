@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { getCareerBriefs, getCareerBriefContent } from '@/lib/content/careerBriefs';
 import { getCareerBriefContext } from '@/lib/content/careerBriefPersonalization';
 import { generatePersonalizedBriefSection } from '@/lib/ai/careerBriefAI';
@@ -29,6 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CareerBriefDetailPage({ params }: Props) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/career-brief');
+  const access = await getMemberDashboardAccess(user.id);
+  if (access.redirectTo) redirect(access.redirectTo);
 
   const { slug } = await params;
   const content = getCareerBriefContent(slug);

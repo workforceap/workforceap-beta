@@ -34,7 +34,6 @@ import { Button } from '@astryxdesign/core/Button';
 import { Token } from '@astryxdesign/core/Token';
 import { StatusDot } from '@astryxdesign/core/StatusDot';
 import { HStack } from '@astryxdesign/core/Layout';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   Mic,
   MicOff,
@@ -72,6 +71,7 @@ import { PageOpener } from '../PageOpener';
 import { KitEmptyState } from '../KitEmptyState';
 import { StatusTag } from '../StatusTag';
 import { VoiceOrb } from '../VoiceOrb';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -1280,14 +1280,13 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
               : 'Add your resume to get an instant structural read, full AI scoring, and rewrites.'}
           </p>
         </div>
-        <AstryxLink href={hasResume ? TOOL_HREF['resume-studio'] + '?view=score' : TOOL_HREF['resume-studio']} as={Link as never} isStandalone>
-          <Button
-            label={hasResume ? 'Open full analysis' : 'Add résumé'}
-            variant="primary"
-            size="sm"
-            icon={<Upload size={14} aria-hidden="true" />}
-          />
-        </AstryxLink>
+        <KitLinkButton
+          href={hasResume ? TOOL_HREF['resume-studio'] + '?view=score' : TOOL_HREF['resume-studio']}
+          label={hasResume ? 'Open full analysis' : 'Add résumé'}
+          variant="primary"
+          size="sm"
+          icon={<Upload size={14} aria-hidden="true" />}
+        />
       </div>
 
       {hasResume && score !== null ? (
@@ -1369,12 +1368,8 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
                 Scores this resume against job-market keywords and O*NET skills, then rewrites weak bullets.
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
-                <AstryxLink href={TOOL_HREF['resume-studio'] + '?view=score'} as={Link as never} isStandalone>
-                  <Button label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
-                </AstryxLink>
-                <AstryxLink href={TOOL_HREF['resume-rewriter']} as={Link as never} isStandalone>
-                  <Button label="Rewrite a bullet" variant="secondary" size="sm" />
-                </AstryxLink>
+                <KitLinkButton href={TOOL_HREF['resume-studio'] + '?view=score'} label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
+                <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Rewrite a bullet" variant="secondary" size="sm" />
               </div>
               </div>
             </Card>
@@ -1458,9 +1453,7 @@ function IssueRow({ issue }: { issue: ResumeStudioIssue }) {
           <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-meta)' }}>{title}</div>
           <div style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{detail}</div>
         </div>
-        <AstryxLink href={TOOL_HREF['resume-rewriter']} as={Link as never} isStandalone>
-          <Button label="Fix with AI" variant="primary" size="sm" />
-        </AstryxLink>
+        <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Fix with AI" variant="primary" size="sm" />
       </div>
     </Card>
   );

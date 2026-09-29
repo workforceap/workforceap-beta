@@ -24,6 +24,7 @@ function healthBody(overrides: Record<string, unknown> = {}) {
     probe: 'live',
     version: 'f630cf6',
     supabaseRef: DEMO_REF,
+    prismaProject: 'demo',
     timestamp: '2026-09-17T00:00:00.000Z',
     ...overrides,
   });
@@ -164,12 +165,13 @@ describe('normalizeTrustedSha', () => {
 describe('evaluateHealthPayload', () => {
   const base = { status: 200, trustedSha: TRUSTED_SHA, mode: 'isolated_preview' };
 
-  it('passes when the version prefixes the trusted SHA and the Supabase ref matches the policy', () => {
+  it('passes when the version and both public Auth and server Prisma projects match the policy', () => {
     expect(evaluateHealthPayload({ ...base, body: healthBody() })).toEqual({
       ok: true,
       status: 200,
       version: 'f630cf6',
       supabaseRef: DEMO_REF,
+      prismaProject: 'demo',
     });
   });
 
@@ -243,10 +245,49 @@ describe('evaluateHealthPayload', () => {
     });
   });
 
+  it('fails closed when the public URL is DEMO but the server Prisma URL is PROD', () => {
+    const outcome = evaluateHealthPayload({ ...base, body: healthBody({ prismaProject: 'prod' }) });
+    expect(outcome).toMatchObject({
+      ok: false,
+      reason: 'prisma_project_mismatch',
+      prismaProject: 'prod',
+      expectedPrismaProject: 'demo',
+      retryable: false,
+    });
+    expect(describeHealthGateFailure(outcome)).toContain('Prisma datasource is prod');
+  });
+
+  it('fails closed on missing or unclassified server Prisma attestation', () => {
+    expect(evaluateHealthPayload({ ...base, body: healthBody({ prismaProject: undefined }) })).toMatchObject({
+      reason: 'prisma_project_missing',
+      retryable: false,
+    });
+    for (const prismaProject of ['unset', 'unknown']) {
+      expect(evaluateHealthPayload({ ...base, body: healthBody({ prismaProject }) })).toMatchObject({
+        reason: 'prisma_project_mismatch',
+        expectedPrismaProject: 'demo',
+        retryable: false,
+      });
+    }
+  });
+
+  it('requires PROD Prisma for the production canary', () => {
+    expect(evaluateHealthPayload({
+      ...base,
+      mode: 'production_canary',
+      body: healthBody({ supabaseRef: PROD_REF, prismaProject: 'demo' }),
+    })).toMatchObject({ reason: 'prisma_project_mismatch', expectedPrismaProject: 'prod' });
+    expect(evaluateHealthPayload({
+      ...base,
+      mode: 'production_canary',
+      body: healthBody({ supabaseRef: PROD_REF, prismaProject: 'prod' }),
+    })).toMatchObject({ ok: true, prismaProject: 'prod' });
+  });
+
   it('skips the commit and project checks only for the local policy', () => {
     expect(
       evaluateHealthPayload({ status: 200, mode: 'local', trustedSha: null, body: JSON.stringify({ status: 'ok' }) }),
-    ).toEqual({ ok: true, status: 200, version: null, supabaseRef: null });
+    ).toEqual({ ok: true, status: 200, version: null, supabaseRef: null, prismaProject: null });
     expect(
       evaluateHealthPayload({ status: 200, mode: 'local', trustedSha: TRUSTED_SHA, body: healthBody({ version: 'abc1234' }) }),
     ).toMatchObject({ reason: 'version_mismatch' });

@@ -12,6 +12,7 @@ import {
 import { checkMessageRateLimit } from '@/lib/messages/rateLimit';
 import { createNotification } from '@/lib/notifications/create';
 import { notifyUnassignedMemberMessage } from '@/lib/messages/unassignedNotify';
+import { counselorMemberThreadLink } from '@/lib/messages/staffLinks';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -114,12 +115,19 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
   const messagePreview = normalized.body.slice(0, 200);
 
   if (recipientId) {
+    // Staff open the member's thread from the notification, never the member
+    // inbox (/dashboard/messages). A counselor of record lands on the thread in
+    // /counselor/messages; any other staff recipient uses /admin/messages.
+    const recipientCounselor = await prisma.counselor
+      .findFirst({ where: { userId: recipientId, active: true }, select: { id: true } })
+      .catch(() => null);
+    const link = recipientCounselor ? counselorMemberThreadLink(user.id) : '/admin/messages';
     await createNotification({
       userId: recipientId,
       type: 'message',
       title: `New message from ${senderLabel}`,
       body: messagePreview,
-      data: { threadId: thread.id, memberId: user.id },
+      data: { threadId: thread.id, memberId: user.id, link },
     });
   } else {
     // Assignment should have already run on thread open. If the org still

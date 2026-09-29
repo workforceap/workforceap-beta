@@ -1,9 +1,8 @@
 'use client';
 
-import NextLink from 'next/link';
+import type { ReactNode } from 'react';
+import { ScreeningPackRowActions } from '@/components/admin/ScreeningPackRowActions';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Token } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
@@ -11,6 +10,7 @@ import {
   DataTable,
   type Column,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Employer screening packs — pre-built candidate screening packs per employer,
@@ -43,6 +43,12 @@ export interface ScreeningPacksKitProps {
   totalPacks?: number;
   /** Active packs (for the subtitle). */
   activePacks?: number;
+  /** Show Activate / Deactivate / Delete on each row (WAP-193). */
+  manageable?: boolean;
+  /** New-pack form, rendered under the table (WAP-193). */
+  createForm?: ReactNode;
+  /** In-page anchor of `createForm`; the header button jumps there. */
+  createFormHref?: string;
 }
 
 const DEFAULT_PACKS: ScreeningPackRow[] = [
@@ -68,7 +74,14 @@ export function ScreeningPacksKit({
   packs = DEFAULT_PACKS,
   totalPacks,
   activePacks,
+  manageable = false,
+  createForm,
+  createFormHref,
 }: ScreeningPacksKitProps) {
+  const actions = (row: ScreeningPackRow) =>
+    manageable ? (
+      <ScreeningPackRowActions id={row.id} label={`${row.employer} · ${row.roleFamily}`} active={row.active} />
+    ) : null;
   const total = totalPacks ?? packs.length;
   const active = activePacks ?? packs.filter((p) => p.active).length;
   const subtitle = `${active.toLocaleString()} active ${
@@ -104,6 +117,9 @@ export function ScreeningPacksKit({
       ),
     },
   ];
+  if (manageable) {
+    columns.push({ key: 'actions', header: 'Actions', render: actions });
+  }
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
@@ -112,9 +128,11 @@ export function ScreeningPacksKit({
         kicker="Employers"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/employer-screening-packs?ui=legacy" as={NextLink as never} isStandalone>
-            <Button label="Manage packs" variant="secondary" size="sm" />
-          </AstryxLink>
+          createForm && createFormHref ? (
+            <KitLinkButton href={createFormHref} label="New pack" variant="secondary" size="sm" />
+          ) : (
+            <KitLinkButton href="/admin/employer-screening-packs?ui=legacy" label="Manage packs" variant="secondary" size="sm" />
+          )
         }
       />
 
@@ -122,7 +140,7 @@ export function ScreeningPacksKit({
         columns={columns}
         rows={packs}
         rowKey={(row) => row.id}
-        minWidth={720}
+        minWidth={manageable ? 900 : 720}
         mobile="cards"
         cardRender={(row) => (
           <Card>
@@ -175,11 +193,14 @@ export function ScreeningPacksKit({
               <span>Used</span>
               <Token label={row.used} size="sm" color="gray" />
             </div>
+            {manageable ? <div style={{ marginTop: 12 }}>{actions(row)}</div> : null}
           </Card>
         )}
         emptyTitle="No screening packs"
         emptyDescription="Employer-designed screening packs will appear here once they are created."
       />
+
+      {createForm ? <div style={{ marginTop: 24, maxWidth: 900 }}>{createForm}</div> : null}
     </DesignSurface>
   );
 }

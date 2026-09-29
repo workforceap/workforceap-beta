@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { employerVisibleMatchReasons } from '@/lib/employer/matchReasons';
 import type { AIJobMatchStatus } from '@prisma/client';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -55,7 +56,8 @@ const patchSchema = z.object({
 
   auditLog({ actorUserId: user.id, action: 'employer_job_match_update', targetType: 'AIJobMatch', targetId: match.id }).catch(() => {});
   logAuditEvent({ user: { id: user.id, role: 'employer' }, verb: 'updated', object: { type: 'AIJobMatch', id: match.id }, result: { success: true } }).catch(() => {});
-  return NextResponse.json(updated);
+  // Legacy rows can still carry the staff-only assessment-score reason.
+  return NextResponse.json({ ...updated, matchReasons: employerVisibleMatchReasons(updated.matchReasons) });
 
   } catch (error) {
     console.error('/employer/jobs/[id]/matches/[studentId] error:', error);
