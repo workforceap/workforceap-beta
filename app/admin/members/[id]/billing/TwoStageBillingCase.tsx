@@ -5,7 +5,7 @@ import { KitEmptyState } from '@/components/portal/kit';
 import { GATE_CODES, type BillingStage, type CaseListItemDto, type CaseSummaryDto, type ErrorCode } from '@/lib/billing/twoStage/dto';
 import TwoStageBillingWorkbench from './TwoStageBillingWorkbench';
 import TwoStageStageEditor from './TwoStageStageEditor';
-import { ClassStartedPanel, FailureNotice, J5ReadinessPanel, PaymentPanel, SignerTaskAction, StageLifecycle, VoucherPanel, type PanelContext } from './TwoStageStagePanels';
+import { ClassStartedPanel, FailureNotice, J5ReadinessPanel, PaymentPanel, SignerTaskAction, signatureSlotStage, StageLifecycle, VoucherPanel, type PanelContext } from './TwoStageStagePanels';
 import { twoStageApi, type ApiFailure } from './twoStageClient';
 import styles from './TwoStageBillingWorkbench.module.css';
 
@@ -193,6 +193,7 @@ export default function TwoStageBillingCase({ memberId, memberName, memberEmail,
 
   const { summary, caseId, cases } = state;
   const ctx: PanelContext = { memberId, caseId, gates: summary.gates, onChanged: refresh };
+  const signatureStage = signatureSlotStage(summary);
   const editor = (stage: BillingStage) =>
     editing === stage ? (
       <TwoStageStageEditor
@@ -250,7 +251,7 @@ export default function TwoStageBillingCase({ memberId, memberName, memberEmail,
             <>
               {editor('j5')}
               <J5ReadinessPanel ctx={ctx} attestation={summary.j5.readinessAttestation} />
-              <StageLifecycle ctx={ctx} stage="j5" view={summary.j5} viewer={summary.viewer} signature={summary.signature} />
+              <StageLifecycle ctx={ctx} stage="j5" view={summary.j5} viewer={summary.viewer} signature={summary.signature} showSignatureSlot={signatureStage === 'j5'} />
             </>
           ),
           j6: (
@@ -258,7 +259,7 @@ export default function TwoStageBillingCase({ memberId, memberName, memberEmail,
               {editor('j6')}
               <VoucherPanel ctx={ctx} voucher={summary.j6.voucher} />
               <ClassStartedPanel ctx={ctx} classStarted={summary.j6.classStarted} />
-              <StageLifecycle ctx={ctx} stage="j6" view={summary.j6} viewer={summary.viewer} signature={summary.signature} />
+              <StageLifecycle ctx={ctx} stage="j6" view={summary.j6} viewer={summary.viewer} signature={summary.signature} showSignatureSlot={signatureStage === 'j6'} />
               <PaymentPanel ctx={ctx} payment={summary.payment} />
             </>
           ),

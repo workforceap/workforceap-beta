@@ -366,6 +366,38 @@ describe('two-stage billing: the designated signer approves his signature image'
     expect(JSON.parse(String(form.get('attestation')))).toEqual({ statementConfirmed: true, statementText: SIGNATURE_STATEMENT, replace: true, revokeReason: 'Cleaner scan' });
   });
 
+  it('renders one upload form per case, not one per stage, and none for staff', async () => {
+    const bothMissing = (viewer: CaseSummaryDto['viewer']) => {
+      const summary = withoutImage();
+      summary.viewer = viewer;
+      summary.j6 = { ...summary.j6, blockers: [...summary.j6.blockers, missingBlocker] };
+      return summary;
+    };
+    mockCase(() => bothMissing(designated));
+    let view = renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    expect(screen.getAllByRole('group', { name: 'Your signature' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Upload your signature (PNG)' })).toHaveLength(1);
+    expect(within(lifecycle('J5')).getByRole('group', { name: 'Your signature' })).toBeInTheDocument();
+    expect(within(lifecycle('J6')).queryByRole('group', { name: 'Your signature' })).toBeNull();
+    view.unmount();
+    vi.unstubAllGlobals();
+
+    // An approved image is shown (with its replace form) once too.
+    mockCase(() => withImage());
+    view = renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    expect(screen.getAllByRole('group', { name: 'Your signature' })).toHaveLength(1);
+    view.unmount();
+    vi.unstubAllGlobals();
+
+    mockCase(() => bothMissing({ isExecutiveSigner: false, isDesignatedSigner: false }));
+    renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    expect(screen.queryAllByRole('group', { name: 'Your signature' })).toHaveLength(0);
+    expect(screen.queryAllByRole('button', { name: 'Upload your signature (PNG)' })).toHaveLength(0);
+  });
+
   it('staff other than the designated signer never see the upload or replace controls', async () => {
     mockCase(() => j5DraftSummary({ signature: { active: activeSignature, approvalStatement: SIGNATURE_STATEMENT, viewerCanUpload: false } }));
     renderCase();

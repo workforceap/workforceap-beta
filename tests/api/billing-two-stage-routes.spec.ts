@@ -170,7 +170,9 @@ import { sha256Hex } from '@/lib/billing/twoStage/canonical';
 import { buildJ5Content, recipientRowsForContent } from '@/lib/billing/twoStage/content';
 import { WAP_LOGO_PUBLIC_PATH } from '@/lib/billing/twoStage/letterhead';
 import { inspectSignaturePng, signatureApprovalStatement } from '@/lib/billing/twoStage/signatureAsset';
-import { renderDraftFromContent } from '@/lib/billing/twoStage/rendererAdapter';
+import { RendererAdapterError, renderDraftFromContent } from '@/lib/billing/twoStage/rendererAdapter';
+import { adapterError } from '@/lib/billing/twoStage/api/documents';
+import { ApiError } from '@/lib/billing/twoStage/api/http';
 import { signerIntentStatement } from '@/lib/billing/twoStage/signing';
 import { syntheticPng } from '../fixtures/billing/syntheticPng';
 
@@ -509,7 +511,8 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     expect(again.j6.voucher?.receiptAttestation?.attestationId).toBe('rs-1');
     expect(again.waitingOnDesignatedSigner).toEqual([]);
     expect(again.readinessWaitingOn).toEqual({});
-    expect(again.j6.blockers.some((b) => b.waitingOn)).toBe(false);
+    // The voucher steps no longer wait on him; only his (not yet uploaded) signature image does.
+    expect(again.j6.blockers.filter((b) => b.waitingOn).map((b) => b.code)).toEqual(['SIGNATURE_ASSET_MISSING']);
 
     // A replacement voucher clears it.
     h.state.artifacts.push({ ...h.state.artifacts[0], id: 'v2', sha256: 'd'.repeat(64), createdAt: new Date('2026-09-30T15:00:00Z') });
@@ -527,7 +530,7 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
       voucherTermsVerified: 'designated_signer',
       michaelReceivingSignatureAttested: 'designated_signer',
     });
-    expect(again.j6.blockers.filter((b) => b.waitingOn === 'designated_signer').map((b) => b.code).sort()).toEqual(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
+    expect(again.j6.blockers.filter((b) => b.waitingOn === 'designated_signer').map((b) => b.code).sort()).toEqual(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED', 'SIGNATURE_ASSET_MISSING']);
     // The voucher-data blocker names who must act, never reads like a staff task.
     const dataBlocker = again.j6.blockers.find((b) => b.code === 'J6_VOUCHER_ATTESTATION_INCOMPLETE')!;
     expect(dataBlocker.message).toMatch(/^Waiting on Michael A\. Brown/u);
@@ -893,6 +896,10 @@ describe('two-stage routes: case summary reports the signature image', () => {
     let summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
     expect(summary.signature).toMatchObject({ active: null, viewerCanUpload: true });
     for (const stage of [summary.j5, summary.j6]) expect(stage.blockers.map((b) => b.code)).toContain('SIGNATURE_ASSET_MISSING');
+    // Only he can upload it, so both stages name him as the one who must act.
+    for (const stage of [summary.j5, summary.j6]) {
+      expect(stage.blockers.find((b) => b.code === 'SIGNATURE_ASSET_MISSING')).toMatchObject({ waitingOn: 'designated_signer' });
+    }
     expect(summary.j5.canSign).toBe(false);
 
     h.state.signatureAssets = [assetRow()];
@@ -1072,5 +1079,35 @@ describe('two-stage routes: signing a J5 with the approved image', () => {
     expect(res.status).toBe(403);
     expect(mocks.readSignature).not.toHaveBeenCalled();
     expect(mocks.archive).not.toHaveBeenCalled();
+  });
+});
+
+describe('two-stage routes: renderer refusals keep their own codes', () => {
+  const mapped = (error: RendererAdapterError): ApiError => {
+    try {
+      adapterError(error);
+    } catch (thrown) {
+      if (thrown instanceof ApiError) return thrown;
+      throw thrown;
+    }
+    throw new Error('adapterError returned');
+  };
+
+  it('a held J6 refused by the signed renderer is J6_HELD with its holds, not TEXT_NOT_PRINTABLE', () => {
+    const e = mapped(new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'A J6 on hold cannot be signed.', { holds: ['voucher_amount_differs'] }));
+    expect(e.status).toBe(409);
+    expect(e.body).toMatchObject({ code: 'J6_HELD', holds: ['voucher_amount_differs'], blockers: [{ code: 'HOLD_VOUCHER_AMOUNT_DIFFERS', hardHold: true }] });
+  });
+
+  it('a J6 without the receiving-signature attestation is RECEIVING_SIGNATURE_NOT_ATTESTED', () => {
+    const e = mapped(new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'A signed J6 needs the designated signer receiving-signature attestation.', { field: 'voucher' }));
+    expect([e.status, e.body.code]).toEqual([409, 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
+  });
+
+  it('other unrenderable content, and a changed signature image, keep their existing codes', () => {
+    const shape = mapped(new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'The total must be $7,500.00.', { field: 'totalCents' }));
+    expect([shape.status, shape.body.code, shape.body.field]).toEqual([422, 'TEXT_NOT_PRINTABLE', 'totalCents']);
+    const image = mapped(new RendererAdapterError('SIGNATURE_IMAGE_MISMATCH', 'The signature image is not the one this draft was prepared with.'));
+    expect([image.status, image.body.code]).toEqual([409, 'SIGNATURE_ASSET_MISMATCH']);
   });
 });

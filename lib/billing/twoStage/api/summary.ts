@@ -82,8 +82,19 @@ export type SummaryInput = {
   now: Date;
 };
 
-/** The blocker codes a designated-signer step clears, tagged `waitingOn` while a voucher file exists. */
-const DESIGNATED_SIGNER_BLOCKERS = new Set<Blocker['code']>(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
+/**
+ * The blocker codes only the designated signer clears, tagged `waitingOn`: his
+ * signature image (on both stages), and the voucher steps (while a voucher
+ * file exists). SIGNATURE_ASSET_MISMATCH is staff's to clear (save the draft
+ * again), so it is not tagged.
+ */
+const DESIGNATED_SIGNER_BLOCKERS = new Set<Blocker['code']>(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED', 'SIGNATURE_ASSET_MISSING']);
+/** Of those, the steps on the current voucher file: tagged only while one exists. */
+const VOUCHER_SIGNER_BLOCKERS = new Set<Blocker['code']>(['J6_VOUCHER_ATTESTATION_INCOMPLETE', 'RECEIVING_SIGNATURE_NOT_ATTESTED']);
+
+function waitsOnDesignatedSigner(code: Blocker['code'], voucherExists: boolean): boolean {
+  return DESIGNATED_SIGNER_BLOCKERS.has(code) && (voucherExists || !VOUCHER_SIGNER_BLOCKERS.has(code));
+}
 
 /**
  * Steps waiting on the designated signer for the current voucher file, in
@@ -362,7 +373,9 @@ function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Re
         quotedClassEndDate: classEndDate(isoDate(readinessRow.classStartDate) as string),
       }
     : null;
-  const allBlockers = [...blockers, ...signBlockers, ...imageBlockers, ...sendBlockers];
+  const allBlockers = [...blockers, ...signBlockers, ...imageBlockers, ...sendBlockers].map((b) =>
+    waitsOnDesignatedSigner(b.code, false) ? { ...b, waitingOn: 'designated_signer' as const } : b,
+  );
   const view: J5StageView = {
     current: current ? versionView(snapshot, input.memberId, current, now) : null,
     history: records.slice(1).map((r) => versionView(snapshot, input.memberId, r, now)),
@@ -469,7 +482,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
   const invoiceRow = snapshot.artifacts.find((f) => f.kind === 'board_invoice') ?? null;
   const signerTasks = designatedSignerTasks(input, voucher, Boolean(receipt));
   const allBlockers = [...blockers, ...signBlockers, ...imageBlockers, ...sendBlockers].map((b) =>
-    voucher && DESIGNATED_SIGNER_BLOCKERS.has(b.code)
+    waitsOnDesignatedSigner(b.code, voucher !== null)
       ? // Name who must act: M1's "Confirm the uploaded voucher…" reads like a staff task.
         { ...b, waitingOn: 'designated_signer' as const, message: b.code === 'J6_VOUCHER_ATTESTATION_INCOMPLETE' ? VOUCHER_DATA_WAITING_MESSAGE : b.message }
       : b,

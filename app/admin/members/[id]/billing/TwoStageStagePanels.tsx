@@ -567,6 +567,16 @@ function signatureAssetMissing(view: J5StageView | J6StageView, gates: CaseSumma
   return gate ? gate.message ?? 'Upload your signature image before signing.' : null;
 }
 
+/**
+ * The one stage whose lifecycle carries the signature upload: the first that
+ * reports the image missing, or J5 once an image is approved. The image is per
+ * signer, not per stage, so the designated signer never sees two forms.
+ */
+export function signatureSlotStage(summary: Pick<CaseSummaryDto, 'j5' | 'j6' | 'gates' | 'signature'>): BillingStage | null {
+  for (const stage of ['j5', 'j6'] as const) if (signatureAssetMissing(summary[stage], summary.gates) || summary.signature.active) return stage;
+  return null;
+}
+
 function SignatureAssetSlot({ ctx, signature, missingMessage }: { ctx: PanelContext; signature: SignatureStatusDto; missingMessage: string | null }) {
   const action = useAction();
   const inputId = useId();
@@ -659,12 +669,15 @@ export function StageLifecycle({
   view,
   viewer,
   signature,
+  showSignatureSlot,
 }: {
   ctx: PanelContext;
   stage: BillingStage;
   view: J5StageView | J6StageView;
   viewer: CaseSummaryDto['viewer'];
   signature: SignatureStatusDto;
+  /** Whether this stage carries the case's single signature upload (`signatureSlotStage`). */
+  showSignatureSlot: boolean;
 }) {
   const freezeAction = useAction();
   const signAction = useAction();
@@ -752,7 +765,7 @@ export function StageLifecycle({
         </div>
       ) : null}
 
-      {viewer.isDesignatedSigner && (signatureMissing || signature.active) ? <SignatureAssetSlot ctx={ctx} signature={signature} missingMessage={signatureMissing} /> : null}
+      {viewer.isDesignatedSigner && showSignatureSlot && (signatureMissing || signature.active) ? <SignatureAssetSlot ctx={ctx} signature={signature} missingMessage={signatureMissing} /> : null}
 
       <ActionButton
         label={`Sign ${stage.toUpperCase()}`}

@@ -270,7 +270,7 @@ export type Blocker = {
   code: BlockerCode;
   message: string;
   hardHold: boolean;
-  /** Present only when the designated signer, not staff, must act (voucher data, receiving signature). */
+  /** Present only when the designated signer, not staff, must act (voucher data, receiving signature, his signature image). */
   waitingOn?: WaitingOn;
 };
 

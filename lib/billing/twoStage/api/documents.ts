@@ -102,6 +102,15 @@ const FRAME_HEADERS = { 'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Polic
 
 export function adapterError(error: unknown): never {
   if (error instanceof RendererAdapterError) {
+    // renderSignedFromContent refuses a held J6 (with its holds) and a J6 without the
+    // receiving-signature attestation (field 'voucher') under CONTENT_NOT_RENDERABLE;
+    // surface each under the code the sign route's own checks use, not TEXT_NOT_PRINTABLE.
+    if (error.code === 'CONTENT_NOT_RENDERABLE' && error.holds.length > 0) {
+      throw apiError(409, 'J6_HELD', 'This J6 is on hold.', { holds: [...error.holds], blockers: holdBlockers(error.holds) });
+    }
+    if (error.code === 'CONTENT_NOT_RENDERABLE' && error.field === 'voucher') {
+      throw apiError(409, 'RECEIVING_SIGNATURE_NOT_ATTESTED', RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE);
+    }
     const status = error.code === 'LOGO_CHANGED' || error.code === 'SIGNATURE_IMAGE_MISMATCH' ? 409 : 422;
     const code = error.code === 'CONTENT_NOT_RENDERABLE' ? 'TEXT_NOT_PRINTABLE' : error.code === 'SIGNATURE_IMAGE_MISMATCH' ? 'SIGNATURE_ASSET_MISMATCH' : error.code;
     throw apiError(status, code, error.message, error.field ? { field: error.field } : {});
