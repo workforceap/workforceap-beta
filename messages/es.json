@@ -4161,8 +4161,8 @@
     "partner": {
       "referrals": {
         "title": "Aún no hay miembros referidos",
-        "body": "Los miembros que se postulan con tu enlace de referencia o una invitación aparecen aquí con sus fechas de inscripción y colocación.",
-        "action": "Abrir la guía de referencias",
+        "body": "Los miembros que se postulan con tu enlace de referido o una invitación aparecen aquí con sus fechas de inscripción y colocación.",
+        "action": "Abrir la guía de referidos",
         "secondary": "Miembros referidos"
       },
       "referralsFiltered": {
@@ -4172,7 +4172,7 @@
       },
       "payouts": {
         "title": "Aún no hay pagos",
-        "body": "Un pago se registra aquí después de que WorkforceAP verifica una colocación de un miembro que referiste.",
+        "body": "Un pago se registra aquí después de que WorkforceAP verifique la colocación de un miembro que referiste.",
         "action": "Miembros referidos"
       },
       "pendingReviewsClear": {
@@ -4182,12 +4182,12 @@
       },
       "attentionClear": {
         "title": "Ningún miembro necesita atención",
-        "body": "El registro de ningún miembro referido lleva tanto tiempo sin actualizarse como para entrar en esta cola.",
+        "body": "Ningún registro de miembro referido lleva suficiente tiempo sin actualizarse como para entrar en esta cola.",
         "action": "Miembros referidos"
       },
       "attentionFiltered": {
-        "title": "No hay miembros en esta urgencia",
-        "body": "Los miembros de los otros niveles siguen listados en Todos.",
+        "title": "No hay miembros con este nivel de urgencia",
+        "body": "Los miembros de los demás niveles siguen en la cola: muestra todos los niveles para verlos.",
         "action": "Mostrar todos los niveles"
       },
       "attentionUnavailable": {
@@ -4202,7 +4202,7 @@
       },
       "milestonesPendingClear": {
         "title": "No hay hitos pendientes de revisión",
-        "body": "Aún no hay ninguna certificación ni colocación registrada para tus miembros; la actividad aparece en Completados."
+        "body": "Aún no hay ninguna certificación ni colocación registrada para tus miembros; la actividad ya registrada aparece más abajo."
       },
       "milestonesUnavailable": {
         "title": "No se pudieron cargar los hitos",

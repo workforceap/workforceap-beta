@@ -112,6 +112,27 @@ describe('empty.* copy', () => {
     for (const group of [p.payouts, p.milestones]) expect(group.body).not.toMatch(/will appear/);
   });
 
+  it('partner: es/fr/pt are translated and reuse each locale’s partner nav words', () => {
+    const catalogs = { en, es, fr, pt } as const;
+    const enLeaves = new Map(leaves(en.empty.partner as unknown as Tree));
+    for (const [locale, messages] of Object.entries(catalogs)) {
+      const p = messages.empty.partner;
+      // The route buttons say what the nav says (partner.referredMembers / partner.referralGuide).
+      for (const label of [p.referrals.secondary, p.payouts.action, p.pendingReviewsClear.action, p.attentionClear.action, p.milestones.action]) {
+        expect(label, locale).toBe(messages.partner.referredMembers);
+      }
+      expect(p.referrals.action.toLowerCase(), locale).toContain(messages.partner.referralGuide.toLowerCase());
+      if (locale === 'en') continue;
+      for (const [key, value] of leaves(p as unknown as Tree)) {
+        expect(value, `${locale} empty.partner.${key} is still English`).not.toBe(enLeaves.get(key));
+      }
+      // The attention tier chips and the phone "Completed" toggle render in English for now,
+      // so translated bodies must not cite them by a translated label.
+      expect(p.attentionFiltered.body, locale).not.toMatch(/\b(Todos|Tous)\b/);
+      expect(p.milestonesPendingClear.body, locale).not.toMatch(/Completados|Terminés|Concluídos/);
+    }
+  });
+
   it('first states name the thing, say what appears here, and end on the first action', () => {
     for (const group of ['activeApplications', 'applications', 'matches'] as const) {
       const leaf = en.empty[group];

@@ -4105,7 +4105,7 @@
       "referrals": {
         "title": "Ainda não há membros indicados",
         "body": "Os membros que se inscrevem com seu link de indicação ou um convite aparecem aqui com as datas de matrícula e colocação.",
-        "action": "Abrir o guia de indicações",
+        "action": "Abrir o guia de indicação",
         "secondary": "Membros indicados"
       },
       "referralsFiltered": {
@@ -4125,12 +4125,12 @@
       },
       "attentionClear": {
         "title": "Nenhum membro precisa de atenção",
-        "body": "O registro de nenhum membro indicado ficou tanto tempo sem atualização a ponto de entrar nesta fila.",
+        "body": "Nenhum registro de membro indicado está sem atualização há tempo suficiente para entrar nesta fila.",
         "action": "Membros indicados"
       },
       "attentionFiltered": {
-        "title": "Nenhum membro nesta urgência",
-        "body": "Os membros dos outros níveis continuam listados em Todos.",
+        "title": "Nenhum membro com este nível de urgência",
+        "body": "Os membros dos outros níveis continuam na fila: mostre todos os níveis para vê-los.",
         "action": "Mostrar todos os níveis"
       },
       "attentionUnavailable": {
@@ -4145,7 +4145,7 @@
       },
       "milestonesPendingClear": {
         "title": "Nenhum marco pendente de revisão",
-        "body": "Ainda não há nenhuma certificação ou colocação registrada para seus membros; a atividade aparece em Concluídos."
+        "body": "Ainda não há nenhuma certificação ou colocação registrada para seus membros; a atividade já registrada aparece mais abaixo."
       },
       "milestonesUnavailable": {
         "title": "Não foi possível carregar os marcos",
