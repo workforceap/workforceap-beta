@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import type { EnrollmentPageModel } from '@/lib/enroll/resolveEnrollmentPartner';
 import { partnerApplyHref, partnerProgramHref } from '@/lib/apply/partnerApplyHref';
+import { categoryTone } from '@/lib/marketing/categoryTone';
+import CategoryPill from './CategoryPill';
 import EnrollRefCookie from './EnrollRefCookie';
 
 const ICONS = {
@@ -36,10 +38,6 @@ const ICONS = {
 function Icon({ name, size }: { name: string; size: number }) {
   const Cmp = ICONS[name as keyof typeof ICONS] ?? Briefcase;
   return <Cmp size={size} aria-hidden="true" />;
-}
-
-function categoryTone(color: string): 'c' | 'g' {
-  return /ad2c4d|crimson|c47/i.test(color) ? 'c' : 'g';
 }
 
 export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPageModel }) {
@@ -165,7 +163,7 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
               <div className="pcard" key={p.slug}>
                 <div className="pcard-top">
                   <div className="ptags">
-                    <span className={`cat-pill cat--${categoryTone(p.categoryColor)}`}>{p.category}</span>
+                    <CategoryPill tone={categoryTone(p.categoryColor)}>{p.category}</CategoryPill>
                     <span className="fund-pill">Sponsored for {model.termLabel}</span>
                   </div>
                   <span className="picon"><Icon name={p.icon} size={26} /></span>

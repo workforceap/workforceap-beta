@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { unlinkedPartnerHref } from '@/lib/auth/portalGuards';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
@@ -87,6 +88,7 @@ export default async function PartnerGuidePage() {
     referralCode: partner?.referralCode,
     slug: partner?.slug ?? ctx.partner.slug,
   });
+  const mission = await getTranslations('mission');
   const shareLinks = buildPartnerShareLinks({
     referralCode: partner?.referralCode,
     slug: partner?.slug ?? ctx.partner.slug,
@@ -108,7 +110,11 @@ export default async function PartnerGuidePage() {
       <PartnerReferralShare url={referralApplyUrl} referralCode={referralCode} />
 
       <div style={{ marginBottom: '2rem' }}>
-        <PartnerShareToolkit links={shareLinks} channelCounts={channelCounts} />
+        <PartnerShareToolkit
+          links={shareLinks}
+          about={{ heading: mission('aboutHeading'), statement: mission('statement') }}
+          channelCounts={channelCounts}
+        />
       </div>
 
       {/* Who is WorkforceAP for */}
