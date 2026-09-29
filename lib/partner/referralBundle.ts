@@ -131,6 +131,54 @@ export function pendingPlacementWindowStart(now: number = Date.now()): Date {
   return new Date(now - PENDING_PLACEMENT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 }
 
+/** Most referral rows `loadPartnerReferralBundle` loads (newest first). */
+export const PARTNER_REFERRAL_BUNDLE_CAP = 500;
+
+/**
+ * The referral scope every partner surface reads: this partner's rows, in its
+ * own org, for non-deleted member accounts (staff/test accounts excluded),
+ * narrowed to the members this partner's tier may see (minors hidden from
+ * non-school partners without FERPA consent — lib/partner/dataAccess.ts).
+ * Shared by the bundle load and `countPartnerReferrals`, so a count and a
+ * load can never disagree about which referrals are in scope.
+ */
+export function partnerReferralScopeWhere(
+  partnerId: string,
+  tenantOrganizationId: string,
+  access: PartnerDataAccess,
+) {
+  return {
+    partnerId,
+    partner: { organizationId: tenantOrganizationId },
+    member: withPartnerMemberVisibility({
+      deletedAt: null,
+      organizationId: tenantOrganizationId,
+      ...MEMBER_ONLY_WHERE,
+    }, access),
+  };
+}
+
+/**
+ * The stored partner row's tier (never the caller's), or null when the
+ * partner is not in this org. Same lookup `loadPartnerReferralBundle` uses.
+ */
+async function resolvePartnerAccess(partnerId: string, tenantOrganizationId: string) {
+  const partnerRow = await prisma.partner.findFirst({
+    where: { id: partnerId, organizationId: tenantOrganizationId },
+    select: { partnerType: true },
+  });
+  return { partnerRow, access: partnerDataAccess(partnerRow) };
+}
+
+/** Uncapped count of the referrals `loadPartnerReferralBundle` would load. */
+export async function countPartnerReferrals(partnerId: string, tenantOrganizationId: string): Promise<number> {
+  const { partnerRow, access } = await resolvePartnerAccess(partnerId, tenantOrganizationId);
+  if (!partnerRow) return 0;
+  return prisma.partnerReferral.count({
+    where: partnerReferralScopeWhere(partnerId, tenantOrganizationId, access),
+  });
+}
+
 /**
  * @param tenantOrganizationId — Partner portal tenant boundary: partner row
  *   and referred members must belong to this org (defense against orphaned /
@@ -143,11 +191,7 @@ export function pendingPlacementWindowStart(now: number = Date.now()): Date {
  * columns and copy without re-deriving it.
  */
 export async function loadPartnerReferralBundle(partnerId: string, tenantOrganizationId: string) {
-  const partnerRow = await prisma.partner.findFirst({
-    where: { id: partnerId, organizationId: tenantOrganizationId },
-    select: { partnerType: true },
-  });
-  const access = partnerDataAccess(partnerRow);
+  const { partnerRow, access } = await resolvePartnerAccess(partnerId, tenantOrganizationId);
   if (!partnerRow) {
     return {
       referrals: [],
@@ -159,16 +203,8 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
   }
 
   const referrals = await prisma.partnerReferral.findMany({
-    take: 500,
-    where: {
-      partnerId,
-      partner: { organizationId: tenantOrganizationId },
-      member: withPartnerMemberVisibility({
-        deletedAt: null,
-        organizationId: tenantOrganizationId,
-        ...MEMBER_ONLY_WHERE,
-      }, access),
-    },
+    take: PARTNER_REFERRAL_BUNDLE_CAP,
+    where: partnerReferralScopeWhere(partnerId, tenantOrganizationId, access),
     include: {
       member: { select: referralMemberSelect(access) },
     },
