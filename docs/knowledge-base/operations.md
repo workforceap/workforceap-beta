@@ -144,6 +144,24 @@ Workflow enablement lives in `FeatureFlag.enabled` under the reserved `cron.enab
 
 [Notification creation](../../lib/notifications/create.ts) synchronously registers its full database → aggregated Discord operation with Next `after()` before returning, while preserving an awaitable promise for scripts and tests. Browser push remains best effort. An in-app `Notification` row proves app-inbox persistence only; a Resend success proves provider acceptance only; Discord/Web Push acceptance and user inbox/display receipt are separate boundaries. Placement-survey rows use nullable `sentAt` as pre-acceptance retry state and persist the complete helper-level provider payload—including recipient, rendered-input fields, signed URL, wave, and row/attempt key—before egress; ambiguous retries resolve persisted state before mutable email checks, reuse that frozen payload byte-for-byte even when current email is absent, and account the frozen recipient while intentional resends create a new attempt; admin readers and counters exclude that state until acceptance is stamped, while member exports represent it truthfully with `sentAt: null`. Review [sender tests](../../lib/email/send.test.ts), [bulk cron guard](../../lib/email/bulkCronGuard.test.ts), the request-lifetime lint ban on fire-and-forget `send*Email` in API routes ([eslint.config.mjs](../../eslint.config.mjs), `ABANDONED_ROUTE_EMAIL_BANS`), [contact route tests](../../tests/api/contact-route.spec.ts), [notification tests](../../tests/lib/notifications/create.spec.ts), and the changed workflow suite. Two naturally scheduled Sunday weekly-recap runs without relevant 429s remain timed operational acceptance; CI or synthetic sends cannot satisfy that gate.
 
+### Monitoring when execution tracking is unavailable
+
+Only `cron_deploy_health` and `cron_smoke_test` may continue after the initial
+`CronExecution` write fails. This fixed allowlist is for diagnostic GET probes,
+not enrollment, email, billing, or other mutating jobs. Authentication and the
+production cron-secret requirement still apply. A readable disabled setting is
+honored; if settings storage is also unavailable, these two monitors may run
+once so they can observe the outage. All other workflows remain fail-closed.
+
+The untracked path reports the storage failure and runs the monitor in a fresh
+API-error scope without inventing an execution ID. Its response carries
+`X-Cron-Execution-Tracking: unavailable`; probe failures retain their original
+failure status and body. A handler or completion-write failure never reruns the
+probes. This preserves monitoring during a tracking failure, not durable history
+or a repair to the underlying database connection. Existing handler-internal
+diagnostic error deduplication is unchanged. See the behavioral
+[wrapper regressions](../../tests/api/cron-wrapper-reliability.spec.ts).
+
 ## Health and observability
 
 | Signal | Meaning and source |
