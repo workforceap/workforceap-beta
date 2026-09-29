@@ -8,6 +8,7 @@ import {
   HASH_A,
   J5_RECORD_ID,
   MEMBER_ID,
+  SIGNATURE_STATEMENT,
   VOUCHER_ID,
   VOUCHER_SHA,
   emptyCaseSummary,
@@ -248,8 +249,7 @@ describe('two-stage billing actions', () => {
       const summary = j5DraftSummary({ viewer });
       summary.j5 = {
         ...summary.j5,
-        // Not in dto.ts yet: M1 adds the signer signature asset and its code.
-        blockers: [...summary.j5.blockers, { code: 'SIGNATURE_ASSET_MISSING' as never, message: 'Upload your signature image before signing.', hardHold: false }],
+        blockers: [...summary.j5.blockers, { code: 'SIGNATURE_ASSET_MISSING' as const, message: 'Upload your signature image before signing.', hardHold: false }],
       };
       return summary;
     };
@@ -258,7 +258,7 @@ describe('two-stage billing actions', () => {
     await screen.findByRole('region', { name: 'Release gates' });
     const slot = within(lifecycle('J5')).getByRole('group', { name: 'Your signature' });
     expect(within(slot).getByText('Upload your signature image before signing.')).toBeInTheDocument();
-    expect(within(slot).getByRole('button', { name: 'Upload your signature (PNG)' })).toBeDisabled();
+    expect(within(slot).getByRole('button', { name: 'Upload your signature (PNG)' })).toHaveAccessibleDescription('Choose your signature image (a PNG).');
     unmount();
     vi.unstubAllGlobals();
 
@@ -268,5 +268,109 @@ describe('two-stage billing actions', () => {
     expect(within(lifecycle('J5')).queryByRole('group', { name: 'Your signature' })).toBeNull();
     // Staff still see why signing waits.
     expect(within(screen.getByRole('region', { name: 'Quote / Voucher Request' })).getByText('Upload your signature image before signing.')).toBeInTheDocument();
+  });
+});
+
+
+describe('two-stage billing: the designated signer approves his signature image', () => {
+  const missingBlocker = { code: 'SIGNATURE_ASSET_MISSING' as const, message: 'Upload your signature image before signing.', hardHold: false };
+  const designated: CaseSummaryDto['viewer'] = { isExecutiveSigner: true, isDesignatedSigner: true };
+  const activeSignature = {
+    id: 'sig-1',
+    sha256: 'a'.repeat(64),
+    widthPx: 360,
+    heightPx: 90,
+    byteLength: 1234,
+    uploadedAt: '2026-09-29T17:00:00.000Z',
+    approvedAt: '2026-09-29T17:00:00.000Z',
+  };
+  const withoutImage = () => {
+    const summary = j5DraftSummary({ viewer: designated, signature: { active: null, approvalStatement: SIGNATURE_STATEMENT, viewerCanUpload: true } });
+    summary.j5 = { ...summary.j5, blockers: [...summary.j5.blockers, missingBlocker] };
+    return summary;
+  };
+  const withImage = () => j5DraftSummary({ viewer: designated, signature: { active: activeSignature, approvalStatement: SIGNATURE_STATEMENT, viewerCanUpload: true } });
+  const png = () => new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], 'my-signature.png', { type: 'image/png' });
+
+  it('uploads only after he picks a PNG and confirms the exact statement, sending the file and that statement', async () => {
+    let summary = withoutImage();
+    const calls = mockCase(
+      () => summary,
+      (call) => {
+        if (call.method === 'POST' && call.url === `${BASE}/signature`) {
+          summary = withImage();
+          return jsonResponse({ signature: activeSignature, replaced: null }, 201);
+        }
+        return undefined;
+      },
+    );
+    renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    const slot = within(lifecycle('J5')).getByRole('group', { name: 'Your signature' });
+    const upload = within(slot).getByRole('button', { name: 'Upload your signature (PNG)' });
+    // The statement he confirms is the server's, word for word.
+    expect(within(slot).getByText(SIGNATURE_STATEMENT)).toBeInTheDocument();
+    expect(upload).toBeDisabled();
+
+    fireEvent.change(within(slot).getByLabelText('Signature image (PNG)'), { target: { files: [png()] } });
+    expect(upload).toHaveAccessibleDescription('Confirm the statement first.');
+    fireEvent.click(within(slot).getByLabelText('I make this statement.'));
+    expect(upload).toBeEnabled();
+    fireEvent.click(upload);
+
+    await waitFor(() => expect(calls.some((c) => c.url === `${BASE}/signature`)).toBe(true));
+    const sent = calls.find((c) => c.url === `${BASE}/signature`)!;
+    expect(sent.method).toBe('POST');
+    const form = sent.body as FormData;
+    expect((form.get('file') as File).name).toBe('my-signature.png');
+    expect(JSON.parse(String(form.get('attestation')))).toEqual({ statementConfirmed: true, statementText: SIGNATURE_STATEMENT });
+
+    // The case reloads: the missing-image slot gives way to the approved image.
+    await waitFor(() => expect(within(lifecycle('J5')).getByText(/Approved 2026-09-29/u)).toBeInTheDocument());
+    expect(within(lifecycle('J5')).queryByRole('button', { name: 'Upload your signature (PNG)' })).toBeNull();
+  });
+
+  it('shows the server’s own refusal and leaves the form as it was', async () => {
+    mockCase(
+      () => withoutImage(),
+      (call) => (call.url === `${BASE}/signature` ? jsonResponse({ code: 'SIGNATURE_IMAGE_INVALID', error: 'Upload the signature as a PNG image.' }, 422) : undefined),
+    );
+    renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    const slot = within(lifecycle('J5')).getByRole('group', { name: 'Your signature' });
+    fireEvent.change(within(slot).getByLabelText('Signature image (PNG)'), { target: { files: [png()] } });
+    fireEvent.click(within(slot).getByLabelText('I make this statement.'));
+    fireEvent.click(within(slot).getByRole('button', { name: 'Upload your signature (PNG)' }));
+    expect(await within(slot).findByRole('alert')).toHaveTextContent('Upload the signature as a PNG image.');
+  });
+
+  it('replacing an approved image needs a reason and sends the replacement flag', async () => {
+    const calls = mockCase(
+      () => withImage(),
+      (call) => (call.url === `${BASE}/signature` ? jsonResponse({ signature: { ...activeSignature, id: 'sig-2' }, replaced: activeSignature }, 201) : undefined),
+    );
+    renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    const slot = within(lifecycle('J5')).getByRole('group', { name: 'Your signature' });
+    expect(within(slot).getByText(/Approved 2026-09-29/u)).toBeInTheDocument();
+    const replace = within(slot).getByRole('button', { name: 'Replace my signature image' });
+    fireEvent.change(within(slot).getByLabelText('New signature image (PNG)'), { target: { files: [png()] } });
+    fireEvent.click(within(slot).getByLabelText('I make this statement.'));
+    expect(replace).toHaveAccessibleDescription('Say why you are replacing your signature image.');
+    fireEvent.change(within(slot).getByLabelText('Why are you replacing it?'), { target: { value: '  Cleaner scan  ' } });
+    expect(replace).toBeEnabled();
+    fireEvent.click(replace);
+
+    await waitFor(() => expect(calls.some((c) => c.url === `${BASE}/signature`)).toBe(true));
+    const form = calls.find((c) => c.url === `${BASE}/signature`)!.body as FormData;
+    expect(JSON.parse(String(form.get('attestation')))).toEqual({ statementConfirmed: true, statementText: SIGNATURE_STATEMENT, replace: true, revokeReason: 'Cleaner scan' });
+  });
+
+  it('staff other than the designated signer never see the upload or replace controls', async () => {
+    mockCase(() => j5DraftSummary({ signature: { active: activeSignature, approvalStatement: SIGNATURE_STATEMENT, viewerCanUpload: false } }));
+    renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    expect(within(lifecycle('J5')).queryByRole('group', { name: 'Your signature' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /signature image|Upload your signature/u })).toBeNull();
   });
 });

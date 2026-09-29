@@ -134,6 +134,9 @@ export const PREREQUISITE_BLOCKER_CODES = [
   'RECEIVING_SIGNATURE_NOT_ATTESTED',
   'J6_ISSUE_DATE_NOT_TODAY',
   'J5_ISSUE_DATE_NOT_TODAY',
+  // The designated signer's approved signature image (M1 aade34e).
+  'SIGNATURE_ASSET_MISSING',
+  'SIGNATURE_ASSET_MISMATCH',
 ] as const;
 
 /** Every code a `Blocker` can carry: prerequisites, hard holds and gates. */
@@ -248,6 +251,15 @@ export const ERROR_CODES = [
   'PAYMENT_RECEIVED_BEFORE_SENT',
   'SEND_FAILED_WITHOUT_PROVIDER_REJECTION',
   'SIGNER_DELEGATION_DISABLED',
+  // The designated signer's approved signature image (M1 aade34e).
+  'SIGNATURE_ASSET_MISSING',
+  'SIGNATURE_ASSET_MISMATCH',
+  'SIGNATURE_ASSET_WRONG_PRINCIPAL',
+  'SIGNATURE_ASSET_APPEND_ONLY',
+  'SIGNATURE_ASSET_EXISTS',
+  'SIGNATURE_IMAGE_INVALID',
+  'SIGNATURE_STATEMENT_NOT_CONFIRMED',
+  'SIGNATURE_REVOKE_REASON_REQUIRED',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
@@ -349,7 +361,7 @@ export type StageVersionView = {
   createdAt: IsoInstant;
   updatedAt: IsoInstant;
   createdBy: Actor;
-  signed: null | { signedAt: IsoInstant; signedBy: Actor; signatureMethod: 'typed_attestation'; artifact: ArtifactView };
+  signed: null | { signedAt: IsoInstant; signedBy: Actor; signatureMethod: 'approved_image' | 'typed_attestation'; artifact: ArtifactView };
   sentAt: IsoInstant | null;
   recipients: Array<{ role: RecipientRole; name: string; email: string; phone: string | null }>;
   delivery: RoleDeliveryView[];
@@ -493,11 +505,39 @@ export type OpenCaseRequest = { programSlug: string };
 export type OpenCaseDto = { case: CaseListItemDto };
 
 /** GET …/cases/[caseId] */
+/** The designated signer's approved signature image, as any admin may see it (metadata only; the image itself is never served). */
+export type SignatureAssetDto = {
+  id: string;
+  sha256: string;
+  widthPx: number;
+  heightPx: number;
+  byteLength: number;
+  uploadedAt: IsoInstant;
+  approvedAt: IsoInstant;
+};
+
+/** Where the organization's signature image stands (org-level, not case-level). */
+export type SignatureStatusDto = {
+  /** The one active asset, or null while none is approved (signing stays closed). */
+  active: SignatureAssetDto | null;
+  /** The exact statement the designated signer confirms with an upload; echoed back verbatim. */
+  approvalStatement: string;
+  /** True only for the designated signer, signed in as himself. */
+  viewerCanUpload: boolean;
+};
+
+/** The `attestation` part of POST …/signature: the exact statement echoed back; `replace` + `revokeReason` to replace the active image. */
+export type SignatureUploadAttestation = { statementConfirmed: boolean; statementText: string; replace?: boolean; revokeReason?: string };
+
+/** POST …/signature: multipart `file` (PNG, up to 4 MB) + `attestation` (JSON, SignatureUploadAttestation). */
+export type SignatureUploadDto = { signature: SignatureAssetDto; replaced: SignatureAssetDto | null };
+
 export type CaseSummaryDto = {
   case: { id: string; programSlug: string; className: string | null; contactHours: 160 | 200 | null; createdAt: IsoInstant; createdBy: Actor };
   progress: CaseProgress;
   gates: Record<GateName, GateState>;
   viewer: { isExecutiveSigner: boolean; isDesignatedSigner: boolean };
+  signature: SignatureStatusDto;
   j5: J5StageView;
   j6: J6StageView;
   payment: PaymentDto;

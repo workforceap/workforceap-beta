@@ -3,10 +3,21 @@ import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { getProgramSyllabus } from '@/shared/programSyllabi';
 
 /**
- * One-page, side-effect-free DRAFT renderers for the two distinct WAP billing
- * stages. They never sign or create a final document. A later, authorized
- * server workflow must apply Michael's approved signature method and archive
- * the exact final bytes before delivery.
+ * One-page, side-effect-free renderers for the two distinct WAP billing
+ * stages.
+ *
+ * The DRAFT renderers never sign or create a final document: they print the
+ * DRAFT badge and the "signature required" caption.
+ *
+ * The SIGNED renderers produce the final page for the sign route. They print
+ * the identical approved layout with exactly two differences: the DRAFT badge
+ * and the "Executive signature required before issue" caption are omitted, and
+ * the designated signer's approved signature PNG is placed in the existing
+ * signature gap above the rule. The caller (the sign route) has already
+ * checked that the image bytes hash to the asset frozen in the content; this
+ * module only refuses a J6 that still carries a hold or lacks the receiving
+ * signature attestation, since neither can be signed. Archiving the exact final
+ * bytes and everything about who may sign stay with the server workflow.
  *
  * Every variable string on the page (organization name, website, footer
  * phone and address, title, signer name and title, payment wording,
@@ -187,9 +198,13 @@ function longDate(value: string): string {
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
-function validateFacts(input: TwoStageDocumentFacts): Date {
+/** How the page is rendered: a DRAFT preview, or the final page with the signer's approved image. */
+type RenderMode = { readonly kind: 'draft' } | { readonly kind: 'signed'; readonly signaturePng: Uint8Array };
+
+function validateFacts(input: TwoStageDocumentFacts, signed: boolean): Date {
   if (input.stage !== 'j5' && input.stage !== 'j6') throw new Error('Unknown billing stage');
-  if ('signature' in input || 'signed' in input) throw new Error('This renderer produces drafts only');
+  // The signature is never a caller-supplied fact: the signed renderers take the image separately.
+  if ('signature' in input || 'signed' in input) throw new Error('Signature data is not accepted as a document fact');
   const L = TWO_STAGE_TEXT_LIMITS;
   required(input.documentNumber, 'documentNumber', L.documentNumber);
   required(input.title, 'title', L.title);
@@ -218,6 +233,8 @@ function validateFacts(input: TwoStageDocumentFacts): Date {
   isoDate(input.classStartDate, 'classStartDate');
   isoDate(input.classEndDate, 'classEndDate');
   const holds: readonly string[] = input.stage === 'j6' ? input.openHolds ?? [] : [];
+  // A held J6 can be previewed as a DRAFT but is never signable.
+  if (signed && holds.length > 0) throw new Error('A signed document cannot carry open holds');
   if (input.classEndDate !== fiveMonthsLater(input.classStartDate) && !holds.includes('end_date_not_contract')) {
     throw new Error('Class end must be five calendar months after start');
   }
@@ -244,6 +261,7 @@ function validateFacts(input: TwoStageDocumentFacts): Date {
     if (voucher.authorizedAmountCents !== 750_000 && !holds.includes('voucher_amount_differs')) throw new Error('Signed voucher authorized amount must equal $7,500.00');
     if (!/^[0-9a-f]{64}$/iu.test(voucher.sha256)) throw new Error('Signed voucher SHA-256 is required');
     if (voucher.receivingSignatureAttestationId !== null) required(voucher.receivingSignatureAttestationId, 'signedVoucher.receivingSignatureAttestationId', L.attestationId);
+    if (signed && voucher.receivingSignatureAttestationId === null) throw new Error('A signed J6 needs the designated signer receiving-signature attestation');
   }
   return frozenAt;
 }
@@ -325,13 +343,15 @@ export const DRAFT_BADGE = 'DRAFT - SIGNATURE REQUIRED';
 export const DRAFT_ON_HOLD_BADGE = 'DRAFT - ON HOLD - NOT SIGNABLE';
 export const RECEIVING_SIGNATURE_PENDING_SUFFIX = '(receiving signature not yet attested)';
 
-function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeight: number, logo: Awaited<ReturnType<PDFDocument['embedPng']>>, held: boolean): void {
+function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeight: number, logo: Awaited<ReturnType<PDFDocument['embedPng']>>, badge: string | null): void {
   const scale = Math.min(183 / logoWidth, 88 / logoHeight);
   page.drawImage(logo, { x: LEFT, y: 682, width: logoWidth * scale, height: logoHeight * scale });
-  const status = held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE;
-  const statusW = fonts.bold.widthOfTextAtSize(status, 7.5) + 22;
-  page.drawRectangle({ x: RIGHT - statusW, y: 749, width: statusW, height: 22, color: rgb(1, 0.94, 0.84) });
-  drawText(page, fonts, status, RIGHT - statusW + 11, 756, statusW - 22, 7.5, true, rgb(110 / 255, 68 / 255, 12 / 255));
+  // The final (signed) page carries no status badge.
+  if (badge !== null) {
+    const statusW = fonts.bold.widthOfTextAtSize(badge, 7.5) + 22;
+    page.drawRectangle({ x: RIGHT - statusW, y: 749, width: statusW, height: 22, color: rgb(1, 0.94, 0.84) });
+    drawText(page, fonts, badge, RIGHT - statusW + 11, 756, statusW - 22, 7.5, true, rgb(110 / 255, 68 / 255, 12 / 255));
+  }
   page.drawLine({ start: { x: LEFT, y: 667 }, end: { x: RIGHT, y: 667 }, thickness: 1, color: GOLD });
 }
 
@@ -343,23 +363,32 @@ function drawFooter(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts): 
   drawCentered(page, fonts, addressLine2 === undefined ? addressLine1 : `${addressLine1}  |  ${addressLine2}`, 31, 7.5);
 }
 
-function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts, y: number): void {
+/** The signature gap above the rule: 245pt wide (the rule), 26pt tall, clear of "Respectfully," above and the rule below. */
+const SIGNATURE_BOX = Object.freeze({ width: 240, height: 26, aboveRule: 2 });
+
+function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts, y: number, signature: Awaited<ReturnType<PDFDocument['embedPng']>> | null): void {
   if (y < 167) throw new Error('Signature area would collide with the footer');
   drawText(page, fonts, 'Respectfully,', LEFT, y, CONTENT_W, 9.3);
+  if (signature) {
+    const scale = Math.min(SIGNATURE_BOX.width / signature.width, SIGNATURE_BOX.height / signature.height);
+    page.drawImage(signature, { x: LEFT + 2, y: y - 32 + SIGNATURE_BOX.aboveRule, width: signature.width * scale, height: signature.height * scale });
+  }
   page.drawLine({ start: { x: LEFT, y: y - 32 }, end: { x: LEFT + 245, y: y - 32 }, thickness: 0.7, color: MUTED });
-  drawText(page, fonts, 'Executive signature required before issue', LEFT, y - 44, 350, 7.9, false, MUTED);
+  if (!signature) drawText(page, fonts, 'Executive signature required before issue', LEFT, y - 44, 350, 7.9, false, MUTED);
   drawText(page, fonts, input.signer.name, LEFT, y - 58, 350, 9.5, true);
   drawText(page, fonts, `${input.signer.title}, ${input.letterhead.organizationName}`, LEFT, y - 71, 350, 8.4);
   if (y - 71 < 78) throw new Error('Signature block overlaps the footer');
 }
 
-/** Returns draft document bytes; the signed voucher is never embedded here. */
-async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uint8Array> {
+/** Returns the document bytes (DRAFT or signed); the received voucher is never embedded here. */
+async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode): Promise<Uint8Array> {
   // Snapshot all caller-owned data before the first await. In particular, a
   // mutable PNG supplied by a route cannot change while pdf-lib embeds it.
   const facts = structuredClone(input);
   const logoBytes = new Uint8Array(facts.letterhead?.logoPng ?? []);
-  const frozenAt = validateFacts(facts);
+  const signatureBytes = mode.kind === 'signed' ? new Uint8Array(mode.signaturePng ?? []) : null;
+  if (signatureBytes !== null && signatureBytes.length === 0) throw new Error('The approved signature image is required to render a signed document');
+  const frozenAt = validateFacts(facts, mode.kind === 'signed');
   const doc = await PDFDocument.create();
   const org = facts.letterhead.organizationName;
   doc.setTitle(`${facts.stage.toUpperCase()} ${facts.title} - ${facts.documentNumber}`);
@@ -374,8 +403,10 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
     bold: await doc.embedFont(StandardFonts.HelveticaBold),
   };
   const logo = await doc.embedPng(logoBytes);
+  const signatureImage = signatureBytes ? await doc.embedPng(signatureBytes) : null;
   const page = doc.addPage([PAGE_W, PAGE_H]);
-  drawLetterhead(page, fonts, logo.width, logo.height, logo, facts.stage === 'j6' && (facts.openHolds?.length ?? 0) > 0);
+  const held = facts.stage === 'j6' && (facts.openHolds?.length ?? 0) > 0;
+  drawLetterhead(page, fonts, logo.width, logo.height, logo, signatureImage ? null : held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE);
   drawFooter(page, fonts, facts);
 
   drawText(page, fonts, facts.stage.toUpperCase(), LEFT, 642, 50, 9.5, true, RED);
@@ -427,16 +458,48 @@ async function renderTwoStageDraftPdf(input: TwoStageDocumentFacts): Promise<Uin
     enclosure.forEach((line, index) => drawText(page, fonts, line, LEFT, y - index * 11, CONTENT_W, 8.4, false, MUTED));
     y -= (enclosure.length - 1) * 11;
   }
-  drawSignature(page, fonts, facts, y - 21);
+  drawSignature(page, fonts, facts, y - 21, signatureImage);
   return doc.save({ useObjectStreams: false });
 }
 
 export function renderJ5QuoteVoucherRequestDraftPdf(input: J5QuoteVoucherRequestFacts): Promise<Uint8Array> {
   if (input.stage !== 'j5') throw new Error('J5 renderer requires J5 facts');
-  return renderTwoStageDraftPdf(input);
+  return renderTwoStagePdf(input, { kind: 'draft' });
 }
 
 export function renderJ6InvoiceVoucherCoverLetterDraftPdf(input: J6InvoiceVoucherCoverLetterFacts): Promise<Uint8Array> {
   if (input.stage !== 'j6') throw new Error('J6 renderer requires J6 facts');
-  return renderTwoStageDraftPdf(input);
+  return renderTwoStagePdf(input, { kind: 'draft' });
+}
+
+/**
+ * The final J5 page: the approved layout with the designated signer's approved
+ * signature image. `signaturePng` must be the bytes of the asset frozen in the
+ * content (the sign route verifies its hash); it is never a client upload.
+ */
+export function renderJ5QuoteVoucherRequestSignedPdf(input: J5QuoteVoucherRequestFacts, signaturePng: Uint8Array): Promise<Uint8Array> {
+  if (input.stage !== 'j5') throw new Error('J5 renderer requires J5 facts');
+  return renderTwoStagePdf(input, { kind: 'signed', signaturePng });
+}
+
+/** The final J6 page. Refuses a J6 with open holds or without the receiving-signature attestation. */
+export function renderJ6InvoiceVoucherCoverLetterSignedPdf(input: J6InvoiceVoucherCoverLetterFacts, signaturePng: Uint8Array): Promise<Uint8Array> {
+  if (input.stage !== 'j6') throw new Error('J6 renderer requires J6 facts');
+  return renderTwoStagePdf(input, { kind: 'signed', signaturePng });
+}
+
+/**
+ * Whether pdf-lib can embed these PNG bytes. The upload route asks before it
+ * accepts a signature image, so a stored asset can always be rendered later
+ * (the database accepts PNG variants, such as some interlaced or 16-bit files,
+ * that a PDF writer may not).
+ */
+export async function canEmbedSignaturePng(bytes: Uint8Array): Promise<boolean> {
+  try {
+    const doc = await PDFDocument.create();
+    const image = await doc.embedPng(new Uint8Array(bytes));
+    return image.width > 0 && image.height > 0;
+  } catch {
+    return false;
+  }
 }

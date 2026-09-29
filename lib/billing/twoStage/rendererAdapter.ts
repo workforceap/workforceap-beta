@@ -37,7 +37,9 @@ import {
   isWinAnsiPrintable,
   RECEIVING_SIGNATURE_PENDING_SUFFIX,
   renderJ5QuoteVoucherRequestDraftPdf,
+  renderJ5QuoteVoucherRequestSignedPdf,
   renderJ6InvoiceVoucherCoverLetterDraftPdf,
+  renderJ6InvoiceVoucherCoverLetterSignedPdf,
   TWO_STAGE_TEXT_LIMITS,
   type J5QuoteVoucherRequestFacts,
   type J6InvoiceVoucherCoverLetterFacts,
@@ -50,6 +52,7 @@ export type TwoStageContent = J5Content | J6Content;
 
 export type RendererAdapterCode =
   | 'LOGO_CHANGED'
+  | 'SIGNATURE_IMAGE_MISMATCH'
   | 'TEXT_NOT_PRINTABLE'
   | 'VOUCHER_REFERENCE_TOO_LONG'
   | 'CONTENT_NOT_RENDERABLE';
@@ -309,8 +312,53 @@ export async function renderDraftFromContent(content: TwoStageContent, opts: Ren
   try {
     return facts.stage === 'j5' ? await renderJ5QuoteVoucherRequestDraftPdf(facts) : await renderJ6InvoiceVoucherCoverLetterDraftPdf(facts);
   } catch (error) {
-    const message = error instanceof Error ? error.message : '';
-    const field = /^([\w.[\]]+) must /u.exec(message)?.[1] ?? null;
-    throw new RendererAdapterError('TEXT_NOT_PRINTABLE', `${field ?? 'A printed field'} contains characters or a length the PDF cannot print.`, { field });
+    throw layoutRefusal(error);
+  }
+}
+
+/** A renderer refusal (for example a value too wide for the one-page layout) as TEXT_NOT_PRINTABLE. */
+function layoutRefusal(error: unknown): RendererAdapterError {
+  const message = error instanceof Error ? error.message : '';
+  const field = /^([\w.[\]]+) must /u.exec(message)?.[1] ?? null;
+  return new RendererAdapterError('TEXT_NOT_PRINTABLE', `${field ?? 'A printed field'} contains characters or a length the PDF cannot print.`, { field });
+}
+
+export type SignedRenderOptions = RenderOptions & {
+  /**
+   * The bytes of the designated signer's approved signature image, read from
+   * the private archive. They must hash to the asset the content froze
+   * (content.signature.assetSha256), so the page can only carry that image.
+   */
+  signaturePng: Uint8Array;
+};
+
+/**
+ * Render the FINAL page for frozen content: the approved layout with the
+ * frozen signature image and no DRAFT markers. Refuses, before rendering, a
+ * content that froze no signature, an image that is not the frozen one, a
+ * held J6, and a J6 without the designated signer's receiving-signature
+ * attestation (`receiptSignatureId`). Sign-time authorization is not decided
+ * here; the sign route has already applied it.
+ */
+export async function renderSignedFromContent(content: TwoStageContent, opts: SignedRenderOptions): Promise<Uint8Array> {
+  const frozen = content.signature;
+  if (!frozen || sha256Hex(opts.signaturePng) !== frozen.assetSha256) {
+    throw new RendererAdapterError('SIGNATURE_IMAGE_MISMATCH', 'The signature image is not the one this draft was prepared with. Save the draft again and review it.');
+  }
+  if (content.kind === 'j6_invoice_cover_letter') {
+    if (content.reviewReasons.length > 0) {
+      throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'A J6 on hold cannot be signed.', { holds: content.reviewReasons });
+    }
+    if (!opts.receiptSignatureId?.trim()) {
+      throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'A signed J6 needs the designated signer receiving-signature attestation.', { field: 'voucher' });
+    }
+  }
+  const facts = toRendererFacts(content, opts);
+  try {
+    return facts.stage === 'j5'
+      ? await renderJ5QuoteVoucherRequestSignedPdf(facts, opts.signaturePng)
+      : await renderJ6InvoiceVoucherCoverLetterSignedPdf(facts, opts.signaturePng);
+  } catch (error) {
+    throw layoutRefusal(error);
   }
 }

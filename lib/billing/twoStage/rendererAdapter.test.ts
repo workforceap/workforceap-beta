@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { Attestation } from './attestations';
 import { sha256Hex } from './canonical';
 import { buildJ5Content, buildJ6Content, type J5Content, type J6Content } from './content';
 import { WAP_LOGO_PUBLIC_PATH } from './letterhead';
+import { syntheticPng } from '../../../tests/fixtures/billing/syntheticPng';
 import { formatUsdCents } from './lineItem';
 import {
   FIXED_PRINTED_TEXT,
@@ -16,6 +17,7 @@ import {
   printedLongDate,
   RendererAdapterError,
   renderDraftFromContent,
+  renderSignedFromContent,
   toRendererFacts,
   VOUCHER_REFERENCE_MAX,
   type TwoStageContent,
@@ -25,6 +27,9 @@ const logoPng = new Uint8Array(readFileSync(join(process.cwd(), WAP_LOGO_PUBLIC_
 const logoSha256 = sha256Hex(logoPng);
 const SLUG = 'data-analytics-professional-certificate-google';
 const NOW = new Date('2026-10-01T18:00:00.000Z');
+/** A generated stand-in for the designated signer's approved image. No real signature is used or committed. */
+const signaturePng = new Uint8Array(syntheticPng(360, 90));
+const signatureAsset = { assetId: 'sig-asset-synthetic', assetSha256: sha256Hex(signaturePng) };
 
 function attestation(overrides: Partial<Attestation>): Attestation {
   return {
@@ -69,6 +74,7 @@ function j5(overrides: Partial<Parameters<typeof buildJ5Content>[0]> = {}): J5Co
     logoSha256,
     issueDate: '2026-09-21',
     ...contacts,
+    signatureAsset,
     programSlug: SLUG,
     readiness: attestation({
       id: 'att-ready',
@@ -113,6 +119,7 @@ function j6(
     boardInvoice: null,
     documentNumber: 'WAP-I-2026-0001',
     logoSha256,
+    signatureAsset,
     issueDate: '2026-10-01',
     student: overrides.student ?? contacts.student,
     counselor: overrides.counselor ?? contacts.counselor,
@@ -325,5 +332,112 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     const facts = toRendererFacts(j5(), { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' });
     assert.equal(facts.stage, 'j5');
     assert.ok(!('signedVoucher' in facts) && !('financePerson' in facts));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The FINAL (signed) page.
+
+const FROZEN_AT = '2026-10-01T18:30:00.000Z';
+const DRAFT_ONLY_TEXT = ['DRAFT - SIGNATURE REQUIRED', 'Executive signature required before issue'];
+
+/** Images placed on the page in draw order, with the transform each is painted under (pdfjs operator list). */
+async function placedImages(bytes: Uint8Array): Promise<Array<{ width: number; height: number; x: number; y: number }>> {
+  const pdf = await getDocument({ data: bytes, useSystemFonts: true, disableFontFace: true }).promise;
+  try {
+    const list = await (await pdf.getPage(1)).getOperatorList();
+    type M = [number, number, number, number, number, number];
+    const mul = (m: M, n: M): M => [
+      m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
+      m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
+      m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5],
+    ];
+    let ctm: M = [1, 0, 0, 1, 0, 0];
+    const stack: M[] = [];
+    const out: Array<{ width: number; height: number; x: number; y: number }> = [];
+    list.fnArray.forEach((fn, i) => {
+      const args = list.argsArray[i] as unknown;
+      if (fn === OPS.save) stack.push(ctm);
+      else if (fn === OPS.restore) ctm = stack.pop() ?? ctm;
+      else if (fn === OPS.transform) ctm = mul(ctm, args as M);
+      else if (fn === OPS.paintImageXObject) out.push({ width: ctm[0], height: ctm[3], x: ctm[4], y: ctm[5] });
+    });
+    return out;
+  } finally {
+    await pdf.destroy();
+  }
+}
+
+describe('two-stage renderer adapter: the signed page', () => {
+  for (const [name, build] of [
+    ['J5', () => j5()],
+    ['J6', () => j6()],
+  ] as const) {
+    it(`${name}: the approved layout with exactly two differences - no draft markers, and the frozen signature image`, async () => {
+      const content: TwoStageContent = build();
+      const opts = { logoPng, frozenAt: FROZEN_AT, receiptSignatureId: 'rsig-0001' };
+      const draft = await renderDraftFromContent(content, opts);
+      const signed = await renderSignedFromContent(content, { ...opts, signaturePng });
+
+      // Text: the draft page minus the two draft-only strings, nothing added.
+      // pdfjs takes ownership of the buffer it is given, so every read gets its own copy.
+      let expected = await pageText(Uint8Array.from(draft));
+      for (const marker of DRAFT_ONLY_TEXT) {
+        assert.ok(expected.includes(marker), `draft prints ${marker}`);
+        expected = expected.replace(marker, ' ');
+      }
+      const signedText = await pageText(Uint8Array.from(signed));
+      assert.equal(collapse(signedText), collapse(expected));
+      for (const marker of DRAFT_ONLY_TEXT) assert.ok(!signedText.includes(marker), `signed page must not print ${marker}`);
+      assert.doesNotMatch(signedText, /DRAFT|not yet attested/iu);
+
+      // Images: the draft carries the logo; the signed page carries the logo plus the signature.
+      const draftImages = await placedImages(Uint8Array.from(draft));
+      const signedImages = await placedImages(Uint8Array.from(signed));
+      assert.equal(draftImages.length, 1);
+      assert.equal(signedImages.length, 2);
+      const sig = signedImages[1];
+      assert.ok(sig.width <= 240 + 0.01 && sig.height <= 26 + 0.01, `signature ${sig.width}x${sig.height} fits its box`);
+      assert.ok(Math.abs(sig.width / sig.height - 4) < 0.01, 'the image keeps its aspect ratio');
+      assert.ok(sig.x >= 54 && sig.x + sig.width <= 54 + 245, 'the image sits over the signature rule');
+    });
+
+    it(`${name}: signed bytes are deterministic for the same inputs`, async () => {
+      const content: TwoStageContent = build();
+      const opts = { logoPng, signaturePng, frozenAt: FROZEN_AT, receiptSignatureId: 'rsig-0001' };
+      const a = await renderSignedFromContent(content, opts);
+      const b = await renderSignedFromContent(content, opts);
+      assert.equal(sha256Hex(a), sha256Hex(b));
+    });
+  }
+
+  it('refuses an image that is not the one the content froze, or a content that froze none', async () => {
+    const other = new Uint8Array(syntheticPng(361, 90));
+    const opts = { logoPng, frozenAt: FROZEN_AT, receiptSignatureId: 'rsig-0001' };
+    const code = (e: unknown) => e instanceof RendererAdapterError && e.code === 'SIGNATURE_IMAGE_MISMATCH';
+    await assert.rejects(renderSignedFromContent(j5(), { ...opts, signaturePng: other }), code);
+    await assert.rejects(renderSignedFromContent(j6(), { ...opts, signaturePng: other }), code);
+    await assert.rejects(renderSignedFromContent({ ...j5(), signature: null }, { ...opts, signaturePng }), code);
+    await assert.rejects(renderSignedFromContent({ ...j6(), signature: null }, { ...opts, signaturePng }), code);
+  });
+
+  it('refuses a J6 that is on hold or lacks the designated signer receiving-signature attestation', async () => {
+    const base = { logoPng, signaturePng, frozenAt: FROZEN_AT };
+    const held = j6({ authorizedEndDate: '2027-01-31' });
+    assert.deepEqual(held.reviewReasons, ['voucher_period_conflict']);
+    await assert.rejects(renderSignedFromContent(held, { ...base, receiptSignatureId: 'rsig-0001' }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'CONTENT_NOT_RENDERABLE');
+    for (const missing of [null, undefined, '', '  ']) {
+      await assert.rejects(renderSignedFromContent(j6(), { ...base, receiptSignatureId: missing }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'CONTENT_NOT_RENDERABLE', JSON.stringify(missing));
+    }
+    // A J5 has no receipt to attest.
+    await assert.doesNotReject(renderSignedFromContent(j5(), { ...base, receiptSignatureId: null }));
+  });
+
+  it('still refuses a letterhead logo that differs from the frozen hash', async () => {
+    const changed = new Uint8Array([...logoPng, 0]);
+    await assert.rejects(
+      renderSignedFromContent(j5(), { logoPng: changed, signaturePng, frozenAt: FROZEN_AT, receiptSignatureId: null }),
+      (e: unknown) => e instanceof RendererAdapterError && e.code === 'LOGO_CHANGED',
+    );
   });
 });

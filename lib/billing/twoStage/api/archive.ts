@@ -19,6 +19,7 @@ import {
   type FinanceArchiveKind,
   type FinanceArchiveRef,
 } from '../storageArchive';
+import { readSignaturePng, storeSignaturePng, type SignatureObjectRef } from '../signatureStorage';
 import { apiError } from './http';
 
 export type { FinanceArchiveRef };
@@ -71,6 +72,51 @@ export async function readArchived(row: Parameters<typeof refFor>[0]): Promise<U
     const code = archiveErrorCode(error);
     if (code === 'INTEGRITY_MISMATCH') throw apiError(502, 'ARCHIVE_INTEGRITY_MISMATCH', 'An archived file failed its integrity check. Nothing was sent. Contact an administrator.');
     if (code) throw apiError(503, 'FINANCE_ARCHIVE_UNAVAILABLE', 'The billing finance archive is not available.');
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The designated signer's approved signature image (org-level, signature/… keys).
+
+export type SignatureStorePort = {
+  storeSignaturePng(input: { organizationId: string; signerUserId: string; bytes: Uint8Array }): ReturnType<typeof storeSignaturePng>;
+  readSignaturePng(ref: SignatureObjectRef): Promise<Uint8Array>;
+};
+
+const realSignatureStore: SignatureStorePort = {
+  storeSignaturePng: (input) => storeSignaturePng(input),
+  readSignaturePng: (ref) => readSignaturePng(ref),
+};
+
+let currentSignatureStore: SignatureStorePort = realSignatureStore;
+
+export function signatureStore(): SignatureStorePort {
+  return currentSignatureStore;
+}
+
+/** Test hook: replace the signature store with a fake. Returns a restore function. */
+export function setSignatureStoreForTests(port: SignatureStorePort): () => void {
+  const previous = currentSignatureStore;
+  currentSignatureStore = port;
+  return () => {
+    currentSignatureStore = previous;
+  };
+}
+
+/** The storage reference of a signature asset row. */
+export function signatureRefFor(row: { organizationId: string; signerUserId: string; storageBucket: string; storageKey: string; sha256: string; byteLength: number }): SignatureObjectRef {
+  return { organizationId: row.organizationId, signerUserId: row.signerUserId, bucket: row.storageBucket, key: row.storageKey, sha256: row.sha256, byteLength: row.byteLength };
+}
+
+/** Read verified signature image bytes, mapping archive failures to the route errors. */
+export async function readSignatureImage(row: Parameters<typeof signatureRefFor>[0]): Promise<Uint8Array> {
+  try {
+    return await signatureStore().readSignaturePng(signatureRefFor(row));
+  } catch (error) {
+    const code = archiveErrorCode(error);
+    if (code === 'INTEGRITY_MISMATCH') throw apiError(502, 'ARCHIVE_INTEGRITY_MISMATCH', 'The signature image failed its integrity check. Nothing was signed. Contact an administrator.');
+    if (code) throw apiError(503, 'FINANCE_ARCHIVE_UNAVAILABLE', 'The billing finance archive is not available. Nothing was signed.');
     throw error;
   }
 }

@@ -19,6 +19,7 @@
  *    designated signer's own authenticated action (signing.ts authorizeSigner).
  */
 import { sha256Hex } from './canonical';
+import { authorizedSignerLine } from './constants';
 
 export const SIGNATURE_ASSET_MIME = 'image/png' as const;
 export const SIGNATURE_ASSET_MAX_BYTES = 5 * 1024 * 1024;
@@ -125,6 +126,15 @@ export function inspectSignaturePng(bytes: Uint8Array): { ok: true; png: Inspect
       pngHeader: bytes.slice(0, SIGNATURE_ASSET_HEADER_BYTES),
     },
   };
+}
+
+/**
+ * The exact statement the designated signer confirms when he uploads his
+ * signature image (stored as approval_statement). The upload request must echo
+ * it verbatim, so an approval is always his explicit act on this wording.
+ */
+export function signatureApprovalStatement(): string {
+  return `I, ${authorizedSignerLine()}, approve the uploaded image as my own handwritten signature. It may be placed on J5 and J6 documents that I sign, as myself, for Workforce Advancement Project.`;
 }
 
 /** Server-generated object key (matches billing_signer_signature_assets_storage_check). */

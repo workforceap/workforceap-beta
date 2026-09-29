@@ -14,7 +14,7 @@ describe('two-stage blocker codes pinned to M1 messages', () => {
     if (!j5.ok) messages.push(...j5.errors);
     const j6 = checkJ6Prerequisites({ now: NOW, hasOpenJ6: true, programSlug: 'data-analytics-professional-certificate-google', priorJ5: null, classStarted: null, voucher: null, voucherAttestation: null, boardInvoice: { id: 'x', kind: 'board_signed_voucher', fileName: '', mimeType: '', byteLength: 0, sha256: '' } });
     if (!j6.ok) messages.push(...j6.errors);
-    const built5 = buildJ5Content({ documentNumber: 'N', logoSha256: 'a'.repeat(64), issueDate: '2026-10-01', student: { name: '', email: 'bad' }, boardName: '', counselor: { name: 'C', email: 'c@example.test', phone: '' }, programSlug: 'data-analytics-professional-certificate-google', readiness: null as never });
+    const built5 = buildJ5Content({ documentNumber: 'N', logoSha256: 'a'.repeat(64), issueDate: '2026-10-01', student: { name: '', email: 'bad' }, boardName: '', counselor: { name: 'C', email: 'c@example.test', phone: '' }, programSlug: 'data-analytics-professional-certificate-google', readiness: null as never, signatureAsset: null });
     if (!built5.ok) messages.push(...built5.errors);
     const dup = j6Recipients({ finance: { name: 'F', email: 'same@example.test' }, counselor: { name: 'C', email: 'same@example.test' }, student: { name: 'S', email: 's@example.test' } });
     if (!dup.ok) messages.push(...dup.errors);

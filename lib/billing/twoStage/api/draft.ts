@@ -28,12 +28,13 @@ import type {
 } from '../dto';
 import { isPlausibleEmail, normalizeEmail } from '../recipients';
 import { printableIssue, printableIssues, RendererAdapterError, renderDraftFromContent } from '../rendererAdapter';
+import { activeSignatureAsset, signatureRefForContent } from '../signatureAsset';
 import { TWO_STAGE_TEXT_LIMITS } from '../documentPdf';
 import { checkJ5Prerequisites, checkJ6Prerequisites } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { isUniqueViolation } from './access';
 import { blockersFromMessages, holdBlockers } from './blockers';
-import { dateColumn, j6Prerequisites, latestAttestation, loadCaseSnapshot, recordContent, stageRecords, toAttestation, type CaseSnapshot, type RecordWithRelations } from './caseData';
+import { dateColumn, j6Prerequisites, latestAttestation, loadCaseSnapshot, recordContent, stageRecords, toAttestation, toSignerAsset, type CaseSnapshot, type RecordWithRelations } from './caseData';
 import { apiError } from './http';
 import { readLetterheadLogo } from './logo';
 import { versionView } from './summary';
@@ -199,7 +200,11 @@ export function stagePrerequisiteBlockers(stage: BillingStage, snapshot: CaseSna
 
 function buildContent(stage: BillingStage, snapshot: CaseSnapshot, inputs: Inputs, args: { now: Date; documentNumber: string; logoSha256: string; editing: RecordWithRelations | null }): Built {
   const issueDate = billingToday(args.now);
-  const common = { documentNumber: args.documentNumber, logoSha256: args.logoSha256, issueDate, student: inputs.student, boardName: inputs.boardName, counselor: inputs.counselor };
+  // The designated signer's active signature image is frozen into the content, so the
+  // version hash binds the exact image and the database can check it at sign time.
+  // With no active image the draft is still saved (reviewable), but it cannot be signed.
+  const signatureAsset = signatureRefForContent(activeSignatureAsset(snapshot.signatureAssets.map(toSignerAsset), snapshot.designatedSignerUserId));
+  const common = { documentNumber: args.documentNumber, logoSha256: args.logoSha256, issueDate, student: inputs.student, boardName: inputs.boardName, counselor: inputs.counselor, signatureAsset };
   if (stage === 'j5') {
     const readiness = latestAttestation(snapshot, 'j5_readiness');
     if (!readiness) return { ok: false, blockers: blockersFromMessages(['Record the J5 readiness attestation (with the confirmed class start date) first.']) };

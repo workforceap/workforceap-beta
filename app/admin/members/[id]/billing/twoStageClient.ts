@@ -35,6 +35,8 @@ import type {
   SendRequest,
   SignDto,
   SignRequestDto,
+  SignatureUploadAttestation,
+  SignatureUploadDto,
   VoucherAttestationPart,
   VoucherReceiptAttestationDto,
   VoucherReceiptAttestationRequest,
@@ -134,6 +136,13 @@ function pdfForm(file: File): FormData {
   return form;
 }
 
+function signatureForm(file: File, attestation: SignatureUploadAttestation): FormData {
+  const form = new FormData();
+  form.append('file', file, file.name);
+  form.append('attestation', JSON.stringify(attestation));
+  return form;
+}
+
 export const twoStageApi = {
   listCases: (memberId: string, signal?: AbortSignal) => request<ListCasesDto>(`${twoStageBase(memberId)}/cases`, { signal }),
   openCase: (memberId: string, body: OpenCaseRequest) => request<OpenCaseDto>(`${twoStageBase(memberId)}/cases`, { method: 'POST', json: body }),
@@ -157,6 +166,10 @@ export const twoStageApi = {
     request<VoucherReceiptStatementDto>(`${caseBase(memberId, caseId)}/voucher/${encodeURIComponent(artifactId)}/receipt-attestation`),
   attestReceipt: (memberId: string, caseId: string, artifactId: string, body: VoucherReceiptAttestationRequest) =>
     request<VoucherReceiptAttestationDto>(`${caseBase(memberId, caseId)}/voucher/${encodeURIComponent(artifactId)}/receipt-attestation`, { method: 'POST', json: body }),
+
+  /** The designated signer approves (or replaces) his signature image. Organization-level, so it takes no case id. */
+  uploadSignature: (memberId: string, file: File, attestation: SignatureUploadAttestation) =>
+    request<SignatureUploadDto>(`${twoStageBase(memberId)}/signature`, { method: 'POST', form: signatureForm(file, attestation) }),
 
   freeze: (memberId: string, caseId: string, stage: BillingStage, body: FreezeRequest) =>
     request<FreezeDto>(`${caseBase(memberId, caseId)}/${stage}/freeze`, { method: 'POST', json: body }),

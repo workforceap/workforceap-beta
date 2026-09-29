@@ -13,11 +13,13 @@ import { apiError } from './http';
 type Env = Record<string, string | undefined>;
 
 /**
- * No signed (non-draft) renderer exists yet: #2702 renders drafts only and
- * the signature representation is not approved. Flip only in a reviewed
- * change that adds the signed renderer.
+ * The signed (final) renderer exists (rendererAdapter renderSignedFromContent).
+ * This is the code-level switch that keeps it off if it must be withdrawn; it
+ * authorizes nothing by itself: signing still needs the migration, the
+ * designated signer, that signer's approved signature image, his own
+ * authenticated act and the archive.
  */
-export const SIGNED_RENDERER_AVAILABLE = false;
+export const SIGNED_RENDERER_AVAILABLE = true;
 
 const on = (env: Env, name: string) => env[name]?.trim() === 'true';
 
@@ -26,7 +28,7 @@ export const GATE_MESSAGES: Readonly<Record<GateCode, string>> = {
   PROVIDER_ORG_MISCONFIGURED: 'J5/J6 billing is misconfigured (BILLING_PACKET_PROVIDER_ORG_ID). Contact an administrator.',
   FINANCE_ARCHIVE_UNAVAILABLE: 'The billing finance archive is not available. No file was stored, signed or sent.',
   SIGNER_NOT_CONFIGURED: 'Signing is disabled until the executive signer account is configured.',
-  SIGNED_RENDERER_UNAVAILABLE: 'Signed J5/J6 PDFs cannot be produced until the signature representation is approved.',
+  SIGNED_RENDERER_UNAVAILABLE: 'Signed J5/J6 PDFs cannot be produced in this environment.',
   SIGNER_PRINCIPAL_UNSET: 'No signer principal is designated yet; the voucher receipt attestation, J5 and J6 signing, and J6 sending stay closed.',
   EMAIL_NOT_ENABLED: 'J5/J6 email delivery is not enabled yet.',
 };
