@@ -13,14 +13,14 @@
  *
  * Every line reuses an existing definition in docs/OUTCOMES-METHODOLOGY.md
  * (§2, §4, §7; see "Partner outcome packet" there). No new rate is defined:
- * every line is shown as "X of N", never as a percentage. Placement records
- * are reported both in full (§2 "Placed", which includes rows a counselor has
- * not verified) and split by `startDateVerified` (§7 "Partner placements"),
- * so the packet does not pick one placement definition over the other. A
- * member's own offer confirmation (dashboard/placementAction.ts ->
- * recordPlacementFromApplication) creates a placement row with
- * `startDateVerified: false`: it counts in "Placement records" and stays out
- * of the verified subset until staff verify it.
+ * every line is shown as "X of N", never as a percentage. Placements are
+ * counted verified-only (§7 "Partner placements" / §8, `startDateVerified`),
+ * the same rule every other partner placement count uses; the all-records §2
+ * "Placed" figure is not shown. A member's own offer confirmation
+ * (dashboard/placementAction.ts -> recordPlacementFromApplication) creates a
+ * placement row with `startDateVerified: false`: it is shown only as
+ * "Placement reported, pending verification" and is not counted as a
+ * placement until staff verify it.
  */
 import { SMALL_SAMPLE_THRESHOLD } from '@/lib/admin/boardOutcomes';
 import { csvEscape } from '@/lib/csv';
@@ -38,7 +38,6 @@ export type PartnerPacketLineKey =
   | 'enrolled'
   | 'trainingCompleted'
   | 'credentialRecords'
-  | 'placementRecords'
   | 'placementStartDateVerified'
   | 'placementStartDateNotVerified';
 
@@ -118,7 +117,7 @@ export const PARTNER_PACKET_EXCLUSIONS = [
 ] as const;
 
 export const PARTNER_PACKET_NOTES = [
-  'A placement a member reports on their dashboard, or an employer marks hired, is recorded as an unverified placement record: it counts in "Placement records" and in "Placement reported, pending verification", and not in "Placement start date verified" until staff verify it.',
+  'A placement a member reports on their dashboard, or an employer marks hired, is recorded as an unverified placement record: it counts in "Placement reported, pending verification", and not in "Placement start date verified" until staff verify it.',
   'The page and the CSV use the same definitions, but each reads live records when it is generated, so figures can differ if records changed in between. Compare their generated-at times.',
 ] as const;
 
@@ -169,7 +168,6 @@ export function buildPartnerOutcomePacket({
   const total = Math.max(totalReferrals, loaded);
 
   const count = (pred: (r: PartnerPacketRow) => boolean) => rows.filter(pred).length;
-  const placementRecords = count((r) => r.placementStatus !== 'none');
   const verified = count((r) => r.placementStatus === 'start_date_verified');
   const notVerified = count((r) => r.placementStatus === 'recorded_start_not_verified');
 
@@ -213,16 +211,9 @@ export function buildPartnerOutcomePacket({
       count((r) => r.credentialRecord),
     ),
     line(
-      'placementRecords',
-      'Placement records',
-      'Referred members with a placement record, verified or not; includes member self-reports, which are recorded as unverified',
-      '§2 Placed',
-      placementRecords,
-    ),
-    line(
       'placementStartDateVerified',
       'Placement start date verified',
-      'Placement records whose start date staff verified; a subset of placement records that excludes unverified self-reports',
+      'Placement records whose start date staff verified; unverified self-reports are excluded',
       '§7 Partner placements',
       verified,
     ),
@@ -230,7 +221,7 @@ export function buildPartnerOutcomePacket({
       'placementStartDateNotVerified',
       'Placement reported, pending verification',
       'Placement records whose start date staff have not verified yet, including member self-reports',
-      'Partner outcome packet (placement records minus start date verified)',
+      'Partner outcome packet (placement records without a verified start date)',
       notVerified,
     ),
   ];

@@ -113,18 +113,18 @@ describe('partner export preset=packet', () => {
 
     const summaryStart = lines.indexOf('metric,count,denominator,display');
     expect(summaryStart).toBeGreaterThan(0);
-    expect(lines.slice(summaryStart + 1, summaryStart + 8)).toEqual([
+    expect(lines.slice(summaryStart + 1, summaryStart + 7)).toEqual([
       'referred,3,3,3 of 3',
       'enrolled,3,3,3 of 3',
       'trainingCompleted,0,3,0 of 3',
       'credentialRecords,0,3,0 of 3',
-      'placementRecords,2,3,2 of 3',
       'placementStartDateVerified,1,3,1 of 3',
       'placementStartDateNotVerified,1,3,1 of 3',
     ]);
-    expect(lines[summaryStart + 8]).toBe('');
+    expect(lines[summaryStart + 7]).toBe('');
+    expect(text).not.toMatch(/placementRecords|# Placement records:/);
 
-    const rowBlock = lines.slice(summaryStart + 9);
+    const rowBlock = lines.slice(summaryStart + 8);
     const unverified = rowBlock.find((l) => l.startsWith('Unverified Member,'));
     expect(unverified).toBeDefined();
     expect(unverified).toContain('recorded_start_not_verified');

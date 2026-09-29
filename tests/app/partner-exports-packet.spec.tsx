@@ -68,8 +68,9 @@ describe('PartnerExportsPage outcome packet', () => {
     expect(html).toContain('Outcome packet');
     expect(html).toContain('Referred members');
     expect(html).toContain('3 of 3');
-    expect(html).toContain('Placement records');
-    expect(html).toContain('2 of 3');
+    // Placement counts are verified-only: no all-records "Placement records" line.
+    expect(html).not.toContain('data-line="placementRecords"');
+    expect(html).not.toContain('>Placement records<');
     expect(html).toContain('Placement start date verified');
     expect(html).toContain('1 of 3');
     expect(html).toContain('Enrolled members with no enrolled date recorded: 1');
@@ -80,7 +81,7 @@ describe('PartnerExportsPage outcome packet', () => {
     expect(html).toMatch(/Generated at <time dateTime="\d{4}-\d{2}-\d{2}T[\d:.]+Z" data-testid="partner-outcome-packet-generated-at">/i);
     expect(html).toContain('The page and the CSV use the same definitions');
     expect(html).not.toMatch(/always match|cannot drift/i);
-    // The unverified self-report counts as a placement record and is labelled pending.
+    // The unverified self-report is labelled pending, not counted as a placement.
     expect(html).toContain('Placement reported, pending verification');
     expect(html).toContain('recorded as an unverified placement record');
     // Credential copy names every source and status, never "member-reported".

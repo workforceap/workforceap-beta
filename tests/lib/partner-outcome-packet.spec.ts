@@ -114,7 +114,7 @@ function lineOf(packet: PartnerOutcomePacket, key: string) {
 }
 
 describe('buildPartnerOutcomePacket', () => {
-  it('(a) reports every placement record and splits it by start-date verification, as X of N', () => {
+  it('(a) counts placements verified-only and shows unverified ones as pending, as X of N', () => {
     const packet = build();
     expect(packet.definitionsVersion).toBe('partner-packet-v1');
     expect(packet.generatedAt).toBe('2026-09-23T12:00:00.000Z');
@@ -127,7 +127,9 @@ describe('buildPartnerOutcomePacket', () => {
     expect(lineOf(packet, 'enrolled')).toMatchObject({ count: 9, denominator: 12, display: '9 of 12' });
     expect(lineOf(packet, 'trainingCompleted')).toMatchObject({ count: 2, display: '2 of 12' });
     expect(lineOf(packet, 'credentialRecords')).toMatchObject({ count: 4, display: '4 of 12' });
-    expect(lineOf(packet, 'placementRecords')).toMatchObject({ count: 5, display: '5 of 12' });
+    // Verified-only (#2562's rule): no all-records placement line.
+    expect(packet.lines.map((l) => l.key)).not.toContain('placementRecords');
+    expect(packet.lines.map((l) => l.label)).not.toContain('Placement records');
     expect(lineOf(packet, 'placementStartDateVerified')).toMatchObject({ count: 3, denominator: 12, display: '3 of 12' });
     expect(lineOf(packet, 'placementStartDateNotVerified')).toMatchObject({ count: 2, display: '2 of 12' });
 
@@ -164,7 +166,6 @@ describe('buildPartnerOutcomePacket', () => {
       enrolled: rows.filter((r) => r.enrolled).length,
       trainingCompleted: rows.filter((r) => r.trainingCompleted).length,
       credentialRecords: rows.filter((r) => r.credentialRecord).length,
-      placementRecords: rows.filter((r) => r.placementStatus !== 'none').length,
       placementStartDateVerified: rows.filter((r) => r.placementStatus === 'start_date_verified').length,
       placementStartDateNotVerified: rows.filter((r) => r.placementStatus === 'recorded_start_not_verified').length,
     };
@@ -173,17 +174,14 @@ describe('buildPartnerOutcomePacket', () => {
       expect(line.count, line.key).toBe(agg[line.key]);
       expect(line.denominator, line.key).toBe(rows.length);
     }
-    expect(lineOf(packet, 'placementStartDateVerified').count + lineOf(packet, 'placementStartDateNotVerified').count).toBe(
-      lineOf(packet, 'placementRecords').count,
-    );
+    expect(packet.lines.map((l) => l.key).sort()).toEqual(['referred', ...Object.keys(agg)].sort());
   });
 
-  it('an unverified self-reported placement counts in all placement records but not in the verified subset', () => {
+  it('an unverified self-reported placement is shown as pending and not counted as a placement', () => {
     // The shape confirmPlacement -> recordPlacementFromApplication writes for
     // a member's own offer confirmation: a placement row, startDateVerified false.
     const selfReport = member(1, { placement: 'unverified' });
     const packet = build([selfReport, member(2)]);
-    expect(lineOf(packet, 'placementRecords')).toMatchObject({ count: 1, display: '1 of 2' });
     expect(lineOf(packet, 'placementStartDateVerified')).toMatchObject({ count: 0, display: '0 of 2' });
     expect(lineOf(packet, 'placementStartDateNotVerified')).toMatchObject({
       count: 1,
@@ -196,6 +194,8 @@ describe('buildPartnerOutcomePacket', () => {
     expect(packet.notes.join(' ')).toMatch(/recorded as an unverified placement record/);
     expect(csv).toContain('# note: A placement a member reports on their dashboard');
     expect(csv).not.toMatch(/not placement records|are not counted/i);
+    // Every line and note points only at lines the packet shows.
+    expect(csv).not.toMatch(/"Placement records"|placementRecords|# Placement records:|minus start date verified/);
     for (const e of packet.exclusions) expect(e).not.toMatch(/placement/i);
   });
 
