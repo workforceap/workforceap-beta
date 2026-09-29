@@ -18,7 +18,8 @@ import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import { employerAiMatchStatusBadgeVariant, employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import { getTranslations } from 'next-intl/server';
 import { EMPLOYER_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import EmployerEmptyState from '@/components/employer/EmployerEmptyState';
+import { employerPipelineEmptyVariant } from '@/lib/employer/emptyState';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('employer');
@@ -39,8 +40,11 @@ export default async function EmployerPipelinePage() {
   const t = await getTranslations('employer');
 
   const liveJobWhere = { employerId: ctx.employerId, status: 'live' as const };
-  const [jobTotal, jobs] = await Promise.all([
-    prisma.job.count({ where: liveJobWhere }),
+  const [postingsByStatus, jobs] = await Promise.all([
+    // One read for every posting, any status (replaces the live-only count):
+    // with none the first step is to post; with some but none live, matching
+    // has nothing to run on yet.
+    prisma.job.groupBy({ by: ['status'], where: { employerId: ctx.employerId }, _count: { id: true } }),
     prisma.job.findMany({
       take: EMPLOYER_LIST_CAP,
       where: liveJobWhere,
@@ -48,6 +52,9 @@ export default async function EmployerPipelinePage() {
       orderBy: { updatedAt: 'desc' },
     }),
   ]);
+
+  const postingTotal = postingsByStatus.reduce((sum, row) => sum + row._count.id, 0);
+  const jobTotal = postingsByStatus.find((row) => row.status === 'live')?._count.id ?? 0;
 
   const jobIds = jobs.map((j) => j.id);
   const matchTotal =
@@ -92,6 +99,10 @@ export default async function EmployerPipelinePage() {
     }
     return t('noProgram');
   }
+
+  // Which empty state the counts put this employer in (lib/employer/emptyState.ts);
+  // null when there is at least one match to show.
+  const emptyVariant = employerPipelineEmptyVariant({ postings: postingTotal, live: jobs.length, matches: allMatches.length });
 
   const byJob = new Map<string, typeof allMatches>();
   for (const m of allMatches) {
@@ -154,22 +165,8 @@ export default async function EmployerPipelinePage() {
           ))}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0 1rem' }}>
-          {jobs.length === 0 ? (
-            <PortalEmptyState
-              headingAs="h2"
-              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">account_tree</span>}
-              title="No pipeline yet"
-              description="Post a job to receive matched candidates."
-              primaryAction={{ label: 'Post a Job', href: '/employer/jobs/new' }}
-            />
-          ) : allMatches.length === 0 ? (
-            <PortalEmptyState
-              headingAs="h2"
-              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">psychology</span>}
-              title="No matches yet"
-              description="Matches will appear once your jobs are live."
-              secondaryAction={{ label: 'View Your Jobs', href: '/employer/jobs' }}
-            />
+          {emptyVariant ? (
+            <EmployerEmptyState variant={emptyVariant} headingAs="h2" framed />
           ) : (
             jobs.map((job) => {
               const matches = byJob.get(job.id) ?? [];
@@ -206,22 +203,8 @@ export default async function EmployerPipelinePage() {
         </div>
       </div>
       <div className="wa-hidden md:wa-block">
-        {jobs.length === 0 ? (
-          <PortalEmptyState
-            headingAs="h2"
-            icon={<span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)' }} aria-hidden="true">account_tree</span>}
-            title="No pipeline yet"
-            description="Post a job to receive matched candidates here."
-            primaryAction={{ label: 'Post your first job', href: '/employer/jobs/new' }}
-          />
-        ) : allMatches.length === 0 ? (
-          <PortalEmptyState
-            headingAs="h2"
-            icon={<span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)' }} aria-hidden="true">psychology</span>}
-            title="No matches yet"
-            description="Matches appear here after admin runs job–candidate matching."
-            secondaryAction={{ label: 'View Your Jobs', href: '/employer/jobs' }}
-          />
+        {emptyVariant ? (
+          <EmployerEmptyState variant={emptyVariant} headingAs="h2" framed />
         ) : (
           <EmployerKanban initialMatches={allMatches.map(m => ({ id: m.id, jobId: m.jobId, jobTitle: jobs.find(j => j.id === m.jobId)?.title ?? 'Job', matchScore: m.matchScore, matchReasons: m.matchReasons, status: m.status, student: m.student }))} />
         )}
