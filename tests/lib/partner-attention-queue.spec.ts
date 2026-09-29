@@ -134,6 +134,19 @@ describe('partner follow-up eligibility', () => {
     expect(query.values).toContain('partner-1');
     expect(query.values.filter(value => value === 'org-1')).toHaveLength(2);
   });
+
+  it('binds the minor cutoff as a YYYY-MM-DD date string, clamped on Feb 29', () => {
+    // A bound Date is a timestamptz; `::date` on it depends on the session
+    // time zone. The helper's calendar-date string cannot shift a day.
+    const leapDay = new Date('2028-02-29T15:00:00Z');
+    const query = buildAttentionPageQuery('partner-1', 'org-1', { tier: 'all', asOf: leapDay, limit: 50 });
+    expect(query.text).toMatch(/minor\.dob > \$\d+::date/);
+    expect(query.values).toContain('2010-02-28');
+    expect(query.values).not.toContain('2010-03-01');
+    const dateValues = query.values.filter((value) => value instanceof Date) as Date[];
+    // asOf is still bound as an instant; no Date carries the minor cutoff.
+    expect(dateValues.every((value) => value.getUTCFullYear() !== 2010)).toBe(true);
+  });
 });
 
 describe('program titles on partner attention rows', () => {

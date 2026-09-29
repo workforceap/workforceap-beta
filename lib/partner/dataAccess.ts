@@ -74,9 +74,30 @@ export type MinorProfileFacts = {
   ferpaConsentGiven?: boolean | null;
 } | null | undefined;
 
-/** The instant a member born after it is still under 18 (UTC calendar day). */
+/**
+ * The instant a member born after it is still under 18 (UTC calendar day).
+ *
+ * On Feb 29 the date 18 years earlier never exists (18 is not a multiple of
+ * 4, so that year is not a leap year), and `Date.UTC` would roll it to Mar 1,
+ * treating a member born on Mar 1, who is still 17 that day, as an adult.
+ * Clamp the day to the last day of that month instead, so the cutoff is
+ * Feb 28 and the Mar 1 birthday stays a minor.
+ */
 export function minorBirthDateCutoff(now: Date = new Date()): Date {
-  return new Date(Date.UTC(now.getUTCFullYear() - 18, now.getUTCMonth(), now.getUTCDate()));
+  const year = now.getUTCFullYear() - 18;
+  const month = now.getUTCMonth();
+  const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(now.getUTCDate(), lastDayOfMonth)));
+}
+
+/**
+ * The same cutoff as a `YYYY-MM-DD` calendar date, for raw SQL against the
+ * `profiles.dob` DATE column. A bound `Date` parameter is a timestamptz, and
+ * casting that to `date` uses the session time zone, which could move the
+ * cutoff a day; a date string cannot.
+ */
+export function minorBirthDateCutoffIsoDate(now: Date = new Date()): string {
+  return minorBirthDateCutoff(now).toISOString().slice(0, 10);
 }
 
 /** True when the saved profile flags the member as under 18. */
@@ -105,6 +126,15 @@ export function partnerMayViewMember(
  * (same rule as `partnerMayViewMember`), or null when the partner may see
  * every referred member (school partners). A member without a profile row is
  * not a known minor and stays visible.
+ *
+ * NULL-safe on purpose. Callers put this inside `NOT`, and Prisma renders a
+ * to-one `profile: { is }` filter as a LEFT JOIN, so the whole condition is
+ * negated in SQL. With a bare `dob > cutoff`, an adult whose date of birth was
+ * never saved (the usual case) made the OR `false OR NULL` = NULL, `NOT NULL`
+ * is NULL, and PostgreSQL dropped the row: every such adult was hidden from
+ * every non-school partner. `dob IS NOT NULL AND dob > cutoff` is false, not
+ * NULL, for a missing date. `isMinor` and `ferpaConsentGiven` are NOT NULL
+ * columns (lib/partner/partnerVisibility.realdb.test.ts).
  */
 export function partnerHiddenMemberWhere(
   access: PartnerDataAccess,
@@ -115,7 +145,7 @@ export function partnerHiddenMemberWhere(
     profile: {
       is: {
         ferpaConsentGiven: false,
-        OR: [{ isMinor: true }, { dob: { gt: minorBirthDateCutoff(now) } }],
+        OR: [{ isMinor: true }, { dob: { not: null, gt: minorBirthDateCutoff(now) } }],
       },
     },
   };

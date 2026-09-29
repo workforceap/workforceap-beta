@@ -1,7 +1,15 @@
 .panel {
   display: grid;
+  /* One track that may shrink below the longest unbreakable URL: an implicit
+     `auto` track grows to its min-content and pushes the rows past a 390px
+     viewport. Children may shrink too (grid items default to min-width: auto). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--wa-pad);
   box-shadow: none;
+}
+
+.panel > * {
+  min-width: 0;
 }
 
 .intro p {
@@ -73,6 +81,21 @@
   resize: vertical;
 }
 
+.about {
+  margin: 0.5rem 0 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--wa-accent);
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+}
+
+.about p {
+  margin: 0;
+  color: var(--wa-text);
+  font-size: var(--wa-type-body);
+  line-height: 1.55;
+}
+
 .snippetActions {
   display: flex;
   flex-wrap: wrap;
@@ -86,6 +109,7 @@
   color: var(--wa-muted);
   font-size: var(--wa-type-meta);
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .error {

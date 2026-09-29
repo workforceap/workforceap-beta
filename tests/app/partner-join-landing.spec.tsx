@@ -23,6 +23,8 @@ vi.mock('@/lib/tenant/resolveProvisionOrg', () => ({ resolveProvisionOrganizatio
 vi.mock('@/lib/platform/programCatalog', () => ({
   getActivePrograms: async () => [
     { slug: 'it-support', name: 'IT Support', category: 'IT', duration: '6 months', certifications: ['Google IT Support'], featured: true, displayOrder: 1, static: undefined },
+    { slug: 'cyber-analyst', name: 'Cyber', category: 'it', duration: null, certifications: [], featured: false, displayOrder: 2, static: { title: 'Cybersecurity Analyst', categoryLabel: 'IT & Cybersecurity', categoryColor: '#ad2c4d', duration: '4 months' } },
+    { slug: 'ai-developer', name: 'AI', category: 'ai', duration: null, certifications: [], featured: false, displayOrder: 3, static: { title: 'AI Developer', categoryLabel: 'AI & Software Dev', categoryColor: '#8b4a9b', duration: '6 months' } },
   ],
 }));
 vi.mock('@/lib/i18n/server', () => ({ getRequestLocale: async () => h.locale }));
@@ -101,17 +103,45 @@ describe('/join/<code> partner landing page', () => {
     expect(html).toContain('/programs/it-support?ref=acme-code');
   });
 
+  it('gives every program category pill a solid fill tone (a bare pill drew white text on the pale card)', async () => {
+    const root = document.createElement('div');
+    root.innerHTML = await renderJoin('acme-code');
+    const pills = [...root.querySelectorAll('#partner-programs .pcard .cat-pill')];
+    expect(pills.map((el) => [el.textContent, el.getAttribute('data-category-tone')])).toEqual([
+      ['IT', 'g'],
+      ['IT & Cybersecurity', 'c'],
+      ['AI & Software Dev', 'g'],
+    ]);
+    for (const pill of pills) {
+      expect(pill.classList).toContain(`cat--${pill.getAttribute('data-category-tone')}`);
+    }
+  });
+
   it('keeps the visitor locale on the CTA', async () => {
     h.locale = 'es';
     const html = await renderJoin('acme-code');
     expect(html).toContain('href="/es/apply?ref=acme-code"');
   });
 
-  it('builds share metadata (title, description, OG) for the partner, not indexed', async () => {
+  it('renders the full mission statement in an "Our mission" section right after the hero', async () => {
+    const root = document.createElement('div');
+    root.innerHTML = await renderJoin('acme-code');
+    const section = root.querySelector('section[data-mission]');
+    expect(section?.querySelector('h2')?.textContent).toBe('Our mission');
+    expect(section?.querySelector('p')?.textContent).toBe(messages.mission.statement);
+    expect(section?.previousElementSibling?.getAttribute('aria-labelledby')).toBe('partner-landing-title');
+    // The partner stays named in the hero.
+    expect(root.querySelector('#partner-landing-title')?.textContent).toBe('Acme Workforce Center invited you to WorkforceAP');
+  });
+
+  it('builds share metadata (title, mission description, OG) for the partner, not indexed', async () => {
     const meta = await generateMetadata(params('acme-code'));
     expect(meta.title).toBe('Apply to WorkforceAP with Acme Workforce Center');
-    expect(String(meta.description)).toContain('Acme Workforce Center invites you');
-    expect(meta.openGraph).toMatchObject({ url: '/join/acme-code' });
+    const firstSentence = messages.mission.statement.split('. ')[0] + '.';
+    expect(meta.description).toBe(messages.mission.summary);
+    expect(String(meta.description)).toContain(firstSentence);
+    expect(String(meta.description)).toContain('At no cost to eligible members through grant- and scholarship-funded memberships.');
+    expect(meta.openGraph).toMatchObject({ url: '/join/acme-code', description: messages.mission.summary });
     expect(meta.robots).toEqual({ index: false, follow: true });
   });
 });

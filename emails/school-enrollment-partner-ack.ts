@@ -7,11 +7,15 @@ import { escapeHtml } from '@/lib/email/escapeHtml';
 export function schoolEnrollmentPartnerAckHtml(params: {
   partnerName: string;
   studentName: string;
-  studentEmail: string;
+  /** Null when the partner's tier does not include member contact details. */
+  studentEmail: string | null;
   programInterest: string;
   gradeLevel?: string | null;
   partnerPortalUrl: string;
 }): string {
+  const emailLine = params.studentEmail?.trim()
+    ? `<li><strong>Email:</strong> ${escapeHtml(params.studentEmail.trim())}</li>`
+    : '';
   const gradeLine = params.gradeLevel?.trim()
     ? `<li><strong>Grade:</strong> ${escapeHtml(params.gradeLevel.trim())}</li>`
     : '';
@@ -20,7 +24,7 @@ export function schoolEnrollmentPartnerAckHtml(params: {
     <p>A new student from <strong>${escapeHtml(params.partnerName)}</strong> just completed a WorkforceAP enrollment application.</p>
     <ul>
       <li><strong>Student:</strong> ${escapeHtml(params.studentName)}</li>
-      <li><strong>Email:</strong> ${escapeHtml(params.studentEmail)}</li>
+      ${emailLine}
       <li><strong>Program interest:</strong> ${escapeHtml(params.programInterest)}</li>
       ${gradeLine}
     </ul>

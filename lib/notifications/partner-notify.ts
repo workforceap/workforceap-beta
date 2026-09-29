@@ -146,7 +146,9 @@ export async function sendPartnerMilestoneEmail(
 
 /**
  * Notifies the partner when a new member is assigned to them.
- * No-ops when partner has no contact email or Resend is not configured.
+ * No-ops when partner has no contact email or Resend is not configured, and
+ * when the member is hidden from this partner (the same minor rule
+ * `sendPartnerMilestoneEmail` applies, lib/partner/dataAccess.ts).
  */
 export async function sendPartnerNewMemberAssignedEmail(
   memberId: string,
@@ -156,15 +158,19 @@ export async function sendPartnerNewMemberAssignedEmail(
     const [member, partner] = await Promise.all([
       prisma.user.findUnique({
         where: { id: memberId },
-        select: { fullName: true },
+        select: {
+          fullName: true,
+          profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } },
+        },
       }),
       prisma.partner.findUnique({
         where: { id: partnerId },
-        select: { contactEmail: true, name: true },
+        select: { contactEmail: true, name: true, partnerType: true },
       }),
     ]);
 
     if (!member || !partner?.contactEmail?.trim()) return;
+    if (!partnerMayViewMember(partnerDataAccess(partner), member.profile)) return;
 
     const resendKey = process.env.RESEND_API_KEY;
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';

@@ -427,7 +427,7 @@ export default async function PartnerDashboardPage({
     // unverified ones included. The legacy ?ui=legacy estimate is unchanged
     // (WAP-193 retires that branch).
     const unpaidVerified = showPayouts
-      ? await countUnpaidVerifiedPlacements(ctx.partnerId, ctx.partner.organizationId)
+      ? await countUnpaidVerifiedPlacements(ctx.partnerId, ctx.partner.organizationId, access)
       : 0;
     const payoutDueUsd = unpaidVerified * getPartnerPlacementPayoutUsd();
     const payoutDueSubtitle = `${unpaidVerified} verified placement${unpaidVerified === 1 ? '' : 's'} not yet paid${

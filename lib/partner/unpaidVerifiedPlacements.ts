@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { eventNameReadCandidates } from '@/lib/events/names';
 import { getPlacementPayoutRejection } from '@/lib/partner/payoutEligibility';
+import { withPartnerMemberVisibility, type PartnerDataAccess } from '@/lib/partner/dataAccess';
 
 /** Upper bound on placements read for the partner overview's payout tile. */
 const UNPAID_PLACEMENTS_READ_CAP = 500;
@@ -12,12 +13,20 @@ const UNPAID_PLACEMENTS_READ_CAP = 500;
  * (`getPlacementPayoutRejection`), so the overview's "Payout due" tile and the
  * payout button can never disagree (WAP-213). It used to multiply every
  * placement ever recorded — paid, unverified and all — by the payout rate.
+ *
+ * The population is the overview's "Placed" tile's: members this partner may
+ * see (lib/partner/dataAccess.ts), so a hidden minor's placement is neither
+ * counted as placed nor as payout due on the partner's own screen.
  */
-export async function countUnpaidVerifiedPlacements(partnerId: string, organizationId: string): Promise<number> {
+export async function countUnpaidVerifiedPlacements(
+  partnerId: string,
+  organizationId: string,
+  access: PartnerDataAccess,
+): Promise<number> {
   const placements = await prisma.placementRecord.findMany({
     where: {
       startDateVerified: true,
-      user: { organizationId, partnerReferrals: { some: { partnerId } } },
+      user: withPartnerMemberVisibility({ organizationId, partnerReferrals: { some: { partnerId } } }, access),
     },
     select: { id: true, userId: true, placedAt: true, startDateVerified: true },
     orderBy: { placedAt: 'desc' },
