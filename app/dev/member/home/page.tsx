@@ -46,6 +46,7 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
  *     reloads with `?program=<slug>`, which keeps the switch and shows the
  *     secondary-program note. `?program=` alone implies two programs.
  *   `?staff=1` shows the staff-view banner (as a staff viewer sees it).
+ *   `?advisor=off` hides the career advisor card (no active assignment).
  *   The app-install prompt is always mounted; the browser only fires its
  *     `beforeinstallprompt` from the second visit, so it rarely shows here.
  * The strip and the check-in call real server actions, which refuse without a
@@ -121,6 +122,7 @@ export default async function DevMemberHomePage({
     programs?: string;
     program?: string;
     staff?: string;
+    advisor?: string;
   }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
@@ -207,6 +209,7 @@ export default async function DevMemberHomePage({
     {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
       showStaffViewBanner={params?.staff === '1'}
+      advisor={params?.advisor === 'off' ? null : { name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }}
       programSwitch={programSwitch}
       firstName="Mike"
       coursePercent={coursePercent}

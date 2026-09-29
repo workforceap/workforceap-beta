@@ -81,6 +81,21 @@
   resize: vertical;
 }
 
+.about {
+  margin: 0.5rem 0 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--wa-accent);
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+}
+
+.about p {
+  margin: 0;
+  color: var(--wa-text);
+  font-size: var(--wa-type-body);
+  line-height: 1.55;
+}
+
 .snippetActions {
   display: flex;
   flex-wrap: wrap;

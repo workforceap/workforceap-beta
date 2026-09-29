@@ -43,17 +43,23 @@ function CopyButton({ value, label, copiedLabel }: {
 
 /**
  * Partner share tools (guide page): landing-page link, per-channel links with
- * UTM tags, a copyable "Apply" button snippet, and — when supplied — signup
- * counts per channel (counts only, no member data). Copying never sends.
+ * UTM tags, a copyable "About WorkforceAP" blurb (the mission statement,
+ * `mission.statement` in messages/*.json, passed in by the server page so this
+ * client component does not bundle the catalog), a copyable "Apply" button
+ * snippet, and — when supplied — signup counts per channel (counts only, no
+ * member data). Copying never sends.
  *
  * No QR code: the repo has no QR dependency and the CSP (`img-src`) blocks
  * third-party QR image services.
  */
 export default function PartnerShareToolkit({
   links,
+  about,
   channelCounts,
 }: {
   links: PartnerShareLinks;
+  /** "About WorkforceAP" blurb: `mission.aboutHeading` and `mission.statement`. */
+  about: { heading: string; statement: string };
   /** Signups per channel from `apply_signup_completed` metadata; null hides the column. */
   channelCounts?: Record<PartnerShareChannelId | 'other', number> | null;
 }) {
@@ -100,6 +106,17 @@ export default function PartnerShareToolkit({
             ({channelCounts.other} with no channel tag or another source).
           </p>
         ) : null}
+      </div>
+
+      <div data-share-about>
+        <h3 className={styles.sectionTitle}>{about.heading}</h3>
+        <p className={styles.note}>Paste this with your links so people know who WorkforceAP is.</p>
+        <blockquote className={styles.about}>
+          <p>{about.statement}</p>
+        </blockquote>
+        <div className={styles.snippetActions}>
+          <CopyButton value={about.statement} label="Copy about blurb" copiedLabel="Blurb copied" />
+        </div>
       </div>
 
       <div>

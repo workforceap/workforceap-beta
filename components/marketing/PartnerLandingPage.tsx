@@ -6,6 +6,7 @@ import type { PartnerLandingModel } from '@/lib/partner/partnerLanding';
 import { partnerProgramHref } from '@/lib/apply/partnerApplyHref';
 import { getPartnerDisclosureCopy } from '@/lib/apply/partnerDisclosureCopy';
 import PartnerReferralDisclosure from '@/components/apply/PartnerReferralDisclosure';
+import CategoryPill from './CategoryPill';
 import EnrollRefCookie from './EnrollRefCookie';
 import UtmCapture from './UtmCapture';
 import TrustStrip from './TrustStrip';
@@ -15,7 +16,9 @@ import styles from './PartnerLandingPage.module.css';
  * Public partner-branded landing page (`/join/<code>`). Reuses the partner
  * enrollment page's styles (css/enroll-school.css) and the approved home-page
  * copy (`marketing.home.*`) for every WorkforceAP claim; only the partner
- * framing lives in `partnerLanding.*`.
+ * framing lives in `partnerLanding.*`. The mission section right after the
+ * hero renders `mission.statement` verbatim (shared with the invitation email
+ * and the partner share toolkit).
  *
  * Attribution uses the existing mechanics: `EnrollRefCookie` persists the ref
  * (sessionStorage + first-party cookie), `UtmCapture` keeps the channel tags,
@@ -29,9 +32,10 @@ export default async function PartnerLandingPage({
   /** Locale-prefixed `/apply?ref=<code>`. */
   applyHref: string;
 }) {
-  const [t, home, disclosureCopy] = await Promise.all([
+  const [t, home, mission, disclosureCopy] = await Promise.all([
     getTranslations('partnerLanding'),
     getTranslations('marketing.home'),
+    getTranslations('mission'),
     getPartnerDisclosureCopy(),
   ]);
   const partner = model.name;
@@ -86,6 +90,15 @@ export default async function PartnerLandingPage({
         </div>
       </section>
 
+      <section className="band" aria-labelledby="partner-landing-mission" data-mission>
+        <div className={`wrap ${styles.missionWrap}`}>
+          <div className="sec-head">
+            <h2 id="partner-landing-mission">{mission('heading')}</h2>
+            <p>{mission('statement')}</p>
+          </div>
+        </div>
+      </section>
+
       <TrustStrip variant="home" />
 
       <section className="band" aria-labelledby="partner-landing-steps">
@@ -127,7 +140,7 @@ export default async function PartnerLandingPage({
               {model.programs.map((p) => (
                 <div className="pcard" key={p.slug}>
                   <div className="pcard-top">
-                    <div className="ptags"><span className="cat-pill">{p.category}</span></div>
+                    <div className="ptags"><CategoryPill tone={p.categoryTone}>{p.category}</CategoryPill></div>
                   </div>
                   {/* Program pages are served by the Astro site: document navigation. */}
                   <h3><a href={partnerProgramHref(model.ref, p.slug)}>{p.title}</a></h3>

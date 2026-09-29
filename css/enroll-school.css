@@ -108,8 +108,13 @@
 .enroll-school .pcard:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
 .enroll-school .pcard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .enroll-school .ptags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.enroll-school .cat-pill{color:var(--color-on-accent);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:700}
-.enroll-school .cat--c{background:var(--crimson, var(--color-accent))}.enroll-school .cat--g{background:var(--gold-dark, #8c6a2a)}
+/* Category pill: white text on a solid fill. The fill used to exist only on the
+   .cat--c / .cat--g modifiers, so a bare .cat-pill (the /join cards) drew white
+   text on the pale card (~1.1:1). The base now carries the crimson fill, and the
+   fills are the mode-constant hero pairs (they stay dark in both themes and pair
+   with --wa-on-hero): 6.5:1 crimson, 5.9:1 gold, light and dark. */
+.enroll-school .cat-pill{background:var(--wa-hero-crimson);color:var(--wa-on-hero);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:700}
+.enroll-school .cat--c{background:var(--wa-hero-crimson)}.enroll-school .cat--g{background:var(--wa-hero-gold)}
 .enroll-school .fund-pill{font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;background:color-mix(in srgb, var(--color-green) 12%, transparent);color:var(--color-green)}
 .enroll-school .picon{color:var(--crimson, var(--color-accent))}
 .enroll-school .pcard h3{font-size:18px;font-weight:700;margin-bottom:10px;min-height:3.6em}

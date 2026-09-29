@@ -35,6 +35,8 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
+import MemberAdvisorCard from '@/components/portal/kit/pages/member/MemberAdvisorCard';
+import type { AssignedCounselor } from '@/lib/member/counselorContext';
 import First90DaysCard, { type First90DaysCardProps } from '@/components/portal/First90DaysCard';
 import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
@@ -224,6 +226,8 @@ export interface MemberHomeKitProps {
   } | null;
   /** Dominant next-best-action banner rendered above the bento grid. `null`/omitted renders nothing (no empty shell). */
   doThisNext?: NextBestAction | null;
+  /** Active assigned counselor (resolveAssignedCounselor). Null hides the advisor card. */
+  advisor?: AssignedCounselor | null;
   /** The steps after `doThisNext`, most important first. Empty renders nothing. */
   upNext?: NextBestAction[];
   /** One AI Career Tools pick for the member's stage. `null` renders nothing. */
@@ -595,6 +599,7 @@ export function MemberHomeKit({
   showStaffViewBanner = false,
   programSwitch = null,
   doThisNext = null,
+  advisor = null,
   upNext = [],
   recommendedTool = null,
   ungatedDigitalBasicsHref = null,
@@ -716,6 +721,9 @@ export function MemberHomeKit({
             <First90DaysCard {...first90} variant="kit" />
           </ErrorBoundary>
         ) : null}
+
+        {/* Stitch member layout: who to ask, right under the next step. */}
+        <MemberAdvisorCard advisor={advisor} />
 
         {!programTitle && ungatedDigitalBasicsHref ? (
           <div className="wa-kit-card" style={{ display: 'grid', gap: 10 }}>
