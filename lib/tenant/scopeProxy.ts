@@ -53,6 +53,19 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'chapterMeeting',
   'chapterCurriculumItem',
   'trainingBillingPacket',
+  // Two-stage J5/J6 billing (lib/billing/twoStage, docs/BILLING-PACKETS.md).
+  'billingCase',
+  'billingAttestation',
+  'billingArtifact',
+  'billingSignerDelegation',
+  'billingStageRecord',
+  'billingStageRecipient',
+  'billingStageSend',
+  'billingDeliveryEvent',
+  'billingVoucherReceiptSignature',
+  'billingDesignatedSigner',
+  'billingSignerSignatureAsset',
+  'billingPaymentEvent',
 ]);
 
 /**
