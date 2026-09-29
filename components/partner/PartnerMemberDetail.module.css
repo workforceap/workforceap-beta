@@ -1,0 +1,175 @@
+/* Partner member detail: stage badge, numbered journey, placement card.
+   Stage hues follow the Stitch "Civic Horizon" partner spec; each pair is
+   text-on-tint tuned for WCAG AA in both modes via light-dark(), and every
+   badge carries a text label so colour is never the only signal. */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.5rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.badge svg { flex-shrink: 0; }
+
+.referred {
+  color: light-dark(#3b6978, #9cc7d4);
+  background: light-dark(#eef4f6, rgba(59, 105, 120, 0.22));
+}
+.in_training {
+  color: light-dark(#5b35d0, #c3b2ff);
+  background: light-dark(#f3f0fd, rgba(112, 72, 232, 0.22));
+}
+.course_complete {
+  color: light-dark(#0d6e6e, #7fd3d3);
+  background: light-dark(#e6f4f4, rgba(13, 110, 110, 0.24));
+}
+.awaiting_verification {
+  color: light-dark(#8a4a00, #f2b36b);
+  background: light-dark(#fef7ee, rgba(156, 84, 0, 0.22));
+  border-color: light-dark(#9c5400, #c77a1f);
+}
+.placed_verified {
+  color: light-dark(#206d3d, #83d09f);
+  background: light-dark(#eaf5ee, rgba(32, 109, 61, 0.24));
+}
+
+/* ── Numbered journey ─────────────────────────────────────────────── */
+
+.journey {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.875rem;
+  padding-bottom: 1.25rem;
+}
+.step:last-child { padding-bottom: 0; }
+
+/* Vertical rail between nodes. */
+.step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: calc(1rem - 1px);
+  top: 2rem;
+  bottom: 0;
+  width: 2px;
+  background: var(--wa-border);
+}
+.stepDone:not(:last-child)::before {
+  background: color-mix(in srgb, var(--wa-success) 55%, var(--wa-border));
+}
+
+.node {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: var(--wa-type-meta);
+  font-variant-numeric: tabular-nums;
+  background: var(--wa-surface);
+  color: var(--wa-muted-strong);
+  border: 2px solid var(--wa-border);
+}
+.stepDone .node {
+  background: var(--wa-success);
+  border-color: var(--wa-success);
+  color: #ffffff;
+}
+.stepCurrent .node {
+  border-color: var(--wa-accent);
+  color: var(--wa-accent-text);
+  box-shadow: 0 0 0 3px var(--wa-accent-soft);
+}
+.stepPending .node {
+  border-color: light-dark(#9c5400, #c77a1f);
+  color: light-dark(#8a4a00, #f2b36b);
+  background: light-dark(#fef7ee, rgba(156, 84, 0, 0.22));
+}
+
+.stepBody { min-width: 0; padding-top: 0.25rem; }
+.stepHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+}
+.stepLabel { margin: 0; font-weight: 700; color: var(--wa-text); }
+.stepDate {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted-strong);
+  font-variant-numeric: tabular-nums;
+}
+.stepDetail {
+  margin: 0.25rem 0 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted-strong);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* ── Placement card ───────────────────────────────────────────────── */
+
+.placementGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1rem;
+  margin: 0.75rem 0 0;
+}
+.placementGrid dt {
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--wa-muted-strong);
+}
+.placementGrid dd {
+  margin: 0.25rem 0 0;
+  font-weight: 700;
+  color: var(--wa-text);
+  overflow-wrap: anywhere;
+}
+.money { font-variant-numeric: tabular-nums; }
+.verifiedPanel .placementGrid { margin: 0; }
+
+.verifiedPanel {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--wa-success) 40%, var(--wa-border));
+  background: light-dark(#f6fbf7, rgba(32, 109, 61, 0.12));
+}
+
+.pendingPanel {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  border: 1px solid light-dark(#9c5400, #c77a1f);
+  background: light-dark(#fef7ee, rgba(156, 84, 0, 0.16));
+}
+.pendingPanel svg { flex-shrink: 0; color: light-dark(#8a4a00, #f2b36b); margin-top: 0.125rem; }
+.pendingTitle { margin: 0 0 0.25rem; font-weight: 700; color: var(--wa-text); }
+.pendingBody { margin: 0; font-size: var(--wa-type-meta); color: var(--wa-muted-strong); line-height: 1.55; }
+
+.empty { margin: 0.75rem 0 0; color: var(--wa-muted-strong); }
