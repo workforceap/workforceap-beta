@@ -82,7 +82,7 @@ test('single-member choices use canonical titles, not stale tenant catalog names
   // program renames (what staff saw in the admin "Change program" dropdown).
   const staleCatalog = [
     { slug: 'digital-literacy-empowerment-class', name: 'Digital Literacy Empowerment Class', status: 'active' },
-    { slug: 'ai-professional-developer-certificate-ibm', name: 'AI Professional Developer Certificate (IBM)', status: 'active' },
+    { slug: 'ai-practitioner-professional-certificate-aws', name: 'AI Professional Developer Certificate (IBM)', status: 'active' },
     { slug: 'aws-cloud-technology-amazon', name: 'AWS Cloud Technology (Amazon)', status: 'active' },
     { slug: 'core-construction-training-certificate', name: 'Construction Readiness Certificate (OSHA-10)', status: 'active' },
     { slug: 'certified-logistics-technician-clt', name: 'Logistics and Supply Chain Certificate (CLT)', status: 'active' },
@@ -97,9 +97,8 @@ test('single-member choices use canonical titles, not stale tenant catalog names
   for (const option of options) {
     assert.equal(option.name, getProgramBySlug(option.slug)?.title);
   }
-  // Legacy aliases collapse onto the canonical slug the PATCH route accepts.
+  // Production rows keep the canonical slug with an old display name.
   assert.ok(options.some((option) => option.slug === 'ai-practitioner-professional-certificate-aws'));
-  assert.ok(!options.some((option) => option.slug === 'ai-professional-developer-certificate-ibm'));
 });
 
 test('single-member choices keep a current program that left the catalog, disabled', () => {
