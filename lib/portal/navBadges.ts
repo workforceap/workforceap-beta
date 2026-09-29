@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { partnerDataAccess, withPartnerMemberVisibility, type PartnerDataAccess } from '@/lib/partner/dataAccess';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { adminApplicationsAwaitingDecisionWhere } from '@/lib/admin/adminApprovalQueue';
@@ -64,7 +65,7 @@ export async function getNavBadgeCountsForUser(
     const sa = await isSuperAdmin(userId);
     const ctx = await getPartnerForUser(userId, { isSuperAdminHint: sa });
     if (!ctx) return {};
-    return getPartnerBadgeCounts(ctx.partnerId, ctx.partner.organizationId);
+    return getPartnerBadgeCounts(ctx.partnerId, ctx.partner.organizationId, partnerDataAccess(ctx.partner));
   }
 
   if (role === 'counselor') {
@@ -227,20 +228,25 @@ async function getCounselorBadgeCounts(counselorId: string, userId: string): Pro
   };
 }
 
-async function getPartnerBadgeCounts(partnerId: string, organizationId: string): Promise<NavBadgeCounts> {
+async function getPartnerBadgeCounts(
+  partnerId: string,
+  organizationId: string,
+  access: PartnerDataAccess,
+): Promise<NavBadgeCounts> {
   const since = new Date();
   since.setDate(since.getDate() - MILESTONE_LOOKBACK_DAYS);
 
   const [attentionCount, referralIds, partnerUsers, thread] = await Promise.all([
     countPartnerAttention(partnerId, organizationId),
     // Same population as the partner overview and milestones feed: referred
-    // members of this org who are members, not staff or seeded fixtures.
+    // members of this org who are members, not staff or seeded fixtures, and
+    // not minors hidden from this partner (lib/partner/dataAccess.ts).
     prisma.partnerReferral.findMany({
       take: 500,
       where: {
         partnerId,
         partner: { organizationId },
-        member: { deletedAt: null, organizationId, ...MEMBER_ONLY_WHERE },
+        member: withPartnerMemberVisibility({ deletedAt: null, organizationId, ...MEMBER_ONLY_WHERE }, access),
       },
       select: { memberId: true },
     }),

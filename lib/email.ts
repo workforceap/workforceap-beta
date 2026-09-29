@@ -1798,7 +1798,8 @@ export async function sendSchoolEnrollmentPartnerAckEmail(params: {
   to: string;
   partnerName: string;
   studentName: string;
-  studentEmail: string;
+  /** Null for a restricted (referral-track) partner: no member contact. */
+  studentEmail: string | null;
   programInterest: string;
   gradeLevel?: string | null;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {

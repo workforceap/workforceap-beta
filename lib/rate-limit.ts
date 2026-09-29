@@ -112,6 +112,10 @@ let forgotPasswordEmailRateLimiter: Ratelimit | null = null;
 let applyStatusLookupRateLimiter: Ratelimit | null = null;
 let applyStatusLookupEmailRateLimiter: Ratelimit | null = null;
 let publicCareersGetRateLimiter: Ratelimit | null = null;
+// Public GET /api/apply/partner-disclosure: resolves a partner ref to the
+// partner name shown in the apply-funnel disclosure. Per IP, against code
+// enumeration.
+let publicPartnerDisclosureRateLimiter: Ratelimit | null = null;
 let publicVoiceSessionRateLimiter: Ratelimit | null = null;
 // Per-authenticated-user limiter for any ElevenLabs voice session mint
 // (member portal voice tools, counselor/employer/partner walkthroughs,
@@ -376,6 +380,11 @@ if (redisUrl && redisToken) {
     redis,
     limiter: Ratelimit.slidingWindow(120, '1 h'),
     prefix: 'ratelimit:careers-public-get',
+  });
+  publicPartnerDisclosureRateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, '1 h'),
+    prefix: 'ratelimit:partner-disclosure-public-get',
   });
   voiceSessionRateLimiter = new Ratelimit({
     redis,
@@ -648,6 +657,13 @@ export async function checkApplyStatusLookupEmailRateLimit(email: string): Promi
 export async function checkPublicCareersGetRateLimit(ip: string): Promise<{ success: boolean }> {
   if (!publicCareersGetRateLimiter) return { success: true };
   const result = await publicCareersGetRateLimiter.limit(ip);
+  return { success: result.success };
+}
+
+/** Public GET /api/apply/partner-disclosure — per IP; fail-open without Redis. */
+export async function checkPublicPartnerDisclosureRateLimit(ip: string): Promise<{ success: boolean }> {
+  if (!publicPartnerDisclosureRateLimiter) return { success: true };
+  const result = await publicPartnerDisclosureRateLimiter.limit(ip);
   return { success: result.success };
 }
 

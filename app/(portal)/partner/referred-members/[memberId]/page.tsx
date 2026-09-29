@@ -26,6 +26,11 @@ import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { eventNameReadCandidates } from '@/lib/events/names';
 import { PARTNER_PLACEMENT_LABELS, partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
+import {
+  partnerDataAccess,
+  partnerVisiblePlacement,
+  withPartnerMemberVisibility,
+} from '@/lib/partner/dataAccess';
 
 type Props = {
   params: Promise<{ memberId: string }>;
@@ -70,12 +75,20 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
 
   const { memberId } = await params;
 
+  // Tier + minor rule (lib/partner/dataAccess.ts): a hidden minor is a 404,
+  // and a restricted (referral-track) partner never loads job details. The
+  // partner type comes from the stored partner row via getPartnerForUser.
+  const access = partnerDataAccess(ctx.partner);
+
   const referral = await prisma.partnerReferral.findFirst({
     where: {
       partnerId: ctx.partnerId,
       memberId,
       partner: { organizationId: ctx.partner.organizationId, active: true },
-      member: { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+      member: withPartnerMemberVisibility(
+        { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+        access,
+      ),
     },
     select: { id: true, referredAt: true },
   });
@@ -103,17 +116,18 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
         select: { programSlug: true, courseSlug: true },
       },
       placementRecord: {
-        select: {
-          employerName: true,
-          jobTitle: true,
-          startDate: true,
-          salaryOffered: true,
-          placedAt: true,
-          startDateVerified: true,
-          retentionStatus: true,
-          retentionDecision: true,
-          onboardingWindowEnd: true,
-        },
+        select: access.canSeePlacementDetails
+          ? {
+              employerName: true,
+              jobTitle: true,
+              salaryOffered: true,
+              placedAt: true,
+              startDateVerified: true,
+              retentionStatus: true,
+              retentionDecision: true,
+              onboardingWindowEnd: true,
+            }
+          : { placedAt: true, startDateVerified: true },
       },
       userCertifications: { select: { certName: true, earnedAt: true }, orderBy: { earnedAt: 'desc' } },
       memberProgramProgress: {
@@ -207,8 +221,10 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
   const skillsetProgress = await loadMemberSkillsetProgress(memberId);
   const certificateCount = member.userCertifications.length;
   const outreachCount = outreachLogs.length;
-  const placed = member.placementRecord?.startDateVerified === true;
-  const reportedPlacement = !!member.placementRecord;
+  const placement = partnerVisiblePlacement(access, member.placementRecord);
+  const showJobDetails = access.canSeePlacementDetails;
+  const placed = placement?.startDateVerified === true;
+  const reportedPlacement = !!placement;
   const pendingPlacement = placementConfirmations[0] ?? null;
   const recentActivity = recentEvents.flatMap((event) => {
     const label = partnerEventLabel(event.eventName);
@@ -249,24 +265,29 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
     {
       key: 'placement',
       label: 'Placement',
-      detail: placed && member.placementRecord
-        ? `${member.placementRecord.jobTitle} @ ${member.placementRecord.employerName}`
+      detail: placed && placement
+        ? placement.jobTitle && placement.employerName
+          ? `${placement.jobTitle} @ ${placement.employerName}`
+          : PARTNER_PLACEMENT_LABELS.verifiedWithoutDetails
         : reportedPlacement || pendingPlacement ? PARTNER_PLACEMENT_LABELS.pendingVerification : 'Not placed yet',
-      date: placed ? member.placementRecord?.placedAt ?? null : null,
+      date: placed ? placement?.placedAt ?? null : null,
       done: placed,
     },
-    {
-      key: 'retention',
-      label: 'Retention / follow-up',
-      detail:
-        (placed ? member.placementRecord?.retentionDecision : null) ??
-        (placed ? member.placementRecord?.retentionStatus : null) ??
-        (placed && member.placementRecord?.onboardingWindowEnd
-          ? `Onboarding window through ${formatDate(member.placementRecord.onboardingWindowEnd)}`
-          : 'Awaiting verified placement'),
-      date: placed ? member.placementRecord?.onboardingWindowEnd ?? null : null,
-      done: placed && !!(member.placementRecord?.retentionStatus || member.placementRecord?.retentionDecision),
-    },
+    // Retention is job detail: restricted partners see placed yes/no + date only.
+    ...(showJobDetails
+      ? [{
+          key: 'retention',
+          label: 'Retention / follow-up',
+          detail:
+            (placed ? placement?.retentionDecision : null) ??
+            (placed ? placement?.retentionStatus : null) ??
+            (placed && placement?.onboardingWindowEnd
+              ? `Onboarding window through ${formatDate(placement.onboardingWindowEnd)}`
+              : 'Awaiting verified placement'),
+          date: placed ? placement?.onboardingWindowEnd ?? null : null,
+          done: placed && !!(placement?.retentionStatus || placement?.retentionDecision),
+        }]
+      : []),
   ];
 
   return (
@@ -278,7 +299,9 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
         </Link>
         <PageHeader
           title={member.fullName}
-          subtitle="Read-only overview. Contact information, assessments, and benefit requests are not shown in the partner portal."
+          subtitle={showJobDetails
+            ? 'Read-only overview. Contact information, assessments, and benefit requests are not shown in the partner portal.'
+            : 'Read-only status overview. Referral partners see application status, program, progress, certifications, and whether and when a member was placed.'}
           breadcrumbs={[
             { label: 'Referred members', href: '/partner/referred-members' },
             { label: 'Member details' },
@@ -425,26 +448,32 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
 
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
               {sectionHeading('Placement')}
-              {placed && member.placementRecord ? (
+              {placed && placement ? (
                 <div style={{ display: 'grid', gap: '0.7rem', marginTop: '0.75rem' }}>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Employer</p>
-                    <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{member.placementRecord.employerName}</p>
-                  </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Role</p>
-                    <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{member.placementRecord.jobTitle}</p>
-                  </div>
+                  {showJobDetails ? (
+                    <>
+                      <div>
+                        <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Employer</p>
+                        <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{placement.employerName ?? '—'}</p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Role</p>
+                        <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{placement.jobTitle ?? '—'}</p>
+                      </div>
+                    </>
+                  ) : null}
                   <div>
                     <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Placed</p>
-                    <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{formatDate(member.placementRecord.placedAt)}</p>
+                    <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{formatDate(placement.placedAt)}</p>
                   </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Salary</p>
-                    <p className="wa-tabular-nums" style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>
-                      {formatSalary(member.placementRecord.salaryOffered)}
-                    </p>
-                  </div>
+                  {showJobDetails ? (
+                    <div>
+                      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Salary</p>
+                      <p className="wa-tabular-nums" style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>
+                        {formatSalary(placement.salaryOffered)}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               ) : reportedPlacement || pendingPlacement ? (
                 <div style={{ marginTop: '0.75rem' }}>
@@ -463,7 +492,9 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                     <div>
                       <p style={{ margin: '0 0 0.25rem', fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)' }}>{PARTNER_PLACEMENT_LABELS.pendingVerification}</p>
                       <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
-                        WorkforceAP staff have not verified this placement. Employer, role, and salary details will appear after verification.
+                        {showJobDetails
+                          ? 'WorkforceAP staff have not verified this placement. Employer, role, and salary details will appear after verification.'
+                          : 'WorkforceAP staff have not verified this placement. The placement date will appear after verification.'}
                       </p>
                     </div>
                   </div>

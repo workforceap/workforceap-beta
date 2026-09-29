@@ -62,6 +62,8 @@ const state = vi.hoisted(() => ({
   /** `where` args passed to `courseEnrollment.count` (seat-cap denominator). */
   enrollmentCounts: [] as Record<string, unknown>[],
   profileUpserts: [] as UpsertArgs[],
+  /** Row `profile.upsert` returns (the saved minor facts); a returning applicant's existing flags. */
+  savedProfile: { isMinor: false, dob: null } as { isMinor: boolean; dob: Date | null },
   /** Request cookies visible to the route via `next/headers`. */
   cookies: {} as Record<string, string>,
   /** Cookies the route wrote back via `cookieStore.set`. */
@@ -136,7 +138,11 @@ vi.mock('@/lib/db/prisma', () => {
     profile: {
       upsert: vi.fn(async (args: { create: Record<string, unknown>; update: Record<string, unknown> }) => {
         state.profileUpserts.push(args);
-        return {};
+        const created = args.create as { isMinor?: boolean };
+        return {
+          isMinor: state.savedProfile.isMinor || created.isMinor === true,
+          dob: state.savedProfile.dob,
+        };
       }),
     },
     application: {
@@ -301,6 +307,7 @@ import {
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logger } from '@/lib/observability/logger';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { trackEvent } from '@/lib/events/track';
 
 function makeRequest(overrides: Record<string, unknown> = {}) {
   const body = {
@@ -337,6 +344,7 @@ function resetState() {
   state.enrollmentUpdateManys.length = 0;
   state.enrollmentCounts.length = 0;
   state.profileUpserts.length = 0;
+  state.savedProfile = { isMinor: false, dob: null };
   state.cookieSets.length = 0;
   state.partnerReferralUpserts.length = 0;
   state.adminEmails.length = 0;
@@ -1157,6 +1165,121 @@ describe('POST /api/apply/signup school enrollment ack emails', () => {
     expect(sendSchoolEnrollmentParentAckEmail).not.toHaveBeenCalled();
     expect(sendSchoolEnrollmentPartnerAckEmail).not.toHaveBeenCalled();
   });
+
+  // Partner tiers + the minor rule (lib/partner/dataAccess.ts). A sponsoring
+  // partner of ANY type gets the school apply variant (isSchoolApplyVariant),
+  // so this email is not only a high school's; it must follow the same rule
+  // as the partner portal.
+  function schoolVariantBody(overrides: Record<string, unknown> = {}) {
+    return {
+      referralRef: 'sponsor2026',
+      ageGroup: '18_24',
+      gradeLevel: '12',
+      primaryBarriers: ['high_school_student'],
+      eligibilityQ1: null,
+      eligibilityQ2: null,
+      county: null,
+      ...overrides,
+    };
+  }
+
+  it('a sponsored referral (restricted) partner is told of an adult applicant without email or grade', async () => {
+    state.partner = schoolPartner({
+      id: 'partner-affiliate',
+      name: 'Neighborhood Referral Network',
+      partnerType: 'referral',
+      contactEmail: 'affiliate@example.org',
+    });
+
+    const res = await POST(makeRequest(schoolVariantBody()));
+    expect(res.status).toBe(200);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(sendSchoolEnrollmentPartnerAckEmail).toHaveBeenCalledTimes(1);
+    const args = vi.mocked(sendSchoolEnrollmentPartnerAckEmail).mock.calls[0]![0];
+    expect(args).toMatchObject({
+      to: 'affiliate@example.org',
+      studentName: 'Concordia Student',
+      studentEmail: null,
+      gradeLevel: null,
+    });
+    // "will not see your email": the applicant's address is nowhere in the call.
+    expect(JSON.stringify(args)).not.toContain('applicant@example.com');
+  });
+
+  it('a sponsored referral partner gets no email at all for an under-18 applicant', async () => {
+    state.partner = schoolPartner({ partnerType: 'referral', contactEmail: 'affiliate@example.org' });
+
+    const res = await POST(
+      makeRequest(schoolVariantBody({ ageGroup: 'under_18', gradeLevel: '10', parentGuardianEmail: 'parent@example.com' })),
+    );
+    expect(res.status).toBe(200);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(sendSchoolEnrollmentPartnerAckEmail).not.toHaveBeenCalled();
+    // The guardian still hears about their own child's application.
+    expect(sendSchoolEnrollmentParentAckEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it('a community partner gets no email for an under-18 applicant with no FERPA consent', async () => {
+    state.partner = schoolPartner({
+      name: 'Eastside Community Center',
+      partnerType: 'community',
+      contactEmail: 'community@example.org',
+    });
+
+    const res = await POST(
+      makeRequest(schoolVariantBody({ ageGroup: 'under_18', gradeLevel: '11', parentGuardianEmail: 'parent@example.com' })),
+    );
+    expect(res.status).toBe(200);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(sendSchoolEnrollmentPartnerAckEmail).not.toHaveBeenCalled();
+  });
+
+  it('a community partner keeps the full view of an adult applicant, email and grade included', async () => {
+    state.partner = schoolPartner({ partnerType: 'community', contactEmail: 'community@example.org' });
+
+    await POST(makeRequest(schoolVariantBody()));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(sendSchoolEnrollmentPartnerAckEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ to: 'community@example.org', studentEmail: 'applicant@example.com', gradeLevel: '12' }),
+    );
+  });
+
+  it('a returning applicant already saved as a minor stays hidden even when this signup says 18-24', async () => {
+    state.partner = schoolPartner({ partnerType: 'community', contactEmail: 'community@example.org' });
+    state.savedProfile = { isMinor: true, dob: null };
+
+    await POST(makeRequest(schoolVariantBody()));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(sendSchoolEnrollmentPartnerAckEmail).not.toHaveBeenCalled();
+  });
+
+  it('a saved date of birth under 18 hides the applicant from a non-school partner', async () => {
+    state.partner = schoolPartner({ partnerType: 'community', contactEmail: 'community@example.org' });
+    state.savedProfile = { isMinor: false, dob: new Date(Date.UTC(new Date().getUTCFullYear() - 16, 0, 1)) };
+
+    await POST(makeRequest(schoolVariantBody()));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(sendSchoolEnrollmentPartnerAckEmail).not.toHaveBeenCalled();
+  });
+
+  it('a high-school partner still gets its under-18 student, email included (school enrollment)', async () => {
+    state.partner = schoolPartner();
+
+    await POST(
+      makeRequest(schoolVariantBody({ ageGroup: 'under_18', gradeLevel: '9', parentGuardianEmail: 'parent@example.com' })),
+    );
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(sendSchoolEnrollmentPartnerAckEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ studentEmail: 'applicant@example.com', gradeLevel: '9' }),
+    );
+  });
 });
 
 describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
@@ -1488,5 +1611,64 @@ describe('POST /api/apply/signup unmatched partner ref', () => {
     state.partner = null;
     await POST(makeRequest());
     expect(unmatchedRefWarnings()).toHaveLength(0);
+  });
+});
+
+
+/**
+ * Partner disclosure acknowledgement (lib/apply/partnerReferralDisclosureCore.ts):
+ * recorded on the apply_signup_completed event with the server-resolved partner.
+ */
+describe('POST /api/apply/signup partner disclosure acknowledgement', () => {
+  beforeEach(() => {
+    resetState();
+    vi.mocked(trackEvent).mockClear();
+  });
+
+  const signupMetadata = () => {
+    const call = vi.mocked(trackEvent).mock.calls.find(([arg]) => arg.eventName === 'apply_signup_completed');
+    return (call?.[0].metadata ?? {}) as Record<string, unknown>;
+  };
+
+  function partner(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 'partner-affiliate',
+      name: 'Affiliate Partner',
+      partnerType: 'referral',
+      contactEmail: null,
+      notifyOnEnrollment: false,
+      sponsoredEnrollment: false,
+      sponsorshipFundingSource: null,
+      sponsorshipTermLabel: null,
+      sponsorshipStartsAt: null,
+      sponsorshipEndsAt: null,
+      sponsorshipSeatCap: null,
+      schoolDistrict: null,
+      ...overrides,
+    };
+  }
+
+  it('records the disclosure shown for the attributed partner, with its id and tier', async () => {
+    state.partner = partner();
+    const res = await POST(makeRequest({ referralRef: 'affiliate', partnerDisclosureRef: 'affiliate' }));
+    expect(res.status).toBe(200);
+    expect(signupMetadata()).toMatchObject({
+      partner_disclosure_shown: true,
+      partner_disclosure_partner_id: 'partner-affiliate',
+      partner_disclosure_tier: 'restricted',
+    });
+  });
+
+  it('records not-shown when the form disclosed another ref', async () => {
+    state.partner = partner({ partnerType: 'community' });
+    await POST(makeRequest({ referralRef: 'affiliate', partnerDisclosureRef: 'different' }));
+    expect(signupMetadata()).toMatchObject({ partner_disclosure_shown: false, partner_disclosure_tier: 'full' });
+  });
+
+  it('records nothing when the ref matched no active partner', async () => {
+    state.partner = null;
+    await POST(makeRequest({ referralRef: 'unknown', partnerDisclosureRef: 'unknown' }));
+    expect(signupMetadata()).not.toHaveProperty('partner_disclosure_shown');
+    expect(signupMetadata()).not.toHaveProperty('partner_disclosure_partner_id');
   });
 });

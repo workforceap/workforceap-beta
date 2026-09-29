@@ -54,15 +54,18 @@ export function partnerEventLabel(name: string): string | null {
  */
 export const PARTNER_PLACEMENT_LABELS = {
   verified: (employerName: string, jobTitle: string) => `Placed at ${employerName} — ${jobTitle}`,
+  /** Restricted (referral-track) partners never see employer or job title. */
+  verifiedWithoutDetails: 'Placed',
   pendingVerification: 'Placement reported, pending verification',
 } as const;
 
 export function partnerPlacementLabel(placement: {
-  employerName: string;
-  jobTitle: string;
+  employerName: string | null;
+  jobTitle: string | null;
   startDateVerified: boolean | null;
 }): string {
-  return placement.startDateVerified === true
+  if (placement.startDateVerified !== true) return PARTNER_PLACEMENT_LABELS.pendingVerification;
+  return placement.employerName && placement.jobTitle
     ? PARTNER_PLACEMENT_LABELS.verified(placement.employerName, placement.jobTitle)
-    : PARTNER_PLACEMENT_LABELS.pendingVerification;
+    : PARTNER_PLACEMENT_LABELS.verifiedWithoutDetails;
 }

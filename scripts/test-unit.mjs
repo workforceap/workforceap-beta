@@ -118,6 +118,14 @@ function classify(relPath) {
     // `database-contract` CI job runs this lane with TEST_REAL_DB=1.
     return { skip: 'realDb' };
   }
+  if (/lib\/partner\/partnerVisibility\.realdb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Seeds referred members and runs the partner minor rule through Prisma
+    // and PostgreSQL: the `profile` to-one filter appended to NOT, the raw
+    // attention SQL that mirrors it, the Feb 29 cutoff and a non-UTC session
+    // time zone are what the Prisma mocks in the partner specs cannot prove.
+    // The `database-contract` CI job runs this lane with TEST_REAL_DB=1.
+    return { skip: 'realDb' };
+  }
   if (/lib\/auth\/roles\.test\.ts/.test(normalized) && !REAL_DB) {
     // Hits the real Prisma client via getProfileRole — needs a postgres
     // server. The default lane has none; the `database-contract` CI job

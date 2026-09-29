@@ -10,6 +10,7 @@ import PageHeader from '@/components/portal/PageHeader';
 import { Download, FileSpreadsheet, Users } from 'lucide-react';
 import { DesignSurface, StatusTag, colorVar } from '@/components/portal/kit';
 import { getTranslations } from 'next-intl/server';
+import { partnerDataAccess } from '@/lib/partner/dataAccess';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('partner');
@@ -134,14 +135,25 @@ export default async function PartnerExportsPage() {
   if (!ctx) redirect(await unlinkedPartnerHref(user.id));
 
   const t = await getTranslations('partner');
+  // Referral-track partners export status only; there is no demographics
+  // file for them (the API refuses it too — lib/partner/dataAccess.ts).
+  const restricted = partnerDataAccess(ctx.partner).tier === 'restricted';
+  const options = restricted
+    ? EXPORTS.filter((option) => option.id !== 'demographics').map((option) =>
+        option.id === 'referrals'
+          ? { ...option, description: 'Every referred member with application status, program, progress, certifications, and placement date.' }
+          : option.id === 'outcomes'
+            ? { ...option, description: 'The same status-only columns: whether and when each member was placed.' }
+            : option)
+    : EXPORTS;
 
   return (
     <PortalPageFrame maxWidth="80rem">
       <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
         <PageHeader title={t('exportsTitle')} subtitle={t('exportsGoal')} />
 
-        <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-3 wa-gap-4">
-          {EXPORTS.map((option) => (
+        <div className={`wa-grid wa-grid-cols-1 ${restricted ? 'md:wa-grid-cols-2' : 'md:wa-grid-cols-3'} wa-gap-4`}>
+          {options.map((option) => (
             <ExportTile key={option.id} option={option} />
           ))}
         </div>

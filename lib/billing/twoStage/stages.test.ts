@@ -50,6 +50,8 @@ const people = {
   student: { name: 'Synthetic Student', email: 'student@example.test' },
   counselor: { name: 'Synthetic Counselor', email: 'counselor@example.test', phone: '(512) 555-0100' },
   boardName: 'Workforce Solutions Synthetic Area',
+  /** A synthetic active signature asset (never a real image). */
+  signatureAsset: { assetId: 'sig-asset-synthetic', assetSha256: 'c'.repeat(64) },
 };
 
 function sentJ5(programSlug = IT_SUPPORT): { recordId: string; status: 'sent'; content: J5Content; contentSha256: string } {
@@ -447,6 +449,21 @@ describe('frozen content hash', () => {
     assert.equal(r.ok, false);
     assert.equal(!r.ok && r.status, 409);
     assert.equal(buildJ5Content({ ...base, logoSha256: 'not-a-hash' }).ok, false);
+  });
+
+  it('freezes the active signature asset (id + sha256): another asset changes the version hash; null previews but cannot sign', () => {
+    const base = { documentNumber: 'WAP-Q-2026-0010', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people, logoSha256: LOGO_SHA };
+    const first = buildJ5Content(base);
+    const replaced = buildJ5Content({ ...base, signatureAsset: { assetId: 'sig-asset-2', assetSha256: 'd'.repeat(64) } });
+    const none = buildJ5Content({ ...base, signatureAsset: null });
+    assert.ok(first.ok && replaced.ok && none.ok);
+    assert.deepEqual(first.content.signature, people.signatureAsset);
+    assert.notEqual(replaced.contentSha256, first.contentSha256);
+    assert.equal(none.content.signature, null);
+    assert.equal(buildJ5Content({ ...base, signatureAsset: { assetId: 'x', assetSha256: 'not-a-hash' } }).ok, false);
+    const j6 = buildJ6Content({ ...j6Input(), logoSha256: LOGO_SHA, documentNumber: 'WAP-I-2026-0010', issueDate: '2026-10-20', ...people, finance: { name: 'Synthetic Finance', email: 'finance@example.test' } });
+    assert.ok(j6.ok);
+    assert.deepEqual(j6.content.signature, people.signatureAsset);
   });
 
   it('is stable under key order and changes with any field', () => {
