@@ -139,13 +139,12 @@ export function acceptanceReasons(receipt) {
     reasons.push(`acceptance did not pass (outcome: ${receipt.outcome ?? 'unknown'}${receipt.refusal ? `: ${receipt.refusal}` : ''})`);
   }
   if (receipt.attempts !== 1) reasons.push('acceptance receipt does not record exactly one attempt');
-  if (!RUN_ID.test(String(receipt.runId ?? ''))) reasons.push('acceptance receipt has no first-attempt runId');
   reasons.push(...exactRoles(receipt.roles, 'acceptance'));
   for (const role of FIVE_ROLES) {
     const entry = receipt.roles?.[role];
     if (!entry) continue;
     if (!UUID.test(String(entry.userId ?? ''))) reasons.push(`${role}: acceptance does not record the user ID`);
-    if (RUN_ID.test(String(receipt.runId ?? '')) && entry.email !== emailFor(receipt.runId, role)) {
+    if (typeof receipt.runId === 'string' && RUN_ID.test(receipt.runId) && entry.email !== emailFor(receipt.runId, role)) {
       reasons.push(`${role}: acceptance ran as a user that is not this run's synthetic ${role}`);
     }
     if (entry.identityVerified !== true) reasons.push(`${role}: session identity was not verified`);
@@ -195,16 +194,33 @@ export function cleanupReasons(receipt) {
 }
 
 /**
- * The ONE green check. Reads the three receipts together and passes only when
- * each passes on its own AND all three name the same run, the same five users
- * and (acceptance vs readback) the same records. Every reason is returned so
- * one failure never hides another. Never throws.
+ * Every receipt must carry a valid first-attempt runId (`<GITHUB_RUN_ID>-1`)
+ * equal to the run being verified. A missing, empty, malformed, re-run or
+ * other-run ID never passes, even when the other receipts agree with it.
  */
-export function verifyFiveRoleRun(acceptancePath, readbackPath, cleanupPath) {
+function runIdReasons(label, receipt, expectedRunId) {
+  const runId = receipt?.runId;
+  if (typeof runId !== 'string' || !RUN_ID.test(runId)) return [`${label} receipt has no valid first-attempt runId`];
+  if (runId !== expectedRunId) return [`${label} receipt is for another run, not this workflow run`];
+  return [];
+}
+
+/**
+ * The ONE green check. Reads the three receipts together and passes only when
+ * each passes on its own, ALL THREE carry the expected first-attempt run ID of
+ * the workflow run being verified, and they name the same five users and
+ * (acceptance vs readback) the same records. `expectedRunId` comes from the
+ * workflow (runIdFor(GITHUB_RUN_ID, GITHUB_RUN_ATTEMPT)), never from a
+ * receipt. Every reason is returned so one failure never hides another.
+ * Never throws.
+ */
+export function verifyFiveRoleRun(acceptancePath, readbackPath, cleanupPath, expectedRunId) {
   const acceptance = readReceipt(acceptancePath, 'acceptance');
   const readback = readReceipt(readbackPath, 'readback');
   const cleanup = readReceipt(cleanupPath, 'cleanup');
   const reasons = [];
+  const expectedValid = typeof expectedRunId === 'string' && RUN_ID.test(expectedRunId);
+  if (!expectedValid) reasons.push('the expected workflow run ID is not a valid first-attempt run ID');
   if (acceptance.reason) reasons.push(acceptance.reason);
   else reasons.push(...acceptanceReasons(acceptance.receipt));
   if (readback.reason) reasons.push(readback.reason);
@@ -212,8 +228,11 @@ export function verifyFiveRoleRun(acceptancePath, readbackPath, cleanupPath) {
   if (cleanup.reason) reasons.push(cleanup.reason);
   else reasons.push(...cleanupReasons(cleanup.receipt));
 
-  const runIds = [acceptance.receipt?.runId, readback.receipt?.runId, cleanup.receipt?.runId];
-  if (runIds.every(Boolean) && new Set(runIds).size !== 1) reasons.push('receipts name different runs');
+  if (expectedValid) {
+    for (const [label, loaded] of [['acceptance', acceptance], ['readback', readback], ['cleanup', cleanup]]) {
+      if (loaded.receipt) reasons.push(...runIdReasons(label, loaded.receipt, expectedRunId));
+    }
+  }
   for (const role of FIVE_ROLES) {
     const accepted = acceptance.receipt?.roles?.[role];
     const removed = cleanup.receipt?.users?.[role];

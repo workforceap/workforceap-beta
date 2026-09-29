@@ -5,10 +5,12 @@
  * report a pass without all three real receipts agreeing.
  */
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import {
   ACCEPTANCE_KIND,
   acceptanceRefusal,
@@ -63,9 +65,10 @@ function files(a: unknown, r: unknown, c: unknown) {
   }
   return paths;
 }
-const verify = (a: unknown, r: unknown, c: unknown) => {
+/** `expected` is the workflow's own run (runIdFor(GITHUB_RUN_ID, GITHUB_RUN_ATTEMPT)). */
+const verify = (a: unknown, r: unknown, c: unknown, expected: unknown = RUN) => {
   const p = files(a, r, c);
-  return verifyFiveRoleRun(p.a, p.r, p.c);
+  return verifyFiveRoleRun(p.a, p.r, p.c, expected);
 };
 const withRole = (receipt: ReturnType<typeof acceptance>, role: string, patch: Record<string, unknown>) => ({
   ...receipt, roles: { ...receipt.roles, [role]: { ...(receipt.roles as Record<string, object>)[role], ...patch } },
@@ -146,10 +149,64 @@ test('[mocked — NOT acceptance] a pass needs verified cleanup absence for ever
   }
 });
 
-test('[mocked — NOT acceptance] receipts from different runs or users never combine into a pass', () => {
-  const other = verify(acceptance(), readback({ runId: '999-1' }), cleanup());
-  assert.equal(other.ok, false);
-  assert.match(other.reasons.join('\n'), /receipts name different runs/);
+// First-attempt means `<GITHUB_RUN_ID>-1`: numeric run ID, attempt exactly 1
+// (re-runs are refused), equal to the workflow run being verified.
+const BAD_RUN_IDS: Array<[string, unknown, RegExp]> = [
+  ['missing', undefined, /has no valid first-attempt runId/],
+  ['empty', '', /has no valid first-attempt runId/],
+  ['non-numeric', 'abc-1', /has no valid first-attempt runId/],
+  ['no attempt', '123456', /has no valid first-attempt runId/],
+  ['attempt 2', '123456-2', /has no valid first-attempt runId/],
+  ['not a string', 123456, /has no valid first-attempt runId/],
+  ['another run', '999-1', /is for another run, not this workflow run/],
+];
+
+for (const [label, builder] of [['acceptance', acceptance], ['readback', readback], ['cleanup', cleanup]] as const) {
+  test(`[mocked — NOT acceptance] ${label} receipt: a missing, empty, invalid, re-run or other-run runId never passes`, () => {
+    for (const [kind, runId, reason] of BAD_RUN_IDS) {
+      const bad = builder() as Record<string, unknown>;
+      if (runId === undefined) delete bad.runId;
+      else bad.runId = runId;
+      const receipts = { acceptance: acceptance(), readback: readback(), cleanup: cleanup(), [label]: bad };
+      const result = verify(receipts.acceptance, receipts.readback, receipts.cleanup);
+      assert.equal(result.ok, false, `${label} runId ${kind}`);
+      assert.match(result.reasons.join('\n'), new RegExp(`${label} receipt ${reason.source}`), `${label} runId ${kind}`);
+    }
+  });
+}
+
+test('[mocked — NOT acceptance] receipts must match the expected workflow run, not just each other', () => {
+  const agreeing = verify(acceptance({ runId: '999-1' }), readback({ runId: '999-1' }), cleanup({ runId: '999-1' }));
+  assert.equal(agreeing.ok, false, 'three receipts from another run');
+  assert.match(agreeing.reasons.join('\n'), /acceptance receipt is for another run/);
+  const p = files(acceptance(), readback(), cleanup());
+  for (const expected of [undefined, null, '', 'abc', '123456', '123456-2', 123456]) {
+    const result = verifyFiveRoleRun(p.a, p.r, p.c, expected);
+    assert.equal(result.ok, false, `expected ${String(expected)}`);
+    assert.match(result.reasons.join('\n'), /expected workflow run ID is not a valid first-attempt run ID/);
+  }
+});
+
+test('[mocked — NOT acceptance] the verifier CLI takes the expected run from GITHUB_RUN_ID and GITHUB_RUN_ATTEMPT', () => {
+  const p = files(acceptance(), readback(), cleanup());
+  const cli = join(dirname(fileURLToPath(import.meta.url)), 'verify-five-role-acceptance.mjs');
+  const run = (runId: string, attempt: string) => spawnSync(process.execPath, [cli], {
+    encoding: 'utf8',
+    env: {
+      NODE_ENV: 'test', PATH: process.env.PATH ?? '', GITHUB_RUN_ID: runId, GITHUB_RUN_ATTEMPT: attempt,
+      FIVE_ROLE_ACCEPTANCE_OUTPUT: p.a, FIVE_ROLE_QA_READBACK_OUTPUT: p.r, FIVE_ROLE_QA_CLEANUP_OUTPUT: p.c,
+    },
+  });
+  assert.equal(run('123456', '1').status, 0);
+  const rerun = run('123456', '2');
+  assert.equal(rerun.status, 1);
+  assert.match(rerun.stderr, /re-runs are refused/);
+  const other = run('777', '1');
+  assert.equal(other.status, 1);
+  assert.match(other.stderr, /is for another run/);
+});
+
+test('[mocked — NOT acceptance] receipts naming different users never combine into a pass', () => {
 
   const c = cleanup();
   const users = c.users as Record<string, Record<string, unknown>>;
