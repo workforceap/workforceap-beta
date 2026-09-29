@@ -1,0 +1,248 @@
+name: Resume Build DEMO Acceptance
+
+# Provider-backed acceptance of member Resume Build on the isolated DEMO
+# Preview. Each run creates ONE disposable synthetic member
+# (resume-qa-<run>-<attempt>@example.com), uploads a synthetic two-page PDF
+# (facts on page 2), runs Build with the real provider, checks the saved draft,
+# and always removes that member by its recorded ID. Runbook, prerequisites
+# and cleanup verification: docs/RESUME-DEMO-ACCEPTANCE.md.
+#
+# It writes to the DEMO project and spends provider quota, so it is separate
+# from the read-only Authenticated Portal Smoke, has no schedule and no
+# pull_request trigger, and runs only on manual dispatch from trusted master.
+# It never targets production: gate 1 proves the PREVIEW_SITE_URL deployment
+# serves this exact commit on the DEMO Supabase project before any credential
+# is read, and gate 2 (inside the helper) refuses Supabase or database URLs
+# that are not the DEMO project and any organization that is not the exact
+# active portal-qa-* fixture organization.
+#
+# Quota: DEMO_SETUP.md:65 documents the Preview GROQ_API_KEY as the production
+# key, so a Build request may consume production Groq quota. The spec makes
+# exactly ONE Build request and never retries, the concurrency group below
+# stops overlapping runs, and a repeat dispatch needs a review of the previous
+# receipt (docs/RESUME-DEMO-ACCEPTANCE.md, "Dispatch").
+
+on:
+  workflow_dispatch:
+    inputs:
+      qa_organization_id:
+        description: "Exact ID of the dedicated portal-qa-* organization in the DEMO project"
+        required: true
+        type: string
+      qa_organization_slug:
+        description: "Its slug (must start with portal-qa-)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: resume-demo-acceptance
+  cancel-in-progress: false
+
+jobs:
+  # UNGATED on purpose (no `if`): a dispatch with `--ref <other branch>` would
+  # otherwise skip every gated job and could show green with no receipts. This
+  # job runs every time, reads no secrets, and fails the run visibly unless it
+  # is a workflow_dispatch on master of the trusted repository. Every other job
+  # depends on it (checked by scripts/resume-demo-acceptance-workflow.test.ts).
+  policy:
+    name: Require a master dispatch in the trusted repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Refuse anything but a workflow_dispatch on master
+        env:
+          RUN_REPOSITORY: ${{ github.repository }}
+          RUN_REF: ${{ github.ref }}
+          RUN_EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$RUN_REPOSITORY" != "workforceap/workforceap-beta" ] || [ "$RUN_REF" != "refs/heads/master" ] || [ "$RUN_EVENT" != "workflow_dispatch" ]; then
+            echo "::error::Resume Build DEMO Acceptance runs only as a workflow_dispatch on refs/heads/master of workforceap/workforceap-beta (got $RUN_EVENT on $RUN_REF in $RUN_REPOSITORY). Nothing else ran."
+            exit 1
+          fi
+          echo "Trusted master dispatch."
+
+  # Same mirror the portal smoke uses: `preview` must serve master's commit.
+  mirror:
+    name: Refresh the preview mirror
+    needs: policy
+    if: github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/mirror-master-to-preview.yml
+
+  acceptance:
+    name: Upload and Build as a disposable DEMO member
+    needs: [policy, mirror]
+    if: >-
+      !cancelled() && needs.policy.result == 'success' && needs.mirror.result == 'success' &&
+      github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      deployments: read
+    env:
+      # Outside the workspace, so no artifact step can pick them up. The marker
+      # (run id + synthetic email, no secrets) is written BEFORE the Auth create
+      # call, the state (exact IDs) right after it.
+      RESUME_QA_STATE_FILE: /tmp/resume-qa-fixture.json
+      RESUME_QA_MARKER_FILE: /tmp/resume-qa-fixture.marker.json
+      # create's progress (target-guard, key-probe, then clients). Cleanup
+      # writes an informational receipt only while it still says target-guard
+      # or key-probe (no client or Auth write had happened).
+      RESUME_QA_STAGE_FILE: /tmp/resume-qa-fixture.stage.json
+
+    steps:
+      - name: Checkout trusted master
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify trusted checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          remote="$(git remote get-url origin)"
+          test "$remote" = "https://github.com/workforceap/workforceap-beta" || \
+            test "$remote" = "https://github.com/workforceap/workforceap-beta.git"
+
+      - name: Wait for the Vercel Preview build of this commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          deadline=$(( $(date +%s) + 1500 ))
+          while :; do
+            dep="$(gh api "repos/${GITHUB_REPOSITORY}/deployments?sha=${GITHUB_SHA}&environment=Preview&per_page=20" \
+              --jq '[.[] | select(.creator.login == "vercel[bot]")] | sort_by(.created_at) | last | .id // empty')"
+            state=none
+            if [ -n "$dep" ]; then
+              state="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=1" --jq '.[0].state // "none"')"
+            fi
+            echo "Vercel Preview deployment for ${GITHUB_SHA:0:9}: ${dep:-none} (${state})"
+            case "$state" in
+              success|inactive) break ;;
+              failure|error) echo "::error::Vercel's Preview build of ${GITHUB_SHA:0:9} failed (deployment ${dep})."; exit 1 ;;
+            esac
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::No successful Vercel Preview deployment of ${GITHUB_SHA:0:9} after 25 minutes."
+              exit 1
+            fi
+            sleep 20
+          done
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Gate 0: the target must not be an exact production hostname
+      # (scripts/lib/resume-acceptance-receipt.mjs, the same list the spec
+      # uses). The value is never printed.
+      - name: Refuse a production target
+        env:
+          RESUME_ACCEPTANCE_TARGET_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+        run: node scripts/verify-resume-acceptance-receipt.mjs check-target
+
+      # Gate 1, before any credential: the Preview serves this exact commit and
+      # its /api/health reports the DEMO Supabase project (isolated_preview).
+      - name: Verify Preview SHA and DEMO Supabase scope
+        shell: bash
+        env:
+          PORTAL_AUDIT_MODE: isolated_preview
+          PORTAL_AUDIT_TARGET_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_SHA: ${{ github.sha }}
+        run: node scripts/portal-audit-health-gate.mjs
+
+      # Gate 2 runs inside the helper before any client exists: the Supabase URL
+      # and database URL must both identify the DEMO project, and the
+      # organization must be the exact, active portal-qa-* fixture organization
+      # (scripts/lib/portal-qa-guard.cjs). It fails closed otherwise.
+      - name: Create the disposable synthetic member
+        id: create
+        env:
+          PORTAL_QA_TARGET: demo
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          PORTAL_QA_ORGANIZATION_ID: ${{ inputs.qa_organization_id }}
+          PORTAL_QA_ORGANIZATION_SLUG: ${{ inputs.qa_organization_slug }}
+        run: pnpm exec tsx scripts/resume-demo-member.ts create
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run the acceptance spec
+        run: pnpm exec playwright test tests/e2e/resume-demo-acceptance.spec.ts --project=chromium --retries=0 --reporter=list
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ secrets.PREVIEW_SITE_URL }}
+          RESUME_ACCEPTANCE_SHARED_EMAILS: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          RESUME_ACCEPTANCE_CONFIRMED: "1"
+          # Workflow mode: a refusal fails the step instead of skipping, and a
+          # receipt with pass:false is always written.
+          RESUME_ACCEPTANCE_MODE: workflow
+          RESUME_ACCEPTANCE_OUTPUT: test-results/resume-demo-acceptance.json
+
+      # Runs whenever the create step ran (even if it or the spec failed), so
+      # credentials are still never used before the gates passed. Removes
+      # exactly the recorded ID. With no marker and create stopped at the target
+      # guard it writes an informational memberCreated:false receipt (no DB);
+      # any other missing marker/state fails closed with exact-email recovery.
+      - name: Clean up the disposable synthetic member
+        if: always() && steps.create.outcome != 'skipped'
+        env:
+          PORTAL_QA_TARGET: demo
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          PORTAL_QA_ORGANIZATION_ID: ${{ inputs.qa_organization_id }}
+          PORTAL_QA_ORGANIZATION_SLUG: ${{ inputs.qa_organization_slug }}
+          RESUME_QA_CLEANUP_OUTPUT: test-results/resume-demo-cleanup.json
+        run: pnpm exec tsx scripts/resume-demo-member.ts cleanup
+
+      # The ONE green check, reading both receipts together: acceptance
+      # (pass: true, outcome success, exactly one Build request, the member it
+      # ran as) AND cleanup (success for a created member, Auth and Prisma
+      # absence verified, every member-prefix storage count 0) AND the same
+      # runId, member ID and email in both. A no-op (memberCreated:false)
+      # cleanup, a refused spec or an unverified cleanup fails here.
+      - name: Verify the acceptance and cleanup receipts together
+        if: always()
+        env:
+          RESUME_ACCEPTANCE_OUTPUT: test-results/resume-demo-acceptance.json
+          RESUME_QA_CLEANUP_OUTPUT: test-results/resume-demo-cleanup.json
+        run: node scripts/verify-resume-acceptance-receipt.mjs receipt
+
+      # One upload per receipt, each required.
+      - name: Upload the acceptance receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resume-demo-acceptance-${{ github.run_id }}
+          path: test-results/resume-demo-acceptance.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload the cleanup receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resume-demo-cleanup-${{ github.run_id }}
+          path: test-results/resume-demo-cleanup.json
+          if-no-files-found: error
+          retention-days: 14

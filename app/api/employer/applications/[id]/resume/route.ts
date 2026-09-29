@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Buffer } from 'node:buffer';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
@@ -8,6 +9,7 @@ import {
   isLegacyResumeProfilePath,
 } from '@/lib/resume/atomicResumeObjectSwap';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 const BUCKET = 'member-resumes';
@@ -58,6 +60,18 @@ export const GET = withApiGuc(async (_request: Request, { params }: Props) => {
     const extension = resumePath.split('.').pop()?.toLowerCase();
     if (!extension) {
       return NextResponse.json({ error: 'Resume record is invalid' }, { status: 409 });
+    }
+    if (extension === 'txt') {
+      const { data: legacyFile, error: legacyError } = await storage.download(resumePath);
+      if (legacyError || !legacyFile) {
+        return NextResponse.json({ error: 'Could not verify the shared resume' }, { status: 502 });
+      }
+      if (!(await inspectStoredEnhancedResume(
+        Buffer.from(await legacyFile.arrayBuffer()),
+        resumePath,
+      )).readable) {
+        return NextResponse.json({ error: 'The shared resume is not readable' }, { status: 422 });
+      }
     }
     const snapshotPath = `${application.studentId}/application-${id}-resume.${extension}`;
     const { error: copyError } = await storage.copy(resumePath, snapshotPath);
@@ -114,6 +128,19 @@ export const GET = withApiGuc(async (_request: Request, { params }: Props) => {
       applicationId: id,
     });
     return NextResponse.json({ error: 'Resume record is invalid' }, { status: 409 });
+  }
+
+  if (resumePath.toLowerCase().endsWith('.txt')) {
+    const { data: snapshotFile, error: snapshotError } = await storage.download(resumePath);
+    if (snapshotError || !snapshotFile) {
+      return NextResponse.json({ error: 'Could not verify the shared resume' }, { status: 502 });
+    }
+    if (!(await inspectStoredEnhancedResume(
+      Buffer.from(await snapshotFile.arrayBuffer()),
+      resumePath,
+    )).readable) {
+      return NextResponse.json({ error: 'The shared resume is not readable' }, { status: 422 });
+    }
   }
 
   const { data, error } = await storage.createSignedUrl(resumePath, 300);

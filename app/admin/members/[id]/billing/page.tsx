@@ -4,28 +4,22 @@ import { notFound, redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPageScope';
-import { prisma } from '@/lib/db/prisma';
-import { getProgramBySlug } from '@/lib/content/programs';
-import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
-import { buildDefaultLineItems, resolveProgramPricing } from '@/lib/billing/packetDefaults';
-import { getDefaultBillTo, getDefaultSigner, getTrainingProviderIdentity } from '@/lib/billing/providerIdentity';
 import { resolveAssignedCounselorContact, serializeBillingPacket } from '@/lib/billing/packetAccess';
 import PageHeader from '@/components/portal/PageHeader';
-import BillingPacketClient, { type BillingProgramOption } from './BillingPacketClient';
+import BillingPacketList from '@/components/billing/BillingPacketList';
+import { resolveProgramTitle } from '@/lib/billing/packetDocument';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
+import TwoStageBillingCase, { type EnrolledProgram } from './TwoStageBillingCase';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
-    title: 'J5 Invoice & J6 Cover Letter',
-    description: 'Create, sign and send the training invoice packet for a member.',
+    title: 'J5 and J6 billing',
+    description: 'Prepare separate J5 quote and J6 voucher payment documents for a member.',
     path: '/admin/members',
   });
 }
 
-/**
- * Admin signing desk for one member: prefilled J5 line items (classes with
- * the tuition spread by contact hours, plus catalog fees), a J6 cover letter
- * draft, signature capture, and the send-to-counselor-and-student button.
- */
 export default async function AdminMemberBillingPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/members');
@@ -41,60 +35,40 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
         fullName: true,
         email: true,
         organizationId: true,
-        enrolledProgram: true,
         deletedAt: true,
-        courseEnrollments: {
-          select: { programSlug: true, curriculumVersion: true, isPrimary: true, enrolledAt: true },
-          orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'asc' }],
-        },
+        enrolledProgram: true,
+        courseEnrollments: { select: { id: true, programSlug: true, isPrimary: true, enrolledAt: true }, orderBy: { enrolledAt: 'asc' } },
       },
     }),
   );
   if (!member || member.deletedAt) notFound();
 
-  // Programs this member can be billed for: every enrollment, then the legacy
-  // `enrolledProgram` slug if it is not already an enrollment row.
-  const enrollmentSlugs = member.courseEnrollments.map((e) => e.programSlug);
-  const slugs = [...enrollmentSlugs];
-  if (member.enrolledProgram && !slugs.includes(member.enrolledProgram)) slugs.push(member.enrolledProgram);
+  // The case opens for the member's enrolled program: the primary enrollment
+  // (or the one matching the legacy pointer) first, then any other enrollment.
+  const { primaryProgramSlug } = resolveActiveDashboardProgram({
+    enrollments: member.courseEnrollments,
+    legacyEnrolledProgram: member.enrolledProgram,
+  });
+  const enrolledSlugs = [primaryProgramSlug, ...member.courseEnrollments.map((row) => row.programSlug)].filter(
+    (slug): slug is string => Boolean(slug),
+  );
+  const enrolledPrograms: EnrolledProgram[] = [];
+  for (const slug of enrolledSlugs) {
+    if (!enrolledPrograms.some((p) => programSlugsEquivalent(p.slug, slug))) {
+      enrolledPrograms.push({ slug, title: resolveProgramTitle(slug) });
+    }
+  }
 
-  const [catalogRows, packets, counselor] = await Promise.all([
-    slugs.length
-      ? prisma.organizationProgramCatalog.findMany({
-          where: { organizationId: member.organizationId, programSlug: { in: slugs } },
-          select: { programSlug: true, name: true, cost: true, certCost: true, bookCost: true, miscCost: true },
-        })
-      : Promise.resolve([]),
-    prisma.trainingBillingPacket.findMany({
-      where: { memberId: member.id, organizationId: member.organizationId },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    }),
+  const [packets, counselor] = await Promise.all([
+    withAdminPageScope(scope, (db) =>
+      db.trainingBillingPacket.findMany({
+        where: { memberId: member.id, organizationId: member.organizationId },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+    ),
     resolveAssignedCounselorContact(member.id),
   ]);
-
-  const programs: BillingProgramOption[] = slugs
-    .map((slug, index) => {
-      const program = getProgramBySlug(slug);
-      const catalog = catalogRows.find((row) => row.programSlug === slug) ?? null;
-      const title = program?.title ?? catalog?.name ?? slug;
-      if (!program && !catalog) return null;
-      const enrollment = member.courseEnrollments.find((e) => e.programSlug === slug);
-      const courses = program ? getProgramCoursesForCurriculumVersion(program, enrollment?.curriculumVersion) : [];
-      const pricing = resolveProgramPricing({ slug }, catalog);
-      return {
-        slug,
-        title,
-        lineItems: buildDefaultLineItems({ courses, pricing, programTitle: title }),
-        pricingSource: pricing.source,
-        isPrimary: enrollment?.isPrimary ?? (index === 0 && enrollmentSlugs.length === 0),
-      };
-    })
-    .filter((p): p is BillingProgramOption => p !== null);
-
-  const provider = getTrainingProviderIdentity();
-  const signer = getDefaultSigner();
-  const billTo = getDefaultBillTo();
 
   return (
     <div>
@@ -104,25 +78,36 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
           { label: member.fullName, href: `/admin/members/${member.id}` },
           { label: 'J5 / J6 billing' },
         ]}
-        title={`J5 invoice & J6 cover letter — ${member.fullName}`}
-        subtitle={`${member.email}${counselor ? ` · Counselor: ${counselor.fullName}` : ' · No counselor assigned yet'}`}
+        title={`J5 and J6 billing — ${member.fullName}`}
+        subtitle={counselor ? `Counselor: ${counselor.fullName}` : 'No counselor assigned yet'}
         action={
           <Link href={`/admin/members/${member.id}`} className="btn btn-outline" style={{ minHeight: 44, justifyContent: 'center' }}>
             Back to member
           </Link>
         }
       />
-      <BillingPacketClient
+      <TwoStageBillingCase
         memberId={member.id}
         memberName={member.fullName}
         memberEmail={member.email}
-        programs={programs}
-        billTo={billTo}
-        signer={{ name: signer.name, title: signer.title }}
-        providerName={provider.legalName}
-        counselorLabel={counselor ? `${counselor.fullName} (${counselor.email})` : null}
-        initialPackets={packets.map((row) => serializeBillingPacket(row, programs.find((p) => p.slug === row.programSlug)?.title))}
+        counselor={counselor ? { name: counselor.fullName, email: counselor.email } : null}
+        enrolledPrograms={enrolledPrograms}
       />
+      {packets.length > 0 ? (
+        <section className="portal-profile-section-card">
+          <div className="portal-profile-section-card__header">
+            <h2 className="portal-profile-section-card__title">Earlier billing documents</h2>
+          </div>
+          <div className="portal-profile-section-card__body">
+            <BillingPacketList
+              packets={packets.map((row) => serializeBillingPacket(row))}
+              canSend={false}
+              counselorLabel={counselor ? `${counselor.fullName} (${counselor.email})` : null}
+              memberEmail={member.email}
+            />
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

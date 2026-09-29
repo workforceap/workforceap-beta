@@ -76,9 +76,12 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   dashboard layout's existing user query; nothing is inferred beyond the
   email fallback.
   Member rails use a 232px budget (208px on smaller laptops, 72px collapsed),
-  with Home, My program, Job board, My progress, AI Career Tools, Messages,
-  and Skill missions visible and remaining Tools / Training / Account groups
-  disclosed on demand.
+  with five permanent rows — Home, My program, Job board, AI Career Tools
+  and Messages (WAP-189) — plus the single contextual tool row on
+  `/dashboard/ai-tools/*` pages, and the Tools & careers /
+  Training & progress / Account & support groups disclosed on demand.
+  My progress and Skill missions live in Training & progress. The
+  collapsed 72px rail has no disclosure: it lists every row as an icon.
   The current route opens its group and only the most specific destination
   receives `aria-current`. Staff rails use 240px and the shared desktop header
   uses a 68px minimum height. Destination lists scroll independently so appearance
@@ -358,7 +361,7 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `AppShellMember` (+ `AppShellSidebar` from `kit/AppShellSidebar`) | shell chrome (member tabs / dense sidebar) |
 | `UniversalSearch` (`kit/UniversalSearch`, not in the barrel) | global search affordance |
 | `GuidedTour` | guided-tour engine: spotlight ring + step popover over `[data-tour]` anchors, steps from `lib/tours/registry.ts` through `TourContext`, copy from the `tours` i18n namespace, chrome on `--wa-*` and `--z-tour`. Not in the barrel (it depends on `components/onboarding/TourContext`) — import `@/components/portal/kit/GuidedTour` directly; `TourProviderWrapper` already mounts it for every portal. Reopen a tour from the header `PortalHelpMenu`; offer it once with `TourOfferStrip`. |
-| `MemberDashboardKit` | composed member dashboard |
+| `MemberHomeKit` (`kit/pages/member/MemberHomeKit`, not in the barrel) | the member home at `/dashboard`, its one implementation (fed by `lib/member/loadMemberDashboardHome.ts`; the old `MemberDashboardKit` and the `?ui=legacy` home were removed in WAP-195) |
 
 `ChatThread` accepts an optional editable `initialText` and `multiline` composer
 for server-validated context such as a course feedback request. It never sends
@@ -452,6 +455,12 @@ against that page in the client.
 `StudentsRosterKit` shows the full account email beneath each student name in
 both table rows and mobile cards. Keep that identifier visible and wrapping so
 staff can distinguish same-name accounts before opening an account action.
+Phone-width emails prefer breaks after local-part dots and before `@`, with an
+emergency break only when a segment cannot fit. A named program with no stored
+assignment is marked `(inferred)` in every kit view. The training loader can
+produce that state from course progress; the default roster loader uses a
+placeholder when it has no assignment, and the dev roster exercises the
+named-program case.
 
 `StudentsRosterKit` is the one admin roster (admin audit 2026-09-20, §7 item 2). It
 takes a `view` preset: `roster` (`/admin/students`) shows Program, Progress, Coursera
@@ -595,6 +604,12 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   `SegmentedControl`, `Spinner`, `Pagination`, `EmptyState`, `StatusDot`, `ProgressBar`, `Link`
   wrapping Next's `Link` for navigational actions — see `VoiceStudioKit.tsx` /
   `member/MemberHomeKit.tsx`) — same brand-token bridge as everywhere else Astryx is used.
+  A navigational action that should look like a button is `KitLinkButton`
+  (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
+  kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
+  which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
+  `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on
+  a `Button` placed directly inside a `Link` or `AstryxLink` (WAP-268).
   WorkforceAP-specific composites that already encode real layout/business logic —
   `DataTable`, `StageTrack`, `SegmentedProgress`, `QueueRow`, `WorkQueueItem`, `ChatThread`,
   `KpiStrip`, `CardHead`, `Sparkline`/`AreaChartMini`, `ProgressRing`, `FeatureTile`,
@@ -614,6 +629,7 @@ section here in the same PR.*
 ### Stakeholder workflow contracts (2026-09-09)
 
 - Admin Command Center queue counts represent all matching active records in the actor's organization, independent of the eight-row overview. Focused `queue`/`page` URLs show 25 items, retain context, and recover from an emptied last page. Totals are items, and interview rows are opportunities; neither is a unique-person count. “Select this page” acts only on visible application IDs.
+- Admin Today (`/admin`, WAP-190) is `CommandCenterKit` with `title="Today"`, `queuesFirst` and a `lead`: the org-wide `CounselorApprovalQueue` (same builder, SLA and tones as the counselor Today; `rowHrefs` send each row to the admin screen that records the decision; `total` + `moreLinks` print "Showing the N oldest of M" instead of silently truncating). The queues precede the KPI strip, placements trend and program / system context; `/admin/command-center` keeps the metrics-first default. `CommandCenterQueueItem.links` names the people behind a count, each with a direct link (new applicants → the record's Counselor assignment card).
 - Command Center health accepts `unknown` in addition to `ok`/`warn`. Unmeasured or failed checks show a neutral dot and “Not verified,” never green. Failed core loaders render an explicit error state.
 - Partner application links carry the existing attribution token and appear on the default overview/guide. Share tools prepare user-reviewable text; copy or native-share failure stays visible. Attention keeps approved/observed training separate from approval/funding pending.
 - Counselor student summaries state funding source separately from the member-level Coursera approval flag. Neither asserts paid grants or working provider access. Member-context links, drafts, and message recipients must remain tied to the selected learner through async work.
@@ -626,6 +642,7 @@ section here in the same PR.*
 - Admin overview uses a compact metric strip and flat queue rows. All-zero measured placement series show a concise zero summary; absent series stay absent and nonzero series retain their chart. Program and system context stays secondary without stretching to the queue height. Actions retain full counts and destinations; bulk selection remains owned by the queue client.
 - Sidebar preference controls keep their radio keyboard interaction. The rail scrolls its destinations, with language and appearance visible below. Narrow or collapsed navigation must never expose clipped focusable controls.
 - Counselor messages use one neutral inbox workspace. Member metadata appears once per roster row, catalog names resolve on the server, and selected conversations/filter controls expose their state accessibly. Recipient identity, request guards, and draft ownership remain unchanged.
+- Partner share tools (`PartnerShareToolkit`, guide page) are dense edge-to-edge rows — landing page, per-channel UTM links with optional signup counts (counts only) — plus a copyable “About WorkforceAP” blurb (the mission statement, `mission.statement` in `messages/*.json`, passed in by the server page) and a read-only Apply-button snippet textarea; each Copy action is an Astryx `Button` whose failure stays visible. What a partner may see about referred members is decided in `lib/partner/dataAccess.ts`, never in a component (docs/PARTNER_TIERS.md).
 - Partner sharing keeps its primary Copy action visible; URL/code live in a native disclosure that opens on clipboard failure. Member sharing keeps the link/copy action visible and opens invitation preview for manual copying when needed. Privacy and aggregate-reward limits remain visible.
 - Partner metrics without supplied trend data use compact StatTile captions; supplied trends retain StatSparkTile. Partner KPI tiles carry no categorical colour (a `tone` only for a state such as pending reviews above zero). The referral funnel presents the same supplied counts/percentages as named progress bars across a desktop row and a mobile stack. The progress handoff retains its destination as a quiet direct link.
 - Counselor student detail record panels (`CounselorIntakeReviewPanel`, `WioaScreeningReadonly`, `AssessmentAnswersReadonly`, `CounselorNotesPanel`, `AdvisorSessionNotesPanel`) are `.wa-kit-card` sections: section h2 titles and `.wa-kit-stat-label` h3 card heads, `.wa-kit-meta` captions, `StatusTag` / tone hooks for status copy, colocated `*.module.css` for layout (`--wa-*` only, 13px floor, no inline `fontSize`). The page keeps the single h1; heading levels inside the tab panels are unchanged. The notes panels load through `fetchWithTimeout` with the effect's `AbortSignal` and `lib/portal/memberRequestFailure` copy (a cancelled request never reads as a failure).

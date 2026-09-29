@@ -11,6 +11,7 @@ type SyncResult = {
       completedOk: number;
       errored: number;
       ignored: number;
+      unresolvedCourse?: number;
       unmatched: number;
     };
   };
@@ -67,6 +68,8 @@ export default function CourseraSyncProgressButton() {
               {' '}— {result.xapi.breakdown.completedOk} completed
               {result.xapi.breakdown.errored > 0 && `, ${result.xapi.breakdown.errored} errored`}
               {result.xapi.breakdown.ignored > 0 && `, ${result.xapi.breakdown.ignored} progress signals`}
+              {(result.xapi.breakdown.unresolvedCourse ?? 0) > 0
+                && `, ${result.xapi.breakdown.unresolvedCourse} for unmapped courses`}
               {result.xapi.breakdown.unmatched > 0 && `, ${result.xapi.breakdown.unmatched} unmatched`}
             </>
           ) : (

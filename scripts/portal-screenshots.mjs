@@ -145,6 +145,7 @@ const TARGETS = [
   { name: 'partner-members', path: '/dev/staff/partner-members' },
   // Staff kits (app/dev/staff/** showcase routes, mock data)
   { name: 'staff-partner', path: '/dev/staff/partner' },
+  { name: 'staff-partner-member-detail', path: '/dev/staff/partner-member-detail' },
   { name: 'staff-placements', path: '/dev/staff/placements' },
   { name: 'staff-jobs-board', path: '/dev/staff/jobs-board' },
   { name: 'staff-pipeline-funnel', path: '/dev/staff/pipeline-funnel' },

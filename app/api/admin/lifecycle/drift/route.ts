@@ -3,8 +3,46 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { prisma } from '@/lib/db/prisma';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+
+/**
+ * - enrolled_no_record: legacy pointer set, no primary CourseEnrollment row.
+ * - pointer_missing: primary row exists, legacy pointer is NULL.
+ * - slug_mismatch: pointer and primary row name different programs.
+ * - alias_equivalent: different stored slugs that canonicalize to the same
+ *   program (lib/content/programSlug.ts). The app already treats them as one
+ *   program, so this is not a slug_mismatch, but it stays listed because the
+ *   alias table itself is under content-owner review.
+ */
+type DriftType = 'enrolled_no_record' | 'pointer_missing' | 'slug_mismatch' | 'alias_equivalent';
+
+type DriftRecord = {
+  userId: string;
+  fullName: string | null;
+  email: string;
+  driftType: DriftType;
+  userProgram: string | null;
+  enrollmentProgram: string | null;
+};
+
+function emptyCounts(): Record<DriftType, number> {
+  return { enrolled_no_record: 0, pointer_missing: 0, slug_mismatch: 0, alias_equivalent: 0 };
+}
+
+function driftResponse(records: DriftRecord[], scanned: number) {
+  const counts = emptyCounts();
+  for (const record of records) counts[record.driftType] += 1;
+  return NextResponse.json({
+    total: records.length,
+    counts,
+    records: records.slice(0, 100),
+    scanned,
+    checkedAt: new Date().toISOString(),
+  });
+}
+
 export const GET = withApiGuc(async () => {
   try {
   const user = await getUser();
@@ -20,19 +58,24 @@ export const GET = withApiGuc(async () => {
     try {
       orgFilterId = await getActorOrganizationId(user.id);
     } catch {
-      return NextResponse.json({ drift: [], totalScanned: 0 });
+      return driftResponse([], 0);
     }
   }
 
-  // Find users with enrolledProgram set. Multi-program: drift now compares
-  // User.enrolledProgram against the user's *primary* CourseEnrollment row
-  // (the one with isPrimary = true). Secondary enrollments are not a drift
-  // signal — a user can legitimately be enrolled in IT Support (primary) +
-  // Cybersecurity (secondary). Prisma findMany with a filtered relation
-  // returns at most one row because of the partial unique index.
+  // Find users with the legacy enrolledProgram pointer OR a primary
+  // CourseEnrollment row, so a primary-row member with a NULL pointer is
+  // scanned too. Drift compares User.enrolledProgram against the user's
+  // *primary* CourseEnrollment row (isPrimary = true). Secondary enrollments
+  // are not a drift signal — a user can legitimately be enrolled in IT
+  // Support (primary) + Cybersecurity (secondary). Prisma findMany with a
+  // filtered relation returns at most one row because of the partial unique
+  // index. Read-only: nothing here backfills the pointer.
   const enrolledUsers = await prisma.$transaction((tx) => tx.user.findMany({
     where: {
-      enrolledProgram: { not: null },
+      OR: [
+        { enrolledProgram: { not: null } },
+        { courseEnrollments: { some: { isPrimary: true } } },
+      ],
       deletedAt: null,
       ...(orgFilterId ? { organizationId: orgFilterId } : {}),
     },
@@ -51,45 +94,32 @@ export const GET = withApiGuc(async () => {
     take: 500,
   }));
 
-  type DriftRecord = {
-    userId: string;
-    fullName: string | null;
-    email: string;
-    driftType: 'enrolled_no_record' | 'slug_mismatch';
-    userProgram: string | null;
-    enrollmentProgram: string | null;
-  };
-
   const driftRecords: DriftRecord[] = [];
 
   for (const u of enrolledUsers) {
     const primary = u.courseEnrollments[0] ?? null;
+    let driftType: DriftType | null = null;
     if (!primary) {
-      driftRecords.push({
-        userId: u.id,
-        fullName: u.fullName,
-        email: u.email,
-        driftType: 'enrolled_no_record',
-        userProgram: u.enrolledProgram,
-        enrollmentProgram: null,
-      });
+      if (u.enrolledProgram) driftType = 'enrolled_no_record';
+    } else if (!u.enrolledProgram) {
+      driftType = 'pointer_missing';
     } else if (u.enrolledProgram !== primary.programSlug) {
-      driftRecords.push({
-        userId: u.id,
-        fullName: u.fullName,
-        email: u.email,
-        driftType: 'slug_mismatch',
-        userProgram: u.enrolledProgram,
-        enrollmentProgram: primary.programSlug,
-      });
+      driftType = programSlugsEquivalent(u.enrolledProgram, primary.programSlug)
+        ? 'alias_equivalent'
+        : 'slug_mismatch';
     }
+    if (!driftType) continue;
+    driftRecords.push({
+      userId: u.id,
+      fullName: u.fullName,
+      email: u.email,
+      driftType,
+      userProgram: u.enrolledProgram,
+      enrollmentProgram: primary?.programSlug ?? null,
+    });
   }
 
-  return NextResponse.json({
-    total: driftRecords.length,
-    records: driftRecords.slice(0, 100),
-    checkedAt: new Date().toISOString(),
-  });
+  return driftResponse(driftRecords, enrolledUsers.length);
 
   } catch (error) {
     console.error('/admin/lifecycle/drift error:', error);

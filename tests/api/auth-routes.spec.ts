@@ -1060,7 +1060,9 @@ describe('GET /api/auth/me', () => {
     vi.mocked(isSuperAdmin).mockResolvedValue(false);
 
     const { getPortalSwitcherRoles } = await import('@/lib/auth/portalRoleSwitcher');
-    vi.mocked(getPortalSwitcherRoles).mockResolvedValue([]);
+    vi.mocked(getPortalSwitcherRoles).mockResolvedValue([
+      { role: 'member', roleLabel: 'Member', homeHref: '/dashboard' },
+    ]);
 
     const res = await meGET(new Request('http://localhost:3000/api/auth/me'));
 
@@ -1069,7 +1071,24 @@ describe('GET /api/auth/me', () => {
     expect(body.role).toBe('member');
     expect(body.superAdmin).toBe(false);
     expect(body.canAccessMemberDashboard).toBe(true);
-    expect(body.availablePortals).toEqual([]);
+    expect(body.availablePortals).toEqual([{ role: 'member', roleLabel: 'Member', homeHref: '/dashboard' }]);
+  });
+
+  it('does not advertise member dashboard access to staff with only another portal', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'user-employer', email: 'employer@example.com' } as any);
+    const { getProfileRole, isSuperAdmin } = await import('@/lib/auth/roles');
+    vi.mocked(getProfileRole).mockResolvedValue('employer');
+    vi.mocked(isSuperAdmin).mockResolvedValue(false);
+    const { getPortalSwitcherRoles } = await import('@/lib/auth/portalRoleSwitcher');
+    vi.mocked(getPortalSwitcherRoles).mockResolvedValue([
+      { role: 'employer', roleLabel: 'Employer', homeHref: '/employer' },
+    ]);
+
+    const res = await meGET(new Request('http://localhost:3000/api/auth/me'));
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.canAccessMemberDashboard).toBe(false);
+    expect(body.availablePortals).toEqual([{ role: 'employer', roleLabel: 'Employer', homeHref: '/employer' }]);
   });
 
   it('returns superAdmin true when UserRole grants super_admin even if profile is member', async () => {
@@ -1090,6 +1109,7 @@ describe('GET /api/auth/me', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.superAdmin).toBe(true);
+    expect(body.canAccessMemberDashboard).toBe(true);
     expect(isSuperAdmin).toHaveBeenCalledWith('user-sa');
     expect(getPortalSwitcherRoles).toHaveBeenCalledWith(
       'user-sa',

@@ -95,4 +95,20 @@ describe('ResumeClient upload failure state', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/could not reach/i);
     await waitFor(() => expect(input).toBeEnabled());
   });
+
+  it('explains how to recover when an older AI-built resume is quarantined', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({
+      ...resumeStatus,
+      hasOriginal: true,
+      originalUrl: 'https://example.test/original',
+      originalExt: 'pdf',
+      enhancedUnavailable: true,
+    })));
+    renderPage();
+
+    expect(await screen.findByText(/older AI-built resume could not be read safely/i)).toBeInTheDocument();
+    expect(screen.getByText(/Your original resume is still available/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'profile' })).toHaveAttribute('href', '/dashboard/profile');
+    expect(screen.queryByText('Updated Resume')).not.toBeInTheDocument();
+  });
 });

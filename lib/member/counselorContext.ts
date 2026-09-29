@@ -28,8 +28,9 @@ import { firstNameOf } from '@/lib/member/memberApprovalStatus';
  *
  * One resolver, two entry points: `loadMemberDashboardHome` reads the
  * assignment inside its own single user query and calls
- * {@link resolveAssignedCounselor}; the `?ui=legacy` wizard path, which has no
- * home loader, uses {@link getMemberCounselorContext}. The estimate is a
+ * {@link resolveAssignedCounselor}; a caller without the home loader's read
+ * (the onboarding wizard's closing step, formerly mounted by the retired
+ * `?ui=legacy` home) uses {@link getMemberCounselorContext}. The estimate is a
  * separate read ({@link getApprovalWaitEstimate}) so the home loader keeps
  * its one-operation budget.
  *
@@ -206,7 +207,11 @@ export async function getApprovalWaitEstimate(
   return medianApprovalDays(events, applications);
 }
 
-/** Standalone loader for the `?ui=legacy` wizard path (one user read, plus the estimate while under review). */
+/**
+ * Standalone loader for a caller without the home loader's read (one user read,
+ * plus the estimate while under review). Its caller was the onboarding wizard on
+ * the retired `?ui=legacy` home (WAP-195); WAP-194 re-homes the wizard.
+ */
 export async function getMemberCounselorContext(
   userId: string,
   db?: CounselorContextDb,

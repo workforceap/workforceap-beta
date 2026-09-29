@@ -120,6 +120,12 @@ async function _POST(req: NextRequest) {
 }
 
 
+/** Legacy admin retention words mapped onto the classifier's vocabulary. */
+const RETENTION_STATUS_ALIASES: Readonly<Record<string, string>> = {
+  left: 'separated',
+  unknown: 'pending',
+};
+
 async function _PATCH(req: NextRequest) {
   try {
   const user = await getUser();
@@ -134,13 +140,25 @@ async function _PATCH(req: NextRequest) {
     salaryOffered: z.number().nonnegative().optional(),
     employerName: z.string().min(1).max(200).optional(),
     jobTitle: z.string().min(1).max(200).optional(),
-    retentionStatus: z.enum(['active', 'left', 'unknown']).optional(),
+    // Only values the outcome classifier (lib/analytics/retentionOutcome.ts)
+    // and the placement-survey sync understand. 'left' and 'unknown' are
+    // accepted as aliases and normalised below. 'active' is refused: "still
+    // employed" with no proven 90/180-day window is not retention evidence,
+    // no report can classify it, and the survey would never overwrite it.
+    retentionStatus: z
+      .enum(['retained_90d', 'retained_180d', 'separated', 'pending', 'left', 'unknown'])
+      .optional(),
   }).safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid fields', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { id, ...updates } = parsed.data;
+  const { id, retentionStatus, ...rest } = parsed.data;
+  // Normalised before the write and the audit 'after' snapshot.
+  const updates: typeof rest & { retentionStatus?: string } =
+    retentionStatus === undefined
+      ? rest
+      : { ...rest, retentionStatus: RETENTION_STATUS_ALIASES[retentionStatus] ?? retentionStatus };
   const orgId = await getActorOrganizationId(user.id);
 
   // Verify placement belongs to admin's org and snapshot the fields being

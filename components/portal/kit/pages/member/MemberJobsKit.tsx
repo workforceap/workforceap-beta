@@ -75,6 +75,15 @@ export interface MemberJobsKitProps {
   openRoles?: OpenRoleRow[];
   /** Total live openings when more exist than are listed. */
   openRolesTotal?: number;
+  /**
+   * A load failed (WAP-261): the section shows "couldn't load", never 0 or
+   * its empty state, because an unknown count is not an empty one.
+   * `retryHref` is where "Try again" goes (the page itself).
+   */
+  pipelineLoadFailed?: boolean;
+  openRolesLoadFailed?: boolean;
+  recommendationsLoadFailed?: boolean;
+  retryHref?: string;
 }
 
 function JobsCta({
@@ -110,6 +119,10 @@ export function MemberJobsKit({
   recommended = [],
   openRoles = [],
   openRolesTotal,
+  pipelineLoadFailed = false,
+  openRolesLoadFailed = false,
+  recommendationsLoadFailed = false,
+  retryHref = '/dashboard/jobs',
 }: MemberJobsKitProps) {
   const t = useTranslations('empty');
   const openRolesCount = Math.max(openRolesTotal ?? 0, openRoles.length);
@@ -149,24 +162,38 @@ export function MemberJobsKit({
           icon={<Compass size={13} aria-hidden="true" />}
         />
         <KpiStrip
-          items={[
-            { label: 'Saved', value: saved },
-            { label: 'Applied', value: applied },
-            { label: 'Interviewing', value: interviewing },
-            { label: 'Offers', value: offers },
-          ]}
+          items={(
+            [
+              ['Saved', saved],
+              ['Applied', applied],
+              ['Interviewing', interviewing],
+              ['Offers', offers],
+            ] as const
+          ).map(([label, value]) =>
+            pipelineLoadFailed
+              ? { label, value: '—', delta: t('applicationsUnavailable.kpiCaption'), deltaTone: 'warn' as const }
+              : { label, value },
+          )}
         />
 
         <div className="wa-kit-card">
           <div className="wa-flex wa-flex-col md:wa-flex-row md:wa-items-center wa-justify-between wa-gap-3" style={{ marginBottom: 16 }}>
             <div>
               <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Applications</h2>
-              {syncedLabel ? <p className="wa-kit-meta">{syncedLabel}</p> : null}
+              {syncedLabel && !pipelineLoadFailed ? <p className="wa-kit-meta">{syncedLabel}</p> : null}
             </div>
             {applications.length > 0 ? <JobsCta href={browseHref}>Browse openings</JobsCta> : null}
           </div>
           {/* The empty state is the card's own branch: the table below only mounts with rows, so it carries no `empty` prop. */}
-          {applications.length === 0 ? (
+          {pipelineLoadFailed ? (
+            <KitEmptyState
+              kind="unavailable"
+              title={t('applicationsUnavailable.title')}
+              description={t('applicationsUnavailable.body')}
+              primaryAction={{ label: t('applicationsUnavailable.action'), href: retryHref }}
+              data-testid="member-jobs-applications-load-failed"
+            />
+          ) : applications.length === 0 ? (
             <KitEmptyState
               kind="first"
               title={t('applications.title')}
@@ -190,13 +217,23 @@ export function MemberJobsKit({
             <h2 id="open-roles-heading" style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', margin: 0 }}>
               Open roles
             </h2>
-            {openRolesCount > 0 ? (
+            {openRolesCount > 0 && !openRolesLoadFailed ? (
               <p className="wa-kit-meta" style={{ margin: 0, fontVariantNumeric: 'tabular-nums' }}>
                 {openRolesCount} live opening{openRolesCount === 1 ? '' : 's'}
               </p>
             ) : null}
           </div>
-          {openRoles.length === 0 ? (
+          {openRolesLoadFailed ? (
+            <div className="wa-kit-card">
+              <KitEmptyState
+                kind="unavailable"
+                title={t('openingsUnavailable.title')}
+                description={t('openingsUnavailable.body')}
+                primaryAction={{ label: t('openingsUnavailable.action'), href: retryHref }}
+                data-testid="member-jobs-openings-load-failed"
+              />
+            </div>
+          ) : openRoles.length === 0 ? (
             <div className="wa-kit-card">
               <KitEmptyState
                 kind={JOBS_BOARD_EMPTY.kind}
@@ -229,7 +266,18 @@ export function MemberJobsKit({
 
         <div>
           <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Recommended</h2>
-          {recommended.length === 0 ? (
+          {recommendationsLoadFailed ? (
+            <div className="wa-kit-card">
+              <KitEmptyState
+                kind="unavailable"
+                title={t('matchesUnavailable.title')}
+                description={t('matchesUnavailable.body')}
+                primaryAction={{ label: t('matchesUnavailable.action'), href: retryHref }}
+                secondaryAction={{ label: t('matchesUnavailable.secondary'), href: browseHref }}
+                data-testid="member-jobs-matches-load-failed"
+              />
+            </div>
+          ) : recommended.length === 0 ? (
             <div className="wa-kit-card">
               <KitEmptyState
                 kind="first"

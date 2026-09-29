@@ -7,9 +7,13 @@ import type { StudentRow } from '@/components/portal/kit/pages/admin-subviews/St
  * `/admin/students?needs=…`. The roster page resolves that param to the
  * nearest chip and the kit opens on it, so the link lands on a filtered
  * roster rather than the whole list (admin audit 2026-09-20).
+ *
+ * `?needs=new-applicants` has no chip: the page hands the kit the member ids
+ * behind the admin Today's "new applicants have no counselor" row, from the
+ * same attention queue, and the kit shows only those (WAP-198).
  */
 
-const mocks = vi.hoisted(() => ({ members: vi.fn(), enrichment: vi.fn(), kit: vi.fn() }));
+const mocks = vi.hoisted(() => ({ members: vi.fn(), enrichment: vi.fn(), kit: vi.fn(), attention: vi.fn() }));
 
 vi.mock('@astryxdesign/core/Card', () => ({
   Card: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
@@ -60,9 +64,33 @@ vi.mock('@/lib/admin/healthScore', async (importOriginal) => ({
 vi.mock('@/lib/admin/studentsRosterEnrichment', () => ({ loadStudentRosterEnrichment: mocks.enrichment }));
 vi.mock('@/lib/coursera/progressQueries', () => ({ loadUnmatchedLearners: async () => [], countUnmatchedLearners: async () => 0 }));
 vi.mock('@/lib/admin/trainingRosterLoad', () => ({ loadTrainingRoster: async () => ({ ok: false }) }));
+vi.mock('@/lib/attention/admin', () => ({ getAdminAttention: mocks.attention }));
 
 import { StudentsRosterKit } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
-import { ADMIN_ATTENTION_HREF } from '@/lib/attention/adminViews';
+import { ADMIN_ATTENTION_HREF, buildCommandCenterAttentionRows } from '@/lib/attention/adminViews';
+import { emptyAttentionQueue, type AttentionQueue, type MemberAttention } from '@/lib/attention/evaluate';
+import type { AttentionReason } from '@/lib/attention/reasons';
+import { STUDENTS_FOCUS_UNAVAILABLE_NOTICE } from '@/lib/admin/studentsRosterFocus';
+import type { StudentsRosterFocus } from '@/lib/admin/studentsRosterView';
+
+function flagged(memberId: string, reasons: AttentionReason[]): MemberAttention {
+  return {
+    memberId, memberName: memberId, memberEmail: `${memberId}@example.test`, enrolledProgram: null,
+    reasons, primaryReason: reasons[0], severity: 'warning', urgency: 1, context: {}, lastActivityAt: null,
+  };
+}
+
+/** Two members new with no counselor (one also has a pending application), one only at risk. */
+function attentionQueue(): AttentionQueue {
+  const queue = emptyAttentionQueue();
+  queue.rows.push(
+    flagged('new-1', ['new_no_counselor']),
+    flagged('new-2', ['pending_application', 'new_no_counselor']),
+    flagged('risk-1', ['risk_alert']),
+  );
+  for (const row of queue.rows) for (const reason of row.reasons) queue.totals.byReason[reason] += 1;
+  return queue;
+}
 
 const ROWS: StudentRow[] = [
   {
@@ -100,6 +128,33 @@ describe('roster kit opens on the chip an attention link asks for', () => {
     expect(screen.getAllByText('Joseph Ring').length).toBeGreaterThan(0);
   });
 
+  it('opens on a focus: only those members, the rule, a way back, and chip counts inside the focus', () => {
+    const focus: StudentsRosterFocus = {
+      label: 'New applicants with no counselor',
+      detail: 'Joined in the last 7 days with no active counselor assignment',
+      memberIds: ['u2'],
+      clearHref: '/admin/students',
+    };
+    render(<StudentsRosterKit students={ROWS} total={2} focus={focus} />);
+    const notice = screen.getByTestId('students-roster-focus');
+    expect(notice).toHaveTextContent('New applicants with no counselor · 1');
+    expect(notice).toHaveTextContent('Joined in the last 7 days with no active counselor assignment.');
+    expect(within(notice).getByRole('link', { name: 'Show all students' })).toHaveAttribute('href', '/admin/students');
+    expect(checkedChip()).toMatch(/^All · 1/);
+    expect(screen.getAllByText('Joseph Ring').length).toBeGreaterThan(0);
+    expect(screen.queryAllByText('Noel Gonzalez')).toHaveLength(0);
+    expect(screen.getByTestId('students-roster-footer')).toHaveTextContent('Showing 1 of 1');
+  });
+
+  it('says how many focused members this list could not show, instead of dropping them silently', () => {
+    const focus: StudentsRosterFocus = {
+      label: 'New applicants with no counselor', detail: 'Rule', memberIds: ['u1', 'not-loaded-1', 'not-loaded-2'], clearHref: '/admin/students',
+    };
+    render(<StudentsRosterKit students={ROWS} total={2} focus={focus} />);
+    expect(screen.getByTestId('students-roster-focus')).toHaveTextContent('New applicants with no counselor · 1');
+    expect(screen.getByTestId('students-roster-focus')).toHaveTextContent("2 more are past this list's load limit; open them from Today.");
+  });
+
   it('opens the training preset on its real Stalled chip', () => {
     render(<StudentsRosterKit students={ROWS} total={2} view="training" initialChip="Stalled" />);
     expect(checkedChip()).toMatch(/^Stalled · 1/);
@@ -120,6 +175,7 @@ describe('/admin/students resolves ?needs= from the attention links', () => {
     vi.clearAllMocks();
     mocks.members.mockResolvedValue([member]);
     mocks.enrichment.mockResolvedValue([]);
+    mocks.attention.mockResolvedValue(attentionQueue());
   });
 
   async function kitPropsFor(href: string) {
@@ -130,14 +186,49 @@ describe('/admin/students resolves ?needs= from the attention links', () => {
     const url = new URL(href, 'https://example.test');
     expect(url.pathname).toBe('/admin/students');
     render(await AdminStudentsPage({ searchParams: Promise.resolve(Object.fromEntries(url.searchParams)) }));
-    return mocks.kit.mock.calls.at(-1)?.[0] as { initialChip: string; view: string };
+    return mocks.kit.mock.calls.at(-1)?.[0] as {
+      initialChip: string; view: string; focus?: StudentsRosterFocus; notice?: string;
+    };
   }
 
-  it('a risk alert or a quiet member opens the At Risk chip; new applicants open the whole roster', async () => {
-    expect(await kitPropsFor(ADMIN_ATTENTION_HREF.risk_alert)).toMatchObject({ view: 'roster', initialChip: 'At Risk' });
-    expect(await kitPropsFor(ADMIN_ATTENTION_HREF.no_activity_30d)).toMatchObject({ view: 'roster', initialChip: 'At Risk' });
-    expect(await kitPropsFor(ADMIN_ATTENTION_HREF.new_no_counselor)).toMatchObject({ view: 'roster', initialChip: 'All' });
-    expect(await kitPropsFor('/admin/students?needs=anything-else')).toMatchObject({ initialChip: 'All' });
-    expect(await kitPropsFor('/admin/students')).toMatchObject({ initialChip: 'All' });
+  it('a risk alert or a quiet member opens the At Risk chip, with no focus and no attention read', async () => {
+    expect(await kitPropsFor(ADMIN_ATTENTION_HREF.risk_alert)).toMatchObject({ view: 'roster', initialChip: 'At Risk', focus: undefined });
+    expect(await kitPropsFor(ADMIN_ATTENTION_HREF.no_activity_30d)).toMatchObject({ view: 'roster', initialChip: 'At Risk', focus: undefined });
+    expect(await kitPropsFor('/admin/students?needs=anything-else')).toMatchObject({ initialChip: 'All', focus: undefined });
+    expect(await kitPropsFor('/admin/students')).toMatchObject({ initialChip: 'All', focus: undefined });
+    expect(mocks.attention).not.toHaveBeenCalled();
+  });
+
+  it('new applicants open on exactly the members the admin Today row counts', async () => {
+    const props = await kitPropsFor(ADMIN_ATTENTION_HREF.new_no_counselor);
+    expect(props).toMatchObject({ view: 'roster', initialChip: 'All' });
+    expect(props.focus).toMatchObject({
+      label: 'New applicants with no counselor',
+      detail: 'Joined in the last 7 days with no active counselor assignment',
+      memberIds: ['new-1', 'new-2'],
+      clearHref: '/admin/students',
+    });
+    const todayRow = buildCommandCenterAttentionRows(attentionQueue()).find((row) => row.id === 'new_no_counselor')!;
+    expect(todayRow.href).toBe(ADMIN_ATTENTION_HREF.new_no_counselor);
+    expect(props.focus!.memberIds).toHaveLength(todayRow.count);
+    expect(mocks.attention).toHaveBeenCalledWith({ ok: true, orgId: 'org-1', superAdmin: false });
+  });
+
+  it('the training preset does not focus', async () => {
+    mocks.members.mockResolvedValue([member]);
+    const { loadStudentsRosterFocus } = await import('@/lib/admin/studentsRosterFocus');
+    await expect(
+      loadStudentsRosterFocus({ ok: true, orgId: 'org-1', superAdmin: false } as never, 'new-applicants', 'training'),
+    ).resolves.toEqual({ focus: null, failed: false });
+    expect(mocks.attention).not.toHaveBeenCalled();
+  });
+
+  it('a failed attention read falls back to everyone with a notice, never an empty list', async () => {
+    mocks.attention.mockRejectedValue(new Error('db down'));
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const props = await kitPropsFor(ADMIN_ATTENTION_HREF.new_no_counselor);
+    expect(props.focus).toBeUndefined();
+    expect(props.notice).toBe(STUDENTS_FOCUS_UNAVAILABLE_NOTICE);
+    error.mockRestore();
   });
 });

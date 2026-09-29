@@ -1,5 +1,5 @@
 import React from 'react';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readCss } from '@/lib/ui/cssTokenContrast.test-helpers';
 
@@ -116,6 +116,21 @@ describe('AdminDashboardKit "Unmatched Coursera" tile', () => {
 });
 
 describe('/admin/dashboard threads the metrics payload through', () => {
+  it('replaces the loading state with the dashboard data marker after metrics resolve', async () => {
+    let releaseMetrics: (value: Response) => void = () => {};
+    fetchMock.mockImplementation(() => new Promise<Response>((resolve) => { releaseMetrics = resolve; }));
+    const { container } = render(<ExecutiveDashboardPage />);
+
+    expect(container.querySelector('[data-portal-loading-state="admin-metrics"]')).not.toBeNull();
+    expect(container.querySelector('[data-portal-data-ready="admin-metrics"]')).toBeNull();
+    releaseMetrics(Response.json(payload));
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-portal-loading-state="admin-metrics"]')).toBeNull();
+      expect(container.querySelector('[data-portal-data-ready="admin-metrics"]')).not.toBeNull();
+    });
+  });
+
   it('degraded present → the kit view shows the notice beside the tile', async () => {
     fetchMock.mockResolvedValue(Response.json({ ...payload, degraded: ['coursera-xapi-unavailable'] }));
     render(<ExecutiveDashboardPage />);

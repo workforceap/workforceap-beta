@@ -186,7 +186,8 @@ describe('employer surfaces: a new and a not-selected application', () => {
     // The list renders a desktop table and a mobile card list; both selects carry the same label.
     const select = screen.getAllByLabelText('Update application status for Rex Applicant')[0] as HTMLSelectElement;
     expect(select.selectedOptions[0]?.textContent).toBe('Not selected');
-    expect(Array.from(select.options).map((o) => o.textContent)).toContain('Offer extended');
+    // Only the stage it is in plus the moves the server accepts (lib/employer/applicationStatus.ts).
+    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['New', 'Not selected']);
     expect(document.body.textContent).not.toMatch(OLD_WORDS);
   });
 
@@ -204,10 +205,10 @@ describe('employer surfaces: a new and a not-selected application', () => {
     expect(document.body.textContent).not.toMatch(OLD_WORDS);
   });
 
-  it('status updater: the <select> offers the six stages in the employer words', () => {
+  it('status updater: the <select> offers the current and allowed next stages in the employer words', () => {
     render(<ApplicationStatusUpdater applicationId="a1" currentStatus="offered" />);
     const select = screen.getByRole('combobox') as HTMLSelectElement;
-    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['New', 'Reviewing', 'Interviewing', 'Offer extended', 'Hired', 'Not selected']);
+    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(['Interviewing', 'Offer extended', 'Hired', 'Not selected']);
     expect(select.selectedOptions[0]?.textContent).toBe('Offer extended');
   });
 });

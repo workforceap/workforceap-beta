@@ -6,6 +6,7 @@ import {
   PieChart, Pie, Cell,
 } from 'recharts';
 import PageHeader from '@/components/portal/PageHeader';
+import { objectsToCsv } from '@/lib/csv/cells';
 
 const ACCENT = '#ad2c4d';
 const BLUE = '#2b7bb9';
@@ -78,25 +79,6 @@ const tooltipStyle = {
   labelStyle: { fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '0.25rem' },
   itemStyle: { color: 'var(--color-on-surface-variant)', paddingTop: '0.15rem' },
 };
-
-function objectsToCsv(rows: Record<string, string | number>[]): string {
-  if (rows.length === 0) return '';
-  const headers = Object.keys(rows[0]);
-  const lines = [headers.join(',')];
-  for (const row of rows) {
-    lines.push(
-      headers.map((h) => {
-        const val = row[h];
-        const str = String(val ?? '');
-        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-          return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
-      }).join(',')
-    );
-  }
-  return lines.join('\n');
-}
 
 type AIEfficacyDashboardProps = {
   /** Super-admin organization override forwarded to the API as `?orgId=`. */

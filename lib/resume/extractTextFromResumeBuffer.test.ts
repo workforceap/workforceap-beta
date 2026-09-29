@@ -197,3 +197,24 @@ test('extractTextFromResumeBuffer: reads a PDF from a current-generation produce
     assert.match(text, /Workforce Advancement Project/);
   }
 });
+
+test('extractTextFromResumeBuffer: reads every page of a multi-page PDF without PDF syntax', async () => {
+  // Fictional two-page resume: experience on page 1, education on page 2.
+  const { PDFDocument, StandardFonts } = require('pdf-lib') as typeof import('pdf-lib');
+  const document = await PDFDocument.create();
+  const font = await document.embedFont(StandardFonts.Helvetica);
+  document.addPage([612, 792]).drawText('Riverbend Logistics - Warehouse Lead, 2019-2023', {
+    x: 40, y: 700, size: 11, font,
+  });
+  document.addPage([612, 792]).drawText('Lakeshore Community College - A.A.S. Industrial Maintenance, 2018', {
+    x: 40, y: 700, size: 11, font,
+  });
+
+  const text = await extractTextFromResumeBuffer(Buffer.from(await document.save()), 'pdf');
+
+  assert.match(text, /Riverbend Logistics - Warehouse Lead, 2019-2023/);
+  assert.match(text, /Lakeshore Community College - A\.A\.S\. Industrial Maintenance, 2018/);
+  assert.ok(text.indexOf('Riverbend') < text.indexOf('Lakeshore'), 'pages stay in order');
+  assert.doesNotMatch(text, /%PDF|\bendobj\b|\bstream\b/);
+  assert.equal(isUnsafeResumePlainText(text), false);
+});

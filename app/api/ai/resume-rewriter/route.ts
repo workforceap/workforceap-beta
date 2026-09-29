@@ -10,7 +10,7 @@ import { aiResponseLanguageInstruction } from '@/lib/ai/responseLanguage';
 import { saveAIToolResult } from '@/lib/ai/saveResult';
 import { resolveActOnBehalf } from '@/lib/auth/actAsSubject';
 import { inferResumeFramework, resumeFrameworkPromptBlock, type ResumeFramework } from '@/lib/resume/inferResumeFramework';
-import { prefillResumeRewriter, honestNoResumeError } from '@/lib/ai/prefillFromMemberState';
+import { prefillResumeRewriter } from '@/lib/ai/prefillFromMemberState';
 import { loadCoachContextBlock } from '@/lib/ai/coachContextBlock';
 import { prisma } from '@/lib/db/prisma';
 import { analyzeResume } from '@/lib/ai/resumeScore';
@@ -63,8 +63,7 @@ export const POST = withApiGuc(async (request: Request) => {
     if (!finalResume || finalResume.length < 40) {
       const prefill = await prefillResumeRewriter(onBehalf.subjectUserId);
       if (!prefill.ok) {
-        const err = honestNoResumeError();
-        return NextResponse.json({ error: err.error }, { status: err.status });
+        return NextResponse.json({ error: prefill.error }, { status: 400 });
       }
       finalResume = prefill.resume;
       if (!finalJobTarget) finalJobTarget = prefill.jobTarget;

@@ -19,6 +19,7 @@ import {
 import { canonicalPathname } from '../../scripts/lib/portal-audit-classify.mjs';
 import { waitForPortalReady } from '../../scripts/lib/portal-audit-browser.mjs';
 import { validatePortalAuditTarget } from '../../scripts/lib/portal-audit-target.mjs';
+import { installReadOnlyAuditCookie } from '../../scripts/lib/portal-audit-cookie.mjs';
 
 const sectionArg = (process.env.PORTAL_AUDIT_SECTION ?? 'all').toLowerCase();
 const rawBaseURL = process.env.PLAYWRIGHT_BASE_URL?.trim() || 'http://localhost:3000';
@@ -136,6 +137,7 @@ test.describe('cross-portal static routes and role isolation', () => {
     test(`${section} account sees only the allowed portal roots`, async ({ page }) => {
       let blockedWriteRequestCount = 0;
       let allowAuthentication = true;
+      await installReadOnlyAuditCookie(page.context(), trustedOrigin, readOnlyAuditToken);
       await page.route('**/*', async (route) => {
         const request = route.request();
         const disposition = classifyReadOnlyAuditRequest(
@@ -145,22 +147,7 @@ test.describe('cross-portal static routes and role isolation', () => {
           { allowAuthentication },
         );
         if (disposition === 'continue') {
-          let isTrustedRequest = false;
-          try {
-            isTrustedRequest = new URL(request.url()).origin === trustedOrigin;
-          } catch {
-            // Safe external methods continue without the audit-only header.
-          }
-          if (isTrustedRequest) {
-            await route.continue({
-              headers: {
-                ...request.headers(),
-                'x-workforceap-read-only-audit-token': readOnlyAuditToken,
-              },
-            });
-          } else {
-            await route.continue();
-          }
+          await route.continue();
           return;
         }
         if (disposition === 'suppress_telemetry') {

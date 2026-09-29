@@ -4,8 +4,10 @@ import { preload } from 'react-dom';
 import { redirect } from 'next/navigation';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { getUser } from '@/lib/auth/server';
+import { getProfileRole } from '@/lib/auth/roles';
 import { resolveAdminPageTenant } from '@/lib/tenant/adminPageScope';
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import AdminPortalShell from '@/components/portal/AdminPortalShell';
 import LegacyViewNotice from '@/components/portal/LegacyViewNotice';
 import OrgBrandingBar from '@/components/platform/OrgBrandingBar';
@@ -45,11 +47,11 @@ export default async function AdminLayout({
 
   try {
     const scope = await resolveAdminPageTenant(user.id);
-    if (!scope.ok) redirect('/dashboard');
+    if (!scope.ok) redirect(await deniedPortalHomeHref(user.id, 'admin'));
     const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
     const adminTour = getHomeTourForRole('admin');
-    const [branding, portalRoles, tour] = await Promise.all([
+    const [branding, portalRoles, tour, effectiveRole] = await Promise.all([
       getDefaultOrgBranding({ readOnlyAudit }),
       getPortalSwitcherRoles(user.id, {
         superAdmin: scope.superAdmin,
@@ -57,6 +59,7 @@ export default async function AdminLayout({
       }),
       // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
       adminTour ? getTourOffer(user.id, adminTour.key) : Promise.resolve(null),
+      getProfileRole(user.id),
     ]);
 
     return (
@@ -89,6 +92,7 @@ export default async function AdminLayout({
         </Suspense>
         <AdminPortalShell
           superAdmin={scope.superAdmin}
+          knownIsAdmin={effectiveRole === 'admin'}
           portalRoles={portalRoles}
           readOnlyAudit={readOnlyAudit}
           tour={tour}

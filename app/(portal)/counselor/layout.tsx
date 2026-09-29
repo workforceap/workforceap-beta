@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor, isSuperAdmin } from '@/lib/auth/roles';
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
 import CounselorPortalShell from '@/components/portal/CounselorPortalShell';
 import { counselorAffiliationDisplay } from '@/lib/counselor/counselorLabels';
@@ -34,7 +35,7 @@ export default async function CounselorLayout({ children }: { children: React.Re
     isAdmin(user.id),
     isSuperAdmin(user.id),
   ]);
-  if (!allowedCounselor && !allowedAdmin) redirect('/dashboard');
+  if (!allowedCounselor && !allowedAdmin) redirect(await deniedPortalHomeHref(user.id, 'counselor'));
   const counselorTour = getHomeTourForRole('counselor');
   const [portalRoles, tour] = await Promise.all([
     getPortalSwitcherRoles(user.id, {

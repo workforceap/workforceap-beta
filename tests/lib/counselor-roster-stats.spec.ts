@@ -124,4 +124,22 @@ describe('buildCounselorRosterStats', () => {
     expect(placements.caption).toBe('Placements recorded for your members in the last 30 days');
     expect(placements.href).toBe('/counselor/placements');
   });
+
+  // C05: the count is placement records, every one of them (methodology §7);
+  // the caption says how many still have an unconfirmed start date instead of
+  // silently dropping them or presenting them as verified.
+  it('says how many recent placements still have a start date not yet verified', () => {
+    const queue = buildAttentionQueue([member({ memberId: 'a' })], NOW);
+    const [, , , placements] = buildCounselorRosterStats({
+      queue,
+      recentCompletions: 0,
+      recentPlacements: 3,
+      recentPlacementsUnverified: 2,
+    });
+    expect(placements.value).toBe(3);
+    expect(placements.caption).toBe(
+      '2 with start date not yet verified · Placements recorded for your members in the last 30 days',
+    );
+    expect(placements.tone).toBeUndefined();
+  });
 });

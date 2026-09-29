@@ -61,6 +61,30 @@
   transition: width 0.2s;
 }
 
+.counselor-profile-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+.counselor-profile-facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639px) {
+  .counselor-profile-facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+  .counselor-profile-facts dd {
+    margin-bottom: 0.75rem;
+  }
+  .counselor-profile-facts dd:last-child {
+    margin-bottom: 0;
+  }
+}
+
 /* =============================================
    ADD MEMBER PAGE
    ============================================= */

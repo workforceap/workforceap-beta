@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { buildMemberApprovalStatus, type MemberApprovalFacts, type MemberApprovalStatus } from './memberApprovalStatus';
 import {
   EMPTY_COUNSELOR_CONTEXT,
@@ -11,10 +12,12 @@ import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from '
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { getProgramBySlug } from '@/lib/content/programs';
+import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
   canonicalizeProgramSlug,
   programSlugsEquivalent,
 } from '@/lib/content/programSlug';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { effectiveStreak } from '@/lib/member/streakDisplay';
@@ -27,20 +30,30 @@ import {
   memberPointsSpark,
   type MemberStatSpark,
 } from '@/lib/member/memberPointsTrend';
-import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
+import { MEMBER_PROGRAM_HREF, memberProgramHrefFor, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { buildNextBestActions, type NextBestAction } from '@/lib/member/nextBestActions';
+import { recommendMemberTool, type MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import {
   digitalLiteracyFirstModuleHref,
   isWorkforceApCourse,
   workforceApCourseHref,
 } from '@/lib/content/courseDelivery';
+import {
+  FIRST90_CHECK_IN_EVENT,
+  buildCheckInsByStage,
+  daysSincePlacement,
+  getFirst90Stage,
+  type First90Response,
+  type First90Stage,
+} from '@/lib/member/first90Days';
 
 /**
- * Kit-default `/dashboard` home loader (SCALE Phase 2).
+ * The `/dashboard` home loader (SCALE Phase 2) — the only one since the
+ * `?ui=legacy` home was retired (WAP-195).
  *
  * Combines the former page-level fan-out (12 Prisma client calls on the kit
- * path; 24 on `?ui=legacy`) into **one `$transaction`** of at most
+ * path; 24 on the retired `?ui=legacy` home) into **one `$transaction`** of at most
  * {@link MEMBER_DASHBOARD_HOME_PRISMA_BUDGET} operations:
  *
  *  1. `user.findUnique` with the nested relations / `_count`s the kit needs
@@ -48,13 +61,19 @@ import {
  * same validated X/Y/% formula as the training detail without trusting a stale
  * aggregate rollup. The Points tile's weekly trend is bucketed in memory from
  * the same nested `points_transactions` page (see `memberPointsTrend`), so the
- * sparkline adds no Prisma operation and no second round trip.
+ * sparkline adds no Prisma operation and no second round trip. The pieces the
+ * retired legacy home read separately (OFFER rows for the placement confirmation
+ * strip, First 90 Days check-ins, the youth notice's date of birth, every
+ * persisted next-best action) ride on the same read too, and so do the
+ * first-login wizard's intake fields and every `CourseEnrollment` the
+ * `?program=` switch chooses between (WAP-194).
  *
  * Coursera B4B + `maybeAutoSyncCourseraOnDashboard` stay **off this path**.
  * Hourly `coursera-training-sync` owns seeding. `getMemberState` (Redis
  * optional) is not called — the page still renders with no Upstash.
  *
- * `?ui=legacy` does not use this loader and may remain fat.
+ * `/dashboard?ui=legacy` and `?tab=` now redirect to the kit home, so there is
+ * no fat path left on this route (lib/member/dashboardLegacyRedirect.ts).
  */
 
 /** Prisma ops this loader issues on the happy path (1–2). Layout bootstrap is extra. */
@@ -76,6 +95,30 @@ export const MEMBER_DASHBOARD_HOME_PRISMA_BUDGET = 2;
 const POINTS_TRANSACTION_TAKE = 400;
 /** Recent pipeline rows shown on the home card: anything not yet closed. */
 const PIPELINE_ROW_STATUSES_EXCLUDED = ['REJECTED', 'ACCEPTED'] as const;
+/** Rows the home "Application pipeline" card shows: the most recently updated open ones. */
+const PIPELINE_ROW_LIMIT = 4;
+/**
+ * Open job-tracker rows read with the member (newest update first).
+ *
+ * The pipeline card shows the first {@link PIPELINE_ROW_LIMIT}; the rest of the
+ * page is read so an OFFER row reaches the placement confirmation strip even
+ * when newer saved or applied rows have pushed it off the card. The legacy
+ * home issued a separate OFFER-only read for this (`take: 500`); here it is
+ * the same nested read, so it costs no Prisma operation. Moving a row to OFFER
+ * bumps its `updatedAt`, so an offer falls outside this page only when the
+ * member has since touched more than this many other open rows.
+ */
+const OPEN_APPLICATION_TAKE = 200;
+/** First 90 Days check-ins read with the member; the legacy home read the same 12. */
+const FIRST90_EVENT_TAKE = 12;
+/**
+ * Enrollments read with the member, primary first. `(userId, programSlug)` is
+ * unique, so this is a ceiling on programs, not rows: the whole catalog is a
+ * few dozen programs and staff enrol a member in one or two.
+ */
+const COURSE_ENROLLMENT_TAKE = 25;
+/** Written by the interview practice flow; counted, not listed. */
+const INTERVIEW_PRACTICE_COMPLETED_EVENT = 'career_os.interview_practice_completed';
 
 export type DashboardPipelineRow = {
   role: string;
@@ -96,6 +139,97 @@ export type DashboardPointsLedgerEntry = {
   label: string;
   amount: number;
   color: 'accent' | 'info' | 'gold';
+};
+
+/** One OFFER row the placement confirmation strip asks about. */
+export type DashboardJobOffer = {
+  id: string;
+  role: string;
+  company: string;
+};
+
+/** Props for `First90DaysCard`, built the way the legacy home built them. */
+export type DashboardFirst90Card = {
+  stage: First90Stage;
+  daysSincePlacement: number;
+  employerName: string;
+  currentStageResponse: First90Response | null;
+  completedStages: First90Stage[];
+};
+
+/**
+ * What the `member_dashboard_viewed` / `member_dashboard_activated` events
+ * carry. `/api/admin/metrics` reads both (weekly dashboard views, Activation
+ * Rate) and `lib/admin/healthScore.ts` counts them as member activity, so the
+ * kit home writes them with the legacy home's definitions (see
+ * `dashboardViewFacts`).
+ */
+export type DashboardViewFacts = {
+  /**
+   * `getMemberState`'s stage letter, the one legacy wrote: A no application,
+   * B no program, C preassessment not done, D assessed. Not the letter
+   * `buildNextBestActions` is given below.
+   */
+  state: 'A' | 'B' | 'C' | 'D';
+  checklistAllDone: boolean;
+  /** Completed courses in the assigned program; 0 without one. */
+  completedCount: number;
+  programTitle?: string;
+};
+
+/** One of the member's own enrollments, for the view-only program switch (`DashboardProgramSelector`). */
+export type DashboardProgramOption = {
+  id: string;
+  programSlug: string;
+  programTitle: string;
+  isPrimary: boolean;
+};
+
+/**
+ * The view-only enrolled-program switch (WAP-194). Present only when the
+ * member has more than one `CourseEnrollment`; choosing an option reloads
+ * `/dashboard?program=<slug>`, which changes what the home describes and
+ * never an enrollment (locked stake: members do not change programs).
+ */
+export type DashboardProgramSwitch = {
+  options: DashboardProgramOption[];
+  /** The option the home describes, spelled exactly as that option's `programSlug`. */
+  activeProgramSlug: string;
+  /**
+   * The home describes a non-primary enrollment. My Program
+   * (`/dashboard/program`) and the Coursera launch still open the primary
+   * program (WAP-196), so the program links on this view go to the Learning
+   * hub instead of deep-linking a course My Program cannot open.
+   */
+  viewingSecondary: boolean;
+};
+
+/**
+ * What the first-login guidance needs (`PortalEntryClient portal="member"`):
+ * whether to open the onboarding wizard or auto-start the first-visit tour,
+ * and the intake fields the wizard is pre-filled with. Read from the same
+ * nested user read; the legacy home issued a separate intake query.
+ */
+export type DashboardOnboarding = {
+  /** `onboardingCompletedAt` is not set: open the wizard. */
+  showWizard: boolean;
+  /**
+   * Onboarding is done but `tourCompletedAt` is not set: the legacy 1.5 s
+   * tour auto-start applies. The page still turns it off when the
+   * `guided_tours_v2` flag is on (the shell owns the tour then).
+   */
+  showTour: boolean;
+  wizard: {
+    initialFullName: string;
+    initialPhone: string;
+    initialAddress: string;
+    initialCity: string;
+    initialState: string;
+    initialZip: string;
+    initialProgramInterest: string;
+    initialReferralSource: string;
+    initialStep: number;
+  };
 };
 
 export type MemberDashboardHomeView = {
@@ -170,8 +304,30 @@ export type MemberDashboardHomeView = {
   toolkitHref: string;
   jobsHref: string;
   doThisNext: NextBestAction | null;
+  /**
+   * The next few steps after `doThisNext`, so the home says more than one
+   * true thing: the other persisted (staff- or cron-written) actions first,
+   * then the stalled-training counselor row when it applies, then the
+   * heuristics. Never repeats the hero or a page already listed, never the
+   * always-present "talk to your counselor" floor.
+   */
+  upNext: NextBestAction[];
+  /** One AI Career Tools pick for the member's stage; null when none fits. */
+  recommendedTool: MemberToolRecommendation | null;
   /** Always the Digital Literacy lesson-1 URL; the kit shows it when no program is enrolled. */
   ungatedDigitalBasicsHref: string;
+  /** OFFER rows for the placement confirmation strip (member-reported placements). Empty renders nothing. */
+  jobOffers: DashboardJobOffer[];
+  /** First 90 Days check-in card while a placement is inside its window; null otherwise. */
+  first90: DashboardFirst90Card | null;
+  /** The member's age from `profile.dob` when it is under 18 (the youth notice); null otherwise. */
+  youthNoticeAge: number | null;
+  /** Facts for the dashboard view / activation events; null when there is no member row to write them for. */
+  dashboardViewFacts: DashboardViewFacts | null;
+  /** First-login wizard / tour state; null when there is no member row. */
+  onboarding: DashboardOnboarding | null;
+  /** The enrolled-program switch; null unless the member has more than one enrollment. */
+  programSwitch: DashboardProgramSwitch | null;
   /** Prisma client operations issued by this call (happy path ≤ budget). */
   prismaOpCount: number;
 };
@@ -179,6 +335,13 @@ export type MemberDashboardHomeView = {
 export type LoadMemberDashboardHomeArgs = {
   userId: string;
   fallbackDisplayName?: string | null;
+  /**
+   * `/dashboard?program=<slug>`: which of the member's own enrollments the
+   * home describes. Honoured only when it names one of their enrollments;
+   * anything else (unknown, someone else's, blank) falls back to the primary,
+   * exactly as `getActiveProgramForDashboard` resolves it.
+   */
+  requestedProgramSlug?: string | null;
   /** Orphan auth user: provision then the loader re-reads. */
   provisionIfMissing?: () => Promise<void>;
 };
@@ -193,12 +356,45 @@ type DashboardHomeDb = {
   $transaction: <T>(fn: (tx: DashboardHomeTx) => Promise<T>) => Promise<T>;
 };
 
-type DashboardUserRow = MemberApprovalFacts & {
+type DashboardUserRow = Omit<MemberApprovalFacts, 'applications'> & {
+  /** Newest application; `programInterest` pre-fills the first-login wizard. */
+  applications?: Array<{ status: string; submittedAt: Date | null; programInterest?: string | null }>;
   organizationId?: string;
   counselorAssignments?: AssignedCounselorRow[];
   phone?: string | null;
-  profile?: { profilePhone: string | null; profileAddress: string | null; city: string | null; state: string | null; zip: string | null; referralSource: string | null } | null;
+  profile?: {
+    profilePhone: string | null;
+    profileAddress: string | null;
+    city: string | null;
+    state: string | null;
+    zip: string | null;
+    referralSource: string | null;
+    resumeOriginalPath?: string | null;
+    resumeEnhancedPath?: string | null;
+    /** Date of birth; drives the youth notice (under 18). */
+    dob?: Date | null;
+  } | null;
+  /** The member's own counselor thread (memberId is unique, so 0 or 1 rows). */
+  messageThreadsAsMember?: Array<{
+    memberLastReadAt: Date | null;
+    /** Newest messages written by someone other than the member. */
+    messages: Array<{ createdAt: Date }>;
+  }>;
+  /** First 90 Days check-ins, newest first (entityId = stage, metadata.response). */
+  memberEvents?: Array<{ entityId: string | null; metadata: unknown; createdAt: Date }>;
+  placementRecord?: {
+    placedAt: Date | null;
+    retentionDecision: string | null;
+    retentionStatus: string | null;
+    employerName?: string | null;
+  } | null;
   fullName: string | null;
+  /** First-login wizard / tour state (`/api/onboarding/*` writes these). */
+  onboardingCompletedAt?: Date | null;
+  onboardingCurrentStep?: number | null;
+  tourCompletedAt?: Date | null;
+  /** Intake program interest, the wizard's fallback when the application has none. */
+  programInterest?: string | null;
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
   /** Program enrolment date — half of the training-eligibility baseline. */
@@ -217,7 +413,15 @@ type DashboardUserRow = MemberApprovalFacts & {
       courseraSlug: string | null;
     }>;
   };
-  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string; enrolledByAdminId?: string | null; enrolledAt?: Date | null }>;
+  /** Every enrollment, primary first then newest (at most {@link COURSE_ENROLLMENT_TAKE}). */
+  courseEnrollments: Array<{
+    id?: string;
+    programSlug: string;
+    curriculumVersion?: string;
+    isPrimary?: boolean;
+    enrolledByAdminId?: string | null;
+    enrolledAt?: Date | null;
+  }>;
   courseProgress: Array<{
     programSlug: string;
     courseSlug: string;
@@ -245,7 +449,9 @@ type DashboardUserRow = MemberApprovalFacts & {
     ctaLabel: string;
     priority: number;
   }>;
+  /** Open rows, newest update first: the pipeline card's rows plus any OFFER further down. */
   jobApplications: Array<{
+    id: string;
     role: string;
     company: string;
     status: string;
@@ -265,6 +471,8 @@ type DashboardUserRow = MemberApprovalFacts & {
   _count: {
     userCertifications: number;
     jobApplications: number;
+    /** Finished interview practice sessions; above 0 retires the practice row. */
+    memberEvents?: number;
   };
 };
 
@@ -391,7 +599,7 @@ function dashboardHomeStateLetter(args: {
   return 'C';
 }
 
-function fallbackDashboardHomeAction(args: {
+type DashboardHomeActionFacts = {
   noApplicationOnFile?: boolean;
   starterProfileReviewRequired?: boolean;
   starterProfileMissingFields?: string[];
@@ -403,8 +611,22 @@ function fallbackDashboardHomeAction(args: {
   trainingCoursesIncomplete: boolean;
   nextIncompleteCourseName: string | null;
   allCoursesComplete: boolean;
-}): NextBestAction {
-  const actions = buildNextBestActions({
+  /**
+   * Real engagement facts from the same user read. Optional only for the
+   * zeroed view (no user row), where "nothing to nag about" is the honest
+   * default. Profile completeness and the weekly recap stay off this path:
+   * the first needs the full profile scorer, the second a week-bounds read.
+   */
+  hasResume?: boolean;
+  hasCompletedInterviewPractice?: boolean;
+  counselorUnreadCount?: number;
+  placementPlacedAt?: Date | null;
+  placementRetentionDecision?: string | null;
+  placementSeparated?: boolean;
+};
+
+function computeDashboardHomeActions(args: DashboardHomeActionFacts): NextBestAction[] {
+  return buildNextBestActions({
     state: dashboardHomeStateLetter(args),
     noApplicationOnFile: args.noApplicationOnFile ?? false,
     enrolledProgram: args.enrolledProgram,
@@ -412,51 +634,222 @@ function fallbackDashboardHomeAction(args: {
     completedCourseCount: args.completedCourseCount,
     starterProfileReviewRequired: args.starterProfileReviewRequired,
     starterProfileMissingFields: args.starterProfileMissingFields,
-    hasResume: true,
+    hasResume: args.hasResume ?? true,
+    hasCompletedInterviewPractice: args.hasCompletedInterviewPractice ?? true,
     profileCompletenessPct: 100,
     jobApplicationCount: args.jobApplicationCount,
-    counselorUnreadCount: 0,
+    counselorUnreadCount: args.counselorUnreadCount ?? 0,
     weeklyRecapUnopened: false,
     courseEnrollmentActive: args.courseEnrollmentActive,
     trainingCoursesIncomplete: args.trainingCoursesIncomplete,
     nextIncompleteCourseName: args.nextIncompleteCourseName,
+    placementPlacedAt: args.placementPlacedAt ?? null,
+    placementRetentionDecision: args.placementRetentionDecision ?? null,
+    placementSeparated: args.placementSeparated ?? false,
   });
-  return actions[0]!;
 }
 
-function resolveDashboardHomeNextAction(args: {
-  persisted: DashboardUserRow['nextBestActions'];
-  noApplicationOnFile?: boolean;
-  starterProfileReviewRequired?: boolean;
-  starterProfileMissingFields?: string[];
-  enrolledProgram: string | null;
-  assessmentCompleted: boolean;
-  courseEnrollmentActive: boolean;
-  completedCourseCount: number;
-  jobApplicationCount: number;
-  trainingCoursesIncomplete: boolean;
-  nextIncompleteCourseName: string | null;
-  allCoursesComplete: boolean;
-}): NextBestAction {
-  const persisted = args.persisted[0];
-  if (persisted) {
-    return {
-      id: persisted.id,
-      title: persisted.title,
-      body: persisted.description,
-      href: resolveMemberProgramHref(persisted.ctaHref),
-      cta: persisted.ctaLabel,
-      variant: 'urgent',
-      weight: persisted.priority + 100,
-    };
+/** Rows shown under the hero; the hero plus these make the four actions `buildNextBestActions` returns. */
+const UP_NEXT_LIMIT = 3;
+
+/** `/a/b?x=1#y` → `/a/b`: two rows that open the same page are one step. */
+function hrefPath(href: string): string {
+  return href.split(/[?#]/)[0] ?? href;
+}
+
+const COUNSELOR_MESSAGES_PATH = '/dashboard/messages';
+
+/**
+ * The row the kit home shows when enrolled training has gone quiet: the
+ * legacy home's `MemberStuckCounselorStrip` (`dashboard.stuckTalkToCounselor`,
+ * `stuckNoActivityMessage`, `openMessages`) as one step, pointing at the same
+ * counselor thread. It says only what the staleness flag knows: no activity
+ * has been saved for a while.
+ */
+export const STALE_TRAINING_COUNSELOR_ACTION: NextBestAction = {
+  id: 'stale_training_counselor',
+  title: 'Stuck? Talk to an advisor',
+  body: "We haven't seen training activity in a while. Message your team.",
+  href: COUNSELOR_MESSAGES_PATH,
+  cta: 'Open messages',
+  variant: 'default',
+  // Placed explicitly (after the persisted rows, before the heuristics), so
+  // the weight never ranks it.
+  weight: 0,
+};
+
+/** A persisted `MemberNextBestAction` row in the shape the home renders. */
+function persistedAction(row: DashboardUserRow['nextBestActions'][number]): NextBestAction {
+  return {
+    id: row.id,
+    title: row.title,
+    body: row.description,
+    href: resolveMemberProgramHref(row.ctaHref),
+    cta: row.ctaLabel,
+    variant: 'urgent',
+    weight: row.priority + 100,
+  };
+}
+
+/**
+ * A computed training step ("Continue training: …", "Launch your first
+ * course") opens My Program. On a secondary program's view it must open that
+ * program, so it carries `?program=` (WAP-196; before, it went to the
+ * Learning hub because My Program ignored the parameter). Every other step is
+ * about the member, not the program, and is left alone; so are persisted
+ * (staff-written) rows.
+ */
+export function secondaryProgramAction(action: NextBestAction, programSlug: string): NextBestAction {
+  if (hrefPath(action.href) !== MEMBER_PROGRAM_HREF) return action;
+  const course = new URL(action.href, 'https://x.invalid').searchParams.get('course');
+  return { ...action, href: memberProgramHrefFor({ program: programSlug, course }) };
+}
+
+/**
+ * Hero + "Up next" from one ranked list. The first persisted (staff- or
+ * cron-written) action still wins the hero, and the other persisted rows lead
+ * the list beneath it; the heuristics then fill what is left. When training
+ * has stalled and no row already opens Messages, the counselor row joins
+ * right after the persisted ones. Rows never repeat a page already on screen,
+ * stop at {@link UP_NEXT_LIMIT}, and never show the "talk to your counselor"
+ * floor — it exists so the hero is never blank, and Messages is one tap away
+ * in the rail.
+ */
+function resolveDashboardHomeActions(
+  args: DashboardHomeActionFacts & {
+    persisted: DashboardUserRow['nextBestActions'];
+    /** Enrolled training has gone quiet (see `shapeHome`); offers the counselor row. */
+    trainingStalled?: boolean;
+    /** Set when the home describes a non-primary enrollment: its program slug
+     *  (see {@link secondaryProgramAction}). */
+    secondaryProgramSlug?: string | null;
+  },
+): { doThisNext: NextBestAction; upNext: NextBestAction[] } {
+  const heuristicActions = computeDashboardHomeActions(args);
+  const secondarySlug = args.secondaryProgramSlug;
+  const computed = secondarySlug
+    ? heuristicActions.map((action) => secondaryProgramAction(action, secondarySlug))
+    : heuristicActions;
+  const [firstPersisted, ...otherPersisted] = args.persisted.map(persistedAction);
+  const doThisNext: NextBestAction = firstPersisted ?? computed[0]!;
+  const heuristics = computed.filter(
+    (action) => action.id !== doThisNext.id && action.id !== 'default_counselor',
+  );
+
+  const fill = (candidates: NextBestAction[]): NextBestAction[] => {
+    const shownPaths = new Set([hrefPath(doThisNext.href)]);
+    const rows: NextBestAction[] = [];
+    for (const action of candidates) {
+      if (rows.length >= UP_NEXT_LIMIT) break;
+      const path = hrefPath(action.href);
+      if (shownPaths.has(path)) continue;
+      shownPaths.add(path);
+      rows.push(action);
+    }
+    return rows;
+  };
+
+  const upNext = fill([...otherPersisted, ...heuristics]);
+  const messagesShown = [doThisNext, ...upNext].some(
+    (action) => hrefPath(action.href) === COUNSELOR_MESSAGES_PATH,
+  );
+  if (args.trainingStalled && !messagesShown) {
+    return { doThisNext, upNext: fill([...otherPersisted, STALE_TRAINING_COUNSELOR_ACTION, ...heuristics]) };
   }
-  return fallbackDashboardHomeAction(args);
+  return { doThisNext, upNext };
+}
+
+/**
+ * First 90 Days card props, built exactly as the retired legacy branch of
+ * `app/(portal)/dashboard/page.tsx` built them (WAP-188): a stage only inside the
+ * placement's window (`getFirst90Stage`), the newest response per stage, and
+ * every stage that has one.
+ */
+export function buildFirst90Card(
+  placement: { placedAt: Date | null; employerName?: string | null } | null | undefined,
+  events: Array<{ entityId: string | null; metadata: unknown; createdAt: Date }>,
+  now: Date = new Date(),
+): DashboardFirst90Card | null {
+  const placedAt = placement?.placedAt;
+  if (!placedAt) return null;
+  const stage = getFirst90Stage(placedAt, now);
+  if (!stage) return null;
+  const checkInsByStage = buildCheckInsByStage(events);
+  return {
+    stage,
+    daysSincePlacement: daysSincePlacement(placedAt, now),
+    employerName: placement.employerName ?? '',
+    currentStageResponse: checkInsByStage[stage]?.response ?? null,
+    completedStages: Object.keys(checkInsByStage) as First90Stage[],
+  };
+}
+
+const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
+
+/**
+ * The legacy home's age maths (`profile.dob`, whole years of 365.25 days),
+ * returned only when it is under 18 — the one thing the youth notice needs.
+ * A future or unreadable date of birth is bad data, not a young member, so it
+ * shows nothing.
+ */
+export function youthNoticeAgeFromDob(dob: Date | null | undefined, now: number = Date.now()): number | null {
+  if (!dob) return null;
+  const age = Math.floor((now - new Date(dob).getTime()) / YEAR_MS);
+  return age >= 0 && age < 18 ? age : null;
+}
+
+/**
+ * Facts for the dashboard view / activation events, with the legacy home's
+ * definitions (`DashboardHomeClient`): the stage letter is `getMemberState`'s
+ * (`deriveStateLetter`, not exported and not importable here), the checklist
+ * is its five milestones, and activation is "past stage A with a course
+ * completed". Course counts come from this loader's own reconciliation, the
+ * same ledger the Course tile shows; legacy blended in B4B, which stays off
+ * this path.
+ */
+export function dashboardViewFacts(args: {
+  applicationExists: boolean;
+  assignedProgramSlug: string | null;
+  assessmentCompleted: boolean;
+  completedCount: number;
+  programTitle?: string;
+}): DashboardViewFacts {
+  const enrolled = Boolean(args.assignedProgramSlug);
+  const state: DashboardViewFacts['state'] = !args.applicationExists
+    ? 'A'
+    : !enrolled
+      ? 'B'
+      : !args.assessmentCompleted
+        ? 'C'
+        : 'D';
+  // Legacy read training only for an assigned program, so nothing counts without one.
+  const completedCount = enrolled ? args.completedCount : 0;
+  return {
+    state,
+    // Account, program, preassessment, first course started, first course
+    // completed. A completed course is also a started one, so the last two
+    // collapse into one check.
+    checklistAllDone: enrolled && args.assessmentCompleted && completedCount >= 1,
+    completedCount,
+    ...(enrolled && args.programTitle ? { programTitle: args.programTitle } : {}),
+  };
+}
+
+/** Counselor-thread messages the member has not read, from the nested thread read. */
+export function countUnreadCounselorMessages(
+  thread: { memberLastReadAt: Date | null; messages: Array<{ createdAt: Date }> } | undefined,
+): number {
+  if (!thread) return 0;
+  const readAt = thread.memberLastReadAt?.getTime();
+  if (readAt === undefined) return thread.messages.length;
+  return thread.messages.filter((message) => message.createdAt.getTime() > readAt).length;
 }
 
 function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashboardHomeView {
   const firstName = displayFirstName(null, fallbackDisplayName);
   const badge = deriveNextBadge({ totalPoints: 0, certCount: 0 });
-  const doThisNext = fallbackDashboardHomeAction({
+  const { doThisNext, upNext } = resolveDashboardHomeActions({
+    persisted: [],
     enrolledProgram: null,
     assessmentCompleted: false,
     courseEnrollmentActive: false,
@@ -494,17 +887,103 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     toolkitHref: '/dashboard/ai-tools',
     jobsHref: '/dashboard/jobs',
     doThisNext,
+    upNext,
+    // No user row: nothing is known about the member's stage, so name no tool.
+    recommendedTool: null,
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
+    jobOffers: [],
+    first90: null,
+    youthNoticeAge: null,
+    // No member row to attach an event to (the retired legacy home redirected
+    // such sessions away; the kit home renders the empty shape instead).
+    dashboardViewFacts: null,
+    // No member row for the wizard to write to, and no enrollment to switch.
+    onboarding: null,
+    programSwitch: null,
     prismaOpCount: 1,
+  };
+}
+
+/**
+ * Which enrollment the home describes, with `getActiveProgramForDashboard`'s
+ * semantics (`resolveActiveDashboardProgram`): the primary enrollment (or the
+ * legacy `User.enrolledProgram`), unless `requestedProgramSlug` names one of
+ * the member's own enrollments. With no request this is exactly the slug the
+ * loader used before it read every enrollment.
+ */
+export function resolveHomeEnrollment(
+  row: Pick<DashboardUserRow, 'courseEnrollments' | 'enrolledProgram'>,
+  requestedProgramSlug: string | null | undefined,
+) {
+  const enrollments = row.courseEnrollments;
+  const primaryEnrollment = enrollments.find((enrollment) => enrollment.isPrimary === true) ?? null;
+  const resolved = resolveActiveDashboardProgram({
+    enrollments: enrollments.map((enrollment, index) => ({
+      id: enrollment.id ?? `enrollment-${index}`,
+      programSlug: enrollment.programSlug,
+      isPrimary: enrollment.isPrimary === true,
+      enrolledAt: enrollment.enrolledAt ?? new Date(0),
+    })),
+    legacyEnrolledProgram: row.enrolledProgram,
+    requestedProgramSlug,
+  });
+  const activeSlug = resolved.activeProgramSlug;
+  const viewingSecondary = Boolean(
+    activeSlug &&
+      resolved.primaryProgramSlug &&
+      !programSlugsEquivalent(activeSlug, resolved.primaryProgramSlug),
+  );
+  const activeEnrollment = activeSlug
+    ? enrollments.find((enrollment) => programSlugsEquivalent(enrollment.programSlug, activeSlug)) ?? null
+    : null;
+  // The primary view keeps reading the primary row exactly as before (its
+  // curriculum pin, "is there an enrollment"); a secondary view reads its own.
+  const pinnedEnrollment = viewingSecondary ? activeEnrollment : primaryEnrollment;
+  const programSwitch: DashboardProgramSwitch | null =
+    enrollments.length > 1 && activeSlug
+      ? {
+          options: enrollments.map((enrollment, index) => ({
+            id: enrollment.id ?? `enrollment-${index}`,
+            programSlug: enrollment.programSlug,
+            programTitle: programDisplayTitle(enrollment.programSlug),
+            isPrimary: enrollment.isPrimary === true,
+          })),
+          activeProgramSlug: activeEnrollment?.programSlug ?? activeSlug,
+          viewingSecondary,
+        }
+      : null;
+  return { activeSlug, primaryEnrollment, pinnedEnrollment, activeEnrollment, viewingSecondary, programSwitch };
+}
+
+/** The wizard / tour gate and the wizard's pre-filled intake, as the legacy home built them. */
+export function buildDashboardOnboarding(row: DashboardUserRow): DashboardOnboarding {
+  const onboardingDone = row.onboardingCompletedAt != null;
+  return {
+    showWizard: !onboardingDone,
+    showTour: onboardingDone && row.tourCompletedAt == null,
+    wizard: {
+      initialFullName: row.fullName ?? '',
+      initialPhone: row.profile?.profilePhone ?? row.phone ?? '',
+      initialAddress: row.profile?.profileAddress ?? '',
+      initialCity: row.profile?.city ?? '',
+      initialState: row.profile?.state ?? '',
+      initialZip: row.profile?.zip ?? '',
+      initialProgramInterest: row.applications?.[0]?.programInterest ?? row.programInterest ?? '',
+      initialReferralSource: row.profile?.referralSource ?? '',
+      initialStep: row.onboardingCurrentStep ?? 0,
+    },
   };
 }
 
 function shapeHome(args: {
   row: DashboardUserRow;
   fallbackDisplayName: string | null | undefined;
+  requestedProgramSlug?: string | null;
   prismaOpCount: number;
 }): MemberDashboardHomeView {
-  const assignedSlug = args.row.courseEnrollments[0]?.programSlug ?? args.row.enrolledProgram ?? null;
+  const home = resolveHomeEnrollment(args.row, args.requestedProgramSlug);
+  const { viewingSecondary } = home;
+  const assignedSlug = home.activeSlug;
   const inferredSlug =
     args.row.memberProgramProgress[0]?.programSlug ??
     args.row.courseProgress[0]?.programSlug ??
@@ -517,7 +996,7 @@ function shapeHome(args: {
         programSlugsEquivalent(course.programSlug, slug),
       )
     : [];
-  const pinnedCurriculumVersion = args.row.courseEnrollments[0]?.curriculumVersion;
+  const pinnedCurriculumVersion = home.pinnedEnrollment?.curriculumVersion;
   const validatedCourses = program && pinnedCurriculumVersion
     ? getProgramCoursesForCurriculumVersion(program, pinnedCurriculumVersion)
     : program?.syllabus && !program.curriculumMigrationPending
@@ -560,54 +1039,28 @@ function shapeHome(args: {
   // The cert-path card must name a module, not the hero action: when the top
   // next-best action is the preassessment (or a guide), the program still has a
   // first / next incomplete module to show. `doThisNext` keeps the hero as is.
+  // Both the WorkforceAP module page and My Program open any of the member's
+  // enrollments by its stored slug (`?program=`, WAP-196), so a secondary
+  // program's links name that program; the primary's need no parameter.
+  const secondaryProgramSlug = viewingSecondary ? home.activeEnrollment?.programSlug ?? slug : null;
   const nextModule = program && slug && nextIncompleteCourse
     ? {
         title: nextIncompleteCourse.name,
         href: isWorkforceApCourse(nextIncompleteCourse)
-          ? workforceApCourseHref(nextIncompleteCourse.slug, slug)
-          : `${MEMBER_PROGRAM_HREF}?course=${encodeURIComponent(nextIncompleteCourse.slug)}`,
+          ? workforceApCourseHref(nextIncompleteCourse.slug, secondaryProgramSlug ?? slug)
+          : memberProgramHrefFor({ program: secondaryProgramSlug, course: nextIncompleteCourse.slug }),
       }
     : null;
 
-  const programHref = MEMBER_PROGRAM_HREF;
+  const programHref = memberProgramHrefFor({ program: secondaryProgramSlug });
   // /dashboard/training only redirects back to /dashboard, so enrolled members
   // must resume on My Program — otherwise Continue/Resume is a do-loop.
   const resumeHref = programHref;
   const starterReview = getCounselorStarterProfileReview({
-    wasCounselorCreated: !!args.row.courseEnrollments[0]?.enrolledByAdminId,
+    wasCounselorCreated: !!home.primaryEnrollment?.enrolledByAdminId,
     phone: args.row.phone,
     ...args.row.profile,
   });
-  const doThisNext = resolveDashboardHomeNextAction({
-    noApplicationOnFile: args.row.applications ? args.row.applications.length === 0 : false,
-    starterProfileReviewRequired: starterReview.required,
-    starterProfileMissingFields: getStarterProfileFieldLabels(starterReview.missing),
-    persisted: args.row.nextBestActions,
-    enrolledProgram: assignedSlug,
-    assessmentCompleted: args.row.assessmentCompleted,
-    courseEnrollmentActive: args.row.courseEnrollments.length > 0,
-    completedCourseCount: completedCount,
-    jobApplicationCount: args.row._count.jobApplications,
-    trainingCoursesIncomplete: Boolean(program) && !allCoursesComplete,
-    nextIncompleteCourseName: nextIncompleteCourse?.name ?? null,
-    allCoursesComplete,
-  });
-
-  // One rolling-7-day definition for both the "this week" chip and the last
-  // point of the sparkline: same rows, same windows, computed once.
-  const pointsTrend = buildMemberPointsTrend({
-    transactions: args.row.pointsTransactions,
-    now: Date.now(),
-    truncated: args.row.pointsTransactions.length >= POINTS_TRANSACTION_TAKE,
-  });
-  const pointsThisWeek = pointsTrend.thisWeek;
-  const recentLedger = args.row.pointsTransactions.slice(0, 3);
-  const totalPoints = args.row.memberPoints?.totalPoints ?? 0;
-  const badge = deriveNextBadge({
-    totalPoints,
-    certCount: args.row._count.userCertifications,
-  });
-
   // Newest saved training activity across every course. `courseProgress` is
   // ordered by `lastActivityAt` desc, but Postgres sorts NULLs first on a
   // descending sort, so take the max rather than trusting row 0.
@@ -622,11 +1075,10 @@ function shapeHome(args: {
     if (!at) return latest;
     return !latest || at.getTime() > latest.getTime() ? at : latest;
   }, null);
-  // The same baseline the member program page uses for
-  // `isTrainingStaleForCounselorEscalation`: the later of enrolment and
-  // finishing the preassessment, and only once both are true. Using the
-  // program-enrolment date alone would call a member stale on their first day
-  // of actually being able to start, and would disagree with that page.
+  // Baseline (`trainingEligibleSince`): the later of enrolment and finishing
+  // the preassessment, and only once both are true. Using the program-enrolment
+  // date alone would call a member stale on their first day of actually being
+  // able to start.
   const courseProgressStale = isTrainingActivityStale({
     lastActivityAt: lastTrainingActivityAt,
     eligibleSince: trainingEligibleSince({
@@ -636,6 +1088,72 @@ function shapeHome(args: {
       assessmentCompletedAt: args.row.assessmentCompletedAt,
     }),
     staleDetectedAt: args.row.staleTrainingDetectedAt ?? null,
+  });
+
+  // The legacy home's `MemberStuckCounselorStrip`, as an "Up next" row: only
+  // while an assigned program still has courses left, so a member who has
+  // finished (or has no program) is never told their training went quiet.
+  const trainingStalled =
+    courseProgressStale && Boolean(assignedSlug) && Boolean(program) && !allCoursesComplete;
+
+  const hasResume = Boolean(args.row.profile?.resumeOriginalPath || args.row.profile?.resumeEnhancedPath);
+  const hasCompletedInterviewPractice = (args.row._count.memberEvents ?? 0) > 0;
+  const placement = args.row.placementRecord ?? null;
+  const placementSeparated = Boolean(
+    placement &&
+      (placement.retentionDecision === 'not_retained' || placement.retentionStatus === 'separated'),
+  );
+  const { doThisNext, upNext } = resolveDashboardHomeActions({
+    hasResume,
+    hasCompletedInterviewPractice,
+    counselorUnreadCount: countUnreadCounselorMessages(args.row.messageThreadsAsMember?.[0]),
+    placementPlacedAt: placement?.placedAt ?? null,
+    placementRetentionDecision: placement?.retentionDecision ?? null,
+    placementSeparated,
+    noApplicationOnFile: args.row.applications ? args.row.applications.length === 0 : false,
+    starterProfileReviewRequired: starterReview.required,
+    starterProfileMissingFields: getStarterProfileFieldLabels(starterReview.missing),
+    persisted: args.row.nextBestActions,
+    trainingStalled,
+    secondaryProgramSlug,
+    enrolledProgram: assignedSlug,
+    assessmentCompleted: args.row.assessmentCompleted,
+    courseEnrollmentActive: Boolean(home.pinnedEnrollment),
+    completedCourseCount: completedCount,
+    jobApplicationCount: args.row._count.jobApplications,
+    trainingCoursesIncomplete: Boolean(program) && !allCoursesComplete,
+    nextIncompleteCourseName: nextIncompleteCourse?.name ?? null,
+    allCoursesComplete,
+  });
+
+  const recommendedTool = recommendMemberTool(
+    {
+      enrolledProgram: assignedSlug,
+      assessmentCompleted: args.row.assessmentCompleted,
+      hasResume,
+      hasCompletedInterviewPractice,
+      // Every open row read, not just the card's four: an offer further down
+      // is still an offer, and the placement strip above names it.
+      openApplicationStatuses: args.row.jobApplications.map((job) => job.status),
+      placed: Boolean(placement?.placedAt) && !placementSeparated,
+      placementSeparated,
+    },
+    [doThisNext.href, ...upNext.map((action) => action.href)],
+  );
+
+  // One rolling-7-day definition for both the "this week" chip and the last
+  // point of the sparkline: same rows, same windows, computed once.
+  const pointsTrend = buildMemberPointsTrend({
+    transactions: args.row.pointsTransactions,
+    now: Date.now(),
+    truncated: args.row.pointsTransactions.length >= POINTS_TRANSACTION_TAKE,
+  });
+  const pointsThisWeek = pointsTrend.thisWeek;
+  const recentLedger = args.row.pointsTransactions.slice(0, 3);
+  const totalPoints = args.row.memberPoints?.totalPoints ?? 0;
+  const badge = deriveNextBadge({
+    totalPoints,
+    certCount: args.row._count.userCertifications,
   });
 
   // One resolver for "who is your counselor": the assignment is accepted only
@@ -673,7 +1191,7 @@ function shapeHome(args: {
     nextBadgeName: badge.nextBadgeName,
     nextBadgePercent: badge.nextBadgePercent,
     nextBadgeRemaining: badge.nextBadgeRemaining,
-    pipeline: mapPipelineRows(args.row.jobApplications),
+    pipeline: mapPipelineRows(args.row.jobApplications.slice(0, PIPELINE_ROW_LIMIT)),
     certModulesDone: completedCount,
     certModulesTotal: totalCourses,
     pointsLedger: mapPointsLedger(recentLedger),
@@ -685,18 +1203,92 @@ function shapeHome(args: {
     toolkitHref: '/dashboard/ai-tools',
     jobsHref: '/dashboard/jobs',
     doThisNext,
+    upNext,
+    recommendedTool,
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
+    jobOffers: args.row.jobApplications
+      .filter((job) => job.status === 'OFFER')
+      .map((job) => ({ id: job.id, role: job.role, company: job.company })),
+    first90: buildFirst90Card(placement, args.row.memberEvents ?? []),
+    youthNoticeAge: youthNoticeAgeFromDob(args.row.profile?.dob),
+    dashboardViewFacts: dashboardViewFacts({
+      applicationExists: (args.row.applications?.length ?? 0) > 0,
+      assignedProgramSlug: assignedSlug,
+      assessmentCompleted: args.row.assessmentCompleted,
+      completedCount,
+      programTitle: program?.title,
+    }),
+    onboarding: buildDashboardOnboarding(args.row),
+    programSwitch: home.programSwitch,
     prismaOpCount: args.prismaOpCount,
   };
 }
 
-function userSelect() {
+/** Unread counselor messages counted per thread; beyond this the row reads "you have unread messages" either way. */
+const UNREAD_MESSAGE_TAKE = 50;
+
+/**
+ * The one nested read. `satisfies Prisma.UserSelect` has the compiler check
+ * every relation and column here against the schema: `DashboardHomeTx` types
+ * the call loosely for the test double, so nothing else would.
+ */
+function userSelect(userId: string) {
   return {
     fullName: true,
     phone: true,
     organizationId: true,
-    profile: { select: { profilePhone: true, profileAddress: true, city: true, state: true, zip: true, referralSource: true } },
-    applications: { orderBy: { createdAt: 'desc' as const }, take: 1, select: { status: true, submittedAt: true } },
+    // First-login wizard / tour gate and the wizard's program fallback
+    // (the legacy home's separate intake read, folded in here).
+    onboardingCompletedAt: true,
+    onboardingCurrentStep: true,
+    tourCompletedAt: true,
+    programInterest: true,
+    profile: {
+      select: {
+        profilePhone: true,
+        profileAddress: true,
+        city: true,
+        state: true,
+        zip: true,
+        referralSource: true,
+        resumeOriginalPath: true,
+        resumeEnhancedPath: true,
+        dob: true,
+      },
+    },
+    // Same definition as `getMemberEngagementSignals`: messages in the
+    // member's thread written by anyone else, after `memberLastReadAt`. The
+    // read-time comparison is done in memory (a nested `_count` cannot
+    // reference a sibling column), so this stays one Prisma operation.
+    messageThreadsAsMember: {
+      take: 1,
+      select: {
+        memberLastReadAt: true,
+        messages: {
+          where: { authorId: { not: userId } },
+          orderBy: { createdAt: 'desc' as const },
+          take: UNREAD_MESSAGE_TAKE,
+          select: { createdAt: true },
+        },
+      },
+    },
+    // First 90 Days check-ins (one per stage, newest first) for the post-placement
+    // card. Interview practice, which used to hold this relation, is a filtered
+    // `_count` below: a relation can be selected only once per read.
+    memberEvents: {
+      where: { eventName: FIRST90_CHECK_IN_EVENT },
+      orderBy: { createdAt: 'desc' as const },
+      take: FIRST90_EVENT_TAKE,
+      select: { entityId: true, metadata: true, createdAt: true },
+    },
+    placementRecord: {
+      select: { placedAt: true, retentionDecision: true, retentionStatus: true, employerName: true },
+    },
+    applications: {
+      orderBy: { createdAt: 'desc' as const },
+      take: 1,
+      select: { status: true, submittedAt: true, programInterest: true },
+    },
     wioaReviewStatus: true,
     wioaReviewedAt: true,
     courseraEnrollmentApproved: true,
@@ -726,10 +1318,20 @@ function userSelect() {
         },
       },
     },
+    // Every enrollment, primary first (the order `getActiveProgramForDashboard`
+    // reads), so `?program=` can pick a secondary one and the switch can list
+    // them all without a second read.
     courseEnrollments: {
-      where: { isPrimary: true },
-      take: 1,
-      select: { programSlug: true, curriculumVersion: true, enrolledByAdminId: true, enrolledAt: true },
+      orderBy: [{ isPrimary: 'desc' as const }, { enrolledAt: 'desc' as const }],
+      take: COURSE_ENROLLMENT_TAKE,
+      select: {
+        id: true,
+        programSlug: true,
+        curriculumVersion: true,
+        isPrimary: true,
+        enrolledByAdminId: true,
+        enrolledAt: true,
+      },
     },
     courseProgress: {
       orderBy: [{ lastActivityAt: 'desc' as const }, { lastUpdatedAt: 'desc' as const }],
@@ -771,8 +1373,8 @@ function userSelect() {
     jobApplications: {
       where: { status: { notIn: [...PIPELINE_ROW_STATUSES_EXCLUDED] } },
       orderBy: { updatedAt: 'desc' as const },
-      take: 4,
-      select: { role: true, company: true, status: true, updatedAt: true },
+      take: OPEN_APPLICATION_TAKE,
+      select: { id: true, role: true, company: true, status: true, updatedAt: true },
     },
     goals: {
       where: { status: 'ACTIVE' },
@@ -802,9 +1404,13 @@ function userSelect() {
         jobApplications: {
           where: { status: { in: [...ACTIVE_APPLICATION_STATUSES] } },
         },
+        // Has the member ever finished an interview practice session.
+        memberEvents: {
+          where: { eventName: INTERVIEW_PRACTICE_COMPLETED_EVENT },
+        },
       },
     },
-  };
+  } satisfies Prisma.UserSelect;
 }
 
 async function fetchHomeRow(
@@ -814,7 +1420,7 @@ async function fetchHomeRow(
   return db.$transaction(async (tx) => {
     const row = await tx.user.findUnique({
       where: { id: userId },
-      select: userSelect(),
+      select: userSelect(userId),
     });
     if (!row) {
       return { row: null, prismaOpCount: 1 };
@@ -858,6 +1464,7 @@ export async function loadMemberDashboardHome(
   return shapeHome({
     row,
     fallbackDisplayName: args.fallbackDisplayName,
+    requestedProgramSlug: args.requestedProgramSlug,
     prismaOpCount,
   });
 }

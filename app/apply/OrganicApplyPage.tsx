@@ -19,7 +19,12 @@ import PreLaunchTag from '@/components/portal/PreLaunchTag';
 import type { SchoolApplyContext } from '@/lib/apply/resolveSchoolApply';
 import styles from './OrganicApplyPage.module.css';
 
-type OrganicApplyPageProps = { program?: string; schoolApply?: SchoolApplyContext | null };
+type OrganicApplyPageProps = {
+  program?: string;
+  schoolApply?: SchoolApplyContext | null;
+  /** "You were referred by {partner}…" — resolved server-side from ?ref=. */
+  partnerDisclosure?: React.ReactNode;
+};
 
 /* ─── styles ─── */
 const sPage = {
@@ -185,7 +190,7 @@ const SCHOOL_PROGRESS_STEPS = [
   { labelKey: 'stepProgramSelection', icon: 'key' },
 ] as const;
 
-export default async function OrganicApplyPage({ program: programParam, schoolApply = null }: OrganicApplyPageProps) {
+export default async function OrganicApplyPage({ program: programParam, schoolApply = null, partnerDisclosure = null }: OrganicApplyPageProps) {
   const programSlug = resolveApplyProgramSlug(programParam);
   const program = programSlug ? getProgramBySlug(programSlug) : undefined;
   const t = await getTranslations('apply');
@@ -230,6 +235,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           {t('questionsCall')}{' '}
           <a href="tel:+15127771808" className="apply-hero-help-compact__link">(512) 777-1808</a>
         </p>
+        {partnerDisclosure ? <div style={{ maxWidth: 640, margin: 'var(--space-4) auto 0' }}>{partnerDisclosure}</div> : null}
         <a href="#apply-form-start" className={`btn btn-primary apply-hero-start-cta ${styles.startAction}`}>
           {t('startYourApplication')}
         </a>
@@ -411,6 +417,10 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
         }
 
         .apply-hero-help-compact__link {
+          /* WAP-192: a call link is a real phone tap target; keep it 44px tall. */
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
           color: var(--color-on-accent);
           font-weight: 700;
           text-decoration: underline;

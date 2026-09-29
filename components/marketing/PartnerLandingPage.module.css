@@ -1,0 +1,26 @@
+/* Overrides on top of css/enroll-school.css for the /join/<code> page. */
+.steps3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.missionWrap :global(.sec-head) {
+  margin-bottom: 0;
+}
+
+@media (max-width: 680px) {
+  /* A dozen centred lines are hard to track on a phone. */
+  .missionWrap :global(.sec-head p) {
+    text-align: left;
+  }
+}
+
+.disclosureWrap {
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+@media (max-width: 880px) {
+  .steps3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

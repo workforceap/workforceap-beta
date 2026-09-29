@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getUser } from '@/lib/auth/server';
+import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { getCounselorAttention } from '@/lib/attention/counselor';
 import { toTodayQueue } from '@/lib/attention/counselorViews';
@@ -26,7 +27,7 @@ export default async function CounselorTodayPage() {
 
   const counselor = await isCounselor(user.id);
   const admin = await isAdmin(user.id);
-  if (!counselor && !admin) redirect('/dashboard');
+  if (!counselor && !admin) redirect(await deniedPortalHomeHref(user.id, 'counselor'));
 
   let attention = emptyAttentionQueue();
   let loadError = false;

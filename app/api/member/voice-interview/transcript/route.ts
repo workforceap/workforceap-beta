@@ -7,6 +7,7 @@ import { completeCareerOsInterviewActions } from '@/lib/workflows/completeCareer
 import { updateCoachMemory, type CoachTurn } from '@/lib/coach/memory';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { persistEvent } from '@/lib/events/track';
@@ -88,9 +89,14 @@ function hasMeaningfulUserPractice(transcript: TranscriptTurn[]) {
         });
       }
   
-      void updateCoachMemory({ userId: user.id, recentTurns: transcript as CoachTurn[] }).catch((err) => {
-        console.error('[voice-interview transcript] coach memory update failed:', err);
-      });
+      // The memory update is a paid model call on every POST. Meter it in its own
+      // bucket so it never spends the member's AI tool quota; skip it when over.
+      const lim = await checkAIToolRateLimit(`coach-memory:${user.id}`).catch(() => ({ success: false }));
+      if (lim.success) {
+        void updateCoachMemory({ userId: user.id, recentTurns: transcript as CoachTurn[] }).catch((err) => {
+          console.error('[voice-interview transcript] coach memory update failed:', err);
+        });
+      }
 
       const dbUser = await prisma.$transaction((tx) => tx.user.findUnique({
         where: { id: user.id },

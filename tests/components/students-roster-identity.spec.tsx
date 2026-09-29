@@ -58,7 +58,7 @@ describe('student account identity', () => {
       expect(card).toBeDefined();
       if (!card) throw new Error('Expected a mobile student card');
       const email = within(card).getByText(student.email);
-      expect(email).toHaveStyle({ overflowWrap: 'anywhere', whiteSpace: 'normal' });
+      expect(email).toHaveStyle({ overflowWrap: 'break-word', whiteSpace: 'normal' });
       await user.click(card);
       expect(mocks.push).toHaveBeenLastCalledWith(`/admin/members/${student.id}`);
     }

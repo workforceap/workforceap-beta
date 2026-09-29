@@ -20,6 +20,7 @@ import {
   type MemberApprovalStatus,
 } from '@/lib/member/memberApprovalStatus';
 import type { MemberCounselorContext } from '@/lib/member/counselorContext';
+import { applicationStatusLabel, intakeStatusLabel } from '@/lib/status/applicationStatusVocabulary';
 
 const STAGE_ORDER: ApprovalStageKey[] = ['application', 'intake', 'training'];
 
@@ -63,6 +64,10 @@ export default function MemberApprovalStatusCard({
   counselorContext?: MemberCounselorContext | null;
 }) {
   const t = useTranslations('memberApproval');
+  // Application and intake words come from the shared status vocabulary
+  // (`status.*.member.*`, lib/status/applicationStatusVocabulary.ts), so the
+  // card reads the same way as every other surface that names these states.
+  const tStatus = useTranslations('status');
   const locale = useLocale();
   const dateLabel = (date: string) => formatDate(date, isAppLocale(locale) ? locale : DEFAULT_LOCALE);
 
@@ -99,8 +104,8 @@ export default function MemberApprovalStatusCard({
   }, [storageKey]);
 
   const statusText = (stage: ApprovalStageKey) => {
-    if (stage === 'application') return t(`applicationStatus.${status.application}`);
-    if (stage === 'intake') return t(`intakeStatus.${status.intake}`);
+    if (stage === 'application') return applicationStatusLabel(status.application, 'member', tStatus);
+    if (stage === 'intake') return intakeStatusLabel(status.intake, 'member', tStatus);
     return t(`trainingStatus.${status.training}`);
   };
 

@@ -1,18 +1,38 @@
 import { prisma } from '@/lib/db/prisma';
 
-/* Setup tasks weighted lower; high-value outcomes weighted higher */
+/**
+ * Setup tasks weighted lower; high-value outcomes weighted higher. The ten
+ * weights sum to exactly 100, so the score IS the points earned — no cap.
+ *
+ * History: until 2026-09 the weights summed to 105 (20/5, 5/10/15/5, 15/15,
+ * 10/5) and the score was `min(100, earned)`, so the ring said "/ 100" while
+ * the recap said "of 105 points". Rescaled by largest-remainder rounding:
+ * areas 25/35/30/15 → 24/33/29/14, then items inside each area, with the one
+ * tie (Interview & Jobs 14.5/14.5) broken toward addApplications so its
+ * 3 applications × 5 = 15 partial credit stays whole.
+ */
 const WEIGHTS = {
   completeProfile: 5,
-  setGoals: 10,
-  buildResume: 20,
-  complete2Resources: 10,
-  practiceInterview: 15,
+  setGoals: 9,
+  buildResume: 19,
+  complete2Resources: 9,
+  practiceInterview: 14,
   startPathway: 5,
-  completePathwaySteps: 15,
+  completePathwaySteps: 14,
   addApplications: 15,
   trackCertifications: 5,
   weeklyConsistency: 5,
 };
+
+/** Counts at which the partial-credit items reach full points (unchanged by the rescale). */
+const FULL_AT = { resources: 2, pathwaySteps: 5, applications: 3 };
+
+/** Proportional partial credit, rounded to whole points and capped at `max`. */
+function partialCredit(count: number, fullAt: number, max: number): number {
+  return Math.min(max, Math.round((count / fullAt) * max));
+}
+
+export const READINESS_SCORE_MAX = Object.values(WEIGHTS).reduce((sum, w) => sum + w, 0);
 
 export type ScoreBreakdown = {
   completeProfile: { earned: number; max: number; done: boolean };
@@ -105,7 +125,7 @@ export function buildScoreBreakdownFromRelations(
       done: hasResume,
     },
     complete2Resources: {
-      earned: Math.min(resourcesCompleted * 5, WEIGHTS.complete2Resources),
+      earned: partialCredit(resourcesCompleted, FULL_AT.resources, WEIGHTS.complete2Resources),
       max: WEIGHTS.complete2Resources,
       done: resourcesCompleted >= 2,
     },
@@ -120,12 +140,12 @@ export function buildScoreBreakdownFromRelations(
       done: hasPathway,
     },
     completePathwaySteps: {
-      earned: Math.min(pathwayStepsCompleted * 3, WEIGHTS.completePathwaySteps),
+      earned: partialCredit(pathwayStepsCompleted, FULL_AT.pathwaySteps, WEIGHTS.completePathwaySteps),
       max: WEIGHTS.completePathwaySteps,
       done: pathwayStepsCompleted >= 3,
     },
     addApplications: {
-      earned: Math.min(appCount * 5, WEIGHTS.addApplications),
+      earned: partialCredit(appCount, FULL_AT.applications, WEIGHTS.addApplications),
       max: WEIGHTS.addApplications,
       done: appCount >= 3,
     },
@@ -142,12 +162,14 @@ export function buildScoreBreakdownFromRelations(
   };
 }
 
+/** The readiness score: points earned across the ten items (weights sum to 100). */
+export function sumReadinessPoints(breakdown: ScoreBreakdown): number {
+  return Object.values(breakdown).reduce((sum, b) => sum + b.earned, 0);
+}
+
 export async function computeReadinessScore(userId: string): Promise<number> {
   const breakdown = await getScoreBreakdown(userId);
-  return Math.min(
-    100,
-    Object.values(breakdown).reduce((sum, b) => sum + b.earned, 0)
-  );
+  return sumReadinessPoints(breakdown);
 }
 
 export async function getScoreBreakdown(userId: string): Promise<ScoreBreakdown> {

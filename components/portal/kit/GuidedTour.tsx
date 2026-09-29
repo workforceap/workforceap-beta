@@ -92,8 +92,20 @@ function layoutPopover(rect: DOMRect, placement: TourPlacement | undefined, popW
   return { top, left, width: popW };
 }
 
-function findAnchor(targetId: string): HTMLElement | null {
+function queryAnchor(targetId: string): HTMLElement | null {
   return document.querySelector<HTMLElement>(`[data-tour="${targetId}"]`);
+}
+
+/**
+ * The step's anchor when the person can actually see and reach it. An anchor
+ * inside an `inert` / `aria-hidden` subtree — at phone width, every rail row
+ * in the closed drawer (WorkspaceShell) — is skipped like a missing one;
+ * spotlighting it put the highlight off-screen (WAP-228).
+ */
+function findAnchor(targetId: string): HTMLElement | null {
+  const el = queryAnchor(targetId);
+  if (!el || el.closest('[inert], [aria-hidden="true"]')) return null;
+  return el;
 }
 
 const SPOTLIGHT_PAD = 8;
@@ -149,7 +161,7 @@ const footerStyle: CSSProperties = {
 export function GuidedTour() {
   const t = useTranslations('tours');
   const announce = useAnnounce();
-  const { isOpen, currentStep, steps, endTour, completeTour, nextStep, prevStep, goToStep } = useTour();
+  const { isOpen, currentStep, steps, endTour, abandonTour, completeTour, nextStep, prevStep, goToStep } = useTour();
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [popover, setPopover] = useState<PopoverLayout | null>(null);
   const primaryRef = useRef<HTMLButtonElement>(null);
@@ -176,7 +188,12 @@ export function GuidedTour() {
       resolved++;
     }
     if (resolved >= steps.length) {
-      void completeTour();
+      // Nothing to point at. When no anchor exists on the page the tour has
+      // nothing to teach here and completes, as before. When anchors exist
+      // but all are hidden (phone drawer), close without recording, so the
+      // person still gets the tour where they can see it (WAP-228).
+      if (steps.some((s) => queryAnchor(s.targetId))) abandonTour();
+      else void completeTour();
       return;
     }
     if (resolved !== currentStep) {
@@ -195,7 +212,7 @@ export function GuidedTour() {
     const popW = Math.min(340, window.innerWidth - 24);
     const popH = dialogRef.current?.offsetHeight ?? 240;
     setPopover(layoutPopover(rect, current.placement, popW, popH));
-  }, [isOpen, steps, currentStep, completeTour, goToStep, dialogRef]);
+  }, [isOpen, steps, currentStep, completeTour, abandonTour, goToStep, dialogRef]);
 
   useEffect(() => {
     if (!isOpen) return;

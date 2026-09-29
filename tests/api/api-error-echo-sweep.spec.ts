@@ -294,6 +294,7 @@ describe('staff routes keep upstream error text server-side', () => {
   it('PATCH /api/admin/members/[id]/partner', async () => {
     h.fn('user.findFirst').mockResolvedValue({ id: 'm1', deletedAt: null });
     h.fn('partner.findFirst').mockResolvedValue({ id: '3f1d2b4e-8c6a-4f2e-9b1d-2a3c4d5e6f70' });
+    h.fn('partnerReferral.findMany').mockResolvedValue([]);
     h.fn('partnerReferral.deleteMany').mockRejectedValue(new Error(UPSTREAM));
     const res = await memberPartner(
       req('/api/admin/members/m1/partner', 'PATCH', JSON.stringify({ partnerId: '3f1d2b4e-8c6a-4f2e-9b1d-2a3c4d5e6f70' })),

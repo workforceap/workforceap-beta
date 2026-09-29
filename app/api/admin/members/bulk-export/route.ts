@@ -13,6 +13,7 @@ import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress
 import { formatPhone } from '@/lib/formatPhone';
 import { MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { csvEscape } from '@/lib/csv';
 
 const MAX_MEMBERS = 500;
 
@@ -20,10 +21,13 @@ const bodySchema = z.object({
   memberIds: z.array(z.string().uuid()).min(1).max(MAX_MEMBERS),
 });
 
-function csvEscape(s: string | number | null | undefined): string {
-  const str = s == null ? '' : String(s);
-  if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
-  return str;
+/**
+ * One CSV cell through the shared `lib/csv.ts` escaper, which quotes and
+ * neutralises a leading `= + - @ TAB CR` so a member-typed value opens in
+ * Excel or Sheets as text, not a formula (S01/P02).
+ */
+function csvCell(value: string | number | null | undefined): string {
+  return csvEscape(String(value ?? ''));
 }
 
 async function _POST(request: NextRequest) {
@@ -211,7 +215,7 @@ async function _POST(request: NextRequest) {
       ];
     });
 
-    const lines = [headers.map(csvEscape).join(','), ...rows.map((r) => r.map(csvEscape).join(','))];
+    const lines = [headers.map(csvCell).join(','), ...rows.map((r) => r.map(csvCell).join(','))];
     const csv = lines.join('\n');
 
     await auditLog({
@@ -234,6 +238,7 @@ async function _POST(request: NextRequest) {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="members-export-${new Date().toISOString().slice(0, 10)}.csv"`,
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {

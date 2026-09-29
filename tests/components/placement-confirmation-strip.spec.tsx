@@ -62,11 +62,62 @@ describe('PlacementConfirmationStrip tells the member what the confirmation did'
     expect(screen.queryByText(/Did you accept the role at Acme/)).toBeNull();
   });
 
-  it('the acknowledgement paints from --wa-* tokens only', async () => {
+  it('the acknowledgement is a kit card on --wa-* tokens with a lucide icon (WAP-194)', async () => {
     const { status } = await confirmAcme('unchanged');
+    expect(status.className).toContain('wa-kit-card');
+    expect(status.className).toContain('wa-kit-tone--ok');
+    expect(status.className).toContain('wa-kit-tone-edge');
+    expect(status.querySelector('.material-symbols-outlined')).toBeNull();
+    expect(status.querySelector('.wa-kit-tone-icon svg.lucide')).not.toBeNull();
     const styles = inlineStyles(status.parentElement as HTMLElement);
     expect(styles).not.toMatch(HEX);
-    expect(styles).toContain('background: var(--wa-success-dark)');
-    expect((styles.match(/var\(--wa-on-success\)/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(styles).not.toMatch(/rgba?\(/);
+    expect(styles).not.toMatch(/var\(--color-/);
+    expect(styles).toContain('color: var(--wa-success-dark)');
+  });
+
+  it('a failed record write is acknowledged in the warn tone, not the success one', async () => {
+    const { status } = await confirmAcme('failed');
+    expect(status.className).toContain('wa-kit-tone--warn');
+    expect(inlineStyles(status)).toContain('color: var(--wa-gold-dark)');
+  });
+
+  it('the offer question is a kit card: lucide icon, --wa-* paints, kit pill buttons (WAP-194)', () => {
+    const view = render(<Strip offers={[{ id: 'o1', company: 'Acme' }]} variant="kit" />);
+    const card = view.container.querySelector('section')!.firstElementChild as HTMLElement;
+    expect(card.className).toContain('wa-kit-card');
+    expect(card.className).toContain('wa-kit-tone--ok');
+    expect(view.container.querySelector('.material-symbols-outlined')).toBeNull();
+    expect(card.querySelector('svg.lucide')).not.toBeNull();
+    const styles = inlineStyles(view.container);
+    expect(styles).not.toMatch(HEX);
+    expect(styles).not.toMatch(/rgba?\(/);
+    expect(styles).not.toMatch(/var\(--color-/);
+    expect(screen.getByRole('button', { name: /notify my team/ }).className).toContain('wa-kit-cta');
+    const later = screen.getByRole('button', { name: 'Not right now' });
+    expect(later.className).toContain('wa-kit-cta');
+    expect(later.className).toContain('wa-kit-cta--ghost');
+  });
+
+  it('legacy (default) keeps its own gutter; kit sits flush in the kit column and spaces stacked offers with a gap', () => {
+    const offers = [{ id: 'o1', company: 'Acme' }, { id: 'o2', company: 'Beta' }];
+    const legacy = render(<Strip offers={offers} />);
+    const legacySection = legacy.container.querySelector('section') as HTMLElement;
+    expect(legacySection.style.padding).toBe('0px 1.25rem');
+    expect(legacySection.style.marginBottom).toBe('1.25rem');
+    for (const card of Array.from(legacySection.children) as HTMLElement[]) expect(card.style.marginBottom).toBe('1rem');
+    legacy.unmount();
+
+    // WAP-188: on the kit home the column (wa-space-y-6) owns the inline edge and the gap to its neighbours.
+    const kit = render(<Strip offers={offers} variant="kit" />);
+    const kitSection = kit.container.querySelector('section') as HTMLElement;
+    expect(kitSection.style.padding).toBe('');
+    expect(kitSection.style.margin).toBe('');
+    expect(kitSection.style.marginBottom).toBe('');
+    expect(kitSection.style.display).toBe('grid');
+    expect(kitSection.style.gap).toBe('1rem');
+    const cards = Array.from(kitSection.children) as HTMLElement[];
+    expect(cards).toHaveLength(2);
+    for (const card of cards) expect(card.style.marginBottom).toBe('');
   });
 });

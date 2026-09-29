@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import NextLink from 'next/link';
 import {
   CircleCheck,
   TriangleAlert,
@@ -13,12 +12,11 @@ import {
   CircleHelp,
 } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { PageOpener } from '@/components/portal/kit';
 import { EmbeddableFrame } from './EmbeddableFrame';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Coursera Sync — sync-status card + unmatched-learners list (dense).
@@ -285,15 +283,14 @@ export function CourseraSyncKit({
             ))}
           </div>
 
-          <AstryxLink href={forceSyncHref} as={NextLink as never} isStandalone style={{ display: 'block', marginTop: 18 }}>
-            <Button
-              label="Open sync tools"
-              variant="primary"
-              size="sm"
-              icon={<RefreshCw size={14} />}
-              style={{ width: '100%' }}
-            />
-          </AstryxLink>
+          <KitLinkButton
+            href={forceSyncHref}
+            label="Open sync tools"
+            variant="primary"
+            size="sm"
+            icon={<RefreshCw size={14} />}
+            style={{ display: 'flex', width: '100%', marginTop: 18 }}
+          />
           <p
             style={{
               marginTop: 8,
@@ -394,9 +391,7 @@ export function CourseraSyncKit({
                       {row.caption}
                     </div>
                   </div>
-                  <AstryxLink href={row.href} as={NextLink as never} isStandalone style={{ flexShrink: 0 }}>
-                    <Button label="Link" variant="secondary" size="sm" icon={<Link2 size={12} />} />
-                  </AstryxLink>
+                  <KitLinkButton href={row.href} label="Link" variant="secondary" size="sm" icon={<Link2 size={12} />} style={{ flexShrink: 0 }} />
                 </Card>
               ))}
             </div>

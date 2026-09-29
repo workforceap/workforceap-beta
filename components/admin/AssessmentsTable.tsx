@@ -9,6 +9,7 @@ import { ASSESSMENT_QUESTIONS_PUBLIC as ASSESSMENT_QUESTIONS } from '@/lib/asses
 import { formatPhone } from '@/lib/formatPhone';
 import DataTable from '@/components/portal/ui/DataTable';
 import PortalPagination from '@/components/portal/PortalPagination';
+import { csvCell } from '@/lib/csv/cells';
 
 type AssessmentUser = {
   id: string;
@@ -97,10 +98,10 @@ export default function AssessmentsTable({
       u.email,
       u.phone ?? '',
       u.programInterest ?? '',
-      String(u.assessmentScorePct ?? ''),
+      u.assessmentScorePct ?? '',
       u.assessmentCompletedAt?.toISOString() ?? '',
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const csv = [headers.join(','), ...rows.map((r) => r.map(csvCell).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

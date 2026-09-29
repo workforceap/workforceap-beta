@@ -245,31 +245,44 @@ describe('GET /api/cron/applicant-followup', () => {
 });
 
 describe('applicantChaseHtml', () => {
-  const dashboardUrl = 'https://www.workforceap.org/dashboard';
+  const programUrl = 'https://www.workforceap.org/dashboard/program';
 
   it('never promises a review date and never uses eligibility language', () => {
     for (const stage of ['day10', 'day20'] as const) {
-      const html = applicantChaseHtml({ firstName: 'Taylor', stage, dashboardUrl });
+      const html = applicantChaseHtml({ firstName: 'Taylor', stage, programUrl });
       expect(html).toContain('Hi Taylor,');
       expect(html).not.toMatch(/we expect to have an update/i);
       expect(html).not.toMatch(/business days/i);
       expect(html).not.toMatch(/eligib/i);
       expect(html).not.toMatch(/undefined/);
-      expect(html).toContain(dashboardUrl);
+      expect(html).toContain(programUrl);
+    }
+  });
+
+  it('opens My Program, where the program picker lives, from both program-choice links', () => {
+    for (const stage of ['day10', 'day20'] as const) {
+      const html = applicantChaseHtml({ firstName: 'Taylor', stage, programUrl });
+      const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+      expect(hrefs).toContain(programUrl);
+      // No body link sends the applicant to the member home to find the picker.
+      expect(hrefs).not.toContain('https://www.workforceap.org/dashboard');
+      expect(html).toContain('My Program');
     }
   });
 
   it('escalates honestly between the two later stages', () => {
-    const day10 = applicantChaseHtml({ firstName: 'Taylor', stage: 'day10', dashboardUrl });
-    const day20 = applicantChaseHtml({ firstName: 'Taylor', stage: 'day20', dashboardUrl });
+    const day10 = applicantChaseHtml({ firstName: 'Taylor', stage: 'day10', programUrl });
+    const day20 = applicantChaseHtml({ firstName: 'Taylor', stage: 'day20', programUrl });
     expect(day10).toMatch(/still in our review queue/);
     expect(day10).toMatch(/Choose the career program/);
+    // Reads cleanly once rendered: no doubled preposition before "My Program".
+    expect(day10.replace(/<[^>]+>/g, '')).not.toMatch(/\bin in\b/);
     expect(day20).toMatch(/haven't forgotten you/);
     expect(day20).toMatch(/reply and let us know/);
     expect(day10).not.toBe(day20);
   });
 
   it('escapes the first name', () => {
-    expect(applicantChaseHtml({ firstName: '<b>x</b>', stage: 'day10', dashboardUrl })).not.toContain('<b>x</b>');
+    expect(applicantChaseHtml({ firstName: '<b>x</b>', stage: 'day10', programUrl })).not.toContain('<b>x</b>');
   });
 });

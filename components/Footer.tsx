@@ -110,7 +110,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
         <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {t('copyright', { year })}
         </p>
-        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', opacity: 0.6, marginTop: '0.75rem', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.75rem', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
           {t('onetAttribution')}{' '}
           <a href="https://services.onetcenter.org/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-on-surface-variant)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: '44px', minWidth: '44px', padding: '0.75rem 0.5rem' }}>
             O*NET Web Services

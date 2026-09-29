@@ -33,9 +33,13 @@
     "myAccount": "My account",
     "myProgram": "My program",
     "myCertificates": "My certificates",
+    "pathToCertification": "Path to certification",
+    "myDocuments": "My documents",
+    "inviteFriend": "Invite a friend",
     "wioaQualification": "WIOA Qualification",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
+    "aiAdvisor": "AI Advisor",
     "trainingPreassessment": "Training preassessment",
     "counselorChat": "Messages",
     "aboutUs": "About Us",
@@ -61,6 +65,7 @@
     "collapseSidebar": "Collapse sidebar",
     "workspaceTabs": "Workspace tabs",
     "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "pendingApplicationsCount": "{count, plural, one {# waiting on an employer} other {# waiting on employers}}",
     "mobileBottomNav": {
       "ariaLabel": "Primary mobile navigation",
       "marketing": {
@@ -73,6 +78,7 @@
         "overview": "Overview",
         "jobs": "Jobs",
         "pipeline": "Pipeline",
+        "workQueue": "Queue",
         "messages": "Messages"
       },
       "counselor": {
@@ -86,6 +92,7 @@
       "partner": {
         "overview": "Overview",
         "members": "Members",
+        "attention": "Attention",
         "messages": "Messages",
         "milestones": "Milestones",
         "outcomes": "Outcomes"
@@ -93,7 +100,8 @@
       "admin": {
         "today": "Today",
         "students": "Students",
-        "messages": "Messages"
+        "messages": "Messages",
+        "applications": "Applications"
       }
     },
     "freeCareerQuiz": "Free Career Quiz",
@@ -510,6 +518,15 @@
     "voiceInterviewMetaDesc": "Practice a live voice mock interview for a specific job or role, with optional camera recording and real-time coaching feedback.",
     "assessmentMetaTitle": "Training Preassessment",
     "assessmentMetaDesc": "A short skills check that helps place you. Completing it does not unlock Coursera.",
+    "interviewSteps": {
+      "preScreeningTitle": "Pre-screening",
+      "preScreeningLede": "The step before your interview.",
+      "interviewTitle": "Interview",
+      "eligible": "You’re interview eligible.",
+      "submitted": "Pre-screening submitted. A counselor will review it and reach out by email.",
+      "requested": "We received your interview request on {date}. A counselor will reach out by email."
+    },
+    "weeklyRecapOpenGoals": "Open your goals",
     "programMetaTitle": "My Program",
     "programMetaDesc": "View or select your enrolled program.",
     "mentorMetaTitle": "Mentor Dashboard",
@@ -719,6 +736,30 @@
     "screeningSectionTitle": "Eligibility screening details",
     "ageGroupLabel": "Age group *",
     "ageGroupPlaceholder": "Select age group",
+    "ageGroupOptions": {
+      "under_18": "Under 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50+"
+    },
+    "gradeLevelOptions": {
+      "9": "9th grade",
+      "10": "10th grade",
+      "11": "11th grade",
+      "12": "12th grade",
+      "other": "Other / recent graduate"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Need in-demand occupation or certificate training",
+      "no_barrier": "No barrier right now",
+      "employment_gap": "Employment gap",
+      "limited_work_history": "Limited work history",
+      "snap_tanf_wic": "SNAP / TANF / Food Stamps / WIC",
+      "justice_involved": "Background / justice involvement",
+      "disability_health": "Disability or health barrier",
+      "housing_instable": "Housing instability",
+      "other_barrier": "Other barrier"
+    },
     "countyLabel": "County *",
     "primaryBarriersLabel": "Primary barrier(s) — check all that apply *",
     "primaryBarriersAria": "Primary barriers",
@@ -902,6 +943,9 @@
     "accountContactConsent": "I agree to be contacted",
     "accountContactConsentRest": "by WorkforceAP about my application by email or phone. *",
     "accountConsentHint": "Required so an advisor can follow up about your next step. See our",
+    "partnerDisclosureLabel": "Your referral partner",
+    "partnerDisclosureRestricted": "You were referred by {partner}. {partner} will be able to see your application status and progress in WorkforceAP: your name, your application status and the date you applied, the program you enroll in, how far along you are, the names of certifications you earn, and whether and when you start a job. {partner} will not see your email, phone number, address, employment or education details, employer, job title, or pay.",
+    "partnerDisclosureFull": "You were referred by {partner}. {partner} will be able to see your application status and progress in WorkforceAP, along with some contact and profile details: your name and email address; your city, state, and ZIP code; your employment status and education level; the program you enroll in and how far along you are; the certifications you earn; and, once WorkforceAP confirms a job placement, your employer, job title, pay, and job follow-up.",
     "accountCreating": "Creating your account…",
     "accountSubmitCta": "Save my spot and create login",
     "accountProfileLater": "You can come back later to finish your profile.",
@@ -924,6 +968,15 @@
     "errSummaryGeneric": "Please fix the highlighted fields and try again.",
     "errProgramsNotSaved": "Your program selections weren't saved — please go back to step 2 and choose at least one program.",
     "errAccountGeneric": "We could not finish creating your account. Please review your information and try again, or call (512) 777-1808.",
+    "errEmailExists": "An account with this email already exists. Log in to continue, or reset your password if you are returning.",
+    "errAccountRecovery": "An account with this email already exists. If you cannot sign in, call WorkforceAP at (512) 777-1808 for help recovering it.",
+    "errAlreadySignedIn": "You are already signed in to another account. Sign out first, then create the new account.",
+    "errRateLimited": "Too many signup attempts. Please wait a few minutes and try again.",
+    "errRequestUnreadable": "We could not read your signup details. Refresh the page and try again.",
+    "errServiceUnavailable": "Signup is temporarily unavailable. Please try again shortly, or call (512) 777-1808.",
+    "errSecurityCheckRequired": "Please complete the security check.",
+    "errSecurityCheckFailed": "The security check did not pass. Please try it again.",
+    "errProgramUnmatched": "We could not match your program choice. Go back to step 2 and choose your program again.",
     "errNetwork": "We could not reach the server to finish creating your account. Check your internet connection and try again, or call (512) 777-1808 if it keeps failing.",
     "confirmationMetaTitle": "You're in the WorkforceAP system",
     "confirmationMetaDescription": "Your application is on file. Check your inbox and spam folder for confirmation and follow-up about next steps.",
@@ -1076,6 +1129,26 @@
     "missingHome": "Back to home",
     "missingMetaTitle": "School enrollment page not found"
   },
+  "partnerLanding": {
+    "metaTitle": "Apply to WorkforceAP with {partner}",
+    "eyebrow": "Referred by {partner}",
+    "title": "{partner} invited you to WorkforceAP",
+    "applyCta": "Start your application",
+    "applyCtaNote": "Applying from this page connects your application to {partner}.",
+    "programsEyebrow": "Program highlights",
+    "programsTitle": "Career training you can explore",
+    "programsBody": "A few of the programs available through WorkforceAP. You choose your program when you apply.",
+    "stepsEyebrow": "How it works",
+    "stepsTitle": "Three steps from here",
+    "privacyTitle": "What {partner} will see",
+    "closingTitle": "Ready when you are"
+  },
+  "mission": {
+    "heading": "Our mission",
+    "aboutHeading": "About WorkforceAP",
+    "statement": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. WorkforceAP equips individuals, nonprofits, counselors, and community ambassadors with workforce-readiness tools, occupational training and professional certification programs, and AI-powered résumé, interview, and job-placement assistance. Our mission is to help people secure meaningful employment, build sustainable careers, and create better lives—at no cost to eligible members through grant- and scholarship-funded memberships.",
+    "summary": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. At no cost to eligible members through grant- and scholarship-funded memberships."
+  },
   "training": {
     "myTraining": "My Training",
     "course": "Course",
@@ -1130,7 +1203,16 @@
     "noMessagesYet": "No messages yet",
     "yourCounselor": "Your counselor",
     "workforceapSupport": "WorkforceAP support",
-    "supportTeam": "Support team"
+    "supportTeam": "Support team",
+    "kitLede": "Counselor and support in one inbox.",
+    "conversations": "Conversations",
+    "unreadMessage": "Unread message",
+    "backToMessages": "Back to messages",
+    "sendFailed": "Send failed",
+    "networkError": "Network error",
+    "composerPlaceholder": "Message {name}…",
+    "feedbackDraftNotice": "Review your course details and any saved project link before sending. Your private notes are not shared.",
+    "feedbackUnavailable": "We could not load that assigned course. You can still write your message below."
   },
   "profile": {
     "edit": "Edit profile",
@@ -1535,6 +1617,10 @@
     "nextActionCelebrateTip": "Your referrals are landing jobs. Keep the pipeline full.",
     "nextActionReviewProgress": "Track member progress",
     "nextActionReviewProgressTip": "Members are moving through their journey — follow their outcomes.",
+    "nextActionAttention": "{count, plural, =0 {No one needs attention right now} =1 {1 member needs attention} other {# members need attention}}",
+    "nextActionAttentionTip": "Members who stalled or went quiet. Check in before they drop off.",
+    "nextActionAttentionUnavailable": "Couldn't load who needs attention",
+    "nextActionAttentionUnavailableTip": "The count is unknown, not zero. Open the queue to see it.",
     "assistantSpeaking": "Assistant is speaking…",
     "assistantListening": "Listening — ask your question",
     "referredMembersTableSubtitle": "Name, journey status, enrollment and placement dates, and each member's contribution to your estimated payout.",
@@ -2885,7 +2971,7 @@
       "phone": "Phone (optional)",
       "password": "Create a password",
       "passwordPlaceholder": "At least 8 characters",
-      "passwordHelp": "First time here? Create a password. Already have an account? Leave this blank.",
+      "passwordHelp": "First time here? Create a password. Already have an account? Sign in first, then leave this blank.",
       "accepting": "Accepting…",
       "accept": "Accept Invitation",
       "roles": {
@@ -2904,7 +2990,9 @@
         "alreadyAccepted": "This invitation has already been accepted. Sign in to your account.",
         "expired": "This invitation has expired. Ask your WorkforceAP contact to resend it.",
         "nameRequired": "Enter your full name.",
-        "newAccountRequired": "New accounts need your full name and a password with at least 8 characters.",
+        "newAccountRequired": "New accounts need a password with at least 8 characters. If you already have an account, sign in or reset your password, then return to this invitation.",
+        "accountRecoveryRequired": "An account with this email already exists. Sign in or reset your password, then return to this invitation.",
+        "identityReviewRequired": "We couldn't match this invitation to the account on file. Contact WorkforceAP support for help.",
         "signupUnavailable": "Account signup is temporarily unavailable. If this continues, contact support.",
         "loadFailed": "We couldn’t load this invitation. Please try again shortly.",
         "codeFailed": "We couldn’t check that code. Try again in a moment.",
@@ -3050,6 +3138,8 @@
       "adding": "Adding…"
     },
     "form": {
+      "typeLabel": "Goal type",
+      "titleLabel": "Goal title",
       "customPlaceholder": "Or type a custom goal",
       "adding": "Adding…",
       "addGoal": "Add goal",
@@ -3386,22 +3476,6 @@
         "unknown": "No training approval is recorded yet. Staff update this step once it is decided."
       }
     },
-    "applicationStatus": {
-      "not_submitted": "No application on file",
-      "pending": "Pending review",
-      "needs_info": "More information requested",
-      "approved": "Application approved",
-      "denied": "Application closed",
-      "unknown": "Status not recorded"
-    },
-    "intakeStatus": {
-      "pending": "Review pending",
-      "in_review": "In review",
-      "verified": "Intake verified by staff",
-      "not_eligible": "Staff recorded not eligible",
-      "needs_info": "More information requested",
-      "unknown": "Status not recorded"
-    },
     "trainingStatus": {
       "approved": "Training approved",
       "pending": "Not yet approved",
@@ -3727,12 +3801,12 @@
           "body": "See who needs you today, where your students and programs live, how training progress is tracked and where member messages wait for a reply."
         },
         "commandCenter": {
-          "title": "Command Center",
-          "body": "Your home base. Active Students, Placements YTD and who needs attention sit at the top, then What needs you today: replies owed, applications and certifications awaiting review, interview prep. Every row links to the page that acts on it."
+          "title": "Today",
+          "body": "Your home base. Waiting on your decision comes first: every application and intake check in your organization, oldest first, each opening the screen where you decide it. What needs you today follows (applications, certificates, new applicants with no counselor, replies owed, interview prep), then the organization's numbers."
         },
         "overview": {
           "title": "Detailed overview",
-          "body": "The full picture behind the Command Center: total members, assessments completed, who is active in training, programs enrolled and completed, plus recent signups and placements. Come here for the numbers, not just the queue."
+          "body": "The full picture behind Today: total members, assessments completed, who is active in training, programs enrolled and completed, plus recent signups and placements. Come here for the numbers, not just the queue."
         },
         "students": {
           "title": "Students",
@@ -3744,11 +3818,11 @@
         },
         "programs": {
           "title": "Programs",
-          "body": "The training programs you offer, one card per program with learners enrolled and completion. Program requests, students asking to switch, sit right below it."
+          "body": "The training programs you offer, one card per program with learners enrolled and completion. Career paths open right under it; Program requests, students asking to switch, sit in Daily work at the top of the sidebar."
         },
         "trainingProgress": {
           "title": "Training progress",
-          "body": "Course-by-course progress for every enrolled student, sortable, across the curriculum and Coursera. Assessments and Certificates open right under it."
+          "body": "Course-by-course progress for every enrolled student, sortable, across the curriculum and Coursera. Assessments open right under it; Certificates waiting on review sit in Daily work."
         },
         "settings": {
           "title": "Settings",
@@ -3841,6 +3915,17 @@
       "body": "Try again, or browse the job board to see every opening.",
       "action": "Try again",
       "secondary": "Browse jobs"
+    },
+    "applicationsUnavailable": {
+      "title": "Couldn't load your applications",
+      "body": "Your counts are unknown, not zero. Try again in a moment.",
+      "action": "Try again",
+      "kpiCaption": "Couldn't load"
+    },
+    "openingsUnavailable": {
+      "title": "Couldn't load open roles",
+      "body": "This is a loading problem, not an empty board. Try again in a moment.",
+      "action": "Try again"
     },
     "stage": {
       "title": "Nothing in this stage"
@@ -4051,6 +4136,17 @@
         "title": "Could not load work queue",
         "body": "Something went wrong fetching the queue. Try again.",
         "action": "Retry"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Some caseload counts couldn't load",
+        "countsBody": "A tile showing — is unknown, not zero. Try again; if this keeps happening, tell an admin.",
+        "tileCaption": "Couldn't load",
+        "queueTitle": "Couldn't load who needs you",
+        "queueBody": "The list did not answer, so this is not an empty queue. Try again; if this keeps happening, tell an admin.",
+        "queueSecondary": "Open Today",
+        "sessions": "Couldn't load recent interview practice.",
+        "breakdown": "Couldn't load the caseload breakdown.",
+        "action": "Try again"
       },
       "inbox": {
         "title": "No members assigned yet",

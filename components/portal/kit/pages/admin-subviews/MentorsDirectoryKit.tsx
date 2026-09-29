@@ -16,10 +16,13 @@ import { MENTORS_ADMIN_EMPTY } from '@/lib/member/mentorsEmptyState';
  * 3-col card grid. Mockup: workforceap-admin-full.html "mentors" view.
  * Target route: /admin/mentors
  *
- * Server-rendered (no interactivity) so it stays a plain RSC. Each card shows
- * an avatar/icon tile, the mentor name, and a "{Role} @ {Company} · {N} mentees"
- * description line. Mentee counts are real (distinct members from mentor
- * sessions, supplied by the page).
+ * Server-rendered so it stays a plain RSC. Each card shows an avatar/icon
+ * tile, the mentor name, and a "{Role} @ {Company} · {N} mentees" description
+ * line. Mentee counts are real (distinct members from mentor sessions,
+ * supplied by the page). With `mentorAction` (a server action), each card
+ * also posts its review action: Approve a pending mentor, Deactivate an
+ * active one, Reactivate an inactive one (WAP-193; these used to exist only
+ * behind ?ui=legacy).
  */
 export interface MentorCard {
   id: string;
@@ -44,6 +47,16 @@ export interface MentorsDirectoryKitProps {
   total?: number;
   /** Active mentor count (approved + isActive). */
   activeCount?: number;
+  /** Server action taking `mentorId` and `action` (approve | deactivate | activate). */
+  mentorAction?: (formData: FormData) => Promise<void>;
+}
+
+type MentorReview = { action: 'approve' | 'deactivate' | 'activate'; label: string; primary: boolean };
+
+function mentorReview(m: MentorCard): MentorReview {
+  if (!m.isApproved) return { action: 'approve', label: 'Approve', primary: true };
+  if (m.isActive) return { action: 'deactivate', label: 'Deactivate', primary: false };
+  return { action: 'activate', label: 'Reactivate', primary: true };
 }
 
 const DEFAULT_MENTORS: MentorCard[] = [
@@ -62,6 +75,7 @@ export function MentorsDirectoryKit({
   mentors = DEFAULT_MENTORS,
   total,
   activeCount,
+  mentorAction,
 }: MentorsDirectoryKitProps) {
   const mentorTotal = total ?? mentors.length;
   const active = activeCount ?? mentors.filter((m) => m.isActive && m.isApproved).length;
@@ -121,6 +135,23 @@ export function MentorsDirectoryKit({
                       {m.role} @ {m.company} · {m.mentees} {m.mentees === 1 ? 'mentee' : 'mentees'}
                     </p>
                   </div>
+                  {mentorAction ? (() => {
+                    const review = mentorReview(m);
+                    return (
+                      <form action={mentorAction}>
+                        <input type="hidden" name="mentorId" value={m.id} />
+                        <button
+                          type="submit"
+                          name="action"
+                          value={review.action}
+                          aria-label={`${review.label} ${m.name}`}
+                          className={`wa-kit-cta wa-kit-focus${review.primary ? '' : ' wa-kit-cta--ghost'}`}
+                        >
+                          {review.label}
+                        </button>
+                      </form>
+                    );
+                  })() : null}
                 </div>
               </Card>
             );

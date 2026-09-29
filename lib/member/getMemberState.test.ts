@@ -97,6 +97,27 @@ describe('getMemberState', () => {
     findPlacementRecord.mockResolvedValue(null);
   });
 
+  it.each([
+    ['profile phone', '555-000-1000', '555-000-2000', '555-000-2000'],
+    ['account phone', '555-000-1000', null, '555-000-1000'],
+    ['account phone without a profile', '555-000-1000', null, '555-000-1000'],
+    ['no phone', null, null, null],
+  ])('resolves %s for member contact', async (label, accountPhone, profilePhone, expected) => {
+    findUser.mockResolvedValue({
+      ...userRecord,
+      phone: accountPhone,
+      profile: label === 'account phone without a profile' ? null : {
+        profilePhone,
+        employmentStatus: null,
+        educationLevel: null,
+      },
+    });
+
+    const state = await getMemberState('member-1');
+
+    expect(state.contactPhone).toBe(expected);
+  });
+
   it('returns hasCompletedInterviewPractice=false when the completion event is absent', async () => {
     const state = await getMemberState('member-1');
 

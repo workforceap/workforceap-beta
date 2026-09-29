@@ -47,12 +47,16 @@ function extFromPath(path: string): string {
 /**
  * Best-effort plain text from the member's stored resume.
  * By default prefers enhanced resume (for voice/context consumers).
- * Pass `opts.preferOriginal = true` for generation paths to use the original uploaded resume as source-of-truth.
+ * Pass `opts.preferOriginal = true` to try the original first while retaining
+ * the alternate fallback. Generation must use `originalOnly` so a legacy AI
+ * draft never becomes the source for another AI draft. A caller that has
+ * already tried originalOnly can use `enhancedOnly` for context without
+ * downloading/parsing the same failed original twice.
  */
 export async function getMemberResumePlainText(
   userId: string,
   maxChars = 8000,
-  opts?: { preferOriginal?: boolean; readOnlyAudit?: boolean }
+  opts?: { preferOriginal?: boolean; originalOnly?: boolean; enhancedOnly?: boolean; readOnlyAudit?: boolean }
 ): Promise<string> {
   if (opts?.readOnlyAudit) return '';
   const profile = await prisma.profile.findUnique({
@@ -60,9 +64,13 @@ export async function getMemberResumePlainText(
   });
   if (!profile) return '';
 
-  const paths = (opts?.preferOriginal
-    ? [profile.resumeOriginalPath, profile.resumeEnhancedPath]
-    : [profile.resumeEnhancedPath, profile.resumeOriginalPath]
+  const paths = (opts?.originalOnly
+    ? [profile.resumeOriginalPath]
+    : opts?.enhancedOnly
+      ? [profile.resumeEnhancedPath]
+    : opts?.preferOriginal
+      ? [profile.resumeOriginalPath, profile.resumeEnhancedPath]
+      : [profile.resumeEnhancedPath, profile.resumeOriginalPath]
   ).filter((p): p is string => Boolean(p) && isResumeObjectPathOwnedByUser(userId, p as string));
   if (paths.length === 0) return '';
 

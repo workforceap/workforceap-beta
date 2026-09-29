@@ -18,6 +18,46 @@
 
 import { prisma } from '@/lib/db/prisma';
 
+/**
+ * Factor names `escalateToCounselor` writes when a MEMBER reported the
+ * problem themselves (First 90 Days "having trouble" in
+ * app/(portal)/dashboard/first90DaysAction.ts, placement-survey job loss in
+ * app/api/placement-survey/route.ts). The nightly scorer
+ * (`/api/cron/at-risk-check` + `persistAtRiskAlert`) must neither auto-resolve
+ * an alert carrying one of these nor drop the factor or its score floor —
+ * the escalation stays until staff close it. Only names that are written
+ * today belong here.
+ */
+export const MEMBER_REPORTED_FACTOR_NAMES = [
+  'first90_trouble_reported',
+  'placement_survey_job_loss_reported',
+] as const;
+
+const MEMBER_REPORTED_FACTOR_NAME_SET: ReadonlySet<string> = new Set(MEMBER_REPORTED_FACTOR_NAMES);
+
+/**
+ * The member-reported entries of an `AtRiskAlert.factors` JSON value.
+ * Pure and defensive: returns [] for anything that is not an array, and skips
+ * entries that are not objects with a string `name`.
+ */
+export function memberReportedFactors(
+  factors: unknown,
+): Array<{ name: string } & Record<string, unknown>> {
+  if (!Array.isArray(factors)) return [];
+  const out: Array<{ name: string } & Record<string, unknown>> = [];
+  for (const entry of factors) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
+    const name = (entry as Record<string, unknown>).name;
+    if (typeof name !== 'string' || !MEMBER_REPORTED_FACTOR_NAME_SET.has(name)) continue;
+    out.push(entry as { name: string } & Record<string, unknown>);
+  }
+  return out;
+}
+
+export function hasMemberReportedFactor(factors: unknown): boolean {
+  return memberReportedFactors(factors).length > 0;
+}
+
 export type CounselorEscalationInput = {
   userId: string;
   /** Short machine-readable factor name stored on the AtRiskAlert. */

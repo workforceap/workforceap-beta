@@ -62,11 +62,12 @@ vi.mock('@elevenlabs/client', () => ({ Conversation: { startSession: vi.fn() } }
 // and /find-your-path (whose funnel tracker is mocked).
 vi.mock('@/lib/db/prisma', () => ({ prisma: { memberEvent: { findMany: vi.fn(async () => []) } } }));
 vi.mock('@/lib/analytics/events', () => ({ trackFunnelEvent: vi.fn() }));
+// §3e renders the First 90 Days card, whose check-in server action is never called here.
+vi.mock('@/app/(portal)/dashboard/first90DaysAction', () => ({ submitFirst90DaysCheckIn: vi.fn() }));
 
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
 import VoiceCoachLauncherCard from '@/components/portal/VoiceCoachLauncherCard';
 import VoiceCoachesPromo from '@/components/portal/VoiceCoachesPromo';
-import MemberDashboardVoiceSection from '@/components/portal/MemberDashboardVoiceSection';
 import MembersTable from '@/components/admin/MembersTable';
 import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
 import {
@@ -82,6 +83,7 @@ import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
 import MotivatingRecapClient from '@/app/(portal)/dashboard/weekly-recap/MotivatingRecapClient';
 import FindYourPathClient from '@/app/(decision-journey)/find-your-path/FindYourPathClient';
 import SessionsIndexBody from '@/components/portal/sessions/SessionsIndexBody';
+import First90DaysCard from '@/components/portal/First90DaysCard';
 
 const SCHEMES: readonly Scheme[] = ['light', 'dark'];
 const AA = 4.5;
@@ -309,7 +311,7 @@ describe('voice surfaces glow and cast their CTA shadow from --wa-* tokens', () 
 
   for (const scheme of SCHEMES) {
     it(`${scheme}: the Elevator Introduction launcher cards glow brand gold and badge --wa-gold-dark (were #a47f38 on both)`, () => {
-      for (const [Section, badge] of [[VoiceCoachesPromo, '10–20 SEC'], [MemberDashboardVoiceSection, 'Introduction']] as const) {
+      for (const [Section, badge] of [[VoiceCoachesPromo, '10–20 SEC']] as const) {
         const { unmount } = renderIn(scheme, <Section />);
         const label = screen.getByText(badge);
         const text = computed(label, 'color');
@@ -620,8 +622,9 @@ describe('css/portal.css accent shadows and gradient stops are color-mixes of --
 });
 
 // ── 3e. the last five accent shadow / gradient literals (#2503 inspection, §2 leftovers) ──
-// Four render here; app/(portal)/partner/page.tsx:968 (the "next step" guidance card, ?ui=legacy only)
-// needs the whole partner data layer mocked and is the same color-mix, reviewed by hand.
+// Three render here; app/(portal)/partner/page.tsx:968 (the "next step" guidance card, ?ui=legacy only)
+// needs the whole partner data layer mocked and is the same color-mix, reviewed by hand. The fifth,
+// the YouthDashboardNotice band, is gone: the notice moved onto the kit home as a --wa-* kit card (3f).
 describe('the leftover accent shadow / gradient literals are color-mixes of --color-accent (and --wa-gold)', () => {
   const SEEDED = '#ad2c4d';
   const OTHER_ORG = '#1d4ed8';
@@ -634,8 +637,6 @@ describe('the leftover accent shadow / gradient literals are color-mixes of --co
     for (const [k, v] of loadBlockTokens(main, scheme === 'light' ? 'html:not(.dark)' : 'html.dark')) tokens.set(k, v);
     return tokens;
   }
-  /** A gradient stop without its trailing `0%` / `100%` position. */
-  const stopColour = (stop: string) => stop.replace(/\s+\d+%$/, '');
   /**
    * `color-mix(in srgb, var(--color-accent) N%, transparent)`: the seeded org paints the exact rgba the
    * literal did, another org's accent follows, and without an org override the tint flips with the scheme.
@@ -656,22 +657,6 @@ describe('the leftover accent shadow / gradient literals are color-mixes of --co
   afterEach(() => { localStorage.clear(); });
 
   for (const scheme of SCHEMES) {
-    it(`${scheme}: YouthDashboardNotice band runs --wa-gold 15% → --color-accent 8% (was rgba(240,205,131,.15) → rgba(173,44,77,.08))`, () => {
-      const { container } = renderIn(scheme, <YouthDashboardNotice age={17} />);
-      const band = container.firstElementChild as HTMLElement;
-      const gradient = computed(band, 'background');
-      expectNoLiteral(gradient, `${scheme} youth notice "${gradient}"`);
-      expect(gradient).toBe('linear-gradient(135deg, color-mix(in srgb, var(--wa-gold) 15%, transparent) 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 100%)');
-      expectTokensResolve(gradient, scheme, 'youth notice');
-      const [gold, accent] = gradientStops(gradient).map(stopColour);
-      const tokens = tokensFor(scheme);
-      const hue = colorOf('var(--wa-gold)', tokens, scheme);
-      expect(parseColor(resolve(gold, tokens, scheme))).toEqual({ r: hue.r, g: hue.g, b: hue.b, a: 0.15 });
-      // Brand gold is a light-dark() pair, so the gold stop follows the theme (the pale literal never did).
-      expect(resolve(gold, tokensFor('light'), 'light')).not.toBe(resolve(gold, tokensFor('dark'), 'dark'));
-      expectAccentTint(accent, 8, 'youth notice accent stop');
-    });
-
     it(`${scheme}: MotivatingRecapClient hero tints --color-accent 10% → 2% (was rgba(173,44,77,.10) → .02)`, () => {
       const { container } = renderIn(
         scheme,
@@ -714,6 +699,111 @@ describe('the leftover accent shadow / gradient literals are color-mixes of --co
       expect(shadow).toBe('0 8px 24px color-mix(in srgb, var(--color-accent) 12%, transparent)');
       expectAccentTint(shadow.slice('0 8px 24px '.length), 12, 'walk-in shadow');
       expectNoLiteralShadows(container, `${scheme} sessions index`);
+    });
+  }
+});
+
+// ── 3e'. First90DaysCard on the kit home (WAP-188, restyled WAP-194) ──────────
+// WAP-188 took the seeded-crimson rgba() literals and the constant green off
+// the card. WAP-194 finishes the move onto a kit card: `wa-kit-card`, lucide
+// icons instead of Material Symbols, and `--wa-*` tokens for every paint (no
+// `--color-*`), with its tints mixed from `--wa-accent` like the rest of the
+// kit column. Copy and the check-in action are unchanged.
+describe('First90DaysCard is a kit card on --wa-* tokens only', () => {
+  const first90 = (currentStageResponse: 'going_well' | null) => (
+    <NextIntlClientProvider locale="en" messages={en}>
+      <First90DaysCard stage="day_30" daysSincePlacement={20} employerName="Acme Health" currentStageResponse={currentStageResponse} completedStages={['week_1']} variant="kit" />
+    </NextIntlClientProvider>
+  );
+  const styleProp = (el: Element, prop: string) =>
+    (el.getAttribute('style') ?? '').match(new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`))?.[1]?.trim() ?? '';
+  const waAccentTint = (pct: number) => `color-mix(in srgb, var(--wa-accent) ${pct}%, transparent)`;
+
+  for (const scheme of SCHEMES) {
+    it(`${scheme}: kit card, lucide icons, every paint a defined --wa-* token (tints of --wa-accent / --wa-success)`, () => {
+      const { container, unmount } = renderIn(scheme, first90(null));
+      const section = container.querySelector('section') as HTMLElement;
+      expect(section.getAttribute('style'), 'kit variant: no outer padding of its own').toBeNull();
+      const card = section.firstElementChild as HTMLElement;
+      expect(card.className).toContain('wa-kit-card');
+      expect(card.className).not.toMatch(/portal-card/);
+      expect(container.querySelector('.material-symbols-outlined'), 'no Material Symbols ligatures').toBeNull();
+      expect(container.querySelectorAll('svg.lucide').length).toBeGreaterThanOrEqual(5);
+
+      const styles = Array.from(container.querySelectorAll<HTMLElement>('[style]')).map((el) => el.getAttribute('style') ?? '');
+      expect(styles.length).toBeGreaterThan(5);
+      for (const style of styles) {
+        expectNoLiteral(style, `${scheme} first 90 "${style}"`);
+        expect(style, `${scheme} first 90 "${style}"`).not.toMatch(/var\(--(?:color|surface-container|outline)-?/);
+        if (style.includes('var(--wa-')) expectTokensResolve(style, scheme, `first 90 "${style}"`);
+      }
+
+      const tile = container.querySelector('section span[aria-hidden]') as HTMLElement;
+      expect(styleProp(tile, 'background')).toBe(waAccentTint(14));
+      const chips = screen.getAllByRole('listitem');
+      const current = chips.find((li) => li.textContent?.includes('Day 30')) as HTMLElement;
+      expect(styleProp(current, 'background')).toBe(waAccentTint(10));
+      expect(styleProp(current, 'border')).toBe(`1px solid ${waAccentTint(30)}`);
+      const doneTick = chips.find((li) => li.textContent?.includes('Week 1'))?.querySelector('svg') as SVGElement;
+      expect(styleProp(doneTick, 'color')).toBe('var(--wa-success)');
+
+      // The answers are the kit's 44px ghost pills.
+      for (const name of [en.first90.responses.going_well, en.first90.responses.have_questions, en.first90.responses.having_trouble]) {
+        const button = screen.getByRole('button', { name });
+        expect(button.className).toContain('wa-kit-cta');
+        expect(button.className).toContain('wa-kit-cta--ghost');
+      }
+
+      const quotes = Array.from(container.querySelectorAll('blockquote'));
+      expect(quotes).toHaveLength(2);
+      for (const quote of quotes) {
+        expect(styleProp(quote, 'background')).toBe(waAccentTint(5));
+        expect(styleProp(quote, 'border-left')).toBe(`3px solid ${waAccentTint(35)}`);
+      }
+      unmount();
+
+      const thanks = renderIn(scheme, first90('going_well'));
+      const box = screen.getByText(en.first90.thanks.going_well).parentElement as HTMLElement;
+      expect(styleProp(box, 'background')).toBe('color-mix(in srgb, var(--wa-success) 8%, transparent)');
+      expect(styleProp(box, 'border')).toBe('1px solid color-mix(in srgb, var(--wa-success) 20%, transparent)');
+      expectTokensResolve(styleProp(box, 'background'), scheme, 'first 90 thanks box');
+      for (const el of Array.from(thanks.container.querySelectorAll<HTMLElement>('[style]'))) expectNoLiteral(el.getAttribute('style') ?? '', `${scheme} first 90 thanks`);
+    });
+  }
+
+  it('legacy variant keeps its section gutter; the card inside is the same kit card', () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <First90DaysCard stage="week_1" daysSincePlacement={3} employerName="Acme" currentStageResponse={null} completedStages={[]} />
+      </NextIntlClientProvider>,
+    );
+    const section = container.querySelector('section') as HTMLElement;
+    expect(section.style.padding).toBe('1rem 1.25rem 0px');
+    expect((section.firstElementChild as HTMLElement).className).toContain('wa-kit-card');
+  });
+});
+
+// ── 3f. YouthDashboardNotice on the kit home (WAP-188) ─────────────────────
+// The notice now renders on the kit member home, so it left the legacy chain
+// entirely: a kit card with the info edge, no gradient band, no --color-* and
+// no rgba() literal anywhere in its tree (the icon tiles and the job-board box
+// were rgba(173,44,77,.1) / rgba(240,205,131,.2) / rgba(255,255,255,.7)).
+describe('YouthDashboardNotice is a kit card on --wa-* tokens only', () => {
+  for (const scheme of SCHEMES) {
+    it(`${scheme}: every inline paint reads a defined --wa-* token, never a literal or --color-*`, () => {
+      const { container } = renderIn(scheme, <YouthDashboardNotice age={17} />);
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.className).toContain('wa-kit-card');
+      expect(card.className).toContain('wa-kit-tone--info');
+      expect(card.className).toContain('wa-kit-tone-edge');
+      expect(inline(card, 'background'), 'the band gradient is gone').toBe('');
+      const styles = Array.from(container.querySelectorAll<HTMLElement>('[style]')).map((el) => el.getAttribute('style') ?? '');
+      expect(styles.length).toBeGreaterThan(0);
+      for (const style of styles) {
+        expectNoLiteral(style, `${scheme} youth notice "${style}"`);
+        expect(style, `${scheme} youth notice "${style}"`).not.toMatch(/var\(--(?:color|surface-container|radius)-/);
+        if (style.includes('var(--wa-')) expectTokensResolve(style, scheme, `youth notice "${style}"`);
+      }
     });
   }
 });

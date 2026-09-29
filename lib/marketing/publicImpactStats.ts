@@ -9,6 +9,7 @@ import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
+import { VERIFIED_PLACEMENT_WHERE } from '@/lib/placement/verifiedPlacement';
 import {
   hasValidatedProgramCompletion,
   validatedProgramAssignmentRowsSql,
@@ -184,8 +185,14 @@ export async function getPublicImpactStats(orgId: string): Promise<PublicImpactS
     ] = await Promise.all([
       prisma.user.count({ where: memberWhere }),
       prisma.user.count({ where: { ...memberWhere, enrolledProgram: { not: null } } }),
+      // Placement rate, hires and the salary delta count staff-verified
+      // placements only (docs/OUTCOMES-METHODOLOGY.md, "Public placement counts").
       prisma.user.count({
-        where: { ...memberWhere, enrolledProgram: { not: null }, placementRecord: { isNot: null } },
+        where: {
+          ...memberWhere,
+          enrolledProgram: { not: null },
+          placementRecord: { is: VERIFIED_PLACEMENT_WHERE },
+        },
       }),
       prisma.$queryRaw<Array<{ program_slug: string; count: bigint | number }>>`
         WITH validated_programs(canonical_slug, storage_value, curriculum_version, total_courses) AS (
@@ -244,13 +251,14 @@ export async function getPublicImpactStats(orgId: string): Promise<PublicImpactS
       prisma.job.count({
         where: { organizationId: orgId, status: { in: [...jobPostedStatuses] } },
       }),
-      prisma.placementRecord.count({ where: { user: memberWhere } }),
+      prisma.placementRecord.count({ where: { ...VERIFIED_PLACEMENT_WHERE, user: memberWhere } }),
       prisma.$queryRaw<Array<{ avg_delta: number | null; n: bigint | number }>>`
         SELECT AVG(pr.wage_at_follow_up - pr.salary_offered) AS avg_delta, COUNT(*)::bigint AS n
         FROM placement_records pr
         INNER JOIN users u ON u.id = pr.user_id
         WHERE pr.salary_offered IS NOT NULL
           AND pr.wage_at_follow_up IS NOT NULL
+          AND pr.start_date_verified = true
           AND u.organization_id = ${orgId}
           AND u.deleted_at IS NULL
           AND ${memberOnlyRoleSql('u')}

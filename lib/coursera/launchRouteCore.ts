@@ -39,7 +39,14 @@ type ApprovedCurriculumTrack = {
 export type CourseraLaunchDependencies<ResponseLike, ProgramType extends ProgramWithCourses> = {
   getUser: () => Promise<CourseraLaunchUser | null>;
   findUser: (userId: string) => Promise<DbUser>;
-  resolveActiveProgram: (userId: string, legacyEnrolledProgram: string | null) => Promise<string | null>;
+  /** `requestedProgramSlug` is the `&program=` of the page the member launched
+   *  from; the resolver honors it only for one of the member's own enrollments
+   *  (WAP-196), and otherwise falls back to the primary program. */
+  resolveActiveProgram: (
+    userId: string,
+    legacyEnrolledProgram: string | null,
+    requestedProgramSlug?: string | null,
+  ) => Promise<string | null>;
   findCourse: (args: {
     organizationId: string;
     programSlug: string;
@@ -101,17 +108,40 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
   deps: CourseraLaunchDependencies<ResponseLike, ProgramType>,
 ) {
   return async function courseraLaunchGET(request: Request): Promise<ResponseLike> {
+    const searchParams = new URL(request.url).searchParams;
+    const requestedSlug = searchParams.get('course')?.trim() || '';
+    // The enrollment the member was viewing (a secondary program's My Program
+    // page passes it; WAP-196). Validated by resolveActiveProgram.
+    const requestedProgram = searchParams.get('program')?.trim() || '';
+    // Query string that returns to the same program and course.
+    const backQuery = new URLSearchParams({
+      ...(requestedProgram ? { program: requestedProgram } : {}),
+      ...(requestedSlug ? { course: requestedSlug } : {}),
+    }).toString();
     const user = await deps.getUser();
     if (!user) {
+      // Come back to My Program with the course the member clicked, so login
+      // does not drop them on the default course.
       const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirectTo', '/dashboard/training');
+      const back = backQuery ? `/dashboard/program?${backQuery}` : '/dashboard/program';
+      loginUrl.searchParams.set('redirectTo', back);
       return deps.redirect(loginUrl);
     }
+
+    // Failed launches return to My Program (via /dashboard/training), which
+    // turns `error` into a plain-language notice and keeps `course` selected.
+    const launchErrorRedirect = (code: 'curriculum_track_pending' | 'course_not_assigned' | 'launch_failed') => {
+      const errorUrl = new URL('/dashboard/training', request.url);
+      errorUrl.searchParams.set('error', code);
+      if (requestedProgram) errorUrl.searchParams.set('program', requestedProgram);
+      if (requestedSlug) errorUrl.searchParams.set('course', requestedSlug);
+      return deps.redirect(errorUrl);
+    };
 
     const dbUser = await deps.findUser(user.id);
 
     // Use the same active-program resolution as `/dashboard/training` and
-    // the home dashboard so the launch button never disagrees with what the
+    // My Program (`getActiveProgramForDashboard`) so the launch button never disagrees with what the
     // member is looking at. Pre-fix this used `User.enrolledProgram` (legacy
     // single-program field) directly — when a member had multiple
     // CourseEnrollment rows with a primary that diverged from the legacy
@@ -120,8 +150,8 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     const enrolledProgram = await deps.resolveActiveProgram(
       user.id,
       dbUser?.enrolledProgram ?? null,
+      requestedProgram || null,
     );
-    const requestedSlug = new URL(request.url).searchParams.get('course')?.trim() || '';
     const curriculumVersion = enrolledProgram
       ? dbUser?.courseEnrollments?.find(
           (enrollment) => enrollment.programSlug === enrolledProgram,
@@ -143,18 +173,14 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     const approvedCollectionId = approvedTrack?.collectionId?.trim() || null;
     if (enrolledProgram && curriculumVersion === APPROVED_CURRICULUM_VERSION) {
       if (!isExternalCurriculumTrackReady(approvedTrack)) {
-        const errorUrl = new URL('/dashboard/training', request.url);
-        errorUrl.searchParams.set('error', 'curriculum_track_pending');
-        return deps.redirect(errorUrl);
+        return launchErrorRedirect('curriculum_track_pending');
       }
     }
 
     // A URL can be hand-edited. Never launch a Course DB/discovered entry that
     // is outside the learner's immutable curriculum assignment.
     if (requestedSlug && (!program || !program.courses.some((course) => course.slug === requestedSlug))) {
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'course_not_assigned');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('course_not_assigned');
     }
 
     const requestedCourse = requestedSlug
@@ -179,9 +205,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
         approvedCollectionId,
       );
       if (approvedCourseUrl) return deps.redirect(approvedCourseUrl);
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'launch_failed');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('launch_failed');
     }
 
     if (requestedSlug && enrolledProgram) {
@@ -263,9 +287,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
         if (orgScoped) return deps.redirect(orgScoped);
       }
 
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'launch_failed');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('launch_failed');
     }
 
     const orgScopedProgramUrl = enrolledProgram
@@ -303,9 +325,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     }
 
     if (!safeUrl) {
-      const errorUrl = new URL('/dashboard/training', request.url);
-      errorUrl.searchParams.set('error', 'launch_failed');
-      return deps.redirect(errorUrl);
+      return launchErrorRedirect('launch_failed');
     }
 
     return deps.redirect(safeUrl);

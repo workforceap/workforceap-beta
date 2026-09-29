@@ -1,16 +1,14 @@
 'use client';
 
-import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
   DataTable,
   type Column,
 } from '@/components/portal/kit';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Assessments — the admin assessment catalog rendered as a dense table.
@@ -139,9 +137,7 @@ export function AssessmentsKit({
         kicker="Members"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/assessments?ui=legacy" as={NextLink as never} isStandalone>
-            <Button label="Results & export" variant="secondary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton href="/admin/assessments?ui=legacy" label="Results & export" variant="secondary" size="sm" />
         }
       />
 

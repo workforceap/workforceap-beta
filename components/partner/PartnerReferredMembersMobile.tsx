@@ -154,9 +154,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem', flexShrink: 0 }}>
                     <StatusTag tone={STAGE_TONE[row.stage] ?? 'muted'}>{row.stageLabel}</StatusTag>
-                    {isPlaced ? (
+                    {row.placementVerified != null ? (
                       <StatusTag tone={row.placementVerified ? 'ok' : 'warn'}>
-                        {row.placementVerified ? 'Verified' : 'Pending'}
+                        {row.placementVerified ? 'Verified' : 'Pending verification'}
                       </StatusTag>
                     ) : null}
                   </div>

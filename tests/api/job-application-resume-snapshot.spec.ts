@@ -48,6 +48,10 @@ vi.mock('@/lib/supabase-admin', () => ({
   getSupabaseAdmin: vi.fn(),
 }));
 
+vi.mock('@/lib/resume/inspectStoredEnhancedResume', () => ({
+  inspectStoredEnhancedResume: vi.fn(),
+}));
+
 vi.mock('@/lib/email', () => ({
   sendNewJobApplicationEmail: vi.fn(),
 }));
@@ -74,6 +78,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 import { sendNewJobApplicationEmail } from '@/lib/email';
 import { trackEvent } from '@/lib/events/track';
 import { syncCuratedJobToTracker } from '@/lib/jobs/syncCuratedJobToTracker';
@@ -100,6 +105,7 @@ function employerContext(applicationId = 'application-123') {
 
 function makeStorage() {
   return {
+    download: vi.fn().mockResolvedValue({ data: { arrayBuffer: async () => new ArrayBuffer(8) }, error: null }),
     copy: vi.fn().mockResolvedValue({ data: {}, error: null }),
     remove: vi.fn().mockResolvedValue({ data: {}, error: null }),
     createSignedUrl: vi.fn().mockResolvedValue({
@@ -115,6 +121,7 @@ describe('job application resume snapshots', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(inspectStoredEnhancedResume).mockResolvedValue({ readable: true, text: null });
 
     storage = makeStorage();
     from = vi.fn(() => storage);
@@ -197,6 +204,52 @@ describe('job application resume snapshots', () => {
     );
   });
 
+  it('shares the original instead of a quarantined legacy AI draft', async () => {
+    vi.mocked(inspectStoredEnhancedResume).mockResolvedValueOnce({ readable: false, text: null });
+
+    const response = await applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: true }),
+      applyContext(),
+    );
+
+    expect(response.status).toBe(200);
+    expect(storage.download).toHaveBeenCalledWith(`${MEMBER_ID}/resume-enhanced-v2.pdf`);
+    expect(storage.copy).toHaveBeenCalledWith(
+      `${MEMBER_ID}/resume-original-v1.pdf`,
+      expect.stringMatching(new RegExp(`^${MEMBER_ID}/application-.*-resume\\.pdf$`)),
+    );
+  });
+
+  it('does not submit when the only saved resume is an unreadable AI draft', async () => {
+    vi.mocked(prisma.profile.findUnique).mockResolvedValue({
+      resumeOriginalPath: null,
+      resumeEnhancedPath: `${MEMBER_ID}/resume-enhanced-v2.txt`,
+    } as never);
+    vi.mocked(inspectStoredEnhancedResume).mockResolvedValueOnce({ readable: false, text: null });
+
+    const response = await applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: true }),
+      applyContext(),
+    );
+
+    expect(response.status).toBe(400);
+    expect(storage.copy).not.toHaveBeenCalled();
+    expect(prisma.jobPostingApplication.create).not.toHaveBeenCalled();
+  });
+
+  it('does not submit when the enhanced file cannot be verified', async () => {
+    storage.download.mockResolvedValueOnce({ data: null, error: { message: 'unavailable' } });
+
+    const response = await applyForJob(
+      makeApplyRequest({ shareProfile: true, shareResume: true }),
+      applyContext(),
+    );
+
+    expect(response.status).toBe(503);
+    expect(storage.copy).not.toHaveBeenCalled();
+    expect(prisma.jobPostingApplication.create).not.toHaveBeenCalled();
+  });
+
   it('does not create an application when the resume snapshot copy fails', async () => {
     storage.copy.mockResolvedValueOnce({ data: null, error: { message: 'copy failed' } });
 
@@ -269,6 +322,7 @@ describe('employer application resume access', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(inspectStoredEnhancedResume).mockResolvedValue({ readable: true, text: null });
 
     storage = makeStorage();
     from = vi.fn(() => storage);
@@ -394,6 +448,43 @@ describe('employer application resume access', () => {
       data: { resumePath: snapshotPath },
     });
     expect(response.status).toBe(307);
+  });
+
+  it('does not copy an unsafe legacy text object into an employer-facing snapshot', async () => {
+    const applicationId = 'application-legacy-bad';
+    vi.mocked(prisma.jobPostingApplication.findFirst).mockResolvedValue({
+      studentId: MEMBER_ID,
+      resumePath: `${MEMBER_ID}/resume-enhanced.txt`,
+    } as never);
+    vi.mocked(inspectStoredEnhancedResume).mockResolvedValueOnce({ readable: false, text: null });
+
+    const response = await getEmployerApplicationResume(
+      new Request(`http://localhost/api/employer/applications/${applicationId}/resume`),
+      employerContext(applicationId),
+    );
+
+    expect(response.status).toBe(422);
+    expect(storage.copy).not.toHaveBeenCalled();
+    expect(prisma.jobPostingApplication.updateMany).not.toHaveBeenCalled();
+    expect(storage.createSignedUrl).not.toHaveBeenCalled();
+  });
+
+  it('does not sign a pre-existing unsafe text snapshot', async () => {
+    const applicationId = 'application-old-snapshot';
+    vi.mocked(prisma.jobPostingApplication.findFirst).mockResolvedValue({
+      studentId: MEMBER_ID,
+      resumePath: `${MEMBER_ID}/application-${applicationId}-resume.txt`,
+    } as never);
+    vi.mocked(inspectStoredEnhancedResume).mockResolvedValueOnce({ readable: false, text: null });
+
+    const response = await getEmployerApplicationResume(
+      new Request(`http://localhost/api/employer/applications/${applicationId}/resume`),
+      employerContext(applicationId),
+    );
+
+    expect(response.status).toBe(422);
+    expect(storage.copy).not.toHaveBeenCalled();
+    expect(storage.createSignedUrl).not.toHaveBeenCalled();
   });
 
   it('does not sign a resume when the application is outside the employer organization', async () => {

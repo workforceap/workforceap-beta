@@ -41,8 +41,8 @@ const JOURNEY_STEPS = [
     num: 3,
     title: 'Start Coursera training',
     desc: 'Open your assigned Coursera courses and finish them in order. When Coursera reports a completed course we add a pending certificate to My Certificates; our team verifies it before it counts as earned, and you can also add a certificate you earned elsewhere. Verified certificates are what employers see on your WorkforceAP record, and your cert progress is directly tied to job eligibility in the employer pipeline.',
-    href: '/dashboard',
-    cta: 'Open Training',
+    href: '/dashboard/program',
+    cta: 'Open My Program',
     icon: 'school',
   },
   {

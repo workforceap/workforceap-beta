@@ -101,6 +101,27 @@ describe('admin command-center queues', () => {
     expect(screen.getByRole('link', { name: 'All queues' })).toHaveAttribute('href', '/admin/command-center');
     expect(screen.queryByRole('link', { name: /^View all/ })).not.toBeInTheDocument();
   });
+
+  // WAP-190: the rail badge that opens this queue counts PENDING member
+  // applications only; the header counts both statuses over every account.
+  it('puts the rail badge number under the Applications count and accounts for the rest', () => {
+    const data = center({ pagination: { queue: 'applications', page: 1, pageSize: 25 } });
+    data.totals = { ...data.totals, applicationsPendingCount: 7, applicationsWaitingOn: { decision: 3, applicant: 2 } };
+    render(<AdminCommandCenterClient data={data} />);
+    expect(screen.getByTestId('bucket-summary-applications')).toHaveTextContent(
+      '3 waiting on your decision · 2 waiting on the applicant · 2 from staff or test accounts',
+    );
+  });
+
+  it('prints no split when the loader did not count one, or nothing is open', () => {
+    const { unmount } = render(<AdminCommandCenterClient data={center()} />);
+    expect(screen.queryByTestId('bucket-summary-applications')).toBeNull();
+    unmount();
+    const empty = center();
+    empty.totals = { ...empty.totals, applicationsPendingCount: 0, applicationsWaitingOn: { decision: 0, applicant: 0 } };
+    render(<AdminCommandCenterClient data={empty} />);
+    expect(screen.queryByTestId('bucket-summary-applications')).toBeNull();
+  });
 });
 
 describe('admin bulk review selection and recovery', () => {

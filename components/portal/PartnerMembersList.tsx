@@ -78,7 +78,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
       render: (m) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
           <StatusTag tone={STAGE_TONE[m.stage] ?? 'muted'}>{m.stageLabel}</StatusTag>
-          {m.stage === 'placed' ? (
+          {m.placementVerified != null ? (
             <StatusTag tone={m.placementVerified ? 'ok' : 'warn'}>
               {m.placementVerified ? 'Verified' : 'Pending verification'}
             </StatusTag>

@@ -11,6 +11,7 @@ import { PipelineFunnelKit } from '@/components/portal/kit/pages/admin-subviews/
 import { buildPipelineFunnel, pipelineFunnelSubtitle } from '@/lib/admin/pipelineFunnel';
 import PipelineLegacyView from './PipelineLegacyView';
 import PlacementRecordedToast from './PlacementRecordedToast';
+import { StaleApplicationsPanel, STALE_APPLICATIONS_ID } from './StaleApplicationsPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,7 +117,7 @@ export default async function PipelinePage({
         funnelSubtitle={pipelineFunnelSubtitle(FUNNEL_WINDOW_DAYS)}
         headerAction={
           <a
-            href="/admin/pipeline?ui=legacy"
+            href={`#${STALE_APPLICATIONS_ID}`}
             className="wa-kit-focus"
             style={{
               display: 'inline-flex',
@@ -134,7 +135,10 @@ export default async function PipelinePage({
             Stale applications
           </a>
         }
-      />
+      >
+        {/* Send-reminder used to live only in the ?ui=legacy banner (WAP-193). */}
+        <StaleApplicationsPanel />
+      </PipelineFunnelKit>
     </>
   );
 }

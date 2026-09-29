@@ -2,6 +2,9 @@ name: Knowledge Base
 
 on:
   pull_request:
+  # Merge queue (WAP-201): report on the queue commit too, so this check can
+  # be required without stalling the queue.
+  merge_group:
   push:
     branches: [master]
   workflow_dispatch:

@@ -1,123 +1,109 @@
-import Link from 'next/link';
 import { GraduationCap, BookOpen, Sparkles } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
+const FOCUS_AREAS: Array<{ icon: LucideIcon; title: string; body: string }> = [
+  {
+    icon: GraduationCap,
+    title: 'Training & Courses',
+    body: 'Build skills through certified training programs designed for young learners',
+  },
+  {
+    icon: BookOpen,
+    title: 'Career Resources',
+    body: 'Explore career paths and learn about different industries',
+  },
+  {
+    icon: Sparkles,
+    title: 'AI Career Tools',
+    body: 'Use AI tools to explore careers, build resumes, and practice interviews',
+  },
+];
+
+/**
+ * Youth member notice (under 18, age from `profile.dob`).
+ *
+ * Shown on the kit member home (and, until it is retired, the `?ui=legacy`
+ * home). Kit card on `--wa-*` tokens: an info edge because this is a fact
+ * about the account, not a warning; the three focus areas use the kit
+ * tone-icon chip, and the job-board rule sits on the raised neutral fill.
+ * Copy is unchanged from the legacy notice.
+ */
 export default function YouthDashboardNotice({ age }: { age: number }) {
   return (
-    <div style={{
-      padding: '1.5rem',
-      background: 'linear-gradient(135deg, color-mix(in srgb, var(--wa-gold) 15%, transparent) 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 100%)',
-      border: '2px solid rgba(240, 205, 131, 0.4)',
-      borderRadius: 'var(--radius-md)',
-      marginBottom: '2rem'
-    }}>
-      <h3 style={{ 
-        fontSize: '1.15rem', 
-        fontWeight: 700, 
-        marginBottom: '0.75rem',
-        color: 'var(--color-primary)'
-      }}>
-        🎓 Youth Member Portal (Age {age})
-      </h3>
-      
-      <p style={{ 
-        color: 'var(--color-on-surface)', 
-        lineHeight: 1.6, 
-        marginBottom: '1rem',
-        fontSize: '0.95rem'
-      }}>
-        Welcome to WorkforceAP! As a youth member, your portal is designed for career exploration 
+    <section
+      className="wa-kit-card wa-kit-tone--info wa-kit-tone-edge"
+      aria-labelledby="youth-notice-title"
+      style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+    >
+      <div>
+        <p
+          className="wa-kit-meta"
+          style={{ margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}
+        >
+          Youth member
+        </p>
+        <h3
+          id="youth-notice-title"
+          style={{ margin: '4px 0 0', fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--wa-text)' }}
+        >
+          Youth Member Portal (Age {age})
+        </h3>
+      </div>
+
+      <p className="wa-kit-lede" style={{ margin: 0 }}>
+        Welcome to WorkforceAP! As a youth member, your portal is designed for career exploration
         and skill-building. Focus on these areas to prepare for your future career:
       </p>
 
-      <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'start' }}>
-          <div style={{ 
-            padding: '0.5rem', 
-            background: 'rgba(173, 44, 77, 0.1)',
-            borderRadius: '8px',
-            flexShrink: 0
-          }}>
-            <GraduationCap size={20} style={{ color: 'var(--wa-accent-text)' }} aria-hidden />
-          </div>
-          <div>
-            <strong style={{ fontSize: '0.95rem' }}>Training & Courses</strong>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>
-              Build skills through certified training programs designed for young learners
-            </p>
-          </div>
-        </div>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 12 }}>
+        {FOCUS_AREAS.map(({ icon: Icon, title, body }) => (
+          <li key={title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <span className="wa-kit-tone-icon" aria-hidden>
+              <Icon size={18} />
+            </span>
+            <span style={{ minWidth: 0 }}>
+              <strong style={{ display: 'block', fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{title}</strong>
+              <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>
+                {body}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'start' }}>
-          <div style={{ 
-            padding: '0.5rem', 
-            background: 'rgba(240, 205, 131, 0.2)', 
-            borderRadius: '8px',
-            flexShrink: 0
-          }}>
-            <BookOpen size={20} style={{ color: 'var(--color-gold)' }} aria-hidden />
-          </div>
-          <div>
-            <strong style={{ fontSize: '0.95rem' }}>Career Resources</strong>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>
-              Explore career paths and learn about different industries
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'start' }}>
-          <div style={{ 
-            padding: '0.5rem', 
-            background: 'rgba(173, 44, 77, 0.1)',
-            borderRadius: '8px',
-            flexShrink: 0
-          }}>
-            <Sparkles size={20} style={{ color: 'var(--wa-accent-text)' }} aria-hidden />
-          </div>
-          <div>
-            <strong style={{ fontSize: '0.95rem' }}>AI Career Tools</strong>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>
-              Use AI tools to explore careers, build resumes, and practice interviews
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div style={{
-        padding: '1rem',
-        background: 'rgba(255, 255, 255, 0.7)',
-        borderRadius: '8px',
-        fontSize: '0.85rem',
-        lineHeight: 1.5,
-        color: 'var(--color-on-surface)'
-      }}>
+      <div
+        style={{
+          padding: 'var(--wa-pad-sm)',
+          background: 'var(--wa-surface-2)',
+          borderRadius: 'var(--wa-radius-sm)',
+          fontSize: 'var(--wa-type-meta)',
+          lineHeight: 1.5,
+          color: 'var(--wa-text)',
+        }}
+      >
         <strong>Job Board Access:</strong> {age >= 16 ? (
           <>
-            You can view youth-appropriate jobs. Full job board access and applications become 
+            You can view youth-appropriate jobs. Full job board access and applications become
             available when you turn 18. Some positions may require work permits.
           </>
         ) : age >= 14 ? (
           <>
-            You can view youth-appropriate jobs that comply with youth labor laws. 
+            You can view youth-appropriate jobs that comply with youth labor laws.
             All positions require work permits for ages 14-15.
           </>
         ) : (
           <>
-            Job applications become available at age 14. For now, focus on skill-building 
+            Job applications become available at age 14. For now, focus on skill-building
             and career exploration through our training programs.
           </>
         )}
       </div>
 
       {age < 14 ? (
-        <p style={{ 
-          marginTop: '1rem', 
-          fontSize: '0.85rem', 
-          color: 'var(--color-on-surface-variant)',
-          fontStyle: 'italic'
-        }}>
+        <p style={{ margin: 0, fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
           Questions? Your counselor can help you plan your career path. Reach out via the Messages tab.
         </p>
       ) : null}
-    </div>
+    </section>
   );
 }

@@ -5,6 +5,7 @@ import { getPartnerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { loadPartnerReferralBundle } from '@/lib/partner/referralBundle';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -71,6 +72,10 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
     // must never let a partner grant themselves that access. Attribution is
     // created by the application flow or the separate admin assignment API.
     // Keep this endpoint idempotent for an already-authorized relationship.
+    // A member hidden from this partner (a minor without FERPA consent under
+    // a non-school partner, lib/partner/dataAccess.ts) is a 404 like any
+    // other member it may not see.
+    const access = partnerDataAccess(ctx.partner);
     const referral = await prisma.$transaction((tx) => tx.partnerReferral.findFirst({
       where: {
         partnerId: ctx.partnerId,
@@ -81,6 +86,7 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
           deletedAt: null,
           ...MEMBER_ONLY_WHERE,
         },
+        AND: [{ member: withPartnerMemberVisibility({}, access) }],
       },
       select: { id: true, partnerId: true, memberId: true, referredAt: true },
     }));

@@ -16,12 +16,15 @@ export const ADMIN_GUIDE_HREF = '/admin/guide';
 export default function AdminPortalShell({
   children,
   superAdmin = false,
+  knownIsAdmin,
   portalRoles,
   readOnlyAudit = false,
   tour = null,
 }: {
   children: React.ReactNode;
   superAdmin?: boolean;
+  /** Server-resolved effective role is exactly admin; separate from access to this portal. */
+  knownIsAdmin?: boolean;
   portalRoles?: PortalSwitcherRole[];
   readOnlyAudit?: boolean;
   /**
@@ -45,6 +48,7 @@ export default function AdminPortalShell({
       workspaceLabel={PRODUCT_COPY.adminWorkspace}
       contextLabel="Administrator"
       superAdmin={superAdmin}
+      knownIsAdmin={knownIsAdmin}
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}
       footer={<AdminFooter />}

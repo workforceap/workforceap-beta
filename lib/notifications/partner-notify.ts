@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import { partnerDataAccess, partnerEmailDetails, partnerMayViewMember } from '@/lib/partner/dataAccess';
 
 /** Surface provider rejections and persist safe metadata before returning. */
 async function sendPartnerEmail(resend: Resend, args: { from: string; to: string; subject: string; text: string }): Promise<void> {
@@ -74,13 +75,25 @@ export async function sendPartnerMilestoneEmail(
           notifyOnCourse: true,
           notifyOnCertified: true,
           notifyOnPlaced: true,
+          partnerType: true,
         },
       },
-      member: { select: { fullName: true } },
+      member: {
+        select: {
+          fullName: true,
+          profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } },
+        },
+      },
     },
   });
 
   if (!referral) return;
+  // Same tier + minor rule as the portal (lib/partner/dataAccess.ts): a hidden
+  // minor is never announced, and a restricted (referral-track) partner gets
+  // program / course / certification names only — never employer or role.
+  const access = partnerDataAccess(referral.partner);
+  if (!partnerMayViewMember(access, referral.member.profile)) return;
+  const visibleDetails = partnerEmailDetails(access, details);
   if (!referral.partner.contactEmail?.trim()) return;
 
   // Respect partner notification preferences
@@ -100,8 +113,8 @@ export async function sendPartnerMilestoneEmail(
   const subject = sanitizeEmailSubjectLine(`[WorkforceAP] Update on ${first} - ${milestone}`);
 
   const detailLines: string[] = [];
-  if (details) {
-    for (const [k, v] of Object.entries(details)) {
+  if (visibleDetails) {
+    for (const [k, v] of Object.entries(visibleDetails)) {
       if (v) detailLines.push(`${k}: ${v}`);
     }
   }
@@ -133,7 +146,9 @@ export async function sendPartnerMilestoneEmail(
 
 /**
  * Notifies the partner when a new member is assigned to them.
- * No-ops when partner has no contact email or Resend is not configured.
+ * No-ops when partner has no contact email or Resend is not configured, and
+ * when the member is hidden from this partner (the same minor rule
+ * `sendPartnerMilestoneEmail` applies, lib/partner/dataAccess.ts).
  */
 export async function sendPartnerNewMemberAssignedEmail(
   memberId: string,
@@ -143,15 +158,19 @@ export async function sendPartnerNewMemberAssignedEmail(
     const [member, partner] = await Promise.all([
       prisma.user.findUnique({
         where: { id: memberId },
-        select: { fullName: true },
+        select: {
+          fullName: true,
+          profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } },
+        },
       }),
       prisma.partner.findUnique({
         where: { id: partnerId },
-        select: { contactEmail: true, name: true },
+        select: { contactEmail: true, name: true, partnerType: true },
       }),
     ]);
 
     if (!member || !partner?.contactEmail?.trim()) return;
+    if (!partnerMayViewMember(partnerDataAccess(partner), member.profile)) return;
 
     const resendKey = process.env.RESEND_API_KEY;
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';

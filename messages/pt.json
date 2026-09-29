@@ -33,9 +33,13 @@
     "myAccount": "Minha Conta",
     "myProgram": "Meu Programa",
     "myCertificates": "Meus Certificados",
+    "pathToCertification": "Caminho para a certificação",
+    "myDocuments": "Meus documentos",
+    "inviteFriend": "Convidar um amigo",
     "wioaQualification": "Qualificação WIOA",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
+    "aiAdvisor": "Consultor de IA",
     "trainingPreassessment": "Pré-avaliação de Treinamento",
     "counselorChat": "Mensagens",
     "aboutUs": "Sobre Nós",
@@ -60,6 +64,7 @@
     "collapseSidebar": "Recolher barra lateral",
     "workspaceTabs": "Abas do espaço de trabalho",
     "unreadCount": "{count, plural, one {# não lida} other {# não lidas}}",
+    "pendingApplicationsCount": "{count, plural, one {# aguardando o empregador} other {# aguardando empregadores}}",
     "mobileBottomNav": {
       "ariaLabel": "Navegação móvel principal",
       "marketing": {
@@ -72,6 +77,7 @@
         "overview": "Visão Geral",
         "jobs": "Vagas",
         "pipeline": "Processo",
+        "workQueue": "Fila",
         "messages": "Mensagens"
       },
       "counselor": {
@@ -85,6 +91,7 @@
       "partner": {
         "overview": "Visão Geral",
         "members": "Membros",
+        "attention": "Atenção",
         "messages": "Mensagens",
         "milestones": "Marcos",
         "outcomes": "Resultados"
@@ -92,7 +99,8 @@
       "admin": {
         "today": "Hoje",
         "students": "Estudantes",
-        "messages": "Mensagens"
+        "messages": "Mensagens",
+        "applications": "Candidaturas"
       }
     },
     "freeCareerQuiz": "Quiz de carreira grátis",
@@ -499,6 +507,15 @@
     "voiceInterviewMetaDesc": "Practice a live voice mock interview for a specific job or role, with optional camera recording and real-time coaching feedback.",
     "assessmentMetaTitle": "Pré-avaliação de Treinamento",
     "assessmentMetaDesc": "Uma verificação rápida de habilidades que ajuda a posicionar você. Concluí-la não libera o Coursera.",
+    "interviewSteps": {
+      "preScreeningTitle": "Pré-triagem",
+      "preScreeningLede": "A etapa antes da sua entrevista.",
+      "interviewTitle": "Entrevista",
+      "eligible": "Você já pode solicitar sua entrevista.",
+      "submitted": "Pré-triagem enviada. Um orientador vai analisá-la e entrar em contato por e-mail.",
+      "requested": "Recebemos sua solicitação de entrevista em {date}. Um orientador entrará em contato por e-mail."
+    },
+    "weeklyRecapOpenGoals": "Abrir suas metas",
     "programMetaTitle": "My Program",
     "programMetaDesc": "View or select your enrolled program.",
     "mentorMetaTitle": "Mentor Dashboard",
@@ -654,6 +671,30 @@
     "screeningSectionTitle": "Detalhes da triagem de elegibilidade",
     "ageGroupLabel": "Faixa etária *",
     "ageGroupPlaceholder": "Selecione a faixa etária",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 ou mais"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º ano",
+      "10": "10.º ano",
+      "11": "11.º ano",
+      "12": "12.º ano",
+      "other": "Outro / recém-formado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Preciso de formação em uma ocupação em demanda ou de um certificado",
+      "no_barrier": "Nenhuma barreira no momento",
+      "employment_gap": "Período sem emprego",
+      "limited_work_history": "Pouca experiência de trabalho",
+      "snap_tanf_wic": "SNAP / TANF / vale-alimentação / WIC",
+      "justice_involved": "Antecedentes / envolvimento com a justiça",
+      "disability_health": "Deficiência ou problema de saúde",
+      "housing_instable": "Moradia instável",
+      "other_barrier": "Outra barreira"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barreira(s) principal(is) — marque todas que se aplicam *",
     "primaryBarriersAria": "Barreiras principais",
@@ -831,6 +872,9 @@
     "accountContactConsent": "Concordo em ser contatado",
     "accountContactConsentRest": "pelo WorkforceAP sobre minha candidatura por e-mail ou telefone. *",
     "accountConsentHint": "Necessário para que um conselheiro possa fazer acompanhamento sobre seu próximo passo. Veja nossa",
+    "partnerDisclosureLabel": "Your referral partner",
+    "partnerDisclosureRestricted": "You were referred by {partner}. {partner} will be able to see your application status and progress in WorkforceAP: your name, your application status and the date you applied, the program you enroll in, how far along you are, the names of certifications you earn, and whether and when you start a job. {partner} will not see your email, phone number, address, employment or education details, employer, job title, or pay.",
+    "partnerDisclosureFull": "You were referred by {partner}. {partner} will be able to see your application status and progress in WorkforceAP, along with some contact and profile details: your name and email address; your city, state, and ZIP code; your employment status and education level; the program you enroll in and how far along you are; the certifications you earn; and, once WorkforceAP confirms a job placement, your employer, job title, pay, and job follow-up.",
     "accountCreating": "Criando sua conta…",
     "accountSubmitCta": "Salvar minha vaga e criar login",
     "accountProfileLater": "Você pode voltar depois para completar seu perfil.",
@@ -853,6 +897,15 @@
     "errSummaryGeneric": "Por favor, corrija os campos destacados e tente novamente.",
     "errProgramsNotSaved": "Suas seleções de programa não foram salvas — por favor, volte para a etapa 2 e escolha pelo menos um programa.",
     "errAccountGeneric": "Não conseguimos finalizar a criação da sua conta. Por favor, revise suas informações e tente novamente, ou ligue para (512) 777-1808.",
+    "errEmailExists": "Já existe uma conta com este e-mail. Entre para continuar ou redefina sua senha se você já tem cadastro.",
+    "errAccountRecovery": "Já existe uma conta com este e-mail. Se você não conseguir entrar, ligue para a WorkforceAP no (512) 777-1808 para recuperá-la.",
+    "errAlreadySignedIn": "Você já está conectado a outra conta. Saia primeiro e depois crie a nova conta.",
+    "errRateLimited": "Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.",
+    "errRequestUnreadable": "Não conseguimos ler seus dados de cadastro. Atualize a página e tente novamente.",
+    "errServiceUnavailable": "O cadastro está temporariamente indisponível. Tente novamente em breve ou ligue para (512) 777-1808.",
+    "errSecurityCheckRequired": "Conclua a verificação de segurança.",
+    "errSecurityCheckFailed": "A verificação de segurança não foi aprovada. Tente novamente.",
+    "errProgramUnmatched": "Não encontramos o programa escolhido. Volte à etapa 2 e escolha seu programa novamente.",
     "errNetwork": "Não conseguimos acessar o servidor para finalizar a criação da sua conta. Verifique sua conexão com a internet e tente novamente, ou ligue para (512) 777-1808 se continuar falhando.",
     "confirmationMetaTitle": "Você está no sistema do WorkforceAP",
     "confirmationMetaDescription": "Sua inscrição está registrada. Verifique sua caixa de entrada e a pasta de spam para a confirmação e os próximos passos.",
@@ -1019,6 +1072,26 @@
     "missingHome": "Voltar ao início",
     "missingMetaTitle": "Página de inscrição escolar não encontrada"
   },
+  "partnerLanding": {
+    "metaTitle": "Apply to WorkforceAP with {partner}",
+    "eyebrow": "Referred by {partner}",
+    "title": "{partner} invited you to WorkforceAP",
+    "applyCta": "Start your application",
+    "applyCtaNote": "Applying from this page connects your application to {partner}.",
+    "programsEyebrow": "Program highlights",
+    "programsTitle": "Career training you can explore",
+    "programsBody": "A few of the programs available through WorkforceAP. You choose your program when you apply.",
+    "stepsEyebrow": "How it works",
+    "stepsTitle": "Three steps from here",
+    "privacyTitle": "What {partner} will see",
+    "closingTitle": "Ready when you are"
+  },
+  "mission": {
+    "heading": "Our mission",
+    "aboutHeading": "About WorkforceAP",
+    "statement": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. WorkforceAP equips individuals, nonprofits, counselors, and community ambassadors with workforce-readiness tools, occupational training and professional certification programs, and AI-powered résumé, interview, and job-placement assistance. Our mission is to help people secure meaningful employment, build sustainable careers, and create better lives—at no cost to eligible members through grant- and scholarship-funded memberships.",
+    "summary": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. At no cost to eligible members through grant- and scholarship-funded memberships."
+  },
   "training": {
     "myTraining": "Meu Treinamento",
     "course": "Curso",
@@ -1073,7 +1146,16 @@
     "noMessagesYet": "Nenhuma mensagem ainda",
     "yourCounselor": "Seu orientador",
     "workforceapSupport": "Suporte WorkforceAP",
-    "supportTeam": "Equipe de suporte"
+    "supportTeam": "Equipe de suporte",
+    "kitLede": "Seu orientador e o suporte em uma só caixa de entrada.",
+    "conversations": "Conversas",
+    "unreadMessage": "Mensagem não lida",
+    "backToMessages": "Voltar às mensagens",
+    "sendFailed": "Falha ao enviar",
+    "networkError": "Erro de rede",
+    "composerPlaceholder": "Escreva para {name}…",
+    "feedbackDraftNotice": "Revise os detalhes do curso e qualquer link de projeto salvo antes de enviar. Suas notas privadas não são compartilhadas.",
+    "feedbackUnavailable": "Não conseguimos carregar esse curso atribuído. Você ainda pode escrever sua mensagem abaixo."
   },
   "profile": {
     "edit": "Editar perfil",
@@ -1480,6 +1562,10 @@
     "nextActionCelebrateTip": "Suas indicações estão resultando em empregos. Mantenha o pipeline cheio.",
     "nextActionReviewProgress": "Acompanhe o progresso dos membros",
     "nextActionReviewProgressTip": "Os membros estão avançando na jornada — acompanhe seus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Ninguém precisa de atenção agora} =1 {1 membro precisa de atenção} other {# membros precisam de atenção}}",
+    "nextActionAttentionTip": "Membros que pararam ou ficaram em silêncio. Entre em contato antes que desistam.",
+    "nextActionAttentionUnavailable": "Não foi possível carregar quem precisa de atenção",
+    "nextActionAttentionUnavailableTip": "O número é desconhecido, não zero. Abra a fila para vê-lo.",
     "partnerInsights": "Insights do parceiro",
     "assistantSpeaking": "O assistente está falando…",
     "assistantListening": "Ouvindo — faça sua pergunta",
@@ -1512,6 +1598,9 @@
     "settingsGoal": "O perfil da sua organização e as preferências de notificação."
   },
   "group": {
+    "memberTools": "Ferramentas e carreiras",
+    "memberProgress": "Formação e progresso",
+    "memberAccount": "Conta e suporte",
     "workflows": "Fluxos de trabalho",
     "insights": "Informações",
     "manage": "Gerenciar"
@@ -2825,7 +2914,7 @@
       "phone": "Telefone (opcional)",
       "password": "Crie uma senha",
       "passwordPlaceholder": "Pelo menos 8 caracteres",
-      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Deixe este campo em branco.",
+      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Entre primeiro e deixe este campo em branco.",
       "accepting": "Aceitando…",
       "accept": "Aceitar convite",
       "roles": {
@@ -2844,7 +2933,9 @@
         "alreadyAccepted": "Este convite já foi aceito. Entre na sua conta.",
         "expired": "Este convite expirou. Peça ao seu contato da WorkforceAP para reenviá-lo.",
         "nameRequired": "Informe seu nome completo.",
-        "newAccountRequired": "Novas contas precisam do seu nome completo e de uma senha com pelo menos 8 caracteres.",
+        "newAccountRequired": "Novas contas precisam de uma senha com pelo menos 8 caracteres. Se você já tem uma conta, entre ou redefina sua senha e depois volte a este convite.",
+        "accountRecoveryRequired": "Já existe uma conta com este e-mail. Entre ou redefina sua senha e depois volte a este convite.",
+        "identityReviewRequired": "Não foi possível vincular este convite à conta cadastrada. Entre em contato com a equipe WorkforceAP para obter ajuda.",
         "signupUnavailable": "A criação de contas está temporariamente indisponível. Se o problema continuar, entre em contato com o suporte.",
         "loadFailed": "Não foi possível carregar este convite. Tente novamente em instantes.",
         "codeFailed": "Não foi possível verificar esse código. Tente novamente em instantes.",
@@ -2990,6 +3081,8 @@
       "adding": "Adicionando…"
     },
     "form": {
+      "typeLabel": "Tipo de meta",
+      "titleLabel": "Título da meta",
       "customPlaceholder": "Ou digite uma meta personalizada",
       "adding": "Adicionando…",
       "addGoal": "Adicionar meta",
@@ -3326,22 +3419,6 @@
         "unknown": "Ainda não há aprovação de treinamento registrada. A equipe atualiza esta etapa quando a decisão é tomada."
       }
     },
-    "applicationStatus": {
-      "not_submitted": "Nenhuma inscrição registrada",
-      "pending": "Análise pendente",
-      "needs_info": "Mais informações solicitadas",
-      "approved": "Inscrição aprovada",
-      "denied": "Inscrição encerrada",
-      "unknown": "Status não registrado"
-    },
-    "intakeStatus": {
-      "pending": "Análise pendente",
-      "in_review": "Em análise",
-      "verified": "Admissão verificada pela equipe",
-      "not_eligible": "A equipe registrou que não atende aos requisitos",
-      "needs_info": "Mais informações solicitadas",
-      "unknown": "Status não registrado"
-    },
     "trainingStatus": {
       "approved": "Capacitação aprovada",
       "pending": "Ainda não aprovada",
@@ -3667,12 +3744,12 @@
           "body": "Veja quem precisa de você hoje, onde ficam seus estudantes e programas, como o progresso do treinamento é acompanhado e onde as mensagens dos membros aguardam resposta."
         },
         "commandCenter": {
-          "title": "Centro de comando",
-          "body": "Sua base. Estudantes ativos, colocações no ano e quem precisa de atenção ficam no topo; depois, O que precisa de você hoje: respostas pendentes, candidaturas e certificações aguardando análise, preparação de entrevistas. Cada linha leva à página onde agir."
+          "title": "Hoje",
+          "body": "Sua base. Primeiro, Aguardando sua decisão: cada candidatura e cada verificação de admissão da sua organização, da mais antiga para a mais recente, e cada uma abre a tela onde ela é decidida. Depois, O que precisa de você hoje (candidaturas, certificados, novos candidatos sem conselheiro, respostas pendentes, preparação de entrevistas) e, por fim, os números da organização."
         },
         "overview": {
           "title": "Visão detalhada",
-          "body": "O quadro completo por trás do Centro de comando: total de membros, avaliações concluídas, quem está ativo no treinamento, programas matriculados e concluídos, além de inscrições e colocações recentes. Venha aqui pelos números, não só pela fila."
+          "body": "O quadro completo por trás de Hoje: total de membros, avaliações concluídas, quem está ativo no treinamento, programas matriculados e concluídos, além de inscrições e colocações recentes. Venha aqui pelos números, não só pela fila."
         },
         "students": {
           "title": "Estudantes",
@@ -3684,11 +3761,11 @@
         },
         "programs": {
           "title": "Programas",
-          "body": "Os programas de treinamento que você oferece, um cartão por programa com alunos matriculados e conclusão. Solicitações de programa, estudantes pedindo para trocar, fica logo abaixo."
+          "body": "Os programas de treinamento que você oferece, um cartão por programa com alunos matriculados e conclusão. Trilhas de carreira abre logo abaixo; Solicitações de programa, estudantes pedindo para trocar, fica em Trabalho do dia, no topo do menu lateral."
         },
         "trainingProgress": {
           "title": "Progresso do treinamento",
-          "body": "Progresso curso a curso de cada estudante matriculado, ordenável, em todo o currículo e no Coursera. Avaliações e Certificados ficam no mesmo grupo."
+          "body": "Progresso curso a curso de cada estudante matriculado, ordenável, em todo o currículo e no Coursera. Avaliações abre logo abaixo; os Certificados aguardando análise ficam em Trabalho do dia."
         },
         "settings": {
           "title": "Configurações",
@@ -3781,6 +3858,17 @@
       "body": "Tente novamente ou veja o quadro de vagas para conferir todas as oportunidades.",
       "action": "Tentar novamente",
       "secondary": "Ver vagas"
+    },
+    "applicationsUnavailable": {
+      "title": "Não foi possível carregar suas candidaturas",
+      "body": "Seus totais são desconhecidos, não zero. Tente novamente em instantes.",
+      "action": "Tentar novamente",
+      "kpiCaption": "Não foi possível carregar"
+    },
+    "openingsUnavailable": {
+      "title": "Não foi possível carregar as vagas",
+      "body": "É um problema de carregamento, não um quadro vazio. Tente novamente em instantes.",
+      "action": "Tentar novamente"
     },
     "stage": {
       "title": "Nada nesta etapa"
@@ -3990,6 +4078,17 @@
       "workQueueUnavailable": {
         "title": "Não foi possível carregar a fila de trabalho",
         "body": "Algo deu errado ao buscar a fila. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Não foi possível carregar algumas contagens da carteira",
+        "countsBody": "Um bloco com — é desconhecido, não zero. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "tileCaption": "Não foi possível carregar",
+        "queueTitle": "Não foi possível carregar quem precisa de você",
+        "queueBody": "A lista não respondeu, então isto não é uma fila vazia. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "queueSecondary": "Abrir Hoje",
+        "sessions": "Não foi possível carregar a prática de entrevistas recente.",
+        "breakdown": "Não foi possível carregar a divisão da carteira.",
         "action": "Tentar novamente"
       },
       "inbox": {

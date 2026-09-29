@@ -119,7 +119,7 @@ export default async function FindYourCareerPage() {
             {[
               { href: '/dashboard/learning', icon: 'school', label: 'Learning Hub', desc: 'All pathways and courses' },
               { href: '/dashboard/ai-tools', icon: 'auto_awesome', label: 'AI Career Tools', desc: 'Resume, interview prep, and more' },
-              { href: '/dashboard', icon: 'trending_up', label: 'Training', desc: 'Your enrolled program progress' },
+              { href: '/dashboard/program', icon: 'trending_up', label: 'My Program', desc: 'Your enrolled program progress' },
             ].map((link) => (
               <Link key={link.href} href={link.href} className="portal-action-row" style={{ gap: '0.75rem' }}>
                 <span

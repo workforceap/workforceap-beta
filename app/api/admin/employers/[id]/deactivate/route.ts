@@ -7,6 +7,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { invalidateJobListings } from '@/lib/jobs/listingCache';
 
 /**
  * Track A — Tenant Isolation Hardening (Sprint A.2 batch 2).
@@ -43,6 +44,10 @@ export const POST = withApiGuc(async (_request: Request, { params }: { params: P
       data: { status: 'inactive' },
     }),
   );
+
+  // Its jobs stay `live` but members no longer see them; drop the cached
+  // member job list so they disappear now, not after the cache TTL.
+  await invalidateJobListings().catch(() => {});
 
   await auditLog({
     actorUserId: user.id,

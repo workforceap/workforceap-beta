@@ -1,31 +1,31 @@
-import NextLink from 'next/link';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
   KpiStrip,
   DataTable,
   StatusTag,
+  SectionHeader,
   type Column,
   type KpiItem,
   type KitTone,
 } from '@/components/portal/kit';
+import type { ReactNode } from 'react';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
- * Agent Inbox — admin review queue for drafts and incomplete deliveries (dense, read-only).
- * Target route: /admin/agent-inbox  (interactive approve/dismiss UI lives behind ?ui=legacy)
+ * Agent Inbox — admin review queue for drafts and incomplete deliveries (dense).
+ * Target route: /admin/agent-inbox
  *
- * The live page is an interactive inbox: a counselor reviews AI-drafted
- * celebration / next-step emails and approves or dismisses each cascade. This
- * kit treatment is the at-a-glance summary that renders by default — a KPI
- * strip of pipeline totals plus a dense table of everything awaiting review,
- * oldest first. Approve/Send still happens in the legacy UI.
+ * A counselor reviews AI-drafted celebration / next-step emails and approves
+ * or dismisses each cascade. This kit treatment is the at-a-glance summary — a
+ * KPI strip of pipeline totals plus a dense table of everything awaiting
+ * review, oldest first. The interactive review cards (read and edit each
+ * draft, then approve or dismiss) arrive through the `review` slot and render
+ * below the table; without it the page links out to ?ui=legacy (WAP-193).
  *
- * Server-rendered (no interactivity): all data lands as plain serialized rows
- * from the page loader (`listAwaitingApprovalCascades` + `getCascadeMetrics`),
- * so this stays server-component friendly. DataTable mobile="cards" stacks the
- * wide queue on phones instead of squishing it.
+ * Server-rendered: rows land as plain serialized data from the page loader
+ * (`listAwaitingApprovalCascades` + `getCascadeMetrics`). DataTable
+ * mobile="cards" stacks the wide queue on phones instead of squishing it.
  */
 
 /** One cascade awaiting review, pre-formatted for display. */
@@ -57,7 +57,14 @@ export interface AgentInboxKitProps {
   sent: number;
   /** All-time dismissed + expired. */
   resolved: number;
+  /**
+   * Interactive review queue (read/edit each draft, approve or dismiss).
+   * Rendered below the summary table under a "Review & send" heading.
+   */
+  review?: ReactNode;
 }
+
+const REVIEW_ID = 'agent-inbox-review';
 
 export function AgentInboxKit({
   rows,
@@ -65,7 +72,9 @@ export function AgentInboxKit({
   pendingDraft,
   sent,
   resolved,
+  review,
 }: AgentInboxKitProps) {
+  const reviewHref = review ? `#${REVIEW_ID}` : '/admin/agent-inbox?ui=legacy';
   const goal =
     awaitingReview === 0
       ? 'No cascades awaiting review right now.'
@@ -144,9 +153,7 @@ export function AgentInboxKit({
         kicker="Agentforce"
         lede={goal}
         action={
-          <AstryxLink href="/admin/agent-inbox?ui=legacy" as={NextLink as never} isStandalone>
-            <Button label="Review & Send" variant="primary" size="sm" />
-          </AstryxLink>
+          <KitLinkButton href={reviewHref} label="Review & Send" variant="primary" size="sm" />
         }
       />
 
@@ -212,13 +219,23 @@ export function AgentInboxKit({
         >
           Showing {rows.length} awaiting review · approve or dismiss in the{' '}
           <a
-            href="/admin/agent-inbox?ui=legacy"
+            href={reviewHref}
             className="wa-kit-focus"
             style={{ color: 'var(--wa-accent)' }}
           >
             review queue
           </a>
         </p>
+      ) : null}
+
+      {review ? (
+        <section id={REVIEW_ID} aria-label="Review and send" style={{ marginTop: 32, scrollMarginTop: 16 }}>
+          <SectionHeader
+            title="Review & send"
+            goal="Read and edit each draft, then approve it or dismiss the cascade."
+          />
+          {review}
+        </section>
       ) : null}
     </DesignSurface>
   );

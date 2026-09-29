@@ -19,7 +19,7 @@ test('live program CTAs launch the selected Coursera course and keep Learning Hu
   assert.match(programPage, /slug:\s*c\.slug/);
   assert.match(
     programPage,
-    /launchHref:\s*launchableCourseSlugs\.has\(c\.slug\)[\s\S]{0,160}`\/api\/member\/coursera\/launch\?course=\$\{encodeURIComponent\(c\.slug\)\}`/,
+    /launchHref:\s*launchableCourseSlugs\.has\(c\.slug\)[\s\S]{0,160}courseraLaunchHref\(c\.slug\)/,
   );
   assert.match(programPage, /courseraLaunchHref=\{nextCourseLaunchHref\}/);
   assert.match(programPage, /resumeHref="\/dashboard\/learning"/);

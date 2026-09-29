@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
-import MemberNextStepsStrip from '@/components/portal/MemberNextStepsStrip';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
@@ -13,12 +12,12 @@ const action: NextBestAction = {
   id: '22222222-2222-4222-8222-222222222222', title: 'Finish your profile', body: 'Two fields left.',
   href: '/dashboard/profile', cta: 'Open profile', variant: 'default', weight: 10,
 };
-describe.each(['today', 'strip'])('%s completion persistence', (variant) => {
+// The legacy home's next-steps strip went with it (WAP-195); the kit home's
+// do-this-next card is the one surface that marks a next-best-action done.
+describe('today completion persistence', () => {
   beforeEach(() => { vi.clearAllMocks(); vi.stubGlobal('fetch', vi.fn()); });
   afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
-  const show = () => render(variant === 'today'
-    ? <MemberDoThisNextCard action={action} variant="kit" />
-    : <MemberNextStepsStrip actions={[action]} />);
+  const show = () => render(<MemberDoThisNextCard action={action} />);
   it.each(['http', 'network'])('restores an unsaved card after %s failure and still navigates', async (failure) => {
     if (failure === 'http') vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 500 } as Response);
     else vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'));

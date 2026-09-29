@@ -11,7 +11,7 @@ import { getUser } from "@/lib/auth/server";
 import { prisma } from "@/lib/db/prisma";
 import { getProgramBySlug } from "@/lib/content/programs";
 import { programDisplayTitle } from "@/lib/content/programTitle";
-import { getScoreBreakdownSafeResult } from "@/lib/readiness/score";
+import { getScoreBreakdownSafeResult, sumReadinessPoints } from "@/lib/readiness/score";
 // Use the client-safe questions file. This page doesn't need the answer
 // key (only renders question text + member's recorded answer), so we
 // avoid pulling the server-only answer-key module into this server
@@ -270,10 +270,7 @@ export default async function DashboardProfilePage({
         : Promise.resolve(null),
     ]);
     const readinessBreakdown = readinessResult.breakdown;
-    const readinessScore = Math.min(
-      100,
-      Object.values(readinessBreakdown).reduce((sum, b) => sum + b.earned, 0),
-    );
+    const readinessScore = sumReadinessPoints(readinessBreakdown);
     // Same rule as the home chip and the points page: a counter whose last
     // activity is older than yesterday is a lost streak and reads 0.
     const currentStreak = effectiveStreak({

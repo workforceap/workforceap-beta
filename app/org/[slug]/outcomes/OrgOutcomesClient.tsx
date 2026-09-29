@@ -27,12 +27,9 @@ interface PublicPartnerReport {
     placements: number;
     activeMembers: number;
     dropOffs: number;
-    dropOffRate: number;
-    avgDaysToPlacement: number | null;
-    salaryAvg: number | null;
-    salaryMedian: number | null;
-    salaryMin: number | null;
-    salaryMax: number | null;
+    /** Null when referrals are below the small-sample threshold. */
+    dropOffRate: number | null;
+    dropOffRateSuppressed: boolean;
   };
   programBreakdown: Array<{
     programSlug: string;
@@ -42,16 +39,24 @@ interface PublicPartnerReport {
   }>;
 }
 
+// docs/OUTCOMES-METHODOLOGY.md rule 1: a suppressed rate is replaced by its
+// denominator and this note; the count is still shown.
+function smallSampleNote(denominator: number): string {
+  return `N=${denominator} · sample too small for a reliable rate`;
+}
+
 function MetricCard({
   label,
   value,
   icon,
   accent,
+  hint,
 }: {
   label: string;
   value: string;
   icon: string;
   accent: 'accent' | 'blue' | 'green' | 'gold';
+  hint?: string;
 }) {
   return (
     <div className="portal-metric-card">
@@ -60,6 +65,7 @@ function MetricCard({
       </div>
       <p className="portal-metric-card__value">{value}</p>
       <p className="portal-metric-card__label">{label}</p>
+      {hint && <p className="portal-metric-card__hint">{hint}</p>}
     </div>
   );
 }
@@ -256,23 +262,17 @@ export default function OrgOutcomesClient({
             <MetricCard label="Completions" value={m.completions.toLocaleString()} icon="check_circle" accent="green" />
             <MetricCard label="Placements" value={m.placements.toLocaleString()} icon="work" accent="green" />
             <MetricCard label="Active" value={m.activeMembers.toLocaleString()} icon="timer" accent="gold" />
-            <MetricCard label="Drop-offs" value={`${m.dropOffs} (${m.dropOffRate}%)`} icon="trending_down" accent="accent" />
-            {m.avgDaysToPlacement != null && (
-              <MetricCard
-                label="Avg Days to Place"
-                value={`${m.avgDaysToPlacement}`}
-                icon="schedule"
-                accent="blue"
-              />
-            )}
-            {m.salaryAvg != null && (
-              <MetricCard
-                label="Avg Salary"
-                value={`$${m.salaryAvg.toLocaleString()}`}
-                icon="payments"
-                accent="green"
-              />
-            )}
+            <MetricCard
+              label="Drop-offs"
+              value={
+                m.dropOffRateSuppressed || m.dropOffRate == null
+                  ? m.dropOffs.toLocaleString()
+                  : `${m.dropOffs} (${m.dropOffRate}%)`
+              }
+              hint={m.dropOffRateSuppressed ? smallSampleNote(m.totalReferred) : undefined}
+              icon="trending_down"
+              accent="accent"
+            />
           </div>
 
           {/* Program breakdown */}

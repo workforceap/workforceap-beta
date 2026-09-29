@@ -18,8 +18,9 @@ import { awardPoints } from '@/lib/member/points';
  * Until 2026-09-22 only the employer path stood up a PlacementRecord; the
  * member's confirmation wrote an event and stopped, so a self-reported hire
  * never reached the 30/60/90-day retention check-ins
- * (lib/cron/placement-surveys.ts), the First 90 Days card
- * (app/(portal)/dashboard/page.tsx) or any placement count. Both paths now
+ * (lib/cron/placement-surveys.ts), the First 90 Days card (now on the kit
+ * home, components/portal/kit/pages/member/MemberHomeKit.tsx) or any
+ * placement count. Both paths now
  * come through here.
  *
  * ## Idempotency

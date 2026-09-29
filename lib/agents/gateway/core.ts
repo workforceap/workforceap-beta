@@ -1,3 +1,4 @@
+import { LEGACY_TRAINING_STUB_HREF, MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
 import {
   MEMBER_AGENT_TOOL_NAMES,
   type AgentGatewayHandoff,
@@ -50,7 +51,21 @@ function safePortalHref(value: string): string {
   }
 }
 
-function trustedNextActionFromHref(value: string): NonNullable<MemberNextStepData['action']> {
+/**
+ * Trusted program facts from the scoped snapshot (never from stored action
+ * prose). A My Program link means different things depending on them: an
+ * unenrolled member is sent there to choose a program, an enrolled one to
+ * train.
+ */
+type ProgramActionState = Readonly<{
+  hasAssignedProgram: boolean;
+  trainingInProgress: boolean;
+}>;
+
+function trustedNextActionFromHref(
+  value: string,
+  program: ProgramActionState,
+): NonNullable<MemberNextStepData['action']> {
   const href = safePortalHref(value);
   const path = href.split(/[?#]/, 1)[0];
   if (path === '/dashboard/resume') {
@@ -80,13 +95,37 @@ function trustedNextActionFromHref(value: string): NonNullable<MemberNextStepDat
       ctaHref: href,
     };
   }
-  if (path === '/dashboard/training') {
+  // My Program owns both the program picker and training. The old training
+  // stub only redirects there, so a stored stub link is rewritten to My
+  // Program directly, keeping its query and hash. The copy comes from the
+  // member's program state, so an unenrolled member is never told to continue
+  // training in an assigned program.
+  if (path === MEMBER_PROGRAM_HREF || path === LEGACY_TRAINING_STUB_HREF) {
+    const ctaHref = `${MEMBER_PROGRAM_HREF}${href.slice(path.length)}`;
+    if (!program.hasAssignedProgram) {
+      return {
+        id: 'choose_program',
+        title: 'Choose your program',
+        description: 'Open My Program to pick the training program that fits your goals.',
+        ctaLabel: 'Open My Program',
+        ctaHref,
+      };
+    }
+    if (program.trainingInProgress) {
+      return {
+        id: 'continue_training',
+        title: 'Continue training',
+        description: 'Open My Program to review your assigned program and next course.',
+        ctaLabel: 'Open My Program',
+        ctaHref,
+      };
+    }
     return {
-      id: 'continue_training',
-      title: 'Continue training',
-      description: 'Open My Training to review your assigned program and next course.',
-      ctaLabel: 'Open My Training',
-      ctaHref: href,
+      id: 'review_program',
+      title: 'Review My Program',
+      description: 'Open My Program to review your program details and next steps.',
+      ctaLabel: 'Open My Program',
+      ctaHref,
     };
   }
   return {
@@ -187,7 +226,15 @@ export function createMemberAgentGateway(args: {
       // Next-action prose can contain provider- or employer-sourced text. Do
       // not place it in the model-visible response. Only expose deterministic
       // copy for the small set of reviewed portal destinations.
-      const action = trustedNextActionFromHref(first.href);
+      const action = trustedNextActionFromHref(first.href, {
+        hasAssignedProgram: Boolean(snapshot.programSlug),
+        trainingInProgress: Boolean(
+          snapshot.programSlug &&
+            snapshot.training &&
+            !snapshot.training.allComplete &&
+            snapshot.training.totalCourses > 0,
+        ),
+      });
       return {
         status: 'ok',
         asOf: asOf(),
@@ -284,7 +331,7 @@ export function createMemberAgentGateway(args: {
             curriculumTruth,
           },
           memberFacingMessage: 'Your program is assigned, but its training progress is not available right now.',
-          handoff: handoff('portal', '/dashboard/training', 'Training progress needs portal review.'),
+          handoff: handoff('portal', MEMBER_PROGRAM_HREF, 'Training progress needs portal review.'),
         };
       }
 
@@ -330,7 +377,7 @@ export function createMemberAgentGateway(args: {
         handoff: {
           recommended: false,
           destination: 'portal',
-          href: '/dashboard/training',
+          href: MEMBER_PROGRAM_HREF,
           reason: null,
         },
       };
@@ -360,7 +407,7 @@ export function createMemberAgentGateway(args: {
           source: source(['coursera_course_progress']),
           data: empty,
           memberFacingMessage: 'No synchronized Coursera progress is linked to your account yet.',
-          handoff: handoff('portal', '/dashboard/training', 'Check activation and course launch status in My Training.'),
+          handoff: handoff('portal', MEMBER_PROGRAM_HREF, 'Check activation and course launch status in My Program.'),
         };
       }
 
@@ -392,7 +439,7 @@ export function createMemberAgentGateway(args: {
         handoff: {
           recommended: false,
           destination: 'portal',
-          href: '/dashboard/training',
+          href: MEMBER_PROGRAM_HREF,
           reason: null,
         },
       };

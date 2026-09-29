@@ -87,9 +87,9 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
           <strong>$0</strong>
         </div>
         <div class="hc-chips">
-          <span>Real-time tracking</span>
+          <span>Referral tracking</span>
           <span>Zero referral fees</span>
-          <span>1–2 day setup</span>
+          <span>Staff-reviewed setup</span>
         </div>
       </div>
     </div>
@@ -113,7 +113,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
     <div class="steps" style="grid-template-columns:repeat(3,1fr)">
       <div class="stepcard"><div class="num">1</div><h3>Email or sign up</h3><p>Fill the signup form below or email partners@workforceap.org with a quick note about your org.</p></div>
       <div class="stepcard"><div class="num">2</div><h3>Get portal access</h3><p>We review your request, provision your partner portal, and email you your unique referral link.</p></div>
-      <div class="stepcard"><div class="num">3</div><h3>Start referring</h3><p>Send referrals via the portal, your link, or a CSV upload. Watch milestones land in real time.</p></div>
+      <div class="stepcard"><div class="num">3</div><h3>Start referring</h3><p>Share your referral link or invite someone from the portal. Review available milestones in your dashboard after they sign up.</p></div>
     </div>
   </div></section>
 
@@ -125,10 +125,10 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
       <p>Built for the people who refer, fund, and follow up on outcomes.</p>
     </div>
     <div class="vgrid">
-      <div class="vcard"><div class="ic ic--c"><Icon name="trending-up" /></div><div><h3>Real-time 1:1 tracking</h3><p>See every referral move from intake to placement. No more emailing for status updates — your dashboard always knows.</p></div></div>
-      <div class="vcard"><div class="ic ic--g"><Icon name="file-text" /></div><div><h3>Outcome reporting for funders</h3><p>Export enrollment, completion, and placement data in funder-ready formats. WIOA-aligned where applicable.</p></div></div>
-      <div class="vcard"><div class="ic ic--b"><Icon name="lock" /></div><div><h3>FERPA-conscious privacy</h3><p>Member consent gates every data exchange. You see what you need; nothing you do not.</p></div></div>
-      <div class="vcard"><div class="ic ic--gr"><Icon name="dollar" /></div><div><h3>Zero referral fees</h3><p>We never charge to refer. Funding flows to partners after verified placement — never from member fees.</p></div></div>
+      <div class="vcard"><div class="ic ic--c"><Icon name="trending-up" /></div><div><h3>Referral progress</h3><p>See members who sign up through your link or invitation and the progress information available in your dashboard.</p></div></div>
+      <div class="vcard"><div class="ic ic--g"><Icon name="file-text" /></div><div><h3>Outcome reporting for funders</h3><p>Download referral and outcome CSVs to support your reporting. Confirm funder-specific requirements with our team.</p></div></div>
+      <div class="vcard"><div class="ic ic--b"><Icon name="lock" /></div><div><h3>Scoped partner access</h3><p>Your portal is scoped to your organization's referrals, with separate views and exports for authorized partner users.</p></div></div>
+      <div class="vcard"><div class="ic ic--gr"><Icon name="dollar" /></div><div><h3>Zero referral fees</h3><p>There is no charge to refer. Member services are funded by grants and partnerships.</p></div></div>
     </div>
   </div></section>
 
@@ -157,7 +157,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
         <span class="typetag">You are:</span>
         <h3>Referral Partners</h3>
         <div class="who">Nonprofits, social services, churches, reentry programs, community centers, workforce centers, federal one-stop centers.</div>
-        <p class="why">Refer clients who need career training. We follow up on every referral by email. There is no cost to refer. You get updates when referred individuals complete programs.</p>
+        <p class="why">Refer clients who need career training. We email invited candidates and provide a portal for tracking referred members. There is no cost to refer.</p>
         <a class="go" href={partnerSignupHref}>Register your organization →</a>
       </div>
       <div class="pcard">
@@ -368,15 +368,15 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
         <div class="feat-rows">
           <div class="feat-row">
             <span class="ic ic--c"><Icon name="pencil" /></span>
-            <div><h3>Smart Intake</h3><p>Structured enrollment and eligibility screening reduces onboarding time by 60%, letting counselors focus on high-touch support.</p></div>
+            <div><h3>Smart Intake</h3><p>Structured referrals give staff the details they need to review an intake and follow up.</p></div>
           </div>
           <div class="feat-row">
             <span class="ic ic--b"><Icon name="bar-chart" /></span>
-            <div><h3>Real-Time Dashboards</h3><p>Partners access live data on referral status, enrollment progress, certification completions, and placement outcomes.</p></div>
+            <div><h3>Partner Dashboards</h3><p>View referral status, training progress, milestones, and recorded outcomes in your partner portal.</p></div>
           </div>
           <div class="feat-row">
             <span class="ic ic--gr"><Icon name="check-circle" /></span>
-            <div><h3>Verification &amp; Reporting</h3><p>Automated credential verification and WIOA-compliant reporting ensures accountability across every partnership.</p></div>
+            <div><h3>Progress &amp; Reporting</h3><p>Review referral milestones and download reports for your own referred members.</p></div>
           </div>
         </div>
       </div>
@@ -393,19 +393,19 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
     <div class="faq">
       <details>
         <summary>Can we co-brand the referral experience?<span class="pl">+</span></summary>
-        <p>Yes. Strategic partners get a co-branded landing page and referral link. Your logo, your colors, your voice — pointing at our intake.</p>
+        <p>We can discuss branding for a referral partnership. Contact us about what is available for your organization.</p>
       </details>
       <details>
         <summary>Do you share member contact info?<span class="pl">+</span></summary>
-        <p>Only with explicit member consent, and only the fields you need for follow-up. Members can revoke at any time, and you will see consent state on every record.</p>
+        <p>Partner exports may include email addresses for members referred by your organization. Ask our team about consent and permitted follow-up.</p>
       </details>
       <details>
         <summary>What notifications do we get?<span class="pl">+</span></summary>
-        <p>Email + in-portal alerts on every milestone: application started, enrolled, certification earned, placed. You choose digest cadence in your partner settings.</p>
+        <p>Partner settings let you choose email notifications for enrollment, course completion, certification, and placement. Referral activity is also available in the portal.</p>
       </details>
       <details>
         <summary>Can we bulk-import referrals?<span class="pl">+</span></summary>
-        <p>Yes — CSV upload with column mapping. We validate rows, deduplicate against existing members, and surface errors row-by-row before commit.</p>
+        <p>The portal supports individual invitations and referral links. Contact our team if you need to discuss a larger batch.</p>
       </details>
       <details>
         <summary>Is there a fee to be a partner?<span class="pl">+</span></summary>
@@ -413,7 +413,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
       </details>
       <details>
         <summary>How do reports work?<span class="pl">+</span></summary>
-        <p>Pull placement, completion, and demographic reports straight from your partner dashboard. Schedule monthly exports to your inbox or your funder's data warehouse.</p>
+        <p>Download referral, outcome, and demographic CSVs from your partner dashboard when you need them.</p>
       </details>
     </div>
   </div></section>
@@ -426,7 +426,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
     <div class="close__veil" aria-hidden="true"></div>
     <div class="close__inner wrap">
       <h2>Start a Partnership</h2>
-      <p>Clear next steps, real outcomes, and a team that follows up on every referral.</p>
+      <p>Clear next steps, referral tracking, and a team you can contact for support.</p>
       <div class="acts acts--center">
         <a class="bbtn bbtn--gold" href={partnerSignupHref}>Register as a referral partner →</a>
         <a class="bbtn bbtn--outline" href={employersHref}>I am hiring (employers)</a>

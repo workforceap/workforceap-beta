@@ -10,7 +10,7 @@ import { prisma } from '@/lib/db/prisma';
 import { formatPortalDateTime } from '@/lib/formatDate';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 
-import { loadPartnerReferralBundle, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
+import { loadPartnerReferralBundle, pendingPlacementWindowStart, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
 import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/lib/pipeline/stage';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import PartnerReferredMembersMobile, { type PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
@@ -18,6 +18,7 @@ import { formatPortalDate } from '@/lib/formatDate';
 import CopyReferralLink from '@/components/partner/CopyReferralLink';
 import PartnerReferralShare from '@/components/partner/PartnerReferralShare';
 import { buildPartnerReferralLink } from '@/lib/partner/referralLink';
+import { buildPartnerShareLinks } from '@/lib/partner/shareLinks';
 import PartnerMembersList from '@/components/portal/PartnerMembersList';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
@@ -37,8 +38,11 @@ import type { DataTableColumn } from '@/components/portal/ui/DataTable';
 import PartnerReferralResourcesSection from '@/components/partner/PartnerReferralResourcesSection';
 import PendingApprovalBanner from '@/components/partner/PendingApprovalBanner';
 import PartnerConnectPayoutButton from '@/components/partner/PartnerConnectPayoutButton';
-import { getPartnerPlacementPayoutUsd } from '@/lib/partner/partnerPayout';
+import { getPartnerPlacementPayoutUsd, isPartnerPlacementPayoutRateConfigured } from '@/lib/partner/partnerPayout';
+import { countUnpaidVerifiedPlacements } from '@/lib/partner/unpaidVerifiedPlacements';
+import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import { isReferralPartner } from '@/lib/partner/partnerType';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 import { buildPartnerReferralBadge, isOutcomesSocialProofEnabled } from '@/lib/outcomes/socialProof';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
@@ -61,6 +65,7 @@ import {
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getTourOffer } from '@/lib/tours/getTourOffer';
 import { eventNameReadCandidates } from '@/lib/events/names';
+import { partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('partner');
@@ -176,13 +181,41 @@ export default async function PartnerDashboardPage({
   // count/findMany queries only. NO bundle, NO $transaction, NO external HTTP.
   // v2 kit is the DEFAULT partner overview; legacy via ?ui=legacy.
   if (requestedUi !== 'legacy') {
-    const memberFilter = {
+    // Minors are hidden from non-school partners (lib/partner/dataAccess.ts):
+    // every count and row below shares this population.
+    const access = partnerDataAccess(ctx.partner);
+    const memberFilter = withPartnerMemberVisibility({
       deletedAt: null,
       organizationId: ctx.partner.organizationId,
       ...MEMBER_ONLY_WHERE,
+    }, access);
+    // One pending row and one count per referred member, even if they sent
+    // several confirmations. A verified placement is no longer pending.
+    const pendingEventFilter = {
+      eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
+      createdAt: { gte: pendingPlacementWindowStart() },
     };
-    const [referredCount, enrolledCount, placedCount, pendingPlacementEvents, recentReferrals, payoutEvents] =
-      await Promise.all([
+    const pendingMemberFilter = {
+      ...memberFilter,
+      partnerReferrals: {
+        some: { partnerId: ctx.partnerId, partner: { organizationId: ctx.partner.organizationId } },
+      },
+      OR: [
+        { placementRecord: { is: null } },
+        { placementRecord: { is: { startDateVerified: false } } },
+      ],
+    };
+    const pendingPlacementWhere = { ...pendingEventFilter, user: pendingMemberFilter };
+    const [
+      referredCount,
+      enrolledCount,
+      placedCount,
+      pendingPlacementEvents,
+      recentReferrals,
+      payoutEvents,
+      pendingPlacementCount,
+      attentionCount,
+    ] = await Promise.all([
         prisma.partnerReferral.count({
           where: {
             partnerId: ctx.partnerId,
@@ -199,20 +232,19 @@ export default async function PartnerDashboardPage({
         }),
         prisma.placementRecord.count({
           where: {
-            user: {
+            startDateVerified: true,
+            user: withPartnerMemberVisibility({
               partnerReferrals: { some: { partnerId: ctx.partnerId } },
               organizationId: ctx.partner.organizationId,
-            },
+            }, access),
           },
         }),
         prisma.memberEvent.findMany({
-          where: {
-            eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
-            user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
-          },
+          where: pendingPlacementWhere,
           orderBy: { createdAt: 'desc' },
           take: 8,
-          select: { id: true, userId: true, metadata: true, createdAt: true },
+          distinct: ['userId'],
+          select: { id: true, userId: true, createdAt: true },
         }),
         // Same population as the "Members referred" count above, so the
         // table never lists a staff or seeded-fixture account the tile
@@ -243,7 +275,7 @@ export default async function PartnerDashboardPage({
         prisma.memberEvent.findMany({
           where: {
             eventName: { in: eventNameReadCandidates('partner_payout_sent') },
-            user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
+            user: withPartnerMemberVisibility({ partnerReferrals: { some: { partnerId: ctx.partnerId } } }, access),
           },
           orderBy: { createdAt: 'desc' },
           take: 10,
@@ -253,6 +285,19 @@ export default async function PartnerDashboardPage({
             metadata: true,
             user: { select: { fullName: true } },
           },
+        }),
+        prisma.partnerReferral.count({
+          where: {
+            partnerId: ctx.partnerId,
+            partner: { organizationId: ctx.partner.organizationId },
+            member: { ...pendingMemberFilter, memberEvents: { some: pendingEventFilter } },
+          },
+        }),
+        // The rail badge's number (one aggregate query). A failure is unknown,
+        // not zero, so the card says so instead of "no one" (WAP-215).
+        countPartnerAttention(ctx.partnerId, ctx.partner.organizationId).catch((err: unknown) => {
+          console.error('[partner overview] attention count failed', err);
+          return null;
         }),
       ]);
 
@@ -285,7 +330,7 @@ export default async function PartnerDashboardPage({
     const referralMobileRows: PartnerMemberRow[] = recentReferrals.flatMap((r) => {
       const m = r.member;
       if (!m) return [];
-      const stage: PipelineStage = m.placementRecord ? 'placed' : m.enrolledAt ? 'enrolled' : 'applied';
+      const stage: PipelineStage = m.placementRecord?.startDateVerified ? 'placed' : m.enrolledAt ? 'enrolled' : 'applied';
       return [
         {
           id: m.id,
@@ -376,10 +421,18 @@ export default async function PartnerDashboardPage({
       },
     ];
 
-    // "Payout due" KPI — same estimate formula as the legacy path's
-    // Estimated Payout card (placements × payout-per-placement), computed
-    // from counts already in hand. Referral-partner track only.
-    const payoutDueUsd = placedCount * getPartnerPlacementPayoutUsd();
+    // "Payout due" KPI (referral-partner track only): placements the payout
+    // route would pay now — verified and not yet paid — at the per-placement
+    // rate (WAP-213). It used to be every placement ever × the rate, paid and
+    // unverified ones included. The legacy ?ui=legacy estimate is unchanged
+    // (WAP-193 retires that branch).
+    const unpaidVerified = showPayouts
+      ? await countUnpaidVerifiedPlacements(ctx.partnerId, ctx.partner.organizationId, access)
+      : 0;
+    const payoutDueUsd = unpaidVerified * getPartnerPlacementPayoutUsd();
+    const payoutDueSubtitle = `${unpaidVerified} verified placement${unpaidVerified === 1 ? '' : 's'} not yet paid${
+      isPartnerPlacementPayoutRateConfigured() ? '' : ' · estimated rate'
+    }`;
     const fmtMoneyKit = (n: number) =>
       new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -396,7 +449,12 @@ export default async function PartnerDashboardPage({
 
           {/* `tour-referral-link`: step 1 of the partner guided tour (lib/tours/registry.ts). */}
           <div data-tour="tour-referral-link">
-            <PartnerReferralShare url={referralApplyUrl} referralCode={refParam} />
+            <PartnerReferralShare
+              url={referralApplyUrl}
+              referralCode={refParam}
+              landingUrl={buildPartnerShareLinks({ referralCode: partnerRow.referralCode, slug: partnerRow.slug ?? ctx.partner.slug, name: ctx.partner.name }).landingUrl}
+              shareToolsHref="/partner/guide#share-tools"
+            />
           </div>
 
           <PartnerKpiGrid
@@ -423,7 +481,7 @@ export default async function PartnerDashboardPage({
                 ? {
                     label: 'Payout due',
                     value: fmtMoneyKit(payoutDueUsd),
-                    subtitle: t('placementEstimate'),
+                    subtitle: payoutDueSubtitle,
                     icon: <Wallet size={16} />,
                   }
                 : {
@@ -438,9 +496,13 @@ export default async function PartnerDashboardPage({
           <PartnerReferralFunnel stages={funnelStages} />
 
           <PartnerAttentionCard
-            title={t('nextActionReviewProgress')}
-            body={t('nextActionReviewProgressTip')}
-            href="/partner/referred-members"
+            title={
+              attentionCount === null
+                ? t('nextActionAttentionUnavailable')
+                : t('nextActionAttention', { count: attentionCount })
+            }
+            body={attentionCount === null ? t('nextActionAttentionUnavailableTip') : t('nextActionAttentionTip')}
+            href="/partner/attention"
           />
 
           <PartnerAssistantAccordion title={t('partnerAssistant')} hint="(tap to open)">
@@ -460,7 +522,7 @@ export default async function PartnerDashboardPage({
           {pendingPlacementEvents.length > 0 ? (
             <div className="wa-flex wa-flex-col wa-gap-3">
               <KitSectionHeader
-                title={t('nextActionReviewPlacements', { count: pendingPlacementEvents.length })}
+                title={t('nextActionReviewPlacements', { count: pendingPlacementCount })}
                 goal={t('nextActionReviewPlacementsTip')}
                 action={
                   <Link href="/partner/outcomes" className="portal-section-action">
@@ -469,18 +531,11 @@ export default async function PartnerDashboardPage({
                 }
               />
               {pendingPlacementEvents.map((ev) => {
-                const label =
-                  ev.metadata &&
-                  typeof ev.metadata === 'object' &&
-                  ev.metadata !== null &&
-                  'label' in ev.metadata
-                    ? String((ev.metadata as { label?: string }).label)
-                    : t('pendingVerification');
                 return (
                   <QueueRow
                     key={ev.id}
                     tone="yellow"
-                    title={label}
+                    title={t('pendingVerification')}
                     meta={formatPortalDate(ev.createdAt)}
                     flag={t('pendingVerification')}
                     action={
@@ -613,7 +668,7 @@ export default async function PartnerDashboardPage({
         status: 'rewarded',
         referee: {
           deletedAt: null,
-          placementRecord: { isNot: null },
+          placementRecord: { is: { startDateVerified: true } },
         },
       },
     }),
@@ -640,11 +695,18 @@ export default async function PartnerDashboardPage({
     memberIds.length === 0
       ? []
       : await prisma.memberEvent.findMany({
-          where: { userId: { in: memberIds } },
+          where: {
+            userId: { in: memberIds },
+            eventName: { in: partnerVisibleEventNames() },
+          },
           orderBy: { createdAt: 'desc' },
           take: 15,
-          include: { user: { select: { fullName: true } } },
+          select: { id: true, eventName: true, createdAt: true, user: { select: { fullName: true } } },
         });
+  const visibleEvents = events.flatMap((event) => {
+    const label = partnerEventLabel(event.eventName);
+    return label ? [{ id: event.id, label, user: event.user, createdAt: event.createdAt }] : [];
+  });
 
   const stageCounts: Record<string, number> = {};
   for (const s of JOURNEY_STAGES) {
@@ -657,7 +719,7 @@ export default async function PartnerDashboardPage({
     }
   }
 
-  const placements = members.filter((m) => m.placementRecord).length;
+  const placements = members.filter((m) => m.placementRecord?.startDateVerified === true).length;
   const inTraining = pipelineMembers.filter((p) => p.stage === 'in_training' || p.stage === 'certified').length;
 
   const total = members.length;
@@ -672,10 +734,12 @@ export default async function PartnerDashboardPage({
   const referralTableRows = pipelineMembers.map((p) => {
     const stageLabel = (PIPELINE_STAGE_LABELS as Record<string, string>)[p.stage] ?? p.stage;
     const enrollmentDate = p.member.enrolledAt ? formatPortalDate(p.member.enrolledAt) : '—';
-    const placementDate = p.member.placementRecord?.placedAt ? formatPortalDate(p.member.placementRecord.placedAt) : '—';
+    const placementDate = p.member.placementRecord?.startDateVerified && p.member.placementRecord.placedAt
+      ? formatPortalDate(p.member.placementRecord.placedAt)
+      : '—';
     let payoutStatus = t('notPlaced');
-    if (p.member.placementRecord) payoutStatus = t('includedInEstimate');
-    else if (pendingUserIds.has(p.member.id)) payoutStatus = t('pendingVerification');
+    if (p.member.placementRecord?.startDateVerified) payoutStatus = t('includedInEstimate');
+    else if (p.member.placementRecord || pendingUserIds.has(p.member.id)) payoutStatus = t('pendingVerification');
     return {
       id: p.member.id,
       fullName: p.member.fullName ?? t('memberFallback'),
@@ -1410,17 +1474,14 @@ export default async function PartnerDashboardPage({
           <section className="partner-activity partner-panel">
             <details className="partner-activity-collapsed">
               <summary>{t('recentActivity')}</summary>
-              {events.length === 0 ? (
+              {visibleEvents.length === 0 ? (
                 <p className="partner-activity-empty">{t('noMilestoneEventsYet')}</p>
               ) : (
                 <ul>
-                  {events.map((ev) => (
+                  {visibleEvents.map((ev) => (
                     <li key={ev.id}>
                       <strong>{ev.user.fullName}</strong>
-                      <span> · {ev.eventName}</span>
-                      {ev.metadata && typeof ev.metadata === 'object' && ev.metadata !== null && 'label' in ev.metadata && (
-                        <span> — {String((ev.metadata as { label?: string }).label)}</span>
-                      )}
+                      <span> · {ev.label}</span>
                       <span className="partner-activity-date">{formatPortalDateTime(ev.createdAt)}</span>
                     </li>
                   ))}

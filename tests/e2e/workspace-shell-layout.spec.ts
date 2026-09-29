@@ -244,3 +244,40 @@ test.describe('site footer does not cover member content', () => {
     });
   }
 });
+
+/**
+ * WAP-208: the staff header's meta row (view switcher + bell) could not shrink
+ * at phone width — a later base rule (`flex-shrink: 0`) beat the phone rule in
+ * css/portal-main-extracted.css — so at 390px the header ran 8px past the
+ * screen and the notification bell was cut off.
+ */
+test.describe('staff header at phone width', () => {
+  for (const width of [360, 375, 390]) {
+    test(`fits the screen and keeps the bell and view switcher whole at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/dev/staff/admin-shell');
+      const header = page.locator('.workspace-shell-header');
+      await expect(header).toBeVisible();
+
+      const m = await page.evaluate(() => {
+        const box = (el: Element | null) => (el ? el.getBoundingClientRect().toJSON() : null);
+        const headerEl = document.querySelector('.workspace-shell-header') as HTMLElement;
+        const meta = headerEl.querySelector('.workspace-shell-header__meta');
+        return {
+          headerScroll: headerEl.scrollWidth,
+          headerClient: headerEl.clientWidth,
+          meta: box(meta),
+          switcher: box(headerEl.querySelector('.super-admin-view-switcher')),
+          actions: box(headerEl.querySelector('.portal-shell-header__actions')),
+        };
+      });
+
+      expect(m.headerScroll).toBeLessThanOrEqual(m.headerClient);
+      expect(m.actions, 'header actions (bell)').not.toBeNull();
+      expect(m.actions!.right).toBeLessThanOrEqual(width);
+      if (m.switcher && m.meta) {
+        expect(m.switcher.left).toBeGreaterThanOrEqual(m.meta.left - 0.5);
+      }
+    });
+  }
+});

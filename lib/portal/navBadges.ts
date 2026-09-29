@@ -1,10 +1,15 @@
 import { prisma } from '@/lib/db/prisma';
-import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
+import { partnerDataAccess, withPartnerMemberVisibility, type PartnerDataAccess } from '@/lib/partner/dataAccess';
+import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { adminApplicationsAwaitingDecisionWhere } from '@/lib/admin/adminApprovalQueue';
 import { countThreadsWithSlaBreach, countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
 import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
 import { memberUnreadStaffMessagesWhere } from '@/lib/messages/memberUnread';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
+import { partnerMilestoneEventNameCandidates } from '@/lib/partner/milestoneEvents';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   countAwaitingApprovalCascades,
   resolveCascadeScope,
@@ -21,20 +26,27 @@ export async function getNavBadgeCountsForUser(
   userId: string
 ): Promise<NavBadgeCounts> {
   if (role === 'admin') {
+    // `?role=admin` is a query parameter any signed-in account can send, so
+    // every admin count sits behind one gate (WAP-199): an admin of the
+    // actor's own org, or a super-admin. Everyone else gets an empty set,
+    // like the employer / partner / counselor branches with no portal context.
+    const orgId = await getActorOrganizationId(userId);
+    if (!(await isAdminInOrg(userId, orgId))) return {};
     // Admin gets the agent-inbox count, tenant-scoped to their org so the
     // badge number matches what they'll actually see in /admin/agent-inbox.
     // Super-admins get the unscoped count. Defensive .catch so a query
     // failure doesn't break the whole nav.
     const scope = await resolveCascadeScope(userId).catch(() => ({ kind: 'deny' as const }));
     const milestones_awaiting_approval = await countAwaitingApprovalCascades({ scope }).catch(() => 0);
+    const applications = await countAdminApplicationsPending(orgId);
     if (await isSuperAdmin(userId)) {
       const [counselor_sla_breach_48h, member_messages_unanswered] = await Promise.all([
         countThreadsWithSlaBreach(48),
         countUnansweredMemberThreads(),
       ]);
-      return { counselor_sla_breach_48h, member_messages_unanswered, milestones_awaiting_approval };
+      return { counselor_sla_breach_48h, member_messages_unanswered, milestones_awaiting_approval, ...applications };
     }
-    return { milestones_awaiting_approval };
+    return { milestones_awaiting_approval, ...applications };
   }
 
   if (role === 'member' || role === 'group') {
@@ -53,7 +65,7 @@ export async function getNavBadgeCountsForUser(
     const sa = await isSuperAdmin(userId);
     const ctx = await getPartnerForUser(userId, { isSuperAdminHint: sa });
     if (!ctx) return {};
-    return getPartnerBadgeCounts(ctx.partnerId, ctx.partner.organizationId);
+    return getPartnerBadgeCounts(ctx.partnerId, ctx.partner.organizationId, partnerDataAccess(ctx.partner));
   }
 
   if (role === 'counselor') {
@@ -69,6 +81,20 @@ export async function getNavBadgeCountsForUser(
   }
 
   return {};
+}
+
+/**
+ * The Applications rail row's badge (WAP-190): PENDING applications in the
+ * actor's own organization — the same where, and so the same number, as
+ * "waiting on your decision" on the admin Today (lib/admin/adminApprovalQueue.ts).
+ * Scoped to the actor's org for super-admins too, like the workbench it opens.
+ * The caller has already checked the actor is an admin of `orgId` (or a
+ * super-admin). A failed count throws, so the route answers 503 instead of a
+ * false zero.
+ */
+async function countAdminApplicationsPending(orgId: string): Promise<Pick<NavBadgeCounts, 'admin_applications_pending'>> {
+  const admin_applications_pending = await prisma.application.count({ where: adminApplicationsAwaitingDecisionWhere(orgId) });
+  return { admin_applications_pending };
 }
 
 async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
@@ -105,12 +131,11 @@ async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
 }
 
 async function getEmployerBadgeCounts(employerId: string): Promise<NavBadgeCounts> {
-  const [draft, pendingReview, live, newApplications, queueBadges, employerRow, thread] = await Promise.all([
+  const [draft, pendingReview, newApplications, queueBadges, employerRow, thread] = await Promise.all([
     prisma.job.count({ where: { employerId, status: 'draft' } }),
     prisma.job.count({
       where: { employerId, status: { in: ['pending', 'approved'] } },
     }),
-    prisma.job.count({ where: { employerId, status: 'live' } }),
     prisma.jobPostingApplication.count({
       where: {
         job: { employerId },
@@ -145,7 +170,6 @@ async function getEmployerBadgeCounts(employerId: string): Promise<NavBadgeCount
   return {
     jobs_draft: draft,
     jobs_pending: pendingReview,
-    jobs_live: live,
     applications_new: newApplications,
     employer_messages_unread,
     ...queueBadges,
@@ -204,15 +228,26 @@ async function getCounselorBadgeCounts(counselorId: string, userId: string): Pro
   };
 }
 
-async function getPartnerBadgeCounts(partnerId: string, organizationId: string): Promise<NavBadgeCounts> {
+async function getPartnerBadgeCounts(
+  partnerId: string,
+  organizationId: string,
+  access: PartnerDataAccess,
+): Promise<NavBadgeCounts> {
   const since = new Date();
   since.setDate(since.getDate() - MILESTONE_LOOKBACK_DAYS);
 
   const [attentionCount, referralIds, partnerUsers, thread] = await Promise.all([
     countPartnerAttention(partnerId, organizationId),
+    // Same population as the partner overview and milestones feed: referred
+    // members of this org who are members, not staff or seeded fixtures, and
+    // not minors hidden from this partner (lib/partner/dataAccess.ts).
     prisma.partnerReferral.findMany({
       take: 500,
-      where: { partnerId, member: { deletedAt: null } },
+      where: {
+        partnerId,
+        partner: { organizationId },
+        member: withPartnerMemberVisibility({ deletedAt: null, organizationId, ...MEMBER_ONLY_WHERE }, access),
+      },
       select: { memberId: true },
     }),
     prisma.partnerUser.findMany({
@@ -229,9 +264,12 @@ async function getPartnerBadgeCounts(partnerId: string, organizationId: string):
   const memberIds = referralIds.map((r) => r.memberId);
   let milestonesNew = 0;
   if (memberIds.length > 0) {
+    // Milestones in the last 7 days, not "since last seen": partners have no
+    // read marker for the feed. Only the events the feed lists (WAP-214).
     milestonesNew = await prisma.memberEvent.count({
       where: {
         userId: { in: memberIds },
+        eventName: { in: partnerMilestoneEventNameCandidates() },
         createdAt: { gte: since },
       },
     });

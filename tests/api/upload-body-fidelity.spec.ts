@@ -8,6 +8,8 @@
  * and spans exactly its own backing store, so a `.buffer` read at the storage
  * boundary cannot over-read adjacent memory. A binary fixture with every byte
  * value plus CR/LF/boundary-like sequences guards multipart parsing itself.
+ * Each fixture starts with a real header for its type (S03 part 2: the routes
+ * refuse bytes that are not the type the file name claims).
  */
 import { Buffer } from 'node:buffer';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -77,8 +79,8 @@ import { POST as uploadEmployerLogo } from '@/app/api/employer/logo/route';
  * view into a larger pooled allocation, as `Buffer.from` does for small
  * payloads, so the route must copy rather than forward the pool.
  */
-function binaryFixture(label: string): { bytes: Uint8Array; expected: Buffer } {
-  const parts: Buffer[] = [Buffer.from(label, 'utf8')];
+function binaryFixture(label: string, header: Buffer): { bytes: Uint8Array; expected: Buffer } {
+  const parts: Buffer[] = [header, Buffer.from(label, 'utf8')];
   parts.push(Buffer.from(Array.from({ length: 256 }, (_, i) => i)));
   parts.push(Buffer.from('\r\n--\r\n----WebKitFormBoundary\r\nContent-Type: text/plain\r\n\r\n\u0000\u0000', 'latin1'));
   parts.push(Buffer.from(Array.from({ length: 1024 }, (_, i) => (i * 37 + 11) & 0xff)));
@@ -124,6 +126,8 @@ type RouteCase = {
   filename: string;
   type: string;
   expectedPath: string;
+  /** The real leading bytes of `type`, so the route's signature check passes. */
+  header: Buffer;
   post: (request: Request) => Promise<Response>;
   extraFields: Array<{ name: string; value: string }>;
 };
@@ -135,6 +139,7 @@ const ROUTES: RouteCase[] = [
     filename: 'certificate.pdf',
     type: 'application/pdf',
     expectedPath: 'cert-files/user-1/cert-1.pdf',
+    header: Buffer.from('%PDF-1.7\n', 'latin1'),
     post: (request) => uploadCertification(request as never),
     extraFields: [{ name: 'certName', value: 'CompTIA A+' }],
   },
@@ -144,6 +149,7 @@ const ROUTES: RouteCase[] = [
     filename: 'logo.png',
     type: 'image/png',
     expectedPath: 'org-1/logo.png',
+    header: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     post: (request) => uploadOrgLogo(request as never),
     extraFields: [],
   },
@@ -153,6 +159,7 @@ const ROUTES: RouteCase[] = [
     filename: 'logo.jpg',
     type: 'image/jpeg',
     expectedPath: 'employer-1/logo.jpg',
+    header: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
     post: (request) => uploadEmployerLogo(request as never),
     extraFields: [],
   },
@@ -165,7 +172,7 @@ beforeEach(() => {
 
 describe.each(ROUTES)('$label body fidelity', (route) => {
   it('stages a non-empty byte view that is byte-identical to the uploaded file', async () => {
-    const { bytes, expected } = binaryFixture(route.label);
+    const { bytes, expected } = binaryFixture(route.label, route.header);
     expect(bytes.byteOffset).toBeGreaterThan(0);
     expect(bytes.buffer.byteLength).toBeGreaterThan(bytes.byteLength);
 
@@ -191,7 +198,7 @@ describe.each(ROUTES)('$label body fidelity', (route) => {
   });
 
   it('spans exactly its own backing store, so a .buffer read cannot over-read', async () => {
-    const { bytes, expected } = binaryFixture(route.label);
+    const { bytes, expected } = binaryFixture(route.label, route.header);
     await route.post(multipartRequest(`https://example.test${route.label.split(' ')[1]}`, [
       ...route.extraFields,
       { name: 'file', filename: route.filename, type: route.type, bytes },

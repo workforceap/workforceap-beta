@@ -71,6 +71,8 @@ vi.mock('@/lib/db/prisma', () => {
     },
     counselor: {
       findMany: vi.fn(),
+      // Recipient lookup for the staff notification link (no Counselor row by default).
+      findFirst: vi.fn(async () => null),
     },
   };
   prisma.$transaction = vi.fn(async (arg: any) =>
@@ -288,6 +290,65 @@ describe('POST /api/member/messages', () => {
         body: 'I need help with my resume',
         data: expect.objectContaining({ threadId: 'thread-1', memberId: 'user-123' }),
       })
+    );
+  });
+
+  function mockAssignedSend(recipientUserId: string) {
+    vi.mocked(getUser).mockResolvedValue({ id: 'user-123', email: 'jane@example.com' } as any);
+    const thread = { id: 'thread-1', memberId: 'user-123', counselorUserId: recipientUserId };
+    vi.mocked(getOrCreateMemberCounselorThread).mockResolvedValue(thread as any);
+    vi.mocked(assertMemberCanAccessThread).mockResolvedValue(true as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ fullName: 'Jane Doe' } as any);
+    vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) =>
+      fn({
+        message: {
+          create: vi.fn().mockResolvedValue({
+            id: 'msg-new',
+            threadId: 'thread-1',
+            authorId: 'user-123',
+            body: 'Hello',
+            createdAt: new Date('2026-05-10T12:00:00Z'),
+          }),
+        },
+        messageThread: { update: vi.fn().mockResolvedValue({}) },
+      }),
+    );
+  }
+
+  it('links an assigned counselor straight to the member thread in the counselor inbox', async () => {
+    mockAssignedSend('counselor-456');
+    vi.mocked(prisma.counselor.findFirst).mockResolvedValue({ id: 'cns-1' } as any);
+
+    const res = await POST(makeRequest({ body: 'Hello' }) as any);
+
+    expect(res.status).toBe(200);
+    expect(prisma.counselor.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'counselor-456', active: true } }),
+    );
+    const call = vi.mocked(createNotification).mock.calls[0]?.[0];
+    expect(call?.userId).toBe('counselor-456');
+    expect(call?.data).toEqual(
+      expect.objectContaining({
+        threadId: 'thread-1',
+        memberId: 'user-123',
+        link: '/counselor/messages?memberId=user-123',
+      }),
+    );
+    expect(call?.data?.link).not.toContain('/dashboard/messages');
+  });
+
+  it('links a non-counselor staff recipient (admin of record) to the admin messages inbox', async () => {
+    mockAssignedSend('admin-9');
+    vi.mocked(prisma.counselor.findFirst).mockResolvedValue(null);
+
+    const res = await POST(makeRequest({ body: 'Hello' }) as any);
+
+    expect(res.status).toBe(200);
+    expect(createNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'admin-9',
+        data: expect.objectContaining({ threadId: 'thread-1', memberId: 'user-123', link: '/admin/messages' }),
+      }),
     );
   });
 

@@ -11,6 +11,7 @@ import {
   CareerMappingsKit,
   type CareerPathCard,
 } from '@/components/portal/kit/pages/admin-subviews/CareerMappingsKit';
+import { CareerMappingEditor, CAREER_MAPPING_EDITOR_ID } from '@/components/admin/CareerMappingEditor';
 import CareerMappingsClient, { type AuditEntry } from './CareerMappingsClient';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -131,6 +132,8 @@ export default async function AdminCareerMappingsPage({
         totalPrograms={paths.length}
         totalRoles={totalRoles}
         totalPartners={totalPartners}
+        editor={<CareerMappingEditor />}
+        editorId={CAREER_MAPPING_EDITOR_ID}
       />
     </>
   );

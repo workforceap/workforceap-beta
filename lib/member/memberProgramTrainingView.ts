@@ -221,21 +221,3 @@ export async function loadMemberProgramTrainingView(args: {
     validatedCourseSlugs: courseList.map((course) => course.slug),
   };
 }
-
-export function isTrainingStaleForCounselorEscalation(args: {
-  trainingView: MemberProgramTrainingView;
-  /** When the member became eligible to open training (e.g. max of enrolled and assessment done). */
-  trainingEligibleSince: Date | null;
-  allCoursesComplete: boolean;
-  dashboardInTraining: boolean;
-}): boolean {
-  if (!args.dashboardInTraining || args.allCoursesComplete) return false;
-
-  const staleMs = STALE_TRAINING_ACTIVITY_DAYS * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-
-  const baseline = args.trainingView.lastTrainingActivityAt ?? args.trainingEligibleSince;
-  if (!baseline) return false;
-
-  return now - baseline.getTime() > staleMs;
-}

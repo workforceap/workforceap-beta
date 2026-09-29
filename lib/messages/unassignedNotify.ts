@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { WAP_STAFF_COUNSELOR_AFFILIATION } from '@/lib/counselor/autoAssign';
+import { counselorMemberThreadLink } from '@/lib/messages/staffLinks';
 
 export type UnassignedNotifyResult = {
   notifiedUserIds: string[];
@@ -43,7 +44,7 @@ export async function notifyUnassignedMemberMessage(input: {
             data: {
               threadId,
               memberId,
-              link: '/counselor',
+              link: counselorMemberThreadLink(memberId),
               unassigned: true,
             },
           }),

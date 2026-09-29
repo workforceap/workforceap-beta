@@ -66,12 +66,17 @@ export async function getEmployerWorkQueueSlices(employerId: string) {
   };
 }
 
+/**
+ * Work queue rail badge + notification bell counts. Applications only
+ * (WAP-211): jobs awaiting publish are on the work-queue page too, but they
+ * already badge the Jobs row (`jobs_pending`), and the bell labels this count
+ * "Candidates to review today", so a pending job must not inflate it.
+ */
 export async function countEmployerQueueBadges(employerId: string) {
-  const { needsReviewTodayApps, jobsAwaitingPublish, staleApps, interviewPending } =
-    await getEmployerWorkQueueSlices(employerId);
+  const { needsReviewTodayApps, staleApps, interviewPending } = await getEmployerWorkQueueSlices(employerId);
 
   return {
-    employer_queue_review_today: needsReviewTodayApps.length + jobsAwaitingPublish.length,
+    employer_queue_review_today: needsReviewTodayApps.length,
     employer_queue_stale_48h: staleApps.length,
     employer_queue_interview: interviewPending.length,
   };

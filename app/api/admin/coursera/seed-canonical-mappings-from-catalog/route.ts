@@ -16,7 +16,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  * upserts a `CourseraCanonicalCourseMapping` row for every Course with a real
  * (non-`TODO_…`, non-empty) Coursera course id. This is the production fix
  * for an empty mapping table — without it, every inbound xAPI event from
- * Coursera bounces with `completion_status='ignored'` and never promotes to
+ * Coursera bounces with `completion_status='unresolved_course'` (`'ignored'` before WAP-276) and never promotes to
  * `course_progress`. The /admin/coursera/health page flags the empty state in
  * red; this endpoint resolves it from data we already have.
  *

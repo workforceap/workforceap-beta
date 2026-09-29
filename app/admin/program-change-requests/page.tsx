@@ -54,8 +54,12 @@ export default async function AdminProgramChangeRequestsPage({
 
   // --- DEFAULT: design-kit review table wired into real (lean) data ---
   if (ui !== 'legacy') {
+    // Tenant admins see only their org's members' requests, matching the
+    // PATCH route's tenant filter; super-admins see the platform.
+    const where = inheritUserOrg(scope);
     const [requests, pendingCount] = await Promise.all([
       prisma.programChangeRequest.findMany({
+        where,
         take: BOARD_LIMIT,
         orderBy: { createdAt: 'desc' },
         select: {
@@ -67,7 +71,7 @@ export default async function AdminProgramChangeRequestsPage({
           user: { select: { id: true, email: true, fullName: true } },
         },
       }),
-      prisma.programChangeRequest.count({ where: { status: 'PENDING' } }),
+      prisma.programChangeRequest.count({ where: { ...where, status: 'PENDING' } }),
     ]);
 
     const rows: ProgramChangeRow[] = requests.map((r) => ({
@@ -81,21 +85,23 @@ export default async function AdminProgramChangeRequestsPage({
 
     return (
       <DesignSurface surface="dense">
-        <ProgramChangeRequestsKit requests={rows} pendingCount={pendingCount} />
+        <ProgramChangeRequestsKit requests={rows} pendingCount={pendingCount} reviewable />
       </DesignSurface>
     );
   }
 
   // --- LEGACY (?ui=legacy): the proven review workspace, unchanged ---
+  const legacyWhere = inheritUserOrg(scope);
   const [rows, rowTotal] = await Promise.all([
     prisma.programChangeRequest.findMany({
+      where: legacyWhere,
       take: ADMIN_SSR_LIST_CAP,
       orderBy: { createdAt: 'desc' },
       include: {
         user: { select: { id: true, email: true, fullName: true, enrolledProgram: true } },
       },
     }),
-    prisma.programChangeRequest.count(),
+    prisma.programChangeRequest.count({ where: legacyWhere }),
   ]);
 
   return (

@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
+import { Buffer } from 'node:buffer';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { isResumeObjectPathOwnedByUser } from '@/lib/resume/atomicResumeObjectSwap';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -54,6 +56,7 @@ function storageErrorMessage(error: { message?: string } | null): string {
     const supabase = getSupabaseAdmin();
     let originalUrl: string | null = null;
     let enhancedUrl: string | null = null;
+    let enhancedReadable = false;
 
     if (originalPath) {
       const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(originalPath, 3600);
@@ -64,21 +67,34 @@ function storageErrorMessage(error: { message?: string } | null): string {
       originalUrl = data.signedUrl;
     }
     if (enhancedPath) {
-      const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(enhancedPath, 3600);
-      if (error || !data?.signedUrl) {
-        console.error('[admin/members/[id]/resume-urls] createSignedUrl enhanced failed:', error);
-        return NextResponse.json({ error: storageErrorMessage(error) }, { status: 502 });
+      const { data: fileData, error: downloadError } = await supabase.storage.from(BUCKET).download(enhancedPath);
+      if (downloadError || !fileData) {
+        console.error('[admin/members/[id]/resume-urls] download enhanced failed:', downloadError);
+      } else {
+        enhancedReadable = (await inspectStoredEnhancedResume(
+          Buffer.from(await fileData.arrayBuffer()),
+          enhancedPath,
+        )).readable;
+        if (enhancedReadable) {
+          const signed = await supabase.storage.from(BUCKET).createSignedUrl(enhancedPath, 3600);
+          if (signed.error || !signed.data?.signedUrl) {
+            console.error('[admin/members/[id]/resume-urls] createSignedUrl enhanced failed:', signed.error);
+            enhancedReadable = false;
+          } else {
+            enhancedUrl = signed.data.signedUrl;
+          }
+        }
       }
-      enhancedUrl = data.signedUrl;
     }
 
     return NextResponse.json({
       hasOriginal: !!originalPath,
-      hasEnhanced: !!enhancedPath,
+      hasEnhanced: enhancedReadable,
+      enhancedUnavailable: !!enhancedPath && !enhancedReadable,
       originalUrl,
       enhancedUrl,
       originalPath,
-      enhancedPath,
+      enhancedPath: enhancedReadable ? enhancedPath : null,
     });
   } catch (error) {
     console.error('[admin/members/[id]/resume-urls GET] error:', error);

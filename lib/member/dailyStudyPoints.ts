@@ -24,3 +24,17 @@ export function utcDateKey(date: Date = new Date()): string {
   const day = String(date.getUTCDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+/**
+ * The `daily_study` award key for one xAPI statement, or null when it must not
+ * award (WAP-276). "Studied today" means the learner's own event time falls on
+ * the current UTC day. Keying on the processing time instead let the hourly
+ * auto-heal replay of old statements award a point and a streak day on days
+ * the member never studied. A statement with no trustworthy learner time
+ * never awards: received/replay time is not learner activity.
+ */
+export function dailyStudyAwardKey(learnerAt: Date | null, now: Date = new Date()): string | null {
+  if (!learnerAt) return null;
+  const key = utcDateKey(learnerAt);
+  return key === utcDateKey(now) ? key : null;
+}

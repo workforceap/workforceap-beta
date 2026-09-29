@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 
@@ -106,6 +106,26 @@ describe('/dashboard/certifications with pending and approved rows', () => {
 
     const select = vi.mocked(prisma.userCertification.findMany).mock.calls[0][0]?.select;
     expect(select).toMatchObject({ status: true, certName: true, earnedAt: true });
-    expect(document.body).toHaveTextContent(/appears here as a pending certificate; our team verifies it before it counts as earned/);
+    // The default view now carries the self-report form (WAP-188), so the empty
+    // state uses the full sentence that points at it.
+    expect(document.body).toHaveTextContent(/we add it here as a pending certificate; our team verifies it before it counts as earned/);
+    expect(document.body).toHaveTextContent(/add a certificate you earned elsewhere below/);
+  });
+
+  it('WAP-188: the default view carries the self-report form under the pending-review copy', async () => {
+    vi.mocked(prisma.userCertification.findMany).mockResolvedValue([
+      { id: 'cert-approved', certName: 'Networking Basics', earnedAt: new Date('2026-08-01T12:00:00.000Z'), status: 'approved' },
+    ] as never);
+
+    render(<NextIntlClientProvider locale="en" messages={en}>{await DashboardCertificationsPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
+
+    const card = screen.getByRole('region', { name: 'Add a certificate you earned elsewhere' });
+    expect(card).toHaveAttribute('id', 'add-certificate');
+    // The real route renders the same CertificationAddForm the legacy view uses.
+    expect(within(card).getByRole('form', { name: 'Add certificate fixture' })).toBeInTheDocument();
+    expect(card).toHaveTextContent(/Our staff check every certificate you add/);
+    expect(card).toHaveTextContent(/shows as pending and does not count as earned/);
+    // One form on the default view (the legacy view renders one per layout).
+    expect(screen.getAllByRole('form', { name: 'Add certificate fixture' })).toHaveLength(1);
   });
 });

@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { isResumeObjectPathOwnedByUser } from '@/lib/resume/atomicResumeObjectSwap';
+import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -44,6 +45,12 @@ function storageErrorMessage(error: { message?: string } | null): string {
   }
 
   const buf = Buffer.from(await data.arrayBuffer());
+  if (variant === 'enhanced' && !(await inspectStoredEnhancedResume(buf, path)).readable) {
+    return NextResponse.json(
+      { error: 'This enhanced resume is not readable. Your original file was kept.' },
+      { status: 422 },
+    );
+  }
   const name = path.split('/').pop() ?? 'resume';
   const lower = name.toLowerCase();
   let contentType = 'application/octet-stream';

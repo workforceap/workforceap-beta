@@ -118,7 +118,7 @@ export default function DevStaffPartnerCommandPage() {
       <PartnerAttentionCard
         title="Review member progress"
         body="3 referred members are within one module of finishing their program."
-        href="/partner/referred-members"
+        href="/partner/attention"
       />
 
       <PartnerAssistantAccordion title="Partner assistant" hint="(tap to open)">

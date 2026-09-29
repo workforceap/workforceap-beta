@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { isMarketingChromeHidden } from '@/lib/nav/marketing-chrome';
+import { recordMarketingNavDecision } from '@/lib/observability/portalHydrationClientTrace';
 
 /** Code-split MainNav (~ThemeToggle/LanguageToggle/chrome) away from `/dashboard`/portal routes that never render it */
 const MainNav = dynamic(() => import('./MainNav'), {
@@ -23,6 +24,7 @@ type ConditionalMarketingNavProps = {
 export default function ConditionalMarketingNav({ forceHidden = false }: ConditionalMarketingNavProps) {
   const pathname = usePathname();
   const hidden = forceHidden || isMarketingChromeHidden(pathname);
+  recordMarketingNavDecision(pathname, hidden);
 
   useEffect(() => {
     const root = document.documentElement;

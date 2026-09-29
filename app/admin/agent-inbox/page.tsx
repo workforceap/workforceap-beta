@@ -78,8 +78,9 @@ function toKitRow(c: CascadeCardData): AgentInboxRow {
 /**
  * Agent inbox — admin-only.
  *
- * Default view is a read-only kit summary (KPI strip + dense queue table).
- * The interactive approve/dismiss inbox is preserved behind `?ui=legacy`.
+ * Default view is the kit summary (KPI strip + dense queue table) with the
+ * interactive review cards (read/edit drafts, approve or dismiss) below it
+ * (WAP-193). `?ui=legacy` keeps the original page for now.
  *
  * Shows every cascade currently waiting for review, oldest first. Counselor
  * access is a follow-up: it requires the list query and the underlying
@@ -140,6 +141,11 @@ export default async function AgentInboxPage({
         pendingDraft={metrics.totals.pendingDraft}
         sent={metrics.totals.sent}
         resolved={metrics.totals.dismissed + metrics.totals.expired}
+        review={
+          cascades.length > 0 ? (
+            <AgentInboxClient cascades={JSON.parse(JSON.stringify(cascades))} />
+          ) : undefined
+        }
       />
     </PortalPageFrame>
   );

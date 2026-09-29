@@ -29,24 +29,28 @@ type Milestone = {
 const KIND_TONE: Record<string, KitTone> = {
   certification: 'info',
   placement: 'ok',
+  placement_pending: 'warn',
   event: 'muted',
 };
 
 const KIND_LABEL: Record<string, string> = {
   certification: 'Certification',
   placement: 'Placement',
+  placement_pending: 'Pending verification',
   event: 'Activity',
 };
 
 const KIND_ICON: Record<string, LucideIcon> = {
   certification: Award,
   placement: Briefcase,
+  placement_pending: Briefcase,
   event: Activity,
 };
 
 const KIND_COLOR: Record<string, KitColor> = {
   certification: 'info',
   placement: 'success',
+  placement_pending: 'gold',
   event: 'muted',
 };
 
@@ -128,6 +132,7 @@ export default function PartnerMilestonesView() {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
           <StatusTag tone="info">{counts?.certifications ?? 0} certifications</StatusTag>
           <StatusTag tone="ok">{counts?.placements ?? 0} placements</StatusTag>
+          <StatusTag tone="warn">{milestones.filter((m) => m.kind === 'placement_pending').length} pending placements</StatusTag>
           <StatusTag tone="muted">{counts?.events ?? 0} activity events</StatusTag>
         </div>
         <SegmentedProgress

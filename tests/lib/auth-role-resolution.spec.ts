@@ -14,7 +14,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({ crossTenantOK: (fn: () => Promi
 vi.mock('@/lib/observability/logger', () => ({ logger: log }));
 vi.mock('next/headers', () => ({ cookies: vi.fn(), headers: vi.fn() }));
 
-import { getProfileRole, getUserRoles, isAdmin, isSuperAdmin } from '@/lib/auth/roles';
+import { getProfileRole, getStoredRoleIdentity, getUserRoles, isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { ROLE_PRECEDENCE, resolveEffectiveRole } from '@/lib/auth/roleAccess';
 
 type Row = { deletedAt: Date | null; profile: { role: string } | null; userRoles: { role: { name: string } }[] };
@@ -88,8 +88,16 @@ describe('getProfileRole resolves from user_roles first', () => {
   it('an unknown user or an empty profile defaults to member', async () => {
     db.user.findUnique.mockResolvedValue(null);
     expect(await getProfileRole('u-missing')).toBe('member');
+    expect(await getStoredRoleIdentity('u-missing')).toEqual({ userExists: false, deletedAt: null, profileRole: null });
     db.user.findUnique.mockResolvedValue(user(null, []));
     expect(await getProfileRole('u-no-profile')).toBe('member');
+    expect(await getStoredRoleIdentity('u-no-profile')).toEqual({ userExists: true, deletedAt: null, profileRole: null });
+  });
+
+  it('exposes the stored profile role separately from effective role precedence', async () => {
+    db.user.findUnique.mockResolvedValue(user('member', ['member', 'employer']));
+    expect(await getProfileRole('u-conflict')).toBe('employer');
+    expect(await getStoredRoleIdentity('u-conflict')).toEqual({ userExists: true, deletedAt: null, profileRole: 'member' });
   });
 
   it('a super_admin profile is not demoted by a lesser row until item 2 writes the super_admin row', async () => {

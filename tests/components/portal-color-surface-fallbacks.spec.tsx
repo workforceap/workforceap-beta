@@ -81,7 +81,6 @@ import AdminCronsClient from '@/components/admin/AdminCronsClient';
 import AdminEmployersPage from '@/app/admin/employers/page';
 import MemberFeedbackModal from '@/components/portal/MemberFeedbackModal';
 import DeleteAccountButton from '@/components/portal/DeleteAccountButton';
-import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
 import AdminMemberQuickSummary from '@/components/admin/AdminMemberQuickSummary';
 import Footer from '@/components/Footer';
 import RouteErrorFallback from '@/components/error/RouteErrorFallback';
@@ -344,8 +343,8 @@ const PORTAL_CHAIN_SHEETS = [
 const ROOT_CHAIN_SHEETS = ['css/main.css', 'css/marketing.css', 'css/marketing-depth.css', 'css/marketing-a11y.css', 'css/astryx-brand-bridge.css'];
 /** CSS modules that border from the token family (PortalShell role switcher; the root-layout cookie banner). */
 const BORDER_MODULE_SHEETS = ['components/portal/PortalRoleSwitcher.module.css', 'components/CookieConsentBanner.module.css'];
-/** CSS modules on the portal chain that fill from the tonal scale (member dashboard hero, coach chat, insight card). */
-const SURFACE_MODULE_SHEETS = ['components/portal/CoachChat.module.css', 'components/portal/TodayHero.module.css', 'components/portal/ProactiveInsightCard.module.css'];
+/** CSS modules on the portal chain that fill from the tonal scale (coach chat; the legacy home's hero and insight card went with it, WAP-195). */
+const SURFACE_MODULE_SHEETS = ['components/portal/CoachChat.module.css'];
 
 /** The root layout chain: css/main.css keeps dark defaults on :root and light overrides on html:not(.dark). */
 function rootChainTokens(scheme: 'light' | 'dark'): Map<string, string> {
@@ -422,7 +421,7 @@ describe('--surface-container-lowest is the opaque card fill on the root-layout 
 });
 
 describe('DashboardProgramSelector popover', () => {
-  it('paints the listbox from --wa-surface with no literal fallback', () => {
+  it('paints the program menu from --wa-surface with no literal fallback', () => {
     const { container } = render(
       <DashboardProgramSelector
         activeProgramSlug="it-support"
@@ -433,8 +432,7 @@ describe('DashboardProgramSelector popover', () => {
       />,
     );
     fireEvent.click(screen.getByTestId('dashboard-program-selector'));
-    const listbox = screen.getByRole('listbox');
-    expectSurfaceFill(listbox, 'program popover');
+    expectSurfaceFill(screen.getByTestId('dashboard-program-selector-menu'), 'program popover');
     expectNoLiteralSurfaceFallback(container);
     expectNoLegacyName(container);
   });
@@ -711,7 +709,10 @@ describe('TriageNudgePanel borders', () => {
 });
 
 describe('GoalsModule active goal card', () => {
-  it('edges each goal with --wa-border over the --surface-container-lowest fill, no literal fallback on either', async () => {
+  // WAP-188 moved the module onto /dashboard/career-brief#goals and restyled it to
+  // the kit: the goal card fills from --wa-surface (the portal chain's own card fill,
+  // not the root-chain --surface-container-lowest bridge) and nothing reads --color-*.
+  it('edges each goal with --wa-border over the --wa-surface fill, no literal fallback on either', async () => {
     fetchMock.mockResolvedValue(
       Response.json({
         goals: [
@@ -734,8 +735,21 @@ describe('GoalsModule active goal card', () => {
     const card = title.closest('li') as HTMLElement;
     expect(card).not.toBeNull();
     expect(borderOf(card), 'goal card border').toBe(HAIRLINE(PORTAL_BORDER));
-    expect(backgroundOf(card), 'goal card fill').toBe(PUBLIC_FILL);
+    expectSurfaceFill(card, 'goal card');
     expectNoLiteralTokenFallback(container);
+    for (const style of paintedStyles(container)) {
+      expect(style, `legacy token family still painted: ${style}`).not.toMatch(/var\(\s*--(?:color-|surface-container)/);
+    }
+    expect(container.querySelector('.material-symbols-outlined'), 'Material Symbols ligature').toBeNull();
+  });
+
+  it('paints the load-failure notice from the danger tokens, not a literal tint', async () => {
+    fetchMock.mockRejectedValue(new TypeError('offline'));
+    const { container } = render(<GoalsModule />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.style.background).toBe('var(--wa-danger-soft)');
+    expect(alert.style.color).toBe('var(--wa-danger-text)');
+    for (const style of paintedStyles(container)) expect(style).not.toMatch(/rgba?\(/);
   });
 });
 
@@ -819,10 +833,10 @@ describe('tokenized public pages: borders read --outline-variant (root layout, n
  * ---------------------------------------------------------------------------
  */
 describe('inline surface-container fills read the token bare (portal chain)', () => {
-  it('MemberFeedbackModal card paints --surface-container-lowest', () => {
+  it('MemberFeedbackModal card paints the kit surface (WAP-188: it now opens from the default /dashboard/help)', () => {
     const { container } = render(<MemberFeedbackModal open onClose={() => {}} />);
     const card = screen.getByRole('dialog').firstElementChild as HTMLElement;
-    expect(backgroundOf(card), 'feedback modal card').toBe(PUBLIC_FILL);
+    expectSurfaceFill(card, 'feedback modal card');
     expectNoLiteralTokenFallback(container);
     expectNoLegacyName(container);
   });
@@ -832,16 +846,6 @@ describe('inline surface-container fills read the token bare (portal chain)', ()
     fireEvent.click(screen.getByRole('button', { name: /delete/i }));
     const card = screen.getByRole('heading', { name: 'Delete account permanently?' }).parentElement as HTMLElement;
     expect(backgroundOf(card), 'delete confirm card').toBe('var(--surface-container-low)');
-    expectNoLiteralTokenFallback(container);
-    expectNoLegacyName(container);
-  });
-
-  it('MemberFirstCertProgressBar track paints --surface-container-high', () => {
-    const { container } = render(
-      <MemberFirstCertProgressBar progress={{ percent: 40, stageLabel: 'Midway', isComplete: false, stepsComplete: 2, stepsTotal: 5 }} />,
-    );
-    const track = screen.getByRole('progressbar');
-    expect(backgroundOf(track), 'progress track').toBe('var(--surface-container-high)');
     expectNoLiteralTokenFallback(container);
     expectNoLegacyName(container);
   });
