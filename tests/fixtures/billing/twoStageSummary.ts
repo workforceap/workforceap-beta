@@ -12,6 +12,9 @@ import type {
   J6StageView,
   StageVersionView,
 } from '@/lib/billing/twoStage/dto';
+import { signatureApprovalStatement } from '@/lib/billing/twoStage/signatureAsset';
+
+export const SIGNATURE_STATEMENT = signatureApprovalStatement();
 
 export const MEMBER_ID = '11111111-1111-4111-8111-111111111111';
 export const CASE_ID = '22222222-2222-4222-8222-222222222222';
@@ -22,7 +25,7 @@ export const VOUCHER_SHA = 'c0ffee'.padEnd(64, '0');
 
 export const GATE_TEXT = {
   signing: 'Signing is disabled until the executive signer account is configured.',
-  signedRenderer: 'Signed J5/J6 PDFs cannot be produced until the signature representation is approved.',
+  signedRenderer: 'Signed J5/J6 PDFs cannot be produced in this environment.',
   principal: 'No signer principal is designated yet; the voucher receipt attestation, J5 and J6 signing, and J6 sending stay closed.',
   email: 'J5/J6 email delivery is not enabled yet.',
 };
@@ -149,6 +152,7 @@ export function emptyCaseSummary(overrides: Partial<CaseSummaryDto> = {}): CaseS
     progress: { j5: 'none', voucher: 'none', j6: 'none', payment: 'not_applicable' },
     gates: closedGates(),
     viewer: { isExecutiveSigner: false, isDesignatedSigner: false },
+    signature: { active: null, approvalStatement: SIGNATURE_STATEMENT, viewerCanUpload: false },
     j5: j5View(),
     j6: j6View(),
     payment: { status: 'not_applicable', j6RecordId: null, events: [] },

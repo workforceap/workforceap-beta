@@ -22,7 +22,7 @@
  *    from partner B gives 400 with no update; lookups use ctx partnerId.
  *  - GET   /api/partner/outreach: the log read filters on ctx partnerId, not
  *    a query value, and never returns partner B's logs.
- *  - POST  /api/partner/outreach: partner B's member gives 400 with no
+ *  - POST  /api/partner/outreach: partner B's member gives 404 with no
  *    partnerOutreachLog.create; a body partnerId is ignored.
  *  - GET   /api/partner/referral-members: the bundle is loaded with ctx
  *    partnerId and ctx organizationId, not a query value.
@@ -133,20 +133,11 @@ vi.mock('@/lib/db/prisma', () => {
   const prisma = {
     $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(prisma)),
     partnerReferral: {
-      findUnique: vi.fn(
-        async ({ where }: { where: { partnerId_memberId?: { partnerId?: string; memberId?: string } } }) => {
-          const key = where.partnerId_memberId ?? {};
-          const row = fx.referrals.find(
-            (r) => matches(r.partnerId, key.partnerId) && matches(r.memberId, key.memberId),
-          );
-          return row ? { ...row, member: { fullName: `Member ${row.memberId}` } } : null;
-        },
-      ),
       findFirst: vi.fn(async ({ where }: { where: { partnerId?: string; memberId?: string } }) => {
         const row = fx.referrals.find(
           (r) => matches(r.partnerId, where.partnerId) && matches(r.memberId, where.memberId),
         );
-        return row ? { ...row } : null;
+        return row ? { ...row, member: { fullName: `Member ${row.memberId}` } } : null;
       }),
       update: vi.fn(async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => ({
         id: where.id,
@@ -393,8 +384,8 @@ describe('PATCH /api/partner/referrals/[memberId] stays inside the caller partne
       memberId: fx.MEMBER_B,
     }, { assignedPartnerUserId: null });
     expect(res.status).toBe(404);
-    expect(db.partnerReferral!.findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { partnerId_memberId: { partnerId: 'partner-a', memberId: fx.MEMBER_B } } }),
+    expect(db.partnerReferral!.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ partnerId: 'partner-a', memberId: fx.MEMBER_B }) }),
     );
     await expectNoWrites();
   });
@@ -434,13 +425,14 @@ describe('partner outreach stays inside the caller partner', () => {
     const res = await call(outreachGET as Handler, 'GET', '/api/partner/outreach?partnerId=partner-b');
     expect(res.status).toBe(200);
     for (const [args] of db.partnerOutreachLog!.findMany!.mock.calls) {
-      expect((args as { where: unknown }).where).toEqual({ partnerId: 'partner-a' });
+      // ctx partnerId, plus the minor-visibility member filter (lib/partner/dataAccess.ts).
+      expect((args as { where: unknown }).where).toEqual({ partnerId: 'partner-a', member: expect.any(Object) });
     }
     const body = (await res.json()) as { logs: Array<{ id: string }> };
     expect(body.logs.map((l) => l.id)).toEqual(['log-a']);
   });
 
-  it("POST for partner B's member: 400 with no partnerOutreachLog.create", async () => {
+  it("POST for partner B's member: 404 with no partnerOutreachLog.create", async () => {
     signInAs('partner-a-caller');
     const res = await call(outreachPOST as Handler, 'POST', '/api/partner/outreach', undefined, {
       memberId: fx.MEMBER_B,
@@ -448,9 +440,9 @@ describe('partner outreach stays inside the caller partner', () => {
       note: 'Trying to reach another partner member',
       partnerId: 'partner-b',
     });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(404);
     expect(db.partnerReferral!.findFirst).toHaveBeenCalledWith({
-      where: { partnerId: 'partner-a', memberId: fx.MEMBER_B },
+      where: expect.objectContaining({ partnerId: 'partner-a', memberId: fx.MEMBER_B }),
     });
     await expectNoWrites();
   });

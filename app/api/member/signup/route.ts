@@ -11,6 +11,7 @@ import { memberSignupSchema } from '@/lib/validation/member';
 import { checkSignupRateLimit, checkSignupEmailRateLimit } from '@/lib/rate-limit';
 import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
 import { trackEvent } from '@/lib/events/track';
+import { partnerDisclosureAcknowledgement } from '@/lib/apply/partnerReferralDisclosureCore';
 import { getConversionValuePayload } from '@/lib/analytics/conversionValue';
 import { prisma } from '@/lib/db/prisma';
 import { normalizePartnerRef, PARTNER_REF_COOKIE, partnerRefCookieClearOptions } from '@/lib/apply/applyReferralCapture';
@@ -251,8 +252,9 @@ export async function POST(request: NextRequest) {
     const refFromCookie = normalizePartnerRef(rawRefCookie);
     const referralRef = (refFromBody || refFromCookie || '').toLowerCase() || undefined;
 
+    let partnerAttribution: Awaited<ReturnType<typeof createMember>> | undefined;
     try {
-      await createMember(user.id, { ...data, referralRef });
+      partnerAttribution = await createMember(user.id, { ...data, referralRef });
     } catch (err) {
       console.error('Signup member creation error:', err);
       // signUp may return a pre-existing unconfirmed/orphan Auth identity.
@@ -283,6 +285,12 @@ export async function POST(request: NextRequest) {
           program_interest: data.programInterest,
           ...getConversionValuePayload('apply_signup_completed'),
           ...attributionMetadata,
+          ...partnerDisclosureAcknowledgement({
+            attributedPartnerId: partnerAttribution?.referralPartnerId ?? null,
+            attributedPartnerType: partnerAttribution?.referralPartnerType ?? null,
+            attributedRef: partnerAttribution?.referralRef ?? null,
+            shownRef: data.partnerDisclosureRef,
+          }),
         },
         sourcePage: '/signup',
       });

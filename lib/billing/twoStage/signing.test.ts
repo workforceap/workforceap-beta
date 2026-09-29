@@ -98,14 +98,20 @@ describe('review then sign over the exact version', () => {
     assert.equal(validateSignRequest({ ...target, status: 'signed' }, request).ok, false);
   });
 
-  it('renders a typed signature block with no image; the image slot is disabled with no approved asset', () => {
-    const block = buildSignatureBlock({ signedAt: new Date('2026-10-20T15:04:05Z'), intent });
-    assert.equal(block.method, 'typed_attestation');
+  it('prints the frozen signature image; no image is ever approved in code', () => {
+    const image = { assetId: 'sig-asset-1', assetSha256: 'e'.repeat(64) };
+    const block = buildSignatureBlock({ signedAt: new Date('2026-10-20T15:04:05Z'), intent, image });
+    assert.equal(block.method, 'approved_image');
+    assert.deepEqual(block.image, image);
     assert.equal(block.name, 'Michael A. Brown, PMP, ChE');
     assert.equal(block.title, 'Executive Director');
     assert.equal(block.signedAt, '2026-10-20T15:04:05.000Z');
-    assert.equal(block.image, null);
-    assert.equal(SIGNATURE_IMAGE_ENABLED, false);
+    assert.ok(block.attestation.endsWith(intent));
+    // Without an image the block is the typed fallback, which the database refuses to sign.
+    const typed = buildSignatureBlock({ signedAt: new Date('2026-10-20T15:04:05Z'), intent });
+    assert.equal(typed.method, 'typed_attestation');
+    assert.equal(typed.image, null);
+    assert.equal(SIGNATURE_IMAGE_ENABLED, true);
     assert.equal(APPROVED_SIGNATURE_ASSETS.length, 0);
     assert.equal(isApprovedSignatureAsset('e'.repeat(64)), false);
     assert.equal(isApprovedSignatureAsset('e'.repeat(64), true), false);

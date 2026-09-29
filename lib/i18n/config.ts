@@ -55,6 +55,8 @@ export const LOCALEABLE_PATH_PREFIXES: readonly string[] = [
   '/invite',
   '/partner-signup',
   '/lp',
+  // Partner landing pages (`/join/<code>`, Next-owned; see app/join/[code]).
+  '/join',
 ];
 
 export function isLocaleableMarketingPath(pathname: string): boolean {

@@ -27,6 +27,8 @@ import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
 import { isSchoolCollectionSignup, schoolPrimaryBarriers } from '@/lib/apply/schoolCollection';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
+import PartnerReferralDisclosure, { type PartnerDisclosureCopy } from '@/components/apply/PartnerReferralDisclosure';
+import type { PartnerReferralDisclosure as PartnerDisclosure } from '@/lib/apply/partnerReferralDisclosureCore';
 
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then((m) => m.Turnstile), { ssr: false });
 
@@ -54,7 +56,23 @@ function formatPhoneInput(value: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recoveryContext }: { readyHeader?: ReactNode; readyIntro?: ReactNode; recoveryContext?: ApplyRecoveryContext }) {
+export default function ApplyCreateAccountForm({
+  readyHeader,
+  readyIntro,
+  recoveryContext,
+  partnerDisclosure = null,
+  partnerDisclosureCopy,
+}: {
+  readyHeader?: ReactNode;
+  readyIntro?: ReactNode;
+  recoveryContext?: ApplyRecoveryContext;
+  /** Server-resolved partner disclosure for the page's ref (query or cookie). */
+  partnerDisclosure?: PartnerDisclosure | null;
+  partnerDisclosureCopy?: PartnerDisclosureCopy;
+}) {
+  // The ref whose "{partner} will be able to see …" line is on screen; sent
+  // with signup so the acknowledgement can be recorded server-side.
+  const [disclosedPartnerRef, setDisclosedPartnerRef] = useState<string | null>(partnerDisclosure?.ref ?? null);
   const t = useTranslations('apply');
   const tForm = useTranslations('form');
   const searchParams = useSearchParams();
@@ -386,6 +404,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
           password,
           programRankedSlugs,
           referralRef: referralRef?.trim() || undefined,
+          partnerDisclosureRef: disclosedPartnerRef ?? undefined,
           recommendedOnetCode: careerPayload?.recommendedOnetCode ?? undefined,
           recommendedCareerTitle: careerPayload?.recommendedCareerTitle ?? undefined,
           careerRecommendationJson: careerPayload?.careerRecommendationJson ?? undefined,
@@ -988,6 +1007,14 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         <legend style={{ padding: '0 0.4rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           {t('accountConsentLegend')}
         </legend>
+        {partnerDisclosureCopy ? (
+          <PartnerReferralDisclosure
+            initial={partnerDisclosure}
+            copy={partnerDisclosureCopy}
+            programSlug={programRankedSlugs?.[0]}
+            onShownRefChange={setDisclosedPartnerRef}
+          />
+        ) : null}
         <label htmlFor="contactConsent" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.75rem', minHeight: 44 }}>
           <input
             id="contactConsent"

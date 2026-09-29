@@ -1,7 +1,7 @@
 -- Two-stage J5 quote/voucher request + J6 invoice/voucher cover letter
 -- (docs/BILLING-PACKETS.md "Two-stage J5/J6"). Mike Brown, 2026-09-27.
 --
--- Purely additive: eleven new tables, their constraints, triggers and grants.
+-- Purely additive: twelve new tables, their constraints, triggers and grants.
 -- training_billing_packets (20260904020000) is not touched, so an older app
 -- revision still inserting legacy packets keeps working during the
 -- Vercel migrate/build overlap, and existing packet rows are preserved.
@@ -268,6 +268,76 @@ CREATE TABLE IF NOT EXISTS "billing_voucher_receipt_signatures" (
     ), false))
 );
 CREATE INDEX IF NOT EXISTS "billing_voucher_receipt_signatures_voucher_artifact_id_idx" ON "billing_voucher_receipt_signatures"("voucher_artifact_id");
+
+-- --------------------------------------------- signer signature assets
+-- The designated signer's approved handwritten-signature image (Michael A.
+-- Brown), placed on the J5/J6 PDFs he signs while logged in as himself. The
+-- image never authorizes anything: signing is still his authenticated act
+-- (billing_stage_record_rules); the sign trigger only requires that the signed
+-- content freeze the sha256 of his one active asset. This is not a
+-- billing_artifacts row (those stay PDF-only case documents): it is an
+-- organization-level PNG in the private billing-finance bucket under
+-- signature/<org>/<signer>/<sha256>.png. The database never holds the bytes;
+-- it keeps the first 33 bytes (the PNG signature and IHDR chunk) so the magic
+-- bytes and the pixel dimensions are checked here as well as at upload.
+-- Only the designated signer inserts one (uploader = signer = designation,
+-- trigger-enforced); the upload is his approval, so uploaded_at and
+-- approved_at are both the database clock. Append-only apart from a one-time,
+-- DB-stamped revoke; at most one active (non-revoked) asset per organization.
+CREATE TABLE IF NOT EXISTS "billing_signer_signature_assets" (
+    "id" TEXT NOT NULL,
+    "organization_id" TEXT NOT NULL,
+    "signer_user_id" TEXT NOT NULL,
+    "uploaded_by_user_id" TEXT NOT NULL,
+    "storage_bucket" TEXT NOT NULL,
+    "storage_key" TEXT NOT NULL,
+    "mime_type" TEXT NOT NULL,
+    "byte_length" INTEGER NOT NULL,
+    "sha256" CHAR(64) NOT NULL,
+    "width_px" INTEGER NOT NULL,
+    "height_px" INTEGER NOT NULL,
+    "png_header" BYTEA NOT NULL,
+    "approval_statement" TEXT NOT NULL,
+    -- Stamped by the trigger (wall clock); the DEFAULTs only let clients omit them.
+    "uploaded_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "approved_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "revoked_at" TIMESTAMP(3),
+    "revoked_by_subject_id" TEXT,
+    "revoke_reason" TEXT,
+
+    CONSTRAINT "billing_signer_signature_assets_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "billing_signer_signature_assets_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    -- PNG only: the declared type, the 8-byte PNG signature, an IHDR first chunk
+    -- (length 13) with valid bit depth / colour type / methods, and the stored
+    -- pixel dimensions equal the IHDR width and height.
+    CONSTRAINT "billing_signer_signature_assets_png_check" CHECK (coalesce((
+      "mime_type" = 'image/png'
+      AND CASE WHEN octet_length("png_header") = 33 THEN
+            substring("png_header" FROM 1 FOR 16) = decode('89504e470d0a1a0a0000000d49484452', 'hex')
+            AND "width_px" = get_byte("png_header", 16)::bigint * 16777216 + get_byte("png_header", 17) * 65536 + get_byte("png_header", 18) * 256 + get_byte("png_header", 19)
+            AND "height_px" = get_byte("png_header", 20)::bigint * 16777216 + get_byte("png_header", 21) * 65536 + get_byte("png_header", 22) * 256 + get_byte("png_header", 23)
+            AND get_byte("png_header", 24) IN (1, 2, 4, 8, 16)
+            AND get_byte("png_header", 25) IN (0, 2, 3, 4, 6)
+            AND get_byte("png_header", 26) = 0 AND get_byte("png_header", 27) = 0 AND get_byte("png_header", 28) IN (0, 1)
+          ELSE false END
+      AND "width_px" BETWEEN 1 AND 6000 AND "height_px" BETWEEN 1 AND 6000
+    ), false)),
+    CONSTRAINT "billing_signer_signature_assets_storage_check" CHECK (coalesce((
+      "byte_length" BETWEEN 34 AND 5242880
+      AND "sha256" ~ '^[0-9a-f]{64}$'
+      AND "organization_id" ~ '^[A-Za-z0-9-]{1,64}$' AND "signer_user_id" ~ '^[A-Za-z0-9-]{1,64}$'
+      AND "storage_bucket" = 'billing-finance'
+      AND "storage_key" = 'signature/' || "organization_id" || '/' || "signer_user_id" || '/' || "sha256" || '.png'
+    ), false)),
+    CONSTRAINT "billing_signer_signature_assets_actor_check" CHECK (coalesce((
+      "uploaded_by_user_id" = "signer_user_id" AND btrim("approval_statement") <> ''
+      AND (num_nonnulls("revoked_at", "revoked_by_subject_id", "revoke_reason") = 0
+        OR ("revoked_at" IS NOT NULL AND btrim("revoked_by_subject_id") <> '' AND btrim("revoke_reason") <> ''))
+    ), false))
+);
+CREATE INDEX IF NOT EXISTS "billing_signer_signature_assets_organization_id_signer_user_idx" ON "billing_signer_signature_assets"("organization_id", "signer_user_id");
+-- At most one active signature per organization (revoke the old one first).
+CREATE UNIQUE INDEX IF NOT EXISTS "billing_signer_signature_assets_one_active_per_org" ON "billing_signer_signature_assets"("organization_id") WHERE "revoked_at" IS NULL;
 
 -- --------------------------------------------------------- attestations
 CREATE TABLE IF NOT EXISTS "billing_attestations" (
@@ -1259,6 +1329,51 @@ CREATE TRIGGER billing_voucher_receipt_signatures_append_only
   BEFORE UPDATE OR DELETE ON public.billing_voucher_receipt_signatures
   FOR EACH ROW EXECUTE FUNCTION public.billing_append_only();
 
+-- Signature assets: only the organization's designated signer uploads (and so
+-- approves) his own signature; uploaded_at/approved_at are the DB clock. Never
+-- edited or deleted, except one revoke that records who and why and is
+-- stamped by the database. A revoke never touches already-signed records:
+-- they keep the sha256 frozen in their content.
+CREATE OR REPLACE FUNCTION public.billing_signer_signature_asset_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+DECLARE
+  designated TEXT;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'SIGNATURE_ASSET_APPEND_ONLY: a signature asset is never deleted; revoke it' USING ERRCODE = '23514';
+  END IF;
+  IF TG_OP = 'INSERT' THEN
+    SELECT d.user_id INTO designated FROM public.billing_designated_signers d WHERE d.organization_id = NEW.organization_id;
+    IF designated IS NULL THEN
+      RAISE EXCEPTION 'SIGNER_PRINCIPAL_UNSET: no signer is designated for this organization' USING ERRCODE = '23514';
+    END IF;
+    IF NEW.signer_user_id IS DISTINCT FROM designated OR NEW.uploaded_by_user_id IS DISTINCT FROM designated THEN
+      RAISE EXCEPTION 'SIGNATURE_ASSET_WRONG_PRINCIPAL: only the designated signer uploads and approves his own signature' USING ERRCODE = '23514';
+    END IF;
+    IF num_nonnulls(NEW.revoked_at, NEW.revoked_by_subject_id, NEW.revoke_reason) > 0 THEN
+      RAISE EXCEPTION 'a signature asset is inserted active; revoke it separately' USING ERRCODE = '23514';
+    END IF;
+    NEW.uploaded_at := public.billing_utc_now();
+    NEW.approved_at := NEW.uploaded_at;
+    RETURN NEW;
+  END IF;
+  -- UPDATE: only the one-time revoke; every other column is frozen.
+  IF OLD.revoked_at IS NOT NULL THEN
+    RAISE EXCEPTION 'SIGNATURE_ASSET_APPEND_ONLY: a revoked signature asset is final' USING ERRCODE = '23514';
+  END IF;
+  IF (to_jsonb(NEW) - ARRAY['revoked_at', 'revoked_by_subject_id', 'revoke_reason']) IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['revoked_at', 'revoked_by_subject_id', 'revoke_reason'])
+     OR NEW.revoked_by_subject_id IS NULL OR NEW.revoke_reason IS NULL THEN
+    RAISE EXCEPTION 'SIGNATURE_ASSET_APPEND_ONLY: a signature asset changes only by one revoke (who and why)' USING ERRCODE = '23514';
+  END IF;
+  NEW.revoked_at := public.billing_utc_now();
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS billing_signer_signature_asset_guard ON public.billing_signer_signature_assets;
+CREATE TRIGGER billing_signer_signature_asset_guard
+  BEFORE INSERT OR UPDATE OR DELETE ON public.billing_signer_signature_assets
+  FOR EACH ROW EXECUTE FUNCTION public.billing_signer_signature_asset_guard();
+
 -- Attestation dates: nothing is attested as having happened after today
 -- (America/Chicago).
 CREATE OR REPLACE FUNCTION public.billing_attestation_dates_guard()
@@ -1433,6 +1548,8 @@ DECLARE
   reasons TEXT[] := ARRAY[]::TEXT[];
   required_roles TEXT[];
   designated_signer TEXT;
+  sig_asset_id TEXT;
+  sig_asset_sha TEXT;
 BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NEW.status <> 'draft' THEN
@@ -1526,6 +1643,21 @@ BEGIN
       END IF;
       IF NEW.signed_via_delegation_id IS NOT NULL THEN
         RAISE EXCEPTION 'SIGNER_DELEGATION_DISABLED: delegated signing is disabled' USING ERRCODE = '23514';
+      END IF;
+      -- The signed content freezes the designated signer's one active signature
+      -- asset (id and sha256). FOR SHARE: a concurrent revoke waits for this sign,
+      -- or (revoke first) this sign sees no active asset. A later revoke or
+      -- replacement never alters this record: it keeps the frozen hash.
+      SELECT s.id, s.sha256 INTO sig_asset_id, sig_asset_sha FROM public.billing_signer_signature_assets s
+        WHERE s.organization_id = NEW.organization_id AND s.signer_user_id = designated_signer AND s.revoked_at IS NULL
+        FOR SHARE;
+      IF sig_asset_sha IS NULL THEN
+        RAISE EXCEPTION 'SIGNATURE_ASSET_MISSING: the designated signer has no active approved signature image; signing stays closed' USING ERRCODE = '23514';
+      END IF;
+      IF NEW.content #>> '{signature,assetSha256}' IS DISTINCT FROM sig_asset_sha::text
+         OR NEW.content #>> '{signature,assetId}' IS DISTINCT FROM sig_asset_id
+         OR NEW.signature_method IS DISTINCT FROM 'approved_image' THEN
+        RAISE EXCEPTION 'SIGNATURE_ASSET_MISMATCH: content.signature must freeze the active signature asset (assetId, assetSha256), signed with signature_method approved_image' USING ERRCODE = '23514';
       END IF;
       IF NEW.stage = 'j5' AND NEW.content ->> 'issueDate' IS DISTINCT FROM to_char(public.billing_today(), 'YYYY-MM-DD') THEN
         RAISE EXCEPTION 'J5_ISSUE_DATE_NOT_SERVER_DATE: a J5 is issued on the server date it is signed (America/Chicago)' USING ERRCODE = '23514';
@@ -1674,11 +1806,12 @@ ALTER TABLE public.billing_stage_recipients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_delivery_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_designated_signers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_voucher_receipt_signatures ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_signer_signature_assets ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
   public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
   public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events,
-  public.billing_designated_signers, public.billing_voucher_receipt_signatures FROM PUBLIC;
+  public.billing_designated_signers, public.billing_voucher_receipt_signatures, public.billing_signer_signature_assets FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(),
   public.billing_case_identity_guard(), public.billing_stage_record_guard(),
   public.billing_stage_send_guard(), public.billing_stage_record_links_guard(),
@@ -1691,7 +1824,7 @@ REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_ap
   public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(),
   public.billing_designated_signer_guard(), public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_voucher_receipt_signature_guard(),
   public.billing_letterhead_footer(), public.billing_artifact_stamp(), public.billing_signer_delegation_guard(),
-  public.billing_program_slug_aliases(), public.billing_canonical_program_slug(TEXT) FROM PUBLIC;
+  public.billing_program_slug_aliases(), public.billing_canonical_program_slug(TEXT), public.billing_signer_signature_asset_guard() FROM PUBLIC;
 
 DO $$
 DECLARE
@@ -1703,7 +1836,7 @@ BEGIN
         'REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations, '
         'public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends, '
         'public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events, '
-        'public.billing_designated_signers, public.billing_voucher_receipt_signatures FROM %I', browser_role);
+        'public.billing_designated_signers, public.billing_voucher_receipt_signatures, public.billing_signer_signature_assets FROM %I', browser_role);
       EXECUTE format(
         'REVOKE ALL ON FUNCTION public.billing_payment_event_j6_only(), public.billing_append_only(), '
         'public.billing_case_identity_guard(), public.billing_stage_record_guard(), '
@@ -1717,7 +1850,7 @@ BEGIN
         'public.billing_idempotency_retry_window(), public.billing_utc_now(), public.billing_stale_claim_age(), '
         'public.billing_designated_signer_guard(), public.billing_voucher_receipt_signed(TEXT, TEXT), public.billing_voucher_receipt_signature_guard(), '
         'public.billing_letterhead_footer(), public.billing_artifact_stamp(), public.billing_signer_delegation_guard(), '
-        'public.billing_program_slug_aliases(), public.billing_canonical_program_slug(TEXT) FROM %I', browser_role);
+        'public.billing_program_slug_aliases(), public.billing_canonical_program_slug(TEXT), public.billing_signer_signature_asset_guard() FROM %I', browser_role);
     END IF;
   END LOOP;
 END;
@@ -1734,11 +1867,11 @@ BEGIN
     REVOKE ALL ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
       public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
       public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events,
-      public.billing_voucher_receipt_signatures FROM service_role;
+      public.billing_voucher_receipt_signatures, public.billing_signer_signature_assets FROM service_role;
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.billing_cases, public.billing_artifacts, public.billing_attestations,
       public.billing_signer_delegations, public.billing_stage_records, public.billing_stage_sends,
       public.billing_payment_events, public.billing_stage_recipients, public.billing_delivery_events,
-      public.billing_voucher_receipt_signatures TO service_role;
+      public.billing_voucher_receipt_signatures, public.billing_signer_signature_assets TO service_role;
     -- The designation is read-only for the app.
     REVOKE ALL ON TABLE public.billing_designated_signers FROM service_role;
     GRANT SELECT ON TABLE public.billing_designated_signers TO service_role;

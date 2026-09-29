@@ -21,10 +21,17 @@ import 'server-only';
  *    exact version by echoing its content hash and confirming the intent
  *    statement. A stale or different hash is refused.
  *  - Delegation is modeled (billing_signer_delegations) but disabled here and
- *    has no UI; an approved signature image slot exists but is disabled and
- *    has no approved asset, so the signature is a typed attestation block.
+ *    has no UI.
+ *  - Signature image: the designated signer's one active approved PNG
+ *    (billing_signer_signature_assets, signatureAsset.ts), which only he
+ *    uploads as himself. Every sign freezes its id + sha256 in
+ *    content.signature and uses signature_method 'approved_image'; the
+ *    database refuses a sign without it (SIGNATURE_ASSET_MISSING /
+ *    SIGNATURE_ASSET_MISMATCH). The image is what is printed, never what
+ *    authorizes: authorizeSigner above still decides who may sign.
  */
 import { authorizedSignerLine, AUTHORIZED_SIGNER, type BillingStage } from './constants';
+import type { SignatureAssetRef } from './signatureAsset';
 import type { StageStatus } from './stateMachine';
 
 export const SIGNER_ENV = 'BILLING_EXECUTIVE_SIGNER_USER_ID';
@@ -32,10 +39,14 @@ export const SIGNER_ENV = 'BILLING_EXECUTIVE_SIGNER_USER_ID';
 /** Delegated signing stays off until Mike separately approves it. */
 export const SIGNER_DELEGATION_ENABLED = false;
 
-/** No approved WAP signature image exists yet; the slot stays disabled. */
-export const SIGNATURE_IMAGE_ENABLED = false;
+/** The signature image slot is on: the approved image is the database's active signature asset. */
+export const SIGNATURE_IMAGE_ENABLED = true;
 
-/** Reviewed signature assets by SHA-256. Empty until an asset is approved through review. */
+/**
+ * @deprecated The approved signature is the active row of
+ * billing_signer_signature_assets (signatureAsset.ts); no image is ever
+ * approved in code or committed to the repository, so this stays empty.
+ */
 export const APPROVED_SIGNATURE_ASSETS: ReadonlyArray<{ sha256: string; approvalReference: string }> = Object.freeze([]);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -137,30 +148,36 @@ export function validateSignRequest(target: SignTarget, request: SignRequest): {
 }
 
 export type SignatureBlock = {
-  method: 'typed_attestation';
+  /** Matches billing_stage_records.signature_method; a sign is refused unless it is 'approved_image'. */
+  method: 'typed_attestation' | 'approved_image';
   name: string;
   title: string;
   signedAt: string;
   attestation: string;
-  image: null;
+  /** The frozen content.signature: the image placed in the slot (its bytes must hash to assetSha256). */
+  image: SignatureAssetRef | null;
 };
 
 /**
- * The block printed on the signed PDF: typed name, title, signed-at and the
- * attestation. No image until an approved asset exists and the slot is enabled.
+ * The block printed on the signed PDF: name, title, signed-at, the attestation
+ * and (for every sign the database accepts) the frozen signature image.
  */
-export function buildSignatureBlock(args: { signedAt: Date; intent: string }): SignatureBlock {
+export function buildSignatureBlock(args: { signedAt: Date; intent: string; image?: SignatureAssetRef | null }): SignatureBlock {
+  const image = args.image ?? null;
   return {
-    method: 'typed_attestation',
+    method: image ? 'approved_image' : 'typed_attestation',
     name: AUTHORIZED_SIGNER.name,
     title: AUTHORIZED_SIGNER.title,
     signedAt: args.signedAt.toISOString(),
-    attestation: `Electronically signed by ${AUTHORIZED_SIGNER.name} (typed signature). ${args.intent}`,
-    image: null,
+    attestation: `Electronically signed by ${AUTHORIZED_SIGNER.name}${image ? '' : ' (typed signature)'}. ${args.intent}`,
+    image,
   };
 }
 
-/** Whether an image may be placed in the signature slot. False until review enables it. */
+/**
+ * @deprecated Always false: use signatureAssetStatus (signatureAsset.ts) with
+ * the database's active asset. Kept so the export is stable.
+ */
 export function isApprovedSignatureAsset(sha256: string, enabled: boolean = SIGNATURE_IMAGE_ENABLED): boolean {
   return enabled && APPROVED_SIGNATURE_ASSETS.some((a) => a.sha256 === sha256);
 }

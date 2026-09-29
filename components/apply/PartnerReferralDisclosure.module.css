@@ -1,0 +1,45 @@
+/* Brand tokens (css/wa-brand-tokens.css) load on every route, so this
+   callout reads the same on /apply, /apply/create-account, /signup and the
+   /join landing page. */
+.disclosure {
+  margin: 0 0 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  border-inline-start: 4px solid var(--wa-accent);
+  background: var(--wa-accent-soft);
+  /* Explicit, never `inherit`: a parent with light text (the /apply hero)
+     would otherwise put white text on this pale box. --wa-text comes from
+     css/portal-tokens.css, which not every route loads, so the fallback
+     repeats its light-dark() pair. */
+  color: var(--wa-text, light-dark(#1a1a1a, #f2e8ea));
+  text-align: start;
+  line-height: 1.55;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--wa-accent-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.body {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+/* Inside the crimson /apply hero. The hero gradient stays crimson in both
+   themes, so use the mode-constant on-hero pair (css/wa-brand-tokens.css:
+   "Dedicated pairs prevent white-on-pink") instead of light-dark() tokens. */
+.onHero {
+  border-inline-start-color: var(--wa-hero-crimson);
+  background: var(--wa-hero-action-bg);
+  color: var(--wa-hero-action-text);
+}
+
+.onHero .label {
+  color: var(--wa-hero-crimson-dark);
+}

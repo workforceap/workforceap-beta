@@ -11,6 +11,7 @@ import type {
   BillingCase,
   BillingDeliveryEvent,
   BillingPaymentEvent,
+  BillingSignerSignatureAsset,
   BillingStageRecipient,
   BillingStageRecord,
   BillingStageSend,
@@ -18,6 +19,7 @@ import type {
 } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
+import { activeSignatureAsset, type SignerSignatureAsset } from '../signatureAsset';
 import { voucherReceiptSignatureStatus, type VoucherReceiptSignatureMethod, type VoucherReceiptSignatureStatus } from '../voucherReceipt';
 import type { Attestation, AttestationKind } from '../attestations';
 import type { BillingStage } from '../constants';
@@ -41,19 +43,31 @@ export type CaseSnapshot = {
   receiptSignatures: BillingVoucherReceiptSignature[];
   /** The organization's designated signer principal (M1 billing_designated_signers), or null (unset: J6 stays closed). */
   designatedSignerUserId: string | null;
+  /**
+   * The organization's signature images, newest first (org-level, not case
+   * data). At most one is active; a revoked row is history and never signs.
+   */
+  signatureAssets: BillingSignerSignatureAsset[];
   /** subjectId -> display name, for every actor id on the rows (null when the account is gone). */
   actorNames: Map<string, string | null>;
 };
 
 type Db = Pick<
   typeof prisma,
-  'billingCase' | 'billingAttestation' | 'billingArtifact' | 'billingStageRecord' | 'billingPaymentEvent' | 'billingVoucherReceiptSignature' | 'billingDesignatedSigner'
+  | 'billingCase'
+  | 'billingAttestation'
+  | 'billingArtifact'
+  | 'billingStageRecord'
+  | 'billingPaymentEvent'
+  | 'billingVoucherReceiptSignature'
+  | 'billingDesignatedSigner'
+  | 'billingSignerSignatureAsset'
 >;
 
 export async function loadCaseSnapshot(db: Db, organizationId: string, caseId: string): Promise<CaseSnapshot | null> {
   const billingCase = await db.billingCase.findFirst({ where: { id: caseId, organizationId } });
   if (!billingCase) return null;
-  const [attestations, artifacts, records, paymentEvents, receiptSignatures, designated] = await Promise.all([
+  const [attestations, artifacts, records, paymentEvents, receiptSignatures, designated, signatureAssets] = await Promise.all([
     db.billingAttestation.findMany({ where: { caseId, organizationId }, orderBy: { attestedAt: 'desc' } }),
     db.billingArtifact.findMany({ where: { caseId, organizationId }, orderBy: { createdAt: 'desc' } }),
     db.billingStageRecord.findMany({
@@ -64,6 +78,7 @@ export async function loadCaseSnapshot(db: Db, organizationId: string, caseId: s
     db.billingPaymentEvent.findMany({ where: { caseId, organizationId }, orderBy: { recordedAt: 'asc' } }),
     db.billingVoucherReceiptSignature.findMany({ where: { caseId, organizationId }, orderBy: { attestedAt: 'desc' } }),
     db.billingDesignatedSigner.findFirst({ where: { organizationId }, select: { userId: true } }),
+    db.billingSignerSignatureAsset.findMany({ where: { organizationId }, orderBy: { uploadedAt: 'desc' }, take: 50 }),
   ]);
   const ids = new Set<string>([billingCase.createdBySubjectId]);
   for (const a of attestations) ids.add(a.attestedBySubjectId);
@@ -90,8 +105,19 @@ export async function loadCaseSnapshot(db: Db, organizationId: string, caseId: s
     paymentEvents,
     receiptSignatures,
     designatedSignerUserId: designated?.userId ?? null,
+    signatureAssets,
     actorNames: names,
   };
+}
+
+export function toSignerAsset(row: BillingSignerSignatureAsset): SignerSignatureAsset {
+  return { id: row.id, organizationId: row.organizationId, signerUserId: row.signerUserId, sha256: row.sha256, revokedAt: row.revokedAt };
+}
+
+/** The designated signer's one active signature image row, or null (no image approved: signing stays closed). */
+export function activeSignatureRow(snapshot: Pick<CaseSnapshot, 'signatureAssets' | 'designatedSignerUserId'>): BillingSignerSignatureAsset | null {
+  const active = activeSignatureAsset(snapshot.signatureAssets.map(toSignerAsset), snapshot.designatedSignerUserId);
+  return active ? snapshot.signatureAssets.find((row) => row.id === active.id) ?? null : null;
 }
 
 export function actor(snapshot: Pick<CaseSnapshot, 'actorNames'>, subjectId: string): Actor {

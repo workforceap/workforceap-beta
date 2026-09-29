@@ -9,6 +9,7 @@ import { authorizedSignerLine, AUTHORIZED_SIGNER, CONTENT_VERSION, DOCUMENT_TITL
 import { contentSha256 } from './canonical';
 import { classEndDate, isIsoDate } from './dates';
 import { resolveProgramTerms, type ContractHours } from './hours';
+import type { SignatureAssetRef } from './signatureAsset';
 import { WAP_BILLING_LETTERHEAD } from './letterhead';
 import { buildTuitionLineItems, type TuitionLine } from './lineItem';
 import { j5Recipients, j6Recipients, normalizeRecipientName, type Contact, type Recipient, type RecipientRole } from './recipients';
@@ -38,6 +39,12 @@ type Common = {
   lineItems: TuitionLine[];
   totalCents: number;
   signer: { name: string; title: string; line: string };
+  /**
+   * The designated signer's active approved signature image (id + sha256),
+   * frozen into the version hash. Null = no active asset: the draft previews
+   * but the database refuses to sign it (SIGNATURE_ASSET_MISSING).
+   */
+  signature: SignatureAssetRef | null;
   recipients: Recipient[];
 };
 
@@ -135,6 +142,15 @@ function lineItems(): { lineItems: TuitionLine[]; totalCents: number } {
   return { lineItems: items, totalCents: items[0].amountCents };
 }
 
+function signatureRef(asset: SignatureAssetRef | null, errors: string[]): SignatureAssetRef | null {
+  if (asset === null) return null;
+  if (!asset.assetId?.trim() || !HEX64.test(asset.assetSha256 ?? '')) {
+    errors.push('The signature asset must be the active asset id and its sha256.');
+    return null;
+  }
+  return { assetId: asset.assetId, assetSha256: asset.assetSha256 };
+}
+
 function basics(documentNumber: string, issueDate: string, boardName: string, counselor: CounselorContact, logoSha256: string): string[] {
   const errors: string[] = [];
   if (!HEX64.test(logoSha256)) errors.push('The letterhead logo hash (sha256 of the exact PNG bytes) is required.');
@@ -156,8 +172,11 @@ export function buildJ5Content(input: {
   counselor: CounselorContact;
   programSlug: string;
   readiness: Attestation;
+  /** The designated signer's active signature asset (signatureRefForContent), or null. */
+  signatureAsset: SignatureAssetRef | null;
 }): ContentResult<J5Content> {
   const errors = basics(input.documentNumber, input.issueDate, input.boardName, input.counselor, input.logoSha256);
+  const signature = signatureRef(input.signatureAsset, errors);
   const gate = checkJ5Prerequisites({ hasOpenJ5: false, readiness: input.readiness, programSlug: input.programSlug });
   if (!gate.ok) errors.push(...gate.errors);
   const terms = resolveProgramTerms(input.programSlug);
@@ -179,6 +198,7 @@ export function buildJ5Content(input: {
     training: { programSlug: terms.canonicalSlug, className: terms.className, contactHours: terms.hours, classStartDate: start, classEndDate: classEndDate(start) },
     ...lineItems(),
     signer: signer(),
+    signature,
     recipients: recipients.recipients,
     readiness: {
       attestationId: input.readiness.id,
@@ -211,9 +231,12 @@ export function buildJ6Content(
     boardName: string;
     counselor: CounselorContact;
     finance: Contact;
+    /** The designated signer's active signature asset (signatureRefForContent), or null. */
+    signatureAsset: SignatureAssetRef | null;
   },
 ): ContentResult<J6Content> {
   const errors = basics(input.documentNumber, input.issueDate, input.boardName, input.counselor, input.logoSha256);
+  const signature = signatureRef(input.signatureAsset, errors);
   const gate = checkJ6Prerequisites(input);
   if (!gate.ok) errors.push(...gate.errors);
   const recipients = j6Recipients({ finance: input.finance, counselor: input.counselor, student: input.student });
@@ -236,6 +259,7 @@ export function buildJ6Content(
     training: gate.training,
     ...lineItems(),
     signer: signer(),
+    signature,
     recipients: recipients.recipients,
     voucher: {
       artifactId: voucher.id,

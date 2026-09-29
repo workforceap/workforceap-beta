@@ -6,6 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 import { prisma } from '@/lib/db/prisma';
 import PortalTeamChatClient from '@/components/portal/PortalTeamChatClient';
 import { getOrCreatePartnerMessageThread } from '@/lib/messages/portalThreads';
@@ -52,7 +53,11 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
           where: {
             partnerId: ctx.partnerId,
             partner: { organizationId: ctx.partner.organizationId },
-            member: { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+            // Hidden minors are not a selectable message context (lib/partner/dataAccess.ts).
+            member: withPartnerMemberVisibility(
+              { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+              partnerDataAccess(ctx.partner),
+            ),
           },
           select: { member: { select: { id: true, fullName: true } } },
           orderBy: { referredAt: 'desc' },

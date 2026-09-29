@@ -56,8 +56,24 @@ describe('partner default referral journey', () => {
     render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
     const share = screen.getByRole('region', { name: 'Share your referral link' });
     fireEvent.click(within(share).getByText('View link and referral code'));
-    expect(within(share).getByRole('link')).toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-code');
+    expect(within(share).getByRole('link', { name: 'https://training.example.invalid/apply?ref=community-code' }))
+      .toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-code');
+    expect(within(share).getByRole('link', { name: 'https://training.example.invalid/join/community-code' }))
+      .toHaveAttribute('href', 'https://training.example.invalid/join/community-code');
+    expect(within(share).getByRole('link', { name: 'Landing page, channel links and Apply button' }))
+      .toHaveAttribute('href', '/partner/guide#share-tools');
     expect(within(share).getByRole('button', { name: 'Copy referral link' })).toBeVisible();
+  });
+
+  it('shows the landing page, UTM channel links and a plain-link Apply snippet on the guide', async () => {
+    render(await PartnerGuidePage());
+    const tools = screen.getByRole('region', { name: 'Share tools' });
+    expect(within(tools).getByRole('link', { name: 'https://training.example.invalid/join/community-code' })).toBeVisible();
+    expect(within(tools).getByText('https://training.example.invalid/join/community-code?utm_source=facebook&utm_medium=social&utm_campaign=partner_referral')).toBeVisible();
+    const snippet = within(tools).getByRole('textbox') as HTMLTextAreaElement;
+    expect(snippet.value).toContain('href="https://training.example.invalid/apply?ref=community-code&amp;utm_source=website&amp;utm_medium=referral&amp;utm_campaign=partner_referral"');
+    expect(snippet.value).not.toMatch(/<script|<iframe/i);
+    expect(within(tools).getByRole('button', { name: 'Copy button HTML' })).toBeVisible();
   });
 
   it('keeps the guide application CTA and share tools attributed', async () => {
@@ -83,6 +99,7 @@ describe('partner default referral journey', () => {
     render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
     const share = screen.getByRole('region', { name: 'Share your referral link' });
     fireEvent.click(within(share).getByText('View link and referral code'));
-    expect(within(share).getByRole('link')).toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-slug');
+    expect(within(share).getByRole('link', { name: 'https://training.example.invalid/apply?ref=community-slug' }))
+      .toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-slug');
   });
 });

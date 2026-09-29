@@ -8,6 +8,7 @@ import { MemberSignupInput } from '@/lib/validation/member';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { logger } from '@/lib/observability/logger';
 import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
+import { activeReferralPartnerWhere } from '@/lib/partner/referralPartnerLookup';
 
 /**
  * The member row uses the Supabase auth user id as its primary key, so the
@@ -34,12 +35,20 @@ export type CreateMemberOptions = {
   headers?: HeadersLike;
 };
 
+/** The partner the signup was attributed to (for the disclosure acknowledgement). */
+type CreateMemberResult = {
+  referralPartnerId: string | null;
+  referralPartnerType: string | null;
+  referralRef: string | null;
+};
+
 export async function createMember(
   userId: string,
   data: MemberSignupInput,
   options: CreateMemberOptions = {},
-): Promise<void> {
+): Promise<CreateMemberResult> {
   let referralPartnerId: string | null = null;
+  let referralPartnerType: string | null = null;
   let referralSource: string | null = null;
 
   // Resolve the member's organization first so the partner lookup below is
@@ -56,16 +65,13 @@ export async function createMember(
   if (refRaw) {
     const partner = await withDbRetry(() =>
       prisma.partner.findFirst({
-        where: {
-          active: true,
-          organizationId,
-          OR: [{ referralCode: refRaw }, { slug: refRaw }],
-        },
-        select: { id: true },
+        where: activeReferralPartnerWhere(refRaw, organizationId),
+        select: { id: true, partnerType: true },
       }),
     );
     if (partner) {
       referralPartnerId = partner.id;
+      referralPartnerType = partner.partnerType;
       referralSource = `partner_ref:${refRaw}`;
     } else {
       // The ref is dropped (no such code, inactive partner, or a partner in
@@ -156,4 +162,6 @@ export async function createMember(
       throw err;
     }
   });
+
+  return { referralPartnerId, referralPartnerType, referralRef: refRaw ?? null };
 }

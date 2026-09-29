@@ -103,7 +103,13 @@ describe('partner contextual messages page', () => {
           partnerId: 'partner-1',
           partner: { organizationId: 'org-1' },
           // One definition of "a member" (WAP-182 item 3).
-          member: expect.objectContaining({ organizationId: 'org-1', deletedAt: null, ...MEMBER_ONLY_WHERE }),
+          member: expect.objectContaining({
+            organizationId: 'org-1',
+            deletedAt: null,
+            email: MEMBER_ONLY_WHERE.email,
+            // Member-only exclusions plus the hidden-minor rule (lib/partner/dataAccess.ts).
+            NOT: [...MEMBER_ONLY_WHERE.NOT, { profile: { is: expect.objectContaining({ ferpaConsentGiven: false }) } }],
+          }),
         },
       }),
     );

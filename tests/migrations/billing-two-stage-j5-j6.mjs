@@ -23,6 +23,10 @@
  *  - ambiguous sends go through reconciliation and settled sends are final;
  *  - payment is pending (expected follow-up +10..+14 days) or received with
  *    evidence, only for a sent J6;
+ *  - the signer's signature image: a PNG (magic bytes + IHDR in the DB) only the
+ *    designated signer uploads, one active per org, append-only apart from one
+ *    DB-stamped revoke; every sign freezes the active asset and a revoke never
+ *    alters a signed record (synthetic generated PNGs only, never a real image);
  *  - erasure retention: deleting the member (as cleanupDeletedAccounts does)
  *    detaches member_id and keeps the whole finance archive.
  * Runs only against a dedicated disposable local database. Creates the
@@ -33,6 +37,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
+import { deflateSync } from 'node:zlib';
 
 const MIGRATION_NAME = '20260927230000_billing_two_stage_j5_j6';
 const LEGACY_MIGRATION = 'prisma/migrations/20260904020000_training_billing_packets/migration.sql';
@@ -54,6 +59,7 @@ const NEW_TABLES = [
   'billing_delivery_events',
   'billing_designated_signers',
   'billing_voucher_receipt_signatures',
+  'billing_signer_signature_assets',
 ];
 
 const sourceUrl = process.env.BILLING_TWO_STAGE_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';
@@ -164,7 +170,7 @@ const contentRecipients = (stage) =>
 
 /** A stage record whose frozen content prints exactly its frozen columns and its recipients. */
 function stageInsert({ id, stage, version = 1, doc, caseId = 'case-1', className = CLASS, program = PROGRAM, hours = 160, start = '2026-09-30', end = '2027-02-28', amount = 750000, extra = {} }) {
-  const content = JSON.stringify({ synthetic: true, totalCents: amount, training: { programSlug: program, className, contactHours: hours, classStartDate: start, classEndDate: end }, ...contentContacts(stage), recipients: contentRecipients(stage), letterhead: CONTENT_LETTERHEAD, issueDate: TODAY_ISO });
+  const content = JSON.stringify({ synthetic: true, totalCents: amount, training: { programSlug: program, className, contactHours: hours, classStartDate: start, classEndDate: end }, ...contentContacts(stage), recipients: contentRecipients(stage), letterhead: CONTENT_LETTERHEAD, issueDate: TODAY_ISO, signature: ACTIVE_SIG });
   const cols = {
     id: `'${id}'`,
     organization_id: `'${ORG}'`,
@@ -202,10 +208,42 @@ const readinessInsert = (id, over = {}) => {
 /** Signing columns the caller supplies; signed_at is stamped by the database. */
 const SIGNED = (artifact) => ({
   signed_by_subject_id: `'${SIGNER}'`,
-  signature_method: `'typed_attestation'`,
+  signature_method: `'approved_image'`,
   signer_intent: `'I, Michael A. Brown, sign this document.'`,
   signed_artifact_id: `'${artifact}'`,
 });
+
+/** A generated synthetic greyscale PNG (never a real signature image); `seed` varies the bytes. */
+function syntheticPng(width, height, seed = 0) {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (b) => { let c = 0xffffffff; for (const x of b) c = crcTable[(c ^ x) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const chunk = (type, data) => {
+    const body = Buffer.concat([Buffer.from(type, 'latin1'), data]);
+    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const sum = Buffer.alloc(4); sum.writeUInt32BE(crc(body));
+    return Buffer.concat([len, body, sum]);
+  };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(width, 0); ihdr.writeUInt32BE(height, 4); ihdr[8] = 8; ihdr[9] = 0;
+  const raw = Buffer.alloc((width + 1) * height, 0x40 + seed);
+  for (let y = 0; y < height; y += 1) raw[y * (width + 1)] = 0;
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
+}
+/** The active signature asset every new stage record freezes in content.signature. */
+let ACTIVE_SIG = null;
+/** INSERT for a signer signature asset from a synthetic PNG (header, hash and dimensions derived from its bytes). */
+function sigAsset(id, { signer = SIGNER, uploader = signer, width = 240, height = 80, seed = 0, mime = 'image/png', header = null, key = null, bucket = 'billing-finance', stamps = '' } = {}) {
+  const png = syntheticPng(width, height, seed);
+  const sha = createHash('sha256').update(png).digest('hex');
+  const hdr = header ?? png.subarray(0, 33).toString('hex');
+  const insert = `INSERT INTO public.billing_signer_signature_assets (id, organization_id, signer_user_id, uploaded_by_user_id, storage_bucket, storage_key, mime_type, byte_length, sha256, width_px, height_px, png_header, approval_statement${stamps ? ', uploaded_at, approved_at' : ''})
+    VALUES ('${id}', '${ORG}', '${signer}', '${uploader}', '${bucket}', '${key ?? `signature/${ORG}/${signer}/${sha}.png`}', '${mime}', ${png.length}, '${sha}', ${width}, ${height}, decode('${hdr}', 'hex'), 'Synthetic: this is my signature; place it on documents I sign'${stamps ? `, ${stamps}, ${stamps}` : ''});`;
+  return { sha, insert, ref: { assetId: id, assetSha256: sha } };
+}
+const revokeSig = (id, extra = '') => `UPDATE public.billing_signer_signature_assets SET revoked_by_subject_id = 'ops-review', revoke_reason = 'Synthetic: replaced'${extra} WHERE id = '${id}';`;
 
 /** Claim one role's copy of a record version: starts `pending`, canonical per-role-attempt key. */
 function sendInsert({ id, record, stage, version = 1, attempt = 1, role, status = 'pending', key, attachments = [], email = null, content = null, name = null, claimedAt = null }) {
@@ -405,6 +443,32 @@ try {
   // The designated signer principal (Michael), set by an ops-reviewed change; unset by default.
   assert.equal(sql(`SELECT count(*) FROM public.billing_designated_signers;`), '0', 'no signer is designated by the migration');
   sql(`INSERT INTO public.billing_designated_signers (organization_id, user_id, designated_by, note, designated_at) VALUES ('${ORG}', '${SIGNER}', 'ops-review', 'Synthetic designation', '2000-01-01');`);
+
+  // ---- The signer's signature image (synthetic generated PNGs only).
+  assert.equal(sql(`SELECT count(*) FROM public.billing_signer_signature_assets;`), '0', 'no signature asset ships with the migration');
+  refusedBecause(sigAsset('sig-staff', { uploader: STAFF }).insert, 'SIGNATURE_ASSET_WRONG_PRINCIPAL:%');
+  refusedBecause(sigAsset('sig-staff2', { signer: STAFF }).insert, 'SIGNATURE_ASSET_WRONG_PRINCIPAL:%');
+  rejects(`SET ROLE service_role; ${sigAsset('sig-staff3', { signer: STAFF }).insert}`, '23514', 'service_role cannot upload a signature for a non-designated principal');
+  refusedBecause(`DELETE FROM public.billing_designated_signers WHERE organization_id = '${ORG}'; ${sigAsset('sig-unset').insert}`, 'SIGNER_PRINCIPAL_UNSET:%');
+  rejects(sigAsset('sig-jpeg-mime', { mime: 'image/jpeg' }).insert, '23514', 'only image/png');
+  rejects(sigAsset('sig-jpeg-magic', { header: 'ffd8ffe000104a46494600010100000100010000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912' }).insert, '23514', 'JPEG magic bytes are refused');
+  rejects(sigAsset('sig-pdf-magic', { header: Buffer.from('%PDF-1.7 synthetic not an image!').toString('hex') }).insert, '23514', 'PDF magic bytes are refused');
+  rejects(sigAsset('sig-short', { header: '89504e470d0a1a0a' }).insert, '23514', 'the IHDR header must be present');
+  rejects(sigAsset('sig-dims', { header: syntheticPng(241, 80).subarray(0, 33).toString('hex') }).insert, '23514', 'pixel dimensions must equal the IHDR');
+  rejects(sigAsset('sig-huge', { width: 6001, height: 1 }).insert, '23514', 'pixel dimensions are bounded');
+  rejects(sigAsset('sig-bucket', { bucket: 'member-files' }).insert, '23514', 'only the private billing-finance bucket');
+  rejects(sigAsset('sig-key', { key: `cases/case-1/receipt-signature/${'a'.repeat(64)}.png` }).insert, '23514', 'the key is signature/<org>/<signer>/<sha256>.png');
+  const sig1 = sigAsset('sig-1', { stamps: `'2000-01-01'` });
+  sql(sig1.insert);
+  ACTIVE_SIG = sig1.ref;
+  assert.equal(sql(`SELECT (uploaded_at > '2020-01-01' AND approved_at = uploaded_at AND revoked_at IS NULL)::text FROM public.billing_signer_signature_assets WHERE id = 'sig-1';`), 'true', 'uploaded_at/approved_at are the DB clock');
+  rejects(sigAsset('sig-second', { seed: 1 }).insert, '23505', 'at most one active signature asset per organization');
+  rejects(`UPDATE public.billing_signer_signature_assets SET sha256 = '${'e'.repeat(64)}' WHERE id = 'sig-1';`, '23514', 'a signature asset is append-only');
+  rejects(`UPDATE public.billing_signer_signature_assets SET revoked_by_subject_id = 'ops-review' WHERE id = 'sig-1';`, '23514', 'a revoke records who and why');
+  rejects(`UPDATE public.billing_signer_signature_assets SET revoked_by_subject_id = 'ops-review', revoke_reason = 'x', approval_statement = 'edited' WHERE id = 'sig-1';`, '23514', 'a revoke changes nothing else');
+  rejects(`DELETE FROM public.billing_signer_signature_assets WHERE id = 'sig-1';`, '23514', 'a signature asset is never deleted');
+  rejects(`SET ROLE service_role; DELETE FROM public.billing_signer_signature_assets WHERE id = 'sig-1';`, '23514', 'not even by service_role');
+  pass('signature asset: only the designated signer uploads (a non-signer, or an unset designation, is refused); image/png only with PNG magic bytes and IHDR dimensions checked in the DB; private billing-finance signature/ key; one active per org; uploaded_at/approved_at DB-stamped; append-only apart from the revoke');
   rejects(
     `INSERT INTO public.billing_cases (id, organization_id, member_id, subject_member_id, program_slug, created_by_subject_id, updated_at)
       VALUES ('case-x', '${ORG}', '${MEMBER}', 'someone-else', 'x', '${STAFF}', now());`,
@@ -582,6 +646,17 @@ try {
       UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j5'))}, updated_at = now() WHERE id='j5-v1';`, 'SIGNER_PRINCIPAL_UNSET:%');
   refusedBecause(`UPDATE public.billing_stage_records SET content = jsonb_set(content, '{issueDate}', to_jsonb(to_char(public.billing_today() - 3, 'YYYY-MM-DD'))) WHERE id='j5-v1';
       UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j5'))}, updated_at = now() WHERE id='j5-v1';`, 'J5_ISSUE_DATE_NOT_SERVER_DATE:%');
+  // Signature asset at sign (each case rolled back inside a DO block).
+  refusedBecause(`${revokeSig('sig-1')} UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j5'))}, updated_at = now() WHERE id='j5-v1';`, 'SIGNATURE_ASSET_MISSING:%');
+  refusedBecause(`UPDATE public.billing_stage_records SET content = jsonb_set(content, '{signature,assetSha256}', to_jsonb(repeat('e', 64))) WHERE id='j5-v1';
+      UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j5'))}, updated_at = now() WHERE id='j5-v1';`, 'SIGNATURE_ASSET_MISMATCH:%');
+  refusedBecause(`UPDATE public.billing_stage_records SET content = content - 'signature' WHERE id='j5-v1';
+      UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j5'))}, updated_at = now() WHERE id='j5-v1';`, 'SIGNATURE_ASSET_MISMATCH:%');
+  refusedBecause(`UPDATE public.billing_stage_records SET status='signed', ${set({ ...SIGNED('art-j5'), signature_method: `'typed_attestation'` })}, updated_at = now() WHERE id='j5-v1';`, 'SIGNATURE_ASSET_MISMATCH:%');
+  refusedBecause(`${revokeSig('sig-1')} ${sigAsset('sig-replacement', { seed: 2 }).insert}
+      UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j5'))}, updated_at = now() WHERE id='j5-v1';`, 'SIGNATURE_ASSET_MISMATCH:%');
+  assert.equal(sql(`SELECT count(*) || '|' || count(*) FILTER (WHERE revoked_at IS NULL) FROM public.billing_signer_signature_assets;`), '1|1', 'the rolled-back cases left sig-1 active');
+  pass('sign needs the designated signer\'s active signature asset (SIGNATURE_ASSET_MISSING when revoked or absent) and content.signature freezing exactly it with signature_method approved_image (SIGNATURE_ASSET_MISMATCH for another hash, a missing block, a typed signature, or a replaced asset)');
   // Delegations: principal must be the designated signer; append-only except one DB-stamped revocation.
   const delegation = (id, principal) => `INSERT INTO public.billing_signer_delegations (id, organization_id, principal_subject_id, delegate_subject_id, stage, approved_by_subject_id, approval_reference, valid_from, valid_until)
       VALUES ('${id}', '${ORG}', '${principal}', '${STAFF}', 'j5', 'ops', 'Synthetic approval', now() - interval '1 day', now() + interval '30 days');`;
@@ -840,8 +915,15 @@ try {
   // J6 principal binding at signing (each case rolled back inside a DO block).
   refusedBecause(`DELETE FROM public.billing_designated_signers WHERE organization_id = '${ORG}'; ${signJ6('j6-v2')}`, 'SIGNER_PRINCIPAL_UNSET:%');
   refusedBecause(`UPDATE public.billing_stage_records SET status='signed', ${set({ ...SIGNED('art-j6'), signed_by_subject_id: `'${STAFF}'` })}, updated_at = now() WHERE id='j6-v2';`, 'SIGNER_NOT_DESIGNATED:%');
+  // A re-designated principal never signs with the previous signer's image.
   refusedBecause(`DELETE FROM public.billing_designated_signers WHERE organization_id = '${ORG}';
       INSERT INTO public.billing_designated_signers (organization_id, user_id, designated_by, note) VALUES ('${ORG}', '${STAFF}', 'ops', 'Synthetic re-designation');
+      UPDATE public.billing_stage_records SET status='signed', ${set({ ...SIGNED('art-j6'), signed_by_subject_id: `'${STAFF}'` })}, updated_at = now() WHERE id='j6-v2';`, 'SIGNATURE_ASSET_MISSING:%');
+  const staffSig = sigAsset('sig-staff-own', { signer: STAFF, seed: 3 });
+  refusedBecause(`DELETE FROM public.billing_designated_signers WHERE organization_id = '${ORG}';
+      INSERT INTO public.billing_designated_signers (organization_id, user_id, designated_by, note) VALUES ('${ORG}', '${STAFF}', 'ops', 'Synthetic re-designation');
+      ${revokeSig('sig-1')} ${staffSig.insert}
+      UPDATE public.billing_stage_records SET content = jsonb_set(content, '{signature}', '${JSON.stringify(staffSig.ref)}'::jsonb) WHERE id='j6-v2';
       UPDATE public.billing_stage_records SET status='signed', ${set({ ...SIGNED('art-j6'), signed_by_subject_id: `'${STAFF}'` })}, updated_at = now() WHERE id='j6-v2';`, 'VOUCHER_ATTESTER_NOT_SIGNER:%');
   assert.equal(sql(`SELECT user_id FROM public.billing_designated_signers WHERE organization_id = '${ORG}';`), SIGNER, 'the rolled-back cases left the designation unchanged');
   rejects(`SET ROLE service_role; INSERT INTO public.billing_designated_signers (organization_id, user_id, designated_by, note) VALUES ('${ORG}', '${SIGNER}', 'x', 'x');`, '42501', 'the app cannot designate a signer');
@@ -1054,7 +1136,7 @@ try {
   const j6v3Hashes = () => sql(`SELECT array_to_string(public.billing_stage_expected_attachments('j6-v3'), ',');`).split(',');
   rejects(sendInsert({ id: 's-j6-v3-draft', record: 'j6-v3', stage: 'j6', version: 3, role: 'finance', attachments: j6Hashes }), '23514', 'no claim for a draft record');
   // Privacy: the frozen recipient rows must equal the recipients printed in the signed content.
-  const v3Content = (recipients, contacts = contentContacts('j6'), letterhead = CONTENT_LETTERHEAD, issueDate = TODAY_ISO) => `UPDATE public.billing_stage_records SET content = '${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-02-20' }, ...contacts, recipients, letterhead, issueDate })}'::jsonb, updated_at = now() WHERE id='j6-v3';`;
+  const v3Content = (recipients, contacts = contentContacts('j6'), letterhead = CONTENT_LETTERHEAD, issueDate = TODAY_ISO) => `UPDATE public.billing_stage_records SET content = '${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-02-20' }, ...contacts, recipients, letterhead, issueDate, signature: ACTIVE_SIG })}'::jsonb, updated_at = now() WHERE id='j6-v3';`;
   // The frozen footer must be exactly the confirmed WAP footer facts.
   for (const [why, footer] of [
     ['an unspaced footer phone', { ...CONTENT_LETTERHEAD.footer, phone: '(512)825-2896' }],
@@ -1300,6 +1382,58 @@ try {
   rejects(`UPDATE public.billing_cases SET member_id = '${STAFF}' WHERE id='case-1';`, '23514', 'a detached case cannot be re-pointed at another account');
   pass('purging the member detaches member_id, keeps subject_member_id and the whole finance archive');
 
+  // ------------------------------- signature asset: revoke vs signed records
+  // A fresh J5 draft on its own case, ready to sign except for the signature asset it froze.
+  const sigCase = (caseId, recordId, doc) => {
+    sql(`INSERT INTO public.users VALUES ('subject-${caseId}', 'subject-${caseId}@example.test', '${ORG}');
+         INSERT INTO public.billing_cases (id, organization_id, member_id, subject_member_id, program_slug, created_by_subject_id, updated_at)
+           VALUES ('${caseId}', '${ORG}', 'subject-${caseId}', 'subject-${caseId}', '${PROGRAM}', '${STAFF}', now());
+         ${readinessInsert(`att-${caseId}`).replace("'case-1'", `'${caseId}'`)}
+         ${stageInsert({ id: recordId, stage: 'j5', doc, caseId, extra: { readiness_attestation_id: `'att-${caseId}'` } })}
+         ${recipientsInsert(recordId, 'j5', ['counselor', 'student'])}
+         ${artifactInsert({ id: `art-${recordId}`, kind: 'j5_signed_pdf', source: 'rendered', caseId, text: `%PDF-1.7 synthetic ${recordId}`, renders: { record: recordId, version: 1, contentSha256: HASH } })}`);
+    return `UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED(`art-${recordId}`))}, updated_at = now() WHERE id='${recordId}';`;
+  };
+  const frozenSigned = (except = '') => sql(`SELECT string_agg(id || ':' || status || ':' || content_sha256 || ':' || coalesce(content #>> '{signature,assetId}', '-') || ':' || coalesce(content #>> '{signature,assetSha256}', '-') || ':' || signed_at::text || ':' || coalesce(sent_at::text, 'unsent'), ',' ORDER BY id)
+      FROM public.billing_stage_records WHERE signed_at IS NOT NULL AND id <> '${except}';`);
+  const signedBefore = frozenSigned();
+  assert.equal(signedBefore.split(',').filter((r) => r.includes(`:sig-1:${sig1.sha}:`)).length, 3, `fixture: the signed J5/J6 records (two sent, all later superseded) froze sig-1: ${signedBefore}`);
+  const signA = sigCase('case-sig-a', 'j5-sig-a', 'WAP-Q-SIG-A');
+  const signB = sigCase('case-sig-b', 'j5-sig-b', 'WAP-Q-SIG-B');
+  // Two-session race, sign first: A signs and holds; B's revoke waits on A's FOR SHARE lock of the asset, then revokes.
+  const sigSigner = sqlAsync(`BEGIN; ${signA} SELECT pg_sleep(1.5); COMMIT;`);
+  await pause(400);
+  const revokeStarted = Date.now();
+  const sigRevoker = sqlAsync(revokeSig('sig-1', `, revoked_at = '2000-01-01'`));
+  const [sigSigned, sigRevoked] = await Promise.all([sigSigner, sigRevoker]);
+  assert.equal(sigSigned.code, 0, sigSigned.stderr);
+  assert.equal(sigRevoked.code, 0, sigRevoked.stderr);
+  assert.ok(Date.now() - revokeStarted > 800, 'the revoke waited for the concurrent sign');
+  assert.equal(sql(`SELECT status || '|' || (content #>> '{signature,assetSha256}') FROM public.billing_stage_records WHERE id = 'j5-sig-a';`), `signed|${sig1.sha}`);
+  assert.equal(sql(`SELECT (revoked_at > '2020-01-01')::text || '|' || revoked_by_subject_id FROM public.billing_signer_signature_assets WHERE id = 'sig-1';`), 'true|ops-review', 'revoked_at is the DB clock');
+  rejects(revokeSig('sig-1'), '23514', 'a revoke is one-time');
+  // Replacement: a new asset for the same signer; every record signed earlier keeps its frozen sig-1 hash.
+  const sig2 = sigAsset('sig-2', { seed: 4 });
+  sql(sig2.insert);
+  ACTIVE_SIG = sig2.ref;
+  assert.equal(frozenSigned('j5-sig-a'), signedBefore, 'revoking and replacing the asset alters no signed or sent record');
+  rejects(`UPDATE public.billing_stage_records SET content = jsonb_set(content, '{signature}', '${JSON.stringify(sig2.ref)}'::jsonb) WHERE id = 'j5-v1';`, '23514', 'a signed record cannot adopt the new asset');
+  // A draft prepared with the revoked asset cannot be signed with it.
+  refusedBecause(signB, 'SIGNATURE_ASSET_MISMATCH:%');
+  // Race, revoke first: B revokes sig-2 and holds; A's sign waits, then sees no active asset and is refused.
+  const signC = sigCase('case-sig-c', 'j5-sig-c', 'WAP-Q-SIG-C');
+  const sigHolder = sqlAsync(`BEGIN; ${revokeSig('sig-2')} SELECT pg_sleep(1.5); COMMIT;`);
+  await pause(400);
+  const sigLate = sqlAsync(signC);
+  const [sigHeld, sigLateSign] = await Promise.all([sigHolder, sigLate]);
+  assert.equal(sigHeld.code, 0, sigHeld.stderr);
+  assert.notEqual(sigLateSign.code, 0, 'the sign waited for the revoke and was refused');
+  assert.match(sigLateSign.stderr, /23514/);
+  assert.equal(sql(`SELECT status FROM public.billing_stage_records WHERE id = 'j5-sig-c';`), 'draft');
+  refusedBecause(signC, 'SIGNATURE_ASSET_MISSING:%');
+  assert.equal(frozenSigned('j5-sig-a'), signedBefore, 'still unchanged after the second revoke');
+  pass('signature asset revoke (two-session races in both orders serialize on the asset row): a sign in flight completes with the frozen hash and the revoke waits; a sign after a revoke is refused (SIGNATURE_ASSET_MISSING); revoke is one-time and DB-stamped; revoking or replacing the asset never alters a signed or sent record, and a draft frozen with a revoked asset is refused (SIGNATURE_ASSET_MISMATCH)');
+
   // ------------------------------------------------ DB-stamped columns
   // Prisma-shaped inserts omit every DB-stamped column (the helpers above do); supplied values are overwritten.
   sql(`${readinessInsert('att-stamp-check', { attested_at: `'2000-01-01'` })}
@@ -1311,6 +1445,7 @@ try {
       + (SELECT count(*) FROM public.billing_artifacts WHERE created_at < '2020-01-01')
       + (SELECT count(*) FROM public.billing_designated_signers WHERE designated_at < '2020-01-01')
       + (SELECT count(*) FROM public.billing_voucher_receipt_signatures WHERE attested_at < '2020-01-01')
+      + (SELECT count(*) FROM public.billing_signer_signature_assets WHERE uploaded_at < '2020-01-01' OR approved_at < '2020-01-01' OR revoked_at < '2020-01-01')
       + (SELECT count(*) FROM public.billing_stage_records WHERE signed_at < '2020-01-01' OR sent_at < '2020-01-01' OR superseded_at < '2020-01-01'
            OR voided_at < '2020-01-01' OR send_cancelled_at < '2020-01-01')
       + (SELECT count(*) FROM public.billing_stage_sends WHERE claimed_at < '2020-01-01' OR last_claimed_at < '2020-01-01' OR accepted_at < '2020-01-01' OR reconciled_at < '2020-01-01')
@@ -1324,12 +1459,12 @@ try {
     sql(`SELECT string_agg(table_name || '.' || column_name, ',' ORDER BY table_name, column_name) FROM information_schema.columns
          WHERE table_schema = 'public' AND is_nullable = 'NO' AND column_default IS NULL
            AND (table_name, column_name) IN (('billing_attestations','attested_at'), ('billing_artifacts','created_at'), ('billing_designated_signers','designated_at'),
-             ('billing_voucher_receipt_signatures','attested_at'), ('billing_stage_sends','claimed_at'), ('billing_stage_sends','last_claimed_at'),
+             ('billing_voucher_receipt_signatures','attested_at'), ('billing_signer_signature_assets','uploaded_at'), ('billing_signer_signature_assets','approved_at'), ('billing_stage_sends','claimed_at'), ('billing_stage_sends','last_claimed_at'),
              ('billing_delivery_events','recorded_at'), ('billing_payment_events','recorded_at'));`),
     '',
     'every NOT NULL DB-stamped column has a DEFAULT, so a Prisma create can omit it',
   );
-  pass('DB-stamped columns (attested_at x2, created_at upload, designated_at, signed_at, sent_at, superseded_at, voided_at, send_cancelled_at, claimed_at, last_claimed_at, accepted_at, reconciled_at, recorded_at x2, member_merged_at) are omittable in Prisma-shaped inserts and hold the DB clock');
+  pass('DB-stamped columns (attested_at x2, created_at upload, designated_at, uploaded_at/approved_at/revoked_at signature asset, signed_at, sent_at, superseded_at, voided_at, send_cancelled_at, claimed_at, last_claimed_at, accepted_at, reconciled_at, recorded_at x2, member_merged_at) are omittable in Prisma-shaped inserts and hold the DB clock');
 
   // ------------------------------------------------------- re-run
   const recordCount = sql(`SELECT count(*) FROM public.billing_stage_records;`);

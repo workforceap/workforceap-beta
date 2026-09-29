@@ -250,7 +250,7 @@ export default function TwoStageBillingCase({ memberId, memberName, memberEmail,
             <>
               {editor('j5')}
               <J5ReadinessPanel ctx={ctx} attestation={summary.j5.readinessAttestation} />
-              <StageLifecycle ctx={ctx} stage="j5" view={summary.j5} viewer={summary.viewer} />
+              <StageLifecycle ctx={ctx} stage="j5" view={summary.j5} viewer={summary.viewer} signature={summary.signature} />
             </>
           ),
           j6: (
@@ -258,7 +258,7 @@ export default function TwoStageBillingCase({ memberId, memberName, memberEmail,
               {editor('j6')}
               <VoucherPanel ctx={ctx} voucher={summary.j6.voucher} />
               <ClassStartedPanel ctx={ctx} classStarted={summary.j6.classStarted} />
-              <StageLifecycle ctx={ctx} stage="j6" view={summary.j6} viewer={summary.viewer} />
+              <StageLifecycle ctx={ctx} stage="j6" view={summary.j6} viewer={summary.viewer} signature={summary.signature} />
               <PaymentPanel ctx={ctx} payment={summary.payment} />
             </>
           ),

@@ -13,6 +13,7 @@ import type {
   RecipientRole,
   RoleDeliveryView,
   SendDto,
+  SignatureStatusDto,
   VoucherReceiptStatementDto,
 } from '@/lib/billing/twoStage/dto';
 import { twoStageApi, type ApiFailure, type ApiResult } from './twoStageClient';
@@ -552,10 +553,10 @@ function ClosePanel({ ctx, stage, view }: { ctx: PanelContext; stage: BillingSta
 }
 
 /**
- * M1 is adding the designated signer's signature image (a PNG only Michael
- * uploads, signed in as himself). Until dto.ts carries its code, this slot
- * looks for it by name. It shows only to the designated signer and only while
- * the server reports the asset missing; everyone else sees the blocker text.
+ * The designated signer's approved signature image. Only he sees this card
+ * (the server refuses anyone else), and only he can approve an image: the
+ * upload, after he confirms the exact statement, is his approval. Nothing
+ * else on the page can sign for him or change the image.
  */
 const SIGNATURE_ASSET_MISSING = 'SIGNATURE_ASSET_MISSING';
 
@@ -566,16 +567,88 @@ function signatureAssetMissing(view: J5StageView | J6StageView, gates: CaseSumma
   return gate ? gate.message ?? 'Upload your signature image before signing.' : null;
 }
 
-function SignatureAssetSlot({ message }: { message: string }) {
+function SignatureAssetSlot({ ctx, signature, missingMessage }: { ctx: PanelContext; signature: SignatureStatusDto; missingMessage: string | null }) {
+  const action = useAction();
+  const inputId = useId();
+  const [file, setFile] = useState<File | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
+  const [reason, setReason] = useState('');
+  const active = signature.active;
+  const replacing = active !== null;
+  const reasonBlocked = !file
+    ? 'Choose your signature image (a PNG).'
+    : !confirmed
+      ? 'Confirm the statement first.'
+      : replacing && !reason.trim()
+        ? 'Say why you are replacing your signature image.'
+        : null;
+
+  async function submit() {
+    if (!file || reasonBlocked) return;
+    const attestation = { statementConfirmed: true, statementText: signature.approvalStatement, ...(replacing ? { replace: true, revokeReason: reason.trim() } : {}) };
+    await action.run(
+      () => twoStageApi.uploadSignature(ctx.memberId, file, attestation),
+      () => {
+        setFile(null);
+        setConfirmed(false);
+        setReason('');
+      },
+      ctx,
+    );
+  }
+
+  const form = (
+    <>
+      <div className={styles.field}>
+        <label htmlFor={inputId} className={styles.fieldLabel}>
+          {replacing ? 'New signature image (PNG)' : 'Signature image (PNG)'}
+        </label>
+        <input
+          id={inputId}
+          className={styles.fileInput}
+          type="file"
+          accept="image/png,.png"
+          onChange={(e) => {
+            setFile(e.target.files?.[0] ?? null);
+            action.setFailure(null);
+          }}
+        />
+        <p className={styles.fieldHint}>PNG only, up to 4 MB. It is printed above your name on the J5 and J6 documents you sign, and nowhere else.</p>
+      </div>
+      {replacing ? <TextField label="Why are you replacing it?" value={reason} onChange={setReason} /> : null}
+      <blockquote className={styles.statement}>{signature.approvalStatement}</blockquote>
+      <CheckField label="I make this statement." checked={confirmed} onChange={setConfirmed} />
+      <ActionButton
+        label={replacing ? 'Replace my signature image' : 'Upload your signature (PNG)'}
+        pendingLabel={replacing ? 'Replacing…' : 'Uploading…'}
+        reason={reasonBlocked}
+        pending={action.pending}
+        variant="secondary"
+        onClick={() => void submit()}
+      />
+      <FailureNotice failure={action.failure} />
+    </>
+  );
+
   return (
     <div className={styles.signatureSlot} role="group" aria-label="Your signature">
       <p className={styles.sectionLabel}>Your signature</p>
-      <p className={styles.panelFact}>{message}</p>
-      <ActionButton
-        label="Upload your signature (PNG)"
-        reason="The signature upload opens when its server route is released; nothing is stored from this page yet."
-        variant="secondary"
-      />
+      {active ? (
+        <>
+          <p className={styles.panelFact}>
+            Approved {active.approvedAt.slice(0, 10)}: a {active.widthPx} × {active.heightPx} px image (fingerprint {shortHash(active.sha256)}). A draft saved before a change must be saved again to carry the current image.
+          </p>
+          <details>
+            <summary>Replace my signature image</summary>
+            {form}
+          </details>
+        </>
+      ) : (
+        <>
+          <p className={styles.panelFact}>{missingMessage ?? 'Upload your signature image before signing.'}</p>
+          {form}
+        </>
+      )}
     </div>
   );
 }
@@ -585,11 +658,13 @@ export function StageLifecycle({
   stage,
   view,
   viewer,
+  signature,
 }: {
   ctx: PanelContext;
   stage: BillingStage;
   view: J5StageView | J6StageView;
   viewer: CaseSummaryDto['viewer'];
+  signature: SignatureStatusDto;
 }) {
   const freezeAction = useAction();
   const signAction = useAction();
@@ -677,7 +752,7 @@ export function StageLifecycle({
         </div>
       ) : null}
 
-      {viewer.isDesignatedSigner && signatureMissing ? <SignatureAssetSlot message={signatureMissing} /> : null}
+      {viewer.isDesignatedSigner && (signatureMissing || signature.active) ? <SignatureAssetSlot ctx={ctx} signature={signature} missingMessage={signatureMissing} /> : null}
 
       <ActionButton
         label={`Sign ${stage.toUpperCase()}`}

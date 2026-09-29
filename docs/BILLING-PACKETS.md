@@ -156,6 +156,7 @@ this branch rather than followed by corrective migrations.
 | `billing_delivery_events` | Append-only delivery evidence for an accepted copy: `delivered`, `bounced` or `complained`, with time, source and a unique provider event id. Recordable after the stage is sent. |
 | `billing_payment_events` | Append-only `pending` / `received` for a J6 proven sent. |
 | `billing_signer_delegations` | Hook only, disabled. |
+| `billing_signer_signature_assets` | The designated signer's approved handwritten-signature PNG (organization-level, not a case artifact): bucket, `signature/<org>/<signer>/<sha256>.png` key, `image/png`, SHA-256, byte size, pixel size, the 33-byte PNG header, approval statement, DB-stamped `uploaded_at` / `approved_at`, one-time `revoked_at`. See "Signature image" below. |
 
 The database enforces these rules itself, not just the app:
 
@@ -186,9 +187,10 @@ The database enforces these rules itself, not just the app:
 - **Prior-J5 link.** Links are validated on insert and whenever that link column changes, never on other edits or status moves, so voiding or superseding a J6 is never blocked by an older link. A J5 that an open (draft or signed) J6 follows cannot be superseded or voided (`J5_LINKED_BY_OPEN_J6`): void or send that J6 first. A sent J6 keeps its historical link.
 - **Payment.** It is accepted for a J6 proven sent: `sent_at` plus delivered finance, counselor and student copies. So a sent J6 later superseded by a corrected cover letter still reconciles its payment, and an unsent J6 never does. A `pending` event's window is anchored to that J6's send date: `billing_sent_on(sent_at)` (America/Chicago) + 10 to + 14 days, the same as `expectedFollowUpWindow()` in `payment.ts`. Transitions are case-level and monotonic: one `pending` per sent J6; `received` only after a `pending` on the case; `received` is terminal (no later `pending`, no second `received`; there is no correction kind in M1). The case summary (`summarizeCase` / `casePaymentView`) shows `received` once any event is received, otherwise the latest pending on an ever-sent J6, whatever the latest J6 version's status.
 - **Clock.** `billing_utc_now()` and `billing_today()` read the wall clock (`clock_timestamp()`, VOLATILE), not the transaction-start `now()`, so a long or held transaction cannot make a stale decision: the 23 h retry bound, the 15-minute stale age, `signed_at` (stamped at `draft` -> `signed`; a caller value is refused), `sent_at`, `claimed_at` / `last_claimed_at`, merge and cancellation stamps, and every "today" check use them. They are called only from triggers; no CHECK depends on the clock. `billing_chicago_date()` and `billing_sent_on()` are pure date conversions and stay IMMUTABLE.
-- **DB-stamped columns.** The database writes these from its wall clock and overwrites any caller value: `attested_at` on `billing_attestations` and on `billing_voucher_receipt_signatures`, the artifact upload `created_at`, `designated_at`, `claimed_at` / `last_claimed_at`, `accepted_at`, `reconciled_at`, delivery and payment `recorded_at`, `superseded_at` / `voided_at`, `send_cancelled_at` and `member_merged_at`. `signed_at` and `sent_at` are also DB-stamped, and a caller-supplied value for them is refused. Every NOT NULL stamp has a SQL `DEFAULT` (Prisma `@default(now())`), and the nullable ones are optional, so a Prisma `create` never has to supply them (`dbStamps.test.ts`; PG16 proof).
+- **DB-stamped columns.** The database writes these from its wall clock and overwrites any caller value: `attested_at` on `billing_attestations` and on `billing_voucher_receipt_signatures`, the artifact upload `created_at`, `designated_at`, `claimed_at` / `last_claimed_at`, `accepted_at`, `reconciled_at`, delivery and payment `recorded_at`, `superseded_at` / `voided_at`, `send_cancelled_at`, `member_merged_at`, and the signature asset's `uploaded_at` / `approved_at` / `revoked_at`. `signed_at` and `sent_at` are also DB-stamped, and a caller-supplied value for them is refused. Every NOT NULL stamp has a SQL `DEFAULT` (Prisma `@default(now())`), and the nullable ones are optional, so a Prisma `create` never has to supply them (`dbStamps.test.ts`; PG16 proof).
 - **No second send after a timeout.** An `ambiguous` claim never becomes a plain `failed` (that would unlock a fresh key for a copy that may have been delivered); it is retried with the same key or settled by audited `reconciled_*`. `pending -> failed` needs the provider rejection recorded by that update (`provider_result` or `last_error`, non-blank and new; `SEND_FAILED_WITHOUT_PROVIDER_REJECTION`). `pending -> needs_reconciliation` needs a recorded provider outcome or the 15-minute stale age.
 - **Signer (both stages).** J5 and J6 signing both require the designated signer (`billing_designated_signers`, the single source of truth; `authorizeSigner` takes `designatedSignerUserId` read from it, and `BILLING_EXECUTIVE_SIGNER_USER_ID` is only an optional cross-check that fails closed on disagreement), `content.issueDate` = server date (`J5_ISSUE_DATE_NOT_SERVER_DATE` / `J6_ISSUE_DATE_NOT_SERVER_DATE`), and no `signed_via_delegation_id` (`SIGNER_DELEGATION_DISABLED`). Delegation rows must name the designated signer as principal and a user of the organization as delegate; they are append-only except a one-time DB-stamped `revoked_at`, and never deleted.
+- **Signature image (both stages).** Every `draft -> signed` needs the designated signer's one active (non-revoked) row in `billing_signer_signature_assets` (`SIGNATURE_ASSET_MISSING`), `content.signature` = `{ assetId, assetSha256 }` of exactly that row and `signature_method = 'approved_image'` (`SIGNATURE_ASSET_MISMATCH`). The sign reads the asset `FOR SHARE`, so a concurrent revoke waits for it, and a sign after a revoke is refused. A revoke or replacement never alters a signed record: it keeps its frozen hash.
 - **Closing a signed or sent record** needs a non-blank `closed_by_subject_id` and `close_reason` (`CLOSE_ACTOR_REASON_REQUIRED`); both are written only in the closing update and frozen afterwards.
 - **J6 insert vs J5 close.** The J6's prior-J5 check locks the J5 row `FOR SHARE`, so a concurrent J5 supersede/void and J6 insert serialize: whichever commits second is refused.
 - **Program slugs** are canonicalized on insert (`billing_canonical_program_slug`, whose alias map equals `PROGRAM_SLUG_ALIASES`) and stored canonical (CHECK); contract hours use the canonical slug.
@@ -254,22 +256,77 @@ longer read.
 
 ### Signing
 
-- Only the user whose id equals `BILLING_EXECUTIVE_SIGNER_USER_ID` can sign
-  (server-only, UUID), and they must also be an active admin of the provider
-  org. Nothing is ever matched by name, and no default id ships. If the
-  variable is unset or malformed, signing is disabled (503).
+- Only the designated signer (`billing_designated_signers`, read by the route
+  and passed to `authorizeSigner` as `designatedSignerUserId`) can sign, and
+  only as his own authenticated session; he must also be an active admin of
+  the provider org. `BILLING_EXECUTIVE_SIGNER_USER_ID`, when set, is only a
+  cross-check that denies on disagreement. Nothing is ever matched by name,
+  and no default id ships. Unset means signing is disabled (503).
 - The printed signer is the constant
   `Michael A. Brown, PMP, ChE — Executive Director`. There is no drawn or
-  free-text signature input.
+  free-text signature input in the sign flow.
 - Review then sign: the sign request must echo the previewed record id,
   version and `content_sha256`, and confirm the exact intent statement. The
   rendered signed PDF is stored with its SHA-256.
-- Until an approved WAP signature asset exists, the signature is a typed
-  attestation block (name, title, signed-at, attestation). The image slot is
-  disabled and the approved-asset list is empty.
+- The signature block is name, title, signed-at, the attestation and
+  Michael's approved signature image (`buildSignatureBlock({ image })`,
+  `signature_method = 'approved_image'`). The image is the one frozen in
+  `content.signature`; the renderer must place bytes whose SHA-256 equals
+  `assetSha256`. A typed-only block is never accepted by the sign trigger.
 - The voucher's receiving signature is Michael's own signature, made by hand
   on the board document before upload. The app never stamps or alters the
   voucher, and this is separate from the J6 cover-letter signature.
+
+### Signature image (Michael A. Brown)
+
+Mike Brown supplied Michael A. Brown's handwritten signature (2026-09-28) as
+the image for signed J5/J6 documents. The image itself is never committed to
+the repository, fixtures or docs; tests use generated synthetic PNGs.
+
+- **Where.** One organization-level row in `billing_signer_signature_assets`;
+  the bytes in the private `billing-finance` bucket under
+  `signature/<org>/<signer>/<sha256>.png`. It is not a `billing_artifacts`
+  row, so case artifacts stay PDF-only.
+- **Why a PNG here.** The PDF-only rule covers case evidence that is archived
+  and attached as-is (vouchers, invoices, signed documents). The signature is
+  an image component that the renderer embeds inside the signed PDF, which
+  needs a raster image; the only archived and sent file is still the PDF. So
+  PNG is allowed for this one kind only: `mime_type = 'image/png'`, the PNG
+  magic bytes and IHDR (first 33 bytes, stored and checked by the database,
+  with the pixel dimensions), at most 5 MB and 6000 x 6000 px, hashed on the
+  server and stored unchanged (`inspectSignaturePng` in `signatureAsset.ts`).
+- **Who.** Only the designated signer, logged in as himself, uploads it:
+  `signer_user_id` and `uploaded_by_user_id` must both equal the current
+  designation (`SIGNATURE_ASSET_WRONG_PRINCIPAL`, `SIGNER_PRINCIPAL_UNSET`).
+  His upload is his approval, so `uploaded_at` and `approved_at` are both the
+  database clock. At most one active asset per organization (partial unique
+  index); rows are append-only apart from one DB-stamped revoke that records
+  who and why, and are never deleted.
+- **Where it appears.** Only on J5/J6 documents that Michael signs while logged
+  in as himself: every sign freezes the active asset's id and SHA-256 in
+  `content.signature` and the database refuses a sign without it. The image
+  never authorizes anything by itself; who may sign is decided only by the
+  signer checks above. A re-designated principal can never use the previous
+  signer's image.
+- **Revoke or replace.** Revoke the active row, then upload the new one. Already
+  signed or sent records keep the hash they froze; a draft frozen with the
+  revoked asset must be rebuilt and reviewed again.
+- **Upload, in the app (§5.20).** On the member's billing page the designated
+  signer sees "Your signature": he picks the PNG and confirms the exact
+  approval statement (`signatureApprovalStatement()`, stored as
+  `approval_statement`). The route validates the PNG, proves pdf-lib can embed
+  it (`canEmbedSignaturePng`), stores the exact bytes, then inserts the row.
+  Replacing an approved image needs an explicit replacement and a reason: the
+  old row is revoked (who, why; the database stamps when) in the same
+  transaction as the new insert.
+- **Bucket MIME.** The bucket DDL of #2700 (`20260927232204`) allows only
+  `application/pdf`. Migration `20260928140000_billing_finance_bucket_signature_png`
+  adds `image/png` and nothing else (still private, 10 MiB, no policy or
+  grant). It **must apply after** `20260927232204`: it fails the migration if
+  the bucket is missing or is not in exactly the state that migration leaves it
+  in, so a wrong order stops the deploy instead of leaving every sign to fail.
+  The database still limits PNG to the `signature/` key. Proof:
+  `tests/migrations/billing-finance-bucket-signature-png.mjs`.
 
 ### Storage
 
@@ -307,7 +364,9 @@ These rows mirror draft #2687's retained-finance model:
 - **PDF-only for this release.** Every archived file, including the voucher
   and an approved signature representation, must be `application/pdf` stored
   under a `.pdf` content-addressed key (`billing_artifacts_kind_check`,
-  `billing_artifacts_storage_check`). No JPEG/PNG uploads.
+  `billing_artifacts_storage_check`). No JPEG/PNG uploads. The one exception
+  is the signer's signature image, which is not a case artifact (see
+  "Signature image").
 - A member merge (`lib/admin/memberMerge.ts`) repoints `billing_cases.member_id`
   to the survivor (`memberMergeRepointPlan.ts`). The executor declares the
   pair for its transaction (`app.billing_member_merge`); the database refuses
@@ -335,6 +394,9 @@ while a send is unresolved) and a retention/disposal policy.
   - external prior quote
   - exact attachments
   - payment
+  - the signature image: non-signer upload, non-PNG, a second active asset,
+    sign without an asset, hash mismatch, and revoke races that never alter a
+    signed record
   - erasure retention
   - idempotent re-run
 
@@ -554,7 +616,7 @@ claim row, storage write or provider call, and reported in the case summary
 | Provider org | `BILLING_PACKET_PROVIDER_ORG_ID` unset (default org) or a UUID | all | `503 PROVIDER_ORG_MISCONFIGURED` |
 | Finance archive | the #2704 private-bucket preflight passes | uploads, file download, sign, send | `503 FINANCE_ARCHIVE_UNAVAILABLE`; the case summary never calls Storage and reports this gate as unknown (`enabled: null`, `code: null`), never as closed |
 | Signer configured | `BILLING_EXECUTIVE_SIGNER_USER_ID` is a UUID equal to the designated-signer row (M1 55a0562 makes the row the identity and the env var an optional cross-check; M3 keeps it required as a second key) | sign, voucher receipt attestation | `503 SIGNER_NOT_CONFIGURED` |
-| Signed renderer | the signature representation is approved and a signed (non-draft) renderer exists (`SIGNED_RENDERER_AVAILABLE = false` in code) | sign | `503 SIGNED_RENDERER_UNAVAILABLE` |
+| Signed renderer | the signed renderer exists (`SIGNED_RENDERER_AVAILABLE = true` in code; a code-level switch to withdraw it, never an authorization) | sign | `503 SIGNED_RENDERER_UNAVAILABLE` |
 | Receipt-signature principal | the provider org has a `billing_designated_signers` row (M1; unset by default) | voucher receipt attestation, J5 and J6 sign, J6 send | `503 SIGNER_PRINCIPAL_UNSET` |
 | Real email | `BILLING_TWO_STAGE_EMAIL_ENABLED === 'true'` (after real-email acceptance) | send | `503 EMAIL_NOT_ENABLED` |
 
@@ -562,13 +624,14 @@ The footer facts are confirmed (Mike, 2026-09-28: `www.WorkforceAP.org`,
 `(512) 825-2896`, `207 Settlers Valley Suite C` / `Pflugerville, TX 78660`),
 set in M1's letterhead constant and printed only from frozen content, so there is
 no footer-confirmation gate. What keeps sign and send closed is the exact
-signer Auth principal, the approved signature representation, the principal
-voucher receipt attestation and the release/acceptance gates (migration, real
-email).
+signer Auth principal, the signer's own approved signature image (§5.20), the
+principal voucher receipt attestation and the release/acceptance gates
+(migration, real email).
 
 Available once the migration gate is on: case open and summary,
 attestations, uploads, draft review and save, draft preview, freeze, close,
-payment read. Sign and send are wired but return their gate error.
+payment read, the signature image upload (§5.20). Sign and send are wired and
+return their gate error until their gates are opened.
 
 ### 5. Routes
 
@@ -911,7 +974,7 @@ artifacts; the student receives their required copy only as an email
 attachment (§5.14). A test pins that no route outside
 `app/api/admin/members/[id]/billing/two-stage/` reads the finance archive.
 
-#### 5.13 Sign (signer only; disabled)
+#### 5.13 Sign (signer only; gates default off)
 
 `POST /cases/[caseId]/[stage]/sign`
 `{ recordId, version, contentSha256, intentConfirmed: true, intentText }`.
@@ -922,15 +985,23 @@ signer must be the designated principal signing as himself, never a delegate,
 `403 SIGNER_NOT_DESIGNATED`; the database also refuses a delegation id,
 `SIGNER_DELEGATION_DISABLED`) → exact echo and intent → freeze checks (§5.9;
 a J5 too is dated the server date it is signed: blocker
-`J5_ISSUE_DATE_NOT_TODAY`, DB `J5_ISSUE_DATE_NOT_SERVER_DATE`) →
+`J5_ISSUE_DATE_NOT_TODAY`, DB `J5_ISSUE_DATE_NOT_SERVER_DATE`; and the
+signer's one active signature image must be exactly the one the draft froze in
+`content.signature`: `409 SIGNATURE_ASSET_MISSING` / `SIGNATURE_ASSET_MISMATCH`,
+the same rule the database enforces) → the image bytes are read from the
+private archive and verified against the frozen SHA-256 →
 `signedAt = now` (server clock; no route accepts a caller-supplied issue or
 sign date; the database stamps `signed_at` and the transaction rolls back
 unless it falls on the same Chicago day and, for a J6, `content.issueDate`),
-`buildSignatureBlock` → render the signed PDF (`frozenAt = signedAt`) → #2704
-archive (before the transaction; storage is not transactional) → one
+`buildSignatureBlock` (method `approved_image`) → render the signed PDF
+(`renderSignedFromContent`, `frozenAt = signedAt`: the approved layout with the
+DRAFT badge and "signature required" caption omitted and the image placed on the
+signature rule; it refuses a held J6 and a J6 without the receiving-signature
+attestation) → #2704 archive (before the transaction; storage is not transactional) → one
 transaction: artifact row (`source: 'rendered'`, bound to the record version
 and `renderedContentSha256`), compare-and-set update
-`WHERE status = 'draft' AND content_sha256 = request.contentSha256` (0 rows →
+`WHERE status = 'draft' AND content_sha256 = request.contentSha256` writing
+`signature_method = 'approved_image'` (0 rows →
 `409 VERSION_STALE`), audit. A failure after the archive write or inside the
 transaction commit returns `500 OUTCOME_UNCERTAIN`. A repeat after success
 is `409 ALREADY_SIGNED`.
@@ -1060,6 +1131,41 @@ takes the pre-M3 path. `webhookLinkage.test.ts` pins this: for `sent`,
 gate open with no billing match) gives the same response and the same store
 calls as the pre-M3 store.
 
+#### 5.20 Signature image (designated signer)
+
+`GET /api/admin/members/[id]/billing/two-stage/signature` → `SignatureStatusDto`
+`{ active, approvalStatement, viewerCanUpload }` for any admin. Metadata only:
+the storage key and the image are never returned.
+
+`POST` (multipart: PNG `file`, JSON `attestation`
+`{ statementConfirmed: true, statementText, replace?, revokeReason? }`) →
+`201 SignatureUploadDto { signature, replaced }`, or `200` with the existing row
+when the identical image is uploaded again. The organization-level image sits
+under a member path only so it runs the same §3 checks as every other route
+(migration gate, Origin, admin, tenant, provider org).
+
+Order: §3 steps → the designated signer as himself
+(`503 SIGNER_PRINCIPAL_UNSET`, `403 SIGNATURE_ASSET_WRONG_PRINCIPAL`) → the
+signer account configured (`503 SIGNER_NOT_CONFIGURED`, `authorizeSigner`, the
+env var a required second key as for the receipt attestation) → **everything is
+validated before any storage write**: the statement echoed verbatim
+(`422 SIGNATURE_STATEMENT_NOT_CONFIRMED`), a PNG within 4 MiB of request body
+(`415 UNSUPPORTED_MEDIA_TYPE`, `422 SIGNATURE_IMAGE_INVALID` for a malformed PNG or one
+pdf-lib cannot embed, `422 UPLOAD_EMPTY`) → an active image exists: the same
+bytes are a no-op, a different image needs `replace: true`
+(`409 SIGNATURE_ASSET_EXISTS`) and a `revokeReason`
+(`422 SIGNATURE_REVOKE_REASON_REQUIRED`) → exact bytes to the private bucket
+(content-addressed, never overwritten) → one transaction: revoke the old row
+(`revokedBySubjectId`, `revokeReason`; `revoked_at` is the database's), insert the
+new row (`uploaded_at` / `approved_at` are the database's), audit
+`billing.two_stage.signature_asset_approved`. A concurrent approval is
+`409 SIGNATURE_ASSET_EXISTS`. A storage outage approves nothing.
+
+Effect on drafts: a draft freezes the active image into `content.signature`, so
+the case summary raises `SIGNATURE_ASSET_MISSING` while none is approved and
+`SIGNATURE_ASSET_MISMATCH` for a draft saved before a change; saving the draft
+again carries the current image.
+
 ### 6. Blockers and error codes
 
 #### 6.1 J6 holds
@@ -1136,11 +1242,17 @@ line each, with the reason.
 42. **Combined readiness:** deprecated in favor of `readinessByStage`, because merging the stages shows J5 facts on the J6 card.
 43. **Designated signer for both stages (M1 `55a0562`):** J5 and J6 signing need the designated-signer row and the signer himself (no delegate), and the env signer stays a required second key in M3, because the row is the identity and a disagreement must refuse.
 44. **New M1 refusals:** every `CODE:` refusal M1 raises maps to its own error (§2), and J5 gets the server-date blocker `J5_ISSUE_DATE_NOT_TODAY`, because staff need the reason, not a generic refusal.
+45. **Signature image is organization-level but routed under a member (§5.20):** it reuses the §3 checks unchanged instead of a second access path.
+46. **Replacing an image revokes the old one in the same transaction, with a reason:** a wrong upload must be fixable without database access, and the database allows only one active image.
+47. **The upload needs the same two keys as signing (designated row and the env signer):** an image is his approval, so it gets the strictest signer guard.
+48. **The signed page differs from the approved DRAFT layout only by omitting the two draft markers and placing the image:** nothing new is printed, so the reviewed wording and the parity tests still cover the whole page.
+49. **A stored image must be embeddable:** the upload proves pdf-lib can place it, because the database accepts some PNG variants a PDF writer may not, and a failure at sign time would leave the signer stuck.
 
 ### Not in M3
 
-Signed renderer; fresh MFA step-up; persisted incomplete drafts; migration
-apply in any environment; real email; production backup/restore proof.
+Fresh MFA step-up; persisted incomplete drafts; migration apply in any
+environment; real email; production backup/restore proof. (The signed renderer
+and the signature image upload were added after M3; see §5.13 and §5.20.)
 
 ### Route index (M3)
 
@@ -1166,9 +1278,46 @@ Under `/api/admin/members/[id]/billing/two-stage/cases`; files under
 | PUT | `/[caseId]/[stage]/draft` | complete set only |
 | GET | `/[caseId]/[stage]/draft/preview` | DRAFT PDF, never gated; blocker codes in headers |
 | POST | `/[caseId]/[stage]/freeze` | writes nothing |
-| POST | `/[caseId]/[stage]/sign` | **disabled** (gates default off) |
-| POST | `/[caseId]/[stage]/send` | **disabled** (gates default off); `maxDuration = 60` |
+| POST | `/[caseId]/[stage]/sign` | gates default off; renders the signed page with the signer's image |
+| POST | `/[caseId]/[stage]/send` | gates default off; `maxDuration = 60` |
 | POST | `/[caseId]/[stage]/sends/[sendId]/reconcile` | audited |
 | POST | `/[caseId]/[stage]/versions/[recordId]/close` | audited |
 | POST | `/[caseId]/[stage]/versions/[recordId]/cancel-send` | audited |
 | POST | `/api/webhooks/resend` (existing) | billing branch: `applyBillingDeliveryEvent` |
+| GET / POST | `../signature` (one level up: `/api/admin/members/[id]/billing/two-stage/signature`) | §5.20: image status; designated signer approves or replaces the image |
+
+## Release runbook (two-stage J5/J6)
+
+Everything ships dark: each gate below defaults off, so merging changes no
+behavior until the matching step is done. Production migrations run inside the
+Vercel build (`build:with-migrate`, see `docs/DEPLOYMENT-CHECKLIST.md`), so a
+merge to `master` applies its migrations at deploy. Steps marked **Mike** or
+**Ops** are deliberately not automatable: they are identity, backup and
+credential decisions.
+
+| # | Step | Owner | Done when |
+| --- | --- | --- | --- |
+| 1 | Take a fresh PROD backup (condition of the M1 merge) | Mike / Ops | Backup confirmed restorable per `docs/DATABASE-RECOVERY.md` |
+| 2 | Merge bottom-up: #2699 (M1 schema), #2707 (M3 routes), #2713 (M4 page, includes #2706), **then** #2700 (bucket), **then** the signing PR that adds `20260928140000` | Mike | Each deploy's migration stage is inspected before the next merge |
+| 3 | Confirm the bucket: `billing-finance` exists, is private, 10 MiB, and allows `application/pdf` and `image/png` only (no Storage policy) | Ops | Checked with the Storage API, not only SQL |
+| 4 | Designate the signer (ops-reviewed change): one row in `billing_designated_signers` (`organization_id`, `user_id`, `designated_by`, `note`) naming Michael's own account | Ops | `SELECT user_id FROM billing_designated_signers` returns his id |
+| 5 | Set the environment: `BILLING_TWO_STAGE_MIGRATION_APPLIED=true`, `BILLING_EXECUTIVE_SIGNER_USER_ID=<his user id>` (must equal the row), `BILLING_PACKET_PROVIDER_ORG_ID` if the provider is not the default org. Leave `BILLING_TWO_STAGE_EMAIL_ENABLED` unset | Ops | The billing page loads and shows the case card; both sign gates read as expected |
+| 6 | Michael signs in **as himself**, opens any member's `J5 / J6 billing` page and approves his signature image ("Your signature": choose the PNG, confirm the statement) | Michael | The card shows "Approved <date>" |
+| 7 | DEMO acceptance of J5: open a case, record readiness, save the draft, review the DRAFT, "Review for signature", sign; open the signed PDF from the case files | Mike | The PDF shows the approved layout with his image, no DRAFT marker; the record is `signed` with method `approved_image` |
+| 8 | Email acceptance to test recipients only, then set `BILLING_TWO_STAGE_EMAIL_ENABLED=true` | Mike / Ops | Each recipient role received exactly one copy; the ledger shows `provider_accepted` |
+| 9 | J6 later, when a board-signed voucher arrives: staff upload it, Michael records its details and his receiving signature, then sign and send | Mike | See §5.10, §5.10a, §5.13, §5.14 |
+
+Safe stops and rollbacks:
+
+- **Wrong image approved:** replace it (Replace my signature image, with a
+  reason). Signed records keep the hash they froze; drafts saved earlier must be
+  saved again (the page says so).
+- **Withdraw signing:** unset `BILLING_EXECUTIVE_SIGNER_USER_ID` (sign and the
+  image upload return `SIGNER_NOT_CONFIGURED`), or flip
+  `SIGNED_RENDERER_AVAILABLE` in `lib/billing/twoStage/api/gates.ts`.
+- **Stop email:** unset `BILLING_TWO_STAGE_EMAIL_ENABLED`.
+- **Migrations are additive:** roll the application back with a Vercel rollback
+  (it does not change the database); the schema rollback is the manual, reviewed
+  procedure in the M1 migration notes above.
+- If `20260928140000` ever fails with "bucket is missing", it ran before
+  `20260927232204`. Merge #2700 first; do not edit the bucket by hand.

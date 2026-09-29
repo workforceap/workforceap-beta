@@ -22,16 +22,18 @@ import type { CancelSendDto, CloseDto, ReconcileDto, SendDto, SignDto, StageVers
 import type { ArtifactKind } from '../financeStorage';
 import { expectedFollowUpWindow } from '../payment';
 import { STAGE_RECIPIENT_ROLES, type RecipientRole } from '../recipients';
+import { renderSignedFromContent } from '../rendererAdapter';
 import { ACCEPTED, deliveryState, markStaleClaimAmbiguous, reconcileSend, UNRESOLVED, type SendStatus } from '../sendClaims';
 import { authorizeSigner, buildSignatureBlock, validateSignRequest, type SignatureBlock } from '../signing';
 import type { StageStatus } from '../stateMachine';
 import { isBillingRuleRefusal, isUniqueViolation, type TwoStageContext } from './access';
-import { archiveErrorCode, financeArchive, readArchived } from './archive';
+import { archiveErrorCode, financeArchive, readArchived, readSignatureImage } from './archive';
 import { loadCaseSnapshot, recordContent, type CaseSnapshot, type RecordWithRelations } from './caseData';
-import { verifySignable } from './documents';
+import { adapterError, verifySignable } from './documents';
 import { SIGNER_CODES } from './evidence';
 import { requireSendGates, requireSignGates, SIGNED_RENDERER_AVAILABLE } from './gates';
 import { apiError } from './http';
+import { readLetterheadLogo } from './logo';
 import { isConcurrentClaimRefusal, runSend, type EmailPort, type SendClaimRow, type SendStorePort } from './sendEngine';
 import { casePaymentDto, deliveryViews, versionView } from './summary';
 
@@ -59,15 +61,33 @@ function recordIn(snapshot: CaseSnapshot, stage: BillingStage, recordId: string)
 // ---------------------------------------------------------------------------
 // Sign
 
-/** Renders the signed (non-draft) PDF. None exists yet: #2702 is DRAFT-only and no signature representation is approved. */
-export type SignedRendererPort = (input: { content: J5Content | J6Content; signature: SignatureBlock; frozenAt: string; receiptSignatureId: string | null }) => Promise<Uint8Array>;
-export const signedRenderer: SignedRendererPort | null = null;
+/**
+ * Renders the FINAL (signed) PDF from frozen content, the signer's verified
+ * approved signature image and the letterhead logo. The production renderer
+ * checks the image against the hash the content froze; tests inject a fake.
+ */
+export type SignedRendererPort = (input: {
+  content: J5Content | J6Content;
+  signature: SignatureBlock;
+  frozenAt: string;
+  receiptSignatureId: string | null;
+  logoPng: Uint8Array;
+  signaturePng: Uint8Array;
+}) => Promise<Uint8Array>;
+
+export const signedRenderer: SignedRendererPort = async ({ content, frozenAt, receiptSignatureId, logoPng, signaturePng }) => {
+  try {
+    return await renderSignedFromContent(content, { logoPng, signaturePng, frozenAt, receiptSignatureId });
+  } catch (error) {
+    return adapterError(error);
+  }
+};
 
 export async function signStage<P>(ctx: TwoStageContext<P>, stage: BillingStage, body: unknown, renderer: SignedRendererPort | null = signedRenderer): Promise<SignDto> {
   const principal = await designatedSigner(ctx.member.organizationId);
   // Gates first: while any is off nothing below runs.
   requireSignGates(stage, principal !== null);
-  if (!SIGNED_RENDERER_AVAILABLE || !renderer) throw apiError(503, 'SIGNED_RENDERER_UNAVAILABLE', 'Signed J5/J6 PDFs cannot be produced until the signature representation is approved.');
+  if (!SIGNED_RENDERER_AVAILABLE || !renderer) throw apiError(503, 'SIGNED_RENDERER_UNAVAILABLE', 'Signed J5/J6 PDFs cannot be produced in this environment.');
   const signer = authorizeSigner({
     actor: { userId: ctx.user.id, organizationId: ctx.actorOrgId, isActive: true, isAdmin: true },
     providerOrgId: getBillingProviderOrgId(),
@@ -91,11 +111,16 @@ export async function signStage<P>(ctx: TwoStageContext<P>, stage: BillingStage,
     request,
   );
   if (!checked.ok) throw apiError(checked.status, checked.status === 422 ? 'INTENT_NOT_CONFIRMED' : target.status === 'draft' ? 'VERSION_STALE' : 'ALREADY_SIGNED', checked.message);
-  const { receiptSignatureId } = await verifySignable(ctx, stage, target.id, request.contentSha256);
+  // Also proves the signer's one active signature image is exactly the one this draft froze.
+  const { receiptSignatureId, signatureAsset } = await verifySignable(ctx, stage, target.id, request.contentSha256);
 
+  // The image bytes are read from the private archive and verified against the frozen hash
+  // before anything is rendered or stored.
+  const signaturePng = await readSignatureImage(signatureAsset);
+  const logo = await readLetterheadLogo();
   const signedAt = ctx.now;
-  const signature = buildSignatureBlock({ signedAt, intent: checked.intent });
-  const bytes = await renderer({ content, signature, frozenAt: signedAt.toISOString(), receiptSignatureId });
+  const signature = buildSignatureBlock({ signedAt, intent: checked.intent, image: { assetId: signatureAsset.id, assetSha256: signatureAsset.sha256 } });
+  const bytes = await renderer({ content, signature, frozenAt: signedAt.toISOString(), receiptSignatureId, logoPng: logo.bytes, signaturePng });
   const kind = stage === 'j5' ? 'j5_signed_pdf' : 'j6_signed_pdf';
   ctx.effects.mark();
   let archived: Awaited<ReturnType<ReturnType<typeof financeArchive>['archiveFinancePdf']>>;
@@ -133,7 +158,8 @@ export async function signStage<P>(ctx: TwoStageContext<P>, stage: BillingStage,
       }));
     const updated = await tx.billingStageRecord.updateMany({
       where: { id: target.id, organizationId: ctx.member.organizationId, status: 'draft', contentSha256: request.contentSha256 },
-      data: { status: 'signed', signedBySubjectId: signer.signerSubjectId, signatureMethod: 'typed_attestation', signerIntent: checked.intent, signedArtifactId: artifact.id, signedViaDelegationId: null },
+      // The database requires signature_method 'approved_image' with the frozen asset (M1 aade34e).
+      data: { status: 'signed', signedBySubjectId: signer.signerSubjectId, signatureMethod: signature.method, signerIntent: checked.intent, signedArtifactId: artifact.id, signedViaDelegationId: null },
     });
     if (updated.count !== 1) throw apiError(409, 'VERSION_STALE', 'The document changed since you reviewed it. Review the current version and sign again.');
     // The database stamps signed_at; the printed date must be the same day (and, for a J6, the frozen issue date).
@@ -148,7 +174,7 @@ export async function signStage<P>(ctx: TwoStageContext<P>, stage: BillingStage,
         action: 'billing.two_stage.signed',
         targetType: 'billing_stage_record',
         targetId: target.id,
-        metadata: { caseId: ctx.billingCase!.id, stage, version: target.version, contentSha256: target.contentSha256, signedArtifactSha256: ref.sha256, via: signer.via },
+        metadata: { caseId: ctx.billingCase!.id, stage, version: target.version, contentSha256: target.contentSha256, signedArtifactSha256: ref.sha256, via: signer.via, signatureAssetId: signatureAsset.id, signatureAssetSha256: signatureAsset.sha256 },
       },
       tx,
     );

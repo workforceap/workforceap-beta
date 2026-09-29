@@ -56,6 +56,7 @@ model Organization {
   billingCases           BillingCase[]
   billingSignerDelegations BillingSignerDelegation[]
   billingDesignatedSigner  BillingDesignatedSigner?
+  billingSignerSignatureAssets BillingSignerSignatureAsset[]
 
   @@index([stripeSubscriptionId])
   @@map("organizations")
@@ -2304,6 +2305,44 @@ model BillingVoucherReceiptSignature {
 
   @@index([voucherArtifactId])
   @@map("billing_voucher_receipt_signatures")
+}
+
+/// The designated signer's approved handwritten-signature PNG, placed on the
+/// J5/J6 he signs as himself. Organization-level, outside billing_artifacts
+/// (which stay PDF-only); bytes in billing-finance under
+/// signature/<org>/<signer>/<sha256>.png. Only the designated signer inserts
+/// one; append-only apart from one DB-stamped revoke; at most one active per
+/// organization. The sign trigger requires content.signature to freeze the
+/// active asset's id and sha256. The image never authorizes a signature.
+model BillingSignerSignatureAsset {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  signerUserId       String    @map("signer_user_id")
+  uploadedByUserId   String    @map("uploaded_by_user_id")
+  storageBucket      String    @map("storage_bucket")
+  storageKey         String    @map("storage_key")
+  /// image/png only.
+  mimeType           String    @map("mime_type")
+  byteLength         Int       @map("byte_length")
+  sha256             String    @db.Char(64)
+  widthPx            Int       @map("width_px")
+  heightPx           Int       @map("height_px")
+  /// The first 33 bytes (PNG signature + IHDR), checked by the database.
+  pngHeader          Bytes     @map("png_header")
+  approvalStatement  String    @map("approval_statement")
+  /// Stamped by the database.
+  uploadedAt         DateTime  @default(now()) @map("uploaded_at")
+  /// Stamped by the database (the signer's own upload is his approval).
+  approvedAt         DateTime  @default(now()) @map("approved_at")
+  /// Stamped by the database on the one-time revoke.
+  revokedAt          DateTime? @map("revoked_at")
+  revokedBySubjectId String?   @map("revoked_by_subject_id")
+  revokeReason       String?   @map("revoke_reason")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, signerUserId])
+  @@map("billing_signer_signature_assets")
 }
 
 /// Explicitly approved signing delegation. Model hook only: disabled in code

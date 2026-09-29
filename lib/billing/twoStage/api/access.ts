@@ -85,6 +85,11 @@ const NAMED_REFUSALS: ReadonlyArray<{ code: ErrorCode; status: number; message: 
   { code: 'CLOSE_ACTOR_REASON_REQUIRED', status: 422, message: 'Record why this version is being closed.' },
   { code: 'PAYMENT_RECEIVED_BEFORE_SENT', status: 422, message: 'The received date cannot be before the J6 was sent.' },
   { code: 'SEND_FAILED_WITHOUT_PROVIDER_REJECTION', status: 409, message: 'A copy is marked failed only with the provider rejection recorded. Reload the case and reconcile the copy.' },
+  // M1 aade34e: the designated signer's approved signature image
+  { code: 'SIGNATURE_ASSET_MISSING', status: 409, message: 'The designated signer has no active signature image; signing stays closed.' },
+  { code: 'SIGNATURE_ASSET_MISMATCH', status: 409, message: 'This draft was prepared with another signature image. Save the draft again and review it.' },
+  { code: 'SIGNATURE_ASSET_WRONG_PRINCIPAL', status: 403, message: 'Only the designated signer can upload and approve his signature image.' },
+  { code: 'SIGNATURE_ASSET_APPEND_ONLY', status: 409, message: 'A signature image is never edited or deleted; it can only be replaced.' },
 ];
 
 export function namedRefusal(message: string): { code: ErrorCode; status: number; message: string } | null {

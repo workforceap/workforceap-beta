@@ -64,6 +64,7 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'billingDeliveryEvent',
   'billingVoucherReceiptSignature',
   'billingDesignatedSigner',
+  'billingSignerSignatureAsset',
   'billingPaymentEvent',
 ]);
 

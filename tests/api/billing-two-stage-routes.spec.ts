@@ -5,6 +5,8 @@
  * shape against #2706's keys, and the staff-only archive read path. Prisma,
  * Storage and email are fakes; no real provider or database is touched.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const h = vi.hoisted(() => {
@@ -21,6 +23,7 @@ const h = vi.hoisted(() => {
     records: [] as Array<Record<string, unknown>>,
     receipt: [] as Array<Record<string, unknown>>,
     designated: null as null | { userId: string },
+    signatureAssets: [] as Array<Record<string, unknown>>,
     payments: [] as Array<Record<string, unknown>>,
     auditCreate: null as null | (() => never),
   };
@@ -36,6 +39,11 @@ const mocks = vi.hoisted(() => ({
   readArchive: vi.fn(),
   txCreate: vi.fn(),
   receiptCreate: vi.fn(),
+  storeSignature: vi.fn(),
+  readSignature: vi.fn(),
+  signatureCreate: vi.fn(),
+  signatureRevoke: vi.fn(),
+  artifactCreate: vi.fn(),
   recordUpdate: vi.fn(async (_args: unknown): Promise<{ count: number }> => ({ count: 0 })),
   paymentCreate: vi.fn(async (_args: unknown): Promise<unknown> => ({ id: 'pay-new' })),
 }));
@@ -67,6 +75,10 @@ vi.mock('@/lib/billing/twoStage/storageArchive', () => ({
   archiveFinancePdf: mocks.archive,
   readFinanceArchivePdf: mocks.readArchive,
 }));
+vi.mock('@/lib/billing/twoStage/signatureStorage', () => ({
+  storeSignaturePng: mocks.storeSignature,
+  readSignaturePng: mocks.readSignature,
+}));
 
 function prismaFake() {
   type Key = 'attestations' | 'artifacts' | 'records' | 'receipt';
@@ -85,11 +97,36 @@ function prismaFake() {
       create: mocks.txCreate,
     },
     billingAttestation: { findMany: byCase('attestations') },
+    billingSignerSignatureAsset: {
+      findMany: async ({ where }: { where: Record<string, unknown> }) => h.state.signatureAssets.filter((a) => a.organizationId === where.organizationId),
+      create: async ({ data }: { data: Record<string, unknown> }) => {
+        mocks.signatureCreate(data);
+        // uploaded_at / approved_at are stamped by the database trigger.
+        const row = { ...data, id: 'sig-new', uploadedAt: new Date('2026-09-29T18:00:00Z'), approvedAt: new Date('2026-09-29T18:00:00Z'), revokedAt: null };
+        h.state.signatureAssets.push(row);
+        return row;
+      },
+      updateMany: async (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+        mocks.signatureRevoke(args);
+        const row = h.state.signatureAssets.find((a) => a.id === args.where.id && a.revokedAt === null);
+        if (!row) return { count: 0 };
+        Object.assign(row, args.data, { revokedAt: new Date('2026-09-29T18:00:00Z') });
+        return { count: 1 };
+      },
+    },
     billingArtifact: {
+      create: async ({ data }: { data: Record<string, unknown> }) => {
+        mocks.artifactCreate(data);
+        return { ...data, id: 'art-signed', createdAt: new Date('2026-09-29T18:00:00Z') };
+      },
       findMany: byCase('artifacts'),
       findFirst: async ({ where }: { where: Record<string, unknown> }) => h.state.artifacts.find((a) => a.id === where.id && a.caseId === where.caseId && a.organizationId === where.organizationId) ?? null,
     },
-    billingStageRecord: { findMany: byCase('records'), updateMany: (args: unknown) => mocks.recordUpdate(args) },
+    billingStageRecord: {
+      findMany: byCase('records'),
+      updateMany: (args: unknown) => mocks.recordUpdate(args),
+      findFirst: async ({ where }: { where: Record<string, unknown> }) => h.state.records.find((r) => r.id === where.id) ?? null,
+    },
     billingPaymentEvent: {
       findMany: async ({ where }: { where: Record<string, unknown> }) => h.state.payments.filter((r) => r.caseId === where.caseId && r.organizationId === where.organizationId),
       create: (args: unknown) => mocks.paymentCreate(args),
@@ -126,6 +163,16 @@ import { J5_READINESS_KEYS, J6_READINESS_KEYS, type ApiErrorBody, type CaseSumma
 import { namedRefusal, twoStageRoute } from '@/lib/billing/twoStage/api/access';
 import { POST as closeRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/versions/[recordId]/close/route';
 import { POST as paymentReceivedRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/payment/received/route';
+import { POST as freeze } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/freeze/route';
+import { GET as signatureGet, POST as signaturePost } from '@/app/api/admin/members/[id]/billing/two-stage/signature/route';
+import type { Attestation } from '@/lib/billing/twoStage/attestations';
+import { sha256Hex } from '@/lib/billing/twoStage/canonical';
+import { buildJ5Content, recipientRowsForContent } from '@/lib/billing/twoStage/content';
+import { WAP_LOGO_PUBLIC_PATH } from '@/lib/billing/twoStage/letterhead';
+import { inspectSignaturePng, signatureApprovalStatement } from '@/lib/billing/twoStage/signatureAsset';
+import { renderDraftFromContent } from '@/lib/billing/twoStage/rendererAdapter';
+import { signerIntentStatement } from '@/lib/billing/twoStage/signing';
+import { syntheticPng } from '../fixtures/billing/syntheticPng';
 
 const ORIGIN = 'http://localhost';
 const base = `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/cases`;
@@ -155,6 +202,7 @@ beforeEach(() => {
   h.state.records = [];
   h.state.receipt = [];
   h.state.designated = null;
+  h.state.signatureAssets = [];
   h.state.payments = [];
   mocks.getUser.mockResolvedValue({ id: h.ADMIN });
   mocks.isAdmin.mockResolvedValue(true);
@@ -167,6 +215,11 @@ beforeEach(() => {
   mocks.recordUpdate.mockImplementation(async () => ({ count: 0 }));
   mocks.paymentCreate.mockReset();
   mocks.paymentCreate.mockImplementation(async () => ({ id: 'pay-new' }));
+  mocks.storeSignature.mockReset();
+  mocks.readSignature.mockReset();
+  mocks.signatureCreate.mockReset();
+  mocks.signatureRevoke.mockReset();
+  mocks.artifactCreate.mockReset();
 });
 
 afterEach(() => {
@@ -231,14 +284,14 @@ describe('two-stage routes: authorization and request checks', () => {
 describe('two-stage routes: sign and send are hard-disabled', () => {
   const signBody = { recordId: 'r', version: 1, contentSha256: 'a'.repeat(64), intentConfirmed: true, intentText: 'x' };
 
-  it('sign: 503 SIGNER_NOT_CONFIGURED by default, then 503 SIGNED_RENDERER_UNAVAILABLE once a signer id is set', async () => {
+  it('sign: 503 SIGNER_NOT_CONFIGURED by default, then 503 SIGNER_PRINCIPAL_UNSET once a signer id is set but no signer is designated', async () => {
     let res = await sign(jsonReq(`${base}/${h.CASE}/j5/sign`, signBody), caseParams({ stage: 'j5' }));
     expect(res.status).toBe(503);
     expect((await res.json()).code).toBe('SIGNER_NOT_CONFIGURED');
     process.env.BILLING_EXECUTIVE_SIGNER_USER_ID = h.ADMIN;
     res = await sign(jsonReq(`${base}/${h.CASE}/j5/sign`, signBody), caseParams({ stage: 'j5' }));
     expect(res.status).toBe(503);
-    expect((await res.json()).code).toBe('SIGNED_RENDERER_UNAVAILABLE');
+    expect((await res.json()).code).toBe('SIGNER_PRINCIPAL_UNSET');
     expect(mocks.archive).not.toHaveBeenCalled();
   });
 
@@ -626,5 +679,398 @@ describe('two-stage routes: every M1 named database refusal has its own code', (
   it('maps each to itself', () => {
     for (const code of M1_CODES) expect(namedRefusal(`${code}: refused by the database`)?.code, code).toBe(code);
     expect(namedRefusal('billing send status cannot move from pending to sent')).toBeNull();
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// The designated signer's approved signature image, and signing with it.
+
+const SIG_URL = `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/signature`;
+/** Generated stand-ins; no real signature image is used or committed. */
+const PNG = new Uint8Array(syntheticPng(360, 90));
+const PNG_SHA = sha256Hex(PNG);
+const OTHER_PNG = new Uint8Array(syntheticPng(361, 90));
+const OTHER_SHA = sha256Hex(OTHER_PNG);
+
+const storageError = (code: string) => Object.assign(new Error(code), { name: 'FinanceArchiveError', code });
+
+function uploadReq(opts: { png?: Uint8Array | null; type?: string; attestation?: unknown; headers?: Record<string, string> } = {}) {
+  const form = new FormData();
+  if (opts.png !== null) form.set('file', new File([new Uint8Array(opts.png ?? PNG)], 'signature.png', { type: opts.type ?? 'image/png' }));
+  form.set('attestation', JSON.stringify(opts.attestation ?? { statementConfirmed: true, statementText: signatureApprovalStatement() }));
+  return new Request(SIG_URL, { method: 'POST', headers: opts.headers ?? { origin: ORIGIN }, body: form });
+}
+
+function assetRow(over: Record<string, unknown> = {}) {
+  const sha = (over.sha256 as string | undefined) ?? PNG_SHA;
+  return {
+    id: 'sig-1',
+    organizationId: h.ORG,
+    signerUserId: h.ADMIN,
+    uploadedByUserId: h.ADMIN,
+    storageBucket: 'billing-finance',
+    storageKey: `signature/${h.ORG}/${h.ADMIN}/${sha}.png`,
+    mimeType: 'image/png',
+    byteLength: PNG.length,
+    sha256: sha,
+    widthPx: 360,
+    heightPx: 90,
+    pngHeader: Buffer.from(PNG.subarray(0, 33)),
+    approvalStatement: signatureApprovalStatement(),
+    uploadedAt: new Date('2026-09-29T17:00:00Z'),
+    approvedAt: new Date('2026-09-29T17:00:00Z'),
+    revokedAt: null,
+    revokedBySubjectId: null,
+    revokeReason: null,
+    ...over,
+  };
+}
+
+/** Michael's setup: designated in the database, and the env cross-check names the same account. */
+function asDesignatedSigner() {
+  process.env.BILLING_EXECUTIVE_SIGNER_USER_ID = h.ADMIN;
+  h.state.designated = { userId: h.ADMIN };
+}
+
+function fakeStore() {
+  mocks.storeSignature.mockImplementation(async ({ organizationId, signerUserId, bytes }: { organizationId: string; signerUserId: string; bytes: Uint8Array }) => {
+    const inspected = inspectSignaturePng(bytes);
+    if (!inspected.ok) throw new Error('fake store got a non-PNG');
+    return { ref: { organizationId, signerUserId, bucket: 'billing-finance', key: `signature/${organizationId}/${signerUserId}/${inspected.png.sha256}.png`, sha256: inspected.png.sha256, byteLength: bytes.length }, png: inspected.png, reused: false };
+  });
+}
+
+async function code(res: Response): Promise<string> {
+  return ((await res.json()) as ApiErrorBody).code;
+}
+
+describe('two-stage routes: the designated signer signature image', () => {
+  it('GET shows any admin whether an image is approved (metadata only, never the storage key), and only the signer may upload', async () => {
+    let res = await signatureGet(new Request(SIG_URL), memberParams());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ active: null, approvalStatement: signatureApprovalStatement(), viewerCanUpload: false });
+
+    h.state.designated = { userId: h.ADMIN };
+    h.state.signatureAssets = [assetRow()];
+    res = await signatureGet(new Request(SIG_URL), memberParams());
+    const body = await res.json();
+    expect(body.viewerCanUpload).toBe(true);
+    expect(body.active).toMatchObject({ id: 'sig-1', sha256: PNG_SHA, widthPx: 360, heightPx: 90 });
+    expect(JSON.stringify(body)).not.toMatch(/storageKey|storage_key|signature\//u);
+
+    mocks.getUser.mockResolvedValue({ id: 'someone-else' });
+    h.state.userOrg.set('someone-else', h.ORG);
+    expect((await (await signatureGet(new Request(SIG_URL), memberParams())).json()).viewerCanUpload).toBe(false);
+  });
+
+  it('is closed by default and refuses a request without a same-site Origin', async () => {
+    mocks.getUser.mockClear();
+    delete process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED;
+    expect((await signaturePost(uploadReq(), memberParams())).status).toBe(503);
+    expect(mocks.getUser).not.toHaveBeenCalled();
+    process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED = 'true';
+    const res = await signaturePost(uploadReq({ headers: { origin: 'https://evil.example' } }), memberParams());
+    expect(res.status).toBe(403);
+    expect(await code(res)).toBe('ORIGIN_REJECTED');
+    expect(mocks.storeSignature).not.toHaveBeenCalled();
+  });
+
+  it('only the designated signer, signed in as himself, with the configured signer account, can upload; nothing is stored otherwise', async () => {
+    fakeStore();
+    // No signer designated yet.
+    let res = await signaturePost(uploadReq(), memberParams());
+    expect([res.status, await code(res)]).toEqual([503, 'SIGNER_PRINCIPAL_UNSET']);
+    // Designated is someone else: this admin cannot approve his signature.
+    h.state.designated = { userId: 'the-real-signer' };
+    res = await signaturePost(uploadReq(), memberParams());
+    expect([res.status, await code(res)]).toEqual([403, 'SIGNATURE_ASSET_WRONG_PRINCIPAL']);
+    // Designated is this admin, but the signer account is not configured (env is the required second key).
+    h.state.designated = { userId: h.ADMIN };
+    res = await signaturePost(uploadReq(), memberParams());
+    expect([res.status, await code(res)]).toEqual([503, 'SIGNER_NOT_CONFIGURED']);
+    // The env names a different account than the database row: fail closed.
+    process.env.BILLING_EXECUTIVE_SIGNER_USER_ID = 'a1111111-1111-4111-8111-111111111111';
+    res = await signaturePost(uploadReq(), memberParams());
+    expect(res.status).toBe(503);
+    expect(mocks.storeSignature).not.toHaveBeenCalled();
+    expect(mocks.signatureCreate).not.toHaveBeenCalled();
+  });
+
+  it('validates before any storage write: unconfirmed statement, not a PNG, wrong declared type, no file', async () => {
+    fakeStore();
+    asDesignatedSigner();
+    const attempt = async (req: Request, status: number, expected: string) => {
+      const res = await signaturePost(req, memberParams());
+      expect([res.status, await code(res)]).toEqual([status, expected]);
+    };
+    await attempt(uploadReq({ attestation: { statementConfirmed: false, statementText: signatureApprovalStatement() } }), 422, 'SIGNATURE_STATEMENT_NOT_CONFIRMED');
+    await attempt(uploadReq({ attestation: { statementConfirmed: true, statementText: 'I agree.' } }), 422, 'SIGNATURE_STATEMENT_NOT_CONFIRMED');
+    await attempt(uploadReq({ png: new Uint8Array([0xff, 0xd8, 0xff, 0xe0, ...new Array(100).fill(1)]) }), 422, 'SIGNATURE_IMAGE_INVALID');
+    await attempt(uploadReq({ type: 'image/jpeg' }), 415, 'UNSUPPORTED_MEDIA_TYPE');
+    await attempt(uploadReq({ png: null }), 422, 'UPLOAD_EMPTY');
+    expect(mocks.storeSignature).not.toHaveBeenCalled();
+    expect(mocks.signatureCreate).not.toHaveBeenCalled();
+  });
+
+  it('approves the image: stores the exact bytes, then records who and what, leaving every timestamp to the database', async () => {
+    fakeStore();
+    asDesignatedSigner();
+    const res = await signaturePost(uploadReq(), memberParams());
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.signature).toMatchObject({ sha256: PNG_SHA, widthPx: 360, heightPx: 90, byteLength: PNG.length });
+    expect(body.replaced).toBeNull();
+
+    expect(mocks.storeSignature).toHaveBeenCalledTimes(1);
+    const stored = mocks.storeSignature.mock.calls[0][0] as { organizationId: string; signerUserId: string; bytes: Uint8Array };
+    expect([stored.organizationId, stored.signerUserId, sha256Hex(stored.bytes)]).toEqual([h.ORG, h.ADMIN, PNG_SHA]);
+
+    expect(mocks.signatureCreate).toHaveBeenCalledTimes(1);
+    const data = mocks.signatureCreate.mock.calls[0][0] as Record<string, unknown>;
+    expect(data).toMatchObject({
+      organizationId: h.ORG,
+      signerUserId: h.ADMIN,
+      uploadedByUserId: h.ADMIN,
+      storageBucket: 'billing-finance',
+      storageKey: `signature/${h.ORG}/${h.ADMIN}/${PNG_SHA}.png`,
+      mimeType: 'image/png',
+      sha256: PNG_SHA,
+      approvalStatement: signatureApprovalStatement(),
+    });
+    expect((data.pngHeader as Buffer).length).toBe(33);
+    for (const stamped of ['uploadedAt', 'approvedAt', 'revokedAt', 'revokedBySubjectId']) expect(data).not.toHaveProperty(stamped);
+    expect(mocks.signatureRevoke).not.toHaveBeenCalled();
+    expect(mocks.auditLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'billing.two_stage.signature_asset_approved', actorUserId: h.ADMIN }), expect.anything());
+  });
+
+  it('uploading the identical image again changes nothing', async () => {
+    fakeStore();
+    asDesignatedSigner();
+    h.state.signatureAssets = [assetRow()];
+    const res = await signaturePost(uploadReq(), memberParams());
+    expect(res.status).toBe(200);
+    expect((await res.json()).signature.id).toBe('sig-1');
+    expect(mocks.storeSignature).not.toHaveBeenCalled();
+    expect(mocks.signatureCreate).not.toHaveBeenCalled();
+  });
+
+  it('a different image needs an explicit replacement and a reason; the old row is revoked (who and why) in the same transaction', async () => {
+    fakeStore();
+    asDesignatedSigner();
+    h.state.signatureAssets = [assetRow()];
+    const confirmed = { statementConfirmed: true, statementText: signatureApprovalStatement() };
+
+    let res = await signaturePost(uploadReq({ png: OTHER_PNG, attestation: confirmed }), memberParams());
+    expect([res.status, await code(res)]).toEqual([409, 'SIGNATURE_ASSET_EXISTS']);
+    res = await signaturePost(uploadReq({ png: OTHER_PNG, attestation: { ...confirmed, replace: true, revokeReason: '   ' } }), memberParams());
+    expect([res.status, await code(res)]).toEqual([422, 'SIGNATURE_REVOKE_REASON_REQUIRED']);
+    expect(mocks.storeSignature).not.toHaveBeenCalled();
+
+    res = await signaturePost(uploadReq({ png: OTHER_PNG, attestation: { ...confirmed, replace: true, revokeReason: ' Cleaner scan ' } }), memberParams());
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.signature.sha256).toBe(OTHER_SHA);
+    expect(body.replaced).toMatchObject({ id: 'sig-1', sha256: PNG_SHA });
+    expect(mocks.signatureRevoke).toHaveBeenCalledWith({
+      where: { id: 'sig-1', organizationId: h.ORG, revokedAt: null },
+      data: { revokedBySubjectId: h.ADMIN, revokeReason: 'Cleaner scan' },
+    });
+  });
+
+  it('a storage outage approves nothing: no database row, and a clear error', async () => {
+    asDesignatedSigner();
+    mocks.storeSignature.mockRejectedValue(storageError('STORAGE_UNAVAILABLE'));
+    const res = await signaturePost(uploadReq(), memberParams());
+    expect([res.status, await code(res)]).toEqual([503, 'FINANCE_ARCHIVE_UNAVAILABLE']);
+    expect(mocks.signatureCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe('two-stage routes: case summary reports the signature image', () => {
+  it('a designated signer with no image blocks signing on both stages; an approved image clears it', async () => {
+    asDesignatedSigner();
+    let summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.signature).toMatchObject({ active: null, viewerCanUpload: true });
+    for (const stage of [summary.j5, summary.j6]) expect(stage.blockers.map((b) => b.code)).toContain('SIGNATURE_ASSET_MISSING');
+    expect(summary.j5.canSign).toBe(false);
+
+    h.state.signatureAssets = [assetRow()];
+    summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.signature.active).toMatchObject({ id: 'sig-1', sha256: PNG_SHA });
+    for (const stage of [summary.j5, summary.j6]) expect(stage.blockers.map((b) => b.code)).not.toContain('SIGNATURE_ASSET_MISSING');
+  });
+
+  it('with no designated signer there is no image blocker (the principal gate already explains it)', async () => {
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    for (const stage of [summary.j5, summary.j6]) expect(stage.blockers.map((b) => b.code)).not.toContain('SIGNATURE_ASSET_MISSING');
+  });
+});
+
+describe('two-stage routes: signing a J5 with the approved image', () => {
+  const NOW_ISO = '2026-10-01T18:00:00.000Z';
+  const REC = 'rec-j5';
+  const logoPng = new Uint8Array(readFileSync(join(process.cwd(), WAP_LOGO_PUBLIC_PATH)));
+  const logoSha = sha256Hex(logoPng);
+  const readiness: Attestation = {
+    id: 'att-ready', kind: 'j5_readiness', statement: 'synthetic', evidenceReference: 'synthetic evidence', classStartDate: '2026-09-30', classEndDate: null, artifactId: null,
+    voucherReference: null, authorizedAmountCents: null, authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, receivingSignaturePresent: null, externalReference: null,
+    externalQuoteDate: null, quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: null, authorizedClassName: null, studentReadyConfirmed: true,
+    counselorRequestedBy: 'Casey Counselor', counselorRequestedOn: '2026-09-19', counselorRequestReference: 'Email 2026-09-19', attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-20T15:00:00.000Z',
+  };
+  const day = (v: string | null) => (v ? new Date(`${v}T00:00:00.000Z`) : null);
+
+  /** A saved J5 draft that froze `frozen` (the image its content names), plus the evidence it needs. */
+  function seedDraft(frozen: { assetId: string; assetSha256: string } | null) {
+    const built = buildJ5Content({
+      documentNumber: 'WAP-Q-2026-0001',
+      logoSha256: logoSha,
+      issueDate: '2026-10-01',
+      student: { name: 'Jordan Example', email: 'jordan@example.test' },
+      counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
+      boardName: 'Workforce Solutions Capital Area',
+      programSlug: 'data-analytics-professional-certificate-google',
+      readiness,
+      signatureAsset: frozen,
+    });
+    if (!built.ok) throw new Error(built.errors.join('; '));
+    const content = built.content;
+    h.state.attestations = [
+      { ...readiness, caseId: h.CASE, organizationId: h.ORG, classStartDate: day(readiness.classStartDate), counselorRequestedOn: day(readiness.counselorRequestedOn), attestedAt: new Date(readiness.attestedAt) },
+    ];
+    h.state.records = [
+      {
+        id: REC, organizationId: h.ORG, caseId: h.CASE, stage: 'j5', version: 1, status: 'draft', documentNumber: content.documentNumber, content, contentSha256: built.contentSha256,
+        className: content.training.className, contactHours: content.training.contactHours, classStartDate: day(content.training.classStartDate), classEndDate: day(content.training.classEndDate),
+        createdBySubjectId: h.ADMIN, createdAt: new Date('2026-10-01T17:00:00Z'), updatedAt: new Date('2026-10-01T17:30:00Z'),
+        signedAt: null, signedBySubjectId: null, signedArtifactId: null, sentAt: null, supersededAt: null, voidedAt: null, closedBySubjectId: null, acceptedRolesAtClose: [],
+        sendCancelledAt: null, sendCancelledBySubjectId: null, readinessAttestationId: readiness.id,
+        recipients: recipientRowsForContent(content).map((r) => ({ stageRecordId: REC, organizationId: h.ORG, stage: 'j5', recipientRole: r.role, recipientName: r.name, email: r.email, phone: r.phone })),
+        sends: [],
+      },
+    ];
+    return { content, hash: built.contentSha256 };
+  }
+
+  const signReq = (hash: string, content: { title: string; documentNumber: string }) =>
+    jsonReq(`${base}/${h.CASE}/j5/sign`, {
+      recordId: REC,
+      version: 1,
+      contentSha256: hash,
+      intentConfirmed: true,
+      intentText: signerIntentStatement({ documentTitle: content.title, documentNumber: content.documentNumber, contentSha256: hash }),
+    });
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(NOW_ISO));
+    asDesignatedSigner();
+    mocks.readSignature.mockResolvedValue(PNG);
+    // The archive and the database behave as they will: bytes in, a content-addressed ref out; the sign update stamps the record.
+    mocks.archive.mockImplementation(async ({ caseId, kind, bytes }: { caseId: string; kind: string; bytes: Uint8Array }) => {
+      const sha = sha256Hex(bytes);
+      return { ref: { caseId, kind, bucket: 'billing-finance', key: `cases/${caseId}/j5/${sha}.pdf`, sha256: sha, byteLength: bytes.length, mimeType: 'application/pdf' }, reused: false };
+    });
+    mocks.artifactCreate.mockImplementation((data: Record<string, unknown>) => {
+      h.state.artifacts.push({ ...data, id: 'art-signed', createdAt: new Date(NOW_ISO) });
+    });
+    mocks.recordUpdate.mockImplementation(async (args: unknown) => {
+      const { where, data } = args as { where: { id: string; contentSha256: string }; data: Record<string, unknown> };
+      const row = h.state.records.find((r) => r.id === where.id);
+      if (!row || row.status !== 'draft' || row.contentSha256 !== where.contentSha256) return { count: 0 };
+      Object.assign(row, data, { signedAt: new Date(NOW_ISO) });
+      return { count: 1 };
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('signs with the approved image: renders the final page, archives the exact bytes, and records approved_image', async () => {
+    h.state.signatureAssets = [assetRow()];
+    const { content, hash } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    const res = await sign(signReq(hash, content), caseParams({ stage: 'j5' }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.record.status).toBe('signed');
+    expect(body.record.signed).toMatchObject({ signatureMethod: 'approved_image' });
+
+    // The image came from the private archive, by the asset's own key.
+    expect(mocks.readSignature).toHaveBeenCalledWith(expect.objectContaining({ key: `signature/${h.ORG}/${h.ADMIN}/${PNG_SHA}.png`, sha256: PNG_SHA }));
+
+    // The archived bytes are the final page: a PDF with the logo and the signature, and no draft marker.
+    expect(mocks.archive).toHaveBeenCalledTimes(1);
+    const archived = mocks.archive.mock.calls[0][0] as { kind: string; bytes: Uint8Array };
+    expect(archived.kind).toBe('j5_signed_pdf');
+    const text = Buffer.from(archived.bytes).toString('latin1');
+    expect(text.startsWith('%PDF-')).toBe(true);
+    // Exactly one more image than the same page as a draft (the logo, plus its alpha mask, is in both).
+    const draft = await renderDraftFromContent(content, { logoPng, frozenAt: NOW_ISO });
+    const images = (bytes: Uint8Array) => (Buffer.from(bytes).toString('latin1').match(/\/Subtype\s*\/Image/gu) ?? []).length;
+    expect(images(archived.bytes)).toBe(images(draft) + 1);
+    expect(text).not.toMatch(/DRAFT/u);
+
+    // The database update carries the method and the exact-version guard the trigger checks.
+    expect(mocks.recordUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: REC, status: 'draft', contentSha256: hash }),
+        data: expect.objectContaining({ status: 'signed', signatureMethod: 'approved_image', signedBySubjectId: h.ADMIN, signedViaDelegationId: null }),
+      }),
+    );
+    expect(mocks.auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'billing.two_stage.signed', metadata: expect.objectContaining({ signatureAssetId: 'sig-1', signatureAssetSha256: PNG_SHA }) }),
+      expect.anything(),
+    );
+  });
+
+  it('refuses before rendering or storing anything when the signer has no active image', async () => {
+    const { content, hash } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    h.state.signatureAssets = [];
+    const res = await sign(signReq(hash, content), caseParams({ stage: 'j5' }));
+    expect([res.status, await code(res)]).toEqual([409, 'SIGNATURE_ASSET_MISSING']);
+    expect(mocks.readSignature).not.toHaveBeenCalled();
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+  });
+
+  it('refuses a draft that froze another image, or none: the draft must be saved again', async () => {
+    h.state.signatureAssets = [assetRow({ id: 'sig-2', sha256: OTHER_SHA })];
+    for (const frozen of [{ assetId: 'sig-1', assetSha256: PNG_SHA }, null]) {
+      const { content, hash } = seedDraft(frozen);
+      const res = await sign(signReq(hash, content), caseParams({ stage: 'j5' }));
+      expect([res.status, await code(res)]).toEqual([409, 'SIGNATURE_ASSET_MISMATCH']);
+    }
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+  });
+
+  it('"Review for signature" (freeze) applies the same image check, so the signer learns early', async () => {
+    const { hash } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    h.state.signatureAssets = [];
+    const res = await freeze(jsonReq(`${base}/${h.CASE}/j5/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j5' }));
+    expect([res.status, await code(res)]).toEqual([409, 'SIGNATURE_ASSET_MISSING']);
+  });
+
+  it('a stored image that fails its integrity check stops the sign before anything is archived', async () => {
+    h.state.signatureAssets = [assetRow()];
+    const { content, hash } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    mocks.readSignature.mockRejectedValue(storageError('INTEGRITY_MISMATCH'));
+    const res = await sign(signReq(hash, content), caseParams({ stage: 'j5' }));
+    expect([res.status, await code(res)]).toEqual([502, 'ARCHIVE_INTEGRITY_MISMATCH']);
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+  });
+
+  it('only the designated signer can sign, even with an approved image and an admin account', async () => {
+    h.state.signatureAssets = [assetRow()];
+    const { content, hash } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    const other = 'a2222222-2222-4222-8222-222222222222';
+    h.state.userOrg.set(other, h.ORG);
+    mocks.getUser.mockResolvedValue({ id: other });
+    const res = await sign(signReq(hash, content), caseParams({ stage: 'j5' }));
+    expect(res.status).toBe(403);
+    expect(mocks.readSignature).not.toHaveBeenCalled();
+    expect(mocks.archive).not.toHaveBeenCalled();
   });
 });

@@ -5,14 +5,20 @@ import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { PROGRAM_SYLLABI } from '@/shared/programSyllabi';
+import { syntheticPng } from '../../../tests/fixtures/billing/syntheticPng';
 import {
+  canEmbedSignaturePng,
   renderJ5QuoteVoucherRequestDraftPdf,
+  renderJ5QuoteVoucherRequestSignedPdf,
   renderJ6InvoiceVoucherCoverLetterDraftPdf,
+  renderJ6InvoiceVoucherCoverLetterSignedPdf,
   type J5QuoteVoucherRequestFacts,
   type J6InvoiceVoucherCoverLetterFacts,
 } from './documentPdf';
 
 const logoPng = new Uint8Array(readFileSync(join(process.cwd(), 'public', 'images', 'logo-tight.png')));
+/** A generated stand-in for the signer's approved image; no real signature is used or committed. */
+const signaturePng = new Uint8Array(syntheticPng(360, 90));
 
 function j5(overrides: Partial<J5QuoteVoucherRequestFacts> = {}): J5QuoteVoucherRequestFacts {
   return {
@@ -135,7 +141,12 @@ describe('two-stage WAP billing PDFs', () => {
     assert.doesNotMatch(text, /SIGNED -|Approval reference|typed signature|electronic signature|\/s\//iu);
     await assert.rejects(
       renderJ5QuoteVoucherRequestDraftPdf({ ...j5(), signature: { mode: 'signed' } } as J5QuoteVoucherRequestFacts),
-      /drafts only/u,
+      /not accepted as a document fact/u,
+    );
+    // The signed renderers take the image as a separate argument, never as a fact.
+    await assert.rejects(
+      renderJ5QuoteVoucherRequestSignedPdf({ ...j5(), signature: { mode: 'signed' } } as J5QuoteVoucherRequestFacts, signaturePng),
+      /not accepted as a document fact/u,
     );
   });
 
@@ -219,5 +230,54 @@ describe('two-stage WAP billing PDFs', () => {
   it('refuses a runtime stage switch through either stage-specific wrapper', () => {
     assert.throws(() => renderJ5QuoteVoucherRequestDraftPdf(j6() as unknown as J5QuoteVoucherRequestFacts), /J5 renderer requires J5/u);
     assert.throws(() => renderJ6InvoiceVoucherCoverLetterDraftPdf(j5() as unknown as J6InvoiceVoucherCoverLetterFacts), /J6 renderer requires J6/u);
+  });
+});
+
+describe('two-stage WAP billing PDFs: the signed renderers (module-level guards)', () => {
+  it('render both stages without any draft marker and with the signature image placed', async () => {
+    for (const bytes of [await renderJ5QuoteVoucherRequestSignedPdf(j5(), signaturePng), await renderJ6InvoiceVoucherCoverLetterSignedPdf(j6(), signaturePng)]) {
+      assert.equal(Buffer.from(bytes).subarray(0, 5).toString('latin1'), '%PDF-');
+      const { text } = await extract(Uint8Array.from(bytes));
+      assert.doesNotMatch(text, /DRAFT|signature required|not yet attested/iu);
+    }
+  });
+
+  it('refuse a J6 that carries a hold, even if the caller skips the adapter', async () => {
+    await assert.rejects(
+      renderJ6InvoiceVoucherCoverLetterSignedPdf(j6({ openHolds: ['voucher_period_conflict'] }), signaturePng),
+      /cannot carry open holds/u,
+    );
+    // The same facts remain previewable as a DRAFT for review.
+    await assert.doesNotReject(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ openHolds: ['voucher_period_conflict'] })));
+  });
+
+  it('refuse a J6 without the designated signer receiving-signature attestation', async () => {
+    const pending = j6({ signedVoucher: { ...j6().signedVoucher, receivingSignatureAttestationId: null } });
+    await assert.rejects(renderJ6InvoiceVoucherCoverLetterSignedPdf(pending, signaturePng), /receiving-signature attestation/u);
+    await assert.doesNotReject(renderJ6InvoiceVoucherCoverLetterDraftPdf(pending));
+  });
+
+  it('refuse a missing image and bytes that are not a PNG, and reject a wrong-stage entry point', async () => {
+    await assert.rejects(renderJ5QuoteVoucherRequestSignedPdf(j5(), new Uint8Array()), /signature image is required/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestSignedPdf(j5(), new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])));
+    // The stage guard throws before any async work, like the draft entry points.
+    assert.throws(() => renderJ5QuoteVoucherRequestSignedPdf(j6() as unknown as J5QuoteVoucherRequestFacts, signaturePng), /J5 renderer requires J5 facts/u);
+    assert.throws(() => renderJ6InvoiceVoucherCoverLetterSignedPdf(j5() as unknown as J6InvoiceVoucherCoverLetterFacts, signaturePng), /J6 renderer requires J6 facts/u);
+  });
+
+  it('does not let a caller mutate the image while it is embedded (snapshot before the first await)', async () => {
+    const mutable = Uint8Array.from(signaturePng);
+    const pending = renderJ5QuoteVoucherRequestSignedPdf(j5(), mutable);
+    mutable.fill(0); // the caller reuses its buffer straight after calling
+    await assert.doesNotReject(pending);
+    assert.equal(Buffer.from(await pending).length > 1000, true);
+  });
+
+  it('canEmbedSignaturePng accepts a real PNG and refuses everything else', async () => {
+    assert.equal(await canEmbedSignaturePng(signaturePng), true);
+    assert.equal(await canEmbedSignaturePng(new Uint8Array()), false);
+    assert.equal(await canEmbedSignaturePng(new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0])), false);
+    // Well-formed up to the header, then cut short.
+    assert.equal(await canEmbedSignaturePng(signaturePng.subarray(0, 40)), false);
   });
 });

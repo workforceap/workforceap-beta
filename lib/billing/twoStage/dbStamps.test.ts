@@ -13,6 +13,7 @@ const DB_STAMPED: Record<string, string[]> = {
   BillingAttestation: ['attestedAt'],
   BillingDesignatedSigner: ['designatedAt'],
   BillingVoucherReceiptSignature: ['attestedAt'],
+  BillingSignerSignatureAsset: ['uploadedAt', 'approvedAt', 'revokedAt'],
   BillingStageRecord: ['signedAt', 'sentAt', 'supersededAt', 'voidedAt', 'sendCancelledAt', 'acceptedRolesAtClose'],
   BillingStageSend: ['claimedAt', 'lastClaimedAt', 'acceptedAt', 'reconciledAt'],
   BillingDeliveryEvent: ['recordedAt'],
@@ -28,6 +29,9 @@ const typeLevel: true[] = [
   true satisfies Optional<Prisma.BillingAttestationUncheckedCreateInput, 'attestedAt'>,
   true satisfies Optional<Prisma.BillingDesignatedSignerUncheckedCreateInput, 'designatedAt'>,
   true satisfies Optional<Prisma.BillingVoucherReceiptSignatureUncheckedCreateInput, 'attestedAt'>,
+  true satisfies Optional<Prisma.BillingSignerSignatureAssetUncheckedCreateInput, 'uploadedAt'>,
+  true satisfies Optional<Prisma.BillingSignerSignatureAssetUncheckedCreateInput, 'approvedAt'>,
+  true satisfies Optional<Prisma.BillingSignerSignatureAssetUncheckedCreateInput, 'revokedAt'>,
   true satisfies Optional<Prisma.BillingStageRecordUncheckedCreateInput, 'signedAt'>,
   true satisfies Optional<Prisma.BillingStageRecordUncheckedCreateInput, 'sentAt'>,
   true satisfies Optional<Prisma.BillingStageRecordUncheckedCreateInput, 'supersededAt'>,
@@ -43,7 +47,7 @@ const typeLevel: true[] = [
 
 describe('DB-stamped columns are omittable in Prisma creates', () => {
   it('each stamp has a default or is optional in the generated client', () => {
-    assert.equal(typeLevel.length, 17);
+    assert.equal(typeLevel.length, 20);
     const models = new Map(Prisma.dmmf.datamodel.models.map((m) => [m.name, m]));
     for (const [model, fields] of Object.entries(DB_STAMPED)) {
       const m = models.get(model);

@@ -10,6 +10,7 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     partnerReferral: { findMany: h.findMany },
     memberEvent: { findMany: h.pendingFindMany },
+    partner: { findFirst: async () => ({ partnerType: 'community' }) },
   },
 }));
 

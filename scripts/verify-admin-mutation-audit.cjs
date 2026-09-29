@@ -35,6 +35,8 @@ const DELEGATED_AUDIT_HELPERS = {
   '@/lib/billing/twoStage/api/draft': 'lib/billing/twoStage/api/draft.ts',
   '@/lib/billing/twoStage/api/evidence': 'lib/billing/twoStage/api/evidence.ts',
   '@/lib/billing/twoStage/api/stageActions': 'lib/billing/twoStage/api/stageActions.ts',
+  // The signature image upload audits (billing.two_stage.signature_asset_approved) in the same transaction as the insert.
+  '@/lib/billing/twoStage/api/signature': 'lib/billing/twoStage/api/signature.ts',
 };
 
 /**

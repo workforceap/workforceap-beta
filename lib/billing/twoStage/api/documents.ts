@@ -18,15 +18,17 @@ import type { CaseSummaryDto, FreezeDto, ListCasesDto, OpenCaseDto, PaymentDto }
 import { resolveProgramTerms } from '../hours';
 import { currentCasePaymentEvent, recordPaymentReceived } from '../payment';
 import { RendererAdapterError, renderDraftFromContent } from '../rendererAdapter';
+import { signatureAssetStatus } from '../signatureAsset';
 import { authorizeSigner, signerIntentStatement } from '../signing';
 import { canSignJ6 } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { readArchived } from './archive';
 import { holdBlockers, J5_ISSUE_DATE_NOT_TODAY_MESSAGE, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
-import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, loadCaseSnapshot, receiptSignatureState, recordContent, type CaseSnapshot } from './caseData';
+import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, loadCaseSnapshot, receiptSignatureState, recordContent, toSignerAsset, type CaseSnapshot } from './caseData';
 import { allGates, GATE_MESSAGES } from './gates';
 import { apiError, json, NO_STORE_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
+import { signatureGateError } from './signatureView';
 import { basePath, buildCaseSummary, caseListItem, casePaymentDto, toPaymentEvent } from './summary';
 import { stagePrerequisiteBlockers } from './draft';
 
@@ -98,10 +100,10 @@ function findRecord(snapshot: CaseSnapshot, stage: BillingStage, recordId: strin
 
 const FRAME_HEADERS = { 'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': "frame-ancestors 'self'" };
 
-function adapterError(error: unknown): never {
+export function adapterError(error: unknown): never {
   if (error instanceof RendererAdapterError) {
-    const status = error.code === 'LOGO_CHANGED' ? 409 : 422;
-    const code = error.code === 'CONTENT_NOT_RENDERABLE' ? 'TEXT_NOT_PRINTABLE' : error.code;
+    const status = error.code === 'LOGO_CHANGED' || error.code === 'SIGNATURE_IMAGE_MISMATCH' ? 409 : 422;
+    const code = error.code === 'CONTENT_NOT_RENDERABLE' ? 'TEXT_NOT_PRINTABLE' : error.code === 'SIGNATURE_IMAGE_MISMATCH' ? 'SIGNATURE_ASSET_MISMATCH' : error.code;
     throw apiError(status, code, error.message, error.field ? { field: error.field } : {});
   }
   throw error;
@@ -167,7 +169,7 @@ export async function verifySignable<P>(
   stage: BillingStage,
   recordId: string,
   versionHash: string,
-): Promise<{ snapshot: CaseSnapshot; record: CaseSnapshot['records'][number]; content: J5Content | J6Content; receiptSignatureId: string | null }> {
+): Promise<{ snapshot: CaseSnapshot; record: CaseSnapshot['records'][number]; content: J5Content | J6Content; receiptSignatureId: string | null; signatureAsset: CaseSnapshot['signatureAssets'][number] }> {
   const snapshot = await snapshotOf(ctx);
   const record = findRecord(snapshot, stage, recordId);
   if (record.status !== 'draft') throw apiError(409, 'ALREADY_SIGNED', `This document is already ${record.status}.`);
@@ -224,7 +226,13 @@ export async function verifySignable<P>(
       throw apiError(409, 'DRAFT_STALE', J5_ISSUE_DATE_NOT_TODAY_MESSAGE, { blockers: [{ code: 'J5_ISSUE_DATE_NOT_TODAY', message: J5_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false }] });
     }
   }
-  return { snapshot, record, content, receiptSignatureId };
+  // The designated signer's one active signature image must be exactly the one this draft froze
+  // (the database refuses a sign otherwise: SIGNATURE_ASSET_MISSING / SIGNATURE_ASSET_MISMATCH).
+  const image = signatureAssetStatus({ designatedSignerUserId: snapshot.designatedSignerUserId, assets: snapshot.signatureAssets.map(toSignerAsset), frozen: content.signature });
+  if (!image.ok) throw signatureGateError(image);
+  const signatureAsset = snapshot.signatureAssets.find((row) => row.id === image.asset.assetId);
+  if (!signatureAsset) throw signatureGateError({ ok: false, code: 'SIGNATURE_ASSET_MISSING', error: 'The signer has no active approved signature image; signing stays closed.' });
+  return { snapshot, record, content, receiptSignatureId, signatureAsset };
 }
 
 const DRAFT_STALE_MESSAGE = 'The evidence or letterhead changed since this draft was saved. Save the draft again and review the new preview.';

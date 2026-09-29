@@ -144,7 +144,7 @@ describe('POST /api/member/signup — member onboarding', () => {
       },
     } as any);
 
-    vi.mocked(createMember).mockResolvedValue(undefined);
+    vi.mocked(createMember).mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
 
     const res = await signupPOST(makeRequest(validSignupBody));
 
@@ -227,7 +227,7 @@ describe('POST /api/member/signup — member onboarding', () => {
       },
     } as any);
 
-    vi.mocked(createMember).mockResolvedValue(undefined);
+    vi.mocked(createMember).mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
 
     const res = await signupPOST(
       makeRequest({ ...validSignupBody, phone: '' })
@@ -483,7 +483,7 @@ describe('Onboarding profile creation via createMember', () => {
       },
     } as any);
 
-    vi.mocked(createMember).mockResolvedValue(undefined);
+    vi.mocked(createMember).mockResolvedValue({ referralPartnerId: null, referralPartnerType: null, referralRef: null });
 
     const body = {
       fullName: 'Profile Test',

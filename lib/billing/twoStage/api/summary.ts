@@ -52,7 +52,9 @@ import {
   VOUCHER_DATA_WAITING_MESSAGE,
   VOUCHER_RECEIPT_FUTURE_MESSAGE,
 } from './blockers';
+import { SIGNATURE_MISMATCH_MESSAGE, SIGNATURE_MISSING_MESSAGE, signatureStatus } from './signatureView';
 import {
+  activeSignatureRow,
   actor,
   currentVoucher,
   isoDate,
@@ -231,7 +233,7 @@ export function versionView(snapshot: CaseSnapshot, memberId: string, record: Re
     createdBy: actor(snapshot, record.createdBySubjectId),
     signed:
       record.signedAt && record.signedBySubjectId && signedArtifact
-        ? { signedAt: record.signedAt.toISOString(), signedBy: actor(snapshot, record.signedBySubjectId), signatureMethod: 'typed_attestation', artifact: artifactView(snapshot, memberId, signedArtifact) }
+        ? { signedAt: record.signedAt.toISOString(), signedBy: actor(snapshot, record.signedBySubjectId), signatureMethod: record.signatureMethod === 'approved_image' ? 'approved_image' : 'typed_attestation', artifact: artifactView(snapshot, memberId, signedArtifact) }
         : null,
     sentAt: record.sentAt?.toISOString() ?? null,
     recipients: STAGE_RECIPIENT_ROLES[record.stage as BillingStage].flatMap((role) => {
@@ -307,6 +309,24 @@ function draftContactReadiness(record: RecordWithRelations | null): Partial<Reco
   return out;
 }
 
+/**
+ * Blockers for the designated signer's approved signature image. None while no
+ * signer is designated (SIGNER_PRINCIPAL_UNSET already blocks signing). Missing
+ * shows for every open state so the signer can upload before any draft exists;
+ * a draft that froze another image (or none) must be saved again.
+ */
+function signatureImageBlockers(snapshot: CaseSnapshot, current: RecordWithRelations | null): Blocker[] {
+  if (snapshot.designatedSignerUserId === null) return [];
+  if (current?.status === 'signed' || current?.status === 'sent') return [];
+  const active = activeSignatureRow(snapshot);
+  if (!active) return [{ code: 'SIGNATURE_ASSET_MISSING', message: SIGNATURE_MISSING_MESSAGE, hardHold: false }];
+  if (current?.status !== 'draft') return [];
+  const frozen = recordContent<J5Content | J6Content>(current).signature;
+  return frozen?.assetId === active.id && frozen.assetSha256 === active.sha256
+    ? []
+    : [{ code: 'SIGNATURE_ASSET_MISMATCH', message: SIGNATURE_MISMATCH_MESSAGE, hardHold: false }];
+}
+
 function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Record<J5ReadinessKey, boolean>> } {
   const { snapshot, now } = input;
   const records = stageRecords(snapshot, 'j5');
@@ -323,6 +343,7 @@ function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Re
   if (current?.status === 'draft' && recordContent<J5Content>(current).issueDate !== billingToday(now)) {
     blockers.push({ code: 'J5_ISSUE_DATE_NOT_TODAY', message: J5_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false });
   }
+  const imageBlockers = signatureImageBlockers(snapshot, current);
   const sendBlockers = current?.status === 'signed' ? gateBlockers(input.gates, ['realEmail']) : [];
   const readinessAttestation = readinessRow && readinessRow.classStartDate
     ? {
@@ -341,14 +362,14 @@ function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Re
         quotedClassEndDate: classEndDate(isoDate(readinessRow.classStartDate) as string),
       }
     : null;
-  const allBlockers = [...blockers, ...signBlockers, ...sendBlockers];
+  const allBlockers = [...blockers, ...signBlockers, ...imageBlockers, ...sendBlockers];
   const view: J5StageView = {
     current: current ? versionView(snapshot, input.memberId, current, now) : null,
     history: records.slice(1).map((r) => versionView(snapshot, input.memberId, r, now)),
     rolesThatReceivedEarlierVersions: rolesThatReceivedEarlierVersions(records.slice(1).map((r) => ({ version: r.version, acceptedRolesAtClose: r.acceptedRolesAtClose as RecipientRole[] }))),
     blockers: allBlockers,
     canSaveDraft: !current || current.status === 'draft' || current.status === 'superseded' || current.status === 'voided',
-    canSign: current?.status === 'draft' && gate.ok && signBlockers.length === 0 && input.viewerIsExecutiveSigner,
+    canSign: current?.status === 'draft' && gate.ok && signBlockers.length === 0 && imageBlockers.length === 0 && input.viewerIsExecutiveSigner,
     canSend: current?.status === 'signed' && sendBlockers.length === 0,
     readinessAttestation,
     programTerms: terms.ok
@@ -428,6 +449,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
     blockers.push({ code: 'J6_ISSUE_DATE_NOT_TODAY', message: J6_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false });
   }
   const signBlockers = current?.status === 'draft' ? gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']) : [];
+  const imageBlockers = signatureImageBlockers(snapshot, current);
   const sendBlockers = current?.status === 'signed' ? gateBlockers(input.gates, ['realEmail', 'receiptSignaturePrincipal']) : [];
   const classStartedRow = latestAttestation(snapshot, 'class_started');
   const prior = priorQuote(snapshot);
@@ -446,7 +468,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
     : null;
   const invoiceRow = snapshot.artifacts.find((f) => f.kind === 'board_invoice') ?? null;
   const signerTasks = designatedSignerTasks(input, voucher, Boolean(receipt));
-  const allBlockers = [...blockers, ...signBlockers, ...sendBlockers].map((b) =>
+  const allBlockers = [...blockers, ...signBlockers, ...imageBlockers, ...sendBlockers].map((b) =>
     voucher && DESIGNATED_SIGNER_BLOCKERS.has(b.code)
       ? // Name who must act: M1's "Confirm the uploaded voucher…" reads like a staff task.
         { ...b, waitingOn: 'designated_signer' as const, message: b.code === 'J6_VOUCHER_ATTESTATION_INCOMPLETE' ? VOUCHER_DATA_WAITING_MESSAGE : b.message }
@@ -460,7 +482,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
     rolesThatReceivedEarlierVersions: rolesThatReceivedEarlierVersions(records.slice(1).map((r) => ({ version: r.version, acceptedRolesAtClose: r.acceptedRolesAtClose as RecipientRole[] }))),
     blockers: allBlockers,
     canSaveDraft: !current || current.status === 'draft' || current.status === 'superseded' || current.status === 'voided',
-    canSign: current?.status === 'draft' && gate.ok && holds.length === 0 && Boolean(receipt) && signBlockers.length === 0 && input.viewerIsExecutiveSigner,
+    canSign: current?.status === 'draft' && gate.ok && holds.length === 0 && Boolean(receipt) && signBlockers.length === 0 && imageBlockers.length === 0 && input.viewerIsExecutiveSigner,
     canSend: current?.status === 'signed' && sendBlockers.length === 0,
     priorQuote:
       prior?.source === 'system'
@@ -602,6 +624,7 @@ export function buildCaseSummary(input: SummaryInput): CaseSummaryDto {
     progress: caseProgress(snapshot),
     gates: input.gates,
     viewer: { isExecutiveSigner: input.viewerIsExecutiveSigner, isDesignatedSigner: input.viewerIsDesignatedSigner },
+    signature: signatureStatus(snapshot, input.viewerIsDesignatedSigner),
     j5: j5.view,
     j6: j6.view,
     payment: paymentDto(snapshot, now),
