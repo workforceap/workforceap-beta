@@ -921,6 +921,9 @@
     "accountContactConsent": "Acepto que me contacten",
     "accountContactConsentRest": "por WorkforceAP sobre mi solicitud por correo o teléfono. *",
     "accountConsentHint": "Requerido para que un asesor pueda dar seguimiento a tu próximo paso. Consulta nuestra",
+    "partnerDisclosureLabel": "Tu organización de referencia",
+    "partnerDisclosureRestricted": "Te refirió {partner}. {partner} podrá ver el estado de tu solicitud y tu progreso en WorkforceAP: tu nombre, el estado de tu solicitud y la fecha en que la enviaste, el programa en el que te inscribas, cuánto has avanzado, los nombres de las certificaciones que obtengas y si comienzas un empleo y cuándo. {partner} no verá tu correo electrónico, número de teléfono, dirección, situación laboral ni nivel educativo, empleador, puesto ni salario.",
+    "partnerDisclosureFull": "Te refirió {partner}. {partner} podrá ver el estado de tu solicitud y tu progreso en WorkforceAP, junto con algunos datos de contacto y de perfil: tu nombre y correo electrónico; tu ciudad, estado y código postal; tu situación laboral y nivel educativo; el programa en el que te inscribas y cuánto has avanzado; las certificaciones que obtengas; y, cuando WorkforceAP confirme una colocación laboral, tu empleador, puesto, salario y el seguimiento de ese empleo.",
     "accountCreating": "Creando tu cuenta…",
     "accountSubmitCta": "Guardar mi lugar y crear acceso",
     "accountProfileLater": "Puedes volver después para completar tu perfil.",
@@ -1125,6 +1128,26 @@
     "missingContact": "Contactar a WorkforceAP",
     "missingHome": "Volver al inicio",
     "missingMetaTitle": "Página de inscripción escolar no encontrada"
+  },
+  "partnerLanding": {
+    "metaTitle": "Postúlate a WorkforceAP con {partner}",
+    "eyebrow": "Referido por {partner}",
+    "title": "{partner} te invitó a WorkforceAP",
+    "applyCta": "Comienza tu solicitud",
+    "applyCtaNote": "Al postularte desde esta página, tu solicitud queda vinculada a {partner}.",
+    "programsEyebrow": "Programas destacados",
+    "programsTitle": "Capacitación profesional para explorar",
+    "programsBody": "Algunos de los programas disponibles en WorkforceAP. Eliges tu programa al postularte.",
+    "stepsEyebrow": "Cómo funciona",
+    "stepsTitle": "Tres pasos desde aquí",
+    "privacyTitle": "Lo que {partner} podrá ver",
+    "closingTitle": "Cuando estés listo"
+  },
+  "mission": {
+    "heading": "Our mission",
+    "aboutHeading": "About WorkforceAP",
+    "statement": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. WorkforceAP equips individuals, nonprofits, counselors, and community ambassadors with workforce-readiness tools, occupational training and professional certification programs, and AI-powered résumé, interview, and job-placement assistance. Our mission is to help people secure meaningful employment, build sustainable careers, and create better lives—at no cost to eligible members through grant- and scholarship-funded memberships.",
+    "summary": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. At no cost to eligible members through grant- and scholarship-funded memberships."
   },
   "training": {
     "myTraining": "Mi Entrenamiento",

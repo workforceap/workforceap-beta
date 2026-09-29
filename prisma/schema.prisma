@@ -53,6 +53,10 @@ model Organization {
   chapters          Chapter[]
   wioaReviewSnapshots WioaReviewSnapshot[]
   trainingBillingPackets TrainingBillingPacket[]
+  billingCases           BillingCase[]
+  billingSignerDelegations BillingSignerDelegation[]
+  billingDesignatedSigner  BillingDesignatedSigner?
+  billingSignerSignatureAssets BillingSignerSignatureAsset[]
 
   @@index([stripeSubscriptionId])
   @@map("organizations")
@@ -278,6 +282,8 @@ model User {
   adminCourseEnrollments      CourseEnrollment[]    @relation("AdminCourseEnrollments")
   trainingBillingPackets      TrainingBillingPacket[] @relation("MemberBillingPackets")
   billingPacketsSigned        TrainingBillingPacket[] @relation("BillingPacketSigner")
+  billingCases                BillingCase[]         @relation("MemberBillingCases")
+  billingSignerDesignations   BillingDesignatedSigner[]
 
   mentorProfile       Mentor?
   mentorSessions      MentorSession[] @relation("MentorSessionMember")
@@ -2103,6 +2109,477 @@ model TrainingBillingPacket {
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([memberId, createdAt(sort: Desc)])
   @@map("training_billing_packets")
+}
+
+// --- Two-stage J5/J6 billing (docs/BILLING-PACKETS.md "Two-stage J5/J6") ---
+// Additive and separate from the legacy combined TrainingBillingPacket above,
+// which stays legacy and unchanged. Retained finance archive: no row here is
+// deleted by account erasure (member FK is SET NULL; actor ids are historical
+// subject ids without FKs, mirroring draft #2687's retention model). Money is
+// whole cents. Migration-only DDL (CHECKs, immutability triggers, partial
+// unique indexes, RLS + browser-role revokes) lives in
+// prisma/migrations/20260927230000_billing_two_stage_j5_j6.
+
+/// One student + one program seat billed through J5 then J6.
+model BillingCase {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  /// Live account link. Null after the member is purged; the case remains.
+  memberId           String?  @map("member_id")
+  /// Original member id (immutable) for scoped archive lookup after erasure.
+  subjectMemberId    String   @map("subject_member_id")
+  /// canonicalizeProgramSlug() of the enrolled program; fixed for the case.
+  programSlug        String   @map("program_slug")
+  /// Set by the database when a member merge repoints memberId (audit).
+  memberMergedFromId String?   @map("member_merged_from_id")
+  memberMergedAt     DateTime? @map("member_merged_at")
+  createdBySubjectId String   @map("created_by_subject_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  member        User?                 @relation("MemberBillingCases", fields: [memberId], references: [id], onDelete: SetNull)
+  attestations  BillingAttestation[]
+  artifacts     BillingArtifact[]
+  stageRecords  BillingStageRecord[]
+  paymentEvents BillingPaymentEvent[]
+  voucherReceiptSignatures BillingVoucherReceiptSignature[]
+
+  @@unique([id, organizationId])
+  @@index([organizationId, subjectMemberId, createdAt(sort: Desc)])
+  @@index([memberId])
+  @@map("billing_cases")
+}
+
+/// Append-only staff attestation. kind: j5_readiness (student ready for a
+/// quote/voucher request, with the admin-confirmed planned class start) |
+/// class_started (the class has begun: actual start and confirmed end) |
+/// voucher_board_signed (the uploaded file is the board-signed voucher, with
+/// its reference and authorized amount) | external_j5_reference (a quote
+/// issued manually before this system, optionally with an uploaded copy).
+/// Never inferred from enrollment rows.
+model BillingAttestation {
+  id                  String    @id @default(uuid())
+  organizationId      String    @map("organization_id")
+  caseId              String    @map("case_id")
+  kind                String
+  /// The exact statement the staff member confirmed.
+  statement           String    @db.Text
+  /// What the attestation rests on (referral id, attendance record, board email ...).
+  evidenceReference   String    @map("evidence_reference") @db.Text
+  /// j5_readiness: confirmed planned start. class_started: actual start.
+  classStartDate      DateTime? @map("class_start_date") @db.Date
+  /// class_started: staff-confirmed end.
+  classEndDate        DateTime? @map("class_end_date") @db.Date
+  /// voucher_board_signed: the voucher (required). external_j5_reference: optional copy.
+  artifactId          String?   @map("artifact_id")
+  voucherReference    String?   @map("voucher_reference")
+  /// voucher_board_signed: amount the board authorized, in cents.
+  authorizedAmountCents Int?    @map("authorized_amount_cents")
+  /// voucher_board_signed: authorized period, when printed on the voucher.
+  authorizedStartDate DateTime? @map("authorized_start_date") @db.Date
+  authorizedEndDate   DateTime? @map("authorized_end_date") @db.Date
+  /// voucher_board_signed: date the signed voucher was received from the board.
+  receivedOn          DateTime? @map("received_on") @db.Date
+  /// voucher_board_signed: staff confirm Michael's receiving signature is on the
+  /// uploaded document (signed by hand on receipt; the app never stamps or alters it).
+  receivingSignaturePresent Boolean? @map("receiving_signature_present")
+  /// external_j5_reference: the manual quote's reference and date.
+  externalReference   String?   @map("external_reference")
+  externalQuoteDate   DateTime? @map("external_quote_date") @db.Date
+  /// external_j5_reference: the program and class the manual quote named.
+  quotedProgramSlug   String?   @map("quoted_program_slug")
+  quotedClassName     String?   @map("quoted_class_name")
+  /// voucher_board_signed: the program and class the board voucher authorizes.
+  authorizedProgramSlug String? @map("authorized_program_slug")
+  authorizedClassName   String? @map("authorized_class_name")
+  /// j5_readiness fact 1: the student is approved/ready (must be true).
+  studentReadyConfirmed Boolean? @map("student_ready_confirmed")
+  /// j5_readiness fact 2: the counselor requested the quote (who, when, reference).
+  counselorRequestedBy      String?   @map("counselor_requested_by")
+  counselorRequestedOn      DateTime? @map("counselor_requested_on") @db.Date
+  counselorRequestReference String?   @map("counselor_request_reference")
+  attestedBySubjectId String    @map("attested_by_subject_id")
+  attestedAt          DateTime  @default(now()) @map("attested_at")
+
+  case     BillingCase      @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  artifact BillingArtifact? @relation(fields: [artifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+
+  j5Readiness BillingStageRecord[] @relation("StageReadinessAttestation")
+  j6ClassStart BillingStageRecord[] @relation("StageClassStartAttestation")
+  j6Voucher   BillingStageRecord[] @relation("StageVoucherAttestation")
+  j6ExternalJ5 BillingStageRecord[] @relation("StageExternalJ5Attestation")
+
+  @@unique([id, caseId])
+  @@index([caseId, kind, attestedAt(sort: Desc)])
+  @@map("billing_attestations")
+}
+
+/// Immutable record of one PDF in the private finance Storage bucket
+/// (BILLING_FINANCE_BUCKET, default `billing-finance`; never a member bucket;
+/// lib/billing/twoStage/financeStorage.ts).
+/// kind: j5_signed_pdf | j6_signed_pdf | board_signed_voucher | board_invoice |
+/// external_j5_copy. The object key is content-addressed
+/// (cases/{caseId}/{segment}/{sha256}.pdf); bytes are re-hashed on every read.
+model BillingArtifact {
+  id                  String   @id @default(uuid())
+  organizationId      String   @map("organization_id")
+  caseId              String   @map("case_id")
+  kind                String
+  /// rendered (by the app, at signing) | uploaded (by staff).
+  source              String
+  fileName            String   @map("file_name")
+  mimeType            String   @map("mime_type")
+  byteLength          Int      @map("byte_length")
+  sha256              String   @db.Char(64)
+  storageBucket       String   @map("storage_bucket")
+  storageKey          String   @map("storage_key")
+  /// Rendered signed PDFs only: the exact stage record version and frozen
+  /// content hash this PDF renders. Null for uploads (case-level files).
+  stageRecordId         String?  @map("stage_record_id")
+  stage                 String?
+  stageVersion          Int?     @map("stage_version")
+  renderedContentSha256 String?  @map("rendered_content_sha256") @db.Char(64)
+  createdBySubjectId  String   @map("created_by_subject_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  case BillingCase @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  renderedFrom BillingStageRecord? @relation("StageRenderedArtifacts", fields: [stageRecordId, caseId, stage, stageVersion], references: [id, caseId, stage, version], onDelete: Restrict, onUpdate: NoAction, map: "billing_artifacts_stage_record_version_fkey")
+  reconcileEvidenceFor BillingStageSend[]
+
+  attestations      BillingAttestation[]
+  receiptSignaturesOnVoucher     BillingVoucherReceiptSignature[] @relation("ReceiptSignatureVoucher")
+  receiptSignaturesOnVoucherCase BillingVoucherReceiptSignature[] @relation("ReceiptSignatureVoucherCase")
+  receiptSignatureRepresentations BillingVoucherReceiptSignature[] @relation("ReceiptSignatureRepresentation")
+  signedStageRecord BillingStageRecord[] @relation("StageSignedArtifact")
+  voucherFor        BillingStageRecord[] @relation("StageVoucherArtifact")
+  boardInvoiceFor   BillingStageRecord[] @relation("StageBoardInvoiceArtifact")
+
+  @@unique([id, caseId])
+  @@unique([id, sha256])
+  @@unique([storageBucket, storageKey])
+  @@index([caseId, kind, createdAt(sort: Desc)])
+  @@map("billing_artifacts")
+}
+
+/// The one auth principal per organization who signs and attests receiving
+/// signatures on board vouchers. Unset by default (J6 sign/send fail closed);
+/// written only by an ops-reviewed change, read-only for service_role.
+model BillingDesignatedSigner {
+  organizationId String   @id @map("organization_id")
+  userId         String   @map("user_id")
+  designatedBy   String   @map("designated_by")
+  note           String
+  /// Stamped by the database.
+  designatedAt   DateTime @default(now()) @map("designated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("billing_designated_signers")
+}
+
+/// The designated signer's attestation that his receiving signature is on the
+/// exact voucher bytes (present_on_original) or an approved signature
+/// representation (approved_signature_representation + its artifact). Bound to
+/// (voucher artifact id, sha256); append-only; attested_at stamped by the DB.
+model BillingVoucherReceiptSignature {
+  id                       String   @id @default(uuid())
+  organizationId           String   @map("organization_id")
+  caseId                   String   @map("case_id")
+  voucherArtifactId        String   @map("voucher_artifact_id")
+  voucherSha256            String   @map("voucher_sha256") @db.Char(64)
+  attestedByUserId         String   @map("attested_by_user_id")
+  /// present_on_original | approved_signature_representation
+  method                   String
+  representationArtifactId String?  @map("representation_artifact_id")
+  representationSha256     String?  @map("representation_sha256") @db.Char(64)
+  statement                String
+  attestedAt               DateTime @default(now()) @map("attested_at")
+
+  case           BillingCase      @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "billing_voucher_receipt_signatures_case_fkey")
+  voucher        BillingArtifact  @relation("ReceiptSignatureVoucher", fields: [voucherArtifactId, voucherSha256], references: [id, sha256], onDelete: Restrict, onUpdate: NoAction, map: "billing_voucher_receipt_signatures_voucher_fkey")
+  voucherInCase  BillingArtifact  @relation("ReceiptSignatureVoucherCase", fields: [voucherArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction, map: "billing_voucher_receipt_signatures_voucher_case_fkey")
+  representation BillingArtifact? @relation("ReceiptSignatureRepresentation", fields: [representationArtifactId, representationSha256], references: [id, sha256], onDelete: Restrict, onUpdate: NoAction, map: "billing_voucher_receipt_signatures_representation_fkey")
+
+  @@index([voucherArtifactId])
+  @@map("billing_voucher_receipt_signatures")
+}
+
+/// The designated signer's approved handwritten-signature PNG, placed on the
+/// J5/J6 he signs as himself. Organization-level, outside billing_artifacts
+/// (which stay PDF-only); bytes in billing-finance under
+/// signature/<org>/<signer>/<sha256>.png. Only the designated signer inserts
+/// one; append-only apart from one DB-stamped revoke; at most one active per
+/// organization. The sign trigger requires content.signature to freeze the
+/// active asset's id and sha256. The image never authorizes a signature.
+model BillingSignerSignatureAsset {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  signerUserId       String    @map("signer_user_id")
+  uploadedByUserId   String    @map("uploaded_by_user_id")
+  storageBucket      String    @map("storage_bucket")
+  storageKey         String    @map("storage_key")
+  /// image/png only.
+  mimeType           String    @map("mime_type")
+  byteLength         Int       @map("byte_length")
+  sha256             String    @db.Char(64)
+  widthPx            Int       @map("width_px")
+  heightPx           Int       @map("height_px")
+  /// The first 33 bytes (PNG signature + IHDR), checked by the database.
+  pngHeader          Bytes     @map("png_header")
+  approvalStatement  String    @map("approval_statement")
+  /// Stamped by the database.
+  uploadedAt         DateTime  @default(now()) @map("uploaded_at")
+  /// Stamped by the database (the signer's own upload is his approval).
+  approvedAt         DateTime  @default(now()) @map("approved_at")
+  /// Stamped by the database on the one-time revoke.
+  revokedAt          DateTime? @map("revoked_at")
+  revokedBySubjectId String?   @map("revoked_by_subject_id")
+  revokeReason       String?   @map("revoke_reason")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, signerUserId])
+  @@map("billing_signer_signature_assets")
+}
+
+/// Explicitly approved signing delegation. Model hook only: disabled in code
+/// (SIGNER_DELEGATION_ENABLED = false) and no UI creates one.
+model BillingSignerDelegation {
+  id                   String    @id @default(uuid())
+  organizationId       String    @map("organization_id")
+  principalSubjectId   String    @map("principal_subject_id")
+  delegateSubjectId    String    @map("delegate_subject_id")
+  /// j5 | j6
+  stage                String
+  approvedBySubjectId  String    @map("approved_by_subject_id")
+  approvalReference    String    @map("approval_reference") @db.Text
+  validFrom            DateTime  @map("valid_from")
+  validUntil           DateTime  @map("valid_until")
+  revokedAt            DateTime? @map("revoked_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  stageRecords BillingStageRecord[]
+
+  @@index([organizationId, delegateSubjectId])
+  @@map("billing_signer_delegations")
+}
+
+/// One J5 (quote/voucher request) or J6 (invoice/voucher cover letter)
+/// document version. status: draft -> signed -> sent, or superseded/voided.
+/// Once signed, content, terms and signature are immutable (trigger); a
+/// correction is a new version that supersedes this one.
+model BillingStageRecord {
+  id                       String    @id @default(uuid())
+  organizationId           String    @map("organization_id")
+  caseId                   String    @map("case_id")
+  /// j5 | j6
+  stage                    String
+  version                  Int
+  supersedesRecordId       String?   @unique @map("supersedes_record_id")
+  status                   String    @default("draft")
+  documentNumber           String    @map("document_number")
+  contentVersion           Int       @map("content_version")
+  /// Frozen document fields (lib/billing/twoStage/content.ts).
+  content                  Json
+  contentSha256            String    @map("content_sha256") @db.Char(64)
+  /// Always 750000 (Tuition & Fees $7,500.00).
+  amountCents              Int       @map("amount_cents")
+  /// Frozen class name (approved syllabus title); must equal content.training.className.
+  className                String    @map("class_name")
+  /// 160, or 200 for the IBM AI & Software Developer program.
+  contactHours             Int       @map("contact_hours")
+  /// J5: the admin-confirmed estimate. J6: the staff-confirmed actual dates.
+  classStartDate           DateTime  @map("class_start_date") @db.Date
+  classEndDate             DateTime  @map("class_end_date") @db.Date
+  /// J6 only: system (priorJ5RecordId, our sent J5) | external (externalJ5AttestationId).
+  priorJ5Source            String?   @map("prior_j5_source")
+  priorJ5RecordId          String?   @map("prior_j5_record_id")
+  externalJ5AttestationId  String?   @map("external_j5_attestation_id")
+  /// J6 only: set when the voucher amount/period or dates conflict with the quote.
+  /// Signing is blocked until an audited staff review clears it.
+  reviewRequired           Boolean   @default(false) @map("review_required")
+  reviewReasons            String[]  @default([]) @map("review_reasons")
+  reviewClearedBySubjectId String?   @map("review_cleared_by_subject_id")
+  reviewClearedAt          DateTime? @map("review_cleared_at")
+  reviewNote               String?   @map("review_note") @db.Text
+  readinessAttestationId   String?   @map("readiness_attestation_id")
+  classStartAttestationId  String?   @map("class_start_attestation_id")
+  voucherArtifactId        String?   @map("voucher_artifact_id")
+  voucherAttestationId     String?   @map("voucher_attestation_id")
+  boardInvoiceArtifactId   String?   @map("board_invoice_artifact_id")
+  signedAt                 DateTime? @map("signed_at")
+  signedBySubjectId        String?   @map("signed_by_subject_id")
+  /// typed_attestation until an approved signature image exists.
+  signatureMethod          String?   @map("signature_method")
+  /// The exact intent statement the signer confirmed.
+  signerIntent             String?   @map("signer_intent") @db.Text
+  signedViaDelegationId    String?   @map("signed_via_delegation_id")
+  signedArtifactId         String?   @map("signed_artifact_id")
+  sentAt                   DateTime? @map("sent_at")
+  /// Recipients, provider ids and attachment hashes once every copy is delivered.
+  sendReceipt              Json?     @map("send_receipt")
+  supersededAt             DateTime? @map("superseded_at")
+  voidedAt                 DateTime? @map("voided_at")
+  closedBySubjectId        String?   @map("closed_by_subject_id")
+  closeReason              String?   @map("close_reason") @db.Text
+  /// Roles that had an accepted copy of this version when it was closed (computed by the DB; empty while open).
+  acceptedRolesAtClose     String[]  @default([]) @map("accepted_roles_at_close")
+  /// Audited partial-send cancellation: closing a signed, never-sent record that has send claims.
+  sendCancelledAt          DateTime? @map("send_cancelled_at")
+  sendCancelledBySubjectId String?   @map("send_cancelled_by_subject_id")
+  sendCancelReason         String?   @map("send_cancel_reason") @db.Text
+  createdBySubjectId       String    @map("created_by_subject_id")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  case                 BillingCase              @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  supersedes           BillingStageRecord?      @relation("StageSupersedes", fields: [supersedesRecordId, caseId, stage], references: [id, caseId, stage], onDelete: Restrict, onUpdate: NoAction)
+  supersededBy         BillingStageRecord[]     @relation("StageSupersedes")
+  priorJ5              BillingStageRecord?      @relation("StagePriorJ5", fields: [priorJ5RecordId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  followingJ6          BillingStageRecord[]     @relation("StagePriorJ5")
+  externalJ5Attestation BillingAttestation?     @relation("StageExternalJ5Attestation", fields: [externalJ5AttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  readinessAttestation BillingAttestation?      @relation("StageReadinessAttestation", fields: [readinessAttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  classStartAttestation BillingAttestation?     @relation("StageClassStartAttestation", fields: [classStartAttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  voucherArtifact      BillingArtifact?         @relation("StageVoucherArtifact", fields: [voucherArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  voucherAttestation   BillingAttestation?      @relation("StageVoucherAttestation", fields: [voucherAttestationId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  boardInvoiceArtifact BillingArtifact?         @relation("StageBoardInvoiceArtifact", fields: [boardInvoiceArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  signedArtifact       BillingArtifact?         @relation("StageSignedArtifact", fields: [signedArtifactId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+  signedViaDelegation  BillingSignerDelegation? @relation(fields: [signedViaDelegationId], references: [id], onDelete: Restrict)
+  sends                BillingStageSend[]
+  recipients           BillingStageRecipient[]
+  renderedArtifacts    BillingArtifact[]        @relation("StageRenderedArtifacts")
+  paymentEvents        BillingPaymentEvent[]
+
+  @@unique([caseId, stage, version])
+  @@unique([organizationId, documentNumber])
+  @@unique([id, organizationId, stage])
+  @@unique([id, caseId])
+  @@unique([id, caseId, stage])
+  @@unique([id, caseId, stage, version])
+  @@index([caseId, stage, createdAt(sort: Desc)])
+  @@map("billing_stage_records")
+}
+
+/// Frozen recipient snapshot of one stage record: one normalized address per
+/// role, editable only while the record is a draft. A send row must match it.
+model BillingStageRecipient {
+  stageRecordId  String   @map("stage_record_id")
+  organizationId String   @map("organization_id")
+  /// j5 | j6
+  stage          String
+  /// student | counselor (J5); student | counselor | finance (J6).
+  recipientRole  String   @map("recipient_role")
+  recipientName  String   @map("recipient_name")
+  /// lower(trim(email)).
+  email          String
+  /// Printed phone for this contact, when the document prints one (the counselor).
+  phone          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  stageRecord BillingStageRecord @relation(fields: [stageRecordId, organizationId, stage], references: [id, organizationId, stage], onDelete: Restrict, onUpdate: NoAction)
+  sends       BillingStageSend[]
+
+  @@id([stageRecordId, recipientRole])
+  @@unique([stageRecordId, recipientRole, email], map: "billing_stage_recipients_record_role_email_key")
+  @@unique([stageRecordId, email], map: "billing_stage_recipients_record_email_key")
+  @@map("billing_stage_recipients")
+}
+
+/// One recipient role's claim for one signed stage record version. Attempts are
+/// per role: attempt n + 1 (a fresh canonical idempotency key) only after that
+/// role's latest claim definitively failed; an ambiguous claim is retried with
+/// the same key or reconciled; an accepted role is never re-sent.
+/// status (public.billing_send_statuses() = SEND_STATUSES): pending |
+/// provider_accepted | ambiguous | needs_reconciliation | failed |
+/// reconciled_delivered | reconciled_failed. Delivery evidence is in
+/// BillingDeliveryEvent.
+model BillingStageSend {
+  id                    String    @id @default(uuid())
+  organizationId        String    @map("organization_id")
+  stageRecordId         String    @map("stage_record_id")
+  /// j5 | j6, equal to the record's stage (composite FK).
+  stage                 String
+  attemptNo             Int       @map("attempt_no")
+  /// student | counselor (J5); student | counselor | finance (J6).
+  recipientRole         String    @map("recipient_role")
+  recipientName         String    @map("recipient_name")
+  email                 String
+  idempotencyKey        String    @unique @map("idempotency_key")
+  status                String
+  /// Rotated on every claim/reconciliation; final transitions compare-and-set on it.
+  claimToken            String    @map("claim_token")
+  claimedAt             DateTime  @default(now()) @map("claimed_at")
+  lastClaimedAt         DateTime  @default(now()) @map("last_claimed_at")
+  /// Provider acceptance (status 'provider_accepted' requires it with providerMessageId).
+  acceptedAt            DateTime? @map("accepted_at")
+  /// The record version's frozen content hash this copy renders.
+  contentSha256         String    @map("content_sha256") @db.Char(64)
+  /// sha256 of every attachment in this copy, in order.
+  attachmentSha256s     String[]  @default([]) @map("attachment_sha256s")
+  providerMessageId     String?   @map("provider_message_id")
+  providerResult        String?   @map("provider_result") @db.Text
+  lastError             String?   @map("last_error") @db.Text
+  reconciledBySubjectId String?   @map("reconciled_by_subject_id")
+  reconciledAt          DateTime? @map("reconciled_at")
+  reconcileNote         String?   @map("reconcile_note") @db.Text
+  reconcileEvidenceArtifactId String? @map("reconcile_evidence_artifact_id")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  stageRecord BillingStageRecord @relation(fields: [stageRecordId, organizationId, stage], references: [id, organizationId, stage], onDelete: Restrict)
+  recipient   BillingStageRecipient @relation(fields: [stageRecordId, recipientRole, email], references: [stageRecordId, recipientRole, email], onDelete: Restrict, onUpdate: NoAction, map: "billing_stage_sends_recipient_snapshot_fkey")
+  reconcileEvidence BillingArtifact? @relation(fields: [reconcileEvidenceArtifactId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  deliveryEvents    BillingDeliveryEvent[]
+
+  @@unique([stageRecordId, stage, attemptNo, recipientRole])
+  @@unique([id, organizationId])
+  @@map("billing_stage_sends")
+}
+
+/// Append-only delivery evidence for an accepted copy (webhook or operator):
+/// delivered | bounced | complained. Recordable after the stage is sent and
+/// never unsends it; a bounce or complaint flags follow-up.
+model BillingDeliveryEvent {
+  id              String   @id @default(uuid())
+  organizationId  String   @map("organization_id")
+  sendId          String   @map("send_id")
+  kind            String
+  occurredAt      DateTime @map("occurred_at")
+  source          String
+  providerEventId String?  @unique @map("provider_event_id")
+  recordedAt      DateTime @default(now()) @map("recorded_at")
+
+  send BillingStageSend @relation(fields: [sendId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([sendId])
+  @@map("billing_delivery_events")
+}
+
+/// Append-only payment tracking for a sent J6. status: pending (with the
+/// expected follow-up window, send + 10..14 days; an expectation, not a due
+/// date) | received (only with recorded evidence). Current = latest row.
+model BillingPaymentEvent {
+  id                   String    @id @default(uuid())
+  organizationId       String    @map("organization_id")
+  caseId               String    @map("case_id")
+  j6RecordId           String    @map("j6_record_id")
+  status               String
+  expectedFollowUpFrom DateTime? @map("expected_follow_up_from") @db.Date
+  expectedFollowUpTo   DateTime? @map("expected_follow_up_to") @db.Date
+  receivedOn           DateTime? @map("received_on") @db.Date
+  evidence             String?   @db.Text
+  recordedBySubjectId  String    @map("recorded_by_subject_id")
+  recordedAt           DateTime  @default(now()) @map("recorded_at")
+
+  case     BillingCase        @relation(fields: [caseId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  j6Record BillingStageRecord @relation(fields: [j6RecordId, caseId], references: [id, caseId], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([caseId, recordedAt(sort: Desc)])
+  @@map("billing_payment_events")
 }
 
 /// xAPI statements ingested from Coursera (LRS webhook). `statementId` is the external UUID when present.

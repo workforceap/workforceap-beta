@@ -185,6 +185,7 @@ async function renderMemberDashboard(
     {approvalPlacement === 'primary' ? approvalCard : null}
     <MemberHomeKit
       showStaffViewBanner={staffViewer}
+      advisor={counselorContext?.counselor ?? null}
       programSwitch={home.programSwitch}
       firstName={home.firstName}
       coursePercent={home.coursePercent}

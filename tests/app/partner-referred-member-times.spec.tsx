@@ -173,3 +173,72 @@ describe('PartnerReferredMemberDetailPage partner-visible activity', () => {
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * Partner data tiers (lib/partner/dataAccess.ts): a referral-track (payout)
+ * partner's detail page is status-only, and a hidden minor is a 404 for any
+ * non-school partner because the referral lookup itself excludes them.
+ */
+describe('PartnerReferredMemberDetailPage partner data tier', () => {
+  const verifiedMember = {
+    id: 'member-1',
+    fullName: 'Fixture Member',
+    email: null,
+    enrolledProgram: null,
+    enrolledAt: INSTANT,
+    courseEnrollments: [],
+    courseProgress: [],
+    placementRecord: {
+      employerName: 'SECRET_EMPLOYER', jobTitle: 'SECRET_ROLE', salaryOffered: 98765,
+      placedAt: INSTANT, startDateVerified: true, retentionStatus: 'SECRET_RETENTION',
+      retentionDecision: null, onboardingWindowEnd: null,
+    },
+    userCertifications: [],
+    memberProgramProgress: [],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getUser).mockResolvedValue({ id: 'partner-user-1' } as never);
+    vi.mocked(prisma.partnerReferral.findFirst).mockResolvedValue({ id: 'ref-1', referredAt: INSTANT } as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(verifiedMember as never);
+    vi.mocked(prisma.memberEvent.findMany).mockResolvedValue([] as never);
+    vi.mocked(prisma.partnerOutreachLog.findMany).mockResolvedValue([] as never);
+  });
+
+  it('referral partner: placed + date only — no employer, role, salary or retention, and none selected', async () => {
+    vi.mocked(getPartnerForUser).mockResolvedValue({ partnerId: 'partner-1', partner: { organizationId: 'org-1', partnerType: 'referral' } } as never);
+    const html = renderToStaticMarkup(await PartnerReferredMemberDetailPage({ params: Promise.resolve({ memberId: 'member-1' }) }));
+    expect(html).not.toMatch(/SECRET_|98,765|Salary|Employer|Retention/);
+    expect(html).toContain('Placed');
+    expect(html).toContain('Sep 18, 2026');
+    const select = (vi.mocked(prisma.user.findUnique).mock.calls[0][0] as { select: { placementRecord: unknown } }).select;
+    expect(select.placementRecord).toEqual({ select: { placedAt: true, startDateVerified: true } });
+  });
+
+  it('community partner: verified employer, role and salary still render', async () => {
+    vi.mocked(getPartnerForUser).mockResolvedValue({ partnerId: 'partner-1', partner: { organizationId: 'org-1', partnerType: 'community' } } as never);
+    const html = renderToStaticMarkup(await PartnerReferredMemberDetailPage({ params: Promise.resolve({ memberId: 'member-1' }) }));
+    expect(html).toContain('SECRET_EMPLOYER');
+    expect(html).toContain('SECRET_ROLE');
+    expect(html).toContain('$98,765');
+  });
+
+  it('non-school partner: the referral lookup excludes minors without FERPA consent (404 otherwise)', async () => {
+    vi.mocked(getPartnerForUser).mockResolvedValue({ partnerId: 'partner-1', partner: { organizationId: 'org-1', partnerType: 'community' } } as never);
+    vi.mocked(prisma.partnerReferral.findFirst).mockResolvedValue(null as never);
+    await expect(PartnerReferredMemberDetailPage({ params: Promise.resolve({ memberId: 'member-1' }) })).rejects.toThrow('NOT_FOUND');
+    const where = (vi.mocked(prisma.partnerReferral.findFirst).mock.calls[0][0] as { where: { member: { NOT: unknown[] } } }).where;
+    expect(where.member.NOT).toContainEqual({
+      profile: { is: expect.objectContaining({ ferpaConsentGiven: false }) },
+    });
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('school partner: no minor exclusion on the lookup', async () => {
+    vi.mocked(getPartnerForUser).mockResolvedValue({ partnerId: 'partner-1', partner: { organizationId: 'org-1', partnerType: 'high_school' } } as never);
+    await PartnerReferredMemberDetailPage({ params: Promise.resolve({ memberId: 'member-1' }) });
+    const where = (vi.mocked(prisma.partnerReferral.findFirst).mock.calls[0][0] as { where: { member: unknown } }).where;
+    expect(JSON.stringify(where.member)).not.toContain('ferpaConsentGiven');
+  });
+});

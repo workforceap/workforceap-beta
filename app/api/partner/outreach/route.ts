@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db/prisma';
 import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -21,8 +22,11 @@ const postSchema = z.object({
   const ctx = await getPartnerForUser(user.id);
   if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+  // Minor rule (lib/partner/dataAccess.ts): outreach about a member this
+  // partner may not see is not listed, the same as every other partner view.
+  const access = partnerDataAccess(ctx.partner);
   const logs = await prisma.$transaction((tx) => tx.partnerOutreachLog.findMany({
-    where: { partnerId: ctx.partnerId },
+    where: { partnerId: ctx.partnerId, member: withPartnerMemberVisibility({}, access) },
     orderBy: { createdAt: 'desc' },
     take: 80,
     include: {
@@ -62,11 +66,20 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
+  // A member hidden from this partner (lib/partner/dataAccess.ts) answers
+  // exactly like a member it never referred: 404, and no log row. One answer
+  // for both, so the status code cannot tell a partner which of its referrals
+  // is a hidden minor.
+  const access = partnerDataAccess(ctx.partner);
   const referral = await prisma.$transaction((tx) => tx.partnerReferral.findFirst({
-    where: { partnerId: ctx.partnerId, memberId: parsed.data.memberId },
+    where: {
+      partnerId: ctx.partnerId,
+      memberId: parsed.data.memberId,
+      member: withPartnerMemberVisibility({}, access),
+    },
   }));
   if (!referral) {
-    return NextResponse.json({ error: 'Member not referred by this partner' }, { status: 400 });
+    return NextResponse.json({ error: 'Member not found' }, { status: 404 });
   }
 
   const log = await prisma.$transaction((tx) => tx.partnerOutreachLog.create({

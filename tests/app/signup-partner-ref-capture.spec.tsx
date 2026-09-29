@@ -30,6 +30,23 @@ vi.mock('next/navigation', () => ({
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 vi.mock('@/lib/i18n/server', () => ({ getRequestLocale: async () => 'en' }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: async () => ({}) }));
+vi.mock('next/headers', () => ({
+  cookies: async () => ({ get: () => undefined }),
+  headers: async () => new Headers(),
+}));
+// The server-side disclosure lookup has its own suite; here no partner resolves
+// on the server and the browser reconciles through the (mocked) API.
+vi.mock('@/lib/apply/partnerReferralDisclosure', () => ({ resolvePartnerReferralDisclosure: async () => null }));
+vi.mock('@/lib/apply/partnerDisclosureCopy', async () => {
+  const { apply } = (await import('@/messages/en.json')).default;
+  return {
+    getPartnerDisclosureCopy: async () => ({
+      label: apply.partnerDisclosureLabel,
+      restricted: apply.partnerDisclosureRestricted,
+      full: apply.partnerDisclosureFull,
+    }),
+  };
+});
 
 import SignupPage from '@/app/(auth)/signup/page';
 import { APPLY_REFERRAL_SESSION_KEY } from '@/lib/apply/applyReferralCapture';
@@ -55,12 +72,17 @@ function fillRequiredFields() {
   fireEvent.click(screen.getByRole('checkbox', { name: /terms of service/i }));
 }
 
+const signupCalls = () => fetchMock.mock.calls.filter(([url]) => String(url).includes('/api/member/signup'));
+
 async function submitAndReadBody(): Promise<Record<string, unknown>> {
   fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-  const [, options] = fetchMock.mock.calls[0];
+  await waitFor(() => expect(signupCalls()).toHaveLength(1));
+  const [, options] = signupCalls()[0];
   return JSON.parse(options!.body as string) as Record<string, unknown>;
 }
+
+/** Server answer for GET /api/apply/partner-disclosure. */
+let disclosureAnswer: unknown = null;
 
 function clearPersistedState() {
   sessionStorage.clear();
@@ -69,9 +91,11 @@ function clearPersistedState() {
 
 beforeEach(() => {
   fetchMock.mockReset();
-  fetchMock.mockResolvedValue(
-    new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
-  );
+  disclosureAnswer = null;
+  fetchMock.mockImplementation(async (url) => new Response(
+    JSON.stringify(String(url).includes('/api/apply/partner-disclosure') ? { disclosure: disclosureAnswer } : { success: true }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } },
+  ));
   vi.stubGlobal('fetch', fetchMock);
   clearPersistedState();
   window.dataLayer = [];
@@ -107,6 +131,35 @@ describe('/signup partner attribution (mocked transport)', () => {
     await renderSignupPage();
     fillRequiredFields();
 
-    expect(await submitAndReadBody()).not.toHaveProperty('referralRef');
+    const body = await submitAndReadBody();
+    expect(body).not.toHaveProperty('referralRef');
+    expect(body).not.toHaveProperty('partnerDisclosureRef');
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('partner-disclosure'))).toBe(false);
+  });
+
+  it('names the server-resolved partner and records which ref was disclosed', async () => {
+    disclosureAnswer = { ref: 'acme-hs', partnerName: 'Acme Workforce Center', tier: 'restricted' };
+    await renderSignupPage('ref=Acme-HS');
+
+    const note = await screen.findByRole('note');
+    expect(note).toHaveTextContent('You were referred by Acme Workforce Center.');
+    expect(note).toHaveTextContent('will not see your email');
+    const lookup = fetchMock.mock.calls.find(([url]) => String(url).includes('/api/apply/partner-disclosure'));
+    expect(String(lookup?.[0])).toContain('ref=acme-hs');
+
+    fillRequiredFields();
+    expect(await submitAndReadBody()).toMatchObject({ referralRef: 'acme-hs', partnerDisclosureRef: 'acme-hs' });
+  });
+
+  it('shows no disclosure when the server does not resolve the ref (unknown or inactive partner)', async () => {
+    disclosureAnswer = null;
+    await renderSignupPage('ref=unknown-partner');
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).includes('partner-disclosure'))).toBe(true));
+
+    expect(screen.queryByText(/You were referred by/)).toBeNull();
+    fillRequiredFields();
+    const body = await submitAndReadBody();
+    expect(body).toMatchObject({ referralRef: 'unknown-partner' });
+    expect(body).not.toHaveProperty('partnerDisclosureRef');
   });
 });

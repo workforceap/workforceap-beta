@@ -37,6 +37,7 @@ const DELEGATED_AUDIT_HELPERS = {
  * and every entry justified; adding a real data mutation here defeats the gate.
  */
 const ALLOWLIST = {
+  'app/api/admin/members/[id]/billing-packets/route.ts': 'retired POST returns 410 after auth and tenant checks; it never persists or sends',
   'app/api/admin/email-templates/[id]/preview/route.ts': 'renders a template preview; no persistence',
   'app/api/admin/email-crons/[id]/dry-run/route.ts': 'counts recipients for a dry run; no persistence',
   'app/api/admin/blog/ai/review/route.ts': 'returns AI review text; no persistence',

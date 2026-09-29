@@ -86,7 +86,8 @@ describe('partner overview Payout due (WAP-213)', () => {
     expect(tile).not.toContain('$2,700');
     expect(tile).toContain('2 verified placements not yet paid');
     expect(tile).not.toContain('estimated rate');
-    expect(mocks.unpaid).toHaveBeenCalledWith('partner-1', 'org-1');
+    // The overview's own tier (referral → restricted), so the count shares the Placed tile's population.
+    expect(mocks.unpaid).toHaveBeenCalledWith('partner-1', 'org-1', expect.objectContaining({ tier: 'restricted', isSchoolPartner: false }));
   });
 
   it('says the rate is estimated when it is the built-in fallback', async () => {

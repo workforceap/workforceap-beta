@@ -70,6 +70,8 @@ export const memberSignupSchema = z.object({
   consentCommunications: z.boolean().optional(),
   /** Partner referral code from apply link (?ref=), stored on Application */
   referralRef: z.string().max(100).optional().nullable(),
+  /** Ref whose partner disclosure the form showed; recorded, never trusted. */
+  partnerDisclosureRef: z.string().max(100).optional().nullable(),
   /** Marketing attribution captured at first ad-landing visit. Stored on
    * downstream MemberEvent metadata for paid-channel ROI analysis. */
   utmSource: z.string().max(200).optional().nullable(),

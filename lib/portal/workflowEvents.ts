@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { partnerHiddenMemberWhere, type PartnerDataAccess } from '@/lib/partner/dataAccess';
 
 export async function recordEmployerWorkflowEvent(input: {
   employerId: string;
@@ -55,9 +56,15 @@ export async function listEmployerWorkflowEvents(employerId: string, take = 35) 
   });
 }
 
-export async function listPartnerWorkflowEvents(partnerId: string, take = 35) {
+/**
+ * The partner's timeline. With `access`, events whose actor is a member this
+ * partner may not see (lib/partner/dataAccess.ts) are left out, so a hidden
+ * minor who acted before the write-side guard existed is not named either.
+ */
+export async function listPartnerWorkflowEvents(partnerId: string, take = 35, access?: PartnerDataAccess) {
+  const hiddenActor = access ? partnerHiddenMemberWhere(access) : null;
   return prisma.portalWorkflowEvent.findMany({
-    where: { partnerId },
+    where: hiddenActor ? { partnerId, NOT: [{ actor: { is: hiddenActor } }] } : { partnerId },
     orderBy: { createdAt: 'desc' },
     take,
     include: { actor: { select: { fullName: true, email: true } } },

@@ -14,6 +14,7 @@ import {
 } from '@/lib/placement/recordPlacementFromApplication';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { PARTNER_PLACEMENT_LABELS } from '@/lib/partner/partnerVisibleEvents';
+import { partnerDataAccess, partnerMayViewMember } from '@/lib/partner/dataAccess';
 
 export type ConfirmPlacementResult = {
   /**
@@ -107,10 +108,21 @@ export async function confirmPlacement(jobApplicationId: string): Promise<Confir
 
     const referral = await prisma.partnerReferral.findFirst({
       where: { memberId: user.id },
-      select: { partnerId: true },
+      select: {
+        partnerId: true,
+        partner: { select: { partnerType: true } },
+        member: { select: { profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } } } },
+      },
     });
 
-    if (referral?.partnerId) {
+    // The partner timeline names the actor, and the actor here is the member.
+    // A member hidden from this partner (a minor without FERPA consent under a
+    // non-school partner, lib/partner/dataAccess.ts) must not appear there, so
+    // no partner event is written for them at all.
+    if (
+      referral?.partnerId &&
+      partnerMayViewMember(partnerDataAccess(referral.partner), referral.member?.profile)
+    ) {
       await recordPartnerWorkflowEvent({
         partnerId: referral.partnerId,
         actorUserId: user.id,
