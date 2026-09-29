@@ -98,9 +98,11 @@ jobs:
       contents: read
       deployments: read
     env:
-      # Outside the workspace, so no artifact step can pick them up. The marker
-      # (run ID and synthetic emails, no secrets) is written before the first
-      # Auth call, the state (exact IDs) after every Auth call.
+      # The marker (run ID and synthetic emails) is written before the first
+      # Auth call; the state (exact IDs, plus the write in flight) before and
+      # after every write. Neither holds a password or any secret: passwords go
+      # only to GITHUB_ENV, masked. They are uploaded at the end so a failed
+      # cleanup can be finished from the exact IDs.
       FIVE_ROLE_QA_STATE_FILE: /tmp/five-role-qa-fixture.json
       FIVE_ROLE_QA_MARKER_FILE: /tmp/five-role-qa-fixture.marker.json
       FIVE_ROLE_QA_STAGE_FILE: /tmp/five-role-qa-fixture.stage.json
@@ -181,8 +183,11 @@ jobs:
         run: node scripts/portal-audit-health-gate.mjs
 
       # Gate 2 and the key probe run inside the CLI before any client exists.
+      # A step timeout (well inside the job's) so a hang ends this step and
+      # still lets cleanup run, instead of the job timing out mid-write.
       - name: Create the five disposable synthetic users
         id: create
+        timeout-minutes: 10
         env:
           PORTAL_QA_TARGET: demo
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
@@ -196,8 +201,21 @@ jobs:
         if: steps.create.outcome == 'success'
         run: pnpm exec playwright install --with-deps chromium
 
+      # The first check can be several minutes old by now: re-prove the exact
+      # SHA and DEMO project immediately before any write through the Preview.
+      - name: Re-verify target SHA and DEMO Supabase scope before the writes
+        if: steps.create.outcome == 'success'
+        shell: bash
+        env:
+          PORTAL_AUDIT_MODE: isolated_preview
+          PORTAL_AUDIT_TARGET_ORIGIN: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_SHA: ${{ github.sha }}
+        run: node scripts/portal-audit-health-gate.mjs
+
       - name: Run the five-role acceptance spec
         if: steps.create.outcome == 'success'
+        timeout-minutes: 15
         run: pnpm exec playwright test tests/e2e/five-role-demo-acceptance.spec.ts --project=chromium --retries=0 --reporter=list
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
@@ -266,4 +284,18 @@ jobs:
           name: five-role-demo-cleanup-${{ github.run_id }}
           path: test-results/five-role-demo-cleanup.json
           if-no-files-found: error
+          retention-days: 14
+
+      # IDs and synthetic emails only (no passwords or secrets), for finishing
+      # a failed cleanup by exact ID. Absent when create never started.
+      - name: Upload the fixture state, marker and stage files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-role-demo-fixture-files-${{ github.run_id }}
+          path: |
+            /tmp/five-role-qa-fixture.json
+            /tmp/five-role-qa-fixture.marker.json
+            /tmp/five-role-qa-fixture.stage.json
+          if-no-files-found: ignore
           retention-days: 14

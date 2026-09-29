@@ -41,7 +41,7 @@ function acceptance(overrides: Record<string, unknown> = {}) {
 function readback(overrides: Record<string, unknown> = {}) {
   return {
     kind: READBACK_KIND, runId: RUN, success: true,
-    roles: Object.fromEntries(FIVE_ROLES.map((role: string) => [role, { recordId: RECORD[role], found: true, ownerMatched: true, valueMatched: true }])),
+    roles: Object.fromEntries(FIVE_ROLES.map((role: string) => [role, { userId: USER[role], recordId: RECORD[role], found: true, ownerMatched: true, valueMatched: true }])),
     ...overrides,
   };
 }
@@ -53,6 +53,7 @@ function cleanup(overrides: Record<string, unknown> = {}) {
     }])),
     partner: { partnerId: RECORD.partner, deleted: true, absenceVerified: true },
     notes: { deleted: 2, absenceVerified: true },
+    records: Object.fromEntries(FIVE_ROLES.map((role: string) => [role, { recordId: RECORD[role], absenceVerified: true }])),
     ...overrides,
   };
 }
@@ -234,4 +235,39 @@ test('[mocked — NOT acceptance] the spec refuses production, shared accounts, 
   assert.throws(() => runIdFor('123456', '2'), /re-runs are refused/);
   assert.equal(runIdFor('123456', '1'), RUN);
   assert.throws(() => emailFor('123456-2', 'member'), /non-synthetic/);
+});
+
+test('[mocked — NOT acceptance] one user or one record can never stand in for two roles', () => {
+  const sameUser = withRole(acceptance(), 'admin', { userId: USER.counselor });
+  assert.match(verify(sameUser, readback(), cleanup()).reasons.join('\n'), /reuses a user ID across roles/);
+  const sameNote = withRole(acceptance(), 'admin', { recordId: RECORD.counselor });
+  const result = verify(sameNote, readback(), cleanup());
+  assert.equal(result.ok, false);
+  assert.match(result.reasons.join('\n'), /reuses a record ID across roles/);
+});
+
+test('[mocked — NOT acceptance] readback and cleanup are bound to the users, partner and records acceptance reported', () => {
+  const r = readback();
+  const rRoles = r.roles as Record<string, Record<string, unknown>>;
+  const otherUser = verify(acceptance(), { ...r, roles: { ...rRoles, member: { ...rRoles.member, userId: id(88) } } }, cleanup());
+  assert.match(otherUser.reasons.join('\n'), /member: readback checked a different user than acceptance ran as/);
+
+  const c = cleanup();
+  for (const partner of [{ partnerId: id(66), deleted: true, absenceVerified: true }, { partnerId: null, deleted: false, absenceVerified: true }]) {
+    const result = verify(acceptance(), readback(), { ...c, partner });
+    assert.equal(result.ok, false);
+    assert.match(result.reasons.join('\n'), /cleanup removed a different partner organization/);
+  }
+  const records = c.records as Record<string, Record<string, unknown>>;
+  const cases: Array<[unknown, RegExp]> = [
+    [{ ...c, records: { ...records, member: { recordId: id(55), absenceVerified: true } } }, /member: cleanup checked a different record/],
+    [{ ...c, records: { ...records, counselor: { recordId: RECORD.counselor, absenceVerified: null } } }, /counselor: absence of the written record was not verified/],
+    [{ ...c, records: { ...records, employer: undefined } }, /employer: absence of the written record was not verified/],
+    [{ ...c, records: undefined }, /admin: absence of the written record was not verified/],
+  ];
+  for (const [cleanupReceipt, reason] of cases) {
+    const result = verify(acceptance(), readback(), cleanupReceipt);
+    assert.equal(result.ok, false);
+    assert.match(result.reasons.join('\n'), reason);
+  }
 });

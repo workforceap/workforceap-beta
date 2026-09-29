@@ -45,9 +45,14 @@ not proven.
    (`portal-qa-wap6-<run>-1`, all notifications off), the employer row, the
    counselor row, and one counselor assignment to the synthetic member.
 
-   It writes a marker file (emails only) before the first Auth call, and
-   rewrites the state file (exact IDs) after every Auth call.
-5. The spec signs in as each user in turn and checks that the session cookie's
+   It writes a marker file (emails only) before the first Auth call. It saves
+   the state file (exact IDs) both before and after every write, with
+   `pending` naming the write in flight, so a lost response still leaves the
+   exact email or slug to look up. The step has a 10-minute timeout, so a hang
+   ends the step and still lets cleanup run.
+5. The SHA and DEMO gate runs again immediately before the spec, because the
+   first check can be several minutes old by then. The spec then signs in as
+   each user in turn and checks that the session cookie's
    user ID and token `sub` are that user. It then sends each role's single
    write (never retried) and reads the result back through the app:
 
@@ -73,13 +78,25 @@ not proven.
      assignment, partner link, goal and event rows cascade.
    - The partner organization.
 
-   Each absence is checked after its delete. Only recorded IDs are used,
-   never a pattern. Audit rows are kept on purpose.
+   A role the state does not record (its Auth call may have landed with the
+   response lost) is looked up by its exact synthetic email. It is removed only
+   if it is this run's flagged fixture for that role and organization;
+   otherwise cleanup fails closed. The same applies to a partner whose ID was
+   never recorded, looked up by its exact per-run slug.
+
+   Each absence is checked by a lookup after its delete, by ID and by email or
+   slug. So are the goal, both notes and the employer row the spec reported.
+   Nothing is ever matched by pattern. Audit rows are kept on purpose. The
+   state, marker and stage files (IDs and synthetic emails only, no passwords)
+   are uploaded as an artifact.
 8. The one green check, `scripts/verify-five-role-acceptance.mjs`, passes only
    when all three receipts agree on the same run and the same users:
    - **acceptance**: all five roles wrote and the app showed the value;
    - **readback**: every row was found with its owner and value;
-   - **cleanup**: every fixture was created and then verified absent.
+   - **cleanup**: every fixture was created and then verified absent, including
+     the partner and every record acceptance reported, each by its exact ID.
+
+   The five user IDs and the five record IDs must all be distinct.
 
    All three receipts are uploaded, and a missing receipt fails the run.
 
@@ -117,6 +134,9 @@ Other prerequisites:
 - The DEMO database schema must match `schema.prisma` for the models the
   fixture writes (users, profiles, user roles, partners, partner users,
   employers, counselors, counselor assignments, goals, counselor notes).
+- The database role in `DEMO_QA_POSTGRES_PRISMA_URL` must be able to read
+  `auth.users` (Supabase's `postgres` role can). Cleanup uses it for its
+  read-only exact-email recovery lookup, and fails closed if it cannot.
 - Staff MFA must be off on the Preview (`STAFF_MFA_ENFORCEMENT` not `1`).
   Otherwise the admin and counselor writes are refused, and the receipt
   records that.
@@ -138,6 +158,8 @@ before any further dispatch.
 If `cleanup` fails, its receipt and log give the run ID and the exact
 recorded IDs.
 
+- There is no cleanup-only dispatch mode yet; this is a follow-up. Use the
+  uploaded `five-role-demo-fixture-files-<run>` artifact for the exact IDs.
 - **Cleanup failed part-way:** dispatching again does *not* re-clean an old
   run, because a new run has new users. In the DEMO project, remove these
   exact IDs, in this order: the notes where `member_id` is the synthetic member

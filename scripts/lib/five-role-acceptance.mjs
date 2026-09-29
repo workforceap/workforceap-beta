@@ -11,8 +11,8 @@
  *               write through the Preview app and read it back through the app;
  *   readback    the fixture CLI found each written row in the DEMO database by
  *               its recorded ID, owned by that user, with the written value;
- *   cleanup     every recorded user, the partner row and the notes are gone,
- *               each absence checked after the delete.
+ *   cleanup     every user, the partner row, the notes and each written record
+ *               are gone, each absence checked by a lookup after the delete.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { hostnameOf, isProductionHost } from './resume-acceptance-receipt.mjs';
@@ -155,6 +155,12 @@ export function acceptanceReasons(receipt) {
     if (!UUID.test(String(entry.recordId ?? ''))) reasons.push(`${role}: no written record ID`);
     if (entry.appReadback?.matched !== true) reasons.push(`${role}: the app readback did not show the written value`);
   }
+  // Five distinct users and five distinct records: one row can never stand in for two roles.
+  const entries = FIVE_ROLES.map((role) => receipt.roles?.[role]).filter(Boolean);
+  const userIds = entries.map((entry) => entry.userId).filter(Boolean);
+  const recordIds = entries.map((entry) => entry.recordId).filter(Boolean);
+  if (new Set(userIds).size !== userIds.length) reasons.push('acceptance receipt reuses a user ID across roles');
+  if (new Set(recordIds).size !== recordIds.length) reasons.push('acceptance receipt reuses a record ID across roles');
   return reasons;
 }
 
@@ -169,13 +175,14 @@ export function readbackReasons(receipt, acceptance) {
     if (entry.found !== true) reasons.push(`${role}: the written row was not found in the database`);
     if (entry.valueMatched !== true) reasons.push(`${role}: the database value is not the written value`);
     if (entry.ownerMatched !== true) reasons.push(`${role}: the database row is not owned by the synthetic ${role}`);
-    const accepted = acceptance?.roles?.[role]?.recordId;
-    if (accepted && entry.recordId !== accepted) reasons.push(`${role}: readback checked a different record than acceptance wrote`);
+    const accepted = acceptance?.roles?.[role];
+    if (accepted && entry.recordId !== accepted.recordId) reasons.push(`${role}: readback checked a different record than acceptance wrote`);
+    if (accepted && entry.userId !== accepted.userId) reasons.push(`${role}: readback checked a different user than acceptance ran as`);
   }
   return reasons;
 }
 
-export function cleanupReasons(receipt) {
+export function cleanupReasons(receipt, acceptance) {
   if (receipt.kind !== CLEANUP_KIND) return ['cleanup receipt has the wrong kind'];
   if (receipt.success !== true) return [`cleanup did not succeed (${receipt.error ?? 'no error recorded'})`];
   if (receipt.fixturesCreated !== true) {
@@ -190,6 +197,17 @@ export function cleanupReasons(receipt) {
   }
   if (receipt.partner?.absenceVerified !== true) reasons.push('partner organization absence was not verified');
   if (receipt.notes?.absenceVerified !== true) reasons.push('note absence was not verified');
+  const acceptedPartner = acceptance?.roles?.partner?.recordId;
+  if (!acceptedPartner || receipt.partner?.partnerId !== acceptedPartner) {
+    reasons.push('cleanup removed a different partner organization than acceptance wrote to');
+  }
+  // Every written record, by the exact ID acceptance reported, was looked up and found absent.
+  for (const role of FIVE_ROLES) {
+    const record = receipt.records?.[role];
+    const accepted = acceptance?.roles?.[role]?.recordId;
+    if (!record || record.absenceVerified !== true) reasons.push(`${role}: absence of the written record was not verified`);
+    else if (!accepted || record.recordId !== accepted) reasons.push(`${role}: cleanup checked a different record than acceptance wrote`);
+  }
   return reasons;
 }
 
@@ -226,7 +244,7 @@ export function verifyFiveRoleRun(acceptancePath, readbackPath, cleanupPath, exp
   if (readback.reason) reasons.push(readback.reason);
   else reasons.push(...readbackReasons(readback.receipt, acceptance.receipt));
   if (cleanup.reason) reasons.push(cleanup.reason);
-  else reasons.push(...cleanupReasons(cleanup.receipt));
+  else reasons.push(...cleanupReasons(cleanup.receipt, acceptance.receipt));
 
   if (expectedValid) {
     for (const [label, loaded] of [['acceptance', acceptance], ['readback', readback], ['cleanup', cleanup]]) {

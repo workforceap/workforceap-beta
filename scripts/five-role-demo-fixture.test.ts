@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import {
+  acceptanceRecordIds,
   cleanupFixtures,
   createFixtures,
   FIXTURE_FLAG,
@@ -55,7 +56,12 @@ function fakeDeps({ organizations = [{ id: 'qa-org', slug: 'portal-qa-test', act
   const notes = new Map<string, { id: string; memberId: string | null; authorId: string | null; content: string }>([
     ['foreign-note', { id: 'foreign-note', memberId: FOREIGN, authorId: FOREIGN, content: 'real note' }],
   ]);
-  const failures = { authCreateAt: -1, authLookup: false, authDeleteKeeps: false };
+  // authCreateAt: the call fails, nothing is created. authCreateLostAt: the user
+  // IS created server-side, then the client throws (lost response / timeout).
+  // roleRowsLost: the transaction commits, then the client throws.
+  // lateCreate: a create that was still in flight lands (same email, new ID)
+  // while cleanup runs.
+  const failures = { authCreateAt: -1, authCreateLostAt: -1, authLookup: false, authDeleteKeeps: false, roleRowsLost: false, lateCreate: '' };
   let authCreates = 0;
   const inScope = (n: { memberId: string | null; authorId: string | null }, s: { memberId: string | null; authorIds: string[] }) =>
     (s.memberId !== null && n.memberId === s.memberId) || (n.authorId !== null && s.authorIds.includes(n.authorId));
@@ -66,16 +72,30 @@ function fakeDeps({ organizations = [{ id: 'qa-org', slug: 'portal-qa-test', act
     findUserById: async (id) => users.get(id) ?? null,
     createAuthUser: async ({ email, appMetadata }) => {
       calls.push(`createAuthUser:${email}`);
-      if (authCreates++ === failures.authCreateAt) throw new Error('Auth down');
+      const index = authCreates++;
+      if (index === failures.authCreateAt) throw new Error('Auth down');
       const id = newId();
       auth.set(id, { id, email, appMetadata });
+      if (index === failures.authCreateLostAt) throw new Error('Auth request timed out');
       return id;
     },
     getAuthUser: async (id) => {
       if (failures.authLookup) throw new Error('Auth 500');
       return auth.get(id) ?? null;
     },
-    deleteAuthUser: async (id) => { calls.push(`deleteAuthUser:${id}`); if (!failures.authDeleteKeeps) auth.delete(id); },
+    findAuthUserByEmail: async (email) => {
+      if (failures.authLookup) throw new Error('Auth 500');
+      return [...auth.values()].find((u) => u.email === email) ?? null;
+    },
+    deleteAuthUser: async (id) => {
+      calls.push(`deleteAuthUser:${id}`);
+      const deleted = auth.get(id);
+      if (!failures.authDeleteKeeps) auth.delete(id);
+      if (deleted && deleted.email === failures.lateCreate) {
+        const late = newId();
+        auth.set(late, { id: late, email: deleted.email, appMetadata: deleted.appMetadata });
+      }
+    },
     createRoleRows: async ({ organizationId, users: created, partner, employerCompanyName }) => {
       calls.push('createRoleRows');
       for (const role of ROLES) users.set(created[role].userId, { id: created[role].userId, email: created[role].email, organizationId });
@@ -83,10 +103,18 @@ function fakeDeps({ organizations = [{ id: 'qa-org', slug: 'portal-qa-test', act
       partners.set(partnerId, { id: partnerId, organizationId, slug: partner.slug, name: partner.name });
       const employerId = newId();
       employers.set(employerId, { id: employerId, userId: created.employer.userId, companyName: employerCompanyName });
+      if (failures.roleRowsLost) throw new Error('connection reset after COMMIT');
       return { partnerId, employerId };
     },
-    deleteUser: async (id) => { calls.push(`deleteUser:${id}`); users.delete(id); },
+    deleteUser: async (id) => {
+      calls.push(`deleteUser:${id}`);
+      users.delete(id);
+      // ON DELETE CASCADE, as in the schema.
+      for (const [key, goal] of goals) if (goal.userId === id) goals.delete(key);
+      for (const [key, employer] of employers) if (employer.userId === id) employers.delete(key);
+    },
     findPartner: async (id) => partners.get(id) ?? null,
+    findPartnerBySlug: async (slug) => [...partners.values()].find((p) => p.slug === slug) ?? null,
     deletePartner: async (id) => { calls.push(`deletePartner:${id}`); partners.delete(id); },
     countNotes: async (scope) => [...notes.values()].filter((n) => inScope(n, scope)).length,
     deleteNotes: async (scope) => {
@@ -132,7 +160,11 @@ test('[mocked — NOT acceptance] create: marker before the first Auth call, sta
   const { fake, state, states } = await created();
   const firstAuth = fake.calls.findIndex((c) => c.startsWith('createAuthUser'));
   assert.ok(fake.calls.indexOf('marker') < firstAuth, 'marker is written before any Auth write');
-  assert.deepEqual(states.map((s) => Object.keys(s.users).length), [1, 2, 3, 4, 5, 5]);
+  // Saved before AND after every write, naming the write in flight.
+  assert.deepEqual(states.map((s) => [Object.keys(s.users).length, s.pending ?? null]), [
+    [0, 'member'], [1, null], [1, 'counselor'], [2, null], [2, 'admin'], [3, null],
+    [3, 'employer'], [4, null], [4, 'partner'], [5, null], [5, 'role-rows'], [5, null],
+  ]);
   for (const role of ROLES) {
     assert.equal(state.users[role]!.email, emailFor(RUN, role));
     const authUser = fake.auth.get(state.users[role]!.userId)!;
@@ -198,8 +230,13 @@ test('[mocked — NOT acceptance] readback passes only for the recorded rows wit
 
 test('[mocked — NOT acceptance] cleanup removes only recorded IDs and verifies every absence', async () => {
   const { fake, state } = await created();
-  writeAll(fake, state);
-  const result = await cleanupFixtures(TARGET, state, fake.deps);
+  const acceptance = writeAll(fake, state);
+  const result = await cleanupFixtures(TARGET, state, fake.deps, acceptanceRecordIds(acceptance));
+  for (const role of ROLES) {
+    assert.deepEqual(result.records[role], { recordId: acceptance.roles[role].recordId, absenceVerified: true }, `${role} record`);
+  }
+  assert.equal(fake.goals.size, 0, 'the goal cascaded with the member');
+  assert.equal(fake.employers.size, 0, 'the employer row cascaded with its user');
   assert.equal(result.fixturesCreated, true);
   assert.equal(result.notes.deleted, 2);
   assert.equal(result.notes.absenceVerified, true);
@@ -248,6 +285,101 @@ test('[mocked — NOT acceptance] cleanup fails closed: a recorded ID that is no
   await assert.rejects(cleanupFixtures({ ...TARGET, organizationId: 'other' }, state, fake.deps), /not a synthetic five-role fixture of this organization/);
   const forged = { ...state, users: { ...state.users, member: { userId: FOREIGN, email: 'member-test@workforceap.org' } } };
   await assert.rejects(cleanupFixtures(TARGET, forged, fake.deps), /not a synthetic five-role fixture/);
+});
+
+test('[mocked — NOT acceptance] Auth user created server-side but the client threw: cleanup finds it by exact email and removes it', async () => {
+  const fake = fakeDeps();
+  fake.failures.authCreateLostAt = 2; // the admin
+  const states: FixtureState[] = [];
+  await assert.rejects(createFixtures(TARGET, RUN, passwords(), fake.deps, (s) => states.push(structuredClone(s)), () => {}), /timed out/);
+  const last = states.at(-1)!;
+  assert.deepEqual([Object.keys(last.users), last.pending], [['member', 'counselor'], 'admin']);
+  const orphan = [...fake.auth.values()].find((u) => u.email === emailFor(RUN, 'admin'));
+  assert.ok(orphan, 'the admin Auth user exists but is unrecorded');
+
+  const result = await cleanupFixtures(TARGET, last, fake.deps);
+  assert.equal(result.fixturesCreated, 'partial');
+  assert.equal(result.users.admin.recoveredByEmail, true);
+  assert.equal(result.users.admin.userId, orphan.id);
+  assert.equal(result.users.admin.authAbsenceVerified, true);
+  for (const role of ROLES) {
+    assert.equal([...fake.auth.values()].some((u) => u.email === emailFor(RUN, role)), false, `${role} gone by email`);
+  }
+  assert.equal(fake.auth.has(FOREIGN), true, 'a real account is never touched');
+});
+
+test('[mocked — NOT acceptance] an unrecorded email that is not this run\'s flagged fixture fails closed and deletes nothing', async () => {
+  for (const appMetadata of [
+    {},
+    { [FIXTURE_FLAG]: true, run_id: '1-1', role: 'admin', portal_qa_organization_id: 'qa-org' },
+    { [FIXTURE_FLAG]: true, run_id: RUN, role: 'member', portal_qa_organization_id: 'qa-org' },
+    { [FIXTURE_FLAG]: true, run_id: RUN, role: 'admin', portal_qa_organization_id: 'other-org' },
+  ]) {
+    const fake = fakeDeps();
+    fake.failures.authCreateAt = 2;
+    const states: FixtureState[] = [];
+    await assert.rejects(createFixtures(TARGET, RUN, passwords(), fake.deps, (s) => states.push(structuredClone(s)), () => {}));
+    fake.auth.set('stray', { id: 'stray', email: emailFor(RUN, 'admin'), appMetadata });
+    await assert.rejects(cleanupFixtures(TARGET, states.at(-1)!, fake.deps), /an Auth user with this run's admin email is not this run's flagged fixture/);
+    assert.equal(fake.calls.some((c) => c.startsWith('delete')), false, JSON.stringify(appMetadata));
+  }
+  // An unrecorded role whose email lookup fails is unresolved: fail closed.
+  const fake = fakeDeps();
+  fake.failures.authCreateAt = 0;
+  const states: FixtureState[] = [];
+  await assert.rejects(createFixtures(TARGET, RUN, passwords(), fake.deps, (s) => states.push(structuredClone(s)), () => {}));
+  fake.failures.authLookup = true;
+  await assert.rejects(cleanupFixtures(TARGET, states.at(-1)!, fake.deps), /Auth lookup by email/);
+});
+
+test('[mocked — NOT acceptance] role rows committed but the result was lost: cleanup finds the partner by its exact slug', async () => {
+  const fake = fakeDeps();
+  fake.failures.roleRowsLost = true;
+  const states: FixtureState[] = [];
+  await assert.rejects(createFixtures(TARGET, RUN, passwords(), fake.deps, (s) => states.push(structuredClone(s)), () => {}), /after COMMIT/);
+  const last = states.at(-1)!;
+  assert.deepEqual([Object.keys(last.users).length, last.pending, last.partnerId], [5, 'role-rows', undefined]);
+  assert.equal(fake.partners.size, 1, 'the partner organization was committed');
+
+  const result = await cleanupFixtures(TARGET, last, fake.deps);
+  assert.equal(result.fixturesCreated, 'partial');
+  assert.equal(result.partner.recoveredBySlug, true);
+  assert.equal(result.partner.absenceVerified, true);
+  assert.equal(fake.partners.size, 0);
+  assert.equal(fake.employers.size, 0);
+  for (const role of ROLES) assert.equal(fake.users.has(last.users[role]!.userId), false);
+});
+
+test('[mocked — NOT acceptance] partner absence is a real lookup; a foreign partner with this run\'s slug is refused', async () => {
+  {
+    const fake = fakeDeps();
+    fake.failures.authCreateAt = 0;
+    const states: FixtureState[] = [];
+    await assert.rejects(createFixtures(TARGET, RUN, passwords(), fake.deps, (s) => states.push(structuredClone(s)), () => {}));
+    const result = await cleanupFixtures(TARGET, states.at(-1)!, fake.deps);
+    assert.deepEqual([result.partner.partnerId, result.partner.deleted, result.partner.absenceVerified], [null, false, true]);
+  }
+  const fake = fakeDeps();
+  fake.failures.authCreateAt = 0;
+  const states: FixtureState[] = [];
+  await assert.rejects(createFixtures(TARGET, RUN, passwords(), fake.deps, (s) => states.push(structuredClone(s)), () => {}));
+  fake.partners.set('p', { id: 'p', organizationId: 'other-org', slug: partnerSlugFor(RUN), name: 'x' });
+  await assert.rejects(cleanupFixtures(TARGET, states.at(-1)!, fake.deps), /not this run's synthetic partner/);
+  assert.equal(fake.partners.has('p'), true);
+});
+
+test('[mocked — NOT acceptance] tampered state: a real user ID with a synthetic email, or a synthetic user in another org, is refused', async () => {
+  {
+    const { fake, state } = await created();
+    const tampered = { ...state, users: { ...state.users, member: { userId: FOREIGN, email: emailFor(RUN, 'member') } } };
+    await assert.rejects(cleanupFixtures(TARGET, tampered, fake.deps), /database user recorded as the member is not this run's synthetic user/);
+    assert.equal(fake.calls.some((c) => c.startsWith('delete')), false);
+    assert.equal(fake.users.has(FOREIGN), true);
+  }
+  const { fake, state } = await created();
+  fake.users.get(state.users.employer!.userId)!.organizationId = 'other-org';
+  await assert.rejects(cleanupFixtures(TARGET, state, fake.deps), /database user recorded as the employer is not this run's synthetic user/);
+  assert.equal(fake.calls.some((c) => c.startsWith('delete')), false);
 });
 
 test('[mocked — NOT acceptance] resolveCleanupInput: only a readable state or a pre-client stop; everything else fails closed with exact emails', async () => {
@@ -371,4 +503,33 @@ test('[mocked — NOT acceptance] CLI: cleanup with a marker but no state fails 
   const receipt = json(run.env.FIVE_ROLE_QA_CLEANUP_OUTPUT);
   assert.deepEqual([receipt.success, receipt.fixturesCreated], [false, 'unknown']);
   assert.equal(run.clientsBuilt(), 0);
+});
+
+test('[mocked — NOT acceptance] CLI: cleanup refuses a state file from another run', async () => {
+  const run = cli();
+  await main('create', run.env, run.options(200));
+  await assert.rejects(main('cleanup', { ...run.env, GITHUB_RUN_ID: '9999' }, run.options(200)), /belongs to another run/);
+  const receipt = json(run.env.FIVE_ROLE_QA_CLEANUP_OUTPUT);
+  assert.deepEqual([receipt.success, receipt.fixturesCreated], [false, 'unknown']);
+  assert.equal(run.fake.calls.some((c) => c.startsWith('delete')), false);
+});
+
+test('[mocked — NOT acceptance] CLI: the uploaded state, marker and stage files never contain a password', async () => {
+  const run = cli();
+  await main('create', run.env, run.options(200));
+  const passwordsHandedOff = readFileSync(run.env.GITHUB_ENV!, 'utf8').split('\n')
+    .filter((line) => /_PASSWORD=/.test(line)).map((line) => line.split('=').slice(1).join('='));
+  assert.equal(passwordsHandedOff.length, 5);
+  for (const path of [run.env.FIVE_ROLE_QA_STATE_FILE, run.env.FIVE_ROLE_QA_MARKER_FILE, run.env.FIVE_ROLE_QA_STAGE_FILE]) {
+    const text = readFileSync(path!, 'utf8');
+    for (const password of passwordsHandedOff) assert.equal(text.includes(password), false);
+    assert.doesNotMatch(text, /password|secret|key/i);
+  }
+});
+
+test('[mocked — NOT acceptance] absence is also checked by email: a late-landing duplicate Auth user fails cleanup closed', async () => {
+  const { fake, state } = await created();
+  fake.failures.lateCreate = emailFor(RUN, 'partner');
+  await assert.rejects(cleanupFixtures(TARGET, state, fake.deps), /partner Auth user still present by email/);
+  assert.equal(fake.calls.some((c) => c.startsWith('deleteUser')), false, 'database rows are kept for a rerun');
 });

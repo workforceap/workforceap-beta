@@ -135,3 +135,19 @@ test('[mocked — NOT acceptance] one attempt: no retries, cleanup and the combi
     assert.match(upload, /if-no-files-found: error/);
   }
 });
+
+test('[mocked — NOT acceptance] the SHA/DEMO gate is re-run right before the writes, create has a step timeout, and fixture IDs are uploaded', () => {
+  const recheck = index(/Re-verify target SHA and DEMO Supabase scope before the writes/);
+  assert.ok(index(/Create the five/) < recheck && recheck === index(/Run the five-role acceptance spec/) - 1,
+    'the re-check is the step immediately before the spec');
+  const body = steps[recheck].body;
+  assert.match(body, /run: node scripts\/portal-audit-health-gate\.mjs/);
+  assert.match(body, /PORTAL_AUDIT_TRUSTED_SHA: \$\{\{ github\.sha \}\}/);
+  assert.match(body, /PORTAL_AUDIT_MODE: isolated_preview/);
+  assert.match(step(/Create the five/).body, /^ {8}timeout-minutes: 10$/m);
+  const upload = step(/Upload the fixture state, marker and stage files/).body;
+  assert.match(upload, /if: always\(\)/);
+  for (const file of ['five-role-qa-fixture.json', 'five-role-qa-fixture.marker.json', 'five-role-qa-fixture.stage.json']) {
+    assert.match(upload, new RegExp(`/tmp/${file.replace(/\./g, '\\.')}`));
+  }
+});
