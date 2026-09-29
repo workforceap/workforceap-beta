@@ -214,6 +214,25 @@ describe('empty.* copy', () => {
     }
   });
 
+  it('employer: es/fr/pt are translated, keep every {param}, and reuse each locale’s employer nav words', () => {
+    const catalogs = { en, es, fr, pt } as const;
+    const params = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
+    const enLeaves = new Map(leaves(en.empty.employer as unknown as Tree));
+    for (const [locale, messages] of Object.entries(catalogs)) {
+      const e = messages.empty.employer;
+      // The post / import buttons say what the employer nav says.
+      expect(e.postings.action, locale).toBe(messages.employer.postAJob);
+      expect(e.applications.action, locale).toBe(messages.employer.postAJob);
+      expect(e.postings.secondary, locale).toBe(messages.employer.importJobs);
+      expect(e.workQueueUnavailable.title.toLowerCase(), locale).toContain(messages.employer.workQueue.toLowerCase());
+      if (locale === 'en') continue;
+      for (const [key, value] of leaves(e as unknown as Tree)) {
+        expect(value, `${locale} empty.employer.${key} is still English`).not.toBe(enLeaves.get(key));
+        expect(params(value), `${locale} empty.employer.${key} params`).toBe(params(enLeaves.get(key) ?? ''));
+      }
+    }
+  });
+
   it('never promises a reply time', () => {
     for (const [locale, ns] of Object.entries(LOCALES)) {
       expect(JSON.stringify(ns), locale).not.toMatch(/business day|día(s)? hábil|jour(s)? ouvr|dia(s)? útei|dia útil|within \d|\d+ ?(hours|horas|heures)/i);
