@@ -94,6 +94,7 @@ export const STATIC_PATHS = {
     '/admin/feature-flags',
     '/admin/feedback',
     '/admin/guide',
+    '/admin/billing/preview',
     '/admin/growth',
     '/admin/health',
     '/admin/invites',
