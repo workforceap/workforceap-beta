@@ -175,3 +175,73 @@ describe('PATCH /api/admin/members/[id]/program', () => {
     expect((prisma as any).__tx.user.updateMany).not.toHaveBeenCalled();
   });
 });
+
+describe('PATCH /api/admin/members/[id]/program: picker parity (WAP-286)', () => {
+  type Row = { programSlug: string; status: string };
+  let catalog: Row[] = [];
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    // The real static catalog and alias resolution, as the picker uses them.
+    const actual = await vi.importActual<typeof import('@/lib/content/programs')>('@/lib/content/programs');
+    vi.mocked(getProgramBySlug).mockImplementation(actual.getProgramBySlug);
+    vi.mocked(getUser).mockResolvedValue({ id: ADMIN_ID } as any);
+    vi.mocked(requireAdmin).mockResolvedValue(undefined as any);
+    vi.mocked(getActorOrganizationId).mockResolvedValue(ORG_ID);
+    vi.mocked(getSubjectOrganizationId).mockResolvedValue(ORG_ID);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: MEMBER_ID } as any);
+    // An in-memory tenant catalog answering the route's exact queries.
+    vi.mocked(prisma.organizationProgramCatalog.count).mockImplementation((async () => catalog.length) as any);
+    vi.mocked(prisma.organizationProgramCatalog.findFirst).mockImplementation((async (args: any) => {
+      const { organizationId, programSlug, status } = args.where;
+      if (organizationId !== ORG_ID) return null;
+      const row = catalog.find((r) => r.programSlug === programSlug && r.status === status);
+      return row ? { programSlug: row.programSlug } : null;
+    }) as any);
+    (prisma as any).__tx.user.updateMany.mockResolvedValue({ count: 1 });
+    (prisma as any).__tx.courseEnrollment.findMany.mockResolvedValue([]);
+    (prisma as any).__tx.courseEnrollment.upsert.mockResolvedValue({ id: 'enrollment-1' });
+  });
+
+  const patch = (programSlug: string) =>
+    PATCH(makeRequest({ programSlug }), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+  it('still rejects an alias-only tenant row: PATCH is not broadened', async () => {
+    catalog = [{ programSlug: 'ai-professional-developer-certificate-ibm', status: 'active' }];
+    for (const requested of ['ai-practitioner-professional-certificate-aws', 'ai-professional-developer-certificate-ibm']) {
+      const res = await patch(requested);
+      expect(res.status, requested).toBe(400);
+      expect(await res.json()).toEqual({ error: "Program is not available for this member's organization." });
+    }
+    expect((prisma as any).__tx.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('accepts exactly the programs the single-member picker marks assignable', async () => {
+    const { PROGRAMS } = await vi.importActual<typeof import('@/lib/content/programs')>('@/lib/content/programs');
+    const { buildMemberProgramOptions } = await import('@/lib/admin/assignableProgramOptions');
+    const assignable = PROGRAMS.filter((p) => !p.curriculumMigrationPending);
+    const [a, b] = assignable.filter((p) => p.slug !== 'ai-practitioner-professional-certificate-aws');
+    const catalogs: Row[][] = [
+      [{ programSlug: 'ai-professional-developer-certificate-ibm', status: 'active' }],
+      [
+        { programSlug: 'ai-professional-developer-certificate-ibm', status: 'active' },
+        { programSlug: 'ai-practitioner-professional-certificate-aws', status: 'active' },
+      ],
+      [{ programSlug: a.slug, status: 'active' }, { programSlug: b.slug, status: 'inactive' }],
+      [],
+    ];
+    for (const rows of catalogs) {
+      catalog = rows;
+      const options = buildMemberProgramOptions(rows.map((r) => ({ slug: r.programSlug, name: 'tenant', status: r.status })), null);
+      for (const program of assignable) {
+        const option = options.find((o) => o.slug === program.slug);
+        // An empty catalog uses the component's static fallback: every unpaused program.
+        const pickerAssignable = rows.length === 0
+          ? true
+          : Boolean(option && !option.curriculumMigrationPending && (!option.status || option.status === 'active'));
+        const res = await patch(program.slug);
+        expect(res.status === 200, `${JSON.stringify(rows)} ${program.slug} -> ${res.status}`).toBe(pickerAssignable);
+      }
+    }
+  });
+});

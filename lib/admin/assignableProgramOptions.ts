@@ -2,6 +2,15 @@ import { getProgramBySlug } from '@/lib/content/programs';
 
 export type AssignableProgramOption = { slug: string; title: string };
 
+/**
+ * Status shown for a program whose only active tenant catalog row uses a
+ * legacy alias slug (for example `ai-professional-developer-certificate-ibm`
+ * for the AWS program). The writers (PATCH /api/admin/members/[id]/program,
+ * bulk-update) require an exact canonical active row, so the option is shown
+ * disabled until the catalog is repaired with a canonical row (WAP-286).
+ */
+export const CATALOG_REPAIR_STATUS = 'needs catalog repair';
+
 export type MemberProgramOption = {
   slug: string;
   name: string;
@@ -12,9 +21,10 @@ export type MemberProgramOption = {
 /**
  * Converts the active tenant catalog into the choices staff may assign.
  *
- * The mutation routes accept only canonical WorkforceAP programs and reject
- * curricula that are paused for a versioned migration. Keeping the picker on
- * the same contract prevents a page-derived or stale option from advertising
+ * The mutation routes accept only canonical WorkforceAP programs, require an
+ * active catalog row with exactly that canonical slug, and reject curricula
+ * that are paused for a versioned migration. Keeping the picker on the same
+ * contract prevents a page-derived, stale or alias-only row from advertising
  * an assignment the server will refuse.
  */
 export function buildAssignableProgramOptions(
@@ -24,7 +34,8 @@ export function buildAssignableProgramOptions(
 
   for (const row of activePrograms) {
     const program = getProgramBySlug(row.slug);
-    if (!program || program.curriculumMigrationPending) continue;
+    // An alias-only row resolves to a program but is not what the writers accept.
+    if (!program || program.curriculumMigrationPending || row.slug !== program.slug) continue;
     bySlug.set(program.slug, { slug: program.slug, title: program.title });
   }
 
@@ -40,6 +51,11 @@ export function buildAssignableProgramOptions(
  * the bulk picker and `getActivePrograms`. Tenant catalog rows seeded before a
  * program rename keep their old `name` column, so trusting it here showed
  * staff retired titles (for example "Digital Literacy Empowerment Class").
+ *
+ * An option is active only when the tenant has an active row with exactly the
+ * canonical slug, which is what the PATCH route checks. A program whose only
+ * active row uses a legacy alias slug is shown disabled as
+ * `CATALOG_REPAIR_STATUS`, never as assignable.
  */
 export function buildMemberProgramOptions(
   catalogPrograms: ReadonlyArray<{ slug: string; name?: string; status?: string }>,
@@ -50,19 +66,39 @@ export function buildMemberProgramOptions(
     ? getProgramBySlug(currentProgramSlug)?.slug ?? currentProgramSlug
     : null;
 
+  // Per canonical program: the exact-slug row (at most one per tenant) and
+  // whether any alias-slug row is active.
+  const byProgram = new Map<string, {
+    program: NonNullable<ReturnType<typeof getProgramBySlug>>;
+    exact?: { status?: string };
+    aliasActive: boolean;
+    aliasStatus?: string;
+  }>();
   for (const row of catalogPrograms) {
     const program = getProgramBySlug(row.slug);
     if (!program) continue;
+    const entry = byProgram.get(program.slug) ?? { program, aliasActive: false };
+    const rowActive = !row.status || row.status === 'active';
+    if (row.slug === program.slug) entry.exact = { status: row.status };
+    else if (rowActive) entry.aliasActive = true;
+    else entry.aliasStatus ??= row.status;
+    byProgram.set(program.slug, entry);
+  }
 
+  for (const { program, exact, aliasActive, aliasStatus } of byProgram.values()) {
     const curriculumMigrationPending = program.curriculumMigrationPending === true;
-    const catalogInactive = Boolean(row.status && row.status !== 'active');
+    const status = exact ? exact.status : aliasActive ? CATALOG_REPAIR_STATUS : aliasStatus;
+    const needsRepair = status === CATALOG_REPAIR_STATUS;
+    const catalogInactive = Boolean(status && status !== 'active' && !needsRepair);
     const isCurrentProgram = program.slug === currentCanonicalSlug;
+    // Paused and inactive programs stay hidden unless current; a program that
+    // needs catalog repair stays visible (disabled) so staff can see why.
     if ((curriculumMigrationPending || catalogInactive) && !isCurrentProgram) continue;
 
     bySlug.set(program.slug, {
       slug: program.slug,
       name: program.title,
-      status: row.status,
+      status,
       curriculumMigrationPending,
     });
   }
