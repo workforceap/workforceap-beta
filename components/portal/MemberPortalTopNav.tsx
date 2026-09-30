@@ -133,7 +133,11 @@ export default function MemberPortalTopNav({
             >
               <Link
                 href={href}
-                prefetch={tab.canonical === '/dashboard'}
+                // No full prefetch: this strip shows on every phone member page, and
+                // `prefetch` (true) would render the whole member home in the
+                // background from each of them. Tapping Home still navigates with
+                // app/(portal)/dashboard/loading.tsx, like the rail and header links.
+                prefetch={false}
                 className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
                 aria-current={active ? 'page' : undefined}
               >
