@@ -453,6 +453,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // (/admin/members) remains reachable via /admin/students?ui=legacy; the
   // flavored student lists and Invites nest under Students.
   { href: '/admin/students', label: 'Students', group: 'dailyWork', Icon: Users, tourTarget: 'tour-students' },
+  { href: '/admin/billing/preview', label: 'J5 / J6 preview', group: 'dailyWork', Icon: FileText, parentHref: '/admin/students' },
   { href: '/admin/subgroups', label: 'Subgroups', group: 'dailyWork', Icon: UsersRound, parentHref: '/admin/students' },
   { href: '/admin/sessions', label: 'In-office sessions', group: 'dailyWork', Icon: Sparkles, requiresSuperAdminContext: true, parentHref: '/admin/students' },
   { href: '/admin/pipeline', label: 'Applications funnel', group: 'dailyWork', Icon: GitBranch, requiresSuperAdminContext: true, parentHref: '/admin/students' },

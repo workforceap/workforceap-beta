@@ -1,0 +1,72 @@
+.sample {
+  padding-block: var(--wa-pad-sm);
+  border-bottom: 1px solid var(--wa-border);
+}
+
+.sample h2,
+.workflow summary {
+  color: var(--wa-text);
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  gap: var(--wa-pad-sm) var(--wa-pad);
+  margin-block: var(--wa-pad-sm) 0;
+  font-size: var(--wa-type-body);
+}
+
+.facts dt,
+.note {
+  color: var(--wa-muted);
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.note {
+  font-size: var(--wa-type-meta);
+  line-height: 1.6;
+}
+
+.stageButton,
+.openDocument {
+  min-height: 2.75rem;
+}
+
+.openDocument {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  color: var(--wa-accent-text);
+  text-decoration: underline;
+}
+
+.document {
+  width: 100%;
+  min-width: 0;
+  height: min(72vh, 54rem);
+  min-height: 22rem;
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+}
+
+.workflow summary {
+  padding-block: var(--wa-pad);
+  cursor: pointer;
+}
+
+@media (max-width: 40rem) {
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .facts dd {
+    padding-bottom: var(--wa-pad-sm);
+  }
+}
