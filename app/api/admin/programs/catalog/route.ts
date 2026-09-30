@@ -105,6 +105,16 @@ async function _POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    // getProgramBySlug also resolves legacy aliases and titles, but program
+    // assignment (PATCH /api/admin/members/[id]/program, bulk-update) only
+    // accepts a row with the exact canonical slug. Storing anything else
+    // creates an alias-only row the pickers cannot assign (WAP-286).
+    if (parsed.data.programSlug !== staticRef.slug) {
+      return NextResponse.json(
+        { error: `programSlug must be the canonical program slug "${staticRef.slug}".` },
+        { status: 400 }
+      );
+    }
   
     const organizationId = await getActorOrganizationId(user.id);
     try {
