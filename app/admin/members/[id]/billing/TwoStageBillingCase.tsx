@@ -72,6 +72,8 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
   const [editing, setEditing] = useState<BillingStage | null>(null);
   const [opening, setOpening] = useState(false);
   const [openFailure, setOpenFailure] = useState<ApiFailure | null>(null);
+  const [reviewRevision, setReviewRevision] = useState(0);
+  const [loadedReviewRevision, setLoadedReviewRevision] = useState(0);
   const [programSlug, setProgramSlug] = useState(enrolledPrograms[0]?.slug ?? '');
   const selected = useRef<string | null>(null);
   const loadSeq = useRef(0);
@@ -79,6 +81,9 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
   const load = useCallback(
     async (signal?: AbortSignal) => {
       const id = ++loadSeq.current;
+      // Evidence actions invalidate an open editor immediately, before the
+      // refreshed summary arrives. Its typed fields remain owned by the editor.
+      setReviewRevision(id);
       const listed = await twoStageApi.listCases(memberId, signal);
       if (id !== loadSeq.current) return;
       if (!listed.ok) {
@@ -102,6 +107,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
       }
       selected.current = chosen.id;
       onCaseSelected(chosen.id);
+      setLoadedReviewRevision(id);
       setState({ phase: 'ready', cases, caseId: chosen.id, summary: summary.data });
     },
     [memberId, enrolledPrograms, onCaseSelected],
@@ -219,6 +225,8 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
         j5Current={stage === 'j6' ? summary.j5.current : null}
         boardInvoices={summary.j6.boardInvoice ? [summary.j6.boardInvoice] : []}
         canSaveDraft={summary[stage].canSaveDraft}
+        reviewRevision={reviewRevision}
+        summaryRefreshing={reviewRevision !== loadedReviewRevision}
         onSaved={refresh}
         onClose={() => setEditing(null)}
       />
