@@ -38,6 +38,10 @@
   min-height: 2.75rem;
 }
 
+.stageButton[aria-pressed='true'] {
+  color: var(--wa-on-accent-control);
+}
+
 .openDocument {
   display: inline-flex;
   align-items: center;
