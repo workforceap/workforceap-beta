@@ -324,7 +324,9 @@ export const SAFE_ACTION_CONTRACTS = {
       sourcePath: '/partner/referred-members',
       targetPattern: '/partner/referred-members/[memberId]',
       requiredWhenApplicable: true,
-      emptyStateText: "You haven't referred any members yet",
+      // PartnerEmptyState variant="referrals" renders this title at both widths
+      // (messages/en.json -> empty.partner.referrals.title).
+      emptyStateText: 'No referred members yet',
     },
   ],
   counselor: [
