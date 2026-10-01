@@ -36,9 +36,11 @@ const env = {
   PGPASSWORD: decodeURIComponent(target.password),
   PGDATABASE: database,
   PGCONNECT_TIMEOUT: '5',
-  // Do not inherit service/options/hostaddr overrides that could redirect psql.
-  PGSERVICE: '', PGSERVICEFILE: '', PGHOSTADDR: '', PGOPTIONS: '',
 };
+// Do not inherit service/options/hostaddr overrides that could redirect psql.
+// Remove them, rather than assigning empty strings: libpq treats an explicitly
+// empty PGSERVICEFILE as a filename and errors before connecting.
+for (const key of ['PGSERVICE', 'PGSERVICEFILE', 'PGHOSTADDR', 'PGOPTIONS']) delete env[key];
 const preamble = '\\set VERBOSITY sqlstate\nSET client_min_messages = warning; SET statement_timeout = \'15s\'; SET lock_timeout = \'10s\';\n';
 const migration = readFileSync(resolve(root,
   'prisma/migrations/20261001200042_enrollment_agreement_submissions/migration.sql'), 'utf8');
