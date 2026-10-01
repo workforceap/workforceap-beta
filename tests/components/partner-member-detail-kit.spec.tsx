@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import PartnerMemberJourney from '@/components/partner/PartnerMemberJourney';
 import PartnerPlacementCard from '@/components/partner/PartnerPlacementCard';
 import PartnerStageBadge from '@/components/partner/PartnerStageBadge';
-import { partnerMemberStage } from '@/lib/partner/memberStage';
+import { partnerDirectoryStage, partnerMemberStage } from '@/lib/partner/memberStage';
 import { PARTNER_PLACEMENT_LABELS } from '@/lib/partner/partnerVisibleEvents';
 
 describe('partnerMemberStage', () => {
@@ -96,5 +96,24 @@ describe('PartnerMemberJourney', () => {
     );
     expect(html).toContain('Pending verification: </span>Placement');
     expect(html).not.toContain('Current step:');
+  });
+});
+
+describe('partnerDirectoryStage', () => {
+  it('reads an unverified placement row as awaiting verification at any training stage', () => {
+    expect(partnerDirectoryStage('certified', false)).toBe('awaiting_verification');
+    expect(partnerDirectoryStage('in_training', false)).toBe('awaiting_verification');
+  });
+
+  it('reads only a verified placement row as placed', () => {
+    expect(partnerDirectoryStage('placed', true)).toBe('placed_verified');
+    expect(partnerDirectoryStage('placed', null)).not.toBe('placed_verified');
+  });
+
+  it('keeps the pipeline stage otherwise', () => {
+    expect(partnerDirectoryStage('applied', null)).toBe('referred');
+    expect(partnerDirectoryStage('enrolled', null)).toBe('enrolled');
+    expect(partnerDirectoryStage('job_searching', undefined)).toBe('job_searching');
+    expect(partnerDirectoryStage('closed', null)).toBe('closed');
   });
 });

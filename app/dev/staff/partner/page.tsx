@@ -64,8 +64,8 @@ export default function DevStaffPartnerPage() {
         items={[
           { label: 'Members Referred', value: 62, subtitle: 'in your portal' },
           { label: 'Members Enrolled', value: 47, subtitle: 'started a program' },
-          { label: 'Members Placed', value: 29, subtitle: 'verified hires' },
-          { label: 'Placement Rate', value: '47%', subtitle: 'placements / referred' },
+          { label: 'Members placed', value: 29, subtitle: '47% of referrals', tone: 'ok' },
+          { label: 'Awaiting verification', value: 2, subtitle: 'Reported placements, not counted as placed', tone: 'warn' },
         ]}
       />
 
