@@ -13,7 +13,8 @@ import { toneClass } from '@/components/portal/kit';
  * "not a completion or health score". So the bars carry NO status colour:
  *
  *   - not the blanket `color: 'success'` they used to carry, which painted
- *     every program green under a heading that reads "Program health" and so
+ *     every program green under a heading that then read "Program health"
+ *     (since renamed "Enrollment share by program") and so
  *     re-told, in colour, the completion-score misread #2425 (S21) removed
  *     from the printed numbers;
  *   - and not a tone derived from `pct` either, which would invent a health
@@ -96,6 +97,8 @@ describe('program-health bars carry no status colour', () => {
 });
 
 describe('the tone contract still works for rows that do have a state', () => {
+  // `RankDatum` carries `tone` only: the deprecated categorical `color` path
+  // was retired with the kit tone follow-ups (see portal-hex-token-sweep.spec).
   it('paints from the tone hook when a caller sets tone', () => {
     const { container } = render(
       <CommandCenterKit programHealth={[{ label: 'Skilled Trades', value: '81 enrolled', pct: 10, tone: 'warn' }]} />,
@@ -103,23 +106,5 @@ describe('the tone contract still works for rows that do have a state', () => {
     const scoped = container.querySelector<HTMLElement>(`.${toneClass('warn')!} .wa-kit-bar-fill`);
     expect(scoped).not.toBeNull();
     expect(scoped!.getAttribute('style') ?? '').toMatch(/var\(--wa-kit-tone\)/);
-  });
-
-  it('keeps the deprecated color prop working for callers that still pass it', () => {
-    const { container } = render(
-      <CommandCenterKit programHealth={[{ label: 'Cloud & IT', value: '312 enrolled', pct: 37, color: 'info' }]} />,
-    );
-    const fill = barFills(container)[0];
-    expect(fill.getAttribute('style') ?? '').toMatch(/var\(--wa-info\)/);
-  });
-
-  it('lets tone win over a deprecated color on the same row', () => {
-    const { container } = render(
-      <CommandCenterKit programHealth={[{ label: 'Cloud & IT', value: '312 enrolled', pct: 37, tone: 'ok', color: 'info' }]} />,
-    );
-    const fill = barFills(container)[0];
-    const style = fill.getAttribute('style') ?? '';
-    expect(style).toMatch(/var\(--wa-kit-tone\)/);
-    expect(style).not.toMatch(/var\(--wa-info\)/);
   });
 });

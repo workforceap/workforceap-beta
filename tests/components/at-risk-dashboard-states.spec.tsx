@@ -1,11 +1,13 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render as rtlRender, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import AtRiskDashboard from '@/components/portal/counselor/AtRiskDashboard';
 import type { AtRiskMember } from '@/lib/member/atRiskRow';
 import { ATTENTION_REASON_META } from '@/lib/attention/reasons';
 import { MEMBER_REQUEST_FAILURE } from '@/lib/portal/memberRequestFailure';
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('@/components/portal/counselor/AtRiskDetailModal', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalInlineSpinner', () => ({ PortalInlineSpinner: () => <span aria-hidden="true" /> }));
@@ -46,6 +48,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+/** Rendered with exactly the messages the (portal) layout ships to the browser. */
+function render(ui: React.ReactElement) {
+  return rtlRender(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{ui}</NextIntlClientProvider>);
+}
+
 describe('AtRiskDashboard first paint', () => {
   it('renders the server rows immediately without any client fetch', () => {
     const fetchMock = stubFetch(() => Response.json({ results: [] }));
@@ -80,7 +87,8 @@ describe('AtRiskDashboard failure states', () => {
     const fetchMock = stubFetch(() => Response.json({ results: [] }));
     render(<AtRiskDashboard initialMembers={[]} initialError="We could not load at-risk members right now." />);
     const alert = screen.getByRole('alert');
-    expect(within(alert).getByRole('heading', { name: 'We couldn’t load at-risk members' })).toBeVisible();
+    expect(within(alert).getByRole('heading', { name: "We couldn't load at-risk members" })).toBeVisible();
+    expect(alert).toHaveAttribute('data-kind', 'unavailable');
     expect(within(alert).getByText('We could not load at-risk members right now.')).toBeVisible();
     expect(within(alert).getByRole('button', { name: 'Try again' })).toBeVisible();
     expect(screen.queryByText(/Loading at-risk members/)).not.toBeInTheDocument();

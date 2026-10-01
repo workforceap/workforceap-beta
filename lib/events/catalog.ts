@@ -1,3 +1,5 @@
+import { JOB_POSTING_STATUS_WORDS } from '@/lib/status/jobPostingStatusVocabulary';
+
 export type FunnelDefinition = {
   audience: 'employer' | 'applicant' | 'member' | 'admin';
   funnel: string;
@@ -19,7 +21,8 @@ export const FUNNEL_DEFINITIONS: FunnelDefinition[] = [
       'Submit for review',
       'Admin approval / rejection',
     ],
-    outcomes: ['Draft created', 'Pending review', 'Live posting'],
+    // The middle outcome is the posting status the employer sees after "Submit for review" (lib/status/jobPostingStatusVocabulary.ts).
+    outcomes: ['Draft created', JOB_POSTING_STATUS_WORDS.employer.pending, 'Live posting'],
     confusionSignals: [
       'Import started but no extracted draft',
       'Fallback used after low field coverage',

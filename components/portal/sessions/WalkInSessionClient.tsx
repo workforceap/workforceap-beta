@@ -90,7 +90,7 @@ export default function WalkInSessionClient({
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1rem', marginBottom: '1rem' }}>
         <div className="form-group">
           <label htmlFor="walk-in-first-name">
-            First name <span style={{ color: 'var(--color-accent)' }}>*</span>
+            First name <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
           </label>
           <input
             id="walk-in-first-name"
@@ -119,7 +119,7 @@ export default function WalkInSessionClient({
 
       <div className="form-group">
         <label htmlFor="walk-in-email">
-          Email <span style={{ color: 'var(--color-accent)' }}>*</span>
+          Email <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
         </label>
         <input
           id="walk-in-email"

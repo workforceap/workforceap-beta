@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { type KitBaseProps, type KitDataAttrs } from './base';
-import { KitEmptyState } from './KitEmptyState';
+import { KitEmptyState, type KitEmptyStateProps } from './KitEmptyState';
 import {
   KitTablePager,
   KitTableShell,
@@ -10,6 +10,14 @@ import {
 
 export type { KitTableBulkBarContext, KitTablePagination };
 
+/**
+ * The table's empty state — `KitEmptyState` props minus the ones the shell
+ * owns. `title` defaults to "No rows yet"; `kind` to `first` (pass `filtered`
+ * when a search / filter is active, with a "Clear filters" `primaryAction`).
+ */
+export type DataTableEmpty = Partial<Pick<KitEmptyStateProps, 'title'>> &
+  Omit<KitEmptyStateProps, 'title' | 'headingAs' | 'framed' | 'ref'>;
+
 export interface Column<T> {
   /** Stable key for React. */
   key: string;
@@ -17,6 +25,8 @@ export interface Column<T> {
   /** Cell renderer; defaults to String(row[key]) when omitted. */
   render?: (row: T) => ReactNode;
   align?: 'left' | 'right';
+  /** Numeric column: right-aligned tabular numerals (`.wa-kit-table-cell--num`, guide §6a). */
+  numeric?: boolean;
   /** Pin this column while the table scrolls sideways (the first column, usually). */
   stickyLeft?: boolean;
   minWidth?: number | string;
@@ -36,7 +46,11 @@ interface DataTableProps<T> extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
   cardRender?: (row: T) => ReactNode;
   minWidth?: number;
   onRowClick?: (row: T) => void;
+  /** Empty state (kind, description, actions, icon). Wins over the legacy `emptyTitle` pair. */
+  empty?: DataTableEmpty;
+  /** @deprecated Use `empty={{ title }}`. Still honoured. */
   emptyTitle?: string;
+  /** @deprecated Use `empty={{ description }}`. Still honoured. */
   emptyDescription?: string;
   /** Override surface-driven density. */
   density?: 'compact' | 'balanced' | 'spacious';
@@ -66,9 +80,10 @@ interface DataTableProps<T> extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
 
 /**
  * Dense roster table — native `.wa-kit-table` chrome via `KitTableShell`
- * (pre-rendered cells keep server `render` columns RSC-safe). Mobile: scroll
- * or stacked cards. Row density is surface-driven (see KitTableShell). The
- * table standard (columns, density, states) is in docs/KIT_GUIDE.md §6a.
+ * (pre-rendered, column-keyed cells keep server `render` columns RSC-safe and
+ * avoid Flight list-key warnings). Mobile: scroll or stacked cards. Row density
+ * is surface-driven (see KitTableShell). The table standard (columns, density,
+ * states) is in docs/KIT_GUIDE.md §6a.
  */
 export function DataTable<T>({
   columns,
@@ -78,6 +93,7 @@ export function DataTable<T>({
   cardRender,
   minWidth = 600,
   onRowClick,
+  empty,
   emptyTitle = 'No rows yet',
   emptyDescription,
   density,
@@ -106,13 +122,17 @@ export function DataTable<T>({
     key: c.key,
     header: c.header,
     align: c.align,
+    numeric: c.numeric,
     stickyLeft: c.stickyLeft,
     minWidth: c.minWidth,
     ariaSort: c.ariaSort,
   }));
   const shellRows = rows.map((row) => ({
     key: rowKey(row),
-    cells: columns.map((c) => cell(c, row)),
+    // Keyed per column: DataTable renders on the server, where an array of
+    // unkeyed server-component elements (a StatusTag cell) crossing into the
+    // client KitTableShell logs React's missing-key warning (WAP-209).
+    cells: columns.map((c) => <Fragment key={c.key}>{cell(c, row)}</Fragment>),
     subRow: renderSubRow ? renderSubRow(row) : undefined,
     label: rowLabel ? rowLabel(row) : undefined,
   }));
@@ -126,13 +146,19 @@ export function DataTable<T>({
 
   const single = mobile === 'scroll' || !cardRender;
 
+  const emptyProps: KitEmptyStateProps = {
+    kind: 'first',
+    ...empty,
+    title: empty?.title ?? emptyTitle,
+    description: empty?.description ?? emptyDescription,
+  };
+
   const tableEl = (
     <KitTableShell
       columns={shellColumns}
       rows={shellRows}
       minWidth={minWidth}
-      emptyTitle={emptyTitle}
-      emptyDescription={emptyDescription}
+      empty={emptyProps}
       onRowKeyClick={onRowKeyClick}
       density={density}
       stickyHeader={stickyHeader}
@@ -167,7 +193,7 @@ export function DataTable<T>({
           </div>
         ) : null}
         {rows.length === 0 ? (
-          <KitEmptyState title={emptyTitle} description={emptyDescription} />
+          <KitEmptyState {...emptyProps} />
         ) : (
           rows.map((row) => (
             <div

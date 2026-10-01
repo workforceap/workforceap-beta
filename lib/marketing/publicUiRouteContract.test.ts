@@ -240,3 +240,94 @@ test('the colour guard reads values, not var() fallbacks', () => {
   // a literal after a var() on the same declaration is still caught
   assert.match(stripVarFallbacks('border:1px solid var(--border, #ece5e0) #ad2c4d'), /#ad2c4d/);
 });
+
+/*
+ * Polish pass (site-polish): consistent page titles, one sign-in label, and
+ * AA contrast for the small text-bearing labels the audit flagged.
+ */
+
+/** WCAG 2.x relative luminance / contrast ratio for two #rrggbb colours. */
+function contrastRatio(hexA: string, hexB: string): number {
+  const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * lin(r!) + 0.7152 * lin(g!) + 0.0722 * lin(b!);
+  };
+  const [hi, lo] = [luminance(hexA), luminance(hexB)].sort((a, b) => b - a);
+  return (hi! + 0.05) / (lo! + 0.05);
+}
+
+/** Composite an rgba() tint over a solid #rrggbb background. */
+function tintOver(base: string, r: number, g: number, b: number, alpha: number): string {
+  const channel = (i: number, c: number) =>
+    Math.round(c * alpha + parseInt(base.slice(i, i + 2), 16) * (1 - alpha))
+      .toString(16)
+      .padStart(2, '0');
+  return `#${channel(1, r)}${channel(3, g)}${channel(5, b)}`;
+}
+
+test('the contrast helper agrees with the WCAG reference pairs', () => {
+  assert.equal(Math.round(contrastRatio('#000000', '#ffffff')), 21);
+  assert.equal(contrastRatio('#ffffff', '#ffffff'), 1);
+  // the base success hue on white — the value the audit flagged (3.45:1)
+  assert.ok(Math.abs(contrastRatio('#4a9b4f', '#ffffff') - 3.45) < 0.02);
+});
+
+test('every public <title>, og:title and twitter:title runs through the brand-suffix helper', () => {
+  const layout = source('marketing/src/layouts/Layout.astro');
+  const imports = astroImportSpecifiers(layout);
+
+  assert.ok(imports.some((s) => s.endsWith('/lib/marketing/pageTitle')), 'Layout.astro must import lib/marketing/pageTitle');
+  assert.match(layout, /const pageTitle = brandedPageTitle\(title\);/);
+  assert.match(layout, /<title>\{pageTitle\}<\/title>/);
+  assert.match(layout, /property="og:title" content=\{pageTitle\}/);
+  assert.match(layout, /name="twitter:title" content=\{pageTitle\}/);
+  assert.doesNotMatch(layout, /<title>\{title\}<\/title>/);
+});
+
+test('the marketing header uses one sign-in label on desktop and in the drawer', () => {
+  const layout = source('marketing/src/layouts/Layout.astro');
+  const desktop = layout.match(/class="navdrop-trigger signin" href="\/login">([^<]+)</);
+  const drawer = layout.match(/<summary>(Sign in|Log in|Sign In|Log In)</);
+
+  assert.ok(desktop && drawer, 'expected the desktop sign-in trigger and the drawer summary');
+  assert.equal(desktop![1], 'Sign in');
+  assert.equal(drawer![1], desktop![1]);
+});
+
+test('small text-bearing labels on the public pages clear WCAG AA', () => {
+  const blend = source('marketing/src/styles/blend.css');
+  const tokens = source('css/wa-brand-tokens.css');
+
+  // "We will" label on how-it-works: the dark success ramp on the white card.
+  const greenDark = blend.match(/--green-dark:\s*var\(--wa-success-dark,\s*(#[0-9a-f]{6})\)/i);
+  assert.ok(greenDark, 'blend.css must alias --green-dark onto --wa-success-dark with a literal fallback');
+  const successDarkLight = tokens.match(/--wa-success-dark:\s*light-dark\((#[0-9a-f]{6}),/i);
+  assert.ok(successDarkLight, 'css/wa-brand-tokens.css must define --wa-success-dark');
+  assert.equal(greenDark![1].toLowerCase(), successDarkLight![1].toLowerCase(), 'the --green-dark fallback drifted from the token');
+  assert.match(source('marketing/src/pages/how-it-works.astro'), /\.commit-label--will\{color:var\(--green-dark\)\}/);
+  assert.ok(contrastRatio(greenDark![1], '#ffffff') >= 4.5);
+
+  // Employer banner on the FAQ: --muted was 4.42:1 on the gold tint; body text now uses --text.
+  const faq = source('marketing/src/pages/faq.astro');
+  assert.match(faq, /\.emp-banner p\{color:var\(--text\);/);
+  const bannerBg = tintOver('#f7f4f1', 164, 127, 56, 0.1); // rgba(164,127,56,.1) over the page --bg
+  assert.ok(contrastRatio('#1a1414', bannerBg) >= 4.5);
+  assert.ok(contrastRatio('#6e6a66', bannerBg) < 4.5, 'the muted colour would pass here now — revisit this case');
+
+  // Donate section eyebrows: the page-local bright gold must not shadow the shared --gold-dark.
+  const donate = source('marketing/src/pages/donate.astro');
+  assert.doesNotMatch(donate, /--gold(-dark|-soft)?\s*:\s*#/i, 'donate.astro redeclares a shared gold alias');
+  assert.match(donate, /\.wg-head \.wg-eyebrow\{color:var\(--gold-dark\);\}/);
+  const cream = donate.match(/--cream:\s*(#[0-9a-f]{6})/i);
+  assert.ok(cream, 'donate.astro must declare --cream, the band the eyebrows sit on');
+  assert.ok(contrastRatio('#7d5f26', cream![1]) >= 4.5);
+  assert.ok(contrastRatio('#7d5f26', '#ffffff') >= 4.5);
+  assert.ok(contrastRatio('#b8860b', cream![1]) < 4.5, 'the old bright gold would pass here now — revisit this case');
+});
+
+test('public copy in the default catalog uses US spelling', () => {
+  const catalog = readFileSync(join(process.cwd(), 'messages/en.json'), 'utf8');
+  const offenders = catalog.match(/\b(recognised|organisation|programme|colour|favourite|enrol)\b/gi) ?? [];
+  assert.deepEqual(offenders, []);
+});

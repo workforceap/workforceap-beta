@@ -130,7 +130,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
 
   if (error) {
     return (
-      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-accent, #b91c1c)' }} role="alert">
+      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--wa-danger)' }} role="alert">
         {error}
       </p>
     );
@@ -201,7 +201,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}
+                style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}
               >
                 Download ↗
               </a>
@@ -215,7 +215,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
           <iframe
             title={`${label} PDF preview`}
             src={previewPath}
-            style={{ width: '100%', minHeight: '420px', border: 'none', display: 'block', background: '#525659' }}
+            style={{ width: '100%', minHeight: '420px', border: 'none', display: 'block', background: 'var(--wa-surface-2)' }}
           />
         )}
         {['doc', 'docx'].includes(ext ?? '') && (
@@ -248,7 +248,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
               className="markdown-body"
               style={{
                 padding: '1.25rem',
-                background: 'var(--color-surface)',
+                background: 'var(--wa-surface)',
                 fontSize: '0.9375rem',
                 lineHeight: 1.65,
                 maxHeight: 'min(55vh, 560px)',
@@ -332,7 +332,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
                 <iframe
                   title="Resume PDF"
                   src={modalSrc}
-                  style={{ width: '100%', height: 'min(82vh, 800px)', border: 'none', display: 'block', background: '#525659' }}
+                  style={{ width: '100%', height: 'min(82vh, 800px)', border: 'none', display: 'block', background: 'var(--wa-surface-2)' }}
                 />
               )}
               {['doc', 'docx'].includes(modalExt ?? '') && modalDocHtml && (

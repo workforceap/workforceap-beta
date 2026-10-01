@@ -17,7 +17,10 @@ vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError:
 vi.mock('@/lib/coursera/replayPendingXapi', () => ({ replayPendingXapiStatements: mocks.replay }));
 vi.mock('@/lib/xapi/reprocess', () => ({ autoHealUnmatchedXapiEvents: mocks.heal, reprocessIgnoredXapiEventsWithMappings: mocks.ignored }));
 vi.mock('@/lib/cron/courseraHealQueue', () => ({ countCourseraHealQueue: mocks.queue }));
-vi.mock('@/lib/coursera/programContentsCache', () => ({ loadB4BContents: vi.fn() }));
+vi.mock('@/lib/coursera/programContentsCache', () => ({
+  loadB4BContents: vi.fn(),
+  loadB4BContentsChecked: vi.fn(async () => ({ ok: true, value: [] })),
+}));
 vi.mock('@/lib/coursera/seedCanonicalMappingsFromB4B', () => ({ seedCanonicalMappingsFromB4B: vi.fn() }));
 vi.mock('@/lib/email/pacing', () => ({
   createBulkEmailCronPacer: mocks.createPacer,

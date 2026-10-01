@@ -1,8 +1,16 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ReactElement } from 'react';
 
+import en from '@/messages/en.json';
 import { JOBS_OPEN_ROLES_ANCHOR, MemberJobsKit } from '@/components/portal/kit/pages/member/MemberJobsKit';
 import { JOBS_BOARD_EMPTY } from '@/lib/member/jobPipelineDisplay';
+
+/** The kit reads its empty-state copy from the `empty` namespace (KIT_GUIDE §6). */
+function show(ui: ReactElement) {
+  return render(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
+}
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
@@ -26,7 +34,7 @@ describe('MemberJobsKit open roles', () => {
   afterEach(() => cleanup());
 
   it('links every live opening to its job page and points the browse CTAs at the in-page list', () => {
-    render(<MemberJobsKit openRoles={openRoles} openRolesTotal={12} />);
+    show(<MemberJobsKit openRoles={openRoles} openRolesTotal={12} />);
 
     const jobLinks = [...document.querySelectorAll<HTMLAnchorElement>('a[href^="/dashboard/jobs/"]')];
     expect(jobLinks.map((a) => a.getAttribute('href'))).toEqual(['/dashboard/jobs/job-1', '/dashboard/jobs/job-2']);
@@ -45,12 +53,13 @@ describe('MemberJobsKit open roles', () => {
   });
 
   it('shows the honest empty board state with real next steps when nothing is live', () => {
-    render(<MemberJobsKit openRoles={[]} />);
+    show(<MemberJobsKit openRoles={[]} />);
 
     const section = document.getElementById('open-roles') as HTMLElement;
-    expect(within(section).getByText(JOBS_BOARD_EMPTY.title)).toBeInTheDocument();
-    expect(within(section).getByRole('link', { name: JOBS_BOARD_EMPTY.primaryCta })).toHaveAttribute('href', JOBS_BOARD_EMPTY.primaryHref);
-    expect(within(section).getByRole('link', { name: JOBS_BOARD_EMPTY.secondaryCta })).toHaveAttribute('href', JOBS_BOARD_EMPTY.secondaryHref);
+    expect(within(section).getByText(en.empty.openings.title)).toBeInTheDocument();
+    expect(section.querySelector('.wa-kit-empty')?.getAttribute('data-kind')).toBe(JOBS_BOARD_EMPTY.kind);
+    expect(within(section).getByRole('link', { name: en.empty.openings.action })).toHaveAttribute('href', JOBS_BOARD_EMPTY.primaryHref);
+    expect(within(section).getByRole('link', { name: en.empty.openings.secondary })).toHaveAttribute('href', JOBS_BOARD_EMPTY.secondaryHref);
     expect(document.querySelector('a[href^="/dashboard/jobs/"]')).toBeNull();
     expect(screen.queryByText(/^\d+ live openings?$/)).toBeNull();
   });

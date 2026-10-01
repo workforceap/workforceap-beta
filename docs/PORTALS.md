@@ -9,28 +9,15 @@
 
 ### Dashboard Home
 
-The member dashboard is the primary experience for enrolled members. It adapts between desktop and mobile layouts.
+The member dashboard is the primary experience for enrolled members. It has one implementation, the kit home, and the same page serves phone and desktop inside the member workspace shell (left rail on desktop, top tabs on mobile).
 
-**Desktop Layout:**
-- Sidebar navigation with portal sections
-- Main content area with cards and widgets
-- Top bar with notifications, points, profile
+**Key files:**
+- `app/(portal)/dashboard/page.tsx` — renders the kit home; the retired `?ui=legacy` and `?tab=` switches redirect to `/dashboard`, keeping a well-formed `?program=<slug>` (`lib/member/dashboardLegacyRedirect.ts`)
+- `lib/member/loadMemberDashboardHome.ts` — the one loader (at most `MEMBER_DASHBOARD_HOME_PRISMA_BUDGET` Prisma operations)
+- `components/portal/kit/pages/member/MemberHomeKit.tsx` — the page: greeting, Today focus (`MemberDoThisNextCard`), placement confirmation and First 90 Days check-in when they apply, Up next, recommended AI tool, certification path, weekly activity, points, next badge, goals and the application pipeline
+- `components/portal/kit/pages/member/MemberHomeViewEvents.tsx` — the dashboard view / activation events the admin metrics read
 
-**Mobile Layout:**
-- Bottom navigation icon bar (Home, Education, Skills, Messages, Portfolio, Profile)
-- Scrollable card-based feed
-- Priority action cards at top
-
-**Key Components:**
-- `DesktopDashboard` — full desktop layout
-- `MobileDiscoverSection` — mobile feed
-- `MobileJourneyTimeline` — visual progress
-- `MobilePointsSection` — gamification
-- `MobilePriorityActionCard` — next recommended action
-- `MobileProgramTrainingCard` — active training
-- `MobileQuickActions` — quick buttons
-- `MobileRecentActivity` — activity feed
-- `MobileStateANextStepCard` — state-specific steps
+The pre-kit mobile/desktop home (`DesktopDashboard`, the `Mobile*` sections, `DashboardHomeClient`) was removed in WAP-195.
 
 ### AI Tools Suite (`/dashboard/ai-tools/*`)
 
@@ -108,24 +95,26 @@ The member dashboard is the primary experience for enrolled members. It adapts b
 
 ## Admin Portal (`/admin/*`)
 
-### Sidebar sections (2026-09-21 consolidation)
+### Sidebar sections (2026-09-21 consolidation; queue-first, WAP-190)
 
 The admin rail (`lib/nav/portalNav.ts` → `ADMIN_PORTAL_NAV_ITEMS`, rendered by
 `components/portal/WorkspaceSidebarSections.tsx` inside `WorkspaceShell`) groups every admin
-destination into seven collapsible sections. Daily pages are top-level rows; related pages nest
-under a top-level row (`parentHref`) and open on demand or when one of them is the current page.
-Section and nested-row open state persists per browser (`localStorage` `wa_nav_sections_admin`);
-the current page's section always opens on arrival. Rows marked ⚿ are `requiresSuperAdminContext`.
+destination into seven sections. Daily work, the queue-clearing rows, comes first and is always open
+(a plain label, not a disclosure); the other six are collapsible and start closed. Related pages nest under a
+top-level row (`parentHref`) and open on demand or when one of them is the current page. Section and
+nested-row open state persists per browser (`localStorage` `wa_nav_sections_admin`); the current
+page's section always opens on arrival, and a running guided tour opens them all. Rows marked ⚿ are
+`requiresSuperAdminContext`.
 
 | Section | Top-level rows (nested rows) |
 |---|---|
-| Run the org | Command Center · Detailed overview · Messages ⚿ (Feedback ⚿) |
-| Students | Students (Subgroups · In-office sessions ⚿ · Applications funnel ⚿ · Find duplicate students ⚿) · Invites |
-| Programs | Programs (Career paths · Funding eligibility) · Program requests · Training progress (Assessments · Certificates · Coursera ⚿) |
+| Daily work (always open) | Today → `/admin` · Applications → `/admin/command-center?queue=applications` (pending-applications badge) · Funding eligibility · Certificates · Program requests · Students (Subgroups · In-office sessions ⚿ · Applications funnel ⚿ · Find duplicate students ⚿ · Invites) · Messages ⚿ (Feedback ⚿) |
+| Run the org | Detailed overview |
+| Programs | Programs (Career paths) · Training progress (Assessments · Coursera ⚿) |
 | Partners & Employers | Employers (Jobs · Employer screening) · Partners · Placements (Placement surveys) · Counselors · Mentors |
 | Reporting | Reporting → `/admin/reporting` hub (Analytics · Placement outcomes · Board outcomes · Metrics ⚿ · Weekly recap ⚿ · Growth ⚿ · AI tools ⚿ · AI Efficacy ⚿) |
 | Content | Blog (Email templates ⚿ · What WorkforceAP does ⚿) |
-| Security & system ⚿ (closed by default) | Settings (Feature flags · Data retention) · Users · Audit logs (CSP reports) · Exports · System Health (Diagnostics · Cron Monitor · Email & Crons · Webhook events · Agent inbox) |
+| Security & system ⚿ | Settings (Feature flags · Data retention) · Users · Audit logs (CSP reports) · Exports · System Health (Diagnostics · Cron Monitor · Email & Crons · Webhook events · Agent inbox) |
 
 The collapsed icon rail lists every row flat. `/dev/staff/admin-shell` renders this chrome without
 auth or a database for screenshots.
@@ -239,11 +228,12 @@ auth or a database for screenshots.
 
 ## Counselor Portal (`/counselor/*`)
 
+- `today` — Landing page (`/counselor` redirects here): the attention queue plus approvals. Rail badge: caseload threads with a member message unanswered 48h+
 - `dashboard` — Counselor dashboard with queue
 - `students` — Student list
 - `students/[memberId]` — Student detail with notes
 - `inbox` — Message inbox
-- `messages` — Messages
+- `messages` — Messages. Rail badge: caseload threads with unread member messages
 - `placements` — Placement tracking
 - `queue` — Student queue
 - `triage` — Student triage

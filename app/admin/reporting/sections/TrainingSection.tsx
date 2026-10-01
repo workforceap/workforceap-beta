@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { STUDENTS_SECONDARY_LOAD_NOTICE } from '@/lib/admin/studentsRosterLoad';
+import { studentsRosterNotice } from '@/lib/admin/studentsRosterLoad';
 import { loadTrainingRoster } from '@/lib/admin/trainingRosterLoad';
 import { TRAINING_PROGRESS_LEGACY_HREF } from '@/lib/admin/studentsRosterView';
 import { reportingTabHref } from '@/lib/admin/reportingHub';
@@ -35,7 +35,7 @@ export async function ReportingTrainingSection({
         students={training.students}
         total={training.total}
         showingLabel={training.showingLabel}
-        notice={training.secondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
+        notice={studentsRosterNotice(training)}
       />
     </>
   );

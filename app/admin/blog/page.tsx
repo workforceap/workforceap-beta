@@ -170,7 +170,7 @@ async function renderLegacy() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                   {/* Post type icon */}
                   <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '0.625rem', background: 'var(--surface-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>article</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>article</span>
                   </div>
 
                   {/* Title + meta */}

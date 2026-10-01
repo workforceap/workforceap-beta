@@ -53,7 +53,7 @@ export default function CounselorCommandCenter({ data }: { data: CommandCenter }
               padding: '0.4rem 0.7rem',
               borderRadius: '999px',
               background: 'rgba(173,44,77,0.12)',
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               fontSize: '0.8125rem',
               fontWeight: 700,
             }}
@@ -211,7 +211,7 @@ function PriorityRow({
             <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {name}
             </p>
-            <p style={{ margin: 0, fontSize: '0.8125rem', color: urgent ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 600 : 400 }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', color: urgent ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 600 : 400 }}>
               {meta}
             </p>
             {preview ? (
@@ -220,7 +220,7 @@ function PriorityRow({
               </p>
             ) : null}
           </div>
-          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-accent)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--wa-accent-text)', whiteSpace: 'nowrap', flexShrink: 0 }}>
             {actionLabel} &rarr;
           </span>
         </div>

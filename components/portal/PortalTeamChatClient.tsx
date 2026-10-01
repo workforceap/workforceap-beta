@@ -8,6 +8,7 @@ import {
   partnerMessagingSurface,
 } from '@/lib/portal/messagingSurfaces';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
+import { KitEmptyState } from '@/components/portal/kit';
 
 type MessageDto = {
   id: string;
@@ -40,7 +41,8 @@ type PortalTeamChatClientProps = {
   apiPath: string;
   initial: InitialPayload;
   subtitle: string;
-  emptyHint: string;
+  /** Empty-thread copy (KIT_GUIDE §6 `first`, from the surface's `empty.*`); the action focuses the composer. */
+  empty: { title: string; description: string; action: string };
   /** Matches voice-agent surfaces — partner vs employer gradient. */
   surfaceVariant: 'partner' | 'employer';
   /** Render without the outer voice-agent shell when embedded in another inbox shell. */
@@ -57,7 +59,7 @@ export default function PortalTeamChatClient({
   apiPath,
   initial,
   subtitle,
-  emptyHint,
+  empty,
   surfaceVariant,
   decorated = true,
   contextLabel,
@@ -71,6 +73,7 @@ export default function PortalTeamChatClient({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
   const lastRenderedMessageId = messages[messages.length - 1]?.id ?? null;
   const renderedReadCursor = useRef<string | null>(null);
@@ -222,7 +225,12 @@ export default function PortalTeamChatClient({
       ) : null}
       <div ref={scrollRef} className="member-counselor-chat__scroll" role="log" aria-live="polite" aria-relevant="additions">
         {messages.length === 0 ? (
-          <p style={{ color: 'var(--color-on-surface-variant)' }}>{emptyHint}</p>
+          <KitEmptyState
+            kind="first"
+            title={empty.title}
+            description={empty.description}
+            primaryAction={{ label: empty.action, onClick: () => inputRef.current?.focus() }}
+          />
         ) : (
           messages.map((m) => {
             const mine = m.authorId === portalUserId;
@@ -246,6 +254,7 @@ export default function PortalTeamChatClient({
         </label>
         <textarea
           id="portal-team-chat-input"
+          ref={inputRef}
           className="member-counselor-chat__input"
           rows={3}
           value={draft}

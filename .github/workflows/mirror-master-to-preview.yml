@@ -8,11 +8,19 @@ name: Mirror master to preview
 # DEMO Supabase project (docs/STAGING_ENV.md), and the deployment's stable
 # branch alias is what the PREVIEW_SITE_URL repository secret must hold.
 #
-# `preview` is a mirror, never a place to commit: every push to master rewrites
-# it to master's SHA. Nothing else may push to it.
+# `preview` is a mirror, never a place to commit: every run of this workflow
+# rewrites it to master's SHA. Nothing else may push to it.
+#
+# Triggers: manual dispatch, and `workflow_call` from Authenticated Portal Smoke
+# (WAP-204), which refreshes the mirror before every non-production run, the
+# nightly schedule included. The push trigger stays off (#2344): mirroring on
+# every master merge built dozens of extra Preview deployments a day. The
+# nightly call adds at most one Preview build a night, and none when `preview`
+# already points at master.
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: write

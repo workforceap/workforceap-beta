@@ -20,13 +20,14 @@ import {
   TriangleAlert} from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
 import type { LucideIcon } from 'lucide-react';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import {
   DesignSurface,
+  KitEmptyState,
   SectionHeader,
   StatSparkTile,
   StatusTag,
   colorVar,
+  textColorVar,
   type KitColor,
   type KitTone} from '@/components/portal/kit';
 import AtRiskDetailModal from './AtRiskDetailModal';
@@ -201,6 +202,7 @@ export function AtRiskDashboardView({
   onUpdateStatus,
   onBulkAcknowledge}: AtRiskDashboardViewProps) {
   const tCommon = useTranslations('common');
+  const tEmpty = useTranslations('empty');
   // Local mirror of `members` so the detail modal's status-change callback
   // (which — matching the legacy behavior — only syncs local UI state, it
   // does not itself call the PATCH endpoint) can update the list instantly.
@@ -405,19 +407,23 @@ export function AtRiskDashboardView({
     );
   }
 
+  // A failed load is `unavailable` + danger (role="alert"), never a confirmed
+  // empty list (KIT_GUIDE §6); the server's plain-language sentence is the body.
   if (error && localMembers.length === 0) {
     return (
       <DesignSurface surface="dense">
-        <div role="alert">
-          <PortalEmptyState
-            headingAs="h2"
-            title="We couldn’t load at-risk members"
-            description={error}
-            icon={<TriangleAlert size={32} style={{ color: 'var(--wa-accent)' }} />}
-            primaryAction={onRetry ? { label: 'Try again', onClick: onRetry } : undefined}
-            secondaryAction={{ label: 'Back to Today', href: '/counselor' }}
-          />
-        </div>
+        <KitEmptyState
+          framed
+          kind="unavailable"
+          tone="danger"
+          headingAs="h2"
+          data-testid="at-risk-load-failed"
+          title={tEmpty('counselor.atRiskUnavailable.title')}
+          description={error}
+          icon={<TriangleAlert size={13} aria-hidden="true" />}
+          primaryAction={onRetry ? { label: tEmpty('counselor.atRiskUnavailable.action'), onClick: onRetry } : undefined}
+          secondaryAction={{ label: tEmpty('counselor.atRiskUnavailable.secondary'), href: '/counselor' }}
+        />
       </DesignSurface>
     );
   }
@@ -709,19 +715,30 @@ export function AtRiskDashboardView({
 
         {/* Hero list */}
         {localMembers.length === 0 ? (
-          <PortalEmptyState
-            title="No at-risk members on your caseload"
-            description={`Nobody you support has a ${RISK_ALERT_REASON.label.toLowerCase()} right now (${RISK_ALERT_REASON.definition.toLowerCase()}). New cases appear here after the nightly risk scan.`}
-            icon={<ShieldCheck size={32} style={{ color: 'var(--wa-success-dark)' }} />}
-            primaryAction={{ label: 'Open Today', href: '/counselor' }}
-            secondaryAction={{ label: 'View caseload', href: '/counselor/students' }}
+          // Zero saved cases is the goal: `clear` (ok). The attention model's
+          // own words for the rule are interpolated so this page and Today agree.
+          <KitEmptyState
+            framed
+            kind="clear"
+            data-testid="at-risk-clear"
+            title={tEmpty('counselor.atRiskClear.title')}
+            description={tEmpty('counselor.atRiskClear.body', {
+              reason: RISK_ALERT_REASON.label.toLowerCase(),
+              definition: RISK_ALERT_REASON.definition.toLowerCase(),
+            })}
+            icon={<ShieldCheck size={13} aria-hidden="true" />}
+            primaryAction={{ label: tEmpty('counselor.atRiskClear.action'), href: '/counselor' }}
+            secondaryAction={{ label: tEmpty('counselor.atRiskClear.secondary'), href: '/counselor/students' }}
           />
         ) : filteredMembers.length === 0 ? (
-          <PortalEmptyState
-            title="No at-risk members match your filters"
-            description="Try adjusting severity or status filters, or check back after the next nightly risk scan."
-            icon={<TriangleAlert size={32} style={{ color: 'var(--wa-gold)' }} />}
-            primaryAction={{ label: 'Clear filters', onClick: clearAllFilters }}
+          <KitEmptyState
+            framed
+            kind="filtered"
+            data-testid="at-risk-filtered"
+            title={tEmpty('counselor.atRiskFiltered.title')}
+            description={tEmpty('counselor.atRiskFiltered.body')}
+            icon={<Filter size={13} aria-hidden="true" />}
+            primaryAction={{ label: tEmpty('counselor.atRiskFiltered.action'), onClick: clearAllFilters }}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -889,17 +906,42 @@ function FilterChip({
 }) {
   // Severity chips carry an explicit KitColor; status chips reuse the
   // StatusTag tone→color mapping so "Open" reads the same everywhere.
-  // `ok` reads the text-on-success-tint token: --wa-success itself is a fill
-  // colour (3.1:1 on its own tint), not a text colour.
+  // TONE_COLOR is the fill hue (border, tint); the label reads TONE_TEXT below,
+  // because --wa-success / --wa-gold / --wa-info are fill colours (3.1–4.3:1
+  // as 13px text), not text colours.
   const TONE_COLOR: Record<KitTone, string> = {
-    ok: 'var(--wa-success-dark)',
+    ok: 'var(--wa-success)',
     warn: 'var(--wa-gold)',
     alert: 'var(--wa-accent)',
-    danger: '#b91c1c',
+    danger: 'var(--wa-danger)',
     info: 'var(--wa-info)',
     muted: 'var(--wa-muted)'};
+  // The label reads the text twin of the tone (--wa-gold-dark, --wa-info-dark,
+  // --wa-success-dark, --wa-danger-text ...): the fill hues measured 3.2–4.3:1
+  // for 13px text on --wa-bg (scout M6). Border and active tint keep the tone.
+  const TONE_TEXT: Record<KitTone, string> = {
+    ok: 'var(--wa-success-dark)',
+    warn: 'var(--wa-gold-dark)',
+    alert: 'var(--wa-accent-text)',
+    danger: 'var(--wa-danger-text)',
+    info: 'var(--wa-info-dark)',
+    muted: 'var(--wa-muted)'};
+  // Active fill: the tone's soft tint (the kit tag backgrounds), which the
+  // text twins are tuned against. A 14% color-mix of the fill hue left
+  // --wa-success-dark at 4.28:1 on the active "Low" chip.
+  const SOFT_BG: Partial<Record<KitColor | KitTone, string>> = {
+    accent: 'var(--wa-accent-soft)',
+    accentDark: 'var(--wa-accent-soft)',
+    gold: 'var(--wa-gold-soft)',
+    info: 'var(--wa-info-soft)',
+    success: 'var(--wa-success-soft)',
+    ok: 'var(--wa-success-soft)',
+    warn: 'var(--wa-gold-soft)',
+    alert: 'var(--wa-accent-soft)',
+    danger: 'var(--wa-danger-soft)'};
   const c = color ? colorVar(color) : tone ? TONE_COLOR[tone] : 'var(--wa-text)';
-  const activeBg = tone === 'ok' ? 'var(--wa-success-soft)' : `color-mix(in srgb, ${c} 14%, transparent)`;
+  const text = color ? textColorVar(color) : tone ? TONE_TEXT[tone] : 'var(--wa-text)';
+  const activeBg = SOFT_BG[color ?? tone ?? 'text'] ?? `color-mix(in srgb, ${c} 14%, transparent)`;
   return (
     <button
       type="button"
@@ -910,7 +952,7 @@ function FilterChip({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 6,
-        minHeight: 36,
+        minHeight: 44,
         padding: '6px 12px',
         borderRadius: 999,
         fontSize: 13,
@@ -918,7 +960,7 @@ function FilterChip({
         cursor: 'pointer',
         border: `1.5px solid ${active ? c : 'transparent'}`,
         background: active ? activeBg : 'var(--wa-bg)',
-        color: c}}
+        color: text}}
     >
       {Icon ? <Icon size={13} /> : null}
       {label}

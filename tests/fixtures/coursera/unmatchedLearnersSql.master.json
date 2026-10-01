@@ -1,0 +1,78 @@
+{
+  "loadDefault": {
+    "text": "\n      WITH unioned AS (\n        SELECT\n          LOWER(external_email) AS email,\n          MAX(external_name) AS name,\n          MAX(last_activity_time) AS last_activity_time,\n          COUNT(*) AS course_count,\n          0::bigint AS badge_count,\n          0::bigint AS xapi_count,\n          NULL::text AS actor_identifier,\n          NULL::text AS actor_home_page\n        FROM coursera_course_progress\n        WHERE user_id IS NULL\n          AND organization_id = $1\n          AND coursera_course_id <> ALL($2::text[])\n        GROUP BY LOWER(external_email)\n        UNION ALL\n        SELECT\n          LOWER(external_email) AS email,\n          MAX(external_name) AS name,\n          MAX(last_activity_time) AS last_activity_time,\n          0::bigint AS course_count,\n          COUNT(*) AS badge_count,\n          0::bigint AS xapi_count,\n          NULL::text AS actor_identifier,\n          NULL::text AS actor_home_page\n        FROM coursera_badge_progress\n        WHERE user_id IS NULL\n          AND organization_id = $3\n        GROUP BY LOWER(external_email)\n        UNION ALL\n        SELECT\n          LOWER(COALESCE(actor_email, actor_identifier)) AS email,\n          NULL::text AS name,\n          MAX(received_at) AS last_activity_time,\n          0::bigint AS course_count,\n          0::bigint AS badge_count,\n          COUNT(*) AS xapi_count,\n          MAX(actor_identifier) AS actor_identifier,\n          MAX(actor_home_page) AS actor_home_page\n        FROM coursera_xapi_events\n        WHERE completion_status IN ('unmatched', 'error')\n          AND COALESCE(actor_email, actor_identifier) IS NOT NULL\n          AND organization_id = $4\n        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))\n      )\n      SELECT\n        email AS \"externalEmail\",\n        MAX(name) AS \"externalName\",\n        SUM(course_count)::bigint AS \"courseCount\",\n        SUM(badge_count)::bigint AS \"badgeCount\",\n        SUM(xapi_count)::bigint AS \"xapiCount\",\n        MAX(actor_identifier) AS \"actorIdentifier\",\n        MAX(actor_home_page) AS \"actorHomePage\",\n        MAX(last_activity_time) AS \"lastActivityTime\"\n      FROM unioned\n      GROUP BY email\n      HAVING email NOT LIKE '%test%'\n  AND email NOT LIKE 'force-%'\n  AND email NOT LIKE 'noreply%'\n  AND email NOT LIKE 'no-reply%'\n  AND email NOT LIKE '%@example.com'\n  AND email NOT LIKE '%@example.org'\n      ORDER BY MAX(last_activity_time) DESC NULLS LAST\n      LIMIT $5\n    ",
+    "values": [
+      "org-A",
+      [
+        "vjCRy6uOReCwkcurjsXg3Q",
+        "fT-1P-CkT6q_tT_gpM-qJw",
+        "o9PJJ-ReQ_KTySfkXuPyHw",
+        "vaH4UkrHSKSh-FJKxxik4Q",
+        "iMhjZsGTRkSIY2bBk-ZEhA",
+        "gCtwKvPFS36rcCrzxSt-Yg",
+        "C-5mIgyaSLGuZiIMmrixWg",
+        "Wj6KdjQrQfm-inY0K6H5xg",
+        "Dz4BBgGAS1i-AQYBgLtYgA",
+        "Xvd7I_wBSNO3eyP8AXjTfA",
+        "rrX4ZPagR5K1-GT2oGeS9Q",
+        "q5z39pYDSM6c9_aWA4jOLw",
+        "QnQ2KKmHTmu0Niiphy5rsQ",
+        "Qkse5-KHSUyLHufih3lMPg",
+        "p4o8q6jBSOOKPKuowQjjFw"
+      ],
+      "org-A",
+      "org-A",
+      25
+    ]
+  },
+  "loadIncludeTest": {
+    "text": "\n      WITH unioned AS (\n        SELECT\n          LOWER(external_email) AS email,\n          MAX(external_name) AS name,\n          MAX(last_activity_time) AS last_activity_time,\n          COUNT(*) AS course_count,\n          0::bigint AS badge_count,\n          0::bigint AS xapi_count,\n          NULL::text AS actor_identifier,\n          NULL::text AS actor_home_page\n        FROM coursera_course_progress\n        WHERE user_id IS NULL\n          AND organization_id = $1\n          AND coursera_course_id <> ALL($2::text[])\n        GROUP BY LOWER(external_email)\n        UNION ALL\n        SELECT\n          LOWER(external_email) AS email,\n          MAX(external_name) AS name,\n          MAX(last_activity_time) AS last_activity_time,\n          0::bigint AS course_count,\n          COUNT(*) AS badge_count,\n          0::bigint AS xapi_count,\n          NULL::text AS actor_identifier,\n          NULL::text AS actor_home_page\n        FROM coursera_badge_progress\n        WHERE user_id IS NULL\n          AND organization_id = $3\n        GROUP BY LOWER(external_email)\n        UNION ALL\n        SELECT\n          LOWER(COALESCE(actor_email, actor_identifier)) AS email,\n          NULL::text AS name,\n          MAX(received_at) AS last_activity_time,\n          0::bigint AS course_count,\n          0::bigint AS badge_count,\n          COUNT(*) AS xapi_count,\n          MAX(actor_identifier) AS actor_identifier,\n          MAX(actor_home_page) AS actor_home_page\n        FROM coursera_xapi_events\n        WHERE completion_status IN ('unmatched', 'error')\n          AND COALESCE(actor_email, actor_identifier) IS NOT NULL\n          AND organization_id = $4\n        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))\n      )\n      SELECT\n        email AS \"externalEmail\",\n        MAX(name) AS \"externalName\",\n        SUM(course_count)::bigint AS \"courseCount\",\n        SUM(badge_count)::bigint AS \"badgeCount\",\n        SUM(xapi_count)::bigint AS \"xapiCount\",\n        MAX(actor_identifier) AS \"actorIdentifier\",\n        MAX(actor_home_page) AS \"actorHomePage\",\n        MAX(last_activity_time) AS \"lastActivityTime\"\n      FROM unioned\n      GROUP BY email\n      \n      ORDER BY MAX(last_activity_time) DESC NULLS LAST\n      LIMIT $5\n    ",
+    "values": [
+      "org-A",
+      [
+        "vjCRy6uOReCwkcurjsXg3Q",
+        "fT-1P-CkT6q_tT_gpM-qJw",
+        "o9PJJ-ReQ_KTySfkXuPyHw",
+        "vaH4UkrHSKSh-FJKxxik4Q",
+        "iMhjZsGTRkSIY2bBk-ZEhA",
+        "gCtwKvPFS36rcCrzxSt-Yg",
+        "C-5mIgyaSLGuZiIMmrixWg",
+        "Wj6KdjQrQfm-inY0K6H5xg",
+        "Dz4BBgGAS1i-AQYBgLtYgA",
+        "Xvd7I_wBSNO3eyP8AXjTfA",
+        "rrX4ZPagR5K1-GT2oGeS9Q",
+        "q5z39pYDSM6c9_aWA4jOLw",
+        "QnQ2KKmHTmu0Niiphy5rsQ",
+        "Qkse5-KHSUyLHufih3lMPg",
+        "p4o8q6jBSOOKPKuowQjjFw"
+      ],
+      "org-A",
+      "org-A",
+      25
+    ]
+  },
+  "countDefault": {
+    "text": "\n      WITH unioned AS (\n        SELECT LOWER(external_email) AS email\n        FROM coursera_course_progress\n        WHERE user_id IS NULL\n          AND organization_id = $1\n        GROUP BY LOWER(external_email)\n        UNION\n        SELECT LOWER(external_email) AS email\n        FROM coursera_badge_progress\n        WHERE user_id IS NULL\n          AND organization_id = $2\n        GROUP BY LOWER(external_email)\n        UNION\n        SELECT LOWER(COALESCE(actor_email, actor_identifier)) AS email\n        FROM coursera_xapi_events\n        WHERE completion_status IN ('unmatched', 'error')\n          AND COALESCE(actor_email, actor_identifier) IS NOT NULL\n          AND organization_id = $3\n        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))\n      )\n      SELECT COUNT(DISTINCT email)::bigint AS count\n      FROM unioned\n      WHERE email IS NOT NULL\n        AND email NOT LIKE '%test%'\n  AND email NOT LIKE 'force-%'\n  AND email NOT LIKE 'noreply%'\n  AND email NOT LIKE 'no-reply%'\n  AND email NOT LIKE '%@example.com'\n  AND email NOT LIKE '%@example.org'\n    ",
+    "values": [
+      "org-A",
+      "org-A",
+      "org-A"
+    ]
+  },
+  "countIncludeTest": {
+    "text": "\n      WITH unioned AS (\n        SELECT LOWER(external_email) AS email\n        FROM coursera_course_progress\n        WHERE user_id IS NULL\n          AND organization_id = $1\n        GROUP BY LOWER(external_email)\n        UNION\n        SELECT LOWER(external_email) AS email\n        FROM coursera_badge_progress\n        WHERE user_id IS NULL\n          AND organization_id = $2\n        GROUP BY LOWER(external_email)\n        UNION\n        SELECT LOWER(COALESCE(actor_email, actor_identifier)) AS email\n        FROM coursera_xapi_events\n        WHERE completion_status IN ('unmatched', 'error')\n          AND COALESCE(actor_email, actor_identifier) IS NOT NULL\n          AND organization_id = $3\n        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))\n      )\n      SELECT COUNT(DISTINCT email)::bigint AS count\n      FROM unioned\n      WHERE email IS NOT NULL\n        \n    ",
+    "values": [
+      "org-A",
+      "org-A",
+      "org-A"
+    ]
+  },
+  "countHidden": {
+    "text": "\n      WITH unioned AS (\n        SELECT LOWER(external_email) AS email\n        FROM coursera_course_progress\n        WHERE user_id IS NULL\n          AND organization_id = $1\n        GROUP BY LOWER(external_email)\n        UNION\n        SELECT LOWER(external_email) AS email\n        FROM coursera_badge_progress\n        WHERE user_id IS NULL\n          AND organization_id = $2\n        GROUP BY LOWER(external_email)\n        UNION\n        SELECT LOWER(COALESCE(actor_email, actor_identifier)) AS email\n        FROM coursera_xapi_events\n        WHERE completion_status IN ('unmatched', 'error')\n          AND COALESCE(actor_email, actor_identifier) IS NOT NULL\n          AND organization_id = $3\n        GROUP BY LOWER(COALESCE(actor_email, actor_identifier))\n      )\n      SELECT COUNT(DISTINCT email)::bigint AS count\n      FROM unioned\n      WHERE email IS NOT NULL\n        AND (\n          email LIKE '%test%'\n          OR email LIKE 'force-%'\n          OR email LIKE 'noreply%'\n          OR email LIKE 'no-reply%'\n          OR email LIKE '%@example.com'\n          OR email LIKE '%@example.org'\n        )\n    ",
+    "values": [
+      "org-A",
+      "org-A",
+      "org-A"
+    ]
+  }
+}

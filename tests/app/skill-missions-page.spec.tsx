@@ -56,6 +56,11 @@ describe('/dashboard/missions page', () => {
     const select = vi.mocked(prisma.user.findUnique).mock.calls[0]![0]!.select as Record<string, unknown>;
     expect(select).not.toHaveProperty('enrolledProgram');
     expect(screen.getByRole('heading', { name: 'No program enrolled' })).toBeInTheDocument();
+    // No program is a first step (choose one); the shell is the one KitEmptyState in a kit card.
+    const empty = document.querySelector<HTMLElement>('.wa-kit-empty')!;
+    expect(empty.dataset.kind).toBe('first');
+    expect(empty.dataset.tone).toBe('muted');
+    expect(empty.closest('.wa-kit-card')).not.toBeNull();
     const cta = screen.getByRole('link', { name: 'Choose program' });
     expect(cta).toHaveAttribute('href', '/dashboard/program');
     expect(cta.className).toContain('wa-kit-cta');
@@ -80,6 +85,11 @@ describe('/dashboard/missions page', () => {
     );
     expect(screen.getByRole('heading', { name: 'No missions for AI Professional Practitioner Certificate yet' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Continue training' })).toHaveAttribute('href', '/dashboard/program');
+    // Enrolled without catalog missions: not available yet (info), not a first step.
+    const empty = document.querySelector<HTMLElement>('.wa-kit-empty')!;
+    expect(empty.dataset.kind).toBe('unavailable');
+    expect(empty.dataset.tone).toBe('info');
+    expect(empty).not.toHaveAttribute('role');
     expect(screen.queryByRole('link', { name: 'Choose program' })).toBeNull();
   });
 

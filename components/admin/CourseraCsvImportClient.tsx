@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { csvCell } from '@/lib/csv/cells';
 
 type CsvKind = 'course-activity' | 'learning-path-activity';
 
@@ -66,10 +67,6 @@ const buttonPrimaryStyle: React.CSSProperties = {
   fontSize: '0.95rem',
 };
 
-function escapeCsv(v: string) {
-  return `"${(v ?? '').replace(/"/g, '""')}"`;
-}
-
 function downloadUnresolvedCsv(result: ImportResult) {
   const isCourse = result.kind === 'course-activity';
   const header = isCourse ? 'email,name,course_id,course\n' : 'email,name,badge_slug,badge_title\n';
@@ -77,13 +74,13 @@ function downloadUnresolvedCsv(result: ImportResult) {
     ? (result.unresolvedRows as UnresolvedCourseRow[])
         .map(
           (r) =>
-            `${escapeCsv(r.email)},${escapeCsv(r.name)},${escapeCsv(r.courseId)},${escapeCsv(r.course)}`
+            `${csvCell(r.email)},${csvCell(r.name)},${csvCell(r.courseId)},${csvCell(r.course)}`
         )
         .join('\n')
     : (result.unresolvedRows as UnresolvedBadgeRow[])
         .map(
           (r) =>
-            `${escapeCsv(r.email)},${escapeCsv(r.name)},${escapeCsv(r.badgeSlug)},${escapeCsv(r.badgeTitle)}`
+            `${csvCell(r.email)},${csvCell(r.name)},${csvCell(r.badgeSlug)},${csvCell(r.badgeTitle)}`
         )
         .join('\n');
   const blob = new Blob([header + body + '\n'], { type: 'text/csv;charset=utf-8' });

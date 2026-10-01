@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit';
 
 type AppMsg = {
   id: string;
@@ -30,6 +32,8 @@ export default function EmployerApplicationChatClient({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const t = useTranslations('empty');
 
   const markRead = useCallback(async () => {
     try {
@@ -137,9 +141,12 @@ export default function EmployerApplicationChatClient({
           </p>
         ) : null}
         {messages.length === 0 ? (
-          <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
-            No messages yet. Start the conversation about this application.
-          </p>
+          <KitEmptyState
+            kind="first"
+            title={t('applicationThread.title')}
+            description={t('applicationThread.body')}
+            primaryAction={{ label: t('applicationThread.action'), onClick: () => inputRef.current?.focus() }}
+          />
         ) : (
           messages.map((m) => {
             const mine = m.isFromEmployer;
@@ -175,6 +182,7 @@ export default function EmployerApplicationChatClient({
         </label>
         <textarea
           id="employer-application-chat-input"
+          ref={inputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Type a message…"

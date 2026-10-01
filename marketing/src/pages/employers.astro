@@ -194,13 +194,13 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
     <div class="emp-intake">
       <div class="emp-intake__head">
         <h2>Prefer email over scheduling?</h2>
-        <p>Submit intake details and we will follow up within 1–2 business days. This form is an email alternative — or use the button above to start a partnership.</p>
+        <p>Submit intake details and our team will review them and follow up by email. This form is an email alternative — or use the button above to start a partnership.</p>
       </div>
       <div class="emp-form-card">
         <form class="emp-form" id="employer-intake-form" method="post" novalidate aria-label="Employer intake">
           <div class="emp-form__note">
             <p class="emp-form__note-title">Employer intake for hiring managers, talent leaders, and program owners.</p>
-            <p class="emp-form__note-copy">Share your hiring intent, role needs, expected volume, and timeline. We review submissions within 1–2 business days and route you to the right partnership path.</p>
+            <p class="emp-form__note-copy">Share your hiring intent, role needs, expected volume, and timeline. Our team reviews every submission and emails you with the right partnership path.</p>
           </div>
           <div class="form-group">
             <label for="employer-company">Company name *</label>
@@ -266,7 +266,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
           )}
           <p class="form-status form-status--err" id="employer-intake-error" role="alert" hidden></p>
           <button type="submit" class="btn btn--primary emp-form__submit">Submit employer intake</button>
-          <p class="emp-form__footnote">We respond within 1–2 business days.</p>
+          <p class="emp-form__footnote">We review every submission and follow up by email.</p>
         </form>
         <p class="form-status form-status--ok" id="employer-intake-success" role="status" hidden></p>
       </div>
@@ -363,7 +363,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
               }
               form.hidden = true;
               if (okEl) {
-                okEl.textContent = 'We got it — a team member responds within 1–2 business days.';
+                okEl.textContent = 'We got it — a team member will reply by email.';
                 okEl.hidden = false;
               }
             });

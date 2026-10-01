@@ -85,8 +85,15 @@ type StepGenInput = {
  * Use AI to break a goal into 3-5 concrete, achievable next steps.
  * Falls back to a curated template when AI is unavailable so the feature
  * always returns something useful.
+ *
+ * `skipAI` returns the curated template without a model call. The route sets
+ * it when the member is over the AI tool quota.
  */
-export async function generateGoalSteps(input: StepGenInput): Promise<string[]> {
+export async function generateGoalSteps(
+  input: StepGenInput,
+  options: { skipAI?: boolean } = {}
+): Promise<string[]> {
+  if (options.skipAI) return fallbackSteps(input);
   const ai = await generateStepsWithAI(input);
   if (ai && ai.length >= 3) return ai.slice(0, 5);
   return fallbackSteps(input);

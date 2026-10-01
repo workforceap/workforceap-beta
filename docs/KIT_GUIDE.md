@@ -76,9 +76,12 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   dashboard layout's existing user query; nothing is inferred beyond the
   email fallback.
   Member rails use a 232px budget (208px on smaller laptops, 72px collapsed),
-  with Home, My program, Job board, My progress, AI Career Tools, Messages,
-  and Skill missions visible and remaining Tools / Training / Account groups
-  disclosed on demand.
+  with five permanent rows — Home, My program, Job board, AI Career Tools
+  and Messages (WAP-189) — plus the single contextual tool row on
+  `/dashboard/ai-tools/*` pages, and the Tools & careers /
+  Training & progress / Account & support groups disclosed on demand.
+  My progress and Skill missions live in Training & progress. The
+  collapsed 72px rail has no disclosure: it lists every row as an icon.
   The current route opens its group and only the most specific destination
   receives `aria-current`. Staff rails use 240px and the shared desktop header
   uses a 68px minimum height. Destination lists scroll independently so appearance
@@ -155,13 +158,14 @@ only radius / padding / pop / shadow change.
 Wrap the **route-group layout**, not individual components:
 
 ```tsx
-import { DesignSurface, useSurface } from '@/components/portal/kit';
+import { DesignSurface } from '@/components/portal/kit';
 
 <DesignSurface surface="warm">{children}</DesignSurface>   // member
 <DesignSurface surface="dense">{children}</DesignSurface>  // admin / staff / data
 ```
 
-`useSurface()` returns `'warm' | 'dense'` for the rare component that must branch in JS
+`useSurface()` (import it from `@/components/portal/kit/DesignSurface`; it is not in the
+barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
 (default is `'dense'` if unwrapped). Components should normally *not* branch — consuming
 `--wa-radius`/`--wa-pad`/`--wa-pop` makes them adapt automatically. Spec:
 `docs/PORTAL_DESIGN_KIT.md`.
@@ -269,10 +273,37 @@ reachable path (kit default and `?ui=legacy`), not `StatusBadge`. Do not infer a
 | neutral | neutral | muted | gray |
 | no equivalent | no equivalent | danger | red |
 
-Legacy `PortalEmptyState` delegates its content to `KitEmptyState`. Set `headingAs="h2"`
+**Application / intake status words** (`lib/status/applicationStatusVocabulary.ts`) — one
+vocabulary for `Application.status` and `users.wioaReviewStatus`, two audiences, one tone per
+value. Never keep a local `{ PENDING: 'Pending' }` map; call `applicationStatusLabel(key, audience)`
+/ `intakeStatusLabel(key, audience)` (English) or pass the `status`-scoped translator for a
+localized surface, and paint `StatusTag` with `applicationStatusTone(key)` / `intakeStatusTone(key)`.
+Keys come from `applicationStatusKey(enum)` / `intakeStatusKey(column)`; messages live under
+`status.application.<audience>.*` and `status.intake.<audience>.*` in all four locales.
+
+| value | member word | staff word | tone |
+|---|---|---|---|
+| no application | No application on file | No application on file | muted |
+| `PENDING` | Pending review | Awaiting decision | warn |
+| `NEEDS_INFO` | More information requested | Waiting on applicant | alert |
+| `APPROVED` | Application approved | Approved | ok |
+| `DENIED` | Application closed | Denied | danger |
+| intake `null` | Status not recorded | Not reviewed | muted |
+| intake `pending` | Review pending | Awaiting review | warn |
+| intake `in_review` | In review | In review | info |
+| intake `needs_info` | More information requested | Needs more information | alert |
+| intake `verified` | Intake verified by staff | Intake verified | ok |
+| intake `not_eligible` | Staff recorded not eligible | Not eligible | danger |
+
+Staff intake verification is not a legal WIOA eligibility determination (`lib/wioa/wioaReview.ts`),
+so no surface says "Eligible". Action buttons keep their verbs (Approve / Deny / Request info,
+admin "Not a fit"); the #2486 queue title "Waiting on your decision" is a title, not a status word.
+
+Legacy `PortalEmptyState` is `KitEmptyState` with `framed`. Set `headingAs="h2"`
 when an empty section directly follows the page h1; the default h3 is retained for
 empties inside an existing h2 section. Preserve the distinction between a failed load
-and a confirmed empty result. Keep existing directory empties on `KitEmptyState`.
+and a confirmed empty result (`kind="unavailable" tone="danger"` + a Reload action, never
+`first`). Keep existing directory empties on `KitEmptyState`.
 
 ---
 
@@ -294,34 +325,43 @@ Every kit primitive accepts `className`, `style`, `ref` (plain prop, React 19 st
 
 ## 6. Component index (`components/portal/kit/index.ts`)
 
-Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` types, `toneClass`,
+Foundation: `DesignSurface`, `colorVar` + `KitColor`/`KitTone` types, `toneClass`,
 `KitBaseProps` / `KitDataAttrs` / `cx` (§5).
+
+The barrel exports what pages compose through it. A kit module that only its kit siblings
+use is imported from its own file instead (the way `GuidedTour` already is), and `pnpm knip`
+reports any barrel re-export nothing imports — keep that at zero. Direct-import modules today:
+`useSurface` (`kit/DesignSurface`), `useListFocus` / `LIST_ITEM_ATTR` (`kit/hooks/useListFocus`),
+`announce` / `getFocusable` (`kit/hooks/useAnnounce`, `kit/hooks/useFocusTrap`),
+`KitTableToolbar`, `KitRowMenu`, `kitTableUrlState`, `KanbanColumnHeader` (`kit/Kanban`),
+`Sparkline` (`kit/Charts`), `DeltaChip` (`kit/CommandCenter`), `AppShellSidebar`,
+`UniversalSearch`.
 
 | Component | Use for |
 |---|---|
 | `StatTile`, `KpiStrip` | single stat / row of stats (never hand-roll stat blocks); `tone?: KitTone` is a *state* painted on the edge accent via the §4 hooks, the number stays neutral; `deltaTone` for the caption |
 | `StatSparkTile` | icon-chip stat with optional delta chip + sparkline; same `tone` gate — the chip and trend line paint, the value never does |
 | `StatusTag` | semantic status pill (every table status column, risk tiers) |
-| `JobListingRow` | member open-role listing row (live `/dashboard/jobs` + board proof — not `.job-card` mosaics). `MemberJobsKit` lists the live openings itself under `#open-roles` (`openRoles`, each linking to `/dashboard/jobs/<id>`); "Browse openings" / "Browse jobs" jump to that list, never to `?ui=legacy`. An empty list is the honest `JOBS_BOARD_EMPTY` state. |
-| `KitEmptyState` | titled empty placeholder for listing and table shells (optional `action` = real next step). Admin directory empties (`MentorsDirectoryKit`, `PartnersDirectoryKit`, `EmployersDirectoryKit`, `SubgroupsDirectoryKit`) use this + sentence-case CTA copy from `lib/member/mentorsEmptyState.ts` / `lib/admin/directoryEmptyState.ts` — not Astryx `EmptyState`. |
+| `JobListingRow` | member open-role listing row (live `/dashboard/jobs` + board proof — not `.job-card` mosaics). `MemberJobsKit` lists the live openings itself under `#open-roles` (`openRoles`, each linking to `/dashboard/jobs/<id>`); "Browse openings" / "Browse jobs" jump to that list, never to `?ui=legacy`. An empty list is the honest `empty.openings` state (`KitEmptyState kind="unavailable"`, hrefs from `JOBS_BOARD_EMPTY`). |
+| `KitEmptyState` | the one empty state for listing and table shells. `kind` names the situation and is emitted as `data-kind`: `first` (nothing yet → the first action), `filtered` (rows exist, none match → "Clear filters"), `unavailable` (not available to this viewer / not loaded / not in this period / failed — `tone="danger"` + Reload for a failure), `clear` (zero is the goal — staff queues, alerts). Tone defaults by kind (muted / muted / warn / ok) and paints the optional `icon` chip and the edge through the §4 hooks. `primaryAction` (`href` or `onClick`) and `secondaryAction` render as `.wa-kit-cta` / `--ghost`; `framed` draws the standalone box (what `PortalEmptyState` is). Inline value fallbacks in a cell ("No program", "—") are not empty states — use `StatusTag` muted or `—`. Admin directory empties (`MentorsDirectoryKit`, `PartnersDirectoryKit`, `EmployersDirectoryKit`, `SubgroupsDirectoryKit`) use this + sentence-case CTA copy from `lib/member/mentorsEmptyState.ts` / `lib/admin/directoryEmptyState.ts` — not Astryx `EmptyState`. Member-surface copy lives in `messages/*.json` under `empty.*` (one sentence pattern per kind; `empty` is a `PORTAL_CLIENT_NAMESPACES` entry), read through the surface's translator — never hardcoded in the component or a `lib/**` constant. The deprecated `action` slot stays until the last caller migrates. |
 | `SectionHeader` | titled section starts |
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
 | `ProgressRing`, `ProgressBar` | completion / capacity |
 | `Avatar` | people |
-| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
-| `KitTableToolbar` (+ `KitTableViewChip`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`). |
-| `KitRowMenu` (+ `KitRowMenuItem`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
+| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Empty rows render `KitEmptyState` from the `empty` prop (`DataTableEmpty`: `kind`, `title` — default "No rows yet" — `description`, actions, icon); the legacy `emptyTitle` / `emptyDescription` pair still works. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
+| `KitTableToolbar` (+ `KitTableViewChip`; import from `kit/KitTableToolbar`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`; import from `kit/kitTableUrlState`). |
+| `KitRowMenu` (+ `KitRowMenuItem`; import from `kit/KitRowMenu`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
 | `QueueRow`, `WorkQueueItem` | staff work queues |
-| `KanbanBoard`, `KanbanColumnHeader` | pipeline boards |
-| `BarChartMini`, `RankBars` | inline mini charts |
+| `KanbanBoard` (+ `KanbanColumnHeader` from `kit/Kanban`) | pipeline boards |
+| `BarChartMini`, `RankBars`, `AreaChartMini`, `TrendPlaceholder` | inline mini charts (`Sparkline` from `kit/Charts`) |
 | `FormField`, `Toggle` | form controls |
-| `ChatThread` | message threads |
+| `ChatThread` | message threads. An empty thread renders `KitEmptyState kind="first"` whose action focuses the composer; surfaces pass `empty={{ title, description, action }}` from their `empty.*` translator (`MemberMessagesKit` does), the kit English is the fallback. `PortalTeamChatClient` (employer / partner team threads) takes the same `empty` object. Page-level inbox guards (no member row, no thread in an audit) are `kind="unavailable"` inside `MemberMessagesFrame`, never "No messages yet". |
 | `Tabs`, `TabPanel` | section tabs around server-rendered panels (WAI-ARIA tabs on `useListFocus`; `?tab=` mirrored with `history.replaceState`; an in-page `#anchor` inside a panel opens that panel). Counselor student detail is the reference. |
-| `AppShellSidebar`, `AppShellMember` | shell chrome (dense sidebar / member tabs) |
-| `UniversalSearch` | global search affordance |
+| `AppShellMember` (+ `AppShellSidebar` from `kit/AppShellSidebar`) | shell chrome (member tabs / dense sidebar) |
+| `UniversalSearch` (`kit/UniversalSearch`, not in the barrel) | global search affordance |
 | `GuidedTour` | guided-tour engine: spotlight ring + step popover over `[data-tour]` anchors, steps from `lib/tours/registry.ts` through `TourContext`, copy from the `tours` i18n namespace, chrome on `--wa-*` and `--z-tour`. Not in the barrel (it depends on `components/onboarding/TourContext`) — import `@/components/portal/kit/GuidedTour` directly; `TourProviderWrapper` already mounts it for every portal. Reopen a tour from the header `PortalHelpMenu`; offer it once with `TourOfferStrip`. |
-| `MemberDashboardKit` | composed member dashboard |
+| `MemberHomeKit` (`kit/pages/member/MemberHomeKit`, not in the barrel) | the member home at `/dashboard`, its one implementation (fed by `lib/member/loadMemberDashboardHome.ts`; the old `MemberDashboardKit` and the `?ui=legacy` home were removed in WAP-195) |
 
 `ChatThread` accepts an optional editable `initialText` and `multiline` composer
 for server-validated context such as a course feedback request. It never sends
@@ -369,8 +409,8 @@ any future kit Dialog/Menu/Combobox must be built on them):
 | Hook | Use for |
 |---|---|
 | `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close. Prefer native `<dialog>.showModal()` when possible. |
-| `useListFocus` | roving tabindex for tablists/menus/result lists — Arrow keys (RTL-aware), Home/End, one tab stop, self-repairing as items mount/unmount. Mark items with `data-kit-list-item`. |
-| `useAnnounce` / `announce` | screen-reader announcements ("12 results", "Saved"). Singleton persistent live regions — never mount your own `aria-live` div per component (freshly-mounted regions don't announce). |
+| `useListFocus` (`kit/hooks/useListFocus`, not in the barrel) | roving tabindex for tablists/menus/result lists — Arrow keys (RTL-aware), Home/End, one tab stop, self-repairing as items mount/unmount. Mark items with `data-kit-list-item`. |
+| `useAnnounce` (barrel) / `announce` (`kit/hooks/useAnnounce`) | screen-reader announcements ("12 results", "Saved"). Singleton persistent live regions — never mount your own `aria-live` div per component (freshly-mounted regions don't announce). |
 
 Reference compositions ("templates"): `components/portal/kit/pages/{member,admin,admin-subviews}/`
 plus `PartnerOverviewKit.tsx`, `VoiceStudioKit.tsx`. **Start new pages by copying the nearest one.**
@@ -415,6 +455,12 @@ against that page in the client.
 `StudentsRosterKit` shows the full account email beneath each student name in
 both table rows and mobile cards. Keep that identifier visible and wrapping so
 staff can distinguish same-name accounts before opening an account action.
+Phone-width emails prefer breaks after local-part dots and before `@`, with an
+emergency break only when a segment cannot fit. A named program with no stored
+assignment is marked `(inferred)` in every kit view. The training loader can
+produce that state from course progress; the default roster loader uses a
+placeholder when it has no assignment, and the dev roster exercises the
+named-program case.
 
 `StudentsRosterKit` is the one admin roster (admin audit 2026-09-20, §7 item 2). It
 takes a `view` preset: `roster` (`/admin/students`) shows Program, Progress, Coursera
@@ -464,8 +510,9 @@ Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCa
   optionally controlled through `selectedKeys`.
 - **Mobile**: `mobile="cards"` with one card template — identity, one `StatusTag`, two facts, the same
   row menu — and the pager under the cards. Horizontal scroll only for diagnostic tables.
-- **Empty / loading / error**: empty = `KitEmptyState` with a real next step (`emptyTitle` /
-  `emptyDescription`); route loading = `app/admin/loading.tsx`, in-table refresh = `loading`
+- **Empty / loading / error**: empty = `KitEmptyState` with a real next step (`empty={{ kind, title,
+  description, primaryAction }}`; `kind: 'filtered'` while a search / filter is active, the legacy
+  `emptyTitle` / `emptyDescription` pair still works); route loading = `app/admin/loading.tsx`, in-table refresh = `loading`
   (`aria-busy` + skeleton rows while there are no rows yet); hard failure =
   `components/admin/AdminDataLoadError.tsx` (kit card, single h1, Admin home / Jobs); soft failure =
   `errorNotice` (an alert row above the data, the rows stay).
@@ -557,6 +604,12 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   `SegmentedControl`, `Spinner`, `Pagination`, `EmptyState`, `StatusDot`, `ProgressBar`, `Link`
   wrapping Next's `Link` for navigational actions — see `VoiceStudioKit.tsx` /
   `member/MemberHomeKit.tsx`) — same brand-token bridge as everywhere else Astryx is used.
+  A navigational action that should look like a button is `KitLinkButton`
+  (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
+  kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
+  which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
+  `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on
+  a `Button` placed directly inside a `Link` or `AstryxLink` (WAP-268).
   WorkforceAP-specific composites that already encode real layout/business logic —
   `DataTable`, `StageTrack`, `SegmentedProgress`, `QueueRow`, `WorkQueueItem`, `ChatThread`,
   `KpiStrip`, `CardHead`, `Sparkline`/`AreaChartMini`, `ProgressRing`, `FeatureTile`,
@@ -576,6 +629,7 @@ section here in the same PR.*
 ### Stakeholder workflow contracts (2026-09-09)
 
 - Admin Command Center queue counts represent all matching active records in the actor's organization, independent of the eight-row overview. Focused `queue`/`page` URLs show 25 items, retain context, and recover from an emptied last page. Totals are items, and interview rows are opportunities; neither is a unique-person count. “Select this page” acts only on visible application IDs.
+- Admin Today (`/admin`, WAP-190) is `CommandCenterKit` with `title="Today"`, `queuesFirst` and a `lead`: the org-wide `CounselorApprovalQueue` (same builder, SLA and tones as the counselor Today; `rowHrefs` send each row to the admin screen that records the decision; `total` + `moreLinks` print "Showing the N oldest of M" instead of silently truncating). The queues precede the KPI strip, placements trend and program / system context; `/admin/command-center` keeps the metrics-first default. `CommandCenterQueueItem.links` names the people behind a count, each with a direct link (new applicants → the record's Counselor assignment card).
 - Command Center health accepts `unknown` in addition to `ok`/`warn`. Unmeasured or failed checks show a neutral dot and “Not verified,” never green. Failed core loaders render an explicit error state.
 - Partner application links carry the existing attribution token and appear on the default overview/guide. Share tools prepare user-reviewable text; copy or native-share failure stays visible. Attention keeps approved/observed training separate from approval/funding pending.
 - Counselor student summaries state funding source separately from the member-level Coursera approval flag. Neither asserts paid grants or working provider access. Member-context links, drafts, and message recipients must remain tied to the selected learner through async work.
@@ -588,6 +642,7 @@ section here in the same PR.*
 - Admin overview uses a compact metric strip and flat queue rows. All-zero measured placement series show a concise zero summary; absent series stay absent and nonzero series retain their chart. Program and system context stays secondary without stretching to the queue height. Actions retain full counts and destinations; bulk selection remains owned by the queue client.
 - Sidebar preference controls keep their radio keyboard interaction. The rail scrolls its destinations, with language and appearance visible below. Narrow or collapsed navigation must never expose clipped focusable controls.
 - Counselor messages use one neutral inbox workspace. Member metadata appears once per roster row, catalog names resolve on the server, and selected conversations/filter controls expose their state accessibly. Recipient identity, request guards, and draft ownership remain unchanged.
+- Partner share tools (`PartnerShareToolkit`, guide page) are dense edge-to-edge rows — landing page, per-channel UTM links with optional signup counts (counts only) — plus a copyable “About WorkforceAP” blurb (the mission statement, `mission.statement` in `messages/*.json`, passed in by the server page) and a read-only Apply-button snippet textarea; each Copy action is an Astryx `Button` whose failure stays visible. What a partner may see about referred members is decided in `lib/partner/dataAccess.ts`, never in a component (docs/PARTNER_TIERS.md).
 - Partner sharing keeps its primary Copy action visible; URL/code live in a native disclosure that opens on clipboard failure. Member sharing keeps the link/copy action visible and opens invitation preview for manual copying when needed. Privacy and aggregate-reward limits remain visible.
 - Partner metrics without supplied trend data use compact StatTile captions; supplied trends retain StatSparkTile. Partner KPI tiles carry no categorical colour (a `tone` only for a state such as pending reviews above zero). The referral funnel presents the same supplied counts/percentages as named progress bars across a desktop row and a mobile stack. The progress handoff retains its destination as a quiet direct link.
 - Counselor student detail record panels (`CounselorIntakeReviewPanel`, `WioaScreeningReadonly`, `AssessmentAnswersReadonly`, `CounselorNotesPanel`, `AdvisorSessionNotesPanel`) are `.wa-kit-card` sections: section h2 titles and `.wa-kit-stat-label` h3 card heads, `.wa-kit-meta` captions, `StatusTag` / tone hooks for status copy, colocated `*.module.css` for layout (`--wa-*` only, 13px floor, no inline `fontSize`). The page keeps the single h1; heading levels inside the tab panels are unchanged. The notes panels load through `fetchWithTimeout` with the effect's `AbortSignal` and `lib/portal/memberRequestFailure` copy (a cancelled request never reads as a failure).

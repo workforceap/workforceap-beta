@@ -51,9 +51,9 @@ export default function MarketingRouteLoading() {
           border-radius: var(--radius-lg, 0.75rem);
           background: linear-gradient(
             90deg,
-            var(--surface-container-low, #f3f4f6) 25%,
-            var(--surface-container, #e5e7eb) 50%,
-            var(--surface-container-low, #f3f4f6) 75%
+            var(--surface-container-low) 25%,
+            var(--surface-container) 50%,
+            var(--surface-container-low) 75%
           );
           background-size: 200% 100%;
           animation: marketing-skeleton-shimmer 1.4s ease-in-out infinite;
@@ -61,9 +61,9 @@ export default function MarketingRouteLoading() {
         html.dark .marketing-skeleton {
           background: linear-gradient(
             90deg,
-            var(--surface-container-low, #1f2937) 25%,
-            var(--surface-container, #374151) 50%,
-            var(--surface-container-low, #1f2937) 75%
+            var(--surface-container-low) 25%,
+            var(--surface-container) 50%,
+            var(--surface-container-low) 75%
           );
           background-size: 200% 100%;
         }

@@ -9,8 +9,8 @@ import { getProgramBySlug } from '@/lib/content/programs';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { buildPathwayMilestones } from '@/lib/content/pathwayStepDisplay';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
-import { CardHead, ProgressRing, ProgressBar, StatusTag } from '@/components/portal/kit';
+import { getTranslations } from 'next-intl/server';
+import { CardHead, KitEmptyState, ProgressRing, ProgressBar, StatusTag } from '@/components/portal/kit';
 import LearningPathCard from '@/components/portal/LearningPathCard';
 import LearningHubDestinationCards from '@/components/portal/LearningHubDestinationCards';
 import LearningHubEnrolledCourses from '@/components/portal/LearningHubEnrolledCourses';
@@ -118,6 +118,37 @@ export default async function LearningPage() {
       ? Math.round((completedPathwaySteps / ACTIVE_PATHWAY.steps.length) * 100)
       : 0;
   const learningStatusLabel = overallPct > 0 ? 'In Progress' : 'Ready to start';
+  // `empty.*` (KIT_GUIDE §6). getPathwayForProgram is null for two different
+  // reasons: no enrolled program (`first` — start digital basics or choose a
+  // program) or an enrolled program whose curriculum version has no published
+  // courses (`unavailable` — nothing to choose, message the counselor).
+  const te = await getTranslations('empty');
+  const pathwayEmpty = ACTIVE_PATHWAY
+    ? null
+    : enrolledProgram
+      ? (
+        <KitEmptyState
+          kind="unavailable"
+          framed
+          headingAs="h3"
+          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', fontVariationSettings: "'FILL' 1" }}>school</span>}
+          title={te('learningPathwayUnavailable.title')}
+          description={te('learningPathwayUnavailable.body')}
+          primaryAction={{ href: '/dashboard/messages', label: te('learningPathwayUnavailable.action') }}
+        />
+      )
+      : (
+        <KitEmptyState
+          kind="first"
+          framed
+          headingAs="h3"
+          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', fontVariationSettings: "'FILL' 1" }}>school</span>}
+          title={te('learningPathway.title')}
+          description={te('learningPathway.body')}
+          primaryAction={{ href: digitalLiteracyFirstModuleHref(), label: te('learningPathway.action') }}
+          secondaryAction={{ href: '/dashboard/program', label: te('learningPathway.secondary') }}
+        />
+      );
 
   return (
     <>
@@ -127,24 +158,14 @@ export default async function LearningPage() {
     <div className="md:wa-hidden">
       {/* Header */}
       <div style={{ padding: '1.5rem 1.5rem 0', marginBottom: '1.5rem' }}>
-        <p className="wa-text-[13px] wa-font-medium wa-tracking-[0.1em] wa-uppercase wa-text-[var(--color-accent)]" style={{ display: 'block', marginBottom: '0.5rem' }}>Your Learning</p>
+        <p className="wa-text-[13px] wa-font-medium wa-tracking-[0.1em] wa-uppercase wa-text-[var(--wa-accent-text)]" style={{ display: 'block', marginBottom: '0.5rem' }}>Your Learning</p>
         <h2 className="wa-text-3xl wa-font-bold wa-tracking-tight wa-text-[var(--color-on-surface)] wa-leading-tight">The Learning Hub</h2>
       </div>
 
       {/* Empty state when no enrolled program */}
       {!ACTIVE_PATHWAY && (
         <div style={{ margin: '0 1.5rem 1.5rem' }}>
-          <PortalEmptyState
-            icon={
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
-                school
-              </span>
-            }
-            title="No active learning pathway"
-            description="Start digital basics now — no application needed — or choose a funded program."
-            primaryAction={{ href: digitalLiteracyFirstModuleHref(), label: 'Start digital basics, no application needed' }}
-            secondaryAction={{ href: '/dashboard/program', label: 'Choose a program' }}
-          />
+          {pathwayEmpty}
         </div>
       )}
 
@@ -205,17 +226,7 @@ export default async function LearningPage() {
 
       {!ACTIVE_PATHWAY && (
         <div style={{ marginBottom: 'var(--space-8)' }}>
-          <PortalEmptyState
-            icon={
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
-                school
-              </span>
-            }
-            title="No active learning pathway"
-            description="Start digital basics now — no application needed — or choose a funded program."
-            primaryAction={{ href: digitalLiteracyFirstModuleHref(), label: 'Start digital basics, no application needed' }}
-            secondaryAction={{ href: '/dashboard/program', label: 'Choose a program' }}
-          />
+          {pathwayEmpty}
         </div>
       )}
     </div>
@@ -309,7 +320,7 @@ export default async function LearningPage() {
                   <span
                     className="material-symbols-outlined wa-text-base"
                     style={{
-                      color: isCompleted ? 'var(--color-gold)' : isActive ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+                      color: isCompleted ? 'var(--color-gold)' : isActive ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
                       '--ms-fill': isCompleted ? 1 : 0,
                     }}
                    aria-hidden="true">
@@ -398,7 +409,7 @@ export default async function LearningPage() {
                 alignItems: 'center',
                 gap: 'var(--space-2)',
                 background: 'color-mix(in srgb, var(--color-accent) 12%, transparent)',
-                color: 'var(--color-accent)',
+                color: 'var(--wa-accent-text)',
                 padding: 'var(--space-1) var(--space-3)',
                 borderRadius: 'var(--radius-full)',
                 fontSize: 'var(--font-size-sm)',
@@ -542,7 +553,7 @@ export default async function LearningPage() {
       {ACTIVE_PATHWAY && (
       <section style={{ marginBottom: 'var(--space-8)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '1.5rem', color: 'var(--color-accent)', '--ms-fill': 1 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '1.5rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}>
             school
           </span>
           <h2 className="portal-section-heading" style={{ margin: 0 }}>Your Learning Pathway</h2>

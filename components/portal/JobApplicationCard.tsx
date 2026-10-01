@@ -8,6 +8,7 @@ import type { JobApplication } from "@/types/job-application";
 import type { JobApplicationStatus } from "@/lib/jobApplications/constants";
 import { isAppLocale } from "@/lib/i18n/config";
 import { formatLocalizedDate } from "@/lib/i18n/date";
+import { JOB_APPLICATION_STATUS_ACCENT } from "@/lib/jobApplications/statusAccents";
 
 interface JobApplicationCardProps {
   application: JobApplication;
@@ -23,16 +24,6 @@ const STATUS_LABELS: Record<JobApplicationStatus, string> = {
   ACCEPTED: "Accepted",
   SAVED: "Saved",
   REJECTED: "Rejected",
-};
-
-const CARD_ACCENT: Record<JobApplicationStatus, string> = {
-  SAVED: "#64748b",
-  APPLIED: "#8c0f37",
-  PHONE_SCREEN: "#2563eb",
-  INTERVIEWING: "#d97706",
-  OFFER: "#16a34a",
-  ACCEPTED: "#059669",
-  REJECTED: "#dc2626",
 };
 
 export default function JobApplicationCard({
@@ -129,15 +120,15 @@ export default function JobApplicationCard({
           <button
             onClick={handleStatusChange}
             type="button"
-            className="wa-flex-1 wa-px-3 wa-py-2 wa-text-white wa-text-sm wa-font-medium wa-rounded focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[#8c0f37] focus-visible:wa-ring-offset-1"
-            style={{ background: "var(--color-accent-dark, #6b0c29)" }}
+            className="wa-flex-1 wa-px-3 wa-py-2 wa-text-white wa-text-sm wa-font-medium wa-rounded focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[var(--wa-accent-dark)] focus-visible:wa-ring-offset-1"
+            style={{ background: "var(--wa-accent-dark)" }}
           >
             Save
           </button>
           <button
             type="button"
             onClick={() => setIsEditing(false)}
-            className="wa-flex-1 wa-px-3 wa-py-2 wa-text-sm wa-font-medium wa-rounded focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[#8c0f37] focus-visible:wa-ring-offset-1"
+            className="wa-flex-1 wa-px-3 wa-py-2 wa-text-sm wa-font-medium wa-rounded focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[var(--wa-accent-dark)] focus-visible:wa-ring-offset-1"
             style={{
               background: "var(--surface-container-high)",
               color: "var(--color-on-surface)",
@@ -162,11 +153,11 @@ export default function JobApplicationCard({
       role="button"
       tabIndex={0}
       aria-label={`Edit job application for ${application.role} at ${application.company}`}
-      className="portal-kanban-card job-app-card wa-cursor-pointer focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[#8c0f37] focus-visible:wa-ring-offset-1"
+      className="portal-kanban-card job-app-card wa-cursor-pointer focus-visible:wa-outline-none focus-visible:wa-ring-2 focus-visible:wa-ring-[var(--wa-accent-dark)] focus-visible:wa-ring-offset-1"
       style={
         {
           padding: "0.75rem",
-          "--portal-kanban-accent": CARD_ACCENT[application.status],
+          "--portal-kanban-accent": JOB_APPLICATION_STATUS_ACCENT[application.status],
         } as CSSProperties
       }
     >
@@ -202,7 +193,7 @@ export default function JobApplicationCard({
           <Link
             href={application.url}
             className="wa-font-medium hover:wa-underline"
-            style={{ color: "var(--color-accent)" }}
+            style={{ color: "var(--wa-accent-text)" }}
             onClick={(e) => e.stopPropagation()}
           >
             View job posting →
@@ -222,7 +213,7 @@ export default function JobApplicationCard({
       {application.nextInterviewDate && (
         <p
           className="wa-text-xs wa-font-medium wa-mb-2"
-          style={{ color: "var(--color-accent)" }}
+          style={{ color: "var(--wa-accent-text)" }}
         >
           Interview: {formatDate(application.nextInterviewDate)}
         </p>

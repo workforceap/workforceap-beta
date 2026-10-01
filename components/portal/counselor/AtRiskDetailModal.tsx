@@ -443,7 +443,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
               </button>
             </div>
             {error && (
-              <p role="alert" style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-accent)' }}>
+              <p role="alert" style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>
                 {error}
               </p>
             )}

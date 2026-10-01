@@ -1,10 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
@@ -15,12 +14,11 @@ import {
   Avatar,
   FormField,
   KpiStrip,
-  colorVar,
   type Column,
-  type KitColor,
   type KpiItem,
 } from '@/components/portal/kit';
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
+import { KIT_TABLE_PAGE_SIZE } from '@/components/portal/kit/kitTableUrlState';
 import {
   DEFAULT_STUDENT_SORT_DIRECTION,
   DEFAULT_STUDENT_SORT_KEY,
@@ -41,12 +39,17 @@ import {
   STUDENTS_ROSTER_VIEW_HREFS,
   TRAINING_PROGRESS_LEGACY_HREF,
   chipsForView,
+  emailWrapParts,
   matchesRosterChip,
   matchesRosterSearch,
+  rosterProgramLabel,
   toTrainingRosterRow,
+  applyRosterFocus,
   type StudentsRosterChip,
+  type StudentsRosterFocus,
   type StudentsRosterView,
 } from '@/lib/admin/studentsRosterView';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
@@ -133,6 +136,11 @@ export interface StudentsRosterKitProps {
    * the page). Unknown for this view falls back to "All".
    */
   initialChip?: StudentFilter;
+  /**
+   * Open on a server-resolved member set (`?needs=new-applicants`, WAP-198):
+   * only those rows, a notice naming the rule, and a link back to everyone.
+   */
+  focus?: StudentsRosterFocus;
   /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1); the view nav stays. */
   embedded?: boolean;
 }
@@ -216,22 +224,9 @@ function formatRosterGrade(pct: number | null | undefined): string {
   return `${String(rounded)}%`;
 }
 
-function readinessColor(score: number): KitColor {
-  if (score >= 70) return 'success';
-  if (score >= 50) return 'gold';
-  return 'accent';
-}
-
-/** Readiness score as a CSS var string (success ≥70, gold ≥50, else crimson). */
-function readinessVar(score: number): string {
-  return colorVar(readinessColor(score));
-}
-
 function NavButton({ href, label }: { href: string; label: string }) {
   return (
-    <AstryxLink href={href} as={NextLink as never} isStandalone>
-      <Button label={label} variant="secondary" size="sm" />
-    </AstryxLink>
+    <KitLinkButton href={href} label={label} variant="secondary" size="sm" />
   );
 }
 
@@ -243,6 +238,7 @@ export function StudentsRosterKit({
   total = 847,
   showingLabel,
   initialChip,
+  focus,
   embedded = false,
 }: StudentsRosterKitProps) {
   const router = useRouter();
@@ -255,21 +251,27 @@ export function StudentsRosterKit({
     initialChip && chips.includes(initialChip) ? initialChip : 'All',
   );
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const { sortKey, sortDirection, sortHeader } = useKitTableSort<StudentSortKey | TrainingSortKey>(
     isTraining ? DEFAULT_TRAINING_SORT_KEY : DEFAULT_STUDENT_SORT_KEY,
     isTraining ? DEFAULT_TRAINING_SORT_DIRECTION : DEFAULT_STUDENT_SORT_DIRECTION,
     TEXT_SORT_KEYS,
   );
 
+  // A focus replaces the population: chips, counts and the footer all read
+  // the focused rows, so "All" is the focused total, not the roster's.
+  const pool = useMemo(() => applyRosterFocus(students, focus), [students, focus]);
+  const poolTotal = focus ? pool.length : total;
+  const focusNotLoaded = focus ? Math.max(0, new Set(focus.memberIds).size - pool.length) : 0;
   const counts = Object.fromEntries(
     chips.map((chip) => [
       chip,
-      chip === 'All' ? total : students.filter((s) => matchesRosterChip(s, chip, view)).length,
+      chip === 'All' ? poolTotal : pool.filter((s) => matchesRosterChip(s, chip, view)).length,
     ]),
   ) as Record<StudentFilter, number>;
 
   const visible = useMemo(() => {
-    const kept = students.filter(
+    const kept = pool.filter(
       (s) => matchesRosterChip(s, active, view) && matchesRosterSearch(s, search),
     );
     if (!isTraining) return sortStudentRows(kept, sortKey as StudentSortKey, sortDirection);
@@ -279,12 +281,30 @@ export function StudentsRosterKit({
     return sortTrainingRows(kept.map(toTrainingRosterRow), sortKey as TrainingSortKey, sortDirection)
       .map((row) => byId.get(row.id))
       .filter((row): row is StudentRow => row != null);
-  }, [students, active, search, view, isTraining, sortKey, sortDirection]);
+  }, [pool, active, search, view, isTraining, sortKey, sortDirection]);
 
   const summary = useMemo(
     () => (isTraining ? summarizeTrainingRows(visible.map(toTrainingRosterRow)) : null),
     [isTraining, visible],
   );
+
+  // Page the filtered roster at the kit page size (guide §6a) so a 130-row
+  // roster is not 130 stacked cards on a phone. A chip or search change
+  // drops back to page 1; an out-of-range page clamps to the last one.
+  const pageCount = Math.max(1, Math.ceil(visible.length / KIT_TABLE_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = useMemo(
+    () => visible.slice((currentPage - 1) * KIT_TABLE_PAGE_SIZE, currentPage * KIT_TABLE_PAGE_SIZE),
+    [visible, currentPage],
+  );
+  const selectChip = (chip: StudentFilter) => {
+    setActive(chip);
+    setPage(1);
+  };
+  const changeSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
   const StudentCell = ({ row }: { row: StudentRow }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
@@ -309,8 +329,14 @@ export function StudentsRosterKit({
             ) : null}
           </div>
         ) : null}
-        <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
-          {row.email}
+        {/* Wraps at the <wbr>s (name-part dots, then "@"), not mid-domain; break-word only splits a part that cannot fit. */}
+        <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', overflowWrap: 'break-word', whiteSpace: 'normal' }}>
+          {emailWrapParts(row.email).map((part, index) => (
+            <Fragment key={index}>
+              {index > 0 ? <wbr /> : null}
+              {part}
+            </Fragment>
+          ))}
         </p>
         {row.location ? (
           <div
@@ -347,9 +373,8 @@ export function StudentsRosterKit({
     </div>
   );
 
-  /** Program title; the training view marks a program inferred from activity rather than assigned. */
-  const programLabel = (row: StudentRow) =>
-    `${row.program}${isTraining && row.inWap !== false && row.noProgram ? ' (inferred)' : ''}`;
+  /** Program title; every view marks a program inferred from activity rather than assigned (WAP-209). */
+  const programLabel = rosterProgramLabel;
 
   const LastActiveCell = ({ row }: { row: StudentRow }) => (
     <span
@@ -387,6 +412,7 @@ export function StudentsRosterKit({
     key: 'courseraGrade',
     header: sortHeader('courseraGrade', 'Coursera grade'),
     align: 'right',
+    numeric: true,
     minWidth: 112,
     ariaSort: ariaSort('courseraGrade'),
     render: (row) => (
@@ -419,6 +445,7 @@ export function StudentsRosterKit({
       key: 'readiness',
       header: sortHeader('readiness', 'Readiness'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSort('readiness'),
       render: (row) => row.readiness == null ? <span>—</span> : (
@@ -426,7 +453,7 @@ export function StudentsRosterKit({
           style={{
             fontVariantNumeric: 'tabular-nums',
             fontWeight: 800,
-            color: readinessVar(row.readiness),
+            color: 'var(--wa-text)',
             whiteSpace: 'nowrap',
           }}
         >
@@ -462,6 +489,7 @@ export function StudentsRosterKit({
       key: 'modules',
       header: sortHeader('modules', 'Modules'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSort('modules'),
       render: (row) => (
@@ -538,6 +566,19 @@ export function StudentsRosterKit({
         </p>
       ) : null}
 
+      {focus ? (
+        <p className="wa-kit-training-notice" data-testid="students-roster-focus">
+          <strong>{focus.label} · {pool.length}</strong>{' '}
+          {focus.detail}.
+          {focusNotLoaded > 0
+            ? ` ${focusNotLoaded} more ${focusNotLoaded === 1 ? 'is' : 'are'} past this list's load limit; open them from Today.`
+            : ''}{' '}
+          <AstryxLink href={focus.clearHref} as={NextLink as never}>
+            Show all students
+          </AstryxLink>
+        </p>
+      ) : null}
+
       {kpis ? (
         <div className="wa-mb-5" data-testid="students-roster-kpis">
           <KpiStrip items={kpis} />
@@ -551,12 +592,12 @@ export function StudentsRosterKit({
           type="search"
           placeholder="Name, email or program"
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          onChange={(event) => changeSearch(event.target.value)}
         />
-        <div className="lg:wa-col-span-2">
+        <div className="lg:wa-col-span-2 wa-kit-view-chips">
           <SegmentedControl
             value={active}
-            onChange={(v) => setActive(v as StudentFilter)}
+            onChange={(v) => selectChip(v as StudentFilter)}
             label="Roster filters"
             size="sm"
             layout="hug"
@@ -570,8 +611,15 @@ export function StudentsRosterKit({
 
       <DataTable<StudentRow>
         columns={isTraining ? trainingColumns : rosterColumns}
-        rows={visible}
+        rows={pageRows}
         rowKey={(row) => row.id}
+        pagination={{
+          page: currentPage,
+          pageSize: KIT_TABLE_PAGE_SIZE,
+          totalItems: visible.length,
+          onChange: setPage,
+          label: 'Roster pagination',
+        }}
         onRowClick={(row) => router.push(row.href ?? `/admin/members/${row.id}`)}
         minWidth={isTraining ? 1080 : 1040}
         mobile="cards"
@@ -595,16 +643,11 @@ export function StudentsRosterKit({
               </div>
             ) : (
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
-                <span style={{ minWidth: 0 }}>{row.program} · {row.counselor ?? 'Unassigned'}</span>
+                <span style={{ minWidth: 0 }}>{programLabel(row)} · {row.counselor ?? 'Unassigned'}</span>
                 {row.readiness != null ? (
                   <span style={{ whiteSpace: 'nowrap' }}>
                     Readiness{' '}
-                    <b
-                      style={{
-                        fontVariantNumeric: 'tabular-nums',
-                        color: readinessVar(row.readiness),
-                      }}
-                    >
+                    <b style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {row.readiness}
                     </b>
                   </span>
@@ -633,7 +676,7 @@ export function StudentsRosterKit({
         data-testid="students-roster-footer"
         style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 16 }}
       >
-        {showingLabel ?? `Showing ${visible.length} of ${total}`}
+        {showingLabel ?? `Showing ${visible.length} of ${poolTotal}`}
       </p>
     </EmbeddableFrame>
   );

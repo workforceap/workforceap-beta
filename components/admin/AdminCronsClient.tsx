@@ -77,7 +77,7 @@ export default function AdminCronsClient({
           style={{
             padding: '0.5rem 0.75rem',
             borderRadius: '0.375rem',
-            border: '1px solid var(--outline)',
+            border: '1px solid var(--wa-control-border)',
             background: 'var(--surface-container)',
             color: 'var(--color-on-surface)',
             fontSize: '0.875rem',
@@ -97,7 +97,7 @@ export default function AdminCronsClient({
           style={{
             padding: '0.5rem 0.75rem',
             borderRadius: '0.375rem',
-            border: '1px solid var(--outline)',
+            border: '1px solid var(--wa-control-border)',
             background: 'var(--surface-container)',
             color: 'var(--color-on-surface)',
             fontSize: '0.875rem',
@@ -228,7 +228,7 @@ export default function AdminCronsClient({
                       onClick={() => toggleError(row.id)}
                       style={{
                         fontSize: '0.8125rem',
-                        color: 'var(--color-accent)',
+                        color: 'var(--wa-accent-text)',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
@@ -242,7 +242,7 @@ export default function AdminCronsClient({
                       <p
                         style={{
                           fontSize: '0.8125rem',
-                          color: 'var(--color-accent)',
+                          color: 'var(--wa-accent-text)',
                           margin: '0.25rem 0 0',
                           maxWidth: '300px',
                           whiteSpace: 'pre-wrap',

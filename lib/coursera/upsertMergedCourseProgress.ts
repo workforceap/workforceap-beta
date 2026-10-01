@@ -1,12 +1,23 @@
 import { CourseProgressStatus, Prisma } from '@prisma/client';
 
+import {
+  ensurePendingCertificationForCompletionSafely,
+  type PendingCertificationDb,
+} from '@/lib/certifications/pendingFromCompletion';
 import type { ExistingCourseProgress, MergedCourseProgress } from '@/lib/coursera/b4bSync';
 
-type DbClient = Pick<Prisma.TransactionClient, '$queryRaw' | '$executeRaw'> & {
+type DbClient = Pick<Prisma.TransactionClient, '$queryRaw' | '$executeRaw'> &
+  // Present on the root client and on a transaction client; the certificate
+  // step below reuses them so it runs on the same connection as the write.
+  Partial<Pick<Prisma.TransactionClient, 'userCertification' | 'user' | 'auditLog'>> & {
   $transaction?: <T>(
     callback: (tx: Prisma.TransactionClient) => Promise<T>,
   ) => Promise<T>;
 };
+
+function certificateClientOf(db: DbClient): PendingCertificationDb | undefined {
+  return db.userCertification && db.user && db.auditLog ? (db as PendingCertificationDb) : undefined;
+}
 
 export type UpsertMergedCourseProgressArgs = {
   userId: string;
@@ -63,7 +74,7 @@ export async function upsertMergedCourseProgress(
 
   const runAtomicUpsert = async (
     tx: Pick<Prisma.TransactionClient, '$queryRaw' | '$executeRaw'>,
-  ): Promise<UpsertMergedCourseProgressResult> => {
+  ): Promise<UpsertMergedCourseProgressResult & { completed: boolean }> => {
     const lockKey = `${userId}:${programSlug}:${courseSlug}`;
     await tx.$executeRaw(Prisma.sql`
       SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
@@ -194,10 +205,37 @@ export async function upsertMergedCourseProgress(
         ? previous.status !== CourseProgressStatus.COMPLETED
         : finalRow.inserted);
 
-    return { newlyCompleted };
+    return { newlyCompleted, completed: finalRow.status === CourseProgressStatus.COMPLETED };
   };
 
-  return db.$transaction
+  const written = await (db.$transaction
     ? db.$transaction((tx) => runAtomicUpsert(tx))
-    : runAtomicUpsert(db);
+    : runAtomicUpsert(db));
+
+  // Every Coursera-reported completion that lands here (B4B cron, per-user
+  // sync, CSV promotion, xAPI statement detail) gets a pending certificate
+  // the member can see while staff verify it. It runs on the client the
+  // caller gave us: the root client means "after the progress transaction
+  // committed, in the helper's own transaction"; a transaction client
+  // (b4bSync's per-row `tx`) means "inside that transaction", so a rolled
+  // back completion leaves no orphan certificate. The helper is idempotent
+  // on (user, certificate name), so a re-sync of an already completed row is
+  // one indexed read, and a certificate that fails to appear is retried by
+  // the next report or the backfill script.
+  if (written.completed) {
+    const certificateDb = certificateClientOf(db);
+    await ensurePendingCertificationForCompletionSafely(
+      {
+        userId,
+        programSlug,
+        courseSlug,
+        courseraCourseId: courseId,
+        completedAt,
+        source: 'coursera-progress-merge',
+      },
+      certificateDb ? { db: certificateDb } : {},
+    );
+  }
+
+  return { newlyCompleted: written.newlyCompleted };
 }

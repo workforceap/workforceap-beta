@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_ROLE_NOT } from '@/lib/admin/memberOnlyWhere';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor, isSuperAdmin } from '@/lib/auth/roles';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
@@ -81,7 +82,10 @@ async function loadAuthorizedMemberOptions(args: {
   const members = await prisma.$transaction((tx) => {
     const where: Prisma.UserWhereInput = {
       deletedAt: null,
-      profile: { role: 'member' },
+      // Who may have a placement recorded is the one definition of "a member"
+      // (lib/admin/memberOnlyWhere.ts), so the selector and the funder counts
+      // name the same people. Role half only: a QA account can still be placed.
+      NOT: MEMBER_ONLY_ROLE_NOT,
     };
 
     if (!args.superAdmin) {
@@ -220,7 +224,8 @@ async function _POST(request: Request) {
         where: {
           id: userId,
           deletedAt: null,
-          profile: { role: 'member' },
+          // Same eligibility as the selector above: the one member definition.
+          NOT: MEMBER_ONLY_ROLE_NOT,
         },
         select: PLACEMENT_MEMBER_SELECT,
       }),

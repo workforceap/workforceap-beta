@@ -6,6 +6,7 @@ import LocalizedLink from '@/components/LocalizedLink';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { WEAK_PASSWORD_REASON } from '@/lib/auth/authProviderError';
+import { isSignupErrorReason } from '@/lib/apply/signupErrorReason';
 import { trackApplyFunnel } from '@/lib/analytics/events';
 import { isValidPostalCode } from '@/lib/validation/postalCode';
 import { trackConversionWithValue } from '@/lib/analytics/conversionValue';
@@ -26,6 +27,8 @@ import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
 import { isSchoolCollectionSignup, schoolPrimaryBarriers } from '@/lib/apply/schoolCollection';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
+import PartnerReferralDisclosure, { type PartnerDisclosureCopy } from '@/components/apply/PartnerReferralDisclosure';
+import type { PartnerReferralDisclosure as PartnerDisclosure } from '@/lib/apply/partnerReferralDisclosureCore';
 
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then((m) => m.Turnstile), { ssr: false });
 
@@ -53,7 +56,23 @@ function formatPhoneInput(value: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recoveryContext }: { readyHeader?: ReactNode; readyIntro?: ReactNode; recoveryContext?: ApplyRecoveryContext }) {
+export default function ApplyCreateAccountForm({
+  readyHeader,
+  readyIntro,
+  recoveryContext,
+  partnerDisclosure = null,
+  partnerDisclosureCopy,
+}: {
+  readyHeader?: ReactNode;
+  readyIntro?: ReactNode;
+  recoveryContext?: ApplyRecoveryContext;
+  /** Server-resolved partner disclosure for the page's ref (query or cookie). */
+  partnerDisclosure?: PartnerDisclosure | null;
+  partnerDisclosureCopy?: PartnerDisclosureCopy;
+}) {
+  // The ref whose "{partner} will be able to see …" line is on screen; sent
+  // with signup so the acknowledgement can be recorded server-side.
+  const [disclosedPartnerRef, setDisclosedPartnerRef] = useState<string | null>(partnerDisclosure?.ref ?? null);
   const t = useTranslations('apply');
   const tForm = useTranslations('form');
   const searchParams = useSearchParams();
@@ -102,6 +121,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
     contactConsent?: string;
   }>({});
   const errorSummaryRef = useRef<HTMLDivElement | null>(null);
+  const verifyHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const completedRef = useRef(false);
   const dropoffRef = useRef({ startedFields: 0, smsOptIn: false, program_slugs: null as string[] | null });
   const passwordStrengthScore = getPasswordStrengthScore(password);
@@ -384,6 +404,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
           password,
           programRankedSlugs,
           referralRef: referralRef?.trim() || undefined,
+          partnerDisclosureRef: disclosedPartnerRef ?? undefined,
           recommendedOnetCode: careerPayload?.recommendedOnetCode ?? undefined,
           recommendedCareerTitle: careerPayload?.recommendedCareerTitle ?? undefined,
           careerRecommendationJson: careerPayload?.careerRecommendationJson ?? undefined,
@@ -422,40 +443,79 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
           ...(CAPTCHA_ENABLED && turnstileToken ? { turnstileToken } : {}),
         }),
       });
-      const data = await res.json();
+      // An HTML 502/504 from the edge is not JSON; that is a failed account
+      // request, not a network error, so fall through to errAccountGeneric.
+      const data = await res.json().catch(() => null);
 
-      if (!res.ok) {
+      if (!res.ok || !data) {
         // Map common server-side errors to the specific field that produced
         // them so users can fix the issue inline instead of guessing.
-        // WAP-26: a weak-password refusal is reported by reason so the copy
-        // stays localised (the message text alone need not mention "password").
+        // WAP-26 / WAP-242: the server reports a stable `reason`, so the copy
+        // stays localised and the field is chosen by code, never by matching
+        // the English `error` text. Responses without a known reason (older
+        // deploys, unexpected failures) keep the text-based fallback.
         const weakPassword = data?.reason === WEAK_PASSWORD_REASON;
-        const serverMessage: string = weakPassword
-          ? t('errPasswordWeak')
-          : typeof data?.error === 'string' ? data.error : '';
-        const lower = serverMessage.toLowerCase();
+        const reason = isSignupErrorReason(data?.reason) ? data.reason : null;
         const serverFieldErrors: typeof fieldErrors = {};
+        let serverMessage: string;
         if (weakPassword) {
+          serverMessage = t('errPasswordWeak');
           serverFieldErrors.password = serverMessage;
-        } else if (lower.includes('already exists') || lower.includes('already registered')) {
-          serverFieldErrors.email = serverMessage;
-        } else if (lower.includes('password')) {
-          serverFieldErrors.password = serverMessage;
-        } else if (lower.includes('phone')) {
-          serverFieldErrors.phone = serverMessage;
-        } else if (lower.includes('email')) {
-          serverFieldErrors.email = serverMessage;
-        } else if (lower.includes('first name')) {
-          serverFieldErrors.firstName = serverMessage;
-        } else if (lower.includes('last name')) {
-          serverFieldErrors.lastName = serverMessage;
+        } else if (reason === 'invalid_field') {
+          const INVALID_FIELD: Partial<Record<string, [keyof typeof fieldErrors, string]>> = {
+            firstName: ['firstName', t('errFirstName')],
+            lastName: ['lastName', t('errLastName')],
+            email: ['email', t('errEmailInvalid')],
+            phone: ['phone', t('errPhoneDigits')],
+            zip: ['zip', t('errZipFormat')],
+            password: ['password', t('errPasswordShort')],
+          };
+          const hit = typeof data?.field === 'string' ? INVALID_FIELD[data.field] : undefined;
+          serverMessage = hit ? hit[1] : t('errAccountGeneric');
+          if (hit) serverFieldErrors[hit[0]] = serverMessage;
+        } else if (reason) {
+          const REASON_MESSAGE: Record<Exclude<typeof reason, 'invalid_field'>, string> = {
+            rate_limited: t('errRateLimited'),
+            request_unreadable: t('errRequestUnreadable'),
+            service_unavailable: t('errServiceUnavailable'),
+            security_check_required: t('errSecurityCheckRequired'),
+            security_check_failed: t('errSecurityCheckFailed'),
+            program_unmatched: t('errProgramUnmatched'),
+            already_signed_in: t('errAlreadySignedIn'),
+            email_exists: t('errEmailExists'),
+            account_recovery_required: t('errAccountRecovery'),
+          };
+          serverMessage = REASON_MESSAGE[reason];
+          if (reason === 'email_exists' || reason === 'account_recovery_required') {
+            serverFieldErrors.email = serverMessage;
+          }
+        } else {
+          serverMessage = typeof data?.error === 'string' ? data.error : '';
+          const lower = serverMessage.toLowerCase();
+          if (lower.includes('already exists') || lower.includes('already registered')) {
+            serverFieldErrors.email = serverMessage;
+          } else if (lower.includes('password')) {
+            serverFieldErrors.password = serverMessage;
+          } else if (lower.includes('phone')) {
+            serverFieldErrors.phone = serverMessage;
+          } else if (lower.includes('email')) {
+            serverFieldErrors.email = serverMessage;
+          } else if (lower.includes('first name')) {
+            serverFieldErrors.firstName = serverMessage;
+          } else if (lower.includes('last name')) {
+            serverFieldErrors.lastName = serverMessage;
+          }
         }
         if (Object.keys(serverFieldErrors).length > 0) {
           setFieldErrors((prev) => ({ ...prev, ...serverFieldErrors }));
         }
         // The Turnstile token is single-use and expires quickly — a failed
         // server-side check needs a fresh token, not just a re-submit.
-        if (lower.includes('security check')) {
+        if (
+          reason === 'security_check_required' ||
+          reason === 'security_check_failed' ||
+          (!reason && serverMessage.toLowerCase().includes('security check'))
+        ) {
           setTurnstileToken(null);
           setTurnstileNotice('expired');
           turnstileRef.current?.reset();
@@ -463,7 +523,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         setError(serverMessage || t('errAccountGeneric'));
         trackApplyFunnel(3, 'account_create_error', {
           program_slugs: programRankedSlugs,
-          error_message: serverMessage || 'unknown_error',
+          error_message: (reason ?? (weakPassword ? WEAK_PASSWORD_REASON : serverMessage)) || 'unknown_error',
         });
         setLoading(false);
         requestAnimationFrame(() => {
@@ -485,9 +545,13 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         schoolSignup &&
         eligibilityPayload?.ageGroup === 'under_18' &&
         eligibilityPayload?.parentGuardianEmail?.trim();
-      const confirmationPath = schoolSignup
-        ? `/apply/confirmation?school=1${schoolMinor ? '&minor=1' : ''}`
-        : '/apply/confirmation';
+      // `receipt=0` only when the server's awaited receipt send failed: the
+      // confirmation page then retries it. A sent receipt is never sent twice (WAP-240).
+      const receiptQuery = data.receiptSent === false ? 'receipt=0' : '';
+      const confirmationQuery = [schoolSignup ? 'school=1' : '', schoolMinor ? 'minor=1' : '', receiptQuery]
+        .filter(Boolean)
+        .join('&');
+      const confirmationPath = `/apply/confirmation${confirmationQuery ? `?${confirmationQuery}` : ''}`;
       trackApplyFunnel(3, 'account_created', {
         program_slugs: programRankedSlugs,
         redirect_to: confirmationPath,
@@ -504,8 +568,19 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         });
       }
 
-      if (data.message) {
-        window.location.href = confirmationPath;
+      // M07: signup succeeded without a session (email confirmation required).
+      // Show the "Check your email" screen instead of a confirmation page that
+      // implies the applicant can already sign in.
+      const redirectTo = typeof data.redirectTo === 'string' ? data.redirectTo : '';
+      const needsEmailVerification =
+        redirectTo === '/login' || (Boolean(data.message) && !redirectTo.startsWith('/apply/confirmation'));
+      if (needsEmailVerification) {
+        setVerifyEmail(email.trim().toLowerCase());
+        setVerifyEmailMode(true);
+        setLoading(false);
+        requestAnimationFrame(() => {
+          verifyHeadingRef.current?.focus();
+        });
         return;
       }
 
@@ -525,11 +600,11 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
     return (
       <div className="apply-form" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
         <MailOpen size={56} aria-hidden="true" style={{ color: 'var(--color-accent)', display: 'block', margin: '0 auto 1rem' }} />
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--color-on-surface)' }}>{t('accountVerifyTitle')}</h2>
+        <h2 ref={verifyHeadingRef} tabIndex={-1} style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--color-on-surface)' }}>{t('accountVerifyTitle')}</h2>
         <p style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6, marginBottom: '0.5rem' }}>
           {t('accountVerifySentTo')}
         </p>
-        <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '1.25rem', wordBreak: 'break-all' }}>
+        <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--wa-accent-text)', marginBottom: '1.25rem', wordBreak: 'break-all' }}>
           {verifyEmail}
         </p>
         <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
@@ -540,7 +615,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         </LocalizedLink>
         <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', marginTop: '1rem' }}>
           {t('accountVerifySpam')}{' '}
-          <a href="tel:+15127771808" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+          <a href="tel:+15127771808" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
             (512) 777-1808
           </a>{' '}
           {t('accountVerifySpamSuffix')}
@@ -605,7 +680,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
                   fontWeight: 600,
                 }}
               >
-                <span style={{ color: 'var(--color-accent)', fontWeight: 800 }}>#{index + 1}</span>
+                <span style={{ color: 'var(--wa-accent-text)', fontWeight: 800 }}>#{index + 1}</span>
                 {label}
               </span>
             ))}
@@ -932,6 +1007,14 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         <legend style={{ padding: '0 0.4rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           {t('accountConsentLegend')}
         </legend>
+        {partnerDisclosureCopy ? (
+          <PartnerReferralDisclosure
+            initial={partnerDisclosure}
+            copy={partnerDisclosureCopy}
+            programSlug={programRankedSlugs?.[0]}
+            onShownRefChange={setDisclosedPartnerRef}
+          />
+        ) : null}
         <label htmlFor="contactConsent" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.75rem', minHeight: 44 }}>
           <input
             id="contactConsent"
@@ -953,7 +1036,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
         </label>
         <p id="contact-consent-hint" className="apply-field-hint" style={{ margin: '0 0 0.5rem 0' }}>
           {t('accountConsentHint')}{' '}
-          <LocalizedLink href="/privacy" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>{t('privacyPolicy')}</LocalizedLink>.
+          <LocalizedLink href="/privacy" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>{t('privacyPolicy')}</LocalizedLink>.
         </p>
         {fieldErrors.contactConsent ? (
           <p id="contact-consent-error" className="form-error" role="alert" style={{ marginBottom: '0.5rem' }}>

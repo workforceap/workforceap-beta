@@ -5,7 +5,9 @@ import { getPartnerForUser } from '@/lib/auth/roles';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { sendPartnerReferralInviteEmail } from '@/lib/email';
+import { eventNameReadCandidates } from '@/lib/events/names';
 import { trackEvent } from '@/lib/events/track';
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
 import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
 import { checkAdminInviteRateLimit } from '@/lib/rate-limit';
 
@@ -15,10 +17,46 @@ import { logAuditEvent } from '@/lib/audit/log';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
 
+/**
+ * P01 duplicate-safe referral: an email this partner (the caller or any
+ * teammate) already invited within this many hours gets no second email.
+ * Operational default; adjust here.
+ */
+const PARTNER_REINVITE_WINDOW_HOURS = 24;
+
 const schema = z.object({
   email: z.string().email().max(320).transform((value) => value.toLowerCase().trim()),
   personalMessage: z.string().max(2000).optional().nullable(),
-});export const POST = withApiGuc(async (request: NextRequest) => {
+});
+
+/**
+ * When this partner last sent an invite to `email` inside the re-invite
+ * window, read from the `partner_invite_sent` events the send path records.
+ * A courtesy guard, not a security control: a failed lookup is logged and
+ * returns null so the invite still sends (fail open).
+ */
+async function findRecentPartnerInvite(partnerId: string, email: string): Promise<Date | null> {
+  try {
+    const since = new Date(Date.now() - PARTNER_REINVITE_WINDOW_HOURS * 60 * 60 * 1000);
+    const prior = await prisma.$transaction((tx) => tx.memberEvent.findFirst({
+      where: {
+        eventName: { in: eventNameReadCandidates('partner_invite_sent') },
+        entityType: 'partner',
+        entityId: partnerId,
+        createdAt: { gte: since },
+        metadata: { path: ['inviteeEmail'], equals: email },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    }));
+    return prior?.createdAt ?? null;
+  } catch (error) {
+    console.error('[POST /api/partner/invitations] repeat-invite lookup failed; sending anyway', error);
+    return null;
+  }
+}
+
+export const POST = withApiGuc(async (request: NextRequest) => {
   try {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -64,6 +102,20 @@ const schema = z.object({
     const inviterName =
       inviter?.fullName?.trim() || inviter?.email?.trim() || partner.name || 'Your WorkforceAP partner';
     const personalMessage = parsed.data.personalMessage?.trim() || null;
+
+    const priorInviteAt = await findRecentPartnerInvite(ctx.partnerId, parsed.data.email);
+    if (priorInviteAt) {
+      // No send and no new partner_invite_sent event, so the window runs from
+      // the email the person actually received.
+      auditLog({ actorUserId: user.id, action: 'partner_invitation_repeat_suppressed', targetType: 'User', targetId: user.id, metadata: { partnerId: ctx.partnerId, inviteeEmail: parsed.data.email, priorInviteAt: priorInviteAt.toISOString() } }).catch(() => {});
+      const priorDay = priorInviteAt.toLocaleDateString('en-US', { timeZone: PORTAL_TIMEZONE, month: 'short', day: 'numeric' });
+      return NextResponse.json({
+        ok: true,
+        alreadyInvited: true,
+        inviteUrl,
+        message: `You already invited ${parsed.data.email} on ${priorDay}. We didn't send another email.`,
+      });
+    }
 
     const emailResult = await sendPartnerReferralInviteEmail({
       to: parsed.data.email,

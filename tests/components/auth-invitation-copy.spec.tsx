@@ -134,6 +134,21 @@ it('uses localized generic retry guidance for an unknown acceptance error', asyn
   expect(screen.queryByText('private provider stack')).not.toBeInTheDocument();
 });
 
+it.each([
+  ['INVITE_ACCOUNT_RECOVERY_REQUIRED', 'accountRecoveryRequired'],
+  ['INVITE_IDENTITY_REVIEW_REQUIRED', 'identityReviewRequired'],
+] as const)('shows localized invitation guidance for %s', async (code, errorKey) => {
+  navigation.search.set('token', token);
+  fetchMock.mockResolvedValueOnce(Response.json(invitation));
+  fetchMock.mockResolvedValueOnce(Response.json({ error: 'Private provider detail', code }, { status: 409 }));
+  mount('es', <InvitePage />);
+  await screen.findByRole('heading', { name: es.auth.invite.invitedHeading });
+  fireEvent.change(screen.getByLabelText(es.auth.invite.fullName), { target: { value: 'Fixture Person' } });
+  fireEvent.click(screen.getByRole('button', { name: es.auth.invite.accept }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(es.auth.invite.errors[errorKey]);
+  expect(screen.queryByText('Private provider detail')).not.toBeInTheDocument();
+});
+
 it('retains the safe default when a login destination is protocol-relative', () => {
   mount('es', <LoginForm initialRedirectTo="//example.test/unsafe" />, 'login');
   const nav = within(screen.getByRole('navigation', { name: es.auth.login.portalDestinationAria }));

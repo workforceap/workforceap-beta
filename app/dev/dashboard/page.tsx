@@ -104,7 +104,7 @@ export default function DevDashboardPage() {
 
         {/* bento: feature tiles + pipeline */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5" style={{ marginBottom: 20 }}>
-          <FeatureTile icon={<Sparkles size={22} />} badge="AI" title="Career Toolkit" body="Resume audit + cover letters in seconds." tone="crimson" />
+          <FeatureTile icon={<Sparkles size={22} />} badge="AI" title="AI Career Tools" body="Resume audit + cover letters in seconds." tone="crimson" />
           <FeatureTile icon={<Medal size={22} />} badge="NEXT" title="Next Badge" body="2 modules to Cloud Foundations." tone="gold" />
           <div className="wa-kit-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>

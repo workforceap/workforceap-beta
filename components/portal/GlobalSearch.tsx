@@ -45,7 +45,10 @@ export default function GlobalSearch() {
       >
         <Search size={16} aria-hidden />
         <span>Search</span>
-        <kbd className="wa-hidden md:wa-inline" style={{ color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}>⌘K</kbd>
+        {/* Inherits the button's text colour: --wa-text on the surface button, the
+            admin rail's --wa-sidebar-label on its dark chrome (4.85:1). --wa-muted
+            measured 3.14:1 on the admin rail. */}
+        <kbd className="wa-hidden md:wa-inline" style={{ color: 'inherit', fontSize: 'var(--wa-type-meta)' }}>⌘K</kbd>
       </button>
       <CommandPalette<GlobalSearchItem>
         isOpen={open}

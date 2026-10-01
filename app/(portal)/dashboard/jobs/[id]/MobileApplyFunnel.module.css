@@ -215,7 +215,7 @@
 
 .mobile-funnel-btn-primary {
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
 }
 
 .mobile-funnel-btn-primary:hover {
@@ -301,7 +301,7 @@
   border: none;
   cursor: pointer;
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   transition: opacity var(--wa-dur-fast) var(--wa-ease), transform var(--wa-dur-fast) var(--wa-ease);
 }
 

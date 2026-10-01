@@ -60,7 +60,7 @@ export default function AtRiskSummaryWidget() {
 
   const levels = useMemo(
     () => [
-      { key: 'critical', label: 'Critical', count: summary?.critical ?? 0, color: 'var(--color-accent)', icon: ShieldAlert },
+      { key: 'critical', label: 'Critical', count: summary?.critical ?? 0, color: 'var(--wa-accent-text)', icon: ShieldAlert },
       { key: 'high', label: 'High', count: summary?.high ?? 0, color: 'var(--color-gold)', icon: ShieldHalf },
       { key: 'medium', label: 'Medium', count: summary?.medium ?? 0, color: 'var(--color-blue)', icon: ShieldCheck },
     ],
@@ -108,7 +108,7 @@ export default function AtRiskSummaryWidget() {
           style={{
             fontSize: '0.8125rem',
             fontWeight: 600,
-            color: 'var(--color-accent)',
+            color: 'var(--wa-accent-text)',
             textDecoration: 'none',
             display: 'inline-flex',
             alignItems: 'center',

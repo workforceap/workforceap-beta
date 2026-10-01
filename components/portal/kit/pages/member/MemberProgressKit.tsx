@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Check, Mic, TrendingUp, Zap, Flag } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DesignSurface, PageOpener, ProgressRing, KitEmptyState } from '@/components/portal/kit';
 import type { ReadinessPriorityAction } from '@/lib/readiness/progressView';
 
@@ -67,6 +68,11 @@ export function MemberProgressKit({
   summary,
 }: MemberProgressKitProps) {
   const score = Math.max(0, Math.min(100, Math.round(readinessScore)));
+  // `empty.*` (KIT_GUIDE §6). buildReadinessProgressView always emits the four
+  // categories, so the lists are empty only when the score read failed (the
+  // `loadFailed` branch, `unavailable`/danger) or in previews — the `first`
+  // states below carry no CTA because nothing the member does creates a row.
+  const te = useTranslations('empty');
 
   return (
     <DesignSurface surface="warm">
@@ -80,14 +86,11 @@ export function MemberProgressKit({
         {loadFailed ? (
           <div className="wa-kit-card" data-portal-error-state="member-readiness-load">
             <KitEmptyState
-              title="Couldn't load your readiness score"
-              description="Refresh the page. If this keeps happening, message your counselor."
-              action={
-                <a href={readinessCoachHref} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
-                  <Mic size={14} aria-hidden="true" />
-                  Open readiness coach
-                </a>
-              }
+              kind="unavailable"
+              tone="danger"
+              title={te('readinessUnavailable.title')}
+              description={te('readinessUnavailable.body')}
+              primaryAction={{ href: readinessCoachHref, label: te('readinessUnavailable.action') }}
             />
           </div>
         ) : (
@@ -144,15 +147,7 @@ export function MemberProgressKit({
           <div className="wa-kit-card lg:wa-col-span-2">
             <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>{statsHeading}</h2>
             {weekStats.length === 0 ? (
-              <KitEmptyState
-                title="No category scores yet"
-                description="Scores appear as you complete profile, resume, training, and job applications."
-                action={
-                  <a href="/dashboard/profile" className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
-                    Open profile
-                  </a>
-                }
-              />
+              <KitEmptyState kind="first" headingAs="h3" title={te('categoryScores.title')} description={te('categoryScores.body')} />
             ) : (
             <div className="wa-grid wa-grid-cols-2 sm:wa-grid-cols-4 wa-gap-3" style={{ marginBottom: 24 }}>
               {weekStats.map((stat) => (
@@ -168,10 +163,7 @@ export function MemberProgressKit({
               Milestones
             </h3>
             {milestones.length === 0 ? (
-              <KitEmptyState
-                title="No milestones yet"
-                description="Milestones follow the four readiness areas as profile, training, jobs, and engagement fill in."
-              />
+              <KitEmptyState kind="first" headingAs="h4" title={te('milestones.title')} description={te('milestones.body')} />
             ) : (
             <div className="wa-space-y-3">
               {milestones.map((m) => {

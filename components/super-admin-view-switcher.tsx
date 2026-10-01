@@ -27,14 +27,16 @@ function getCurrentView(pathname: string): ViewId {
  * Super-admin flag from the shared current-user snapshot (WAP-27). When the
  * server already rendered the answer (`knownSuperAdmin`), no request is made;
  * otherwise every caller on the page shares the same single `/api/auth/me`.
+ * Both true and false are authoritative server answers; only undefined needs
+ * a browser lookup.
  */
-export function useIsSuperAdmin(knownSuperAdmin = false) {
-  const { user } = useCurrentUser({ enabled: !knownSuperAdmin });
-  return knownSuperAdmin || user?.superAdmin === true;
+export function useIsSuperAdmin(knownSuperAdmin?: boolean) {
+  const { user } = useCurrentUser({ enabled: knownSuperAdmin === undefined });
+  return knownSuperAdmin ?? (user?.superAdmin === true);
 }
 
 export default function SuperAdminViewSwitcher({
-  initialIsSuperAdmin = false,
+  initialIsSuperAdmin,
 }: {
   initialIsSuperAdmin?: boolean;
 }) {

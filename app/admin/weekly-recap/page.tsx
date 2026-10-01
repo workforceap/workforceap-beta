@@ -8,6 +8,8 @@ import { getWeeklyRecapCohortStats, getWeeklyScoreboardStats } from '@/lib/admin
 import { isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import DataTable from '@/components/portal/ui/DataTable';
@@ -238,7 +240,16 @@ export default async function AdminWeeklyRecapAnalyticsPage({
   const deepStaleCutoff = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000);
 
   const orgFilter = orgId ? { organizationId: orgId } : {};
-  const orgUserFilter = orgId ? { user: { organizationId: orgId } } : {};
+  // Member accounts only (lib/admin/memberOnlyWhere.ts). This page sat outside
+  // #2425's surface list, so a super_admin dogfood placement, a staff
+  // certification and a staff account's enrollment date were still weekly
+  // outcomes here (number audit 2026-09-20, F1 / F2 / F7).
+  const memberFilter = { deletedAt: null, ...orgFilter, ...MEMBER_ONLY_WHERE };
+  const orgUserFilter = { user: memberFilter };
+  // Activity is something the member did. Rows the platform writes *to* the
+  // member (nudge mails, recap digests) are not activity, or every nudged
+  // member would read as re-engaged (S1; Mike's activity rule, 2026-09-20).
+  const activityEvent = MEMBER_ACTIVITY_EVENT_WHERE;
 
   // Six lean count queries (no $transaction, no per-row HTTP).
   const [
@@ -252,10 +263,10 @@ export default async function AdminWeeklyRecapAnalyticsPage({
     reEngaged,
   ] = await Promise.all([
     prisma.user.count({
-      where: { deletedAt: null, ...orgFilter, enrolledAt: { gte: weekStart, lt: now } },
+      where: { ...memberFilter, enrolledAt: { gte: weekStart, lt: now } },
     }),
     prisma.user.count({
-      where: { deletedAt: null, ...orgFilter, enrolledAt: { gte: prevStart, lt: weekStart } },
+      where: { ...memberFilter, enrolledAt: { gte: prevStart, lt: weekStart } },
     }),
     prisma.placementRecord.count({
       where: { placedAt: { gte: weekStart, lt: now }, ...orgUserFilter },
@@ -273,22 +284,20 @@ export default async function AdminWeeklyRecapAnalyticsPage({
     // the 14–21d window (crossed the 14d staleness line during this week).
     prisma.user.count({
       where: {
-        deletedAt: null,
-        ...orgFilter,
+        ...memberFilter,
         enrolledAt: { not: null },
-        memberEvents: { none: { createdAt: { gte: staleCutoff } } },
-        AND: [{ memberEvents: { some: { createdAt: { gte: deepStaleCutoff, lt: staleCutoff } } } }],
+        memberEvents: { none: { createdAt: { gte: staleCutoff }, ...activityEvent } },
+        AND: [{ memberEvents: { some: { createdAt: { gte: deepStaleCutoff, lt: staleCutoff }, ...activityEvent } } }],
       },
     }),
     // Re-engaged: members active this week whose only prior activity was already
     // stale (no activity in the 14d→7d window before this week).
     prisma.user.count({
       where: {
-        deletedAt: null,
-        ...orgFilter,
+        ...memberFilter,
         enrolledAt: { not: null },
-        memberEvents: { some: { createdAt: { gte: weekStart } } },
-        AND: [{ memberEvents: { none: { createdAt: { gte: deepStaleCutoff, lt: weekStart } } } }],
+        memberEvents: { some: { createdAt: { gte: weekStart }, ...activityEvent } },
+        AND: [{ memberEvents: { none: { createdAt: { gte: deepStaleCutoff, lt: weekStart }, ...activityEvent } } }],
       },
     }),
   ]);

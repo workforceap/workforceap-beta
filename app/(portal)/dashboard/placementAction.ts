@@ -8,10 +8,31 @@ import { revalidatePath } from 'next/cache';
 import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
 import { persistEvent } from '@/lib/events/track';
 import { recordApplicationStatusChange } from '@/lib/member/applicationStatusEvent';
+import {
+  recordPlacementFromApplication,
+  type RecordPlacementOutcome,
+} from '@/lib/placement/recordPlacementFromApplication';
+import { captureApiError } from '@/lib/observability/captureApiError';
+import { PARTNER_PLACEMENT_LABELS } from '@/lib/partner/partnerVisibleEvents';
+import { partnerDataAccess, partnerMayViewMember } from '@/lib/partner/dataAccess';
 
-export async function confirmPlacement(jobApplicationId: string) {
+export type ConfirmPlacementResult = {
+  /**
+   * What happened to the member's PlacementRecord: 'created' (first
+   * confirmation), 'unchanged' (already on record, nothing re-sent), or
+   * 'failed' (the record write threw; the claim event still carries the
+   * report for staff review). The strip reads this to tell the member the
+   * truth for their case.
+   */
+  placementOutcome: RecordPlacementOutcome | 'failed';
+};
+
+export async function confirmPlacement(jobApplicationId: string): Promise<ConfirmPlacementResult> {
   const user = await getUser();
   if (!user) throw new Error('Unauthorized');
+
+  let placementOutcome: RecordPlacementOutcome | 'failed' = 'failed';
+  let placementRecordId: string | null = null;
 
   await withUserGuc(user, async () => {
     const application = await prisma.jobApplication.findUnique({
@@ -34,6 +55,34 @@ export async function confirmPlacement(jobApplicationId: string) {
       data: { status: 'ACCEPTED', updatedAt: now },
     });
 
+    // Stand up the PlacementRecord the same way an employer marking the
+    // application hired does (lib/employer/applicationStatusEffects.ts), so a
+    // self-reported hire reaches the retention check-ins, the First 90 Days
+    // card and the placement counts instead of stopping at an event. The row
+    // is member-reported and `startDateVerified: false` until a counselor
+    // confirms start date and wage; one row per member, so a second
+    // confirmation or a later employer 'hired' lands on this same row.
+    // Fail-soft like the employer path: the status update above has already
+    // committed, and the claim event below must still be written.
+    try {
+      const recorded = await recordPlacementFromApplication({
+        userId: user.id,
+        employerName: application.company,
+        jobTitle: application.role,
+        source: 'member_self_report',
+        applicationId: application.id,
+        actorUserId: user.id,
+        now,
+      });
+      placementOutcome = recorded.outcome;
+      placementRecordId = recorded.placement.id;
+    } catch (err) {
+      captureApiError(err, {
+        route: 'dashboard/confirmPlacement',
+        extra: { userId: user.id, applicationId: application.id, stage: 'member-placement-record' },
+      });
+    }
+
     await persistEvent({
       userId: user.id,
       eventName: 'placement_confirmation_submitted',
@@ -50,24 +99,37 @@ export async function confirmPlacement(jobApplicationId: string) {
         role: application.role,
         confirmedAt: now.toISOString(),
         pendingReview: true,
-        note: 'Member self-reported offer acceptance. No placement record created until staff review.',
+        placementOutcome,
+        placementRecordId,
+        note: 'Member self-reported offer acceptance. Recorded as a member-reported placement; start date and wage stay unverified until staff review.',
       },
       sourcePage: '/dashboard',
     }, prisma);
 
     const referral = await prisma.partnerReferral.findFirst({
       where: { memberId: user.id },
-      select: { partnerId: true },
+      select: {
+        partnerId: true,
+        partner: { select: { partnerType: true } },
+        member: { select: { profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } } } },
+      },
     });
 
-    if (referral?.partnerId) {
+    // The partner timeline names the actor, and the actor here is the member.
+    // A member hidden from this partner (a minor without FERPA consent under a
+    // non-school partner, lib/partner/dataAccess.ts) must not appear there, so
+    // no partner event is written for them at all.
+    if (
+      referral?.partnerId &&
+      partnerMayViewMember(partnerDataAccess(referral.partner), referral.member?.profile)
+    ) {
       await recordPartnerWorkflowEvent({
         partnerId: referral.partnerId,
         actorUserId: user.id,
         kind: 'placement_confirmation_submitted',
-        headline: `${application.company} offer reported by member`,
+        headline: PARTNER_PLACEMENT_LABELS.pendingVerification,
         detail:
-          'Member self-reported an accepted role. WorkforceAP review is still pending before placement is finalized.',
+          'Member self-reported an accepted role. Recorded as a member-reported placement; WorkforceAP still verifies start date and wage before it is finalized.',
         entityType: 'JobApplication',
         entityId: application.id,
       });
@@ -98,8 +160,12 @@ export async function confirmPlacement(jobApplicationId: string) {
 
   revalidatePath('/dashboard');
   revalidatePath('/admin');
+  revalidatePath('/admin/placements');
+  revalidatePath('/counselor/placements');
   revalidatePath(`/admin/members/${user.id}`);
   revalidatePath('/partner');
   revalidatePath('/partner/attention');
   revalidatePath('/partner/outcomes');
+
+  return { placementOutcome };
 }

@@ -12,7 +12,7 @@ import {
   PageOpener,
   RankBars,
   type RankDatum,
-  type KitColor,
+  type KitTone,
 } from '@/components/portal/kit';
 import { Card } from '@astryxdesign/core/Card';
 
@@ -58,19 +58,6 @@ export interface SystemHealthKitProps {
   kicker?: string;
   /** Right-aligned header action (e.g. a Refresh button). */
   headerAction?: ReactNode;
-}
-
-function tileColor(status: TileStatus): KitColor {
-  switch (status) {
-    case 'ok':
-      return 'success';
-    case 'degraded':
-      return 'gold';
-    case 'fail':
-      return 'accent';
-    default:
-      return 'muted';
-  }
 }
 
 /** CSS var string for the tile accent color. */
@@ -195,7 +182,20 @@ export function SystemHealthKit({
   );
 }
 
-/** Re-export the bar color helper so the page can color bars by status. */
-export function statusToKitColor(status: TileStatus): KitColor {
-  return tileColor(status);
+/**
+ * Subsystem status → kit tone for the "Integration uptime" RankBars, so the
+ * page paints each bar by state through `.wa-kit-tone--<tone>` (same hues the
+ * status tiles above use: ok → success, degraded → gold, fail → brand alert).
+ */
+export function statusToKitTone(status: TileStatus): KitTone {
+  switch (status) {
+    case 'ok':
+      return 'ok';
+    case 'degraded':
+      return 'warn';
+    case 'fail':
+      return 'alert';
+    default:
+      return 'muted';
+  }
 }

@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import NextLink from 'next/link';
 import {
   CircleCheck,
   TriangleAlert,
@@ -13,12 +12,11 @@ import {
   CircleHelp,
 } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { PageOpener } from '@/components/portal/kit';
 import { EmbeddableFrame } from './EmbeddableFrame';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Coursera Sync — sync-status card + unmatched-learners list (dense).
@@ -75,6 +73,13 @@ export interface CourseraSyncKitProps {
   unmatchedTotal: number | null;
   unmatchedLoaded?: boolean;
   hiddenTestCount?: number | null;
+  /**
+   * Why a list that loaded without error is still narrower than production's
+   * (e.g. `coursera_xapi_events` absent). Rendered in the kit's info-toned
+   * `role="status"` slot inside the Unmatched Learners card; omitted = nothing
+   * to say.
+   */
+  notice?: string;
   /** Force Sync target — the legacy interactive view that hosts the real button. */
   forceSyncHref: string;
   /** Header action (e.g. a link to Coursera health diagnostics). */
@@ -154,6 +159,7 @@ export function CourseraSyncKit({
   unmatchedTotal,
   unmatchedLoaded = true,
   hiddenTestCount = null,
+  notice,
   forceSyncHref,
   headerAction,
   approvedForEnrollment,
@@ -277,15 +283,14 @@ export function CourseraSyncKit({
             ))}
           </div>
 
-          <AstryxLink href={forceSyncHref} as={NextLink as never} isStandalone style={{ display: 'block', marginTop: 18 }}>
-            <Button
-              label="Open sync tools"
-              variant="primary"
-              size="sm"
-              icon={<RefreshCw size={14} />}
-              style={{ width: '100%' }}
-            />
-          </AstryxLink>
+          <KitLinkButton
+            href={forceSyncHref}
+            label="Open sync tools"
+            variant="primary"
+            size="sm"
+            icon={<RefreshCw size={14} />}
+            style={{ display: 'flex', width: '100%', marginTop: 18 }}
+          />
           <p
             style={{
               marginTop: 8,
@@ -323,6 +328,11 @@ export function CourseraSyncKit({
           <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 14px' }}>
             Recorded Coursera identities with no matching member. This is an activity backlog, not a provider membership roster.
           </p>
+          {notice ? (
+            <p role="status" className="wa-kit-training-notice" data-testid="coursera-sync-notice">
+              {notice}
+            </p>
+          ) : null}
 
           {!unmatchedLoaded ? (
             <EmptyState
@@ -381,9 +391,7 @@ export function CourseraSyncKit({
                       {row.caption}
                     </div>
                   </div>
-                  <AstryxLink href={row.href} as={NextLink as never} isStandalone style={{ flexShrink: 0 }}>
-                    <Button label="Link" variant="secondary" size="sm" icon={<Link2 size={12} />} />
-                  </AstryxLink>
+                  <KitLinkButton href={row.href} label="Link" variant="secondary" size="sm" icon={<Link2 size={12} />} style={{ flexShrink: 0 }} />
                 </Card>
               ))}
             </div>

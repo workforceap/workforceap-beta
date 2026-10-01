@@ -43,7 +43,7 @@ const primaryPillStyle = {
   gap: 6,
   padding: '10px 20px',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   borderRadius: 999,
   border: 'none',
   fontWeight: 700,

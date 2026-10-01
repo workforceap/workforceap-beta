@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Search } from 'lucide-react';
-import { Token } from '@astryxdesign/core/Token';
 import { type KitBaseProps, type KitDataAttrs } from './base';
 
 interface UniversalSearchProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
@@ -42,7 +41,7 @@ export function UniversalSearch({ placeholder = 'Find anything…', onSearch, hi
       />
       {hint ? (
         <span className="wa-hidden md:wa-inline" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}>
-          <Token label="⌘K" size="sm" color="gray" />
+          <kbd className="wa-kit-search-hint" aria-hidden>⌘K</kbd>
         </span>
       ) : null}
     </div>

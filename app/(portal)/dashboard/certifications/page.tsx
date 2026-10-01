@@ -8,10 +8,10 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getPathwayForProgram } from '@/lib/content/learningPathways';
 import { buildPathwayMilestones } from '@/lib/content/pathwayStepDisplay';
+import { getTranslations } from 'next-intl/server';
 import { getRequestLocale } from '@/lib/i18n/server';
 import { formatLocalizedDate } from '@/lib/i18n/date';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import CertificationRoadmap from '@/components/portal/CertificationRoadmap';
 import CertificationReferenceSection from '@/components/portal/CertificationReferenceSection';
 import {
@@ -21,11 +21,13 @@ import {
   CertificationViewButton,
 } from '@/components/portal/CertificationVaultActions';
 import CertificationAddForm from '@/components/portal/CertificationAddForm';
+import CertificationsEarnMoreCard from '@/components/portal/CertificationsEarnMoreCard';
 import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/MemberCertificatesKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
+import CertificationsEmptyNotice, { CERTIFICATES_ADD_FORM_ID } from '@/components/portal/CertificationsEmptyNotice';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -45,6 +47,9 @@ export default async function DashboardCertificationsPage({
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const locale = await getRequestLocale();
+  // `empty.certificates` (KIT_GUIDE §6): the one sentence for the empty vault,
+  // shared by the legacy records caption and every KitEmptyState on this page.
+  const te = await getTranslations('empty');
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
 
@@ -76,7 +81,7 @@ export default async function DashboardCertificationsPage({
       take: 500,
       where: { userId: user.id },
       orderBy: { earnedAt: 'desc' },
-      select: { id: true, certName: true, earnedAt: true },
+      select: { id: true, certName: true, earnedAt: true, status: true },
     }),
     primaryPathway
       ? prisma.pathwayStepProgress.findMany({
@@ -111,14 +116,28 @@ export default async function DashboardCertificationsPage({
   if (requestedUi !== 'legacy') {
     // Earned certs → kit cards. earnedAt is a Date here (raw Prisma select,
     // not the ISO-mapped certRows used by the legacy mobile rows below).
-    const earned = certs.map((c) => ({
-      id: c.id,
-      title: c.certName,
-      meta: `Issued ${formatLocalizedDate(c.earnedAt, locale, { month: 'short', day: 'numeric', year: 'numeric' })}`,
-      // Coursera/manual certs aren't credential-verified through us, so we
-      // don't claim "verified" — leave the badge off.
-      verified: false,
-    }));
+    // WAP-20 / review 2026-09-22: every row starts `pending` (a self-report
+    // or a certificate created from a Coursera completion) and only a row
+    // staff approved is a verified credential. Say which is which instead of
+    // dating every row as issued.
+    const earned = certs.map((c) => {
+      const date = formatLocalizedDate(c.earnedAt, locale, { month: 'short', day: 'numeric', year: 'numeric' });
+      return {
+        id: c.id,
+        title: c.certName,
+        meta:
+          c.status === 'approved'
+            ? `Issued ${date}`
+            : c.status === 'pending'
+              ? `Pending verification · completed ${date}`
+              : `Not verified · reported ${date}`,
+        verified: c.status === 'approved',
+      };
+    });
+    // "Earned" and "Verified" both mean staff-approved: a pending or rejected
+    // row is listed with its state but does not count until it is verified,
+    // which is what the empty-state copy promises.
+    const approvedCount = earned.filter((cert) => cert.verified).length;
 
     // In-progress cert = the member's current pathway milestone, surfaced as a
     // single in-progress card with the overall pathway completion percent.
@@ -152,15 +171,19 @@ export default async function DashboardCertificationsPage({
 
     return (
       <MemberCertificatesKit
-        earnedCount={certs.length}
+        earnedCount={approvedCount}
         inProgressCount={inProgress.length}
-        verifiedCount={0}
+        verifiedCount={approvedCount}
         // Learning-hours isn't loaded on this route; pass 0 rather than let the
         // kit's fabricated default (86) show next to real counts.
         learningHours={0}
         earned={earned}
         inProgress={inProgress}
         continueHref={inProgress.length > 0 ? MEMBER_PROGRAM_HREF : undefined}
+        // WAP-188 Phase A: the self-report form used to render only on
+        // ?ui=legacy. Same component, same route (a `pending` row for staff
+        // review); the kit frames it with the pending-review copy.
+        addCertificateForm={<CertificationAddForm />}
       />
     );
   }
@@ -195,7 +218,7 @@ export default async function DashboardCertificationsPage({
             {
               icon: 'workspace_premium',
               label: `${certs.length} earned`,
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               bg: 'rgba(173,44,77,0.12)',
             },
             {
@@ -245,9 +268,7 @@ export default async function DashboardCertificationsPage({
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {certs.length === 0 ? (
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>
-                No certificates recorded yet. Certificates appear here when you complete Coursera courses (they sync automatically) or when you add certificates you've earned elsewhere.
-              </p>
+              <CertificationsEmptyNotice />
             ) : (
               certs.map((cert) => (
                 <CertificationEarnedRowMobile key={cert.id} certName={cert.certName} earnedAt={cert.earnedAt} />
@@ -256,7 +277,9 @@ export default async function DashboardCertificationsPage({
           </div>
           <div style={{ paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             <DownloadAllCertificatesButton certs={certRows} />
-            <CertificationAddForm />
+            <div id={CERTIFICATES_ADD_FORM_ID}>
+              <CertificationAddForm />
+            </div>
           </div>
         </section>
 
@@ -324,7 +347,7 @@ export default async function DashboardCertificationsPage({
             }}
           >
             <div style={{ display: 'flex', gap: '0.625rem', marginBottom: '0.75rem', alignItems: 'flex-start' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', flexShrink: 0 }} aria-hidden="true">help_center</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', flexShrink: 0 }} aria-hidden="true">help_center</span>
               <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0 }}>
                 Not sure which cert to go after?
               </p>
@@ -350,7 +373,7 @@ export default async function DashboardCertificationsPage({
                     textDecoration: 'none',
                   }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">workspace_premium</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--wa-accent-text)' }} aria-hidden="true">workspace_premium</span>
                   {label}
                 </a>
               ))}
@@ -364,7 +387,7 @@ export default async function DashboardCertificationsPage({
                 marginTop: '0.875rem',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                color: 'var(--color-accent)',
+                color: 'var(--wa-accent-text)',
                 textDecoration: 'none',
               }}
             >
@@ -376,49 +399,7 @@ export default async function DashboardCertificationsPage({
 
         {/* Earn More CTA */}
         <div style={{ padding: '0 1rem', marginBottom: '1rem' }}>
-          <div
-            style={{
-              background: 'linear-gradient(135deg, var(--color-accent) 0%, rgba(173,44,77,0.8) 100%)',
-              borderRadius: '1rem',
-              padding: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: '2rem', color: '#fff', '--ms-fill': 1 }}
-            >
-              emoji_events
-            </span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem', marginBottom: '0.25rem' }}>Earn More Credentials</div>
-              <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.625rem' }}>
-                Browse available certificates in your program pathway.
-              </div>
-              <a
-                href="/dashboard/learning"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  background: '#fff',
-                  // White pill in both modes: pin the label to the light-mode crimson
-                  // (var(--color-accent) is #e0658a in dark mode, 3.28:1 on white).
-                  color: '#ad2c4d',
-                  borderRadius: '0.5rem',
-                  padding: '0.375rem 0.875rem',
-                  fontWeight: 700,
-                  fontSize: '0.8125rem',
-                  textDecoration: 'none',
-                }}
-              >
-                View Pathway
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">arrow_forward</span>
-              </a>
-            </div>
-          </div>
+          <CertificationsEarnMoreCard />
         </div>      </div>
 
       {/* ── DESKTOP ── */}
@@ -451,7 +432,7 @@ export default async function DashboardCertificationsPage({
                 className="material-symbols-outlined"
                 style={{
                   fontSize: '2rem',
-                  color: 'var(--color-accent)',
+                  color: 'var(--wa-accent-text)',
                   background: 'rgba(173,44,77,0.12)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-3)',
@@ -542,7 +523,7 @@ export default async function DashboardCertificationsPage({
                 >
                   {certs.length > 0
                     ? 'Credentials saved to your WorkforceAP profile. Official PDF certificates come from the issuing organization (Coursera, CompTIA, etc.).'
-                    : 'Earn certificates through your program pathway to see them listed here. Coursera certificates sync automatically; others can be added manually.'}
+                    : te('certificates.body')}
                 </div>
               </div>
             </div>
@@ -562,7 +543,7 @@ export default async function DashboardCertificationsPage({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--color-accent)', flexShrink: 0, marginTop: '0.1rem' }} aria-hidden="true">help_center</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--wa-accent-text)', flexShrink: 0, marginTop: '0.1rem' }} aria-hidden="true">help_center</span>
               <div>
                 <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: '0 0 0.25rem' }}>
                   Not sure which cert to go after?
@@ -597,7 +578,7 @@ export default async function DashboardCertificationsPage({
                     textDecoration: 'none',
                   }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '0.9rem', color: 'var(--color-accent)' }} aria-hidden="true">workspace_premium</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '0.9rem', color: 'var(--wa-accent-text)' }} aria-hidden="true">workspace_premium</span>
                   {cert.label}
                 </a>
               ))}
@@ -608,11 +589,11 @@ export default async function DashboardCertificationsPage({
                   alignItems: 'center',
                   gap: '0.375rem',
                   padding: '0.4rem 0.875rem',
-                  background: 'var(--color-accent)',
+                  background: 'var(--wa-accent)',
                   borderRadius: '999px',
                   fontSize: '0.8125rem',
                   fontWeight: 700,
-                  color: '#fff',
+                  color: 'var(--wa-on-accent-control)',
                   textDecoration: 'none',
                 }}
               >
@@ -641,7 +622,7 @@ export default async function DashboardCertificationsPage({
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
                 <span
                   className="material-symbols-outlined"
-                  style={{ fontSize: '1.5rem', color: 'var(--color-accent)', '--ms-fill': 1 }}
+                  style={{ fontSize: '1.5rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}
                 >
                   route
                 </span>
@@ -707,7 +688,7 @@ export default async function DashboardCertificationsPage({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', '--ms-fill': 1 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}>
                   download
                 </span>
                 <h3 style={{ fontSize: 'var(--font-size-h4)', fontWeight: 'var(--font-weight-medium)', margin: 0 }}>Certificate Record</h3>
@@ -750,20 +731,10 @@ export default async function DashboardCertificationsPage({
                   ))}
                 </ul>
               ) : (
-                <PortalEmptyState
-                  icon={
-                    <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
-                      workspace_premium
-                    </span>
-                  }
-                  title="No certificates yet"
-                  description="Earn certificates through your program pathway to see them listed here. Coursera certificates sync automatically; others can be added manually."
-                  primaryAction={{ href: '/dashboard/learning', label: 'Go to Learning Hub' }}
-                  secondaryAction={{ href: '/dashboard/ai-tools/career-business-coach', label: 'Talk to Career Coach' }}
-                />
+                <CertificationsEmptyNotice headingAs="h4" addFormId={`${CERTIFICATES_ADD_FORM_ID}-desktop`} />
               )}
               <DownloadAllCertificatesButton certs={certRows} />
-              <div style={{ marginTop: '0.75rem' }}>
+              <div style={{ marginTop: '0.75rem' }} id={`${CERTIFICATES_ADD_FORM_ID}-desktop`}>
                 <CertificationAddForm />
               </div>
             </div>
@@ -813,7 +784,7 @@ export default async function DashboardCertificationsPage({
           {/* Certificate Roadmap section */}
           <section style={{ marginBottom: 'var(--space-12)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.5rem', color: 'var(--color-accent)', '--ms-fill': 1 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.5rem', color: 'var(--wa-accent-text)', '--ms-fill': 1 }}>
                 timeline
               </span>
               <h2 className="portal-section-heading" style={{ margin: 0 }}>Certificate Roadmap</h2>

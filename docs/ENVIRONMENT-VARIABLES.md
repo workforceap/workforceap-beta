@@ -285,7 +285,7 @@ Lilley's member prompt contains no browser-supplied text placeholders. The sessi
 | `PORTAL_AUDIT_SECTION` | 🛠️ 🔒 | Local-only portal section filter; trusted remote policies require `all` | `all` | Portal audit runner and cross-portal E2E |
 | `PORTAL_AUDIT_OUTPUT` | 🛠️ 🔒 | Current audit result path | `test-results/portal-audit-results.json` | Portal audit runner |
 | `PORTAL_AUDIT_ROUTE_CONCURRENCY` | 🛠️ 🔒 | Bounded page concurrency (1–12) | `8` | Portal audit runner |
-| `PORTAL_AUDIT_READ_ONLY_TOKEN` | 🛠️ 🔒 | Capability token (≥ 32 chars) the audit browser sends only to the exact trusted origin; the target deployment must hold the same value | `openssl rand -hex 32` | Portal audit runner, `middleware.ts` |
+| `PORTAL_AUDIT_READ_ONLY_TOKEN` | 🛠️ 🔒 | Capability token (≥ 32 chars) carried in a host-only, HttpOnly audit cookie for the validated target; the target deployment must hold the same value | `openssl rand -hex 32` | Portal audit runner, `middleware.ts` |
 | `PORTAL_AUDIT_TARGET_ORIGIN` | 🛠️ 🔒 | Origin the pre-audit health gate probes (falls back to `PLAYWRIGHT_BASE_URL`) | `https://exact-preview.example` | `scripts/portal-audit-health-gate.mjs` |
 | `PORTAL_AUDIT_TRUSTED_SHA` | 🛠️ 🔒 | Full commit the target must serve on `/api/health` (falls back to `GITHUB_SHA`) | `f630cf65…` | `scripts/portal-audit-health-gate.mjs` |
 | `PORTAL_AUDIT_HEALTH_TIMEOUT_MS` | 🛠️ 🔒 | How long the health gate waits for a still-building preview (default 10 minutes) | `600000` | `scripts/portal-audit-health-gate.mjs` |

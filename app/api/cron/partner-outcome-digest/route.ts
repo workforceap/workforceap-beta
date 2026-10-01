@@ -12,6 +12,8 @@ import {
   partnerDigestReferralTake,
 } from '@/lib/cron/cronCaps';
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { partnerDataAccess, partnerMayViewMember, partnerVisiblePlacement } from '@/lib/partner/dataAccess';
+import { partnerPlacementLabel } from '@/lib/partner/partnerVisibleEvents';
 
 export const maxDuration = 300;
 
@@ -34,6 +36,7 @@ async function handle(_request: Request) {
       id: true,
       name: true,
       contactEmail: true,
+      partnerType: true,
     },
   });
 
@@ -72,8 +75,16 @@ async function handle(_request: Request) {
           assessmentCompleted: true,
           deletedAt: true,
           placementRecord: {
-            select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true },
+            select: {
+              employerName: true,
+              jobTitle: true,
+              salaryOffered: true,
+              placedAt: true,
+              startDateVerified: true,
+            },
           },
+          // Minor visibility only (lib/partner/dataAccess.ts); never rendered.
+          profile: { select: { isMinor: true, dob: true, ferpaConsentGiven: true } },
           userCertifications: { select: { certName: true, earnedAt: true } },
           applications: { select: { status: true, submittedAt: true } },
           memberProgramProgress: {
@@ -99,7 +110,10 @@ async function handle(_request: Request) {
       continue;
     }
 
-    const referrals = referralsByPartner.get(p.id) ?? [];
+    // Same tier + minor rule as the partner portal (lib/partner/dataAccess.ts).
+    const access = partnerDataAccess(p);
+    const referrals = (referralsByPartner.get(p.id) ?? [])
+      .filter((r) => partnerMayViewMember(access, r.member.profile, now));
     if (referrals.length === 0) {
       results.push({ partnerId: p.id, name: p.name, emailSent: false, error: 'no_referrals' });
       continue;
@@ -110,6 +124,11 @@ async function handle(_request: Request) {
 
     for (const r of referrals) {
       const m = r.member;
+      // A placement is a partner-visible outcome only once staff verified its
+      // start date (lib/partner/partnerVisibleEvents.ts). A member self-report
+      // is unverified: it neither moves the stage to "placed" (same rule as
+      // lib/partner/referralBundle.ts) nor is announced as a win below.
+      const verifiedPlacement = m.placementRecord?.startDateVerified === true ? m.placementRecord : null;
       const assignment = resolveTrainingProgressAssignment(
         m.enrolledProgram,
         m.courseEnrollments,
@@ -123,7 +142,7 @@ async function handle(_request: Request) {
         enrolledAt: m.enrolledAt,
         assessmentCompleted: m.assessmentCompleted,
         deletedAt: m.deletedAt,
-        placementRecord: m.placementRecord,
+        placementRecord: verifiedPlacement,
         userCertifications: m.userCertifications,
         applications: m.applications,
         memberProgramProgress: m.memberProgramProgress,
@@ -136,10 +155,11 @@ async function handle(_request: Request) {
           successLines.push(`${m.fullName} earned certification: ${c.certName}`);
         }
       }
-      const placed = m.placementRecord;
+      // Tier projection first (a restricted partner never gets employer or
+      // job title), then the portal's own wording for a verified placement.
+      const placed = partnerVisiblePlacement(access, verifiedPlacement);
       if (placed?.placedAt && placed.placedAt >= weekStart) {
-        const role = placed.jobTitle ? ` as ${placed.jobTitle}` : '';
-        successLines.push(`${m.fullName} placed${role}`);
+        successLines.push(`${m.fullName}: ${partnerPlacementLabel(placed)}`);
       }
     }
 

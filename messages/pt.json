@@ -33,9 +33,13 @@
     "myAccount": "Minha Conta",
     "myProgram": "Meu Programa",
     "myCertificates": "Meus Certificados",
+    "pathToCertification": "Caminho para a certificação",
+    "myDocuments": "Meus documentos",
+    "inviteFriend": "Convidar um amigo",
     "wioaQualification": "Qualificação WIOA",
     "careerToolkit": "AI Career Tools",
     "aiCounselor": "Lilley",
+    "aiAdvisor": "Consultor de IA",
     "trainingPreassessment": "Pré-avaliação de Treinamento",
     "counselorChat": "Mensagens",
     "aboutUs": "Sobre Nós",
@@ -60,6 +64,7 @@
     "collapseSidebar": "Recolher barra lateral",
     "workspaceTabs": "Abas do espaço de trabalho",
     "unreadCount": "{count, plural, one {# não lida} other {# não lidas}}",
+    "pendingApplicationsCount": "{count, plural, one {# aguardando o empregador} other {# aguardando empregadores}}",
     "mobileBottomNav": {
       "ariaLabel": "Navegação móvel principal",
       "marketing": {
@@ -72,6 +77,7 @@
         "overview": "Visão Geral",
         "jobs": "Vagas",
         "pipeline": "Processo",
+        "workQueue": "Fila",
         "messages": "Mensagens"
       },
       "counselor": {
@@ -85,6 +91,7 @@
       "partner": {
         "overview": "Visão Geral",
         "members": "Membros",
+        "attention": "Atenção",
         "messages": "Mensagens",
         "milestones": "Marcos",
         "outcomes": "Resultados"
@@ -92,7 +99,8 @@
       "admin": {
         "today": "Hoje",
         "students": "Estudantes",
-        "messages": "Mensagens"
+        "messages": "Mensagens",
+        "applications": "Candidaturas"
       }
     },
     "freeCareerQuiz": "Quiz de carreira grátis",
@@ -499,6 +507,15 @@
     "voiceInterviewMetaDesc": "Practice a live voice mock interview for a specific job or role, with optional camera recording and real-time coaching feedback.",
     "assessmentMetaTitle": "Pré-avaliação de Treinamento",
     "assessmentMetaDesc": "Uma verificação rápida de habilidades que ajuda a posicionar você. Concluí-la não libera o Coursera.",
+    "interviewSteps": {
+      "preScreeningTitle": "Pré-triagem",
+      "preScreeningLede": "A etapa antes da sua entrevista.",
+      "interviewTitle": "Entrevista",
+      "eligible": "Você já pode solicitar sua entrevista.",
+      "submitted": "Pré-triagem enviada. Um orientador vai analisá-la e entrar em contato por e-mail.",
+      "requested": "Recebemos sua solicitação de entrevista em {date}. Um orientador entrará em contato por e-mail."
+    },
+    "weeklyRecapOpenGoals": "Abrir suas metas",
     "programMetaTitle": "My Program",
     "programMetaDesc": "View or select your enrolled program.",
     "mentorMetaTitle": "Mentor Dashboard",
@@ -522,8 +539,6 @@
     "jobApplicationsCount": "{count, plural, one {# candidatura} other {# candidaturas}}",
     "addApplication": "Adicionar candidatura",
     "browseJobs": "Ver empregos",
-    "jobApplicationsEmptyTitle": "Nenhuma candidatura ainda",
-    "jobApplicationsEmptyDesc": "Acompanhe as vagas às quais você se candidata—adicione uma manualmente ou candidate-se pelo quadro de empregos.",
     "jobApplicationsLoadError": "Não foi possível carregar suas candidaturas. Verifique sua conexão e tente de novo.",
     "jobApplicationsAddError": "Não foi possível adicionar esta candidatura. Verifique sua conexão e tente de novo.",
     "jobApplicationsUpdateError": "Não foi possível atualizar esta candidatura. Verifique sua conexão e tente de novo.",
@@ -559,7 +574,7 @@
     "programChangeModalTitle": "Solicitar mudança de programa",
     "programChangeCloseAria": "Fechar",
     "programChangeSuccessTitle": "Solicitação enviada.",
-    "programChangeSuccessBody": "Um conselheiro entrará em contato pelo chat ou e-mail — geralmente em 1–2 dias úteis.",
+    "programChangeSuccessBody": "Um orientador analisará seu pedido e entrará em contato pelo chat ou e-mail.",
     "programChangeCloseButton": "Fechar",
     "programChangeCurrentLabel": "Programa atual:",
     "programChangeSelectLabel": "Programa para o qual deseja mudar",
@@ -656,6 +671,30 @@
     "screeningSectionTitle": "Detalhes da triagem de elegibilidade",
     "ageGroupLabel": "Faixa etária *",
     "ageGroupPlaceholder": "Selecione a faixa etária",
+    "ageGroupOptions": {
+      "under_18": "Menos de 18",
+      "18_24": "18–24",
+      "25_50": "25–50",
+      "50_plus": "50 ou mais"
+    },
+    "gradeLevelOptions": {
+      "9": "9.º ano",
+      "10": "10.º ano",
+      "11": "11.º ano",
+      "12": "12.º ano",
+      "other": "Outro / recém-formado"
+    },
+    "barrierOptions": {
+      "seeking_skills_training": "Preciso de formação em uma ocupação em demanda ou de um certificado",
+      "no_barrier": "Nenhuma barreira no momento",
+      "employment_gap": "Período sem emprego",
+      "limited_work_history": "Pouca experiência de trabalho",
+      "snap_tanf_wic": "SNAP / TANF / vale-alimentação / WIC",
+      "justice_involved": "Antecedentes / envolvimento com a justiça",
+      "disability_health": "Deficiência ou problema de saúde",
+      "housing_instable": "Moradia instável",
+      "other_barrier": "Outra barreira"
+    },
     "countyLabel": "Condado *",
     "primaryBarriersLabel": "Barreira(s) principal(is) — marque todas que se aplicam *",
     "primaryBarriersAria": "Barreiras principais",
@@ -833,6 +872,9 @@
     "accountContactConsent": "Concordo em ser contatado",
     "accountContactConsentRest": "pelo WorkforceAP sobre minha candidatura por e-mail ou telefone. *",
     "accountConsentHint": "Necessário para que um conselheiro possa fazer acompanhamento sobre seu próximo passo. Veja nossa",
+    "partnerDisclosureLabel": "Your referral partner",
+    "partnerDisclosureRestricted": "You were referred by {partner}. {partner} will be able to see your application status and progress in WorkforceAP: your name, your application status and the date you applied, the program you enroll in, how far along you are, the names of certifications you earn, and whether and when you start a job. {partner} will not see your email, phone number, address, employment or education details, employer, job title, or pay.",
+    "partnerDisclosureFull": "You were referred by {partner}. {partner} will be able to see your application status and progress in WorkforceAP, along with some contact and profile details: your name and email address; your city, state, and ZIP code; your employment status and education level; the program you enroll in and how far along you are; the certifications you earn; and, once WorkforceAP confirms a job placement, your employer, job title, pay, and job follow-up.",
     "accountCreating": "Criando sua conta…",
     "accountSubmitCta": "Salvar minha vaga e criar login",
     "accountProfileLater": "Você pode voltar depois para completar seu perfil.",
@@ -855,6 +897,15 @@
     "errSummaryGeneric": "Por favor, corrija os campos destacados e tente novamente.",
     "errProgramsNotSaved": "Suas seleções de programa não foram salvas — por favor, volte para a etapa 2 e escolha pelo menos um programa.",
     "errAccountGeneric": "Não conseguimos finalizar a criação da sua conta. Por favor, revise suas informações e tente novamente, ou ligue para (512) 777-1808.",
+    "errEmailExists": "Já existe uma conta com este e-mail. Entre para continuar ou redefina sua senha se você já tem cadastro.",
+    "errAccountRecovery": "Já existe uma conta com este e-mail. Se você não conseguir entrar, ligue para a WorkforceAP no (512) 777-1808 para recuperá-la.",
+    "errAlreadySignedIn": "Você já está conectado a outra conta. Saia primeiro e depois crie a nova conta.",
+    "errRateLimited": "Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.",
+    "errRequestUnreadable": "Não conseguimos ler seus dados de cadastro. Atualize a página e tente novamente.",
+    "errServiceUnavailable": "O cadastro está temporariamente indisponível. Tente novamente em breve ou ligue para (512) 777-1808.",
+    "errSecurityCheckRequired": "Conclua a verificação de segurança.",
+    "errSecurityCheckFailed": "A verificação de segurança não foi aprovada. Tente novamente.",
+    "errProgramUnmatched": "Não encontramos o programa escolhido. Volte à etapa 2 e escolha seu programa novamente.",
     "errNetwork": "Não conseguimos acessar o servidor para finalizar a criação da sua conta. Verifique sua conexão com a internet e tente novamente, ou ligue para (512) 777-1808 se continuar falhando.",
     "confirmationMetaTitle": "Você está no sistema do WorkforceAP",
     "confirmationMetaDescription": "Sua inscrição está registrada. Verifique sua caixa de entrada e a pasta de spam para a confirmação e os próximos passos.",
@@ -917,14 +968,14 @@
     "confirmationGuestDashboardLabel": "Abra seu dashboard para ferramentas",
     "confirmationGuestDashboardDesc": "Após fazer login, seu dashboard é onde ferramentas de carreira com IA, mensagens e aprendizado ficam.",
     "statusMetaTitle": "Status da candidatura",
-    "statusMetaDescription": "Verifique o status da sua candidatura no WorkforceAP com o e-mail que você usou.",
+    "statusMetaDescription": "Receba um link seguro para o status atual da sua candidatura na WorkforceAP, enviado ao e-mail usado na candidatura.",
     "statusHeroTitle": "Status da candidatura",
-    "statusHeroSubtitle": "Veja onde sua candidatura está antes de ter um login no portal do membro.",
-    "statusLead": "Digite o e-mail que você usou na candidatura. Mostraremos seu status atual — sem senha necessária.",
+    "statusHeroSubtitle": "Receba por e-mail um link seguro para o status atual da sua candidatura — antes de ter acesso ao portal de membro.",
+    "statusLead": "Digite o e-mail usado na sua candidatura. Se houver uma candidatura nesse endereço, enviaremos um link para o status atual — sem senha. Os links expiram após {minutes} minutos.",
     "statusEmailLabel": "E-mail",
     "statusEmailPlaceholder": "voce@exemplo.com",
-    "statusChecking": "Verificando…",
-    "statusSubmit": "Verificar status",
+    "statusChecking": "Enviando…",
+    "statusSubmit": "Enviar link de status por e-mail",
     "statusErrorGeneric": "Algo deu errado. Por favor, tente novamente.",
     "statusErrorUnexpected": "Resposta inesperada. Por favor, tente novamente.",
     "statusErrorNetwork": "Erro de rede. Por favor, tente novamente.",
@@ -977,7 +1028,31 @@
     "shareButtonEmailSubject": "Treinamento profissional sem custo para os membros",
     "shareButtonEmailBody": "Conheça a WorkforceAP:",
     "shareButtonSmsBody": "Conheça o treinamento profissional da WorkforceAP, sem custo para os membros:",
-    "schoolHeroDescSuffix": "Depois escolha um programa e crie seu acesso. Um orientador analisará sua inscrição e entrará em contato."
+    "schoolHeroDescSuffix": "Depois escolha um programa e crie seu acesso. Um orientador analisará sua inscrição e entrará em contato.",
+    "statusSentTitle": "Confira sua caixa de entrada.",
+    "statusSentBody": "Se houver uma candidatura em {email}, enviamos um link por e-mail. Ele expira em {minutes} minutos.",
+    "statusSentHelp": "Nada chegou? Verifique a pasta de spam e confirme que este é o e-mail usado na candidatura. Enviamos atualizações de status apenas por e-mail, nunca por mensagem de texto.",
+    "statusContactBefore": "Para perguntar sobre sua candidatura agora,",
+    "statusContactLink": "fale com a equipe",
+    "statusContactAfter": "e inclua o e-mail usado na candidatura.",
+    "statusViewMetaTitle": "Status da sua candidatura",
+    "statusViewHeroTitle": "Status da sua candidatura",
+    "statusViewHeroSubtitle": "O que temos registrado e o que acontece a seguir.",
+    "statusViewHeroSubtitleNamed": "{name}, aqui está o que temos registrado e o que acontece a seguir.",
+    "statusViewProgressLabel": "Progresso da candidatura",
+    "statusViewCurrentLabel": "Status atual",
+    "statusViewUnknownLabel": "Registrada",
+    "statusViewUnknownNext": "Nossa equipe recebeu sua candidatura. Fique de olho no e-mail para os próximos passos.",
+    "statusViewSubmittedLabel": "Enviada em",
+    "statusViewProgramLabel": "Programa de interesse",
+    "statusViewCounselorLabel": "Seu conselheiro",
+    "statusViewNextLabel": "O que acontece a seguir",
+    "statusViewLinkNote": "Este link deixa de funcionar {minutes} minutos após a solicitação. Precisa consultar de novo mais tarde?",
+    "statusViewRequestAgain": "Solicitar um novo link",
+    "statusViewExpiredTitle": "Este link expirou",
+    "statusViewExpiredBody": "Links de status funcionam por {minutes} minutos e apenas para o e-mail ao qual foram enviados.",
+    "statusViewExpiredHelp": "Solicite um novo e o enviaremos ao e-mail usado na candidatura.",
+    "statusViewExpiredCta": "Solicitar um novo link"
   },
   "enroll": {
     "missingPill": "Inscrição escolar",
@@ -996,6 +1071,26 @@
     "missingContact": "Contatar WorkforceAP",
     "missingHome": "Voltar ao início",
     "missingMetaTitle": "Página de inscrição escolar não encontrada"
+  },
+  "partnerLanding": {
+    "metaTitle": "Apply to WorkforceAP with {partner}",
+    "eyebrow": "Referred by {partner}",
+    "title": "{partner} invited you to WorkforceAP",
+    "applyCta": "Start your application",
+    "applyCtaNote": "Applying from this page connects your application to {partner}.",
+    "programsEyebrow": "Program highlights",
+    "programsTitle": "Career training you can explore",
+    "programsBody": "A few of the programs available through WorkforceAP. You choose your program when you apply.",
+    "stepsEyebrow": "How it works",
+    "stepsTitle": "Three steps from here",
+    "privacyTitle": "What {partner} will see",
+    "closingTitle": "Ready when you are"
+  },
+  "mission": {
+    "heading": "Our mission",
+    "aboutHeading": "About WorkforceAP",
+    "statement": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. WorkforceAP equips individuals, nonprofits, counselors, and community ambassadors with workforce-readiness tools, occupational training and professional certification programs, and AI-powered résumé, interview, and job-placement assistance. Our mission is to help people secure meaningful employment, build sustainable careers, and create better lives—at no cost to eligible members through grant- and scholarship-funded memberships.",
+    "summary": "Workforce Advancement Project (WorkforceAP) is a 501(c)(3) nonprofit organization committed to helping bridge the digital divide created by rapid technological growth through digital literacy, AI readiness, and access to occupational training. At no cost to eligible members through grant- and scholarship-funded memberships."
   },
   "training": {
     "myTraining": "Meu Treinamento",
@@ -1051,7 +1146,16 @@
     "noMessagesYet": "Nenhuma mensagem ainda",
     "yourCounselor": "Seu orientador",
     "workforceapSupport": "Suporte WorkforceAP",
-    "supportTeam": "Equipe de suporte"
+    "supportTeam": "Equipe de suporte",
+    "kitLede": "Seu orientador e o suporte em uma só caixa de entrada.",
+    "conversations": "Conversas",
+    "unreadMessage": "Mensagem não lida",
+    "backToMessages": "Voltar às mensagens",
+    "sendFailed": "Falha ao enviar",
+    "networkError": "Erro de rede",
+    "composerPlaceholder": "Escreva para {name}…",
+    "feedbackDraftNotice": "Revise os detalhes do curso e qualquer link de projeto salvo antes de enviar. Suas notas privadas não são compartilhadas.",
+    "feedbackUnavailable": "Não conseguimos carregar esse curso atribuído. Você ainda pode escrever sua mensagem abaixo."
   },
   "profile": {
     "edit": "Editar perfil",
@@ -1090,18 +1194,9 @@
     "salaryHighToLow": "Salário (maior para menor)",
     "salaryLowToHigh": "Salário (menor para maior)",
     "match": "compatível",
-    "noJobsMatchFilters": "Nenhuma vaga corresponde aos seus filtros",
-    "tryAdjustingFilters": "Tente ajustar seus filtros ou limpe-os para ver todas as vagas disponíveis.",
     "clearFilters": "Limpar filtros",
-    "noOpeningsListed": "Nenhuma vaga ativa no momento",
-    "newRolesAppear": "Os parceiros empregadores ainda não publicaram vagas ativas neste quadro. Atualize seu perfil para ficar pronto quando houver correspondências, envie uma mensagem ao seu conselheiro para indicações e volte depois que novas vagas forem publicadas.",
-    "updateProfile": "Atualizar perfil",
     "messageCounselor": "Mensagem ao conselheiro",
     "improveJobMatches": "Melhorar correspondências de vagas",
-    "noJobsAvailable": "Nenhuma vaga disponível no momento",
-    "newJobsAddedRegularly": "Os parceiros empregadores ainda não publicaram vagas ativas neste quadro. Explore os programas de treinamento enquanto espera e volte depois que novas vagas forem publicadas.",
-    "browsePrograms": "Explorar programas",
-    "applyForTraining": "Candidatar-se para treinamento",
     "searchJobs": "Pesquisar vagas",
     "sortBy": "Ordenar por",
     "allTypes": "Todos os tipos",
@@ -1136,16 +1231,8 @@
     "inAProgram": "Em um programa",
     "noProgramYet": "Sem programa ainda",
     "activeRoster": "Lista ativa",
-    "noMembersAssignedYet": "Nenhum membro atribuído ainda",
-    "membersAppearOnceAssigned": "Os membros aparecem aqui assim que um administrador os atribuir a você.",
-    "noConversationsMatch": "Nenhuma conversa corresponde",
-    "tryAnotherFilterOrSearch": "Tente outro filtro ou termo de busca.",
-    "clearConversationFilters": "Limpar filtros",
-    "counselorGuide": "Guia do conselheiro",
     "resources": "Recursos",
     "openMessages": "Abrir mensagens",
-    "contactAdminForAssignments": "Contatar admin para atribuições",
-    "counselorResources": "Recursos do conselheiro",
     "enrolled": "Matriculado",
     "notEnrolled": "Não matriculado",
     "noProgram": "Nenhum programa",
@@ -1198,7 +1285,6 @@
     "trainingProgressUnavailable": "Progresso do treinamento indisponível",
     "sortedByRecentlyAssigned": "Ordenados por atribuição mais recente.",
     "available": "Disponível",
-    "membersAppearOnceAssignedMobile": "Os membros aparecerão aqui assim que forem atribuídos por um administrador. Enquanto isso, explore o guia do conselheiro.",
     "hotQueueHoursAgo": "{count}h",
     "hotQueueDaysAgo": "{count}d",
     "messages": "Mensagens",
@@ -1208,17 +1294,11 @@
     "atRiskHighCount": "Alto",
     "atRiskLoadingNotes": "Carregando resumo de risco…",
     "atRiskMediumCount": "Médio",
-    "atRiskNoAlerts": "Nenhum alerta de risco no momento. Ótimo trabalho!",
     "atRiskRecentAlerts": "Alertas recentes",
     "atRiskSummaryTitle": "Alertas de Risco",
     "atRiskViewAll": "Ver todos",
     "workQueueSubtitle": "Membros aguardando uma resposta há mais de 24 horas. Ordenados do mais antigo ao mais recente.",
-    "workQueueLoadError": "Não foi possível carregar a fila de trabalho",
-    "workQueueLoadErrorDesc": "Algo deu errado ao buscar a fila. Tente atualizar a página.",
     "retry": "Tentar novamente",
-    "workQueueEmptyDesc": "Nenhum membro está aguardando uma resposta há mais de 24 horas. Bom trabalho.",
-    "workQueueNoRepliesTitle": "Nenhuma resposta atrasada",
-    "workQueueOtherFlagged": "{count, plural, one {# membro está sinalizado por outro motivo} other {# membros estão sinalizados por outros motivos}} — a mesma lista que o Inbox zero mostra.",
     "emptyMessagePreview": "(sem conteúdo de mensagem)",
     "backToDashboard": "Voltar ao painel",
     "workQueueMembersAwaiting": "{count} membro{count, plural, =1 {} other {s}} aguardando resposta",
@@ -1227,8 +1307,6 @@
     "inactiveMembersSubtitle": "Membros que não estiveram ativos na plataforma. Entre em contato diretamente por e-mail ou telefone, depois registre o contato para que outros funcionários possam ver que o membro foi contactado.",
     "minDaysInactive": "Dias mínimos inativos",
     "loadingMemberList": "Carregando lista de membros…",
-    "everyoneIsActive": "Todos estão ativos",
-    "noMembersInactive": "Nenhum membro esteve inativo por {days}+ dias com este filtro.",
     "needsAttention": "Precisa de atenção",
     "membersThreshold": "{count} membro{count, plural, =1 {} other {s}} · limiar {days}+ dias",
     "daysInactive": "Dias inativos",
@@ -1242,7 +1320,6 @@
     "saving": "Salvando…",
     "logged": "Registrado ✓",
     "logOutreach": "Registrar contato",
-    "couldNotLoadInactiveMembers": "Não foi possível carregar membros inativos",
     "couldNotLogOutreach": "Não foi possível registrar o contato. Tente novamente.",
     "never": "Nunca",
     "critical": "Crítico",
@@ -1274,8 +1351,6 @@
     "notes": "Notes",
     "recording": "Recording…",
     "loadingPlacements": "Loading placements…",
-    "noPlacementsYet": "No placements yet",
-    "noPlacementsDesc": "When you record a placement, it will appear in this list for your team.",
     "recordedPlacements": "Recorded placements",
     "total": "total",
     "salary": "Salary",
@@ -1487,6 +1562,10 @@
     "nextActionCelebrateTip": "Suas indicações estão resultando em empregos. Mantenha o pipeline cheio.",
     "nextActionReviewProgress": "Acompanhe o progresso dos membros",
     "nextActionReviewProgressTip": "Os membros estão avançando na jornada — acompanhe seus resultados.",
+    "nextActionAttention": "{count, plural, =0 {Ninguém precisa de atenção agora} =1 {1 membro precisa de atenção} other {# membros precisam de atenção}}",
+    "nextActionAttentionTip": "Membros que pararam ou ficaram em silêncio. Entre em contato antes que desistam.",
+    "nextActionAttentionUnavailable": "Não foi possível carregar quem precisa de atenção",
+    "nextActionAttentionUnavailableTip": "O número é desconhecido, não zero. Abra a fila para vê-lo.",
     "partnerInsights": "Insights do parceiro",
     "assistantSpeaking": "O assistente está falando…",
     "assistantListening": "Ouvindo — faça sua pergunta",
@@ -1504,7 +1583,6 @@
     "messagesSubtitle": "Linha direta com sua equipe de parceria WorkforceAP — indicações, marcos e recursos.",
     "messagesMetaDescription": "Envie uma mensagem à equipe WorkforceAP.",
     "noMessagesYetTitle": "Ainda não há mensagens",
-    "noMessagesYetDescription": "Sua conversa de parceria com a WorkforceAP aparecerá aqui após a primeira mensagem.",
     "messagesAuditPaused": "O acesso às mensagens está disponível. Conteúdo, confirmações de leitura e sincronização em tempo real estão pausados para esta auditoria.",
     "noMilestonesYet": "Ainda não há marcos",
     "noMilestonesYetDescription": "Os marcos aparecerão aqui conforme seus membros avançarem na capacitação.",
@@ -1520,6 +1598,9 @@
     "settingsGoal": "O perfil da sua organização e as preferências de notificação."
   },
   "group": {
+    "memberTools": "Ferramentas e carreiras",
+    "memberProgress": "Formação e progresso",
+    "memberAccount": "Conta e suporte",
     "workflows": "Fluxos de trabalho",
     "insights": "Informações",
     "manage": "Gerenciar"
@@ -1535,10 +1616,10 @@
       "memberPromiseTitle": "Formação e certificados profissionais",
       "memberPromiseTitleAccent": "sem custo para os membros.",
       "memberPromiseBody1": "Inscreva-se em cerca de cinco minutos. Explore programas que combinam com seus objetivos e obtenha credenciais da IBM, Google, Microsoft e mais, com acompanhamento de um orientador quando você se qualificar por meio de nossos caminhos financiados.",
-      "memberPromiseBody2": "Não sabe por onde começar? Faça o guia de 5 minutos: uma equipe real entra em contato em 1 a 2 dias úteis.",
+      "memberPromiseBody2": "Não sabe por onde começar? Faça o guia de 5 minutos: uma equipe real analisa e entra em contato por e-mail.",
       "heroCopy": "Treinamento profissional sem custo inicial para membros elegíveis que desejam um caminho mais sólido para o trabalho. Comece com Encontre seu caminho, veja programas adequados e obtenha orientação de conselheiro, ajuda com currículo e suporte na busca de emprego.",
       "trustReviewed": "Avaliado por uma equipe real",
-      "trustReviewedDetail": "As candidaturas são avaliadas pela equipe do WorkforceAP, com acompanhamento em 1 a 2 dias úteis.",
+      "trustReviewedDetail": "As candidaturas são avaliadas pela equipe do WorkforceAP. Você recebe um e-mail quando houver uma decisão.",
       "trustYears": "Construído em 25+ anos de experiência",
       "trustYearsDetail": "WorkforceAP é uma organização sem fins lucrativos 501(c)(3) fundada em Austin com 25+ anos de experiência em desenvolvimento da força de trabalho.",
       "trustEmployer": "Caminhos reconhecidos por empregadores",
@@ -1548,7 +1629,6 @@
       "memberCardCount": "20 certificados profissionais e ocupacionais em alta demanda",
       "readyToApply": "Pronto para se candidatar? Inicie sua candidatura →",
       "networkTitle": "Uma rede construída para o sucesso",
-      "heroBody1": "Workforce Advancement Project (WorkforceAP) é uma organização sem fins lucrativos 501(c)(3) que equipa indivíduos, conselheiros e embaixadores comunitários com ferramentas de prontidão para o trabalho, treinamento ocupacional e certificados profissionais, e assistência de currículo, entrevista e colocação de emprego impulsionada por IA para ajudar a garantir emprego significativo, construir carreiras duradouras e uma vida melhor sem custo para o membro.",
       "heroBody2": "Comece com Encontre seu caminho, veja programas adequados e obtenha orientação de conselheiro, ajuda com currículo e suporte na busca de emprego.",
       "heroStep1": "Comece sua candidatura (cerca de 5 minutos)",
       "heroStep2": "Veja programas que correspondam às suas metas",
@@ -1608,7 +1688,7 @@
       "aiVoice": "Treinamento de voz impulsionado pelo ElevenLabs",
       "aiCta": "Candidatar-se para ferramentas do membro",
       "ctaTitle": "Seu próximo passo",
-      "ctaCopy": "Cerca de 10 minutos para se candidatar. Respondemos em 1 a 2 dias úteis. Certificados reconhecidos pela indústria e suporte de colocação. Sem custo para membros elegíveis.",
+      "ctaCopy": "Cerca de 10 minutos para se candidatar. Um orientador analisa cada candidatura e você recebe a resposta por e-mail. Certificados reconhecidos pela indústria e suporte de colocação. Sem custo para membros elegíveis.",
       "ctaFind": "Encontre seu caminho",
       "ctaApply": "Iniciar minha candidatura",
       "ctaViewPrograms": "Ver detalhes do programa",
@@ -1649,7 +1729,6 @@
       "value3Desc": "Governo, Empregadores, Organizações Sem Fins Lucrativos e Comunitárias, e Igrejas — reunimos as pessoas certas para que os membros não precisem resolver tudo sozinhos.",
       "missionEyebrow": "Nossa Missão",
       "missionTitle": "Construído para escala. Focado nas pessoas.",
-      "missionBody1": "WorkforceAP é uma organização sem fins lucrativos 501(c)(3) que equipa indivíduos, conselheiros e embaixadores comunitários com ferramentas de prontidão para o trabalho, treinamento ocupacional e certificados profissionais, e assistência de IA para currículo, entrevistas e colocação profissional.",
       "missionBody2": "Construímos carreiras duradouras e vidas melhores sem custo para membros elegíveis — financiado por subsídios e parcerias com empregadores e comunidades.",
       "pipelineTitle": "Empregadores Contratando Nossos Formandos",
       "pipelineEmpty": "Detalhes do pipeline de empregadores em breve.",
@@ -1778,7 +1857,7 @@
       "quickStartCard3Desc": "Não é necessário conhecimento técnico. Habilidades em Agile e Scrum que se transferem entre setores.",
       "quickStartCard3Cta": "Ver programa",
       "ctaHeadline": "Pronto para começar?",
-      "ctaSubheadline": "Candidate-se em minutos. Um consultor fará acompanhamento em 1 a 2 dias úteis.",
+      "ctaSubheadline": "Candidate-se em minutos. Um orientador analisa cada candidatura e entra em contato por e-mail.",
       "ctaPrimary": "Candidatar-se Agora",
       "ctaSecondary": "Encontre seu caminho",
       "toolChipCompare": "Comparar Programas",
@@ -1788,7 +1867,7 @@
       "languageFull": "Disponível em {language}",
       "languageSubtitles": "Legendas em {language}",
       "languageAuto": "{language} (automático)",
-      "ctaDisclaimer": "Elegibilidade WIOA necessária. Um consultor analisará sua candidatura em 1 a 2 dias úteis.",
+      "ctaDisclaimer": "Elegibilidade WIOA necessária. Um orientador analisará sua candidatura; você recebe um e-mail quando houver uma decisão.",
       "ctaSubtitle": "Candidate-se para {program} hoje. Gratuito para membros qualificados.",
       "ctaTitle": "Inicie sua candidatura",
       "curriculumSubtitle": "{count} cursos projetados para levá-lo do iniciante ao nível profissional.",
@@ -1829,7 +1908,7 @@
     "blog": {
       "blog": "Blog",
       "careerResources": "Recursos de carreira",
-      "careerToolkit": "Kit de ferramentas de carreira",
+      "careerToolkit": "AI Career Tools",
       "includedForMembers": "Incluído para membros",
       "betaAccess": "Acesso beta"
     },
@@ -1843,7 +1922,7 @@
       "heroHeadline": "Estamos aqui para",
       "heroHeadlineAccent": "membros, empregadores e parceiros",
       "heroHeadlineSuffix": "igualmente.",
-      "heroCopy": "Seja você um membro atual ou potencial com perguntas sobre programas, um empregador procurando contratar ou construir um pipeline, um parceiro comunitário explorando uma relação de referência, ou um doador interessado em apoiar o treinamento gratuito de membros, entre em contato e um membro da equipe WorkforceAP responderá em 1 a 2 dias úteis.",
+      "heroCopy": "Seja você um membro atual ou potencial com perguntas sobre programas, um empregador procurando contratar ou construir um pipeline, um parceiro comunitário explorando uma relação de referência, ou um doador interessado em apoiar o treinamento gratuito de membros, entre em contato: um membro da equipe WorkforceAP lê cada mensagem e responde por e-mail.",
       "card1Title": "Nossa Localização",
       "card1Body1": "Construído em Austin.",
       "card1Body2": "Disponível em todo o país.",
@@ -1851,7 +1930,7 @@
       "card3Title": "Telefone",
       "card3Hours": "Seg–Sex, 9h00 – 17h00 CT",
       "card4Title": "Tempo de Resposta",
-      "card4Body": "Respondemos em 1 a 2 dias úteis para a maioria das consultas.",
+      "card4Body": "Lemos cada consulta e respondemos por e-mail.",
       "austinTitle": "Construído em Austin, apoiando membros em todo o país",
       "austinBody": "Trabalhamos em Austin, Texas e apoiamos membros, parceiros e empregadores em todo o país. Use o formulário, e-mail ou telefone para entrar em contato com o membro certo da equipe WorkforceAP. Coordenamos com organizações parceiras, mas conselheiros e organizações parceiras não são a mesma coisa.",
       "quote": "Acreditamos que todos merecem um caminho claro para uma carreira significativa. Isso começa com estar disponível e responsivo às pessoas que servimos."
@@ -1892,9 +1971,9 @@
       "narrativeHeadline": "Capacitando Aqueles Que",
       "narrativeHeadlineAccent": "Capacitam os Outros",
       "narrativeQuote": "Fazemos parcerias com empregadores que contratam, organizações que indicam, conselhos de mão de obra que se alinham e financiadores que escalam. Cada tipo de parceria tem um caminho claro — porque construir uma força de trabalho qualificada requer que todos trabalhemos juntos.",
-      "narrativeCopy": "Os parceiros de indicação nos enviam candidatos que podem se beneficiar de treinamento profissional sem custo para os membros. Entramos em contato em 24 a 48 horas e os guiamos pelo processo.",
+      "narrativeCopy": "Os parceiros de indicação nos enviam candidatos que podem se beneficiar de treinamento profissional sem custo para os membros. Entramos em contato com cada candidato indicado e o guiamos pelo processo.",
       "narrativeLi1": "Envie uma indicação pelo nosso formulário de contato ou portal de parceiros",
-      "narrativeLi2": "Entramos em contato com o candidato dentro de 24 a 48 horas",
+      "narrativeLi2": "Entramos em contato com o candidato assim que sua indicação chega",
       "narrativeLi3": "Membros aceitos recebem treinamento, certificados e suporte de colocação",
       "narrativeLi4": "Você recebe atualizações quando os indicados concluem programas",
       "pathwaysTitle": "Caminhos de",
@@ -1904,19 +1983,19 @@
       "platformTitleAccent": "Impacto Humano",
       "faqTitle": "Perguntas Frequentes de Parceiros",
       "ctaTitle": "Inicie uma Parceria",
-      "ctaCopy": "Próximos passos claros, resultados reais e uma equipe que responde em 1 a 2 dias úteis.",
+      "ctaCopy": "Próximos passos claros, resultados reais e uma equipe que acompanha cada indicação.",
       "ctaCta": "Registrar-se como parceiro de indicação",
       "ctaCta2": "Sou empregador (contratar)",
       "signupEyebrow": "Parceiros de indicação",
       "signupTitle": "Registrar sua organização",
-      "signupSubtitle": "Indique membros, acompanhe resultados, receba reconhecimento. Envie o formulário — ativamos seu portal de parceiro em 1–2 dias úteis.",
+      "signupSubtitle": "Indique membros, acompanhe resultados, receba reconhecimento. Envie o formulário — nós o analisamos e avisamos por e-mail quando seu portal de parceiro estiver pronto.",
       "signupAlready": "Já está registrado?",
       "signupSignIn": "Entrada do parceiro",
       "signupOtherPaths": "Centros de treinamento, agências públicas e financiadores:",
       "signupContactTeam": "fale conosco para o caminho certo",
       "referralType": "Parceiros de Indicação",
       "referralWho": "ONGs, serviços sociais, igrejas, programas de reintegração, centros comunitários, centros de mão de obra, centros federais de balcão único.",
-      "referralWhy": "Indique clientes que precisam de treinamento profissional. Respondemos em 1 a 2 dias úteis. Não há custo para indicar. Você recebe atualizações quando os indicados concluem programas.",
+      "referralWhy": "Indique clientes que precisam de treinamento profissional. Acompanhamos cada indicação por e-mail. Não há custo para indicar. Você recebe atualizações quando os indicados concluem programas.",
       "referralCta": "Registrar sua organização",
       "trainingType": "Centros de Treinamento",
       "trainingWho": "Instituições educacionais, faculdades comunitárias, escolas vocacionais, centros de letramento digital.",
@@ -1961,11 +2040,11 @@
       "stat3Value": "340",
       "stat3Label": "Membros colocados via parceiros",
       "howTitle": "Como as parcerias começam",
-      "howSubtitle": "Três passos. A maioria das organizações começa a indicar em menos de uma semana.",
+      "howSubtitle": "Três passos. Comece a indicar assim que seu portal estiver ativo; confirmamos por e-mail.",
       "howStep1Title": "Envie um e-mail ou cadastre-se",
       "howStep1Desc": "Preencha o formulário de cadastro abaixo ou envie um e-mail para partners@workforceap.org com uma breve nota sobre sua organização.",
       "howStep2Title": "Receba acesso ao portal",
-      "howStep2Desc": "Liberamos seu portal de parceiro em 1–2 dias úteis e compartilhamos seu link de indicação exclusivo.",
+      "howStep2Desc": "Analisamos seu pedido, liberamos seu portal de parceiro e enviamos por e-mail seu link de indicação exclusivo.",
       "howStep3Title": "Comece a indicar",
       "howStep3Desc": "Envie indicações pelo portal, pelo seu link ou por upload de CSV. Acompanhe os marcos em tempo real.",
       "whyTitle": "Por que os parceiros escolhem o WorkforceAP",
@@ -2089,7 +2168,7 @@
       "heroHeadline": "Compartilhe sua expertise. Mude uma carreira.",
       "heroSubheadline": "Os mentores do WorkforceAP são profissionais da indústria que doam seu tempo para orientar candidatos a emprego. Sua experiência vale mais do que você imagina — e é dedutível de impostos.",
       "title": "Torne-se um mentor",
-      "waitlistCopy": "Estamos aceitando candidaturas de mentor agora e fazendo o pareamento conforme nossa turma cresce. A maioria dos pareamentos começa 4 a 8 semanas após sua candidatura, quando um membro alcança a etapa de preparação para entrevista do programa na sua área.",
+      "waitlistCopy": "Estamos aceitando candidaturas de mentor agora. Analisamos cada candidatura e enviamos um e-mail quando você for aprovado; depois, os membros solicitam sessões com você pelo portal.",
       "waitlistCta": "Entrar na lista de espera",
       "waitlistEyebrow": "Lista de espera de mentores · Pré-lançamento"
     },
@@ -2211,7 +2290,7 @@
         "metaTitle": "Application received",
         "metaDescription": "Your WorkforceAP application is in. Here is what happens next.",
         "title": "You're in.",
-        "lead": "We'll email next steps within 1 business day.",
+        "lead": "Enviaremos seu próximo passo por e-mail assim que um orientador analisar sua inscrição.",
         "bullet1Title": "Counselor review",
         "bullet1Desc": "A WorkforceAP counselor reviews your application and program fit.",
         "bullet2Title": "Email with next steps",
@@ -2226,7 +2305,7 @@
         "metaTitle": "Inquiry received",
         "metaDescription": "Thanks for reaching out. Our employer team will follow up shortly.",
         "title": "Got it.",
-        "lead": "Our team will reach out within 24 hours.",
+        "lead": "Nossa equipe analisa cada solicitação e entrará em contato por e-mail.",
         "resourceLabel": "Visão geral do impacto",
         "ctaEmployers": "Employer overview",
         "ctaHome": "Back to home"
@@ -2235,7 +2314,7 @@
         "metaTitle": "Partner signup received",
         "metaDescription": "Thanks for signing up. We will activate your partner portal soon.",
         "title": "Welcome aboard.",
-        "lead": "Our partnerships team will reach out within 1–2 business days.",
+        "lead": "Nossa equipe de parcerias analisa cada solicitação e entrará em contato por e-mail.",
         "bullet1Title": "Account review",
         "bullet1Desc": "We verify your organization details and referral capacity.",
         "bullet2Title": "Portal activation",
@@ -2842,7 +2921,7 @@
       "phone": "Telefone (opcional)",
       "password": "Crie uma senha",
       "passwordPlaceholder": "Pelo menos 8 caracteres",
-      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Deixe este campo em branco.",
+      "passwordHelp": "Primeira vez aqui? Crie uma senha. Já tem uma conta? Entre primeiro e deixe este campo em branco.",
       "accepting": "Aceitando…",
       "accept": "Aceitar convite",
       "roles": {
@@ -2861,7 +2940,9 @@
         "alreadyAccepted": "Este convite já foi aceito. Entre na sua conta.",
         "expired": "Este convite expirou. Peça ao seu contato da WorkforceAP para reenviá-lo.",
         "nameRequired": "Informe seu nome completo.",
-        "newAccountRequired": "Novas contas precisam do seu nome completo e de uma senha com pelo menos 8 caracteres.",
+        "newAccountRequired": "Novas contas precisam de uma senha com pelo menos 8 caracteres. Se você já tem uma conta, entre ou redefina sua senha e depois volte a este convite.",
+        "accountRecoveryRequired": "Já existe uma conta com este e-mail. Entre ou redefina sua senha e depois volte a este convite.",
+        "identityReviewRequired": "Não foi possível vincular este convite à conta cadastrada. Entre em contato com a equipe WorkforceAP para obter ajuda.",
         "signupUnavailable": "A criação de contas está temporariamente indisponível. Se o problema continuar, entre em contato com o suporte.",
         "loadFailed": "Não foi possível carregar este convite. Tente novamente em instantes.",
         "codeFailed": "Não foi possível verificar esse código. Tente novamente em instantes.",
@@ -3007,6 +3088,8 @@
       "adding": "Adicionando…"
     },
     "form": {
+      "typeLabel": "Tipo de meta",
+      "titleLabel": "Título da meta",
       "customPlaceholder": "Ou digite uma meta personalizada",
       "adding": "Adicionando…",
       "addGoal": "Adicionar meta",
@@ -3309,6 +3392,15 @@
     "ownerStaff": "Equipe da WorkforceAP",
     "ownerCounselor": "Seu(sua) conselheiro(a), {name}",
     "whatsNext": "Próximo: {text}",
+    "reviewer": {
+      "assignedApproval": "Seu(sua) conselheiro(a), {name}, analisará sua inscrição.",
+      "assignedIntake": "Seu(sua) conselheiro(a), {name}, concluirá sua análise de admissão.",
+      "assignedNeedsInfo": "Seu(sua) conselheiro(a), {name}, continuará a análise assim que você enviar as informações solicitadas.",
+      "unassigned": "Um(a) conselheiro(a) será designado(a) para você; o nome aparecerá aqui.",
+      "message": "Enviar mensagem para {name}",
+      "decisionStep": "Analisamos sua inscrição; você receberá a decisão por e-mail e a verá aqui.",
+      "waitEstimate": "As inscrições recentes foram aprovadas em cerca de {days, plural, one {# dia} other {# dias}} (com base em {count} aprovações nos últimos 30 dias)."
+    },
     "next": {
       "application": {
         "not_submitted": "Envie sua inscrição para que a equipe possa iniciar a análise.",
@@ -3316,7 +3408,7 @@
         "needs_info": "Envie as informações que sua equipe pediu para que a análise continue.",
         "approved": "A análise de admissão é a próxima etapa.",
         "denied": "Fale com sua equipe para entender o que aconteceu ou se inscrever novamente.",
-        "unknown": "Peça à sua equipe para confirmar a situação da sua inscrição."
+        "unknown": "A situação da sua inscrição ainda não está registrada aqui."
       },
       "intake": {
         "upcoming": "Começa depois que sua inscrição for aprovada.",
@@ -3325,30 +3417,14 @@
         "needs_info": "Envie os documentos que sua equipe pediu para concluir a análise de admissão.",
         "verified": "A aprovação do treinamento é a próxima etapa.",
         "not_eligible": "Sua equipe explicará as opções disponíveis para você.",
-        "unknown": "Peça à sua equipe para confirmar a situação da análise de admissão."
+        "unknown": "Ainda não há análise de admissão registrada. A equipe atualiza esta etapa quando a análise começa."
       },
       "training": {
         "upcoming": "Começa depois que a análise de admissão for verificada.",
         "pending": "A equipe aprova sua matrícula no treinamento e depois você recebe um convite da Coursera.",
         "approved": "Verifique seu e-mail para encontrar o convite da Coursera e aceite-o.",
-        "unknown": "Peça à sua equipe para confirmar se o treinamento foi aprovado."
+        "unknown": "Ainda não há aprovação de treinamento registrada. A equipe atualiza esta etapa quando a decisão é tomada."
       }
-    },
-    "applicationStatus": {
-      "not_submitted": "Nenhuma inscrição registrada",
-      "pending": "Análise pendente",
-      "needs_info": "Mais informações solicitadas",
-      "approved": "Inscrição aprovada",
-      "denied": "Inscrição encerrada",
-      "unknown": "Status não registrado"
-    },
-    "intakeStatus": {
-      "pending": "Análise pendente",
-      "in_review": "Em análise",
-      "verified": "Admissão verificada pela equipe",
-      "not_eligible": "A equipe registrou que não atende aos requisitos",
-      "needs_info": "Mais informações solicitadas",
-      "unknown": "Status não registrado"
     },
     "trainingStatus": {
       "approved": "Capacitação aprovada",
@@ -3675,12 +3751,12 @@
           "body": "Veja quem precisa de você hoje, onde ficam seus estudantes e programas, como o progresso do treinamento é acompanhado e onde as mensagens dos membros aguardam resposta."
         },
         "commandCenter": {
-          "title": "Centro de comando",
-          "body": "Sua base. Estudantes ativos, colocações no ano e quem precisa de atenção ficam no topo; depois, O que precisa de você hoje: respostas pendentes, candidaturas e certificações aguardando análise, preparação de entrevistas. Cada linha leva à página onde agir."
+          "title": "Hoje",
+          "body": "Sua base. Primeiro, Aguardando sua decisão: cada candidatura e cada verificação de admissão da sua organização, da mais antiga para a mais recente, e cada uma abre a tela onde ela é decidida. Depois, O que precisa de você hoje (candidaturas, certificados, novos candidatos sem conselheiro, respostas pendentes, preparação de entrevistas) e, por fim, os números da organização."
         },
         "overview": {
           "title": "Visão detalhada",
-          "body": "O quadro completo por trás do Centro de comando: total de membros, avaliações concluídas, quem está ativo no treinamento, programas matriculados e concluídos, além de inscrições e colocações recentes. Venha aqui pelos números, não só pela fila."
+          "body": "O quadro completo por trás de Hoje: total de membros, avaliações concluídas, quem está ativo no treinamento, programas matriculados e concluídos, além de inscrições e colocações recentes. Venha aqui pelos números, não só pela fila."
         },
         "students": {
           "title": "Estudantes",
@@ -3692,11 +3768,11 @@
         },
         "programs": {
           "title": "Programas",
-          "body": "Os programas de treinamento que você oferece, um cartão por programa com alunos matriculados e conclusão. Solicitações de programa, estudantes pedindo para trocar, fica logo abaixo."
+          "body": "Os programas de treinamento que você oferece, um cartão por programa com alunos matriculados e conclusão. Trilhas de carreira abre logo abaixo; Solicitações de programa, estudantes pedindo para trocar, fica em Trabalho do dia, no topo do menu lateral."
         },
         "trainingProgress": {
           "title": "Progresso do treinamento",
-          "body": "Progresso curso a curso de cada estudante matriculado, ordenável, em todo o currículo e no Coursera. Avaliações e Certificados ficam no mesmo grupo."
+          "body": "Progresso curso a curso de cada estudante matriculado, ordenável, em todo o currículo e no Coursera. Avaliações abre logo abaixo; os Certificados aguardando análise ficam em Trabalho do dia."
         },
         "settings": {
           "title": "Configurações",
@@ -3706,6 +3782,332 @@
           "title": "Volte quando quiser",
           "body": "Ajuda reabre este tour sempre que você quiser."
         }
+      }
+    }
+  },
+  "status": {
+    "application": {
+      "member": {
+        "not_submitted": "Nenhuma inscrição registrada",
+        "pending": "Análise pendente",
+        "needs_info": "Mais informações solicitadas",
+        "approved": "Inscrição aprovada",
+        "denied": "Inscrição encerrada",
+        "unknown": "Status não registrado"
+      },
+      "staff": {
+        "not_submitted": "Nenhuma inscrição registrada",
+        "pending": "Aguardando decisão",
+        "needs_info": "Aguardando o candidato",
+        "approved": "Aprovada",
+        "denied": "Negada",
+        "unknown": "Status não registrado"
+      }
+    },
+    "intake": {
+      "member": {
+        "not_reviewed": "Status não registrado",
+        "pending": "Análise pendente",
+        "in_review": "Em análise",
+        "needs_info": "Mais informações solicitadas",
+        "verified": "Admissão verificada pela equipe",
+        "not_eligible": "A equipe registrou que não atende aos requisitos",
+        "unknown": "Status não registrado"
+      },
+      "staff": {
+        "not_reviewed": "Não analisado",
+        "pending": "Aguardando análise",
+        "in_review": "Em análise",
+        "needs_info": "Precisa de mais informações",
+        "verified": "Admissão verificada",
+        "not_eligible": "Não atende aos requisitos",
+        "unknown": "Status não registrado"
+      }
+    }
+  },
+  "empty": {
+    "activeApplications": {
+      "title": "Nenhuma candidatura ativa",
+      "body": "As vagas que você salva ou às quais se candidata aparecem aqui até você marcá-las como aceitas ou encerradas. Veja as vagas abertas para adicionar a primeira.",
+      "action": "Ver vagas abertas"
+    },
+    "applications": {
+      "title": "Nenhuma candidatura ainda",
+      "body": "As vagas que você salva ou às quais se candidata aparecem aqui. Adicione uma ou veja as vagas abertas.",
+      "action": "Ver vagas abertas",
+      "add": "Adicionar candidatura"
+    },
+    "matches": {
+      "title": "Nenhuma vaga compatível ainda",
+      "body": "As vagas que combinam com seu perfil aparecem aqui. Atualize seu perfil para que possamos encontrar correspondências.",
+      "browse": "Ver vagas",
+      "profile": "Atualizar perfil"
+    },
+    "openings": {
+      "title": "Nenhuma vaga ativa no momento",
+      "body": "Os empregadores parceiros ainda não publicaram vagas ativas. Atualize seu perfil para estar pronto quando publicarem, ou fale com seu orientador para pedir indicações.",
+      "action": "Atualizar perfil",
+      "secondary": "Falar com seu orientador"
+    },
+    "openingsPublic": {
+      "title": "Nenhuma vaga ativa no momento",
+      "body": "Os empregadores parceiros ainda não publicaram vagas ativas. Explore os programas de formação enquanto espera.",
+      "action": "Ver programas",
+      "secondary": "Candidatar-se à formação"
+    },
+    "jobsFiltered": {
+      "title": "Nenhuma vaga corresponde a estes filtros",
+      "body": "Limpe os filtros para ver todas as vagas ativas.",
+      "action": "Limpar filtros"
+    },
+    "matchesUnavailable": {
+      "title": "Não foi possível carregar as vagas compatíveis",
+      "body": "Tente novamente ou veja o quadro de vagas para conferir todas as oportunidades.",
+      "action": "Tentar novamente",
+      "secondary": "Ver vagas"
+    },
+    "applicationsUnavailable": {
+      "title": "Não foi possível carregar suas candidaturas",
+      "body": "Seus totais são desconhecidos, não zero. Tente novamente em instantes.",
+      "action": "Tentar novamente",
+      "kpiCaption": "Não foi possível carregar"
+    },
+    "openingsUnavailable": {
+      "title": "Não foi possível carregar as vagas",
+      "body": "É um problema de carregamento, não um quadro vazio. Tente novamente em instantes.",
+      "action": "Tentar novamente"
+    },
+    "stage": {
+      "title": "Nada nesta etapa"
+    },
+    "thread": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Escreva sua primeira mensagem e a conversa aparecerá aqui.",
+      "action": "Escrever uma mensagem"
+    },
+    "counselorThread": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Escreva para seu orientador e a conversa aparecerá aqui.",
+      "action": "Escrever uma mensagem"
+    },
+    "counselorUnassigned": {
+      "title": "Nenhum orientador atribuído ainda",
+      "body": "Você ainda pode escrever aqui. A equipe da WorkforceAP lê esta conversa até que um orientador seja atribuído a você.",
+      "action": "Escrever uma mensagem"
+    },
+    "conversations": {
+      "title": "Nenhuma conversa ainda",
+      "body": "A conversa com seu orientador aparecerá aqui depois que você enviar uma mensagem."
+    },
+    "conversationsFiltered": {
+      "title": "Nenhuma conversa corresponde a esta busca",
+      "body": "Limpe a busca para ver todas as conversas.",
+      "action": "Limpar busca"
+    },
+    "inboxProvisioning": {
+      "title": "Sua caixa de entrada está sendo configurada",
+      "body": "As mensagens serão liberadas quando a configuração da sua conta terminar. Escreva para o suporte se precisar de ajuda agora.",
+      "action": "Escrever para o suporte",
+      "secondary": "Voltar ao painel"
+    },
+    "inboxUnavailable": {
+      "title": "Sua caixa de entrada ainda não está pronta",
+      "body": "Sua conversa aparecerá aqui assim que estiver configurada.",
+      "action": "Voltar ao painel",
+      "overviewAction": "Voltar à visão geral"
+    },
+    "teamThreadEmployer": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Faça uma pergunta sobre vagas, candidaturas ou candidatos compatíveis.",
+      "action": "Escrever uma mensagem"
+    },
+    "teamThreadPartner": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Fale conosco sobre indicações, marcos ou dúvidas do programa.",
+      "action": "Escrever uma mensagem"
+    },
+    "applicationThread": {
+      "title": "Nenhuma mensagem ainda",
+      "body": "Inicie a conversa sobre esta candidatura.",
+      "action": "Escrever uma mensagem"
+    },
+    "applicationThreadUnavailable": {
+      "title": "Não foi possível carregar esta conversa",
+      "body": "Tente novamente ou escolha outra conversa na lista.",
+      "action": "Tentar novamente"
+    },
+    "certificates": {
+      "title": "Ainda não há certificados",
+      "body": "Ainda não há certificados registrados. Quando o Coursera informa um curso concluído, nós o adicionamos aqui como certificado pendente; nossa equipe o verifica antes que conte como obtido. Os cursos do Coursera concluídos aparecem em Meu programa, e você também pode adicionar abaixo um certificado obtido em outro lugar.",
+      "bodyKit": "Quando o Coursera informa um curso concluído, ele aparece aqui como certificado pendente; nossa equipe o verifica antes que conte como obtido. Os cursos do Coursera concluídos aparecem em Meu programa.",
+      "action": "Adicionar um certificado",
+      "secondary": "Meu programa",
+      "counselor": "Escrever ao conselheiro",
+      "continue": "Continuar o curso"
+    },
+    "learningPathway": {
+      "title": "Nenhuma trilha de aprendizagem ativa",
+      "body": "Comece agora com o básico digital, sem inscrição, ou escolha um programa financiado.",
+      "action": "Começar o básico digital, sem inscrição",
+      "secondary": "Escolher um programa"
+    },
+    "learningPathwayUnavailable": {
+      "title": "Seu programa ainda não tem uma trilha",
+      "body": "A lista de cursos do seu programa ainda não foi publicada, então não há nada para acompanhar aqui. Escreva ao seu conselheiro sobre no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "enrolledCourses": {
+      "title": "Ainda não há aulas matriculadas",
+      "body": "Escolha um programa e a lista de cursos aparecerá aqui com seu progresso.",
+      "action": "Ir para Meu programa"
+    },
+    "enrolledCoursesUnavailable": {
+      "title": "Ainda não há cursos listados para o seu programa",
+      "body": "A lista de cursos do seu programa ainda não foi publicada. Escreva ao seu conselheiro sobre no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "modules": {
+      "title": "Ainda não há módulos nesta trilha",
+      "body": "A lista de cursos do seu programa ainda não foi publicada. Escreva ao seu conselheiro sobre no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "assignedCourses": {
+      "title": "Ainda não há cursos atribuídos",
+      "body": "A lista de cursos do seu programa ainda não foi publicada. Seu conselheiro pode dizer no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "programResources": {
+      "title": "Ainda não há recursos para esta área do programa",
+      "body": "Ainda não adicionamos recursos para esta área do programa. Enquanto isso, seu conselheiro pode indicar materiais.",
+      "action": "Escrever ao conselheiro",
+      "secondary": "Todas as ferramentas de IA"
+    },
+    "resourcesFiltered": {
+      "title": "Nenhum recurso corresponde a estes filtros",
+      "body": "Limpe os filtros para ver tudo o que há na biblioteca.",
+      "action": "Limpar filtros"
+    },
+    "resourcesUnavailable": {
+      "title": "Nenhum recurso disponível no momento",
+      "body": "Ainda não há nada publicado na biblioteca de carreira. Suas outras ferramentas de carreira continuam disponíveis.",
+      "action": "Abrir ferramentas de IA"
+    },
+    "categoryScores": {
+      "title": "Ainda não há pontuações por categoria",
+      "body": "As pontuações são preenchidas a partir do seu perfil, currículo, treinamento e atividade de emprego."
+    },
+    "milestones": {
+      "title": "Ainda não há marcos",
+      "body": "Os marcos seguem as quatro áreas de prontidão à medida que perfil, treinamento, empregos e engajamento são preenchidos."
+    },
+    "readinessUnavailable": {
+      "title": "Não foi possível carregar sua pontuação de prontidão",
+      "body": "Atualize a página. Se isso continuar acontecendo, escreva ao seu conselheiro.",
+      "action": "Abrir o coach de prontidão"
+    },
+    "counselor": {
+      "roster": {
+        "title": "Ainda não há membros atribuídos",
+        "body": "Um administrador atribui membros a você. Quando isso acontecer, eles aparecerão aqui com progresso, nível de risco e última atividade. O guia do conselheiro explica o que fazer primeiro.",
+        "action": "Abrir o guia do conselheiro",
+        "secondary": "Recursos do conselheiro"
+      },
+      "rosterNoCounselorRecord": {
+        "title": "Sua conta não tem registro de conselheiro",
+        "body": "Esta lista mostra os membros atribuídos a um conselheiro. Sua conta de administrador não tem registro de conselheiro, então nada aparece aqui. A lista de membros da administração inclui todos os membros.",
+        "action": "Abrir membros da administração"
+      },
+      "rosterFiltered": {
+        "title": "Nenhum membro corresponde a este filtro",
+        "body": "Limpe o filtro para ver todos na sua lista.",
+        "action": "Limpar filtro"
+      },
+      "rosterAtRisk": {
+        "title": "Nenhum membro em risco na sua lista",
+        "body": "Todos estão abaixo do limite de risco médio, ou a análise de risco ainda não foi executada. Limpe o filtro para ver todos."
+      },
+      "rosterUpcomingSession": {
+        "title": "Nenhuma sessão nos próximos 7 dias",
+        "body": "Nenhum membro atribuído tem sessão de mentoria agendada nos próximos 7 dias. Limpe o filtro para ver todos."
+      },
+      "rosterPendingApplication": {
+        "title": "Nenhuma inscrição aguardando decisão",
+        "body": "Nenhum membro atribuído tem uma inscrição aguardando decisão. Limpe o filtro para ver todos."
+      },
+      "atRiskClear": {
+        "title": "Nenhum membro em risco na sua carteira",
+        "body": "Ninguém que você acompanha tem um {reason} agora ({definition}). Novos casos aparecem aqui após a análise de risco noturna.",
+        "action": "Abrir Hoje",
+        "secondary": "Ver meus membros"
+      },
+      "atRiskFiltered": {
+        "title": "Nenhum membro em risco corresponde aos seus filtros",
+        "body": "Limpe os filtros para ver todos os casos salvos.",
+        "action": "Limpar filtros"
+      },
+      "atRiskUnavailable": {
+        "title": "Não foi possível carregar os membros em risco",
+        "action": "Tentar novamente",
+        "secondary": "Voltar para Hoje"
+      },
+      "placements": {
+        "title": "Ainda não há colocações",
+        "body": "As colocações registradas para os seus membros aparecem aqui com empregador, cargo e data de início. Registre a primeira.",
+        "action": "Registrar colocação"
+      },
+      "placementsUnavailable": {
+        "title": "Não foi possível carregar as colocações",
+        "body": "A lista de colocações não respondeu. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "action": "Tentar novamente"
+      },
+      "inactiveClear": {
+        "title": "Todos estão ativos",
+        "body": "Nenhum membro ficou {days}+ dias sem atividade.",
+        "action": "Meus membros"
+      },
+      "inactiveUnavailable": {
+        "title": "Não foi possível carregar os membros inativos",
+        "body": "A lista de membros não respondeu. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "workQueueClear": {
+        "title": "Tudo em dia",
+        "body": "Nenhum membro espera resposta há mais de um dia, e nada mais está sinalizado.",
+        "action": "Abrir mensagens",
+        "secondary": "Voltar para Hoje"
+      },
+      "workQueueNoReplies": {
+        "title": "Nenhuma resposta atrasada",
+        "body": "{count, plural, one {# membro está sinalizado por outro motivo} other {# membros estão sinalizados por outros motivos}} — a mesma lista que a Caixa zero mostra.",
+        "bodyUnknown": "Nenhum membro espera resposta há mais de um dia. As demais sinalizações estão na Caixa zero.",
+        "action": "Abrir Caixa zero"
+      },
+      "workQueueUnavailable": {
+        "title": "Não foi possível carregar a fila de trabalho",
+        "body": "Algo deu errado ao buscar a fila. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "overviewUnavailable": {
+        "countsTitle": "Não foi possível carregar algumas contagens da carteira",
+        "countsBody": "Um bloco com — é desconhecido, não zero. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "tileCaption": "Não foi possível carregar",
+        "queueTitle": "Não foi possível carregar quem precisa de você",
+        "queueBody": "A lista não respondeu, então isto não é uma fila vazia. Tente novamente; se continuar acontecendo, avise um administrador.",
+        "queueSecondary": "Abrir Hoje",
+        "sessions": "Não foi possível carregar a prática de entrevistas recente.",
+        "breakdown": "Não foi possível carregar a divisão da carteira.",
+        "action": "Tentar novamente"
+      },
+      "inbox": {
+        "title": "Ainda não há membros atribuídos",
+        "body": "As conversas aparecem aqui quando um administrador atribui membros a você.",
+        "action": "Abrir o guia do conselheiro",
+        "secondary": "Voltar para Hoje"
+      },
+      "inboxFiltered": {
+        "title": "Nenhuma conversa corresponde",
+        "body": "Limpe o filtro ou a busca para ver todas as conversas.",
+        "action": "Limpar filtros"
       }
     }
   }

@@ -187,7 +187,7 @@ export default async function AdminAuditLogsPage({ searchParams }: Props) {
         }}
       >
         {[
-          { label: 'Events (30d)', value: stats.total30d.toLocaleString(), icon: 'timeline', color: 'var(--color-accent)' },
+          { label: 'Events (30d)', value: stats.total30d.toLocaleString(), icon: 'timeline', color: 'var(--wa-accent-text)' },
           { label: 'Active Users', value: stats.uniqueUsers.toString(), icon: 'group', color: 'var(--wa-info-dark)' },
           { label: 'Top Event', value: stats.topEvent, icon: 'trending_up', color: 'var(--wa-success-dark)' },
         ].map((s) => (

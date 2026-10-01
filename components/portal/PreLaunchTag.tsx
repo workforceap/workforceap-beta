@@ -16,8 +16,8 @@ interface PreLaunchTagProps {
  *
  * Was "Pilot Program" (pre-launch). Go-live copy uses the Locked
  * member-safe cost language from `docs/PRODUCT_STAKES.md` — no-cost to
- * members, funded by grants — and does not tighten the 1–2 business day
- * follow-up promise (Approval Required; that copy lives on confirmation).
+ * members, funded by grants — and makes no follow-up time promise (the
+ * confirmation page names the review and the email, never a wait).
  */
 export default function PreLaunchTag({ compact, showCard: controlledShow, onToggle }: PreLaunchTagProps) {
   const [open, setOpen] = useState(false);

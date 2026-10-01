@@ -248,8 +248,8 @@ const ROUTES: RouteCase[] = [
     name: 'POST /api/member/resume/generate',
     handler: resumeGenerate, method: 'POST', url: '/api/member/resume/generate',
     // The body is optional here and bad JSON already read as "no body"; a
-    // non-object body now does the same and reaches the AI-configured check.
-    nonObject: { status: 503 },
+    // non-object body now does the same and reaches the sparse-profile guard.
+    nonObject: { status: 422 },
     object: { body: { resumeBase: RESUME_TEXT, resumeRevision: 'stale-revision' }, status: 409, error: 'Your resume changed in another session. Reload and try again.' },
   },
   {

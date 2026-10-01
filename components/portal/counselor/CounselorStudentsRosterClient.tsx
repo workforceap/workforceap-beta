@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { NO_ACTIVITY_RECORDED_LABEL } from '@/lib/counselor/lastActivity';
 import { useMemo, useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { MessageSquare } from 'lucide-react';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import type { BadgeVariant } from '@/components/portal/StatusBadge';
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
+import { intakeStatusKey, intakeStatusLabel, intakeStatusTone, type IntakeStatusKey } from '@/lib/status/applicationStatusVocabulary';
 import { computeTrainingProgress, type LiveTrainingProgressSummary } from '@/lib/member/trainingProgress';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
@@ -18,6 +19,7 @@ import {
   StatusTag,
   ProgressBar,
   Toggle,
+  KitEmptyState,
   type Column,
   type KitTone,
 } from '@/components/portal/kit';
@@ -107,19 +109,24 @@ function formatLastActivity(iso: string | null): string {
   return `${diffD}d ago`;
 }
 
-function wioaBadgeProps(status: string | null | undefined): { label: string; variant: BadgeVariant; tooltip: string } {
-  switch (status) {
-    case 'verified':
-      return { label: 'WIOA Verified', variant: 'success', tooltip: 'Member is WIOA-verified and eligible to enroll in training' };
-    case 'pending':
-    case 'in_review':
-      return { label: 'WIOA Pending', variant: 'info', tooltip: 'Member submitted WIOA screening — awaiting counselor review' };
-    case 'not_eligible':
-    case 'needs_info':
-      return { label: 'Not Eligible', variant: 'error', tooltip: 'Member is not eligible for training enrollment until WorkforceAP resolves their WIOA status' };
-    default:
-      return { label: 'WIOA: Not Started', variant: 'info', tooltip: "Member hasn't submitted WIOA screening" };
-  }
+/**
+ * Why each intake state matters to a counselor. The pill's word and tone come
+ * from the shared staff vocabulary (lib/status/applicationStatusVocabulary.ts),
+ * so `needs_info` reads "Needs more information" (alert), never "Not eligible".
+ */
+const WIOA_TOOLTIP: Record<IntakeStatusKey, string> = {
+  not_reviewed: "Member hasn't submitted WIOA screening",
+  pending: 'Member submitted WIOA screening — awaiting staff review',
+  in_review: 'Staff are reviewing the WIOA screening',
+  needs_info: 'Staff asked the member for more information before intake can be verified',
+  verified: 'Intake verified by staff — the member can enroll in training',
+  not_eligible: 'Staff recorded this member as not eligible; training enrollment stays gated',
+  unknown: 'WIOA review status is not recognised — check the member record',
+};
+
+function wioaBadgeProps(status: string | null | undefined): { label: string; tone: KitTone; tooltip: string } {
+  const key = intakeStatusKey(status);
+  return { label: intakeStatusLabel(key, 'staff'), tone: intakeStatusTone(key), tooltip: WIOA_TOOLTIP[key] };
 }
 
 function getInitials(name: string): string {
@@ -145,6 +152,7 @@ type Props = {
 };
 
 export default function CounselorStudentsRosterClient({ rows, filterMeta, initialFilter }: Props) {
+  const tEmpty = useTranslations('empty');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -197,25 +205,21 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
 
   if (rows.length === 0) return null;
 
+  // Rows exist (the page renders its own state for an empty roster) and the
+  // chip / toggle matched none of them: `filtered`, with the sentence for the
+  // rule that filtered them (KIT_GUIDE §6). The at-risk toggle without a chip
+  // reads as the at-risk chip.
   const emptyFiltered = visible.length === 0 && (activeFilter != null || atRiskOnly);
-
-  const emptyTitle =
-    activeFilter === 'at-risk'
-      ? 'No at-risk members in your roster'
-      : activeFilter === 'upcoming-session'
-        ? 'No upcoming sessions in the next 7 days'
-        : activeFilter === 'pending-application'
-          ? 'No members with pending applications'
-          : 'No at-risk members in your roster';
-
-  const emptyDescription =
-    activeFilter === 'at-risk'
-      ? 'Everyone is below the medium risk threshold, or alerts have not run yet.'
-      : activeFilter === 'upcoming-session'
-        ? 'No members have mentor sessions scheduled in the next 7 days.'
-        : activeFilter === 'pending-application'
-          ? 'All assigned members have completed or had their applications reviewed.'
-          : 'Everyone is below the medium risk threshold, or alerts have not run yet.';
+  const emptyGroup =
+    activeFilter === 'upcoming-session'
+      ? 'rosterUpcomingSession'
+      : activeFilter === 'pending-application'
+        ? 'rosterPendingApplication'
+        : 'rosterAtRisk';
+  const clearFilters = () => {
+    setAtRiskOnly(false);
+    if (activeFilter) updateFilter(null);
+  };
 
   type Row = CounselorRosterClientRow;
 
@@ -302,7 +306,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
         const wioa = wioaBadgeProps(row.wioaReviewStatus);
         return (
           <span title={wioa.tooltip}>
-            <StatusTag tone={variantToTone(wioa.variant)}>{wioa.label}</StatusTag>
+            <StatusTag tone={wioa.tone}>{wioa.label}</StatusTag>
           </span>
         );
       },
@@ -380,10 +384,13 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
       </div>
 
       {emptyFiltered ? (
-        <PortalEmptyState
-          title={emptyTitle}
-          description={emptyDescription}
-          primaryAction={{ label: 'Clear filter', href: pathname ?? '/counselor/students' }}
+        <KitEmptyState
+          framed
+          kind="filtered"
+          data-testid="counselor-roster-filtered-empty"
+          title={tEmpty(`counselor.${emptyGroup}.title`)}
+          description={tEmpty(`counselor.${emptyGroup}.body`)}
+          primaryAction={{ label: tEmpty('counselor.rosterFiltered.action'), onClick: clearFilters }}
         />
       ) : (
         <DataTable<Row>
@@ -412,7 +419,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
                   <span style={{ minWidth: 0 }}>{getProgramLabel(row.enrolledProgram, row.programInterest)}</span>
                   <span style={{ whiteSpace: 'nowrap' }} title={wioa.tooltip}>
-                    <StatusTag tone={variantToTone(wioa.variant)}>{wioa.label}</StatusTag>
+                    WIOA · <StatusTag tone={wioa.tone}>{wioa.label}</StatusTag>
                   </span>
                 </div>
                 {pct !== null ? (
@@ -428,8 +435,11 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
               </div>
             );
           }}
-          emptyTitle="No students match this view"
-          emptyDescription="Try a different filter."
+          empty={{
+            kind: 'filtered',
+            title: tEmpty('counselor.rosterFiltered.title'),
+            description: tEmpty('counselor.rosterFiltered.body'),
+          }}
         />
       )}
     </DesignSurface>

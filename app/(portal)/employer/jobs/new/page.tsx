@@ -55,7 +55,7 @@ export default async function NewJobPage() {
               padding: '0.5rem 1rem',
               fontSize: '0.875rem',
               fontWeight: 600,
-              color: 'var(--color-accent)',
+              color: 'var(--wa-accent-text)',
               textDecoration: 'none',
             }}
           >

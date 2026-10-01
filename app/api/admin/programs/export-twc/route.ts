@@ -4,6 +4,7 @@ import { isAdmin } from '@/lib/auth/roles';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { csvEscape } from '@/lib/csv';
 
 /**
  * Track A — Tenant Isolation Hardening (Sprint A.2 batch 4).
@@ -12,11 +13,6 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  * Texas Workforce Commission report is a per-funder artefact, so
  * cross-tenant exposure here would also be a compliance issue.
  */
-
-function csvEscape(s: string): string {
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
 
 function formatDate(d: Date | null | undefined): string {
   if (!d) return 'Rolling';
@@ -81,7 +77,8 @@ async function _GET() {
           formatDate(r.programEndDate),
           certs,
         ]
-          .map((c) => csvEscape(String(c)))
+          // Shared escaper: quotes and neutralises a leading = + - @ TAB CR (S01/P02).
+          .map((c) => csvEscape(String(c ?? '')))
           .join(',')
       );
     }
@@ -94,6 +91,7 @@ async function _GET() {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {

@@ -99,7 +99,7 @@ export default function SkillsetProgressList({ rows, variant = 'member', emptyHi
               style={{
                 fontSize: '0.875rem',
                 fontWeight: 700,
-                color: row.progressPct >= 100 ? 'var(--color-green)' : 'var(--color-accent)',
+                color: row.progressPct >= 100 ? 'var(--color-green)' : 'var(--wa-accent-text)',
                 textAlign: 'right',
                 fontVariantNumeric: 'tabular-nums',
               }}

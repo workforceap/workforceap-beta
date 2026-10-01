@@ -81,7 +81,7 @@ export default function ToolHistoryPanelClient({ rows }: { rows: Row[] }) {
                   const regenerateHref = getRegenerateHref(row.toolType, row.id);
                   return (
                     <div style={{ marginTop: '0.875rem', borderLeft: '4px solid var(--color-accent)', background: 'var(--surface-container)', borderRadius: '0.75rem', padding: '0.875rem' }}>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>
+                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--wa-accent-text)' }}>
                         Do this next
                       </p>
                       <p style={{ margin: '0 0 0.25rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>

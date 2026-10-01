@@ -31,6 +31,75 @@ function resolveApplicationStatusVerb(status: ApplicationStatus): string {
   return 'status-changed';
 }
 
+type ReviewTx = Prisma.TransactionClient;
+
+/**
+ * Closing an application must not leave "Training approved" standing on the
+ * member's dashboard (`User.courseraEnrollmentApproved`, read by
+ * `buildMemberApprovalStatus`). Nothing used to clear it, so a denied member
+ * kept seeing a completed training step.
+ *
+ * `DENIED` is the only closing state here: `ApplicationStatus` is
+ * `PENDING | APPROVED | DENIED | NEEDS_INFO`, and `APPROVED` is the *accepted*
+ * outcome — the state a member who was taken on and enrolled sits in. Clearing
+ * on `APPROVED` would revoke training from exactly the people who earned it,
+ * so this runs on `DENIED` alone. `NEEDS_INFO` and `PENDING` are open states.
+ *
+ * A member may hold more than one application (`User.applications` is a list,
+ * and the dashboard reads the newest). Denying one while another is still
+ * `APPROVED` is not a close of their training, so the flag survives that.
+ *
+ * In the review transaction, so the decision and the cleared flag land or roll
+ * back together.
+ */
+async function clearTrainingApprovalOnClose(
+  tx: ReviewTx,
+  args: { userId: string; orgId: string; closedApplicationId: string; actorUserId: string },
+): Promise<boolean> {
+  const stillAccepted = await tx.application.count({
+    where: {
+      userId: args.userId,
+      status: 'APPROVED',
+      id: { not: args.closedApplicationId },
+      user: { organizationId: args.orgId },
+    },
+  });
+  if (stillAccepted > 0) return false;
+
+  // PENDING A DECISION FROM MIKE, deliberately not guessed here: whether
+  // `courseraEnrollmentApprovedAt`/`ById` are cleared alongside the boolean,
+  // and whether `NEEDS_INFO` clears the flag as well as `DENIED`. Until both
+  // are answered this flips the boolean only, on `DENIED` only, and leaves the
+  // approval timestamp and actor exactly as the last real approval wrote them.
+  // Guarded on the current value so an already-cleared member is not touched,
+  // and so `count` reports a real state change.
+  //
+  // Tenant scoping — an atomicity exception, the same shape as the user write
+  // in app/api/admin/users/[id]/route.ts. This must land in the review
+  // transaction with the decision, so it cannot go through `withTenantScope`
+  // (the scoped proxy cannot be inserted inside an outer $transaction). The
+  // primary tenant gate is upstream in that transaction: the application
+  // lookup filters on `user.organizationId` and `lockMemberForReview` locks
+  // the member `WHERE organization_id = orgId FOR UPDATE`. The explicit
+  // `organizationId` and `deletedAt: null` here are belt-and-braces, matching
+  // that gate's shape, so this write can never cross a tenant or touch a
+  // soft-deleted account even if the gate is refactored.
+  const cleared = await tx.user.updateMany({
+    where: { id: args.userId, organizationId: args.orgId, deletedAt: null, courseraEnrollmentApproved: true },
+    data: { courseraEnrollmentApproved: false },
+  });
+  if (cleared.count === 0) return false;
+
+  await auditLog({
+    actorUserId: args.actorUserId,
+    action: 'coursera_enrollment_revoked',
+    targetType: 'User',
+    targetId: args.userId,
+    metadata: { source: 'application_denied', applicationId: args.closedApplicationId },
+  }, tx);
+  return true;
+}
+
 export async function changeApplicationStatus(args: {
   applicationId: string;
   status: ApplicationStatus;
@@ -74,6 +143,14 @@ export async function changeApplicationStatus(args: {
       data: { status, notes: nextNotes },
     });
     if (updated.count !== 1) throw new Error('APPLICATION_REVIEW_CONFLICT');
+    if (statusChanged && status === 'DENIED') {
+      await clearTrainingApprovalOnClose(tx, {
+        userId: application.userId,
+        orgId,
+        closedApplicationId: id,
+        actorUserId,
+      });
+    }
     if (status === 'APPROVED' || status === 'DENIED') {
       await recordWioaReviewSnapshot({
         organizationId: orgId,

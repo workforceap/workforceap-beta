@@ -38,7 +38,7 @@ const overviewLinkStyle = {
   padding: '8px 16px',
   borderRadius: 'var(--wa-radius-sm)',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
   fontSize: 13,
   textDecoration: 'none',
@@ -64,7 +64,7 @@ export default async function PartnerOutcomesPage() {
     ctx.partner.organizationId,
   );
 
-  const placements = members.filter((m) => m.placementRecord).length;
+  const placements = members.filter((m) => m.placementRecord?.startDateVerified === true).length;
   const pendingPlacementCount = pendingPlacements.length;
   const certified = members.filter((m) => m.userCertifications.length > 0).length;
   const inTraining = pipelineMembers.filter(

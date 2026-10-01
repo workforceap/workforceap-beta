@@ -7,6 +7,7 @@ import { getPartnerForUser } from '@/lib/auth/roles';
 import PartnerAttentionClient from '@/components/partner/PartnerAttentionClient';
 import PartnerWorkflowTimeline from '@/components/partner/PartnerWorkflowTimeline';
 import { listPartnerWorkflowEvents } from '@/lib/portal/workflowEvents';
+import { partnerDataAccess } from '@/lib/partner/dataAccess';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PageHeader from '@/components/portal/PageHeader';
 import { DesignSurface } from '@/components/portal/kit';
@@ -39,7 +40,8 @@ export default async function PartnerAttentionPage({
   const initialTier =
     tr === 'high' || tr === 'medium' || tr === 'low' || tr === 'watch' || tr === 'all' ? tr : 'high';
 
-  const rawEvents = await listPartnerWorkflowEvents(ctx.partnerId, 30);
+  // Minor rule (lib/partner/dataAccess.ts): no event names a hidden member as its actor.
+  const rawEvents = await listPartnerWorkflowEvents(ctx.partnerId, 30, partnerDataAccess(ctx.partner));
   const events = rawEvents.map((e) => ({
     id: e.id,
     createdAt: e.createdAt.toISOString(),

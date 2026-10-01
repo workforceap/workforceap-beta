@@ -13,7 +13,8 @@ import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import { assessJobPostingReadiness } from '@/lib/employer/jobReadiness';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import {
   EMPLOYER_JOBS_PAGE_SIZE,
   employerJobsListHref,
@@ -215,7 +216,7 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
                   <h3 className="wa-truncate" style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0, flex: 1, paddingRight: '0.5rem' }}>
                     {job.title}
                   </h3>
-                  <StatusBadge label={employerJobPortalStatusLabel(job.status)} variant={employerJobPortalBadgeVariant(job.status)} />
+                  <StatusTag tone={badgeVariantToKitTone(employerJobPortalBadgeVariant(job.status))}>{employerJobPortalStatusLabel(job.status)}</StatusTag>
                 </div>
                 <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>{job.location}</p>
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>

@@ -119,7 +119,7 @@ export default function MemberDuplicatesClient() {
 
   if (error && groups.length === 0) {
     return (
-      <div style={{ padding: '1.5rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', borderRadius: '0.75rem', color: 'var(--color-accent)' }}>
+      <div style={{ padding: '1.5rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', borderRadius: '0.75rem', color: 'var(--wa-accent-text)' }}>
         {error}
       </div>
     );
@@ -148,7 +148,7 @@ export default function MemberDuplicatesClient() {
         return (
           <div key={group.canonicalEmail} style={{ border: '1px solid var(--outline-variant)', borderRadius: '0.875rem', background: 'var(--surface-container)', overflow: 'hidden' }}>
             <div style={{ padding: '0.875rem 1.125rem', background: 'var(--surface-container-low)', borderBottom: '1px solid var(--outline-variant)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>warning</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>warning</span>
               <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)' }}>{group.canonicalEmail}</span>
               <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>{group.members.length} records</span>
             </div>

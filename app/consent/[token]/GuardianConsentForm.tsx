@@ -14,7 +14,7 @@ const labelStyle: React.CSSProperties = { fontWeight: 600, fontSize: '0.9rem' };
 const inputStyle: React.CSSProperties = {
   padding: '0.6rem 0.7rem',
   borderRadius: '0.45rem',
-  border: '1px solid var(--color-outline, #cbcbcb)',
+  border: '1px solid var(--outline-variant)',
   fontSize: '1rem',
 };
 
@@ -72,10 +72,10 @@ export default function GuardianConsentForm({
       <div
         role="status"
         style={{
-          border: '1px solid var(--color-outline, #e2e2e2)',
+          border: '1px solid var(--outline-variant)',
           borderRadius: '0.75rem',
           padding: '1.5rem',
-          background: 'var(--color-surface, #fff)',
+          background: 'var(--surface-container-lowest)',
         }}
       >
         <h2 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem' }}>Consent recorded</h2>

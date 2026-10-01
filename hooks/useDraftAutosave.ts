@@ -32,6 +32,10 @@ export function useDraftAutosave<T>(
   const debounceMs = options?.debounceMs ?? 300;
   const setValueRef = useRef(setValue);
   setValueRef.current = setValue;
+  // Callers usually pass `isEmpty` inline; read it through a ref so the
+  // effects below do not re-run (and re-arm the debounce) on every render.
+  const isEmptyRef = useRef(isEmpty);
+  isEmptyRef.current = isEmpty;
   const loadedRef = useRef(false);
 
   // Load once on mount if current value is empty.
@@ -39,23 +43,23 @@ export function useDraftAutosave<T>(
     if (loadedRef.current) return;
     loadedRef.current = true;
     if (typeof window === 'undefined') return;
-    if (!isEmpty(value)) return;
+    if (!isEmptyRef.current(value)) return;
     try {
       const raw = window.localStorage.getItem(key);
       if (!raw) return;
       const parsed = JSON.parse(raw) as T;
-      if (!isEmpty(parsed)) setValueRef.current(parsed);
+      if (!isEmptyRef.current(parsed)) setValueRef.current(parsed);
     } catch {
       // ignore parse / storage errors
     }
-  }, [key, value, isEmpty]);
+  }, [key, value]);
 
   // Write on change, debounced.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handle = window.setTimeout(() => {
       try {
-        if (isEmpty(value)) {
+        if (isEmptyRef.current(value)) {
           window.localStorage.removeItem(key);
         } else {
           window.localStorage.setItem(key, JSON.stringify(value));
@@ -65,7 +69,7 @@ export function useDraftAutosave<T>(
       }
     }, debounceMs);
     return () => window.clearTimeout(handle);
-  }, [key, value, isEmpty, debounceMs]);
+  }, [key, value, debounceMs]);
 
   return {
     clear: () => {

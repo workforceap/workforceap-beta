@@ -7,9 +7,9 @@
  *
  *   1. the target serves the exact commit the workflow checked out
  *      (`/api/health` → `version` is a prefix of the trusted SHA), and
- *   2. the target is wired to the Supabase project its policy allows —
- *      the DEMO project for `isolated_preview`, the real project for
- *      `production_canary` (`/api/health` → `supabaseRef`).
+ *   2. both its public Auth URL and runtime Prisma datasource identify the
+ *      Supabase project its policy allows — DEMO for `isolated_preview`, real
+ *      for `production_canary` (`/api/health` → `supabaseRef`, `prismaProject`).
  *
  * The previous gate was a bare `curl --fail`, which turned every failure into
  * "404" with no way to tell a stale deployment from a typo. This module keeps
@@ -121,6 +121,8 @@ export function evaluateHealthPayload({ status, body, trustedSha, mode }) {
   const expectedRef = expectedSupabaseRefForMode(mode);
   const supabaseRef =
     typeof payload.supabaseRef === 'string' ? payload.supabaseRef.trim().toLowerCase() : '';
+  const prismaProject =
+    typeof payload.prismaProject === 'string' ? payload.prismaProject.trim().toLowerCase() : '';
   if (expectedRef) {
     if (!supabaseRef) {
       // The version already matches, so waiting will not add the field.
@@ -135,9 +137,28 @@ export function evaluateHealthPayload({ status, body, trustedSha, mode }) {
         retryable: false,
       });
     }
+    const expectedPrismaProject = expectedRef === DEMO_REF ? 'demo' : 'prod';
+    if (!prismaProject) {
+      return failure('prisma_project_missing', { status, version, retryable: false });
+    }
+    if (prismaProject !== expectedPrismaProject) {
+      return failure('prisma_project_mismatch', {
+        status,
+        version,
+        prismaProject,
+        expectedPrismaProject,
+        retryable: false,
+      });
+    }
   }
 
-  return { ok: true, status, version: version || null, supabaseRef: supabaseRef || null };
+  return {
+    ok: true,
+    status,
+    version: version || null,
+    supabaseRef: supabaseRef || null,
+    prismaProject: prismaProject || null,
+  };
 }
 
 function vercelDiagnostics(headers) {
@@ -158,13 +179,18 @@ function vercelDiagnostics(headers) {
 export function formatHealthGateAttempt(attempt, outcome) {
   const parts = [`[health-gate] attempt ${attempt}:`];
   if (outcome.ok) {
-    parts.push(`ok (version ${outcome.version ?? 'n/a'}, supabaseRef ${outcome.supabaseRef ?? 'n/a'})`);
+    parts.push(
+      `ok (version ${outcome.version ?? 'n/a'}, supabaseRef ${outcome.supabaseRef ?? 'n/a'}, ` +
+        `prismaProject ${outcome.prismaProject ?? 'n/a'})`,
+    );
   } else {
     parts.push(outcome.reason);
     if (outcome.reason === 'version_mismatch') {
       parts.push(`(target ${outcome.version}, trusted ${outcome.trustedVersion})`);
     } else if (outcome.reason === 'supabase_ref_mismatch') {
       parts.push(`(target ${outcome.supabaseRef}, expected ${outcome.expectedRef})`);
+    } else if (outcome.reason === 'prisma_project_mismatch') {
+      parts.push(`(target ${outcome.prismaProject}, expected ${outcome.expectedPrismaProject})`);
     } else if (outcome.reason === 'fetch_failed' && outcome.detail) {
       parts.push(`(${outcome.detail})`);
     }
@@ -197,6 +223,13 @@ export function describeHealthGateFailure(outcome) {
       return (
         'target serves the trusted commit but its /api/health has no supabaseRef field' +
         '; the deployment predates the health contract the gate relies on'
+      );
+    case 'prisma_project_missing':
+      return 'target serves the trusted commit but /api/health has no Prisma project attestation';
+    case 'prisma_project_mismatch':
+      return (
+        `target server Prisma datasource is ${outcome.prismaProject}, policy requires ${outcome.expectedPrismaProject}` +
+        '; refusing to sign in against an unverified database (docs/STAGING_ENV.md)'
       );
     case 'redirected':
       return `target redirected (HTTP ${outcome.status}); the audit origin must answer /api/health directly`;

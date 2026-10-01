@@ -34,7 +34,6 @@ import { Button } from '@astryxdesign/core/Button';
 import { Token } from '@astryxdesign/core/Token';
 import { StatusDot } from '@astryxdesign/core/StatusDot';
 import { HStack } from '@astryxdesign/core/Layout';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   Mic,
   MicOff,
@@ -72,6 +71,7 @@ import { PageOpener } from '../PageOpener';
 import { KitEmptyState } from '../KitEmptyState';
 import { StatusTag } from '../StatusTag';
 import { VoiceOrb } from '../VoiceOrb';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -90,6 +90,8 @@ export type SessionAgentConfig = {
   payload?: Record<string, unknown>;
   accent: string;
   accentDark: string;
+  /** Solid button fill that pairs with `--wa-on-hero` in both themes (see AGENT_ACCENT). */
+  solid: string;
   /**
    * When true, the idle state asks the member for a target role + interview
    * type before starting (used by Mock Interview), and merges them into the
@@ -103,10 +105,16 @@ export type SessionAgentConfig = {
 const LILLEY_DATA_USE_NOTICE =
   'ElevenLabs processes your microphone audio and live transcript during this session. WorkforceAP may share only the saved next-step, program, and progress facts needed for Lilley through approved read-only tools. This AI Career Tools session does not save the transcript to your WorkforceAP AI history or coach memory.';
 
+/**
+ * `solid` is the fill behind `--wa-on-hero` white text on the session panel's
+ * Start / End buttons: a mode-constant hero hue (guide §1) so the label clears
+ * 4.5:1 in both themes. White on the base `--wa-gold` measured 3.7:1 and on
+ * the dark-mode `--wa-accent` / `--wa-info` 3.3:1 / 2.2:1.
+ */
 const AGENT_ACCENT = {
-  crimson: { accent: 'var(--wa-accent)', accentDark: 'var(--wa-accent-dark)' },
-  gold: { accent: 'var(--wa-gold)', accentDark: 'var(--wa-gold-dark)' },
-  blue: { accent: 'var(--wa-info)', accentDark: 'color-mix(in srgb, var(--wa-info) 75%, black)' },
+  crimson: { accent: 'var(--wa-accent)', accentDark: 'var(--wa-accent-dark)', solid: 'var(--wa-hero-crimson)' },
+  gold: { accent: 'var(--wa-gold)', accentDark: 'var(--wa-gold-dark)', solid: 'var(--wa-hero-gold)' },
+  blue: { accent: 'var(--wa-info)', accentDark: 'color-mix(in srgb, var(--wa-info) 75%, black)', solid: 'color-mix(in srgb, var(--wa-info) 70%, black)' },
 } as const;
 
 const SESSION_AGENTS: Record<VoiceStudioAgentKey, SessionAgentConfig> = {
@@ -409,6 +417,17 @@ function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void 
   );
 }
 
+/**
+ * Card shadows tint the card's own hue, never an rgba() literal, so they
+ * follow light-dark() (and the org accent where the fill is the accent):
+ * `--wa-accent` under the crimson / accent gradients, `--wa-gold` under the
+ * gold gradient, the panel chrome under the dark card and the kit's surface
+ * shadow token under the light-body cards (#2491 follow-up).
+ */
+const ACCENT_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-accent) 15%, transparent)';
+const GOLD_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-gold) 15%, transparent)';
+const DARK_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-sidebar-bg) 20%, transparent)';
+
 function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: SessionAgentConfig) => void }) {
   const { variant, Icon, badge, title, body, ctaIcon: Cta, cta } = card;
 
@@ -421,29 +440,29 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
 
   switch (variant) {
     case 'gold':
-      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-gold), var(--wa-hero-gold-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 10px 15px -3px rgba(120,93,38,0.15)' };
+      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-gold), var(--wa-hero-gold-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: GOLD_CARD_SHADOW };
       iconChip = { background: 'rgba(255,255,255,0.22)' };
       bodyColor = 'rgba(255,255,255,0.92)';
       ctaColor = undefined;
       break;
     case 'crimson':
-      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)' };
+      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: ACCENT_CARD_SHADOW };
       iconChip = { background: 'rgba(255,255,255,0.22)' };
       bodyColor = 'rgba(255,255,255,0.92)';
       break;
     case 'crimson-deep':
-      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson-dark), color-mix(in srgb, var(--wa-hero-crimson-dark) 70%, black))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)' };
+      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson-dark), color-mix(in srgb, var(--wa-hero-crimson-dark) 70%, black))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: ACCENT_CARD_SHADOW };
       iconChip = { background: 'rgba(255,255,255,0.22)' };
       bodyColor = 'rgba(255,255,255,0.92)';
       break;
     case 'counselor':
-      cardStyle = { background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' };
+      cardStyle = { background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: 'var(--wa-shadow)' };
       iconChip = { background: 'var(--wa-info-soft)', color: 'var(--wa-info)', border: '1px solid var(--wa-border)' };
       bodyColor = 'var(--wa-muted)';
       ctaColor = 'var(--wa-info)';
       break;
     case 'dark':
-      cardStyle = { background: 'var(--wa-sidebar-bg)', color: 'var(--wa-sidebar-text)', border: '1px solid var(--wa-sidebar-border)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.2)' };
+      cardStyle = { background: 'var(--wa-sidebar-bg)', color: 'var(--wa-sidebar-text)', border: '1px solid var(--wa-sidebar-border)', boxShadow: DARK_CARD_SHADOW };
       iconChip = { background: 'var(--wa-accent)' };
       bodyColor = 'rgba(255,255,255,0.9)';
       break;
@@ -453,7 +472,7 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
       // mode — the previous hardcoded cream + flipping text tokens made
       // this card unreadable in dark. CTA uses --wa-text for guaranteed AA;
       // the gold identity carries through the icon chip + badge.
-      cardStyle = { background: 'var(--wa-gold-soft)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' };
+      cardStyle = { background: 'var(--wa-gold-soft)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: 'var(--wa-shadow)' };
       iconChip = { background: 'var(--wa-gold-soft)', color: 'var(--wa-gold-dark)', border: '1px solid var(--wa-border)' };
       bodyColor = 'var(--wa-text)';
       ctaColor = 'var(--wa-text)';
@@ -486,7 +505,7 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
         )}
       </div>
       <div>
-        <h3 style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>{title}</h3>
+        <h2 style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>{title}</h2>
         <p style={{ fontSize: 'var(--wa-type-body)', color: bodyColor, marginTop: 6, lineHeight: 1.5 }}>{body}</p>
         <div
           style={{
@@ -568,7 +587,7 @@ function formatClock(totalSeconds: number): string {
  * live session, not canned content.
  */
 function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
-  const { label, endpoint, payload, accent, accentDark, askRole, dataUseNotice } = agent;
+  const { label, endpoint, payload, accent, accentDark, solid, askRole, dataUseNotice } = agent;
   const [phase, setPhase] = useState<SessionPhase>('idle');
   const [error, setError] = useState('');
   const [agentSpeaking, setAgentSpeaking] = useState(false);
@@ -991,8 +1010,8 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                     style={{
                       padding: '12px 24px',
                       borderRadius: 999,
-                      background: accent,
-                      color: 'var(--wa-on-accent)',
+                      background: solid,
+                      color: 'var(--wa-on-hero)',
                       fontWeight: 700,
                       fontSize: 'var(--wa-type-body)',
                       border: 'none',
@@ -1037,8 +1056,8 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                   style={{
                     padding: '12px 28px',
                     borderRadius: 999,
-                    background: accent,
-                    color: 'var(--wa-on-accent)',
+                    background: solid,
+                    color: 'var(--wa-on-hero)',
                     fontWeight: 700,
                     fontSize: 'var(--wa-type-body)',
                     border: 'none',
@@ -1105,8 +1124,8 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                       <div
                         style={{
                           ...bubble,
-                          background: accent,
-                          color: 'var(--wa-on-accent)',
+                          background: solid,
+                          color: 'var(--wa-on-hero)',
                           borderTopRightRadius: 4,
                           display: 'inline-block',
                           textAlign: 'left',
@@ -1232,7 +1251,7 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 16,
-          boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)',
+          boxShadow: ACCENT_CARD_SHADOW,
         }}
       >
         <div>
@@ -1261,14 +1280,13 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
               : 'Add your resume to get an instant structural read, full AI scoring, and rewrites.'}
           </p>
         </div>
-        <AstryxLink href={hasResume ? TOOL_HREF['resume-studio'] + '?view=score' : TOOL_HREF['resume-studio']} as={Link as never} isStandalone>
-          <Button
-            label={hasResume ? 'Open full analysis' : 'Add résumé'}
-            variant="primary"
-            size="sm"
-            icon={<Upload size={14} aria-hidden="true" />}
-          />
-        </AstryxLink>
+        <KitLinkButton
+          href={hasResume ? TOOL_HREF['resume-studio'] + '?view=score' : TOOL_HREF['resume-studio']}
+          label={hasResume ? 'Open full analysis' : 'Add résumé'}
+          variant="primary"
+          size="sm"
+          icon={<Upload size={14} aria-hidden="true" />}
+        />
       </div>
 
       {hasResume && score !== null ? (
@@ -1350,12 +1368,8 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
                 Scores this resume against job-market keywords and O*NET skills, then rewrites weak bullets.
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
-                <AstryxLink href={TOOL_HREF['resume-studio'] + '?view=score'} as={Link as never} isStandalone>
-                  <Button label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
-                </AstryxLink>
-                <AstryxLink href={TOOL_HREF['resume-rewriter']} as={Link as never} isStandalone>
-                  <Button label="Rewrite a bullet" variant="secondary" size="sm" />
-                </AstryxLink>
+                <KitLinkButton href={TOOL_HREF['resume-studio'] + '?view=score'} label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
+                <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Rewrite a bullet" variant="secondary" size="sm" />
               </div>
               </div>
             </Card>
@@ -1376,7 +1390,7 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
                 justifyContent: 'space-between',
                 cursor: 'pointer',
                 border: 'none',
-                boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)',
+                boxShadow: ACCENT_CARD_SHADOW,
                 textDecoration: 'none',
               }}
             >
@@ -1439,9 +1453,7 @@ function IssueRow({ issue }: { issue: ResumeStudioIssue }) {
           <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-meta)' }}>{title}</div>
           <div style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{detail}</div>
         </div>
-        <AstryxLink href={TOOL_HREF['resume-rewriter']} as={Link as never} isStandalone>
-          <Button label="Fix with AI" variant="primary" size="sm" />
-        </AstryxLink>
+        <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Fix with AI" variant="primary" size="sm" />
       </div>
     </Card>
   );
@@ -1613,7 +1625,7 @@ const ORB_CSS = `
 .vs-orb-ring.vs-d3 { animation-delay: 1.8s; }
 .vs-eqbar { height: 60%; animation: vsEq 1s ease-in-out infinite; }
 .vs-dot { animation: vsPulse 1.6s ease-in-out infinite; }
-.vs-focus-dark:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--wa-sidebar-bg), 0 0 0 4px var(--wa-accent); }
+.vs-focus-dark:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring-on-dark); }
 
 /* Micro-interactions — transform/opacity only, so they're cheap to composite
    and safe to disable wholesale under reduced motion below. */

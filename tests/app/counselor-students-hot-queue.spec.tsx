@@ -49,7 +49,7 @@ vi.mock('@/lib/counselor/rosterStats', () => ({
   buildCounselorRosterStats: vi.fn(() => []),
 }));
 vi.mock('@/components/portal/PageHeader', () => ({ default: () => null }));
-vi.mock('@/components/portal/PortalEmptyState', () => ({ default: () => null }));
+vi.mock('@/components/portal/counselor/CounselorRosterEmpty', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalPageFrame', () => ({
   default: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
 }));

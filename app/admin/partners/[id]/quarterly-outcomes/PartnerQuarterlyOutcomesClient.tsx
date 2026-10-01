@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/components/portal/PageHeader';
 import DataTable from '@/components/portal/ui/DataTable';
+import { objectsToCsv } from '@/lib/csv/cells';
 
 const ACCENT = '#ad2c4d';
 const BLUE = '#2b7bb9';
@@ -51,25 +52,6 @@ interface PartnerQuarterlyReport {
     salaryOffered: number | null;
     daysToPlacement: number | null;
   }>;
-}
-
-function objectsToCsv(rows: Record<string, string | number>[]): string {
-  if (rows.length === 0) return '';
-  const headers = Object.keys(rows[0]);
-  const lines = [headers.join(',')];
-  for (const row of rows) {
-    lines.push(
-      headers.map((h) => {
-        const val = row[h];
-        const str = String(val ?? '');
-        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-          return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
-      }).join(',')
-    );
-  }
-  return lines.join('\n');
 }
 
 function buildCsvBundle(report: PartnerQuarterlyReport): { name: string; csv: string }[] {
@@ -419,7 +401,7 @@ export default function PartnerQuarterlyOutcomesClient({
                     key: 'name',
                     header: 'Name',
                     cell: (m) => (
-                      <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 600, color: 'var(--color-accent)' }}>
+                      <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 600, color: 'var(--wa-accent-text)' }}>
                         {m.fullName}
                       </Link>
                     ),

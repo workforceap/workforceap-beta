@@ -80,7 +80,7 @@ export default function ConversionThankYouPage({
                   fontWeight: 700,
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase',
-                  color: 'var(--color-accent)',
+                  color: 'var(--wa-accent-text)',
                   margin: '0 0 1.25rem',
                 }}
               >
@@ -92,7 +92,7 @@ export default function ConversionThankYouPage({
                     <ArrowRight
                       size={20}
                       aria-hidden="true"
-                      style={{ color: 'var(--color-accent)', flexShrink: 0, marginTop: '0.1rem' }}
+                      style={{ color: 'var(--wa-accent-text)', flexShrink: 0, marginTop: '0.1rem' }}
                     />
                     <div>
                       <p style={{ margin: 0, fontWeight: 700, color: 'var(--color-on-surface)' }}>{item.title}</p>

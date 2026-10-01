@@ -4,12 +4,14 @@ import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, ty
 import { ChevronDown } from 'lucide-react';
 import { Pagination } from '@astryxdesign/core/Pagination';
 import { cx, type KitDataAttrs } from './base';
-import { KitEmptyState } from './KitEmptyState';
+import { KitEmptyState, type KitEmptyStateProps } from './KitEmptyState';
 
 export type KitTableShellColumn = {
   key: string;
   header: ReactNode;
   align?: 'left' | 'right';
+  /** Numeric column: right-aligned tabular numerals via `.wa-kit-table-cell--num`. */
+  numeric?: boolean;
   /** Pin column on horizontal scroll (typically the row label). */
   stickyLeft?: boolean;
   /** Minimum width for this column so badges/tokens are not clipped. */
@@ -44,8 +46,8 @@ interface KitTableShellProps extends KitDataAttrs {
   columns: KitTableShellColumn[];
   rows: KitTableShellRow[];
   minWidth?: number;
-  emptyTitle: string;
-  emptyDescription?: string;
+  /** Rendered in a full-width cell when there are no rows (DataTable resolves the defaults). */
+  empty: KitEmptyStateProps;
   onRowKeyClick?: (key: string) => void;
   /** Override surface-driven density. Warm → balanced, dense → compact. */
   density?: 'compact' | 'balanced' | 'spacious';
@@ -92,8 +94,7 @@ export function KitTableShell({
   columns,
   rows,
   minWidth = 600,
-  emptyTitle,
-  emptyDescription,
+  empty,
   onRowKeyClick,
   density,
   stickyHeader = false,
@@ -171,7 +172,7 @@ export function KitTableShell({
   const showCue = scrollCue && scrollable && !atEnd;
 
   const cellStyle = (c: KitTableShellColumn): CSSProperties | undefined => ({
-    ...(c.align === 'right' ? { textAlign: 'right' } : undefined),
+    ...(c.align === 'right' || c.numeric ? { textAlign: 'right' } : undefined),
     ...(c.minWidth != null ? { minWidth: c.minWidth } : undefined),
   });
 
@@ -244,7 +245,7 @@ export function KitTableShell({
                   key={c.key}
                   scope="col"
                   aria-sort={c.ariaSort}
-                  className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', stickyHeader && 'wa-kit-table-th--sticky')}
+                  className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num', stickyHeader && 'wa-kit-table-th--sticky')}
                   style={cellStyle(c)}
                 >
                   {c.header}
@@ -266,7 +267,7 @@ export function KitTableShell({
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={colSpan}>
-                  <KitEmptyState title={emptyTitle} description={emptyDescription} />
+                  <KitEmptyState {...empty} />
                 </td>
               </tr>
             ) : (
@@ -325,7 +326,7 @@ export function KitTableShell({
                       </td>
                     ) : null}
                     {columns.map((c, i) => (
-                      <td key={c.key} className={cx(c.stickyLeft && 'wa-kit-table-sticky-left')} style={cellStyle(c)}>
+                      <td key={c.key} className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num')} style={cellStyle(c)}>
                         {row.cells[i]}
                       </td>
                     ))}

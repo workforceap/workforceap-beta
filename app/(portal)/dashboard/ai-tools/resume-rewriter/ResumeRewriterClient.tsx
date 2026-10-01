@@ -35,6 +35,7 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
   const [resumeText, setResumeText] = useState(initialData?.resume ?? '');
   const [hasHydrated, setHasHydrated] = useState(false);
   const [hasStoredResume, setHasStoredResume] = useState(!!initialData?.resume);
+  const [hasOriginalOnFile, setHasOriginalOnFile] = useState(!!initialData?.resume);
   const [showLoadedBanner, setShowLoadedBanner] = useState(!!initialData?.resume);
   const [showUploadBanner, setShowUploadBanner] = useState(false);
   const loadedTextRef = useRef<string | null>(initialData?.resume ?? null);
@@ -50,7 +51,7 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
     }
     let cancelled = false;
 
-    fetch('/api/member/resume?includePlainText=1')
+    fetch('/api/member/resume?includePlainText=1&originalOnly=1')
       .then(async (res) => {
         if (!res.ok) throw new Error('Failed to load resume');
         return res.json() as Promise<ResumeResponse>;
@@ -59,6 +60,7 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
         if (cancelled) return;
         const plainText = data.resumePlainText?.trim() ?? '';
         const hasOriginal = Boolean(data.hasOriginal);
+        setHasOriginalOnFile(hasOriginal);
 
         if (plainText) {
           loadedTextRef.current = plainText;
@@ -69,7 +71,7 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
         } else {
           setHasStoredResume(false);
           setShowLoadedBanner(false);
-          setShowUploadBanner(!hasOriginal);
+          setShowUploadBanner(true);
         }
       })
       .catch(() => {
@@ -160,9 +162,9 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
             >
               <Upload size={16} aria-hidden="true" />
               <span>
-                No resume on file.{' '}
+                {hasOriginalOnFile ? 'Could not read the original resume. Paste it into the text box below or ' : 'No resume on file. Paste one into the text box below or '}
                 <Link href="/dashboard/resume" style={{ color: 'var(--wa-accent)', fontWeight: 600 }}>
-                  Upload resume
+                  upload a readable resume
                 </Link>
               </span>
             </div>

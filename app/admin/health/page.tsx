@@ -8,7 +8,7 @@ import PageHeader from '@/components/portal/PageHeader';
 import type { HealthResponse, HealthStatus, SubsystemCheck } from '@/app/api/admin/health/route';
 import {
   SystemHealthKit,
-  statusToKitColor,
+  statusToKitTone,
   type HealthTile,
   type TileStatus,
 } from '@/components/portal/kit/pages/admin-subviews/SystemHealthKit';
@@ -60,7 +60,7 @@ function statusColor(status: HealthStatus | 'ok' | 'degraded' | 'fail'): string 
       return 'var(--wa-gold-dark)';
     case 'unhealthy':
     case 'fail':
-      return 'var(--color-accent, #ad2c4d)';
+      return 'var(--color-accent)';
     default:
       return 'var(--color-on-surface-variant)';
   }
@@ -373,31 +373,31 @@ function HealthKitView({
   // "Integration uptime (30d)" — there is NO 30-day uptime store, so we do not
   // fabricate 99.9%-style figures. Instead each bar reflects the CURRENT health
   // of an integration subsystem we actually check, with its status note as the
-  // value and a status-derived fill. Bars are colored by status.
+  // value and a status-derived tone. Bars paint by status through the kit tone hook.
   const uptime: RankDatum[] = [
     {
       label: 'Webhooks',
       value: statusText(toTileStatus(checks.webhooks.status), 'OK'),
       pct: statusPct(checks.webhooks.status),
-      color: statusToKitColor(toTileStatus(checks.webhooks.status)),
+      tone: statusToKitTone(toTileStatus(checks.webhooks.status)),
     },
     {
       label: 'xAPI ingestion',
       value: statusText(toTileStatus(checks.xapi.status), 'OK'),
       pct: statusPct(checks.xapi.status),
-      color: statusToKitColor(toTileStatus(checks.xapi.status)),
+      tone: statusToKitTone(toTileStatus(checks.xapi.status)),
     },
     {
       label: 'AI tools',
       value: statusText(toTileStatus(checks.aiTools.status), 'OK'),
       pct: statusPct(checks.aiTools.status),
-      color: statusToKitColor(toTileStatus(checks.aiTools.status)),
+      tone: statusToKitTone(toTileStatus(checks.aiTools.status)),
     },
     {
       label: 'Redis cache',
       value: statusText(toTileStatus(checks.redis.status), 'OK'),
       pct: statusPct(checks.redis.status),
-      color: statusToKitColor(toTileStatus(checks.redis.status)),
+      tone: statusToKitTone(toTileStatus(checks.redis.status)),
     },
   ];
 
@@ -619,7 +619,7 @@ function LegacyHealthView({
           <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
             Active Alerts
             {alerts.length > 0 && (
-              <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>
+              <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)' }}>
                 ({alerts.length})
               </span>
             )}
@@ -679,7 +679,7 @@ export default function AdminHealthPage() {
         <PageHeader title="System Health" subtitle="Services & integrations" />
         <div
           data-portal-error-state="admin-health-load-failed"
-          style={{ padding: '2rem', color: 'var(--color-accent)' }}
+          style={{ padding: '2rem', color: 'var(--wa-accent-text)' }}
         >
           <p>Error loading health data: {error || 'No data'}</p>
           <button onClick={refetch} className="btn btn-primary btn-sm" style={{ marginTop: '1rem' }}>

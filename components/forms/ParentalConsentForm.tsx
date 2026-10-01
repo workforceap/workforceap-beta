@@ -91,7 +91,7 @@ export default function ParentalConsentForm({
 
         <div className="form-group">
           <label htmlFor="parent-name">
-            Parent/Guardian Full Name <span style={{ color: 'var(--color-accent)' }}>*</span>
+            Parent/Guardian Full Name <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
           </label>
           <input
             id="parent-name"
@@ -105,7 +105,7 @@ export default function ParentalConsentForm({
 
         <div className="form-group">
           <label htmlFor="parent-email">
-            Parent/Guardian Email <span style={{ color: 'var(--color-accent)' }}>*</span>
+            Parent/Guardian Email <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
           </label>
           <input
             id="parent-email"
@@ -123,7 +123,7 @@ export default function ParentalConsentForm({
 
         <div className="form-group">
           <label htmlFor="parent-phone">
-            Parent/Guardian Phone <span style={{ color: 'var(--color-accent)' }}>*</span>
+            Parent/Guardian Phone <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
           </label>
           <input
             id="parent-phone"
@@ -143,7 +143,7 @@ export default function ParentalConsentForm({
 
         <div className="form-group">
           <label htmlFor="student-dob">
-            Student Date of Birth <span style={{ color: 'var(--color-accent)' }}>*</span>
+            Student Date of Birth <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
           </label>
           <input
             id="student-dob"
@@ -212,15 +212,15 @@ export default function ParentalConsentForm({
             />
             <span style={{ marginLeft: '0.5rem' }}>
               I am the parent or legal guardian of {studentName}, and I have read and agree to the{' '}
-              <LocalizedLink href="/terms" target="_blank" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>
+              <LocalizedLink href="/terms" target="_blank" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>
                 Terms of Service
               </LocalizedLink>{' '}
               and{' '}
-              <LocalizedLink href="/privacy" target="_blank" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>
+              <LocalizedLink href="/privacy" target="_blank" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>
                 Privacy Policy
               </LocalizedLink>
               . I consent to my child&rsquo;s participation in WorkforceAP programs.{' '}
-              <span style={{ color: 'var(--color-accent)' }}>*</span>
+              <span style={{ color: 'var(--wa-accent-text)' }}>*</span>
             </span>
           </label>
         </div>
@@ -264,7 +264,7 @@ export default function ParentalConsentForm({
         <p style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--color-on-surface)' }}>
           <strong>Your Rights:</strong> You may withdraw consent, request access to your child&rsquo;s information, 
           or request deletion at any time by contacting us at{' '}
-          <a href="mailto:info@workforceap.org" style={{ color: 'var(--color-accent)' }}>
+          <a href="mailto:info@workforceap.org" style={{ color: 'var(--wa-accent-text)' }}>
             info@workforceap.org
           </a>
           . Under COPPA and FERPA, you have the right to review any information we collect about your child.

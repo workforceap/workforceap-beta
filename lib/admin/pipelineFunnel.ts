@@ -21,13 +21,18 @@ export type PipelineFunnelCounts = {
   active: number;
 };
 
-/** Funnel stages in the order an applicant passes them. */
+/**
+ * Funnel stages in the order an applicant passes them. A stage is a position
+ * in the walk, not a state, so the bars carry no tone and paint the kit's
+ * neutral accent (the blue/green pre- vs post-enrollment split they used to
+ * carry was a category, which the kit no longer paints — WAP-99).
+ */
 export const PIPELINE_FUNNEL_STAGES = [
-  { key: 'started', label: 'Started application', color: 'info' },
-  { key: 'intake', label: 'Completed intake', color: 'info' },
-  { key: 'enrolled', label: 'Enrolled', color: 'success' },
-  { key: 'active', label: 'Active', color: 'success' },
-] as const satisfies ReadonlyArray<{ key: keyof PipelineFunnelCounts; label: string; color: RankDatum['color'] }>;
+  { key: 'started', label: 'Started application' },
+  { key: 'intake', label: 'Completed intake' },
+  { key: 'enrolled', label: 'Enrolled' },
+  { key: 'active', label: 'Active' },
+] as const satisfies ReadonlyArray<{ key: keyof PipelineFunnelCounts; label: string }>;
 
 export const WIOA_SCREENED_LABEL = 'WIOA verified';
 export const WIOA_SCREENED_CAPTION = 'eligibility confirmed (review status verified); runs alongside enrollment, not a gate';
@@ -46,7 +51,6 @@ export function buildPipelineFunnel(counts: PipelineFunnelCounts): { bars: RankD
     label: stage.label,
     value: fmt(counts[stage.key]),
     pct: pct(counts[stage.key]),
-    color: stage.color,
   }));
 
   const kpis: KpiItem[] = [

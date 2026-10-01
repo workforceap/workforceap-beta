@@ -3,14 +3,17 @@
  * Single source of truth for schedule, description, audience, and API path.
  *
  * Each entry maps to a route under /api/cron/* and a schedule in vercel.json.
+ * vercel.json is what runs: `schedule` must equal its entry there and
+ * `scheduleLabel` must be `formatCronSchedule(schedule)` (lib/admin/cronScheduleKey.ts).
+ * lib/admin/cronRegistry.test.ts and lib/admin/cronScheduleKey.test.ts fail on drift.
  */
 
 export type CronDef = {
   id: string;
   name: string;
   description: string;
-  schedule: string; // cron expression
-  scheduleLabel: string; // human-readable
+  schedule: string; // cron expression, identical to vercel.json
+  scheduleLabel: string; // formatCronSchedule(schedule)
   apiPath: string; // relative, e.g. /api/cron/weekly-recap
   method: 'GET' | 'POST';
   icon: string; // material-symbols name
@@ -24,8 +27,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'weekly-recap',
     name: 'Weekly Recap Email',
     description: 'Sends a personalized weekly recap to enrolled members who have not received one this week.',
-    schedule: '0 18 * * 0',
-    scheduleLabel: 'Sunday 6PM UTC',
+    schedule: '53 18 * * 0',
+    scheduleLabel: 'Sunday 6:53 PM UTC',
     apiPath: '/api/cron/weekly-recap',
     method: 'GET',
     icon: 'event_note',
@@ -37,8 +40,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'inactive-nudge',
     name: 'Inactive Nudge (All Members)',
     description: 'Sends re-engagement email to any member (enrolled or not) with 7+ days of inactivity who has reminders enabled.',
-    schedule: '0 10 * * 1',
-    scheduleLabel: 'Monday 10AM UTC',
+    schedule: '23 10 * * 1',
+    scheduleLabel: 'Monday 10:23 AM UTC',
     apiPath: '/api/cron/inactive-nudge',
     method: 'GET',
     icon: 'person_off',
@@ -50,8 +53,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'inactivity-nudge',
     name: 'Inactivity Nudge (14-Day)',
     description: 'Sends re-engagement email to enrolled members with 14+ days of inactivity.',
-    schedule: '0 10 * * 3',
-    scheduleLabel: 'Wednesday 10AM UTC',
+    schedule: '29 10 * * 3',
+    scheduleLabel: 'Wednesday 10:29 AM UTC',
     apiPath: '/api/cron/inactivity-nudge',
     method: 'GET',
     icon: 'schedule_send',
@@ -65,7 +68,7 @@ export const CRON_REGISTRY: CronDef[] = [
     description:
       'Weekly at-risk email: reads the CRITICAL AtRiskAlert rows the nightly check persisted (no re-scoring) and sends one batched alert per counselor; members with no counselor go to AT_RISK_DIGEST_EMAILS (fallback: admin inbox). Also runs the G5 member retention nudges (check-in / come-back / stuck, 7-day per-tier cooldown).',
     schedule: '7 13 * * 1',
-    scheduleLabel: 'Monday 1PM UTC',
+    scheduleLabel: 'Monday 1:07 PM UTC',
     apiPath: '/api/cron/at-risk-alerts',
     method: 'GET',
     icon: 'notification_important',
@@ -78,7 +81,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Applicant Follow-up Chases',
     description: 'Status emails to pending applicants at day 3, day 10 and day 20 (one per application per stage), plus a staff alert for the fresh 3–6 day queue.',
     schedule: '7 11 */3 * *',
-    scheduleLabel: 'Every 3 days at 11:07 UTC',
+    scheduleLabel: 'Every 3 days from the 1st of the month, 11:07 AM UTC',
     apiPath: '/api/cron/applicant-followup',
     method: 'GET',
     icon: 'follow_the_signs',
@@ -91,7 +94,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Aging Applications Digest',
     description: 'Weekly staff digest of pending and needs-info applications by age bucket, the ten waiting longest, and how many belong to members who already enrolled.',
     schedule: '37 14 * * 1',
-    scheduleLabel: 'Monday 2:37PM UTC',
+    scheduleLabel: 'Monday 2:37 PM UTC',
     apiPath: '/api/cron/applicant-aging-digest',
     method: 'GET',
     icon: 'pending_actions',
@@ -103,8 +106,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'weekly-recap-email',
     name: 'Admin Weekly Recap',
     description: 'Weekly summary to WorkforceAP staff: new applicants, placements, at-risk students, pending applications.',
-    schedule: '0 22 * * 5',
-    scheduleLabel: 'Friday 10PM UTC (4PM CT)',
+    schedule: '19 22 * * 5',
+    scheduleLabel: 'Friday 10:19 PM UTC',
     apiPath: '/api/cron/weekly-recap-email',
     method: 'GET',
     icon: 'summarize',
@@ -116,8 +119,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'partner-outcome-digest',
     name: 'Partner Weekly Digest',
     description: 'Weekly referral outcome digest to each active partner — pipeline stage counts + weekly wins.',
-    schedule: '0 13 * * 1',
-    scheduleLabel: 'Monday 1PM UTC',
+    schedule: '47 13 * * 1',
+    scheduleLabel: 'Monday 1:47 PM UTC',
     apiPath: '/api/cron/partner-outcome-digest',
     method: 'GET',
     icon: 'handshake',
@@ -143,8 +146,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'milestone-celebration',
     name: 'Milestone Celebration',
     description: 'Sends celebration emails for newly completed programs.',
-    schedule: '0 11 * * *',
-    scheduleLabel: 'Daily 11AM UTC',
+    schedule: '43 11 * * *',
+    scheduleLabel: 'Daily 11:43 AM UTC',
     apiPath: '/api/cron/milestone-celebration',
     method: 'GET',
     icon: 'celebration',
@@ -157,7 +160,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Endpoint Smoke Test',
     description: 'HTTP checks on critical public paths to catch 500s/404s from bad deploys.',
     schedule: '0 * * * *',
-    scheduleLabel: 'Hourly',
+    scheduleLabel: 'Hourly at :00 UTC',
     apiPath: '/api/cron/smoke-test',
     method: 'GET',
     icon: 'wifi_tethering',
@@ -170,7 +173,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Vercel Deploy Health',
     description: 'Queries Vercel API to verify latest production deployment is READY, not ERROR.',
     schedule: '0 * * * *',
-    scheduleLabel: 'Hourly',
+    scheduleLabel: 'Hourly at :00 UTC',
     apiPath: '/api/cron/deploy-health',
     method: 'GET',
     icon: 'cloud_done',
@@ -183,7 +186,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Cron Run Verification',
     description: 'Daily verification that all member-facing cron jobs actually executed in the last 24h.',
     schedule: '0 11 * * *',
-    scheduleLabel: 'Daily 11AM UTC',
+    scheduleLabel: 'Daily 11:00 AM UTC',
     apiPath: '/api/cron/verification',
     method: 'GET',
     icon: 'fact_check',
@@ -196,8 +199,8 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'xAPI replay → course progress',
     description:
       'Replays pending xAPI rows into CourseProgress for any statements that arrived without a known userId/courseSlug.',
-    schedule: '0 * * * *',
-    scheduleLabel: 'Hourly at :00 UTC',
+    schedule: '5 * * * *',
+    scheduleLabel: 'Hourly at :05 UTC',
     apiPath: '/api/cron/coursera-training-sync',
     method: 'GET',
     icon: 'cloud_sync',
@@ -211,7 +214,7 @@ export const CRON_REGISTRY: CronDef[] = [
     description:
       'Polls Coursera Enterprise per-learner skillset progress for every active member and upserts a snapshot row per (userId, skillsetId) into coursera_skillset_progress.',
     schedule: '0 */6 * * *',
-    scheduleLabel: 'Every 6 hours',
+    scheduleLabel: 'Every 6 hours at :00 UTC',
     apiPath: '/api/cron/coursera-sync',
     method: 'GET',
     icon: 'school',
@@ -253,7 +256,7 @@ export const CRON_REGISTRY: CronDef[] = [
     description:
       'Flags members whose CourseEnrollment program has no fresh CourseProgress in 7 days (`User.staleTrainingDetectedAt`). Clears when progress resumes or program completes.',
     schedule: '30 12 * * *',
-    scheduleLabel: 'Daily 12:30 UTC',
+    scheduleLabel: 'Daily 12:30 PM UTC',
     apiPath: '/api/cron/stale-training-check',
     method: 'GET',
     icon: 'flag',
@@ -266,8 +269,8 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Post-Placement Survey',
     description:
       'Emails members with a placement from ~30 days ago who do not yet have a survey record, then creates PlacementSurvey.sentAt.',
-    schedule: '0 14 * * *',
-    scheduleLabel: 'Daily 2:00 PM UTC',
+    schedule: '41 14 * * *',
+    scheduleLabel: 'Daily 2:41 PM UTC',
     apiPath: '/api/cron/placement-survey',
     method: 'GET',
     icon: 'rate_review',
@@ -281,7 +284,7 @@ export const CRON_REGISTRY: CronDef[] = [
     description:
       'Nightly at-risk scoring for all active members. Calculates risk scores from engagement signals, training progress, and counselor contact recency; persists AtRiskAlert rows — the single risk source for both command centers, the at-risk dashboard and the weekly At-Risk Alerts email — and resolves stale alerts. Sends no email.',
     schedule: '11 6 * * *',
-    scheduleLabel: 'Daily 6AM UTC',
+    scheduleLabel: 'Daily 6:11 AM UTC',
     apiPath: '/api/cron/at-risk-check',
     method: 'GET',
     icon: 'crisis_alert',
@@ -294,7 +297,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Milestone Cascade Draft',
     description: 'Drafts milestone cascade emails for counselors to review before sending.',
     schedule: '0 * * * *',
-    scheduleLabel: 'Hourly',
+    scheduleLabel: 'Hourly at :00 UTC',
     apiPath: '/api/cron/milestone-cascade-draft',
     method: 'GET',
     icon: 'drafts',
@@ -307,7 +310,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Milestone Cascade Expire',
     description: 'Expires stale milestone cascade drafts that have not been reviewed.',
     schedule: '0 9 * * *',
-    scheduleLabel: 'Daily 9AM UTC',
+    scheduleLabel: 'Daily 9:00 AM UTC',
     apiPath: '/api/cron/milestone-cascade-expire',
     method: 'GET',
     icon: 'auto_delete',
@@ -332,8 +335,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'wioa-report',
     name: 'WIOA Report',
     description: 'Generates and sends monthly WIOA compliance report.',
-    schedule: '0 14 1 * *',
-    scheduleLabel: '1st of month 2PM UTC',
+    schedule: '31 14 1 * *',
+    scheduleLabel: 'Monthly on the 1st, 2:31 PM UTC',
     apiPath: '/api/cron/wioa-report',
     method: 'GET',
     icon: 'summarize',
@@ -345,8 +348,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'course-accountability',
     name: 'Course Accountability',
     description: 'Checks course completion accountability and sends reminders.',
-    schedule: '0 15 * * *',
-    scheduleLabel: 'Daily 3PM UTC',
+    schedule: '13 15 * * *',
+    scheduleLabel: 'Daily 3:13 PM UTC',
     apiPath: '/api/cron/course-accountability',
     method: 'GET',
     icon: 'account_balance',
@@ -358,8 +361,8 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'employer-pending-applicants',
     name: 'Employer Unreviewed-Applicants Nudge',
     description: 'Weekly nudge to employers with candidates stuck pending/reviewing 5+ days on their job posts, plus an admin digest for employers with a 10+ backlog.',
-    schedule: '0 16 * * 2',
-    scheduleLabel: 'Tuesday 4PM UTC',
+    schedule: '17 16 * * 2',
+    scheduleLabel: 'Tuesday 4:17 PM UTC',
     apiPath: '/api/cron/employer-pending-applicants',
     method: 'GET',
     icon: 'hourglass_top',
@@ -372,7 +375,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Job Auto-Expiry',
     description: "Closes live job posts whose expiresAt has passed and notifies the affected employer once per run.",
     schedule: '45 7 * * *',
-    scheduleLabel: 'Daily 7:45AM UTC',
+    scheduleLabel: 'Daily 7:45 AM UTC',
     apiPath: '/api/cron/job-expiry',
     method: 'GET',
     // 'timer' is in the committed Material Symbols subset; 'event_busy' was
@@ -387,7 +390,7 @@ export const CRON_REGISTRY: CronDef[] = [
     name: 'Onboarding Stalls Digest',
     description: 'Weekly staff digest of members stuck between applying and starting training: interviews requested but not completed, WIOA screening stuck in review, and members with no program or counselor 5-7+ days on. With MEMBER_STALL_NUDGES_ENABLED the stalled member also gets one nudge per bucket.',
     schedule: '30 15 * * 2',
-    scheduleLabel: 'Tuesday 3:30PM UTC',
+    scheduleLabel: 'Tuesday 3:30 PM UTC',
     apiPath: '/api/cron/onboarding-stalls',
     method: 'GET',
     icon: 'pending_actions',

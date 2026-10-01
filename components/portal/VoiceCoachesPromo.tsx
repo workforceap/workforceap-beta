@@ -34,7 +34,7 @@ export default function VoiceCoachesPromo() {
     >
       <div style={AI_COACHES_BAND_STYLE}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>mic</span>
+          <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>mic</span>
           <h2 style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: 0 }}>
             AI Coaches
           </h2>
@@ -51,7 +51,8 @@ export default function VoiceCoachesPromo() {
           <VoiceCoachLauncherCard
             badge="10–20 SEC"
             icon={<Zap size={22} aria-hidden />}
-            glowColor="#a47f38"
+            glowColor="var(--wa-gold)"
+            badgeColor="var(--wa-gold-dark)"
             gradient={GOLD_TEXT_GRADIENT}
             title="Elevator Introduction"
             description="Not a voice coach: writes a 10 to 20 second intro from your profile, saves it, and emails it to you to rehearse."

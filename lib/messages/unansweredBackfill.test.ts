@@ -17,7 +17,7 @@ test('routes to the counselor of record when that user still exists', () => {
   const entry = planBackfillEntry(row, { counselorExists: true, adminUserIds: ['admin-2'] });
   assert.equal(entry.route, 'counselor');
   assert.deepEqual(entry.recipientUserIds, ['admin-1']);
-  assert.equal(entry.link, '/counselor');
+  assert.equal(entry.link, '/counselor/messages?memberId=member-1');
   assert.match(entry.title, /Ada Member/);
 });
 
@@ -59,4 +59,13 @@ test('apply writes one notification per recipient and tags it as a backfill', as
   assert.equal(written[0].data.backfill, 'wap-168');
   assert.equal(written[0].data.threadId, 'thread-1');
   assert.equal(written[0].data.unassigned, true);
+});
+
+test('counselor backfill links open the member thread, not the counselor home', async () => {
+  const written: any[] = [];
+  await applyUnansweredBackfill(
+    [planBackfillEntry({ ...row, memberId: 'member 2/x' }, { counselorExists: true, adminUserIds: [] })],
+    async (input) => { written.push(input); },
+  );
+  assert.equal(written[0].data.link, '/counselor/messages?memberId=member%202%2Fx');
 });

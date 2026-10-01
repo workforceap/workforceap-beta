@@ -5,6 +5,10 @@ import {
   persistAtRiskAlert,
   THRESHOLDS,
 } from '@/lib/member/atRiskScoring';
+import {
+  MEMBER_REPORTED_FACTOR_NAMES,
+  hasMemberReportedFactor,
+} from '@/lib/member/counselorEscalation';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
@@ -19,7 +23,8 @@ export const maxDuration = 300;
  * Scores every active member, persists MEDIUM+ scores to `AtRiskAlert` — the
  * single risk source the admin command center, counselor command center,
  * at-risk dashboard and the weekly counselor alert all read — and resolves
- * alerts for members no longer at risk. Sends no email: the one at-risk email
+ * alerts for members no longer at risk, except member-reported escalations
+ * (see MEMBER_REPORTED_FACTOR_NAMES), which stay until staff close them. Sends no email: the one at-risk email
  * is the weekly `/api/cron/at-risk-alerts`, which reads these rows.
  *
  * Vercel Cron uses GET — both GET and POST are supported.
@@ -45,14 +50,24 @@ async function handle(request: Request) {
 
   const activeAlertUserIds = new Set(atRiskScores.map((s) => s.userId));
 
-  const staleAlerts = await prisma.atRiskAlert.findMany({
+  // Member-reported escalations (First 90 Days trouble, placement-survey job
+  // loss) are never auto-resolved: a counselor must see them and staff close
+  // them. They are excluded IN THE QUERY so preserved rows cannot fill the
+  // take:100 batch and starve real stale alerts, then re-checked per row.
+  const staleCandidates = await prisma.atRiskAlert.findMany({
     where: {
       status: { in: ['open', 'acknowledged'] },
       userId: { notIn: Array.from(activeAlertUserIds) },
+      NOT: {
+        OR: MEMBER_REPORTED_FACTOR_NAMES.map((name) => ({
+          factors: { array_contains: [{ name }] },
+        })),
+      },
     },
-    select: { id: true },
+    select: { id: true, factors: true },
     take: 100,
   });
+  const staleAlerts = staleCandidates.filter((a) => !hasMemberReportedFactor(a.factors));
 
   if (staleAlerts.length > 0) {
     await prisma.atRiskAlert.updateMany({

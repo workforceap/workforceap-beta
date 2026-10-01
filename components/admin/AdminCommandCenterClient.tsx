@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { Pagination } from '@astryxdesign/core/Pagination';
-import { adminQueueHref, type AdminQueueKey } from '@/lib/admin/commandCenterHelpers';
+import {
+  adminApplicationCardId,
+  adminQueueHref,
+  adminWorkbenchApplicationsSplitCopy,
+  type AdminQueueKey,
+} from '@/lib/admin/commandCenterHelpers';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import ApplicantTriageChip from '@/components/admin/ApplicantTriageChip';
 import type {
@@ -153,7 +158,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
-            <p style={{ margin: 0, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, color: 'var(--color-accent)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, color: 'var(--wa-accent-text)' }}>
               Today&apos;s walk-in plan
             </p>
             <h2 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.35rem, 4vw, 2rem)', lineHeight: 1.1 }}>
@@ -171,7 +176,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
           </div>
         </div>
         {oldest != null ? (
-          <p style={{ margin: '1rem 0 0', fontSize: '0.9rem', color: oldest >= 7 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: oldest >= 7 ? 700 : 500 }}>
+          <p style={{ margin: '1rem 0 0', fontSize: '0.9rem', color: oldest >= 7 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', fontWeight: oldest >= 7 ? 700 : 500 }}>
             Oldest pending application: {oldest === 0 ? 'submitted today' : `${oldest} ${oldest === 1 ? 'day' : 'days'} old`}.
           </p>
         ) : null}
@@ -191,7 +196,10 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
           {data.interviewing.map((row) => <InterviewingCard key={`${row.memberId}-${row.company}-${row.role}`} row={row} />)}
         </Bucket>}
 
-        {showQueue('applications') && <Bucket queue="applications" pagination={pagination} title="Applications Pending" count={data.totals.applicationsPendingCount} icon="assignment_ind" empty="No applications are waiting for review.">
+        {showQueue('applications') && <Bucket queue="applications" pagination={pagination} title="Applications Pending" count={data.totals.applicationsPendingCount} icon="assignment_ind" empty="No applications are waiting for review."
+          summary={data.totals.applicationsWaitingOn && data.totals.applicationsPendingCount > 0
+            ? adminWorkbenchApplicationsSplitCopy(data.totals.applicationsPendingCount, data.totals.applicationsWaitingOn)
+            : undefined}>
           {data.applicationsPending.length > 0 ? (
             <div
               style={{
@@ -219,7 +227,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
                       type="button"
                       className={`btn btn-sm ${action.tone === 'primary' ? 'btn-primary' : 'btn-outline'}`}
                       onClick={() => openBulk(action.status)}
-                      style={action.tone === 'danger' ? { borderColor: '#fecaca', color: '#b91c1c' } : undefined}
+                      style={action.tone === 'danger' ? { borderColor: 'color-mix(in srgb, var(--wa-danger) 35%, transparent)', color: 'var(--wa-danger-text)' } : undefined}
                     >
                       {action.label} ({activeSelected.size})
                     </button>
@@ -228,7 +236,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
               ) : null}
             </div>
           ) : null}
-          {bulkResult ? <p role="status" style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: '#166534' }}>{bulkResult}</p> : null}
+          {bulkResult ? <p role="status" style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: 'var(--wa-success-dark)' }}>{bulkResult}</p> : null}
           {data.applicationsPending.map((row) => (
             <ApplicationCard
               key={row.applicationId}
@@ -287,7 +295,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
                 />
               </label>
             ) : null}
-            {bulkError ? <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', color: '#b91c1c' }}>{bulkError}</p> : null}
+            {bulkError ? <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--wa-danger-text)' }}>{bulkError}</p> : null}
             {outcomeUncertain ? (
               <button type="button" className="btn btn-outline btn-sm" onClick={() => {
                 setBulkAction(null);
@@ -323,25 +331,32 @@ function Metric({ label, value, accent }: { label: string; value: number; accent
   return (
     <div style={{ borderRadius: '0.75rem', background: 'var(--wa-surface)', border: '1px solid var(--outline-variant)', padding: '0.75rem' }}>
       <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>{label}</p>
-      <p style={{ margin: '0.1rem 0 0', fontSize: '1.45rem', fontWeight: 800, color: accent ? 'var(--color-accent)' : 'var(--color-on-surface)' }}>
+      <p style={{ margin: '0.1rem 0 0', fontSize: '1.45rem', fontWeight: 800, color: accent ? 'var(--wa-accent-text)' : 'var(--color-on-surface)' }}>
         {value}
       </p>
     </div>
   );
 }
 
-function Bucket({ title, count, icon, empty, children, queue, pagination }: {
+function Bucket({ title, count, icon, empty, children, queue, pagination, summary }: {
   title: string; count: number; icon: string; empty: string; children: React.ReactNode;
   queue: AdminQueueKey; pagination?: AdminCommandCenter['pagination'];
+  /** One line under the header that breaks `count` down (Applications: who moves next). */
+  summary?: string;
 }) {
   const router = useRouter();
   return (
     <section className="portal-card portal-card--flat" style={{ padding: '1rem', minHeight: '14rem' }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.9rem' }}>
-        <span className="material-symbols-outlined" aria-hidden style={{ color: 'var(--color-accent)' }}>{icon}</span>
+        <span className="material-symbols-outlined" aria-hidden style={{ color: 'var(--wa-accent-text)' }}>{icon}</span>
         <h2 style={{ flex: 1, margin: 0, fontSize: '1rem', fontWeight: 800 }}>{title}</h2>
         <span aria-label={pluralCount(count, 'item')} style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
       </header>
+      {summary ? (
+        <p data-testid={`bucket-summary-${queue}`} style={{ margin: '0 0 0.9rem', color: 'var(--color-on-surface-variant)', fontSize: '0.875rem' }}>
+          {summary}
+        </p>
+      ) : null}
       {count === 0 ? (
         <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>{empty}</p>
       ) : (
@@ -405,7 +420,11 @@ function ApplicationCard({
   onToggleSelect: () => void;
 }) {
   return (
-    <article style={{ border: '1px solid var(--outline-variant)', borderRadius: '0.75rem', padding: '0.85rem', background: 'var(--surface-container-low)' }}>
+    // The id lets the admin Today's "Waiting on your decision" rows land on this card.
+    <article
+      id={adminApplicationCardId(row.applicationId)}
+      style={{ border: '1px solid var(--outline-variant)', borderRadius: '0.75rem', padding: '0.85rem', background: 'var(--surface-container-low)', scrollMarginTop: 'calc(var(--wa-pad) * 3)' }}
+    >
       <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', minWidth: 0 }}>
           <input
@@ -427,7 +446,7 @@ function ApplicationCard({
                 <ApplicantTriageChip bucket={row.triage.bucket} label={row.triage.label} reasons={row.triage.reasons} />
               </p>
             ) : null}
-            <p style={{ margin: '0.2rem 0 0', color: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontSize: '0.82rem', fontWeight: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 700 : 500 }}>
+            <p style={{ margin: '0.2rem 0 0', color: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', fontSize: '0.82rem', fontWeight: row.submittedDaysAgo != null && row.submittedDaysAgo >= 7 ? 700 : 500 }}>
               {row.submittedDaysAgo == null ? 'Submitted recently' : row.submittedDaysAgo === 0 ? 'Submitted today' : `Submitted ${row.submittedDaysAgo}d ago`}
             </p>
           </div>
@@ -498,7 +517,7 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
             className={`btn btn-sm ${action.tone === 'primary' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => review(action.status)}
             disabled={isPending}
-            style={action.tone === 'danger' ? { borderColor: '#fecaca', color: '#b91c1c' } : undefined}
+            style={action.tone === 'danger' ? { borderColor: 'color-mix(in srgb, var(--wa-danger) 35%, transparent)', color: 'var(--wa-danger-text)' } : undefined}
           >
             {isPending ? 'Saving…' : action.status === 'DENIED' && denialOpen ? 'Confirm not a fit' : action.label}
           </button>
@@ -518,8 +537,8 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
           />
         </label>
       ) : null}
-      {done ? <p role="status" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#166534' }}>{done}</p> : null}
-      {error ? <p role="alert" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#b91c1c' }}>{error}</p> : null}
+      {done ? <p role="status" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-success-dark)' }}>{done}</p> : null}
+      {error ? <p role="alert" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-danger-text)' }}>{error}</p> : null}
     </div>
   );
 }
@@ -530,10 +549,10 @@ function ActionCard({ name, meta, detail, href, action, urgent }: { name: string
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
         <div style={{ minWidth: 0 }}>
           <p style={{ margin: 0, fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</p>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: urgent ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 700 : 500 }}>{meta}</p>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: urgent ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 700 : 500 }}>{meta}</p>
           {detail ? <p style={{ margin: '0.25rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail}</p> : null}
         </div>
-        <span style={{ flexShrink: 0, color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 800 }}>{action} →</span>
+        <span style={{ flexShrink: 0, color: 'var(--wa-accent-text)', fontSize: '0.8125rem', fontWeight: 800 }}>{action} →</span>
       </div>
     </Link>
   );

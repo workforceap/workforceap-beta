@@ -22,6 +22,17 @@ export async function assignMemberCounselor(
   }) : null;
   if (counselorUserId && !counselor) throw new Error('Counselor is no longer active in this organization.');
 
+  // Read the outgoing counselor after the member lock and before the
+  // deactivate, so staff callers can audit the handoff (from -> to) and skip
+  // notifying a counselor who already had this member.
+  const previous = await tx.counselorAssignment.findFirst({
+    where: { memberId, active: true },
+    orderBy: { assignedAt: 'desc' },
+    select: { counselor: { select: { userId: true, user: { select: { fullName: true } } } } },
+  });
+  const previousCounselorUserId = previous?.counselor?.userId ?? null;
+  const previousCounselorName = previous?.counselor?.user?.fullName ?? null;
+
   await tx.counselorAssignment.updateMany({
     where: { memberId, active: true }, data: { active: false },
   });
@@ -40,5 +51,5 @@ export async function assignMemberCounselor(
     create: { kind: 'member', memberId, counselorUserId },
     update: { counselorUserId },
   });
-  return { counselor, thread };
+  return { counselor, thread, previousCounselorUserId, previousCounselorName };
 }

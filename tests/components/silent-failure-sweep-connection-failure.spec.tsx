@@ -197,9 +197,9 @@ describe('MobileApplicationsClient', () => {
     fetchMock.mockRejectedValue(droppedConnection());
     withMessages(<MobileApplicationsClient initialRows={[applicationRow]} />);
     fireEvent.click(screen.getByRole('button', { name: 'Expand details for Sample Applicant' }));
-    // The filter chip row also has an "Under Review" button; the action lives in the expanded card.
+    // The filter chip row also has a "Reviewing" button; the action lives in the expanded card.
     const details = document.getElementById('application-details-app-1') as HTMLElement;
-    fireEvent.click(within(details).getByRole('button', { name: 'Under Review' }));
+    fireEvent.click(within(details).getByRole('button', { name: 'Reviewing' }));
     expectConnectionCopy(await expectAlert());
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('employer-application-status'), expect.any(TypeError));
   });

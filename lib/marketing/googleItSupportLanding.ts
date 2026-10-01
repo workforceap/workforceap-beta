@@ -1,9 +1,10 @@
 import 'server-only';
 
 import { Prisma, type PrismaClient } from '@prisma/client';
-import { MEMBER_ONLY_WHERE, memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, memberOnlyEmailSql, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 import { prisma } from '@/lib/db/prisma';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
+import { VERIFIED_PLACEMENT_WHERE } from '@/lib/placement/verifiedPlacement';
 import { sqlCount } from '@/lib/db/scanCaps';
 import {
   VALIDATED_PROGRAM_COMPLETION_SPECS,
@@ -150,10 +151,9 @@ export async function getGoogleItLandingMetrics(
             AND progress_program.curriculum_version = ce.curriculum_version
           INNER JOIN users u
             ON u.id = mpp.user_id
-          INNER JOIN profiles p
-            ON p.user_id = u.id AND p.role = 'member'
           WHERE u.organization_id = ${orgId}
             AND u.deleted_at IS NULL
+            AND ${memberOnlyRoleSql('u')}
             AND ${memberOnlyEmailSql('u')}
             AND progress_program.canonical_slug IN (${Prisma.join(GOOGLE_IT_VALIDATED_CANONICAL_SLUGS)})
             AND mpp.courses_completed = progress_program.total_courses
@@ -163,8 +163,12 @@ export async function getGoogleItLandingMetrics(
     const [enrollmentCount, completionRows, placementCount] = await Promise.all([
       db.courseEnrollment.count({ where: enrolledWhere }),
       completionRowsPromise,
+      // Staff-verified placements only, matching the card's "Verified
+      // placement records" label (docs/OUTCOMES-METHODOLOGY.md, "Public
+      // placement counts").
       db.placementRecord.count({
         where: {
+          ...VERIFIED_PLACEMENT_WHERE,
           user: memberWhere,
           OR: [
             { programSlug: { in: GOOGLE_IT_PROGRAM_STORAGE_VALUES } },

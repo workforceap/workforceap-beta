@@ -106,7 +106,16 @@ let careersRecommendRateLimiter: Ratelimit | null = null;
 let interestProfilerRateLimiter: Ratelimit | null = null;
 let forgotPasswordRateLimiter: Ratelimit | null = null;
 let forgotPasswordEmailRateLimiter: Ratelimit | null = null;
+// Public application-status link (28a). Same two-bucket shape as forgot-
+// password: per-IP against scripted probing, per-email so an IP-rotating
+// spray cannot bomb one inbox with our branded "your status link" mail.
+let applyStatusLookupRateLimiter: Ratelimit | null = null;
+let applyStatusLookupEmailRateLimiter: Ratelimit | null = null;
 let publicCareersGetRateLimiter: Ratelimit | null = null;
+// Public GET /api/apply/partner-disclosure: resolves a partner ref to the
+// partner name shown in the apply-funnel disclosure. Per IP, against code
+// enumeration.
+let publicPartnerDisclosureRateLimiter: Ratelimit | null = null;
 let publicVoiceSessionRateLimiter: Ratelimit | null = null;
 // Per-authenticated-user limiter for any ElevenLabs voice session mint
 // (member portal voice tools, counselor/employer/partner walkthroughs,
@@ -355,10 +364,27 @@ if (redisUrl && redisToken) {
     limiter: Ratelimit.slidingWindow(5, '1 h'),
     prefix: 'ratelimit:forgot-password-email',
   });
+  applyStatusLookupRateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, '1 h'),
+    prefix: 'ratelimit:apply-status-lookup',
+  });
+  applyStatusLookupEmailRateLimiter = new Ratelimit({
+    redis,
+    // Links live 30 minutes; three per hour covers "it hasn't arrived yet"
+    // retries without turning the route into a mail cannon for one address.
+    limiter: Ratelimit.slidingWindow(3, '1 h'),
+    prefix: 'ratelimit:apply-status-lookup-email',
+  });
   publicCareersGetRateLimiter = new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(120, '1 h'),
     prefix: 'ratelimit:careers-public-get',
+  });
+  publicPartnerDisclosureRateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, '1 h'),
+    prefix: 'ratelimit:partner-disclosure-public-get',
   });
   voiceSessionRateLimiter = new Ratelimit({
     redis,
@@ -615,10 +641,29 @@ export async function checkForgotPasswordEmailRateLimit(email: string): Promise<
   return { success: r.success };
 }
 
+/** Public application-status link (28a) per-IP cap — 10 requests per IP per hour; fail-closed in production. */
+export async function checkApplyStatusLookupRateLimit(ip: string): Promise<{ success: boolean }> {
+  const r = await failClosedLimit(applyStatusLookupRateLimiter, 'apply-status-lookup', ip);
+  return { success: r.success };
+}
+
+/** Public application-status link (28a) per-email cap — 3 requests per email per hour; fail-closed in production. */
+export async function checkApplyStatusLookupEmailRateLimit(email: string): Promise<{ success: boolean }> {
+  const r = await failClosedLimit(applyStatusLookupEmailRateLimiter, 'apply-status-lookup-email', email.toLowerCase());
+  return { success: r.success };
+}
+
 /** Public GET /api/careers/* (occupation detail, program matches) — per IP; fail-open without Redis. */
 export async function checkPublicCareersGetRateLimit(ip: string): Promise<{ success: boolean }> {
   if (!publicCareersGetRateLimiter) return { success: true };
   const result = await publicCareersGetRateLimiter.limit(ip);
+  return { success: result.success };
+}
+
+/** Public GET /api/apply/partner-disclosure — per IP; fail-open without Redis. */
+export async function checkPublicPartnerDisclosureRateLimit(ip: string): Promise<{ success: boolean }> {
+  if (!publicPartnerDisclosureRateLimiter) return { success: true };
+  const result = await publicPartnerDisclosureRateLimiter.limit(ip);
   return { success: result.success };
 }
 

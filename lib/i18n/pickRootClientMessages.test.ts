@@ -134,6 +134,10 @@ test('portal slice carries every namespace a portal client component reads', () 
     for (const key of ['title', 'intro', 'contact']) {
       assert.equal(typeof ns(portal, 'memberApproval')[key], 'string', `${locale}: memberApproval.${key}`);
     }
+    // The card's application / intake words live in the shared `status` vocabulary.
+    const status = ns(portal, 'status') as Record<string, Record<string, Record<string, unknown>>>;
+    assert.equal(typeof status.application.member.pending, 'string', `${locale}: status.application.member.pending`);
+    assert.equal(typeof status.intake.member.verified, 'string', `${locale}: status.intake.member.verified`);
     assert.equal(typeof ns(portal, 'wioa').title, 'string', `${locale}: wioa.title`);
   }
   assert.equal((pickRootClientMessages(catalog) as Record<string, unknown>).memberApproval, undefined);

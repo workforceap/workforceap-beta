@@ -15,7 +15,6 @@ const PUBLIC_TREES = [
   'app/(auth)',
   'app/(decision-journey)',
   'app/apply',
-  'app/careers',
   'app/employer',
   'app/employers',
   'app/enroll',

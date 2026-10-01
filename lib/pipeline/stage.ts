@@ -27,7 +27,9 @@ export interface PipelineStudent {
   coursesCompleted?: unknown; // legacy JSON array of course slugs; canonical callers should pass memberProgramProgress
   memberProgramProgress?: LiveTrainingProgressSummary | LiveTrainingProgressSummary[];
   deletedAt: Date | null;
-  placementRecord?: { employerName: string; jobTitle: string; salaryOffered: number | null; placedAt: Date } | null;
+  // Stage derivation only checks whether a placement exists. Callers need not
+  // select or construct private placement fields such as salary.
+  placementRecord?: object | null;
   userCertifications?: { certName: string; earnedAt: Date }[];
   applications?: { status: string; submittedAt: Date | null }[];
   /** When set, admin kanban column override (see User.pipelineBoardStage). */

@@ -310,7 +310,9 @@ import Layout from '../layouts/Layout.astro';
 <style>
   .wap-give{
     --maroon:#7A1530; --maroon-dark:#5E0F24; --maroon-deep:#4A0E0E;
-    --gold:#D4A017; --gold-dark:#B8860B; --gold-soft:#F5E6C8;
+    /* Page-local bright gold for the tier cards and gradients; prefixed so it does not
+       shadow the shared --gold / --gold-dark aliases, which text-bearing labels use. */
+    --wg-gold:#D4A017; --wg-gold-dark:#B8860B; --wg-gold-soft:#F5E6C8;
     --cream:#FAF5E8; --cream-2:#F3ECDD; --ink:#2B2B2B; --muted:#6B6B6B;
     --line:#E6DECF; --green:#1F7A3A; --white:#ffffff;
     --serif:Georgia,"Times New Roman",serif;
@@ -334,7 +336,7 @@ import Layout from '../layouts/Layout.astro';
     font-size:1rem;padding:.85em 1.5em;border-radius:999px;text-decoration:none;border:2px solid transparent;
     cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;white-space:nowrap;}
   .wg-btn:hover{transform:translateY(-2px);}
-  .wg-btn-gold{background:var(--gold);color:var(--maroon-deep);box-shadow:0 8px 20px rgba(212,160,23,.35);}
+  .wg-btn-gold{background:var(--wg-gold);color:var(--maroon-deep);box-shadow:0 8px 20px rgba(212,160,23,.35);}
   .wg-btn-gold:hover{background:#e2b02a;}
   .wg-btn-ghost{background:transparent;color:var(--white);border-color:rgba(255,255,255,.6);}
   .wg-btn-ghost:hover{background:rgba(255,255,255,.12);}
@@ -348,10 +350,10 @@ import Layout from '../layouts/Layout.astro';
   .wg-hero{background:radial-gradient(120% 140% at 80% -10%,#8d1c39 0%,var(--maroon) 42%,var(--maroon-dark) 100%);
     color:var(--white);position:relative;overflow:hidden;border-radius:0;}
   .wg-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;
-    background:linear-gradient(90deg,var(--gold),var(--gold-soft),var(--gold));}
+    background:linear-gradient(90deg,var(--wg-gold),var(--wg-gold-soft),var(--wg-gold));}
   .wg-hero .wg-wrap{padding-top:56px;padding-bottom:60px;position:relative;z-index:1;}
   .wg-hero-logo{height:64px;width:auto;margin-bottom:26px;}
-  .wg-hero .wg-eyebrow{color:var(--gold-soft);}
+  .wg-hero .wg-eyebrow{color:var(--wg-gold-soft);}
   .wg-hero h1{color:#fff;font-size:clamp(2rem,4.6vw,3.2rem);margin:.35em 0 .45em;max-width:16ch;}
   .wg-hero .wg-lead{font-size:clamp(1.05rem,1.7vw,1.28rem);max-width:60ch;color:#f4e7ea;}
   .wg-cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px;}
@@ -365,7 +367,7 @@ import Layout from '../layouts/Layout.astro';
   .wg-band-cream{background:var(--cream);}
   .wg-head{max-width:760px;margin-bottom:40px;}
   .wg-head.center{margin-left:auto;margin-right:auto;text-align:center;}
-  .wg-head .wg-eyebrow{color:var(--gold-dark);}
+  .wg-head .wg-eyebrow{color:var(--gold-dark);} /* #B8860B was 2.97:1 on the cream band; the shared dark gold clears AA */
   .wg-head h2{font-size:clamp(1.7rem,3.2vw,2.4rem);margin:.3em 0 .5em;}
   .wg-head p{color:var(--muted);font-size:1.08rem;}
 
@@ -375,13 +377,13 @@ import Layout from '../layouts/Layout.astro';
     box-shadow:var(--shadow);display:flex;flex-direction:column;}
   .wg-prog-top{background:linear-gradient(160deg,var(--maroon) 0%,var(--maroon-dark) 100%);color:#fff;padding:26px 24px 22px;text-align:center;}
   .wg-prog-top h3{color:#fff;font-size:1.3rem;}
-  .wg-prog-sub{display:block;font-family:var(--sans);font-weight:600;color:var(--gold-soft);font-size:.9rem;margin-top:4px;}
+  .wg-prog-sub{display:block;font-family:var(--sans);font-weight:600;color:var(--wg-gold-soft);font-size:.9rem;margin-top:4px;}
   .wg-price{margin-top:16px;font-family:var(--serif);font-weight:700;line-height:1;}
   .wg-price .amt{font-size:2.5rem;}
   .wg-price .per{font-size:.95rem;font-family:var(--sans);font-weight:600;color:#f0dfe3;}
   .wg-prog ul{list-style:none;margin:0;padding:24px 24px 8px;display:flex;flex-direction:column;gap:12px;flex:1;}
   .wg-prog li{position:relative;padding-left:30px;font-weight:600;font-size:.98rem;color:var(--ink);}
-  .wg-prog li::before{content:"✓";position:absolute;left:0;top:-1px;color:var(--gold-dark);font-weight:900;}
+  .wg-prog li::before{content:"✓";position:absolute;left:0;top:-1px;color:var(--wg-gold-dark);font-weight:900;}
   .wg-prog .wg-prog-foot{padding:8px 24px 26px;}
   .wg-prog .wg-btn{width:100%;justify-content:center;}
 
@@ -389,13 +391,13 @@ import Layout from '../layouts/Layout.astro';
   .wg-tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-items:stretch;}
   .wg-tier{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
     display:flex;flex-direction:column;overflow:hidden;position:relative;}
-  .wg-tier.feat{border:2px solid var(--gold);box-shadow:var(--shadow-lg);}
-  .wg-badge{position:absolute;top:0;right:0;background:var(--gold);color:var(--maroon-deep);font-family:var(--sans);
+  .wg-tier.feat{border:2px solid var(--wg-gold);box-shadow:var(--shadow-lg);}
+  .wg-badge{position:absolute;top:0;right:0;background:var(--wg-gold);color:var(--maroon-deep);font-family:var(--sans);
     font-weight:800;font-size:0.8125rem;letter-spacing:.08em;text-transform:uppercase;padding:.4em .8em;border-bottom-left-radius:12px;}
   .wg-tier-top{padding:22px 20px 18px;text-align:center;color:#fff;}
   .wg-t-bronze{background:linear-gradient(160deg,#9c6b3f,#7c5230);}
   .wg-t-silver{background:linear-gradient(160deg,#8a9098,#6c7178);}
-  .wg-t-gold{background:linear-gradient(160deg,var(--gold),var(--gold-dark));}
+  .wg-t-gold{background:linear-gradient(160deg,var(--wg-gold),var(--wg-gold-dark));}
   .wg-t-platinum{background:linear-gradient(160deg,#3d4855,#26303a);}
   .wg-tier-name{font-family:var(--sans);font-weight:800;letter-spacing:.18em;text-transform:uppercase;font-size:.82rem;opacity:.95;}
   .wg-seats{font-family:var(--serif);font-weight:700;font-size:1.95rem;margin:2px 0 2px;line-height:1;color:#fff;}
@@ -417,7 +419,7 @@ import Layout from '../layouts/Layout.astro';
   .wg-value{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
   .wg-vcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px 24px;box-shadow:var(--shadow);}
   .wg-vicon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-    background:var(--gold-soft);color:var(--maroon);margin-bottom:14px;}
+    background:var(--wg-gold-soft);color:var(--maroon);margin-bottom:14px;}
   .wg-vicon svg{width:26px;height:26px;}
   .wg-vcard h3{font-size:1.18rem;margin-bottom:8px;}
   .wg-vcard p{color:var(--muted);font-size:.98rem;}
@@ -430,7 +432,7 @@ import Layout from '../layouts/Layout.astro';
   .wg-final p{color:#f4e7ea;max-width:60ch;margin:0 auto;font-size:1.08rem;}
   .wg-final .wg-cta-row{justify-content:center;}
   .wg-final-alt{margin-top:22px;font-size:.96rem;color:#f0dfe3;}
-  .wg-final-alt a{color:var(--gold-soft);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(245,230,200,.4);}
+  .wg-final-alt a{color:var(--wg-gold-soft);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(245,230,200,.4);}
 
   .wg-foot-note{text-align:center;color:var(--muted);font-size:.9rem;max-width:70ch;margin:34px auto 0;}
 

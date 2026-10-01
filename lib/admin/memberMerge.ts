@@ -723,6 +723,11 @@ export async function executeMemberMerge(
   const repointed: string[] = [];
   const mergedFields: string[] = [];
 
+  // Declare this merge pair for the transaction so the billing-case identity
+  // trigger (migration 20260927230000_billing_two_stage_j5_j6) lets
+  // billing_cases.member_id follow the survivor; any other repoint is refused.
+  await tx.$queryRaw(Prisma.sql`SELECT set_config('app.billing_member_merge', ${`${secondaryId}>${primaryId}`}, true)`);
+
   // 1. Repoint relations, leaf tables first, from the single plan the merge
   // preview also reads. A relation whose unique key the primary already holds
   // is left on the merged-away account rather than allowed to abort the

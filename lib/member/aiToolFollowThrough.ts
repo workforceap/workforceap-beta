@@ -62,8 +62,8 @@ export function getAIToolFollowThrough(params: {
     return {
       title: 'Close the gap with one concrete next step',
       body: 'Use this feedback to target your next course, resume update, or application instead of letting the result sit idle.',
-      href: '/dashboard',
-      cta: 'Open training',
+      href: '/dashboard/program',
+      cta: 'Open My Program',
     };
   }
 
@@ -72,7 +72,7 @@ export function getAIToolFollowThrough(params: {
       title: 'Use your assessment to guide training',
       body: 'Your assessment is most useful when it changes what you study next and how you prepare for job outcomes.',
       href: '/dashboard/program',
-      cta: 'Open Training',
+      cta: 'Open My Program',
     };
   }
 
@@ -116,8 +116,8 @@ export function getAIToolFollowThrough(params: {
     return {
       title: 'Use your skill map to target training',
       body: 'Your mapped skills show where you are strong and where a course or project can close the gap.',
-      href: '/dashboard',
-      cta: 'Open training',
+      href: '/dashboard/program',
+      cta: 'Open My Program',
     };
   }
 

@@ -341,7 +341,7 @@ export default function InvitesTable({ invites }: Props) {
                         style={{
                           padding: '0.25rem 0.5rem',
                           fontSize: '0.85rem',
-                          color: 'var(--color-accent)',
+                          color: 'var(--wa-accent-text)',
                           background: 'none',
                           border: 'none',
                           cursor: resending ? 'wait' : 'pointer',

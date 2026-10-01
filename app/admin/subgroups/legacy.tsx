@@ -124,7 +124,7 @@ export default async function AdminSubgroupsLegacy() {
                   cell: (sg) => (
                     <Link
                       href={`/admin/subgroups/${sg.id}`}
-                      style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: '0.9rem' }}
+                      style={{ color: 'var(--wa-accent-text)', textDecoration: 'none', fontSize: '0.9rem' }}
                     >
                       Manage &rarr;
                     </Link>
@@ -156,7 +156,7 @@ export default async function AdminSubgroupsLegacy() {
                 </p>
                 <p className="admin-portal-card__meta">Partner: {sg.partner?.name ?? '—'}</p>
                 <div className="admin-portal-card__actions">
-                  <Link href={`/admin/subgroups/${sg.id}`} style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: '0.9rem' }}>
+                  <Link href={`/admin/subgroups/${sg.id}`} style={{ color: 'var(--wa-accent-text)', textDecoration: 'none', fontSize: '0.9rem' }}>
                     Manage &rarr;
                   </Link>
                 </div>

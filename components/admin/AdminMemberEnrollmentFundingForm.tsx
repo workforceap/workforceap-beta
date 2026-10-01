@@ -103,7 +103,7 @@ export default function AdminMemberEnrollmentFundingForm({
             padding: '0.4rem 0.6rem',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--outline-variant)',
-            background: 'var(--color-surface)',
+            background: 'var(--wa-surface)',
             color: 'var(--color-on-surface)',
             fontSize: '0.9rem',
           }}
@@ -130,7 +130,7 @@ export default function AdminMemberEnrollmentFundingForm({
             padding: '0.4rem 0.6rem',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--outline-variant)',
-            background: 'var(--color-surface)',
+            background: 'var(--wa-surface)',
             color: 'var(--color-on-surface)',
             fontSize: '0.9rem',
             resize: 'vertical',
@@ -152,7 +152,7 @@ export default function AdminMemberEnrollmentFundingForm({
             padding: '0.4rem 0.6rem',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--outline-variant)',
-            background: 'var(--color-surface)',
+            background: 'var(--wa-surface)',
             color: 'var(--color-on-surface)',
             fontSize: '0.9rem',
           }}

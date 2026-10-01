@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import messages from '@/messages/en.json';
-import { JOB_APPLICATIONS_EMPTY } from '@/lib/member/jobApplicationsEmptyState';
 import JobApplicationsTracker from './JobApplicationsTracker';
 
 vi.mock('next/navigation', () => ({
@@ -31,27 +30,27 @@ function show() {
 }
 
 /**
- * Formerly asserted by reading the component source in
- * lib/member/jobApplicationsEmptyState.test.ts: the empty tracker is a kit
- * empty state carrying the shared copy and kit CTAs, with no legacy
- * `--color-*` tokens in the rendered output.
+ * The empty tracker is a kit empty state (`kind="first"`) carrying the shared
+ * `empty.applications` copy and kit CTAs, with no legacy `--color-*` tokens in
+ * the rendered output.
  */
 describe('JobApplicationsTracker empty state', () => {
   it('renders the shared empty copy through KitEmptyState with kit CTAs', async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify([]), { status: 200, headers: { 'content-type': 'application/json' } }));
 
     const { container } = show();
-    const heading = await screen.findByRole('heading', { name: JOB_APPLICATIONS_EMPTY.title });
+    const heading = await screen.findByRole('heading', { name: messages.empty.applications.title });
     expect(fetchMock).toHaveBeenCalledWith('/api/member/job-applications');
 
     const shell = heading.parentElement as HTMLElement;
+    expect(shell.getAttribute('data-kind')).toBe('first');
     expect(shell.closest('.wa-kit-card')).not.toBeNull();
-    expect(within(shell).getByText(JOB_APPLICATIONS_EMPTY.description).className).toContain('wa-kit-lede');
+    expect(within(shell).getByText(messages.empty.applications.body).className).toContain('wa-kit-lede');
 
-    const add = within(shell).getByRole('button', { name: JOB_APPLICATIONS_EMPTY.primaryCta.label });
+    const add = within(shell).getByRole('button', { name: messages.empty.applications.add });
     expect(add.className).toContain('wa-kit-cta');
-    const browse = within(shell).getByRole('link', { name: messages.dashboard.browseJobs });
-    expect(browse.getAttribute('href')).toBe(JOB_APPLICATIONS_EMPTY.secondaryCta.href);
+    const browse = within(shell).getByRole('link', { name: messages.empty.applications.action });
+    expect(browse.getAttribute('href')).toBe('/dashboard/jobs');
     expect(browse.className).toContain('wa-kit-cta--ghost');
 
     expect(container.innerHTML).not.toMatch(/--color-on-surface|--color-accent/);

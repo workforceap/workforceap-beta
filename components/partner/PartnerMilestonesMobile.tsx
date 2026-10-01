@@ -18,12 +18,14 @@ type Milestone = {
 const KIND_TONE: Record<string, KitTone> = {
   certification: 'info',
   placement: 'ok',
+  placement_pending: 'warn',
   event: 'muted',
 };
 
 const KIND_LABEL: Record<string, string> = {
   certification: 'Certification',
   placement: 'Placement',
+  placement_pending: 'Pending verification',
   event: 'Activity',
 };
 
@@ -64,8 +66,9 @@ export default function PartnerMilestonesMobile() {
     </div>
   );
 
-  // Treat certifications/placements as "pending review", others as completed
-  const pending = milestones.filter((m) => m.kind === 'certification' || m.kind === 'placement' || m.kind === 'milestone');
+  // Only self-reported placements await verification. Recorded certifications
+  // and verified placements are completed outcomes.
+  const pending = milestones.filter((m) => m.kind === 'placement_pending');
   const completed = milestones.filter((m) => !pending.includes(m));
 
   if (milestones.length === 0) {
@@ -85,7 +88,7 @@ export default function PartnerMilestonesMobile() {
           {pending.length > 0 && (
             <span
               className="wa-tabular-nums"
-              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent)', color: 'var(--wa-on-accent)', fontSize: '0.8125rem', fontWeight: 700 }}
+              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontSize: '0.8125rem', fontWeight: 700 }}
             >
               {pending.length}
             </span>

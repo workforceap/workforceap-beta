@@ -27,7 +27,7 @@ export function applicationConfirmationHtml(params: {
     <p>Hi ${escapeHtml(firstName)},</p>
     ${memberWelcomeLetterHtml()}
     ${eligibilityBlock}
-    <p>Your application is on file.${applicationRef} A WorkforceAP staff member usually looks at your goals and program interest within about 1&ndash;2 business days.</p>
-    <p>If you do not hear from an advisor after about 2 business days, call or email and we will check your application with you.</p>
+    <p>Your application is on file.${applicationRef} A counselor reviews every application. You&rsquo;ll get an email when a decision is made.</p>
+    <p>If you do not hear from us after 5 business days, call or email and we will check your application with you.</p>
   `.trim();
 }

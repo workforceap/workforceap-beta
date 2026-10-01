@@ -145,7 +145,7 @@ export default function RouteErrorFallback({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1.5rem',
-        background: 'var(--surface-container-lowest, #ffffff)',
+        background: 'var(--surface-container-lowest)',
       }}
     >
       <div

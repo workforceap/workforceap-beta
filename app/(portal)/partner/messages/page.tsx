@@ -6,6 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { partnerDataAccess, withPartnerMemberVisibility } from '@/lib/partner/dataAccess';
 import { prisma } from '@/lib/db/prisma';
 import PortalTeamChatClient from '@/components/portal/PortalTeamChatClient';
 import { getOrCreatePartnerMessageThread } from '@/lib/messages/portalThreads';
@@ -39,6 +40,7 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
   if (!ctx) redirect(await unlinkedPartnerHref(user.id));
 
   const t = await getTranslations('partner');
+  const te = await getTranslations('empty');
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
   const query = await searchParams;
   const [thread, permittedReferrals] = await Promise.all([
@@ -51,7 +53,11 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
           where: {
             partnerId: ctx.partnerId,
             partner: { organizationId: ctx.partner.organizationId },
-            member: { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+            // Hidden minors are not a selectable message context (lib/partner/dataAccess.ts).
+            member: withPartnerMemberVisibility(
+              { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+              partnerDataAccess(ctx.partner),
+            ),
           },
           select: { member: { select: { id: true, fullName: true } } },
           orderBy: { referredAt: 'desc' },
@@ -71,8 +77,16 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
         {readOnlyAudit && <span hidden data-portal-audit-suppressed="partner-message-thread-provisioning" />}
         <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
           {header}
+          {/* Only reachable in a read-only audit (the live path creates the
+              thread): the inbox is not ready in this view, not "no messages yet". */}
           <div className="wa-kit-card">
-            <KitEmptyState title={t('noMessagesYetTitle')} description={t('noMessagesYetDescription')} />
+            <KitEmptyState
+              kind="unavailable"
+              headingAs="h2"
+              title={te('inboxUnavailable.title')}
+              description={te('inboxUnavailable.body')}
+              primaryAction={{ label: te('inboxUnavailable.overviewAction'), href: '/partner' }}
+            />
           </div>
         </DesignSurface>
       </PortalPageFrame>
@@ -86,7 +100,7 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
         <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
           {header}
           <div className="wa-kit-card">
-            <KitEmptyState title={t('messages')} description={t('messagesAuditPaused')} />
+            <KitEmptyState kind="unavailable" headingAs="h2" title={t('messages')} description={t('messagesAuditPaused')} />
           </div>
         </DesignSurface>
       </PortalPageFrame>
@@ -148,8 +162,8 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
               messages: serializedMessages,
               portalUserId: user.id,
             }}
-            subtitle="We typically reply within one business day."
-            emptyHint="No messages yet. Reach out about referrals, milestones, or program questions."
+            subtitle="Our team reads every message and replies here."
+            empty={{ title: te('teamThreadPartner.title'), description: te('teamThreadPartner.body'), action: te('teamThreadPartner.action') }}
             contextLabel={selectedMember ? `Regarding ${selectedMember.fullName}` : undefined}
             initialDraft={selectedMember ? `Regarding ${selectedMember.fullName}: ` : undefined}
           />

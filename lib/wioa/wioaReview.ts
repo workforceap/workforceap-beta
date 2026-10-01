@@ -1,3 +1,5 @@
+import { INTAKE_STATUS_WORDS, intakeStatusKey, intakeStatusLabel } from '@/lib/status/applicationStatusVocabulary';
+
 /** Staff workflow for WIOA self-screening — not a legal eligibility determination. */
 export const WIOA_REVIEW_STATUSES = [
   'pending',
@@ -9,17 +11,22 @@ export const WIOA_REVIEW_STATUSES = [
 
 export type WioaReviewStatus = (typeof WIOA_REVIEW_STATUSES)[number];
 
+/**
+ * Staff words for each column value — the `staff` intake vocabulary in
+ * lib/status/applicationStatusVocabulary.ts (one source for the filter bar,
+ * the admin review panel, the read-only screening card and the queue).
+ */
 export const WIOA_REVIEW_LABELS: Record<WioaReviewStatus, string> = {
-  pending: 'Pending review',
-  in_review: 'In review',
-  verified: 'Verified (staff)',
-  not_eligible: 'Not eligible (staff)',
-  needs_info: 'Needs more information',
+  pending: INTAKE_STATUS_WORDS.staff.pending,
+  in_review: INTAKE_STATUS_WORDS.staff.in_review,
+  verified: INTAKE_STATUS_WORDS.staff.verified,
+  not_eligible: INTAKE_STATUS_WORDS.staff.not_eligible,
+  needs_info: INTAKE_STATUS_WORDS.staff.needs_info,
 };
 
+/** Staff word for a raw column value; null → "Not reviewed", junk → "Status not recorded". */
 export function wioaReviewLabel(s: string | null | undefined): string {
-  if (!s) return '—';
-  return WIOA_REVIEW_LABELS[s as WioaReviewStatus] ?? s;
+  return intakeStatusLabel(intakeStatusKey(s), 'staff');
 }
 
 /**

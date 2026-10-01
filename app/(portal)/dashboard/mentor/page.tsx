@@ -73,7 +73,7 @@ export default async function MentorDashboardPage() {
   const emptySessions = (
     <PortalEmptyState
       icon={
-        <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '2rem', color: 'var(--color-accent)' }}>
+        <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '2rem', color: 'var(--wa-accent-text)' }}>
           calendar_month
         </span>
       }

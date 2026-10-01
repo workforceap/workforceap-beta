@@ -37,7 +37,7 @@ export default function ScrollToTopButton() {
           height: 44px;
           border-radius: 50%;
           border: 1px solid var(--outline-variant, #d4d4d4);
-          background: color-mix(in srgb, var(--surface-container-high, #fff) 92%, transparent);
+          background: color-mix(in srgb, var(--surface-container-high) 92%, transparent);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           color: var(--color-on-surface, #1a1a1a);

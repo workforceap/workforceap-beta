@@ -82,11 +82,11 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
         disabled={loading !== null}
         style={{
           padding: '0.25rem 0.5rem',
-          background: 'rgba(74, 155, 79, 0.12)',
-          border: '1px solid rgba(74, 155, 79, 0.3)',
+          background: 'var(--wa-success-soft)',
+          border: '1px solid color-mix(in srgb, var(--wa-success) 30%, transparent)',
           borderRadius: '4px',
           cursor: loading ? 'wait' : 'pointer',
-          color: '#2d7a32',
+          color: 'var(--wa-success-dark)',
           fontSize: '0.8125rem',
           fontWeight: 600,
           display: 'inline-flex',
@@ -112,11 +112,11 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
             disabled={loading !== null}
             style={{
               padding: '0.25rem 0.5rem',
-              background: 'rgba(185, 28, 28, 0.08)',
-              border: '1px solid rgba(185, 28, 28, 0.25)',
+              background: 'var(--wa-danger-soft)',
+              border: '1px solid color-mix(in srgb, var(--wa-danger) 25%, transparent)',
               borderRadius: '4px',
               cursor: loading ? 'wait' : 'pointer',
-              color: '#b91c1c',
+              color: 'var(--wa-danger-text)',
               fontSize: '0.8125rem',
               fontWeight: 600,
               display: 'inline-flex',
@@ -135,11 +135,11 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
           disabled={loading !== null}
           style={{
             padding: '0.25rem 0.5rem',
-            background: 'rgba(185, 28, 28, 0.08)',
-            border: '1px solid rgba(185, 28, 28, 0.25)',
+            background: 'var(--wa-danger-soft)',
+            border: '1px solid color-mix(in srgb, var(--wa-danger) 25%, transparent)',
             borderRadius: '4px',
             cursor: loading ? 'wait' : 'pointer',
-            color: '#b91c1c',
+            color: 'var(--wa-danger-text)',
             fontSize: '0.8125rem',
             fontWeight: 600,
             display: 'inline-flex',
@@ -198,7 +198,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
             <div style={{ fontWeight: 600 }}>{partner.name}</div>
             <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{partner.slug}</div>
             {partner.partnerType === 'high_school' || partner.enrollmentPageEnabled || partner.sponsoredEnrollment ? (
-              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', marginTop: 2 }}>School partner</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)', marginTop: 2 }}>School partner</div>
             ) : null}
           </>
         ),
@@ -251,11 +251,11 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 borderRadius: '4px',
                 fontSize: '0.8125rem',
                 background: isPending
-                  ? 'rgba(255, 187, 0, 0.15)'
+                  ? 'var(--wa-gold-soft)'
                   : partner.active
-                    ? 'rgba(74, 155, 79, 0.12)'
+                    ? 'var(--wa-success-soft)'
                     : 'var(--surface-container)',
-                color: isPending ? '#b38600' : partner.active ? '#2d7a32' : 'var(--color-on-surface-variant)',
+                color: isPending ? 'var(--wa-gold-dark)' : partner.active ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)',
               }}
             >
               {isPending ? 'Pending' : partner.active ? 'Active' : 'Inactive'}
@@ -273,7 +273,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 <ApproveRejectButtons partnerId={partner.id} onDone={() => router.refresh()} />
                 <Link
                   href={`/admin/partners/${partner.id}`}
-                  style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
+                  style={{ color: 'var(--wa-accent-text)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
                 >
                   Review →
                 </Link>
@@ -327,7 +327,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 )}
                 <Link
                   href={`/admin/partners/${partner.id}`}
-                  style={{ color: 'var(--color-accent)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
+                  style={{ color: 'var(--wa-accent-text)', textDecoration: 'none', fontSize: '0.9rem', marginLeft: '0.25rem' }}
                 >
                   Manage →
                 </Link>
@@ -369,7 +369,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                 borderRadius: '6px',
                 border: `1px solid ${filter === f ? 'var(--color-accent)' : 'var(--outline-variant)'}`,
                 background: filter === f ? 'rgba(173,44,77,0.08)' : 'var(--color-white)',
-                color: filter === f ? 'var(--color-accent)' : 'var(--color-on-surface)',
+                color: filter === f ? 'var(--wa-accent-text)' : 'var(--color-on-surface)',
                 cursor: 'pointer',
                 fontSize: '0.9rem',
               }}
@@ -428,15 +428,15 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
                   style={{
                     background:
                       partner.status === 'pending_approval'
-                        ? 'rgba(255,187,0,0.15)'
+                        ? 'var(--wa-gold-soft)'
                         : partner.active
-                          ? 'rgba(74,155,79,0.12)'
+                          ? 'var(--wa-success-soft)'
                           : 'var(--surface-container)',
                     color:
                       partner.status === 'pending_approval'
-                        ? '#b38600'
+                        ? 'var(--wa-gold-dark)'
                         : partner.active
-                          ? '#2d7a32'
+                          ? 'var(--wa-success-dark)'
                           : 'var(--color-on-surface-variant)',
                   }}
                 >

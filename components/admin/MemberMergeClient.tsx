@@ -164,7 +164,7 @@ export default function MemberMergeClient() {
       )}
 
       {error && (
-        <div style={{ padding: '1rem 1.25rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', borderRadius: '0.75rem', color: 'var(--color-accent)', fontSize: '0.875rem' }}>
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', borderRadius: '0.75rem', color: 'var(--wa-accent-text)', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
@@ -172,7 +172,7 @@ export default function MemberMergeClient() {
       <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
         {/* Primary selector */}
         <div style={{ position: 'relative' }}>
-          <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Primary (keep this record)</label>
+          <label htmlFor="member-merge-primary-search" style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Primary (keep this record)</label>
           {primary ? (
             <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
               <div>
@@ -191,6 +191,7 @@ export default function MemberMergeClient() {
             <>
               <input
                 ref={primaryRef}
+                id="member-merge-primary-search"
                 type="text"
                 value={primaryQuery}
                 onChange={(e) => setPrimaryQuery(e.target.value)}
@@ -219,7 +220,7 @@ export default function MemberMergeClient() {
 
         {/* Secondary selector */}
         <div style={{ position: 'relative' }}>
-          <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Duplicate (merge into primary)</label>
+          <label htmlFor="member-merge-secondary-search" style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.375rem', color: 'var(--color-on-surface-variant)' }}>Duplicate (merge into primary)</label>
           {secondary ? (
             <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
               <div>
@@ -238,6 +239,7 @@ export default function MemberMergeClient() {
             <>
               <input
                 ref={secondaryRef}
+                id="member-merge-secondary-search"
                 type="text"
                 value={secondaryQuery}
                 onChange={(e) => setSecondaryQuery(e.target.value)}
@@ -297,7 +299,7 @@ export default function MemberMergeClient() {
               </div>
             </div>
             <div style={cardStyle}>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>Duplicate (merged in)</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--wa-accent-text)', marginBottom: '0.5rem' }}>Duplicate (merged in)</div>
               <div style={{ fontWeight: 700, fontSize: '1rem' }}>{preview.secondary.fullName}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{preview.secondary.email}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>

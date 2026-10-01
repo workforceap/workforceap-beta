@@ -13,7 +13,8 @@ import EmployerMatchStatusSelect from '@/components/employer/EmployerMatchStatus
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { programDisplayTitle } from '@/lib/content/programTitle';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import { employerAiMatchStatusBadgeVariant, employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import { getTranslations } from 'next-intl/server';
 import { EMPLOYER_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
@@ -147,7 +148,7 @@ export default async function EmployerPipelinePage() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1rem 0.875rem' }}>
           {PIPELINE_STRIP.map((stage) => (
             <div key={stage.label} className="portal-card portal-card--flat" style={{ flexShrink: 0, textAlign: 'center', padding: '0.625rem 1rem', minWidth: '80px' }}>
-              <div style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{stage.count}</div>
+              <div style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--wa-accent-text)', fontVariantNumeric: 'tabular-nums' }}>{stage.count}</div>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginTop: '0.125rem' }}>{stage.label}</div>
             </div>
           ))}
@@ -180,7 +181,7 @@ export default async function EmployerPipelinePage() {
                     {matches.map((m) => (
                       <div key={m.id} className="portal-card portal-card--flat">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: 'var(--surface-container-low)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8125rem', fontWeight: 700, flexShrink: 0 }}>
+                          <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: 'var(--surface-container-low)', color: 'var(--wa-accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8125rem', fontWeight: 700, flexShrink: 0 }}>
                             {getInitials(m.student.fullName ?? '?')}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -188,9 +189,9 @@ export default async function EmployerPipelinePage() {
                             <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{programDisplayFor(m.student)}</div>
                           </div>
                           <div style={{ flexShrink: 0, textAlign: 'right', minWidth: 0, maxWidth: '42%' }}>
-                            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{matchScoreAsPercent(m.matchScore)}%</div>
+                            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)', fontVariantNumeric: 'tabular-nums' }}>{matchScoreAsPercent(m.matchScore)}%</div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                              <StatusBadge className="wa-truncate max-w-full" label={employerMatchPipelineLabel(m.status)} variant={employerAiMatchStatusBadgeVariant(m.status)} />
+                              <StatusTag className="wa-truncate max-w-full" tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(m.status))}>{employerMatchPipelineLabel(m.status)}</StatusTag>
                             </div>
                           </div>
                         </div>

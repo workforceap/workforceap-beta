@@ -7,12 +7,18 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
-import { formatPortalDate } from '@/lib/formatDate';
+import { formatPortalDate, formatPortalDateTime } from '@/lib/formatDate';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
+import {
+  employerJobPostingApplicationStatusBadgeVariant,
+  employerJobPostingApplicationStatusLabel,
+} from '@/lib/employer/jobPostingApplicationStatus';
 import PortalCard from '@/components/portal/ui/PortalCard';
 import ApplicationStatusUpdater from '@/components/employer/ApplicationStatusUpdater';
+import InterviewDetailsForm from '@/components/employer/InterviewDetailsForm';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -77,6 +83,9 @@ export default async function EmployerApplicationPage({
 
   const t = await getTranslations('employer');
   const candidateName = application.student.fullName ?? t('candidate');
+  // interviewNotes holds the candidate-visible where / format text.
+  const interviewAt = application.interviewScheduledAt;
+  const interviewWhere = application.interviewNotes?.trim() || null;
 
   return (
     <PortalPageFrame maxWidth="64rem">
@@ -102,37 +111,27 @@ export default async function EmployerApplicationPage({
               <p style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
                 Current Status
               </p>
-              <StatusBadge
-                label={
-                  application.status === 'hired'
-                    ? 'Hired'
-                    : application.status === 'rejected'
-                      ? 'Rejected'
-                      : application.status === 'interview'
-                        ? 'Interview'
-                        : application.status === 'offered'
-                          ? 'Offered'
-                          : application.status === 'reviewing'
-                            ? 'Reviewing'
-                            : 'Pending'
-                }
-                variant={
-                  application.status === 'hired'
-                    ? 'success'
-                    : application.status === 'rejected'
-                      ? 'error'
-                      : application.status === 'interview'
-                        ? 'info'
-                        : application.status === 'offered'
-                          ? 'success'
-                          : application.status === 'reviewing'
-                            ? 'info'
-                            : 'warning'
-                }
-              />
+              <StatusTag tone={badgeVariantToKitTone(employerJobPostingApplicationStatusBadgeVariant(application.status))}>
+                {employerJobPostingApplicationStatusLabel(application.status)}
+              </StatusTag>
             </div>
             <ApplicationStatusUpdater applicationId={application.id} currentStatus={application.status} />
           </div>
+          {interviewAt && (
+            <p style={{ fontSize: '0.875rem', margin: '0.75rem 0 0', overflowWrap: 'anywhere' }}>
+              <strong>Interview:</strong> {formatPortalDateTime(interviewAt)}
+              {interviewWhere ? ` · ${interviewWhere}` : ''}
+            </p>
+          )}
+          {application.status === 'interview' && (
+            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--outline-variant)' }}>
+              <InterviewDetailsForm
+                applicationId={application.id}
+                scheduledAt={interviewAt ? interviewAt.toISOString() : null}
+                location={application.interviewNotes ?? null}
+              />
+            </div>
+          )}
         </PortalCard>
 
         {/* Applicant Info */}
@@ -159,7 +158,7 @@ export default async function EmployerApplicationPage({
               <div>
                 <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>LinkedIn</span>
                 <p style={{ margin: '0.125rem 0 0' }}>
-                  <a href={application.student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)' }}>
+                  <a href={application.student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)' }}>
                     View Profile
                   </a>
                 </p>
@@ -179,7 +178,7 @@ export default async function EmployerApplicationPage({
                     href={`/api/employer/applications/${encodeURIComponent(application.id)}/resume`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: 'var(--color-accent)' }}
+                    style={{ color: 'var(--wa-accent-text)' }}
                   >
                     Download Resume
                   </a>

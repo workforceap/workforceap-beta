@@ -77,7 +77,7 @@
   height: 56px;
   border-radius: var(--wa-radius-sm);
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   font-size: 1.25rem;
   font-weight: 900;
 }

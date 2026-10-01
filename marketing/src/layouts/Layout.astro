@@ -10,6 +10,7 @@ import '../styles/hero-media.css';
 import AnalyticsHead from '../components/AnalyticsHead.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
 import { heroPhotoCssUrl, heroPhotoForKey, heroPhotoSequenceForKey } from '../../../lib/marketing/heroPhotos';
+import { brandedPageTitle } from '../../../lib/marketing/pageTitle';
 export interface Props {
   title?: string;
   description?: string;
@@ -20,6 +21,8 @@ const {
   description = 'WorkforceAP is a 501(c)(3) nonprofit providing employer-aligned training, professional certificates, and career support at no cost to members who qualify through scholarship/grant funded membership.',
   lang = 'en',
 } = Astro.props;
+// Every public <title>, og:title and twitter:title carries the brand once (lib/marketing/pageTitle.ts).
+const pageTitle = brandedPageTitle(title);
 // Primary nav with dropdowns — mirrors the portal/Next MainNav structure so
 // chrome is consistent across the whole site (parity with components/MainNav).
 const nav = [
@@ -101,18 +104,18 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title}</title>
+  <title>{pageTitle}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonicalUrl} />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="WorkforceAP" />
-  <meta property="og:title" content={title} />
+  <meta property="og:title" content={pageTitle} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:image" content={socialImage} />
   <meta property="og:image:alt" content="WorkforceAP — career training and career support" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={title} />
+  <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={socialImage} />
   <script type="application/ld+json" set:html={JSON.stringify(organizationSchema).replace(/</g, '\\u003c')} />
@@ -152,7 +155,7 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
       </div>
       <div class="navactions">
         <div class="navdrop navdrop--end">
-          <a class="navdrop-trigger signin" href="/login">Log in<svg class="navchev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
+          <a class="navdrop-trigger signin" href="/login">Sign in<svg class="navchev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
           <div class="navdrop-menu navdrop-menu--right">
             {signInMenu.map((s) => <a href={s.href}>{s.label}</a>)}
           </div>

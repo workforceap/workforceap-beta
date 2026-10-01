@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 import type { MemberResource, ResourceCategory, ResourceStage } from '@/lib/content/memberResources';
 import ResourceCard from '@/components/portal/ResourceCard';
 import ResourceFilters from '@/components/portal/ResourceFilters';
@@ -15,6 +17,7 @@ type ResourcesClientProps = {
 export default function ResourcesClient({ resources, progressByResource = {} }: ResourcesClientProps) {
   const [category, setCategory] = useState<ResourceCategory | ''>('');
   const [stage, setStage] = useState<ResourceStage | ''>('');
+  const te = useTranslations('empty');
 
   const filtered = useMemo(() => {
     return resources.filter((r) => {
@@ -33,36 +36,34 @@ export default function ResourcesClient({ resources, progressByResource = {} }: 
         onStageChange={setStage}
       />
       {filtered.length === 0 ? (
-        <div className="resource-empty-state">
-          <span
-            className="material-symbols-outlined"
-            aria-hidden
-            style={{ fontSize: '1.75rem', opacity: 0.6 }}
-          >
-            filter_alt_off
-          </span>
-          <p style={{ fontWeight: 700, marginTop: '0.5rem' }}>
-            {category || stage ? 'No resources match those filters.' : 'No resources available right now.'}
-          </p>
-          <p className="resource-empty-hint">
-            {category || stage
-              ? 'Try a different category or stage — or clear your filters to see everything we have.'
-              : 'Check back soon, or explore your other career tools in the meantime.'}
-          </p>
-          {(category || stage) && (
-            <button
-              type="button"
-              className="btn btn-primary"
-              style={{ marginTop: '1rem' }}
-              onClick={() => {
+        // `empty.*` (KIT_GUIDE §6): rows exist but none match → `filtered` with
+        // a real Clear filters; the library itself is empty → `unavailable`
+        // (nothing the member can do here), pointing at the tools that do exist.
+        category || stage ? (
+          <KitEmptyState
+            kind="filtered"
+            framed
+            icon={<span className="material-symbols-outlined" style={{ fontSize: '1.75rem' }}>filter_alt_off</span>}
+            title={te('resourcesFiltered.title')}
+            description={te('resourcesFiltered.body')}
+            primaryAction={{
+              label: te('resourcesFiltered.action'),
+              onClick: () => {
                 setCategory('');
                 setStage('');
-              }}
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
+              },
+            }}
+          />
+        ) : (
+          <KitEmptyState
+            kind="unavailable"
+            framed
+            icon={<span className="material-symbols-outlined" style={{ fontSize: '1.75rem' }}>filter_alt_off</span>}
+            title={te('resourcesUnavailable.title')}
+            description={te('resourcesUnavailable.body')}
+            primaryAction={{ href: '/dashboard/ai-tools', label: te('resourcesUnavailable.action') }}
+          />
+        )
       ) : (
         <ul className="resource-grid">
           {filtered.map((r) => (

@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
+import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
@@ -44,6 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DashboardResumePage() {
   const user = await getUser();
   if (!user) redirect("/login?redirectTo=/dashboard/resume");
+  const access = await getMemberDashboardAccess(user.id);
+  if (access.redirectTo) redirect(access.redirectTo);
   const t = await getTranslations('profile');
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
@@ -66,7 +69,7 @@ export default async function DashboardResumePage() {
   }
   const completeness = memberState.profileCompletenessPct;
 
-  // Still need profile for resume paths
+  // The member state already resolves profile and account phone from its owned user read.
   const profile = await withDbRetry(() =>
     prisma.profile.findUnique({
       where: { userId: user.id },
@@ -80,7 +83,7 @@ export default async function DashboardResumePage() {
   const fields = {
     name: memberState.fullName ?? "",
     email: memberState.email ?? "",
-    phone: "", // getMemberState doesn't expose phone currently
+    phone: memberState.contactPhone ?? "",
   };
 
   return (

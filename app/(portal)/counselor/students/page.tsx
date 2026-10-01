@@ -5,7 +5,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import CounselorRosterEmpty from '@/components/portal/counselor/CounselorRosterEmpty';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import CounselorStudentsRosterClient from '@/components/portal/counselor/CounselorStudentsRosterClient';
@@ -270,9 +270,13 @@ export default async function CounselorStudentsPage({
     pendingApplication: membersWithPendingApplication.has(r.memberId),
   }));
 
-  // ── 30-day completion / placement counts from member_events ──
+  // ── 30-day completions (member_events) and placements (placement_records) ──
+  // Placements come from the staff placement record (C05), not the
+  // `placement_recorded` event: some writers never emit it and the admin
+  // placed-outcome route emits another one on every edit. One row per member
+  // (`userId @unique`), so the read is bounded by the roster size.
   const lookbackStart = new Date(now.getTime() - ROSTER_STAT_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
-  const [recentCompletions, recentPlacements] = memberIds.length
+  const [recentCompletions, recentPlacementRows] = memberIds.length
     ? await Promise.all([
         prisma.memberEvent.count({
           where: {
@@ -281,21 +285,23 @@ export default async function CounselorStudentsPage({
             createdAt: { gte: lookbackStart },
           },
         }),
-        prisma.memberEvent.count({
+        prisma.placementRecord.findMany({
           where: {
             userId: { in: memberIds },
-            eventName: 'placement_recorded',
-            createdAt: { gte: lookbackStart },
+            placedAt: { gte: lookbackStart },
           },
+          select: { startDateVerified: true },
         }),
       ])
-    : [0, 0];
+    : [0, [] as Array<{ startDateVerified: boolean }>];
+  const recentPlacements = recentPlacementRows.length;
+  const recentPlacementsUnverified = recentPlacementRows.filter((row) => !row.startDateVerified).length;
 
   // Four tiles, each captioned with the rule it counts (counselor audit §6 item 4).
   // When the attention facts failed to load the tiles are withheld rather than
   // printing zeros the roster below would contradict.
   const rosterStats = attention
-    ? buildCounselorRosterStats({ queue: attention, recentCompletions, recentPlacements })
+    ? buildCounselorRosterStats({ queue: attention, recentCompletions, recentPlacements, recentPlacementsUnverified })
     : null;
 
   return (
@@ -322,13 +328,7 @@ export default async function CounselorStudentsPage({
 
         {assignments.length === 0 ? (
           <div style={{ padding: '0 1rem' }}>
-            <PortalEmptyState
-              title={t('noMembersAssignedYet')}
-              description={t('membersAppearOnceAssigned')}
-              icon={<span className="material-symbols-outlined" aria-hidden="true">person_search</span>}
-              primaryAction={{ label: t('openMessages'), href: '/counselor/messages' }}
-              secondaryAction={{ label: t('counselorGuide'), href: '/counselor/guide' }}
-            />
+            <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h2" />
           </div>
         ) : (
           <CounselorStudentsRosterClient rows={rosterRows} filterMeta={filterMeta} initialFilter={filter} />
@@ -350,13 +350,7 @@ export default async function CounselorStudentsPage({
         ) : null}
 
         {assignments.length === 0 ? (
-          <PortalEmptyState
-            title={t('noMembersAssignedYet')}
-            description={t('membersAppearOnceAssigned')}
-            icon={<span className="material-symbols-outlined" aria-hidden="true">person_search</span>}
-            primaryAction={{ label: t('openMessages'), href: '/counselor/messages' }}
-            secondaryAction={{ label: t('counselorGuide'), href: '/counselor/guide' }}
-          />
+          <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h2" />
         ) : (
           <CounselorStudentsRosterClient rows={rosterRows} filterMeta={filterMeta} initialFilter={filter} />
         )}

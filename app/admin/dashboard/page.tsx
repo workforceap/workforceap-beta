@@ -5,6 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { AdminDashboardKit } from '@/components/portal/kit/pages/admin-subviews/AdminDashboardKit';
+import {
+  COURSERA_XAPI_UNAVAILABLE,
+  COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE,
+  type CourseraXapiDegradation,
+} from '@/lib/coursera/xapiUnavailableNotice';
 
 const ExecutiveTrendCharts = dynamic(
   () => import('@/components/admin/ExecutiveTrendCharts'),
@@ -74,6 +79,12 @@ interface MetricsData {
     enrollments: TrendPoint[];
     dashboardViews: TrendPoint[];
   };
+  /**
+   * Sources the API read without (`['coursera-xapi-unavailable']` when the
+   * coursera_xapi_events table is absent, so `unmatchedCoursera` is narrower
+   * than production's). Absent or empty on a full database.
+   */
+  degraded?: CourseraXapiDegradation[];
 }
 
 import MfaStatusBanner from '@/components/admin/MfaStatusBanner';
@@ -226,6 +237,7 @@ function ExecutiveDashboardContent() {
   }
 
   const { summary, funnels, trends } = data;
+  const courseraXapiUnavailable = data.degraded?.includes(COURSERA_XAPI_UNAVAILABLE) ?? false;
 
   // Format week labels
   const formatWeek = (w: string) => {
@@ -246,6 +258,7 @@ function ExecutiveDashboardContent() {
         signupData={signupData}
         enrollmentData={enrollmentData}
         viewData={viewData}
+        degraded={data.degraded}
       />
     );
   }
@@ -331,6 +344,16 @@ function ExecutiveDashboardContent() {
             color="#3b82f6"
             subtitle="Actor mapping needed"
           />
+          {courseraXapiUnavailable ? (
+            <p
+              role="status"
+              className="wa-kit-training-notice"
+              data-testid="dashboard-coursera-notice"
+              style={{ gridColumn: '1 / -1' }}
+            >
+              {COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -363,7 +386,7 @@ function ExecutiveDashboardContent() {
                   style={{
                     fontSize: '1.25rem',
                     fontWeight: 800,
-                    color: f.rate >= 50 ? 'var(--wa-success-dark)' : f.rate >= 25 ? 'var(--wa-gold-dark)' : 'var(--color-accent)',
+                    color: f.rate >= 50 ? 'var(--wa-success-dark)' : f.rate >= 25 ? 'var(--wa-gold-dark)' : 'var(--wa-accent-text)',
                   }}
                 >
                   {f.rate}%
@@ -423,8 +446,6 @@ function ExecutiveDashboardContent() {
       {/* Footer note */}
       <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
         Metrics refresh on page load. Data sourced from member_events and user tables.
-        <br />
-        Placement tracking KPIs coming soon (waiting on placement workflow completion).
       </p>
     </div>
   );

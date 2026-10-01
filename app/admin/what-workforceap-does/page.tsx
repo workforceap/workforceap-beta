@@ -140,7 +140,7 @@ export default async function AdminWhatWorkforceApDoesPage() {
           {personaCards.map((card) => (
             <article key={card.title} className="portal-card" style={{ padding: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
-                <span className="material-symbols-outlined" aria-hidden style={{ color: 'var(--color-accent)' }}>{card.icon}</span>
+                <span className="material-symbols-outlined" aria-hidden style={{ color: 'var(--wa-accent-text)' }}>{card.icon}</span>
                 <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{card.title}</h3>
               </div>
               <ul style={{ margin: 0, paddingLeft: '1.1rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.65 }}>

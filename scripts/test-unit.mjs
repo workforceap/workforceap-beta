@@ -103,6 +103,29 @@ function classify(relPath) {
     // reproduce by construction. Runs in the `database-contract` lane.
     return { skip: 'realDb' };
   }
+  if (/lib\/admin\/memberOnlyWhere\.realdb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Seeds rows and runs the real member predicate through Prisma and
+    // PostgreSQL (WAP-182 item 3): a nested `NOT`, a `profile: null` to-one
+    // filter, a `userRoles: { none }` to-many filter and a derived-table
+    // join are exactly what a mock cannot vouch for. The `database-contract`
+    // CI job runs this lane with TEST_REAL_DB=1 against a pushed schema.
+    return { skip: 'realDb' };
+  }
+  if (/lib\/certifications\/pendingFromCompletion\.realdb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Proves the `user_certifications (user_id, cert_name)` unique key holds
+    // under concurrent Coursera completion reports and that a repeat report
+    // is a true no-op on the stored row (review 2026-09-22 item 4). The
+    // `database-contract` CI job runs this lane with TEST_REAL_DB=1.
+    return { skip: 'realDb' };
+  }
+  if (/lib\/partner\/partnerVisibility\.realdb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Seeds referred members and runs the partner minor rule through Prisma
+    // and PostgreSQL: the `profile` to-one filter appended to NOT, the raw
+    // attention SQL that mirrors it, the Feb 29 cutoff and a non-UTC session
+    // time zone are what the Prisma mocks in the partner specs cannot prove.
+    // The `database-contract` CI job runs this lane with TEST_REAL_DB=1.
+    return { skip: 'realDb' };
+  }
   if (/lib\/auth\/roles\.test\.ts/.test(normalized) && !REAL_DB) {
     // Hits the real Prisma client via getProfileRole — needs a postgres
     // server. The default lane has none; the `database-contract` CI job
@@ -192,6 +215,12 @@ async function main() {
       '--import',
       'tsx',
       '--test',
+      // The real-DB suites share one PostgreSQL (`wap_contract` in the
+      // database-contract lane). node:test's default concurrency runs the
+      // files as parallel processes, which raced shared rows and stacked
+      // long interactive transactions on a 4-vCPU runner. Run them one file
+      // at a time; the default mocked lane keeps node's default parallelism.
+      ...(REAL_DB ? ['--test-concurrency=1'] : []),
       ...runnable,
     ],
     { stdio: 'inherit', cwd: ROOT, env },

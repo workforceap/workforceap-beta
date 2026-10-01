@@ -204,7 +204,7 @@ export default function MapToUserActions({
               padding: '0.75rem',
               borderRadius: 8,
               border: '1px solid var(--outline-variant, #e0e0e0)',
-              background: 'var(--surface-container-lowest, #fff)',
+              background: 'var(--surface-container-lowest)',
               display: 'flex',
               flexWrap: 'wrap',
               gap: '0.75rem',

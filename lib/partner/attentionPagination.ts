@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
+import { memberOnlyEmailSql, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
+import { minorBirthDateCutoffIsoDate, PARTNER_SCHOOL_TYPE } from '@/lib/partner/dataAccess';
 
 export const ATTENTION_TIERS = ['all', 'high', 'medium', 'low', 'watch'] as const;
 export type AttentionTier = typeof ATTENTION_TIERS[number];
@@ -47,7 +48,7 @@ export function encodeAttentionCursor(value: AttentionCursor): string {
 export type AttentionPageKey = { referralId: string; memberId: string; updatedAt: string; lastTouchName: string | null };
 export type AttentionQueryResult = { counts: AttentionCounts; rows: AttentionPageKey[] };
 
-/** Eligibility mirrors this caller's getPipelineStage inputs: deleted, placed,
+/** Eligibility mirrors this caller's getPipelineStage inputs: deleted, verified placed,
  * or any recorded certification is terminal; course completion alone is not.
  * Age tiers are monotonic in updatedAt, so order the full cohort BEFORE paging.
  */
@@ -65,12 +66,18 @@ export function buildAttentionPageQuery(
       SELECT r.id AS referral_id, r.member_id, u.updated_at,
         FLOOR(EXTRACT(EPOCH FROM (${asOf}::timestamptz - (u.updated_at AT TIME ZONE 'UTC'))) / 86400)::int AS stale_days
       FROM partner_referrals r JOIN partners p ON p.id = r.partner_id
-      JOIN users u ON u.id = r.member_id JOIN profiles profile ON profile.user_id = u.id
+      JOIN users u ON u.id = r.member_id
       WHERE r.partner_id = ${partnerId} AND p.organization_id = ${organizationId} AND p.active = true
         AND u.organization_id = ${organizationId} AND u.deleted_at IS NULL
-        AND profile.role = 'member' AND ${memberOnlyEmailSql('u')}
+        AND ${memberOnlyRoleSql('u')} AND ${memberOnlyEmailSql('u')}
+        -- Minors are hidden from non-school partners unless FERPA consent is
+        -- on file (lib/partner/dataAccess.ts partnerHiddenMemberWhere).
+        AND (p.partner_type = ${PARTNER_SCHOOL_TYPE} OR NOT EXISTS (SELECT 1 FROM profiles minor
+          WHERE minor.user_id = u.id AND minor.ferpa_consent_given = false
+            AND (minor.is_minor = true OR minor.dob > ${minorBirthDateCutoffIsoDate(asOf)}::date)))
         AND (r.referred_at AT TIME ZONE 'UTC') <= ${asOf}::timestamptz
-        AND NOT EXISTS (SELECT 1 FROM placement_records placement WHERE placement.user_id = u.id)
+        AND NOT EXISTS (SELECT 1 FROM placement_records placement
+          WHERE placement.user_id = u.id AND placement.start_date_verified = true)
         AND NOT EXISTS (SELECT 1 FROM user_certifications certification WHERE certification.user_id = u.id)
     ), tagged AS (
       SELECT *, CASE WHEN stale_days >= 14 THEN 'high' WHEN stale_days >= 7 THEN 'medium'

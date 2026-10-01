@@ -1,7 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
+import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getUser } from '@/lib/auth/server';
 import { getScoreBreakdownSafeResult } from '@/lib/readiness/score';
 import PageHeader from '@/components/portal/PageHeader';
@@ -16,6 +18,7 @@ import { buildReadinessProgressView } from '@/lib/readiness/progressView';
 import {
   READINESS_SCORE_LOAD_ERROR,
   buildFactualReadinessRecap,
+  buildReadinessRecapBreakdown,
 } from '@/lib/readiness/progressSummary';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,6 +45,7 @@ export default async function DashboardReadinessPage({
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/readiness');
 
+  const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
 
@@ -75,6 +79,9 @@ export default async function DashboardReadinessPage({
   if (requestedUi !== 'legacy') {
     return (
       <>
+        {readOnlyAudit ? (
+          <span hidden data-portal-audit-suppressed="member-readiness-summary-generation" />
+        ) : null}
         {checklistLoadFailed ? (
           <span hidden data-portal-error-state="member-readiness-checklist-load" />
         ) : null}
@@ -89,7 +96,8 @@ export default async function DashboardReadinessPage({
             <ReadinessProgressSummary
               factualSummary={factualSummary}
               nextAction={scoreLoadFailed ? null : view.priorityAction}
-              enableGeneration={!scoreLoadFailed}
+              breakdown={scoreLoadFailed ? null : buildReadinessRecapBreakdown(view)}
+              enableGeneration={!scoreLoadFailed && !readOnlyAudit}
               loadFailed={scoreLoadFailed}
             />
           }
@@ -154,7 +162,7 @@ export default async function DashboardReadinessPage({
                     />
                   </svg>
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{overallScore}</span>
+                    <span style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--wa-accent-text)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{overallScore}</span>
                     <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>/ 100</span>
                   </div>
                 </div>
@@ -162,7 +170,7 @@ export default async function DashboardReadinessPage({
                   <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>Overall Score</p>
                   <p style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', margin: 0, fontVariantNumeric: 'tabular-nums' }}>{overallScore}<span style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}> / 100</span></p>
                   {priorityAction && (
-                    <a href={priorityAction.href} className="hover:wa-underline" style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', textDecoration: 'none', display: 'block', marginTop: '0.375rem' }}>
+                    <a href={priorityAction.href} className="hover:wa-underline" style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none', display: 'block', marginTop: '0.375rem' }}>
                       Next: {priorityAction.label.slice(0, 50)}{priorityAction.label.length > 50 ? '…' : ''} →
                     </a>
                   )}

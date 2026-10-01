@@ -97,7 +97,7 @@ export default function AdminMemberDbActions({
             {resetStatus === 'loading' ? 'Sending…' : 'Send password reset email'}
           </button>
           {resetMsg && (
-            <span style={{ fontSize: '0.8125rem', color: resetStatus === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontWeight: 600 }}>
+            <span style={{ fontSize: '0.8125rem', color: resetStatus === 'ok' ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', fontWeight: 600 }}>
               {resetMsg}
             </span>
           )}
@@ -127,7 +127,7 @@ export default function AdminMemberDbActions({
         ) : (
           <form onSubmit={saveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '520px' }}>
             {saveMsg && (
-              <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: saveMsg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', color: saveMsg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontSize: '0.875rem' }}>
+              <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: saveMsg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', color: saveMsg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', fontSize: '0.875rem' }}>
                 {saveMsg.text}
               </div>
             )}

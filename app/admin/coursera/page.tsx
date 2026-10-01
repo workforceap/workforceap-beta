@@ -22,10 +22,12 @@ import { CourseraCatalogHealthSection } from '@/components/admin/CourseraCatalog
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_OR_DOGFOOD_ROLE_NOT } from '@/lib/admin/memberOnlyWhere';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
 import { getDiscoveredProgram, getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
@@ -385,18 +387,17 @@ export default async function AdminCourseraPage({
   const auditEmailRaw = typeof sp.auditEmail === 'string' ? sp.auditEmail : '';
   const showTestAccounts = sp.showTest === '1' || sp.showTest === 'true';
 
-  // Include members, profile-less rows (treated as member), and admin/super_admin
-  // dogfood accounts (same idea as MEMBER_OR_DOGFOOD_WHERE) so Coursera tooling
-  // stays usable for platform operators testing with their own learner email.
+  // Members by the one definition (lib/admin/memberOnlyWhere.ts) plus
+  // admin/super_admin dogfood accounts — the role half of
+  // MEMBER_OR_DOGFOOD_WHERE — so Coursera tooling stays usable for platform
+  // operators testing with their own learner email, and so the accounts it can
+  // map are the accounts the member counts report. No fixture-email exclusion:
+  // QA learner accounts are exactly what this tooling gets pointed at.
   const members = await withAdminPageScope(scope, (db) => db.user.findMany({
     where: {
       deletedAt: null,
       organizationId,
-      OR: [
-        { profile: { is: null } },
-        { profile: { role: 'member' } },
-        { profile: { role: { in: ['admin', 'super_admin'] } } },
-      ],
+      NOT: MEMBER_OR_DOGFOOD_ROLE_NOT,
     },
     orderBy: [{ fullName: 'asc' }],
     select: {
@@ -456,12 +457,18 @@ export default async function AdminCourseraPage({
   const courseProgress = await loadCourseProgressSummary(organizationId);
   const xapiCourseProgress = await loadXapiCourseProgressSummary(organizationId, members);
   const badgeProgress = await loadBadgeProgressSummary(organizationId);
+  // When `coursera_xapi_events` is absent (db:push environments) both reads
+  // succeed without the xAPI branch; the probe inside them reports that here
+  // so the unmatched section can say the list is knowingly incomplete.
+  let xapiUnavailable = false;
+  const onXapiTableMissing = () => { xapiUnavailable = true; };
   const unmatchedLearners = await loadUnmatchedLearners(organizationId, 500, {
     includeTestAccounts: showTestAccounts,
+    onXapiTableMissing,
   });
   const hiddenTestAccountCount = showTestAccounts
     ? 0
-    : await countHiddenTestAccountUnmatchedLearners(organizationId);
+    : await countHiddenTestAccountUnmatchedLearners(organizationId, { onXapiTableMissing });
   const skillsetProgress = await getCourseraSkillsetProgressSummary(10, { organizationId });
 
   if (auditEmailRaw.trim().length > 0) {
@@ -600,7 +607,7 @@ export default async function AdminCourseraPage({
               plus one-click approve and enroll.
             </span>
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>Open</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>Open</span>
         </Link>
 
         <Link
@@ -624,7 +631,7 @@ export default async function AdminCourseraPage({
               enrolled / active / stalled / completed, with filters and CSV export. Read-only.
             </span>
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>Open</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>Open</span>
         </Link>
 
         <Link
@@ -647,7 +654,7 @@ export default async function AdminCourseraPage({
               Read-only overview of canonical mappings, xAPI traffic, B4B sync state, ignored events, and unmatched actors.
             </span>
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>Open</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>Open</span>
         </Link>
 
         <div className="content-card" style={{ padding: '1rem 1.2rem', display: 'grid', gap: '0.5rem' }}>
@@ -935,7 +942,7 @@ export default async function AdminCourseraPage({
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(164, 127, 56, 0.14)',
-                            color: 'var(--color-accent)',
+                            color: 'var(--wa-accent-text)',
                           }}
                         >
                           in progress
@@ -1135,7 +1142,7 @@ export default async function AdminCourseraPage({
       <details
         className="content-card"
         style={collapsibleSectionStyle}
-        open={unmatchedLearners.length > 0 || showTestAccounts || hiddenTestAccountCount > 0}
+        open={unmatchedLearners.length > 0 || showTestAccounts || hiddenTestAccountCount > 0 || xapiUnavailable}
       >
         <summary style={collapsibleSummaryStyle}>
           <span>
@@ -1147,12 +1154,17 @@ export default async function AdminCourseraPage({
           </span>
         </summary>
         <div style={collapsibleBodyStyle}>
+        {xapiUnavailable ? (
+          <p role="status" className="wa-kit-training-notice" data-testid="coursera-xapi-notice">
+            {COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE}
+          </p>
+        ) : null}
         {hiddenTestAccountCount > 0 ? (
           <div
             style={{
               padding: '0.65rem 0.9rem',
               marginBottom: '0.6rem',
-              background: 'var(--surface-container-low, rgba(148, 163, 184, 0.08))',
+              background: 'var(--surface-container-low)',
               border: '1px dashed var(--outline-variant)',
               borderRadius: 8,
               fontSize: '0.85rem',

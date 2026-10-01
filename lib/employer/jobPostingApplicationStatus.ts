@@ -1,20 +1,16 @@
 import type { BadgeVariant } from '@/components/portal/StatusBadge';
 import type { JobPostingApplicationStatus } from '@prisma/client';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 
-const LABELS: Record<JobPostingApplicationStatus, string> = {
-  pending: 'Pending',
-  reviewing: 'Reviewing',
-  interview: 'Interview',
-  offered: 'Offered',
-  hired: 'Hired',
-  rejected: 'Rejected',
-};
-
-/** Human-readable pipeline label for employer-facing UI (title case). */
+/**
+ * Pipeline label for employer-facing UI: the `employer` audience of
+ * lib/status/jobApplicationStatusVocabulary.ts ("New" / "Reviewing" /
+ * "Interviewing" / "Offer extended" / "Hired" / "Not selected").
+ */
 export function employerJobPostingApplicationStatusLabel(
   status: JobPostingApplicationStatus | string,
 ): string {
-  return LABELS[status as JobPostingApplicationStatus] ?? String(status);
+  return jobApplicationStatusLabel(String(status), 'employer');
 }
 
 /** Maps hiring pipeline stage to shared portal badge semantics. */

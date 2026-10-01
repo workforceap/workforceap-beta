@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { TextInput } from '@astryxdesign/core/TextInput';
 import { Button } from '@astryxdesign/core/Button';
@@ -66,6 +66,8 @@ export interface CounselorsRosterKitProps {
   atRiskOwned: number;
   /** Avg first-response caption (e.g. "3.2h") or "—". */
   avgResponse: string;
+  /** Add-counselor form, rendered under the roster (WAP-193). */
+  addCounselor?: ReactNode;
 }
 
 const LOAD_TOKEN_COLOR: Record<CounselorRow['load'], TokenColor> = {
@@ -84,6 +86,7 @@ export function CounselorsRosterKit({
   pageSize = 50,
   matchingTotal = total,
   searchQuery = '',
+  addCounselor,
 }: CounselorsRosterKitProps) {
   const [query, setQuery] = useState(searchQuery);
   const pageHref = (page: number) => `/admin/counselors?${new URLSearchParams({ search: searchQuery, page: String(page) })}`;
@@ -161,6 +164,7 @@ export function CounselorsRosterKit({
       key: 'caseload',
       header: sortHeader('caseload', 'Caseload'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSortForColumn('caseload', sortKey, sortDirection),
       render: (row) => (
@@ -171,36 +175,29 @@ export function CounselorsRosterKit({
       key: 'atRisk',
       header: sortHeader('atRisk', 'At-risk'),
       align: 'right',
+      numeric: true,
       minWidth: 80,
       ariaSort: ariaSortForColumn('atRisk', sortKey, sortDirection),
       render: (row) => (
-        <span
-          style={{
-            ...numStyle,
-            fontWeight: 700,
-            color: row.atRisk > 0 ? 'var(--wa-accent)' : 'var(--wa-muted)',
-          }}
-        >
-          {row.atRisk}
-        </span>
+        <span style={{ ...numStyle, fontWeight: 700, color: 'var(--wa-text)' }}>{row.atRisk}</span>
       ),
     },
     {
       key: 'placements',
       header: sortHeader('placements', 'Placements'),
       align: 'right',
+      numeric: true,
       minWidth: 96,
       ariaSort: ariaSortForColumn('placements', sortKey, sortDirection),
       render: (row) => (
-        <span style={{ ...numStyle, color: 'var(--wa-success)', fontWeight: 700 }}>
-          {row.placements}
-        </span>
+        <span style={{ ...numStyle, fontWeight: 700 }}>{row.placements}</span>
       ),
     },
     {
       key: 'avgResponse',
       header: sortHeader('avgResponse', 'Avg response'),
       align: 'right',
+      numeric: true,
       minWidth: 108,
       ariaSort: ariaSortForColumn('avgResponse', sortKey, sortDirection),
       render: (row) => (
@@ -280,12 +277,10 @@ export function CounselorsRosterKit({
               </span>
               <span style={numStyle}>
                 At-risk{' '}
-                <b style={{ color: row.atRisk > 0 ? 'var(--wa-accent)' : 'var(--wa-text)' }}>
-                  {row.atRisk}
-                </b>
+                <b>{row.atRisk}</b>
               </span>
               <span style={numStyle}>
-                Placed <b style={{ color: 'var(--wa-success)' }}>{row.placements}</b>
+                Placed <b>{row.placements}</b>
               </span>
               <span style={numStyle}>Resp {row.avgResponse}</span>
             </div>
@@ -309,6 +304,11 @@ export function CounselorsRosterKit({
         {currentPage > 1 && <Link className="wa-kit-cta wa-kit-cta--ghost" href={pageHref(currentPage - 1)}>Previous page</Link>}
         {currentPage * pageSize < matchingTotal && <Link className="wa-kit-cta wa-kit-cta--ghost" href={pageHref(currentPage + 1)}>Next page</Link>}
       </nav>
+      {addCounselor ? (
+        <section aria-label="Add counselor" style={{ marginTop: 32 }}>
+          {addCounselor}
+        </section>
+      ) : null}
     </DesignSurface>
   );
 }

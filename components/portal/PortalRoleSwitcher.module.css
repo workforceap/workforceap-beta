@@ -22,7 +22,7 @@
 
 .portal-role-switcher-trigger:hover {
   background: var(--surface-container-high);
-  border-color: var(--outline);
+  border-color: var(--wa-control-border);
 }
 
 .portal-role-switcher-chevron {

@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import AdminMemberCounselorChatClient from '@/components/admin/AdminMemberCounselorChatClient';
 import type { CounselorInboxRow } from '@/lib/messages/counselorInbox';
 import {
+  COUNSELOR_MESSAGES_FILTER_EMPTY,
   COUNSELOR_MESSAGES_NO_MEMBERS_EMPTY,
 } from '@/lib/counselor/inboxEmptyState';
 import { KitEmptyState } from '@/components/portal/kit';
@@ -50,38 +51,6 @@ type Props = {
 
 type InboxFilter = 'all' | 'needs_reply' | 'unread';
 
-function KitCta({
-  href,
-  onClick,
-  children,
-  ghost = false,
-}: {
-  href?: string;
-  onClick?: () => void;
-  children: ReactNode;
-  ghost?: boolean;
-}) {
-  const className = [
-    'wa-kit-cta',
-    'wa-kit-focus',
-    'hover:wa-opacity-90',
-    ghost ? 'wa-kit-cta--ghost' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-  if (href) {
-    return (
-      <Link href={href} className={className}>
-        {children}
-      </Link>
-    );
-  }
-  return (
-    <button type="button" onClick={onClick} className={className}>
-      {children}
-    </button>
-  );
-}
 
 function pickInitialSelection(rs: CounselorInboxRow[], initialMemberId?: string | null): string | null {
   if (rs.length === 0) return null;
@@ -149,7 +118,7 @@ function MemberContextAside({ row }: { row: CounselorInboxRow }) {
 }
 
 export default function CounselorMessagesInboxClient({ staffUserId, rows, initialMemberId }: Props) {
-  const t = useTranslations('counselor');
+  const tEmpty = useTranslations('empty');
   const hasInitialSelection = Boolean(
     initialMemberId && rows.some((row) => row.memberId === initialMemberId),
   );
@@ -252,21 +221,20 @@ export default function CounselorMessagesInboxClient({ staffUserId, rows, initia
     if (isMobile) setMobileList(false);
   };
 
+  // `rows` is one row per active assignment (lib/messages/counselorInbox), so
+  // an empty list means no assigned members — `unavailable` (an admin assigns),
+  // not a first step the counselor can take. A search / filter that matched
+  // none of the rows is `filtered` with a clear action (KIT_GUIDE §6).
   const noMembersEmpty = (
     <div className={styles.emptyPad}>
       <KitEmptyState
-        title={t('noMembersAssignedYet')}
-        description={t('membersAppearOnceAssigned')}
-        action={
-          <div className="wa-flex wa-flex-wrap wa-items-center" style={{ gap: 8 }}>
-            <KitCta href={COUNSELOR_MESSAGES_NO_MEMBERS_EMPTY.primaryHref}>
-              {t('browseAllMembers')}
-            </KitCta>
-            <KitCta href={COUNSELOR_MESSAGES_NO_MEMBERS_EMPTY.secondaryHref} ghost>
-              {t('backToDashboard')}
-            </KitCta>
-          </div>
-        }
+        kind={COUNSELOR_MESSAGES_NO_MEMBERS_EMPTY.kind}
+        tone={COUNSELOR_MESSAGES_NO_MEMBERS_EMPTY.tone}
+        data-testid="counselor-inbox-empty"
+        title={tEmpty('counselor.inbox.title')}
+        description={tEmpty('counselor.inbox.body')}
+        primaryAction={{ label: tEmpty('counselor.inbox.action'), href: COUNSELOR_MESSAGES_NO_MEMBERS_EMPTY.primaryHref }}
+        secondaryAction={{ label: tEmpty('counselor.inbox.secondary'), href: COUNSELOR_MESSAGES_NO_MEMBERS_EMPTY.secondaryHref }}
       />
     </div>
   );
@@ -274,11 +242,11 @@ export default function CounselorMessagesInboxClient({ staffUserId, rows, initia
   const filterEmpty = (
     <div className={styles.emptyPad}>
       <KitEmptyState
-        title={t('noConversationsMatch')}
-        description={t('tryAnotherFilterOrSearch')}
-        action={
-          <KitCta onClick={clearListFilters}>{t('clearConversationFilters')}</KitCta>
-        }
+        kind={COUNSELOR_MESSAGES_FILTER_EMPTY.kind}
+        data-testid="counselor-inbox-filtered"
+        title={tEmpty('counselor.inboxFiltered.title')}
+        description={tEmpty('counselor.inboxFiltered.body')}
+        primaryAction={{ label: tEmpty('counselor.inboxFiltered.action'), onClick: clearListFilters }}
       />
     </div>
   );

@@ -1,6 +1,8 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 import { ChatThread } from '@/components/portal/kit/ChatThread';
 import { MemberMessagesKit } from '@/components/portal/kit/pages/member/MemberMessagesKit';
 import { buildTrainingFeedbackDraft } from '@/lib/member/trainingFeedbackDraft';
@@ -40,7 +42,7 @@ describe('course feedback handoff', () => {
 
   it('shows an editable multiline request and sends nothing until explicitly submitted', async () => {
     const onSend = vi.fn();
-    render(<MemberMessagesKit feedbackDraft={buildTrainingFeedbackDraft(workspace, 'networking', 'legacy-v1')} onSend={onSend} />);
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberMessagesKit feedbackDraft={buildTrainingFeedbackDraft(workspace, 'networking', 'legacy-v1')} onSend={onSend} /></NextIntlClientProvider>);
     const composer = screen.getByRole('textbox', { name: 'Message Counselor…' });
     expect(composer.tagName).toBe('TEXTAREA');
     expect((composer as HTMLTextAreaElement).value).toContain('Course: Networking');
@@ -54,7 +56,7 @@ describe('course feedback handoff', () => {
   it('keeps the reviewed draft after a failed member send and clears it after a successful retry', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Please try again.' }), { status: 503 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ message: { id: 'saved-message', body: 'Please review my project.' } }), { status: 200 }));
-    render(<MemberMessagesKit memberUserId="fixture-member" feedbackDraft={buildTrainingFeedbackDraft(workspace, 'networking', 'legacy-v1')} />);
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberMessagesKit memberUserId="fixture-member" feedbackDraft={buildTrainingFeedbackDraft(workspace, 'networking', 'legacy-v1')} /></NextIntlClientProvider>);
     const composer = screen.getByRole('textbox', { name: 'Message Counselor…' });
     fireEvent.change(composer, { target: { value: 'Please review my project.' } });
     await userEvent.click(screen.getByRole('button', { name: 'Send message' }));
@@ -72,7 +74,7 @@ describe('course feedback handoff', () => {
 describe('chat send integrity', () => {
   it('respects a custom async member send rejection', async () => {
     const onSend = vi.fn(async () => false);
-    render(<MemberMessagesKit onSend={onSend} feedbackDraft={{ key: 'custom', text: 'Keep my reviewed request' }} />);
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberMessagesKit onSend={onSend} feedbackDraft={{ key: 'custom', text: 'Keep my reviewed request' }} /></NextIntlClientProvider>);
     await userEvent.click(screen.getByRole('button', { name: 'Send message' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Send message' })).toBeEnabled());
     expect(screen.getByRole('textbox')).toHaveValue('Keep my reviewed request');

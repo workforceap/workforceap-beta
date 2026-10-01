@@ -199,7 +199,7 @@ export default async function WorkforceApModulePage({ params, searchParams }: Pr
                 className="portal-card portal-card--flat"
                 style={{ padding: 16, display: 'flex', gap: 14, alignItems: 'flex-start', textDecoration: 'none' }}
               >
-                <Icon size={20} aria-hidden="true" style={{ flexShrink: 0, color: 'var(--color-accent)' }} />
+                <Icon size={20} aria-hidden="true" style={{ flexShrink: 0, color: 'var(--wa-accent-text)' }} />
                 <span>
                   <strong style={{ display: 'block', color: 'var(--wa-text)' }}>{title}</strong>
                   <span style={{ display: 'block', marginTop: 3, color: 'var(--wa-muted)', lineHeight: 1.45 }}>{detail}</span>

@@ -78,7 +78,7 @@ export default function InvitePartnerUserButton({ partnerId }: { partnerId: stri
         <span
           id="partner-invite-message"
           role={message.type === 'ok' ? 'status' : 'alert'}
-          style={{ fontSize: '0.875rem', fontWeight: 600, color: message.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)', width: '100%' }}
+          style={{ fontSize: '0.875rem', fontWeight: 600, color: message.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', width: '100%' }}
         >
           {message.text}
         </span>

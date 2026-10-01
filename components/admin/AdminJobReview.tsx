@@ -14,6 +14,7 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
 
 type Job = {
   id: string;
@@ -44,6 +45,8 @@ type MatchRow = {
   studentId: string;
   matchScore: number;
   matchReasons: string[];
+  /** Staff-only reasons (assessment score); not part of the employer-visible list. */
+  staffReasons?: string[];
   student: { fullName: string; email: string; enrolledProgram: string | null };
 };
 
@@ -53,15 +56,6 @@ function formatAdminDate(value: string | Date | null | undefined): string {
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleString();
 }
-
-const JOB_STATUS_LABELS: Record<string, string> = {
-  draft: 'Draft',
-  pending: 'Pending',
-  approved: 'Approved',
-  live: 'Live',
-  filled: 'Filled',
-  closed: 'Closed',
-};
 
 /** Tone for the job status pill — mirrors the color language on the jobs queue. */
 function jobStatusTone(status: string): KitTone {
@@ -245,7 +239,10 @@ export default function AdminJobReview({ job }: { job: Job }) {
     {
       key: 'reasons',
       header: 'Reasons',
-      render: (m) => (m.matchReasons.length > 0 ? m.matchReasons.join('; ') : '—'),
+      render: (m) => {
+        const reasons = [...(m.staffReasons ?? []), ...m.matchReasons];
+        return reasons.length > 0 ? reasons.join('; ') : '—';
+      },
     },
   ];
 
@@ -295,7 +292,7 @@ export default function AdminJobReview({ job }: { job: Job }) {
         <span style={{ fontSize: 14, color: 'var(--wa-muted)' }}>
           {job.employer?.companyName ?? 'Unknown'} · {job.employer?.contactName ?? job.employer?.contactEmail ?? '—'}
         </span>
-        <StatusTag tone={jobStatusTone(job.status)}>{JOB_STATUS_LABELS[job.status] ?? job.status}</StatusTag>
+        <StatusTag tone={jobStatusTone(job.status)}>{jobPostingStatusLabel(job.status, 'admin')}</StatusTag>
       </div>
 
       {hasProvenance && (

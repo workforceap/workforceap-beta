@@ -497,7 +497,11 @@ export async function recordXapiEvent(args: {
   matchedUserId?: string;
   organizationId?: string | null;
   mappingMethod?: string;
-  completionStatus: 'completed' | 'ignored' | 'unmatched' | 'error';
+  /** `ignored`: a non-completion statement handled normally (progress written,
+   *  or not a course-progress verb). `unresolved_course`: a course-progress
+   *  statement whose course could not be resolved, so no progress was written
+   *  (WAP-276). */
+  completionStatus: 'completed' | 'ignored' | 'unresolved_course' | 'unmatched' | 'error';
   error?: string;
   rawPayload: unknown;
 }) {

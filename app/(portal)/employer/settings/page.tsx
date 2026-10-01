@@ -94,7 +94,7 @@ export default async function EmployerSettingsPage() {
           </div>
           <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '1rem' }}>
             For urgent changes email{' '}
-            <a href="mailto:info@workforceap.org" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+            <a href="mailto:info@workforceap.org" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
               info@workforceap.org
             </a>.
           </p>

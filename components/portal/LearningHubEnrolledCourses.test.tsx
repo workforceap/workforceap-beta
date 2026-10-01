@@ -1,8 +1,14 @@
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, render as rtlRender } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ProgramCourse } from '@/lib/content/programs';
 import LearningHubEnrolledCourses from './LearningHubEnrolledCourses';
+
+/** The component reads its `empty.*` copy through next-intl, as the (portal) layout provides it. */
+const render = (ui: ReactElement) => rtlRender(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock('@/components/portal/kit/hooks/useAnnounce', () => ({ useAnnounce: () => vi.fn() }));

@@ -67,6 +67,35 @@ describe('buildMemberApplicationStatusView', () => {
     assert.equal(view.stage, 'active');
   });
 
+  describe('active stage next step points at the page that owns it (WAP-197)', () => {
+    const activeMember = { ...baseMember, enrolledProgram: 'cybersecurity-google', enrolledAt: new Date(), assessmentCompleted: true };
+    const intake = { preScreeningDone: false, interviewEligible: false, interviewRequested: false, interviewCompleted: false };
+    const build = (over: Partial<typeof intake>) =>
+      buildMemberApplicationStatusView({ ...baseApp, status: 'APPROVED' }, activeMember, { ...intake, ...over });
+
+    it('pre-screening not done -> the pre-screening form on the Skills check page', () => {
+      const view = build({});
+      assert.ok(view);
+      assert.match(view.nextStep, /Complete your pre-screening/);
+      assert.equal(view.nextStepHref, '/dashboard/assessment#pre-screening');
+    });
+
+    it('interview eligible -> the interview request on the Skills check page', () => {
+      const view = build({ preScreeningDone: true, interviewEligible: true });
+      assert.ok(view);
+      assert.match(view.nextStep, /Request your interview/);
+      assert.equal(view.nextStepHref, '/dashboard/assessment#interview');
+    });
+
+    it('no step links back to the member home it is shown on', () => {
+      for (const over of [{}, { preScreeningDone: true }, { preScreeningDone: true, interviewEligible: true }, { interviewRequested: true }, { interviewCompleted: true }]) {
+        const view = build(over);
+        assert.ok(view);
+        assert.notEqual(view.nextStepHref, '/dashboard');
+      }
+    });
+  });
+
   it('DENIED → stage rejected', () => {
     const view = buildMemberApplicationStatusView({ ...baseApp, status: 'DENIED' }, baseMember);
     assert.ok(view);

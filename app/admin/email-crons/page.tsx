@@ -14,6 +14,7 @@ import {
   type EmailCronRow,
   type EmailCronDisplayStatus,
 } from '@/components/portal/kit/pages/admin-subviews/EmailCronsKit';
+import { EmailCronActivateAll } from '@/components/portal/kit/pages/admin-subviews/EmailCronActivateAll';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -123,6 +124,7 @@ export default async function AdminEmailCronsPage({
         schedule: c.scheduleLabel,
         lastRun: timeAgo(c.lastRunAt),
         status,
+        enabled: c.enabled,
       };
     });
 
@@ -141,6 +143,16 @@ export default async function AdminEmailCronsPage({
           enabled={enabledCount}
           failing={failing}
           lastRun={timeAgo(lastRunIso)}
+          manageable
+          headerAction={<EmailCronActivateAll total={cronData.length} enabled={enabledCount} />}
+          notice={
+            cronSecretMissing ? (
+              <p role="alert" className="wa-kit-card wa-mb-5" style={{ color: 'var(--wa-danger)' }}>
+                CRON_SECRET is not configured, so scheduled and manual runs fail with 401. Add a 32+ character
+                CRON_SECRET in Vercel project settings and redeploy.
+              </p>
+            ) : undefined
+          }
         />
       </DesignSurface>
     );
@@ -156,7 +168,7 @@ export default async function AdminEmailCronsPage({
       {cronSecretMissing && (
         <div style={{ padding: '1rem 1.25rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', borderRadius: '0.75rem', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1", flexShrink: 0, marginTop: '0.1rem' }}>warning</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1", flexShrink: 0, marginTop: '0.1rem' }}>warning</span>
             <div>
               <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: '0 0 0.25rem' }}>
                 Cron secret not configured — jobs cannot run

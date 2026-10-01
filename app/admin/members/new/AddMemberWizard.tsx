@@ -475,22 +475,22 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
             <h3 className="wizard-wioa-title">Workforce Reporting</h3>
             <div className="wizard-wioa-toggles">
               <div className="wizard-toggle-row">
-                <label>US Citizen or Permanent Resident? *</label>
-                <div className="wizard-toggle">
+                <span id="addmemberwizard-us-citizen-label" className="wizard-toggle-label">US Citizen or Permanent Resident? *</span>
+                <div className="wizard-toggle" role="group" aria-labelledby="addmemberwizard-us-citizen-label">
                   <button type="button" aria-pressed={form.usCitizen === true} className={form.usCitizen === true ? 'active' : ''} onClick={() => update('usCitizen', true)}>Yes</button>
                   <button type="button" aria-pressed={form.usCitizen === false} className={form.usCitizen === false ? 'active' : ''} onClick={() => update('usCitizen', false)}>No</button>
                 </div>
               </div>
               <div className="wizard-toggle-row">
-                <label>Authorized to work in US? *</label>
-                <div className="wizard-toggle">
+                <span id="addmemberwizard-authorized-to-work-label" className="wizard-toggle-label">Authorized to work in US? *</span>
+                <div className="wizard-toggle" role="group" aria-labelledby="addmemberwizard-authorized-to-work-label">
                   <button type="button" aria-pressed={form.authorizedToWork === true} className={form.authorizedToWork === true ? 'active' : ''} onClick={() => update('authorizedToWork', true)}>Yes</button>
                   <button type="button" aria-pressed={form.authorizedToWork === false} className={form.authorizedToWork === false ? 'active' : ''} onClick={() => update('authorizedToWork', false)}>No</button>
                 </div>
               </div>
               <div className="wizard-toggle-row">
-                <label>Has a disability?</label>
-                <div className="wizard-toggle">
+                <span id="addmemberwizard-has-disability-label" className="wizard-toggle-label">Has a disability?</span>
+                <div className="wizard-toggle" role="group" aria-labelledby="addmemberwizard-has-disability-label">
                   <button type="button" className={form.hasDisability ? 'active' : ''} onClick={() => update('hasDisability', true)}>Yes</button>
                   <button type="button" className={!form.hasDisability ? 'active' : ''} onClick={() => update('hasDisability', false)}>No</button>
                 </div>

@@ -78,7 +78,7 @@ Why this endpoint: `/api/health/ready` is the dependency probe (Prisma can read 
 
 | Property | Value |
 |---|---|
-| Cadence | every 15 minutes (GitHub may delay scheduled runs; treat detection as 15-30 min) |
+| Cadence | every 15 minutes as scheduled, but GitHub throttles schedules in this repository: observed runs have been 2-5 hours apart (see "Nightly heavy suites"), so detection can take hours until a hosted monitor exists |
 | Pass | HTTP 200 within 5 s |
 | Fail | any other status, a timeout, DNS/TLS failure |
 | Alert channel | GitHub's workflow-failure email to the repository owner (default for scheduled runs); the run summary carries status + timing |
@@ -86,6 +86,28 @@ Why this endpoint: `/api/health/ready` is the dependency probe (Prisma can read 
 | Secrets | none |
 
 **What it is not.** It is not burn-rate alerting, not a status page and not paging. The Vercel log drain (WAP-164 item 3) and the production Sentry alert rule (item 4) are operator-console changes, not repository changes, and remain open. When a hosted monitor (Better Uptime or similar) is set up, keep this workflow: two independent observers are cheap, and this one is versioned with the code it checks.
+
+## Nightly heavy suites (WAP-204)
+
+The browser suites are too slow for every PR, so they belong in a nightly lane on GitHub Actions. Neither is a PR check, and neither should become a required one.
+
+**Status: scheduled nightly.** WAP-216 enables the two `schedule:` triggers after exact-SHA five-role isolated Preview acceptance. Manual dispatch remains available. The scheduled portal smoke uses the trusted isolated Preview; the scheduled public E2E lane uses read-only production checks. WAP-216's remaining acceptance is three observed nights plus a deliberate failure that creates one de-duplicated issue.
+
+| Suite | Workflow | Schedule (UTC) | Target | What runs |
+|---|---|---|---|---|
+| FORCE RLS rehearsal (existing, WAP-24) | `force-rls-shadow.yml` | 06:17 | disposable Postgres service | `scripts/p1/test-force-rls.ts`, report-only, ledger on `force-rls-shadow-ledger` |
+| Authenticated Portal Smoke | `authenticated-portal-smoke.yml` | 07:37 | isolated preview (`PREVIEW_SITE_URL`, DEMO Supabase) | The full five-role `pnpm audit:portal`. A scheduled run has no inputs, so it uses the default `isolated_preview` policy |
+| Public E2E | `nightly-e2e.yml` | 08:47 | production `https://www.workforceap.org` | The credential-free, read-only Playwright specs: `tests/e2e/smoke/**` and `partner-signup-viewports.spec.ts`, stock Playwright Chromium, HTML report uploaded as an artifact |
+
+**Times are approximate.** GitHub delays scheduled workflows under load. In this repository, the `*/15` uptime ping has run 2-5 hours apart, and the 06:17 RLS rehearsal has fired as late as 11:33 and 12:42. The minutes are chosen off `:00` and spaced so the suites do not queue behind each other when they do fire on time. Treat each suite as "about once a night", not a timed SLA.
+
+**Preview freshness for the portal smoke.** Its health gate refuses a target that does not serve master's exact commit. Since #2344 the `preview` mirror is no longer pushed on every merge, so every preview-policy run first calls `mirror-master-to-preview.yml` (a no-op when `preview` already points at master), then waits up to 25 minutes for Vercel's Preview deployment of that commit. If Vercel reports the Preview build as failed, the run fails at once with Vercel's reason, before any sign-in. So the portal smoke can only go green once the `preview` branch builds in Vercel's Preview environment. `production_canary` dispatches skip the mirror and the wait.
+
+For a controlled hydration comparison, dispatch `isolated_preview` twice on the same master commit with `skip_preview_toolbar` off and on. The opt-in run adds [Vercel's documented](https://vercel.com/docs/vercel-toolbar/managing-toolbar) `x-vercel-skip-toolbar: 1` only to page navigations initially targeting the trusted Preview origin. Playwright may carry this non-secret header on a redirect, but unrelated browser fetches receive no toolbar header and the audit capability remains a browser-managed host cookie. The artifact records `executionPolicy.skipVercelToolbar`. This changes Preview instrumentation only and does not relax the exact-SHA, DEMO, role, or read-only gates. Compare the full matrix and React #418 counts before attributing failures to the toolbar.
+
+**Failure issue.** When a scheduled run fails, `nightly-failure-issue.yml` opens one issue, titled `Nightly: Authenticated Portal Smoke failing` or `Nightly: Public E2E failing`, with the `nightly-failure` label and the run link. While that issue is open, a later failure adds a comment to it rather than opening a new issue. A later green scheduled run comments once for that failure episode and leaves the issue open for a person to close. Manual dispatches never open issues. To route these into Linear, connect the label through the GitHub integration.
+
+**Rerun by hand.** Actions → *Authenticated Portal Smoke* → Run workflow on `master` (choose the policy). For the public specs, use Actions → *Nightly E2E* → Run workflow, or run them locally with `PLAYWRIGHT_BASE_URL=https://www.workforceap.org npx playwright test tests/e2e/smoke tests/e2e/partner-signup-viewports.spec.ts`. Only add a spec to `nightly-e2e.yml` if it is credential-free and creates no data.
 
 ---
 
@@ -264,7 +286,9 @@ We list these because pretending they don't exist is what gets you in trouble du
 |---|---|
 | 2026-05-08 | Initial doc; Track D Sprint D.1 foundation. SLOs defined, route stub shipped, Sprint D.2 will wire real telemetry. |
 | 2026-09-21 | WAP-164 item 1: documented the external readiness monitor (`.github/workflows/uptime-ping.yml`, 15-minute GitHub Actions probe of `/api/health/ready`, fails on non-200 or >5 s). Log drain + Sentry alert rule remain open operator items. |
+| 2026-09-23 | WAP-204: nightly heavy suites, dispatch-only until WAP-66. Authenticated Portal Smoke now refreshes the preview mirror first (planned slot 07:37 UTC). The new `nightly-e2e.yml` runs the public Playwright specs (planned slot 08:47 UTC). Once scheduled, a failed run opens one de-duplicated `Nightly: <suite> failing` issue. Also documented that GitHub throttles schedules here. |
+| 2026-09-25 | WAP-216: enabled the 07:37 and 08:47 UTC nightly schedules; made cancelled/skipped portal jobs fail the nightly verdict; confirmed Vercel's GitHub deployment environment is `Preview`; and limited the recovery comment to once per failure episode. Three observed nights and a deliberate failure drill remain the acceptance gate. |
 
 ---
 
-*Updated alongside any change to `app/api/health/slo/route.ts`, `.github/workflows/uptime-ping.yml`, the public `/status` route when it lands, or any change to the committed SLO targets above.*
+*Updated alongside any change to `app/api/health/slo/route.ts`, `.github/workflows/uptime-ping.yml`, the nightly suites (`authenticated-portal-smoke.yml`, `nightly-e2e.yml`), the public `/status` route when it lands, or any change to the committed SLO targets above.*

@@ -12,12 +12,13 @@ import AdminMemberCounselorChatClient from '@/components/admin/AdminMemberCounse
 import Link from 'next/link';
 import { compactStringIds, getMessageAuthorName, getOrCreateMemberCounselorThread, serializeMessage } from '@/lib/messages/counselorThread';
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
 import { fetchLearnerProgressFromB4B } from '@/lib/coursera/learnerProgress';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -42,10 +43,8 @@ import WioaScreeningReadonly from '@/components/admin/WioaScreeningReadonly';
 import AssessmentAnswersReadonly from '@/components/admin/AssessmentAnswersReadonly';
 import { buildAssessmentReviewRows } from '@/lib/assessment/reviewRows';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
-import {
-  employerJobPostingApplicationStatusBadgeVariant,
-  employerJobPostingApplicationStatusLabel,
-} from '@/lib/employer/jobPostingApplicationStatus';
+import { employerJobPostingApplicationStatusBadgeVariant } from '@/lib/employer/jobPostingApplicationStatus';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import {
   employerAiMatchStatusBadgeVariant,
   employerMatchPipelineLabel,
@@ -58,6 +57,7 @@ import SkillsetProgressList from '@/components/portal/SkillsetProgressList';
 import { loadMemberSkillsetProgress } from '@/lib/coursera/memberSkillsetProgress';
 import MemberProgressTimeline from '@/components/portal/counselor/MemberProgressTimeline';
 import type { TimelineEvent } from '@/components/portal/counselor/MemberProgressTimeline';
+import { buildPlacementStage } from '@/lib/counselor/placementTimelineStage';
 import { getRiskLevel } from '@/lib/member/atRiskScoring';
 import type { CareerMatchResult } from '@/lib/onet/types';
 
@@ -125,6 +125,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       // when `User.enrolledProgram` is set to just the primary slug).
       courseEnrollments: {
         select: {
+          id: true,
           programSlug: true,
           curriculumVersion: true,
           isPrimary: true,
@@ -160,9 +161,11 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   // below references it. The full `applications` array is still fetched
   // below for the actual UI display — this is just the 1-bit
   // "has the member applied yet?" signal that the timeline needs early.
-  const [memberEvents, applicationCount] = await Promise.all([
+  // The placement stage reads the staff placement record (C05), never the
+  // `placement_recorded` event: see lib/counselor/placementTimelineStage.ts.
+  const [memberEvents, applicationCount, placementRecord] = await Promise.all([
     prisma.memberEvent.findMany({
-      // Only the 5 milestone events below are ever read from this array, and
+      // Only the 4 milestone events below are ever read from this array, and
       // `metadata` is never inspected — narrowing both keeps this to a few
       // dozen rows off the existing @@index([userId, eventName, createdAt])
       // instead of the member's entire event history with JSON payloads.
@@ -174,7 +177,6 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
             'assessment_completed',
             'course_completed',
             'certification_earned',
-            'placement_recorded',
           ],
         },
       },
@@ -182,28 +184,51 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       select: { eventName: true, createdAt: true },
     }),
     prisma.jobPostingApplication.count({ where: { studentId: memberId } }),
+    prisma.placementRecord.findUnique({
+      where: { userId: memberId },
+      select: { placedAt: true, startDate: true, startDateVerified: true },
+    }),
   ]);
 
   const enrollmentEvent = memberEvents.find((e) => e.eventName === 'program_enrolled');
   const assessmentEvent = memberEvents.find((e) => e.eventName === 'assessment_completed');
   const firstCourseEvent = memberEvents.find((e) => e.eventName === 'course_completed');
   const certEvent = memberEvents.find((e) => e.eventName === 'certification_earned');
-  const placementEvent = memberEvents.find((e) => e.eventName === 'placement_recorded');
+  const placementStage = buildPlacementStage(placementRecord, applicationCount);
 
   function daysBetween(a: Date | null, b: Date | null): number | null {
     if (!a || !b) return null;
     return Math.max(0, Math.round((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24)));
   }
 
+  // C05 part 2: the member's real enrollment is the primary CourseEnrollment
+  // row (resolveActiveDashboardProgram: primary row, else the row matching the
+  // legacy pointer), not `courseEnrollments[0]` and not only the legacy
+  // `User.enrolledProgram` pointer, which is NULL for some enrolled members.
+  const { primaryProgramSlug } = resolveActiveDashboardProgram({
+    enrollments: member.courseEnrollments,
+    legacyEnrolledProgram: member.enrolledProgram,
+  });
+  const primaryEnrollmentRow =
+    member.courseEnrollments.find((row) => row.isPrimary) ??
+    (primaryProgramSlug
+      ? member.courseEnrollments.find((row) => programSlugsEquivalent(row.programSlug, primaryProgramSlug))
+      : undefined) ??
+    // Rows exist but none is primary or matches the pointer: the earliest row
+    // (the select orders by enrolledAt) still dates the enrollment.
+    member.courseEnrollments[0] ??
+    null;
+  /** The program the member is enrolled in, or null when they are not enrolled. */
+  const enrolledProgramSlug = primaryProgramSlug ?? primaryEnrollmentRow?.programSlug ?? null;
+  const enrolledAt = primaryEnrollmentRow?.enrolledAt ?? null;
+
   const timelineEvents: TimelineEvent[] = [
     {
       stage: 'enrollment',
       label: 'Enrollment',
-      date: member.courseEnrollments[0]?.enrolledAt?.toISOString() ?? member.createdAt.toISOString(),
-      durationDays: daysBetween(
-        member.createdAt,
-        member.courseEnrollments[0]?.enrolledAt ?? member.createdAt,
-      ),
+      // Not enrolled: no date (the timeline prints "Pending"), never the signup date.
+      date: enrolledAt?.toISOString() ?? null,
+      durationDays: daysBetween(member.createdAt, enrolledAt),
       status: member.courseEnrollments.length > 0 ? 'completed' : 'pending',
     },
     {
@@ -211,7 +236,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       label: 'Assessment',
       date: assessmentEvent?.createdAt.toISOString() ?? null,
       durationDays: daysBetween(
-        member.courseEnrollments[0]?.enrolledAt ?? member.createdAt,
+        enrolledAt ?? member.createdAt,
         assessmentEvent?.createdAt ?? null,
       ),
       status: assessmentEvent ? 'completed' : member.assessmentScorePct != null ? 'in_progress' : 'pending',
@@ -221,30 +246,31 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       label: 'Training',
       date: firstCourseEvent?.createdAt.toISOString() ?? null,
       durationDays: daysBetween(
-        assessmentEvent?.createdAt ?? member.courseEnrollments[0]?.enrolledAt ?? member.createdAt,
+        assessmentEvent?.createdAt ?? enrolledAt ?? member.createdAt,
         firstCourseEvent?.createdAt ?? null,
       ),
-      status: firstCourseEvent ? 'completed' : member.enrolledProgram ? 'in_progress' : 'pending',
+      status: firstCourseEvent ? 'completed' : enrolledProgramSlug ? 'in_progress' : 'pending',
     },
     {
       stage: 'certification',
       label: 'Certification',
       date: certEvent?.createdAt.toISOString() ?? null,
       durationDays: daysBetween(
-        firstCourseEvent?.createdAt ?? assessmentEvent?.createdAt ?? member.courseEnrollments[0]?.enrolledAt ?? member.createdAt,
+        firstCourseEvent?.createdAt ?? assessmentEvent?.createdAt ?? enrolledAt ?? member.createdAt,
         certEvent?.createdAt ?? null,
       ),
-      status: certEvent ? 'completed' : member.enrolledProgram ? 'in_progress' : 'pending',
+      status: certEvent ? 'completed' : enrolledProgramSlug ? 'in_progress' : 'pending',
     },
     {
       stage: 'placement',
       label: 'Placement',
-      date: placementEvent?.createdAt.toISOString() ?? null,
+      date: placementStage.date,
       durationDays: daysBetween(
-        certEvent?.createdAt ?? firstCourseEvent?.createdAt ?? assessmentEvent?.createdAt ?? member.courseEnrollments[0]?.enrolledAt ?? member.createdAt,
-        placementEvent?.createdAt ?? null,
+        certEvent?.createdAt ?? firstCourseEvent?.createdAt ?? assessmentEvent?.createdAt ?? enrolledAt ?? member.createdAt,
+        placementRecord?.placedAt ?? null,
       ),
-      status: placementEvent ? 'completed' : applicationCount > 0 ? 'in_progress' : 'pending',
+      status: placementStage.status,
+      note: placementStage.note,
     },
   ];
 
@@ -370,16 +396,17 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   );
 
   const initials = getInitials(member.fullName ?? 'U');
-  const storedProgram = member.enrolledProgram ?? member.programInterest;
+  // The program of interest shows only when the member is not enrolled at all.
+  const storedProgram = enrolledProgramSlug ?? member.programInterest;
   // Header/subtitle print a title (alias-resolved, or humanised when the
   // catalog has no entry), never the raw stored slug.
   const program = storedProgram ? programDisplayTitle(storedProgram) : '—';
   const enrollmentBadge = counselorStudentStatusBadge({
-    enrolledProgram: member.enrolledProgram,
+    enrolledProgram: enrolledProgramSlug,
     assessmentScorePct: member.assessmentScorePct,
   });
   const enrollmentBadgeVariant = counselorStudentStatusBadgeVariant({
-    enrolledProgram: member.enrolledProgram,
+    enrolledProgram: enrolledProgramSlug,
     assessmentScorePct: member.assessmentScorePct,
   });
 
@@ -582,7 +609,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                     {memberTitle}
                   </p>
                   <p className={`wa-truncate ${styles.identityMeta}`}>{member.email ? `${program} · ${member.email}` : program}</p>
-                  <StatusBadge label={enrollmentBadge.label} variant={enrollmentBadgeVariant} />
+                  <StatusTag tone={badgeVariantToKitTone(enrollmentBadgeVariant)}>{enrollmentBadge.label}</StatusTag>
                 </div>
               </div>
               {barrierTypes.length > 0 ? (
@@ -671,10 +698,10 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                             <p className={styles.rowTitle}>{app.job.title}</p>
                             <p className={styles.rowMeta}>{app.job.employer.companyName}</p>
                           </div>
-                          <StatusBadge
-                            label={employerJobPostingApplicationStatusLabel(app.status)}
-                            variant={employerJobPostingApplicationStatusBadgeVariant(app.status)}
-                          />
+                          {/* A counselor reads the member's journey, not the employer's queue. */}
+                          <StatusTag tone={badgeVariantToKitTone(employerJobPostingApplicationStatusBadgeVariant(app.status))}>
+                            {jobApplicationStatusLabel(app.status, 'member')}
+                          </StatusTag>
                         </li>
                       ))}
                     </ul>
@@ -694,10 +721,9 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                           <div className={styles.rowEnd}>
                             <div className={styles.accentValue}>{matchScoreAsPercent(m.matchScore)}%</div>
                             <div>
-                              <StatusBadge
-                                label={employerMatchPipelineLabel(m.status)}
-                                variant={employerAiMatchStatusBadgeVariant(m.status)}
-                              />
+                              <StatusTag tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(m.status))}>
+                                {employerMatchPipelineLabel(m.status)}
+                              </StatusTag>
                             </div>
                           </div>
                         </li>

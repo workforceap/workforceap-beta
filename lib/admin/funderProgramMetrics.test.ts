@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Prisma } from '@prisma/client';
 
 vi.mock('server-only', () => ({}));
 
 const mockUserFindMany = vi.fn();
+const mockQueryRaw = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: async (_orgId: string, fn: (db: unknown) => Promise<unknown>) =>
@@ -11,11 +13,12 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
 
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
-    $queryRaw: vi.fn().mockResolvedValue([]),
+    $queryRaw: mockQueryRaw,
   },
 }));
 
 import { getFunderProgramSummaryRows } from './funderProgramMetrics';
+import { MEMBER_ONLY_WHERE, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 
 function mockUser(opts: { id: string; hasPlacement: boolean; startDateVerified?: boolean }) {
   return {
@@ -32,6 +35,24 @@ function mockUser(opts: { id: string; hasPlacement: boolean; startDateVerified?:
 describe('getFunderProgramSummaryRows', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockQueryRaw.mockResolvedValue([]);
+  });
+
+  it('carries the one member definition into the Prisma scan and the at-risk SQL', async () => {
+    // The at-risk aggregate used to hand-roll `p.role = 'member'`, so a
+    // revert leaves this funder figure on the old definition while the
+    // enrolled denominator beside it moves (WAP-182 item 3).
+    mockUserFindMany.mockResolvedValue([]);
+    await getFunderProgramSummaryRows('org-1');
+
+    expect(mockUserFindMany.mock.calls[0][0].where).toMatchObject(MEMBER_ONLY_WHERE);
+
+    const rawSql = (mockQueryRaw.mock.calls as unknown as Array<[TemplateStringsArray, ...unknown[]]>)
+      .map(([strings, ...values]) => Prisma.sql(strings, ...values).sql);
+    const atRisk = rawSql.filter((sql) => sql.includes('at_risk_alerts'));
+    expect(atRisk).toHaveLength(1);
+    expect(atRisk[0]).toContain(memberOnlyRoleSql('u').sql);
+    expect(atRisk[0]).not.toContain("p.role = 'member'");
   });
 
   it('only counts staff-verified placements toward the funder-reported "placed" total', async () => {
@@ -55,6 +76,7 @@ describe('getFunderProgramSummaryRows', () => {
 describe('getFunderProgramSummaryRows — program titles', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockQueryRaw.mockResolvedValue([]);
   });
 
   it('prints a humanised title for an unknown slug and the catalog title for the IBM alias', async () => {

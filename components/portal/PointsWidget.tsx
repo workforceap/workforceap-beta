@@ -333,7 +333,7 @@ export default function PointsWidget({
             gap: '0.25rem',
             fontSize: '0.8125rem',
             fontWeight: 700,
-            color: 'var(--color-accent)',
+            color: 'var(--wa-accent-text)',
             textDecoration: 'none',
           }}
         >

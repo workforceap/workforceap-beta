@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { CheckCircle } from 'lucide-react';
+import PartnerMemberJourney, { type PartnerJourneyStep } from '@/components/partner/PartnerMemberJourney';
+import PartnerPlacementCard, { type PartnerPlacementView } from '@/components/partner/PartnerPlacementCard';
+import PartnerStageBadge from '@/components/partner/PartnerStageBadge';
 
 import { buildPageMetadataAsync } from '@/app/seo';
 import PageHeader from '@/components/portal/PageHeader';
@@ -25,6 +28,13 @@ import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAs
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { eventNameReadCandidates } from '@/lib/events/names';
+import { PARTNER_PLACEMENT_LABELS, partnerEventLabel, partnerVisibleEventNames } from '@/lib/partner/partnerVisibleEvents';
+import { partnerMemberStage } from '@/lib/partner/memberStage';
+import {
+  partnerDataAccess,
+  partnerVisiblePlacement,
+  withPartnerMemberVisibility,
+} from '@/lib/partner/dataAccess';
 
 type Props = {
   params: Promise<{ memberId: string }>;
@@ -69,12 +79,20 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
 
   const { memberId } = await params;
 
+  // Tier + minor rule (lib/partner/dataAccess.ts): a hidden minor is a 404,
+  // and a restricted (referral-track) partner never loads job details. The
+  // partner type comes from the stored partner row via getPartnerForUser.
+  const access = partnerDataAccess(ctx.partner);
+
   const referral = await prisma.partnerReferral.findFirst({
     where: {
       partnerId: ctx.partnerId,
       memberId,
       partner: { organizationId: ctx.partner.organizationId, active: true },
-      member: { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+      member: withPartnerMemberVisibility(
+        { organizationId: ctx.partner.organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+        access,
+      ),
     },
     select: { id: true, referredAt: true },
   });
@@ -102,16 +120,18 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
         select: { programSlug: true, courseSlug: true },
       },
       placementRecord: {
-        select: {
-          employerName: true,
-          jobTitle: true,
-          startDate: true,
-          salaryOffered: true,
-          placedAt: true,
-          retentionStatus: true,
-          retentionDecision: true,
-          onboardingWindowEnd: true,
-        },
+        select: access.canSeePlacementDetails
+          ? {
+              employerName: true,
+              jobTitle: true,
+              salaryOffered: true,
+              placedAt: true,
+              startDateVerified: true,
+              retentionStatus: true,
+              retentionDecision: true,
+              onboardingWindowEnd: true,
+            }
+          : { placedAt: true, startDateVerified: true },
       },
       userCertifications: { select: { certName: true, earnedAt: true }, orderBy: { earnedAt: 'desc' } },
       memberProgramProgress: {
@@ -123,10 +143,13 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
   if (!member) notFound();
 
   const [recentEvents, outreachLogs, placementConfirmations] = await Promise.all([
+    // Partner-visible milestone events only (Vision C3, privacy §3.3); the
+    // metadata column is never read.
     prisma.memberEvent.findMany({
-      where: { userId: memberId },
+      where: { userId: memberId, eventName: { in: partnerVisibleEventNames() } },
       orderBy: { createdAt: 'desc' },
       take: 8,
+      select: { id: true, eventName: true, createdAt: true },
     }),
     prisma.partnerOutreachLog.findMany({
       where: { partnerId: ctx.partnerId, memberId },
@@ -140,7 +163,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
       where: { userId: memberId, eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') } },
       orderBy: { createdAt: 'desc' },
       take: 1,
-      select: { metadata: true, createdAt: true },
+      select: { id: true, createdAt: true },
     }),
   ]);
 
@@ -202,10 +225,22 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
   const skillsetProgress = await loadMemberSkillsetProgress(memberId);
   const certificateCount = member.userCertifications.length;
   const outreachCount = outreachLogs.length;
-  const placed = !!member.placementRecord;
+  const placement = partnerVisiblePlacement(access, member.placementRecord);
+  const showJobDetails = access.canSeePlacementDetails;
+  const placed = placement?.startDateVerified === true;
+  const reportedPlacement = !!placement;
   const pendingPlacement = placementConfirmations[0] ?? null;
-  const recentEvent = recentEvents[0] ?? null;
-  const memberStatus = placed ? 'Placed' : pendingPlacement ? 'Offer reported — review pending' : progressPct >= 80 ? 'Course-complete' : 'In training';
+  const recentActivity = recentEvents.flatMap((event) => {
+    const label = partnerEventLabel(event.eventName);
+    return label ? [{ id: event.id, label, createdAt: event.createdAt }] : [];
+  });
+  const recentEvent = recentActivity[0] ?? null;
+  const stage = partnerMemberStage({
+    placedVerified: placed,
+    placementReported: reportedPlacement || !!pendingPlacement,
+    enrolled: !!(activeEnrollment?.enrolledAt ?? member.enrolledAt),
+    progressPct,
+  });
 
   const lastCertAt = member.userCertifications[0]?.earnedAt ?? null;
   const allCoursesDone =
@@ -218,7 +253,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
     });
   const certPhaseLabel = certificateCount > 0 || allCoursesDone ? 'In progress or complete' : 'Pending';
 
-  const journey = [
+  const journeySteps = [
     { key: 'intake', label: 'Intake', detail: 'Referral on file', date: referral?.referredAt ?? null, done: !!referral },
     {
       key: 'training',
@@ -237,30 +272,51 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
     {
       key: 'placement',
       label: 'Placement',
-      detail: member.placementRecord ? `${member.placementRecord.jobTitle} @ ${member.placementRecord.employerName}` : 'Not placed yet',
-      date: member.placementRecord?.placedAt ?? null,
+      detail: placed && placement
+        ? placement.jobTitle && placement.employerName
+          ? `${placement.jobTitle} @ ${placement.employerName}`
+          : PARTNER_PLACEMENT_LABELS.verifiedWithoutDetails
+        : reportedPlacement || pendingPlacement ? PARTNER_PLACEMENT_LABELS.pendingVerification : 'Not placed yet',
+      date: placed ? placement?.placedAt ?? null : null,
       done: placed,
+      pending: !placed && (reportedPlacement || !!pendingPlacement),
     },
-    {
-      key: 'retention',
-      label: 'Retention / follow-up',
-      detail:
-        member.placementRecord?.retentionDecision ??
-        member.placementRecord?.retentionStatus ??
-        (member.placementRecord?.onboardingWindowEnd
-          ? `Onboarding window through ${formatDate(member.placementRecord.onboardingWindowEnd)}`
-          : 'Recorded after placement'),
-      date: member.placementRecord?.onboardingWindowEnd ?? null,
-      done: !!(member.placementRecord?.retentionStatus || member.placementRecord?.retentionDecision),
-    },
+    // Retention is job detail: restricted partners see placed yes/no + date only.
+    ...(showJobDetails
+      ? [{
+          key: 'retention',
+          label: 'Retention / follow-up',
+          detail:
+            (placed ? placement?.retentionDecision : null) ??
+            (placed ? placement?.retentionStatus : null) ??
+            (placed && placement?.onboardingWindowEnd
+              ? `Onboarding window through ${formatDate(placement.onboardingWindowEnd)}`
+              : 'Awaiting verified placement'),
+          date: placed ? placement?.onboardingWindowEnd ?? null : null,
+          done: placed && !!(placement?.retentionStatus || placement?.retentionDecision),
+        }]
+      : []),
   ];
+  const journey: PartnerJourneyStep[] = journeySteps.map((step) => ({
+    ...step,
+    date: step.date ? formatDate(step.date) : null,
+  }));
 
-  function formatEventLabel(event: (typeof recentEvents)[number]) {
-    if (event.metadata && typeof event.metadata === 'object' && event.metadata !== null && 'label' in event.metadata) {
-      return `${event.eventName} — ${String((event.metadata as { label?: string }).label)}`;
-    }
-    return event.eventName;
-  }
+  const placementView: PartnerPlacementView = placed && placement
+    ? {
+        state: 'verified',
+        placedOn: formatDate(placement.placedAt),
+        details: showJobDetails
+          ? {
+              employerName: placement.employerName ?? null,
+              jobTitle: placement.jobTitle ?? null,
+              salary: formatSalary(placement.salaryOffered),
+            }
+          : null,
+      }
+    : reportedPlacement || pendingPlacement
+      ? { state: 'pending', showJobDetails }
+      : { state: 'none' };
 
   return (
     <PortalPageFrame>
@@ -271,14 +327,17 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
         </Link>
         <PageHeader
           title={member.fullName}
-          subtitle="Read-only overview. Contact information, assessments, and benefit requests are not shown in the partner portal."
+          subtitle={showJobDetails
+            ? 'Read-only overview. Contact information, assessments, and benefit requests are not shown in the partner portal.'
+            : 'Read-only status overview. Referral partners see application status, program, progress, certifications, and whether and when a member was placed.'}
           breadcrumbs={[
             { label: 'Referred members', href: '/partner/referred-members' },
             { label: 'Member details' },
           ]}
         />
 
-        <p className="wa-mb-4">
+        <p className="wa-mb-4" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+          <PartnerStageBadge stage={stage} />
           <Link href={`/partner/messages?memberId=${encodeURIComponent(member.id)}`} className="wa-kit-focus">
             Ask WorkforceAP about this member
           </Link>
@@ -291,51 +350,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
               <p style={{ margin: '0.5rem 0 0.75rem', fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
                 Intake through training, certification, placement, and retention follow-up. Dates show the latest signal we have in each phase.
               </p>
-              <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: '0.65rem' }}>
-                {journey.map((step, idx) => (
-                  <li
-                    key={step.key}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'auto 1fr',
-                      gap: '0.65rem',
-                      alignItems: 'flex-start',
-                      padding: '0.65rem 0.75rem',
-                      borderRadius: '0.75rem',
-                      background: step.done ? 'color-mix(in srgb, var(--color-green) 10%, var(--surface-container-low))' : 'var(--surface-container-low)',
-                      border: `1px solid ${step.done ? 'color-mix(in srgb, var(--color-green) 35%, transparent)' : 'var(--outline-variant)'}`,
-                    }}
-                  >
-                    <span
-                      aria-hidden
-                      style={{
-                        width: '1.75rem',
-                        height: '1.75rem',
-                        borderRadius: '999px',
-                        background: step.done ? 'var(--color-green)' : 'var(--surface-container-highest)',
-                        color: step.done ? 'var(--color-on-accent)' : 'var(--color-on-surface-variant)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        fontSize: '0.8125rem',
-                      }}
-                    >
-                      {step.done ? '✓' : idx + 1}
-                    </span>
-                    <div>
-                      <p style={{ margin: 0, fontWeight: 800 }}>
-                        <span className="wa-sr-only">{step.done ? 'Completed: ' : 'Not yet reached: '}</span>
-                        {step.label}
-                      </p>
-                      <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: 'var(--color-on-surface-variant)' }}>{step.detail}</p>
-                      {step.date ? (
-                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{formatDate(step.date)}</p>
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              <PartnerMemberJourney steps={journey} />
             </section>
 
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
@@ -418,63 +433,18 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
 
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
               {sectionHeading('Placement')}
-              {member.placementRecord ? (
-                <div style={{ display: 'grid', gap: '0.7rem', marginTop: '0.75rem' }}>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Employer</p>
-                    <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{member.placementRecord.employerName}</p>
-                  </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Role</p>
-                    <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{member.placementRecord.jobTitle}</p>
-                  </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Placed</p>
-                    <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{formatDate(member.placementRecord.placedAt)}</p>
-                  </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Salary</p>
-                    <p className="wa-tabular-nums" style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>
-                      {formatSalary(member.placementRecord.salaryOffered)}
-                    </p>
-                  </div>
-                </div>
-              ) : pendingPlacement ? (
-                <div style={{ marginTop: '0.75rem' }}>
-                  <div
-                    style={{
-                      background: 'color-mix(in srgb, var(--color-gold) 18%, transparent)',
-                      border: '1px solid color-mix(in srgb, var(--color-gold) 40%, transparent)',
-                      borderRadius: '0.75rem',
-                      padding: '0.875rem 1rem',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '0.625rem',
-                    }}
-                  >
-                    <span className="material-symbols-outlined" style={{ color: 'var(--color-gold)', flexShrink: 0 }} aria-hidden="true">pending</span>
-                    <div>
-                      <p style={{ margin: '0 0 0.25rem', fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)' }}>Offer reported — under review</p>
-                      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
-                        This member self-reported accepting a job offer. WorkforceAP staff are reviewing the report before finalizing the placement.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p style={{ color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0' }}>Not placed yet.</p>
-              )}
+              <PartnerPlacementCard placement={placementView} />
             </section>
 
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
               {sectionHeading('Recent activity')}
-              {recentEvents.length === 0 ? (
+              {recentActivity.length === 0 ? (
                 <p style={{ color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0' }}>No recent member activity recorded yet.</p>
               ) : (
                 <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
-                  {recentEvents.map((event) => (
+                  {recentActivity.map((event) => (
                     <div key={event.id} style={{ padding: '0.8rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}>
-                      <p style={{ margin: 0, fontWeight: 700 }}>{formatEventLabel(event)}</p>
+                      <p style={{ margin: 0, fontWeight: 700 }}>{event.label}</p>
                       <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{formatDateTime(event.createdAt)}</p>
                     </div>
                   ))}
@@ -508,11 +478,13 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '0.9rem' }}>
                 <div>
                   <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Status</p>
-                  <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{memberStatus}</p>
+                  <p style={{ margin: '0.3rem 0 0' }}>
+                    <PartnerStageBadge stage={stage} />
+                  </p>
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Latest activity</p>
-                  <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{recentEvent ? formatEventLabel(recentEvent) : '—'}</p>
+                  <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{recentEvent ? recentEvent.label : '—'}</p>
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Latest outreach</p>

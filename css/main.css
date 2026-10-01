@@ -546,7 +546,7 @@ textarea.portal-input,
 }
 .portal-choice:has(input:checked) {
     border-color: color-mix(in srgb, var(--color-accent) 70%, var(--outline-variant));
-    background: color-mix(in srgb, var(--color-accent) 8%, var(--surface-container-lowest, transparent));
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--surface-container-lowest));
 }
 .portal-choice:has(input:focus-visible) {
     box-shadow: var(--wa-focus-ring);
@@ -1132,7 +1132,7 @@ html.dark .admin-table tbody tr:hover {
 }
 .admin-jobs-filter-tabs .btn.btn-ghost:hover {
     background: var(--surface-container);
-    border-color: var(--outline);
+    border-color: var(--color-on-surface-variant);
 }
 .admin-jobs-filter-tabs .btn.btn-ghost.active {
     background: color-mix(in srgb, var(--color-accent) 14%, transparent);
@@ -1572,26 +1572,6 @@ html.dark .jobs-listing .job-card:hover {
 }
 html.dark .jobs-listing .job-card__logo {
     background: var(--color-gray-100);
-}
-html.dark .jobs-empty-state {
-    background: var(--color-gray-50);
-    border-color: var(--color-gray-300);
-}
-html.dark .jobs-empty-state__title {
-    color: var(--color-gray-800);
-}
-html.dark .jobs-empty-state__text {
-    color: var(--color-on-surface-variant);
-}
-html.dark .jobs-empty-state .btn.btn-ghost,
-html.dark .jobs-empty-state a.btn.btn-ghost {
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #f9fafb;
-}
-html.dark .jobs-empty-state .btn.btn-ghost:hover,
-html.dark .jobs-empty-state a.btn.btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
 }
 .jobs-public-cta {
     background: var(--color-gray-50);
@@ -2497,7 +2477,7 @@ a.nav-cta.btn::after {
 }
 .mobile-nav-toggle {
     display: none;
-    background: var(--surface-container, rgba(0,0,0,0.04));
+    background: var(--surface-container);
     border: 1px solid var(--outline-variant, rgba(0,0,0,0.14));
     color: var(--color-on-surface, #1c1b1b);
     font-size: 1.5rem;
@@ -2508,7 +2488,7 @@ a.nav-cta.btn::after {
     transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
 }
 .mobile-nav-toggle:hover {
-    background: var(--surface-container-high, rgba(0,0,0,0.12));
+    background: var(--surface-container-high);
     border-color: rgba(255,255,255,0.24);
 }
 
@@ -7047,7 +7027,7 @@ img.img-fade.loaded { opacity: 1; }
         height: 44px;
         border-radius: 14px;
         border: 1px solid var(--outline-variant, rgba(0,0,0,0.12));
-        background: var(--surface-container, rgba(0,0,0,0.06));
+        background: var(--surface-container);
         color: var(--color-on-surface, #1c1b1b);
         box-shadow: 0 8px 24px rgba(0,0,0,0.18);
         transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
@@ -7057,13 +7037,13 @@ img.img-fade.loaded { opacity: 1; }
         touch-action: manipulation;
     }
     .mobile-nav-toggle:hover {
-        background: var(--surface-container-high, rgba(0,0,0,0.12));
-        border-color: var(--outline, rgba(0,0,0,0.2));
+        background: var(--surface-container-high);
+        border-color: var(--color-on-surface-variant);
         transform: translateY(-1px);
     }
     .mobile-nav-toggle:active { 
         transform: scale(0.92);
-        background: var(--surface-container, rgba(0,0,0,0.09));
+        background: var(--surface-container);
     }
     .nav-menu {
         position: fixed;
@@ -7638,7 +7618,11 @@ body { animation: fadeIn 0.4s ease; }
     font-size: 0.95rem;
 }
 .apply-step-back-nav a {
-    color: var(--color-accent);
+    /* WAP-192: 44px tap target and dark-mode-readable accent text. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--wa-accent-text);
     font-weight: 600;
 }
 .apply-missing-session .apply-step-desc {

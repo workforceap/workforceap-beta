@@ -40,9 +40,10 @@ const STATUS_FOR_COLUMN: Record<string, string> = {
   declined: 'rejected',
 };
 
+/** Text tokens, not the fill hues: --wa-success / --wa-gold are 3.45:1 / 3.7:1 for 13px text on white. */
 function scoreColor(score: number): string {
-  if (score >= 80) return 'var(--wa-success)';
-  if (score >= 60) return 'var(--wa-gold)';
+  if (score >= 80) return 'var(--wa-success-dark)';
+  if (score >= 60) return 'var(--wa-gold-dark)';
   return 'var(--wa-muted)';
 }
 

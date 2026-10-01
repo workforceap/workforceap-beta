@@ -129,9 +129,9 @@ export default async function AdminMetricsPage({
       />
 
       <p style={{ marginTop: '1.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-        <Link href="/admin/members" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{t('members')}</Link>
+        <Link href="/admin/members" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>{t('members')}</Link>
         {' · '}
-        <Link href="/admin/exports" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{t('exportFunderCsv')}</Link>
+        <Link href="/admin/exports" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>{t('exportFunderCsv')}</Link>
       </p>
     </div>
   );

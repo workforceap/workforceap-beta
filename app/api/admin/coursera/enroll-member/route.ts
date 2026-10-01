@@ -9,8 +9,12 @@ import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAcces
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { getB4BOrgId } from '@/lib/coursera/b4bClient';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
-import { EnrollStateError, runEnrollStateMachine } from '@/lib/coursera/enrollState';
-import { buildB4BPort, writeEnrollAudit } from '@/lib/coursera/enrollPort';
+import {
+  COURSERA_ROSTER_INCOMPLETE_VIEW,
+  EnrollStateError,
+  runEnrollStateMachine,
+} from '@/lib/coursera/enrollState';
+import { buildB4BPort, CourseraRosterIncompleteError, writeEnrollAudit } from '@/lib/coursera/enrollPort';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import { getProgramBySlug } from '@/lib/content/programs';
@@ -196,6 +200,20 @@ async function _POST(request: Request) {
         return NextResponse.json(
           { error: adminFacing, step: err.step, code: 'B4B_FAILURE' },
           { status: 502 },
+        );
+      }
+      if (err instanceof CourseraRosterIncompleteError) {
+        captureApiError(err, {
+          route: 'admin/coursera/enroll-member',
+          extra: { memberId: member.id, adminId: user.id, reason: err.reason },
+        });
+        return NextResponse.json(
+          {
+            code: COURSERA_ROSTER_INCOMPLETE_VIEW.code,
+            error:
+              "Couldn't finish checking the Coursera roster, so no invitation was sent. Try again in a few minutes.",
+          },
+          { status: 503 },
         );
       }
       captureApiError(err, {

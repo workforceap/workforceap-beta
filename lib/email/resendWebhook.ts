@@ -41,13 +41,34 @@ export interface ResendWebhookApplyInput {
   bounceType: string | null;
 }
 
+/** Send-log tags of a two-stage J5/J6 billing copy (lib/billing/twoStage/api/stageActions.ts resendEmailPort). */
+export const BILLING_TWO_STAGE_TEMPLATE_KEY = 'billing_two_stage';
+export const BILLING_TWO_STAGE_ENTITY_TYPE = 'billing_stage_record';
+
 export interface ResendWebhookStore {
-  /** Record the event on the send-log row for this provider id. `matched` is false when no row exists. */
-  applyEvent(input: ResendWebhookApplyInput): Promise<{ matched: boolean; userId: string | null }>;
+  /**
+   * Record the event on the send-log row for this provider id. `matched` is
+   * false when no row exists. `templateKey` / `entityType` are the row's
+   * send-log tags when the store reads them (they identify a billing copy).
+   */
+  applyEvent(input: ResendWebhookApplyInput): Promise<{ matched: boolean; userId: string | null; templateKey?: string | null; entityType?: string | null }>;
   /** Turn off notification updates for the account(s) behind this delivery. Returns rows changed. */
   disableNotifications(input: { userId: string | null; recipients: string[] }): Promise<number>;
   /** Raw receipt for /admin/webhook-events. */
   logReceipt(input: LogWebhookEventInput): Promise<void>;
+  /**
+   * Optional (two-stage J5/J6 billing): link a delivered / bounced /
+   * complained event to the billing send ledger by provider message id
+   * (billing_delivery_events, separate from email_send_logs). `matched` is
+   * true when the message is a billing J5/J6 copy. Stores without it behave
+   * exactly as before.
+   */
+  applyBillingDeliveryEvent?(input: {
+    providerMessageId: string;
+    kind: 'delivered' | 'bounced' | 'complained';
+    occurredAt: Date;
+    providerEventId: string | null;
+  }): Promise<{ matched: boolean }>;
   /** Operator-visible diagnostic (hard bounce / complaint). */
   recordDiagnostic(input: {
     status: 'error' | 'fallback';
@@ -183,8 +204,52 @@ export async function handleResendWebhook(input: HandleResendWebhookInput): Prom
     bounceType: parsed.bounceType,
   });
 
+  // A billing J5/J6 copy is recognized by its send-log tags as well as by the
+  // billing ledger, so a copy whose provider id never reached the ledger (a
+  // failed settle, the billing gate off) is still never treated as general mail.
+  const taggedBillingCopy = applied.templateKey === BILLING_TWO_STAGE_TEMPLATE_KEY || applied.entityType === BILLING_TWO_STAGE_ENTITY_TYPE;
+  let linkedBillingCopy = false;
+  // Billing evidence: delivered, complained and permanent bounces only. A
+  // transient or undetermined bounce is not a delivery outcome and must not
+  // raise a billing follow-up.
+  const billingKind =
+    parsed.event === 'delivered' || parsed.event === 'complained'
+      ? parsed.event
+      : parsed.event === 'bounced' && isHardDeliveryFailure(parsed.event, parsed.bounceType)
+        ? 'bounced'
+        : null;
+  if (input.store.applyBillingDeliveryEvent && billingKind) {
+    try {
+      const billing = await input.store.applyBillingDeliveryEvent({
+        providerMessageId: parsed.emailId,
+        kind: billingKind,
+        occurredAt: parsed.createdAt,
+        providerEventId: msgId,
+      });
+      linkedBillingCopy = billing.matched;
+    } catch (error) {
+      // A billing ledger failure must not fail the event for everyone else.
+      await input.store.recordDiagnostic({
+        status: 'error',
+        summary: 'Billing J5/J6 delivery evidence could not be recorded; the event was otherwise handled',
+        failureReason: `billing_linkage_error:${error instanceof Error ? error.name : 'unknown'}`,
+        metadata: { event: parsed.event, bounceType: parsed.bounceType, providerMessageId: parsed.emailId },
+      });
+    }
+  }
+  const billingCopy = linkedBillingCopy || taggedBillingCopy;
+
   let notificationsDisabled = 0;
-  if (isHardDeliveryFailure(parsed.event, parsed.bounceType)) {
+  if (billingCopy && isHardDeliveryFailure(parsed.event, parsed.bounceType)) {
+    // A bounced or complained J5/J6 copy is a billing follow-up (flagged on the
+    // case), never a reason to mute the recipient's general notifications.
+    await input.store.recordDiagnostic({
+      status: 'fallback',
+      summary: parsed.event === 'complained' ? 'Billing J5/J6 copy: spam complaint recorded for follow-up' : 'Billing J5/J6 copy: hard bounce recorded for follow-up',
+      failureReason: parsed.event === 'complained' ? 'complained' : `bounced:${parsed.bounceType ?? 'unknown'}`,
+      metadata: { event: parsed.event, bounceType: parsed.bounceType, providerMessageId: parsed.emailId, billingCopy: true },
+    });
+  } else if (isHardDeliveryFailure(parsed.event, parsed.bounceType)) {
     notificationsDisabled = await input.store.disableNotifications({
       userId: applied.userId,
       recipients: parsed.recipients,
@@ -213,6 +278,7 @@ export async function handleResendWebhook(input: HandleResendWebhookInput): Prom
       event: parsed.event,
       matched: applied.matched,
       notificationsDisabled,
+      ...(billingCopy ? { billingCopy: true } : {}),
     },
   };
 }

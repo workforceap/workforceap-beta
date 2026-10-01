@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 vi.mock('next/server', () => ({
   NextResponse: {
@@ -82,8 +83,10 @@ describe('GET /api/cron/inactive-nudge', () => {
     const findManyArgs = (prisma.user.findMany as any).mock.calls[0][0];
     expect(findManyArgs.where.notificationsReminders).toBe(true);
     expect(findManyArgs.where.deletedAt).toBeNull();
-    // Re-engagement mail is for members only (not staff/partner/employer or role-less accounts).
-    expect(findManyArgs.where.userRoles).toEqual({ some: { role: { name: 'member' } } });
+    // Re-engagement mail is for members only (not staff/partner/employer or
+    // role-less accounts), by the one member definition (WAP-182 item 3) —
+    // a bare `user_roles` member row is the baseline every account carries.
+    expect(findManyArgs.where).toMatchObject(MEMBER_ONLY_WHERE);
     expect(findManyArgs.where.AND).toEqual([
       { memberEvents: { none: { createdAt: { gte: expect.any(Date) } } } },
       {

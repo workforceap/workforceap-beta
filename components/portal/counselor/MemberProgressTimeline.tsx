@@ -15,6 +15,8 @@ export type TimelineEvent = {
   date: string | null;
   durationDays: number | null;
   status: 'completed' | 'in_progress' | 'pending' | 'skipped';
+  /** Optional one-line qualifier under the date, e.g. "Start date not yet verified" on the placement stage. */
+  note?: string | null;
 };
 
 type Props = {
@@ -121,7 +123,12 @@ export default function MemberProgressTimeline({ events }: Props) {
           const colors = STAGE_COLORS[event.status];
           const isLast = index === events.length - 1;
           return (
-            <div key={event.stage} style={{ display: 'flex', gap: '0.75rem' }}>
+            <div
+              key={event.stage}
+              data-timeline-stage={event.stage}
+              data-timeline-status={event.status}
+              style={{ display: 'flex', gap: '0.75rem' }}
+            >
               {/* Icon + connector */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div
@@ -181,7 +188,7 @@ export default function MemberProgressTimeline({ events }: Props) {
                       style={{
                         fontSize: '0.8125rem',
                         fontWeight: 700,
-                        color: 'var(--color-accent)',
+                        color: 'var(--wa-accent-text)',
                         background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
                         padding: '0.15rem 0.5rem',
                         borderRadius: '9999px',
@@ -201,6 +208,11 @@ export default function MemberProgressTimeline({ events }: Props) {
                     {event.status === 'skipped' ? 'Skipped' : 'Pending'}
                   </p>
                 )}
+                {event.note ? (
+                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                    {event.note}
+                  </p>
+                ) : null}
               </div>
             </div>
           );

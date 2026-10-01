@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import PageHeader from '@/components/portal/PageHeader';
@@ -86,6 +87,7 @@ async function updateMentorAction(formData: FormData) {
       orgId: scope.orgId,
     });
   }
+  revalidatePath('/admin/mentors');
 }
 
 function getMentorStatusLabel(mentor: {
@@ -189,7 +191,12 @@ export default async function AdminMentorsPage({
   return (
     <>
       {mentorAggregateLoadFailed ? <span hidden data-portal-error-state="admin-mentors-aggregate-load" /> : null}
-      <MentorsDirectoryKit mentors={mentors} total={total} activeCount={activeCount} />
+      <MentorsDirectoryKit
+        mentors={mentors}
+        total={total}
+        activeCount={activeCount}
+        mentorAction={updateMentorAction}
+      />
     </>
   );
 }

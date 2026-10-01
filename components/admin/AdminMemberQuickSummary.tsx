@@ -77,7 +77,7 @@ export default function AdminMemberQuickSummary({ memberId }: { memberId: string
             padding: '1rem 1.1rem',
             borderRadius: '0.6rem',
             border: '1px solid var(--outline-variant, rgba(0,0,0,0.1))',
-            background: 'var(--surface-container-low, #f7f7f9)',
+            background: 'var(--surface-container-low)',
           }}
         >
           <p

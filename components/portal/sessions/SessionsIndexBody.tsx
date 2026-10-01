@@ -166,7 +166,7 @@ export default async function SessionsIndexBody({
         <Link
           href={paths.walkInHref}
           className="portal-card portal-card--flat"
-          style={{ display: 'block', padding: '1.5rem', textDecoration: 'none', color: 'inherit', border: '2px solid var(--color-accent)', boxShadow: '0 8px 24px rgba(173,44,77,0.12)' }}
+          style={{ display: 'block', padding: '1.5rem', textDecoration: 'none', color: 'inherit', border: '2px solid var(--color-accent)', boxShadow: '0 8px 24px color-mix(in srgb, var(--color-accent) 12%, transparent)' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
             <span style={{ background: 'var(--wa-accent-soft)', color: 'var(--wa-accent)', borderRadius: 'var(--radius-md)', padding: '0.5rem', display: 'inline-flex' }}>
@@ -177,7 +177,7 @@ export default async function SessionsIndexBody({
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--color-on-surface-variant)', margin: 0 }}>
             Someone new sat down. Create their account, build their profile, and ship them resume + cover letter + interview prep in one session.
           </p>
-          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>
+          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>
             Start walk-in &rarr;
           </div>
         </Link>
@@ -196,7 +196,7 @@ export default async function SessionsIndexBody({
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--color-on-surface-variant)', margin: 0 }}>
             Pick someone from your roster. Update their profile, then run the same 4-step build &mdash; outputs save to their portal and email.
           </p>
-          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>
+          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>
             Pick a member &rarr;
           </div>
         </Link>

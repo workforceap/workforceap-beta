@@ -7,6 +7,7 @@ import ApplyEligibilityClient from './ApplyEligibilityClient';
 import ApplyPageSkeleton from './ApplyPageSkeleton';
 import ApplyProgramIntro from '@/components/apply/ApplyProgramIntro';
 import ApplyRefCapture from '@/components/apply/ApplyRefCapture';
+import ResponsiveDetails from '@/components/apply/ResponsiveDetails';
 import UtmCapture from '@/components/marketing/UtmCapture';
 import { getProgramBySlug, resolveApplyProgramSlug } from '@/lib/apply/applyProgramPage';
 import { getTranslations } from 'next-intl/server';
@@ -18,7 +19,12 @@ import PreLaunchTag from '@/components/portal/PreLaunchTag';
 import type { SchoolApplyContext } from '@/lib/apply/resolveSchoolApply';
 import styles from './OrganicApplyPage.module.css';
 
-type OrganicApplyPageProps = { program?: string; schoolApply?: SchoolApplyContext | null };
+type OrganicApplyPageProps = {
+  program?: string;
+  schoolApply?: SchoolApplyContext | null;
+  /** "You were referred by {partner}…" — resolved server-side from ?ref=. */
+  partnerDisclosure?: React.ReactNode;
+};
 
 /* ─── styles ─── */
 const sPage = {
@@ -184,7 +190,7 @@ const SCHOOL_PROGRESS_STEPS = [
   { labelKey: 'stepProgramSelection', icon: 'key' },
 ] as const;
 
-export default async function OrganicApplyPage({ program: programParam, schoolApply = null }: OrganicApplyPageProps) {
+export default async function OrganicApplyPage({ program: programParam, schoolApply = null, partnerDisclosure = null }: OrganicApplyPageProps) {
   const programSlug = resolveApplyProgramSlug(programParam);
   const program = programSlug ? getProgramBySlug(programSlug) : undefined;
   const t = await getTranslations('apply');
@@ -229,6 +235,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           {t('questionsCall')}{' '}
           <a href="tel:+15127771808" className="apply-hero-help-compact__link">(512) 777-1808</a>
         </p>
+        {partnerDisclosure ? <div style={{ maxWidth: 640, margin: 'var(--space-4) auto 0' }}>{partnerDisclosure}</div> : null}
         <a href="#apply-form-start" className={`btn btn-primary apply-hero-start-cta ${styles.startAction}`}>
           {t('startYourApplication')}
         </a>
@@ -272,7 +279,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           </div>
 
           {/* Info card — collapsible on mobile to reduce post-form scroll */}
-          <details className="apply-sidebar-next-steps mdx-card" style={sPage.infoCard}>
+          <ResponsiveDetails className="apply-sidebar-next-steps mdx-card" style={sPage.infoCard}>
             <summary className="apply-sidebar-next-steps__summary">{t('whatHappensNext')}</summary>
             <div className="apply-sidebar-next-steps__body">
               <h3 className="apply-sidebar-next-steps__heading">{t('whatHappensNext')}</h3>
@@ -287,7 +294,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
                 {t('questionsCall')} <a href="tel:+15127771808" style={{ color: 'var(--wa-accent-text)', fontWeight: 700 }}>(512) 777-1808</a>
               </p>
             </div>
-          </details>
+          </ResponsiveDetails>
         </aside>
 
         {/* Main form area (8-col) */}
@@ -324,7 +331,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
               <ApplyEligibilityClient schoolApply={schoolApply} />
             </Suspense>
           </div>
-          <details className="apply-docs-checklist apply-foundational-support" role="region" aria-labelledby="apply-docs-checklist-heading">
+          <ResponsiveDetails className="apply-docs-checklist apply-foundational-support" role="region" aria-labelledby="apply-docs-checklist-heading">
             <summary className="apply-docs-checklist__summary">{t(isSchool ? 'schoolDocsSummary' : 'docsChecklistSummary')}</summary>
             <div className="apply-docs-checklist__body">
               <h2 id="apply-docs-checklist-heading" className="apply-foundational-support__title apply-docs-checklist__heading">
@@ -349,7 +356,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
               </ul>
               <p className="apply-docs-checklist__note">{t(isSchool ? 'schoolDocsNote' : 'docsChecklistNote')}</p>
             </div>
-          </details>
+          </ResponsiveDetails>
         </div>
 
         <div className="apply-hero-help-mobile" aria-label={t('helpTitle')}>
@@ -410,6 +417,10 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
         }
 
         .apply-hero-help-compact__link {
+          /* WAP-192: a call link is a real phone tap target; keep it 44px tall. */
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
           color: var(--color-on-accent);
           font-weight: 700;
           text-decoration: underline;

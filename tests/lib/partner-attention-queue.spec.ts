@@ -9,6 +9,7 @@ vi.mock('@/lib/db/prisma', () => ({
   },
 }));
 
+import { memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 import { partnerAttentionRows } from '@/lib/partner/attentionQueue';
 import { buildAttentionPageQuery } from '@/lib/partner/attentionPagination';
 
@@ -93,20 +94,58 @@ describe('partner follow-up eligibility', () => {
     db.referrals.mockResolvedValue([
       referral('applicant', { enrolledProgram: null, courseEnrollments: [], enrolledAt: null }),
       referral('closed', { deletedAt: now }),
-      referral('placed', { placementRecord: { employerName: 'Synthetic', jobTitle: 'Support', placedAt: now } }),
+      referral('placed', { placementRecord: { employerName: 'Synthetic', jobTitle: 'Support', placedAt: now, startDateVerified: true } }),
       referral('certified', { userCertifications: [{ certName: 'Recorded certificate', earnedAt: now }] }),
     ]);
     expect((await loadFixtureRows()).map(row => row.memberId)).toEqual(['applicant']);
+  });
+
+  it('keeps an unverified self-report available for follow-up without calling the member placed', async () => {
+    db.referrals.mockResolvedValue([
+      referral('pending-placement', {
+        placementRecord: {
+          employerName: 'Private Employer', jobTitle: 'Private Role', placedAt: now,
+          startDateVerified: false,
+        },
+      }),
+      referral('verified-placement', {
+        placementRecord: {
+          employerName: 'Confirmed Employer', jobTitle: 'Confirmed Role', placedAt: now,
+          startDateVerified: true,
+        },
+      }),
+    ]);
+    const rows = await loadFixtureRows();
+    expect(rows.map(row => row.memberId)).toEqual(['pending-placement']);
+    expect(rows[0].stage).toBe('enrolled');
+    expect(JSON.stringify(rows)).not.toContain('Private Employer');
+    expect(JSON.stringify(rows)).not.toContain('Private Role');
   });
 
   it('applies the active partner, same-tenant member and real-member predicates before paging', () => {
     const query = buildAttentionPageQuery('partner-1', 'org-1', { tier: 'all', asOf: now, limit: 50 });
     expect(query.text).toContain('p.active = true');
     expect(query.text).toContain('u.deleted_at IS NULL');
-    expect(query.text).toContain("profile.role = 'member'");
+    // One definition of "a member" (WAP-182 item 3): the shared predicate,
+    // not a hand-written `profile.role = 'member'`.
+    expect(query.text).toContain(memberOnlyRoleSql('u').text);
     expect(query.text).toContain('NOT EXISTS (SELECT 1 FROM user_certifications');
+    expect(query.text).toContain('placement.start_date_verified = true');
     expect(query.values).toContain('partner-1');
     expect(query.values.filter(value => value === 'org-1')).toHaveLength(2);
+  });
+
+  it('binds the minor cutoff as a YYYY-MM-DD date string, clamped on Feb 29', () => {
+    // A bound Date is a timestamptz; `::date` on it depends on the session
+    // time zone. The helper's calendar-date string cannot shift a day.
+    const leapDay = new Date('2028-02-29T15:00:00Z');
+    const query = buildAttentionPageQuery('partner-1', 'org-1', { tier: 'all', asOf: leapDay, limit: 50 });
+    expect(query.text).toMatch(/minor\.dob > \$\d+::date/);
+    expect(query.values).toContain('2010-02-28');
+    expect(query.values).not.toContain('2010-03-01');
+    const dateValues = query.values.filter((value) => value instanceof Date) as Date[];
+    // asOf is still bound as an instant; no Date carries the minor cutoff.
+    expect(dateValues.every((value) => value.getUTCFullYear() !== 2010)).toBe(true);
   });
 });
 

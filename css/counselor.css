@@ -61,6 +61,30 @@
   transition: width 0.2s;
 }
 
+.counselor-profile-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+.counselor-profile-facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639px) {
+  .counselor-profile-facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+  .counselor-profile-facts dd {
+    margin-bottom: 0.75rem;
+  }
+  .counselor-profile-facts dd:last-child {
+    margin-bottom: 0;
+  }
+}
+
 /* =============================================
    ADD MEMBER PAGE
    ============================================= */
@@ -174,7 +198,8 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-.wizard-toggle-row label { font-size: 0.9rem; margin: 0; }
+.wizard-toggle-row label,
+.wizard-toggle-row .wizard-toggle-label { font-size: 0.9rem; margin: 0; }
 .wizard-toggle {
   display: flex;
   gap: 0;
@@ -246,7 +271,7 @@
   margin-top: 1rem;
   background: none;
   border: none;
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   font-size: 0.9rem;
   cursor: pointer;
   text-decoration: underline;
@@ -301,7 +326,7 @@
 .readiness-counselor-page { padding-top: 1.5rem; }
 .readiness-counselor-header { margin-bottom: 1.5rem; }
 .readiness-back-link {
-  color: var(--color-accent);
+  color: var(--wa-accent-text);
   margin-bottom: 0.5rem;
   display: inline-block;
 }
@@ -392,7 +417,7 @@
   color: var(--color-on-surface-variant);
   cursor: pointer;
 }
-.readiness-notes-btn:hover { color: var(--color-accent); }
+.readiness-notes-btn:hover { color: var(--wa-accent-text); }
 .readiness-notes-input {
   display: block;
   width: 100%;

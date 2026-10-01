@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback, startTransition } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Menu, ShieldHalf, X } from 'lucide-react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
@@ -22,7 +22,7 @@ import {
   getActiveTab,
 } from '@/lib/nav/portalNav';
 import { withContextualToolRow } from '@/lib/nav/memberToolRoutes';
-import WorkspaceSidebarSections from './WorkspaceSidebarSections';
+import WorkspaceSidebarSections, { navSectionsStorageKey } from './WorkspaceSidebarSections';
 import { useTour } from '@/components/onboarding/TourContext';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import SuperAdminViewSwitcher, { useIsSuperAdmin } from '@/components/super-admin-view-switcher';
@@ -42,6 +42,7 @@ import ThemeSelector from '@/components/theme/ThemeSelector';
 import UnreviewedLocaleBanner from '@/components/portal/UnreviewedLocaleBanner';
 import { useTranslations, useLocale } from 'next-intl';
 import { useWorkspaceMobileScrollChrome } from '@/hooks/useWorkspaceMobileScrollChrome';
+import { recordWorkspaceShellPathname } from '@/lib/observability/portalHydrationClientTrace';
 
 // Map non-member portal roles to MobileBottomNav variants. Member uses
 // MemberPortalTopNav (sticky-top horizontal-scroll) per /plan-design-review
@@ -104,6 +105,8 @@ export default function WorkspaceShell({
   contextLabel,
   minimalMobileHeader = false,
   superAdmin,
+  knownSuperAdmin,
+  knownIsAdmin,
   superAdminImpersonating,
   superAdminBackHref,
   superAdminBackLabel,
@@ -140,6 +143,10 @@ export default function WorkspaceShell({
   /** Optional square logo next to company name (employer portal). */
   contextLogoUrl?: string | null;
   superAdmin?: boolean;
+  /** Server-resolved platform super-admin identity when `superAdmin` is a contextual portal flag. */
+  knownSuperAdmin?: boolean;
+  /** Server-resolved effective role is exactly admin; separate from admin access. */
+  knownIsAdmin?: boolean;
   /** True when super_admin is viewing another org (cookie), not their own portal row */
   superAdminImpersonating?: boolean;
   superAdminBackHref?: string;
@@ -181,6 +188,8 @@ export default function WorkspaceShell({
   // nav hrefs are locale-less (/admin) — strip the active locale so active-route
   // matching (and the crimson active rail item) works across every portal.
   const rawPathname = usePathname() ?? '';
+  // The trusted Preview audit records the first hook value without changing markup.
+  recordWorkspaceShellPathname(rawPathname);
   const pathname =
     rawPathname === `/${locale}`
       ? '/'
@@ -195,7 +204,11 @@ export default function WorkspaceShell({
   // itself and on every non-toolkit route.
   const { items: railNavItems, toolItem: contextualToolItem } =
     portalRole === 'member' ? withContextualToolRow(navItems, pathname) : { items: navItems, toolItem: null };
-  const activeHref = getBestActiveHref(pathname, navItemsForActiveRoute(railNavItems));
+  // The query only matters to a row whose href carries one (admin
+  // Applications = `/admin/command-center?queue=applications`), so the other
+  // workbench queues on that pathname mark no row current.
+  const searchParams = useSearchParams();
+  const activeHref = getBestActiveHref(pathname, navItemsForActiveRoute(railNavItems), searchParams);
   const hasTabs = railNavItems.some((i) => i.tab);
   const activeTab = hasTabs ? getActiveTab(pathname, railNavItems) : null;
   // Members: left command-rail always visible from 769px up (laptops included —
@@ -216,7 +229,7 @@ export default function WorkspaceShell({
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isCollapsedDesktop = collapsed && wide;
   const isMobileDrawer = drawerOpen && !wide;
-  const isSuperAdmin = useIsSuperAdmin(Boolean(superAdmin));
+  const isSuperAdmin = useIsSuperAdmin(knownSuperAdmin ?? superAdmin);
   // Admin rail sections open while a guided tour runs so every anchor is visible
   // (no-op value when no TourProvider is mounted).
   const { isOpen: tourOpen } = useTour();
@@ -251,15 +264,22 @@ export default function WorkspaceShell({
       'My program': tNav('myProgram'),
       'My Classes': tNav('training'),
       'My certificates': tNav('myCertificates'),
+      'Path to certification': tNav('pathToCertification'),
+      'My documents': tNav('myDocuments'),
+      'Invite a friend': tNav('inviteFriend'),
       'My career plan': tNav('careerPlan'),
       'WIOA Qualification': tNav('wioaQualification'),
       'Job board': tNav('jobBoard'),
       'Job applications': tNav('jobApplications'),
       'Resume': tNav('resume'),
       'My progress': tNav('myProgress'),
+      'Skill missions': tNav('skillMissions'),
       'Career Toolkit': tNav('careerToolkit'),
       'AI Career Tools': tNav('careerToolkit'),
       'AI Counselor': tNav('aiCounselor'),
+      // /dashboard/counselor rail row. Its label stays "AI Advisor" (Mike, WAP-197);
+      // nav.aiCounselor is the assistant's name ("Lilley"), not this row's label.
+      'AI Advisor': tNav('aiAdvisor'),
       'Learning Hub': tNav('learningHub'),
       'Find your career': tNav('findYourCareer'),
       'Training preassessment': tNav('trainingPreassessment'),
@@ -469,6 +489,13 @@ export default function WorkspaceShell({
     return Object.keys(style).length > 0 ? (style as React.CSSProperties) : undefined;
   })();
 
+  // Below the 769px rail breakpoint every staff shell (employer, partner,
+  // counselor, admin) takes the member's minimal header: wordmark + current
+  // page on the left, the role / super-admin switcher and the bell on the
+  // right. The tier badge moves into the drawer (see workspace-sidebar-meta)
+  // so the tagline can no longer wrap underneath it (scout M2, 2026-09-22).
+  const minimalHeader = minimalMobileHeader || (portalRole !== 'member' && !wide);
+
   return (
     <div className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
@@ -485,7 +512,7 @@ export default function WorkspaceShell({
       {badgeFetchError ? <span hidden data-portal-error-state="workspace-nav-badges" /> : null}
       <header
         ref={headerRef}
-        className={`workspace-shell-header${minimalMobileHeader ? ' workspace-shell-header--minimal-mobile' : ''}`}
+        className={`workspace-shell-header${minimalHeader ? ' workspace-shell-header--minimal-mobile' : ''}`}
       >
         <div className="workspace-shell-header__brand">
           <button
@@ -567,6 +594,7 @@ export default function WorkspaceShell({
             badges={badges}
             hidePublicSite={Boolean(marketingSiteHref)}
             readOnlyAudit={readOnlyAudit}
+            knownIsAdmin={knownIsAdmin}
             helpTourKey={helpTourKey}
             helpGuideHref={helpGuideHref}
           />
@@ -707,7 +735,7 @@ export default function WorkspaceShell({
                       tNav(open ? 'hideMoreUnder' : 'showMoreUnder', { count, label })
                     }
                     onNavigate={closeDrawer}
-                    storageKey={`wa_nav_sections_${portalRole}`}
+                    storageKey={navSectionsStorageKey(portalRole)}
                     forceExpanded={tourOpen}
                   />
                 ) : GROUP_ORDER.map((group) => {
@@ -795,6 +823,12 @@ export default function WorkspaceShell({
                       {contextLabel}
                     </span>
                   )}
+                  {/* Phone header hides the tier pill (minimal staff header); keep it reachable here. */}
+                  {headerBadge ? (
+                    <span className="workspace-shell-tier-badge" title={headerBadge}>
+                      {headerBadge}
+                    </span>
+                  ) : null}
                   <SuperAdminViewSwitcher initialIsSuperAdmin={isSuperAdmin} />
                 </div>
               ) : null}
@@ -832,9 +866,17 @@ export default function WorkspaceShell({
           </div>
         </div>
       </div>
-      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav. */}
+      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav.
+          `superAdmin` is the prop the admin rail is filtered on (AdminPortalShell),
+          so the admin tabs never offer a page the rail hides; `search` is the
+          query the rail matched on, so a tab and its rail row agree. */}
       {ROLE_TO_NAV_VARIANT[portalRole] ? (
-        <MobileBottomNav variant={ROLE_TO_NAV_VARIANT[portalRole]} badgeCounts={badges} />
+        <MobileBottomNav
+          variant={ROLE_TO_NAV_VARIANT[portalRole]}
+          badgeCounts={badges}
+          superAdmin={Boolean(superAdmin)}
+          search={searchParams}
+        />
       ) : null}
     </div>
   );

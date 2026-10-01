@@ -17,10 +17,10 @@ import WioaReviewFilterBar from '@/components/admin/WioaReviewFilterBar';
 import ApplicantTriageChip from '@/components/admin/ApplicantTriageChip';
 import { APPLICANT_TRIAGE_BUCKET_TEXT } from '@/lib/admin/applicantTriage';
 import { loadApplicantTriageByUserIds, type ApplicantTriageLoaded } from '@/lib/admin/applicantTriageLoad';
+import { intakeStatusKey, type IntakeStatusKey } from '@/lib/status/applicationStatusVocabulary';
 import {
   WioaScreeningKit,
   type WioaScreeningRow,
-  type WioaDetermination,
 } from '@/components/portal/kit/pages/admin-subviews/WioaScreeningKit';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -68,24 +68,24 @@ function categoryFrom(snap: ReturnType<typeof parseWioaQualificationSnapshot>): 
   return 'Adult';
 }
 
-/** Map staff review status → determination tag + doc status. */
-function determinationFrom(reviewStatus: string | null): {
-  determination: WioaDetermination;
-  docs: string;
-  docsComplete: boolean;
-} {
+/**
+ * Document caption per staff review status. The review word and colour
+ * themselves come from the shared intake vocabulary inside WioaScreeningKit
+ * ("Intake verified", never "Eligible").
+ */
+function docsFrom(reviewStatus: IntakeStatusKey): { docs: string; docsComplete: boolean } {
   switch (reviewStatus) {
     case 'verified':
-      return { determination: 'Eligible', docs: 'Complete', docsComplete: true };
+      return { docs: 'Complete', docsComplete: true };
     case 'not_eligible':
-      return { determination: 'Not eligible', docs: 'Reviewed', docsComplete: true };
+      return { docs: 'Reviewed', docsComplete: true };
     case 'needs_info':
-      return { determination: 'Needs docs', docs: 'Missing docs', docsComplete: false };
+      return { docs: 'Missing docs', docsComplete: false };
     case 'in_review':
     case 'pending':
-      return { determination: 'Pending', docs: 'In review', docsComplete: true };
+      return { docs: 'In review', docsComplete: true };
     default:
-      return { determination: 'Unreviewed', docs: 'Not started', docsComplete: false };
+      return { docs: 'Not started', docsComplete: false };
   }
 }
 
@@ -338,7 +338,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
   }
 
   // KPI counts from the status groupBy.
-  let eligible = 0;
+  let verified = 0;
   let pendingReview = 0;
   let needDocs = 0;
   let notEligible = 0;
@@ -348,7 +348,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
     total += n;
     switch (g.wioaReviewStatus) {
       case 'verified':
-        eligible += n;
+        verified += n;
         break;
       case 'pending':
       case 'in_review':
@@ -370,7 +370,8 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
     rowsResult.value.map((r) => {
       const snap = parseWioaQualificationSnapshot(r.wioaQualificationJson);
       const name = r.fullName?.trim() || 'Unnamed member';
-      const { determination, docs, docsComplete } = determinationFrom(r.wioaReviewStatus);
+      const reviewStatus = intakeStatusKey(r.wioaReviewStatus);
+      const { docs, docsComplete } = docsFrom(reviewStatus);
       const awaitingReview = isWioaAwaitingReview(r.wioaReviewStatus);
       return {
         id: r.id,
@@ -379,7 +380,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
         category: categoryFrom(snap),
         docs,
         docsComplete,
-        determination,
+        reviewStatus,
         reviewer: r.wioaReviewer?.fullName?.trim() || '—',
         awaitingReview,
         // Only a screening still waiting on staff has a "days waiting".
@@ -395,7 +396,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
     <WioaScreeningKit
       rows={rows}
       total={total}
-      eligible={eligible}
+      verified={verified}
       pendingReview={pendingReview}
       needDocs={needDocs}
       notEligible={notEligible}

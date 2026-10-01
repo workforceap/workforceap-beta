@@ -6,8 +6,13 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getB4BOrgId } from '@/lib/coursera/b4bClient';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
-import { EnrollStateError, runEnrollStateMachine } from '@/lib/coursera/enrollState';
-import { buildB4BPort, writeEnrollAudit } from '@/lib/coursera/enrollPort';
+import {
+  COURSERA_ROSTER_INCOMPLETE_VIEW,
+  EnrollStateError,
+  enrollFailureView,
+  runEnrollStateMachine,
+} from '@/lib/coursera/enrollState';
+import { buildB4BPort, CourseraRosterIncompleteError, writeEnrollAudit } from '@/lib/coursera/enrollPort';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { getProgramBySlug } from '@/lib/content/programs';
@@ -48,7 +53,9 @@ import {
  * 4xx behavior: a 4xx from Coursera (e.g. "already enrolled") is folded
  * into a 200 status='already-enrolled' so a double-click doesn't surface
  * an error toast. 5xx and unknown 4xx propagate as 502 with the audit
- * trail of whatever did succeed before the failure.
+ * trail of whatever did succeed before the failure, carrying fixed copy
+ * from `enrollFailureView` (never the provider's text). An incomplete
+ * roster scan returns 503 COURSERA_ROSTER_INCOMPLETE: nothing was sent.
  */
 async function _POST(request: Request) {
   try {
@@ -203,14 +210,20 @@ async function _POST(request: Request) {
           route: 'member/coursera/enroll-in-course',
           extra: { userId: user.id, step: err.step, httpStatus: err.httpStatus },
         });
-        const userFacing =
-          err.httpStatus >= 500
-            ? 'Coursera is temporarily unavailable. Please try again in a moment.'
-            : err.message;
+        // Fixed copy only: err.message embeds the provider's error text.
         return NextResponse.json(
-          { error: userFacing, step: err.step, code: 'B4B_FAILURE' },
+          enrollFailureView({ step: err.step, httpStatus: err.httpStatus }),
           { status: 502 },
         );
+      }
+      if (err instanceof CourseraRosterIncompleteError) {
+        // The roster scan stopped before any B4B write, so there is nothing
+        // to audit. 503: the member can retry once the scan can complete.
+        captureApiError(err, {
+          route: 'member/coursera/enroll-in-course',
+          extra: { userId: user.id, reason: err.reason },
+        });
+        return NextResponse.json(COURSERA_ROSTER_INCOMPLETE_VIEW, { status: 503 });
       }
       captureApiError(err, { route: 'member/coursera/enroll-in-course', extra: { userId: user.id } });
       return NextResponse.json(

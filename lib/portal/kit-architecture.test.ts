@@ -7,10 +7,12 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const source = (relativePath: string) => readFileSync(path.join(root, relativePath), 'utf8');
 
-test('missions empty CTA uses wa-kit-cta, not a 14px pill', () => {
-  const src = source('components/portal/SkillMissionEmpty.tsx');
-  assert.match(src, /className="wa-kit-cta/);
+test('missions empty state renders KitEmptyState with a kit CTA, not a 14px pill', () => {
+  // SkillMissionEmpty.tsx was folded into the page (empty-state consolidation
+  // PR 4); the rendered CTA class is asserted in tests/app/skill-missions-page.spec.tsx.
+  const src = source('app/(portal)/dashboard/missions/page.tsx');
   assert.match(src, /KitEmptyState/);
+  assert.match(src, /primaryAction=/);
   assert.doesNotMatch(src, /fontSize:\s*14/);
 });
 

@@ -288,17 +288,21 @@ export async function autoHealUnmatchedXapiEvents(limit = 50): Promise<Reprocess
 }
 
 /**
- * Sister to `autoHealUnmatchedXapiEvents` that drains `'ignored'` events
- * whose `course_slug` now has a canonical mapping. The "ignored" bucket
- * holds events where the actor was bound to a user but the course slug
- * couldn't translate into our program/course slugs — typically because
- * `coursera_canonical_course_mappings` was empty for that program at
- * ingest time. Once the B4B-driven seeder fills the gap, those events
- * can promote to `course_progress` if we re-run them.
+ * Sister to `autoHealUnmatchedXapiEvents` that drains `'unresolved_course'`
+ * events whose `course_slug` now has a canonical mapping. Those are
+ * course-progress statements bound to a user whose course couldn't translate
+ * into our program/course slugs — typically because
+ * `coursera_canonical_course_mappings` was empty for that program at ingest
+ * time. Once the B4B-driven seeder fills the gap, they can promote to
+ * `course_progress` if we re-run them.
  *
- * Filters to only ignored events whose `course_slug` is now mapped, so
- * dead events (system telemetry, unmappable test slugs) don't churn on
- * every cron tick.
+ * It no longer replays `'ignored'` rows (WAP-276): those are normal progress
+ * traffic that already succeeded, stay `'ignored'` after a replay, and so were
+ * re-run every hour, bumping `statement_count` each time. Rows recorded as
+ * `'ignored'` before the new status existed are left for a manual replay.
+ *
+ * Filters to events whose `course_slug` is now mapped, so dead events (system
+ * telemetry, unmappable test slugs) don't churn on every cron tick.
  */
 export async function reprocessIgnoredXapiEventsWithMappings(
   limit = 100,
@@ -311,7 +315,7 @@ export async function reprocessIgnoredXapiEventsWithMappings(
       cxe.organization_id,
       cxe.raw_payload
     FROM coursera_xapi_events cxe
-    WHERE cxe.completion_status = 'ignored'
+    WHERE cxe.completion_status = 'unresolved_course'
       AND cxe.raw_payload IS NOT NULL
       AND cxe.statement_id IS NOT NULL
       AND cxe.course_slug IS NOT NULL

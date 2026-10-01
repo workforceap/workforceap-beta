@@ -8,6 +8,7 @@ vi.mock('next/headers', () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: vi.fn(() => false) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
+vi.mock('@/lib/auth/memberDashboardAccess', () => ({ getMemberDashboardAccess: vi.fn(async () => ({ redirectTo: null })) }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: { user: { findUnique: vi.fn() }, message: { findMany: vi.fn(), count: vi.fn() } },
 }));
@@ -19,7 +20,6 @@ vi.mock('@/lib/member/loadTrainingWorkspace', () => ({ loadTrainingWorkspace: vi
 vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
 vi.mock('@/components/portal/PageHeader', () => ({ default: () => null }));
 vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({ MemberMessagesKit: () => null }));
-vi.mock('@/components/portal/kit/pages/member/MemberMessagesEmpty', () => ({ MemberMessagesEmpty: () => null }));
 vi.mock('@/components/portal/MemberCounselorChatClient', () => ({ default: () => null }));
 // Surface the server-computed inbox preview time so the assertion can see it.
 vi.mock('@/components/portal/MemberMessagesMobileClient', () => ({

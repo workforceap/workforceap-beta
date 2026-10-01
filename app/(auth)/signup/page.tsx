@@ -6,7 +6,12 @@ import { getRequestLocale } from '@/lib/i18n/server';
 import { withLocalePrefix } from '@/lib/i18n/config';
 import SignupForm from './SignupForm';
 import UtmCapture from '@/components/marketing/UtmCapture';
+import PartnerRefCapture from '@/components/marketing/PartnerRefCapture';
 import { Suspense } from 'react';
+import { cookies, headers } from 'next/headers';
+import { PARTNER_REF_COOKIE } from '@/lib/apply/applyReferralCapture';
+import { resolvePartnerReferralDisclosure } from '@/lib/apply/partnerReferralDisclosure';
+import { getPartnerDisclosureCopy } from '@/lib/apply/partnerDisclosureCopy';
 
 export async function generateMetadata(): Promise<Metadata> {
   const base = await buildPageMetadataAsync({
@@ -20,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectTo?: string }>;
+  searchParams: Promise<{ redirectTo?: string; ref?: string }>;
 }) {
   const [sp, locale] = await Promise.all([searchParams, getRequestLocale()]);
   const rawRedirect = typeof sp?.redirectTo === 'string' ? sp.redirectTo : undefined;
@@ -30,12 +35,28 @@ export default async function SignupPage({
     redirect(`${withLocalePrefix('/signup', locale)}?redirectTo=${encodeURIComponent(normalizedRedirect)}`);
   }
 
+  // Same partner lookup as /api/member/signup; the form re-resolves if the
+  // ref it will submit (sessionStorage) differs from this one.
+  const pageRef = (typeof sp?.ref === 'string' ? sp.ref : null) ?? (await cookies()).get(PARTNER_REF_COOKIE)?.value ?? null;
+  const [partnerDisclosure, partnerDisclosureCopy] = await Promise.all([
+    resolvePartnerReferralDisclosure(pageRef, { headers: await headers() }),
+    getPartnerDisclosureCopy(),
+  ]);
+
   return (
     <>
       <Suspense fallback={null}>
+        {/* `?ref=` may arrive straight on /signup (partner link, QR, email)
+            without a prior /apply visit; SignupForm reads what this persists
+            and posts it as `referralRef`. */}
+        <PartnerRefCapture />
         <UtmCapture />
       </Suspense>
-      <SignupForm initialRedirectTo={normalizedRedirect} />
+      <SignupForm
+        initialRedirectTo={normalizedRedirect}
+        partnerDisclosure={partnerDisclosure}
+        partnerDisclosureCopy={partnerDisclosureCopy}
+      />
     </>
   );
 }

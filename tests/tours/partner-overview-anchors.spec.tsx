@@ -8,12 +8,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
  * must be on the real default overview (the v2 kit), not only on `?ui=legacy`.
  * Same fixture as tests/app/partner-dashboard-dates.spec.tsx with the real kit.
  */
-const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
+// The phone-width card list is a client component with its own translations; the desktop kit table is what these specs read.
+vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({ default: () => null }));
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.user }));
@@ -23,8 +25,9 @@ vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader:
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   partner: { findUnique: mocks.partner },
   partnerReferral: { count: mocks.count, findMany: mocks.referrals },
-  placementRecord: { count: mocks.count },
-  memberEvent: { findMany: mocks.events },
+  // findMany: the Payout due tile's verified-unpaid placements (WAP-213).
+  placementRecord: { count: mocks.count, findMany: mocks.placements },
+  memberEvent: { findMany: mocks.events, count: async () => 0 },
 } }));
 vi.mock('@/components/onboarding/PortalEntryClient', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalVoiceSessionLazy', () => ({ default: () => null }));
@@ -45,6 +48,7 @@ function primePartner(partnerType: 'referral' | 'community') {
   mocks.count.mockResolvedValue(0);
   mocks.referrals.mockResolvedValue([]);
   mocks.events.mockResolvedValue([]);
+  mocks.placements.mockResolvedValue([]);
 }
 
 beforeEach(() => {

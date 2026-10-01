@@ -14,6 +14,7 @@ vi.mock('next/headers', () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: vi.fn(() => false) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
+vi.mock('@/lib/auth/memberDashboardAccess', () => ({ getMemberDashboardAccess: vi.fn(async () => ({ redirectTo: null })) }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: { user: { findUnique: vi.fn() }, message: { findMany: vi.fn(), count: vi.fn() } },
 }));
@@ -29,7 +30,6 @@ vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({
     <span data-testid="kit-unread">{String(conversations[0]?.unread)}</span>
   ),
 }));
-vi.mock('@/components/portal/kit/pages/member/MemberMessagesEmpty', () => ({ MemberMessagesEmpty: () => null }));
 vi.mock('@/components/portal/MemberCounselorChatClient', () => ({ default: () => null }));
 vi.mock('@/components/portal/MemberMessagesMobileClient', () => ({
   default: ({ initial }: { initial: { unreadCount: number } }) => <span data-testid="unread-count">{initial.unreadCount}</span>,

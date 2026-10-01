@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import type { JobPostingApplicationStatus } from '@prisma/client';
 import { employerJobPostingApplicationStatusLabel } from '@/lib/employer/jobPostingApplicationStatus';
+import { allowedNextJobApplicationStatuses } from '@/lib/employer/applicationStatus';
 
 type Applicant = {
   id: string;
@@ -25,6 +26,12 @@ const STATUSES: JobPostingApplicationStatus[] = [
   'hired',
   'rejected',
 ];
+
+/** The current stage plus the moves the server accepts from it, in pipeline order. */
+function statusOptions(current: JobPostingApplicationStatus): JobPostingApplicationStatus[] {
+  const offered = new Set<JobPostingApplicationStatus>([current, ...allowedNextJobApplicationStatuses(current)]);
+  return STATUSES.filter((s) => offered.has(s));
+}
 
 export default function JobApplicantsClient({
   jobId,
@@ -80,7 +87,7 @@ export default function JobApplicantsClient({
   return (
     <div>
       {error && (
-        <div className="portal-card portal-card--flat" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'rgba(140,15,55,0.06)', color: 'var(--color-accent)' }} role="alert">
+        <div className="portal-card portal-card--flat" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'rgba(140,15,55,0.06)', color: 'var(--wa-accent-text)' }} role="alert">
           {error}
         </div>
       )}
@@ -134,7 +141,7 @@ export default function JobApplicantsClient({
                   onChange={(e) => patchStatus(app.id, e.target.value as JobPostingApplicationStatus)}
                   style={{ fontSize: '0.8125rem', padding: '0.375rem 0.5rem' }}
                 >
-                  {STATUSES.map((s) => (
+                  {statusOptions(app.status).map((s) => (
                     <option key={s} value={s}>
                       {employerJobPostingApplicationStatusLabel(s)}
                     </option>
@@ -218,7 +225,7 @@ export default function JobApplicantsClient({
                         aria-label={`Update application status for ${studentName}`}
                         onChange={(e) => patchStatus(app.id, e.target.value as JobPostingApplicationStatus)}
                       >
-                        {STATUSES.map((s) => (
+                        {statusOptions(app.status).map((s) => (
                           <option key={s} value={s}>
                             {employerJobPostingApplicationStatusLabel(s)}
                           </option>

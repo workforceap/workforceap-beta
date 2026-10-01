@@ -1,4 +1,5 @@
 import { prisma } from '../db/prisma';
+import { ACTIVE_EMPLOYER_JOB_WHERE } from '../jobs/memberVisibleJob';
 
 /** Tokenize a string into lowercase words, removing stopwords. */
 function tokens(text: string): string[] {
@@ -33,7 +34,7 @@ function scoreJob(job: { title: string; description: string; requirements: strin
 
 export async function findBestEmployerMatch(memberId: string, newSkill: string) {
   const jobs = await prisma.job.findMany({
-    where: { status: 'live' },
+    where: { status: 'live', AND: [ACTIVE_EMPLOYER_JOB_WHERE] },
     select: { id: true, title: true, description: true, requirements: true },
     take: 50,
   });

@@ -220,8 +220,6 @@ export interface RankDatum {
   pct: number;
   /** Semantic state of the row (`ok` on track, `warn` lagging, …); paints the bar through the tone hook. Omit for a plain accent bar. */
   tone?: KitTone;
-  /** @deprecated Categorical fill — use `tone`. Ignored when `tone` is set. */
-  color?: KitColor;
 }
 
 /**
@@ -232,7 +230,7 @@ export function RankBars({ data }: { data: RankDatum[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {data.map((d) => {
-        const fill = tonePaint(d.tone, d.color);
+        const fill = tonePaint(d.tone);
         return (
         <div key={d.label} className={cx(toneClass(d.tone))}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>

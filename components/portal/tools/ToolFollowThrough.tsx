@@ -1,9 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { getAIToolFollowThrough } from '@/lib/member/aiToolFollowThrough';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 export default function ToolFollowThrough({
   toolType,
@@ -62,9 +60,7 @@ export default function ToolFollowThrough({
       >
         {next.body}
       </p>
-      <AstryxLink href={hrefOverride ?? next.href} as={Link as never} isStandalone>
-        <Button label={next.cta} variant="primary" size="sm" style={{ minHeight: 44 }} />
-      </AstryxLink>
+      <KitLinkButton href={hrefOverride ?? next.href} label={next.cta} variant="primary" size="sm" style={{ minHeight: 44 }} />
     </div>
   );
 }

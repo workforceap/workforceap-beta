@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
 import { createNotification } from '@/lib/notifications/create';
+import { hasAdminAccess } from '@/lib/auth/roleAccess';
 
 export const WAP_STAFF_COUNSELOR_AFFILIATION = 'wap_staff' as const;
 
@@ -13,7 +14,8 @@ export type EnsureSelfServeCounselorResult = {
     | 'already_assigned'
     | 'partner_referred'
     | 'no_counselors'
-    | 'member_unavailable';
+    | 'member_unavailable'
+    | 'staff_account';
 };
 
 type CounselorPickClient = {
@@ -90,6 +92,24 @@ async function hasPartnerReferral(memberId: string): Promise<boolean> {
   return referral !== null;
 }
 
+/**
+ * A staff account (active Counselor row, or admin / super_admin by
+ * profiles.role or user_roles) that opens the member inbox is not a member:
+ * it must never be put on a counselor's caseload.
+ */
+async function isStaffAccount(userId: string): Promise<boolean> {
+  const [counselor, profile, userRoles] = await Promise.all([
+    prisma.counselor.findFirst({ where: { userId, active: true }, select: { id: true } }),
+    prisma.profile.findUnique({ where: { userId }, select: { role: true } }),
+    prisma.userRole.findMany({ where: { userId }, select: { role: { select: { name: true } } } }),
+  ]);
+  if (counselor) return true;
+  return hasAdminAccess(
+    profile?.role ?? '',
+    userRoles.map((entry) => entry.role.name),
+  );
+}
+
 async function notifyNewSelfServeAssignment(input: {
   memberId: string;
   counselorUserId: string;
@@ -133,9 +153,10 @@ async function notifyNewSelfServeAssignment(input: {
 
 /**
  * Assign a self-serve member with no active counselor to an active WAP staff
- * counselor. Read-only when already assigned, partner-referred, or the pool
- * is empty — those paths must not bump `users.updated_at`. The lock +
- * assignMemberCounselor commit only runs when there is someone to assign.
+ * counselor. Read-only when already assigned, a staff account,
+ * partner-referred, or the pool is empty — those paths must not bump
+ * `users.updated_at`. The lock + assignMemberCounselor commit only runs when
+ * there is someone to assign.
  */
 export async function ensureSelfServeCounselorAssigned(input: {
   memberId: string;
@@ -148,6 +169,10 @@ export async function ensureSelfServeCounselorAssigned(input: {
       counselorUserId: existingUserId,
       reason: 'already_assigned',
     };
+  }
+
+  if (await isStaffAccount(input.memberId)) {
+    return { assigned: false, counselorUserId: null, reason: 'staff_account' };
   }
 
   if (await hasPartnerReferral(input.memberId)) {

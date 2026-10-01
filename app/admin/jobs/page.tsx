@@ -17,6 +17,7 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { statusColor } from '@/lib/ui/statusColors';
+import { JOB_POSTING_STATUS_WORDS, jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
 import { DesignSurface } from '@/components/portal/kit';
 import {
   JobsBoardKit,
@@ -32,19 +33,10 @@ export async function generateMetadata(): Promise<Metadata> {
 });
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'Draft',
-  pending: 'Pending',
-  approved: 'Approved',
-  live: 'Live',
-  filled: 'Filled',
-  closed: 'Closed',
-};
-
 /** Human label for the ?filter= queue value shown on the mobile job cards. */
 const FILTER_LABELS: Record<string, string> = {
   all: 'All',
-  pending: 'Pending',
+  pending: JOB_POSTING_STATUS_WORDS.admin.pending,
   live: 'Live',
   draft: 'Draft',
   filled: 'Filled / Closed',
@@ -279,7 +271,7 @@ async function renderLegacy({
     totalJobsInDb = Object.values(countByStatus).reduce((a, b) => a + b, 0);
 
     tabs = [
-      { value: 'pending', label: 'Pending', count: countByStatus['pending'] ?? 0 },
+      { value: 'pending', label: JOB_POSTING_STATUS_WORDS.admin.pending, count: countByStatus['pending'] ?? 0 },
       { value: 'all', label: 'All', count: totalJobsInDb },
       { value: 'live', label: 'Live', count: countByStatus['live'] ?? 0 },
       { value: 'draft', label: 'Draft', count: countByStatus['draft'] ?? 0 },
@@ -338,7 +330,7 @@ async function renderLegacy({
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
               <div>
-                <Link href={`/admin/jobs/${job.id}`} style={{ fontWeight: 700, color: 'var(--color-accent)', textDecoration: 'none' }}>
+                <Link href={`/admin/jobs/${job.id}`} style={{ fontWeight: 700, color: 'var(--wa-accent-text)', textDecoration: 'none' }}>
                   {job.title}
                 </Link>
                 <p style={{ margin: '0.35rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
@@ -347,7 +339,7 @@ async function renderLegacy({
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem' }}>
                 <span className={getJobStatusPillClass(job.status)}>
-                  {STATUS_LABELS[job.status] ?? job.status}
+                  {jobPostingStatusLabel(job.status, 'admin')}
                 </span>
                 {job.status === 'pending' && (
                   <span
@@ -404,7 +396,7 @@ async function renderLegacy({
           ) : (
             <>
               No jobs in this view ({currentFilter}).{' '}
-              <Link href="/admin/jobs?filter=all" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+              <Link href="/admin/jobs?filter=all" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
                 Show all ({totalJobsInDb})
               </Link>
             </>

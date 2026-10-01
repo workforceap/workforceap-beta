@@ -12,6 +12,7 @@ import {
   loadUnmatchedLearners,
 } from '@/lib/coursera/progressQueries';
 import { parseCourseGradeString } from '@/lib/coursera/courseGradeDisplay';
+import { COURSERA_XAPI_UNAVAILABLE_NOTICE, type CourseraXapiDegradation } from '@/lib/coursera/xapiUnavailableNotice';
 import { loadStudentRosterEnrichment } from '@/lib/admin/studentsRosterEnrichment';
 import { loadUnmatchedCourseraRoster } from '@/lib/admin/studentsUnmatchedCoursera';
 import { withSoftTimeout } from '@/lib/admin/withSoftTimeout';
@@ -20,7 +21,7 @@ import {
   STUDENT_ROSTER_ACTIVITY_LABELS,
 } from '@/lib/admin/studentsRosterFacts';
 import { relativeLastActiveCaption } from '@/lib/admin/trainingProgressRoster';
-import { initialsFrom } from '@/lib/admin/studentsRosterView';
+import { initialsFrom, ROSTER_PROGRAM_PLACEHOLDERS } from '@/lib/admin/studentsRosterView';
 import {
   inheritMemberOrg,
   inheritUserOrg,
@@ -41,6 +42,37 @@ const ROSTER_ENRICHMENT_TIMEOUT_MS = 20_000;
 export const STUDENTS_SECONDARY_LOAD_NOTICE =
   'Some roster details (recent activity, Coursera evidence) are unavailable right now. Names, programs and statuses are current; refresh in a few minutes for the rest.';
 
+/**
+ * Shown when `coursera_xapi_events` is absent (db:push environments; see
+ * `courseraXapiEventsTablePresent`). One sentence shared with the reporting
+ * Coursera tab and the legacy /admin/coursera page
+ * (lib/coursera/xapiUnavailableNotice.ts); kept under this name for the
+ * roster callers.
+ */
+export const STUDENTS_COURSERA_XAPI_UNAVAILABLE_NOTICE = COURSERA_XAPI_UNAVAILABLE_NOTICE;
+
+/**
+ * Why a roster that loaded without error is still incomplete. Distinct from
+ * `secondaryLoadFailed` (a read threw or timed out): here the read succeeded
+ * against a database that lacks a source, so the result is narrower than
+ * production's by construction.
+ */
+export type StudentsRosterDegradation = CourseraXapiDegradation;
+
+/**
+ * The kit takes one `notice` string; compose it from both states so a
+ * failed read and a missing source each stay visible when they coincide.
+ */
+export function studentsRosterNotice(load: {
+  secondaryLoadFailed: boolean;
+  degraded: StudentsRosterDegradation | null;
+}): string | undefined {
+  const parts: string[] = [];
+  if (load.secondaryLoadFailed) parts.push(STUDENTS_SECONDARY_LOAD_NOTICE);
+  if (load.degraded === 'coursera-xapi-unavailable') parts.push(STUDENTS_COURSERA_XAPI_UNAVAILABLE_NOTICE);
+  return parts.length > 0 ? parts.join(' ') : undefined;
+}
+
 /** Cap the lean roster so first paint stays cheap. The kit filters client-side. */
 const STUDENTS_ROSTER_LIMIT = 2000;
 
@@ -53,6 +85,8 @@ export type StudentsRosterLoad =
       total: number;
       /** True when any secondary source (activity, Coursera evidence, counselors) failed soft. */
       secondaryLoadFailed: boolean;
+      /** Set when a source is absent in this environment, so the roster is knowingly incomplete. */
+      degraded: StudentsRosterDegradation | null;
     };
 
 /**
@@ -198,11 +232,17 @@ export async function loadStudentsRoster(scope: AdminPageTenantOk): Promise<Stud
   // Unmatched Coursera learners come from raw SQL over coursera_xapi_events.
   // A missing, empty or slow table must not hold the roster: both reads are
   // bounded and fail soft into the "details unavailable" notice.
+  // When the table itself is absent (db:push environments) the reads succeed
+  // without the xAPI branch; the probe inside them reports that here so the
+  // page can say the roster is knowingly incomplete.
+  let degraded: StudentsRosterDegradation | null = null;
+  const onXapiTableMissing = () => { degraded = 'coursera-xapi-unavailable'; };
   const { learners: unmatchedLearners, count: unmatchedCount, failed: unmatchedFailed } =
     await loadUnmatchedCourseraRoster(scope.orgId, STUDENTS_ROSTER_LIMIT, {
       load: (organizationId, limit) =>
-        loadUnmatchedLearners(organizationId, limit, { includeTestAccounts: false }),
-      count: (organizationId) => countUnmatchedLearners(organizationId, { includeTestAccounts: false }),
+        loadUnmatchedLearners(organizationId, limit, { includeTestAccounts: false, onXapiTableMissing }),
+      count: (organizationId) =>
+        countUnmatchedLearners(organizationId, { includeTestAccounts: false, onXapiTableMissing }),
     }, {
       onError: (label, reason) =>
         console.error(`[admin/students] unmatched Coursera ${label} failed`, reason),
@@ -214,9 +254,9 @@ export async function loadStudentsRoster(scope: AdminPageTenantOk): Promise<Stud
     const displayProgramSlug = enrichment?.programSlug ?? null;
     const programTitle = displayProgramSlug
       ? `${programDisplayTitle(displayProgramSlug)}${enrichment?.assignmentSource === 'legacy' ? ' (legacy assignment)' : ''}`
-      : !enrichment ? 'Program unavailable'
-        : enrichment.assignmentSource === 'unresolved' ? 'Assignment needs review'
-          : 'Unassigned';
+      : !enrichment ? ROSTER_PROGRAM_PLACEHOLDERS.unavailable
+        : enrichment.assignmentSource === 'unresolved' ? ROSTER_PROGRAM_PLACEHOLDERS.needsReview
+          : ROSTER_PROGRAM_PLACEHOLDERS.unassigned;
 
     const progress = Math.round(enrichment?.averagePercent ?? 0);
 
@@ -311,5 +351,5 @@ export async function loadStudentsRoster(scope: AdminPageTenantOk): Promise<Stud
     });
   }
 
-  return { ok: true, students, total: total + unmatchedCount, secondaryLoadFailed };
+  return { ok: true, students, total: total + unmatchedCount, secondaryLoadFailed, degraded };
 }

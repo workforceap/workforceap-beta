@@ -76,14 +76,39 @@ export function parseStudentsNeeds(value: string | string[] | undefined | null):
  * days, or at most one such signal in 30 days while enrolled; system-sent
  * mail does not count) is the nearest filter today for both a saved risk
  * alert and a 30-day quiet spell; the training preset has a real
- * "Stalled" pace chip. New applicants without a counselor have no chip yet,
- * so they open the full roster. Server-side `needs=` filters from the
- * attention model replace this mapping when the roster consolidation lands.
+ * "Stalled" pace chip. New applicants without a counselor have no chip:
+ * the page resolves them server-side into a `StudentsRosterFocus` instead
+ * (WAP-198), so the chip stays "All" inside that focused list.
  */
 export function chipForStudentsNeeds(needs: StudentsNeeds | null, view: StudentsRosterView): StudentsRosterChip {
   if (needs === 'at-risk') return 'At Risk';
   if (needs === 'stalled') return view === 'training' ? 'Stalled' : 'At Risk';
   return 'All';
+}
+
+/**
+ * A member set the page resolved on the server, which the roster opens on
+ * (WAP-198). `?needs=new-applicants` has no client-side chip: "joined in the
+ * last 7 days with no active counselor" is decided by the attention model,
+ * so the page passes the exact member ids behind the admin Today row and the
+ * roster shows those rows, with a notice naming the rule and a way back to
+ * everyone. Chips and search still narrow inside the focus.
+ */
+export type StudentsRosterFocus = {
+  /** Notice heading, e.g. "New applicants with no counselor". */
+  label: string;
+  /** The rule behind the set, in the attention model's words. */
+  detail: string;
+  memberIds: readonly string[];
+  /** The unfocused roster. */
+  clearHref: string;
+};
+
+/** Rows inside the focus (WAP members only); every row when there is none. */
+export function applyRosterFocus(rows: StudentRow[], focus: StudentsRosterFocus | null | undefined): StudentRow[] {
+  if (!focus) return rows;
+  const keep = new Set(focus.memberIds);
+  return rows.filter((row) => row.inWap !== false && keep.has(row.id));
 }
 
 /** `/admin/students?needs=<value>`: the roster URL an attention number opens. */
@@ -166,6 +191,49 @@ export function toTrainingRosterRow(row: StudentRow): RosterRow {
     lastActive: row.lastActive,
     lastActiveAt: row.lastActiveAt,
   };
+}
+
+/**
+ * Program-column words the roster loader prints when a member has no program
+ * to name (lib/admin/studentsRosterLoad.ts). They are not program titles, so
+ * they never take the "(inferred)" suffix below.
+ */
+export const ROSTER_PROGRAM_PLACEHOLDERS = {
+  unavailable: 'Program unavailable',
+  needsReview: 'Assignment needs review',
+  unassigned: 'Unassigned',
+} as const;
+
+const PLACEHOLDER_PROGRAM_TITLES: ReadonlySet<string> = new Set(Object.values(ROSTER_PROGRAM_PLACEHOLDERS));
+
+/**
+ * The program as the roster prints it, in every view and on the phone card.
+ *
+ * A row flagged `noProgram` (a WAP member with no assigned program) whose
+ * title still names a program is showing activity under that program, so it
+ * says "(inferred)". `loadTrainingRoster` can produce that combination from
+ * CourseProgress; the default `loadStudentsRoster` currently uses a placeholder
+ * instead, while the dev roster exercises the named-program case (WAP-209).
+ * Placeholder words and unmatched Coursera rows print as they are.
+ */
+export function rosterProgramLabel(row: Pick<StudentRow, 'program' | 'noProgram' | 'inWap'>): string {
+  const inferred = row.inWap !== false && row.noProgram === true && !PLACEHOLDER_PROGRAM_TITLES.has(row.program);
+  return inferred ? `${row.program} (inferred)` : row.program;
+}
+
+/**
+ * An email split where a phone-width card may wrap it: after each dot of the
+ * name part and before the "@", never inside the domain. The kit renders a
+ * <wbr> between the parts so "avery@example.test" wraps as "avery" /
+ * "@example.test", not "avery@example." / "test" (WAP-209). A part that still
+ * cannot fit falls back to the browser's overflow-wrap break.
+ */
+export function emailWrapParts(email: string): string[] {
+  const at = email.lastIndexOf('@');
+  if (at <= 0) return [email];
+  const local = email.slice(0, at);
+  const parts = local.split(/(?<=\.)/).filter(Boolean);
+  return [...parts, email.slice(at)];
 }
 
 /** Build initials from a full name (e.g. "Jasmine Davis" → "JD"). */

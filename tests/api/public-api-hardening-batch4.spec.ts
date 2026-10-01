@@ -71,6 +71,9 @@ vi.mock('@/lib/db/prisma', () => {
   return { prisma };
 });
 vi.mock('@/lib/content/programs', () => ({ getProgramBySlug: () => null }));
+// The outcomes route's public projection only reads the threshold; the board
+// generator itself would pull the (mocked-out) program catalog.
+vi.mock('@/lib/admin/boardOutcomes', () => ({ SMALL_SAMPLE_THRESHOLD: 10 }));
 vi.mock('@/lib/public/publicDataFilters', () => ({
   sanitizePublicPartnerLabel: (v: string) => v,
   sanitizePublicSubgroupLabel: (v: string) => v,
@@ -237,7 +240,25 @@ describe('GET /api/org/[slug]/outcomes rate limiting', () => {
   beforeEach(() => {
     mocks.orgOutcomesRateLimit.mockResolvedValue({ success: true });
     mocks.partnerFindUnique.mockResolvedValue({ id: 'partner-1', organizationId: 'org-1' });
-    mocks.generateOutcomes.mockResolvedValue({ quarter: 'Q1', year: 2026, totals: { members: 3 }, membersList: [{ id: 'm-1' }] });
+    mocks.generateOutcomes.mockResolvedValue({
+      quarter: 'Q1',
+      year: 2026,
+      periodStart: 'Jan 1, 2026',
+      periodEnd: 'Mar 31, 2026',
+      generatedAt: '2026-04-01T00:00:00.000Z',
+      partnerName: 'Partner One',
+      partnerSlug: 'partner-one',
+      metrics: {
+        totalReferred: 3, totalEnrolled: 3, completions: 0, placements: 0, activeMembers: 3, dropOffs: 0, dropOffRate: 0,
+        avgDaysToPlacement: null, salaryAvg: null, salaryMedian: null, salaryMin: null, salaryMax: null,
+      },
+      retention: {
+        ninetyDay: { retained: 0, notRetainedOrSeparated: 0, pendingDecision: 0, total: 0 },
+        hundredEightyDay: { retained: 0, notRetainedOrSeparated: 0, pendingDecision: 0, total: 0 },
+      },
+      programBreakdown: [],
+      membersList: [{ id: 'm-1' }],
+    });
   });
 
   it('returns 429 before the partner lookup when the per-IP cap is hit', async () => {
@@ -257,7 +278,7 @@ describe('GET /api/org/[slug]/outcomes rate limiting', () => {
 
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual({ quarter: 'Q1', year: 2026, totals: { members: 3 } });
+    expect(body).toMatchObject({ quarter: 'Q1', year: 2026, metrics: { totalReferred: 3 } });
     expect(body.membersList).toBeUndefined();
     expect(mocks.generateOutcomes).toHaveBeenCalledWith('org-1', 'partner-1', { quarter: 'Q2', year: 2026 });
   });

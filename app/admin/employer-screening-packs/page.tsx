@@ -14,6 +14,7 @@ import {
   type ScreeningPackRow,
 } from '@/components/portal/kit/pages/admin-subviews/ScreeningPacksKit';
 import EmployerScreeningPacksAdmin from './EmployerScreeningPacksAdmin';
+import { NewScreeningPackForm, NEW_SCREENING_PACK_ID } from '@/components/admin/NewScreeningPackForm';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Admin – Employer screening packs',
@@ -136,7 +137,14 @@ async function renderKit() {
 
   return (
     <DesignSurface surface="dense">
-      <ScreeningPacksKit packs={packRows} totalPacks={total} activePacks={active} />
+      <ScreeningPacksKit
+        packs={packRows}
+        totalPacks={total}
+        activePacks={active}
+        manageable
+        createForm={<NewScreeningPackForm programOptions={PROGRAMS.map((p) => ({ slug: p.slug, title: p.title }))} />}
+        createFormHref={`#${NEW_SCREENING_PACK_ID}`}
+      />
     </DesignSurface>
   );
 }
@@ -160,7 +168,7 @@ async function renderLegacy() {
       />
       <p style={{ maxWidth: 720, fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', marginBottom: '1rem' }}>
         Questions are stored as JSON. See{' '}
-        <Link href="/admin/career-mappings" style={{ fontWeight: 700, color: 'var(--color-accent)' }}>
+        <Link href="/admin/career-mappings" style={{ fontWeight: 700, color: 'var(--wa-accent-text)' }}>
           Career paths
         </Link>{' '}
         for O*NET mappings. One active pack per program is recommended — deactivate older rows when publishing a new version.

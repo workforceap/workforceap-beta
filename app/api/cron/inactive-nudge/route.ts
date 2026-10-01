@@ -9,6 +9,7 @@ import { filterNudgeEligibleUserIds, recordNudgeSent } from '@/lib/cron/nudgeThr
 import { createNotification } from '@/lib/notifications/create';
 import { notifyDiscord } from '@/lib/notify/discord';
 import { CRON_NUDGE_CANDIDATE_CAP } from '@/lib/cron/cronCaps';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { persistEvent } from '@/lib/events/track';
@@ -39,7 +40,10 @@ async function handle(_request: Request) {
       // Re-engagement copy is written for members. Staff, partner, employer
       // and role-less accounts (106 nudges in the 2026-09 audit) are not
       // inactive learners and must not be asked to "resume learning".
-      userRoles: { some: { role: { name: 'member' } } },
+      // One definition of "a member" (WAP-182 item 3): a bare `user_roles`
+      // member row is the baseline every account gets from `ensureAppUser`,
+      // so it let staff back in and dropped not-yet-backfilled members.
+      ...MEMBER_ONLY_WHERE,
       AND: [
         { memberEvents: { none: { createdAt: { gte: sevenDaysAgo } } } },
         { memberEvents: { none: { eventName: 'inactive_nudge_sent', createdAt: { gte: sevenDaysAgo } } } },

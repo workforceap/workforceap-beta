@@ -21,10 +21,11 @@ import DeleteAccountButton from '@/components/portal/DeleteAccountButton';
  *   - Account details  → PATCH /api/member/dashboard-profile
  *   - Notification prefs → PATCH /api/member/settings
  *
- * The `dashboard-profile` endpoint upserts the whole Profile row, so the
- * page passes through existing profile fields the kit form does not edit
- * (phone/address/linkedin/bio/…) via `accountPassthrough` to avoid wiping
- * them on save.
+ * The `dashboard-profile` endpoint upserts the whole Profile row. The kit
+ * edits name, city, phone, street address, state, ZIP, LinkedIn and bio
+ * (WAP-193: phone through bio used to be editable only on ?ui=legacy); the
+ * intake fields it does not surface (referral source, barriers, employment
+ * status) pass through via `accountPassthrough` so a save never wipes them.
  */
 
 interface ProfileBadge {
@@ -112,10 +113,15 @@ export function MemberProfileKit({
   const router = useRouter();
   const [prefs, setPrefs] = useState<NotificationPref[]>(notifications);
 
-  // Account-details form state (only Full Name + Location are editable +
-  // persisted; Email and Program Interest are read-only here).
+  // Account-details form state. Email and Program are read-only here.
   const [fullName, setFullName] = useState(name);
   const [loc, setLoc] = useState(location);
+  const [phone, setPhone] = useState(accountPassthrough?.phone ?? '');
+  const [address, setAddress] = useState(accountPassthrough?.address ?? '');
+  const [stateCode, setStateCode] = useState(accountPassthrough?.state ?? '');
+  const [zip, setZip] = useState(accountPassthrough?.zip ?? '');
+  const [linkedin, setLinkedin] = useState(accountPassthrough?.linkedin ?? '');
+  const [bio, setBio] = useState(accountPassthrough?.bio ?? '');
   const [savingAccount, setSavingAccount] = useState(false);
   const [accountError, setAccountError] = useState<string | null>(null);
   const [accountSaved, setAccountSaved] = useState(false);
@@ -190,16 +196,16 @@ export function MemberProfileKit({
         body: JSON.stringify({
           firstName,
           lastName,
-          // Location maps to the city field; round-trip the rest of the
-          // address so the upsert does not wipe it.
+          // Location maps to the city field. Intake fields the kit does not
+          // edit round-trip from the passthrough so the upsert keeps them.
           city: loc.trim() || null,
-          state: pt.state ?? null,
-          zip: pt.zip ?? null,
-          phone: pt.phone ?? null,
-          address: pt.address ?? null,
+          state: stateCode.trim() || null,
+          zip: zip.trim() || null,
+          phone: phone.trim() || null,
+          address: address.trim() || null,
           referralSource: pt.referralSource ?? null,
-          linkedin: pt.linkedin ?? null,
-          bio: pt.bio ?? null,
+          linkedin: linkedin.trim() || null,
+          bio: bio.trim() || null,
           hasEmploymentBarrier: pt.hasEmploymentBarrier ?? false,
           barrierTypes: pt.barrierTypes ?? [],
           employmentStatusAtEnroll: pt.employmentStatusAtEnroll ?? null,
@@ -268,6 +274,57 @@ export function MemberProfileKit({
                 value={loc}
                 onChange={(e) => setLoc(e.target.value)}
               />
+              <FormField
+                label="Phone"
+                type="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+              <FormField
+                label="Street address"
+                autoComplete="street-address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+              <FormField
+                label="State"
+                autoComplete="address-level1"
+                value={stateCode}
+                onChange={(e) => setStateCode(e.target.value)}
+              />
+              <FormField
+                label="ZIP"
+                autoComplete="postal-code"
+                inputMode="numeric"
+                value={zip}
+                onChange={(e) => setZip(e.target.value)}
+              />
+              <FormField
+                label="LinkedIn URL"
+                type="url"
+                value={linkedin}
+                onChange={(e) => setLinkedin(e.target.value)}
+              />
+              <FormField label="Bio" full>
+                <textarea
+                  value={bio}
+                  maxLength={2000}
+                  rows={3}
+                  onChange={(e) => setBio(e.target.value)}
+                  style={{
+                    marginTop: 4,
+                    width: '100%',
+                    fontSize: 'var(--wa-type-body)',
+                    border: '1px solid var(--wa-border)',
+                    borderRadius: 'var(--wa-radius-sm)',
+                    padding: '10px 12px',
+                    outline: 'none',
+                    background: 'var(--wa-surface)',
+                    color: 'var(--wa-text)',
+                  }}
+                />
+              </FormField>
               <FormField label="Program">
                 <select
                   value={programInterest}

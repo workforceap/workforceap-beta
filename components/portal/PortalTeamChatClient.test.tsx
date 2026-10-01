@@ -48,7 +48,7 @@ describe('PortalTeamChatClient contextual draft', () => {
           portalUserId: 'partner-user',
         }}
         subtitle="Team chat"
-        emptyHint="No messages yet"
+        empty={{ title: 'No messages yet', description: 'Ask the team anything.', action: 'Write a message' }}
         surfaceVariant="partner"
         contextLabel="Regarding Ada Member"
         initialDraft="Regarding Ada Member: "

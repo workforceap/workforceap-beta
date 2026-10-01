@@ -14,7 +14,8 @@ import JobReadinessIssueList from '@/components/employer/JobReadinessIssueList';
 import { assessJobPostingReadiness, readinessLabel } from '@/lib/employer/jobReadiness';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import { employerJobPortalBadgeVariant, employerJobPortalStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { getTranslations } from 'next-intl/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -111,7 +112,7 @@ export default async function EmployerJobDetailPage({ params }: Props) {
       ? { bg: 'color-mix(in srgb, var(--color-green) 12%, transparent)', color: 'var(--color-green)' }
       : editReadiness.level === 'usable'
         ? { bg: 'color-mix(in srgb, var(--color-gold) 14%, transparent)', color: 'var(--color-gold)' }
-        : { bg: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)' };
+        : { bg: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--wa-accent-text)' };
 
   return (
     <>
@@ -140,7 +141,7 @@ export default async function EmployerJobDetailPage({ params }: Props) {
                   <div>
                     <h2 style={{ fontSize: '1.35rem', fontWeight: 700, margin: '0 0 0.375rem' }}>{job.title}</h2>
                     <span className="employer-job-edit__meta" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <StatusBadge label={employerJobPortalStatusLabel(job.status)} variant={employerJobPortalBadgeVariant(job.status)} />
+                      <StatusTag tone={badgeVariantToKitTone(employerJobPortalBadgeVariant(job.status))}>{employerJobPortalStatusLabel(job.status)}</StatusTag>
                       {job.applicationsCount > 0 && (
                         <span style={{ fontVariantNumeric: 'tabular-nums' }}>
                           {job.applicationsCount} application{job.applicationsCount === 1 ? '' : 's'}

@@ -28,6 +28,10 @@ export default defineConfig({
       'tests/e2e/**',
     ],
     setupFiles: ['./tests/setup.ts'],
+    // Cascade specs (tests/components/kit-empty-state.spec.tsx) mount the real
+    // portal stylesheets in jsdom through `?raw` imports; Vite hands the text
+    // back untouched (no PostCSS) and every other CSS import stays stubbed.
+    css: { include: [/\/css\/portal(-kit)?\.css\?raw$/] },
   },
   resolve: {
     alias: {

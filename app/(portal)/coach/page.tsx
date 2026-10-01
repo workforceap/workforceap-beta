@@ -43,7 +43,7 @@ export default async function CoachPage() {
   const returning = Boolean(memory?.summary?.trim() || memory?.lastTopic?.trim());
 
   return (
-    <div style={{ background: 'var(--color-surface)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--wa-bg)', minHeight: '100vh' }}>
       <div
         style={{
           padding: '1.25rem 2rem 1.5rem',

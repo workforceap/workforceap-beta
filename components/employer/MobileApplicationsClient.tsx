@@ -3,18 +3,14 @@
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
-import { statusLabel } from '@/lib/employer/statusLabel';
+import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
+import { StatusTag, type KitTone } from '@/components/portal/kit';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 
 const STATUS_CHIP_FILTERS = [
   { label: 'All', value: 'all' },
-  { label: 'New', value: 'pending' },
-  { label: 'Under Review', value: 'reviewing' },
-  { label: 'Interview', value: 'interview' },
-  { label: 'Offer', value: 'offered' },
-  { label: 'Hired', value: 'hired' },
-  { label: 'Declined', value: 'rejected' },
+  ...JOB_APPLICATION_STATUS_KEYS.map((value) => ({ label: jobApplicationStatusLabel(value, 'employer'), value })),
 ];
 
 const STATUS_ACTIONS: Record<string, string[]> = {
@@ -26,26 +22,19 @@ const STATUS_ACTIONS: Record<string, string[]> = {
   rejected: [],
 };
 
-function statusColor(status: string): { bg: string; color: string } {
-  if (status === 'hired') return { bg: 'color-mix(in srgb, var(--color-green) 16%, transparent)', color: 'var(--color-green)' };
-  if (status === 'rejected') return { bg: 'color-mix(in srgb, var(--wa-danger, #dc2626) 14%, transparent)', color: 'var(--wa-danger, #dc2626)' };
-  if (status === 'pending') return { bg: '#fff1f2', color: 'var(--color-accent)' };
-  if (status === 'reviewing') return { bg: 'color-mix(in srgb, var(--color-gold) 18%, transparent)', color: 'var(--color-gold)' };
-  if (status === 'interview') return { bg: '#dbeafe', color: '#1e3a8a' };
-  if (status === 'offered') return { bg: '#f3e8ff', color: '#6b21a8' };
-  return { bg: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' };
+/** Application status → kit tone (guide §4): rejected is a failed state, so it reads kit `danger`. */
+function statusTone(status: string): KitTone {
+  if (status === 'hired') return 'ok';
+  if (status === 'rejected') return 'danger';
+  if (status === 'pending') return 'alert';
+  if (status === 'reviewing') return 'warn';
+  if (status === 'interview' || status === 'offered') return 'info';
+  return 'muted';
 }
 
+/** Employer words from the one job-application vocabulary; also labels the move-to buttons. */
 function applicationStatusLabel(status: string): string {
-  const map: Record<string, string> = {
-    pending: 'New',
-    reviewing: 'Under Review',
-    interview: 'Interview',
-    offered: 'Offer',
-    hired: 'Hired',
-    rejected: 'Declined',
-  };
-  return map[status] ?? statusLabel(status);
+  return jobApplicationStatusLabel(status, 'employer');
 }
 
 function initials(name: string | null): string {
@@ -174,7 +163,6 @@ export default function MobileApplicationsClient({
             const isExpanded = expandedId === app.id;
             const isChatOpen = openChatId === app.id;
             const isChatLoading = chatLoadingId === app.id;
-            const sc = statusColor(app.status);
             const nextStatuses = STATUS_ACTIONS[app.status] ?? [];
             const studentName = app.student.fullName?.trim() || app.student.email;
 
@@ -203,12 +191,9 @@ export default function MobileApplicationsClient({
                       <h4 className="font-bold text-sm truncate" style={{ color: 'var(--color-on-surface)' }}>
                         {studentName}
                       </h4>
-                      <span
-                        className="px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-tighter flex-shrink-0"
-                        style={{ background: sc.bg, color: sc.color, whiteSpace: 'nowrap' }}
-                      >
+                      <StatusTag tone={statusTone(app.status)} style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                         {applicationStatusLabel(app.status)}
-                      </span>
+                      </StatusTag>
                     </div>
                     <p className="text-xs font-semibold uppercase tracking-wider truncate mt-0.5" style={{ color: 'var(--color-on-surface-variant)' }}>
                       {app.job.title}
@@ -219,7 +204,7 @@ export default function MobileApplicationsClient({
                   </div>
                   <span
                     className="material-symbols-outlined text-[18px] flex-shrink-0 mt-1 transition-transform"
-                    style={{ color: 'var(--color-accent)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    style={{ color: 'var(--wa-accent-text)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                    aria-hidden="true">
                     expand_more
                   </span>
@@ -250,7 +235,7 @@ export default function MobileApplicationsClient({
                           border: 'none',
                           cursor: isChatLoading ? 'default' : 'pointer',
                           background: isChatOpen ? 'rgba(173,44,77,0.12)' : 'rgba(173,44,77,0.08)',
-                          color: 'var(--color-accent)',
+                          color: 'var(--wa-accent-text)',
                         }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">forum</span>

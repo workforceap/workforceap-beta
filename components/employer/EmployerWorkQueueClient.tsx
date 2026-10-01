@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Briefcase, UserRound, TriangleAlert, Clock, CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
-import { statusLabel } from '@/lib/employer/statusLabel';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
+import { employerJobStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { QueueRow, WorkQueueItem, StatusTag, type QueueTone, type KitTone } from '@/components/portal/kit';
 
 export type WqApp = {
@@ -72,7 +73,7 @@ function pillButton({
   } as const;
   const style =
     variant === 'accent'
-      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)' }
+      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }
       : { ...base, background: 'var(--wa-surface)', color: 'var(--wa-text)', borderColor: 'var(--wa-border)' };
   return (
     <button type="button" className="wa-kit-focus" disabled={disabled} onClick={onClick} style={style}>
@@ -104,7 +105,7 @@ function pillLink({
   } as const;
   const style =
     variant === 'accent'
-      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)' }
+      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }
       : { ...base, background: 'var(--wa-surface)', color: 'var(--wa-text)', borderColor: 'var(--wa-border)' };
 
   return (
@@ -256,7 +257,7 @@ export default function EmployerWorkQueueClient({
                 icon={<Briefcase size={16} aria-hidden />}
                 urgent
                 title={j.title}
-                detail={`Status: ${statusLabel(j.status)} · Updated ${new Date(j.updatedAt).toLocaleDateString()}`}
+                detail={`Status: ${employerJobStatusLabel(j.status)} · Updated ${new Date(j.updatedAt).toLocaleDateString()}`}
                 action={pillLink({ label: 'Open job', href: `/employer/jobs/${encodeURIComponent(j.id)}` })}
               />
             ))}
@@ -275,7 +276,7 @@ export default function EmployerWorkQueueClient({
                       className="wa-flex wa-items-center wa-gap-2 wa-flex-wrap"
                       style={{ minWidth: 0, flexShrink: 1, justifyContent: 'flex-end' }}
                     >
-                      <StatusTag tone={SECTION_STATUS_TONE[sec.id]}>{statusLabel(a.status)}</StatusTag>
+                      <StatusTag tone={SECTION_STATUS_TONE[sec.id]}>{jobApplicationStatusLabel(a.status, 'employer')}</StatusTag>
                       {pillLink({ label: 'Table view', href: '/employer/applications', variant: 'outline' })}
                       {sec.id === 'review' && a.status === 'pending'
                         ? pillButton({

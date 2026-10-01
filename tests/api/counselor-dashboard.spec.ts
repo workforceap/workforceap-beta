@@ -71,6 +71,8 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { Prisma } from '@prisma/client';
+import { memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 
 const UUIDS = {
   counselorUser: '550e8400-e29b-41d4-a716-446655440001',
@@ -91,6 +93,27 @@ describe('GET /api/counselor/inactive-members — counselor dashboard member lis
     vi.clearAllMocks();
     vi.mocked(prisma.counselor.findFirst).mockReset();
     vi.mocked(prisma.$queryRaw).mockReset();
+  });
+
+  it('scopes the inactive-member queue to the one member definition', async () => {
+    // The queue used to filter on a hand-written `p.role = 'member'`, so a
+    // revert leaves this counselor surface on the old definition while the
+    // counts beside it move (WAP-182 item 3).
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(true);
+    vi.mocked(prisma.counselor.findFirst).mockResolvedValue({ id: UUIDS.counselorId, userId: UUIDS.counselorUser } as any);
+    vi.mocked(getActorOrganizationId).mockResolvedValue(UUIDS.orgId);
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([] as any);
+
+    const res = await getInactiveMembers(makeRequest('http://localhost:3000/api/counselor/inactive-members?days=7'));
+    expect(res.status).toBe(200);
+
+    expect(vi.mocked(prisma.$queryRaw)).toHaveBeenCalledTimes(1);
+    // The route passes a prebuilt `Prisma.Sql`, not a tagged template.
+    const query = vi.mocked(prisma.$queryRaw).mock.calls[0][0] as unknown as Prisma.Sql;
+    expect(query.sql).toContain(memberOnlyRoleSql('u').sql);
+    expect(query.sql).not.toContain("p.role = 'member'");
   });
 
   it('returns assigned members for a counselor', async () => {

@@ -24,7 +24,7 @@ const fetchMock = vi.fn();
 function view({ cursor = true, messages = [message('last-visible')] } = {}) {
   return <PortalTeamChatClient apiPath={cursor ? '/api/partner/messages' : '/api/employer/messages'}
     initial={{ thread: { id: 'thread-1', portalUserLastReadAt: null }, messages, portalUserId: 'partner-user' }}
-    subtitle="WorkforceAP team" emptyHint="No messages yet" surfaceVariant="partner" decorated={false} readCursorMode={cursor} />;
+    subtitle="WorkforceAP team" empty={{ title: 'No messages yet', description: 'Ask the team anything.', action: 'Write a message' }} surfaceVariant="partner" decorated={false} readCursorMode={cursor} />;
 }
 beforeEach(() => {
   vi.resetAllMocks();

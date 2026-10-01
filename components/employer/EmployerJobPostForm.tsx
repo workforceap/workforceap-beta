@@ -112,7 +112,7 @@ export default function EmployerJobPostForm() {
       <div className="portal-card portal-card--flat" style={{ padding: '2rem', textAlign: 'center' }} role="status">
         <span
           className="material-symbols-outlined"
-          style={{ fontSize: '3rem', color: 'var(--color-accent)', display: 'block', marginBottom: '1rem' }}
+          style={{ fontSize: '3rem', color: 'var(--wa-accent-text)', display: 'block', marginBottom: '1rem' }}
           aria-hidden
         >
           check_circle

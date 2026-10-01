@@ -78,7 +78,7 @@ function RatingRow({
         </label>
       ))}
       {error ? (
-        <span id={errorId} role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.85rem', marginLeft: '0.5rem' }}>
+        <span id={errorId} role="alert" style={{ color: 'var(--wa-accent-text)', fontSize: '0.85rem', marginLeft: '0.5rem' }}>
           {error}
         </span>
       ) : null}
@@ -240,7 +240,7 @@ export default function PlacementSurveyForm({
       </div>
 
       {errorMessage ? (
-        <p role="alert" style={{ color: 'var(--color-accent)', marginBottom: '1rem', fontSize: '0.95rem' }}>{errorMessage}</p>
+        <p role="alert" style={{ color: 'var(--wa-accent-text)', marginBottom: '1rem', fontSize: '0.95rem' }}>{errorMessage}</p>
       ) : null}
 
       <button

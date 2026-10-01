@@ -9,16 +9,23 @@
  *
  * Runs only in the database-contract lane (`npm run test:db-contract`, or
  * `TEST_REAL_DB=1`); `scripts/test-unit.mjs` skips it otherwise.
+ *
+ * Uses the shared client from lib/db/prisma like the other two real-DB
+ * suites. A bare `new PrismaClient()` ran the merge transactions below with
+ * Prisma's defaults (maxWait 2 s, timeout 5 s); executeMemberMerge issues
+ * roughly 180 statements per interactive transaction, so on a loaded CI
+ * runner sharing one PostgreSQL with the other suites the 5 s budget is the
+ * likely cause of the intermittent `Database contract (PostgreSQL 16)`
+ * failure. The shared client sets maxWait 5 s / timeout 10 s
+ * (lib/db/prisma.ts), the same values production runs with.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db/prisma';
 
 import { buildMergePreview, executeMemberMerge } from './memberMerge';
-
-const prisma = new PrismaClient();
 
 type Fixture = {
   organizationId: string;
@@ -27,8 +34,13 @@ type Fixture = {
 };
 
 async function organizationId(): Promise<string> {
-  const existing = await prisma.organization.findFirst({ select: { id: true } });
-  if (existing) return existing.id;
+  // Always create our own organization. `node --test` runs the contract
+  // suites' files in parallel against one shared contract database, and
+  // `findFirst` here adopted whichever organization another suite had just
+  // created (roles.test.ts, memberOnlyWhere.realdb.test.ts), seeding the
+  // merge fixtures into it; that suite's teardown then failed on
+  // users_organization_id_fkey. The lane was a ~50/50 race on master
+  // because of it (three clean runs: fail / pass / fail).
   const created = await prisma.organization.create({
     data: { name: `merge-proof-${randomUUID()}`, slug: `merge-proof-${randomUUID()}` },
     select: { id: true },

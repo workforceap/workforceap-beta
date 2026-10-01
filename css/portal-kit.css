@@ -361,8 +361,63 @@ html.dark [data-surface] .wa-kit-card,
   background: var(--wa-info-soft);
 }
 .wa-kit-tag--muted {
-  color: light-dark(var(--wa-muted), #c8c8c8);
+  /* --wa-muted (#6b6b6b) on --wa-border measured 4.35:1 — under AA for 13px
+     uppercase text. Darkened one step so muted pills clear 4.5:1 in light mode;
+     the dark pair was already 8:1+. */
+  color: var(--wa-muted-strong);
   background: light-dark(var(--wa-border), rgba(255, 255, 255, 0.08));
+}
+
+/* Trend delta chip (StatSparkTile, member home KPI tiles): arrow + value.
+   Layout only — the colour comes from composing .wa-kit-tag--ok (up) or
+   .wa-kit-tag--danger (down), the WCAG-tuned text-on-tint pairs above (4.5:1
+   in both modes). Painting the text from the base --wa-success / --wa-danger
+   hue measured 3.1:1 on the soft tint. No uppercase: it is a number. */
+.wa-kit-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  width: fit-content;
+}
+
+/* Saved-view chip strip above a kit table: one row that scrolls sideways on
+   phones instead of shrinking or clipping the last chip. The 4px bleed keeps
+   the focus ring (2px ring at 2px offset) inside the scroll box. */
+.wa-kit-view-chips {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px;
+  margin: -4px;
+}
+.wa-kit-view-chips::-webkit-scrollbar {
+  display: none;
+}
+.wa-kit-view-chips .astryx-segmented-control {
+  width: max-content;
+  max-width: none;
+}
+.wa-kit-view-chips .astryx-segmented-control-item {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Keyboard hint inside UniversalSearch (dark shell chrome): the gray Astryx
+   Token measured 3.1:1 on the header. */
+.wa-kit-search-hint {
+  font-family: inherit;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-sidebar-muted);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--wa-radius-sm);
+  padding: 1px 6px;
 }
 
 /* Semantic tone hook. A container declares its tone once (the same six
@@ -416,6 +471,50 @@ html.dark [data-surface] .wa-kit-card,
   font-size: var(--wa-type-meta);
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* Empty state (KitEmptyState) — the one component for an empty list.
+   `data-kind` names the situation: first | filtered | unavailable | clear
+   (KIT_GUIDE §6). The container declares its tone through .wa-kit-tone--*
+   (first / filtered → muted, unavailable → warn, clear → ok); the icon chip
+   and, for unavailable / clear, the left edge paint from --wa-kit-tone. It is
+   bare by default (inside a card or a table cell the parent frames it);
+   `--framed` is the standalone box PortalEmptyState draws. Type stays on
+   --wa-type-body / --wa-type-meta (13px floor); no colour is named here. */
+.wa-kit-empty {
+  text-align: left;
+  padding: 0;
+  color: var(--wa-text);
+}
+.wa-kit-empty--framed {
+  background: var(--wa-surface-2);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius);
+  padding: var(--wa-pad);
+}
+.wa-kit-empty--unavailable,
+.wa-kit-empty--clear {
+  border-left: 3px solid var(--wa-kit-tone, var(--wa-border));
+}
+.wa-kit-empty--unavailable:not(.wa-kit-empty--framed),
+.wa-kit-empty--clear:not(.wa-kit-empty--framed) {
+  padding-left: var(--wa-pad-sm);
+}
+/* The icon chip hugs its content: callers pass 24-48px glyphs, so the fixed
+   34px .wa-kit-tone-icon box becomes a floor, never a clip. */
+.wa-kit-empty-icon {
+  width: auto;
+  height: auto;
+  min-width: 34px;
+  min-height: 34px;
+  overflow: visible;
+  margin-bottom: 12px;
+}
+.wa-kit-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
 }
 /* StatTile parts. The number is neutral --wa-text whatever the tile's tone
    (WAP-99: categorical totals never paint); a tone declared on the card paints
@@ -618,6 +717,25 @@ a.wa-kit-tab {
   max-width: 100%;
   min-width: 0;
 }
+/* An overflowing table scroller is a keyboard tab stop (browsers make
+   scrollable regions focusable), but the wrap's overflow:hidden clips any
+   ring drawn on the scroller itself. The scroller keeps the standard recipe
+   (replacing the clipped UA outline), and the wrap draws the ring you can see
+   (WAP-253 item 4); forced-colors mode drops box-shadow, so outline there. */
+.wa-kit-table-wrap .wa-overflow-x-auto:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
+}
+.wa-kit-table-wrap:has(> .wa-overflow-x-auto:focus-visible) {
+  box-shadow: var(--wa-focus-ring);
+}
+@media (forced-colors: active) {
+  .wa-kit-table-wrap:has(> .wa-overflow-x-auto:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 .wa-kit-table {
   width: 100%;
   border-collapse: collapse;
@@ -749,6 +867,7 @@ a.wa-kit-tab {
 }
 .wa-kit-table-cell--num {
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 /* Scroll cue: right-edge fade while more columns hide off-screen. */
 .wa-kit-table-wrap--cue[data-scrollable='true']:not([data-scroll-end='true'])::after {
@@ -1326,7 +1445,7 @@ a.wa-kit-tab {
   flex-shrink: 0;
   border-radius: 999px;
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   font-size: var(--wa-type-meta);
   font-weight: 700;
   font-variant-numeric: tabular-nums;

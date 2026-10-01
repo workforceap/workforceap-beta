@@ -7,7 +7,7 @@ import { schoolEnrollmentParentAckHtml } from './school-enrollment-parent-ack';
 import { schoolEnrollmentPartnerAckHtml } from './school-enrollment-partner-ack';
 
 describe('schoolEnrollmentParentAckHtml', () => {
-  it('includes student, school, program, and 24-48 hour timeline', () => {
+  it('includes student, school, program, and the manual enrollment step without a fixed timeline', () => {
     const html = schoolEnrollmentParentAckHtml({
       parentName: 'Alex Rader',
       studentName: 'Jamie Student',
@@ -18,7 +18,8 @@ describe('schoolEnrollmentParentAckHtml', () => {
     assert.ok(html.includes('Jamie Student'));
     assert.ok(html.includes('Concordia High School'));
     assert.ok(html.includes('IT Support Professional Certificate (IBM)'));
-    assert.ok(html.includes('24&ndash;48 hours'));
+    assert.ok(!html.includes('24&ndash;48 hours'));
+    assert.ok(html.includes('by hand and emails them when it&rsquo;s done'));
   });
 
   it('escapes HTML in names', () => {
@@ -47,7 +48,23 @@ describe('schoolEnrollmentPartnerAckHtml', () => {
     assert.ok(html.includes('jamie@example.com'));
     assert.ok(html.includes('Grade:'));
     assert.ok(html.includes('11'));
-    assert.ok(html.includes('24&ndash;48 hours'));
+    assert.ok(!html.includes('24&ndash;48 hours'));
+    assert.ok(html.includes('by hand and emails you when it&rsquo;s done'));
     assert.ok(html.includes('https://www.workforceap.org/partner'));
+  });
+
+  it('leaves the email line out when the partner tier has no member contact', () => {
+    const html = schoolEnrollmentPartnerAckHtml({
+      partnerName: 'Neighborhood Referral Network',
+      studentName: 'Jamie Student',
+      studentEmail: null,
+      programInterest: 'IT Support Professional Certificate (IBM)',
+      gradeLevel: null,
+      partnerPortalUrl: 'https://www.workforceap.org/partner',
+    });
+    assert.ok(html.includes('Jamie Student'));
+    assert.ok(!html.includes('Email:</strong>'));
+    assert.ok(!html.includes('Grade:'));
+    assert.ok(!html.includes('@example.com'));
   });
 });

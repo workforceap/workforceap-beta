@@ -6,6 +6,8 @@ import { skillMissionEmptyState } from './skillMissionEmptyState';
 
 test('unenrolled members are sent to choose a program, not a training page', () => {
   const empty = skillMissionEmptyState({ programSlug: null, programTitle: null });
+  assert.equal(empty.kind, 'first');
+  assert.equal(empty.tone, undefined);
   assert.equal(empty.title, 'No program enrolled');
   assert.ok(empty.description.length <= 96);
   assert.doesNotMatch(empty.description, /Enroll in a training program and a skill mission unlocks/);
@@ -18,6 +20,8 @@ test('enrolled members without catalog missions keep training, not choose-a-prog
     programSlug: 'ai-professional-practitioner-certificate',
     programTitle: 'AI Professional Practitioner Certificate',
   });
+  assert.equal(empty.kind, 'unavailable');
+  assert.equal(empty.tone, 'info');
   assert.equal(empty.title, 'No missions for AI Professional Practitioner Certificate yet');
   assert.doesNotMatch(empty.primaryAction.label, /Choose program/i);
   assert.equal(empty.primaryAction.href, '/dashboard/program');

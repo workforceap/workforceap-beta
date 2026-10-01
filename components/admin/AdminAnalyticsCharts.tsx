@@ -20,13 +20,21 @@ type Props = {
   };
 };
 
-const ACCENT = '#ad2c4d';
-const BLUE = '#2b7bb9';
-const GOLD = '#a47f38';
-const GREEN = '#4a9b4f';
-const MUTED = '#584144';
+// Series colours read the `--wa-*` tokens directly. Recharts writes these
+// into SVG presentation attributes (fill / stroke / stop-color), which take
+// `var()` and `color-mix()` like any CSS colour, so the charts follow the
+// theme with no getComputedStyle pass. Teal and orange are mixed from brand
+// hues rather than added as new literals so they adapt in dark mode too.
+const ACCENT = 'var(--wa-accent)';
+const BLUE = 'var(--wa-info)';
+const GOLD = 'var(--wa-gold)';
+const GREEN = 'var(--wa-success)';
+const VIOLET = 'var(--wa-violet)';
+const TEAL = 'color-mix(in srgb, var(--wa-info) 50%, var(--wa-success))';
+const ORANGE = 'color-mix(in srgb, var(--wa-gold) 45%, var(--wa-danger))';
+const MUTED = 'var(--wa-muted)';
 
-const PROGRAM_COLORS = [ACCENT, BLUE, GOLD, GREEN, '#c4456a', '#0d9488', '#ea580c', MUTED];
+const PROGRAM_COLORS = [ACCENT, BLUE, GOLD, GREEN, VIOLET, TEAL, ORANGE, MUTED];
 
 function SectionLabel({ title, sub }: { title: string; sub?: string }) {
   return (
@@ -136,7 +144,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
                 <stop offset="95%" stopColor={GREEN} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--wa-border)" />
             <XAxis dataKey="date" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
             <YAxis tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
             <Tooltip {...tooltipStyle} />
@@ -175,7 +183,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
           <SectionLabel title="Enrollment by Program" sub="Active members per program track" />
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={enrollmentByProgram} layout="vertical" margin={{ left: 8, right: 16, top: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--wa-border)" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
               <YAxis type="category" dataKey="program" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={110}
                 tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '…' : v} />
@@ -198,9 +206,9 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
                 <Pie data={[
                   { name: 'Placed', value: placementStats.placed },
                   { name: 'In Progress', value: Math.max(0, placementStats.enrolled - placementStats.placed) },
-                ]} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0}>
+                ]} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0} stroke="none">
                   <Cell fill={GREEN} />
-                  <Cell fill="var(--surface-container-highest, #282a2c)" />
+                  <Cell fill="var(--wa-track)" />
                 </Pie>
                 <text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" fill={GREEN} fontSize={20} fontWeight={800}>
                   {placementStats.placementRate}%
@@ -242,7 +250,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
           />
           <ResponsiveContainer width="100%" height={Math.max(180, aiBreakdown.length * 36)}>
             <BarChart data={aiBreakdown} layout="vertical" margin={{ left: 8, right: 40, top: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--wa-border)" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} allowDecimals={false} />
               <YAxis type="category" dataKey="tool" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={130} />
               <Tooltip {...tooltipStyle} />

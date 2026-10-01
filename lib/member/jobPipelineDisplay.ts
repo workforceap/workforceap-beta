@@ -1,25 +1,19 @@
 /**
  * Display helpers for the member Job Pipeline kit.
- * Keep empty-state copy short enough to read on a phone without truncation.
+ *
+ * Empty-state copy lives in messages/*.json under `empty.*` (KIT_GUIDE §6):
+ * `empty.matches` for the recommendations list, `empty.openings` for the
+ * open-roles board. Only the situation kind and the real destinations stay here.
  */
-export const JOBS_EMPTY_RECOMMENDATIONS = {
-  title: 'No matching roles yet',
-  description: 'Update your profile so we can match you to openings.',
-  primaryCta: 'Update profile',
-  secondaryCta: 'Browse jobs',
-} as const;
 
 /**
  * Honest empty inventory for the member open-roles board (`/dashboard/jobs`
  * listing). Distinct from filter “no matches” and from pipeline recommendations.
- * Do not soften this into demo seed copy — empty means no live public jobs.
+ * `unavailable`: nothing failed, but no live public job exists for this member
+ * yet — never soften it into demo seed copy.
  */
 export const JOBS_BOARD_EMPTY = {
-  title: 'No live openings right now',
-  description:
-    'Employer partners have not posted live roles on this board yet. Update your profile so you are ready when matches appear, message your counselor for leads, and check back after new postings go live.',
-  primaryCta: 'Update profile',
-  secondaryCta: 'Message your counselor',
+  kind: 'unavailable',
   primaryHref: '/dashboard/profile',
   secondaryHref: '/dashboard/messages',
 } as const;

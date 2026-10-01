@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 // ─── Mocks ───
 vi.mock('next/server', () => {
@@ -222,7 +223,7 @@ describe('GET /api/partner/dashboard', () => {
       id: UUIDS.member,
       fullName: 'Alice',
       enrolledAt: new Date(),
-      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date(), salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
+      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date(), startDateVerified: true, salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
     });
     const member2 = makeMember({ id: UUIDS.member2, fullName: 'Bob', enrolledAt: new Date() });
 
@@ -248,6 +249,31 @@ describe('GET /api/partner/dashboard', () => {
     expect(body.estimatedPayout).toBe(500);
     expect(body.stageCounts.placed).toBe(1);
     expect(body.stageCounts.enrolled).toBe(1);
+  });
+
+  it('does not count a self-reported placement in dashboard payout or placed total', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getPartnerForUser).mockResolvedValue(partnerCtx as any);
+    const member = makeMember({
+      placementRecord: {
+        placedAt: new Date('2026-04-01'),
+        employerName: 'Private Employer',
+        startDateVerified: false,
+      },
+    });
+    vi.mocked(loadPartnerReferralBundle).mockResolvedValue({
+      members: [member],
+      pipelineMembers: [{ member, stage: 'enrolled' }],
+    } as any);
+
+    const res = await dashboardGet(new Request('http://localhost:3000/api/partner/dashboard'));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      totalMembers: 1,
+      placedCount: 0,
+      estimatedPayout: 0,
+      stageCounts: { enrolled: 1, placed: 0 },
+    });
   });
 });
 
@@ -418,11 +444,15 @@ describe('POST /api/partner/referrals', () => {
           partnerId: UUIDS.partner,
           memberId: UUIDS.member,
           partner: { organizationId: UUIDS.org, active: true },
+          // One definition of "a member" (WAP-182 item 3).
           member: expect.objectContaining({
             organizationId: UUIDS.org,
             deletedAt: null,
-            profile: { role: 'member' },
+            ...MEMBER_ONLY_WHERE,
           }),
+          // The partner minor rule rides alongside it, never replacing it
+          // (lib/partner/dataAccess.ts; tests/api/partner-hidden-member-routes.spec.ts).
+          AND: [{ member: { NOT: [expect.objectContaining({ profile: expect.any(Object) })] } }],
         }),
       })
     );
@@ -434,6 +464,32 @@ describe('POST /api/partner/referrals', () => {
     expect(await retry.json()).toEqual(body);
     expect(prisma.partnerReferral.create).not.toHaveBeenCalled();
   });
+
+  /**
+   * Would the route's member predicate admit a synthetic account whose
+   * `profiles.role` is `profileRole` and which holds no `user_roles` rows?
+   *
+   * The predicate is `MEMBER_ONLY_WHERE`'s role half (WAP-182 item 3), which
+   * rides in the single `NOT` list: "no member row AND the profile does not
+   * say member" excludes, and a staff/partner profile role excludes outright.
+   * A `where` carrying no role predicate at all admits everything, so
+   * dropping the filter fails these cases rather than passing them.
+   */
+  function memberPredicateAdmits(filter: Record<string, any>, profileRole: string): boolean {
+    const clauses = (filter.NOT ?? []) as Array<Record<string, any>>;
+    if (!clauses.some((clause) => clause.profile || clause.userRoles)) return true;
+    return !clauses.some((clause) => {
+      if (clause.email) return false;
+      if (clause.profile?.role?.in) return clause.profile.role.in.includes(profileRole);
+      if (clause.userRoles?.none) {
+        // No rows, so `none` matches; the nested OR decides on the profile role.
+        return (clause.OR as Array<Record<string, any>>).some(
+          (branch) => branch.profile?.role?.notIn && !branch.profile.role.notIn.includes(profileRole),
+        );
+      }
+      return false;
+    });
+  }
 
   it.each([
     { label: 'an unrelated same-org member', memberOrg: UUIDS.org, deletedAt: null, role: 'member', linked: false },
@@ -448,7 +504,10 @@ describe('POST /api/partner/referrals', () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: UUIDS.member, organizationId: memberOrg } as any);
     vi.mocked(prisma.partnerReferral.findFirst).mockImplementation(((args: any) => {
       const filter = args.where.member;
-      const authorized = linked && filter.organizationId === memberOrg && filter.deletedAt === deletedAt && filter.profile.role === role;
+      const authorized = linked
+        && filter.organizationId === memberOrg
+        && filter.deletedAt === deletedAt
+        && memberPredicateAdmits(filter, role);
       return Promise.resolve(authorized ? { id: 'unexpected-access' } : null);
     }) as typeof prisma.partnerReferral.findFirst);
 
@@ -615,7 +674,7 @@ describe('GET /api/partner/earnings', () => {
         member: {
           id: UUIDS.member,
           fullName: 'Alice',
-          placementRecord: { placedAt: new Date('2026-03-01'), employerName: 'Acme', jobTitle: 'Dev' },
+          placementRecord: { placedAt: new Date('2026-03-01'), employerName: 'Acme', jobTitle: 'Dev', startDateVerified: true },
         },
       },
       {
@@ -635,7 +694,60 @@ describe('GET /api/partner/earnings', () => {
     expect(body.estimatedTotal).toBe(750);
     expect(body.placements).toHaveLength(1);
     expect(body.placements[0].memberName).toBe('Alice');
-    expect(body.placements[0].employerName).toBe('Acme');
+    // Referral (payout) partners are the status-only tier: placed + date, no job details.
+    expect(body.placements[0]).toEqual({ memberId: UUIDS.member, memberName: 'Alice', placedAt: '2026-03-01T00:00:00.000Z' });
+    expect(JSON.stringify(body)).not.toContain('Acme');
+  });
+
+  it('omits unverified placement details and payout while enforcing the referral tenant', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getPartnerForUser).mockResolvedValue(partnerCtx as any);
+    vi.mocked(prisma.partnerReferral.findMany).mockResolvedValue([{
+      member: {
+        id: UUIDS.member,
+        fullName: 'Alice',
+        placementRecord: {
+          placedAt: new Date('2026-03-01'),
+          employerName: 'Private Employer',
+          jobTitle: 'Private Role',
+          startDateVerified: false,
+        },
+      },
+    }] as any);
+
+    const res = await earningsGet(new Request('http://localhost'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toMatchObject({
+      totalReferrals: 1,
+      placedCount: 0,
+      estimatedTotal: 0,
+      placements: [],
+    });
+    expect(JSON.stringify(body)).not.toContain('Private Employer');
+    expect(JSON.stringify(body)).not.toContain('Private Role');
+    expect(prisma.partnerReferral.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          partnerId: UUIDS.partner,
+          partner: { organizationId: UUIDS.org },
+          member: expect.objectContaining({
+            organizationId: UUIDS.org,
+            deletedAt: null,
+            email: MEMBER_ONLY_WHERE.email,
+            // Member-only exclusions kept, plus the hidden-minor rule (lib/partner/dataAccess.ts).
+            NOT: [...MEMBER_ONLY_WHERE.NOT, { profile: { is: expect.objectContaining({ ferpaConsentGiven: false }) } }],
+          }),
+        }),
+        include: {
+          member: {
+            select: expect.objectContaining({
+              placementRecord: { select: { placedAt: true, startDateVerified: true } },
+            }),
+          },
+        },
+      }),
+    );
   });
 });
 
@@ -672,7 +784,7 @@ describe('GET /api/partner/members', () => {
       id: UUIDS.member,
       fullName: 'Alice',
       enrolledAt: new Date('2026-01-01'),
-      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date('2026-04-01'), salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
+      placementRecord: { employerName: 'Acme', jobTitle: 'Dev', placedAt: new Date('2026-04-01'), startDateVerified: true, salaryOffered: null, onboardingWindowEnd: null, retentionDecision: null },
     });
     const member2 = makeMember({ id: UUIDS.member2, fullName: 'Bob', enrolledAt: new Date('2026-02-01') });
 
@@ -698,6 +810,41 @@ describe('GET /api/partner/members', () => {
     expect(body.members[1].stage).toBe('in_training');
     expect(body.members[1].progress).toBe(45);
     expect(body.members[1].placedAt).toBeNull();
+  });
+
+  it('redacts employer, role, and date from an unverified member placement', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getPartnerForUser).mockResolvedValue(partnerCtx as any);
+    const member = makeMember({
+      placementRecord: {
+        employerName: 'Private Employer',
+        jobTitle: 'Private Role',
+        placedAt: new Date('2026-04-01'),
+        startDateVerified: false,
+      },
+    });
+    vi.mocked(loadPartnerReferralBundle).mockResolvedValue({
+      pipelineMembers: [{
+        member,
+        stage: 'enrolled',
+        progress: 0,
+        programTitle: 'IT Support',
+        allProgramTitles: ['IT Support'],
+        referredAt: new Date('2026-01-15'),
+      }],
+    } as any);
+
+    const res = await membersGet(new Request('http://localhost:3000/api/partner/members'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.members[0]).toMatchObject({
+      stage: 'enrolled',
+      placedAt: null,
+      employerName: null,
+      jobTitle: null,
+    });
+    expect(JSON.stringify(body)).not.toContain('Private Employer');
+    expect(JSON.stringify(body)).not.toContain('Private Role');
   });
 
   it('returns empty members array when partner has no referrals', async () => {

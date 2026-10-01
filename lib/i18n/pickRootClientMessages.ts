@@ -34,8 +34,17 @@ export const PORTAL_CLIENT_NAMESPACES = [
   'wioa',
   // components/portal/MemberApprovalStatusCard — the /dashboard approval card.
   'memberApproval',
+  // lib/status/applicationStatusVocabulary — the application / intake status
+  // words the approval card renders (`status.application.member.*`, `status.intake.member.*`).
+  'status',
   // components/portal/kit/GuidedTour — tour chrome + step copy (lib/tours/registry.ts).
   'tours',
+  // KitEmptyState copy (docs/KIT_GUIDE.md §6) read by client surfaces: the home
+  // pipeline table and MatchedRoles, the jobs listing, the application tracker.
+  'empty',
+  // components/portal/kit/pages/member/MemberMessagesKit — /dashboard/messages
+  // inbox chrome, composer and send errors (WAP-262).
+  'messages',
 ] as const;
 
 /**

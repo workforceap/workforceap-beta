@@ -11,7 +11,7 @@ import { getUser } from "@/lib/auth/server";
 import { prisma } from "@/lib/db/prisma";
 import { getProgramBySlug } from "@/lib/content/programs";
 import { programDisplayTitle } from "@/lib/content/programTitle";
-import { getScoreBreakdownSafeResult } from "@/lib/readiness/score";
+import { getScoreBreakdownSafeResult, sumReadinessPoints } from "@/lib/readiness/score";
 // Use the client-safe questions file. This page doesn't need the answer
 // key (only renders question text + member's recorded answer), so we
 // avoid pulling the server-only answer-key module into this server
@@ -270,10 +270,7 @@ export default async function DashboardProfilePage({
         : Promise.resolve(null),
     ]);
     const readinessBreakdown = readinessResult.breakdown;
-    const readinessScore = Math.min(
-      100,
-      Object.values(readinessBreakdown).reduce((sum, b) => sum + b.earned, 0),
-    );
+    const readinessScore = sumReadinessPoints(readinessBreakdown);
     // Same rule as the home chip and the points page: a counter whose last
     // activity is older than yesterday is a lost streak and reads 0.
     const currentStreak = effectiveStreak({
@@ -399,7 +396,7 @@ export default async function DashboardProfilePage({
                     fontWeight: 700,
                     background:
                       "color-mix(in srgb, var(--color-accent) 12%, transparent)",
-                    color: "var(--color-accent)",
+                    color: "var(--wa-accent-text)",
                   }}
                 >
                   {program.title}
@@ -576,7 +573,7 @@ export default async function DashboardProfilePage({
                   style={{
                     fontSize: "0.8125rem",
                     fontWeight: 700,
-                    color: "var(--color-accent)",
+                    color: "var(--wa-accent-text)",
                     textDecoration: "none",
                   }}
                 >
@@ -667,7 +664,7 @@ export default async function DashboardProfilePage({
                     style={{
                       fontSize: "2rem",
                       fontWeight: 800,
-                      color: "var(--color-accent)",
+                      color: "var(--wa-accent-text)",
                       letterSpacing: "-0.04em",
                       margin: 0,
                       lineHeight: 1,
@@ -801,7 +798,7 @@ export default async function DashboardProfilePage({
                   background: "var(--surface-container-low)",
                   borderRadius: "var(--radius-md)",
                   border: "1px solid var(--outline-variant)",
-                  color: "var(--color-accent)",
+                  color: "var(--wa-accent-text)",
                   fontWeight: 600,
                   fontSize: "0.875rem",
                   textDecoration: "none",
@@ -949,7 +946,7 @@ export default async function DashboardProfilePage({
                   style={{
                     fontSize: "0.875rem",
                     fontWeight: 700,
-                    color: "var(--color-accent)",
+                    color: "var(--wa-accent-text)",
                     marginBottom: "0.75rem",
                   }}
                 >

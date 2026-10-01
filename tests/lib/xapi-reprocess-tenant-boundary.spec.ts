@@ -68,7 +68,7 @@ describe('xAPI reprocess tenant boundary', () => {
       skippedUnparsed: 0,
       skippedUnresolvedOrganization: 0,
       completionsEmitted: 0,
-      breakdown: { completedOk: 0, errored: 0, ignored: 0, unmatched: 0 },
+      breakdown: { completedOk: 0, errored: 0, ignored: 0, unresolvedCourse: 0, unmatched: 0 },
     });
   });
 

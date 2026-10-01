@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * Surfaces the top course slugs landing in `completion_status='ignored'`
+ * Surfaces the top course slugs landing in `completion_status='unresolved_course'`
  * or `'unmatched'` over the last 30 days. The list points an admin
  * straight at the slugs that need a canonical mapping (or an actor-email
- * remap, in the unmatched case).
+ * remap, in the unmatched case). `'ignored'` is normal progress traffic and
+ * is shown only as context (WAP-276).
  *
  * Backed by `GET /api/admin/coursera/ignored-xapi-summary`.
  */
@@ -23,6 +24,7 @@ type Summary = {
   lookbackDays: number;
   outstandingTotal: number;
   ignoredTotal: number;
+  unresolvedTotal?: number;
   unmatchedTotal: number;
   topSlugs: SummaryRow[];
 };
@@ -98,6 +100,7 @@ export default function IgnoredXapiSummaryCard() {
   if (!data) return null;
 
   const { ignoredTotal, unmatchedTotal, outstandingTotal, lookbackDays, topSlugs } = data;
+  const unresolvedTotal = data.unresolvedTotal ?? 0;
   const severity =
     outstandingTotal === 0
       ? 'rgba(34, 197, 94, 0.10)'
@@ -119,12 +122,16 @@ export default function IgnoredXapiSummaryCard() {
     >
       <div>
         <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-          xAPI events stuck in ignored / unmatched (last {lookbackDays} days)
+          xAPI events that lost progress (last {lookbackDays} days)
         </div>
         <div style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
-          {outstandingTotal.toLocaleString()} total — {ignoredTotal.toLocaleString()} ignored,{' '}
-          {unmatchedTotal.toLocaleString()} unmatched. Slugs below need a canonical mapping or an
-          actor-email remap.
+          {outstandingTotal.toLocaleString()} stuck — {unresolvedTotal.toLocaleString()} for an
+          unmapped course, {unmatchedTotal.toLocaleString()} unmatched to a member. Slugs below need a
+          canonical mapping or an actor-email remap.
+        </div>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+          {ignoredTotal.toLocaleString()} other events were normal progress traffic (ignored). Rows
+          recorded before 2026-09-25 can read ignored even if their course was unmapped.
         </div>
       </div>
       {topSlugs.length === 0 ? (

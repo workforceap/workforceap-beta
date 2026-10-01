@@ -9,6 +9,7 @@ import { ASSESSMENT_QUESTIONS_PUBLIC as ASSESSMENT_QUESTIONS } from '@/lib/asses
 import { formatPhone } from '@/lib/formatPhone';
 import DataTable from '@/components/portal/ui/DataTable';
 import PortalPagination from '@/components/portal/PortalPagination';
+import { csvCell } from '@/lib/csv/cells';
 
 type AssessmentUser = {
   id: string;
@@ -97,10 +98,10 @@ export default function AssessmentsTable({
       u.email,
       u.phone ?? '',
       u.programInterest ?? '',
-      String(u.assessmentScorePct ?? ''),
+      u.assessmentScorePct ?? '',
       u.assessmentCompletedAt?.toISOString() ?? '',
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const csv = [headers.join(','), ...rows.map((r) => r.map(csvCell).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -226,8 +227,8 @@ export default function AssessmentsTable({
                       const correct = correctnessByUserId[u.id]?.[q.id] === true;
                       return (
                         <div key={q.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.375rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
-                          <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>{correct ? 'check_circle' : 'cancel'}</span>
+                          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: correct ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
+                          <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: correct ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>{correct ? 'check_circle' : 'cancel'}</span>
                           <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.4 }}>{ans ?? '—'}</span>
                         </div>
                       );

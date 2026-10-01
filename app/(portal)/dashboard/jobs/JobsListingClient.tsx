@@ -202,58 +202,6 @@ function JobCard({
   );
 }
 
-function JobsEmptyState({ onClearFilters, t }: { onClearFilters: () => void; t: (k: string) => string }) {
-  return (
-    <div className="wa-kit-card">
-      <KitEmptyState
-        title={t('noJobsMatchFilters')}
-        description={t('tryAdjustingFilters')}
-        action={<KitCta onClick={onClearFilters}>{t('clearFilters')}</KitCta>}
-      />
-    </div>
-  );
-}
-
-function JobsNoResultsState({ isAuthenticated, t }: { isAuthenticated: boolean; t: (k: string) => string }) {
-  if (isAuthenticated) {
-    return (
-      <div className="wa-kit-card">
-        <KitEmptyState
-          title={t('noOpeningsListed')}
-          description={t('newRolesAppear')}
-          action={
-            <div className="wa-flex wa-flex-wrap wa-items-center" style={{ gap: 8 }}>
-              <KitCta href="/dashboard/profile" variant="solid">
-                {t('updateProfile')}
-              </KitCta>
-              <KitCta href="/dashboard/messages">{t('messageCounselor')}</KitCta>
-            </div>
-          }
-        />
-      </div>
-    );
-  }
-  return (
-    <div className="wa-kit-card">
-      <KitEmptyState
-        title={t('noJobsAvailable')}
-        description={t('newJobsAddedRegularly')}
-        action={
-          <div className="wa-flex wa-flex-wrap wa-items-center" style={{ gap: 8 }}>
-            <KitCta href="/programs" variant="solid">
-              {t('browsePrograms')}
-            </KitCta>
-            <KitCta href="/apply">{t('applyForTraining')}</KitCta>
-            <KitCta href="/employers" variant="ghost">
-              {t('forEmployers')}
-            </KitCta>
-          </div>
-        }
-      />
-    </div>
-  );
-}
-
 export default function JobsListingClient({
   isAuthenticated = true,
   ageGroup = 'adult18plus' as 'under14' | 'youth14to17' | 'adult18plus',
@@ -275,6 +223,7 @@ export default function JobsListingClient({
   preview?: boolean;
 }) {
   const t = useTranslations('jobs');
+  const te = useTranslations('empty');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -675,11 +624,32 @@ export default function JobsListingClient({
           ))}
         </div>
       ) : jobs.length === 0 ? (
-        hasActiveFilters ? (
-          <JobsEmptyState onClearFilters={clearFilters} t={t} />
-        ) : (
-          <JobsNoResultsState isAuthenticated={isAuthenticated} t={t} />
-        )
+        <div className="wa-kit-card">
+          {hasActiveFilters ? (
+            <KitEmptyState
+              kind="filtered"
+              title={te('jobsFiltered.title')}
+              description={te('jobsFiltered.body')}
+              primaryAction={{ label: te('jobsFiltered.action'), onClick: clearFilters }}
+            />
+          ) : isAuthenticated ? (
+            <KitEmptyState
+              kind="unavailable"
+              title={te('openings.title')}
+              description={te('openings.body')}
+              primaryAction={{ label: te('openings.action'), href: '/dashboard/profile' }}
+              secondaryAction={{ label: te('openings.secondary'), href: '/dashboard/messages' }}
+            />
+          ) : (
+            <KitEmptyState
+              kind="unavailable"
+              title={te('openingsPublic.title')}
+              description={te('openingsPublic.body')}
+              primaryAction={{ label: te('openingsPublic.action'), href: '/programs' }}
+              secondaryAction={{ label: te('openingsPublic.secondary'), href: '/apply' }}
+            />
+          )}
+        </div>
       ) : (
         <>
           <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 8px' }}>

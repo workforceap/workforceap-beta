@@ -18,7 +18,7 @@ vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: h.org }));
 vi.mock('@/lib/admin/applicantTriageLoad', () => ({ loadApplicantTriageByUserIds: async () => new Map() }));
 
 import { loadPersistedAtRiskMembers, persistedRiskCommandRow, type PersistedAtRiskMember } from '@/lib/member/persistedAtRisk';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { getAdminCommandCenter } from '@/lib/admin/commandCenter';
 import { getCounselorCommandCenter } from '@/lib/counselor/commandCenter';
 
@@ -50,7 +50,7 @@ describe('persisted risk selection contract', () => {
     const query = riskQueries()[0];
     expect(query.values).toEqual([...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, 'open', 'acknowledged', 'escalated', 0, 'org-1', 25, 25]);
     // Member-role accounts only: the KPI must agree with the /admin attention tile (number audit S2).
-    expect(query.sql).toContain("INNER JOIN profiles member_profile ON member_profile.user_id = u.id AND member_profile.role = 'member' AND u.email NOT IN (?,?,?,?) AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ?");
+    expect(query.sql).toContain(memberOnlySqlJoin().sql.replace(/\s+/g, ' ').trim());
     expect(query.sql).toMatch(/PARTITION BY a.user_id ORDER BY a.score DESC, a.updated_at DESC, a.id ASC/);
     expect(query.sql).toMatch(/WHERE member_rank = 1/);
     expect(query.sql).toMatch(/SELECT \* FROM members ORDER BY score DESC, updated_at DESC, id ASC LIMIT \? OFFSET \?/);

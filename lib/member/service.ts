@@ -6,6 +6,9 @@ import type { HeadersLike } from '@/lib/tenant/resolveOrgFromRequest';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import { MemberSignupInput } from '@/lib/validation/member';
 import { withDbRetry } from '@/lib/db/withDbRetry';
+import { logger } from '@/lib/observability/logger';
+import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
+import { activeReferralPartnerWhere } from '@/lib/partner/referralPartnerLookup';
 
 /**
  * The member row uses the Supabase auth user id as its primary key, so the
@@ -32,37 +35,53 @@ export type CreateMemberOptions = {
   headers?: HeadersLike;
 };
 
+/** The partner the signup was attributed to (for the disclosure acknowledgement). */
+type CreateMemberResult = {
+  referralPartnerId: string | null;
+  referralPartnerType: string | null;
+  referralRef: string | null;
+};
+
 export async function createMember(
   userId: string,
   data: MemberSignupInput,
   options: CreateMemberOptions = {},
-): Promise<void> {
+): Promise<CreateMemberResult> {
   let referralPartnerId: string | null = null;
+  let referralPartnerType: string | null = null;
   let referralSource: string | null = null;
 
-  const refRaw = data.referralRef?.trim().toLowerCase();
-  if (refRaw) {
-    const partner = await withDbRetry(() =>
-      prisma.partner.findFirst({
-        where: {
-          active: true,
-          OR: [{ referralCode: refRaw }, { slug: refRaw }],
-        },
-        select: { id: true },
-      }),
-    );
-    if (partner) {
-      referralPartnerId = partner.id;
-      referralSource = `partner_ref:${refRaw}`;
-    }
-  }
-
+  // Resolve the member's organization first so the partner lookup below is
+  // tenant-scoped, matching the /apply door: a ref code from another tenant
+  // must not attribute this member to that tenant's partner.
   const organizationId = await withDbRetry(async () =>
     resolveProvisionOrganizationId({
       explicitOrganizationId: options.organizationId,
       headers: options.headers ?? (await tryCurrentRequestHeaders()),
     }),
   );
+
+  const refRaw = data.referralRef?.trim().toLowerCase();
+  if (refRaw) {
+    const partner = await withDbRetry(() =>
+      prisma.partner.findFirst({
+        where: activeReferralPartnerWhere(refRaw, organizationId),
+        select: { id: true, partnerType: true },
+      }),
+    );
+    if (partner) {
+      referralPartnerId = partner.id;
+      referralPartnerType = partner.partnerType;
+      referralSource = `partner_ref:${refRaw}`;
+    } else {
+      // The ref is dropped (no such code, inactive partner, or a partner in
+      // another organization) and nothing about it is persisted, so without
+      // this line a broken partner link is indistinguishable from organic
+      // traffic. The input is caller-controlled, so only log a fingerprint.
+      logger.warn('signup: partner ref matched no active partner in this organization',
+        droppedPartnerRefLogContext(refRaw, organizationId));
+    }
+  }
 
   await withDbRetry(async () => {
     try {
@@ -108,6 +127,23 @@ export async function createMember(
           },
         });
 
+        // Create partner referral record so the member shows in partner's
+        // referred members list (every partner surface reads PartnerReferral,
+        // not Application.referralPartnerId). UPSERT, not create:
+        // `@@unique([partnerId, memberId])` means a re-submit by a returning
+        // member would raise P2002 and roll the whole transaction back.
+        // `update: {}` keeps the original `referredAt` and any admin-assigned
+        // partner user intact. Mirrors app/api/apply/signup/route.ts.
+        if (referralPartnerId) {
+          await tx.partnerReferral.upsert({
+            where: {
+              partnerId_memberId: { partnerId: referralPartnerId, memberId: userId },
+            },
+            create: { partnerId: referralPartnerId, memberId: userId },
+            update: {},
+          });
+        }
+
         // Best-effort: notify admins of new application (do not block signup)
         sendNewApplicationAdminEmail({
           applicantName: data.fullName,
@@ -126,4 +162,6 @@ export async function createMember(
       throw err;
     }
   });
+
+  return { referralPartnerId, referralPartnerType, referralRef: refRaw ?? null };
 }

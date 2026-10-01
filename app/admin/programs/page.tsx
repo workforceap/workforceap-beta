@@ -214,8 +214,8 @@ export default async function AdminProgramsPage({
                   </div>
                   {stats.count > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.625rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', flexShrink: 0 }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>school</span>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--color-accent)' }}>{stats.count}</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>school</span>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--wa-accent-text)' }}>{stats.count}</span>
                     </div>
                   )}
                 </div>
@@ -223,7 +223,7 @@ export default async function AdminProgramsPage({
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.625rem', marginBottom: progressPct > 0 ? '0.875rem' : 0 }}>
                   <div data-program-metric="enrolled">
                     <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Enrolled</p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: stats.count > 0 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', margin: 0, letterSpacing: '-0.03em' }}>{stats.count}</p>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: stats.count > 0 ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)', margin: 0, letterSpacing: '-0.03em' }}>{stats.count}</p>
                   </div>
                   <div data-program-metric="avg-score">
                     <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Avg Score</p>

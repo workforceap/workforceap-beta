@@ -63,7 +63,7 @@ export default function DownloadMyDataButton() {
         )}
       </button>
       {error && (
-        <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', margin: 0 }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', margin: 0 }}>
           {error}
         </p>
       )}

@@ -38,7 +38,8 @@ import {
  *      (when available), a 4-stage tracker (Applied → Screen → Interview →
  *      Offer), and a status pill — alongside a side column with the open
  *      roles queue and a "Community impact" banner (WorkforceAP's 10%
- *      first-year-salary giveback; illustrative/copy-only, no data model).
+ *      first-year-salary giveback). The banner states the policy; it names a
+ *      dollar figure only when the caller passes a real one (WAP-210).
  *
  * All data is optional/degrading: every prop has a safe default so the page
  * renders sensibly with zero live data (new employer, empty pipeline) and
@@ -94,12 +95,20 @@ export interface EmployerHomeKitProps {
   hiresSpark?: SparkStat;
   /** Rows for the hero candidate pipeline table. */
   candidates?: EmployerCandidateRow[];
+  /**
+   * How many candidates "View all" opens (the full applications list). The
+   * table shows only the newest few, so its row count is never used as this
+   * number (WAP-210); omit it and the link carries no count.
+   */
+  candidatesTotal?: number;
   /** Rows for the "Open roles" side queue. */
   openRolesList?: EmployerOpenRoleItem[];
   /**
-   * Illustrative total giveback figure, pre-formatted (e.g. "$15,000").
-   * Derived from `hires` at an illustrative $5k/hire (10% of a $50k
-   * first-year salary) when omitted — copy/derived only, no data model.
+   * A real giveback total from this employer's hires, pre-formatted (e.g.
+   * "$15,000"). There is no data model for it yet, so production passes
+   * nothing and the banner states the 10% policy without a number. It used to
+   * fall back to hires × $50k × 10%, an invented figure shown as the
+   * employer's own (WAP-210).
    */
   givebackFigure?: string;
   givebackHref?: string;
@@ -151,20 +160,6 @@ function statusTagTone(status: string): KitTone {
   return 'muted';
 }
 
-/** Illustrative-only giveback total: hires × $50k avg first-year salary × 10%. Copy, not a real figure. */
-function illustrativeGiveback(hires: number): string {
-  const AVG_FIRST_YEAR_SALARY = 50_000;
-  const GIVEBACK_RATE = 0.1;
-  const total = Math.round(hires * AVG_FIRST_YEAR_SALARY * GIVEBACK_RATE);
-  return `$${total.toLocaleString('en-US')}`;
-}
-
-function fitScoreColor(pct: number): string {
-  if (pct >= 80) return 'var(--wa-success)';
-  if (pct >= 60) return 'var(--wa-gold)';
-  return 'var(--wa-muted)';
-}
-
 /* ---------------------------------------------------------------------- */
 /* Candidate table                                                         */
 /* ---------------------------------------------------------------------- */
@@ -196,9 +191,10 @@ const candidateColumns: Column<EmployerCandidateRow>[] = [
     key: 'fit',
     header: 'Fit',
     align: 'right',
+    numeric: true,
     render: (row) =>
       typeof row.fitScore === 'number' ? (
-        <span style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: fitScoreColor(clampPct(row.fitScore)) }}>
+        <span style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: 'var(--wa-text)' }}>
           {clampPct(row.fitScore)}%
         </span>
       ) : (
@@ -238,7 +234,7 @@ function candidateCard(row: EmployerCandidateRow) {
       <div className="wa-flex wa-items-center wa-justify-between" style={{ marginTop: 10 }}>
         <StageTrack index={stage.index} total={stage.total} tone={stage.tone} />
         {typeof row.fitScore === 'number' ? (
-          <span style={{ fontSize: 13, fontWeight: 800, color: fitScoreColor(clampPct(row.fitScore)), fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--wa-text)', fontVariantNumeric: 'tabular-nums' }}>
             {clampPct(row.fitScore)}% fit
           </span>
         ) : row.appliedLabel ? (
@@ -272,13 +268,13 @@ export function EmployerHomeKit({
   hiresSpark,
   candidates = [],
   openRolesList = [],
+  candidatesTotal,
   givebackFigure,
   givebackHref = '/employer/jobs/new',
   postRoleHref = '/employer/jobs/new',
   jobsHref = '/employer/jobs',
   pipelineHref = '/employer/applications',
 }: EmployerHomeKitProps) {
-  const giveback = givebackFigure ?? illustrativeGiveback(hires);
 
   const kpiTiles: Array<{ key: string; icon: LucideIcon; label: string; value: number; spark?: SparkStat }> = [
     { key: 'openRoles', icon: Briefcase, label: 'Open roles', value: openRoles, spark: openRolesSpark },
@@ -321,13 +317,13 @@ export function EmployerHomeKit({
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="wa-kit-card lg:wa-col-span-8">
             <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Candidate pipeline</h3>
+              <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Candidate pipeline</h2>
               <a
                 href={pipelineHref}
                 className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
                 style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}
               >
-                View all{candidates.length > 0 ? ` ${candidates.length}` : ''} &rarr;
+                View all{typeof candidatesTotal === 'number' && candidatesTotal > 0 ? ` ${candidatesTotal}` : ''} &rarr;
               </a>
             </div>
             <DataTable<EmployerCandidateRow>
@@ -374,8 +370,8 @@ export function EmployerHomeKit({
               icon={<HeartHandshake size={22} aria-hidden />}
               title="Community impact"
               body={
-                hires > 0
-                  ? `WorkforceAP reinvests 10% of every first-year salary from your hires into scholarships and training for the next cohort — an estimated ${giveback} from your hires so far.`
+                hires > 0 && givebackFigure
+                  ? `WorkforceAP reinvests 10% of every first-year salary from your hires into scholarships and training for the next cohort — an estimated ${givebackFigure} from your hires so far.`
                   : 'WorkforceAP reinvests 10% of every first-year salary from your hires into scholarships and training for the next cohort.'
               }
               badge="10% GIVEBACK"

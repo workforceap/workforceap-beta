@@ -5,6 +5,7 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { prisma } from '@/lib/db/prisma';
 import { WIOA_DEMOGRAPHICS_CAP, isListTruncated } from '@/lib/db/queryCaps';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
@@ -26,8 +27,13 @@ async function _GET(req: NextRequest) {
   const dateRange = quarter ? getQuarterRange(year, quarter) : { gte: new Date(year, 0, 1), lte: new Date(year, 11, 31) };
 
   const report = await withTenantScope(orgId, async (db) => {
+    // One definition of "a member" (WAP-182 item 3): the helper, never a
+    // hand-rolled role filter. A bare `user_roles` member row is the
+    // baseline every account gets from `ensureAppUser`, so filtering on it
+    // alone both counted staff and dropped every not-yet-backfilled member
+    // — and it skipped the fixture-email exclusion a funder report needs.
     const totalMembers = await db.user.count({
-      where: { deletedAt: null, userRoles: { some: { role: { name: 'member' } } }, createdAt: dateRange },
+      where: { deletedAt: null, ...MEMBER_ONLY_WHERE, createdAt: dateRange },
     });
 
     const enrolledMembers = await db.courseEnrollment.count({
@@ -50,7 +56,7 @@ async function _GET(req: NextRequest) {
     });
 
     const demographics = await db.user.findMany({
-      where: { deletedAt: null, userRoles: { some: { role: { name: 'member' } } }, createdAt: dateRange },
+      where: { deletedAt: null, ...MEMBER_ONLY_WHERE, createdAt: dateRange },
       select: {
         profile: { select: { ethnicity: true, veteranStatus: true, educationLevel: true, state: true } },
       },

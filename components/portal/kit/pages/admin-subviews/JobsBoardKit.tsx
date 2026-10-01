@@ -2,11 +2,8 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import NextLink from 'next/link';
 import { Plus } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   PageOpener,
@@ -16,12 +13,14 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
+import { JOB_POSTING_STATUS_WORDS } from '@/lib/status/jobPostingStatusVocabulary';
 import {
   DEFAULT_JOB_SORT_DIRECTION,
   DEFAULT_JOB_SORT_KEY,
   sortJobRows,
   type JobSortKey,
 } from '@/lib/admin/jobsBoardSort';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Jobs board — the admin job-posting queue rendered as a dense roster table.
@@ -33,7 +32,11 @@ import {
  * collapses to stacked cards on mobile via DataTable mobile="cards".
  */
 
-/** Display status mapped from the underlying JobStatusEnum. */
+/**
+ * Display status mapped from the underlying JobStatusEnum. These are keys,
+ * not the rendered words: `STATUS_LABEL` below turns them into text, and
+ * `Pending` reads with the admin vocabulary word ("Awaiting review").
+ */
 export type JobDisplayStatus =
   | 'Open'
   | 'Closing'
@@ -101,6 +104,16 @@ const STATUS_TONE: Record<JobDisplayStatus, KitTone> = {
   Closed: 'muted',
 };
 
+/** Rendered word per display status (lib/status/jobPostingStatusVocabulary.ts for the shared ones). */
+const STATUS_LABEL: Record<JobDisplayStatus, string> = {
+  Open: 'Open',
+  Closing: 'Closing',
+  Pending: JOB_POSTING_STATUS_WORDS.admin.pending,
+  Draft: JOB_POSTING_STATUS_WORDS.admin.draft,
+  Filled: JOB_POSTING_STATUS_WORDS.admin.filled,
+  Closed: JOB_POSTING_STATUS_WORDS.admin.closed,
+};
+
 export function JobsBoardKit({
   jobs = DEFAULT_JOBS,
   openRoles = 127,
@@ -147,6 +160,7 @@ export function JobsBoardKit({
       key: 'wage',
       header: sortHeader('wage', 'Wage'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSortForColumn('wage', sortKey, sortDirection),
       render: (row) => (
@@ -159,6 +173,7 @@ export function JobsBoardKit({
       key: 'applicants',
       header: sortHeader('applicants', 'Applicants'),
       align: 'right',
+      numeric: true,
       minWidth: 96,
       ariaSort: ariaSortForColumn('applicants', sortKey, sortDirection),
       render: (row) => (
@@ -172,7 +187,7 @@ export function JobsBoardKit({
       header: sortHeader('status', 'Status'),
       minWidth: 96,
       ariaSort: ariaSortForColumn('status', sortKey, sortDirection),
-      render: (row) => <StatusTag tone={STATUS_TONE[row.status]}>{row.status}</StatusTag>,
+      render: (row) => <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>,
     },
   ];
 
@@ -183,14 +198,13 @@ export function JobsBoardKit({
         kicker="Employers"
         lede={subtitle}
         action={
-          <AstryxLink href="/admin/jobs?ui=legacy" as={NextLink as never} isStandalone>
-            <Button
-              label="Post Job"
-              variant="primary"
-              size="sm"
-              icon={<Plus size={14} aria-hidden="true" />}
-            />
-          </AstryxLink>
+          <KitLinkButton
+            href="/admin/jobs?ui=legacy"
+            label="Post Job"
+            variant="primary"
+            size="sm"
+            icon={<Plus size={14} aria-hidden="true" />}
+          />
         }
       />
 
@@ -235,7 +249,7 @@ export function JobsBoardKit({
                 </div>
               </div>
               <div style={{ flexShrink: 0 }}>
-                <StatusTag tone={STATUS_TONE[row.status]}>{row.status}</StatusTag>
+                <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>
               </div>
             </div>
             <div

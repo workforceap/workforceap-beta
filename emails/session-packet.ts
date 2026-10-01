@@ -13,6 +13,14 @@
 
 import { escapeHtml } from '@/lib/email/escapeHtml';
 
+/**
+ * Where the packet's portal link lands: the member's AI tool history ("My AI
+ * results"), which lists the results saved from the session. It is the same page
+ * the dashboard's in-office session card opened, and the email copy names it
+ * so the member knows what they will find there.
+ */
+export const SESSION_PACKET_PORTAL_PATH = '/dashboard/ai-tools/history';
+
 export type SessionPacketSection = {
   /** Display label e.g. "Polished resume" */
   title: string;
@@ -65,9 +73,9 @@ export function sessionPacketHtml(params: {
 
   return `
     <p>Hi ${escapeHtml(firstName)},</p>
-    <p>Here&rsquo;s the packet from your session with <strong>${escapeHtml(counselorName)}</strong> on ${escapeHtml(sessionDate)}. Everything we built together is below — and you can sign in to your member portal anytime to refine it, run more practice questions, or apply to jobs.</p>
+    <p>Here&rsquo;s the packet from your session with <strong>${escapeHtml(counselorName)}</strong> on ${escapeHtml(sessionDate)}. Everything we built together is below — and it is saved in your member portal, so you can sign in anytime to refine it, run more practice questions, or apply to jobs.</p>
     ${renderedSections.join('\n')}
-    <p style="margin-top: 32px;">When you&rsquo;re ready, sign in to your portal to keep going:</p>
+    <p style="margin-top: 32px;">To see your results from this session again, sign in and open My AI results:</p>
     <p style="margin: 8px 0 24px;"><a href="${escapeHtml(portalUrl)}" style="color: #ad2c4d; font-weight: 600;">${escapeHtml(portalUrl)}</a></p>
     <p>You&rsquo;ve got this.</p>
     <p style="margin-top: 24px; color: #737373; font-size: 14px;">— The WorkforceAP team</p>

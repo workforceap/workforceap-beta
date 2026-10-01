@@ -33,12 +33,7 @@ const STATUSES = ['pending', 'reviewing', 'interview', 'offered', 'hired', 'reje
 
 const FILTER_CHIPS: { label: string; value: JobPostingApplicationStatus | 'all' }[] = [
   { label: 'All', value: 'all' },
-  { label: 'New', value: 'pending' },
-  { label: 'Reviewing', value: 'reviewing' },
-  { label: 'Interview', value: 'interview' },
-  { label: 'Offer', value: 'offered' },
-  { label: 'Hired', value: 'hired' },
-  { label: 'Declined', value: 'rejected' },
+  ...STATUSES.map((value) => ({ label: employerJobPostingApplicationStatusLabel(value), value })),
 ];
 
 export default function EmployerApplicationsClient({

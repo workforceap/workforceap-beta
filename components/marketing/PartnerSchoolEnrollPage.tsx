@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import type { EnrollmentPageModel } from '@/lib/enroll/resolveEnrollmentPartner';
 import { partnerApplyHref, partnerProgramHref } from '@/lib/apply/partnerApplyHref';
+import { categoryTone } from '@/lib/marketing/categoryTone';
+import CategoryPill from './CategoryPill';
 import EnrollRefCookie from './EnrollRefCookie';
 
 const ICONS = {
@@ -38,10 +40,6 @@ function Icon({ name, size }: { name: string; size: number }) {
   return <Cmp size={size} aria-hidden="true" />;
 }
 
-function categoryTone(color: string): 'c' | 'g' {
-  return /ad2c4d|crimson|c47/i.test(color) ? 'c' : 'g';
-}
-
 export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPageModel }) {
   const applyBase = partnerApplyHref(model.referralCode);
   const applyUrl = (slug: string) => partnerApplyHref(model.referralCode, slug);
@@ -52,7 +50,7 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
   const steps = [
     { num: '1', icon: 'search', title: 'Review the programs', desc: `Browse the certificate tracks below and pick the one that fits your interests.` },
     { num: '2', icon: 'file-text', title: 'Apply in about 10 minutes', desc: 'One short online application. No payment information is ever requested.' },
-    { num: '3', icon: 'check-circle', title: 'We enroll you in your program', desc: `Allow 24–48 hours for WorkforceAP to enroll you into your chosen program — it's a manual setup process.` },
+    { num: '3', icon: 'check-circle', title: 'We enroll you in your program', desc: `Our team enrolls you into your chosen program by hand and emails you when it's done.` },
     { num: '4', icon: 'rocket_launch', title: 'Start training', desc: 'Self-paced and flexible — built to fit around your class schedule and activities.' },
   ];
 
@@ -105,7 +103,7 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
               <Link className="dbtn dbtn--solid" href={applyBase}>Start your application <span>→</span></Link>
               <a className="dbtn dbtn--glass" href="#school-programs">See the programs</a>
             </div>
-            <p className="meta-note">About 10 minutes to apply • Program enrollment setup takes 24–48 hours • No payment information requested</p>
+            <p className="meta-note">About 10 minutes to apply • Our team enrolls you by hand and emails you when it's done • No payment information requested</p>
           </div>
 
           <div className="hero-glass">
@@ -165,7 +163,7 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
               <div className="pcard" key={p.slug}>
                 <div className="pcard-top">
                   <div className="ptags">
-                    <span className={`cat-pill cat--${categoryTone(p.categoryColor)}`}>{p.category}</span>
+                    <CategoryPill tone={categoryTone(p.categoryColor)}>{p.category}</CategoryPill>
                     <span className="fund-pill">Sponsored for {model.termLabel}</span>
                   </div>
                   <span className="picon"><Icon name={p.icon} size={26} /></span>

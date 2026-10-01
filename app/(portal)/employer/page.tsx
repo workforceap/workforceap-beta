@@ -14,7 +14,7 @@ import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { EMPLOYER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
 import PortalVoiceSessionLazy from '@/components/portal/PortalVoiceSessionLazy';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
-import { employerVoiceSurface } from '@/lib/portal/voice';
+import { employerVoiceSurface, employerVoiceSessionAccent } from '@/lib/portal/voice';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import StatusBadge from '@/components/portal/StatusBadge';
 import PortalCard from '@/components/portal/ui/PortalCard';
@@ -76,6 +76,7 @@ export default async function EmployerDashboardPage({
       kitHired,
       kitRecent,
       kitOpenRolesList,
+      kitHiringIntents,
     ] = await Promise.all([
       prisma.job.count({ where: { employerId: ctx.employerId, status: 'live' } }),
       prisma.jobPostingApplication.count({
@@ -105,6 +106,21 @@ export default async function EmployerDashboardPage({
         take: 5,
         select: { id: true, title: true, location: true, applicationsCount: true },
       }),
+      // Cohort-sponsorship hiring intents: the panel used to render only on
+      // ?ui=legacy (WAP-193). Same query and component as legacy; a failure
+      // here only hides the panel, never the overview.
+      (async () => {
+        try {
+          return await prisma.employerHiringIntent.findMany({
+            where: { employerId: ctx.employerId },
+            orderBy: { createdAt: 'desc' },
+            take: 25,
+          });
+        } catch (error) {
+          console.error('[employer/home] hiring intents load failed', error);
+          return null;
+        }
+      })(),
     ]);
 
     // Cheap, indexed fit-score lookup for the handful of candidates shown in
@@ -154,8 +170,7 @@ export default async function EmployerDashboardPage({
               sessionEndpoint="/api/employer/voice-session"
               title={kitT('employerVoiceAssistant')}
               description={kitT('askAboutPostingRoles')}
-              accent="var(--color-blue)"
-              accentDark="var(--color-blue)"
+              {...employerVoiceSessionAccent}
               speakingLabel={kitT('assistantIsSpeaking')}
               listeningLabel={kitT('listeningAskYourQuestion')}
             />
@@ -169,8 +184,15 @@ export default async function EmployerDashboardPage({
           interviews={kitInterviews}
           hires={kitHired}
           candidates={kitCandidates}
+          candidatesTotal={kitTotalCandidates}
           openRolesList={kitOpenRolesRows}
         />
+
+        {kitHiringIntents ? (
+          <section className="wa-px-6 wa-pb-6" aria-label="Sponsor a cohort">
+            <EmployerHiringIntentPanel initialIntents={kitHiringIntents} />
+          </section>
+        ) : null}
       </>
     );
   }
@@ -446,8 +468,7 @@ export default async function EmployerDashboardPage({
               sessionEndpoint="/api/employer/voice-session"
               title={t('employerVoiceAssistant')}
               description={t('askAboutPostingRoles')}
-              accent="var(--color-blue)"
-              accentDark="var(--color-blue)"
+              {...employerVoiceSessionAccent}
               speakingLabel={t('assistantIsSpeaking')}
               listeningLabel={t('listeningAskYourQuestion')}
             />
@@ -457,28 +478,28 @@ export default async function EmployerDashboardPage({
         <div className="employer-quick-actions" style={{ marginLeft:"1.5rem", marginRight:"1.5rem", marginTop:"1rem", display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:"0.75rem" }}>
           {totalApplications > 0 ? (
             <Link href="/employer/applications"
-              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', boxShadow: '0 4px 16px rgba(173,44,77,0.3)' }}>
+              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))', boxShadow: '0 4px 16px color-mix(in srgb, var(--wa-accent) 30%, transparent)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span className="material-symbols-outlined" style={{ color: '#fff', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">grading</span>
-                <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-hero)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">grading</span>
+                <span style={{ fontWeight: 700, color: 'var(--wa-on-hero)', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>
                   {t('reviewCandidates', { count: totalApplications })}
                 </span>
               </div>
-              <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.7)' }} aria-hidden="true">arrow_forward</span>
+              <span className="material-symbols-outlined" style={{ color: 'color-mix(in srgb, var(--wa-on-hero) 70%, transparent)' }} aria-hidden="true">arrow_forward</span>
             </Link>
           ) : (
             <Link href="/employer/jobs/new"
-              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', boxShadow: '0 4px 16px rgba(173,44,77,0.3)' }}>
+              style={{ gridColumn: 'span 2', padding: '1rem 1.25rem', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))', boxShadow: '0 4px 16px color-mix(in srgb, var(--wa-accent) 30%, transparent)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span className="material-symbols-outlined" style={{ color: '#fff', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">add_circle</span>
-                <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>{t('postYourFirstRole')}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-on-hero)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">add_circle</span>
+                <span style={{ fontWeight: 700, color: 'var(--wa-on-hero)', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>{t('postYourFirstRole')}</span>
               </div>
-              <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.7)' }} aria-hidden="true">arrow_forward</span>
+              <span className="material-symbols-outlined" style={{ color: 'color-mix(in srgb, var(--wa-on-hero) 70%, transparent)' }} aria-hidden="true">arrow_forward</span>
             </Link>
           )}
           <Link href="/employer/jobs/new"
             className="hover:wa-opacity-90 active:wa-scale-[0.98] wa-transition-[opacity,transform] motion-reduce:wa-transition-none" style={{ padding:"1rem", borderRadius:"0.75rem", display:"flex", flexDirection:"column", gap:"0.5rem", alignItems:"flex-start", textDecoration:"none", minHeight:"44px", background: 'var(--surface-container-high)', color: 'var(--color-on-surface)' }}>
-            <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)' }} aria-hidden="true">add_circle</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)' }} aria-hidden="true">add_circle</span>
             <span className="wa-text-sm wa-font-bold wa-leading-tight">{t('postARole')}</span>
           </Link>
           <Link href="/employer/messages"
@@ -494,7 +515,7 @@ export default async function EmployerDashboardPage({
             <Link
               href="/employer/applications"
               className="wa-text-xs wa-font-bold wa-uppercase wa-tracking-widest"
-              style={{ textDecoration:"none", color: 'var(--color-accent)' }}
+              style={{ textDecoration:"none", color: 'var(--wa-accent-text)' }}
             >
               {t('viewAll')}
             </Link>
@@ -555,8 +576,7 @@ export default async function EmployerDashboardPage({
             sessionEndpoint="/api/employer/voice-session"
             title={t('employerVoiceAssistant')}
             description={t('askAboutPostingRoles')}
-            accent="var(--color-blue)"
-            accentDark="var(--color-blue)"
+            {...employerVoiceSessionAccent}
             speakingLabel={t('assistantIsSpeaking')}
             listeningLabel={t('listeningAskYourQuestion')}
           />
@@ -655,7 +675,7 @@ export default async function EmployerDashboardPage({
                 { icon: 'gavel', label: t('filledClosed'), value: filledPositions, iconColor: 'var(--color-on-surface-variant)' },
               ].map((item) => (
                 <div key={item.label} className="portal-pipeline-item">
-                  <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', '--ms-fill': 1 }} aria-hidden="true">{item.icon}</span>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', '--ms-fill': 1 }} aria-hidden="true">{item.icon}</span>
                   <div style={{ flex: 1 }}>
                     <p className="portal-pipeline-item__label">{item.label}</p>
                     <p className="portal-pipeline-item__meta">{item.value} {item.label.toLowerCase()}</p>
@@ -668,14 +688,14 @@ export default async function EmployerDashboardPage({
             </Link>
           </div>
 
-          <div className="portal-card portal-card--flat" style={{ background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', padding: '1.5rem', overflow: 'hidden', position: 'relative' }}>
-            <span className="material-symbols-outlined" style={{ position: 'absolute', bottom: '-1rem', right: '-1rem', fontSize: '6rem', opacity: 0.08, color: '#fff' }} aria-hidden="true">school</span>
+          <div className="portal-card portal-card--flat" style={{ background: 'linear-gradient(135deg, var(--wa-hero-crimson-dark), var(--wa-hero-crimson))', padding: '1.5rem', overflow: 'hidden', position: 'relative' }}>
+            <span className="material-symbols-outlined" style={{ position: 'absolute', bottom: '-1rem', right: '-1rem', fontSize: '6rem', opacity: 0.08, color: 'var(--wa-on-hero)' }} aria-hidden="true">school</span>
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{t('workforceAdvancement')}</h3>
-              <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--wa-on-hero)', marginBottom: '0.5rem' }}>{t('workforceAdvancement')}</h3>
+              <p style={{ fontSize: '0.8125rem', color: 'color-mix(in srgb, var(--wa-on-hero) 85%, transparent)', marginBottom: '1rem', lineHeight: 1.5 }}>
                 {t('accessCredentialedGraduates')}
               </p>
-              <Link href="/employer/jobs/new" style={{ display: 'inline-block', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.9)', color: 'var(--color-accent)', borderRadius: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none' }}>
+              <Link href="/employer/jobs/new" style={{ display: 'inline-block', padding: '0.5rem 1rem', background: 'var(--wa-hero-action-bg)', color: 'var(--wa-hero-action-text)', borderRadius: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none' }}>
                 {t('postAJob')}
               </Link>
             </div>
@@ -711,7 +731,7 @@ export default async function EmployerDashboardPage({
               >
                 <div style={{ marginBottom: '1rem' }}>
                   <h4 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.25rem', color: 'var(--color-on-surface)' }}>{app.student.fullName}</h4>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 500, marginBottom: '0.75rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', fontWeight: 500, marginBottom: '0.75rem' }}>
                     {t('appliedTo')} {app.job.title}
                   </p>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>

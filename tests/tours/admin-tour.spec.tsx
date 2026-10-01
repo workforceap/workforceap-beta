@@ -28,7 +28,7 @@ vi.mock('@/components/portal/DevViewToggle', () => ({ default: () => null }));
 
 const TOUR = TOUR_REGISTRY['admin.home'];
 const STEP_TITLES = [
-  'Command Center',
+  'Today',
   'Detailed overview',
   'Students',
   'Messages',
@@ -50,9 +50,9 @@ const posted = (): Posted[] =>
     })
     .filter((p) => p.url.startsWith('/api/tours/') || p.url === '/api/onboarding/tour-complete');
 
-/** The real admin home (the Command Center kit) with its built-in showcase data. */
+/** The real admin home (the Command Center kit as /admin renders it: "Today", queues first) with its built-in showcase data. */
 function Home() {
-  return <CommandCenterKit />;
+  return <CommandCenterKit title="Today" queuesFirst />;
 }
 
 /**
@@ -100,7 +100,7 @@ afterEach(() => {
 });
 
 describe('admin guided tour (wave 4)', () => {
-  it('is the home tour the admin shell offers and walks command center → overview → students → messages → programs → training progress → settings → help', () => {
+  it('is the home tour the admin shell offers and walks today → overview → students → messages → programs → training progress → settings → help', () => {
     expect(getHomeTourForRole('admin')?.key).toBe('admin.home');
     expect(TOUR.version).toBe(1);
     expect(TOUR.route).toBe('/admin');
@@ -116,9 +116,9 @@ describe('admin guided tour (wave 4)', () => {
     ]);
   });
 
-  it('every registry step has exactly one real anchor in the admin shell around the real Command Center kit', () => {
+  it('every registry step has exactly one real anchor in the admin shell around the real admin home', () => {
     render(<Portal />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Command Center' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Today' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'What needs you today' })).toBeInTheDocument();
     for (const step of TOUR.steps) {
       const anchors = document.querySelectorAll(`[data-tour="${step.target}"]`);
@@ -170,7 +170,7 @@ describe('admin guided tour (wave 4)', () => {
     await waitFor(() => expect(posted().map((p) => p.body.status)).toEqual(['STARTED', 'DISMISSED']));
 
     const again = await openFromHelp();
-    expect(within(again).getByRole('heading', { level: 2 })).toHaveTextContent('Command Center');
+    expect(within(again).getByRole('heading', { level: 2 })).toHaveTextContent('Today');
     expect(again).toHaveTextContent('Step 1 of 8');
     fireEvent.keyDown(document, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -241,7 +241,7 @@ describe('admin guided tour (wave 4)', () => {
     render(<Portal tour={{ key: 'admin.home', enabled: true, offer: true }} />);
     fireEvent.click(screen.getByTestId('tour-offer-take'));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent('Command Center');
+    expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent('Today');
     expect(dialog).toHaveTextContent('Step 1 of 8');
     expect(screen.queryByTestId('tour-offer-strip')).toBeNull();
   });
@@ -254,7 +254,7 @@ describe('admin guided tour (wave 4)', () => {
     expect(document.querySelector('[data-tour="tour-help"]')).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
     // The rail rows are pre-flag chrome and keep their anchors and hrefs.
-    expect(screen.getByRole('link', { name: 'Command Center' })).toHaveAttribute('href', '/admin');
+    expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('href', '/admin');
     expect(screen.getByRole('link', { name: 'Students' })).toHaveAttribute('href', '/admin/students');
     const nullHtml = nullGate.innerHTML;
     unmount();

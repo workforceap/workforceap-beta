@@ -8,7 +8,7 @@ import { getProgramBySlug } from '@/lib/content/programs';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { prisma } from '@/lib/db/prisma';
 import PageHeader from '@/components/portal/PageHeader';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,9 +40,9 @@ const JOURNEY_STEPS = [
   {
     num: 3,
     title: 'Start Coursera training',
-    desc: 'Open your assigned Coursera courses and finish them in order. Certificates from Coursera sync automatically to your profile as you complete each course — and those certificates are what employers see on your WorkforceAP record. Your cert progress is directly tied to job eligibility in the employer pipeline.',
-    href: '/dashboard',
-    cta: 'Open Training',
+    desc: 'Open your assigned Coursera courses and finish them in order. When Coursera reports a completed course we add a pending certificate to My Certificates; our team verifies it before it counts as earned, and you can also add a certificate you earned elsewhere. Verified certificates are what employers see on your WorkforceAP record, and your cert progress is directly tied to job eligibility in the employer pipeline.',
+    href: '/dashboard/program',
+    cta: 'Open My Program',
     icon: 'school',
   },
   {
@@ -232,12 +232,12 @@ export default async function MemberGuidePage() {
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: isActive ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
+                      color: isActive ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
                     }}>
                       Step {step.num}
                     </span>
-                    {isDone && <StatusBadge label="Done" variant="success" />}
-                    {isActive && <StatusBadge label="Up next" variant="accent" />}
+                    {isDone && <StatusTag tone="ok">Done</StatusTag>}
+                    {isActive && <StatusTag tone="alert">Up next</StatusTag>}
                   </div>
                   <h3 style={{
                     fontSize: '1rem',
@@ -308,7 +308,7 @@ export default async function MemberGuidePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.25rem' }} aria-hidden="true">{b.icon}</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.25rem' }} aria-hidden="true">{b.icon}</span>
               </div>
               <div>
                 <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>{b.title}</h3>
@@ -343,7 +343,7 @@ export default async function MemberGuidePage() {
           </p>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
             Message your counselor — they&rsquo;re here to help with anything.{' '}
-            <Link href="/dashboard/messages" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/dashboard/messages" style={{ color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}>
               Send a message →
             </Link>
           </p>

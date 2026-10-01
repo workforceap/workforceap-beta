@@ -41,6 +41,14 @@ import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { AlertTriangle, ClipboardList, CheckCircle } from 'lucide-react';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import type { WioaReviewStatus } from '@/lib/wioa/wioaReview';
+import {
+  applicationStatusKey,
+  applicationStatusLabel,
+  applicationStatusTone,
+  intakeStatusKey,
+  intakeStatusLabel,
+  intakeStatusTone,
+} from '@/lib/status/applicationStatusVocabulary';
 import AdminMemberWioaReviewPanel from '@/components/admin/AdminMemberWioaReviewPanel';
 import ApplicantTriageChecklist from '@/components/admin/ApplicantTriageChecklist';
 import { localizeApplicantTriage } from '@/lib/admin/applicantTriage';
@@ -649,19 +657,14 @@ export default async function AdminMemberDetailPage({
     .map((part: string) => part[0]?.toUpperCase() ?? '')
     .join('') || '?';
   const latestApplication = (member.applications ?? [])[0] ?? null;
-  const applicationTone: KitTone = (() => {
-    const status = String(latestApplication?.status ?? '');
-    if (status === 'APPROVED' || status === 'ENROLLED' || status === 'ACCEPTED') return 'ok';
-    if (status === 'REJECTED' || status === 'WITHDRAWN' || status === 'DECLINED') return 'danger';
-    if (status === 'PENDING' || status === 'NEEDS_INFO') return 'warn';
-    return 'muted';
-  })();
-  const wioaTone: KitTone = (() => {
-    const status = String(member.wioaReviewStatus ?? '');
-    if (!status) return 'muted';
-    if (status === 'REJECTED' || status === 'DENIED' || status === 'NOT_ELIGIBLE') return 'danger';
-    return gate.ok ? 'ok' : 'warn';
-  })();
+  // Words and tones come from the shared staff vocabulary (KIT_GUIDE §4:
+  // DENIED / not_eligible paint `danger`, NEEDS_INFO `alert`, PENDING `warn`).
+  const applicationKey = applicationStatusKey(latestApplication ? String(latestApplication.status) : null);
+  const applicationTone: KitTone = applicationStatusTone(applicationKey);
+  const applicationWord = applicationStatusLabel(applicationKey, 'staff');
+  const wioaKey = intakeStatusKey(member.wioaReviewStatus);
+  const wioaTone: KitTone = intakeStatusTone(wioaKey);
+  const wioaWord = intakeStatusLabel(wioaKey, 'staff');
 
   // Activity tab: staff actions on this record (AuditLog, indexed on
   // [targetType, targetId]) + the member's own events (up to
@@ -802,11 +805,9 @@ export default async function AdminMemberDetailPage({
                       ? 'Training activity · no enrollment on file'
                       : 'No program enrolled'}
                 </StatusTag>
-                <StatusTag tone={wioaTone}>
-                  {member.wioaReviewStatus ? `WIOA · ${String(member.wioaReviewStatus).replace(/_/g, ' ').toLowerCase()}` : 'WIOA · not reviewed'}
-                </StatusTag>
-                <StatusTag tone={latestApplication ? applicationTone : 'muted'}>
-                  {latestApplication ? `Application · ${String(latestApplication.status).replace(/_/g, ' ').toLowerCase()}` : 'No application on file'}
+                <StatusTag tone={wioaTone}>{`WIOA · ${wioaWord}`}</StatusTag>
+                <StatusTag tone={applicationTone}>
+                  {latestApplication ? `Application · ${applicationWord}` : applicationWord}
                 </StatusTag>
                 <StatusTag tone={activeCounselorAssign?.counselor ? 'info' : 'warn'}>
                   {activeCounselorAssign?.counselor ? `Counselor · ${activeCounselorAssign.counselor.user.fullName}` : 'No counselor assigned'}
@@ -1352,9 +1353,7 @@ export default async function AdminMemberDetailPage({
             <section className="wa-kit-card" aria-labelledby="admin-member-application-status-title">
               <div className={styles.sectionHead}>
                 <h2 id="admin-member-application-status-title" className={styles.sectionTitle}>Application status</h2>
-                <StatusTag tone={latestApplication ? applicationTone : 'muted'}>
-                  {latestApplication ? String(latestApplication.status).replace(/_/g, ' ').toLowerCase() : 'none on file'}
-                </StatusTag>
+                <StatusTag tone={applicationTone}>{applicationWord}</StatusTag>
               </div>
               {latestApplication ? (
                 <div className={styles.facts}>

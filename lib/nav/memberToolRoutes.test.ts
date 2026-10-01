@@ -92,15 +92,15 @@ test('an unmapped tool slug still gets a readable contextual row', () => {
   assert.equal(humanizeToolSlug('offer-negotiation'), 'Offer negotiation');
 });
 
-test('PR #2322 primary ordering survives the contextual row', () => {
+// WAP-189 (owner-approved) supersedes the seven-row PR #2322 order: My progress
+// and Skill missions moved into Training & progress, leaving five primary rows.
+test('the WAP-189 five-row primary ordering survives the contextual row', () => {
   const baseline = primaryOrder(MEMBER_PORTAL_NAV_ITEMS);
   assert.deepEqual(baseline, [
     '/dashboard',
     '/dashboard/program',
     '/dashboard/jobs',
-    '/dashboard/readiness',
     '/dashboard/ai-tools',
-    '/dashboard/missions',
     '/dashboard/messages',
   ]);
   const { items } = withContextualToolRow(MEMBER_PORTAL_NAV_ITEMS, '/dashboard/ai-tools/resume-studio');

@@ -17,6 +17,7 @@ import {
 } from '@/lib/admin/adminUserProvisioning';
 import { sendPasswordResetEmail } from '@/lib/auth/passwordReset';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
+import { provisionIntentAppMetadata } from '@/lib/auth/provisionIntent';
 import {
   authProviderFailureStatus,
   classifyAuthProviderError,
@@ -162,6 +163,7 @@ const createSchema = z.object({
         password: tempPassword,
         email_confirm: true,
         user_metadata: { full_name: fullName },
+        app_metadata: provisionIntentAppMetadata({ role, organizationId, source: 'admin_user_create' }),
       });
   
       if (!error && data.user?.id) {

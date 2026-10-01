@@ -79,7 +79,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               margin: '0 auto 0.75rem',
             }}
           >
-            <CircleAlert size={24} aria-hidden="true" style={{ color: 'var(--color-accent)' }} />
+            <CircleAlert size={24} aria-hidden="true" style={{ color: 'var(--wa-accent-text)' }} />
           </div>
           <h2
             style={{

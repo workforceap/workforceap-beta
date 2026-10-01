@@ -31,6 +31,15 @@ vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => {}) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
 vi.mock('@/lib/member/points', () => ({ awardPoints: vi.fn(async () => ({ awarded: true })) }));
 vi.mock('@/lib/portal/workflowEvents', () => ({ recordPartnerWorkflowEvent: vi.fn(async () => {}) }));
+// The PlacementRecord the confirmation now writes is pinned in
+// lib/placement/recordPlacementFromApplication.test.ts and
+// tests/app/member-confirm-placement.spec.ts; these specs are about the events.
+vi.mock('@/lib/placement/recordPlacementFromApplication', () => ({
+  recordPlacementFromApplication: vi.fn(async () => ({
+    outcome: 'created',
+    placement: { id: 'placement-1', employerName: 'Acme', jobTitle: 'Help Desk Tech' },
+  })),
+}));
 vi.mock('@/lib/events/track', () => ({
   trackEvent: vi.fn(async () => {}),
   persistEvent: vi.fn(async () => ({})),

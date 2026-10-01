@@ -1,6 +1,8 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 import { MemberTrainingWorkspace, nextCourseContinueTarget } from '@/components/portal/kit/pages/member/MemberTrainingWorkspace';
 import type { TrainingWorkspace } from '@/lib/member/trainingWorkspace';
 import { PROGRAM_SYLLABI } from '@/shared/programSyllabi';
@@ -38,12 +40,12 @@ function fixture(): TrainingWorkspace {
 }
 
 function mount(workspace = fixture(), completedSlugs: string[] = [], practiceMissions: TrainingCoursePractice[] = [], modulesNote?: string | null) {
-  return render(<MemberTrainingWorkspace workspace={workspace} programTitle={workspace.programTitle}
+  return render(<NextIntlClientProvider locale="en" messages={en}><MemberTrainingWorkspace workspace={workspace} programTitle={workspace.programTitle}
     completedSlugs={completedSlugs} practiceMissions={practiceMissions} syllabusHours={160} syllabusBreakdown={syllabus.totalHoursLabel} modulesNote={modulesNote}
     destinations={[
       { slug: courseSlug(0), launchHref },
       { slug: courseSlug(9), moduleHref },
-    ]} />);
+    ]} /></NextIntlClientProvider>);
 }
 
 const editor = () => screen.getByRole('region', { name: 'Selected course workspace' });
