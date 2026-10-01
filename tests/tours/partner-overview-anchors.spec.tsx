@@ -1,6 +1,9 @@
 process.env.TZ = 'UTC';
 
 import { renderToStaticMarkup } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -60,7 +63,7 @@ afterEach(() => vi.unstubAllEnvs());
 describe('partner overview carries the guided-tour page anchors', () => {
   it('a referral partner sees one tour-referral-link anchor around the share panel and one tour-payouts anchor', async () => {
     primePartner('referral');
-    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     expect(anchors(html, 'tour-referral-link')).toBe(1);
     expect(html).toMatch(/data-tour="tour-referral-link"[^>]*>[\s\S]{0,600}?aria-label="Share your referral link"/);
     expect(html).toContain('community-code');
@@ -73,7 +76,7 @@ describe('partner overview carries the guided-tour page anchors', () => {
 
   it('a community partner has no payouts surface, so the payouts step has nothing to anchor to and is skipped', async () => {
     primePartner('community');
-    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     expect(anchors(html, 'tour-referral-link')).toBe(1);
     expect(anchors(html, 'tour-payouts')).toBe(0);
     expect(html).not.toContain('Payout history');

@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Avatar, KitEmptyState, StatusTag, StageTrack, type KitTone } from '@/components/portal/kit';
+import { Avatar, StatusTag, StageTrack, type KitTone } from '@/components/portal/kit';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
-import { useTranslations } from 'next-intl';
 
 export type PartnerMemberRow = {
   id: string;
@@ -39,7 +39,6 @@ function stageTrackIndex(stage: string): number {
 }
 
 export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMemberRow[] }) {
-  const t = useTranslations('partner');
   const [filter, setFilter] = useState<Filter>('all');
 
   const counts = useMemo(
@@ -103,13 +102,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
 
       <div style={{ padding: '0 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
         {rows.length === 0 ? (
-          <div className="wa-kit-card">
-            <KitEmptyState title={t('noMembersYet')} description={t('noMembersYetDescription')} />
-          </div>
+          <PartnerEmptyState variant="referrals" framed hideSecondary />
         ) : filtered.length === 0 ? (
-          <div className="wa-kit-card">
-            <KitEmptyState title={t('noMembersYet')} description={t('noMembersMatchFilter')} />
-          </div>
+          <PartnerEmptyState variant="referralsFiltered" framed onPrimary={() => setFilter('all')} />
         ) : (
           filtered.map((row) => {
             const initials = (row.fullName ?? '?')

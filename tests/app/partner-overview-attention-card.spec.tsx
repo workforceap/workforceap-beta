@@ -1,4 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), eventCount: vi.fn(), placements: vi.fn(), unpaid: vi.fn(), attention: vi.fn() }));
@@ -79,7 +82,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 async function card() {
-  const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
   const match = html.match(/<a data-testid="attention-card" href="([^"]*)">(.*?)<\/a>/);
   if (!match) throw new Error('no attention card');
   return { href: match[1], text: match[2] };
