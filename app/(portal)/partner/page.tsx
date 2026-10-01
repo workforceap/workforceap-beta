@@ -29,7 +29,7 @@ import PortalVoiceSessionLazy from '@/components/portal/PortalVoiceSessionLazy';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
 import { partnerVoiceSurface } from '@/lib/portal/voice';
 import { getTranslations } from 'next-intl/server';
-import { BarChart3, CheckCircle2, Download, GraduationCap, Percent, Target, Users, Wallet } from 'lucide-react';
+import { BarChart3, CheckCircle2, Download, Clock3, GraduationCap, Target, Users, Wallet } from 'lucide-react';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PortalKpiCard from '@/components/portal/PortalKpiCard';
 import PortalCard from '@/components/portal/ui/PortalCard';
@@ -471,12 +471,6 @@ export default async function PartnerDashboardPage({
                 subtitle: t('startedAProgram'),
                 icon: <GraduationCap size={16} />,
               },
-              {
-                label: t('placementRate'),
-                value: `${placementRate}%`,
-                subtitle: t('placementEstimate'),
-                icon: <Percent size={16} />,
-              },
               showPayouts
                 ? {
                     label: 'Payout due',
@@ -487,9 +481,19 @@ export default async function PartnerDashboardPage({
                 : {
                     label: t('membersPlaced'),
                     value: placedCount,
-                    subtitle: t('verifiedHires'),
+                    subtitle: t('placementRateOfReferrals', { rate: placementRate }),
+                    tone: 'ok',
                     icon: <CheckCircle2 size={16} />,
                   },
+              // Stitch partner layout: reported placements get their own tile
+              // and are never folded into the placed count above.
+              {
+                label: t('awaitingVerificationKpi'),
+                value: pendingPlacementCount,
+                subtitle: t('awaitingVerificationHint'),
+                tone: pendingPlacementCount > 0 ? 'warn' : undefined,
+                icon: <Clock3 size={16} />,
+              },
             ]}
           />
 

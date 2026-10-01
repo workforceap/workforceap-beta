@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { DataTable, StatusTag, StageTrack, type Column, type KitTone } from '@/components/portal/kit';
+import { DataTable, StageTrack, type Column } from '@/components/portal/kit';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
+import PartnerStageBadge from '@/components/partner/PartnerStageBadge';
+import { partnerDirectoryStage } from '@/lib/partner/memberStage';
 import { partnerReferralsEmptyVariant } from '@/lib/partner/emptyState';
 
 type PartnerMember = {
@@ -23,16 +25,6 @@ type PartnerMember = {
 
 /** Referral milestone order for the StageTrack column — shared with the pipeline stage model. */
 const STAGE_ORDER = PIPELINE_STAGES_ORDERED;
-
-const STAGE_TONE: Record<string, KitTone> = {
-  applied: 'muted',
-  enrolled: 'info',
-  in_training: 'warn',
-  certified: 'info',
-  job_searching: 'warn',
-  placed: 'ok',
-  closed: 'danger',
-};
 
 function stageTrackIndex(stage: string): number {
   const idx = STAGE_ORDER.indexOf(stage as PipelineStage);
@@ -86,14 +78,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
       key: 'stage',
       header: 'Status',
       render: (m) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
-          <StatusTag tone={STAGE_TONE[m.stage] ?? 'muted'}>{m.stageLabel}</StatusTag>
-          {m.placementVerified != null ? (
-            <StatusTag tone={m.placementVerified ? 'ok' : 'warn'}>
-              {m.placementVerified ? 'Verified' : 'Pending verification'}
-            </StatusTag>
-          ) : null}
-        </div>
+        <PartnerStageBadge stage={partnerDirectoryStage(m.stage, m.placementVerified)} />
       ),
     },
     {
