@@ -1,5 +1,6 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
+import type { PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { crossTenantOK, withTenantScope } from '@/lib/tenant/withTenantScope';
 import type { EnrollmentAgreementActor } from './access';
@@ -41,8 +42,11 @@ export async function assertEnrollmentAgreementNotErasing(memberId: string, orga
  * privacy cleanup. Missing BOTH new tables is a safe pre-rollout no-op.
  * No TTL, forced unlock, or rollback to upload-capable state is allowed here.
  */
-export async function claimEnrollmentAgreementErasure(memberId: string): Promise<void> {
-  const schema = await crossTenantOK(() => prisma.$queryRaw<{ submissions: string | null; locks: string | null }[]>`
+export async function claimEnrollmentAgreementErasure(
+  memberId: string,
+  client: Pick<PrismaClient, '$queryRaw'> = prisma,
+): Promise<void> {
+  const schema = await crossTenantOK(() => client.$queryRaw<{ submissions: string | null; locks: string | null }[]>`
     SELECT to_regclass('public.enrollment_agreement_submissions')::text AS submissions,
       to_regclass('public.enrollment_agreement_operation_locks')::text AS locks
   `);
@@ -52,7 +56,7 @@ export async function claimEnrollmentAgreementErasure(memberId: string): Promise
   const token = randomUUID();
   // Cross-tenant marker is intentional: the eraser already authorized this
   // specific member. Derive organization from that member, never a default org.
-  const rows = await crossTenantOK(() => prisma.$queryRaw<{ memberExists: boolean; claimed: boolean }[]>`
+  const rows = await crossTenantOK(() => client.$queryRaw<{ memberExists: boolean; claimed: boolean }[]>`
     WITH member_lock AS (
       SELECT id, organization_id FROM users WHERE id = ${memberId} FOR UPDATE
     ), claim AS (

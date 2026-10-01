@@ -72,7 +72,7 @@ Member merges never transfer agreement evidence automatically. Either account ha
 
 ## Release gates — not yet satisfied by source tests
 
-1. Obtain the owner's retention decision: erase these agreements with the member, or retain them separately as records under an explicit policy. Current source follows student-upload erasure, but collection must remain disabled until confirmed or changed. Then name the disposable PostgreSQL/Supabase test environment and release owner. Verify backups/current migration state; never reset production or replay historical migrations blindly.
+1. Obtain the owner's retention decision: erase these agreements with the member, or retain them separately as records under an explicit policy. Current source follows student-upload erasure, but collection must remain disabled until confirmed or changed. Use the existing disposable PostgreSQL 16 CI lane for SQL proofs; separately name the preview-only Supabase environment and release owner. Verify backups/current migration state; never reset production or replay historical migrations blindly.
 2. Apply the additive migration there. Verify the migration role can create the restrictive policy on `storage.objects`; if it cannot, use the approved Supabase-owner migration procedure. Do not remove the policy to get a green build.
 3. Execute real PostgreSQL tests for current-row uniqueness, immutable fields, stale review/replacement, two concurrent uploads, upload-versus-erasure in both orders, upload-versus-member-merge in both orders, and retained-fence reconciliation. Mocked Prisma tests do not prove these SQL semantics.
 4. Verify anonymous/authenticated browser Storage and Data API access is denied for the new prefix/tables; verify the service-role server route works and unrelated bucket prefixes still work.
@@ -90,5 +90,9 @@ pnpm exec vitest run tests/api/enrollment-agreements.spec.ts tests/api/enrollmen
 node --require ./tests/server-only-stub.cjs --import tsx --test lib/gdpr/deleteUserStorage.test.ts lib/member/exportData.test.ts lib/nav/portalNav.test.ts lib/tenant/scopeProxy.test.ts
 pnpm typecheck
 ```
+
+`tests/migrations/enrollment-agreements.mjs` is automatically discovered by the existing database-contract CI lane. It accepts only a localhost `wap_shadow` launcher, creates a dedicated proof database (refusing an existing one), applies the exact migration, and exercises the application's extracted parameterized SQL. Concurrent claims use observed PostgreSQL lock waits as barriers. It covers immutable evidence, current-row uniqueness, stale reviews, replacement rollback, upload/erasure ordering, safe token release and table/Storage-prefix denial despite a broad preexisting policy. Its Storage table is synthetic: passing this proof does not establish hosted bucket privacy, Supabase migration-role privileges or authenticated UI acceptance.
+
+Hosts without local PostgreSQL can run `node tests/migrations/enrollment-agreements.mjs --check-templates` to check extraction and parameter bindings only; that is explicitly not a database pass. The real lane invokes the script without that option. The synthetic resume-acceptance cleanup CLI uses the same fence with its validated demo database client and the existing server-only preload; it does not fall back to an ambient application database.
 
 Also run existing account-erasure and student-detail-tab regression suites. Global locale completeness already has unrelated French/Portuguese gaps; this feature's namespace is present in all four catalogs.
