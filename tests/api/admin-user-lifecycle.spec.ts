@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   getUser: vi.fn(), isAdmin: vi.fn(), isSuperAdmin: vi.fn(),
   target: vi.fn(), collision: vi.fn(), updateMany: vi.fn(), findMany: vi.fn(),
   restoreAuth: vi.fn(), disableAuth: vi.fn(), audit: vi.fn(), event: vi.fn(),
-  org: vi.fn(), query: vi.fn(), execute: vi.fn(),
+  org: vi.fn(), query: vi.fn(), execute: vi.fn(), scopedClient: vi.fn(),
 }));
 const db = vi.hoisted(() => ({ $queryRaw: mocks.query, $executeRaw: mocks.execute, user: { findFirst: mocks.target, updateMany: mocks.updateMany, findMany: mocks.findMany } }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
@@ -15,9 +15,10 @@ vi.mock('@/lib/auth/roles', () => ({ isAdmin: mocks.isAdmin, isSuperAdmin: mocks
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: unknown) => handler }));
 vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: mocks.org }));
 vi.mock('@/lib/tenant/withTenantScope', () => ({
-  withTenantScope: async (org: string, fn: (client: typeof db) => Promise<unknown>) => {
+  withTenantScope: async (org: string, fn: (client: typeof db) => Promise<unknown>, client?: typeof db) => {
     expect(org).toBe('org-1');
-    return fn(db);
+    if (client) mocks.scopedClient(client);
+    return fn(client ?? db);
   },
   crossTenantOK: (fn: () => Promise<unknown>) => fn(),
 }));
@@ -252,6 +253,7 @@ describe('document safeguards across reversible account changes', () => {
     restoreQueries();
     expect((await restore(req(), ctx())).status).toBe(200);
     expect(mocks.updateMany).toHaveBeenCalledOnce();
+    expect(mocks.scopedClient).toHaveBeenCalledExactlyOnceWith(db);
     expect(mocks.query.mock.invocationCallOrder[3]).toBeLessThan(mocks.restoreAuth.mock.invocationCallOrder[0]);
     expect(mocks.query.mock.invocationCallOrder[6]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
     expect(mocks.updateMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.execute.mock.invocationCallOrder[0]);
@@ -325,6 +327,7 @@ describe('document safeguards across reversible account changes', () => {
     mocks.isSuperAdmin.mockResolvedValue(true);
     mocks.query.mockResolvedValueOnce([installed]).mockResolvedValueOnce([{ id: ID }]).mockResolvedValueOnce([{ present: false }]);
     expect((await suspend(req(), ctx())).status).toBe(200);
+    expect(mocks.scopedClient).toHaveBeenCalledExactlyOnceWith(db);
     expect(mocks.updateMany).toHaveBeenCalledWith({
       where: { id: ID, organizationId: 'org-1', email: marker, deletedAt },
       data: { deletedAt, email: marker },

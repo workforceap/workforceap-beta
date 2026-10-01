@@ -60,10 +60,10 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
       // document operations without claiming or clearing an erasure fence.
       const changed = await prisma.$transaction(async (tx) => {
         await assertNoAgreementOperationForAccountChange(id, tx, orgId);
-        return tx.user.updateMany({
+        return withTenantScope(orgId, (db) => db.user.updateMany({
           where: { id, organizationId: orgId, email: target.email, deletedAt: target.deletedAt },
           data: { deletedAt: target.deletedAt ?? now, email: newEmail },
-        });
+        }), tx);
       });
       if (changed.count !== 1) return NextResponse.json({ error: 'Account changed. Reload before trying again.' }, { status: 409 });
   

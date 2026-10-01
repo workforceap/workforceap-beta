@@ -137,10 +137,10 @@ export const POST = withApiGuc(async (
       const changed = await prisma.$transaction(async (tx) => {
         if (restoreToken) await assertAgreementAccountRestoreOwned(id, orgId, restoreToken, tx);
         else await assertNoAgreementOperationForAccountChange(id, tx, orgId);
-        const updated = await tx.user.updateMany({
+        const updated = await withTenantScope(orgId, (db) => db.user.updateMany({
           where: { id, organizationId: orgId, email: target.email, deletedAt: target.deletedAt },
           data: { deletedAt: null, email: emailToWrite },
-        });
+        }), tx);
         if (updated.count !== 1) throw new Error('Restore target changed during request');
         if (restoreToken) await releaseAgreementAccountRestore(id, orgId, restoreToken, tx);
         return updated;
