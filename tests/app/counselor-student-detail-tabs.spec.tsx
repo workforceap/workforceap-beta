@@ -70,6 +70,9 @@ vi.mock('@/components/admin/AdminMemberCounselorChatClient', () => ({
 vi.mock('@/components/admin/WioaScreeningReadonly', () => ({ default: () => null }));
 vi.mock('@/components/admin/AssessmentAnswersReadonly', () => ({ default: () => null }));
 vi.mock('@/components/billing/BillingPacketList', () => ({ default: () => null }));
+vi.mock('@/components/enrollment/EnrollmentAgreementCard', () => ({
+  default: ({ memberId }: { memberId?: string }) => <section data-agreement-member={memberId}><h2>Enrollment agreement</h2></section>,
+}));
 vi.mock('@/components/counselor/StaffMemberResumePanel', () => ({ default: () => null }));
 vi.mock('@/components/counselor/CounselorIntakeReviewPanel', () => ({ default: () => null }));
 vi.mock('@/components/portal/AwardPointsButton', () => ({ default: () => null }));
@@ -116,6 +119,7 @@ function tab(doc: Document, id: string): HTMLElement {
 
 describe('CounselorStudentDetailPage record tabs (server render)', () => {
   beforeEach(() => {
+    vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'true');
     for (const key of Object.keys(db.overrides)) delete db.overrides[key];
     db.overrides['counselor.findFirst'] = async () => ({ id: 'counselor-1' });
     db.overrides['counselorAssignment.findFirst'] = async () => ({ id: 'assign-1' });
@@ -141,6 +145,23 @@ describe('CounselorStudentDetailPage record tabs (server render)', () => {
       courseEnrollments: [],
       profile: null,
     });
+  });
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('mounts one agreement card for the selected student in Training', async () => {
+    const doc = await renderPage({ tab: 'training' });
+    const agreements = doc.querySelectorAll('[data-agreement-member]');
+    expect(agreements).toHaveLength(1);
+    expect(agreements[0].getAttribute('data-agreement-member')).toBe('member-1');
+    expect(agreements[0].closest('[role="tabpanel"]')?.id).toBe(`${BASE}-panel-training`);
+    expect(panel(doc, 'training').textContent).toContain('Training invoice & cover letter (J5 / J6)');
+  });
+
+  it('keeps Training available while the agreement migration gate is closed', async () => {
+    vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'false');
+    const doc = await renderPage({ tab: 'training' });
+    expect(doc.querySelector('[data-agreement-member]')).toBeNull();
+    expect(panel(doc, 'training').textContent).toContain('Training invoice & cover letter (J5 / J6)');
   });
 
   it('renders the four tabs wired to four server-rendered panels, Profile open by default', async () => {
@@ -204,7 +225,7 @@ describe('CounselorStudentDetailPage record tabs (server render)', () => {
       expect.arrayContaining(['Counselor 360 Signals', 'Resumes', 'Job Pipeline', 'Elevator Pitch Usage']),
     );
     expect(headingsIn('training')).toEqual(
-      expect.arrayContaining(['Funding and training access', 'Program Progress', 'Training invoice & cover letter (J5 / J6)']),
+      expect.arrayContaining(['Funding and training access', 'Program Progress', 'Training invoice & cover letter (J5 / J6)', 'Enrollment agreement']),
     );
     expect(headingsIn('notes')).toEqual(['Counselor Notes', 'Session Notes']);
     expect(headingsIn('messages')).toEqual(['Messages']);

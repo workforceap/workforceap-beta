@@ -15,6 +15,7 @@ const mockFindMany = vi.fn();
 const mockCount = vi.fn();
 const mockAuditEventDeleteMany = vi.fn();
 const mockAnonymizeMember = vi.fn();
+const mockDeleteUserStorageObjects = vi.fn();
 const mockQueryRaw = vi.fn();
 const mockExecuteRaw = vi.fn();
 const mockSnapshotCreateMany = vi.fn();
@@ -40,6 +41,10 @@ const workflowDiagnosticOverride: {
 
 vi.mock('@/lib/member/anonymizeMember', () => ({
   anonymizeMember: (...args: unknown[]) => mockAnonymizeMember(...args),
+}));
+
+vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
+  deleteUserStorageObjects: (...args: unknown[]) => mockDeleteUserStorageObjects(...args),
 }));
 
 /** Shape Prisma gives a violated foreign key (P2003). */
@@ -582,6 +587,8 @@ describe('cleanupDeletedAccounts', () => {
     vi.resetAllMocks();
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
     mockAnonymizeMember.mockResolvedValue(null);
+    mockQueryRaw.mockResolvedValue([{ submissions: false, locks: false }]);
+    mockDeleteUserStorageObjects.mockResolvedValue({ ok: true, deleted: [] });
   });
 
   it('hard-deletes soft-deleted users past retention, one transaction per account', async () => {
@@ -605,6 +612,99 @@ describe('cleanupDeletedAccounts', () => {
     expect(mockDeleteMany).toHaveBeenNthCalledWith(2, { where: { id: 'u2' } });
     // A purged account is gone; only held accounts go through the anonymiser.
     expect(mockAnonymizeMember).not.toHaveBeenCalled();
+    expect(mockDeleteUserStorageObjects).not.toHaveBeenCalled();
+  });
+
+  it.each(['agreement revision', 'completed erasure fence'])('proves storage clean before cascading a retained %s', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'u1' }]);
+    mockQueryRaw
+      .mockResolvedValueOnce([{ submissions: true, locks: true }])
+      .mockResolvedValueOnce([{ present: true }]);
+    const order: string[] = [];
+    mockDeleteUserStorageObjects.mockImplementation(async () => {
+      order.push('storage:clean');
+      return { ok: true, deleted: [] };
+    });
+    mockAuditEventDeleteMany.mockImplementation(async () => { order.push('audit:delete'); return { count: 0 }; });
+    mockDeleteMany.mockImplementation(async () => { order.push('user:cascade'); return { count: 1 }; });
+
+    await expect(cleanupDeletedAccounts()).resolves.toEqual({ deleted: 1, blocked: [] });
+    expect(mockDeleteUserStorageObjects).toHaveBeenCalledWith('u1');
+    expect(order).toEqual(['storage:clean', 'audit:delete', 'user:cascade']);
+    const ownershipSql = (mockQueryRaw.mock.calls[1][0] as TemplateStringsArray).join('?');
+    expect(ownershipSql).toContain('enrollment_agreement_submissions');
+    expect(ownershipSql).toContain('enrollment_agreement_operation_locks');
+    expect(ownershipSql).not.toMatch(/is_current|status|state/);
+  });
+
+  it.each(['active upload', 'ambiguous upload', 'storage listing failure', 'storage removal failure'])(
+    'retains metadata, fence and audit evidence when the eraser reports %s', async (failure) => {
+      mockFindMany.mockResolvedValueOnce([{ id: 'held' }, { id: 'free' }]);
+      mockQueryRaw
+        .mockResolvedValueOnce([{ submissions: true, locks: true }])
+        .mockResolvedValueOnce([{ present: true }])
+        .mockResolvedValueOnce([{ submissions: true, locks: true }])
+        .mockResolvedValueOnce([{ present: false }]);
+      mockDeleteUserStorageObjects.mockResolvedValueOnce({ ok: false, deleted: [], error: failure });
+      mockDeleteMany.mockResolvedValue({ count: 1 });
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const result = await cleanupDeletedAccounts();
+      expect(result).toEqual({ deleted: 1, blocked: [{ id: 'held', constraint: 'enrollment_agreement_erasure_pending' }] });
+      expect(mockAuditEventDeleteMany).toHaveBeenCalledExactlyOnceWith({ where: { actorUserId: 'free', actorRole: 'member' } });
+      expect(mockDeleteMany).toHaveBeenCalledExactlyOnceWith({ where: { id: 'free' } });
+      expect(mockAnonymizeMember).not.toHaveBeenCalled();
+      errorSpy.mockRestore();
+    },
+  );
+
+  it('retries retained erasure fences and purges only after storage succeeds', async () => {
+    mockFindMany.mockResolvedValue([{ id: 'u1' }]);
+    mockQueryRaw.mockImplementation(async (sql: TemplateStringsArray) =>
+      sql.join('?').includes('to_regclass')
+        ? [{ submissions: true, locks: true }]
+        : [{ present: true }],
+    );
+    mockDeleteUserStorageObjects
+      .mockResolvedValueOnce({ ok: false, deleted: [], error: 'storage temporarily unavailable' })
+      .mockResolvedValueOnce({ ok: true, deleted: [] });
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect((await cleanupDeletedAccounts()).blocked).toHaveLength(1);
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+    await expect(cleanupDeletedAccounts()).resolves.toEqual({ deleted: 1, blocked: [] });
+    expect(mockDeleteUserStorageObjects).toHaveBeenCalledTimes(2);
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it.each([
+    { schema: [{ submissions: true, locks: false }] },
+    { schema: [{ submissions: false, locks: true }] },
+    { schema: [] },
+  ])('preserves all account evidence on incomplete capability results: %j', async ({ schema }) => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'u1' }]);
+    mockQueryRaw.mockResolvedValueOnce(schema);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await expect(cleanupDeletedAccounts()).resolves.toEqual({
+      deleted: 0, blocked: [{ id: 'u1', constraint: 'enrollment_agreement_erasure_pending' }],
+    });
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+    expect(mockAuditEventDeleteMany).not.toHaveBeenCalled();
+    expect(mockDeleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it('fails closed on an ownership query error instead of treating it as no agreements', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'u1' }]);
+    mockQueryRaw.mockResolvedValueOnce([{ submissions: true, locks: true }]).mockRejectedValueOnce(new Error('database unavailable'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect((await cleanupDeletedAccounts()).blocked).toEqual([{ id: 'u1', constraint: 'enrollment_agreement_erasure_pending' }]);
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 
   it("removes the member's own audit_events rows before the user row, so the RESTRICT actor FK cannot fire", async () => {
@@ -774,7 +874,11 @@ describe('cleanupUnmatchedCourseraXapiEvents (WAP-33)', () => {
 describe('runDataCleanup', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockQueryRaw.mockResolvedValue([{ present: true }]);
+    mockQueryRaw.mockImplementation(async (sql: TemplateStringsArray) =>
+      sql.join('?').includes('enrollment_agreement_submissions')
+        ? [{ submissions: false, locks: false }]
+        : [{ present: true }],
+    );
     mockExecuteRaw.mockResolvedValue(0);
   });
 

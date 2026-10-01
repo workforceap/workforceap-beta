@@ -12,6 +12,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { eraseEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -104,6 +105,10 @@ export const POST = withApiGuc(async (
     if (shouldAnonymize) {
       // Anonymize: scramble PII but keep enrollment records for reporting
       const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
+      // This route's enrolled-member branch does not call anonymizeMember.
+      // Clear all submission metadata after blob deletion, before reporting
+      // anonymization; this remains required when the upload feature is off.
+      await withTenantScope(orgId, (db) => eraseEnrollmentAgreementData(id, db));
       await withTenantScope(orgId, (db) =>
         db.user.update({
           where: { id },

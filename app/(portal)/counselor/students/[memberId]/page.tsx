@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 import { notFound, redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getUser } from '@/lib/auth/server';
@@ -842,6 +843,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
               </section>
             ) : null}
 
+            {process.env.ENROLLMENT_AGREEMENTS_ENABLED === 'true' && <EnrollmentAgreementCard memberId={member.id} />}
             <section className="wa-kit-card" aria-labelledby="counselor-member-billing-title">
               <h2 id="counselor-member-billing-title" className={`${styles.sectionTitle} ${styles.sectionTitleTight}`}>
                 Training invoice &amp; cover letter (J5 / J6)

@@ -14,6 +14,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
+import { eraseEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -94,6 +95,10 @@ export const POST = withApiGuc(async (
       console.error(`[admin/members/[id]/delete] storage object delete failed for ${id}:`, storage.error);
       return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
     }
+
+    // User remains recoverable, but erased agreement PDFs and their sensitive
+    // review metadata must not survive soft deletion or appear after restore.
+    await withTenantScope(orgId, (db) => eraseEnrollmentAgreementData(id, db));
 
     // If the row is already soft-deleted, leave its email rewrite alone —
     // don't double-rewrite (would build up nested "deleted_deleted_..."

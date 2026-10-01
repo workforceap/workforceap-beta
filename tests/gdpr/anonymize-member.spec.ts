@@ -30,6 +30,8 @@ function fakeDb(user: { email: string; deletedAt: Date | null } | null) {
       update: vi.fn(async (_args: Call) => ({})),
     },
     profile: { updateMany: vi.fn(async (_args: Call) => ({ count: 1 })) },
+    $queryRaw: vi.fn(async () => [{ present: false }]),
+    enrollmentAgreementSubmission: { deleteMany: vi.fn(async () => ({ count: 2 })) },
     auditLog: { create: vi.fn(async (_args: Call) => ({})) },
   };
   const $transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx));
@@ -65,6 +67,25 @@ describe('anonymizeMember', () => {
     expect(parseDeletedEmail(String(userWrite.data.email))).toBe(ORIGINAL_EMAIL);
 
     expect(tx.profile.updateMany).toHaveBeenCalledWith({ where: { userId: USER_ID }, data: ANONYMIZED_PROFILE_DATA });
+    expect(tx.enrollmentAgreementSubmission.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('erases every agreement revision during soft deletion when the table exists', async () => {
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
+    tx.$queryRaw.mockResolvedValue([{ present: true }]);
+    await anonymizeMember(USER_ID, { reason: 'member_self_delete', now: NOW }, db);
+    expect(tx.enrollmentAgreementSubmission.deleteMany).toHaveBeenCalledWith({ where: { memberId: USER_ID } });
+    expect(tx.enrollmentAgreementSubmission.deleteMany.mock.invocationCallOrder[0])
+      .toBeLessThan(tx.auditLog.create.mock.invocationCallOrder[0]);
+  });
+
+  it('propagates agreement metadata deletion failure without writing a success audit', async () => {
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
+    tx.$queryRaw.mockResolvedValue([{ present: true }]);
+    tx.enrollmentAgreementSubmission.deleteMany.mockRejectedValue(new Error('agreement cleanup failed'));
+    await expect(anonymizeMember(USER_ID, { reason: 'member_self_delete', now: NOW }, db))
+      .rejects.toThrow('agreement cleanup failed');
+    expect(tx.auditLog.create).not.toHaveBeenCalled();
   });
 
   it('clears every special-category and identifying profile column the policy names', () => {

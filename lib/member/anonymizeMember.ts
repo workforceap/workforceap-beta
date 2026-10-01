@@ -2,6 +2,7 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
 import { buildDeletedEmail } from './deletedEmail';
+import { eraseEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 
 /**
  * WAP-169: the one anonymiser behind every member deletion path.
@@ -154,6 +155,11 @@ export async function anonymizeMember(
       where: { userId },
       data: ANONYMIZED_PROFILE_DATA,
     });
+
+    // Soft deletion keeps the User row, so a cascading FK cannot remove
+    // agreement review notes and document fingerprints here. Storage callers
+    // have already erased the PDFs; remove every submission revision as well.
+    await eraseEnrollmentAgreementData(userId, tx);
 
     await auditLog(
       {

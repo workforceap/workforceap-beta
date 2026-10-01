@@ -5,6 +5,7 @@ import {
   type EmailFailureSnapshotClient,
 } from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -285,7 +286,7 @@ export async function cleanupUnmatchedCourseraXapiEvents(): Promise<CleanupResul
   return { model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: totalDeleted, batchCount };
 }
 
-/** A soft-deleted account the purge could not remove, and the constraint that stopped it. */
+/** A soft-deleted account the purge could not remove, and its constraint or safety blocker. */
 export type BlockedAccount = {
   id: string;
   constraint: string;
@@ -317,6 +318,49 @@ export function foreignKeyConstraintName(err: unknown): string | null {
   if (typeof raw === 'string' && raw.trim()) return raw.replace(/\s*\(index\)\s*$/, '').trim();
   if (Array.isArray(raw) && raw.length > 0) return raw.map(String).join(',');
   return 'unknown';
+}
+
+/**
+ * A user cascade must not erase the only evidence for a private agreement or an
+ * uncertain upload. Reuse the authorized storage eraser before that cascade:
+ * its persistent fence rejects active uploads, retries completed erasure fences
+ * idempotently, and stays in place until the later user delete succeeds. No
+ * fence is unlocked here. Existing pre-rollout accounts keep their old path.
+ */
+async function eraseAgreementStorageBeforeAccountPurge(memberId: string): Promise<void> {
+  const schema = await prisma.$transaction((tx) => tx.$queryRaw<Array<{
+    submissions: boolean;
+    locks: boolean;
+  }>>`
+    SELECT to_regclass('public.enrollment_agreement_submissions') IS NOT NULL AS submissions,
+      to_regclass('public.enrollment_agreement_operation_locks') IS NOT NULL AS locks
+  `);
+  if (
+    schema.length !== 1
+    || typeof schema[0].submissions !== 'boolean'
+    || typeof schema[0].locks !== 'boolean'
+  ) throw new Error('Enrollment agreement safeguards could not be checked.');
+  if (!schema[0].submissions && !schema[0].locks) return;
+  if (!schema[0].submissions || !schema[0].locks) {
+    throw new Error('Enrollment agreement safeguards are not fully installed.');
+  }
+
+  const ownership = await prisma.$transaction((tx) => tx.$queryRaw<Array<{ present: boolean }>>`
+    SELECT EXISTS (
+      SELECT 1 FROM enrollment_agreement_submissions WHERE member_id = ${memberId}
+      UNION ALL
+      SELECT 1 FROM enrollment_agreement_operation_locks WHERE member_id = ${memberId}
+    ) AS present
+  `);
+  if (ownership.length !== 1 || typeof ownership[0].present !== 'boolean') {
+    throw new Error('Enrollment agreement ownership could not be checked.');
+  }
+  if (!ownership[0].present) return;
+
+  // Do not hold a user-row transaction open around this helper: its erasure
+  // claim takes that row lock itself before any storage listing/removal.
+  const storage = await deleteUserStorageObjects(memberId);
+  if (!storage.ok) throw new Error('Enrollment agreement storage erasure has not completed.');
 }
 
 /**
@@ -373,6 +417,16 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
     if (rows.length === 0) break;
 
     for (const { id } of rows) {
+      try {
+        await eraseAgreementStorageBeforeAccountPurge(id);
+      } catch {
+        // Do not call anonymizeMember here: it removes agreement metadata and
+        // would destroy the retry evidence we are deliberately preserving.
+        const constraint = 'enrollment_agreement_erasure_pending';
+        console.error(`[data-cleanup] Soft-deleted account ${id} requires enrollment document erasure or reconciliation before purge; skipped.`);
+        blocked.push({ id, constraint });
+        continue;
+      }
       try {
         await prisma.$transaction(async (tx) => {
           await tx.auditEvent.deleteMany({

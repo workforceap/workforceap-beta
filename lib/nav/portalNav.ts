@@ -454,6 +454,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // flavored student lists and Invites nest under Students.
   { href: '/admin/students', label: 'Students', group: 'dailyWork', Icon: Users, tourTarget: 'tour-students' },
   { href: '/admin/subgroups', label: 'Subgroups', group: 'dailyWork', Icon: UsersRound, parentHref: '/admin/students' },
+  { href: '/admin/enrollment-agreements', label: 'Enrollment agreements', group: 'dailyWork', Icon: FileText, parentHref: '/admin/students' },
   { href: '/admin/sessions', label: 'In-office sessions', group: 'dailyWork', Icon: Sparkles, requiresSuperAdminContext: true, parentHref: '/admin/students' },
   { href: '/admin/pipeline', label: 'Applications funnel', group: 'dailyWork', Icon: GitBranch, requiresSuperAdminContext: true, parentHref: '/admin/students' },
   { href: '/admin/members/duplicates', label: 'Find duplicate students', group: 'dailyWork', Icon: AlertTriangle, requiresSuperAdminContext: true, parentHref: '/admin/students' },

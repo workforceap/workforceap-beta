@@ -325,6 +325,7 @@ describe('finance archive storage', () => {
     };
     const result = await deleteUserStorageObjects('member-synthetic', {
       supabaseAdmin: admin,
+      claimAgreementErasure: async () => {},
       extraPaths: [{ bucket: DEFAULT_FINANCE_BUCKET, path: 'cases/case-1/voucher/abc.pdf' }],
     });
     assert.ok(result.ok);

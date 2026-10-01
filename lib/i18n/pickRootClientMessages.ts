@@ -13,6 +13,7 @@ export const ROOT_MARKETING_CLIENT_KEYS = ['programs', 'testimonials', 'careers'
 
 /** Member + staff portal namespaces used by client components under `(portal)`. */
 export const PORTAL_CLIENT_NAMESPACES = [
+  'enrollmentAgreement',
   'dashboard',
   'profile',
   'jobs',
@@ -155,7 +156,7 @@ export function pickClientMessageSlice(
       // AdminPortalShell uses the shared WorkspaceShell label namespaces too.
       // `tours` ships the GuidedTour chrome + step copy so admin can mount the
       // same TourProviderWrapper as (portal) (lib/tours/registry.ts).
-      Object.assign(out, pickNamespaces(m, ['admin', 'courseraProgress', 'workspace', 'group', 'tours']));
+      Object.assign(out, pickNamespaces(m, ['admin', 'courseraProgress', 'workspace', 'group', 'tours', 'enrollmentAgreement']));
       {
         const dashboard = pickAdminDashboardClientSlice(m);
         if (dashboard) out.dashboard = dashboard;

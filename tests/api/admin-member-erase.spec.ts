@@ -40,10 +40,16 @@ vi.mock('@/lib/tenant/organization', () => ({
 const findFirst = vi.fn();
 const update = vi.fn();
 const remove = vi.fn();
+const agreementDeleteMany = vi.fn();
+const queryRaw = vi.fn();
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: vi.fn((_orgId: string, fn: (db: unknown) => Promise<unknown>) =>
-    fn({ user: { findFirst, update, delete: remove } }),
+    fn({
+      user: { findFirst, update, delete: remove },
+      $queryRaw: queryRaw,
+      enrollmentAgreementSubmission: { deleteMany: agreementDeleteMany },
+    }),
   ),
 }));
 
@@ -113,6 +119,8 @@ describe('POST /api/admin/members/[id]/erase', () => {
     findFirst.mockResolvedValue(member());
     update.mockResolvedValue({ id: MEMBER_ID });
     remove.mockResolvedValue({ id: MEMBER_ID });
+    queryRaw.mockResolvedValue([{ present: false }]);
+    agreementDeleteMany.mockResolvedValue({ count: 2 });
     supabaseDeleteUser.mockResolvedValue({ error: null });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
   });
@@ -166,6 +174,32 @@ describe('POST /api/admin/members/[id]/erase', () => {
     const [authOrder] = supabaseDeleteUser.mock.invocationCallOrder;
     expect(storageOrder).toBeLessThan(deleteOrder);
     expect(deleteOrder).toBeLessThan(authOrder);
+  });
+
+  it('removes all agreement metadata after storage and before anonymizing an enrolled member', async () => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+    queryRaw.mockResolvedValue([{ present: true }]);
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+    expect(res.status).toBe(200);
+    expect(agreementDeleteMany).toHaveBeenCalledWith({ where: { memberId: MEMBER_ID } });
+    expect(vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder[0])
+      .toBeLessThan(agreementDeleteMany.mock.invocationCallOrder[0]);
+    expect(agreementDeleteMany.mock.invocationCallOrder[0]).toBeLessThan(update.mock.invocationCallOrder[0]);
+  });
+
+  it('does not report successful anonymization when agreement cleanup fails', async () => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+    queryRaw.mockResolvedValue([{ present: true }]);
+    agreementDeleteMany.mockRejectedValue(new Error('agreement cleanup failed'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+      expect(res.status).toBe(500);
+      expect(update).not.toHaveBeenCalled();
+      expect(supabaseDeleteUser).not.toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it('never touches storage or rows for an administrator target', async () => {
