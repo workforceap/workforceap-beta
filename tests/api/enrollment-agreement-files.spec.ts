@@ -18,6 +18,12 @@ beforeEach(() => {
 });
 
 describe('bounded enrollment agreement PDF validation', () => {
+  it('classifies a thrown private-bucket preflight as a definite pre-upload failure', async () => {
+    storage.getBucket.mockRejectedValue(new Error('private upstream diagnostic'));
+    await expect(storeAgreementPdf('synthetic.pdf', new Uint8Array([1])))
+      .rejects.toMatchObject({ code: 'PRIVATE_STORAGE_UNAVAILABLE' });
+    expect(storage.upload).not.toHaveBeenCalled();
+  });
   it('preserves the exact supplied four-page template bytes, without running its JavaScript', async () => {
     const original = await readFile('assets/enrollment/workforceap-enrollment-2026.pdf');
     const bytes = await readAgreementPdf(new File([original], 'agreement.pdf', { type: 'application/pdf' }));

@@ -45,6 +45,7 @@ export async function assertEnrollmentAgreementNotErasing(memberId: string, orga
 export async function claimEnrollmentAgreementErasure(
   memberId: string,
   client: Pick<PrismaClient, '$queryRaw'> = prisma,
+  options: { deletedBefore?: Date } = {},
 ): Promise<void> {
   const schema = await crossTenantOK(() => client.$queryRaw<{ submissions: string | null; locks: string | null }[]>`
     SELECT to_regclass('public.enrollment_agreement_submissions')::text AS submissions,
@@ -54,11 +55,14 @@ export async function claimEnrollmentAgreementErasure(
   if (!schema[0].submissions && !schema[0].locks) return;
   if (!schema[0].submissions || !schema[0].locks) throw new EnrollmentAgreementError(503, 'AGREEMENT_ERASURE_UNAVAILABLE', 'Document-erasure safeguards require a support check.');
   const token = randomUUID();
+  const deletedBefore = options.deletedBefore ?? null;
   // Cross-tenant marker is intentional: the eraser already authorized this
   // specific member. Derive organization from that member, never a default org.
   const rows = await crossTenantOK(() => client.$queryRaw<{ memberExists: boolean; claimed: boolean }[]>`
     WITH member_lock AS (
-      SELECT id, organization_id FROM users WHERE id = ${memberId} FOR UPDATE
+      SELECT id, organization_id FROM users WHERE id = ${memberId}
+        AND (${deletedBefore}::timestamp IS NULL OR deleted_at < ${deletedBefore}::timestamp)
+      FOR UPDATE
     ), claim AS (
       INSERT INTO enrollment_agreement_operation_locks (member_id, organization_id, token, state)
         SELECT id, organization_id, ${token}, 'erasure' FROM member_lock
@@ -67,6 +71,9 @@ export async function claimEnrollmentAgreementErasure(
         RETURNING member_id
     ) SELECT EXISTS (SELECT 1 FROM member_lock) AS "memberExists", EXISTS (SELECT 1 FROM claim) AS claimed
   `);
+  if (options.deletedBefore && rows.length === 1 && !rows[0].memberExists) {
+    throw new EnrollmentAgreementError(409, 'ACCOUNT_RETENTION_CHANGED', 'The account is no longer eligible for retention purge. No storage erasure started.');
+  }
   if (rows.length !== 1 || (rows[0].memberExists && !rows[0].claimed)) {
     throw new EnrollmentAgreementError(503, 'AGREEMENT_UPLOAD_IN_PROGRESS', 'An enrollment agreement upload is still in progress. Account erasure has not started; please retry later.');
   }

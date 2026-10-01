@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
 import { buildDeletedEmail } from './deletedEmail';
 import { eraseEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { DELETED_ACCOUNT_RETENTION_DAYS, getCutoffDate } from '@/lib/retention/config';
 
 /**
  * WAP-169: the one anonymiser behind every member deletion path.
@@ -47,6 +49,8 @@ export type AnonymizeMemberOptions = {
    */
   actorUserId?: string | null;
   now?: Date;
+  /** Recheck the cron's original eligibility under a row lock before scrubbing. */
+  deletedBefore?: Date;
 };
 
 export type AnonymizeMemberResult = {
@@ -125,6 +129,17 @@ export async function anonymizeMember(
   const selfActor = actorUserId === userId;
 
   return db.$transaction(async (tx) => {
+    if (options.reason === 'retention_purge_blocked') {
+      if (!interactiveTransactionsGuaranteed()) throw new Error('Retention anonymization requires an interactive transaction.');
+      const cutoff = options.deletedBefore ?? getCutoffDate(DELETED_ACCOUNT_RETENTION_DAYS);
+      const eligible = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM users WHERE id = ${userId} AND deleted_at < ${cutoff}::timestamp FOR UPDATE
+      `;
+      // A restore, a recent suspension, or a concurrent purge is not authority
+      // to anonymize a user selected by an earlier retention query.
+      if (eligible.length === 0) return null;
+      if (eligible.length !== 1) throw new Error('Retention account eligibility could not be confirmed.');
+    }
     const existing = await tx.user.findUnique({
       where: { id: userId },
       select: { email: true, deletedAt: true },

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // WAP-169: one anonymiser for every deletion path. These cases pin what it
 // writes and, above all, what it never writes (the original address).
@@ -30,7 +30,8 @@ function fakeDb(user: { email: string; deletedAt: Date | null } | null) {
       update: vi.fn(async (_args: Call) => ({})),
     },
     profile: { updateMany: vi.fn(async (_args: Call) => ({ count: 1 })) },
-    $queryRaw: vi.fn(async () => [{ present: false }]),
+    $queryRaw: vi.fn(async (sql: TemplateStringsArray): Promise<Array<{ present: boolean } | { id: string }>> =>
+      sql.join('?').includes('FOR UPDATE') ? [{ id: USER_ID }] : [{ present: false }]),
     enrollmentAgreementSubmission: { deleteMany: vi.fn(async () => ({ count: 2 })) },
     auditLog: { create: vi.fn(async (_args: Call) => ({})) },
   };
@@ -39,7 +40,12 @@ function fakeDb(user: { email: string; deletedAt: Date | null } | null) {
 }
 
 describe('anonymizeMember', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv('VERCEL_ENV', '');
+    vi.stubEnv('PRISMA_FLATTEN_TX', '0');
+  });
+  afterEach(() => vi.unstubAllEnvs());
 
   it('scrubs the user row, nulls every profile PII column, and soft-deletes in one transaction', async () => {
     const { tx, $transaction, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
@@ -150,6 +156,24 @@ describe('anonymizeMember', () => {
     expect(tx.user.update).not.toHaveBeenCalled();
     expect(tx.profile.updateMany).not.toHaveBeenCalled();
     expect(tx.auditLog.create).not.toHaveBeenCalled();
+  });
+  it('does not anonymize an account restored before the retention fallback acquires its lock', async () => {
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
+    tx.$queryRaw.mockResolvedValueOnce([]);
+    expect(await anonymizeMember(USER_ID, { reason: 'retention_purge_blocked', deletedBefore: NOW }, db)).toBeNull();
+    expect(tx.user.findUnique).not.toHaveBeenCalled();
+    expect(tx.user.update).not.toHaveBeenCalled();
+    expect(tx.profile.updateMany).not.toHaveBeenCalled();
+    expect(tx.enrollmentAgreementSubmission.deleteMany).not.toHaveBeenCalled();
+    expect(tx.auditLog.create).not.toHaveBeenCalled();
+  });
+  it('refuses retention fallback when a row lock cannot span the anonymization writes', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: NOW });
+    await expect(anonymizeMember(USER_ID, { reason: 'retention_purge_blocked', deletedBefore: NOW }, db))
+      .rejects.toThrow('interactive transaction');
+    expect(tx.$queryRaw).not.toHaveBeenCalled();
+    expect(tx.user.update).not.toHaveBeenCalled();
   });
 
   it('propagates a failed audit write so the caller cannot report a deletion that did not commit', async () => {

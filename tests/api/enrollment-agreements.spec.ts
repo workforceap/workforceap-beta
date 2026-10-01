@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   acquire: vi.fn(), release: vi.fn(), assertNotErasing: vi.fn(),
 }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: unknown) => handler }));
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
 vi.mock('@/lib/auth/roles', () => ({ getProfileRole: mocks.getProfileRole }));
 vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: mocks.getActorOrganizationId }));
@@ -30,7 +31,7 @@ vi.mock('@/lib/enrollmentAgreements/operationLock', () => ({
 import { GET, POST } from '@/app/api/enrollment-agreements/route';
 import { POST as REVIEW } from '@/app/api/enrollment-agreements/[id]/review/route';
 import { GET as COVERAGE } from '@/app/api/enrollment-agreements/coverage/route';
-import { createAgreementSubmission, reviewAgreementSubmission } from '@/lib/enrollmentAgreements/service';
+import { createAgreementSubmission, getAgreementForRead, reviewAgreementSubmission } from '@/lib/enrollmentAgreements/service';
 import { requireAgreementMemberAccess } from '@/lib/enrollmentAgreements/access';
 import { EnrollmentAgreementError } from '@/lib/enrollmentAgreements/errors';
 
@@ -63,6 +64,7 @@ function reviewRequest(body: unknown) {
 beforeEach(() => {
   vi.resetAllMocks();
   vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'true');
+  vi.stubEnv('STAFF_MFA_ENFORCEMENT', '0');
   mocks.getUser.mockResolvedValue({ id: MEMBER });
   mocks.getProfileRole.mockResolvedValue('member');
   mocks.getActorOrganizationId.mockResolvedValue(ORG);
@@ -118,6 +120,18 @@ describe('enrollment agreement authenticated routes', () => {
     await expect(requireAgreementMemberAccess(member, ADMIN)).rejects.toMatchObject({ status: 403 });
     await expect(requireAgreementMemberAccess({ ...admin, role: 'super_admin' }, OTHER)).rejects.toMatchObject({ status: 404 });
   });
+  it('does not reveal whether an inaccessible submission exists', async () => {
+    const unrelated = { ...member, id: OTHER };
+    await expect(getAgreementForRead(unrelated, ID)).rejects.toMatchObject({ status: 404, code: 'NOT_FOUND' });
+    expect(mocks.findMember).not.toHaveBeenCalled(); expect(mocks.assertNotErasing).not.toHaveBeenCalled();
+    mocks.findSubmission.mockResolvedValue(null);
+    await expect(getAgreementForRead(unrelated, ID)).rejects.toMatchObject({ status: 404, code: 'NOT_FOUND' });
+  });
+  it('does not hide database/schema failures as inaccessible or missing submissions', async () => {
+    const failure = { code: 'P2021' };
+    mocks.findSubmission.mockRejectedValue(failure);
+    await expect(getAgreementForRead(member, ID)).rejects.toEqual(failure);
+  });
   it('permits only assigned same-org counselors to read and denies all counselor writes', async () => {
     const counselor = { ...admin, role: 'counselor' };
     await expect(requireAgreementMemberAccess(counselor, MEMBER)).rejects.toMatchObject({ status: 403 });
@@ -171,6 +185,14 @@ describe('enrollment agreement authenticated routes', () => {
     await expect(createAgreementSubmission(member, { memberId: MEMBER, templateVersion: '2026-09-30', bytes: pdf })).rejects.toMatchObject({ status: 409, code: 'REVISION_CONFLICT' });
     expect(mocks.remove).toHaveBeenCalledExactlyOnceWith(mocks.store.mock.calls[0][0]);
     expect(mocks.remove.mock.calls[0][0]).not.toBe(submission().storagePath);
+  });
+  it.each(['57014', '55P03'])('compensates only the new object and releases its upload fence after definitive PostgreSQL %s', async (code) => {
+    const failure = { code: 'P2010', meta: { code } };
+    mocks.queryRaw.mockRejectedValue(failure);
+    await expect(createAgreementSubmission(member, { memberId: MEMBER, templateVersion: '2026-09-30', bytes: pdf })).rejects.toEqual(failure);
+    expect(mocks.remove).toHaveBeenCalledExactlyOnceWith(mocks.store.mock.calls[0][0]);
+    expect(mocks.release).toHaveBeenCalledExactlyOnceWith(member, MEMBER, 'operation-token');
+    expect(mocks.remove.mock.invocationCallOrder[0]).toBeLessThan(mocks.release.mock.invocationCallOrder[0]);
   });
   it('preserves bytes after ambiguous network failure rather than deleting a possible committed revision', async () => {
     mocks.queryRaw.mockRejectedValue(new Error('connection lost after commit'));

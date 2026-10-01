@@ -6,6 +6,7 @@ import {
 } from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
+import { claimEnrollmentAgreementErasure } from '@/lib/enrollmentAgreements/operationLock';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -312,7 +313,11 @@ const SELF_SERVICE_AUDIT_ACTOR_ROLE = 'member';
  */
 export function foreignKeyConstraintName(err: unknown): string | null {
   if (!err || typeof err !== 'object') return null;
-  const { code, meta } = err as { code?: unknown; meta?: { field_name?: unknown; constraint?: unknown } };
+  const { code, meta } = err as { code?: unknown; meta?: { field_name?: unknown; constraint?: unknown; code?: unknown; message?: unknown } };
+  if (code === 'P2010' && meta?.code === '23503') {
+    // Raw SQL preserves PostgreSQL's SQLSTATE inside Prisma's query error.
+    return typeof meta.message === 'string' ? /constraint "([\w]+)"/.exec(meta.message)?.[1] ?? 'unknown' : 'unknown';
+  }
   if (code !== 'P2003') return null;
   const raw = meta?.field_name ?? meta?.constraint;
   if (typeof raw === 'string' && raw.trim()) return raw.replace(/\s*\(index\)\s*$/, '').trim();
@@ -327,7 +332,7 @@ export function foreignKeyConstraintName(err: unknown): string | null {
  * idempotently, and stays in place until the later user delete succeeds. No
  * fence is unlocked here. Existing pre-rollout accounts keep their old path.
  */
-async function eraseAgreementStorageBeforeAccountPurge(memberId: string): Promise<void> {
+async function eraseAgreementStorageBeforeAccountPurge(memberId: string, cutoff: Date): Promise<void> {
   const schema = await prisma.$transaction((tx) => tx.$queryRaw<Array<{
     submissions: boolean;
     locks: boolean;
@@ -355,12 +360,39 @@ async function eraseAgreementStorageBeforeAccountPurge(memberId: string): Promis
   if (ownership.length !== 1 || typeof ownership[0].present !== 'boolean') {
     throw new Error('Enrollment agreement ownership could not be checked.');
   }
+  // Even a currently docless subject needs a fence: a restore could otherwise
+  // claim one after this ownership read and then lose its row to the cascade.
+  await claimEnrollmentAgreementErasure(memberId, prisma, { deletedBefore: cutoff });
   if (!ownership[0].present) return;
 
   // Do not hold a user-row transaction open around this helper: its erasure
   // claim takes that row lock itself before any storage listing/removal.
-  const storage = await deleteUserStorageObjects(memberId);
+  const storage = await deleteUserStorageObjects(memberId, {
+    claimAgreementErasure: (id) => claimEnrollmentAgreementErasure(id, prisma, { deletedBefore: cutoff }),
+  });
   if (!storage.ok) throw new Error('Enrollment agreement storage erasure has not completed.');
+}
+
+/** One atomic statement, including in environments that flatten $transaction. */
+async function purgeEligibleAccount(id: string, cutoff: Date): Promise<number> {
+  const result = await prisma.$queryRaw<Array<{ deleted: number }>>`
+    WITH eligible AS (
+      SELECT id FROM users WHERE id = ${id} AND deleted_at < ${cutoff}::timestamp FOR UPDATE
+    ), removed_audit AS (
+      DELETE FROM audit_events
+      WHERE actor_user_id = ${id} AND actor_role = ${SELF_SERVICE_AUDIT_ACTOR_ROLE}
+        AND EXISTS (SELECT 1 FROM eligible)
+      RETURNING id
+    ), purged AS (
+      DELETE FROM users
+      WHERE id IN (SELECT id FROM eligible) AND deleted_at < ${cutoff}::timestamp
+        AND (SELECT count(*) FROM removed_audit) >= 0
+      RETURNING id
+    )
+    SELECT count(*)::int AS deleted FROM purged
+  `;
+  if (result.length !== 1 || ![0, 1].includes(result[0].deleted)) throw new Error('Account purge result could not be confirmed.');
+  return result[0].deleted;
 }
 
 /**
@@ -418,7 +450,7 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
 
     for (const { id } of rows) {
       try {
-        await eraseAgreementStorageBeforeAccountPurge(id);
+        await eraseAgreementStorageBeforeAccountPurge(id, cutoff);
       } catch {
         // Do not call anonymizeMember here: it removes agreement metadata and
         // would destroy the retry evidence we are deliberately preserving.
@@ -428,22 +460,17 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
         continue;
       }
       try {
-        await prisma.$transaction(async (tx) => {
-          await tx.auditEvent.deleteMany({
-            where: { actorUserId: id, actorRole: SELF_SERVICE_AUDIT_ACTOR_ROLE },
-          });
-          // deleteMany (not delete) so a row removed concurrently is a no-op,
-          // not a P2025. Cascades run at the database level from here.
-          await tx.user.deleteMany({ where: { id } });
-        });
-        deleted += 1;
+        // Re-evaluate eligibility after remote storage work. The user lock and
+        // both deletes share one statement; a restore that won the race keeps
+        // its account and self-service audit records intact.
+        deleted += await purgeEligibleAccount(id, cutoff);
       } catch (err) {
         const constraint = foreignKeyConstraintName(err);
         if (!constraint) throw err;
         console.error(`[data-cleanup] Soft-deleted account ${id} is still referenced by ${constraint}; skipped.`);
         blocked.push({ id, constraint });
         try {
-          await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null });
+          await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null, deletedBefore: cutoff });
         } catch (anonymizeErr) {
           console.error(`[data-cleanup] Could not anonymise held account ${id}:`, anonymizeErr);
         }

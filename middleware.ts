@@ -92,7 +92,7 @@ const ADMIN_API_PATHS = ['/api/admin'];
  * `getUser()`/Supabase session auth (directly or via a shared handler
  * factory) before touching request data.
  */
-const TENANT_API_PATHS = ['/api/member', '/api/employer', '/api/partner', '/api/counselor'];
+const TENANT_API_PATHS = ['/api/member', '/api/employer', '/api/partner', '/api/counselor', '/api/enrollment-agreements'];
 
 /** Routes under TENANT_API_PATHS that must stay reachable without a session. */
 const TENANT_API_PUBLIC_ALLOWLIST = new Set([
@@ -130,11 +130,15 @@ function isAdminApiPath(pathname: string) {
  * billing-packet send (emails member documents) and the admin SLO report.
  * Keep these exact; /api/partner/* as a whole is the partner portal, and
  * /api/billing-packets/[id]/pdf is the member/counselor download.
+ * Enrollment coverage/review are staff-only. Its mixed-role endpoints also
+ * enforce staff MFA in requireAgreementActor using the persisted role; do not
+ * gate the entire prefix here and force student self-service into staff MFA.
  */
 const STAFF_MFA_EXACT_API_PATHS = new Set(['/api/partner/payout', '/api/health/slo']);
 const STAFF_MFA_API_PATTERNS = [
   /^\/api\/org\/[^/]+\/settings$/,
   /^\/api\/billing-packets\/[^/]+\/send$/,
+  /^\/api\/enrollment-agreements\/(?:coverage|[^/]+\/review)\/?$/,
 ];
 
 function isStaffOnlyApiPath(pathname: string) {

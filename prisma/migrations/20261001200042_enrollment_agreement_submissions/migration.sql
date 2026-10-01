@@ -8,7 +8,7 @@ CREATE TABLE "enrollment_agreement_operation_locks" (
   "member_id" TEXT NOT NULL PRIMARY KEY,
   "organization_id" TEXT NOT NULL,
   "token" TEXT NOT NULL UNIQUE,
-  "state" TEXT NOT NULL CHECK ("state" IN ('upload', 'erasure')),
+  "state" TEXT NOT NULL CHECK ("state" IN ('upload', 'erasure', 'account_restore')),
   "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "enrollment_agreement_operation_locks_member_id_fkey" FOREIGN KEY ("member_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "enrollment_agreement_operation_locks_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE
@@ -61,12 +61,12 @@ CREATE INDEX "enrollment_agreement_submissions_reviewed_by_user_id_idx" ON "enro
 ALTER TABLE "enrollment_agreement_submissions" ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE "enrollment_agreement_submissions" FROM PUBLIC;
 DO $$
-DECLARE browser_role TEXT;
+DECLARE api_role TEXT;
 BEGIN
-  FOREACH browser_role IN ARRAY ARRAY['anon', 'authenticated'] LOOP
-    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = browser_role) THEN
-      EXECUTE format('REVOKE ALL ON TABLE public.enrollment_agreement_submissions FROM %I', browser_role);
-      EXECUTE format('REVOKE ALL ON TABLE public.enrollment_agreement_operation_locks FROM %I', browser_role);
+  FOREACH api_role IN ARRAY ARRAY['anon', 'authenticated', 'service_role'] LOOP
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = api_role) THEN
+      EXECUTE format('REVOKE ALL ON TABLE public.enrollment_agreement_submissions FROM %I', api_role);
+      EXECUTE format('REVOKE ALL ON TABLE public.enrollment_agreement_operation_locks FROM %I', api_role);
     END IF;
   END LOOP;
 END $$;
@@ -114,6 +114,15 @@ BEGIN
   RETURN NEW;
 END $$;
 REVOKE ALL ON FUNCTION public.enrollment_agreement_guard_revision() FROM PUBLIC;
+DO $$
+DECLARE api_role TEXT;
+BEGIN
+  FOREACH api_role IN ARRAY ARRAY['anon', 'authenticated', 'service_role'] LOOP
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = api_role) THEN
+      EXECUTE format('REVOKE ALL ON FUNCTION public.enrollment_agreement_guard_revision() FROM %I', api_role);
+    END IF;
+  END LOOP;
+END $$;
 CREATE TRIGGER enrollment_agreement_immutable_revision BEFORE INSERT OR UPDATE ON public.enrollment_agreement_submissions
 FOR EACH ROW EXECUTE FUNCTION public.enrollment_agreement_guard_revision();
 COMMIT;

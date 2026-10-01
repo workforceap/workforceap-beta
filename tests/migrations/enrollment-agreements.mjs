@@ -44,6 +44,7 @@ for (const key of ['PGSERVICE', 'PGSERVICEFILE', 'PGHOSTADDR', 'PGOPTIONS']) del
 const preamble = '\\set VERBOSITY sqlstate\nSET client_min_messages = warning; SET statement_timeout = \'15s\'; SET lock_timeout = \'10s\';\n';
 const migration = readFileSync(resolve(root,
   'prisma/migrations/20261001200042_enrollment_agreement_submissions/migration.sql'), 'utf8');
+const preflight = readFileSync(resolve(root, 'scripts/enrollment-agreements-storage-preflight.sql'), 'utf8');
 const quote = (value) => `'${String(value).replaceAll("'", "''")}'`;
 const pass = (message) => console.log(`PASS ${message}`);
 
@@ -99,6 +100,13 @@ const templates = {
   erase: queryTemplate('lib/enrollmentAgreements/operationLock.ts', 'claimEnrollmentAgreementErasure', { contains: 'WITH member_lock' }),
   replace: queryTemplate('lib/enrollmentAgreements/service.ts', 'createAgreementSubmission'),
   review: queryTemplate('lib/enrollmentAgreements/service.ts', 'reviewAgreementSubmission'),
+  purge: queryTemplate('lib/retention/cleanup.ts', 'purgeEligibleAccount'),
+  lifecycleLock: queryTemplate('lib/gdpr/accountLifecycle.ts', 'assertNoAgreementOperationForAccountChange', { contains: 'FOR UPDATE' }),
+  lifecycleFence: queryTemplate('lib/gdpr/accountLifecycle.ts', 'assertNoAgreementOperationForAccountChange', { contains: 'SELECT EXISTS' }),
+  retentionLock: queryTemplate('lib/member/anonymizeMember.ts', 'anonymizeMember', { contains: 'FOR UPDATE' }),
+  restoreClaim: queryTemplate('lib/gdpr/accountLifecycle.ts', 'claimAgreementAccountRestore'),
+  restoreOwned: queryTemplate('lib/gdpr/accountLifecycle.ts', 'assertAgreementAccountRestoreOwned', { contains: 'SELECT EXISTS' }),
+  restoreRelease: queryTemplate('lib/gdpr/accountLifecycle.ts', 'releaseAgreementAccountRestore'),
 };
 let statementNumber = 0;
 function bind(name, values) {
@@ -121,7 +129,15 @@ const LOCKS = 'public.enrollment_agreement_operation_locks';
 const member = (id, deleted = false) => sql(`INSERT INTO public.users VALUES (${quote(id)}, ${quote(ORG)}, ${deleted ? 'now()' : 'NULL'});`);
 const acquire = (id, token, organization = ORG) => bind('acquire', { memberId: id, 'actor.organizationId': organization, token });
 const release = (id, token) => bind('release', { memberId: id, 'actor.organizationId': ORG, token });
-const erase = (id, token) => bind('erase', { memberId: id, token });
+const erase = (id, token, deletedBefore = null) => bind('erase', { memberId: id, token, deletedBefore });
+const cutoff = '2026-09-01 00:00:00';
+const purge = (id) => bind('purge', { id, cutoff, SELF_SERVICE_AUDIT_ACTOR_ROLE: 'member' });
+const lifecycleLock = (id) => bind('lifecycleLock', { memberId: id, lockInOrganization: ORG });
+const lifecycleFence = (id) => bind('lifecycleFence', { memberId: id });
+const retentionLock = (id) => bind('retentionLock', { userId: id, cutoff });
+const restoreClaim = (id, token) => bind('restoreClaim', { memberId: id, organizationId: ORG, token });
+const restoreOwned = (id, token) => bind('restoreOwned', { memberId: id, organizationId: ORG, token });
+const restoreRelease = (id, token) => bind('restoreRelease', { memberId: id, organizationId: ORG, token });
 const pathFor = (id, revision) => `enrollment-agreements/${id}/${revision}.pdf`;
 function revisionInsert(id, revision, overrides = {}) {
   const values = {
@@ -150,11 +166,12 @@ const rows = (id) => JSON.parse(sql(`SELECT coalesce(json_agg(to_jsonb(s) ORDER 
 // script without the option and must execute all real PostgreSQL assertions.
 if (checkTemplatesOnly) {
   for (const statement of [acquire('m', 't'), release('m', 't'), erase('m', 't'),
-    replace('m', 'r', 't'), review('m', 'r')]) {
+    erase('m', 't', cutoff), replace('m', 'r', 't'), review('m', 'r'), purge('m'), lifecycleLock('m'), lifecycleFence('m'), retentionLock('m'),
+    restoreClaim('m', 't'), restoreOwned('m', 't'), restoreRelease('m', 't')]) {
     assert.match(statement, /^PREPARE agreement_proof_\d+ \(/);
     assert.match(statement, /EXECUTE agreement_proof_\d+ \(/);
   }
-  console.log('PASS all five canonical SQL templates extracted and fixture bindings resolved; PostgreSQL NOT run');
+  console.log('PASS all twelve canonical SQL templates extracted and fixture bindings resolved; PostgreSQL NOT run');
   process.exit(0);
 }
 
@@ -219,32 +236,38 @@ const createdRoles = [];
 try {
   assert.equal(sql(`SELECT count(*) FROM pg_database WHERE datname = '${database}';`, 'postgres'), '0',
     'Dedicated proof database already exists; refusing to replace it.');
-  for (const role of ['anon', 'authenticated']) {
+  for (const role of ['anon', 'authenticated', 'service_role']) {
     if (sql(`SELECT count(*) FROM pg_roles WHERE rolname = '${role}';`, 'postgres') === '0') {
-      sql(`CREATE ROLE ${role} NOLOGIN NOSUPERUSER NOBYPASSRLS;`, 'postgres');
+      sql(`CREATE ROLE ${role} NOLOGIN NOSUPERUSER ${role === 'service_role' ? 'BYPASSRLS' : 'NOBYPASSRLS'};`, 'postgres');
       createdRoles.push(role);
     }
-    assert.equal(sql(`SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname = '${role}';`, 'postgres'), 'f',
-      'Browser stand-ins must not bypass RLS.');
+    assert.equal(sql(`SELECT rolsuper FROM pg_roles WHERE rolname = '${role}';`, 'postgres'), 'f', 'API stand-ins must not be superusers.');
+    assert.equal(sql(`SELECT rolbypassrls FROM pg_roles WHERE rolname = '${role}';`, 'postgres'), role === 'service_role' ? 't' : 'f',
+      'Only the service-role stand-in must bypass RLS.');
   }
   sql(`CREATE DATABASE ${database};`, 'postgres');
   createdDatabase = true;
   sql(`
     CREATE TABLE public.organizations (id text PRIMARY KEY);
     CREATE TABLE public.users (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES public.organizations(id), deleted_at timestamp);
+    CREATE TABLE public.audit_events (id text PRIMARY KEY, actor_user_id text REFERENCES public.users(id) ON DELETE SET NULL, actor_role text);
     INSERT INTO public.organizations VALUES (${quote(ORG)}), (${quote(OTHER_ORG)});
     INSERT INTO public.users VALUES (${quote(ADMIN)}, ${quote(ORG)}, NULL), ('other-org-admin', ${quote(OTHER_ORG)}, NULL);
     CREATE SCHEMA storage;
     CREATE TABLE storage.objects (id text PRIMARY KEY, bucket_id text NOT NULL, name text NOT NULL);
     ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-    GRANT USAGE ON SCHEMA public, storage TO anon, authenticated;
-    GRANT SELECT, INSERT, UPDATE, DELETE ON storage.objects TO anon, authenticated;
+    GRANT USAGE ON SCHEMA public, storage TO anon, authenticated, service_role;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON storage.objects TO anon, authenticated, service_role;
     CREATE POLICY broad_existing_bucket_policy ON storage.objects FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
     INSERT INTO storage.objects VALUES ('protected', 'member-files', 'enrollment-agreements/synthetic/revision.pdf'),
       ('ordinary', 'member-files', 'resumes/synthetic.pdf'), ('other-bucket', 'other-bucket', 'enrollment-agreements/synthetic.pdf');
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO PUBLIC, anon, authenticated;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO PUBLIC, anon, authenticated, service_role;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role;
   `);
   for (const role of ['anon', 'authenticated']) assert.equal(sql(`SET ROLE ${role}; SELECT count(*) FROM storage.objects;`), '3');
+  sql(preflight);
+  rejects(`SET ROLE anon; ${preflight}`, 'P0001', 'read-only preflight rejects non-owner deployment authority');
+  pass('exact read-only Storage preflight accepts its owner and rejects anon before migration');
   sql(migration);
   pass('exact additive migration applies over synthetic users/orgs and an existing permissive Storage policy');
 
@@ -327,6 +350,67 @@ try {
   assert.equal(sql(acquire('immutable', 'wrong-organization', OTHER_ORG)), '');
   pass('upload/erasure both lock orderings fail closed; erasure retry preserves token, deleted-user cleanup remains possible');
 
+  const expired = (id) => { member(id); sql(`UPDATE users SET deleted_at='2026-08-01' WHERE id=${quote(id)};`); };
+  member('active-cutoff'); member('recent-cutoff', true); expired('expired-cutoff');
+  for (const id of ['active-cutoff', 'recent-cutoff', 'missing-cutoff']) {
+    assert.equal(sql(erase(id, 'ineligible-token', cutoff)), 'f|f');
+    assert.equal(sql(`SELECT count(*) FROM ${LOCKS} WHERE member_id=${quote(id)};`), '0');
+  }
+  assert.equal(sql(erase('expired-cutoff', 'eligible-erasure', cutoff)), 't|t');
+  expired('restore-before-erasure');
+  await blockedRace(`UPDATE users SET deleted_at=NULL WHERE id='restore-before-erasure';`,
+    erase('restore-before-erasure', 'stale-purge', cutoff), '', 'f|f', 'restore-before-erasure');
+  assert.equal(sql(`SELECT count(*) FROM ${LOCKS} WHERE member_id='restore-before-erasure';`), '0');
+  expired('erasure-before-restore');
+  await blockedRace(erase('erasure-before-restore', 'purge-fence', cutoff),
+    `BEGIN; ${lifecycleLock('erasure-before-restore')} ${lifecycleFence('erasure-before-restore')} COMMIT;`,
+    't|t', 'erasure-before-restore\nt', 'erasure-before-restore');
+  assert.equal(sql("SELECT deleted_at IS NOT NULL FROM users WHERE id='erasure-before-restore';"), 't');
+  pass('cutoff claim rejects active/recent/missing subjects; real restore/erasure lock orderings protect the subject or expose the retained fence');
+
+  expired('restore-fence-first');
+  await blockedRace(restoreClaim('restore-fence-first', 'restore-owner'), erase('restore-fence-first', 'purge-contender', cutoff),
+    'restore-owner', 't|f', 'restore-fence-first');
+  assert.equal(sql(acquire('restore-fence-first', 'upload-contender')), '');
+  sql(restoreRelease('restore-fence-first', 'wrong-token'));
+  assert.equal(sql(restoreOwned('restore-fence-first', 'restore-owner')), 't');
+  assert.equal(sql(`BEGIN; ${lifecycleLock('restore-fence-first')} ${restoreOwned('restore-fence-first', 'restore-owner')}
+    UPDATE users SET deleted_at=NULL WHERE id='restore-fence-first'; ${restoreRelease('restore-fence-first', 'restore-owner')} COMMIT;`), 'restore-fence-first\nt');
+  assert.equal(sql(erase('restore-fence-first', 'stale-purge-after-activation', cutoff)), 'f|f');
+  expired('purge-fence-first');
+  await blockedRace(erase('purge-fence-first', 'purge-owner', cutoff), restoreClaim('purge-fence-first', 'restore-contender'),
+    't|t', '', 'purge-fence-first');
+  expired('uncertain-restore');
+  assert.equal(sql(restoreClaim('uncertain-restore', 'uncertain-owner')), 'uncertain-owner');
+  // Auth/DB uncertainty must not release this fence. A later restore and a
+  // purge retry both fail until an authorized reconciliation, not a TTL.
+  assert.equal(sql(restoreClaim('uncertain-restore', 'unsafe-retry')), '');
+  assert.equal(sql(erase('uncertain-restore', 'unsafe-purge', cutoff)), 't|f');
+  assert.equal(sql(restoreOwned('uncertain-restore', 'uncertain-owner')), 't');
+  pass('persistent restore fence wins/loses safely against purge, releases only its successful exact token, and protects uncertain Auth outcomes');
+
+  expired('purge-expired');
+  sql("INSERT INTO audit_events VALUES ('own-audit','purge-expired','member'), ('staff-audit','purge-expired','admin');");
+  assert.equal(sql(purge('purge-expired')), '1');
+  assert.equal(sql("SELECT count(*) FROM audit_events WHERE id='own-audit';"), '0');
+  assert.equal(sql("SELECT actor_user_id IS NULL FROM audit_events WHERE id='staff-audit';"), 't');
+  expired('restore-before-cascade');
+  sql("INSERT INTO audit_events VALUES ('restored-audit','restore-before-cascade','member');");
+  await blockedRace("UPDATE users SET deleted_at=NULL WHERE id='restore-before-cascade';",
+    purge('restore-before-cascade'), '', '0', 'restore-before-cascade');
+  assert.equal(sql("SELECT count(*) FROM audit_events WHERE id='restored-audit';"), '1');
+  expired('cascade-before-restore');
+  await blockedRace(purge('cascade-before-restore'),
+    "UPDATE users SET deleted_at=NULL WHERE id='cascade-before-restore' RETURNING id;", '1', '', 'cascade-before-restore');
+  expired('purge-held');
+  sql("CREATE TABLE held_evidence (member_id text REFERENCES users(id) ON DELETE RESTRICT); INSERT INTO held_evidence VALUES ('purge-held'); INSERT INTO audit_events VALUES ('held-audit','purge-held','member');");
+  rejects(purge('purge-held'), '23503', 'held account keeps its atomic audit delete rolled back');
+  assert.equal(sql("SELECT count(*) FROM audit_events WHERE id='held-audit';"), '1');
+  assert.equal(sql("SELECT count(*) FROM users WHERE id='purge-held';"), '1');
+  await blockedRace("UPDATE users SET deleted_at=NULL WHERE id='purge-held';",
+    `BEGIN; ${retentionLock('purge-held')} COMMIT;`, '', '', 'restore-before-anonymization');
+  pass('atomic purge rechecks cutoff after waiting, preserves restored subjects and staff audit, and rolls back self-audit deletion on FK failure');
+
   member('review-race');
   sql(revisionInsert('review-race', 'review-race-old'));
   await blockedRace(acquire('review-race', 'review-race-old'), acquire('review-race', 'replacement-contender'),
@@ -351,7 +435,17 @@ try {
         SELECT count(*) FROM ${table}; WITH removed AS (DELETE FROM ${table} RETURNING 1) SELECT count(*) FROM removed; ROLLBACK;`), '0\n0',
         'Default-deny RLS still protects rows if a table grant is mistakenly reintroduced');
     }
+    assert.equal(sql(`SELECT has_table_privilege('service_role', ${quote(table)}, 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+      OR has_any_column_privilege('service_role', ${quote(table)}, 'SELECT,INSERT,UPDATE,REFERENCES');`), 'f');
+    for (const command of [`SELECT * FROM ${table};`, `INSERT INTO ${table} DEFAULT VALUES;`,
+      `UPDATE ${table} SET organization_id=organization_id;`, `DELETE FROM ${table};`, `TRUNCATE ${table};`]) {
+      rejects(`SET ROLE service_role; ${command}`, '42501', 'service-role Data API table access despite BYPASSRLS');
+    }
   }
+  for (const role of ['anon', 'authenticated', 'service_role']) {
+    assert.equal(sql(`SELECT has_function_privilege('${role}', 'public.enrollment_agreement_guard_revision()', 'EXECUTE');`), 'f');
+  }
+  assert.equal(sql('SET ROLE service_role; SELECT count(*) FROM storage.objects;'), '3', 'Server Storage service-role access is not revoked');
   for (const role of ['anon', 'authenticated']) {
     assert.equal(sql(`SELECT has_function_privilege('${role}', 'public.enrollment_agreement_guard_revision()', 'EXECUTE');`), 'f');
     assert.equal(sql(`SET ROLE ${role}; SELECT string_agg(id, ',' ORDER BY id) FROM storage.objects;`), 'ordinary,other-bucket');

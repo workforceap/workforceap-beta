@@ -16,6 +16,7 @@ const mockCount = vi.fn();
 const mockAuditEventDeleteMany = vi.fn();
 const mockAnonymizeMember = vi.fn();
 const mockDeleteUserStorageObjects = vi.fn();
+const mockClaimErasure = vi.fn();
 const mockQueryRaw = vi.fn();
 const mockExecuteRaw = vi.fn();
 const mockSnapshotCreateMany = vi.fn();
@@ -46,6 +47,9 @@ vi.mock('@/lib/member/anonymizeMember', () => ({
 vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
   deleteUserStorageObjects: (...args: unknown[]) => mockDeleteUserStorageObjects(...args),
 }));
+vi.mock('@/lib/enrollmentAgreements/operationLock', () => ({
+  claimEnrollmentAgreementErasure: (...args: unknown[]) => mockClaimErasure(...args),
+}));
 
 /** Shape Prisma gives a violated foreign key (P2003). */
 function foreignKeyError(constraint: string) {
@@ -58,7 +62,18 @@ function foreignKeyError(constraint: string) {
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $queryRawUnsafe: vi.fn(),
-    $queryRaw: (...args: unknown[]) => mockQueryRaw(...args),
+    $queryRaw: async (...args: unknown[]) => {
+      // The separate real-PostgreSQL contract executes the exact purge CTE,
+      // including locks, cutoff rechecks, cascade and rollback. This boundary
+      // fake keeps the orchestration assertions below independent of SQL.
+      if ((args[0] as TemplateStringsArray).join('?').includes('WITH eligible AS')) {
+        const id = args[1];
+        await mockAuditEventDeleteMany({ where: { actorUserId: id, actorRole: args[4] } });
+        const result = await mockDeleteMany({ where: { id } });
+        return [{ deleted: result.count }];
+      }
+      return mockQueryRaw(...args);
+    },
     $executeRaw: (...args: unknown[]) => mockExecuteRaw(...args),
     // NB: this fake runs the callback against the plain client and never rolls
     // anything back — i.e. it behaves exactly like `installFlattenTxOverride`
@@ -629,7 +644,9 @@ describe('cleanupDeletedAccounts', () => {
     mockDeleteMany.mockImplementation(async () => { order.push('user:cascade'); return { count: 1 }; });
 
     await expect(cleanupDeletedAccounts()).resolves.toEqual({ deleted: 1, blocked: [] });
-    expect(mockDeleteUserStorageObjects).toHaveBeenCalledWith('u1');
+    expect(mockDeleteUserStorageObjects).toHaveBeenCalledWith('u1', { claimAgreementErasure: expect.any(Function) });
+    await mockDeleteUserStorageObjects.mock.calls[0][1].claimAgreementErasure('u1');
+    expect(mockClaimErasure).toHaveBeenCalledWith('u1', expect.anything(), { deletedBefore: expect.any(Date) });
     expect(order).toEqual(['storage:clean', 'audit:delete', 'user:cascade']);
     const ownershipSql = (mockQueryRaw.mock.calls[1][0] as TemplateStringsArray).join('?');
     expect(ownershipSql).toContain('enrollment_agreement_submissions');
@@ -770,6 +787,7 @@ describe('cleanupDeletedAccounts', () => {
     expect(mockAnonymizeMember).toHaveBeenCalledWith('held', {
       reason: 'retention_purge_blocked',
       actorUserId: null,
+      deletedBefore: expect.any(Date),
     });
     errorSpy.mockRestore();
   });
@@ -805,9 +823,32 @@ describe('cleanupDeletedAccounts', () => {
     expect(mockDeleteMany).not.toHaveBeenCalled();
     expect(mockAuditEventDeleteMany).not.toHaveBeenCalled();
   });
+  it('does not count a subject restored during remote storage work as purged', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'restored' }]);
+    mockQueryRaw.mockResolvedValueOnce([{ submissions: true, locks: true }]).mockResolvedValueOnce([{ present: true }]);
+    mockDeleteMany.mockResolvedValue({ count: 0 });
+    expect(await cleanupDeletedAccounts()).toEqual({ deleted: 0, blocked: [] });
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+  });
+  it('claims the erasure fence even with no initial documents and stops if restore won', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'restoring' }]);
+    mockQueryRaw.mockResolvedValueOnce([{ submissions: true, locks: true }]).mockResolvedValueOnce([{ present: false }]);
+    mockClaimErasure.mockRejectedValueOnce(new Error('account restore owns the fence'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(await cleanupDeletedAccounts()).toEqual({ deleted: 0, blocked: [{ id: 'restoring', constraint: 'enrollment_agreement_erasure_pending' }] });
+    expect(mockClaimErasure).toHaveBeenCalledWith('restoring', expect.anything(), { deletedBefore: expect.any(Date) });
+    expect(mockDeleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
 });
 
 describe('foreignKeyConstraintName', () => {
+  it('recognizes only the foreign-key SQLSTATE from an atomic raw purge failure', () => {
+    expect(foreignKeyConstraintName({ code: 'P2010', meta: { code: '23503', message: 'violates foreign key constraint "held_user_fkey"' } })).toBe('held_user_fkey');
+    expect(foreignKeyConstraintName({ code: 'P2010', meta: { code: '40001', message: 'serialization failure' } })).toBeNull();
+  });
   it('extracts the constraint from a P2003 error', () => {
     expect(foreignKeyConstraintName(foreignKeyError('chapter_members_user_id_fkey'))).toBe(
       'chapter_members_user_id_fkey',

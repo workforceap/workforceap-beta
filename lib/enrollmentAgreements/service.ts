@@ -9,6 +9,7 @@ import type { EnrollmentAgreementActor } from './access';
 import { agreementSha256, agreementStoragePath, removeStagedAgreementPdf, storeAgreementPdf } from './storage';
 import { acquireEnrollmentAgreementUploadLock, releaseEnrollmentAgreementUploadLock } from './operationLock';
 import { ENROLLMENT_TEMPLATE_URL } from './types';
+import { recordAgreementAudit } from './audit';
 import type { EnrollmentAgreementCoverage, EnrollmentAgreementCoverageStatus, EnrollmentAgreementStatus, EnrollmentAgreementSubmissionView, EnrollmentAgreementSummary, EnrollmentAgreementTemplateVersion } from './types';
 
 const MAX_HISTORY = 50;
@@ -41,7 +42,14 @@ export async function getAgreementForRead(actor: EnrollmentAgreementActor, id: s
     where: { id, organizationId: actor.organizationId },
   }));
   if (!row) throw new EnrollmentAgreementError(404, 'NOT_FOUND', 'Enrollment agreement not found.');
-  await requireAgreementMemberAccess(actor, row.memberId);
+  try {
+    await requireAgreementMemberAccess(actor, row.memberId);
+  } catch (error) {
+    if (error instanceof EnrollmentAgreementError && error.status === 403) {
+      throw new EnrollmentAgreementError(404, 'NOT_FOUND', 'Enrollment agreement not found.');
+    }
+    throw error;
+  }
   return row;
 }
 
@@ -56,7 +64,9 @@ function isDefiniteStatementRollback(error: unknown): boolean {
   const candidate = error as { code?: string; meta?: { code?: string } };
   // A generic P2010 can wrap transport failures. Only known PostgreSQL
   // integrity, transaction-rollback and syntax/access classes prove failure.
-  return candidate.code === 'P2002' || (candidate.code === 'P2010' && /^(23|40|42)[0-9A-Z]{3}$/.test(candidate.meta?.code ?? ''));
+  const sqlState = candidate.meta?.code ?? '';
+  return candidate.code === 'P2002' || (candidate.code === 'P2010'
+    && (/^(23|40|42)[0-9A-Z]{3}$/.test(sqlState) || sqlState === '57014' || sqlState === '55P03'));
 }
 
 /**
@@ -122,6 +132,7 @@ export async function createAgreementSubmission(actor: EnrollmentAgreementActor,
   }
   // Outside the compensation catch: failure to release a fence after commit
   // must NEVER remove the committed PDF. Support reconciles the retained fence.
+  await recordAgreementAudit(actor, 'uploaded', { id: result.id, memberId: args.memberId });
   await releaseEnrollmentAgreementUploadLock(actor, args.memberId, token);
   return result;
 }
@@ -158,6 +169,7 @@ export async function reviewAgreementSubmission(actor: EnrollmentAgreementActor,
     if (isDefiniteStatementRollback(error)) await releaseEnrollmentAgreementUploadLock(actor, row.memberId, token);
     throw error;
   }
+  if (updated.length === 1) await recordAgreementAudit(actor, status, { id: args.id, memberId: row.memberId });
   await releaseEnrollmentAgreementUploadLock(actor, row.memberId, token);
   if (updated.length !== 1) throw new EnrollmentAgreementError(409, 'STALE_REVIEW', 'This revision was replaced or already reviewed. Reload before reviewing the current PDF.');
 }

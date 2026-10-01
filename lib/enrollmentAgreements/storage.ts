@@ -11,18 +11,22 @@ export const agreementSha256 = (bytes: Uint8Array) => createHash('sha256').updat
 
 /** Fail closed on a missing or public bucket; never silently change bucket policy. */
 export async function requirePrivateAgreementStorage() {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase.storage.getBucket(AGREEMENT_BUCKET);
-  if (error || !data || data.public !== false) {
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase.storage.getBucket(AGREEMENT_BUCKET);
+    if (error || !data || data.public !== false) throw new Error('Private bucket preflight failed');
+    return supabase.storage.from(AGREEMENT_BUCKET);
+  } catch {
+    // No upload has been issued at this point. Classify rejected promises as
+    // preflight failures too, so the caller can safely release its own fence.
     throw new EnrollmentAgreementError(503, 'PRIVATE_STORAGE_UNAVAILABLE', 'Private enrollment document storage is unavailable. Please contact the team.');
   }
-  return supabase.storage.from(AGREEMENT_BUCKET);
 }
 
 export async function storeAgreementPdf(storagePath: string, bytes: Uint8Array): Promise<void> {
   const storage = await requirePrivateAgreementStorage();
   const { error } = await storage.upload(storagePath, bytes, { contentType: 'application/pdf', upsert: false, cacheControl: '0' });
-  if (error) throw new EnrollmentAgreementError(503, 'UPLOAD_UNAVAILABLE', 'The PDF could not be stored. Please try again.');
+  if (error) throw new EnrollmentAgreementError(503, 'UPLOAD_UNAVAILABLE', 'The upload outcome could not be confirmed. Please contact the team before retrying.');
 }
 
 /** Called only for this request's newly staged UUID after a failed database write. */

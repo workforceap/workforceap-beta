@@ -52,6 +52,14 @@ describe('persistent enrollment operation fences', () => {
     mocks.query.mockResolvedValueOnce([schema]).mockResolvedValueOnce([{ memberExists: false, claimed: false }]);
     await claimEnrollmentAgreementErasure('already-absent-member');
   });
+  it('refuses a stale purge subject before storage can start', async () => {
+    const cutoff = new Date('2026-09-01T00:00:00Z');
+    mocks.query.mockResolvedValueOnce([schema]).mockResolvedValueOnce([{ memberExists: false, claimed: false }]);
+    await expect(claimEnrollmentAgreementErasure('restored-member', undefined, { deletedBefore: cutoff }))
+      .rejects.toMatchObject({ status: 409, code: 'ACCOUNT_RETENTION_CHANGED' });
+    expect(mocks.query.mock.calls[1].slice(1)).toEqual(['restored-member', cutoff, cutoff, expect.any(String)]);
+    expect(mocks.execute).not.toHaveBeenCalled();
+  });
   it('blocks new document reads while the erasure fence is retained', async () => {
     mocks.findFence.mockResolvedValue({ memberId: 'member' });
     await expect(assertEnrollmentAgreementNotErasing('member', 'org')).rejects.toMatchObject({ code: 'ACCOUNT_ERASURE_IN_PROGRESS' });
