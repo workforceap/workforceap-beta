@@ -1,19 +1,26 @@
 /**
- * Isolated PostgreSQL proof for 20260922030200_dblayer_not_null_where_schema_declares.
+ * Isolated PostgreSQL proof for 20261001120200_dblayer_not_null_where_schema_declares.
  * Before: users.notifications_*, profiles.role and placement_records.start_date_verified
  * accept NULL although schema.prisma (and every Prisma reader) says they cannot be
  * null; placement_records.start_date_verified has no default, so the raw INSERT
  * in app/api/counselor/placements/route.ts stores NULL. After: NULL is rejected
- * (SQLSTATE 23502), the defaults fill an omitted column, a pre-existing NULL row
- * makes the migration refuse rather than silently pass, the migration is
+ * (SQLSTATE 23502), the defaults fill an omitted column, the migration is
  * idempotent, and the result matches `prisma db push` of schema.prisma.
- * Runs only against a disposable local database.
+ *
+ * The deploy-safety proof is the pre-existing-NULL case. `ALTER COLUMN ... SET
+ * DEFAULT` writes the catalog only and never rewrites existing rows, so before
+ * this migration gained its backfill a single NULL row aborted it with SQLSTATE
+ * 23502 — and the production build runs `prisma migrate deploy`, so that abort
+ * failed the deploy. This proof now puts real NULLs in every affected column,
+ * runs the migration, and requires that it completes, that each NULL became
+ * that column's declared default, and that no row holding a real value was
+ * touched. Runs only against a disposable local database.
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
-const migrationPath = 'prisma/migrations/20260922030200_dblayer_not_null_where_schema_declares/migration.sql';
+const migrationPath = 'prisma/migrations/20261001120200_dblayer_not_null_where_schema_declares/migration.sql';
 const migration = readFileSync(migrationPath, 'utf8');
 
 const sourceUrl = process.env.DBLAYER_NOT_NULL_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';
@@ -131,11 +138,47 @@ try {
   sql(`UPDATE public.profiles SET role = NULL WHERE id='profile-1';`);
   console.log('PASS before the migration a NULL role and a NULL start_date_verified are stored');
 
-  // A pre-existing NULL makes the migration refuse (23502) instead of silently passing.
-  const refused = runSql(migration, proofDatabase, { expectFailure: true });
-  assert.match(refused, /23502/, `Expected NOT NULL violation while a NULL row exists, got: ${refused}`);
-  assert.deepEqual(shape(proofDatabase), before, 'a refused migration must leave the columns untouched (single transaction)');
-  console.log('PASS the migration refuses to run while a NULL row exists (SQLSTATE 23502) and rolls back whole');
+  // THE DEPLOY-SAFETY PROOF. Before the backfill was added this same state made
+  // the migration abort with SQLSTATE 23502 — and because the production build
+  // runs `prisma migrate deploy` (package.json `build:with-migrate` ->
+  // scripts/safe-migrate.cjs), that abort failed the deploy. `ALTER COLUMN ...
+  // SET DEFAULT` does not rewrite existing rows, so the DEFAULT alone never
+  // rescued it. The backfill must now carry this state through to NOT NULL,
+  // filling each pre-existing NULL with that column's own default.
+  sql(`UPDATE public.users SET notifications_reminders = NULL, notifications_updates = NULL WHERE id='member-2';`);
+  assert.equal(
+    sql(`SELECT count(*) FROM public.users WHERE notifications_reminders IS NULL OR notifications_updates IS NULL;`),
+    '1',
+    'the preimage must really contain NULL rows',
+  );
+  sql(migration);
+  assert.deepEqual(shape(proofDatabase), after, 'the migration must apply over pre-existing NULL rows');
+  assert.equal(
+    sql(`SELECT notifications_reminders AND notifications_updates FROM public.users WHERE id='member-2';`),
+    't',
+    'users.notifications_* NULLs must be backfilled with the declared default true',
+  );
+  assert.equal(sql(`SELECT role FROM public.profiles WHERE id='profile-1';`), 'member', 'profiles.role NULL -> default');
+  assert.equal(
+    sql(`SELECT start_date_verified FROM public.placement_records WHERE id='pr-2';`),
+    'f',
+    'placement_records.start_date_verified NULL -> default false',
+  );
+  console.log('PASS the migration backfills pre-existing NULLs with each column default and still applies');
+
+  // The backfill must not touch a row that already held a real value.
+  assert.equal(
+    sql(`SELECT start_date_verified FROM public.placement_records WHERE id='pr-1';`),
+    'f',
+    'pr-1 was explicitly false before the migration and must stay false',
+  );
+  resetTables();
+  sql(`UPDATE public.users SET notifications_reminders = false WHERE id='member-1';`);
+  sql(`UPDATE public.profiles SET role = 'counselor' WHERE id='profile-1';`);
+  sql(migration);
+  assert.equal(sql(`SELECT notifications_reminders FROM public.users WHERE id='member-1';`), 'f', 'a real false must survive');
+  assert.equal(sql(`SELECT role FROM public.profiles WHERE id='profile-1';`), 'counselor', 'a real role must survive');
+  console.log('PASS the backfill fills only NULLs and overwrites no existing value');
 
   // With the data in the state production is in (no NULLs), the migration applies.
   resetTables();

@@ -1,5 +1,5 @@
 /**
- * Isolated PostgreSQL proof for 20260922030000_dblayer_author_fk_set_null.
+ * Isolated PostgreSQL proof for 20261001120000_dblayer_author_fk_set_null.
  * Before: the four staff-author columns are NOT NULL + ON DELETE CASCADE (the
  * shape the 2026-03/04 migrations wrote), so hard-deleting a counselor deletes
  * every note, chat message, application message and outreach log they wrote.
@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
-const migrationPath = 'prisma/migrations/20260922030000_dblayer_author_fk_set_null/migration.sql';
+const migrationPath = 'prisma/migrations/20261001120000_dblayer_author_fk_set_null/migration.sql';
 const migration = readFileSync(migrationPath, 'utf8');
 
 const sourceUrl = process.env.DBLAYER_AUTHOR_FK_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';

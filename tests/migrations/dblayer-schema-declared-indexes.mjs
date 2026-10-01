@@ -1,5 +1,5 @@
 /**
- * Isolated PostgreSQL proof for 20260922030100_dblayer_schema_declared_indexes.
+ * Isolated PostgreSQL proof for 20261001120100_dblayer_schema_declared_indexes.
  * Before: none of the 21 `@@index` entries exist (production's state on
  * 2026-09-22). After: every index exists with exactly the column list the
  * migration promises, the planner picks the member_events index for the
@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
-const migrationPath = 'prisma/migrations/20260922030100_dblayer_schema_declared_indexes/migration.sql';
+const migrationPath = 'prisma/migrations/20261001120100_dblayer_schema_declared_indexes/migration.sql';
 const migration = readFileSync(migrationPath, 'utf8');
 
 const sourceUrl = process.env.DBLAYER_INDEXES_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';
