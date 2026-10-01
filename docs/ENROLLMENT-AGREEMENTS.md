@@ -65,9 +65,11 @@ Support recovery requires an authorized operator to:
 3. Preserve every committed PDF. Resolve only proven staged orphan objects under the exact subject prefix, with appropriate deletion authority.
 4. For an upload fence only, clear the exact matching token **after** reconciliation. Do not age-expire it or clear another request's token.
 5. For an erasure fence, retry the authorized erasure workflow; do not reopen uploads merely to clear an error.
-6. For an `account_restore` fence, reconcile the exact Auth identity, application deletion state and request outcome under support authority. No automatic expiry, forced unlock or guessed Auth re-ban is provided. Only a definitively successful native activation transaction releases its own exact restore token.
+6. For an `account_restore` fence, reconcile the exact Auth identity, application deletion state and request outcome under support authority. Standard Restore remains blocked while that fence is retained, even if Auth appears active. This runbook does not authorize removing it: support must establish the committed outcome and obtain a reviewed recovery procedure before any corrective mutation. No automatic expiry, forced unlock or guessed Auth re-ban is provided. Only a definitively successful native activation transaction releases its own exact restore token.
 
 Member export/deletion is independent of the UI flag. Confirmed absent tables are pre-migration no-ops; real query errors and partial schema are failures. All revision blobs are removed through subject-specific prefix enumeration; metadata is removed on shared anonymization and Admin member-erasure/delete paths. Existing billing archives are excluded. Generic super-admin user suspension deliberately remains reversible and retains documents through the existing retention window; it serializes against document operations without claiming erasure.
+
+Admin **member deletion**, member self-deletion and GDPR deletion are different from reversible user suspension: they claim erasure and remove files. With the agreement schema installed, their retained erasure fence makes standard Admin Restore return 409, even while the deleted account row remains visible during retention. The retention window is not a recovery window; neither erased files nor anonymized fields are restored. Do not clear an erasure fence to make the Restore button succeed.
 
 With the schema installed, Admin restore claims a persistent `account_restore` fence before any Auth unban. A retained upload/erasure/restore fence blocks it before Auth. Its final activation requires native READ COMMITTED transactions, a locked tenant user row and exact token ownership. Provider or database uncertainty retains the fence for support; no blind Auth compensation occurs. Confirmed absence of both new tables keeps the pre-migration restore behavior; installed-schema flattened environments fail closed.
 
@@ -85,6 +87,14 @@ Member merges never transfer agreement evidence automatically. Either account ha
 4. Verify anonymous/authenticated browser Storage and Data API access is denied for the new prefix/tables, and service-role Data API table access is also denied despite BYPASSRLS. Verify Prisma-backed routes and service-role Storage operations work and unrelated bucket prefixes still work.
 5. On the existing project's green preview, enable only the preview flag. Use synthetic member/Admin/assigned-and-unassigned-counselor/cross-org accounts to complete download → upload → review → correction → replacement → download history → export → erase. Check mobile and desktop, including real PDF downloads and worker packaging.
 6. Obtain explicit production migration/enablement authority and sign-off on retaining the document's current terms. Deploy only after the preview receipts. Do not merge this migration-bearing branch simply because the default-off UI seems harmless: the production build can run migrations.
+
+For gate 2, first configure `psql` for the explicitly approved preview database and exact deployment role, then run from the repository root (no credentials belong in this command or its output):
+
+```sh
+psql -X -v ON_ERROR_STOP=1 -f scripts/enrollment-agreements-storage-preflight.sql
+```
+
+Stop on any nonzero exit. Do not rely on a default/local/production connection, switch targets, or continue to Prisma after a failed preflight.
 
 Rollback for UI/API trouble: unset the feature flag; preserve schema, bytes and privacy cleanup. Never drop the tables or delete agreement records as an automatic rollback.
 

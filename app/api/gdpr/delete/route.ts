@@ -120,9 +120,10 @@ export const POST = withApiGuc(async (request: Request) => {
     );
   }
 
-  // The actor snapshot is pinned: `users.email` is now the recoverable
-  // deleted marker (which embeds the original address for the 30-day restore
-  // window), and letting auditLog look the actor up would copy it into the
+  // The actor snapshot is pinned: `users.email` is now a deleted marker
+  // embedding the original address during retention, not a restore guarantee.
+  // The erasure fence blocks standard restoration when installed; letting
+  // auditLog look the actor up would also copy the original address into the
   // 3-year `actor_email_snapshot` — the leak WAP-169 exists to close.
   auditLog({
     actorUserId: userId,

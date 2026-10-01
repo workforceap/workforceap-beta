@@ -156,6 +156,12 @@ export default function DeletedUsersClient({
         ) : null}
       </div>
 
+      <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
+        Restore is available only when account safeguards allow it. Member deletion or GDPR erasure can block restoration,
+        even while a record is listed here. Restore cannot recover erased files or anonymized data.
+        If restoration is blocked, contact support; do not clear document safeguards.
+      </p>
+
       {/* Status messages */}
       {error ? (
         <div
@@ -196,7 +202,7 @@ export default function DeletedUsersClient({
         >
           <p style={{ margin: 0, fontWeight: 600, color: 'var(--color-on-surface)' }}>No deleted users</p>
           <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
-            Soft-deleted records will appear here. Use this view to free their email or restore them.
+            Deleted records will appear here. Use this view to release their email or request restoration when eligible.
           </p>
         </div>
       ) : (

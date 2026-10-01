@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   getUser: vi.fn(), isAdmin: vi.fn(), isSuperAdmin: vi.fn(),
   target: vi.fn(), collision: vi.fn(), updateMany: vi.fn(), findMany: vi.fn(),
   restoreAuth: vi.fn(), disableAuth: vi.fn(), audit: vi.fn(), event: vi.fn(),
-  org: vi.fn(), query: vi.fn(), execute: vi.fn(), scopedClient: vi.fn(),
+  org: vi.fn(), query: vi.fn(), execute: vi.fn(), scopedClient: vi.fn(), getAdmin: vi.fn(),
 }));
 const db = vi.hoisted(() => ({ $queryRaw: mocks.query, $executeRaw: mocks.execute, user: { findFirst: mocks.target, updateMany: mocks.updateMany, findMany: mocks.findMany } }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
@@ -26,7 +26,7 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {
   $queryRaw: mocks.query, $transaction: (fn: (client: typeof db) => Promise<unknown>) => fn(db),
   user: { findFirst: mocks.collision },
 } }));
-vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ syntheticProvider: true }) }));
+vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: mocks.getAdmin }));
 vi.mock('@/lib/admin/authUserLifecycle', () => ({
   reenableAuthUserAfterRestore: mocks.restoreAuth,
   disableAuthUserForSoftDelete: mocks.disableAuth,
@@ -41,6 +41,7 @@ import { POST as freeEmail } from '@/app/api/admin/users/[id]/free-email/route';
 import { POST as freeBatch } from '@/app/api/admin/users/free-deleted-emails/route';
 import { DELETE as suspend } from '@/app/api/admin/users/[id]/route';
 import { buildDeletedEmail } from '@/app/api/admin/users/_deletedEmail';
+import * as accountLifecycle from '@/lib/gdpr/accountLifecycle';
 
 const ID = '20000000-0000-4000-8000-000000000001';
 const ACTOR = '10000000-0000-4000-8000-000000000001';
@@ -73,6 +74,7 @@ beforeEach(() => {
   vi.stubEnv('PRISMA_FLATTEN_TX', '0');
   mocks.query.mockResolvedValue([{ submissions: false, locks: false, isolation: 'read committed' }]);
   mocks.execute.mockResolvedValue(1);
+  mocks.getAdmin.mockReturnValue({ syntheticProvider: true });
   mocks.getUser.mockResolvedValue({ id: ACTOR });
   mocks.isAdmin.mockResolvedValue(true);
   mocks.isSuperAdmin.mockResolvedValue(false);
@@ -258,6 +260,22 @@ describe('document safeguards across reversible account changes', () => {
     expect(mocks.query.mock.invocationCallOrder[6]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
     expect(mocks.updateMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.execute.mock.invocationCallOrder[0]);
     expect(mocks.execute.mock.calls[0].slice(1)).toEqual([ID, 'org-1', mocks.query.mock.calls[3][4]]);
+  });
+  it('checks local provider configuration before claiming a persistent restore fence', async () => {
+    restoreQueries();
+    const claim = vi.spyOn(accountLifecycle, 'claimAgreementAccountRestore');
+    mocks.getAdmin.mockImplementationOnce(() => { throw new Error('Synthetic missing provider configuration'); });
+    try {
+      const response = await restore(req(), ctx());
+      expect(response.status).toBe(500);
+      expect(claim).not.toHaveBeenCalled();
+      expect(mocks.query.mock.calls.some(([sql]) => (sql as TemplateStringsArray).join('?').includes('WITH member_lock'))).toBe(false);
+      expect(mocks.restoreAuth).not.toHaveBeenCalled();
+      expect(mocks.updateMany).not.toHaveBeenCalled();
+      expect(mocks.execute).not.toHaveBeenCalled();
+    } finally {
+      claim.mockRestore();
+    }
   });
   it('rejects a retained fence before any Auth restore, regardless of feature flag', async () => {
     vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'false');

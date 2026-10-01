@@ -229,11 +229,14 @@ export default function MemberDetailActions({
           onClick={() => setConfirmDelete(true)}
           disabled={!!loading}
         >
-          Soft Delete Account
+          Delete Member Account
         </button>
         {confirmDelete && (
           <div style={{ marginTop: '0.5rem' }}>
-            <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>Confirm soft delete?</p>
+            <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+              Delete this member account and its uploaded files? Erased files cannot be recovered.
+              Account safeguards may block restoration even while the deleted record remains listed.
+            </p>
             <button type="button" className="btn btn-outline" onClick={() => setConfirmDelete(false)}>Cancel</button>
             <button type="button" className="btn" style={{ background: '#c00', color: 'white', marginLeft: '0.5rem' }} onClick={handleDelete} disabled={loading === 'delete'}>
               {loading === 'delete' ? '...' : 'Yes, Delete'}

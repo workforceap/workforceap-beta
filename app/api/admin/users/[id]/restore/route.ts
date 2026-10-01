@@ -91,10 +91,12 @@ export const POST = withApiGuc(async (
     // Bring the login back too. Soft delete bans the auth user (or, before
     // 9/2/26, hard-deleted it); either way the member cannot sign in until
     // this succeeds, so a failure here is reported, not swallowed.
+    // Validate local client configuration before creating a persistent fence.
+    // Auth network operations still happen only after the claim below.
+    const supabaseAdmin = getSupabaseAdmin();
     // A persistent fence spans Auth and the final app transaction. Purge cannot
     // remove the deleted row while Auth is being unbanned or its result is unknown.
     const restoreToken = await claimAgreementAccountRestore(id, orgId);
-    const supabaseAdmin = getSupabaseAdmin();
     let authRestore: string;
     try {
       const result = await reenableAuthUserAfterRestore(supabaseAdmin, {

@@ -28,6 +28,14 @@ describe('MemberDetailActions program assignment', () => {
     vi.unstubAllGlobals();
   });
 
+  it('warns about irreversible files and conditional restoration before member deletion', () => {
+    render(<MemberDetailActions {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Member Account' }));
+    expect(screen.getByText(/Erased files cannot be recovered/)).toBeInTheDocument();
+    expect(screen.getByText(/Account safeguards may block restoration/)).toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('shows the server error when program assignment fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
