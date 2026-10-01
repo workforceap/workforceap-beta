@@ -39,6 +39,10 @@ import {
 } from './lib/portal-audit-environment.mjs';
 import { recordPendingDataRequestTimeout } from './lib/portal-audit-pending.mjs';
 import {
+  isExpectedGatedApiBody,
+  isGatedApiResponseCandidate,
+} from './lib/portal-audit-gated-api.mjs';
+import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
   inspectPortalPage,
@@ -632,6 +636,7 @@ function failedSameOriginDataRequest(request) {
 function trackSameOriginDataRequests(page) {
   const inFlight = new Set();
   const errors = [];
+  const pendingResponseChecks = new Set();
   const abortedErrors = [];
   const abortedDataRequests = [];
   let abortedDataRequestCount = 0;
@@ -646,7 +651,38 @@ function trackSameOriginDataRequests(page) {
   };
   const handleResponse = (response) => {
     const error = failedSameOriginDataResponse(response);
-    if (error) errors.push(error);
+    if (!error) return;
+    if (!isGatedApiResponseCandidate({ status: response.status(), url: response.url() })) {
+      errors.push(error);
+      return;
+    }
+    // A closed two-stage billing gate answers 503 by design. Confirm the body
+    // carries an allowlisted gate code before excusing it; a body that cannot
+    // be read falls back to recording the response as an error.
+    lastActivityAt = Date.now();
+    const check = (async () => {
+      let body = null;
+      try {
+        body = await response.text();
+      } catch {
+        body = null;
+      }
+      if (!isExpectedGatedApiBody(body)) errors.push(error);
+    })().catch(() => {
+      errors.push(error);
+    });
+    pendingResponseChecks.add(check);
+    check.finally(() => {
+      pendingResponseChecks.delete(check);
+      lastActivityAt = Date.now();
+    });
+  };
+  // Gate-code body reads are the only asynchronous part of response handling;
+  // every consumer of `errors` waits for settlement first, so drain them there.
+  const drainPendingResponseChecks = async () => {
+    for (let pass = 0; pass < 5 && pendingResponseChecks.size > 0; pass += 1) {
+      await Promise.allSettled([...pendingResponseChecks]);
+    }
   };
   const handleRequestFinished = (request) => {
     if (!inFlight.delete(request)) return;
@@ -702,10 +738,12 @@ function trackSameOriginDataRequests(page) {
             quietWindowMs,
           })
         ) {
+          await drainPendingResponseChecks();
           return;
         }
         await page.waitForTimeout(Math.min(50, Math.max(1, settleDeadline - Date.now())));
       }
+      await drainPendingResponseChecks();
       const pending = recordPendingDataRequestTimeout(
         inFlight, errors, boundedTimeout, trustedOrigin
       );
