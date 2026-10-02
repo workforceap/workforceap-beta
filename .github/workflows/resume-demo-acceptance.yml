@@ -182,7 +182,7 @@ jobs:
           POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
           PORTAL_QA_ORGANIZATION_ID: ${{ inputs.qa_organization_id }}
           PORTAL_QA_ORGANIZATION_SLUG: ${{ inputs.qa_organization_slug }}
-        run: pnpm exec tsx scripts/resume-demo-member.ts create
+        run: node --require ./tests/server-only-stub.cjs --import tsx scripts/resume-demo-member.ts create
 
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
@@ -213,7 +213,7 @@ jobs:
           PORTAL_QA_ORGANIZATION_ID: ${{ inputs.qa_organization_id }}
           PORTAL_QA_ORGANIZATION_SLUG: ${{ inputs.qa_organization_slug }}
           RESUME_QA_CLEANUP_OUTPUT: test-results/resume-demo-cleanup.json
-        run: pnpm exec tsx scripts/resume-demo-member.ts cleanup
+        run: node --require ./tests/server-only-stub.cjs --import tsx scripts/resume-demo-member.ts cleanup
 
       # The ONE green check, reading both receipts together: acceptance
       # (pass: true, outcome success, exactly one Build request, the member it

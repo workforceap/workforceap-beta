@@ -4,11 +4,13 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import type { PrismaClient } from '@prisma/client';
 import {
   cleanupFixture,
   createFixture,
   generatePassword,
   isAuthNotFound,
+  liveDeps,
   resolveCleanupInput,
   syntheticIdentity,
   type FixtureDeps,
@@ -26,6 +28,7 @@ type FakeOrganization = { id: string; slug: string; active: boolean };
 
 function fakeDeps(organizations: FakeOrganization[] = [{ id: 'qa-org', slug: 'portal-qa-test', active: true }]) {
   const calls: string[] = [];
+  const erasureClaims: string[] = [];
   const users = new Map<string, { id: string; email: string; organizationId: string; resumeOriginalPath: string | null; resumeEnhancedPath: string | null }>([
     [OTHER_ID, { id: OTHER_ID, email: 'member-test@workforceap.org', organizationId: 'qa-org', resumeOriginalPath: `${OTHER_ID}/resume-original.pdf`, resumeEnhancedPath: null }],
   ]);
@@ -82,8 +85,9 @@ function fakeDeps(organizations: FakeOrganization[] = [{ id: 'qa-org', slug: 'po
     deleteAuthUser: async (id) => { calls.push(`deleteAuthUser:${id}`); authUsers.delete(id); },
     storage,
     sleep: async () => {},
+    claimAgreementErasure: async (id) => { erasureClaims.push(id); },
   };
-  return { deps, calls, users, authUsers, objects, removeErrors };
+  return { deps, calls, users, authUsers, objects, removeErrors, erasureClaims };
 }
 
 test('[mock] the DEMO target guard refuses production and needs no role passwords', () => {
@@ -130,13 +134,14 @@ test('[mock] create refuses a wrong organization and an existing member for the 
 });
 
 test('[mock] cleanup removes only the recorded member, its own objects, DB row and Auth user', async () => {
-  const { deps, calls, users, authUsers, objects } = fakeDeps();
+  const { deps, calls, users, authUsers, objects, erasureClaims } = fakeDeps();
   const state = await createFixture(TARGET, syntheticIdentity('42', '1'), 'p', deps, () => {});
   objects.add(`member-resumes/${NEW_ID}/resume-original-a.pdf`);
   objects.add(`member-resumes/${NEW_ID}/resume-enhanced-b.txt`);
   calls.length = 0;
 
   const result = await cleanupFixture(TARGET, state, deps);
+  assert.deepEqual(erasureClaims, [NEW_ID]);
 
   assert.deepEqual(result, {
     storage: { before: { 'member-resumes': 2, 'member-files': 0 }, removed: 2, after: { 'member-resumes': 0, 'member-files': 0 } },
@@ -152,6 +157,88 @@ test('[mock] cleanup removes only the recorded member, its own objects, DB row a
   ]);
   assert.ok(users.has(OTHER_ID) && authUsers.has(OTHER_ID));
   assert.ok(objects.has(`member-resumes/${OTHER_ID}/resume-original.pdf`) && objects.has(`member-files/cert-files/${OTHER_ID}/proof.pdf`));
+});
+
+test('[mock] successful fixture cleanup retains agreement PDFs while removing the account and ordinary files', async () => {
+  const { deps, users, authUsers, objects, erasureClaims } = fakeDeps();
+  const state = await createFixture(TARGET, syntheticIdentity('43', '1'), 'p', deps, () => {});
+  const agreement = 'member-files/enrollment-agreements/' + NEW_ID + '/agreement.pdf';
+  const resume = 'member-resumes/' + NEW_ID + '/resume-original.pdf';
+  objects.add(agreement);
+  objects.add(resume);
+  await cleanupFixture(TARGET, state, deps);
+  assert.deepEqual(erasureClaims, [NEW_ID]);
+  assert.equal(users.has(NEW_ID), false);
+  assert.equal(authUsers.has(NEW_ID), false);
+  assert.equal(objects.has(resume), false);
+  assert.equal(objects.has(agreement), true);
+});
+
+test('[mock] live cleanup wires the real erasure fence to the validated DEMO client, including DATABASE_URL fallback', async () => {
+  const env: NodeJS.ProcessEnv = {
+    NODE_ENV: 'test', PORTAL_QA_TARGET: 'demo',
+    NEXT_PUBLIC_SUPABASE_URL: `https://${DEMO_REF}.supabase.co`,
+    DATABASE_URL: `postgresql://postgres:example@db.${DEMO_REF}.supabase.co:5432/postgres`,
+    SUPABASE_SERVICE_ROLE_KEY: 'test-only-admin-key',
+    PORTAL_QA_ORGANIZATION_ID: 'qa-org', PORTAL_QA_ORGANIZATION_SLUG: 'portal-qa-test',
+  };
+  const { databaseUrl, ...targetOrganization } = readPortalQaTarget(env);
+  assert.ok(databaseUrl);
+  const target = { ...targetOrganization, databaseUrl };
+  const queries: Array<{ sql: string; values: unknown[] }> = [];
+  let constructedUrl: string | undefined;
+  let disconnected = false;
+  let claimed = true;
+  const client = {
+    $queryRaw: async (sql: TemplateStringsArray, ...values: unknown[]) => {
+      queries.push({ sql: sql.join('?'), values });
+      return sql.join('?').includes('to_regclass')
+        ? [{ submissions: 'enrollment_agreement_submissions', locks: 'enrollment_agreement_operation_locks' }]
+        : [{ memberExists: true, claimed }];
+    },
+    $disconnect: async () => { disconnected = true; },
+  } as unknown as PrismaClient;
+  const { deps, close } = liveDeps(target, env, {
+    createPrismaClient: (databaseUrl) => { constructedUrl = databaseUrl; return client; },
+  });
+  try {
+    assert.equal(constructedUrl, target.databaseUrl);
+    assert.equal(constructedUrl, env.DATABASE_URL);
+    assert.ok(deps.claimAgreementErasure);
+    await deps.claimAgreementErasure(NEW_ID);
+    assert.equal(queries.length, 2);
+    assert.match(queries[0].sql, /to_regclass/);
+    assert.match(queries[1].sql, /INSERT INTO enrollment_agreement_operation_locks/);
+    assert.equal(queries[1].values[0], NEW_ID);
+
+    // This is the real claim logic, not a stub that silently accepts uploads.
+    claimed = false;
+    await assert.rejects(() => deps.claimAgreementErasure!(NEW_ID), { code: 'AGREEMENT_UPLOAD_IN_PROGRESS' });
+    assert.equal(queries.length, 4);
+  } finally {
+    await close();
+  }
+  assert.equal(disconnected, true);
+});
+
+test('[mock] a blocked erasure fence preserves storage, Auth and database records', async () => {
+  const { deps, calls, users, authUsers, objects } = fakeDeps();
+  const state = await createFixture(TARGET, syntheticIdentity('42', '1'), 'p', deps, () => {});
+  objects.add(`member-resumes/${NEW_ID}/resume-original.pdf`);
+  objects.add(`member-files/enrollment-agreements/${NEW_ID}/agreement.pdf`);
+  calls.length = 0;
+  let claimedId: string | undefined;
+  deps.claimAgreementErasure = async (id) => {
+    claimedId = id;
+    throw new Error('An enrollment upload still owns its fence.');
+  };
+
+  await assert.rejects(() => cleanupFixture(TARGET, state, deps), /storage cleanup failed/);
+  assert.equal(claimedId, NEW_ID);
+  assert.deepEqual(calls, []);
+  assert.ok(users.has(NEW_ID) && authUsers.has(NEW_ID));
+  assert.ok(objects.has(`member-resumes/${NEW_ID}/resume-original.pdf`));
+  assert.ok(objects.has(`member-files/enrollment-agreements/${NEW_ID}/agreement.pdf`));
 });
 
 test('[mock] cleanup refuses state that points at any non-synthetic account', async () => {

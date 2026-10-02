@@ -28,6 +28,23 @@ describe('MemberDetailActions program assignment', () => {
     vi.unstubAllGlobals();
   });
 
+  it('explains retained agreements, irreversible personal files and conditional restoration before confirming deletion', () => {
+    render(<MemberDetailActions {...defaultProps} />);
+    expect(screen.queryByRole('button', { name: 'Yes, Delete' })).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Member Account' }));
+    expect(screen.getByText(/Enrollment agreements and their review history are retained in the agreement archive/)).toBeInTheDocument();
+    expect(screen.getByText(/Erased personal files cannot be recovered/)).toBeInTheDocument();
+    expect(screen.getByText(/Account safeguards may block restoration even while the deleted record remains listed/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Yes, Delete' })).toBeEnabled();
+    expect(fetch).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('button', { name: 'Yes, Delete' })).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('shows the server error when program assignment fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { checkMergeConflicts, executeMemberMerge } from './memberMerge';
 import { MEMBER_MERGE_PREVIEW_ONLY, MEMBER_MERGE_REPOINT_PLAN } from './memberMergeRepointPlan';
 import type { Prisma } from '@prisma/client';
@@ -88,7 +88,12 @@ function planDelegates(rows: MockRows) {
   return delegates as Record<string, { count: (args: never) => Promise<number> }>;
 }
 
-function makeMockTx(options: { rows?: MockRows; memberPointsRow?: { totalPoints: number } | null } = {}) {
+function makeMockTx(options: {
+  rows?: MockRows;
+  memberPointsRow?: { totalPoints: number } | null;
+  agreementSchema?: { submissions: boolean; locks: boolean; isolation?: string };
+  agreementOwners?: string[];
+} = {}) {
   const rows: MockRows = options.rows ?? {};
   const memberPointsRow = options.memberPointsRow ?? null;
   const calls: string[] = [];
@@ -117,6 +122,12 @@ function makeMockTx(options: { rows?: MockRows; memberPointsRow?: { totalPoints:
     $queryRaw: async (query: Prisma.Sql) => {
       const sql = query.sql;
       logCall('$queryRaw', sql);
+      if (sql.includes("to_regclass('public.enrollment_agreement_submissions')")) {
+        return [{ isolation: 'read committed', submissions: false, locks: false, ...options.agreementSchema }];
+      }
+      if (sql.includes('FROM enrollment_agreement_submissions')) {
+        return (options.agreementOwners ?? []).map((memberId) => ({ memberId }));
+      }
       if (sql.includes('FOR UPDATE')) {
         const ids = (query.values ?? []).filter((value): value is string => typeof value === 'string');
         return [
@@ -216,6 +227,87 @@ type MockTxExtras = {
     findUnique: (args: { where: Record<string, unknown> }) => Promise<ReturnType<typeof makeMockUser> | null>;
   };
 };
+
+afterEach(() => vi.unstubAllEnvs());
+
+describe('enrollment agreement merge safeguards', () => {
+  const installed = { submissions: true, locks: true };
+
+  it.each(['primary', 'secondary'])('blocks agreement history or a fence on %s before any mutation', async (memberId) => {
+    vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'false');
+    const tx = makeMockTx({ agreementSchema: installed, agreementOwners: [memberId] });
+
+    const conflicts = await checkMergeConflicts(tx, 'primary', 'secondary');
+    expect(conflicts[0]).toMatchObject({
+      field: 'enrollmentAgreement',
+      primaryValue: memberId === 'primary',
+      secondaryValue: memberId === 'secondary',
+    });
+    expect(conflicts[0].message).toContain('map the agreement records before merging');
+    await expect(executeMemberMerge(tx, 'primary', 'secondary', 'admin-1')).rejects.toThrow('Signed documents will not be transferred automatically');
+    expect((tx as unknown as MockTxExtras).calls.some((call) => call.startsWith('user.update'))).toBe(false);
+  });
+
+  it('checks all revisions and all fence states only after both user locks during execution', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('PRISMA_FLATTEN_TX', '0');
+    const tx = makeMockTx({ agreementSchema: installed });
+    await executeMemberMerge(tx, 'primary', 'secondary', 'admin-1');
+    const calls = (tx as unknown as MockTxExtras).calls;
+    const lockIndex = calls.findIndex((call) => call.includes('FOR UPDATE'));
+    const ownershipIndex = calls.findIndex((call) => call.includes('FROM enrollment_agreement_submissions'));
+    const mutationIndex = calls.findIndex((call) => call.startsWith('user.update'));
+    expect(lockIndex).toBeGreaterThanOrEqual(0);
+    expect(ownershipIndex).toBeGreaterThan(lockIndex);
+    expect(mutationIndex).toBeGreaterThan(ownershipIndex);
+    expect(calls[lockIndex]).toContain('ORDER BY merge_user.id');
+    expect(calls[ownershipIndex]).toContain('FROM enrollment_agreement_operation_locks');
+    expect(calls[ownershipIndex]).not.toMatch(/is_current|status|state/);
+  });
+
+  it.each(['preview', 'development'])('refuses even an empty installed schema in flattened %s transactions', async (environment) => {
+    vi.stubEnv('VERCEL_ENV', environment);
+    const tx = makeMockTx({ agreementSchema: installed });
+    const conflicts = await checkMergeConflicts(tx, 'primary', 'secondary');
+    expect(conflicts[0].field).toBe('enrollmentAgreementTransaction');
+    await expect(executeMemberMerge(tx, 'primary', 'secondary', 'admin-1')).rejects.toThrow('requires an interactive READ COMMITTED transaction');
+    expect((tx as unknown as MockTxExtras).calls.some((call) => call.startsWith('user.update'))).toBe(false);
+  });
+
+  it('refuses explicit transaction flattening and repeatable-read snapshots', async () => {
+    vi.stubEnv('VERCEL_ENV', '');
+    vi.stubEnv('PRISMA_FLATTEN_TX', '1');
+    await expect(executeMemberMerge(makeMockTx({ agreementSchema: installed }), 'primary', 'secondary', 'admin-1'))
+      .rejects.toThrow('requires an interactive READ COMMITTED transaction');
+    vi.stubEnv('PRISMA_FLATTEN_TX', '0');
+    await expect(executeMemberMerge(makeMockTx({ agreementSchema: { ...installed, isolation: 'repeatable read' } }), 'primary', 'secondary', 'admin-1'))
+      .rejects.toThrow('requires an interactive READ COMMITTED transaction');
+  });
+
+  it('preserves pre-migration merge availability even in preview', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    const tx = makeMockTx();
+    await expect(executeMemberMerge(tx, 'primary', 'secondary', 'admin-1')).resolves.toMatchObject({ secondaryId: 'secondary' });
+    expect((tx as unknown as MockTxExtras).calls.some((call) => call.includes('FROM enrollment_agreement_submissions'))).toBe(false);
+  });
+
+  it.each([
+    { submissions: true, locks: false },
+    { submissions: false, locks: true },
+  ])('fails closed with a partially installed schema: %j', async (agreementSchema) => {
+    const tx = makeMockTx({ agreementSchema });
+    await expect(executeMemberMerge(tx, 'primary', 'secondary', 'admin-1')).rejects.toThrow('safeguards are not fully installed');
+    expect((tx as unknown as MockTxExtras).calls.some((call) => call.startsWith('user.update'))).toBe(false);
+  });
+
+  it('does not treat a malformed capability response or a database outage as missing migration', async () => {
+    const tx = makeMockTx();
+    tx.$queryRaw = vi.fn().mockResolvedValue([]);
+    await expect(checkMergeConflicts(tx, 'primary', 'secondary')).rejects.toThrow('safeguards could not be checked');
+    tx.$queryRaw = vi.fn().mockRejectedValue(new Error('database unavailable'));
+    await expect(checkMergeConflicts(tx, 'primary', 'secondary')).rejects.toThrow('database unavailable');
+  });
+});
 
 describe('checkMergeConflicts', () => {
   it('returns empty when both users have same enrolledProgram', async () => {

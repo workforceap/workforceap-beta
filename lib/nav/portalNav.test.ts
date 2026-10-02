@@ -22,6 +22,15 @@ import { MEMBER_PORTAL_NAV_ITEMS_I18N } from './portalNav.i18n';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const source = (relativePath: string) => readFileSync(path.join(root, relativePath), 'utf8');
 
+test('agreement entry points are unique and reachable through existing student/document navigation', () => {
+  for (const items of [MEMBER_PORTAL_NAV_ITEMS, MEMBER_PORTAL_NAV_ITEMS_I18N]) {
+    assert.equal(items.filter((item) => item.href === '/dashboard/documents').length, 1);
+  }
+  const agreements = ADMIN_PORTAL_NAV_ITEMS.filter((item) => item.href === '/admin/enrollment-agreements');
+  assert.equal(agreements.length, 1);
+  assert.equal(agreements[0].parentHref, '/admin/students');
+});
+
 // WAP-189 (owner-approved 2026-09-23): the always-visible member rail is exactly
 // these five rows, in this order. It supersedes the seven-row PR #2322 order.
 const MEMBER_PRIMARY_HREFS = [
