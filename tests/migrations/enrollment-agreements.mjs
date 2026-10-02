@@ -269,7 +269,19 @@ try {
   for (const role of ['anon', 'authenticated']) assert.equal(sql(`SET ROLE ${role}; SELECT count(*) FROM storage.objects;`), '3');
   sql(preflight);
   rejects(`SET ROLE anon; ${preflight}`, 'P0001', 'read-only preflight rejects non-owner deployment authority');
-  pass('exact read-only Storage preflight accepts its owner and rejects anon before migration');
+  // Generic PostgreSQL accepts arbitrary custom-GUC placeholders. They are not
+  // registered pg_settings parameters and must never stand in for supautils.
+  const fakeGrants = JSON.stringify({ anon: ['storage.objects'] });
+  assert.equal(sql(`SET ROLE anon; SET supautils.policy_grants = ${quote(fakeGrants)};
+    SELECT current_setting('supautils.policy_grants');
+    SELECT count(*) FROM pg_settings WHERE name = 'supautils.policy_grants';`), `${fakeGrants}\n0`,
+  'a fake custom setting is readable but has no registered policy-management capability');
+  for (const grants of [fakeGrants, '{"postgres":["storage.objects"]}', '{"anon":["storage.buckets"]}',
+    '{"anon":"storage.objects"}', '{"anon":["storage.objects",true]}', 'not JSON']) {
+    rejects(`SET ROLE anon; SET supautils.policy_grants = ${quote(grants)}; ${preflight}`, 'P0001',
+      'preflight rejects unregistered policy-grant placeholders, wrong scope and malformed values');
+  }
+  pass('exact read-only Storage preflight accepts its owner and rejects anon, including forged policy-grant settings');
   sql(migration);
   pass('exact additive migration applies over synthetic users/orgs and an existing permissive Storage policy');
 
