@@ -126,7 +126,8 @@ const ADMIN = 'enrollment-proof-admin';
 const HASH = 'a'.repeat(64);
 const TABLE = 'public.enrollment_agreement_submissions';
 const LOCKS = 'public.enrollment_agreement_operation_locks';
-const member = (id, deleted = false) => sql(`INSERT INTO public.users VALUES (${quote(id)}, ${quote(ORG)}, ${deleted ? 'now()' : 'NULL'});`);
+const memberName = (id) => `Synthetic ${id}`;
+const member = (id, deleted = false) => sql(`INSERT INTO public.users (id, organization_id, deleted_at, full_name) VALUES (${quote(id)}, ${quote(ORG)}, ${deleted ? 'now()' : 'NULL'}, ${quote(memberName(id))});`);
 const acquire = (id, token, organization = ORG) => bind('acquire', { memberId: id, 'actor.organizationId': organization, token });
 const release = (id, token) => bind('release', { memberId: id, 'actor.organizationId': ORG, token });
 const erase = (id, token, deletedBefore = null) => bind('erase', { memberId: id, token, deletedBefore });
@@ -142,8 +143,9 @@ const pathFor = (id, revision) => `enrollment-agreements/${id}/${revision}.pdf`;
 function revisionInsert(id, revision, overrides = {}) {
   const values = {
     id: quote(revision), organization_id: quote(ORG), member_id: quote(id),
+    subject_member_id: quote(id), subject_name: quote(memberName(id)),
     storage_path: quote(pathFor(id, revision)), sha256: quote(HASH), size_bytes: '123',
-    template_version: "'2026-09-30'", uploaded_by_user_id: quote(ADMIN), ...overrides,
+    template_version: "'2026-09-30'", uploaded_by_user_id: quote(ADMIN), uploaded_by_subject_id: quote(ADMIN), ...overrides,
   };
   return `INSERT INTO ${TABLE} (${Object.keys(values).join(', ')}) VALUES (${Object.values(values).join(', ')});`;
 }
@@ -154,13 +156,13 @@ function replace(id, revision, token, hash = HASH) {
     'args.bytes.byteLength': 123, 'args.templateVersion': '2026-09-30', 'actor.id': ADMIN,
   });
 }
-function review(id, revision, actor = ADMIN, note = null) {
+function review(id, revision, actor = ADMIN, note = null, status = 'verified') {
   return bind('review', {
-    'row.memberId': id, 'actor.organizationId': ORG, status: 'verified', 'actor.id': actor,
+    'row.memberId': id, 'actor.organizationId': ORG, status, 'actor.id': actor,
     'args.reviewNote': note, 'args.id': revision,
   });
 }
-const rows = (id) => JSON.parse(sql(`SELECT coalesce(json_agg(to_jsonb(s) ORDER BY id), '[]') FROM ${TABLE} s WHERE member_id = ${quote(id)};`));
+const rows = (id) => JSON.parse(sql(`SELECT coalesce(json_agg(to_jsonb(s) ORDER BY id), '[]') FROM ${TABLE} s WHERE subject_member_id = ${quote(id)};`));
 
 // A no-database preflight for hosts without psql. CI deliberately invokes this
 // script without the option and must execute all real PostgreSQL assertions.
@@ -249,10 +251,10 @@ try {
   createdDatabase = true;
   sql(`
     CREATE TABLE public.organizations (id text PRIMARY KEY);
-    CREATE TABLE public.users (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES public.organizations(id), deleted_at timestamp);
+    CREATE TABLE public.users (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES public.organizations(id), deleted_at timestamp, full_name text NOT NULL);
     CREATE TABLE public.audit_events (id text PRIMARY KEY, actor_user_id text REFERENCES public.users(id) ON DELETE SET NULL, actor_role text);
     INSERT INTO public.organizations VALUES (${quote(ORG)}), (${quote(OTHER_ORG)});
-    INSERT INTO public.users VALUES (${quote(ADMIN)}, ${quote(ORG)}, NULL), ('other-org-admin', ${quote(OTHER_ORG)}, NULL);
+    INSERT INTO public.users VALUES (${quote(ADMIN)}, ${quote(ORG)}, NULL, ${quote(memberName(ADMIN))}), ('other-org-admin', ${quote(OTHER_ORG)}, NULL, 'Synthetic other-org-admin');
     CREATE SCHEMA storage;
     CREATE TABLE storage.objects (id text PRIMARY KEY, bucket_id text NOT NULL, name text NOT NULL);
     ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
@@ -279,9 +281,15 @@ try {
     `sha256 = '${'b'.repeat(64)}'`, 'size_bytes = 124', "storage_path = 'different.pdf'",
     "template_version = 'previous'", "uploaded_at = uploaded_at + interval '1 second'",
     `organization_id = ${quote(OTHER_ORG)}`, "id = 'rewritten-id'", `uploaded_by_user_id = 'other-org-admin'`,
+    "member_id = 'other-org-admin'", "subject_member_id = 'rewritten-subject'", "subject_name = 'Rewritten name'",
+    "uploaded_by_subject_id = 'rewritten-uploader'",
   ]) rejects(`UPDATE ${TABLE} SET ${change} WHERE id = 'initial';`, '23514', 'immutable original evidence');
   assert.deepEqual(rows('immutable'), immutableBefore);
   rejects(revisionInsert('immutable', 'wrong-org', { organization_id: quote(OTHER_ORG) }), '23514', 'cross-org ownership');
+  rejects(revisionInsert('immutable', 'wrong-subject', { subject_member_id: quote(ADMIN) }), '23514', 'historical subject must match live member');
+  rejects(revisionInsert('immutable', 'wrong-name', { subject_name: "'Incorrect snapshot'" }), '23514', 'subject name must be the original account snapshot');
+  rejects(revisionInsert('immutable', 'wrong-uploader', { uploaded_by_subject_id: quote('immutable') }), '23514', 'historical uploader must match live uploader');
+  rejects(`DELETE FROM ${TABLE} WHERE id='initial';`, '23514', 'pending agreement must be retained');
   pass('partial-current uniqueness and immutable hash/size/path/version/ownership enforced by PostgreSQL');
 
   member('replacement');
@@ -299,7 +307,7 @@ try {
   rejects(`UPDATE ${TABLE} SET is_current = true WHERE id = 'old-pending';`, '23514', 'retired revision cannot reactivate');
   assert.equal(sql(acquire('replacement', 'new-pending')), 'new-pending');
   assert.equal(sql(review('replacement', 'new-pending', 'replacement')), '', 'No self-review');
-  rejects(`UPDATE ${TABLE} SET status='verified', reviewed_by_user_id='replacement', reviewed_at=now() WHERE id='new-pending';`,
+  rejects(`UPDATE ${TABLE} SET status='verified', reviewed_by_user_id='replacement', reviewed_by_subject_id='replacement', reviewed_at=now() WHERE id='new-pending';`,
     '23514', 'trigger rejects direct self-review');
   assert.equal(sql(review('replacement', 'new-pending')), 'new-pending');
   const reviewed = rows('replacement');
@@ -410,6 +418,75 @@ try {
   await blockedRace("UPDATE users SET deleted_at=NULL WHERE id='purge-held';",
     `BEGIN; ${retentionLock('purge-held')} COMMIT;`, '', '', 'restore-before-anonymization');
   pass('atomic purge rechecks cutoff after waiting, preserves restored subjects and staff audit, and rolls back self-audit deletion on FK failure');
+
+  member('retained-subject'); member('retained-uploader'); member('retained-reviewer');
+  sql(revisionInsert('retained-subject', 'retained-1-pending', {
+    uploaded_by_user_id: quote('retained-uploader'), uploaded_by_subject_id: quote('retained-uploader'),
+  }));
+  for (const [revision, status] of [
+    ['retained-2-verified', 'verified'], ['retained-3-correction', 'needs_correction'], ['retained-4-pending', 'pending'],
+  ]) {
+    const token = `${revision}-upload`;
+    assert.equal(sql(acquire('retained-subject', token)), token);
+    assert.equal(sql(replace('retained-subject', revision, token)), revision);
+    sql(release('retained-subject', token));
+    if (status !== 'pending') {
+      assert.equal(sql(acquire('retained-subject', revision)), revision);
+      assert.equal(sql(review('retained-subject', revision, 'retained-reviewer', status === 'needs_correction' ? 'Missing signature' : null, status)), revision);
+      sql(release('retained-subject', revision));
+    }
+  }
+  const retainedBefore = rows('retained-subject');
+  assert.equal(retainedBefore.length, 4);
+  sql("UPDATE users SET full_name='Changed account name', deleted_at='2026-08-01' WHERE id='retained-subject';");
+  assert.equal(sql(erase('retained-subject', 'retained-erasure', cutoff)), 't|t');
+  assert.equal(sql(purge('retained-subject')), '1');
+  assert.equal(sql("SELECT count(*) FROM users WHERE id='retained-subject';"), '0');
+  assert.equal(sql(`SELECT count(*) FROM ${LOCKS} WHERE member_id='retained-subject';`), '0');
+  assert.deepEqual(rows('retained-subject'), retainedBefore.map((row) => ({ ...row, member_id: null })),
+    'Purge retains every original name/hash/path/review/status/revision while the live subject FK detaches');
+  sql("DELETE FROM users WHERE id IN ('retained-uploader','retained-reviewer');");
+  const detachedEvidence = retainedBefore.map((row) => ({ ...row, member_id: null,
+    uploaded_by_user_id: row.uploaded_by_user_id === 'retained-uploader' ? null : row.uploaded_by_user_id,
+    reviewed_by_user_id: null,
+  }));
+  assert.deepEqual(rows('retained-subject'), detachedEvidence, 'Actor deletion preserves original historical UUIDs and review evidence');
+  for (const row of detachedEvidence) {
+    rejects(`DELETE FROM ${TABLE} WHERE id=${quote(row.id)};`, '23514', `retain ${row.status} revision`);
+    rejects(`UPDATE ${TABLE} SET member_id=${quote(ADMIN)} WHERE id=${quote(row.id)};`, '23514', 'detached subject cannot be reassigned');
+  }
+  for (const change of ["reviewed_by_subject_id=NULL", `reviewed_by_subject_id=${quote(ADMIN)}`,
+    `reviewed_by_user_id=${quote(ADMIN)}`, "review_note='rewritten'"]) {
+    rejects(`UPDATE ${TABLE} SET ${change} WHERE id='retained-2-verified';`, '23514', 'review identity and evidence cannot be rewritten after actor deletion');
+  }
+  rejects(`UPDATE ${TABLE} SET uploaded_by_user_id=${quote(ADMIN)} WHERE id='retained-1-pending';`, '23514', 'detached uploader cannot be reassigned');
+  // Even accidental re-creation of the original UUID cannot reattach old evidence
+  // or bypass historical-current uniqueness through the nullable live FK.
+  member('retained-subject'); member('retained-uploader'); member('retained-reviewer');
+  rejects(`UPDATE ${TABLE} SET member_id='retained-subject' WHERE id='retained-4-pending';`, '23514', 'subject cannot reattach to a recreated UUID');
+  rejects(`UPDATE ${TABLE} SET uploaded_by_user_id='retained-uploader' WHERE id='retained-1-pending';`, '23514', 'uploader cannot reattach to a recreated UUID');
+  rejects(`UPDATE ${TABLE} SET reviewed_by_user_id='retained-reviewer' WHERE id='retained-2-verified';`, '23514', 'reviewer cannot reattach to a recreated UUID');
+  rejects(revisionInsert('retained-subject', 'duplicate-detached-current'), '23505', 'one current historical subject despite detached live FK');
+  rejects(`UPDATE ${TABLE} SET status='verified', reviewed_by_user_id='retained-subject', reviewed_by_subject_id='retained-subject', reviewed_at=now()
+    WHERE id='retained-4-pending';`, '23514', 'detached pending evidence cannot become a self-reviewed agreement');
+  assert.deepEqual(rows('retained-subject'), detachedEvidence);
+  member('explicit-detach');
+  sql(revisionInsert('explicit-detach', 'explicit-detach-pending'));
+  const explicitBefore = rows('explicit-detach');
+  sql(`UPDATE ${TABLE} SET member_id=NULL WHERE member_id='explicit-detach';`);
+  assert.deepEqual(rows('explicit-detach'), explicitBefore.map((row) => ({ ...row, member_id: null })));
+  rejects(`UPDATE ${TABLE} SET member_id='explicit-detach' WHERE id='explicit-detach-pending';`, '23514', 'soft-deletion detach cannot be undone');
+  rejects(`UPDATE ${TABLE} SET status='verified', reviewed_by_user_id=${quote(ADMIN)}, reviewed_by_subject_id=${quote(ADMIN)}, reviewed_at=now()
+    WHERE id='explicit-detach-pending';`, '23514', 'even an active original account cannot review its detached revision');
+  member('suspended-subject');
+  sql(revisionInsert('suspended-subject', 'suspended-pending'));
+  sql("UPDATE users SET deleted_at=now() WHERE id='suspended-subject';");
+  const suspendedBefore = rows('suspended-subject');
+  assert.equal(sql(review('suspended-subject', 'suspended-pending')), '', 'Canonical review excludes a suspended live subject');
+  rejects(`UPDATE ${TABLE} SET status='verified', reviewed_by_user_id=${quote(ADMIN)}, reviewed_by_subject_id=${quote(ADMIN)}, reviewed_at=now()
+    WHERE id='suspended-pending';`, '23514', 'trigger rejects review for a soft-deleted subject whose live FK remains');
+  assert.deepEqual(rows('suspended-subject'), suspendedBefore);
+  pass('all agreement revisions survive account purge and actor deletion with immutable snapshots; detach is one-way and row erasure is rejected');
 
   member('review-race');
   sql(revisionInsert('review-race', 'review-race-old'));

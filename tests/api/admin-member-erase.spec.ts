@@ -40,7 +40,7 @@ vi.mock('@/lib/tenant/organization', () => ({
 const findFirst = vi.fn();
 const update = vi.fn();
 const remove = vi.fn();
-const agreementDeleteMany = vi.fn();
+const agreementUpdateMany = vi.fn();
 const queryRaw = vi.fn();
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
@@ -48,7 +48,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
     fn({
       user: { findFirst, update, delete: remove },
       $queryRaw: queryRaw,
-      enrollmentAgreementSubmission: { deleteMany: agreementDeleteMany },
+      enrollmentAgreementSubmission: { updateMany: agreementUpdateMany },
     }),
   ),
 }));
@@ -120,7 +120,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     update.mockResolvedValue({ id: MEMBER_ID });
     remove.mockResolvedValue({ id: MEMBER_ID });
     queryRaw.mockResolvedValue([{ present: false }]);
-    agreementDeleteMany.mockResolvedValue({ count: 2 });
+    agreementUpdateMany.mockResolvedValue({ count: 2 });
     supabaseDeleteUser.mockResolvedValue({ error: null });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
   });
@@ -176,26 +176,27 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(deleteOrder).toBeLessThan(authOrder);
   });
 
-  it('removes all agreement metadata after storage and before anonymizing an enrolled member', async () => {
-    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+  it.each([true, false])('retains every agreement before account removal (enrolled: %s)', async (enrolled) => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: enrolled ? [{ id: 'enr-1' }] : [] }));
     queryRaw.mockResolvedValue([{ present: true }]);
     const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
     expect(res.status).toBe(200);
-    expect(agreementDeleteMany).toHaveBeenCalledWith({ where: { memberId: MEMBER_ID } });
+    expect(agreementUpdateMany).toHaveBeenCalledWith({ where: { memberId: MEMBER_ID }, data: { memberId: null } });
     expect(vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder[0])
-      .toBeLessThan(agreementDeleteMany.mock.invocationCallOrder[0]);
-    expect(agreementDeleteMany.mock.invocationCallOrder[0]).toBeLessThan(update.mock.invocationCallOrder[0]);
+      .toBeLessThan(agreementUpdateMany.mock.invocationCallOrder[0]);
+    expect(agreementUpdateMany.mock.invocationCallOrder[0]).toBeLessThan((enrolled ? update : remove).mock.invocationCallOrder[0]);
   });
 
-  it('does not report successful anonymization when agreement cleanup fails', async () => {
-    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+  it.each([true, false])('does not remove an account when agreement retention fails (enrolled: %s)', async (enrolled) => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: enrolled ? [{ id: 'enr-1' }] : [] }));
     queryRaw.mockResolvedValue([{ present: true }]);
-    agreementDeleteMany.mockRejectedValue(new Error('agreement cleanup failed'));
+    agreementUpdateMany.mockRejectedValue(new Error('agreement cleanup failed'));
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
       expect(res.status).toBe(500);
       expect(update).not.toHaveBeenCalled();
+      expect(remove).not.toHaveBeenCalled();
       expect(supabaseDeleteUser).not.toHaveBeenCalled();
     } finally {
       errorSpy.mockRestore();

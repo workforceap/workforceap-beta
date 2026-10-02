@@ -14,7 +14,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
-import { eraseEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
+import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -74,8 +74,8 @@ export const POST = withApiGuc(async (
     const newEmail = existing.deletedAt ? existing.email : buildDeletedEmail(id, now.getTime(), existing.email);
     if (!newEmail) return NextResponse.json({ error: 'This email is too long to preserve the original address safely.' }, { status: 400 });
 
-    // Soft-delete still removes member-resumes / member-files objects so PII
-    // does not linger while the deleted row remains in retention. Erased
+    // Soft-delete removes ordinary resumes, certificate proofs and photos,
+    // but retains enrollment agreements under the owner's policy. Erased
     // blobs cannot be restored; an installed agreement erasure fence also
     // blocks standard account restore. Fail closed before rewriting so a storage
     // error cannot leave a "deleted" member with leftover files.
@@ -97,9 +97,9 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
     }
 
-    // The user row remains retained, not a promise of recoverability. Erased
-    // agreement PDFs and review metadata must not survive this deletion.
-    await withTenantScope(orgId, (db) => eraseEnrollmentAgreementData(id, db));
+    // Preserve agreement evidence while removing its live-account link.
+    // The retained user row is not a promise that erased files are recoverable.
+    await withTenantScope(orgId, (db) => retainEnrollmentAgreementData(id, db));
 
     // If the row is already soft-deleted, leave its email rewrite alone —
     // don't double-rewrite (would build up nested "deleted_deleted_..."

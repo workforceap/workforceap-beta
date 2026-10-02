@@ -23,6 +23,7 @@ describe('deleted users recovery guidance', () => {
     render(<DeletedUsersClient rows={[row]} totalDeletedCount={1} stillBoundCount={0} />);
     expect(screen.getByText(/Restore cannot recover erased files or anonymized data/)).toBeInTheDocument();
     expect(screen.getByText(/do not clear document safeguards/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'agreement archive' })).toHaveAttribute('href', '/admin/enrollment-agreements/archive');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

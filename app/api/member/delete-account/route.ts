@@ -28,8 +28,9 @@ export const POST = withApiGuc(async () => {
       // WAP-169: soft-delete, release the email from the unique constraint
       // and scrub the profile through the shared anonymiser. The row is kept
       // (anonymised) for DELETED_ACCOUNT_RETENTION_DAYS before the retention
-      // cron can purge it. This is not a restore guarantee: erased data is
-      // gone, and installed agreement erasure safeguards block standard restore. The
+      // cron can purge it. Agreements and their review evidence are retained
+      // separately. This is not a restore guarantee: ordinary erased files are
+      // gone, and installed account deletion safeguards block standard restore. The
       // audit row is written by the helper without the original address —
       // this route used to log `metadata.originalEmail` into the 3-year log.
       const anonymized = await anonymizeMember(user.id, { reason: 'member_self_delete' }, prisma);

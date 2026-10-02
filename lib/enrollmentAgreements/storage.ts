@@ -36,8 +36,8 @@ export async function removeStagedAgreementPdf(storagePath: string): Promise<voi
   if (error) throw new EnrollmentAgreementError(503, 'UPLOAD_CLEANUP_UNAVAILABLE', 'The upload could not be completed. Please contact the team before retrying.');
 }
 
-export async function readStoredAgreementPdf(row: { id: string; memberId: string; storagePath: string; sha256: string; sizeBytes: number }): Promise<Uint8Array> {
-  if (row.storagePath !== agreementStoragePath(row.memberId, row.id)) throw new EnrollmentAgreementError(503, 'DOCUMENT_UNAVAILABLE', 'This document is temporarily unavailable.');
+export async function readStoredAgreementPdf(row: { id: string; subjectMemberId: string; storagePath: string; sha256: string; sizeBytes: number }): Promise<Uint8Array> {
+  if (row.storagePath !== agreementStoragePath(row.subjectMemberId, row.id)) throw new EnrollmentAgreementError(503, 'DOCUMENT_UNAVAILABLE', 'This document is temporarily unavailable.');
   const storage = await requirePrivateAgreementStorage();
   const { data, error } = await storage.download(row.storagePath);
   if (error || !data || data.size !== row.sizeBytes) throw new EnrollmentAgreementError(503, 'DOCUMENT_UNAVAILABLE', 'This document is temporarily unavailable.');

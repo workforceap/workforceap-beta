@@ -92,6 +92,7 @@ export const STATIC_PATHS = {
     '/admin/employer-screening-packs',
     '/admin/employers',
     '/admin/enrollment-agreements',
+    '/admin/enrollment-agreements/archive',
     '/admin/feature-flags',
     '/admin/feedback',
     '/admin/guide',

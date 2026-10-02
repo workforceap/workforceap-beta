@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Loader2, MailX, RotateCcw, Users, Wand2 } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
 
@@ -159,6 +160,9 @@ export default function DeletedUsersClient({
       <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
         Restore is available only when account safeguards allow it. Member deletion or GDPR erasure can block restoration,
         even while a record is listed here. Restore cannot recover erased files or anonymized data.
+        {' '}Enrollment agreements and their review history remain in the{' '}
+        <Link href="/admin/enrollment-agreements/archive" className="wa-kit-focus">agreement archive</Link>.
+        {' '}
         If restoration is blocked, contact support; do not clear document safeguards.
       </p>
 

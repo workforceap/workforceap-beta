@@ -353,31 +353,38 @@ model EnrollmentAgreementOperationLock {
   @@map("enrollment_agreement_operation_locks")
 }
 
-/// Private, immutable PDF revisions. Only review fields and isCurrent may change.
-/// A migration-only partial unique index permits one current revision per member.
+/// Retained private PDF revisions. Live account links may detach; historical
+/// subject/actor identities and evidence survive account deletion.
+/// A migration-only partial unique index permits one current revision per subject.
 model EnrollmentAgreementSubmission {
   id               String   @id @default(uuid())
   organizationId   String   @map("organization_id")
-  memberId         String   @map("member_id")
+  memberId         String?  @map("member_id")
+  subjectMemberId  String   @map("subject_member_id")
+  subjectName      String   @map("subject_name")
   storagePath      String   @unique @map("storage_path")
   sha256           String
   sizeBytes        Int      @map("size_bytes")
   templateVersion  String   @map("template_version")
   uploadedByUserId String?  @map("uploaded_by_user_id")
+  uploadedBySubjectId String @map("uploaded_by_subject_id")
   uploadedAt       DateTime @default(now()) @map("uploaded_at")
   status           String   @default("pending")
   isCurrent        Boolean  @default(true) @map("is_current")
   reviewedByUserId String?  @map("reviewed_by_user_id")
+  reviewedBySubjectId String? @map("reviewed_by_subject_id")
   reviewedAt       DateTime? @map("reviewed_at")
   reviewNote       String?  @map("review_note") @db.VarChar(1000)
 
   organization Organization @relation(fields: [organizationId], references: [id])
-  member User @relation("EnrollmentAgreementMember", fields: [memberId], references: [id], onDelete: Cascade)
+  member User? @relation("EnrollmentAgreementMember", fields: [memberId], references: [id], onDelete: SetNull)
   uploadedBy User? @relation("EnrollmentAgreementUploader", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
   reviewedBy User? @relation("EnrollmentAgreementReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, status, isCurrent])
-  @@index([memberId, uploadedAt(sort: Desc)])
+  @@index([organizationId, uploadedAt(sort: Desc), id(sort: Desc)], map: "enrollment_agreement_archive_order_idx")
+  @@index([memberId])
+  @@index([subjectMemberId, uploadedAt(sort: Desc)], map: "enrollment_agreement_subject_uploaded_at_idx")
   @@index([uploadedByUserId])
   @@index([reviewedByUserId])
   @@map("enrollment_agreement_submissions")

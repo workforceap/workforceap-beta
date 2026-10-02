@@ -9,15 +9,14 @@ export const MEMBER_FILES_BUCKET = 'member-files';
  * Prefixes a member's own uploads live under. Resume originals/enhanced
  * text and voice-interview recordings sit at `{userId}/…` in
  * `member-resumes`. Certificate proofs sit at `cert-files/{userId}/…` and
- * profile photos at `profile-photos/{userId}/…` and enrollment agreements at
- * `enrollment-agreements/{userId}/…` in `member-files`. Employer
- * logos and org branding are not member PII and are not deleted here.
+ * profile photos at `profile-photos/{userId}/…` in `member-files`. Enrollment
+ * agreements are retained records and are never enumerated or deleted here.
+ * Employer logos and org branding are also outside this deletion scope.
  */
 export const MEMBER_STORAGE_PREFIXES = [
   { bucket: MEMBER_RESUME_BUCKET, prefixFor: (userId: string) => userId },
   { bucket: MEMBER_FILES_BUCKET, prefixFor: (userId: string) => `cert-files/${userId}` },
   { bucket: MEMBER_FILES_BUCKET, prefixFor: (userId: string) => profilePhotoPrefixForUser(userId) },
-  { bucket: MEMBER_FILES_BUCKET, prefixFor: (userId: string) => `enrollment-agreements/${userId}` },
 ] as const;
 
 const LIST_PAGE = 100;
@@ -91,9 +90,7 @@ export function isMemberOwnedStoragePath(
   if (bucket === MEMBER_FILES_BUCKET) {
     const certPrefix = `cert-files/${userId}/`;
     const photoPrefix = `${profilePhotoPrefixForUser(userId)}/`;
-    const agreementPrefix = `enrollment-agreements/${userId}/`;
     if (normalized.startsWith(certPrefix) && normalized.length > certPrefix.length) return true;
-    if (normalized.startsWith(agreementPrefix) && normalized.length > agreementPrefix.length) return true;
     return normalized.startsWith(photoPrefix) && normalized.length > photoPrefix.length;
   }
   return false;
@@ -154,10 +151,10 @@ async function removePaths(
 }
 
 /**
- * Delete every object a member uploaded to `member-resumes` /
- * `member-files`. Listing prefixes catches leftovers after columns are
- * nulled. Extra known paths (resume columns, cert proofs) are a safety
- * net for objects that listing might miss.
+ * Delete ordinary member uploads, excluding retained enrollment agreements.
+ * Listing approved prefixes catches leftovers after columns are nulled.
+ * Extra known paths (resume columns, cert proofs) obey the same allowlist;
+ * they cannot opt retained agreement PDFs into account deletion.
  *
  * Fail-closed: any list/remove error other than "not found" is a failure.
  * Callers must not claim the account was erased when `ok` is false.
@@ -175,16 +172,17 @@ export async function deleteUserStorageObjects(
     return { ok: false, error: 'Invalid user id for storage deletion', deleted: [] };
   }
 
-  // Reserve erasure before even listing unrelated member files. Uploads claim
-  // the same persistent fence before staging bytes, so no agreement can appear
-  // after this deletion's storage listing. An existing erasure claim is safe
-  // to retry; an active/uncertain upload blocks all deletion without a TTL.
+  // Reserve account deletion before listing ordinary member files. Uploads
+  // claim the same persistent fence before staging bytes, so the account cannot
+  // disappear during an in-flight agreement upload. Agreements themselves stay
+  // retained. Existing erasure claims are retryable; uncertain uploads or
+  // restores block deletion without a TTL or automatic fence release.
   try {
     await (options?.claimAgreementErasure ?? claimEnrollmentAgreementErasure)(userId);
   } catch {
     return {
       ok: false,
-      error: 'Enrollment agreement erasure could not be reserved. Retry after any upload finishes.',
+      error: 'Account deletion could not be reserved. Retry after any document operation finishes.',
       deleted: [],
     };
   }

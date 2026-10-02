@@ -114,7 +114,7 @@ export const POST = withApiGuc(async (request: Request) => {
     console.error('[gdpr/delete] Supabase auth delete failed:', deleteAuthError);
     return NextResponse.json(
       {
-        error: 'Account data was anonymized, but auth deletion failed. Please contact support to complete account deletion.',
+        error: 'Ordinary account data was anonymized; enrollment agreements and their review evidence are retained. Sign-in deletion failed. Please contact support to complete account deletion.',
       },
       { status: 500 },
     );
@@ -136,7 +136,7 @@ export const POST = withApiGuc(async (request: Request) => {
   logAuditEvent({ user: { id: userId, role: 'member' }, verb: 'deleted', object: { type: 'User', id: userId }, result: { success: true } }).catch(() => {});
   return NextResponse.json({
     ok: true,
-    message: 'Your account has been deleted. Personal data has been anonymized and all sessions revoked.',
+    message: 'Your account has been deleted. Ordinary account data has been anonymized; enrollment agreements and their review evidence are retained.',
   });
 
   } catch (error) {

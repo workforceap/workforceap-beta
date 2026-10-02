@@ -2,7 +2,7 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
 import { buildDeletedEmail } from './deletedEmail';
-import { eraseEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
+import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import { DELETED_ACCOUNT_RETENTION_DAYS, getCutoffDate } from '@/lib/retention/config';
 
@@ -29,6 +29,10 @@ import { DELETED_ACCOUNT_RETENTION_DAYS, getCutoffDate } from '@/lib/retention/c
  *     reason and field counts only — never the original email or name. The
  *     actor email snapshot is pinned to NULL so `auditLog` cannot copy the
  *     address into the three-year log.
+ *
+ * Enrollment agreements retain their PDFs, identity snapshots and reviews,
+ * with only the live member link detached. No agreement retention duration
+ * is derived from the account purge window.
  *
  * `users` cascades to the member tables, `wioa_review_snapshots` and
  * `audit_logs` (actor SET NULL) survive the later hard purge, and
@@ -171,10 +175,9 @@ export async function anonymizeMember(
       data: ANONYMIZED_PROFILE_DATA,
     });
 
-    // Soft deletion keeps the User row, so a cascading FK cannot remove
-    // agreement review notes and document fingerprints here. Storage callers
-    // have already erased the PDFs; remove every submission revision as well.
-    await eraseEnrollmentAgreementData(userId, tx);
+    // Agreements are retained records: keep every PDF, review and identity
+    // snapshot, but detach them from the anonymized live account.
+    await retainEnrollmentAgreementData(userId, tx);
 
     await auditLog(
       {

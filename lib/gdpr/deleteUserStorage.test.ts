@@ -60,9 +60,9 @@ test('parseMemberStoragePath keeps object keys and extracts signed URLs', () => 
   assert.equal(parseMemberStoragePath(null), null);
 });
 
-test('deleteUserStorageObjects lists both member buckets and removes leftovers', async () => {
+test('deleteUserStorageObjects removes ordinary files but never lists or deletes agreement history', async () => {
   const userId = 'user-123';
-  const { admin, removes } = makeAdmin({
+  const { admin, lists, removes } = makeAdmin({
     listings: {
       [`${MEMBER_RESUME_BUCKET}:${userId}`]: [
         { name: 'resume-original.pdf', id: 'file-1' },
@@ -93,16 +93,15 @@ test('deleteUserStorageObjects lists both member buckets and removes leftovers',
     [
       `${MEMBER_FILES_BUCKET}:cert-files/${userId}/cert-1.pdf`,
       `${MEMBER_FILES_BUCKET}:profile-photos/${userId}/photo.webp`,
-      `${MEMBER_FILES_BUCKET}:enrollment-agreements/${userId}/revision-1.pdf`,
-      `${MEMBER_FILES_BUCKET}:enrollment-agreements/${userId}/revision-2.pdf`,
       `${MEMBER_RESUME_BUCKET}:${userId}/resume-original.pdf`,
       `${MEMBER_RESUME_BUCKET}:${userId}/voice-interview-recordings/abc.webm`,
     ].sort(),
   );
   assert.equal(removes.length, 2);
+  assert.equal(lists.some((row) => row.path?.startsWith('enrollment-agreements/')), false);
 });
 
-test('deleteUserStorageObjects also removes extra known column paths', async () => {
+test('extra known paths remove ordinary files but cannot opt agreements into deletion', async () => {
   const userId = 'user-123';
   const { admin, removes } = makeAdmin({ listings: {} });
 
@@ -114,6 +113,7 @@ test('deleteUserStorageObjects also removes extra known column paths', async () 
       { bucket: MEMBER_FILES_BUCKET, path: `cert-files/${userId}/old.png` },
       { bucket: MEMBER_FILES_BUCKET, path: `enrollment-agreements/${userId}/orphan.pdf` },
       { bucket: MEMBER_FILES_BUCKET, path: 'enrollment-agreements/another-user/keep.pdf' },
+      { bucket: MEMBER_FILES_BUCKET, path: 'https://fixture.supabase.co/storage/v1/object/sign/member-files/enrollment-agreements/user-123/signed.pdf?token=synthetic' },
     ],
   });
 
@@ -121,7 +121,6 @@ test('deleteUserStorageObjects also removes extra known column paths', async () 
   const removed = removes.flatMap((call) => call.paths.map((path) => `${call.bucket}:${path}`)).sort();
   assert.deepEqual(removed, [
     `${MEMBER_FILES_BUCKET}:cert-files/${userId}/old.png`,
-    `${MEMBER_FILES_BUCKET}:enrollment-agreements/${userId}/orphan.pdf`,
     `${MEMBER_RESUME_BUCKET}:${userId}/resume-enhanced.txt`,
   ]);
 });
@@ -156,8 +155,8 @@ test('deleteUserStorageObjects fails closed when remove fails', async () => {
   assert.match(result.error, /permission denied/);
 });
 
-test('agreement paths require the exact subject prefix and a file suffix', () => {
-  assert.equal(isMemberOwnedStoragePath('user-1', MEMBER_FILES_BUCKET, 'enrollment-agreements/user-1/document.pdf'), true);
+test('no agreement path belongs to the ordinary account-file deletion allowlist', () => {
+  assert.equal(isMemberOwnedStoragePath('user-1', MEMBER_FILES_BUCKET, 'enrollment-agreements/user-1/document.pdf'), false);
   for (const path of [
     'enrollment-agreements/user-1/',
     'enrollment-agreements/user-10/document.pdf',
@@ -169,16 +168,17 @@ test('agreement paths require the exact subject prefix and a file suffix', () =>
   }
 });
 
-test('an agreement listing failure prevents deletion of any collected objects', async () => {
-  const { admin, removes } = makeAdmin({
+test('an inaccessible retained agreement prefix is never listed and does not block ordinary cleanup', async () => {
+  const { admin, lists, removes } = makeAdmin({
     listings: {
       [`${MEMBER_RESUME_BUCKET}:user-123`]: [{ name: 'resume.pdf', id: 'resume-1' }],
       [`${MEMBER_FILES_BUCKET}:enrollment-agreements/user-123`]: { error: { message: 'storage timeout' } },
     },
   });
   const result = await deleteUserStorageObjects('user-123', { supabaseAdmin: admin, claimAgreementErasure });
-  assert.equal(result.ok, false);
-  assert.equal(removes.length, 0);
+  assert.equal(result.ok, true);
+  assert.equal(lists.some((row) => row.path?.startsWith('enrollment-agreements/')), false);
+  assert.deepEqual(removes, [{ bucket: MEMBER_RESUME_BUCKET, paths: ['user-123/resume.pdf'] }]);
 });
 
 test('deleteUserStorageObjects treats missing buckets as nothing to delete', async () => {
@@ -206,7 +206,7 @@ test('deleteUserStorageObjects rejects path-traversal user ids', async () => {
 test('member storage prefixes cover both upload buckets', () => {
   assert.deepEqual(
     MEMBER_STORAGE_PREFIXES.map((row) => row.bucket),
-    [MEMBER_RESUME_BUCKET, MEMBER_FILES_BUCKET, MEMBER_FILES_BUCKET, MEMBER_FILES_BUCKET],
+    [MEMBER_RESUME_BUCKET, MEMBER_FILES_BUCKET, MEMBER_FILES_BUCKET],
   );
   assert.equal(ACCOUNT_STORAGE_DELETE_FAILED.includes('not erased'), true);
 });

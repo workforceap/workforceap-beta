@@ -32,14 +32,14 @@ vi.mock('@/lib/tenant/organization', () => ({
 const findFirst = vi.fn();
 const update = vi.fn();
 const queryRaw = vi.fn();
-const agreementDeleteMany = vi.fn();
+const agreementUpdateMany = vi.fn();
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: vi.fn((_orgId: string, fn: (db: unknown) => Promise<unknown>) =>
     fn({
       user: { findFirst, update },
       $queryRaw: queryRaw,
-      enrollmentAgreementSubmission: { deleteMany: agreementDeleteMany },
+      enrollmentAgreementSubmission: { updateMany: agreementUpdateMany },
     }),
   ),
 }));
@@ -106,7 +106,7 @@ describe('POST /api/admin/members/[id]/delete', () => {
     });
     update.mockResolvedValue({ id: MEMBER_ID });
     queryRaw.mockResolvedValue([{ present: false }]);
-    agreementDeleteMany.mockResolvedValue({ count: 2 });
+    agreementUpdateMany.mockResolvedValue({ count: 2 });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
     supabaseGetUserById.mockResolvedValue({ data: { user: { id: MEMBER_ID, email: 'member@example.com' } }, error: null });
     supabaseUpdateUserById.mockResolvedValue({ error: null });
@@ -139,19 +139,19 @@ describe('POST /api/admin/members/[id]/delete', () => {
     expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
 
-  it('erases agreement metadata after storage succeeds and before marking the member deleted', async () => {
+  it('retains agreement metadata after ordinary storage cleanup and before marking the member deleted', async () => {
     queryRaw.mockResolvedValue([{ present: true }]);
     const res = await POST(deleteReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
     expect(res.status).toBe(200);
-    expect(agreementDeleteMany).toHaveBeenCalledWith({ where: { memberId: MEMBER_ID } });
+    expect(agreementUpdateMany).toHaveBeenCalledWith({ where: { memberId: MEMBER_ID }, data: { memberId: null } });
     expect(vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder[0])
-      .toBeLessThan(agreementDeleteMany.mock.invocationCallOrder[0]);
-    expect(agreementDeleteMany.mock.invocationCallOrder[0]).toBeLessThan(update.mock.invocationCallOrder[0]);
+      .toBeLessThan(agreementUpdateMany.mock.invocationCallOrder[0]);
+    expect(agreementUpdateMany.mock.invocationCallOrder[0]).toBeLessThan(update.mock.invocationCallOrder[0]);
   });
 
-  it('does not report deletion when agreement metadata cleanup fails', async () => {
+  it('does not report deletion when agreement retention fails', async () => {
     queryRaw.mockResolvedValue([{ present: true }]);
-    agreementDeleteMany.mockRejectedValue(new Error('agreement cleanup failed'));
+    agreementUpdateMany.mockRejectedValue(new Error('agreement cleanup failed'));
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       const res = await POST(deleteReq(), { params: Promise.resolve({ id: MEMBER_ID }) });

@@ -41,7 +41,7 @@ export async function getAgreementForRead(actor: EnrollmentAgreementActor, id: s
   const row = await withTenantScope(actor.organizationId, (db) => db.enrollmentAgreementSubmission.findFirst({
     where: { id, organizationId: actor.organizationId },
   }));
-  if (!row) throw new EnrollmentAgreementError(404, 'NOT_FOUND', 'Enrollment agreement not found.');
+  if (!row || !row.memberId) throw new EnrollmentAgreementError(404, 'NOT_FOUND', 'Enrollment agreement not found.');
   try {
     await requireAgreementMemberAccess(actor, row.memberId);
   } catch (error) {
@@ -94,7 +94,7 @@ export async function createAgreementSubmission(actor: EnrollmentAgreementActor,
     await storeAgreementPdf(storagePath, args.bytes);
     const rows = await prisma.$queryRaw<{ id: string }[]>`
       WITH member_lock AS (
-        SELECT id FROM users
+        SELECT id, full_name FROM users
         WHERE id = ${args.memberId} AND organization_id = ${actor.organizationId} AND deleted_at IS NULL
           AND EXISTS (SELECT 1 FROM enrollment_agreement_operation_locks
             WHERE member_id = ${args.memberId} AND organization_id = ${actor.organizationId} AND token = ${token} AND state = 'upload')
@@ -106,9 +106,10 @@ export async function createAgreementSubmission(actor: EnrollmentAgreementActor,
         RETURNING id
       ), inserted AS (
         INSERT INTO enrollment_agreement_submissions
-          (id, organization_id, member_id, storage_path, sha256, size_bytes, template_version, uploaded_by_user_id)
-        SELECT ${id}, ${actor.organizationId}, ${args.memberId}, ${storagePath}, ${agreementSha256(args.bytes)},
-          ${args.bytes.byteLength}, ${args.templateVersion}, ${actor.id}
+          (id, organization_id, member_id, subject_member_id, subject_name, storage_path, sha256, size_bytes,
+            template_version, uploaded_by_user_id, uploaded_by_subject_id)
+        SELECT ${id}, ${actor.organizationId}, ${args.memberId}, ${args.memberId}, full_name, ${storagePath}, ${agreementSha256(args.bytes)},
+          ${args.bytes.byteLength}, ${args.templateVersion}, ${actor.id}, ${actor.id}
         FROM member_lock WHERE (SELECT count(*) FROM retired) >= 0
         RETURNING id
       ) SELECT id FROM inserted
@@ -141,6 +142,7 @@ export async function reviewAgreementSubmission(actor: EnrollmentAgreementActor,
   id: string; action: 'verify' | 'request_correction'; reviewNote: string | null; attestSignatures?: boolean;
 }): Promise<void> {
   const row = await getAgreementForRead(actor, args.id);
+  if (!row.memberId) throw new EnrollmentAgreementError(404, 'NOT_FOUND', 'Enrollment agreement not found.');
   await requireAgreementMemberAccess(actor, row.memberId, 'review');
   if (args.action === 'verify' && args.attestSignatures !== true) throw new EnrollmentAgreementError(400, 'ATTESTATION_REQUIRED', 'Confirm that you checked the required signatures and dates.');
   if (args.action === 'request_correction' && !args.reviewNote?.trim()) throw new EnrollmentAgreementError(400, 'NOTE_REQUIRED', 'Explain what needs correction.');
@@ -157,7 +159,7 @@ export async function reviewAgreementSubmission(actor: EnrollmentAgreementActor,
       FOR UPDATE
     )
     UPDATE enrollment_agreement_submissions
-    SET status = ${status}, reviewed_by_user_id = ${actor.id}, reviewed_at = CURRENT_TIMESTAMP, review_note = ${args.reviewNote}
+    SET status = ${status}, reviewed_by_user_id = ${actor.id}, reviewed_by_subject_id = ${actor.id}, reviewed_at = CURRENT_TIMESTAMP, review_note = ${args.reviewNote}
     WHERE id = ${args.id} AND organization_id = ${actor.organizationId} AND member_id = ${row.memberId}
       AND member_id <> ${actor.id} AND is_current = true AND status = 'pending'
       AND EXISTS (SELECT 1 FROM member_lock)

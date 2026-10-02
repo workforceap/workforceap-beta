@@ -4,7 +4,7 @@ type AgreementDataClient = Pick<Prisma.TransactionClient, '$queryRaw' | 'enrollm
 
 /**
  * Privacy operations are independent of the UI feature flag: disabling uploads
- * must not hide previously collected personal data from export or erasure.
+ * must not hide retained agreements from export or account-deletion handling.
  * A fresh deployment may precede the additive migration, so check the exact
  * table without issuing a failing SELECT inside a transaction. Database errors
  * propagate; only a confirmed absent table means there is nothing to process.
@@ -23,18 +23,22 @@ async function submissionsExist(db: Pick<AgreementDataClient, '$queryRaw'>): Pro
 export async function exportEnrollmentAgreementData(memberId: string, db: AgreementDataClient) {
   if (!(await submissionsExist(db))) return [];
   const rows = await db.enrollmentAgreementSubmission.findMany({
-    where: { memberId },
+    where: { subjectMemberId: memberId },
     orderBy: [{ uploadedAt: 'asc' }, { id: 'asc' }],
     select: {
       id: true,
+      subjectMemberId: true,
+      subjectName: true,
       templateVersion: true,
       sha256: true,
       sizeBytes: true,
       uploadedByUserId: true,
+      uploadedBySubjectId: true,
       uploadedAt: true,
       status: true,
       isCurrent: true,
       reviewedByUserId: true,
+      reviewedBySubjectId: true,
       reviewedAt: true,
       reviewNote: true,
     },
@@ -46,8 +50,13 @@ export async function exportEnrollmentAgreementData(memberId: string, db: Agreem
   }));
 }
 
-/** Call after private object deletion succeeds, within the anonymization write. */
-export async function eraseEnrollmentAgreementData(memberId: string, db: AgreementDataClient): Promise<void> {
+/**
+ * Enrollment agreements survive account deletion by owner policy. Detach only
+ * the live account relationship; preserve every revision, PDF fingerprint,
+ * review and immutable identity snapshot. No retention deadline is implied.
+ * Call after the persistent deletion fence is held; never release that fence.
+ */
+export async function retainEnrollmentAgreementData(memberId: string, db: AgreementDataClient): Promise<void> {
   if (!(await submissionsExist(db))) return;
-  await db.enrollmentAgreementSubmission.deleteMany({ where: { memberId } });
+  await db.enrollmentAgreementSubmission.updateMany({ where: { memberId }, data: { memberId: null } });
 }

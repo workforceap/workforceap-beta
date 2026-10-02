@@ -234,7 +234,8 @@ export default function MemberDetailActions({
         {confirmDelete && (
           <div style={{ marginTop: '0.5rem' }}>
             <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-              Delete this member account and its uploaded files? Erased files cannot be recovered.
+              Delete this member account and its personal files? Enrollment agreements and their review history are retained in the agreement archive.
+              Erased personal files cannot be recovered.
               Account safeguards may block restoration even while the deleted record remains listed.
             </p>
             <button type="button" className="btn btn-outline" onClick={() => setConfirmDelete(false)}>Cancel</button>

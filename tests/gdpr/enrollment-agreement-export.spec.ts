@@ -40,7 +40,7 @@ describe('member export includes enrollment agreement history', () => {
       { id: 'old', uploadedAt: uploadedAt.toISOString(), reviewedAt: uploadedAt.toISOString(), isCurrent: false, status: 'verified', reviewNote: null },
       { id: 'current', uploadedAt: uploadedAt.toISOString(), reviewedAt: null, isCurrent: true, status: 'pending', reviewNote: null },
     ]);
-    expect(database.agreements).toHaveBeenCalledWith(expect.objectContaining({ where: { memberId: 'member-1' } }));
+    expect(database.agreements).toHaveBeenCalledWith(expect.objectContaining({ where: { subjectMemberId: 'member-1' } }));
   });
 
   it('preserves export availability before the agreement migration exists', async () => {

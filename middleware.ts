@@ -138,7 +138,7 @@ const STAFF_MFA_EXACT_API_PATHS = new Set(['/api/partner/payout', '/api/health/s
 const STAFF_MFA_API_PATTERNS = [
   /^\/api\/org\/[^/]+\/settings$/,
   /^\/api\/billing-packets\/[^/]+\/send$/,
-  /^\/api\/enrollment-agreements\/(?:coverage|[^/]+\/review)\/?$/,
+  /^\/api\/enrollment-agreements\/(?:coverage|archive(?:\/[^/]+\/download)?|[^/]+\/review)\/?$/,
 ];
 
 function isStaffOnlyApiPath(pathname: string) {

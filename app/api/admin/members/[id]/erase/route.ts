@@ -12,7 +12,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
-import { eraseEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
+import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -25,11 +25,12 @@ import {
  *
  * GDPR right-to-erasure (hard delete).
  *
- * Permanently removes a member and all cascading data after the
+ * Permanently removes a member and cascading account data after the
  * legal-hold period, or immediately if `force=true` is passed by
  * a super-admin.
  *
- * Records the erasure in WorkflowDiagnostic for compliance auditing.
+ * Enrollment agreements and their identity/review snapshots are retained
+ * separately by owner policy. Records account erasure in WorkflowDiagnostic.
  */
 export const POST = withApiGuc(async (
   request: Request,
@@ -97,6 +98,10 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
     }
 
+    // Both account-removal paths retain agreement PDFs and every revision.
+    // Fail closed if detachment cannot be confirmed, even with uploads disabled.
+    await withTenantScope(orgId, (db) => retainEnrollmentAgreementData(id, db));
+
     // Optionally anonymize instead of hard-delete for members that still
     // have active program enrollments. Admins can pass force=true to
     // override, but the default is hard-delete.
@@ -105,10 +110,6 @@ export const POST = withApiGuc(async (
     if (shouldAnonymize) {
       // Anonymize: scramble PII but keep enrollment records for reporting
       const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
-      // This route's enrolled-member branch does not call anonymizeMember.
-      // Clear all submission metadata after blob deletion, before reporting
-      // anonymization; this remains required when the upload feature is off.
-      await withTenantScope(orgId, (db) => eraseEnrollmentAgreementData(id, db));
       await withTenantScope(orgId, (db) =>
         db.user.update({
           where: { id },

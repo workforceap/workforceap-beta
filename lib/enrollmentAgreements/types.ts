@@ -34,3 +34,14 @@ export interface EnrollmentAgreementCoverage {
   total: number;
   counts: Record<EnrollmentAgreementCoverageStatus, number>;
 }
+
+export interface EnrollmentAgreementArchive {
+  rows: (EnrollmentAgreementSubmissionView & {
+    subjectMemberId: string;
+    subjectName: string;
+    retainedAfterAccountDeletion: boolean;
+  })[];
+  page: number;
+  hasMore: boolean;
+  total: number;
+}

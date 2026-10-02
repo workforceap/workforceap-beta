@@ -19,16 +19,20 @@ REVOKE ALL ON TABLE "enrollment_agreement_operation_locks" FROM PUBLIC;
 CREATE TABLE "enrollment_agreement_submissions" (
   "id" TEXT NOT NULL,
   "organization_id" TEXT NOT NULL,
-  "member_id" TEXT NOT NULL,
+  "member_id" TEXT,
+  "subject_member_id" TEXT NOT NULL,
+  "subject_name" TEXT NOT NULL,
   "storage_path" TEXT NOT NULL,
   "sha256" TEXT NOT NULL,
   "size_bytes" INTEGER NOT NULL,
   "template_version" TEXT NOT NULL,
   "uploaded_by_user_id" TEXT,
+  "uploaded_by_subject_id" TEXT NOT NULL,
   "uploaded_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "status" TEXT NOT NULL DEFAULT 'pending',
   "is_current" BOOLEAN NOT NULL DEFAULT true,
   "reviewed_by_user_id" TEXT,
+  "reviewed_by_subject_id" TEXT,
   "reviewed_at" TIMESTAMP(3),
   "review_note" VARCHAR(1000),
   CONSTRAINT "enrollment_agreement_submissions_pkey" PRIMARY KEY ("id"),
@@ -37,21 +41,26 @@ CREATE TABLE "enrollment_agreement_submissions" (
   CONSTRAINT "enrollment_agreement_size_check" CHECK ("size_bytes" > 0 AND "size_bytes" <= 4128768),
   CONSTRAINT "enrollment_agreement_hash_check" CHECK ("sha256" ~ '^[0-9a-f]{64}$'),
   CONSTRAINT "enrollment_agreement_review_check" CHECK (
-    ("status" = 'pending' AND "reviewed_at" IS NULL AND "reviewed_by_user_id" IS NULL AND "review_note" IS NULL)
-    OR ("status" <> 'pending' AND "reviewed_at" IS NOT NULL)
+    ("status" = 'pending' AND "reviewed_at" IS NULL AND "reviewed_by_user_id" IS NULL AND "reviewed_by_subject_id" IS NULL AND "review_note" IS NULL)
+    OR ("status" <> 'pending' AND "reviewed_at" IS NOT NULL AND "reviewed_by_subject_id" IS NOT NULL)
   ),
-  CONSTRAINT "enrollment_agreement_no_self_review" CHECK ("reviewed_by_user_id" IS NULL OR "reviewed_by_user_id" <> "member_id"),
+  CONSTRAINT "enrollment_agreement_subject_link_check" CHECK ("member_id" IS NULL OR "member_id" = "subject_member_id"),
+  CONSTRAINT "enrollment_agreement_uploader_link_check" CHECK ("uploaded_by_user_id" IS NULL OR "uploaded_by_user_id" = "uploaded_by_subject_id"),
+  CONSTRAINT "enrollment_agreement_reviewer_link_check" CHECK ("reviewed_by_user_id" IS NULL OR ("reviewed_by_subject_id" IS NOT NULL AND "reviewed_by_user_id" = "reviewed_by_subject_id")),
+  CONSTRAINT "enrollment_agreement_no_self_review" CHECK ("reviewed_by_subject_id" IS NULL OR "reviewed_by_subject_id" <> "subject_member_id"),
   CONSTRAINT "enrollment_agreement_correction_check" CHECK ("status" <> 'needs_correction' OR coalesce(length(btrim("review_note")) > 0, false)),
   CONSTRAINT "enrollment_agreement_submissions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "enrollment_agreement_submissions_member_id_fkey" FOREIGN KEY ("member_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT "enrollment_agreement_submissions_member_id_fkey" FOREIGN KEY ("member_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT "enrollment_agreement_submissions_uploaded_by_user_id_fkey" FOREIGN KEY ("uploaded_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT "enrollment_agreement_submissions_reviewed_by_user_id_fkey" FOREIGN KEY ("reviewed_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE UNIQUE INDEX "enrollment_agreement_submissions_storage_path_key" ON "enrollment_agreement_submissions"("storage_path");
-CREATE UNIQUE INDEX "enrollment_agreement_one_current_per_member" ON "enrollment_agreement_submissions"("member_id") WHERE "is_current";
+CREATE UNIQUE INDEX "enrollment_agreement_one_current_per_member" ON "enrollment_agreement_submissions"("subject_member_id") WHERE "is_current";
 CREATE INDEX "enrollment_agreement_submissions_organization_id_status_is__idx" ON "enrollment_agreement_submissions"("organization_id", "status", "is_current");
-CREATE INDEX "enrollment_agreement_submissions_member_id_uploaded_at_idx" ON "enrollment_agreement_submissions"("member_id", "uploaded_at" DESC);
+CREATE INDEX "enrollment_agreement_archive_order_idx" ON "enrollment_agreement_submissions"("organization_id", "uploaded_at" DESC, "id" DESC);
+CREATE INDEX "enrollment_agreement_submissions_member_id_idx" ON "enrollment_agreement_submissions"("member_id");
+CREATE INDEX "enrollment_agreement_subject_uploaded_at_idx" ON "enrollment_agreement_submissions"("subject_member_id", "uploaded_at" DESC);
 CREATE INDEX "enrollment_agreement_submissions_uploaded_by_user_id_idx" ON "enrollment_agreement_submissions"("uploaded_by_user_id");
 CREATE INDEX "enrollment_agreement_submissions_reviewed_by_user_id_idx" ON "enrollment_agreement_submissions"("reviewed_by_user_id");
 
@@ -89,23 +98,31 @@ END $$;
 CREATE FUNCTION public.enrollment_agreement_guard_revision() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
 BEGIN
-  IF TG_OP = 'INSERT' THEN
-    IF NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.member_id AND organization_id = NEW.organization_id AND deleted_at IS NULL)
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'Enrollment agreement evidence must be retained' USING ERRCODE = '23514';
+  ELSIF TG_OP = 'INSERT' THEN
+    IF NEW.member_id IS DISTINCT FROM NEW.subject_member_id
+      OR NEW.uploaded_by_user_id IS DISTINCT FROM NEW.uploaded_by_subject_id
+      OR NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.member_id AND full_name = NEW.subject_name AND organization_id = NEW.organization_id AND deleted_at IS NULL)
       OR NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.uploaded_by_user_id AND organization_id = NEW.organization_id AND deleted_at IS NULL)
       OR NEW.status <> 'pending' OR NOT NEW.is_current THEN
       RAISE EXCEPTION 'Invalid enrollment agreement ownership or initial state' USING ERRCODE = '23514';
     END IF;
   ELSE
-    IF ROW(NEW.id, NEW.organization_id, NEW.member_id, NEW.storage_path, NEW.sha256, NEW.size_bytes, NEW.template_version, NEW.uploaded_at)
-      IS DISTINCT FROM ROW(OLD.id, OLD.organization_id, OLD.member_id, OLD.storage_path, OLD.sha256, OLD.size_bytes, OLD.template_version, OLD.uploaded_at)
+    IF ROW(NEW.id, NEW.organization_id, NEW.subject_member_id, NEW.subject_name, NEW.uploaded_by_subject_id, NEW.storage_path, NEW.sha256, NEW.size_bytes, NEW.template_version, NEW.uploaded_at)
+      IS DISTINCT FROM ROW(OLD.id, OLD.organization_id, OLD.subject_member_id, OLD.subject_name, OLD.uploaded_by_subject_id, OLD.storage_path, OLD.sha256, OLD.size_bytes, OLD.template_version, OLD.uploaded_at)
+      OR (NEW.member_id IS DISTINCT FROM OLD.member_id AND NEW.member_id IS NOT NULL)
       OR (NEW.uploaded_by_user_id IS DISTINCT FROM OLD.uploaded_by_user_id AND NEW.uploaded_by_user_id IS NOT NULL)
       OR (NOT OLD.is_current AND NEW.is_current) THEN
       RAISE EXCEPTION 'Enrollment agreement evidence is immutable' USING ERRCODE = '23514';
     END IF;
-    IF ROW(NEW.status, NEW.reviewed_at, NEW.review_note) IS DISTINCT FROM ROW(OLD.status, OLD.reviewed_at, OLD.review_note)
+    IF ROW(NEW.status, NEW.reviewed_at, NEW.review_note, NEW.reviewed_by_subject_id) IS DISTINCT FROM ROW(OLD.status, OLD.reviewed_at, OLD.review_note, OLD.reviewed_by_subject_id)
       OR (NEW.reviewed_by_user_id IS DISTINCT FROM OLD.reviewed_by_user_id AND NEW.reviewed_by_user_id IS NOT NULL) THEN
       IF OLD.status <> 'pending' OR NOT OLD.is_current OR NOT NEW.is_current OR NEW.status = 'pending'
-        OR NEW.reviewed_by_user_id IS NULL OR NEW.reviewed_by_user_id = NEW.member_id
+        OR NEW.member_id IS NULL OR NEW.reviewed_by_user_id IS NULL
+        OR NEW.reviewed_by_user_id IS DISTINCT FROM NEW.reviewed_by_subject_id
+        OR NEW.reviewed_by_subject_id = NEW.subject_member_id
+        OR NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.member_id AND organization_id = NEW.organization_id AND deleted_at IS NULL)
         OR NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.reviewed_by_user_id AND organization_id = NEW.organization_id AND deleted_at IS NULL) THEN
         RAISE EXCEPTION 'Invalid enrollment agreement review' USING ERRCODE = '23514';
       END IF;
@@ -123,6 +140,6 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
-CREATE TRIGGER enrollment_agreement_immutable_revision BEFORE INSERT OR UPDATE ON public.enrollment_agreement_submissions
+CREATE TRIGGER enrollment_agreement_immutable_revision BEFORE INSERT OR UPDATE OR DELETE ON public.enrollment_agreement_submissions
 FOR EACH ROW EXECUTE FUNCTION public.enrollment_agreement_guard_revision();
 COMMIT;

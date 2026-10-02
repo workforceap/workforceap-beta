@@ -44,7 +44,8 @@ const admin = { id: ADMIN, organizationId: ORG, role: 'admin' };
 const member = { id: MEMBER, organizationId: ORG, role: 'member' };
 const pdf = new Uint8Array(Buffer.from('%PDF-1.7\nsynthetic\n%%EOF'));
 const submission = () => ({
-  id: ID, organizationId: ORG, memberId: MEMBER, storagePath: `enrollment-agreements/${MEMBER}/${ID}.pdf`,
+  id: ID, organizationId: ORG, memberId: MEMBER, subjectMemberId: MEMBER, subjectName: 'Synthetic Student',
+  uploadedBySubjectId: MEMBER, reviewedBySubjectId: null, storagePath: `enrollment-agreements/${MEMBER}/${ID}.pdf`,
   sha256: 'a'.repeat(64), sizeBytes: pdf.length, templateVersion: '2026-09-30', uploadedByUserId: MEMBER,
   uploadedAt: new Date('2026-10-01T12:00:00Z'), status: 'pending', isCurrent: true,
   reviewedByUserId: null, reviewedAt: null, reviewNote: null,
@@ -131,6 +132,14 @@ describe('enrollment agreement authenticated routes', () => {
     const failure = { code: 'P2021' };
     mocks.findSubmission.mockRejectedValue(failure);
     await expect(getAgreementForRead(member, ID)).rejects.toEqual(failure);
+  });
+  it('detached retained records cannot be read or reviewed through member routes', async () => {
+    mocks.findSubmission.mockResolvedValue({ ...submission(), memberId: null });
+    await expect(getAgreementForRead(member, ID)).rejects.toMatchObject({ status: 404 });
+    await expect(reviewAgreementSubmission(admin, { id: ID, action: 'verify', reviewNote: null, attestSignatures: true })).rejects.toMatchObject({ status: 404 });
+    expect(mocks.findMember).not.toHaveBeenCalled();
+    expect(mocks.acquire).not.toHaveBeenCalled();
+    expect(mocks.queryRaw).not.toHaveBeenCalled();
   });
   it('permits only assigned same-org counselors to read and denies all counselor writes', async () => {
     const counselor = { ...admin, role: 'counselor' };

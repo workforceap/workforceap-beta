@@ -26,13 +26,13 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe('enrollment API middleware boundary', () => {
-  it.each(['', '/', '/template', '/coverage', '/revision/download', '/revision/review'])('authenticates %s with verified getUser and returns anonymous 401', async (suffix) => {
+  it.each(['', '/', '/template', '/coverage', '/revision/download', '/revision/review', '/archive', '/archive/revision/download'])('authenticates %s with verified getUser and returns anonymous 401', async (suffix) => {
     mocks.user.mockResolvedValue({ data: { user: null }, error: null });
     const response = await middleware(request(suffix));
     expect(response.status).toBe(401);
     expect(mocks.user).toHaveBeenCalled(); expect(mocks.session).not.toHaveBeenCalled();
   });
-  it.each(['/coverage', '/coverage/', '/revision/review', '/revision/review/'])('gates staff-only %s at AAL1', async (suffix) => {
+  it.each(['/coverage', '/coverage/', '/revision/review', '/revision/review/', '/archive', '/archive/', '/archive/revision/download', '/archive/revision/download/'])('gates staff-only %s at AAL1', async (suffix) => {
     const response = await middleware(request(suffix, suffix.includes('review') ? 'POST' : 'GET'));
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ code: 'MFA_REQUIRED' });

@@ -7,6 +7,7 @@ import {
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { claimEnrollmentAgreementErasure } from '@/lib/enrollmentAgreements/operationLock';
+import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -326,13 +327,13 @@ export function foreignKeyConstraintName(err: unknown): string | null {
 }
 
 /**
- * A user cascade must not erase the only evidence for a private agreement or an
- * uncertain upload. Reuse the authorized storage eraser before that cascade:
- * its persistent fence rejects active uploads, retries completed erasure fences
- * idempotently, and stays in place until the later user delete succeeds. No
- * fence is unlocked here. Existing pre-rollout accounts keep their old path.
+ * Retain agreement PDFs and all revisions when the live account is purged.
+ * The persistent deletion fence rejects active/uncertain uploads and restores,
+ * retries deletion idempotently, and stays until the user delete succeeds. Only
+ * ordinary member files are erased; no fence is unlocked here. Existing
+ * pre-rollout accounts keep their old path.
  */
-async function eraseAgreementStorageBeforeAccountPurge(memberId: string, cutoff: Date): Promise<void> {
+async function retainAgreementsBeforeAccountPurge(memberId: string, cutoff: Date): Promise<void> {
   const schema = await prisma.$transaction((tx) => tx.$queryRaw<Array<{
     submissions: boolean;
     locks: boolean;
@@ -352,7 +353,7 @@ async function eraseAgreementStorageBeforeAccountPurge(memberId: string, cutoff:
 
   const ownership = await prisma.$transaction((tx) => tx.$queryRaw<Array<{ present: boolean }>>`
     SELECT EXISTS (
-      SELECT 1 FROM enrollment_agreement_submissions WHERE member_id = ${memberId}
+      SELECT 1 FROM enrollment_agreement_submissions WHERE subject_member_id = ${memberId}
       UNION ALL
       SELECT 1 FROM enrollment_agreement_operation_locks WHERE member_id = ${memberId}
     ) AS present
@@ -370,7 +371,8 @@ async function eraseAgreementStorageBeforeAccountPurge(memberId: string, cutoff:
   const storage = await deleteUserStorageObjects(memberId, {
     claimAgreementErasure: (id) => claimEnrollmentAgreementErasure(id, prisma, { deletedBefore: cutoff }),
   });
-  if (!storage.ok) throw new Error('Enrollment agreement storage erasure has not completed.');
+  if (!storage.ok) throw new Error('Ordinary account storage cleanup has not completed.');
+  await retainEnrollmentAgreementData(memberId, prisma);
 }
 
 /** One atomic statement, including in environments that flatten $transaction. */
@@ -399,8 +401,9 @@ async function purgeEligibleAccount(id: string, cutoff: Date): Promise<number> {
  * Hard-delete users that have been soft-deleted for longer than
  * DELETED_ACCOUNT_RETENTION_DAYS.
  *
- * This is a GDPR compliance measure: after the legal hold period,
- * the account and all cascading relations are permanently removed.
+ * After the existing account retention window, the account and cascading
+ * relations are removed. Enrollment agreements survive as detached records;
+ * their retention duration is separate and is not inferred from this window.
  *
  * Most member tables cascade from `users`, but `audit_events.actor_user_id`
  * is `ON DELETE RESTRICT` with a required actor, and every member who used
@@ -450,12 +453,12 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
 
     for (const { id } of rows) {
       try {
-        await eraseAgreementStorageBeforeAccountPurge(id, cutoff);
+        await retainAgreementsBeforeAccountPurge(id, cutoff);
       } catch {
-        // Do not call anonymizeMember here: it removes agreement metadata and
-        // would destroy the retry evidence we are deliberately preserving.
-        const constraint = 'enrollment_agreement_erasure_pending';
-        console.error(`[data-cleanup] Soft-deleted account ${id} requires enrollment document erasure or reconciliation before purge; skipped.`);
+        // Do not bypass an uncertain document operation or failed retention
+        // safeguard through the anonymization fallback.
+        const constraint = 'enrollment_agreement_retention_pending';
+        console.error(`[data-cleanup] Soft-deleted account ${id} requires document retention safeguards or reconciliation before purge; skipped.`);
         blocked.push({ id, constraint });
         continue;
       }

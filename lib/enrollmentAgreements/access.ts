@@ -32,10 +32,21 @@ export function agreementStudentWhere(organizationId: string): Prisma.UserWhereI
 }
 
 export async function requireAgreementActor(): Promise<EnrollmentAgreementActor> {
+  return resolveAgreementActor(true);
+}
+
+/** Retained records remain accessible when new collection is disabled. */
+export async function requireAgreementArchiveActor(): Promise<EnrollmentAgreementActor> {
+  const actor = await resolveAgreementActor(false);
+  if (!isAgreementAdmin(actor.role)) throw new EnrollmentAgreementError(403, 'FORBIDDEN', 'Administrator access is required.');
+  return actor;
+}
+
+async function resolveAgreementActor(collection: boolean): Promise<EnrollmentAgreementActor> {
   const user = await getUser();
   if (!user) throw new EnrollmentAgreementError(401, 'UNAUTHORIZED', 'Please sign in.');
   // Authenticate before exposing feature availability. No default-org fallback.
-  requireEnrollmentAgreementsEnabled();
+  if (collection) requireEnrollmentAgreementsEnabled();
   const [organizationId, role] = await Promise.all([getActorOrganizationId(user.id), getProfileRole(user.id)]);
   await requireAgreementStaffMfa(user.id, role);
   return { id: user.id, organizationId, role };

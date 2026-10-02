@@ -464,8 +464,8 @@ async function enrollmentAgreementMergeConflict(
   }
 
   const ownership = await tx.$queryRaw<Array<{ memberId: string }>>(Prisma.sql`
-    SELECT member_id AS "memberId" FROM enrollment_agreement_submissions
-    WHERE member_id IN (${Prisma.join([primaryId, secondaryId])})
+    SELECT subject_member_id AS "memberId" FROM enrollment_agreement_submissions
+    WHERE subject_member_id IN (${Prisma.join([primaryId, secondaryId])})
     UNION
     SELECT member_id AS "memberId" FROM enrollment_agreement_operation_locks
     WHERE member_id IN (${Prisma.join([primaryId, secondaryId])})

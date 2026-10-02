@@ -32,7 +32,7 @@ function fakeDb(user: { email: string; deletedAt: Date | null } | null) {
     profile: { updateMany: vi.fn(async (_args: Call) => ({ count: 1 })) },
     $queryRaw: vi.fn(async (sql: TemplateStringsArray): Promise<Array<{ present: boolean } | { id: string }>> =>
       sql.join('?').includes('FOR UPDATE') ? [{ id: USER_ID }] : [{ present: false }]),
-    enrollmentAgreementSubmission: { deleteMany: vi.fn(async () => ({ count: 2 })) },
+    enrollmentAgreementSubmission: { updateMany: vi.fn(async () => ({ count: 2 })) },
     auditLog: { create: vi.fn(async (_args: Call) => ({})) },
   };
   const $transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx));
@@ -73,22 +73,22 @@ describe('anonymizeMember', () => {
     expect(parseDeletedEmail(String(userWrite.data.email))).toBe(ORIGINAL_EMAIL);
 
     expect(tx.profile.updateMany).toHaveBeenCalledWith({ where: { userId: USER_ID }, data: ANONYMIZED_PROFILE_DATA });
-    expect(tx.enrollmentAgreementSubmission.deleteMany).not.toHaveBeenCalled();
+    expect(tx.enrollmentAgreementSubmission.updateMany).not.toHaveBeenCalled();
   });
 
-  it('erases every agreement revision during soft deletion when the table exists', async () => {
+  it.each(['member_self_delete', 'gdpr_account_delete'] as const)('retains every agreement revision during %s', async (reason) => {
     const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
     tx.$queryRaw.mockResolvedValue([{ present: true }]);
-    await anonymizeMember(USER_ID, { reason: 'member_self_delete', now: NOW }, db);
-    expect(tx.enrollmentAgreementSubmission.deleteMany).toHaveBeenCalledWith({ where: { memberId: USER_ID } });
-    expect(tx.enrollmentAgreementSubmission.deleteMany.mock.invocationCallOrder[0])
+    await anonymizeMember(USER_ID, { reason, now: NOW }, db);
+    expect(tx.enrollmentAgreementSubmission.updateMany).toHaveBeenCalledWith({ where: { memberId: USER_ID }, data: { memberId: null } });
+    expect(tx.enrollmentAgreementSubmission.updateMany.mock.invocationCallOrder[0])
       .toBeLessThan(tx.auditLog.create.mock.invocationCallOrder[0]);
   });
 
-  it('propagates agreement metadata deletion failure without writing a success audit', async () => {
+  it('propagates agreement retention failure without writing a success audit', async () => {
     const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
     tx.$queryRaw.mockResolvedValue([{ present: true }]);
-    tx.enrollmentAgreementSubmission.deleteMany.mockRejectedValue(new Error('agreement cleanup failed'));
+    tx.enrollmentAgreementSubmission.updateMany.mockRejectedValue(new Error('agreement cleanup failed'));
     await expect(anonymizeMember(USER_ID, { reason: 'member_self_delete', now: NOW }, db))
       .rejects.toThrow('agreement cleanup failed');
     expect(tx.auditLog.create).not.toHaveBeenCalled();
@@ -164,7 +164,7 @@ describe('anonymizeMember', () => {
     expect(tx.user.findUnique).not.toHaveBeenCalled();
     expect(tx.user.update).not.toHaveBeenCalled();
     expect(tx.profile.updateMany).not.toHaveBeenCalled();
-    expect(tx.enrollmentAgreementSubmission.deleteMany).not.toHaveBeenCalled();
+    expect(tx.enrollmentAgreementSubmission.updateMany).not.toHaveBeenCalled();
     expect(tx.auditLog.create).not.toHaveBeenCalled();
   });
   it('refuses retention fallback when a row lock cannot span the anonymization writes', async () => {

@@ -248,7 +248,7 @@ export const USER_FK_NOT_REPOINTED: Record<string, string> = {
   'billingDesignatedSigner.userId': 'the designated billing signer principal (a staff identity set by an ops-reviewed change, not member data)',
 
   // --- deliberately blocked: executeMemberMerge checks both accounts before writes ---
-  'enrollmentAgreementSubmission.memberId': 'agreement ownership is immutable; enrollmentAgreementMergeConflict refuses either account having revisions',
+  'enrollmentAgreementSubmission.memberId': 'nullable live link only; immutable subject/actor IDs are not User FKs; enrollmentAgreementMergeConflict refuses either historical subject having revisions',
   'enrollmentAgreementOperationLock.memberId': 'upload/erasure fences cannot be transferred; enrollmentAgreementMergeConflict refuses either account having a fence',
 
   // --- member-owned and NOT moved today: gaps, listed so they are visible ---

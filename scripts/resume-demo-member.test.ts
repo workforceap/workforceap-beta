@@ -159,6 +159,21 @@ test('[mock] cleanup removes only the recorded member, its own objects, DB row a
   assert.ok(objects.has(`member-resumes/${OTHER_ID}/resume-original.pdf`) && objects.has(`member-files/cert-files/${OTHER_ID}/proof.pdf`));
 });
 
+test('[mock] successful fixture cleanup retains agreement PDFs while removing the account and ordinary files', async () => {
+  const { deps, users, authUsers, objects, erasureClaims } = fakeDeps();
+  const state = await createFixture(TARGET, syntheticIdentity('43', '1'), 'p', deps, () => {});
+  const agreement = 'member-files/enrollment-agreements/' + NEW_ID + '/agreement.pdf';
+  const resume = 'member-resumes/' + NEW_ID + '/resume-original.pdf';
+  objects.add(agreement);
+  objects.add(resume);
+  await cleanupFixture(TARGET, state, deps);
+  assert.deepEqual(erasureClaims, [NEW_ID]);
+  assert.equal(users.has(NEW_ID), false);
+  assert.equal(authUsers.has(NEW_ID), false);
+  assert.equal(objects.has(resume), false);
+  assert.equal(objects.has(agreement), true);
+});
+
 test('[mock] live cleanup wires the real erasure fence to the validated DEMO client, including DATABASE_URL fallback', async () => {
   const env: NodeJS.ProcessEnv = {
     NODE_ENV: 'test', PORTAL_QA_TARGET: 'demo',

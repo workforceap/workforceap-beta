@@ -27,13 +27,15 @@ vi.mock('@/lib/enrollmentAgreements/service', () => ({
 vi.mock('@/lib/rate-limit', () => ({ checkResumeUploadRateLimit: async () => ({ success: true }) }));
 vi.mock('@/lib/enrollmentAgreements/pdf', () => ({ readAgreementPdf: vi.fn() }));
 
-import { requireAgreementActor, requireAgreementMemberAccess } from '@/lib/enrollmentAgreements/access';
+import { requireAgreementActor, requireAgreementArchiveActor, requireAgreementMemberAccess } from '@/lib/enrollmentAgreements/access';
 import { EnrollmentAgreementError } from '@/lib/enrollmentAgreements/errors';
 import { GET, POST } from '@/app/api/enrollment-agreements/route';
 import { GET as COVERAGE } from '@/app/api/enrollment-agreements/coverage/route';
 import { GET as TEMPLATE } from '@/app/api/enrollment-agreements/template/route';
 import { GET as DOWNLOAD } from '@/app/api/enrollment-agreements/[id]/download/route';
 import { POST as REVIEW } from '@/app/api/enrollment-agreements/[id]/review/route';
+import { GET as ARCHIVE } from '@/app/api/enrollment-agreements/archive/route';
+import { GET as ARCHIVE_DOWNLOAD } from '@/app/api/enrollment-agreements/archive/[id]/download/route';
 
 const MEMBER = '11111111-1111-4111-8111-111111111111';
 const STAFF = '22222222-2222-4222-8222-222222222222';
@@ -49,6 +51,8 @@ const handlers = [
   ['template', () => TEMPLATE(request('/template'))],
   ['download', () => DOWNLOAD(request(`/${OTHER}/download`), params)],
   ['review', () => REVIEW(request(`/${OTHER}/review`, 'POST'), params)],
+  ['archive', () => ARCHIVE(request('/archive'))],
+  ['archive download', () => ARCHIVE_DOWNLOAD(request(`/archive/${OTHER}/download`), params)],
 ] as const;
 
 beforeEach(() => {
@@ -69,6 +73,19 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe('enrollment agreement role-aware staff MFA', () => {
+  it('archive access stays authenticated and MFA-gated with collection disabled', async () => {
+    vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'false');
+    await expect(requireAgreementArchiveActor()).rejects.toMatchObject({ status: 403, code: 'MFA_REQUIRED' });
+    mocks.assurance.mockResolvedValue({ data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null });
+    expect(await requireAgreementArchiveActor()).toMatchObject({ id: STAFF, role: 'admin', organizationId: ORG });
+    mocks.user.mockResolvedValue(null);
+    await expect(requireAgreementArchiveActor()).rejects.toMatchObject({ status: 401 });
+  });
+  it.each(['member', 'counselor', 'case_manager', 'employer', 'partner'])('archive denies %s even with valid authentication and staff MFA', async (role) => {
+    mocks.role.mockResolvedValue(role);
+    mocks.assurance.mockResolvedValue({ data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null });
+    await expect(requireAgreementArchiveActor()).rejects.toMatchObject({ status: 403, code: 'FORBIDDEN' });
+  });
   it.each(['admin', 'super_admin', 'counselor', 'case_manager'])('rejects AAL1 %s on every API variant before data/file work', async (role) => {
     mocks.role.mockResolvedValue(role);
     for (const [name, run] of handlers) {

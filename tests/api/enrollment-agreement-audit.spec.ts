@@ -14,7 +14,7 @@ import { recordAgreementAudit } from '@/lib/enrollmentAgreements/audit';
 import { GET } from '@/app/api/enrollment-agreements/[id]/download/route';
 
 const actor = { id: 'admin', role: 'admin', organizationId: 'organization' };
-const subject = { id: 'revision', memberId: 'member', storagePath: 'private/path', reviewNote: 'private note' };
+const subject = { id: 'revision', memberId: 'member', subjectMemberId: 'member', storagePath: 'private/path', reviewNote: 'private note' };
 const bytes = new Uint8Array(Buffer.from('%PDF synthetic private document'));
 const request = () => GET(new Request('https://portal.test/api/enrollment-agreements/revision/download'), { params: Promise.resolve({ id: 'revision' }) });
 

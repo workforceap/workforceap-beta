@@ -83,7 +83,8 @@ export default function DeleteAccountButton() {
             <h3 id="delete-account-title" style={{ marginBottom: '0.75rem' }}>Delete account permanently?</h3>
             <p id="delete-account-desc" style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
               This deactivates your WorkforceAP member account. You may lose access to training progress, messages, and
-              applications tied to this login. This cannot be undone from the app. Type{' '}
+              applications tied to this login. Personal files are erased, but enrollment agreements and their review history
+              are retained as organization records, including agreements awaiting review. This cannot be undone from the app. Type{' '}
               <strong style={{ color: 'var(--color-primary)' }}>DELETE</strong> in the box below to confirm.
             </p>
             <label htmlFor="delete-confirm-input" className="wa-sr-only">Type DELETE to confirm</label>

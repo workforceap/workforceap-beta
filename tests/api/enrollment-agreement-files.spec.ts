@@ -154,7 +154,7 @@ describe('private immutable storage and downloads', () => {
   });
   it('checks ownership path, byte count and hash before serving original bytes', async () => {
     const bytes = new Uint8Array([1, 2, 3]);
-    const row = { id: 'id', memberId: 'member', storagePath: agreementStoragePath('member', 'id'), sha256: agreementSha256(bytes), sizeBytes: 3 };
+    const row = { id: 'id', memberId: null, subjectMemberId: 'member', storagePath: agreementStoragePath('member', 'id'), sha256: agreementSha256(bytes), sizeBytes: 3 };
     storage.download.mockResolvedValue({ data: new Blob([bytes]), error: null });
     expect(await readStoredAgreementPdf(row)).toEqual(bytes);
     await expect(readStoredAgreementPdf({ ...row, storagePath: 'enrollment-agreements/other/id.pdf' })).rejects.toMatchObject({ code: 'DOCUMENT_UNAVAILABLE' });
