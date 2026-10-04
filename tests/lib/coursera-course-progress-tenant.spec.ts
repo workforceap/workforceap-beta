@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   ensureTenantKeys: vi.fn(),
-  rawFindFirst: vi.fn(),
+  rawFindMany: vi.fn(),
   queryRaw: vi.fn(),
   executeRaw: vi.fn(),
   transaction: vi.fn(),
@@ -18,6 +18,7 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 
 import { upsertCourseraCourseProgress } from '@/lib/coursera/upsertCourseraCourseProgress';
+import { EXACT_EMAIL_CANDIDATE_LIMIT } from '@/lib/db/exactEmailMatch';
 
 const input = {
   externalEmail: 'Learner@Example.com',
@@ -34,7 +35,7 @@ describe('upsertCourseraCourseProgress tenant identity', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.ensureTenantKeys.mockResolvedValue(undefined);
-    mocks.rawFindFirst.mockResolvedValue(null);
+    mocks.rawFindMany.mockResolvedValue([]);
     mocks.queryRaw
       .mockReset()
       .mockResolvedValueOnce([]) // no existing linked users
@@ -44,7 +45,7 @@ describe('upsertCourseraCourseProgress tenant identity', () => {
     mocks.executeRaw.mockResolvedValue(1);
     mocks.transaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) =>
       callback({
-        courseraCourseProgress: { findFirst: mocks.rawFindFirst },
+        courseraCourseProgress: { findMany: mocks.rawFindMany },
         $queryRaw: mocks.queryRaw,
         $executeRaw: mocks.executeRaw,
       }),
@@ -61,7 +62,7 @@ describe('upsertCourseraCourseProgress tenant identity', () => {
     await expect(upsertCourseraCourseProgress(input)).rejects.toThrow(
       'linked-user-outside-organization',
     );
-    expect(mocks.rawFindFirst).not.toHaveBeenCalled();
+    expect(mocks.rawFindMany).not.toHaveBeenCalled();
     expect(
       mocks.executeRaw.mock.calls.filter(
         ([statement]) => !(statement as { sql?: string }).sql?.includes('pg_advisory_xact_lock'),
@@ -72,13 +73,14 @@ describe('upsertCourseraCourseProgress tenant identity', () => {
   it('looks up and conflicts on the organization-local raw identity', async () => {
     await upsertCourseraCourseProgress(input);
 
-    expect(mocks.rawFindFirst).toHaveBeenCalledWith(
+    expect(mocks.rawFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           organizationId: 'org-1',
           externalEmail: { equals: 'learner@example.com', mode: 'insensitive' },
           courseraCourseId: 'course-1',
         },
+        take: EXACT_EMAIL_CANDIDATE_LIMIT,
       }),
     );
     const lockStatement = mocks.executeRaw.mock.calls[0]?.[0] as {
@@ -152,7 +154,7 @@ describe('upsertCourseraCourseProgress tenant identity', () => {
         ([statement]) => !(statement as { sql?: string }).sql?.includes('pg_advisory_xact_lock'),
       ),
     ).toHaveLength(0);
-    expect(mocks.rawFindFirst).not.toHaveBeenCalled();
+    expect(mocks.rawFindMany).not.toHaveBeenCalled();
   });
 
   it('rejects a concurrent attempt to attach the same tenant row to another user', async () => {
@@ -166,5 +168,93 @@ describe('upsertCourseraCourseProgress tenant identity', () => {
     await expect(upsertCourseraCourseProgress(input)).rejects.toThrow(
       'concurrent linked row',
     );
+  });
+
+  it('does not merge unmatched B4B progress onto an ILIKE neighbor email', async () => {
+    mocks.queryRaw
+      .mockReset()
+      .mockResolvedValueOnce([]) // no existing linked users
+      .mockResolvedValueOnce([]) // no legacy ownership conflict
+      .mockResolvedValueOnce([{ userId: null }]); // tenant upsert
+    mocks.rawFindMany.mockResolvedValue([
+      {
+        externalEmail: 'mrjohnson@example.com',
+        userId: 'neighbor-user',
+        organizationId: 'org-1',
+        overallProgress: 90,
+        isCompleted: true,
+        enrollmentTime: new Date('2026-01-01T00:00:00.000Z'),
+        lastActivityTime: new Date('2026-01-02T00:00:00.000Z'),
+        completionTime: new Date('2026-01-02T00:00:00.000Z'),
+      },
+    ]);
+
+    await upsertCourseraCourseProgress({
+      ...input,
+      externalEmail: 'm_johnson@example.com',
+      userId: null,
+      overallProgress: 10,
+      isCompleted: false,
+    });
+
+    const statement = mocks.queryRaw.mock.calls[2]?.[0] as {
+      sql?: string;
+      values?: unknown[];
+    };
+    expect(statement.values).toContain('m_johnson@example.com');
+    expect(statement.values).not.toContain('mrjohnson@example.com');
+    expect(statement.values).not.toContain('neighbor-user');
+  });
+
+  it('does not treat an ILIKE neighbor linked user as an identity conflict', async () => {
+    mocks.rawFindMany.mockResolvedValue([
+      {
+        externalEmail: 'mrjohnson@example.com',
+        userId: 'neighbor-user',
+        organizationId: 'org-1',
+        overallProgress: 90,
+        isCompleted: true,
+        enrollmentTime: new Date('2026-01-01T00:00:00.000Z'),
+        lastActivityTime: new Date('2026-01-02T00:00:00.000Z'),
+        completionTime: new Date('2026-01-02T00:00:00.000Z'),
+      },
+    ]);
+
+    await expect(
+      upsertCourseraCourseProgress({
+        ...input,
+        externalEmail: 'm_johnson@example.com',
+      }),
+    ).resolves.toBeUndefined();
+
+    const statement = mocks.queryRaw.mock.calls[3]?.[0] as {
+      values?: unknown[];
+    };
+    expect(statement.values).toContain('m_johnson@example.com');
+    expect(statement.values).toContain('user-1');
+    expect(statement.values).not.toContain('neighbor-user');
+  });
+
+  it('still reuses the exact existing row when only case differs', async () => {
+    mocks.rawFindMany.mockResolvedValue([
+      {
+        externalEmail: 'Learner@Example.com',
+        userId: 'user-1',
+        organizationId: 'org-1',
+        overallProgress: 40,
+        isCompleted: false,
+        enrollmentTime: new Date('2026-01-01T00:00:00.000Z'),
+        lastActivityTime: new Date('2026-01-02T00:00:00.000Z'),
+        completionTime: null,
+      },
+    ]);
+
+    await upsertCourseraCourseProgress(input);
+
+    const statement = mocks.queryRaw.mock.calls[3]?.[0] as {
+      values?: unknown[];
+    };
+    expect(statement.values).toContain('Learner@Example.com');
+    expect(statement.values).toContain('user-1');
   });
 });
