@@ -28,20 +28,17 @@ import {
   loadPortalAuditEnvFile,
   validateDedicatedPortalCredentials,
 } from './lib/portal-audit-auth.mjs';
-import { canonicalPathname, classifyPortalAuditRow } from './lib/portal-audit-classify.mjs';
+import { canonicalPathname } from './lib/portal-audit-classify.mjs';
 import {
-  isAbortedReadRequest,
   isVerifiedReadOnlyDestination,
   isVercelPreviewToolbarCspError,
-  requestFailureCategory,
   safeToolbarNavigationHeaders,
   sanitizedRequestPath,
 } from './lib/portal-audit-environment.mjs';
-import { recordPendingDataRequestTimeout } from './lib/portal-audit-pending.mjs';
 import {
-  isExpectedGatedApiBody,
-  isGatedApiResponseCandidate,
-} from './lib/portal-audit-gated-api.mjs';
+  classifyCollectedPortalAuditRow,
+  trackSameOriginDataRequests,
+} from './lib/portal-audit-data-requests.mjs';
 import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
@@ -59,13 +56,10 @@ import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
   redirectDestinationFailureReasons,
-  dataRequestQuietWindowSatisfied,
   evaluateAccessProbe,
   failedAccessProbeDiagnostics,
   fixtureConditionMatches,
-  isVerifiedDeniedRedirectWithCanceledGets,
   isBlockedAuditTelemetryRequest,
-  isAllowedReadOnlyNonGetRequest,
   navigationTargetMatches,
   missingRedirectFixtureOutcome,
   redirectTargetMatches,
@@ -550,7 +544,7 @@ function uniqueDiagnostics(values) {
   return [...new Set(values.map(sanitizePortalDiagnostic).filter(Boolean))].slice(0, 20);
 }
 
-function recordConsoleError(message, applicationErrors) {
+function recordConsoleError(message, dataRequests) {
   if (message.type() !== 'error') return false;
   if (isVercelPreviewToolbarCspError(message.text(), {
     mode: artifact.targetValidation.mode,
@@ -559,206 +553,8 @@ function recordConsoleError(message, applicationErrors) {
     vercelToolbarCspDiagnosticCount += 1;
     return true;
   }
-  applicationErrors.push(message.text());
+  dataRequests.recordConsoleError(message);
   return false;
-}
-
-function failedSameOriginDataResponse(response) {
-  const type = response.request().resourceType();
-  if (type !== 'fetch' && type !== 'xhr') return null;
-  if (response.status() < 400) return null;
-  try {
-    if (new URL(response.url()).origin !== trustedOrigin) return null;
-  } catch {
-    return `Same-origin data request returned HTTP ${response.status()}`;
-  }
-  return `Same-origin data request returned HTTP ${response.status()} at ${sanitizeAuditUrl(
-    response.url(),
-    allDynamicPatterns
-  )}`;
-}
-
-function isSameOriginDataRequest(request) {
-  const type = request.resourceType();
-  if (type !== 'fetch' && type !== 'xhr') return false;
-  try {
-    return new URL(request.url()).origin === trustedOrigin;
-  } catch {
-    return false;
-  }
-}
-
-function failedSameOriginDataRequest(request) {
-  if (!isSameOriginDataRequest(request)) return null;
-  let pathname = '/';
-  try {
-    pathname = new URL(request.url()).pathname;
-  } catch {
-    // The same-origin predicate already rejected unparseable URLs.
-  }
-  const method = request.method().toUpperCase();
-  if (isBlockedAuditTelemetryRequest(method, pathname)) return null;
-  if (
-    method !== 'GET' &&
-    method !== 'HEAD' &&
-    method !== 'OPTIONS' &&
-    !isAllowedReadOnlyNonGetRequest(method, pathname)
-  ) {
-    // The read-only request guard records and gates intentionally blocked
-    // writes. Avoid duplicating the same evidence as a network failure.
-    return null;
-  }
-  const category = requestFailureCategory(request.failure()?.errorText);
-  const resourceType = request.resourceType();
-  const headers = request.headers();
-  let hasRscQuery = false;
-  try {
-    hasRscQuery = new URL(request.url()).searchParams.has('_rsc');
-  } catch {
-    // The same-origin predicate already rejected unparseable URLs.
-  }
-  return {
-    message: `Same-origin data request failed (${category}) at ${sanitizeAuditUrl(
-      request.url(),
-      allDynamicPatterns
-    )}`,
-    category,
-    method,
-    resourceType,
-    path: sanitizedRequestPath(request.url(), allDynamicPatterns),
-    prefetch: 'next-router-prefetch' in headers ||
-      /\bprefetch\b/i.test(headers.purpose ?? '') ||
-      /\bprefetch\b/i.test(headers['sec-purpose'] ?? ''),
-    rsc: headers.rsc === '1' || hasRscQuery,
-  };
-}
-
-function trackSameOriginDataRequests(page) {
-  const inFlight = new Set();
-  const errors = [];
-  const pendingResponseChecks = new Set();
-  const abortedErrors = [];
-  const abortedDataRequests = [];
-  let abortedDataRequestCount = 0;
-  const pendingDataRequests = [];
-  let pendingDataRequestCount = 0;
-  let lastActivityAt = Date.now();
-
-  const handleRequest = (request) => {
-    if (!isSameOriginDataRequest(request)) return;
-    inFlight.add(request);
-    lastActivityAt = Date.now();
-  };
-  const handleResponse = (response) => {
-    const error = failedSameOriginDataResponse(response);
-    if (!error) return;
-    if (!isGatedApiResponseCandidate({ status: response.status(), url: response.url() })) {
-      errors.push(error);
-      return;
-    }
-    // A closed two-stage billing gate answers 503 by design. Confirm the body
-    // carries an allowlisted gate code before excusing it; a body that cannot
-    // be read falls back to recording the response as an error.
-    lastActivityAt = Date.now();
-    const check = (async () => {
-      let body = null;
-      try {
-        body = await response.text();
-      } catch {
-        body = null;
-      }
-      if (!isExpectedGatedApiBody(body)) errors.push(error);
-    })().catch(() => {
-      errors.push(error);
-    });
-    pendingResponseChecks.add(check);
-    check.finally(() => {
-      pendingResponseChecks.delete(check);
-      lastActivityAt = Date.now();
-    });
-  };
-  // Gate-code body reads are the only asynchronous part of response handling;
-  // every consumer of `errors` waits for settlement first, so drain them there.
-  const drainPendingResponseChecks = async () => {
-    for (let pass = 0; pass < 5 && pendingResponseChecks.size > 0; pass += 1) {
-      await Promise.allSettled([...pendingResponseChecks]);
-    }
-  };
-  const handleRequestFinished = (request) => {
-    if (!inFlight.delete(request)) return;
-    lastActivityAt = Date.now();
-  };
-  const handleRequestFailed = (request) => {
-    if (inFlight.delete(request)) lastActivityAt = Date.now();
-    const failure = failedSameOriginDataRequest(request);
-    if (!failure) return;
-    if (isAbortedReadRequest(failure)) {
-      abortedDataRequestCount += 1;
-      boundedDiagnosticPush(abortedErrors, failure.message);
-      boundedDiagnosticPush(abortedDataRequests, {
-        method: failure.method,
-        path: failure.path,
-        resourceType: failure.resourceType,
-        prefetch: failure.prefetch,
-        rsc: failure.rsc,
-      });
-    } else {
-      errors.push(failure.message);
-    }
-  };
-
-  page.on('request', handleRequest);
-  page.on('response', handleResponse);
-  page.on('requestfinished', handleRequestFinished);
-  page.on('requestfailed', handleRequestFailed);
-
-  return {
-    errors,
-    abortedErrors,
-    abortedDataRequests,
-    pendingDataRequests,
-    get abortedDataRequestCount() {
-      return abortedDataRequestCount;
-    },
-    get pendingDataRequestCount() {
-      return pendingDataRequestCount;
-    },
-    async waitForSettlement(timeoutMs) {
-      const boundedTimeout = Math.max(1, Math.min(timeoutMs, 5_000));
-      const waitStartedAt = Date.now();
-      const settleDeadline = Date.now() + boundedTimeout;
-      const quietWindowMs = 300;
-      while (Date.now() < settleDeadline) {
-        if (
-          dataRequestQuietWindowSatisfied({
-            inFlightCount: inFlight.size,
-            lastActivityAt,
-            waitStartedAt,
-            now: Date.now(),
-            quietWindowMs,
-          })
-        ) {
-          await drainPendingResponseChecks();
-          return;
-        }
-        await page.waitForTimeout(Math.min(50, Math.max(1, settleDeadline - Date.now())));
-      }
-      await drainPendingResponseChecks();
-      const pending = recordPendingDataRequestTimeout(
-        inFlight, errors, boundedTimeout, trustedOrigin
-      );
-      if (pending) {
-        pendingDataRequestCount = pending.count;
-        pendingDataRequests.splice(0, pendingDataRequests.length, ...pending.requests);
-      }
-    },
-    detach() {
-      page.off('request', handleRequest);
-      page.off('response', handleResponse);
-      page.off('requestfinished', handleRequestFinished);
-      page.off('requestfailed', handleRequestFailed);
-    },
-  };
 }
 
 async function auditRoute(
@@ -773,16 +569,15 @@ async function auditRoute(
   const page = await context.newPage();
   if (traceHydration) await page.addInitScript(installPortalHydrationTrace);
   const startedAt = Date.now();
-  const consoleErrors = [];
   let environmentalConsoleErrorCount = 0;
   const pageErrors = [];
   const documentResponses = [];
-  const dataRequests = trackSameOriginDataRequests(page);
+  const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns: allDynamicPatterns });
   const adminMetricsCheck = role === 'admin' && requestPath === '/admin/dashboard' && !options.accessProbe
     ? observeAdminDashboardMetrics(page, trustedOrigin, remainingTimeout(30_000), remainingTimeout(20_000))
     : null;
   const handleConsole = (message) => {
-    if (recordConsoleError(message, consoleErrors)) environmentalConsoleErrorCount += 1;
+    if (recordConsoleError(message, dataRequests)) environmentalConsoleErrorCount += 1;
   };
   const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
   const handleResponse = (response) => {
@@ -898,13 +693,8 @@ async function auditRoute(
       auditSuppressedStates: inspection.auditSuppressedStates,
       readOnlyCapabilityActive: inspection.readOnlyCapabilityActive,
       documentStatus: finalDocument?.status ?? null,
-      consoleErrors: uniqueDiagnostics(consoleErrors),
       vercelToolbarCspDiagnosticCount: environmentalConsoleErrorCount,
-      pageErrors: uniqueDiagnostics([...pageErrors, ...dataRequests.errors]),
-      abortedDataRequestCount: dataRequests.abortedDataRequestCount,
-      abortedDataRequests: dataRequests.abortedDataRequests,
-      pendingDataRequestCount: dataRequests.pendingDataRequestCount,
-      pendingDataRequests: dataRequests.pendingDataRequests,
+      pageErrors: uniqueDiagnostics(pageErrors),
       h1Count: inspection.h1Count,
       horizontalOverflowPx: inspection.horizontalOverflowPx,
       blockedWriteRequestCount,
@@ -918,31 +708,9 @@ async function auditRoute(
       unnamedInteractiveControls: inspection.unnamedInteractiveControls,
       durationMs: Date.now() - startedAt,
     };
-    const candidateRow = classifyPortalAuditRow(rowInput);
-    const exactDestinationVerified = isVerifiedReadOnlyDestination({
-      exactExpectedPath: !candidateRow.unexpectedRedirect && !candidateRow.queryVariantMismatch,
-      sameOrigin: candidateRow.originMatched,
-      documentStatus: candidateRow.documentStatus,
-      appReady: candidateRow.appReady,
-      h1Count: candidateRow.h1Count,
-      readOnlyCapabilityActive: candidateRow.readOnlyCapabilityActive,
-      errorFallbackDetected: candidateRow.routeErrorFallback || candidateRow.notFoundFallback,
-      consoleErrorCount: candidateRow.consoleErrorCount,
-      pageErrorCount: candidateRow.pageErrorCount,
-      otherFailureCount: candidateRow.failureReasons.length,
+    const row = classifyCollectedPortalAuditRow(rowInput, dataRequests, {
+      ...options, dynamicPatterns: allDynamicPatterns,
     });
-    const deniedRedirectVerified = isVerifiedDeniedRedirectWithCanceledGets(
-      candidateRow,
-      options.accessExpectation,
-      options.accessSourceHome,
-    );
-    const abortsAreDiagnostic = exactDestinationVerified || deniedRedirectVerified;
-    const row = dataRequests.abortedDataRequestCount === 0 || abortsAreDiagnostic
-      ? candidateRow
-      : classifyPortalAuditRow({
-          ...rowInput,
-          pageErrors: uniqueDiagnostics([...rowInput.pageErrors, ...dataRequests.abortedErrors]),
-        });
     if (traceHydration) {
       await logPortalHydrationTrace({
         page, enabled: traceHydration, auditMode: requestedMode,
@@ -1168,11 +936,10 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
 
       const page = await context.newPage();
       if (traceHydration) await page.addInitScript(installPortalHydrationTrace).catch(() => {});
-      const dataRequests = trackSameOriginDataRequests(page);
-      const consoleErrors = [];
+      const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns: allDynamicPatterns });
       const pageErrors = [];
       const documentResponses = [];
-      const handleConsole = (message) => recordConsoleError(message, consoleErrors);
+      const handleConsole = (message) => recordConsoleError(message, dataRequests);
       const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
       const handleResponse = (response) => {
         if (response.request().resourceType() === 'document') {
@@ -1224,7 +991,7 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           trustedOrigin,
           documentStatus: finalDocument?.status ?? null,
           inspection,
-          consoleErrorCount: consoleErrors.length,
+          consoleErrorCount: dataRequests.consoleErrors.length,
           pageErrorCount: pageErrors.length,
           dataErrorCount: dataRequests.errors.length,
           abortedDataRequestCount: dataRequests.abortedDataRequestCount,
@@ -1250,7 +1017,7 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         page.off('console', handleConsole);
         page.off('pageerror', handlePageError);
         page.off('response', handleResponse);
-        result.consoleErrors = uniqueDiagnostics(consoleErrors);
+        result.consoleErrors = uniqueDiagnostics(dataRequests.consoleErrors);
         result.pageErrors = uniqueDiagnostics(pageErrors);
         result.blockedWriteRequestCount = readOnlyGuard.blockedWriteCount(page);
         result.blockedWriteRequests = readOnlyGuard.blockedWriteRequests(page);
@@ -1340,14 +1107,13 @@ async function exerciseReadOnlyNavigation(
     suppressedSideEffectRequestCount: 0,
   };
   const page = await context.newPage();
-  const consoleErrors = [];
   let environmentalConsoleErrorCount = 0;
   const pageErrors = [];
   const documentResponses = [];
-  const dataRequests = trackSameOriginDataRequests(page);
+  const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns: allDynamicPatterns });
   let verifiedDestination = false;
   const handleConsole = (message) => {
-    if (recordConsoleError(message, consoleErrors)) environmentalConsoleErrorCount += 1;
+    if (recordConsoleError(message, dataRequests)) environmentalConsoleErrorCount += 1;
   };
   const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
   const handleResponse = (response) => {
@@ -1402,7 +1168,7 @@ async function exerciseReadOnlyNavigation(
           h1Count: sourceInspection.h1Count,
           readOnlyCapabilityActive: sourceInspection.readOnlyCapabilityActive,
           errorFallbackDetected: sourceInspection.errorFallbackDetected,
-          consoleErrorCount: uniqueDiagnostics(consoleErrors).length,
+          consoleErrorCount: uniqueDiagnostics(dataRequests.consoleErrors).length,
           pageErrorCount: uniqueDiagnostics(pageErrors).length,
           otherFailureCount: dataRequests.errors.length +
             (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
@@ -1472,7 +1238,7 @@ async function exerciseReadOnlyNavigation(
       result.failureReasons.push('document_error_status');
     }
     result.failureReasons.push(
-      ...uniqueDiagnostics(consoleErrors).map(() => 'console_error'),
+      ...uniqueDiagnostics(dataRequests.consoleErrors).map(() => 'console_error'),
       ...uniqueDiagnostics(pageErrors).map(() => 'page_error')
     );
     result.failureReasons = [...new Set(result.failureReasons)];
@@ -1488,7 +1254,7 @@ async function exerciseReadOnlyNavigation(
       h1Count: targetInspection.h1Count,
       readOnlyCapabilityActive: targetInspection.readOnlyCapabilityActive,
       errorFallbackDetected: targetInspection.errorFallbackDetected,
-      consoleErrorCount: uniqueDiagnostics(consoleErrors).length,
+      consoleErrorCount: uniqueDiagnostics(dataRequests.consoleErrors).length,
       pageErrorCount: uniqueDiagnostics(pageErrors).length,
       otherFailureCount: result.failureReasons.length + dataRequests.errors.length +
         (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
@@ -1514,7 +1280,7 @@ async function exerciseReadOnlyNavigation(
     result.blockedTelemetryRequestCount = readOnlyGuard.blockedTelemetryCount(page);
     result.suppressedSideEffectRequestCount = readOnlyGuard.suppressedSideEffectCount(page);
     result.vercelToolbarCspDiagnosticCount = environmentalConsoleErrorCount;
-    if (uniqueDiagnostics(consoleErrors).length > 0) {
+    if (uniqueDiagnostics(dataRequests.consoleErrors).length > 0) {
       result.failureReasons = [...new Set([...result.failureReasons, 'console_error'])];
       result.status = 'failed';
     }

@@ -89,3 +89,29 @@ export function isExpectedGatedApiBody(body) {
 export function isExpectedGatedApiResponse({ status, url, body }) {
   return isGatedApiResponseCandidate({ status, url }) && isExpectedGatedApiBody(body);
 }
+
+/** Chromium's resource diagnostic, never an application's general 503 message. */
+export function isGatedApiResourceConsoleError({ text, url, argumentCount }) {
+  return argumentCount === 0 && typeof text === 'string' &&
+    /^Failed to load resource: the server responded with a status of 503 \((?:Service Unavailable)?\)$/.test(text) &&
+    isGatedApiResponseCandidate({ status: GATED_API_STATUS, url });
+}
+
+/**
+ * Correlate before redaction/deduplication. URLs live only in memory, and an
+ * expected response can excuse at most one matching native resource message.
+ * Mixed, unreadable or still-pending 503 bodies at that exact URL stay strict.
+ */
+export function applicationConsoleErrors(diagnostics, responsesByUrl) {
+  const consumed = new Map();
+  return diagnostics.filter((diagnostic) => {
+    const response = responsesByUrl.get(diagnostic.url);
+    const used = consumed.get(diagnostic.url) ?? 0;
+    if (isGatedApiResourceConsoleError(diagnostic) && response &&
+        response.failed === 0 && response.pending === 0 && used < response.expected) {
+      consumed.set(diagnostic.url, used + 1);
+      return false;
+    }
+    return true;
+  }).map(({ text }) => text);
+}
