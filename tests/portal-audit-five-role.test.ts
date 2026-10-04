@@ -1445,7 +1445,7 @@ describe('portal row quality signals', () => {
     const auditRouteSource = source.slice(auditRouteStart, auditRouteEnd);
     const settlement = auditRouteSource.indexOf('await dataRequests.waitForSettlement');
     const inspection = auditRouteSource.indexOf('inspection = await inspectPortalPage', settlement);
-    const classification = auditRouteSource.indexOf('const candidateRow = classifyPortalAuditRow', inspection);
+    const classification = auditRouteSource.indexOf('const row = classifyCollectedPortalAuditRow', inspection);
     expect(auditRouteStart).toBeGreaterThanOrEqual(0);
     expect(settlement).toBeGreaterThanOrEqual(0);
     expect(inspection).toBeGreaterThan(settlement);
