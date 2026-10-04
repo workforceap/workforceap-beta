@@ -23,9 +23,9 @@
  *      high-stakes tables (selected by policy count + risk from migration
  *      20260513040000_add_rls_policies and subsequent migrations).
  *   5. Seeds 5 personas across 2 organizations.
- *   6. Wraps every assertion in `runWithGucContext()` + `prisma.$transaction`
- *      so the real Prisma GUC override (lib/db/prisma.ts) is exercised
- *      end-to-end and transaction-local GUCs persist across queries.
+ *   6. Sets all five persona GUCs explicitly using parameterized set_config
+ *      inside each bare client's transaction, before the assertion query.
+ *      This tests shadow policies, not the production Prisma middleware.
  *   7. Counts pass/fail per persona-test pair and prints a markdown
  *      summary suitable for pasting into a PR or runbook.
  *
@@ -40,12 +40,12 @@
 import '../../tests/migrations/placement-survey-sent-state.mjs';
 
 import { execSync } from 'node:child_process';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Prisma } from '@prisma/client';
 import {
-  runWithGucContext,
   type GucContext,
   type RlsRole,
 } from '../../lib/db/gucContext';
+import { isForceRlsDenial, runWithForceRlsContext } from './force-rls-context';
 
 // ----------------------------------------------------------------------
 // Safety: never touch production
@@ -210,16 +210,12 @@ async function assertCount(
   persona: string,
   description: string,
   ctx: GucContext,
-  query: (client: PrismaClient) => Promise<number>,
+  query: (client: Prisma.TransactionClient) => Promise<number>,
   expected: { eq?: number; gte?: number; lte?: number },
   client: PrismaClient,
 ): Promise<void> {
   try {
-    // Wrap in $transaction so GUCs are set inside the transaction boundary
-    // where SET LOCAL is visible to all queries (including RLS policies).
-    const actual = await runWithGucContext(ctx, () =>
-      client.$transaction(async (tx) => query(tx as unknown as PrismaClient)),
-    );
+    const actual = await runWithForceRlsContext(client, ctx, query);
     let ok = true;
     if (expected.eq !== undefined && actual !== expected.eq) ok = false;
     if (expected.gte !== undefined && actual < expected.gte) ok = false;
@@ -248,13 +244,15 @@ async function assertThrows(
   persona: string,
   description: string,
   ctx: GucContext,
-  query: (client: PrismaClient) => Promise<unknown>,
+  query: (client: Prisma.TransactionClient) => Promise<unknown>,
   client: PrismaClient,
 ): Promise<void> {
+  let operationStarted = false;
   try {
-    await runWithGucContext(ctx, () =>
-      client.$transaction(async (tx) => query(tx as unknown as PrismaClient)),
-    );
+    await runWithForceRlsContext(client, ctx, async (tx) => {
+      operationStarted = true;
+      return query(tx);
+    });
     results.push({
       persona,
       description,
@@ -262,7 +260,16 @@ async function assertThrows(
       error: 'expected operation to be denied under FORCE RLS, but it succeeded',
     });
   } catch (err) {
-    results.push({ persona, description, passed: true });
+    const denied = operationStarted && isForceRlsDenial(err);
+    results.push({
+      persona,
+      description,
+      passed: denied,
+      ...(denied ? {} : {
+        error: 'expected a verified PostgreSQL RLS denial; got ' +
+          (err instanceof Error ? err.message : String(err)),
+      }),
+    });
   }
 }
 
@@ -270,13 +277,11 @@ async function assertOk(
   persona: string,
   description: string,
   ctx: GucContext,
-  query: (client: PrismaClient) => Promise<unknown>,
+  query: (client: Prisma.TransactionClient) => Promise<unknown>,
   client: PrismaClient,
 ): Promise<void> {
   try {
-    await runWithGucContext(ctx, () =>
-      client.$transaction(async (tx) => query(tx as unknown as PrismaClient)),
-    );
+    await runWithForceRlsContext(client, ctx, query);
     results.push({ persona, description, passed: true });
   } catch (err) {
     results.push({
@@ -1092,7 +1097,8 @@ async function main(): Promise<number> {
   lines.push('');
   lines.push('### v3 fixes (from v2 false failures)');
   lines.push('- **BYPASSRLS fix**: The harness now creates a dedicated `rls_test` role with `NOBYPASSRLS` and reconnects as it for all assertions. The v2 harness connected as `postgres` superuser which has `BYPASSRLS`, silently defeating FORCE RLS and producing 13 false positives.');
-  lines.push('- **Transaction wrapper**: All assertions now wrap queries in `prisma.$transaction()` so GUC `SET LOCAL` values persist across the transaction boundary where RLS policies can read them.');
+  lines.push('- **Explicit transaction context**: The bare rehearsal client sets all five persona GUCs with parameterized transaction-local `set_config` before every assertion. AsyncLocalStorage alone does not install the production Prisma override.');
+  lines.push('- **Verified write denials**: A rejected mutation passes only for an actual PostgreSQL RLS diagnostic; setup, schema, connection, unique and ordinary GRANT failures remain failures.');
   lines.push('- **Recursion fix migration**: Added `20260616050000_fix_force_rls_recursion_is_admin` to the applied migration list.');
   lines.push('');
   lines.push('### What this harness proves');
