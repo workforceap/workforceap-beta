@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { profilePhotoPrefixForUser } from '@/lib/portal/memberProfilePhoto';
+import { claimEnrollmentAgreementErasure } from '@/lib/enrollmentAgreements/operationLock';
 
 export const MEMBER_RESUME_BUCKET = 'member-resumes';
 export const MEMBER_FILES_BUCKET = 'member-files';
@@ -8,8 +9,9 @@ export const MEMBER_FILES_BUCKET = 'member-files';
  * Prefixes a member's own uploads live under. Resume originals/enhanced
  * text and voice-interview recordings sit at `{userId}/…` in
  * `member-resumes`. Certificate proofs sit at `cert-files/{userId}/…` and
- * profile photos at `profile-photos/{userId}/…` in `member-files`. Employer
- * logos and org branding are not member PII and are not deleted here.
+ * profile photos at `profile-photos/{userId}/…` in `member-files`. Enrollment
+ * agreements are retained records and are never enumerated or deleted here.
+ * Employer logos and org branding are also outside this deletion scope.
  */
 export const MEMBER_STORAGE_PREFIXES = [
   { bucket: MEMBER_RESUME_BUCKET, prefixFor: (userId: string) => userId },
@@ -149,10 +151,10 @@ async function removePaths(
 }
 
 /**
- * Delete every object a member uploaded to `member-resumes` /
- * `member-files`. Listing prefixes catches leftovers after columns are
- * nulled. Extra known paths (resume columns, cert proofs) are a safety
- * net for objects that listing might miss.
+ * Delete ordinary member uploads, excluding retained enrollment agreements.
+ * Listing approved prefixes catches leftovers after columns are nulled.
+ * Extra known paths (resume columns, cert proofs) obey the same allowlist;
+ * they cannot opt retained agreement PDFs into account deletion.
  *
  * Fail-closed: any list/remove error other than "not found" is a failure.
  * Callers must not claim the account was erased when `ok` is false.
@@ -162,10 +164,27 @@ export async function deleteUserStorageObjects(
   options?: {
     supabaseAdmin?: MemberStorageAdmin;
     extraPaths?: MemberStorageObject[];
+    /** Dependency injection for tests; production always reserves the DB fence. */
+    claimAgreementErasure?: (memberId: string) => Promise<void>;
   },
 ): Promise<DeleteUserStorageResult> {
   if (!isSafeUserId(userId)) {
     return { ok: false, error: 'Invalid user id for storage deletion', deleted: [] };
+  }
+
+  // Reserve account deletion before listing ordinary member files. Uploads
+  // claim the same persistent fence before staging bytes, so the account cannot
+  // disappear during an in-flight agreement upload. Agreements themselves stay
+  // retained. Existing erasure claims are retryable; uncertain uploads or
+  // restores block deletion without a TTL or automatic fence release.
+  try {
+    await (options?.claimAgreementErasure ?? claimEnrollmentAgreementErasure)(userId);
+  } catch {
+    return {
+      ok: false,
+      error: 'Account deletion could not be reserved. Retry after any document operation finishes.',
+      deleted: [],
+    };
   }
 
   let admin: MemberStorageAdmin;

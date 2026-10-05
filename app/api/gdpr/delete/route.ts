@@ -114,15 +114,16 @@ export const POST = withApiGuc(async (request: Request) => {
     console.error('[gdpr/delete] Supabase auth delete failed:', deleteAuthError);
     return NextResponse.json(
       {
-        error: 'Account data was anonymized, but auth deletion failed. Please contact support to complete account deletion.',
+        error: 'Ordinary account data was anonymized; enrollment agreements and their review evidence are retained. Sign-in deletion failed. Please contact support to complete account deletion.',
       },
       { status: 500 },
     );
   }
 
-  // The actor snapshot is pinned: `users.email` is now the recoverable
-  // deleted marker (which embeds the original address for the 30-day restore
-  // window), and letting auditLog look the actor up would copy it into the
+  // The actor snapshot is pinned: `users.email` is now a deleted marker
+  // embedding the original address during retention, not a restore guarantee.
+  // The erasure fence blocks standard restoration when installed; letting
+  // auditLog look the actor up would also copy the original address into the
   // 3-year `actor_email_snapshot` — the leak WAP-169 exists to close.
   auditLog({
     actorUserId: userId,
@@ -135,7 +136,7 @@ export const POST = withApiGuc(async (request: Request) => {
   logAuditEvent({ user: { id: userId, role: 'member' }, verb: 'deleted', object: { type: 'User', id: userId }, result: { success: true } }).catch(() => {});
   return NextResponse.json({
     ok: true,
-    message: 'Your account has been deleted. Personal data has been anonymized and all sessions revoked.',
+    message: 'Your account has been deleted. Ordinary account data has been anonymized; enrollment agreements and their review evidence are retained.',
   });
 
   } catch (error) {

@@ -1,0 +1,22 @@
+.card, .stack { display: grid; gap: 1rem; min-width: 0; }
+.card { padding: clamp(1rem, 3vw, 1.5rem); }
+.card p { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; justify-content: space-between; }
+.title { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.subtitle { margin: 0; font-size: var(--wa-type-body); }
+.muted { color: var(--wa-muted); font-size: var(--wa-type-meta); }
+.link { display: inline-flex; align-items: center; min-height: 48px; text-decoration: underline; color: var(--wa-text); overflow-wrap: anywhere; }
+.error { padding: 1rem; border: 1px solid var(--wa-border); border-radius: var(--wa-radius); display: grid; gap: .5rem; }
+.notice { font-weight: 600; }
+.current, .stack { border-top: 1px solid var(--wa-border); padding-top: 1rem; }
+.note { white-space: pre-wrap; }
+.disclosure { cursor: pointer; min-height: 48px; display: list-item; align-content: center; }
+.history { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 1rem; }
+.historyRow { display: grid; gap: .25rem; border-top: 1px solid var(--wa-border); padding-top: 1rem; }
+.coverage { display: grid; gap: 1rem; }
+.counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin: 0; }
+.counts > div { padding: 1rem; border: 1px solid var(--wa-border); border-radius: var(--wa-radius); }
+.counts dd { font-size: 1.5rem; font-weight: 700; margin: .5rem 0 0; font-variant-numeric: tabular-nums; }
+.mobileRow { display: grid; gap: .5rem; padding: 1rem; }
+.mobileRow > span { justify-self: start; }
+.card button, .coverage button { min-height: 48px; }

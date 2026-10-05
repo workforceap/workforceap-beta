@@ -2,6 +2,9 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
 import { buildDeletedEmail } from './deletedEmail';
+import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { DELETED_ACCOUNT_RETENTION_DAYS, getCutoffDate } from '@/lib/retention/config';
 
 /**
  * WAP-169: the one anonymiser behind every member deletion path.
@@ -27,6 +30,10 @@ import { buildDeletedEmail } from './deletedEmail';
  *     actor email snapshot is pinned to NULL so `auditLog` cannot copy the
  *     address into the three-year log.
  *
+ * Enrollment agreements retain their PDFs, identity snapshots and reviews,
+ * with only the live member link detached. No agreement retention duration
+ * is derived from the account purge window.
+ *
  * `users` cascades to the member tables, `wioa_review_snapshots` and
  * `audit_logs` (actor SET NULL) survive the later hard purge, and
  * `audit_events.actor_user_id` is SET NULL since migration
@@ -46,6 +53,8 @@ export type AnonymizeMemberOptions = {
    */
   actorUserId?: string | null;
   now?: Date;
+  /** Recheck the cron's original eligibility under a row lock before scrubbing. */
+  deletedBefore?: Date;
 };
 
 export type AnonymizeMemberResult = {
@@ -124,6 +133,17 @@ export async function anonymizeMember(
   const selfActor = actorUserId === userId;
 
   return db.$transaction(async (tx) => {
+    if (options.reason === 'retention_purge_blocked') {
+      if (!interactiveTransactionsGuaranteed()) throw new Error('Retention anonymization requires an interactive transaction.');
+      const cutoff = options.deletedBefore ?? getCutoffDate(DELETED_ACCOUNT_RETENTION_DAYS);
+      const eligible = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM users WHERE id = ${userId} AND deleted_at < ${cutoff}::timestamp FOR UPDATE
+      `;
+      // A restore, a recent suspension, or a concurrent purge is not authority
+      // to anonymize a user selected by an earlier retention query.
+      if (eligible.length === 0) return null;
+      if (eligible.length !== 1) throw new Error('Retention account eligibility could not be confirmed.');
+    }
     const existing = await tx.user.findUnique({
       where: { id: userId },
       select: { email: true, deletedAt: true },
@@ -154,6 +174,10 @@ export async function anonymizeMember(
       where: { userId },
       data: ANONYMIZED_PROFILE_DATA,
     });
+
+    // Agreements are retained records: keep every PDF, review and identity
+    // snapshot, but detach them from the anonymized live account.
+    await retainEnrollmentAgreementData(userId, tx);
 
     await auditLog(
       {

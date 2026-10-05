@@ -5,6 +5,9 @@ import {
   type EmailFailureSnapshotClient,
 } from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
+import { claimEnrollmentAgreementErasure } from '@/lib/enrollmentAgreements/operationLock';
+import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -285,7 +288,7 @@ export async function cleanupUnmatchedCourseraXapiEvents(): Promise<CleanupResul
   return { model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: totalDeleted, batchCount };
 }
 
-/** A soft-deleted account the purge could not remove, and the constraint that stopped it. */
+/** A soft-deleted account the purge could not remove, and its constraint or safety blocker. */
 export type BlockedAccount = {
   id: string;
   constraint: string;
@@ -311,7 +314,11 @@ const SELF_SERVICE_AUDIT_ACTOR_ROLE = 'member';
  */
 export function foreignKeyConstraintName(err: unknown): string | null {
   if (!err || typeof err !== 'object') return null;
-  const { code, meta } = err as { code?: unknown; meta?: { field_name?: unknown; constraint?: unknown } };
+  const { code, meta } = err as { code?: unknown; meta?: { field_name?: unknown; constraint?: unknown; code?: unknown; message?: unknown } };
+  if (code === 'P2010' && meta?.code === '23503') {
+    // Raw SQL preserves PostgreSQL's SQLSTATE inside Prisma's query error.
+    return typeof meta.message === 'string' ? /constraint "([\w]+)"/.exec(meta.message)?.[1] ?? 'unknown' : 'unknown';
+  }
   if (code !== 'P2003') return null;
   const raw = meta?.field_name ?? meta?.constraint;
   if (typeof raw === 'string' && raw.trim()) return raw.replace(/\s*\(index\)\s*$/, '').trim();
@@ -320,11 +327,83 @@ export function foreignKeyConstraintName(err: unknown): string | null {
 }
 
 /**
+ * Retain agreement PDFs and all revisions when the live account is purged.
+ * The persistent deletion fence rejects active/uncertain uploads and restores,
+ * retries deletion idempotently, and stays until the user delete succeeds. Only
+ * ordinary member files are erased; no fence is unlocked here. Existing
+ * pre-rollout accounts keep their old path.
+ */
+async function retainAgreementsBeforeAccountPurge(memberId: string, cutoff: Date): Promise<void> {
+  const schema = await prisma.$transaction((tx) => tx.$queryRaw<Array<{
+    submissions: boolean;
+    locks: boolean;
+  }>>`
+    SELECT to_regclass('public.enrollment_agreement_submissions') IS NOT NULL AS submissions,
+      to_regclass('public.enrollment_agreement_operation_locks') IS NOT NULL AS locks
+  `);
+  if (
+    schema.length !== 1
+    || typeof schema[0].submissions !== 'boolean'
+    || typeof schema[0].locks !== 'boolean'
+  ) throw new Error('Enrollment agreement safeguards could not be checked.');
+  if (!schema[0].submissions && !schema[0].locks) return;
+  if (!schema[0].submissions || !schema[0].locks) {
+    throw new Error('Enrollment agreement safeguards are not fully installed.');
+  }
+
+  const ownership = await prisma.$transaction((tx) => tx.$queryRaw<Array<{ present: boolean }>>`
+    SELECT EXISTS (
+      SELECT 1 FROM enrollment_agreement_submissions WHERE subject_member_id = ${memberId}
+      UNION ALL
+      SELECT 1 FROM enrollment_agreement_operation_locks WHERE member_id = ${memberId}
+    ) AS present
+  `);
+  if (ownership.length !== 1 || typeof ownership[0].present !== 'boolean') {
+    throw new Error('Enrollment agreement ownership could not be checked.');
+  }
+  // Even a currently docless subject needs a fence: a restore could otherwise
+  // claim one after this ownership read and then lose its row to the cascade.
+  await claimEnrollmentAgreementErasure(memberId, prisma, { deletedBefore: cutoff });
+  if (!ownership[0].present) return;
+
+  // Do not hold a user-row transaction open around this helper: its erasure
+  // claim takes that row lock itself before any storage listing/removal.
+  const storage = await deleteUserStorageObjects(memberId, {
+    claimAgreementErasure: (id) => claimEnrollmentAgreementErasure(id, prisma, { deletedBefore: cutoff }),
+  });
+  if (!storage.ok) throw new Error('Ordinary account storage cleanup has not completed.');
+  await retainEnrollmentAgreementData(memberId, prisma);
+}
+
+/** One atomic statement, including in environments that flatten $transaction. */
+async function purgeEligibleAccount(id: string, cutoff: Date): Promise<number> {
+  const result = await prisma.$queryRaw<Array<{ deleted: number }>>`
+    WITH eligible AS (
+      SELECT id FROM users WHERE id = ${id} AND deleted_at < ${cutoff}::timestamp FOR UPDATE
+    ), removed_audit AS (
+      DELETE FROM audit_events
+      WHERE actor_user_id = ${id} AND actor_role = ${SELF_SERVICE_AUDIT_ACTOR_ROLE}
+        AND EXISTS (SELECT 1 FROM eligible)
+      RETURNING id
+    ), purged AS (
+      DELETE FROM users
+      WHERE id IN (SELECT id FROM eligible) AND deleted_at < ${cutoff}::timestamp
+        AND (SELECT count(*) FROM removed_audit) >= 0
+      RETURNING id
+    )
+    SELECT count(*)::int AS deleted FROM purged
+  `;
+  if (result.length !== 1 || ![0, 1].includes(result[0].deleted)) throw new Error('Account purge result could not be confirmed.');
+  return result[0].deleted;
+}
+
+/**
  * Hard-delete users that have been soft-deleted for longer than
  * DELETED_ACCOUNT_RETENTION_DAYS.
  *
- * This is a GDPR compliance measure: after the legal hold period,
- * the account and all cascading relations are permanently removed.
+ * After the existing account retention window, the account and cascading
+ * relations are removed. Enrollment agreements survive as detached records;
+ * their retention duration is separate and is not inferred from this window.
  *
  * Most member tables cascade from `users`, but `audit_events.actor_user_id`
  * is `ON DELETE RESTRICT` with a required actor, and every member who used
@@ -374,22 +453,27 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
 
     for (const { id } of rows) {
       try {
-        await prisma.$transaction(async (tx) => {
-          await tx.auditEvent.deleteMany({
-            where: { actorUserId: id, actorRole: SELF_SERVICE_AUDIT_ACTOR_ROLE },
-          });
-          // deleteMany (not delete) so a row removed concurrently is a no-op,
-          // not a P2025. Cascades run at the database level from here.
-          await tx.user.deleteMany({ where: { id } });
-        });
-        deleted += 1;
+        await retainAgreementsBeforeAccountPurge(id, cutoff);
+      } catch {
+        // Do not bypass an uncertain document operation or failed retention
+        // safeguard through the anonymization fallback.
+        const constraint = 'enrollment_agreement_retention_pending';
+        console.error(`[data-cleanup] Soft-deleted account ${id} requires document retention safeguards or reconciliation before purge; skipped.`);
+        blocked.push({ id, constraint });
+        continue;
+      }
+      try {
+        // Re-evaluate eligibility after remote storage work. The user lock and
+        // both deletes share one statement; a restore that won the race keeps
+        // its account and self-service audit records intact.
+        deleted += await purgeEligibleAccount(id, cutoff);
       } catch (err) {
         const constraint = foreignKeyConstraintName(err);
         if (!constraint) throw err;
         console.error(`[data-cleanup] Soft-deleted account ${id} is still referenced by ${constraint}; skipped.`);
         blocked.push({ id, constraint });
         try {
-          await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null });
+          await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null, deletedBefore: cutoff });
         } catch (anonymizeErr) {
           console.error(`[data-cleanup] Could not anonymise held account ${id}:`, anonymizeErr);
         }

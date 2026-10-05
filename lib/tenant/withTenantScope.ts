@@ -60,15 +60,18 @@ type ScopedClient = Omit<typeof prisma, '$transaction' | '$connect' | '$disconne
 /**
  * Run `fn` with a Prisma client whose tenant-scoped operations are
  * forcibly filtered/written against `orgId`.
+ * Pass the active transaction as `client` when the operation must share
+ * its row locks and commit/rollback boundary. The default is the app client.
  */
 export async function withTenantScope<T>(
   orgId: string,
   fn: (db: ScopedClient) => Promise<T>,
+  client: ScopedClient = prisma,
 ): Promise<T> {
   if (!orgId || typeof orgId !== 'string' || orgId.trim() === '') {
     throw new Error('[tenant-scope] orgId required');
   }
-  const scoped = makeScopedProxy(orgId, prisma) as unknown as ScopedClient;
+  const scoped = makeScopedProxy(orgId, client);
   return fn(scoped);
 }
 

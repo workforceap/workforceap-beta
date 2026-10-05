@@ -44,6 +44,7 @@ import {
 } from '../lib/gdpr/deleteUserStorage';
 import { assertPortalQaOrganization, readPortalQaTarget } from './lib/portal-qa-guard.cjs';
 import { probeDemoServiceKey } from './lib/demo-service-key-probe.cjs';
+import { claimEnrollmentAgreementErasure } from '../lib/enrollmentAgreements/operationLock';
 export const RESUME_QA_EMAIL = /^resume-qa-\d{1,20}-\d{1,4}@example\.com$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -132,6 +133,8 @@ export interface FixtureDeps {
   deleteAuthUser(id: string): Promise<void>;
   /** Backoff between bounded retries; injectable so tests do not wait. */
   sleep?(ms: number): Promise<void>;
+  /** Database-scoped erasure fence; omitted callers retain the storage helper's real default. */
+  claimAgreementErasure?(memberId: string): Promise<void>;
   /** Storage admin client; objects are only ever listed and removed under this member's own ID prefixes. */
   storage: MemberStorageAdmin;
 }
@@ -291,7 +294,11 @@ export async function cleanupFixture(target: PortalQaTarget, state: FixtureState
   const extraPaths = [dbUser?.resumeOriginalPath, dbUser?.resumeEnhancedPath]
     .filter((path): path is string => Boolean(path))
     .map((path) => ({ bucket: MEMBER_RESUME_BUCKET, path }));
-  const removed = await deleteUserStorageObjects(state.userId, { supabaseAdmin: deps.storage, extraPaths });
+  const removed = await deleteUserStorageObjects(state.userId, {
+    supabaseAdmin: deps.storage,
+    extraPaths,
+    claimAgreementErasure: deps.claimAgreementErasure,
+  });
   if (!removed.ok) {
     throw new Error(`Synthetic member storage cleanup failed after removing ${removed.deleted.length} object(s); database and Auth rows were kept for a retry. Manual cleanup IDs: userId=${state.userId} runId=${state.runId}.`);
   }
@@ -343,8 +350,15 @@ export function isAuthNotFound(error: { status?: number; code?: string } | null 
   return error?.code === 'user_not_found';
 }
 
-function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
-  const prisma = new PrismaClient({ datasourceUrl: target.databaseUrl });
+/** Constructor seam permits mock-only verification of the validated DEMO target. */
+export function liveDeps(
+  target: PortalQaTarget,
+  env: NodeJS.ProcessEnv,
+  { createPrismaClient = () => new PrismaClient({ datasourceUrl: target.databaseUrl }) }: {
+    createPrismaClient?: (databaseUrl: string) => PrismaClient;
+  } = {},
+) {
+  const prisma = createPrismaClient(target.databaseUrl);
   const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
@@ -404,6 +418,9 @@ function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
       if (error) throw new Error('Synthetic member Auth deletion failed.');
     },
     storage: supabase as unknown as MemberStorageAdmin,
+    // Both capability and fence SQL must use this exact guarded DEMO client,
+    // never the application's ambient/default database (including fallback envs).
+    claimAgreementErasure: (id) => claimEnrollmentAgreementErasure(id, prisma),
   };
   return { deps, close: () => prisma.$disconnect() };
 }
