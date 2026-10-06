@@ -8,9 +8,9 @@ vi.mock('@/lib/auth/roles', () => ({
 }));
 vi.mock('@/lib/auth/portalRoleSwitcher', () => ({ getPortalSwitcherRoles: vi.fn() }));
 
-import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
+import { deniedPortalHomeHref, unlinkedEmployerHref, unlinkedPartnerHref } from '@/lib/auth/portalGuards';
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
-import { getEmployerAccountForNav, getPartnerForUser } from '@/lib/auth/roles';
+import { getEmployerAccountForNav, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
 
 const role = (name: PortalSwitcherRole['role'], homeHref: string): PortalSwitcherRole => ({
   role: name,
@@ -79,5 +79,33 @@ describe('denied portal destination', () => {
     vi.mocked(getPartnerForUser).mockResolvedValue(null);
 
     expect(await deniedPortalHomeHref('user-unlinked', 'admin')).toBe('/');
+  });
+});
+
+describe('unlinked employer and partner destinations', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('sends a super admin without an employer record to the admin employer selector', async () => {
+    vi.mocked(isSuperAdmin).mockResolvedValue(true);
+    expect(await unlinkedEmployerHref('staff-1')).toBe('/admin/employers');
+    expect(isSuperAdmin).toHaveBeenCalledWith('staff-1');
+  });
+
+  it('sends everyone else without an employer record to the public employers page', async () => {
+    vi.mocked(isSuperAdmin).mockResolvedValue(false);
+    expect(await unlinkedEmployerHref('member-1')).toBe('/employers');
+  });
+
+  it('sends a super admin without a partner record to the admin partner selector', async () => {
+    vi.mocked(isSuperAdmin).mockResolvedValue(true);
+    expect(await unlinkedPartnerHref('staff-1')).toBe('/admin/partners');
+    expect(isSuperAdmin).toHaveBeenCalledWith('staff-1');
+  });
+
+  it('sends everyone else without a partner record to the public partners page', async () => {
+    vi.mocked(isSuperAdmin).mockResolvedValue(false);
+    expect(await unlinkedPartnerHref('member-1')).toBe('/partners');
   });
 });
