@@ -11,7 +11,7 @@ import { resolveAssignedCounselorContact } from '@/lib/billing/packetAccess';
 import { prisma } from '@/lib/db/prisma';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { getBillingProviderOrgId } from '../../providerOrg';
-import type { BillingStage } from '../constants';
+import { CONTENT_VERSION, CONTENT_VERSION_UPGRADE_MESSAGE, type BillingStage } from '../constants';
 import { recipientRowsForContent, type J5Content, type J6Content } from '../content';
 import { billingToday, compareIsoDates, isIsoDate } from '../dates';
 import type { CaseSummaryDto, FreezeDto, ListCasesDto, OpenCaseDto, PaymentDto } from '../dto';
@@ -156,7 +156,7 @@ export async function draftPreview<P>(ctx: TwoStageContext<P>, stage: BillingSta
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="${record.documentNumber}-DRAFT.pdf"`,
+      'Content-Disposition': `${url.searchParams.get('download') === '1' ? 'attachment' : 'inline'}; filename="${record.documentNumber}-DRAFT.pdf"`,
       'X-Billing-Version-Hash': record.contentSha256,
       'X-Billing-Blocker-Codes': codeList(blockerCodes),
       'X-Billing-Holds': codeList(prereq.holds),
@@ -185,6 +185,9 @@ export async function verifySignable<P>(
   if (record.contentSha256 !== versionHash) throw apiError(409, 'VERSION_STALE', 'The document changed since you reviewed it. Review the current version and sign again.');
   const content = recordContent<J5Content | J6Content>(record);
   const logo = await readLetterheadLogo();
+  if (content.contentVersion !== CONTENT_VERSION) throw apiError(409, 'DRAFT_STALE', CONTENT_VERSION_UPGRADE_MESSAGE, {
+    blockers: [{ code: 'DRAFT_STALE', message: CONTENT_VERSION_UPGRADE_MESSAGE, hardHold: false }],
+  });
   if (logo.sha256 !== content.letterhead.logo.sha256) throw apiError(409, 'LOGO_CHANGED', 'The letterhead logo changed. Save the draft again to review the new version.');
   const rows = recipientRowsForContent(content);
   const frozen = record.recipients.map((r) => `${r.recipientRole}|${r.recipientName}|${r.email}|${r.phone ?? ''}`).sort();
@@ -277,7 +280,7 @@ export async function downloadFile<P>(ctx: TwoStageContext<P>, artifactId: strin
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="${row.fileName.replace(/["\\]/gu, '_')}"`,
+      'Content-Disposition': `${new URL(ctx.request.url).searchParams.get('download') === '1' ? 'attachment' : 'inline'}; filename="${row.fileName.replace(/["\\]/gu, '_')}"`,
       'X-Billing-Sha256': row.sha256,
       ...FRAME_HEADERS,
       ...NO_STORE_HEADERS,

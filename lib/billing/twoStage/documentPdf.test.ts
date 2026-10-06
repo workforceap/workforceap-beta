@@ -33,7 +33,7 @@ function j5(overrides: Partial<J5QuoteVoucherRequestFacts> = {}): J5QuoteVoucher
     className: 'Management Analyst & Business Intelligence Professional Certificate',
     classHours: 160,
     classStartDate: '2026-09-30',
-    classEndDate: '2027-02-28',
+    classEndDate: '2027-03-30',
     tuitionCents: 750_000,
     tuitionLabel: 'Tuition & Fees',
     title: 'Quote / Voucher Request',
@@ -108,7 +108,7 @@ describe('two-stage WAP billing PDFs', () => {
     assert.match(text, /Management Analyst & Business Intelligence Professional Certificate/u);
     assert.match(text, /160 hours/u);
     assert.match(text, /September 30, 2026/u);
-    assert.match(text, /February 28, 2027/u);
+    assert.match(text, /March 30, 2027/u);
     assert.equal((text.match(/Tuition & Fees/gu) ?? []).length, 1);
     assert.match(text, /\$7,500\.00/u);
     assert.doesNotMatch(text, /SYNTH-PO-001|Training Invoice|Net 30|class-by-class|syllabus/iu);
@@ -206,7 +206,7 @@ describe('two-stage WAP billing PDFs', () => {
 
   it('rejects altered price, dates, missing logo, missing voucher proof and long layout fields', async () => {
     await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ tuitionCents: 700_000 as 750_000 })), /\$7,500/u);
-    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ classEndDate: '2027-03-01' })), /five calendar months/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ classEndDate: '2027-03-01' })), /six calendar months/u);
     await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ letterhead: { ...j5().letterhead, logoPng: new Uint8Array() } })), /logo PNG/u);
     await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ signedVoucher: { ...j6().signedVoucher, sha256: '' } })), /SHA-256/u);
     await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ signedVoucher: { ...j6().signedVoucher, authorizedAmountCents: 700_000 } })), /authorized amount.*\$7,500/u);

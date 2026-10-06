@@ -1,3 +1,5 @@
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
@@ -55,7 +57,7 @@ describe('bounded page and content semantics', () => {
   it('uses a named region for each radio-selected voice section with no inert focus stop', () => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
-    const view = render(<VoiceStudioKit />);
+    const view = render(<NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit /></NextIntlClientProvider>);
     for (const name of ['Coaches', 'Practice', 'Resume', 'All Tools']) {
       fireEvent.click(screen.getByRole('radio', { name }));
       expect(screen.getByRole('radio', { name })).toHaveAttribute('aria-checked', 'true');

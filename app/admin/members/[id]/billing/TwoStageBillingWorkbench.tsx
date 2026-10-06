@@ -48,6 +48,7 @@ import {
   shortHash,
 } from './twoStagePresentation';
 import styles from './TwoStageBillingWorkbench.module.css';
+import TwoStageDocumentReview from './TwoStageDocumentReview';
 
 export type { TwoStageBillingReadiness };
 
@@ -57,6 +58,7 @@ type StageReadiness = Partial<Record<ReadinessKey, boolean>>;
 const GATE_CODE_SET: ReadonlySet<string> = new Set(GATE_CODES);
 
 type TwoStageBillingWorkbenchProps = {
+  memberId?: string;
   memberName: string;
   /** Shown only until the case summary is loaded; afterwards contacts come from the summary. */
   memberEmail: string | null;
@@ -304,6 +306,7 @@ function StageCard({
   onPrepare,
   unavailableReason,
   children,
+  documentReview,
 }: {
   stage: BillingStage;
   heading: string;
@@ -317,6 +320,7 @@ function StageCard({
   onPrepare?: () => void;
   unavailableReason?: string;
   children?: ReactNode;
+  documentReview?: ReactNode;
 }) {
   const actionAvailable = Boolean(onPrepare);
   const verified = keys.every((key) => readiness[key] === true);
@@ -339,6 +343,7 @@ function StageCard({
         </div>
       </div>
 
+      {documentReview}
       <div className={styles.stageBody}>
         <div className={styles.stageMain}>
           <p className={styles.sectionLabel}>Before creating the draft</p>
@@ -426,6 +431,7 @@ function ContactsLine({ memberEmail, counselor, j5, j6 }: Pick<TwoStageBillingWo
 
 /** Presentation of the two stages. It never signs, sends, uploads, or calls an API; the container does, and the server decides. */
 export default function TwoStageBillingWorkbench({
+  memberId,
   memberName,
   memberEmail,
   counselor,
@@ -470,8 +476,6 @@ export default function TwoStageBillingWorkbench({
 
       <ContactsLine memberEmail={memberEmail} counselor={counselor} j5={j5} j6={j6} />
 
-      {gates ? <GatePanel gates={gates} /> : null}
-
       <div className={styles.stages}>
         <StageCard
           stage="j5"
@@ -485,6 +489,7 @@ export default function TwoStageBillingWorkbench({
           view={j5}
           onPrepare={onPrepareJ5}
           unavailableReason={unavailableReason}
+          documentReview={memberId && caseInfo && j5?.current ? <TwoStageDocumentReview key={`${caseInfo.id}-${j5.current.recordId}-${j5.current.versionHash}`} memberId={memberId} caseId={caseInfo.id} stage="j5" current={j5.current} /> : null}
         >
           {stageContent?.j5}
         </StageCard>
@@ -500,11 +505,14 @@ export default function TwoStageBillingWorkbench({
           view={j6}
           onPrepare={onPrepareJ6}
           unavailableReason={unavailableReason}
+          documentReview={memberId && caseInfo && j6?.current ? <TwoStageDocumentReview key={`${caseInfo.id}-${j6.current.recordId}-${j6.current.versionHash}`} memberId={memberId} caseId={caseInfo.id} stage="j6" current={j6.current} /> : null}
         >
           <SignerTasks tasks={waitingOnDesignatedSigner} viewer={viewer} renderAction={renderSignerTaskAction} />
           {stageContent?.j6}
         </StageCard>
       </div>
+
+      {gates ? <GatePanel gates={gates} /> : null}
 
       <p className={styles.paymentNote}>
         After J6 is sent, track payment separately. Follow up in {PAYMENT_FOLLOW_UP_MIN_DAYS}–{PAYMENT_FOLLOW_UP_MAX_DAYS} days if a check or wire has not arrived.

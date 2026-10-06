@@ -72,7 +72,7 @@ describe('program and coach presentation preserves actions', () => {
   it('uses dark text-bearing coach gradients without opening a voice session', () => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
-    render(<VoiceStudioKit />);
+    render(<NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit /></NextIntlClientProvider>);
     const readiness = screen.getByRole('heading', { name: 'Readiness Coach' }).closest('button')!;
     expect(readiness.style.background).toContain('--wa-hero-gold');
     const resume = screen.getByRole('heading', { name: 'Resume Coach' }).closest('button')!;

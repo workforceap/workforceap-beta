@@ -74,6 +74,73 @@ afterEach(() => {
 });
 
 describe('two-stage billing container (route integration)', () => {
+  it('fixes the class end at six calendar months after the entered start, including month ends', async () => {
+    mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] }) : jsonResponse(j5DraftSummary()));
+    renderCase();
+    const start = await screen.findByLabelText('Actual class start date');
+    const end = within(start.closest('details')!).getByLabelText('Calculated class end date');
+    expect(end).toHaveAttribute('readonly');
+    expect(end).toHaveValue('');
+    fireEvent.change(start, { target: { value: '2026-10-31' } });
+    expect(end).toHaveValue('2027-04-30');
+    fireEvent.change(start, { target: { value: '2027-08-31' } });
+    expect(end).toHaveValue('2028-02-29');
+    fireEvent.change(start, { target: { value: '' } });
+    expect(end).toHaveValue('');
+  });
+
+  it('reviews and downloads the saved J5 without opening the editor or taking a signing action', async () => {
+    const calls = mockRoutes((c) => c.url === `${BASE}/cases`
+      ? jsonResponse({ cases: [caseItem] })
+      : jsonResponse(j5DraftSummary()));
+    renderCase();
+
+    const review = await screen.findByRole('region', { name: 'J5 document review' });
+    const path = `${CASE}/j5/draft/preview?recordId=${j5Draft().recordId}&versionHash=${HASH_A}`;
+    expect(within(review).getByRole('link', { name: 'Download J5 draft PDF' })).toHaveAttribute('href', `${path}&download=1`);
+    expect(screen.queryByRole('region', { name: 'J5 draft' })).toBeNull();
+    fireEvent.click(within(review).getByRole('button', { name: 'View J5 PDF' }));
+    expect(screen.getByTitle('J5 DRAFT PDF review')).toHaveAttribute('src', path);
+    expect(within(review).getByRole('button', { name: 'Hide J5 PDF' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Sign J5' })).toBeDisabled();
+    expect(calls.every((c) => c.method === 'GET')).toBe(true);
+  });
+
+  it('offers the exact archived signed J5 for download even when email delivery is disabled', async () => {
+    const summary = j5DraftSummary();
+    const draft = j5Draft();
+    const path = `${CASE}/files/signed-j5`;
+    summary.j5.current = j5Draft({ status: 'signed', signed: {
+      signedAt: '2026-09-28T16:00:00.000Z', signedBy: draft.createdBy, signatureMethod: 'approved_image',
+      artifact: { id: 'signed-j5', kind: 'j5_signed_pdf', source: 'rendered', fileName: 'J5-signed.pdf', byteLength: 500,
+        sha256: HASH_A, createdBy: draft.createdBy, createdAt: draft.createdAt, downloadPath: path },
+    } });
+    const calls = mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] }) : jsonResponse(summary));
+    renderCase();
+
+    const review = await screen.findByRole('region', { name: 'J5 document review' });
+    expect(within(review).getByRole('link', { name: 'Download signed J5 PDF' })).toHaveAttribute('href', `${path}?download=1`);
+    fireEvent.click(within(review).getByRole('button', { name: 'View J5 PDF' }));
+    expect(screen.getByTitle('J5 signed PDF review')).toHaveAttribute('src', path);
+    expect(screen.getByRole('button', { name: 'Send J5' })).toBeDisabled();
+    expect(calls.every((c) => c.method === 'GET')).toBe(true);
+  });
+
+  it.each(['voided', 'superseded'] as const)('does not offer a %s signed J5 as ready to send', async (status) => {
+    const summary = j5DraftSummary();
+    const draft = j5Draft();
+    summary.j5.current = j5Draft({ status, signed: {
+      signedAt: '2026-09-28T16:00:00.000Z', signedBy: draft.createdBy, signatureMethod: 'approved_image',
+      artifact: { id: 'closed-j5', kind: 'j5_signed_pdf', source: 'rendered', fileName: 'J5-signed.pdf', byteLength: 500,
+        sha256: HASH_A, createdBy: draft.createdBy, createdAt: draft.createdAt, downloadPath: `${CASE}/files/closed-j5` },
+    } });
+    mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] }) : jsonResponse(summary));
+    renderCase();
+    await screen.findByRole('button', { name: 'Create J5 Quote / Voucher Request' });
+    expect(screen.queryByRole('region', { name: 'J5 document review' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Download signed J5 PDF' })).toBeNull();
+  });
+
   it('says billing is not enabled yet when the migration gate is closed, and sends nothing else', async () => {
     const message = 'J5/J6 billing is not available in this environment yet (its database migration is not applied).';
     const calls = mockRoutes(() => jsonResponse({ code: 'MIGRATION_NOT_APPLIED', error: message }, 503));

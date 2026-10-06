@@ -5,7 +5,7 @@
  * later catalog or syllabus change cannot alter an issued document.
  */
 import type { Attestation } from './attestations';
-import { authorizedSignerLine, AUTHORIZED_SIGNER, CONTENT_VERSION, DOCUMENT_TITLES, J5_KIND, J6_KIND, PAYMENT_FOLLOW_UP_MAX_DAYS, PAYMENT_FOLLOW_UP_MIN_DAYS } from './constants';
+import { authorizedSignerLine, AUTHORIZED_SIGNER, CONTENT_VERSION, DOCUMENT_TITLES, J5_KIND, J6_KIND, PAYMENT_FOLLOW_UP_MAX_DAYS, PAYMENT_FOLLOW_UP_MIN_DAYS, type ContentVersion } from './constants';
 import { contentSha256 } from './canonical';
 import { classEndDate, isIsoDate } from './dates';
 import { resolveProgramTerms, type ContractHours } from './hours';
@@ -26,7 +26,7 @@ export type TrainingTerms = {
 };
 
 type Common = {
-  contentVersion: typeof CONTENT_VERSION;
+  contentVersion: ContentVersion;
   title: string;
   documentNumber: string;
   issueDate: string;

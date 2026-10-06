@@ -9,7 +9,7 @@
  *    reference), plus the admin-confirmed class start date. No funding
  *    approval is required: J5 comes before any voucher.
  *  - class_started: the class has begun on a date that is not in the future,
- *    with the staff-confirmed end date. J6 prints these actual dates; the J5
+ *    with its fixed six-month end date. J6 prints these actual dates; the J5
  *    estimate stays frozen on the J5.
  *  - voucher_board_signed: the uploaded file is the voucher signed by the
  *    board for a stated program/class, amount and period, received on a
@@ -23,7 +23,7 @@
  *    proceed without a system J5; no system J5 or signature is fabricated.
  */
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
-import { billingToday, compareIsoDates, formatLongCalendarDate, isIsoDate } from './dates';
+import { billingToday, classEndDate, compareIsoDates, formatLongCalendarDate, isIsoDate } from './dates';
 
 export type AttestationKind = 'j5_readiness' | 'class_started' | 'voucher_board_signed' | 'external_j5_reference';
 
@@ -192,7 +192,7 @@ export function recordClassStarted(input: {
   if (!startOk) errors.push('Enter the date the class began (YYYY-MM-DD).');
   else notFuture(input.classStartDate, input.now, 'A class cannot be recorded as begun on a future date.', errors);
   if (!isIsoDate(input.classEndDate)) errors.push('Enter the confirmed class end date (YYYY-MM-DD).');
-  else if (startOk && compareIsoDates(input.classEndDate, input.classStartDate) <= 0) errors.push('The class end date must be after its start.');
+  else if (startOk && input.classEndDate !== classEndDate(input.classStartDate)) errors.push('The class end date must be exactly six calendar months after its start.');
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,

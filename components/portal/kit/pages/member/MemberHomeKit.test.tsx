@@ -209,13 +209,14 @@ describe('MemberHomeKit up next + recommended tool', () => {
     expect(screen.getByRole('link', { name: /Open interview prep/ }).getAttribute('href')).toBe(
       '/dashboard/ai-tools/interview-prep',
     );
-    expect(screen.getByRole('link', { name: 'All AI Career Tools' }).getAttribute('href')).toBe('/dashboard/ai-tools');
+    expect(screen.getByRole('link', { name: 'Explore all AI Career Tools' }).getAttribute('href')).toBe('/dashboard/ai-tools');
   });
 
-  it('renders neither block when the loader has nothing to add', () => {
+  it('omits empty next-step and recommendation blocks while retaining the tools introduction', () => {
     renderKit(<MemberHomeKit {...base} />);
     expect(screen.queryByRole('list', { name: 'Up next' })).toBeNull();
     expect(screen.queryByTestId('recommended-tool')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Explore AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
   });
 });
 

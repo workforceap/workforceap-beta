@@ -4167,5 +4167,19 @@
         "action": "Clear filters"
       }
     }
+  },
+  "aiToolsDiscovery": {
+    "title": "AI Career Tools",
+    "homeIntro": "Get help with your resume, interview practice, and job applications. Choose a tool, follow the prompts, then review and edit the result before using it.",
+    "tryNext": "Try this next: {title}",
+    "explore": "Explore AI Career Tools",
+    "exploreAll": "Explore all AI Career Tools",
+    "hubIntro": "Get help with your resume, interview answers, and job applications.",
+    "startTitle": "Start with one task",
+    "startIntro": "Open a tool below, add the details it asks for, and review the suggestions. You can edit the result before using it in an application.",
+    "resume": "Improve my resume",
+    "interview": "Practice interview answers",
+    "coverLetter": "Write a cover letter",
+    "preparation": "Have a resume or a job posting ready if the tool asks for one. For voice coaching, choose a coach and press Start when you are ready to use your microphone. Choose All Tools below to see more ways to prepare."
   }
 }

@@ -115,7 +115,7 @@ export default function TwoStageBillingCase({ memberId, memberName, memberEmail,
     refresh();
   };
 
-  const shell = { memberName, memberEmail, counselor };
+  const shell = { memberId, memberName, memberEmail, counselor };
 
   if (state.phase === 'loading') {
     return (

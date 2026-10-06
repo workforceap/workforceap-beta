@@ -155,6 +155,7 @@ vi.mock('@/lib/tenant/withTenantScope', async () => {
 import { GET as listCases, POST as openCase } from '@/app/api/admin/members/[id]/billing/two-stage/cases/route';
 import { GET as caseSummary } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/route';
 import { GET as downloadFile } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/files/[artifactId]/route';
+import { GET as previewDraft } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/preview/route';
 import { POST as uploadVoucher } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/route';
 import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/sign/route';
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
@@ -166,7 +167,7 @@ import { POST as paymentReceivedRoute } from '@/app/api/admin/members/[id]/billi
 import { POST as freeze } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/freeze/route';
 import { GET as signatureGet, POST as signaturePost } from '@/app/api/admin/members/[id]/billing/two-stage/signature/route';
 import type { Attestation } from '@/lib/billing/twoStage/attestations';
-import { sha256Hex } from '@/lib/billing/twoStage/canonical';
+import { contentSha256, sha256Hex } from '@/lib/billing/twoStage/canonical';
 import { buildJ5Content, recipientRowsForContent } from '@/lib/billing/twoStage/content';
 import { WAP_LOGO_PUBLIC_PATH } from '@/lib/billing/twoStage/letterhead';
 import { inspectSignaturePng, signatureApprovalStatement } from '@/lib/billing/twoStage/signatureAsset';
@@ -553,6 +554,12 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     expect(ok.headers.get('content-type')).toBe('application/pdf');
     expect(ok.headers.get('x-billing-sha256')).toBe('b'.repeat(64));
     expect(ok.headers.get('location')).toBeNull();
+    expect(ok.headers.get('content-disposition')).toBe('inline; filename="v.pdf"');
+    mocks.readArchive.mockResolvedValueOnce(new TextEncoder().encode('%PDF-'));
+    const download = await downloadFile(new Request(`${url}?download=1`), caseParams({ artifactId: 'v1' }));
+    expect(download.status).toBe(200);
+    expect(download.headers.get('content-disposition')).toBe('attachment; filename="v.pdf"');
+    expect(download.headers.get('cache-control')).toContain('no-store');
   });
 });
 
@@ -958,6 +965,51 @@ describe('two-stage routes: signing a J5 with the approved image', () => {
     ];
     return { content, hash: built.contentSha256 };
   }
+
+  it('previews and downloads an unsigned J5 with closed signing gates, while enforcing version and tenant guards', async () => {
+    const { hash } = seedDraft(null);
+    delete process.env.BILLING_EXECUTIVE_SIGNER_USER_ID;
+    h.state.designated = null;
+    const path = `${base}/${h.CASE}/j5/draft/preview?recordId=${REC}&versionHash=${hash}`;
+    for (const [suffix, disposition] of [['', 'inline'], ['&download=1', 'attachment']] as const) {
+      const response = await previewDraft(new Request(`${path}${suffix}`), caseParams({ stage: 'j5' }));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('application/pdf');
+      expect(response.headers.get('content-disposition')).toBe(`${disposition}; filename="WAP-Q-2026-0001-DRAFT.pdf"`);
+      expect(response.headers.get('cache-control')).toContain('no-store');
+      expect(Buffer.from(await response.arrayBuffer()).subarray(0, 5).toString()).toBe('%PDF-');
+    }
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    const stale = await previewDraft(new Request(path.replace(hash, '0'.repeat(64))), caseParams({ stage: 'j5' }));
+    expect(stale.status).toBe(409);
+    expect((await stale.json()).code).toBe('VERSION_STALE');
+    h.state.userOrg.set(h.ADMIN, h.OTHER_ORG);
+    expect((await previewDraft(new Request(`${path}&download=1`), caseParams({ stage: 'j5' }))).status).toBe(404);
+  });
+
+  it('keeps a same-day legacy draft reviewable but requires six-month terms before freeze or sign', async () => {
+    const { content } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    h.state.signatureAssets = [assetRow()];
+    content.contentVersion = 1;
+    content.training.classEndDate = '2027-02-28';
+    const hash = contentSha256(content);
+    Object.assign(h.state.records[0], { contentVersion: 1, contentSha256: hash, classEndDate: day('2027-02-28') });
+    const before = JSON.stringify(h.state.records[0]);
+    const preview = await previewDraft(new Request(`${base}/${h.CASE}/j5/draft/preview?recordId=${REC}&versionHash=${hash}`), caseParams({ stage: 'j5' }));
+    expect(preview.status).toBe(200);
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j5.canSign).toBe(false);
+    expect(summary.j5.blockers).toContainEqual(expect.objectContaining({ code: 'DRAFT_STALE', message: expect.stringContaining('Save the draft again') }));
+    expect(summary.j5.readinessAttestation?.quotedClassEndDate).toBe('2027-02-28');
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j5/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j5' }));
+    expect([checkpoint.status, await code(checkpoint)]).toEqual([409, 'DRAFT_STALE']);
+    const signed = await sign(signReq(hash, content), caseParams({ stage: 'j5' }));
+    expect([signed.status, await code(signed)]).toEqual([409, 'DRAFT_STALE']);
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    expect(JSON.stringify(h.state.records[0])).toBe(before);
+  });
 
   const signReq = (hash: string, content: { title: string; documentNumber: string }) =>
     jsonReq(`${base}/${h.CASE}/j5/sign`, {

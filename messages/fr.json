@@ -4110,5 +4110,19 @@
         "action": "Effacer les filtres"
       }
     }
+  },
+  "aiToolsDiscovery": {
+    "title": "AI Career Tools",
+    "homeIntro": "Obtenez de l’aide pour votre CV, vos entretiens et vos candidatures. Choisissez un outil, suivez les indications, puis vérifiez et modifiez le résultat avant de l’utiliser.",
+    "tryNext": "À essayer : {title}",
+    "explore": "Explorer les outils de carrière IA",
+    "exploreAll": "Explorer tous les outils de carrière IA",
+    "hubIntro": "Obtenez de l’aide pour votre CV, vos réponses en entretien et vos candidatures.",
+    "startTitle": "Commencez par une tâche",
+    "startIntro": "Ouvrez un outil ci-dessous, ajoutez les informations demandées et vérifiez les suggestions. Vous pouvez modifier le résultat avant de l’utiliser dans une candidature.",
+    "resume": "Améliorer mon CV",
+    "interview": "M’entraîner aux entretiens",
+    "coverLetter": "Rédiger une lettre de motivation",
+    "preparation": "Préparez un CV ou une offre d’emploi si l’outil en demande un. Pour le coaching vocal, choisissez un coach et appuyez sur Start quand vous êtes prêt à utiliser votre microphone. Choisissez All Tools ci-dessous pour voir d’autres options."
   }
 }

@@ -101,7 +101,7 @@ function j6(
     hasOpenJ6: false,
     programSlug: SLUG,
     priorJ5: { source: 'system', j5: { recordId: 'rec-j5', status: 'sent', content: quote, contentSha256: 'b'.repeat(64) } },
-    classStarted: attestation({ id: 'att-start', kind: 'class_started', classStartDate: '2026-09-30', classEndDate: '2027-02-28' }),
+    classStarted: attestation({ id: 'att-start', kind: 'class_started', classStartDate: '2026-09-30', classEndDate: '2027-03-30' }),
     voucher: { id: 'art-voucher', kind: 'board_signed_voucher', fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: 'c'.repeat(64) },
     voucherAttestation: attestation({
       id: 'att-voucher',
@@ -112,7 +112,7 @@ function j6(
       authorizedProgramSlug: SLUG,
       authorizedClassName: className,
       authorizedStartDate: '2026-09-30',
-      authorizedEndDate: overrides.authorizedEndDate ?? '2027-02-28',
+      authorizedEndDate: overrides.authorizedEndDate ?? '2027-03-30',
       receivedOn: '2026-09-29',
       receivingSignaturePresent: true,
     }),
@@ -185,6 +185,16 @@ function unsourcedRemainder(text: string, content: TwoStageContent, opts: { rece
 }
 
 describe('two-stage renderer adapter: every printed field comes from frozen content', () => {
+  it('previews historical V1 snapshots without changing their dates or hashes', async () => {
+    const content: J5Content = { ...j5(), contentVersion: 1 };
+    content.training = { ...content.training, classEndDate: '2027-02-28' };
+    const before = JSON.stringify(content);
+    const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }));
+    assert.ok(text.includes('February 28, 2027'));
+    assert.equal(JSON.stringify(content), before);
+    await assert.rejects(renderDraftFromContent({ ...content, contentVersion: 2 }, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }));
+  });
+
   for (const [name, build] of [
     ['J5', () => j5()],
     ['J6', () => j6()],
@@ -244,9 +254,9 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
       const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
       assert.equal(text, expected, content.kind);
     }
-    // Sep 30 start -> Feb 28 end: start + 5 calendar months, clamped to the month's end.
+    // Sep 30 start -> Mar 30 end: exactly six calendar months.
     assert.equal(quote.training.classStartDate, '2026-09-30');
-    assert.equal(quote.training.classEndDate, '2027-02-28');
+    assert.equal(quote.training.classEndDate, '2027-03-30');
     assert.equal(a.phone, '(512) 825-2896');
   });
 

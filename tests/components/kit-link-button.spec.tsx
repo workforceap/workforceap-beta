@@ -1,3 +1,5 @@
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
@@ -89,14 +91,14 @@ describe('kit navigation actions are one link each (WAP-252)', () => {
   it('VoiceStudioKit resume tab: analysis, rewrite and fix actions are single links', () => {
     vi.stubGlobal('fetch', vi.fn());
     renderNoNesting(
-      <VoiceStudioKit
+      <NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit
         initialTab="studio"
         resumeStudio={{
           hasResume: true,
           structuralScore: 72,
           issues: [{ title: 'Add numbers to your bullets', detail: 'Two bullets have no measurable result.' }],
         }}
-      />,
+      /></NextIntlClientProvider>,
     );
     expectSingleLinks([
       { name: 'Open full analysis', href: '/dashboard/ai-tools/resume-studio?view=score' },
@@ -108,7 +110,7 @@ describe('kit navigation actions are one link each (WAP-252)', () => {
 
   it('VoiceStudioKit resume tab without a resume: "Add résumé" is one link', () => {
     vi.stubGlobal('fetch', vi.fn());
-    renderNoNesting(<VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: false }} />);
+    renderNoNesting(<NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: false }} /></NextIntlClientProvider>);
     expectSingleLinks([{ name: 'Add résumé', href: '/dashboard/ai-tools/resume-studio' }]);
   });
 });

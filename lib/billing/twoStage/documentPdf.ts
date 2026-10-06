@@ -1,6 +1,8 @@
 import { PDFDocument, type PDFFont, type PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { getProgramSyllabus } from '@/shared/programSyllabi';
+import { CONTENT_VERSION, type ContentVersion } from './constants';
+import { classEndDate } from './dates';
 
 /**
  * One-page, side-effect-free renderers for the two distinct WAP billing
@@ -62,6 +64,8 @@ export function isWinAnsiPrintable(value: string): boolean {
 type Person = { readonly name: string; readonly email: string };
 
 type CommonFacts = {
+  /** Frozen contract version; omitted standalone facts use the current terms. */
+  readonly contentVersion?: ContentVersion;
   readonly documentNumber: string;
   readonly issueDate: string; // YYYY-MM-DD, frozen by the server
   readonly frozenAt: string; // UTC ISO instant, also used for deterministic PDF metadata
@@ -73,7 +77,7 @@ type CommonFacts = {
   readonly className: string;
   readonly classHours: 160 | 200;
   readonly classStartDate: string;
-  readonly classEndDate: string; // exactly five calendar months after start
+  readonly classEndDate: string; // the end date frozen under contentVersion
   readonly tuitionCents: 750_000;
   /** The printed line-item label (`Tuition & Fees`). */
   readonly tuitionLabel: string;
@@ -177,14 +181,6 @@ function utcInstant(value: string, label: string): Date {
   return date;
 }
 
-function fiveMonthsLater(value: string): string {
-  const start = isoDate(value, 'classStartDate');
-  const year = start.getUTCFullYear();
-  const month = start.getUTCMonth() + 5;
-  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month, Math.min(start.getUTCDate(), lastDay))).toISOString().slice(0, 10);
-}
-
 /** "$7,500.00" from whole cents, locale-independent. */
 function formatCents(cents: number): string {
   const dollars = Math.floor(cents / 100)
@@ -235,8 +231,9 @@ function validateFacts(input: TwoStageDocumentFacts, signed: boolean): Date {
   const holds: readonly string[] = input.stage === 'j6' ? input.openHolds ?? [] : [];
   // A held J6 can be previewed as a DRAFT but is never signable.
   if (signed && holds.length > 0) throw new Error('A signed document cannot carry open holds');
-  if (input.classEndDate !== fiveMonthsLater(input.classStartDate) && !holds.includes('end_date_not_contract')) {
-    throw new Error('Class end must be five calendar months after start');
+  const contentVersion = input.contentVersion ?? CONTENT_VERSION;
+  if (input.classEndDate !== classEndDate(input.classStartDate, contentVersion) && !holds.includes('end_date_not_contract')) {
+    throw new Error(`Class end must be ${contentVersion === 1 ? 'five' : 'six'} calendar months after start`);
   }
   if (input.tuitionCents !== 750_000) throw new Error('Tuition & Fees must equal $7,500.00');
   if (!(input.letterhead?.logoPng instanceof Uint8Array) || input.letterhead.logoPng.length === 0) throw new Error('Approved WAP logo PNG is required');

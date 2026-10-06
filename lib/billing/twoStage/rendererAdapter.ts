@@ -254,6 +254,7 @@ export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): 
   const receiptSignatureId = opts.receiptSignatureId?.trim() || null;
 
   const common = {
+    contentVersion: content.contentVersion,
     documentNumber: content.documentNumber,
     issueDate: content.issueDate,
     frozenAt: opts.frozenAt,

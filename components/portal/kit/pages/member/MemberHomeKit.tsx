@@ -4,7 +4,6 @@ import type { CSSProperties } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Play,
-  Wand2,
   Medal,
   GraduationCap,
   ArrowRight,
@@ -36,6 +35,7 @@ import {
 } from '@/components/portal/kit';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
 import MemberAdvisorCard from '@/components/portal/kit/pages/member/MemberAdvisorCard';
+import MemberAiToolsCard from '@/components/portal/kit/pages/member/MemberAiToolsCard';
 import type { AssignedCounselor } from '@/lib/member/counselorContext';
 import First90DaysCard, { type First90DaysCardProps } from '@/components/portal/First90DaysCard';
 import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
@@ -62,9 +62,8 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
  *      while a placement is inside its window (`first90`) — the two
  *      post-offer surfaces the `?ui=legacy` home used to own (WAP-188). Then
- *      an "Up next" list of the following steps beside one AI Career Tools
- *      pick for the member's stage (both from the loader; either may be
- *      empty, and the row disappears when both are).
+ *      an "Up next" list of the following steps. AI Career Tools stays visible
+ *      directly below Today, with a stage-specific pick when one is available.
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
  *   4. A mixed row: certification progress ring, weekly-activity area chart,
@@ -74,9 +73,8 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  *   5. The application pipeline table + a Next Badge tile with segmented
  *      progress. Goals fold into that tile and link to the goals section on
  *      the career brief; with none, a quiet "Set a goal" link goes there.
- * A quiet "quick links" row (Learning Hub / AI Career Tools) closes out the
- * page — those destinations also live in the primary portal nav, so they get
- * a low-key footer instead of competing bento tiles.
+ * A quiet Learning Hub link closes out the page; AI Career Tools is introduced
+ * near the top so members can find it without scrolling through their metrics.
  *
  * All-new visual data (sparklines, weekly activity, points ledger, per-row
  * applied date + stage index) is additive/optional and degrades gracefully
@@ -230,7 +228,7 @@ export interface MemberHomeKitProps {
   advisor?: AssignedCounselor | null;
   /** The steps after `doThisNext`, most important first. Empty renders nothing. */
   upNext?: NextBestAction[];
-  /** One AI Career Tools pick for the member's stage. `null` renders nothing. */
+  /** Optional stage-specific pick inside the permanent AI Career Tools introduction. */
   recommendedTool?: MemberToolRecommendation | null;
   /** Ungated Digital Literacy lesson 1. Shown when the member has no enrolled program. */
   ungatedDigitalBasicsHref?: string | null;
@@ -704,6 +702,7 @@ export function MemberHomeKit({
         {/* 2. Dominant next-best-action banner. Renders nothing when there's no
             pending action (see MemberDoThisNextCard). */}
         <MemberDoThisNextCard action={doThisNext} />
+        <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
 
         {/* Post-offer surfaces, each only when it applies: confirm an accepted
             offer (writes a member-reported placement and alerts the
@@ -743,10 +742,10 @@ export function MemberHomeKit({
           </div>
         ) : null}
 
-        {upNext.length > 0 || recommendedTool ? (
+        {upNext.length > 0 ? (
           <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
             {upNext.length > 0 ? (
-              <div className={cx('wa-kit-card', recommendedTool ? 'lg:wa-col-span-7' : 'lg:wa-col-span-12')}>
+              <div className="wa-kit-card lg:wa-col-span-12">
                 <KitCardHead title="Up next" />
                 <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }} aria-label="Up next">
                   {upNext.map((action) => (
@@ -769,42 +768,6 @@ export function MemberHomeKit({
                     </li>
                   ))}
                 </ol>
-              </div>
-            ) : null}
-            {recommendedTool ? (
-              <div
-                className={cx('wa-kit-card', upNext.length > 0 ? 'lg:wa-col-span-5' : 'lg:wa-col-span-12')}
-                style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-                data-testid="recommended-tool"
-                data-tool={recommendedTool.slug}
-              >
-                <p
-                  className="wa-kit-meta wa-flex wa-items-center wa-gap-2"
-                  style={{ margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}
-                >
-                  <Wand2 size={13} aria-hidden /> Recommended tool
-                </p>
-                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', textWrap: 'balance' }}>
-                  {recommendedTool.title}
-                </h3>
-                <p className="wa-kit-lede" style={{ margin: 0 }}>
-                  {recommendedTool.body}
-                </p>
-                <div className="wa-flex wa-items-center wa-gap-4 wa-flex-wrap" style={{ marginTop: 'auto' }}>
-                  <Link
-                    href={recommendedTool.href}
-                    className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
-                  >
-                    {recommendedTool.cta} <ArrowRight size={13} aria-hidden />
-                  </Link>
-                  <a
-                    href={toolkitHref}
-                    className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                    style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}
-                  >
-                    All AI Career Tools
-                  </a>
-                </div>
               </div>
             ) : null}
           </div>
@@ -1103,9 +1066,7 @@ export function MemberHomeKit({
           </div>
         </div>
 
-        {/* Quiet quick links — Learning Hub + AI Career Tools are also reachable
-            from the primary portal nav, so this stays a low-key footer rather
-            than competing bento tiles. */}
+        {/* Learning Hub remains available after the progress overview. */}
         <div className="wa-flex wa-items-center wa-gap-5 wa-flex-wrap">
           <a
             href={coursesHref}
@@ -1113,13 +1074,6 @@ export function MemberHomeKit({
             style={{ ...HOME_TEXT_LINK, color: 'var(--wa-info-dark)' }}
           >
             <GraduationCap size={14} aria-hidden /> Learning hub <ArrowRight size={14} aria-hidden />
-          </a>
-          <a
-            href={toolkitHref}
-            className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-            style={HOME_TEXT_LINK}
-          >
-            <Wand2 size={14} aria-hidden /> AI Career Tools <ArrowRight size={14} aria-hidden />
           </a>
         </div>
       </div>

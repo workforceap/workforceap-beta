@@ -4167,5 +4167,19 @@
         "action": "Borrar filtros"
       }
     }
+  },
+  "aiToolsDiscovery": {
+    "title": "AI Career Tools",
+    "homeIntro": "Recibe ayuda con tu currículum, las entrevistas y las solicitudes de empleo. Elige una herramienta, sigue las indicaciones y revisa y edita el resultado antes de usarlo.",
+    "tryNext": "Prueba esto: {title}",
+    "explore": "Explorar herramientas profesionales con IA",
+    "exploreAll": "Explorar todas las herramientas profesionales con IA",
+    "hubIntro": "Recibe ayuda con tu currículum, las respuestas de entrevista y las solicitudes de empleo.",
+    "startTitle": "Empieza con una tarea",
+    "startIntro": "Abre una herramienta, añade la información que te pide y revisa las sugerencias. Puedes editar el resultado antes de usarlo en una solicitud.",
+    "resume": "Mejorar mi currículum",
+    "interview": "Practicar respuestas de entrevista",
+    "coverLetter": "Escribir una carta de presentación",
+    "preparation": "Ten a mano un currículum o una oferta de empleo si la herramienta lo solicita. Para practicar por voz, elige un asesor y pulsa Start cuando estés listo para usar el micrófono. Elige All Tools abajo para ver más opciones."
   }
 }

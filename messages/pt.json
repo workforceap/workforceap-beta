@@ -4110,5 +4110,19 @@
         "action": "Limpar filtros"
       }
     }
+  },
+  "aiToolsDiscovery": {
+    "title": "AI Career Tools",
+    "homeIntro": "Receba ajuda com seu currículo, entrevistas e candidaturas. Escolha uma ferramenta, siga as instruções e revise e edite o resultado antes de usá-lo.",
+    "tryNext": "Experimente: {title}",
+    "explore": "Explorar ferramentas de carreira com IA",
+    "exploreAll": "Explorar todas as ferramentas de carreira com IA",
+    "hubIntro": "Receba ajuda com seu currículo, respostas de entrevista e candidaturas.",
+    "startTitle": "Comece com uma tarefa",
+    "startIntro": "Abra uma ferramenta abaixo, adicione os detalhes solicitados e revise as sugestões. Você pode editar o resultado antes de usá-lo em uma candidatura.",
+    "resume": "Melhorar meu currículo",
+    "interview": "Praticar respostas de entrevista",
+    "coverLetter": "Escrever uma carta de apresentação",
+    "preparation": "Tenha um currículo ou uma vaga em mãos se a ferramenta solicitar. Para orientação por voz, escolha um orientador e pressione Start quando estiver pronto para usar o microfone. Escolha All Tools abaixo para ver mais opções."
   }
 }
