@@ -267,10 +267,25 @@ longer read.
 ### Reviewing and downloading without sending
 
 Open **Admin → Members → member → J5 / J6 billing**. Each current saved draft
-has **View J5 PDF** / **View J6 PDF** and **Download draft PDF** controls above
+has **View mock J5 PDF** / **View J6 PDF** and PDF download controls above
 its prerequisites. Reviewing uses the read-only, version-bound preview endpoint;
 it does not require signature approval or enabled email delivery. Save edits before
 reviewing the new version. Downloads use the same authorization checks as preview.
+
+J5 draft review defaults to `mode=mock`: the existing saved content is rendered
+with **MOCK - REVIEW ONLY - NOT SIGNED** on the page and a blank signature area.
+The response filename ends in `-MOCK.pdf`. The mock uses the exact saved version,
+including its original date terms, and does not save a new record, read a signature
+image, write an archive, or invoke signing or delivery. It works in the production
+admin workflow even when real signing or email delivery is unavailable. The regular
+draft preview remains available in the draft editor; J6 uses its existing preview.
+
+The J5 editor also offers **Preview mock J5** before saving. Its read-only
+`POST .../j5/draft/review?mode=mock` validates the current editor fields and saved
+readiness, then renders a temporary mock using the current six-month terms. It
+does not allocate an official document number or persist the inputs. The normal
+review request still returns JSON. Changing fields invalidates the temporary
+preview; saving a draft and all real signing/delivery actions remain separate.
 
 Current signed or sent versions expose **Download signed J5 PDF** /
 **Download signed J6 PDF**, returning the exact archived bytes for manual delivery.

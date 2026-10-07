@@ -37,6 +37,7 @@ import {
   isWinAnsiPrintable,
   RECEIVING_SIGNATURE_PENDING_SUFFIX,
   renderJ5QuoteVoucherRequestDraftPdf,
+  renderJ5QuoteVoucherRequestMockPdf,
   renderJ5QuoteVoucherRequestSignedPdf,
   renderJ6InvoiceVoucherCoverLetterDraftPdf,
   renderJ6InvoiceVoucherCoverLetterSignedPdf,
@@ -312,6 +313,20 @@ export async function renderDraftFromContent(content: TwoStageContent, opts: Ren
   const facts = toRendererFacts(content, opts);
   try {
     return facts.stage === 'j5' ? await renderJ5QuoteVoucherRequestDraftPdf(facts) : await renderJ6InvoiceVoucherCoverLetterDraftPdf(facts);
+  } catch (error) {
+    throw layoutRefusal(error);
+  }
+}
+
+/** Explicit mock of saved J5 content. No signature image is accepted or loaded. */
+export async function renderMockJ5FromContent(content: TwoStageContent, opts: RenderOptions): Promise<Uint8Array> {
+  if (content.kind !== 'j5_quote_voucher_request') {
+    throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'Mock preview is available only for a saved J5 draft.');
+  }
+  const facts = toRendererFacts(content, opts);
+  if (facts.stage !== 'j5') throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'Mock preview requires J5 facts.');
+  try {
+    return await renderJ5QuoteVoucherRequestMockPdf(facts);
   } catch (error) {
     throw layoutRefusal(error);
   }

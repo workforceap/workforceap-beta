@@ -3,15 +3,22 @@
 ## Review or download a J5
 
 1. Open **Admin → Members**, select the member, then open **J5 / J6 billing**.
-2. In the J5 section, choose **View J5 PDF** to review the saved document on screen.
-   **Open J5 PDF in a new tab** is also available if the embedded preview is inconvenient.
-3. Choose **Download J5 draft PDF** to save an unsigned review copy. Reviewing or
-   downloading does not sign the document, send email, or submit it to anyone.
-4. If the data needs a correction, edit and save a new draft, then review it again.
+2. If only the readiness information is saved, choose **Create J5**, then complete
+   the document fields, including the Workforce Solutions board and counselor phone.
+   Choose **Preview mock J5** in the editor to see the current entries without saving
+   a draft first. The mock PDF can be opened or downloaded from that preview.
+3. If a draft is already saved, **View mock J5 PDF** and **Download mock J5 PDF**
+   review that exact saved version directly from the J5 section.
+4. Every mock is clearly marked **MOCK - REVIEW ONLY - NOT SIGNED** and has no
+   signature. Mocking works in the production admin workflow and does not change
+   the billing record, sign the document, send email, or submit it to anyone.
+   Edits invalidate the editor preview; preview again to see the revised entries.
 5. Once the designated signer has explicitly approved and signed the document,
    **Download signed J5 PDF** saves the archived signed version for manual delivery.
 
-If no saved draft exists, record the J5 readiness information and save the draft first.
+Record the J5 readiness information before composing the document. Saving readiness
+does not itself create a J5. **Save draft** is a separate action when the document
+details are ready to be retained.
 Signature and delivery requirements still apply to their own actions. They do not
 prevent an authorized admin from reviewing an existing draft PDF.
 

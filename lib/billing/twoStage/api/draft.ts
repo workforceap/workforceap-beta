@@ -27,7 +27,7 @@ import type {
   J6DraftInput,
 } from '../dto';
 import { isPlausibleEmail, normalizeEmail } from '../recipients';
-import { printableIssue, printableIssues, RendererAdapterError, renderDraftFromContent } from '../rendererAdapter';
+import { printableIssue, printableIssues, RendererAdapterError, renderDraftFromContent, renderMockJ5FromContent } from '../rendererAdapter';
 import { activeSignatureAsset, signatureRefForContent } from '../signatureAsset';
 import { TWO_STAGE_TEXT_LIMITS } from '../documentPdf';
 import { checkJ5Prerequisites, checkJ6Prerequisites } from '../stateMachine';
@@ -35,7 +35,7 @@ import type { TwoStageContext } from './access';
 import { isUniqueViolation } from './access';
 import { blockersFromMessages, holdBlockers } from './blockers';
 import { dateColumn, j6Prerequisites, latestAttestation, loadCaseSnapshot, recordContent, stageRecords, toAttestation, toSignerAsset, type CaseSnapshot, type RecordWithRelations } from './caseData';
-import { apiError } from './http';
+import { apiError, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
 import { versionView } from './summary';
 
@@ -279,6 +279,46 @@ export async function reviewDraft<P>(ctx: TwoStageContext<P>, stage: BillingStag
     holds,
     versionHashIfSaved,
   };
+}
+
+/** POST …/j5/draft/review?mode=mock — compose the editor values, without saving or allocating a document number. */
+export async function reviewMockJ5<P>(ctx: TwoStageContext<P>, stage: BillingStage, patch: DraftPatch<'j6'> & { expectedVersionHash?: string | null }): Promise<Response> {
+  if (stage !== 'j5') throw apiError(400, 'PREVIEW_MODE_INVALID', 'Mock preview is available only for J5.');
+  const { snapshot, counselor } = await loadForDraft(ctx);
+  const editing = currentDraft(snapshot, stage);
+  if (patch.expectedVersionHash !== undefined && patch.expectedVersionHash !== (editing?.contentSha256 ?? null)) {
+    throw apiError(409, 'DRAFT_CONFLICT', 'The saved draft changed. Reload it before creating another mock.');
+  }
+  const values = applyPatch(baseInputs(editing, ctx.member, counselor), patch);
+  const fields = validateFields(stage, values, snapshot);
+  const inputs = toInputs(values);
+  const prereq = stagePrerequisiteBlockers(stage, snapshot, ctx.now, editing, null);
+  if (Object.keys(fields).length > 0 || prereq.blockers.length > 0) {
+    throw apiError(422, 'DRAFT_INCOMPLETE', 'Complete the highlighted fields and readiness details before reviewing the mock. Nothing was saved.', { fields, blockers: prereq.blockers });
+  }
+  const logo = await readLetterheadLogo();
+  const built = buildContent(stage, snapshot, inputs, { now: ctx.now, documentNumber: 'WAP-MOCK-PREVIEW', logoSha256: logo.sha256, editing });
+  if (!built.ok) throw apiError(422, 'DRAFT_INCOMPLETE', 'Complete the readiness details before reviewing the mock. Nothing was saved.', { blockers: built.blockers });
+  let bytes: Uint8Array;
+  try {
+    bytes = await renderMockJ5FromContent(built.content, { logoPng: logo.bytes, frozenAt: ctx.now.toISOString() });
+  } catch (error) {
+    if (error instanceof RendererAdapterError && (error.code === 'TEXT_NOT_PRINTABLE' || error.code === 'VOUCHER_REFERENCE_TOO_LONG')) {
+      throw apiError(422, error.code, error.message, error.field ? { field: error.field } : {});
+    }
+    throw error;
+  }
+  return new Response(new Blob([new Uint8Array(bytes)]), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename="J5-MOCK-REVIEW.pdf"',
+      'X-Billing-Document-Mode': 'mock',
+      'X-Billing-Version-Hash': built.contentSha256,
+      ...PDF_FRAME_HEADERS,
+      ...NO_STORE_HEADERS,
+    },
+  });
 }
 
 async function nextDocumentNumber(tx: Prisma.TransactionClient, organizationId: string, stage: BillingStage, issueDate: string): Promise<string> {

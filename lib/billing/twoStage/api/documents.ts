@@ -17,7 +17,7 @@ import { billingToday, compareIsoDates, isIsoDate } from '../dates';
 import type { CaseSummaryDto, FreezeDto, ListCasesDto, OpenCaseDto, PaymentDto } from '../dto';
 import { resolveProgramTerms } from '../hours';
 import { currentCasePaymentEvent, recordPaymentReceived } from '../payment';
-import { RendererAdapterError, renderDraftFromContent } from '../rendererAdapter';
+import { RendererAdapterError, renderDraftFromContent, renderMockJ5FromContent } from '../rendererAdapter';
 import { signatureAssetStatus } from '../signatureAsset';
 import { authorizeSigner, signerIntentStatement } from '../signing';
 import { canSignJ6 } from '../stateMachine';
@@ -26,7 +26,7 @@ import { readArchived } from './archive';
 import { holdBlockers, J5_ISSUE_DATE_NOT_TODAY_MESSAGE, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
 import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, loadCaseSnapshot, receiptSignatureState, recordContent, toSignerAsset, type CaseSnapshot } from './caseData';
 import { allGates, GATE_MESSAGES } from './gates';
-import { apiError, json, NO_STORE_HEADERS } from './http';
+import { apiError, json, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
 import { signatureGateError } from './signatureView';
 import { basePath, buildCaseSummary, caseListItem, casePaymentDto, toPaymentEvent } from './summary';
@@ -98,8 +98,6 @@ function findRecord(snapshot: CaseSnapshot, stage: BillingStage, recordId: strin
   return record;
 }
 
-const FRAME_HEADERS = { 'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': "frame-ancestors 'self'" };
-
 export function adapterError(error: unknown): never {
   if (error instanceof RendererAdapterError) {
     // renderSignedFromContent refuses a held J6 (with its holds) and a J6 without the
@@ -123,9 +121,13 @@ function codeList(codes: readonly string[]): string {
   return [...new Set(codes)].filter((c) => /^[A-Za-z0-9_]+$/u.test(c)).join(',');
 }
 
-/** GET …/[stage]/draft/preview?recordId=…&versionHash=… */
+/** GET …/[stage]/draft/preview?recordId=…&versionHash=…[&mode=mock][&download=1] */
 export async function draftPreview<P>(ctx: TwoStageContext<P>, stage: BillingStage): Promise<Response> {
   const url = new URL(ctx.request.url);
+  const mode = url.searchParams.get('mode') ?? 'draft';
+  if ((mode !== 'draft' && mode !== 'mock') || (mode === 'mock' && stage !== 'j5')) {
+    throw apiError(400, 'PREVIEW_MODE_INVALID', 'Choose a draft preview, or a mock preview of a saved J5 draft.');
+  }
   const snapshot = await snapshotOf(ctx);
   const record = findRecord(snapshot, stage, url.searchParams.get('recordId'));
   if (record.status !== 'draft') throw apiError(409, 'NOT_A_DRAFT', 'Only a draft has a preview. Open the signed PDF instead.');
@@ -144,7 +146,8 @@ export async function draftPreview<P>(ctx: TwoStageContext<P>, stage: BillingSta
   const logo = await readLetterheadLogo();
   let bytes: Uint8Array;
   try {
-    bytes = await renderDraftFromContent(content, {
+    const render = mode === 'mock' ? renderMockJ5FromContent : renderDraftFromContent;
+    bytes = await render(content, {
       logoPng: logo.bytes,
       frozenAt: record.updatedAt.toISOString(),
       receiptSignatureId: receiptValidForThisVoucher ? receipt!.valid!.id : null,
@@ -156,11 +159,12 @@ export async function draftPreview<P>(ctx: TwoStageContext<P>, stage: BillingSta
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `${url.searchParams.get('download') === '1' ? 'attachment' : 'inline'}; filename="${record.documentNumber}-DRAFT.pdf"`,
+      'Content-Disposition': `${url.searchParams.get('download') === '1' ? 'attachment' : 'inline'}; filename="${record.documentNumber}-${mode === 'mock' ? 'MOCK' : 'DRAFT'}.pdf"`,
+      ...(mode === 'mock' ? { 'X-Billing-Document-Mode': 'mock' } : {}),
       'X-Billing-Version-Hash': record.contentSha256,
       'X-Billing-Blocker-Codes': codeList(blockerCodes),
       'X-Billing-Holds': codeList(prereq.holds),
-      ...FRAME_HEADERS,
+      ...PDF_FRAME_HEADERS,
       ...NO_STORE_HEADERS,
     },
   });
@@ -282,7 +286,7 @@ export async function downloadFile<P>(ctx: TwoStageContext<P>, artifactId: strin
       'Content-Type': 'application/pdf',
       'Content-Disposition': `${new URL(ctx.request.url).searchParams.get('download') === '1' ? 'attachment' : 'inline'}; filename="${row.fileName.replace(/["\\]/gu, '_')}"`,
       'X-Billing-Sha256': row.sha256,
-      ...FRAME_HEADERS,
+      ...PDF_FRAME_HEADERS,
       ...NO_STORE_HEADERS,
     },
   });

@@ -194,8 +194,8 @@ function longDate(value: string): string {
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
-/** How the page is rendered: a DRAFT preview, or the final page with the signer's approved image. */
-type RenderMode = { readonly kind: 'draft' } | { readonly kind: 'signed'; readonly signaturePng: Uint8Array };
+/** A draft or explicit mock has no signature image; only a signed render accepts one. */
+type RenderMode = { readonly kind: 'draft' | 'mock' } | { readonly kind: 'signed'; readonly signaturePng: Uint8Array };
 
 function validateFacts(input: TwoStageDocumentFacts, signed: boolean): Date {
   if (input.stage !== 'j5' && input.stage !== 'j6') throw new Error('Unknown billing stage');
@@ -338,6 +338,7 @@ function details(page: PDFPage, fonts: Fonts, rows: ReadonlyArray<readonly [stri
 
 export const DRAFT_BADGE = 'DRAFT - SIGNATURE REQUIRED';
 export const DRAFT_ON_HOLD_BADGE = 'DRAFT - ON HOLD - NOT SIGNABLE';
+export const MOCK_BADGE = 'MOCK - REVIEW ONLY - NOT SIGNED';
 export const RECEIVING_SIGNATURE_PENDING_SUFFIX = '(receiving signature not yet attested)';
 
 function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeight: number, logo: Awaited<ReturnType<PDFDocument['embedPng']>>, badge: string | null): void {
@@ -345,9 +346,10 @@ function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeig
   page.drawImage(logo, { x: LEFT, y: 682, width: logoWidth * scale, height: logoHeight * scale });
   // The final (signed) page carries no status badge.
   if (badge !== null) {
-    const statusW = fonts.bold.widthOfTextAtSize(badge, 7.5) + 22;
+    const badgeSize = badge === MOCK_BADGE ? 9.5 : 7.5;
+    const statusW = fonts.bold.widthOfTextAtSize(badge, badgeSize) + 22;
     page.drawRectangle({ x: RIGHT - statusW, y: 749, width: statusW, height: 22, color: rgb(1, 0.94, 0.84) });
-    drawText(page, fonts, badge, RIGHT - statusW + 11, 756, statusW - 22, 7.5, true, rgb(110 / 255, 68 / 255, 12 / 255));
+    drawText(page, fonts, badge, RIGHT - statusW + 11, 756, statusW - 22, badgeSize, true, rgb(110 / 255, 68 / 255, 12 / 255));
   }
   page.drawLine({ start: { x: LEFT, y: 667 }, end: { x: RIGHT, y: 667 }, thickness: 1, color: GOLD });
 }
@@ -363,7 +365,7 @@ function drawFooter(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts): 
 /** The signature gap above the rule: 245pt wide (the rule), 26pt tall, clear of "Respectfully," above and the rule below. */
 const SIGNATURE_BOX = Object.freeze({ width: 240, height: 26, aboveRule: 2 });
 
-function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts, y: number, signature: Awaited<ReturnType<PDFDocument['embedPng']>> | null): void {
+function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts, y: number, signature: Awaited<ReturnType<PDFDocument['embedPng']>> | null, mock = false): void {
   if (y < 167) throw new Error('Signature area would collide with the footer');
   drawText(page, fonts, 'Respectfully,', LEFT, y, CONTENT_W, 9.3);
   if (signature) {
@@ -371,7 +373,7 @@ function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts
     page.drawImage(signature, { x: LEFT + 2, y: y - 32 + SIGNATURE_BOX.aboveRule, width: signature.width * scale, height: signature.height * scale });
   }
   page.drawLine({ start: { x: LEFT, y: y - 32 }, end: { x: LEFT + 245, y: y - 32 }, thickness: 0.7, color: MUTED });
-  if (!signature) drawText(page, fonts, 'Executive signature required before issue', LEFT, y - 44, 350, 7.9, false, MUTED);
+  if (!signature) drawText(page, fonts, mock ? MOCK_BADGE : 'Executive signature required before issue', LEFT, y - 44, 350, mock ? 9 : 7.9, mock, mock ? RED : MUTED);
   drawText(page, fonts, input.signer.name, LEFT, y - 58, 350, 9.5, true);
   drawText(page, fonts, `${input.signer.title}, ${input.letterhead.organizationName}`, LEFT, y - 71, 350, 8.4);
   if (y - 71 < 78) throw new Error('Signature block overlaps the footer');
@@ -388,7 +390,7 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   const frozenAt = validateFacts(facts, mode.kind === 'signed');
   const doc = await PDFDocument.create();
   const org = facts.letterhead.organizationName;
-  doc.setTitle(`${facts.stage.toUpperCase()} ${facts.title} - ${facts.documentNumber}`);
+  doc.setTitle(`${facts.stage.toUpperCase()} ${facts.title} - ${facts.documentNumber}${mode.kind === 'mock' ? ' - MOCK' : ''}`);
   doc.setAuthor(org);
   doc.setCreator(`${org} billing`);
   doc.setProducer(`${org} billing`);
@@ -403,7 +405,7 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   const signatureImage = signatureBytes ? await doc.embedPng(signatureBytes) : null;
   const page = doc.addPage([PAGE_W, PAGE_H]);
   const held = facts.stage === 'j6' && (facts.openHolds?.length ?? 0) > 0;
-  drawLetterhead(page, fonts, logo.width, logo.height, logo, signatureImage ? null : held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE);
+  drawLetterhead(page, fonts, logo.width, logo.height, logo, mode.kind === 'mock' ? MOCK_BADGE : signatureImage ? null : held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE);
   drawFooter(page, fonts, facts);
 
   drawText(page, fonts, facts.stage.toUpperCase(), LEFT, 642, 50, 9.5, true, RED);
@@ -455,13 +457,20 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
     enclosure.forEach((line, index) => drawText(page, fonts, line, LEFT, y - index * 11, CONTENT_W, 8.4, false, MUTED));
     y -= (enclosure.length - 1) * 11;
   }
-  drawSignature(page, fonts, facts, y - 21, signatureImage);
+  drawSignature(page, fonts, facts, y - 21, signatureImage, mode.kind === 'mock');
+  if (mode.kind === 'mock') drawCentered(page, fonts, MOCK_BADGE, 85, 9, true, RED);
   return doc.save({ useObjectStreams: false });
 }
 
 export function renderJ5QuoteVoucherRequestDraftPdf(input: J5QuoteVoucherRequestFacts): Promise<Uint8Array> {
   if (input.stage !== 'j5') throw new Error('J5 renderer requires J5 facts');
   return renderTwoStagePdf(input, { kind: 'draft' });
+}
+
+/** Review-only J5 using the exact saved facts, visibly marked and with a blank signature. */
+export function renderJ5QuoteVoucherRequestMockPdf(input: J5QuoteVoucherRequestFacts): Promise<Uint8Array> {
+  if (input.stage !== 'j5') throw new Error('J5 mock renderer requires J5 facts');
+  return renderTwoStagePdf(input, { kind: 'mock' });
 }
 
 export function renderJ6InvoiceVoucherCoverLetterDraftPdf(input: J6InvoiceVoucherCoverLetterFacts): Promise<Uint8Array> {

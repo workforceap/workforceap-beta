@@ -8,7 +8,9 @@ import { PROGRAM_SYLLABI } from '@/shared/programSyllabi';
 import { syntheticPng } from '../../../tests/fixtures/billing/syntheticPng';
 import {
   canEmbedSignaturePng,
+  MOCK_BADGE,
   renderJ5QuoteVoucherRequestDraftPdf,
+  renderJ5QuoteVoucherRequestMockPdf,
   renderJ5QuoteVoucherRequestSignedPdf,
   renderJ6InvoiceVoucherCoverLetterDraftPdf,
   renderJ6InvoiceVoucherCoverLetterSignedPdf,
@@ -94,6 +96,26 @@ async function extract(bytes: Uint8Array): Promise<ExtractedPdf> {
 }
 
 describe('two-stage WAP billing PDFs', () => {
+  it('renders an explicit one-page mock with visible review-only marks and a blank signature', async () => {
+    const bytes = await renderJ5QuoteVoucherRequestMockPdf(j5());
+    const pdf = await PDFDocument.load(bytes);
+    assert.match(pdf.getTitle() ?? '', / - MOCK$/u);
+    const { text, positions } = await extract(new Uint8Array(bytes));
+    assert.equal(text.split(MOCK_BADGE).length - 1, 3, 'header, signature caption and footer remain explicitly mock');
+    assert.match(text, /Jordan Example \| jordan@example\.test/u);
+    assert.match(text, /March 30, 2027/u);
+    assert.match(text, /Michael A\. Brown, PMP, ChE/u);
+    assert.doesNotMatch(text, /DRAFT - SIGNATURE REQUIRED|Executive signature required before issue/u);
+    const imageCount = (data: Uint8Array) => (Buffer.from(data).toString('latin1').match(/\/Subtype \/Image\b/gu) ?? []).length;
+    assert.equal(imageCount(bytes), imageCount(await renderJ5QuoteVoucherRequestDraftPdf(j5())), 'only the existing logo is embedded');
+    for (const position of positions) {
+      assert.ok(position.x >= 24 && position.x + position.width <= 590, 'mock text fits page width');
+      assert.ok(position.y >= 25 && position.y <= 775, 'mock text fits page height');
+    }
+    assert.throws(() => renderJ5QuoteVoucherRequestMockPdf(j6() as unknown as J5QuoteVoucherRequestFacts), /requires J5 facts/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestMockPdf({ ...j5(), signature: signaturePng } as J5QuoteVoucherRequestFacts), /not accepted/u);
+  });
+
   it('renders a one-page J5 quote before any voucher or finance facts exist', async () => {
     const bytes = await renderJ5QuoteVoucherRequestDraftPdf(j5());
     assert.equal(Buffer.from(bytes.slice(0, 5)).toString(), '%PDF-');

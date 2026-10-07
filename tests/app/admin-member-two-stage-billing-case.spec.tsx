@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import TwoStageBillingCase from '@/app/admin/members/[id]/billing/TwoStageBillingCase';
+import TwoStageDocumentReview from '@/app/admin/members/[id]/billing/TwoStageDocumentReview';
 import type { ContactSource, DraftFieldError, DraftReviewDto, DraftSaveDto } from '@/lib/billing/twoStage/dto';
 import { CASE_ID, HASH_A, MEMBER_ID, emptyCaseSummary, j5Draft, j5DraftSummary, jsonResponse } from '../fixtures/billing/twoStageSummary';
 
@@ -89,21 +90,34 @@ describe('two-stage billing container (route integration)', () => {
     expect(end).toHaveValue('');
   });
 
-  it('reviews and downloads the saved J5 without opening the editor or taking a signing action', async () => {
+  it('opens and downloads a mock of the exact saved J5 without opening the editor or taking a signing action', async () => {
     const calls = mockRoutes((c) => c.url === `${BASE}/cases`
       ? jsonResponse({ cases: [caseItem] })
       : jsonResponse(j5DraftSummary()));
     renderCase();
 
     const review = await screen.findByRole('region', { name: 'J5 document review' });
-    const path = `${CASE}/j5/draft/preview?recordId=${j5Draft().recordId}&versionHash=${HASH_A}`;
-    expect(within(review).getByRole('link', { name: 'Download J5 draft PDF' })).toHaveAttribute('href', `${path}&download=1`);
+    const path = `${CASE}/j5/draft/preview?recordId=${j5Draft().recordId}&versionHash=${HASH_A}&mode=mock`;
+    expect(within(review).getByRole('link', { name: 'Download mock J5 PDF' })).toHaveAttribute('href', `${path}&download=1`);
+    expect(within(review).getByRole('link', { name: 'Open mock J5 PDF in a new tab' })).toHaveAttribute('href', path);
+    expect(review).toHaveTextContent('This mock PDF uses your saved J5 details for review only. It does not sign, send, or change any records.');
     expect(screen.queryByRole('region', { name: 'J5 draft' })).toBeNull();
-    fireEvent.click(within(review).getByRole('button', { name: 'View J5 PDF' }));
-    expect(screen.getByTitle('J5 DRAFT PDF review')).toHaveAttribute('src', path);
-    expect(within(review).getByRole('button', { name: 'Hide J5 PDF' })).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.click(within(review).getByRole('button', { name: 'View mock J5 PDF' }));
+    expect(screen.getByTitle('J5 MOCK PDF review')).toHaveAttribute('src', path);
+    expect(within(review).getByRole('button', { name: 'Hide mock J5 PDF' })).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Sign J5' })).toBeDisabled();
     expect(calls.every((c) => c.method === 'GET')).toBe(true);
+  });
+
+  it('keeps J6 draft review on its existing saved draft path without mock mode', () => {
+    const current = j5Draft({ documentNumber: 'WAP-I-2026-0001' });
+    render(<TwoStageDocumentReview memberId={MEMBER_ID} caseId={CASE_ID} stage="j6" current={current} />);
+    const review = screen.getByRole('region', { name: 'J6 document review' });
+    const path = `${CASE}/j6/draft/preview?recordId=${current.recordId}&versionHash=${HASH_A}`;
+    expect(within(review).getByRole('link', { name: 'Download J6 draft PDF' })).toHaveAttribute('href', `${path}&download=1`);
+    expect(within(review).getByRole('link', { name: 'Open J6 PDF in a new tab' })).toHaveAttribute('href', path);
+    fireEvent.click(within(review).getByRole('button', { name: 'View J6 PDF' }));
+    expect(screen.getByTitle('J6 DRAFT PDF review')).toHaveAttribute('src', path);
   });
 
   it('offers the exact archived signed J5 for download even when email delivery is disabled', async () => {

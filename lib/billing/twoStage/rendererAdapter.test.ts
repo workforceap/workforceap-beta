@@ -17,6 +17,7 @@ import {
   printedLongDate,
   RendererAdapterError,
   renderDraftFromContent,
+  renderMockJ5FromContent,
   renderSignedFromContent,
   toRendererFacts,
   VOUCHER_REFERENCE_MAX,
@@ -185,6 +186,22 @@ function unsourcedRemainder(text: string, content: TwoStageContent, opts: { rece
 }
 
 describe('two-stage renderer adapter: every printed field comes from frozen content', () => {
+  it('mocks the exact saved J5, ignores frozen signature metadata, and preserves legacy dates', async () => {
+    for (const version of [1, 2] as const) {
+      const content: J5Content = { ...j5(), contentVersion: version };
+      content.training = { ...content.training, classEndDate: version === 1 ? '2027-02-28' : '2027-03-30' };
+      const before = JSON.stringify(content);
+      const bytes = await renderMockJ5FromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' });
+      const text = await pageText(new Uint8Array(bytes));
+      assert.match(text, /MOCK - REVIEW ONLY - NOT SIGNED/u);
+      assert.ok(text.includes(printedLongDate(content.training.classEndDate)));
+      for (const { field, value } of printedContentFields(content)) assert.ok(text.includes(value), field);
+      assert.equal((await placedImages(bytes)).length, 1, 'only the logo, despite the saved signature asset id');
+      assert.equal(JSON.stringify(content), before);
+    }
+    await assert.rejects(renderMockJ5FromContent(j6(), { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }), /only for a saved J5/u);
+  });
+
   it('previews historical V1 snapshots without changing their dates or hashes', async () => {
     const content: J5Content = { ...j5(), contentVersion: 1 };
     content.training = { ...content.training, classEndDate: '2027-02-28' };

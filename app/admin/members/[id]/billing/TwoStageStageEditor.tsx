@@ -113,12 +113,36 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
   const [serverFieldErrors, setServerFieldErrors] = useState<Partial<Record<DraftField, DraftFieldError>>>({});
   const [saved, setSaved] = useState<DraftSaveDto | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [mockPreview, setMockPreview] = useState<{ url: string; scope: string } | null>(null);
+  const [mockPending, setMockPending] = useState(false);
+  const [mockError, setMockError] = useState<ApiFailure | null>(null);
+  const mockAbort = useRef<AbortController | null>(null);
+  const mockSequence = useRef(0);
+  const mockUrl = useRef<string | null>(null);
+  const scope = `${memberId}/${caseId}/${stage}`;
+  const scopeRef = useRef(scope);
+  scopeRef.current = scope;
   const loaded = useRef(false);
   // Read at load only: a summary refresh must not reset what staff are typing.
   const j5CurrentRef = useRef(j5Current);
   j5CurrentRef.current = j5Current;
   const seq = useRef(0);
   const reviewAbort = useRef<AbortController | null>(null);
+
+  const releaseMock = useCallback(() => {
+    mockSequence.current += 1;
+    mockAbort.current?.abort();
+    mockAbort.current = null;
+    if (mockUrl.current) URL.revokeObjectURL(mockUrl.current);
+    mockUrl.current = null;
+  }, []);
+
+  const clearMock = useCallback(() => {
+    releaseMock();
+    setMockPreview(null);
+    setMockError(null);
+    setMockPending(false);
+  }, [releaseMock]);
 
   const fields = useMemo(() => (review ? DRAFT_FIELDS.filter((f) => f in review.fields) : []), [review]);
 
@@ -149,9 +173,25 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
 
   // First load: an empty review returns the saved draft's inputs or the prefill.
   const load = useCallback(async () => {
+    clearMock();
+    reviewAbort.current?.abort();
+    const controller = new AbortController();
+    reviewAbort.current = controller;
+    const id = ++seq.current;
     loaded.current = false;
+    setReview(null);
+    setSaved(null);
+    setShowPreview(false);
     setLoadError(null);
-    const result = await twoStageApi.reviewDraft(memberId, caseId, stage, {});
+    setReviewPending(true);
+    let result;
+    try {
+      result = await twoStageApi.reviewDraft(memberId, caseId, stage, {}, controller.signal);
+    } catch {
+      return;
+    }
+    if (id !== seq.current) return;
+    setReviewPending(false);
     if (!result.ok) {
       setLoadError(result);
       return;
@@ -185,22 +225,32 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
     setReview(dto);
     // The live-review effect checks the loaded values (including any J5 prefill) once.
     loaded.current = true;
-  }, [memberId, caseId, stage]);
+  }, [memberId, caseId, stage, clearMock]);
 
   useEffect(() => {
     void load();
-    return () => reviewAbort.current?.abort();
-  }, [load]);
+    return () => {
+      seq.current += 1;
+      reviewAbort.current?.abort();
+      releaseMock();
+    };
+  }, [load, releaseMock]);
 
   // Live review while typing.
   useEffect(() => {
     if (!loaded.current || fields.length === 0) return;
     const t = setTimeout(() => void runReview(values, fields), REVIEW_DEBOUNCE_MS);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- review when the values change, not when the field list is recomputed
-  }, [values]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- review when values or case identity change, not when the field list is recomputed
+  }, [values, memberId, caseId, stage]);
 
   const setField = (f: DraftField, value: string) => {
+    clearMock();
+    // Disable preview immediately, including the debounce window, and ignore
+    // any older field review that finishes after this edit.
+    seq.current += 1;
+    reviewAbort.current?.abort();
+    setReviewPending(true);
     setValues((prev) => ({ ...prev, [f]: value }));
     setServerFieldErrors((prev) => {
       if (!prev[f]) return prev;
@@ -212,7 +262,38 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
   const expectedVersionHash = saved?.versionHash ?? review?.current?.versionHash ?? null;
   const current = saved?.record ?? review?.current ?? null;
 
+  const previewMock = async () => {
+    if (stage !== 'j5' || !review?.complete || reviewPending || loadError || mockPending || saving) return;
+    clearMock();
+    const controller = new AbortController();
+    mockAbort.current = controller;
+    const id = ++mockSequence.current;
+    setMockPending(true);
+    try {
+      const result = await twoStageApi.previewMockJ5(memberId, caseId, {
+        ...toPatch(stage, fields, values), expectedVersionHash,
+      }, controller.signal);
+      if (id !== mockSequence.current || scope !== scopeRef.current || controller.signal.aborted) return;
+      if (result.ok) {
+        const url = URL.createObjectURL(result.data);
+        mockUrl.current = url;
+        setMockPreview({ url, scope });
+        announce('Mock J5 ready for review. Nothing was saved, signed, or sent.');
+      } else {
+        setMockError(result);
+        if (result.body?.fields) setServerFieldErrors(result.body.fields);
+      }
+    } catch {
+      if (!controller.signal.aborted && id === mockSequence.current && scope === scopeRef.current) {
+        setMockError({ ok: false, status: 0, body: null, message: 'The mock PDF could not be opened. Try again.', uncertain: false });
+      }
+    } finally {
+      if (id === mockSequence.current && scope === scopeRef.current) setMockPending(false);
+    }
+  };
+
   const save = async () => {
+    clearMock();
     setAttempted(true);
     setSaveError(null);
     setSaving(true);
@@ -247,6 +328,10 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
   const saveBlockers = saveError?.body?.code === 'DRAFT_INCOMPLETE' ? saveError.body.blockers ?? [] : [];
   const reviewBlockers = review?.blockers ?? [];
   const invoiceChoices = boardInvoices.filter((a) => a.kind === 'board_invoice');
+  const mockBlocked = reviewPending ? 'Checking the latest fields…'
+    : loadError ? 'The latest fields could not be checked. Try again before previewing.'
+      : !review?.complete ? 'Complete the fields and J5 readiness steps before previewing.' : null;
+  const visibleMock = mockPreview?.scope === scope ? mockPreview : null;
 
   return (
     <section className={styles.editor} aria-labelledby={`billing-${stage}-editor-heading`} data-editor={stage}>
@@ -254,7 +339,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
         <h3 className={styles.editorTitle} id={`billing-${stage}-editor-heading`}>
           {stage.toUpperCase()} draft
         </h3>
-        <button type="button" className={styles.secondaryButton} onClick={onClose}>
+        <button type="button" className={styles.secondaryButton} onClick={() => { clearMock(); onClose(); }}>
           Close editor
         </button>
       </div>
@@ -365,6 +450,41 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
                 </button>
               ) : null}
             </div>
+          ) : null}
+
+          {stage === 'j5' ? (
+            <section className={styles.documentReview} aria-label="Mock J5 preview">
+              <p className={styles.editorNote}>
+                Preview the fields above, including unsaved changes, as a mock J5. This is for review only; nothing is saved, signed, or sent.
+              </p>
+              <div className={styles.editorActions}>
+                <button type="button" className={styles.primaryButton} disabled={Boolean(mockBlocked) || mockPending || saving}
+                  aria-describedby="billing-j5-mock-reason" onClick={() => void previewMock()}>
+                  {mockPending ? 'Creating mock J5…' : 'Preview mock J5'}
+                </button>
+                <p id="billing-j5-mock-reason" className={styles.reason}>{mockBlocked ?? 'No draft save or signature is needed.'}</p>
+                {loadError ? <button type="button" className={styles.secondaryButton} onClick={() => void runReview(values, fields)}>Check fields again</button> : null}
+              </div>
+              {mockError ? (
+                <div className={styles.alert} role="alert" data-code={mockError.body?.code}>
+                  <p>{mockError.message}</p>
+                  <FieldBlockers blockers={mockError.body?.blockers ?? []} />
+                  {mockError.body?.code === 'DRAFT_CONFLICT' ? (
+                    <button type="button" className={styles.secondaryButton} onClick={() => void load()}>Reload draft details</button>
+                  ) : null}
+                </div>
+              ) : null}
+              {visibleMock ? (
+                <>
+                  <div className={styles.previewActions}>
+                    <a className={styles.secondaryButton} href={visibleMock.url} target="_blank" rel="noopener noreferrer">Open mock J5 in a new tab</a>
+                    <a className={styles.secondaryButton} href={visibleMock.url} download="J5-MOCK.pdf">Download mock J5 PDF</a>
+                    <button type="button" className={styles.secondaryButton} onClick={clearMock}>Close mock preview</button>
+                  </div>
+                  <iframe className={styles.previewFrame} title="Unsaved J5 MOCK PDF preview" src={visibleMock.url} />
+                </>
+              ) : null}
+            </section>
           ) : null}
 
           <div className={styles.editorActions}>
