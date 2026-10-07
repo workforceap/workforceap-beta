@@ -27,6 +27,7 @@ const h = vi.hoisted(() => {
     signatureAssets: [] as Array<Record<string, unknown>>,
     payments: [] as Array<Record<string, unknown>>,
     auditCreate: null as null | (() => never),
+    failBillingReads: false,
   };
   return { ORG, OTHER_ORG, ADMIN, MEMBER, CASE, state };
 });
@@ -92,8 +93,10 @@ function prismaFake() {
       findMany: async () => [],
     },
     billingCase: {
-      findFirst: async ({ where }: { where: Record<string, unknown> }) =>
-        h.state.cases.find((c) => Object.entries(where).every(([k, v]) => c[k] === v)) ?? null,
+      findFirst: async ({ where }: { where: Record<string, unknown> }) => {
+        if (h.state.failBillingReads) throw new Error('billing schema must not be read');
+        return h.state.cases.find((c) => Object.entries(where).every(([k, v]) => c[k] === v)) ?? null;
+      },
       findMany: async () => h.state.cases,
       create: mocks.txCreate,
     },
@@ -158,6 +161,7 @@ import { GET as caseSummary } from '@/app/api/admin/members/[id]/billing/two-sta
 import { GET as downloadFile } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/files/[artifactId]/route';
 import { GET as previewDraft } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/preview/route';
 import { POST as reviewDraftRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/review/route';
+import { GET as memberPreviewGet, POST as memberPreviewPost } from '@/app/api/admin/members/[id]/billing/two-stage/[stage]/preview/route';
 import { POST as uploadVoucher } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/route';
 import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/sign/route';
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
@@ -209,6 +213,7 @@ beforeEach(() => {
   h.state.designated = null;
   h.state.signatureAssets = [];
   h.state.payments = [];
+  h.state.failBillingReads = false;
   mocks.getUser.mockResolvedValue({ id: h.ADMIN });
   mocks.isAdmin.mockResolvedValue(true);
   mocks.isSuperAdmin.mockResolvedValue(false);
@@ -236,7 +241,7 @@ afterEach(() => {
 });
 
 describe('two-stage routes: authorization and request checks', () => {
-  it('every route is closed with 503 MIGRATION_NOT_APPLIED by default, before auth or any read', async () => {
+  it('operational routes are closed with 503 MIGRATION_NOT_APPLIED by default, before auth or any read', async () => {
     delete process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED;
     const res = await listCases(new Request(base), memberParams());
     expect(res.status).toBe(503);
@@ -284,6 +289,134 @@ describe('two-stage routes: authorization and request checks', () => {
     const res = await caseSummary(new Request(`${base}/${h.CASE}`), caseParams());
     expect(res.status).toBe(404);
     expect((await res.json()).code).toBe('CASE_NOT_FOUND');
+  });
+});
+
+describe('member document previews: incomplete information is allowed without issuing anything', () => {
+  const url = (stage = 'j5', query = '') => `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/${stage}/preview${query}`;
+  const params = (stage = 'j5') => ({ params: Promise.resolve({ id: h.MEMBER, stage }) });
+  async function pdfText(response: Response) {
+    expect(response.status).toBe(200);
+    const pdf = await getDocument({ data: new Uint8Array(await response.arrayBuffer()), useSystemFonts: true, disableFontFace: true }).promise;
+    try {
+      expect(pdf.numPages).toBe(1);
+      return (await (await pdf.getPage(1)).getTextContent()).items.flatMap((item) => 'str' in item ? [item.str] : []).join(' ');
+    } finally { await pdf.destroy(); }
+  }
+
+  it('renders GET and POST for both stages without cases, enrollments, readiness, or an enabled billing schema', async () => {
+    delete process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED;
+    h.state.cases = [];
+    h.state.failBillingReads = true;
+    const auditCalls = mocks.auditLog.mock.calls.length;
+    const emailCalls = mocks.emailSend.mock.calls.length;
+    for (const stage of ['j5', 'j6']) {
+      const get = await memberPreviewGet(new Request(url(stage, '?download=1')), params(stage));
+      expect(get.headers.get('content-type')).toBe('application/pdf');
+      expect(get.headers.get('content-disposition')).toBe(`attachment; filename="${stage.toUpperCase()}-PREVIEW.pdf"`);
+      expect(get.headers.get('x-billing-document-mode')).toBe('preview');
+      expect(get.headers.get('cache-control')).toContain('no-store');
+      expect(get.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
+      const getText = await pdfText(get);
+      expect(getText).toContain('PREVIEW - NOT SIGNED');
+      expect(getText).toContain('Synthetic Student');
+      expect(getText).toContain('[Not provided]');
+      expect(getText).toContain('no program enrollment is recorded');
+      expect(getText).not.toMatch(/160 hours|September 30|2027|SYNTH-PO/);
+      const post = await memberPreviewPost(jsonReq(url(stage), {
+        student: { name: 'Typed Student', email: '' }, counselor: { name: 'Typed Counselor', email: '', phone: '' },
+        finance: { name: 'Typed Finance', email: '' }, boardName: '',
+      }), params(stage));
+      expect(post.headers.get('content-disposition')).toContain('inline');
+      const postText = await pdfText(post);
+      expect(postText).toContain('Typed Student');
+      expect(postText).not.toContain('student@example.test');
+      expect(postText).toContain(stage === 'j5' ? 'Typed Counselor' : 'Typed Finance');
+      if (stage === 'j6') expect(postText).toContain('not a payment request');
+    }
+    for (const mock of [mocks.transaction, mocks.txCreate, mocks.recordUpdate, mocks.artifactCreate, mocks.receiptCreate, mocks.signatureCreate,
+      mocks.signatureRevoke, mocks.storeSignature, mocks.readSignature, mocks.archive, mocks.readArchive, mocks.paymentCreate]) expect(mock).not.toHaveBeenCalled();
+    expect(mocks.auditLog).toHaveBeenCalledTimes(auditCalls);
+    expect(mocks.emailSend).toHaveBeenCalledTimes(emailCalls);
+    expect(h.state.records).toEqual([]);
+    expect(h.state.attestations).toEqual([]);
+  });
+
+  it('still renders incomplete J5 and J6 when billing is enabled but no case exists', async () => {
+    h.state.cases = [];
+    for (const stage of ['j5', 'j6']) {
+      expect(await pdfText(await memberPreviewGet(new Request(url(stage)), params(stage)))).toContain('[Not provided]');
+    }
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it('uses only a member-owned case and labels a selected catalog program without claiming enrollment', async () => {
+    h.state.cases[0].memberId = 'someone-else';
+    let response = await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params());
+    expect(response.status).toBe(404);
+    expect((await response.json()).code).toBe('CASE_NOT_FOUND');
+    h.state.cases[0].memberId = h.MEMBER;
+    h.state.cases[0].organizationId = h.OTHER_ORG;
+    response = await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params());
+    expect(response.status).toBe(404);
+    h.state.cases[0].organizationId = h.ORG;
+    response = await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}&programSlug=different-program`)), params());
+    expect(response.status).toBe(422);
+    h.state.cases = [];
+    const text = await pdfText(await memberPreviewGet(new Request(url('j5', '?programSlug=data-analytics-professional-certificate-google')), params()));
+    expect(text).toContain('160 hours');
+    expect(text).toContain('enrollment is not confirmed');
+    expect(text).toContain('[Not provided]');
+  });
+
+  it('uses an existing readiness date without creating evidence or requiring official gates', async () => {
+    h.state.attestations = [{ organizationId: h.ORG, caseId: h.CASE, kind: 'j5_readiness', classStartDate: new Date('2026-09-30T00:00:00Z') }];
+    const text = await pdfText(await memberPreviewGet(new Request(url('j6', `?caseId=${h.CASE}`)), params('j6')));
+    expect(text).toContain('September 30, 2026');
+    expect(text).toContain('March 30, 2027');
+    expect(text).toContain('not a payment request');
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(h.state.attestations).toHaveLength(1);
+  });
+
+  it('uses actual class-start evidence for a new J6 ahead of the quoted J5 dates, while retaining a saved J6 snapshot', async () => {
+    const quoted = { kind: 'j5_quote_voucher_request', training: { classStartDate: '2026-09-30', classEndDate: '2027-03-30' } };
+    h.state.records = [{ organizationId: h.ORG, caseId: h.CASE, stage: 'j5', status: 'draft', content: quoted }];
+    h.state.attestations = [{ organizationId: h.ORG, caseId: h.CASE, kind: 'class_started', classStartDate: new Date('2026-10-15T00:00:00Z'), classEndDate: new Date('2027-04-15T00:00:00Z') }];
+    const text = await pdfText(await memberPreviewGet(new Request(url('j6', `?caseId=${h.CASE}`)), params('j6')));
+    expect(text).toContain('October 15, 2026');
+    expect(text).toContain('April 15, 2027');
+    expect(text).not.toContain('September 30, 2026');
+    expect(text).not.toContain('March 30, 2027');
+    const j5Text = await pdfText(await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params()));
+    expect(j5Text).toContain('September 30, 2026');
+    expect(j5Text).toContain('March 30, 2027');
+    h.state.records.unshift({ organizationId: h.ORG, caseId: h.CASE, stage: 'j6', status: 'draft', content: { ...quoted, kind: 'j6_invoice_cover_letter' } });
+    const savedText = await pdfText(await memberPreviewGet(new Request(url('j6', `?caseId=${h.CASE}`)), params('j6')));
+    expect(savedText).toContain('September 30, 2026');
+    expect(savedText).toContain('March 30, 2027');
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it('keeps authentication, administrator, tenant, provider, origin, and stage guards with the migration gate off', async () => {
+    delete process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED;
+    h.state.failBillingReads = true;
+    mocks.getUser.mockResolvedValueOnce(null);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(401);
+    mocks.isAdmin.mockResolvedValueOnce(false);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(403);
+    h.state.userOrg.set(h.ADMIN, h.OTHER_ORG);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(404);
+    h.state.userOrg.set(h.MEMBER, h.OTHER_ORG);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(403);
+    mocks.isSuperAdmin.mockResolvedValueOnce(true);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(403);
+    h.state.userOrg.set(h.ADMIN, h.ORG);
+    h.state.userOrg.set(h.MEMBER, h.ORG);
+    expect((await memberPreviewPost(jsonReq(url(), {}, { origin: 'https://evil.example' }), params())).status).toBe(403);
+    expect((await memberPreviewGet(new Request(url('j7')), params('j7'))).status).toBe(404);
+    expect((await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params())).status).toBe(404);
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });
 

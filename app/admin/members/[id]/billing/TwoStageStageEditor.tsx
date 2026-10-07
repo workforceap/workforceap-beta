@@ -246,8 +246,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
 
   const setField = (f: DraftField, value: string) => {
     clearMock();
-    // Disable preview immediately, including the debounce window, and ignore
-    // any older field review that finishes after this edit.
+    // Invalidate the old PDF and ignore any older field review after this edit.
     seq.current += 1;
     reviewAbort.current?.abort();
     setReviewPending(true);
@@ -263,29 +262,29 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
   const current = saved?.record ?? review?.current ?? null;
 
   const previewMock = async () => {
-    if (stage !== 'j5' || !review?.complete || reviewPending || loadError || mockPending || saving) return;
+    if (mockPending) return;
     clearMock();
     const controller = new AbortController();
     mockAbort.current = controller;
     const id = ++mockSequence.current;
     setMockPending(true);
     try {
-      const result = await twoStageApi.previewMockJ5(memberId, caseId, {
-        ...toPatch(stage, fields, values), expectedVersionHash,
+      const result = await twoStageApi.previewDocument(memberId, stage, {
+        ...toPatch(stage, fields, values), caseId,
       }, controller.signal);
       if (id !== mockSequence.current || scope !== scopeRef.current || controller.signal.aborted) return;
       if (result.ok) {
         const url = URL.createObjectURL(result.data);
         mockUrl.current = url;
         setMockPreview({ url, scope });
-        announce('Mock J5 ready for review. Nothing was saved, signed, or sent.');
+        announce(`${stage.toUpperCase()} preview ready.`);
       } else {
         setMockError(result);
         if (result.body?.fields) setServerFieldErrors(result.body.fields);
       }
     } catch {
       if (!controller.signal.aborted && id === mockSequence.current && scope === scopeRef.current) {
-        setMockError({ ok: false, status: 0, body: null, message: 'The mock PDF could not be opened. Try again.', uncertain: false });
+        setMockError({ ok: false, status: 0, body: null, message: 'The PDF could not be opened. Try again.', uncertain: false });
       }
     } finally {
       if (id === mockSequence.current && scope === scopeRef.current) setMockPending(false);
@@ -328,9 +327,6 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
   const saveBlockers = saveError?.body?.code === 'DRAFT_INCOMPLETE' ? saveError.body.blockers ?? [] : [];
   const reviewBlockers = review?.blockers ?? [];
   const invoiceChoices = boardInvoices.filter((a) => a.kind === 'board_invoice');
-  const mockBlocked = reviewPending ? 'Checking the latest fields…'
-    : loadError ? 'The latest fields could not be checked. Try again before previewing.'
-      : !review?.complete ? 'Complete the fields and J5 readiness steps before previewing.' : null;
   const visibleMock = mockPreview?.scope === scope ? mockPreview : null;
 
   return (
@@ -452,40 +448,23 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
             </div>
           ) : null}
 
-          {stage === 'j5' ? (
-            <section className={styles.documentReview} aria-label="Mock J5 preview">
-              <p className={styles.editorNote}>
-                Preview the fields above, including unsaved changes, as a mock J5. This is for review only; nothing is saved, signed, or sent.
-              </p>
-              <div className={styles.editorActions}>
-                <button type="button" className={styles.primaryButton} disabled={Boolean(mockBlocked) || mockPending || saving}
-                  aria-describedby="billing-j5-mock-reason" onClick={() => void previewMock()}>
-                  {mockPending ? 'Creating mock J5…' : 'Preview mock J5'}
-                </button>
-                <p id="billing-j5-mock-reason" className={styles.reason}>{mockBlocked ?? 'No draft save or signature is needed.'}</p>
-                {loadError ? <button type="button" className={styles.secondaryButton} onClick={() => void runReview(values, fields)}>Check fields again</button> : null}
-              </div>
-              {mockError ? (
-                <div className={styles.alert} role="alert" data-code={mockError.body?.code}>
-                  <p>{mockError.message}</p>
-                  <FieldBlockers blockers={mockError.body?.blockers ?? []} />
-                  {mockError.body?.code === 'DRAFT_CONFLICT' ? (
-                    <button type="button" className={styles.secondaryButton} onClick={() => void load()}>Reload draft details</button>
-                  ) : null}
+          <section className={styles.documentReview} aria-label={`${stage.toUpperCase()} preview`}>
+            <p className={styles.editorNote}>Preview these fields, including unsaved changes. Missing information appears as “Not provided”.</p>
+            <button type="button" className={styles.primaryButton} disabled={mockPending} onClick={() => void previewMock()}>
+              {mockPending ? 'Creating preview…' : `Preview ${stage.toUpperCase()} PDF`}
+            </button>
+            {mockError ? <div className={styles.alert} role="alert"><p>{mockError.message}</p></div> : null}
+            {visibleMock ? (
+              <>
+                <div className={styles.previewActions}>
+                  <a className={styles.secondaryButton} href={visibleMock.url} target="_blank" rel="noopener noreferrer">Open {stage.toUpperCase()} PDF in a new tab</a>
+                  <a className={styles.secondaryButton} href={visibleMock.url} download={`${stage.toUpperCase()}-PREVIEW.pdf`}>Download {stage.toUpperCase()} PDF</a>
+                  <button type="button" className={styles.secondaryButton} onClick={clearMock}>Close preview</button>
                 </div>
-              ) : null}
-              {visibleMock ? (
-                <>
-                  <div className={styles.previewActions}>
-                    <a className={styles.secondaryButton} href={visibleMock.url} target="_blank" rel="noopener noreferrer">Open mock J5 in a new tab</a>
-                    <a className={styles.secondaryButton} href={visibleMock.url} download="J5-MOCK.pdf">Download mock J5 PDF</a>
-                    <button type="button" className={styles.secondaryButton} onClick={clearMock}>Close mock preview</button>
-                  </div>
-                  <iframe className={styles.previewFrame} title="Unsaved J5 MOCK PDF preview" src={visibleMock.url} />
-                </>
-              ) : null}
-            </section>
-          ) : null}
+                <iframe className={styles.previewFrame} title={`Unsaved ${stage.toUpperCase()} PDF preview`} src={visibleMock.url} />
+              </>
+            ) : null}
+          </section>
 
           <div className={styles.editorActions}>
             <button type="submit" className={styles.primaryButton} disabled={Boolean(saveBlocked) || saving} aria-describedby={`billing-${stage}-save-reason`}>

@@ -55,6 +55,8 @@ const nextConfig: NextConfig = {
   // serverless route trace so a Vercel bundle cannot silently degrade to an
   // unavailable/stale knowledge response.
   outputFileTracingIncludes: {
+    // Member previews render their letterhead locally inside the serverless function.
+    '/api/admin/members/*/billing/two-stage/*/preview': ['./public/images/wap_logo.png'],
     // The PDF parser is resolved at runtime inside a worker thread (webpack
     // rewrites require.resolve into a numeric module id, so the path cannot be
     // computed at module scope). That hides the dependency from the file

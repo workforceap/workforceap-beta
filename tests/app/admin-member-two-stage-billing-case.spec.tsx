@@ -75,6 +75,49 @@ afterEach(() => {
 });
 
 describe('two-stage billing container (route integration)', () => {
+  it('offers both PDF previews and downloads immediately, with no case or enrollment', async () => {
+    const calls = mockRoutes(() => jsonResponse({ cases: [] }));
+    renderCase([]);
+    const preview = within(screen.getByRole('region', { name: 'Preview documents' }));
+    for (const stage of ['j5', 'j6']) {
+      const link = preview.getByRole('link', { name: `Preview ${stage.toUpperCase()} PDF` });
+      expect(link).toHaveAttribute('href', `${BASE}/${stage}/preview`);
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).not.toHaveAttribute('aria-disabled', 'true');
+      expect(preview.getByRole('link', { name: `Download ${stage.toUpperCase()} PDF` }))
+        .toHaveAttribute('href', `${BASE}/${stage}/preview?download=1`);
+    }
+    await screen.findByText(/no program enrollment on file/);
+    expect(preview.getByRole('link', { name: 'Preview J5 PDF' })).toBeVisible();
+    expect(preview.getByRole('link', { name: 'Preview J6 PDF' })).toBeVisible();
+    expect(calls).toEqual([{ url: `${BASE}/cases`, method: 'GET', body: undefined }]);
+  });
+
+  it('keeps both top PDF previews and downloads on the selected billing case', async () => {
+    const secondCaseId = '99999999-9999-4999-8999-999999999999';
+    const secondCase = { ...caseItem, id: secondCaseId, className: 'Second program' };
+    const secondSummary = j5DraftSummary();
+    secondSummary.case.id = secondCaseId;
+    mockRoutes((call) => {
+      if (call.url === `${BASE}/cases`) return jsonResponse({ cases: [caseItem, secondCase] });
+      if (call.url === `${BASE}/cases/${secondCaseId}`) return jsonResponse(secondSummary);
+      return jsonResponse(j5DraftSummary());
+    });
+    renderCase();
+    const preview = within(screen.getByRole('region', { name: 'Preview documents' }));
+    const expectCaseLinks = (caseId: string) => {
+      for (const stage of ['j5', 'j6']) {
+        const path = `${BASE}/${stage}/preview?caseId=${caseId}`;
+        expect(preview.getByRole('link', { name: `Preview ${stage.toUpperCase()} PDF` })).toHaveAttribute('href', path);
+        expect(preview.getByRole('link', { name: `Download ${stage.toUpperCase()} PDF` })).toHaveAttribute('href', `${path}&download=1`);
+      }
+    };
+    await waitFor(() => expectCaseLinks(CASE_ID));
+    fireEvent.change(screen.getByLabelText('Billing case'), { target: { value: secondCaseId } });
+    await waitFor(() => expectCaseLinks(secondCaseId));
+    expect(screen.getByLabelText('Billing case')).toHaveValue(secondCaseId);
+  });
+
   it('fixes the class end at six calendar months after the entered start, including month ends', async () => {
     mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] }) : jsonResponse(j5DraftSummary()));
     renderCase();

@@ -266,7 +266,22 @@ longer read.
 
 ### Reviewing and downloading without sending
 
-Open **Admin → Members → member → J5 / J6 billing**. Each current saved draft
+Open **Admin → Members → member → J5 / J6 billing**. The page starts with
+**Preview J5 PDF** and **Preview J6 PDF**, available for every member the admin is
+authorized to access. Neither button requires a billing case, enrollment, saved
+draft, readiness, voucher, class-start evidence, or signature. Missing facts are
+visibly labeled, and a J6 preview does not claim missing evidence has been supplied.
+These unsigned previews never allocate an official number, persist billing data,
+read a signature image, archive, sign, or send a document.
+
+`GET /api/admin/members/:id/billing/two-stage/:stage/preview` uses available member
+and billing details; `POST` also accepts the current editor fields. Both stages
+use this path, with optional scoped case/program selection and `download=1` for an
+attachment. Admin, member, tenant and provider access checks still apply. The
+operational migration gate does not block the preview-only route; unavailable
+optional billing data is represented as missing information.
+
+Each current saved draft
 has **View mock J5 PDF** / **View J6 PDF** and PDF download controls above
 its prerequisites. Reviewing uses the read-only, version-bound preview endpoint;
 it does not require signature approval or enabled email delivery. Save edits before
@@ -280,12 +295,12 @@ image, write an archive, or invoke signing or delivery. It works in the producti
 admin workflow even when real signing or email delivery is unavailable. The regular
 draft preview remains available in the draft editor; J6 uses its existing preview.
 
-The J5 editor also offers **Preview mock J5** before saving. Its read-only
-`POST .../j5/draft/review?mode=mock` validates the current editor fields and saved
-readiness, then renders a temporary mock using the current six-month terms. It
-does not allocate an official document number or persist the inputs. The normal
-review request still returns JSON. Changing fields invalidates the temporary
-preview; saving a draft and all real signing/delivery actions remain separate.
+Both editors offer a preview of the current fields before saving, including
+incomplete inputs, through the member-level preview route above. Changing fields
+invalidates the temporary preview. The older J5-only
+`POST .../j5/draft/review?mode=mock` remains compatible with its stricter validation;
+normal draft review still returns JSON. Saving a draft and all real signing and
+delivery actions remain separate from these previews.
 
 Current signed or sent versions expose **Download signed J5 PDF** /
 **Download signed J6 PDF**, returning the exact archived bytes for manual delivery.
@@ -607,12 +622,17 @@ sign, send, reconcile, close and payment bodies. M1 types (`CaseProgress`,
 readiness keys to #2706 at compile time and proves the module has no runtime
 imports.
 
-### 3. Auth and checks (every route, in this order)
+### 3. Auth and checks
+
+Operational routes use the order below. The member-level unsigned preview route
+skips only the operational migration gate, retains all access checks, and requires
+the same-origin check for POST. Its optional case selection is scoped to the
+authorized member and organization; no case is required to render a preview.
 
 | Step | Applies to | Check | Failure |
 | --- | --- | --- | --- |
 | 0 | all | `withApiGuc`, same as `billing-packets`. | — |
-| 1 | all | Migration gate: `BILLING_TWO_STAGE_MIGRATION_APPLIED === 'true'`. | `503 MIGRATION_NOT_APPLIED` |
+| 1 | operational routes | Migration gate: `BILLING_TWO_STAGE_MIGRATION_APPLIED === 'true'`. | `503 MIGRATION_NOT_APPLIED` |
 | 2 | mutations | Origin/CSRF: `Origin` present and equal to `new URL(request.url).origin`, and `Sec-Fetch-Site` not `cross-site` (`requireSameOriginMutation`, same rule as `requireLabMutationOrigin`). | `403 ORIGIN_REJECTED` |
 | 3 | mutations | Content type (`application/json`; `multipart/form-data` for uploads). Size, checked from `Content-Length` and a counting reader before anything is buffered: JSON ≤ 64 KiB; multipart ≤ 4 MiB in total. | `415 UNSUPPORTED_MEDIA_TYPE`, `413 PAYLOAD_TOO_LARGE`, `400 INVALID_JSON` |
 | 4 | all | `getUser()`. | `401 UNAUTHENTICATED` |
@@ -625,7 +645,7 @@ imports.
 | 11 | sign | Exact echo and intent: `validateSignRequest(target, request)`. | `409 VERSION_STALE`, `409 ALREADY_SIGNED`, `422 INTENT_NOT_CONFIRMED` |
 
 Every Prisma call names `organizationId: member.organizationId`. Every
-mutation writes one `audit_logs` row with `auditLog(params, tx)` in the same
+persisting mutation writes one `audit_logs` row with `auditLog(params, tx)` in the same
 transaction as its billing rows (`billing.two_stage.<case_opened | attested |
 uploaded | voucher_receipt_attested | draft_saved | signed | send_attempted |
 sent | send_reconciled | send_cancelled | closed | payment_received>`);
@@ -651,7 +671,7 @@ claim row, storage write or provider call, and reported in the case summary
 
 | Gate | Enabled when | Blocks | Error |
 | --- | --- | --- | --- |
-| Migration applied | `BILLING_TWO_STAGE_MIGRATION_APPLIED === 'true'` (set per environment only after the M1 migration and #2700 bucket are applied there) | every two-stage route | `503 MIGRATION_NOT_APPLIED` |
+| Migration applied | `BILLING_TWO_STAGE_MIGRATION_APPLIED === 'true'` (set per environment only after the M1 migration and #2700 bucket are applied there) | operational routes; not the member-level unsigned preview | `503 MIGRATION_NOT_APPLIED` |
 | Provider org | `BILLING_PACKET_PROVIDER_ORG_ID` unset (default org) or a UUID | all | `503 PROVIDER_ORG_MISCONFIGURED` |
 | Finance archive | the #2704 private-bucket preflight passes | uploads, file download, sign, send | `503 FINANCE_ARCHIVE_UNAVAILABLE`; the case summary never calls Storage and reports this gate as unknown (`enabled: null`, `code: null`), never as closed |
 | Signer configured | `BILLING_EXECUTIVE_SIGNER_USER_ID` is a UUID equal to the designated-signer row (M1 55a0562 makes the row the identity and the env var an optional cross-check; M3 keeps it required as a second key) | sign, voucher receipt attestation | `503 SIGNER_NOT_CONFIGURED` |
@@ -1239,7 +1259,7 @@ line each, with the reason.
 
 1. **Fresh MFA at signing:** not implemented; documented as a known limitation (§3), because the repo has no step-up primitive and sign is disabled until it is added.
 2. **Real-email gate:** `BILLING_TWO_STAGE_EMAIL_ENABLED`, default false, set by Mike only after real-email acceptance, so no environment sends J5/J6 mail by accident.
-3. **Unmigrated environments:** `BILLING_TWO_STAGE_MIGRATION_APPLIED` gates every two-stage route with `503 MIGRATION_NOT_APPLIED`, because production has no tables until the backup/restore rehearsal and deploy order alone is not a control.
+3. **Unmigrated environments:** `BILLING_TWO_STAGE_MIGRATION_APPLIED` gates operational two-stage routes with `503 MIGRATION_NOT_APPLIED`. The member-level unsigned preview remains available with missing optional billing information and cannot persist, sign, or send anything.
 4. **Cases:** one case per member and program (`409 CASE_EXISTS`), no enrollment row required, because readiness comes from attestations and M1 has no uniqueness to lean on.
 5. **Which counselor:** the WAP assigned counselor (`resolveAssignedCounselorContact`) prefills name and email and staff may correct them; the phone is always staff-entered, because the brief names the WAP counselor and no phone is on file.
 6. **Printable-text rules:** enforced by M3 at draft save (`printableIssues` + trial render) with `TEXT_NOT_PRINTABLE` / `VOUCHER_REFERENCE_TOO_LONG`, because the renderer's limits are layout facts; moving them into M1 is an optional follow-up.
@@ -1294,6 +1314,12 @@ environment; real email; production backup/restore proof. (The signed renderer
 and the signature image upload were added after M3; see §5.13 and §5.20.)
 
 ### Route index (M3)
+
+Member-level unsigned preview, outside the case routes:
+
+| Method | Full path | Notes |
+| --- | --- | --- |
+| GET / POST | `/api/admin/members/[id]/billing/two-stage/[stage]/preview` | either document; no case or operational prerequisites; POST accepts unsaved fields and requires same-site Origin |
 
 Under `/api/admin/members/[id]/billing/two-stage/cases`; files under
 `app/api/admin/members/[id]/billing/two-stage/cases/`. Every route runs the

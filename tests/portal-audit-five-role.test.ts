@@ -566,7 +566,7 @@ describe('read-only portal action contracts', () => {
     });
   });
 
-  it('allows only the reviewed resume-render POSTs through the read-only guard', () => {
+  it('allows reviewed resume-render POSTs through the read-only guard', () => {
     expect(
       isAllowedReadOnlyNonGetRequest('POST', '/api/member/resume/docx-html'),
     ).toBe(true);
@@ -598,6 +598,33 @@ describe('read-only portal action contracts', () => {
     expect(isSuppressedExternalAuditTelemetryRequest('POST', 'https://www.google.com/api/contact')).toBe(false);
     expect(isSuppressedAuditSideEffectGetRequest('GET', '/api/auth/check-mfa-required')).toBe(true);
     expect(isSuppressedAuditSideEffectGetRequest('POST', '/api/auth/check-mfa-required')).toBe(false);
+  });
+
+  it('allows only exact member J5 and J6 preview POSTs on the trusted origin', () => {
+    const origin = 'https://trusted-preview.example.test';
+    const billingPath = '/api/admin/members/member-1/billing/two-stage';
+    for (const stage of ['j5', 'j6']) {
+      const path = `${billingPath}/${stage}/preview`;
+      for (const suffix of ['', '/', '?download=1']) {
+        expect(classifyReadOnlyAuditRequest('POST', `${origin}${path}${suffix}`, origin)).toBe('continue');
+      }
+      expect(classifyReadOnlyAuditRequest('POST', `https://evil.example.test${path}`, origin)).toBe('block');
+      for (const method of ['PATCH', 'PUT', 'DELETE']) {
+        expect(classifyReadOnlyAuditRequest(method, `${origin}${path}`, origin), method).toBe('block');
+      }
+      for (const sibling of [
+        `${billingPath}/${stage}`,
+        `${billingPath}/${stage}/sign`,
+        `${billingPath}/${stage}/send`,
+        `${path}/send`,
+        `${billingPath}/cases/case-1/${stage}/preview`,
+      ]) {
+        expect(classifyReadOnlyAuditRequest('POST', `${origin}${sibling}`, origin), sibling).toBe('block');
+      }
+    }
+    for (const path of [`${billingPath}/cases`, `${billingPath}/j7/preview`, '/api/admin/members/member-1/billing/preview']) {
+      expect(classifyReadOnlyAuditRequest('POST', `${origin}${path}`, origin), path).toBe('block');
+    }
   });
 
   it('origin-binds every non-GET exception before the browser can continue it', () => {

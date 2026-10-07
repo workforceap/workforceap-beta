@@ -1,26 +1,23 @@
 # Reviewing J5 and finding member tools
 
-## Review or download a J5
+## Preview or download either document
 
 1. Open **Admin → Members**, select the member, then open **J5 / J6 billing**.
-2. If only the readiness information is saved, choose **Create J5**, then complete
-   the document fields, including the Workforce Solutions board and counselor phone.
-   Choose **Preview mock J5** in the editor to see the current entries without saving
-   a draft first. The mock PDF can be opened or downloaded from that preview.
-3. If a draft is already saved, **View mock J5 PDF** and **Download mock J5 PDF**
-   review that exact saved version directly from the J5 section.
-4. Every mock is clearly marked **MOCK - REVIEW ONLY - NOT SIGNED** and has no
-   signature. Mocking works in the production admin workflow and does not change
-   the billing record, sign the document, send email, or submit it to anyone.
-   Edits invalidate the editor preview; preview again to see the revised entries.
-5. Once the designated signer has explicitly approved and signed the document,
-   **Download signed J5 PDF** saves the archived signed version for manual delivery.
+2. Click **Preview J5 PDF** or **Preview J6 PDF** at the top of the page.
+3. View the PDF or use its download control to save a copy.
 
-Record the J5 readiness information before composing the document. Saving readiness
-does not itself create a J5. **Save draft** is a separate action when the document
-details are ready to be retained.
-Signature and delivery requirements still apply to their own actions. They do not
-prevent an authorized admin from reviewing an existing draft PDF.
+These buttons work for any member the admin is authorized to access, even without
+an enrollment, billing case, readiness record, voucher, or signature. Available
+details are filled in; missing information is visibly marked rather than blocking
+the preview. Both documents are clearly marked as unsigned previews. They do not
+save a billing record, sign a document, or send anything.
+
+When an editor is already open, its preview uses the fields currently entered,
+including incomplete or unsaved changes. Editing clears the previous preview.
+
+The official **Save draft**, signing, and sending actions still have their own
+requirements. Once a document is actually signed, **Download signed J5 PDF** or
+**Download signed J6 PDF** retrieves that exact archived version.
 
 ## AI Career Tools
 
