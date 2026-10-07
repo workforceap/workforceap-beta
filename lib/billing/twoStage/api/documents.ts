@@ -23,8 +23,8 @@ import { authorizeSigner, signerIntentStatement } from '../signing';
 import { canSignJ6 } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { readArchived } from './archive';
-import { holdBlockers, J5_ISSUE_DATE_NOT_TODAY_MESSAGE, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
-import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, loadCaseSnapshot, receiptSignatureState, recordContent, toSignerAsset, type CaseSnapshot } from './caseData';
+import { DRAFT_STALE_MESSAGE, holdBlockers, J5_ISSUE_DATE_NOT_TODAY_MESSAGE, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
+import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, j6DraftBindsLatestClassStarted, loadCaseSnapshot, receiptSignatureState, recordContent, toSignerAsset, type CaseSnapshot } from './caseData';
 import { allGates, GATE_MESSAGES } from './gates';
 import { apiError, json, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
@@ -209,6 +209,9 @@ export async function verifySignable<P>(
     if (!voucher || voucher.artifact.id !== content.voucher.artifactId || voucher.attestation?.id !== content.voucher.attestationId) {
       throw apiError(409, 'DRAFT_STALE', DRAFT_STALE_MESSAGE);
     }
+    if (!j6DraftBindsLatestClassStarted(content, snapshot)) {
+      throw apiError(409, 'DRAFT_STALE', DRAFT_STALE_MESSAGE);
+    }
     const receipt = receiptSignatureState(snapshot);
     const receiptOk = receipt?.status.ok === true && receipt.valid?.voucherSha256 === content.voucher.sha256;
     const held = canSignJ6({
@@ -250,8 +253,6 @@ export async function verifySignable<P>(
   if (!signatureAsset) throw signatureGateError({ ok: false, code: 'SIGNATURE_ASSET_MISSING', error: 'The signer has no active approved signature image; signing stays closed.' });
   return { snapshot, record, content, receiptSignatureId, signatureAsset };
 }
-
-const DRAFT_STALE_MESSAGE = 'The evidence or letterhead changed since this draft was saved. Save the draft again and review the new preview.';
 
 /** POST …/[stage]/freeze — a verified checkpoint; writes nothing. */
 export async function freeze<P>(ctx: TwoStageContext<P>, stage: BillingStage, body: unknown): Promise<FreezeDto> {

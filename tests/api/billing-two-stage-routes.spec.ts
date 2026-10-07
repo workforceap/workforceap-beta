@@ -174,7 +174,7 @@ import { POST as freeze } from '@/app/api/admin/members/[id]/billing/two-stage/c
 import { GET as signatureGet, POST as signaturePost } from '@/app/api/admin/members/[id]/billing/two-stage/signature/route';
 import type { Attestation } from '@/lib/billing/twoStage/attestations';
 import { contentSha256, sha256Hex } from '@/lib/billing/twoStage/canonical';
-import { buildJ5Content, recipientRowsForContent } from '@/lib/billing/twoStage/content';
+import { buildJ5Content, buildJ6Content, recipientRowsForContent } from '@/lib/billing/twoStage/content';
 import { WAP_LOGO_PUBLIC_PATH } from '@/lib/billing/twoStage/letterhead';
 import { inspectSignaturePng, signatureApprovalStatement } from '@/lib/billing/twoStage/signatureAsset';
 import { RendererAdapterError, renderDraftFromContent } from '@/lib/billing/twoStage/rendererAdapter';
@@ -1412,6 +1412,164 @@ describe('two-stage routes: signing a J5 with the approved image', () => {
     expect(res.status).toBe(403);
     expect(mocks.readSignature).not.toHaveBeenCalled();
     expect(mocks.archive).not.toHaveBeenCalled();
+  });
+});
+
+describe('two-stage routes: a newer class_started attestation stale-blocks J6 sign', () => {
+  const NOW_ISO = '2026-10-20T18:00:00.000Z';
+  const REC = 'rec-j6';
+  const J5_REC = 'rec-j5-sent';
+  const SLUG = 'data-analytics-professional-certificate-google';
+  const CLASS_NAME = 'Management Analyst & Business Intelligence Professional Certificate';
+  const logoSha = sha256Hex(new Uint8Array(readFileSync(join(process.cwd(), WAP_LOGO_PUBLIC_PATH))));
+  const VOUCHER_SHA = 'c'.repeat(64);
+  const day = (v: string) => new Date(`${v}T00:00:00.000Z`);
+
+  function classStarted(id: string, start: string, end: string, attestedAt: string): Attestation {
+    return {
+      id, kind: 'class_started', statement: 'synthetic class start', evidenceReference: 'synthetic attendance',
+      classStartDate: start, classEndDate: end, artifactId: null, voucherReference: null, authorizedAmountCents: null,
+      authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, receivingSignaturePresent: null,
+      externalReference: null, externalQuoteDate: null, quotedProgramSlug: null, quotedClassName: null,
+      authorizedProgramSlug: null, authorizedClassName: null, studentReadyConfirmed: null, counselorRequestedBy: null,
+      counselorRequestedOn: null, counselorRequestReference: null, attestedBySubjectId: h.ADMIN, attestedAt,
+    };
+  }
+
+  function seedSignableJ6(started: Attestation) {
+    const quote = buildJ5Content({
+      documentNumber: 'WAP-Q-2026-0001', logoSha256: logoSha, issueDate: '2026-09-20',
+      student: { name: 'Jordan Example', email: 'jordan@example.test' },
+      counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
+      boardName: 'Workforce Solutions Capital Area', programSlug: SLUG,
+      readiness: {
+        id: 'att-ready', kind: 'j5_readiness', statement: 'synthetic', evidenceReference: 'synthetic evidence',
+        classStartDate: '2026-09-30', classEndDate: null, artifactId: null, voucherReference: null, authorizedAmountCents: null,
+        authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, receivingSignaturePresent: null,
+        externalReference: null, externalQuoteDate: null, quotedProgramSlug: null, quotedClassName: null,
+        authorizedProgramSlug: null, authorizedClassName: null, studentReadyConfirmed: true,
+        counselorRequestedBy: 'Casey Counselor', counselorRequestedOn: '2026-09-19', counselorRequestReference: 'Email 2026-09-19',
+        attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-20T15:00:00.000Z',
+      },
+      signatureAsset: { assetId: 'sig-1', assetSha256: PNG_SHA },
+    });
+    if (!quote.ok) throw new Error(quote.errors.join('; '));
+    const voucherAttestation: Attestation = {
+      id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
+      classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
+      authorizedAmountCents: 750_000, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+      receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
+      quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
+      studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
+      attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-29T16:00:00.000Z',
+    };
+    const built = buildJ6Content({
+      now: new Date(NOW_ISO), hasOpenJ6: false, programSlug: SLUG,
+      priorJ5: { source: 'system', j5: { recordId: J5_REC, status: 'sent', content: quote.content, contentSha256: quote.contentSha256 } },
+      classStarted: started,
+      voucher: { id: 'art-voucher', kind: 'board_signed_voucher', fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: VOUCHER_SHA },
+      voucherAttestation, boardInvoice: null, documentNumber: 'WAP-I-2026-0001', logoSha256: logoSha,
+      signatureAsset: { assetId: 'sig-1', assetSha256: PNG_SHA }, issueDate: '2026-10-20',
+      student: { name: 'Jordan Example', email: 'jordan@example.test' },
+      counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
+      boardName: 'Workforce Solutions Capital Area', finance: { name: 'Morgan Finance', email: 'finance@example.test' },
+    });
+    if (!built.ok) throw new Error(built.errors.join('; '));
+    const content = built.content;
+    const emptyAttestationDates = {
+      counselorRequestedOn: null, authorizedStartDate: day(voucherAttestation.authorizedStartDate!),
+      authorizedEndDate: day(voucherAttestation.authorizedEndDate!), receivedOn: day(voucherAttestation.receivedOn!),
+      externalQuoteDate: null,
+    };
+    h.state.attestations = [
+      {
+        ...started, caseId: h.CASE, organizationId: h.ORG, classStartDate: day(started.classStartDate!),
+        classEndDate: day(started.classEndDate!), attestedAt: new Date(started.attestedAt),
+        counselorRequestedOn: null, authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, externalQuoteDate: null,
+      },
+      { ...voucherAttestation, caseId: h.CASE, organizationId: h.ORG, classStartDate: null, classEndDate: null, attestedAt: new Date(voucherAttestation.attestedAt), ...emptyAttestationDates },
+    ];
+    h.state.artifacts = [{
+      id: 'art-voucher', organizationId: h.ORG, caseId: h.CASE, kind: 'board_signed_voucher', source: 'uploaded',
+      fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: VOUCHER_SHA,
+      storageBucket: 'billing-finance', storageKey: 'cases/voucher.pdf', createdBySubjectId: h.ADMIN,
+      createdAt: new Date('2026-09-29T15:00:00Z'),
+    }];
+    h.state.receipt = [{
+      id: 'rs-1', organizationId: h.ORG, caseId: h.CASE, voucherArtifactId: 'art-voucher', voucherSha256: VOUCHER_SHA,
+      attestedByUserId: h.ADMIN, method: 'present_on_original', representationArtifactId: null, representationSha256: null,
+      attestedAt: new Date('2026-09-29T17:00:00Z'),
+    }];
+    h.state.records = [
+      {
+        id: J5_REC, organizationId: h.ORG, caseId: h.CASE, stage: 'j5', version: 1, status: 'sent',
+        documentNumber: quote.content.documentNumber, content: quote.content, contentSha256: quote.contentSha256,
+        className: quote.content.training.className, contactHours: quote.content.training.contactHours,
+        classStartDate: day(quote.content.training.classStartDate), classEndDate: day(quote.content.training.classEndDate),
+        createdBySubjectId: h.ADMIN, createdAt: new Date('2026-09-20T17:00:00Z'), updatedAt: new Date('2026-09-20T18:00:00Z'),
+        signedAt: new Date('2026-09-20T18:00:00Z'), signedBySubjectId: h.ADMIN, signedArtifactId: null,
+        sentAt: new Date('2026-09-20T18:30:00Z'), supersededAt: null, voidedAt: null, closedBySubjectId: null,
+        acceptedRolesAtClose: [], sendCancelledAt: null, sendCancelledBySubjectId: null, readinessAttestationId: 'att-ready',
+        recipients: [], sends: [],
+      },
+      {
+        id: REC, organizationId: h.ORG, caseId: h.CASE, stage: 'j6', version: 1, status: 'draft',
+        documentNumber: content.documentNumber, content, contentSha256: built.contentSha256,
+        className: content.training.className, contactHours: content.training.contactHours,
+        classStartDate: day(content.training.classStartDate), classEndDate: day(content.training.classEndDate),
+        createdBySubjectId: h.ADMIN, createdAt: new Date('2026-10-20T17:00:00Z'), updatedAt: new Date('2026-10-20T17:30:00Z'),
+        signedAt: null, signedBySubjectId: null, signedArtifactId: null, sentAt: null, supersededAt: null, voidedAt: null,
+        closedBySubjectId: null, acceptedRolesAtClose: [], sendCancelledAt: null, sendCancelledBySubjectId: null,
+        classStartAttestationId: started.id, voucherAttestationId: voucherAttestation.id, voucherArtifactId: 'art-voucher',
+        recipients: recipientRowsForContent(content).map((r) => ({
+          stageRecordId: REC, organizationId: h.ORG, stage: 'j6', recipientRole: r.role, recipientName: r.name, email: r.email, phone: r.phone,
+        })),
+        sends: [],
+      },
+    ];
+    return { content, hash: built.contentSha256 };
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(NOW_ISO));
+    asDesignatedSigner();
+    h.state.signatureAssets = [assetRow()];
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('refuses freeze and sign when a later class_started row supersedes the draft dates, without writing', async () => {
+    const original = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    const { content, hash } = seedSignableJ6(original);
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(checkpoint.status).toBe(200);
+
+    const corrected = classStarted('att-start-2', '2026-10-15', '2027-04-15', '2026-10-20T16:00:00.000Z');
+    h.state.attestations.unshift({
+      ...corrected, caseId: h.CASE, organizationId: h.ORG, classStartDate: day(corrected.classStartDate!),
+      classEndDate: day(corrected.classEndDate!), attestedAt: new Date(corrected.attestedAt),
+      counselorRequestedOn: null, authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, externalQuoteDate: null,
+    });
+    const before = JSON.stringify(h.state.records.find((r) => r.id === REC));
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.canSign).toBe(false);
+    expect(summary.j6.blockers).toContainEqual(expect.objectContaining({ code: 'DRAFT_STALE', message: expect.stringContaining('Save the draft again') }));
+    expect(summary.j6.classStarted?.attestationId).toBe('att-start-2');
+    expect(summary.j6.classStarted?.classStartDate).toBe('2026-10-15');
+
+    const staleFreeze = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect([staleFreeze.status, await code(staleFreeze)]).toEqual([409, 'DRAFT_STALE']);
+    const signed = await sign(jsonReq(`${base}/${h.CASE}/j6/sign`, {
+      recordId: REC, version: 1, contentSha256: hash, intentConfirmed: true,
+      intentText: signerIntentStatement({ documentTitle: content.title, documentNumber: content.documentNumber, contentSha256: hash }),
+    }), caseParams({ stage: 'j6' }));
+    expect([signed.status, await code(signed)]).toEqual([409, 'DRAFT_STALE']);
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    expect(JSON.stringify(h.state.records.find((r) => r.id === REC))).toBe(before);
   });
 });
 

@@ -45,6 +45,7 @@ import { checkJ5Prerequisites, checkJ6Prerequisites, summarizeCase, type StageSt
 import { VOUCHER_REFERENCE_MAX } from '../rendererAdapter';
 import {
   blockersFromMessages,
+  DRAFT_STALE_MESSAGE,
   holdBlockers,
   J5_ISSUE_DATE_NOT_TODAY_MESSAGE,
   J6_ISSUE_DATE_NOT_TODAY_MESSAGE,
@@ -58,6 +59,7 @@ import {
   actor,
   currentVoucher,
   isoDate,
+  j6DraftBindsLatestClassStarted,
   j6Prerequisites,
   latestAttestation,
   latestRecord,
@@ -471,6 +473,9 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
     blockers.push({ code: 'J6_ISSUE_DATE_NOT_TODAY', message: J6_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false });
   }
   const signBlockers = current?.status === 'draft' ? [...gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']), ...draftVersionBlockers(current)] : [];
+  if (current?.status === 'draft' && currentContent && !j6DraftBindsLatestClassStarted(currentContent, snapshot)) {
+    signBlockers.push({ code: 'DRAFT_STALE', message: DRAFT_STALE_MESSAGE, hardHold: false });
+  }
   const imageBlockers = signatureImageBlockers(snapshot, current);
   const sendBlockers = current?.status === 'signed' ? gateBlockers(input.gates, ['realEmail', 'receiptSignaturePrincipal']) : [];
   const classStartedRow = latestAttestation(snapshot, 'class_started');
