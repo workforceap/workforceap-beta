@@ -8,6 +8,7 @@ import { PROGRAM_SYLLABI } from '@/shared/programSyllabi';
 import { syntheticPng } from '../../../tests/fixtures/billing/syntheticPng';
 import {
   canEmbedSignaturePng,
+  renderBillingDocumentPreviewPdf,
   MOCK_BADGE,
   renderJ5QuoteVoucherRequestDraftPdf,
   renderJ5QuoteVoucherRequestMockPdf,
@@ -96,6 +97,43 @@ async function extract(bytes: Uint8Array): Promise<ExtractedPdf> {
 }
 
 describe('two-stage WAP billing PDFs', () => {
+  it('previews either incomplete stage with labeled missing values, a blank signature, and no invented class or voucher facts', async () => {
+    for (const stage of ['j5', 'j6'] as const) {
+      const facts = j5();
+      const bytes = await renderBillingDocumentPreviewPdf({
+        stage, preparedAt: facts.frozenAt, student: { name: 'Jordan Example', email: null },
+        counselor: { name: null, email: null, phone: null }, finance: { name: null, email: null }, boardName: null,
+        className: null, classHours: null, classStartDate: null, classEndDate: null, voucherReference: null,
+        sourceNote: 'Available member details; no program enrollment is recorded.', signer: facts.signer, letterhead: facts.letterhead,
+      });
+      const { text, positions } = await extract(new Uint8Array(bytes));
+      assert.match(text, /PREVIEW - NOT SIGNED/u);
+      assert.match(text, /\[Not provided\]/u);
+      assert.match(text, /Signature \(blank for preview\)/u);
+      assert.doesNotMatch(text, /September 30|160 hours|March 30|student began class|requests payment|received, signed training voucher/u);
+      assert.match(text, /funding not confirmed/u);
+      if (stage === 'j6') assert.match(text, /not a payment request/u);
+      for (const p of positions) {
+        assert.ok(p.x >= 24 && p.x + p.width <= 590);
+        assert.ok(p.y >= 25 && p.y <= 775);
+      }
+      const images = (data: Uint8Array) => (Buffer.from(data).toString('latin1').match(/\/Subtype \/Image\b/gu) ?? []).length;
+      assert.equal(images(bytes), images(await renderJ5QuoteVoucherRequestDraftPdf(facts)), 'only the logo is embedded');
+    }
+  });
+
+  it('keeps any-member previews renderable while visibly marking text the preview cannot display', async () => {
+    const facts = j5();
+    const { text } = await extract(await renderBillingDocumentPreviewPdf({
+      stage: 'j6', preparedAt: facts.frozenAt, student: { name: '李', email: 'x'.repeat(60_000) },
+      counselor: { name: null, email: null, phone: null }, finance: { name: null, email: null }, boardName: null,
+      className: null, classHours: null, classStartDate: null, classEndDate: null, voucherReference: null,
+      sourceNote: 'Available member details.', signer: facts.signer, letterhead: facts.letterhead,
+    }));
+    assert.match(text, /Text unavailable in preview/u);
+    assert.match(text, /x\.\.\./u);
+  });
+
   it('renders an explicit one-page mock with visible review-only marks and a blank signature', async () => {
     const bytes = await renderJ5QuoteVoucherRequestMockPdf(j5());
     const pdf = await PDFDocument.load(bytes);

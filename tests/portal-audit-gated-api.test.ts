@@ -102,6 +102,24 @@ describe('portal audit gated two-stage billing responses', () => {
     expect(classifyBillingRoute(dataRequests).failureReasons).toContain('page_errors');
   });
 
+  it('fails ungated member J5 and J6 previews even when they return an expected gate code', async () => {
+    for (const stage of ['j5', 'j6']) {
+      for (const suffix of ['', '/', '?download=1']) {
+        const url = `${GATED_API.replace(/\/cases$/, '')}/${stage}/preview${suffix}`;
+        const { dataRequests } = await collect([
+          { status: 503, url, body: gateBody('MIGRATION_NOT_APPLIED') },
+        ]);
+
+        expect(isGatedApiResponseCandidate({ status: 503, url }), url).toBe(false);
+        expect(dataRequests.errors, url).toHaveLength(1);
+        expect(dataRequests.consoleErrors, url).toEqual([native503]);
+        expect(classifyBillingRoute(dataRequests).failureReasons).toEqual(
+          expect.arrayContaining(['page_errors', 'console_errors']),
+        );
+      }
+    }
+  });
+
   it('still fails the route for an unknown 503 code', async () => {
     const { dataRequests } = await collect([
       { status: 503, url: GATED_API, body: gateBody('SOMETHING_ELSE_BROKE') },
@@ -246,6 +264,7 @@ describe('portal audit gated two-stage billing responses', () => {
   it('only reads bodies for 503 responses on the gated path', () => {
     expect(isGatedApiResponseCandidate({ status: 503, url: GATED_API })).toBe(true);
     expect(isGatedApiResponseCandidate({ status: 503, url: `${GATED_API}/case-1/payment` })).toBe(true);
+    expect(isGatedApiResponseCandidate({ status: 503, url: `${GATED_API}/case-1/j5/preview` })).toBe(true);
     expect(isGatedApiResponseCandidate({ status: 500, url: GATED_API })).toBe(false);
     expect(isGatedApiResponseCandidate({ status: 503, url: OTHER_API })).toBe(false);
     expect(isGatedApiResponseCandidate({ status: 503, url: 'not a url' })).toBe(false);

@@ -5,6 +5,7 @@ import { KitEmptyState } from '@/components/portal/kit';
 import { GATE_CODES, type BillingStage, type CaseListItemDto, type CaseSummaryDto, type ErrorCode } from '@/lib/billing/twoStage/dto';
 import TwoStageBillingWorkbench from './TwoStageBillingWorkbench';
 import TwoStageStageEditor from './TwoStageStageEditor';
+import TwoStageQuickPreview from './TwoStageQuickPreview';
 import { ClassStartedPanel, FailureNotice, J5ReadinessPanel, PaymentPanel, SignerTaskAction, signatureSlotStage, StageLifecycle, VoucherPanel, type PanelContext } from './TwoStageStagePanels';
 import { twoStageApi, type ApiFailure } from './twoStageClient';
 import styles from './TwoStageBillingWorkbench.module.css';
@@ -55,7 +56,18 @@ function pickCase(cases: readonly CaseListItemDto[], programs: readonly Enrolled
  * the workbench to the M3 routes. It holds no authority of its own: every
  * button sends a request and the server's answer is what is shown.
  */
-export default function TwoStageBillingCase({ memberId, memberName, memberEmail, counselor, enrolledPrograms }: TwoStageBillingCaseProps) {
+export default function TwoStageBillingCase(props: TwoStageBillingCaseProps) {
+  const [previewCase, setPreviewCase] = useState<{ memberId: string; caseId: string } | null>(null);
+  const selectPreviewCase = useCallback((caseId: string | null) => {
+    setPreviewCase(caseId ? { memberId: props.memberId, caseId } : null);
+  }, [props.memberId]);
+  return <>
+    <TwoStageQuickPreview memberId={props.memberId} caseId={previewCase?.memberId === props.memberId ? previewCase.caseId : undefined} />
+    <TwoStageBillingCaseDetails {...props} onCaseSelected={selectPreviewCase} />
+  </>;
+}
+
+function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counselor, enrolledPrograms, onCaseSelected }: TwoStageBillingCaseProps & { onCaseSelected: (caseId: string | null) => void }) {
   const [state, setState] = useState<State>({ phase: 'loading' });
   const [editing, setEditing] = useState<BillingStage | null>(null);
   const [opening, setOpening] = useState(false);
@@ -70,25 +82,29 @@ export default function TwoStageBillingCase({ memberId, memberName, memberEmail,
       const listed = await twoStageApi.listCases(memberId, signal);
       if (id !== loadSeq.current) return;
       if (!listed.ok) {
+        onCaseSelected(null);
         setState(isUnavailable(listed) ? { phase: 'unavailable', failure: listed } : { phase: 'error', failure: listed });
         return;
       }
       const cases = listed.data.cases;
       const chosen = pickCase(cases, enrolledPrograms, selected.current);
       if (!chosen) {
+        onCaseSelected(null);
         setState({ phase: 'no_case', cases });
         return;
       }
       const summary = await twoStageApi.getCase(memberId, chosen.id, signal);
       if (id !== loadSeq.current) return;
       if (!summary.ok) {
+        onCaseSelected(null);
         setState(isUnavailable(summary) ? { phase: 'unavailable', failure: summary } : { phase: 'error', failure: summary });
         return;
       }
       selected.current = chosen.id;
+      onCaseSelected(chosen.id);
       setState({ phase: 'ready', cases, caseId: chosen.id, summary: summary.data });
     },
-    [memberId, enrolledPrograms],
+    [memberId, enrolledPrograms, onCaseSelected],
   );
 
   useEffect(() => {

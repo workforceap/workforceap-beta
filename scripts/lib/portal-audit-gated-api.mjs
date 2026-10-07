@@ -1,8 +1,8 @@
 /**
  * Expected gated two-stage billing API responses.
  *
- * `lib/billing/twoStage/api/gates.ts` closes every two-stage J5/J6 billing
- * route with HTTP 503 and a JSON `code` until the environment opts in (for
+ * `lib/billing/twoStage/api/gates.ts` closes persisted two-stage J5/J6 billing
+ * routes with HTTP 503 and a JSON `code` until the environment opts in (for
  * example `BILLING_TWO_STAGE_MIGRATION_APPLIED=true`). That is a recorded
  * engineering decision (`docs/BILLING-PACKETS.md`, "release gates"), pinned by
  * `tests/api/billing-two-stage-routes.spec.ts`, and the admin billing page
@@ -46,12 +46,14 @@ export const AUDITED_GATE_CODES = Object.freeze(['PROVIDER_ORG_MISCONFIGURED', '
 
 const EXPECTED_GATE_CODE_SET = new Set(EXPECTED_GATE_CODES);
 
-/** `/api/admin/members/{id}/billing/two-stage/**` — the gated API, nothing else. */
+/** Persisted billing routes are gated; the member-level PDF previews are not. */
 const GATED_API_PATHNAME = /^\/api\/admin\/members\/[^/]+\/billing\/two-stage(?:\/|$)/;
+const UNGATED_PREVIEW_PATHNAME = /^\/api\/admin\/members\/[^/]+\/billing\/two-stage\/(?:j5|j6)\/preview\/?$/;
 
-/** True for a two-stage billing API pathname. */
+/** True for a gated two-stage billing API pathname. */
 export function isGatedTwoStageBillingApiPath(pathname) {
-  return typeof pathname === 'string' && GATED_API_PATHNAME.test(pathname);
+  return typeof pathname === 'string' && GATED_API_PATHNAME.test(pathname) &&
+    !UNGATED_PREVIEW_PATHNAME.test(pathname);
 }
 
 /**

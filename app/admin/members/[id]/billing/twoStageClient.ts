@@ -130,9 +130,15 @@ export function draftPreviewPath(memberId: string, caseId: string, stage: Billin
   return `${caseBase(memberId, caseId)}/${stage}/draft/preview?${q.toString()}`;
 }
 
+/** Always-available, non-binding preview; no billing case or saved draft is required. */
+export function documentPreviewPath(memberId: string, stage: BillingStage, caseId?: string): string {
+  const query = caseId ? `?${new URLSearchParams({ caseId }).toString()}` : '';
+  return `${twoStageBase(memberId)}/${stage}/preview${query}`;
+}
+
 /** Read-only POST: typed fields are rendered to a PDF without saving a draft. */
-async function requestMockJ5Pdf(path: string, body: DraftSaveRequest<'j5'>, signal?: AbortSignal): Promise<ApiResult<Blob>> {
-  const unavailable = 'The mock PDF could not be loaded. Try again.';
+async function requestPreviewPdf(path: string, body: DraftPatch<'j6'> & { caseId?: string }, signal?: AbortSignal): Promise<ApiResult<Blob>> {
+  const unavailable = 'The PDF could not be loaded. Try again.';
   try {
     const res = await fetchWithTimeout(path, {
       method: 'POST', credentials: 'same-origin', cache: 'no-store', signal,
@@ -183,8 +189,8 @@ export const twoStageApi = {
 
   reviewDraft: <S extends BillingStage>(memberId: string, caseId: string, stage: S, body: DraftPatch<S>, signal?: AbortSignal) =>
     request<DraftReviewDto>(`${caseBase(memberId, caseId)}/${stage}/draft/review`, { method: 'POST', json: body, signal }),
-  previewMockJ5: (memberId: string, caseId: string, body: DraftSaveRequest<'j5'>, signal?: AbortSignal) =>
-    requestMockJ5Pdf(`${caseBase(memberId, caseId)}/j5/draft/review?mode=mock`, body, signal),
+  previewDocument: (memberId: string, stage: BillingStage, body: DraftPatch<'j6'> & { caseId?: string }, signal?: AbortSignal) =>
+    requestPreviewPdf(documentPreviewPath(memberId, stage), body, signal),
   saveDraft: <S extends BillingStage>(memberId: string, caseId: string, stage: S, body: DraftSaveRequest<S>) =>
     request<DraftSaveDto>(`${caseBase(memberId, caseId)}/${stage}/draft`, { method: 'PUT', json: body }),
 

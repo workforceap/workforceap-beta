@@ -372,8 +372,9 @@ export function applyBlockedWriteFailure(result, blockedWriteRequestCount) {
 }
 
 /**
- * These POST endpoints render existing resume documents and do not write app
- * state. Every other non-GET request remains blocked by the audit runtime.
+ * These POST endpoints render resumes or unsaved billing previews without
+ * writing app state. Other non-GET requests remain blocked apart from login
+ * during the explicitly allowed authentication phase.
  */
 export function isAllowedReadOnlyNonGetRequest(method, pathname, options = {}) {
   if (String(method).toUpperCase() !== 'POST') return false;
@@ -381,7 +382,8 @@ export function isAllowedReadOnlyNonGetRequest(method, pathname, options = {}) {
   return (
     (options.allowAuthentication === true && path === '/api/auth/login') ||
     path === '/api/member/resume/docx-html' ||
-    /^\/api\/counselor\/members\/[^/]+\/resume\/docx-html$/.test(path)
+    /^\/api\/counselor\/members\/[^/]+\/resume\/docx-html$/.test(path) ||
+    /^\/api\/admin\/members\/[^/]+\/billing\/two-stage\/(?:j5|j6)\/preview$/.test(path)
   );
 }
 
