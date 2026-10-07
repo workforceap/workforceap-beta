@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { StatusTag, useAnnounce } from '@/components/portal/kit';
+import { classEndDate as calculateClassEndDate, isIsoDate } from '@/lib/billing/twoStage/dates';
 import type {
   BillingStage,
   CaseSummaryDto,
@@ -134,6 +135,7 @@ function TextField({
   type = 'text',
   hint,
   multiline,
+  readOnly,
 }: {
   label: string;
   value: string;
@@ -141,6 +143,7 @@ function TextField({
   type?: 'text' | 'date' | 'number';
   hint?: string;
   multiline?: boolean;
+  readOnly?: boolean;
 }) {
   const id = useId();
   return (
@@ -151,7 +154,7 @@ function TextField({
       {multiline ? (
         <textarea id={id} className={styles.control} rows={3} value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={hint ? `${id}-hint` : undefined} />
       ) : (
-        <input id={id} className={styles.control} type={type} value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={hint ? `${id}-hint` : undefined} />
+        <input id={id} className={styles.control} type={type} value={value} readOnly={readOnly} onChange={(e) => onChange(e.target.value)} aria-describedby={hint ? `${id}-hint` : undefined} />
       )}
       {hint ? (
         <p id={`${id}-hint`} className={styles.fieldHint}>
@@ -220,6 +223,7 @@ export function J5ReadinessPanel({ ctx, attestation }: { ctx: PanelContext; atte
       )}
       <div className={styles.fieldGrid}>
         <TextField label="Confirmed class start date" type="date" value={classStartDate} onChange={setClassStartDate} />
+        <TextField label="Calculated class end date" type="date" value={isIsoDate(classStartDate) ? calculateClassEndDate(classStartDate) : ''} onChange={() => undefined} readOnly hint="Fixed at six calendar months after the start, using the last day of the month when needed." />
         <TextField label="Counselor who requested the quote" value={requestedBy} onChange={setRequestedBy} />
         <TextField label="Date of the request" type="date" value={requestedOn} onChange={setRequestedOn} />
         <TextField label="Request reference" value={requestRef} onChange={setRequestRef} hint="For example the subject line of the counselor’s email." />
@@ -236,7 +240,7 @@ export function J5ReadinessPanel({ ctx, attestation }: { ctx: PanelContext; atte
 export function ClassStartedPanel({ ctx, classStarted }: { ctx: PanelContext; classStarted: J6StageView['classStarted'] }) {
   const action = useAction();
   const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
+  const end = isIsoDate(start) ? calculateClassEndDate(start) : '';
   const [evidence, setEvidence] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [contractNote, setContractNote] = useState<string | null>(null);
@@ -257,7 +261,7 @@ export function ClassStartedPanel({ ctx, classStarted }: { ctx: PanelContext; cl
       ) : null}
       <div className={styles.fieldGrid}>
         <TextField label="Actual class start date" type="date" value={start} onChange={setStart} />
-        <TextField label="Confirmed class end date" type="date" value={end} onChange={setEnd} />
+        <TextField label="Calculated class end date" type="date" value={end} onChange={() => undefined} readOnly hint="Fixed at six calendar months after the actual start, using the last day of the month when needed." />
         <TextField label="Evidence reference" value={evidence} onChange={setEvidence} />
       </div>
       <CheckField label="I confirm the student has started this class." checked={confirmed} onChange={setConfirmed} />

@@ -772,6 +772,12 @@
   background: var(--wa-surface-2);
 }
 
+.documentReview {
+  padding: var(--wa-pad);
+  border-bottom: 1px solid var(--wa-border);
+  background: var(--wa-surface-2);
+}
+
 .panel {
   border: 1px solid var(--wa-border);
   border-radius: var(--wa-radius-sm);

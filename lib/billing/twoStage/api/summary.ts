@@ -6,7 +6,7 @@ import 'server-only';
  * every check. No I/O.
  */
 import type { BillingArtifact, BillingAttestation, BillingPaymentEvent } from '@prisma/client';
-import type { BillingStage } from '../constants';
+import { CONTENT_VERSION, CONTENT_VERSION_UPGRADE_MESSAGE, type BillingStage } from '../constants';
 import type { J5Content, J6Content } from '../content';
 import { billingToday, classEndDate, compareIsoDates } from '../dates';
 import type {
@@ -303,6 +303,12 @@ function gateBlockers(gates: Record<GateName, GateState>, names: readonly GateNa
   });
 }
 
+function draftVersionBlockers(record: RecordWithRelations | null): Blocker[] {
+  return record?.status === 'draft' && recordContent<J5Content | J6Content>(record).contentVersion !== CONTENT_VERSION
+    ? [{ code: 'DRAFT_STALE', message: CONTENT_VERSION_UPGRADE_MESSAGE, hardHold: false }]
+    : [];
+}
+
 function draftContactReadiness(record: RecordWithRelations | null): Partial<Record<'boardConfirmed' | 'counselorContactVerified' | 'studentEmailVerified' | 'financeContactVerified', boolean>> {
   if (!record) return {};
   const content = recordContent<J5Content | J6Content>(record);
@@ -342,6 +348,7 @@ function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Re
   const { snapshot, now } = input;
   const records = stageRecords(snapshot, 'j5');
   const current = records[0] ?? null;
+  const currentContent = current ? recordContent<J5Content>(current) : null;
   const readinessRow = latestAttestation(snapshot, 'j5_readiness');
   const terms = resolveProgramTerms(snapshot.billingCase.programSlug);
   const editing = current?.status === 'draft' ? current.id : null;
@@ -350,7 +357,7 @@ function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Re
   const blockers: Blocker[] = gate.ok ? [] : blockersFromMessages(gate.errors);
   if (!current || current.status === 'superseded' || current.status === 'voided') blockers.push({ code: 'DRAFT_MISSING', message: 'Save a draft first.', hardHold: false });
   // M1 55a0562: J5 signing needs the designated signer and the server issue date too.
-  const signBlockers = current?.status === 'draft' ? gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']) : [];
+  const signBlockers = current?.status === 'draft' ? [...gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']), ...draftVersionBlockers(current)] : [];
   if (current?.status === 'draft' && recordContent<J5Content>(current).issueDate !== billingToday(now)) {
     blockers.push({ code: 'J5_ISSUE_DATE_NOT_TODAY', message: J5_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false });
   }
@@ -370,7 +377,9 @@ function j5View(input: SummaryInput): { view: J5StageView; readiness: Partial<Re
           reference: readinessRow.counselorRequestReference ?? '',
         },
         confirmedClassStartDate: isoDate(readinessRow.classStartDate) ?? '',
-        quotedClassEndDate: classEndDate(isoDate(readinessRow.classStartDate) as string),
+        quotedClassEndDate: currentContent?.readiness?.attestationId === readinessRow.id
+          ? currentContent.training.classEndDate
+          : classEndDate(isoDate(readinessRow.classStartDate) as string),
       }
     : null;
   const allBlockers = [...blockers, ...signBlockers, ...imageBlockers, ...sendBlockers].map((b) =>
@@ -461,7 +470,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
   if (current?.status === 'draft' && currentContent && currentContent.issueDate !== today) {
     blockers.push({ code: 'J6_ISSUE_DATE_NOT_TODAY', message: J6_ISSUE_DATE_NOT_TODAY_MESSAGE, hardHold: false });
   }
-  const signBlockers = current?.status === 'draft' ? gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']) : [];
+  const signBlockers = current?.status === 'draft' ? [...gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']), ...draftVersionBlockers(current)] : [];
   const imageBlockers = signatureImageBlockers(snapshot, current);
   const sendBlockers = current?.status === 'signed' ? gateBlockers(input.gates, ['realEmail', 'receiptSignaturePrincipal']) : [];
   const classStartedRow = latestAttestation(snapshot, 'class_started');

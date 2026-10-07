@@ -84,10 +84,10 @@ export default function MemberPortalTopNav({
   const tabs = [
     { canonical: '/dashboard', label: t('dashboard'), icon: 'home' },
     { canonical: '/dashboard/program', label: t('myProgram'), icon: 'school' },
+    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome' },
     { canonical: '/dashboard/jobs', label: t('jobBoard'), icon: 'work' },
     { canonical: '/dashboard/readiness', label: t('myProgress'), icon: 'check_circle' },
     { canonical: '/dashboard/messages', label: t('counselorChat'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey },
-    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome' },
     { canonical: '/dashboard/missions', label: t('skillMissions'), icon: 'flag' },
     { canonical: '/dashboard/job-applications', label: t('jobApplications'), icon: 'assignment', badgeKey: 'applications_new' as NavBadgeKey },
     { canonical: '/dashboard/resume', label: t('resume'), icon: 'description' },

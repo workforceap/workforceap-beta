@@ -112,9 +112,19 @@ primary action, signature and send:
   because the AWS AI Practitioner shares it and is 160. An unknown program, a
   program without an approved syllabus, or a syllabus that disagrees with
   160/200 fails closed (`hours.ts`).
-- End date: class start plus 5 calendar months, clamped to the month's end
-  (Sep 30 → Feb 28/29, Oct 31 → Mar 31, Jan 31 → Jun 30). See `dates.ts`.
+- End date: class start plus 6 calendar months, clamped to the month's end
+  (Sep 30 → Mar 30, Oct 31 → Apr 30, Jan 31 → Jul 31, Aug 31 → Feb 28/29). See `dates.ts`.
   "Today" is the calendar date in America/Chicago.
+  New content version 2 documents use this fixed six-month rule. Readiness and
+  actual-start forms show the calculated end as read-only, and the server rejects
+  a different end date on new class-start attestations. Existing version 1 drafts
+  still preview with their original five-month dates; explicitly save a draft again
+  to review the new six-month terms before signing. For a J6, record corrected
+  class-start evidence first. Signed, sent and superseded snapshots and their
+  archived PDFs are never rewritten; use the existing correction workflow if an
+  issued document needs different terms. The database migration must land before
+  the app writes version 2 documents.
+
 - Payment: once the J6 is sent it is `pending`, with an *expected follow-up*
   window of send + 10 to + 14 days. That is a follow-up expectation, not a due
   date or a Net term, and there is no overdue state. It becomes `received`
@@ -161,7 +171,7 @@ this branch rather than followed by corrective migrations.
 The database enforces these rules itself, not just the app:
 
 - **Drafts and lineage.** Records start as drafts. A correction is exactly version + 1 of a superseded or voided record in the same case and stage, through a composite `(supersedes_record_id, case_id, stage)` FK. Each record has at most one successor, and each case and stage at most one open record.
-- **J5.** It needs only the readiness attestation with both facts: no voucher and no funding input. It quotes the confirmed start and start + 5 calendar months, for the case program.
+- **J5.** It needs only the readiness attestation with both facts: no voucher and no funding input. It quotes the confirmed start and start + 6 calendar months, for the case program.
 - **J6.** It needs, all from the same case:
   - the class-start attestation, whose dates it prints
   - the voucher and its attestation
@@ -171,7 +181,7 @@ The database enforces these rules itself, not just the app:
   - `voucher_amount_differs`: the voucher amount is not 750000 cents.
   - `voucher_class_differs`: the voucher authorizes another program or class.
   - `voucher_period_conflict`: the class dates fall outside the voucher period.
-  - `end_date_not_contract`: the actual end is not start + 5 calendar months, the same rule the PDF renderer enforces.
+  - `end_date_not_contract`: the actual end is not start + 6 calendar months, the same rule the PDF renderer enforces.
   - `class_differs_from_quote`: the program, class or hours differ from our J5 or the external quote.
 - **Signing.** It needs:
   - no hold;
@@ -253,6 +263,35 @@ longer read.
 - **Pure code.** `voucherReceiptSignatureStatus()` in `voucherReceipt.ts` and
   `canSignJ6({ voucherReceiptSignature })` apply the same rule. The blocker code
   is `VOUCHER_RECEIPT_SIGNATURE_UNATTESTED`, and a missing input fails closed.
+
+### Reviewing and downloading without sending
+
+Open **Admin → Members → member → J5 / J6 billing**. Each current saved draft
+has **View mock J5 PDF** / **View J6 PDF** and PDF download controls above
+its prerequisites. Reviewing uses the read-only, version-bound preview endpoint;
+it does not require signature approval or enabled email delivery. Save edits before
+reviewing the new version. Downloads use the same authorization checks as preview.
+
+J5 draft review defaults to `mode=mock`: the existing saved content is rendered
+with **MOCK - REVIEW ONLY - NOT SIGNED** on the page and a blank signature area.
+The response filename ends in `-MOCK.pdf`. The mock uses the exact saved version,
+including its original date terms, and does not save a new record, read a signature
+image, write an archive, or invoke signing or delivery. It works in the production
+admin workflow even when real signing or email delivery is unavailable. The regular
+draft preview remains available in the draft editor; J6 uses its existing preview.
+
+The J5 editor also offers **Preview mock J5** before saving. Its read-only
+`POST .../j5/draft/review?mode=mock` validates the current editor fields and saved
+readiness, then renders a temporary mock using the current six-month terms. It
+does not allocate an official document number or persist the inputs. The normal
+review request still returns JSON. Changing fields invalidates the temporary
+preview; saving a draft and all real signing/delivery actions remain separate.
+
+Current signed or sent versions expose **Download signed J5 PDF** /
+**Download signed J6 PDF**, returning the exact archived bytes for manual delivery.
+Voided or superseded versions remain historical records and are never presented
+as ready to send. Preview and download never sign, email, or submit a document.
+See the [member/admin review guide](MEMBER-ADMIN-REVIEW-GUIDE.md) for the short workflow.
 
 ### Signing
 
@@ -470,7 +509,7 @@ after removing content values and the fixed list nothing is left but
 separators. Changing a bound value changes the page; adding hard-coded text
 fails the test. A third test renders real M1 content and compares the whole
 page, in reading order, with the reference fixture, including the Sep 30 →
-Feb 28 end date (start + 5 calendar months, clamped); a fourth pins M1's
+Mar 30 end date (start + 6 calendar months, clamped); a fourth pins M1's
 frozen strings (titles `Quote / Voucher Request` / `Invoice / Voucher Cover
 Letter`, organization, website, phone `(512) 825-2896`, address, signer,
 payment instruction and follow-up wording) to the fixture.

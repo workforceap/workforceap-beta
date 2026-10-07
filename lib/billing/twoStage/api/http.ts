@@ -12,6 +12,8 @@ export const NO_STORE_HEADERS: Readonly<Record<string, string>> = Object.freeze(
   'X-Content-Type-Options': 'nosniff',
 });
 
+export const PDF_FRAME_HEADERS = { 'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': "frame-ancestors 'self'" };
+
 /** JSON bodies: 64 KiB. */
 export const MAX_JSON_BYTES = 64 * 1024;
 /**

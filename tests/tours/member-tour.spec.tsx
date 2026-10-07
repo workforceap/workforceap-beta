@@ -153,7 +153,7 @@ describe('member guided tour (wave 3)', () => {
     expect(dialog).toHaveAttribute('aria-modal', 'true');
     expect(screen.getByTestId('guided-tour-spotlight')).toBeInTheDocument();
     for (let i = 0; i < STEP_TITLES.length; i++) {
-      await waitFor(() => expect(screen.getByRole('heading', { level: 2, name: STEP_TITLES[i] })).toBeInTheDocument());
+      await waitFor(() => expect(within(screen.getByRole('dialog')).getByRole('heading', { level: 2, name: STEP_TITLES[i] })).toBeInTheDocument());
       expect(screen.getByRole('dialog')).toHaveTextContent(`Step ${i + 1} of 7`);
       if (i < STEP_TITLES.length - 1) fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     }

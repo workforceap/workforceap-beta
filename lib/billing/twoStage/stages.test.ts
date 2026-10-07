@@ -62,7 +62,7 @@ function sentJ5(programSlug = IT_SUPPORT): { recordId: string; status: 'sent'; c
 
 const voucherArtifact = { id: 'art-voucher', kind: 'board_signed_voucher', fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: 'b'.repeat(64) };
 const classStarted = saved(
-  ok(recordClassStarted({ studentName: 'S', className: 'IT Support', classStartDate: '2026-09-30', classEndDate: '2027-02-28', evidenceReference: 'synthetic attendance', attestedBySubjectId: STAFF, confirmed: true, now: NOW })),
+  ok(recordClassStarted({ studentName: 'S', className: 'IT Support', classStartDate: '2026-09-30', classEndDate: '2027-03-30', evidenceReference: 'synthetic attendance', attestedBySubjectId: STAFF, confirmed: true, now: NOW })),
   'att-start',
 );
 const voucherAttestation = (over: Partial<Parameters<typeof recordVoucherBoardSigned>[0]> = {}) =>
@@ -76,7 +76,7 @@ const voucherAttestation = (over: Partial<Parameters<typeof recordVoucherBoardSi
         authorizedProgramSlug: IT_SUPPORT,
         authorizedClassName: IT_CLASS,
         authorizedStartDate: '2026-09-01',
-        authorizedEndDate: '2027-03-31',
+        authorizedEndDate: '2027-04-30',
         receivedOn: '2026-10-02',
         receivingSignaturePresent: true,
         evidenceReference: 'synthetic board email',
@@ -110,7 +110,8 @@ describe('J5: allowed before any voucher exists', () => {
     assert.ok(built.ok);
     const c = built.content;
     assert.equal(c.title, 'Quote / Voucher Request');
-    assert.deepEqual(c.training, { programSlug: IT_SUPPORT, className: 'IT Support Professional Certificate (IBM)', contactHours: 160, classStartDate: '2026-09-30', classEndDate: '2027-02-28' });
+    assert.equal(c.contentVersion, 2);
+    assert.deepEqual(c.training, { programSlug: IT_SUPPORT, className: 'IT Support Professional Certificate (IBM)', contactHours: 160, classStartDate: '2026-09-30', classEndDate: '2027-03-30' });
     assert.deepEqual(c.lineItems, [{ label: 'Tuition & Fees', amountCents: 750_000 }]);
     assert.equal(c.totalCents, 750_000);
     assert.deepEqual(c.recipients.map((r) => r.role), ['counselor', 'student']);
@@ -124,7 +125,7 @@ describe('J5: allowed before any voucher exists', () => {
     const built = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0002', issueDate: '2026-10-01', programSlug: 'ai-and-software-development-professional-certificate-ibm', readiness: r, ...people });
     assert.ok(built.ok);
     assert.equal(built.content.training.contactHours, 200);
-    assert.equal(built.content.training.classEndDate, '2027-03-31');
+    assert.equal(built.content.training.classEndDate, '2027-04-30');
     assert.equal(built.content.training.programSlug, AI_SOFTWARE);
   });
 
@@ -164,6 +165,11 @@ describe('J5: allowed before any voucher exists', () => {
 });
 
 describe('J6: gated on the received signed voucher and class start', () => {
+  it('rejects a manually overridden end date on a new class-start attestation', () => {
+    const result = recordClassStarted({ studentName: 'S', className: 'IT Support', classStartDate: '2026-09-30', classEndDate: '2027-02-28', evidenceReference: 'synthetic attendance', attestedBySubjectId: STAFF, confirmed: true, now: NOW });
+    assert.equal(result.ok, false);
+    assert.match(!result.ok ? result.errors.join(' ') : '', /six calendar months/);
+  });
   it('passes with a sent J5, the receipt-signed voucher and a begun class', () => {
     const gate = checkJ6Prerequisites(j6Input());
     assert.ok(gate.ok, !gate.ok ? gate.errors.join('; ') : '');
@@ -179,7 +185,7 @@ describe('J6: gated on the received signed voucher and class start', () => {
   });
 
   it('is blocked when Michael’s receiving signature is missing or attested false', () => {
-    const noSig = recordVoucherBoardSigned({ boardName: 'B', voucherReference: 'PO', artifact: voucherArtifact, authorizedAmountCents: 750_000, authorizedProgramSlug: IT_SUPPORT, authorizedClassName: IT_CLASS, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-03-31', receivedOn: '2026-10-02', receivingSignaturePresent: false, evidenceReference: 'e', attestedBySubjectId: STAFF, confirmed: true, now: NOW });
+    const noSig = recordVoucherBoardSigned({ boardName: 'B', voucherReference: 'PO', artifact: voucherArtifact, authorizedAmountCents: 750_000, authorizedProgramSlug: IT_SUPPORT, authorizedClassName: IT_CLASS, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30', receivedOn: '2026-10-02', receivingSignaturePresent: false, evidenceReference: 'e', attestedBySubjectId: STAFF, confirmed: true, now: NOW });
     assert.equal(noSig.ok, false);
     for (const value of [false, null]) {
       const gate = checkJ6Prerequisites(j6Input({ voucherAttestation: { ...voucherAttestation(), receivingSignaturePresent: value } }));
@@ -189,12 +195,12 @@ describe('J6: gated on the received signed voucher and class start', () => {
   });
 
   it('is blocked until the class has begun (start <= today in Texas)', () => {
-    const future = { ...classStarted, classStartDate: '2026-10-21', classEndDate: '2027-03-21' };
+    const future = { ...classStarted, classStartDate: '2026-10-21', classEndDate: '2027-04-21' };
     assert.equal(checkJ6Prerequisites(j6Input({ classStarted: future })).ok, false);
     assert.equal(checkJ6Prerequisites(j6Input({ classStarted: null })).ok, false);
-    const today = { ...classStarted, classStartDate: '2026-10-20', classEndDate: '2027-03-20' };
+    const today = { ...classStarted, classStartDate: '2026-10-20', classEndDate: '2027-04-20' };
     assert.ok(checkJ6Prerequisites(j6Input({ classStarted: today, priorJ5: { source: 'external', attestation: external() } })).ok);
-    const refused = recordClassStarted({ studentName: 'S', className: 'C', classStartDate: '2026-10-21', classEndDate: '2027-03-21', evidenceReference: 'e', attestedBySubjectId: STAFF, confirmed: true, now: NOW });
+    const refused = recordClassStarted({ studentName: 'S', className: 'C', classStartDate: '2026-10-21', classEndDate: '2027-04-21', evidenceReference: 'e', attestedBySubjectId: STAFF, confirmed: true, now: NOW });
     assert.equal(refused.ok, false);
   });
 
@@ -218,12 +224,12 @@ describe('J6: gated on the received signed voucher and class start', () => {
   it('prints actual dates, keeps the J5 estimate unchanged, and reports the variance', () => {
     const j5 = sentJ5();
     const before = JSON.stringify(j5.content);
-    const moved = { ...classStarted, classStartDate: '2026-10-05', classEndDate: '2027-03-05' };
+    const moved = { ...classStarted, classStartDate: '2026-10-05', classEndDate: '2027-04-05' };
     const gate = checkJ6Prerequisites(j6Input({ priorJ5: { source: 'system', j5 }, classStarted: moved }));
     assert.ok(gate.ok);
     assert.equal(gate.training.classStartDate, '2026-10-05');
-    assert.equal(gate.training.classEndDate, '2027-03-05');
-    assert.deepEqual(gate.variance, { startShiftDays: 5, endShiftDays: 5, hoursDelta: 0 });
+    assert.equal(gate.training.classEndDate, '2027-04-05');
+    assert.deepEqual(gate.variance, { startShiftDays: 5, endShiftDays: 6, hoursDelta: 0 });
     assert.deepEqual(gate.reviewReasons, []);
     assert.equal(JSON.stringify(j5.content), before);
     assert.equal(gate.priorJ5.source === 'system' && gate.priorJ5.estimate.classStartDate, '2026-09-30');
@@ -248,7 +254,7 @@ describe('J6: gated on the received signed voucher and class start', () => {
   });
 
   it('period and contract-end holds are hard: only corrected voucher or class evidence clears them', () => {
-    const period = checkJ6Prerequisites(j6Input({ voucherAttestation: voucherAttestation({ authorizedStartDate: '2026-10-01', authorizedEndDate: '2027-02-28' }) }));
+    const period = checkJ6Prerequisites(j6Input({ voucherAttestation: voucherAttestation({ authorizedStartDate: '2026-10-01', authorizedEndDate: '2027-03-30' }) }));
     assert.ok(period.ok);
     assert.deepEqual(period.reviewReasons, ['voucher_period_conflict']);
     assert.equal(sign(period.reviewReasons).ok, false);
@@ -256,7 +262,7 @@ describe('J6: gated on the received signed voucher and class start', () => {
     assert.ok(end.ok);
     assert.deepEqual(end.reviewReasons, ['end_date_not_contract']);
     assert.equal(sign(end.reviewReasons).ok, false);
-    const fixed = checkJ6Prerequisites(j6Input({ classStarted: { ...classStarted, classEndDate: '2027-02-28' }, voucherAttestation: voucherAttestation() }));
+    const fixed = checkJ6Prerequisites(j6Input({ classStarted: { ...classStarted, classEndDate: '2027-03-30' }, voucherAttestation: voucherAttestation() }));
     assert.ok(fixed.ok);
     assert.deepEqual(fixed.reviewReasons, []);
   });
@@ -319,7 +325,7 @@ describe('J6: gated on the received signed voucher and class start', () => {
     const alias = checkJ6Prerequisites(j6Input({ voucherAttestation: voucherAttestation({ authorizedClassName: 'IT Support (IBM)' }) }));
     assert.ok(alias.ok);
     assert.deepEqual(alias.reviewReasons, ['voucher_class_differs']);
-    const missing = recordVoucherBoardSigned({ boardName: 'B', voucherReference: 'PO', artifact: voucherArtifact, authorizedAmountCents: 750_000, authorizedProgramSlug: '', authorizedClassName: '', authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-03-31', receivedOn: '2026-10-02', receivingSignaturePresent: true, evidenceReference: 'e', attestedBySubjectId: STAFF, confirmed: true, now: NOW });
+    const missing = recordVoucherBoardSigned({ boardName: 'B', voucherReference: 'PO', artifact: voucherArtifact, authorizedAmountCents: 750_000, authorizedProgramSlug: '', authorizedClassName: '', authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30', receivedOn: '2026-10-02', receivingSignaturePresent: true, evidenceReference: 'e', attestedBySubjectId: STAFF, confirmed: true, now: NOW });
     assert.equal(missing.ok, false);
   });
 
@@ -350,7 +356,7 @@ describe('J6: gated on the received signed voucher and class start', () => {
   it('limits the printed voucher/PO reference to 80 characters (renderer and DB CHECK)', () => {
     const at = (voucherReference: string) => recordVoucherBoardSigned({
       boardName: people.boardName, voucherReference, artifact: voucherArtifact, authorizedAmountCents: 750_000, authorizedProgramSlug: IT_SUPPORT,
-      authorizedClassName: IT_CLASS, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-03-31', receivedOn: '2026-10-02',
+      authorizedClassName: IT_CLASS, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30', receivedOn: '2026-10-02',
       receivingSignaturePresent: true, evidenceReference: 'synthetic board email', attestedBySubjectId: STAFF, confirmed: true, now: NOW,
     });
     assert.equal(VOUCHER_REFERENCE_MAX_LENGTH, 80);

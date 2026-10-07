@@ -3,7 +3,7 @@
  * `YYYY-MM-DD` strings (no time, no time zone) so a class start never shifts
  * by a day between the server, the PDF and the database `DATE` column.
  */
-import { CLASS_LENGTH_CALENDAR_MONTHS } from './constants';
+import { CLASS_LENGTH_CALENDAR_MONTHS, CONTENT_VERSION, type ContentVersion } from './constants';
 
 /** Time zone used to decide "today" for the class-start gate (WorkforceAP is in Texas). */
 export const BILLING_TIME_ZONE = 'America/Chicago';
@@ -54,9 +54,10 @@ export function addCalendarMonthsClamped(isoDate: string, months: number): strin
   return format({ year, month, day: Math.min(start.day, daysInMonth(year, month)) });
 }
 
-/** Class end date: five calendar months after the class start, month-end clamped. */
-export function classEndDate(classStartDate: string): string {
-  return addCalendarMonthsClamped(classStartDate, CLASS_LENGTH_CALENDAR_MONTHS);
+/** New terms use six calendar months; frozen V1 documents retain their five-month rule. */
+export function classEndDate(classStartDate: string, contentVersion: ContentVersion = CONTENT_VERSION): string {
+  if (contentVersion !== 1 && contentVersion !== CONTENT_VERSION) throw new RangeError('Unsupported billing content version');
+  return addCalendarMonthsClamped(classStartDate, contentVersion === 1 ? 5 : CLASS_LENGTH_CALENDAR_MONTHS);
 }
 
 export function addDays(isoDate: string, days: number): string {

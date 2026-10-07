@@ -17,7 +17,7 @@ export default function AdminMemberWorkspaceEmail({
   memberId,
   workspaceEmail,
   workspaceEmailProvisioned,
-  providerAvailable = true,
+  providerAvailable = false,
   providerHint,
 }: Props) {
   const router = useRouter();
@@ -84,9 +84,9 @@ export default function AdminMemberWorkspaceEmail({
       {provisioned ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <p style={{ margin: 0, fontSize: '0.95rem' }}>
-            <strong>Workspace email:</strong> {workspaceEmail}
+            <strong>Saved workspace address:</strong> {workspaceEmail}
           </p>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => setRevokeOpen(true)} disabled={busy}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setRevokeOpen(true)} disabled={busy || !providerAvailable}>
             {busy ? 'Working…' : 'Revoke'}
           </button>
         </div>
@@ -98,13 +98,18 @@ export default function AdminMemberWorkspaceEmail({
           <button type="button" className="btn btn-primary btn-sm" onClick={provision} disabled={busy || !providerAvailable}>
             {busy ? 'Provisioning…' : 'Provision @workforceap.org email'}
           </button>
-          {!providerAvailable ? (
-            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexBasis: '100%' }}>
-              {providerHint ?? 'Workspace email provider is not configured.'}
-            </p>
-          ) : null}
         </div>
       )}
+      {!providerAvailable ? (
+        <p style={{ margin: 0, color: 'var(--wa-muted)' }}>
+          {providerHint ?? 'Mailbox creation is not connected to an email provider.'}
+        </p>
+      ) : null}
+      <p style={{ margin: 0, color: 'var(--wa-muted)' }}>
+        A saved address does not confirm that a mailbox exists. Members need the email provider’s
+        sign-in page and an invitation or temporary password from the email administrator.
+        Their WorkforceAP portal login does not automatically give them mailbox access.
+      </p>
       <ConfirmDialog
         open={revokeOpen}
         title="Revoke workspace email?"

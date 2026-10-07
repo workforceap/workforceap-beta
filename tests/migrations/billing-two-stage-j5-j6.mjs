@@ -40,6 +40,8 @@ import { spawn, spawnSync } from 'node:child_process';
 import { deflateSync } from 'node:zlib';
 
 const MIGRATION_NAME = '20260927230000_billing_two_stage_j5_j6';
+const SIX_MONTH_MIGRATION = '20261006203708_billing_six_month_class_terms';
+const sixMonthMigration = readFileSync(`prisma/migrations/${SIX_MONTH_MIGRATION}/migration.sql`, 'utf8');
 const LEGACY_MIGRATION = 'prisma/migrations/20260904020000_training_billing_packets/migration.sql';
 // #2701: runs before this migration on master and restricts the legacy table's browser grants.
 const LEGACY_GRANTS_MIGRATION_NAME = '20260927224500_restrict_legacy_training_billing_packets';
@@ -169,8 +171,8 @@ const contentRecipients = (stage) =>
   (stage === 'j5' ? ['counselor', 'student'] : ['finance', 'counselor', 'student']).map((role) => ({ role, name: `Synthetic ${role}`, email: `${role}@example.test` }));
 
 /** A stage record whose frozen content prints exactly its frozen columns and its recipients. */
-function stageInsert({ id, stage, version = 1, doc, caseId = 'case-1', className = CLASS, program = PROGRAM, hours = 160, start = '2026-09-30', end = '2027-02-28', amount = 750000, extra = {} }) {
-  const content = JSON.stringify({ synthetic: true, totalCents: amount, training: { programSlug: program, className, contactHours: hours, classStartDate: start, classEndDate: end }, ...contentContacts(stage), recipients: contentRecipients(stage), letterhead: CONTENT_LETTERHEAD, issueDate: TODAY_ISO, signature: ACTIVE_SIG });
+function stageInsert({ id, stage, version = 1, contentVersion = 1, doc, caseId = 'case-1', className = CLASS, program = PROGRAM, hours = 160, start = '2026-09-30', end = '2027-02-28', amount = 750000, extra = {} }) {
+  const content = JSON.stringify({ synthetic: true, contentVersion, totalCents: amount, training: { programSlug: program, className, contactHours: hours, classStartDate: start, classEndDate: end }, ...contentContacts(stage), recipients: contentRecipients(stage), letterhead: CONTENT_LETTERHEAD, issueDate: TODAY_ISO, signature: ACTIVE_SIG });
   const cols = {
     id: `'${id}'`,
     organization_id: `'${ORG}'`,
@@ -178,7 +180,7 @@ function stageInsert({ id, stage, version = 1, doc, caseId = 'case-1', className
     stage: `'${stage}'`,
     version: String(version),
     document_number: `'${doc}'`,
-    content_version: '1',
+    content_version: String(contentVersion),
     content: `'${content.replaceAll("'", "''")}'::jsonb`,
     content_sha256: `'${HASH}'`,
     amount_cents: String(amount),
@@ -443,6 +445,8 @@ try {
   // The designated signer principal (Michael), set by an ops-reviewed change; unset by default.
   assert.equal(sql(`SELECT count(*) FROM public.billing_designated_signers;`), '0', 'no signer is designated by the migration');
   sql(`INSERT INTO public.billing_designated_signers (organization_id, user_id, designated_by, note, designated_at) VALUES ('${ORG}', '${SIGNER}', 'ops-review', 'Synthetic designation', '2000-01-01');`);
+  // Check the stamp at creation; later assertions must not impose a whole-suite time limit.
+  assert.equal(sql(`SELECT (abs(extract(epoch FROM (designated_at - public.billing_utc_now()))) < 60)::text FROM public.billing_designated_signers WHERE organization_id = '${ORG}';`), 'true', 'designated_at is the DB clock');
 
   // ---- The signer's signature image (synthetic generated PNGs only).
   assert.equal(sql(`SELECT count(*) FROM public.billing_signer_signature_assets;`), '0', 'no signature asset ships with the migration');
@@ -928,7 +932,6 @@ try {
   assert.equal(sql(`SELECT user_id FROM public.billing_designated_signers WHERE organization_id = '${ORG}';`), SIGNER, 'the rolled-back cases left the designation unchanged');
   rejects(`SET ROLE service_role; INSERT INTO public.billing_designated_signers (organization_id, user_id, designated_by, note) VALUES ('${ORG}', '${SIGNER}', 'x', 'x');`, '42501', 'the app cannot designate a signer');
   rejects(`INSERT INTO public.billing_designated_signers (organization_id, user_id, designated_by, note) VALUES ('${ORG}', 'org-b-member', 'ops', 'Synthetic');`, '23514', 'the designated signer is a user of that organization');
-  assert.equal(sql(`SELECT (abs(extract(epoch FROM (designated_at - public.billing_utc_now()))) < 60)::text FROM public.billing_designated_signers WHERE organization_id = '${ORG}';`), 'true', 'designated_at is the DB clock');
   rejects(`UPDATE public.billing_designated_signers SET user_id = '${STAFF}' WHERE organization_id = '${ORG}';`, '23514', 'a designation is never edited in place');
   refusedBecause(receipt('rs-staff', { by: STAFF }), 'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL:%');
   rejects(receipt('rs-hash', { sha: 'e'.repeat(64) }), '23503', 'the attestation is bound to the exact voucher bytes');
@@ -1474,6 +1477,38 @@ try {
   assert.equal(legacyAccess(), legacyGrantsBefore, 'a re-run leaves legacy access unchanged');
   assert.equal(sql(`SELECT count(*) FROM public.billing_stage_records;`), recordCount);
   pass('the migration is idempotent: a second apply keeps schema, grants and rows');
+
+  // ----------------------------------- six-month terms, historical snapshots
+  const snapshots = () => sql(`SELECT md5(string_agg(row_to_json(r)::text, ',' ORDER BY r.id)) FROM public.billing_stage_records r;`);
+  const snapshotsBefore = snapshots();
+  sql(sixMonthMigration);
+  sql(sixMonthMigration);
+  assert.equal(snapshots(), snapshotsBefore, 'the term migration never rewrites existing documents');
+  assert.equal(frozenSigned('j5-sig-a'), signedBefore, 'all signed/sent records retain their original content and signatures');
+  // Legacy drafts remain usable under v1, and rollback code may still write v1.
+  sql(`UPDATE public.billing_stage_records SET updated_at = now() WHERE id = 'j5-sig-b';`);
+  for (const [suffix, start, end, contentVersion] of [
+    ['v2-six', '2026-09-30', '2027-03-30', 2],
+    ['v2-clamp', '2026-10-31', '2027-04-30', 2],
+    ['v2-leap', '2027-08-31', '2028-02-29', 2],
+    ['v1-legacy', '2026-09-30', '2027-02-28', 1],
+  ]) {
+    const caseId = `terms-${suffix}`;
+    sql(`INSERT INTO public.users VALUES ('subject-${caseId}', 'subject-${caseId}@example.test', '${ORG}');
+         INSERT INTO public.billing_cases (id, organization_id, member_id, subject_member_id, program_slug, created_by_subject_id, updated_at)
+           VALUES ('${caseId}', '${ORG}', 'subject-${caseId}', 'subject-${caseId}', '${PROGRAM}', '${STAFF}', now());
+         ${readinessInsert(`att-${caseId}`, { case_id: `'${caseId}'`, class_start_date: `'${start}'` })}`);
+    const extra = { readiness_attestation_id: `'att-${caseId}'` };
+    if (contentVersion === 2) {
+      rejects(stageInsert({ id: `bad-${caseId}`, stage: 'j5', doc: `Q-bad-${suffix}`, caseId, start, end: sql(`SELECT to_char('${start}'::date + interval '5 months', 'YYYY-MM-DD');`), contentVersion, extra }), '23514', 'v2 refuses the prior five-month date');
+      rejects(stageInsert({ id: `bad-shape-${caseId}`, stage: 'j5', doc: `Q-shape-${suffix}`, caseId, start, end, contentVersion: 1, extra: { ...extra, content_version: '2' } }), '23514', 'v2 column must match its frozen snapshot');
+    }
+    sql(stageInsert({ id: `j5-${caseId}`, stage: 'j5', doc: `Q-${suffix}`, caseId, start, end, contentVersion, extra }));
+    assert.equal(sql(`SELECT to_char(class_end_date, 'YYYY-MM-DD') FROM public.billing_stage_records WHERE id = 'j5-${caseId}';`), end);
+  }
+  for (const role of ['anon', 'authenticated']) assert.ok(privilegeMatrix(role).every((v) => v === false));
+  pass('six-month v2 terms enforce calendar-month clamping and snapshot version, retain v1 compatibility and every existing document, and preserve browser-role denial');
+
 } finally {
   if (proofDatabaseCreated) {
     runSql(`DROP DATABASE ${ident(proofDatabase)};`, 'postgres');

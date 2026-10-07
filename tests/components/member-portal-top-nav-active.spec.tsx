@@ -101,9 +101,14 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     expect(currentLabels(strip)).toEqual([]);
   });
 
-  it('keeps AI Career Tools in the strip', () => {
+  it('puts AI Career Tools immediately after Home and My program in the phone strip', () => {
     const strip = renderAt('/dashboard');
     expect(strip.getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
+    expect(strip.getAllByRole('link').slice(0, 3).map((link) => link.getAttribute('href'))).toEqual([
+      '/dashboard',
+      '/dashboard/program',
+      '/dashboard/ai-tools',
+    ]);
   });
 
   it('with a dev hrefMap, matches the remapped hrefs and shows only mapped tabs', () => {
@@ -115,8 +120,8 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     const strip = renderAt('/dev/member/messages', 'en', hrefMap);
     expect(strip.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
       '/dev/member/home',
-      '/dev/member/messages',
       '/dev/member/toolkit',
+      '/dev/member/messages',
     ]);
     expect(currentLabels(strip)).toEqual(['Messages']);
     cleanup();
@@ -132,8 +137,8 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     const strip = renderAt('/es/dev/member/messages', 'es', hrefMap);
     expect(strip.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
       '/es/dev/member/home',
-      '/es/dev/member/messages',
       '/es/dev/member/toolkit',
+      '/es/dev/member/messages',
     ]);
     expect(currentLabels(strip)).toEqual(['Messages']);
   });

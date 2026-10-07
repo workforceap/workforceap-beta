@@ -27,13 +27,14 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { Card } from '@astryxdesign/core/Card';
 import { Button } from '@astryxdesign/core/Button';
 import { Token } from '@astryxdesign/core/Token';
 import { StatusDot } from '@astryxdesign/core/StatusDot';
-import { HStack } from '@astryxdesign/core/Layout';
+import { HStack, VStack } from '@astryxdesign/core/Layout';
 import {
   Mic,
   MicOff,
@@ -212,6 +213,7 @@ export function VoiceStudioKit({
   sessionPayload = { role: 'a general professional role', interviewType: 'behavioral' },
   initialAgent,
 }: VoiceStudioKitProps) {
+  const t = useTranslations('aiToolsDiscovery');
   const [tab, setTab] = useState<StudioTab>(initialTab);
   const router = useRouter();
   const pathname = usePathname();
@@ -266,9 +268,25 @@ export function VoiceStudioKit({
         <PageOpener
           kicker="Tools & careers"
           title="AI Career Tools"
-          lede="Voice coaches and the AI toolkit."
+          lede={t('hubIntro')}
           icon={<AudioLines size={13} aria-hidden="true" />}
         />
+        {tab === 'coaches' ? (
+          <VStack as="section" gap={3} aria-labelledby="ai-tools-start-heading">
+            <h2 id="ai-tools-start-heading" className="wa-text-lg wa-font-bold">{t('startTitle')}</h2>
+            <p className="wa-kit-lede wa-m-0">
+              {t('startIntro')}
+            </p>
+            <HStack gap={3} wrap="wrap">
+              <KitLinkButton href={TOOL_HREF['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={TOOL_HREF['interview-practice']} label={t('interview')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={TOOL_HREF['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+            </HStack>
+            <p className="wa-kit-meta wa-m-0">
+              {t('preparation')}
+            </p>
+          </VStack>
+        ) : null}
         <div className="wa-page-tabs">
           <SegmentedControl
             value={tab}

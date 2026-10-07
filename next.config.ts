@@ -27,7 +27,8 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https://*.supabase.co https://*.public.blob.vercel-storage.com https://images.unsplash.com https://www.google-analytics.com https://www.googletagmanager.com https://api.dicebear.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
+  // The J5 review editor displays its locally generated PDF through an object URL.
+  "frame-src 'self' blob: https://www.googletagmanager.com https://challenges.cloudflare.com",
   "form-action 'self' https://formspree.io",
   "object-src 'none'",
   "base-uri 'self'",

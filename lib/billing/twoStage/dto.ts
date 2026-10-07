@@ -159,6 +159,7 @@ export const ERROR_CODES = [
   ...GATE_CODES,
   // request and access
   'INVALID_JSON',
+  'PREVIEW_MODE_INVALID',
   'UNAUTHENTICATED',
   'ADMIN_REQUIRED',
   'ORIGIN_REJECTED',
