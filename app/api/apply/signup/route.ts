@@ -1,4 +1,5 @@
 import { saveEligibilityScreening } from '@/lib/apply/saveEligibilityScreening';
+import { emailIssue, usPhoneIssue } from '@/lib/apply/contactValidation';
 import { pickExactEmailMatch, normalizeEmail, EXACT_EMAIL_CANDIDATE_LIMIT } from '@/lib/db/exactEmailMatch';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { NextRequest, NextResponse, after } from 'next/server';
@@ -113,8 +114,17 @@ function isAppEmailCollision(error: unknown): boolean {
 const applySignupSchema = z.object({
   firstName: z.string().trim().min(1, 'Please enter your first name.').max(100),
   lastName: z.string().trim().min(1, 'Please enter your last name.').max(100),
-  email: z.string().trim().email('Please enter a valid email address.'),
-  phone: z.string().trim().min(10, 'Please enter a valid phone number with area code.').max(50),
+  email: z
+    .string()
+    .trim()
+    .email('Please enter a valid email address.')
+    .refine((v) => emailIssue(v) !== 'typo', 'Check the spelling after the @ in your email address.')
+    .refine((v) => emailIssue(v) === null, 'Please enter a valid email address.'),
+  phone: z
+    .string()
+    .trim()
+    .max(50)
+    .refine((v) => usPhoneIssue(v) === null, 'Please enter a 10-digit US phone number with area code.'),
   addressLine1: z.string().trim().max(200).optional().nullable(),
   addressLine2: z.string().trim().max(200).optional().nullable(),
   city: z.string().trim().max(100).optional().nullable(),
@@ -136,7 +146,13 @@ const applySignupSchema = z.object({
     .union([z.string().trim().email(), z.literal(''), z.null()])
     .optional()
     .transform((v) => (v ? v : null)),
-  parentGuardianPhone: z.string().trim().max(50).optional().nullable(),
+  parentGuardianPhone: z
+    .string()
+    .trim()
+    .max(50)
+    .refine((v) => v === '' || usPhoneIssue(v) === null, 'Please enter a 10-digit US phone number with area code.')
+    .optional()
+    .nullable(),
   schoolName: z.string().trim().max(200).optional().nullable(),
   county: z.string().trim().max(100).optional().nullable(),
   primaryBarrier: z.string().trim().max(100).optional().nullable(),

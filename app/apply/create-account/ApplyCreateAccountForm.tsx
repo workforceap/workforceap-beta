@@ -1,5 +1,6 @@
 'use client';
 
+import { emailIssue, formatUsPhoneInput, usPhoneDigits, usPhoneIssue } from '@/lib/apply/contactValidation';
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import LocalizedLink from '@/components/LocalizedLink';
@@ -48,13 +49,7 @@ function getPasswordStrengthScore(password: string): number {
   return score; // 0-4
 }
 
-function formatPhoneInput(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 10);
-  if (digits.length === 0) return '';
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-}
+const formatPhoneInput = formatUsPhoneInput;
 
 export default function ApplyCreateAccountForm({
   readyHeader,
@@ -288,14 +283,7 @@ export default function ApplyCreateAccountForm({
 
   const rankedProgramLabels = (programRankedSlugs ?? []).map((slug) => getProgramDisplayTitle(getProgramBySlug(slug) ?? slug));
 
-  const emailLooksValid = (value: string) => {
-    const v = value.trim();
-    if (!v.includes('@')) return false;
-    const [local, domain] = v.split('@');
-    if (!local || !domain || !domain.includes('.')) return false;
-    const tld = domain.split('.').pop() ?? '';
-    return tld.length >= 2;
-  };
+  const emailLooksValid = (value: string) => emailIssue(value) === null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,14 +299,19 @@ export default function ApplyCreateAccountForm({
     }
     if (!email.trim()) {
       nextFieldErrors.email = t('errEmailRequired');
+    } else if (emailIssue(email) === 'typo') {
+      nextFieldErrors.email = t('emailTypoError');
     } else if (!emailLooksValid(email)) {
       nextFieldErrors.email = t('errEmailInvalid');
     }
-    const phoneDigits = phone.replace(/\D/g, '');
-    if (!phone.trim()) {
+    const phoneDigits = usPhoneDigits(phone);
+    const phoneProblem = usPhoneIssue(phone);
+    if (phoneProblem === 'required') {
       nextFieldErrors.phone = t('errPhoneRequired');
-    } else if (phoneDigits.length < 10) {
+    } else if (phoneProblem === 'digits') {
       nextFieldErrors.phone = t('errPhoneDigits');
+    } else if (phoneProblem === 'invalid') {
+      nextFieldErrors.phone = t('phoneInvalidError');
     }
     if (phoneError) {
       nextFieldErrors.phone = phoneError;
@@ -760,18 +753,11 @@ export default function ApplyCreateAccountForm({
               const formatted = formatPhoneInput(e.target.value);
               setPhone(formatted);
               if (fieldErrors.phone) setFieldErrors((f) => ({ ...f, phone: undefined }));
-              if (phoneError) {
-                const digits = formatted.replace(/\D/g, '');
-                if (digits.length >= 10) setPhoneError('');
-              }
+              if (phoneError && usPhoneIssue(formatted) === null) setPhoneError('');
             }}
             onBlur={() => {
-              const digits = phone.replace(/\D/g, '');
-              if (digits.length > 0 && digits.length < 10) {
-                setPhoneError(t('errPhoneDigits'));
-              } else {
-                setPhoneError('');
-              }
+              const problem = phone.trim() ? usPhoneIssue(phone) : null;
+              setPhoneError(problem === 'invalid' ? t('phoneInvalidError') : problem ? t('errPhoneDigits') : '');
             }}
             autoComplete="tel"
             required

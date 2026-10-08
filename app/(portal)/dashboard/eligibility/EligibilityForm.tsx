@@ -264,7 +264,7 @@ export default function EligibilityForm({ initial }: { initial: EligibilityIniti
         </div>
       ) : null}
       <YesNoRow name="q2" label="Household income below $60,000?" value={q2} onChange={setQ2} />
-      <YesNoRow name="snapWic" label="Receiving TANF, WIC, and/or Food stamps (SNAP)?" value={snapWic} onChange={setSnapWic} />
+      <YesNoRow name="snapWic" label="Receiving TANF, WIC, Food stamps (SNAP), and/or MAP?" value={snapWic} onChange={setSnapWic} />
       {snapWic === 'yes' ? (
         <>
           <fieldset style={{ border: 'none', margin: 0, padding: 0 }}>

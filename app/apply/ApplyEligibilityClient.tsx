@@ -23,6 +23,7 @@ import {
   type YesNo,
 } from '@/lib/apply/eligibilityExtendedFields';
 import type { SchoolApplyContext } from '@/lib/apply/resolveSchoolApply';
+import { emailIssue, formatUsPhoneInput, usPhoneDigits, usPhoneIssue } from '@/lib/apply/contactValidation';
 import {
   PUBLIC_ASSISTANCE_PROGRAM_VALUES,
   normalizePublicAssistancePrograms,
@@ -72,12 +73,7 @@ export default function ApplyEligibilityClient({
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const formatPhoneInput = (raw: string): string => {
-    const digits = raw.replace(/\D/g, '').slice(0, 10);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
-  };
+  const formatPhoneInput = formatUsPhoneInput;
   const [phoneError, setPhoneError] = useState('');
   const [ageGroup, setAgeGroup] = useState<ApplyFlowDraftV1['ageGroup']>('');
   const [city, setCity] = useState('');
@@ -155,23 +151,19 @@ export default function ApplyEligibilityClient({
     setParentGuardianPhone(draft.parentGuardianPhone ?? '');
   }, [schoolApply]);
 
-  const emailLooksValid = (value: string) => {
-    const v = value.trim();
-    if (!v.includes('@')) return false;
-    const [local, domain] = v.split('@');
-    if (!local || !domain || !domain.includes('.')) return false;
-    const tld = domain.split('.').pop() ?? '';
-    return tld.length >= 2;
+  const emailLooksValid = (value: string) => emailIssue(value) === null;
+  const emailErrorText = (value: string) => {
+    const issue = emailIssue(value);
+    return issue === 'required' ? t('errEmailRequired') : issue === 'typo' ? t('emailTypoError') : t('errEmailInvalid');
   };
+  const phoneErrorText = (value: string) => (usPhoneIssue(value) === 'invalid' ? t('phoneInvalidError') : t('phoneValidationError'));
 
-  const phoneDigits = phone.replace(/\D/g, '');
   const contactOk =
     firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
     email.trim().length > 0 &&
     emailLooksValid(email.trim()) &&
-    phone.trim().length > 0 &&
-    phoneDigits.length >= 10;
+    usPhoneIssue(phone) === null;
 
   const zipOk = isValidPostalCode(zip);
   const isSchool = Boolean(schoolApply);
@@ -188,7 +180,7 @@ export default function ApplyEligibilityClient({
           parentGuardianEmail,
         },
         emailLooksValid,
-      )
+      ) && (parentGuardianPhone.trim() === '' || usPhoneIssue(parentGuardianPhone) === null)
     : !!ageGroup &&
       city.trim().length > 0 &&
       stateVal.trim().length > 0 &&
@@ -401,7 +393,7 @@ export default function ApplyEligibilityClient({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim().toLowerCase(),
-        phone: phone.replace(/\D/g, ''),
+        phone: usPhoneDigits(phone),
         ageGroup,
         city: city.trim(),
         state: stateVal.trim(),
@@ -696,7 +688,9 @@ export default function ApplyEligibilityClient({
                         ? 'publicAssistanceWic'
                         : program === 'snap'
                           ? 'publicAssistanceSnap'
-                          : 'publicAssistanceOtherUnsure';
+                          : program === 'map'
+                            ? 'publicAssistanceMap'
+                            : 'publicAssistanceOtherUnsure';
                     return (
                       <label key={program} className={`form-radio-card form-check-card ${checked ? 'selected' : ''}`}>
                         <input
@@ -845,7 +839,7 @@ export default function ApplyEligibilityClient({
               />
               {attemptedContinue && !emailLooksValid(email.trim()) && (
                 <p id="apply-email-error" className="apply-eligibility-field-error" role="alert">
-                  {email.trim().length === 0 ? t('errEmailRequired') : t('errEmailInvalid')}
+                  {emailErrorText(email)}
                 </p>
               )}
             </div>
@@ -862,28 +856,20 @@ export default function ApplyEligibilityClient({
                 onChange={(e) => {
                   const formatted = formatPhoneInput(e.target.value);
                   setPhone(formatted);
-                  if (phoneError) {
-                    const digits = formatted.replace(/\D/g, '');
-                    if (digits.length >= 10) setPhoneError('');
-                  }
+                  if (phoneError && usPhoneIssue(formatted) === null) setPhoneError('');
                 }}
                 onBlur={() => {
-                  const digits = phone.replace(/\D/g, '');
-                  if (digits.length > 0 && digits.length < 10) {
-                    setPhoneError(t('phoneValidationError'));
-                  } else {
-                    setPhoneError('');
-                  }
+                  setPhoneError(phone.trim() && usPhoneIssue(phone) !== null ? phoneErrorText(phone) : '');
                 }}
                 required
                 minLength={10}
-                aria-invalid={attemptedContinue && phone.replace(/\D/g, '').length < 10}
+                aria-invalid={attemptedContinue && usPhoneIssue(phone) !== null}
                 aria-describedby="apply-phone-hint apply-phone-error"
               />
               <p id="apply-phone-hint" className="apply-field-hint">{t('eligibilityPhoneHint')}</p>
-              {phoneError && (
+              {(phoneError || (attemptedContinue && usPhoneIssue(phone) !== null)) && (
                 <p id="apply-phone-error" className="apply-eligibility-field-error" role="alert">
-                  {phoneError}
+                  {phoneError || (usPhoneIssue(phone) === 'required' ? t('errPhoneRequired') : phoneErrorText(phone))}
                 </p>
               )}
             </div>
@@ -969,7 +955,13 @@ export default function ApplyEligibilityClient({
                     autoComplete="tel"
                     value={parentGuardianPhone}
                     onChange={(e) => setParentGuardianPhone(formatPhoneInput(e.target.value))}
+                    inputMode="tel"
+                    placeholder="(512) 555-0100"
+                    aria-invalid={attemptedContinue && parentGuardianPhone.trim() !== '' && usPhoneIssue(parentGuardianPhone) !== null}
                   />
+                  {attemptedContinue && parentGuardianPhone.trim() !== '' && usPhoneIssue(parentGuardianPhone) !== null ? (
+                    <p className="apply-eligibility-field-error" role="alert">{phoneErrorText(parentGuardianPhone)}</p>
+                  ) : null}
                 </div>
               </>
             ) : null}
