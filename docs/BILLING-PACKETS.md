@@ -871,6 +871,15 @@ the audit row. A held J6 can be saved; it cannot be previewed or signed.
 Becoming signable is a separate, server-checked step: freeze (§5.9) and sign
 (§5.13) re-run every readiness gate on the saved version.
 
+An open Admin draft editor rechecks its current inputs when a sibling readiness,
+signature or evidence action refreshes the case summary. This preserves unsaved
+contact fields; staff do not need to type again to clear an outdated readiness
+message. Save stays disabled until a review of the current inputs and case
+revision succeeds. Cancelled or older responses cannot restore obsolete blockers,
+and a failed review offers a retry without discarding the inputs. This is UI
+freshness only: saving, freezing, signing and sending still enforce their server
+checks, including the saved version and latest attestation hashes.
+
 #### 5.8 Draft preview
 
 `GET /cases/[caseId]/[stage]/draft/preview?recordId=…&versionHash=…` returns
