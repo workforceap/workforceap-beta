@@ -17,6 +17,17 @@ test('normalizePublicAssistancePrograms dedupes, drops junk and keeps canonical 
   assert.deepEqual(normalizePublicAssistancePrograms('snap'), []);
 });
 
+test('MAP (Central Health Medical Access Program) is a selectable program', () => {
+  assert.deepEqual(normalizePublicAssistancePrograms(['map', 'snap']), ['snap', 'map']);
+  assert.equal(formatPublicAssistancePrograms(['map']), 'MAP (Medical Access Program)');
+});
+
+test('MAP alone, like WIC alone, is reviewed rather than treated as a WIOA low-income indicator', () => {
+  assert.equal(wicOnlyPublicAssistance(['map']), true);
+  assert.equal(wicOnlyPublicAssistance(['wic', 'map']), true);
+  assert.equal(wicOnlyPublicAssistance(['map', 'snap']), false);
+});
+
 test('follow-up answers are cleared unless the parent answer is yes', () => {
   assert.deepEqual(
     normalizePublicAssistanceFollowUp({ snapWic: 'no', publicAssistancePrograms: ['snap'], publicAssistanceHelpRequested: 'yes' }),

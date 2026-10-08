@@ -51,7 +51,7 @@ export default function WioaQualificationClient({
   // WAP-53 follow-ups: only asked after a Yes; cleared when the answer flips to No.
   const receivesAssistance = answers.publicAssistanceSelfReport === true;
   const selectedPrograms = normalizePublicAssistancePrograms(answers.publicAssistancePrograms);
-  const programLabelKey: Record<PublicAssistanceProgram, string> = { tanf: 'programTanf', wic: 'programWic', snap: 'programSnap', other_unsure: 'programOtherUnsure' };
+  const programLabelKey: Record<PublicAssistanceProgram, string> = { tanf: 'programTanf', wic: 'programWic', snap: 'programSnap', map: 'programMap', other_unsure: 'programOtherUnsure' };
   const setAssistance = (value: string) => setAnswers((current) => (
     value === 'yes'
       ? { ...current, publicAssistanceSelfReport: true }
