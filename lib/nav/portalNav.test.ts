@@ -216,6 +216,15 @@ test('admin rail: Today keeps the home anchor; Applications opens the decision w
   assert.equal(getBestActiveHref('/admin/certifications', links), '/admin/certifications');
 });
 
+test('admin rail: unsigned billing mock is discoverable under Students for organization admins', () => {
+  const preview = navChildrenOf(ADMIN_PORTAL_NAV_ITEMS, '/admin/students').filter((item) => item.href === '/admin/billing/preview');
+  assert.equal(preview.length, 1);
+  assert.equal(preview[0].label, 'J5 / J6 preview');
+  assert.equal(preview[0].group, 'dailyWork');
+  assert.ok(!preview[0].requiresSuperAdminContext);
+  assert.equal(getBestActiveHref('/admin/billing/preview', navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS)), '/admin/billing/preview');
+});
+
 test('admin rail: Reporting is one top-level hub row with the reporting pages nested under it', () => {
   const hub = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/reporting');
   assert.ok(hub && !hub.parentHref && hub.group === 'reporting');

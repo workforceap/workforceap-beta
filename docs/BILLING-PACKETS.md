@@ -17,6 +17,22 @@ Ops request (9/3/26): "Need a J5 invoice and J6 cover letter system that creates
 signed [document] with the classes and breakdown of prices. Then have a button
 that automatically emails to counselor and the student."
 
+## Read-only Admin mock preview
+
+Open **Admin → Students → J5 / J6 preview** (`/admin/billing/preview`) to review
+fictional, unsigned samples without opening a member's billing case. The page
+switches between J5 and J6 PDFs, offers a new-tab fallback for browsers without
+an inline PDF viewer, and includes the existing workbench as a read-only disclosure.
+All creation actions are disabled; no signer, send, upload, or archive action is wired.
+
+The page and `GET /api/admin/billing/preview/[stage]` each require authenticated
+Admin access. Only `j5` and `j6` are accepted. Document facts come solely from
+`lib/billing/twoStage/mockPreview.ts`, not a request or member record. The PDFs
+use the existing draft renderer, a conspicuous MOCK title, fictional contacts,
+and the draft/signature-required marker. They cannot serve as issued documents.
+Responses are private/no-store. This does not open signing or delivery gates,
+verify any real student's readiness, or create a billing record.
+
 ## Retired workflow (historical reference)
 
 - **Admin signing desk**: `/admin/members/[id]/billing` (button "J5 / J6 billing"
