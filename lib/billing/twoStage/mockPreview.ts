@@ -15,6 +15,7 @@ import {
   type BillingStage,
 } from './constants';
 import type { TwoStageDocumentFacts } from './documentPdf';
+import { classEndDate } from './dates';
 import { WAP_BILLING_LETTERHEAD } from './letterhead';
 
 export const MOCK_BILLING_PREVIEW = Object.freeze({
@@ -26,7 +27,8 @@ export const MOCK_BILLING_PREVIEW = Object.freeze({
   className: 'Management Analyst & Business Intelligence Professional Certificate',
   classHours: 160,
   classStartDate: '2026-09-30',
-  classEndDate: '2027-02-28',
+  // Derived from the current contract terms so the mock always renders.
+  classEndDate: classEndDate('2026-09-30'),
   classStartedAt: '2026-09-30',
   tuitionCents: TUITION_AND_FEES_CENTS,
   tuitionLabel: TUITION_AND_FEES_LABEL,

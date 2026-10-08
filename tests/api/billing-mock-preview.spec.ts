@@ -120,7 +120,7 @@ describe('GET /api/admin/billing/preview/[stage]', () => {
     expect(text).toContain(MOCK_BILLING_PREVIEW.className);
     expect(text).toContain('160 hours');
     expect(text).toContain('September 30, 2026');
-    expect(text).toContain('February 28, 2027');
+    expect(text).toContain('March 30, 2027'); // six-month terms (contentVersion 2)
     expect(text).toContain('$7,500.00');
     expect(text).toContain(WAP_BILLING_LETTERHEAD.footer.phone);
     expect(text).not.toMatch(/Real Person|real@example\.com|real-case|SIGNED -|electronic signature|\/s\//u);
