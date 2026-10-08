@@ -78,13 +78,15 @@ export default function MemberPortalTopNav({
 
   /**
    * Mobile exposed only a handful of the member IA; the rest hid behind the
-   * hamburger. These 12 cover the daily destinations. Proofs pass hrefMap to
+   * hamburger. These 13 cover the daily destinations. Proofs pass hrefMap to
    * stay on /dev/member; omit unmapped tabs.
    */
   const tabs = [
     { canonical: '/dashboard', label: t('dashboard'), icon: 'home' },
     { canonical: '/dashboard/program', label: t('myProgram'), icon: 'school' },
     { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome' },
+    // Ops (10/8/26): members were not finding the preassessment; keep it a tap away.
+    { canonical: '/dashboard/assessment', label: t('wioaPreassessment'), icon: 'assignment_turned_in' },
     { canonical: '/dashboard/jobs', label: t('jobBoard'), icon: 'work' },
     { canonical: '/dashboard/readiness', label: t('myProgress'), icon: 'check_circle' },
     { canonical: '/dashboard/messages', label: t('counselorChat'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey },

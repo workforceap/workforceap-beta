@@ -543,7 +543,7 @@ test('loadMemberDashboardHome surfaces preassessment when enrolled and NBA rows 
   assert.equal(view.prismaOpCount, 1);
   assert.equal(view.doThisNext?.id, 'skills_assessment');
   assert.equal(view.doThisNext?.href, '/dashboard/assessment');
-  assert.equal(view.doThisNext?.title, 'Complete your Training Preassessment');
+  assert.equal(view.doThisNext?.title, 'Take your WIOA Preassessment (35 questions)');
   // The preassessment stays the hero CTA; the cert-path card still names module 1.
   assert.equal(view.nextLesson, fixtureModuleNames()[0]);
 });
@@ -594,7 +594,7 @@ test('cert-path next module: enrolled, unassessed member with no progress sees t
   // Card: first module, never "No next module on file" / the preassessment title.
   assert.equal(view.programTitle, program?.title);
   assert.equal(view.nextLesson, modules[0]);
-  assert.notEqual(view.nextLesson, 'Complete your Training Preassessment');
+  assert.notEqual(view.nextLesson, 'Take your WIOA Preassessment (35 questions)');
   assert.ok(view.nextLessonHref, 'first module must carry a link');
   assert.ok(
     view.nextLessonHref.includes(encodeURIComponent(firstSlug)),
