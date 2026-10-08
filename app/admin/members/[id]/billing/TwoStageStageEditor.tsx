@@ -198,7 +198,8 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
     const id = ++seq.current;
     const revision = reviewRevisionRef.current;
     loaded.current = false;
-    setReview(null);
+    // Keep the previous fields visible while reloading (WAP J5 readiness); only
+    // drop the stale saved/preview state so no mock PDF reflects the old draft.
     setSaved(null);
     setShowPreview(false);
     setLoadError(null);
@@ -286,8 +287,12 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
   const setField = (f: DraftField, value: string) => {
     clearMock();
     // Invalidate the old PDF and ignore any older field review after this edit.
-    seq.current += 1;
-    reviewAbort.current?.abort();
+    // While an explicit reload is in flight it owns the sequence: typing into the
+    // still-visible old fields must not cancel it (its result replaces them).
+    if (loaded.current) {
+      seq.current += 1;
+      reviewAbort.current?.abort();
+    }
     setReviewPending(true);
     setValues((prev) => ({ ...prev, [f]: value }));
     setServerFieldErrors((prev) => {
