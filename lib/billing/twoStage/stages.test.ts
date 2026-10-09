@@ -481,6 +481,24 @@ describe('frozen content hash', () => {
     assert.deepEqual(j6.content.signature, people.signatureAsset);
   });
 
+  it('binds the frozen class description into the version hash so a later syllabus edit cannot match a signed J5', () => {
+    const built = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0011', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people });
+    assert.ok(built.ok);
+    const description = getProgramSyllabus(IT_SUPPORT)!.description.replace(/\s+/gu, ' ').trim();
+    assert.equal(built.content.training.classDescription, description);
+    assert.match(description, /\S/);
+    const rewritten = {
+      ...built.content,
+      training: { ...built.content.training, classDescription: `${description} (edited)` },
+    };
+    assert.notEqual(contentSha256(rewritten), built.contentSha256);
+    const { classDescription: _classDescription, ...trainingWithoutDescription } = built.content.training;
+    assert.notEqual(
+      contentSha256({ ...built.content, training: trainingWithoutDescription }),
+      built.contentSha256,
+    );
+  });
+
   it('is stable under key order and changes with any field', () => {
     const a = sentJ5().content;
     const reordered = Object.fromEntries(Object.entries(a).reverse());
