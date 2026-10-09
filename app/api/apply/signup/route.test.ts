@@ -429,6 +429,34 @@ describe('POST /api/apply/signup ageGroup validation', () => {
     expect(res.status).toBe(200);
     expect(state.applicationCreates[0].data.notes ?? '').not.toContain('Age group:');
   });
+
+  it.each(['512555010', '0125550100', '5555555555'])(
+    'rejects a parent/guardian phone that would not be a real US number (%s)',
+    async (parentGuardianPhone) => {
+      const res = await POST(makeRequest({ ageGroup: 'under_18', parentGuardianPhone }));
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ reason: 'invalid_field', field: 'parentGuardianPhone' });
+      expect(state.profileUpserts).toHaveLength(0);
+    },
+  );
+
+  it('accepts an optional parent/guardian phone with a leading +1 and stores it', async () => {
+    const res = await POST(makeRequest({
+      ageGroup: 'under_18',
+      parentGuardianName: 'Alex Rader',
+      parentGuardianPhone: '+1 (512) 555-0142',
+    }));
+    expect(res.status).toBe(200);
+    expect(state.profileUpserts[0].create).toMatchObject({
+      parentGuardianName: 'Alex Rader',
+      parentGuardianPhone: '+1 (512) 555-0142',
+    });
+  });
+
+  it('allows an omitted parent/guardian phone', async () => {
+    const res = await POST(makeRequest({ ageGroup: 'under_18', parentGuardianPhone: '' }));
+    expect(res.status).toBe(200);
+  });
 });
 
 /**
@@ -978,6 +1006,45 @@ describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
     expect(notes).not.toContain('SNAP/WIC');
     expect(notes).not.toContain('Acme Logistics');
     expect(notes).not.toContain('Benefit programs');
+  });
+
+  it('persists MAP as a public-assistance program when the applicant selected it', async () => {
+    const res = await POST(
+      makeRequest({
+        snapWic: 'yes',
+        publicAssistancePrograms: ['map'],
+        publicAssistanceHelpRequested: 'no',
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(state.screeningUpserts[0].create).toMatchObject({
+      snapWic: 'yes',
+      publicAssistancePrograms: ['map'],
+      publicAssistanceHelpRequested: 'no',
+    });
+  });
+
+  it('clears MAP and other follow-ups when the parent SNAP/WIC answer is no', async () => {
+    const res = await POST(
+      makeRequest({
+        snapWic: 'no',
+        publicAssistancePrograms: ['map', 'snap'],
+        publicAssistanceHelpRequested: 'yes',
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(state.screeningUpserts[0].create).toMatchObject({
+      snapWic: 'no',
+      publicAssistancePrograms: [],
+      publicAssistanceHelpRequested: null,
+    });
+  });
+
+  it('rejects an unknown public-assistance program', async () => {
+    const res = await POST(makeRequest({ snapWic: 'yes', publicAssistancePrograms: ['medicaid'] }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ reason: 'invalid_field', field: 'publicAssistancePrograms' });
+    expect(state.screeningUpserts).toHaveLength(0);
   });
 
   it('persists unemployment / SNAP / hear-about / ambassador fields on screening upsert', async () => {
