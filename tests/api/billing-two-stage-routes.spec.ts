@@ -167,7 +167,7 @@ import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cas
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
 import { GET as receiptStatement, POST as receiptAttest } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/[artifactId]/receipt-attestation/route';
 import { J5_READINESS_KEYS, J6_READINESS_KEYS, type ApiErrorBody, type CaseSummaryDto, type ReadinessKey } from '@/lib/billing/twoStage/dto';
-import { namedRefusal, twoStageRoute } from '@/lib/billing/twoStage/api/access';
+import { isBillingRuleRefusal, namedRefusal, parseStage, twoStageRoute } from '@/lib/billing/twoStage/api/access';
 import { POST as closeRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/versions/[recordId]/close/route';
 import { POST as paymentReceivedRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/payment/received/route';
 import { POST as freeze } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/freeze/route';
@@ -821,10 +821,23 @@ describe('two-stage routes: every M1 named database refusal has its own code', (
     'J6_SIGNED_BEFORE_VOUCHER_RECEIPT', 'LETTERHEAD_FOOTER_MISMATCH', 'PAYMENT_RECEIVED_BEFORE_SENT', 'SEND_FAILED_WITHOUT_PROVIDER_REJECTION', 'SIGNER_DELEGATION_DISABLED',
     'SIGNER_NOT_DESIGNATED', 'SIGNER_PRINCIPAL_UNSET', 'VOUCHER_ATTESTER_NOT_DESIGNATED', 'VOUCHER_ATTESTER_NOT_SIGNER', 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED',
     'VOUCHER_RECEIPT_SIGNATURE_WRONG_PRINCIPAL',
+    'SIGNATURE_ASSET_MISSING', 'SIGNATURE_ASSET_MISMATCH', 'SIGNATURE_ASSET_WRONG_PRINCIPAL', 'SIGNATURE_ASSET_APPEND_ONLY',
   ];
   it('maps each to itself', () => {
     for (const code of M1_CODES) expect(namedRefusal(`${code}: refused by the database`)?.code, code).toBe(code);
     expect(namedRefusal('billing send status cannot move from pending to sent')).toBeNull();
+    expect(namedRefusal('NOT_SIGNATURE_ASSET_MISSING: unrelated')).toBeNull();
+  });
+
+  it('recognizes a PostgreSQL 23514 from Prisma code, meta, or message, and only j5/j6 are stages', () => {
+    expect(isBillingRuleRefusal({ code: '23514', message: 'refused' })).toBe(true);
+    expect(isBillingRuleRefusal({ meta: { code: '23514' }, message: 'refused' })).toBe(true);
+    expect(isBillingRuleRefusal(new Error('SQLSTATE 23514: SIGNATURE_ASSET_MISSING: no image'))).toBe(true);
+    expect(isBillingRuleRefusal({ code: 'P2002', message: 'unique' })).toBe(false);
+    expect(isBillingRuleRefusal(null)).toBe(false);
+    expect(parseStage('j5')).toBe('j5');
+    expect(parseStage('j6')).toBe('j6');
+    expect(() => parseStage('j7')).toThrow(/not found/i);
   });
 });
 

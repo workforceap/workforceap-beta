@@ -45,7 +45,8 @@ const storage = {
 const from = vi.fn(() => storage);
 vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: vi.fn(() => ({ storage: { from } })) }));
 
-import { POST } from '@/app/api/member/voice-interview/recording/route';
+import { NextRequest } from 'next/server';
+import { GET, POST } from '@/app/api/member/voice-interview/recording/route';
 import { getUser } from '@/lib/auth/server';
 import { checkResumeUploadRateLimit } from '@/lib/rate-limit';
 import { saveAIToolResult } from '@/lib/ai/saveResult';
@@ -213,5 +214,46 @@ describe('complete', () => {
 
     expect(res.status).toBe(200);
     expect(saveAIToolResult).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('recording path ownership', () => {
+  const foreign = 'user-2/voice-interview-recordings/0f8fad5b-d9cb-469f-a165-70867728950e.webm';
+  const traversal = `${USER_ID}/voice-interview-recordings/../user-2/voice-interview-recordings/0f8fad5b-d9cb-469f-a165-70867728950e.webm`;
+  const extra = `${USER_ID}/voice-interview-recordings/nested/0f8fad5b-d9cb-469f-a165-70867728950e.webm`;
+  const notUuid = `${USER_ID}/voice-interview-recordings/recording.webm`;
+  const badExt = `${USER_ID}/voice-interview-recordings/0f8fad5b-d9cb-469f-a165-70867728950e.exe`;
+
+  function get(path: string) {
+    return GET(new NextRequest(`http://localhost/api/member/voice-interview/recording?path=${encodeURIComponent(path)}`));
+  }
+
+  it.each([foreign, traversal, extra, notUuid, badExt, '', `${USER_ID}/other-prefix/0f8fad5b-d9cb-469f-a165-70867728950e.webm`])(
+    'complete refuses a path the caller does not own or that is not a recording object (%s)',
+    async (path) => {
+      const res = await complete({ path });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: 'Invalid path' });
+      expect(storage.info).not.toHaveBeenCalled();
+      expect(storage.createSignedUrl).not.toHaveBeenCalled();
+      expect(saveAIToolResult).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([foreign, traversal, extra, notUuid, badExt])(
+    'GET never signs a playback URL for a path the caller does not own (%s)',
+    async (path) => {
+      const res = await get(path);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: 'Invalid path' });
+      expect(storage.createSignedUrl).not.toHaveBeenCalled();
+    },
+  );
+
+  it('GET still signs the caller own recording path', async () => {
+    const res = await get(PATH);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ url: 'https://signed.example/play', expiresIn: 3600 });
+    expect(storage.createSignedUrl).toHaveBeenCalledWith(PATH, 3600);
   });
 });
