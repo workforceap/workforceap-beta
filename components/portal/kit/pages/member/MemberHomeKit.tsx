@@ -34,6 +34,7 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
+import MemberStartHereCard from './MemberStartHereCard';
 import MemberAdvisorCard from '@/components/portal/kit/pages/member/MemberAdvisorCard';
 import MemberAiToolsCard from '@/components/portal/kit/pages/member/MemberAiToolsCard';
 import type { AssignedCounselor } from '@/lib/member/counselorContext';
@@ -230,6 +231,8 @@ export interface MemberHomeKitProps {
   upNext?: NextBestAction[];
   /** Optional stage-specific pick inside the permanent AI Career Tools introduction. */
   recommendedTool?: MemberToolRecommendation | null;
+  /** True once the WIOA preassessment is on file; the Start-here link then reads as done. */
+  preassessmentCompleted?: boolean;
   /** Ungated Digital Literacy lesson 1. Shown when the member has no enrolled program. */
   ungatedDigitalBasicsHref?: string | null;
   /** Sparkline + delta chip for the course-progress stat tile. Omit to hide both. */
@@ -600,6 +603,7 @@ export function MemberHomeKit({
   advisor = null,
   upNext = [],
   recommendedTool = null,
+  preassessmentCompleted = false,
   ungatedDigitalBasicsHref = null,
   courseSpark,
   activeJobsSpark,
@@ -683,6 +687,8 @@ export function MemberHomeKit({
         />
 
         {showStaffViewBanner ? <StaffViewBanner page="dashboard" /> : null}
+
+        <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} />
 
         {noProgram ? (
           <div

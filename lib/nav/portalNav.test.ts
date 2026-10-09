@@ -110,14 +110,14 @@ test('plural assessments alias redirects to Training Preassessment', () => {
 
 test('labeled preassessment CTAs use the assessment page', () => {
   const guide = source('app/(portal)/dashboard/guide/page.tsx');
-  assert.match(guide, /title: 'Complete your Training Preassessment'/);
+  assert.match(guide, /title: 'Take your WIOA Preassessment \(35 questions\)'/);
   assert.match(guide, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(guide, /href: '\/dashboard\/skills-assessment'/);
 
   // The member home's preassessment CTA comes from the next-best-action
   // builder the kit home renders (the legacy DashboardHomeClient is gone, WAP-195).
   const home = source('lib/member/nextBestActions.ts');
-  assert.match(home, /title: 'Complete your Training Preassessment'/);
+  assert.match(home, /title: 'Take your WIOA Preassessment \(35 questions\)'/);
   assert.match(home, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(home, /href: '\/dashboard\/skills-assessment'/);
 

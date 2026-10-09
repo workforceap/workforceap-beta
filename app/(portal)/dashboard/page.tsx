@@ -220,6 +220,7 @@ async function renderMemberDashboard(
       doThisNext={home.doThisNext}
       upNext={home.upNext}
       recommendedTool={home.recommendedTool}
+      preassessmentCompleted={home.preassessmentCompleted}
       ungatedDigitalBasicsHref={home.programTitle ? null : home.ungatedDigitalBasicsHref}
       jobOffers={home.jobOffers}
       first90={home.first90}

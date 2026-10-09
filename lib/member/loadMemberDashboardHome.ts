@@ -314,6 +314,8 @@ export type MemberDashboardHomeView = {
   upNext: NextBestAction[];
   /** One AI Career Tools pick for the member's stage; null when none fits. */
   recommendedTool: MemberToolRecommendation | null;
+  /** Drives the "Start here" shortcuts: the WIOA preassessment link reads as done once taken. */
+  preassessmentCompleted: boolean;
   /** Always the Digital Literacy lesson-1 URL; the kit shows it when no program is enrolled. */
   ungatedDigitalBasicsHref: string;
   /** OFFER rows for the placement confirmation strip (member-reported placements). Empty renders nothing. */
@@ -890,6 +892,7 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     upNext,
     // No user row: nothing is known about the member's stage, so name no tool.
     recommendedTool: null,
+    preassessmentCompleted: false,
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
     jobOffers: [],
     first90: null,
@@ -1205,6 +1208,7 @@ function shapeHome(args: {
     doThisNext,
     upNext,
     recommendedTool,
+    preassessmentCompleted: Boolean(args.row.assessmentCompleted),
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
     jobOffers: args.row.jobApplications
       .filter((job) => job.status === 'OFFER')

@@ -37,7 +37,7 @@ const base = {
   certModulesTotal: 9,
   doThisNext: {
     id: 'skills_assessment',
-    title: 'Complete your Training Preassessment',
+    title: 'Take your WIOA Preassessment (35 questions)',
     body: 'Short preassessment.',
     href: '/dashboard/assessment',
     cta: 'Start preassessment',
@@ -63,8 +63,8 @@ describe('MemberHomeKit certification-path card', () => {
   });
 
   it('falls back to plain text without a module href and to the empty copy without a next lesson', () => {
-    const { unmount } = renderKit(<MemberHomeKit {...base} nextLesson="Complete your Training Preassessment" />);
-    expect(screen.queryByRole('link', { name: 'Complete your Training Preassessment' })).toBeNull();
+    const { unmount } = renderKit(<MemberHomeKit {...base} nextLesson="Take your WIOA Preassessment (35 questions)" />);
+    expect(screen.queryByRole('link', { name: 'Take your WIOA Preassessment (35 questions)' })).toBeNull();
     expect(screen.getAllByText(/Next:/).length).toBeGreaterThan(0);
     unmount();
 
