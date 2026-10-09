@@ -85,6 +85,7 @@ export const FIXED_PRINTED_TEXT = Object.freeze({
     DRAFT_ON_HOLD_BADGE,
     DRAFT_BADGE,
     'TRAINING DETAILS',
+    'CLASS DESCRIPTION',
     'Training hours',
     'Class start',
     'Class end',

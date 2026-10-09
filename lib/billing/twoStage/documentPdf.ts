@@ -354,6 +354,24 @@ function details(page: PDFPage, fonts: Fonts, rows: ReadonlyArray<readonly [stri
   return bottom;
 }
 
+/** Size and line cap chosen so every approved description fits the one-page J5. */
+const DESCRIPTION_SIZE = 7.2;
+const DESCRIPTION_LINE_H = 8.4;
+const DESCRIPTION_MAX_LINES = 6;
+
+function classDescription(page: PDFPage, fonts: Fonts, programSlug: string, top: number): number {
+  const text = getProgramSyllabus(programSlug)?.description?.trim();
+  if (!text) return top;
+  let y = top - 10;
+  drawText(page, fonts, 'CLASS DESCRIPTION', LEFT, y, CONTENT_W, 7, true, MUTED);
+  y -= 9;
+  for (const line of wrap(text, fonts.regular, DESCRIPTION_SIZE, CONTENT_W, DESCRIPTION_MAX_LINES)) {
+    drawText(page, fonts, line, LEFT, y, CONTENT_W, DESCRIPTION_SIZE);
+    y -= DESCRIPTION_LINE_H;
+  }
+  return y + DESCRIPTION_LINE_H - 4;
+}
+
 export const DRAFT_BADGE = 'DRAFT - SIGNATURE REQUIRED';
 export const DRAFT_ON_HOLD_BADGE = 'DRAFT - ON HOLD - NOT SIGNABLE';
 export const MOCK_BADGE = 'MOCK - REVIEW ONLY - NOT SIGNED';
@@ -458,6 +476,10 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   ];
   if (facts.stage === 'j6') rows.push(['Voucher / PO', facts.signedVoucher.reference]);
   y = details(page, fonts, rows, y);
+  // Ops (10/8/26): the J5 must describe the class. Print the approved
+  // syllabus "Program Description" (the same text as the catalog) under the
+  // details, small enough that the longest description still fits one page.
+  if (facts.stage === 'j5') y = classDescription(page, fonts, facts.programSlug, y) + 5;
   y -= 13;
   const priceBottom = y - 37;
   page.drawRectangle({ x: LEFT, y: priceBottom, width: CONTENT_W, height: 37, color: PRICE_PALE });
