@@ -63,6 +63,17 @@ describe('applicationConfirmationHtml welcome letter', () => {
     assert.doesNotMatch(html, /1(?:&ndash;|–|-)\s*2 business days/);
     assert.match(html, /A counselor reviews every application/);
   });
+
+  it('opens with two direct next steps before the letter: the WIOA Preassessment and the AI tools', () => {
+    const html = applicationConfirmationHtml({ firstName: 'Alex' });
+    const startHere = html.indexOf('Start here');
+    const letter = html.indexOf('Thank you for becoming a member');
+    assert.ok(startHere >= 0 && startHere < letter, 'Start here box comes before the letter');
+    assert.match(html, /WIOA Preassessment/);
+    assert.match(html, /35 questions/);
+    assert.ok(html.includes('https://www.workforceap.org/login?redirectTo=%2Fdashboard%2Fassessment'));
+    assert.ok(html.includes('https://www.workforceap.org/login?redirectTo=%2Fdashboard%2Fai-tools'));
+  });
 });
 
 describe('applicationAcceptedHtml welcome letter', () => {
