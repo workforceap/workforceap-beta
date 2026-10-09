@@ -368,6 +368,21 @@ describe('POST /api/member/assessment/submit', () => {
     expect(await res.json()).toEqual({ error: 'Invalid submission data' });
   });
 
+  it('refuses the same letter for every question and saves nothing (ops 10/9/26)', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const allA = Object.fromEntries(Array.from({ length: 35 }, (_, i) => [String(i + 1), 'A']));
+
+    const res = await submitAssessment(makeRequest({ ...validBody, answers: allA }));
+
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.code).toBe('ANSWERS_ALL_SAME');
+    expect(body.error).toMatch(/read each question/);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
   it('still accepts the submission when starter profile review is pending', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(getCounselorStarterProfileReview).mockReturnValue({

@@ -12,6 +12,8 @@ import {
   ASSESSMENT_QUESTIONS_PUBLIC as ASSESSMENT_QUESTIONS,
   type QuestionChoice,
 } from '@/lib/assessment/questions';
+import { sectionAllSame, SECTION_SAME_ANSWER_WARNING } from '@/lib/assessment/answerPattern';
+import { clearAssessmentProgress, readAssessmentProgress, writeAssessmentProgress } from '@/lib/assessment/progressStorage';
 import styles from './AssessmentForm.module.css';
 import { assessmentConfirmMessage } from '@/lib/member/assessmentConfirmMessage';
 
@@ -76,6 +78,26 @@ export default function AssessmentForm({
   const [phone, setPhone] = useState(defaultPhone);
   const [programInterest, setProgramInterest] = useState('');
   const [answers, setAnswers] = useState<Record<number, QuestionChoice>>({});
+  // Answers save as you go (ops 10/9/26): the prompt and emails promise it,
+  // and losing 20 answers to a refresh is how people end up rushing. Kept in
+  // this browser only (no answer key involved), cleared on submit.
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    if (previewOutcome || previewStep) return;
+    const saved = readAssessmentProgress();
+    if (saved) {
+      setAnswers(saved.answers);
+      if (saved.programInterest) setProgramInterest(saved.programInterest);
+      setCurrentStep(Math.max(1, Math.min(TOTAL_STEPS, saved.step)));
+      setRestored(Object.keys(saved.answers).length > 0);
+    }
+    // Restore once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (previewOutcome || previewStep || step !== 'form') return;
+    writeAssessmentProgress({ answers, programInterest, step: currentStep });
+  }, [answers, programInterest, currentStep, step, previewOutcome, previewStep]);
   const confirmHeadingRef = useRef<HTMLHeadingElement>(null);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const isFirstStepRender = useRef(true);
@@ -111,7 +133,11 @@ export default function AssessmentForm({
 
   const setAnswer = (qId: number, choice: QuestionChoice) => {
     setAnswers((prev) => ({ ...prev, [qId]: choice }));
+    setSameAnswerWarnedStep(null);
   };
+  // Ops (10/9/26): five identical letters in a section usually means clicking
+  // through. Warn once; a second Next continues (an honest pattern is allowed).
+  const [sameAnswerWarnedStep, setSameAnswerWarnedStep] = useState<number | null>(null);
 
   const validateStep1 = (): string | null => {
     if (!firstName.trim()) return 'First name is required.';
@@ -123,6 +149,7 @@ export default function AssessmentForm({
 
   const handleNext = () => {
     setError('');
+    setRestored(false);
     setDirection('next');
 
     if (currentStep === 1) {
@@ -133,6 +160,13 @@ export default function AssessmentForm({
       }
     } else if (!stepComplete) {
       setError(`Please answer all questions in this section before continuing.`);
+      return;
+    } else if (
+      sectionAllSame(questionsInStep.map((q) => answers[q.id])) &&
+      sameAnswerWarnedStep !== currentStep
+    ) {
+      setSameAnswerWarnedStep(currentStep);
+      setError(SECTION_SAME_ANSWER_WARNING);
       return;
     }
 
@@ -202,6 +236,7 @@ export default function AssessmentForm({
         staffNotificationSent: data.adminEmailSent === true,
       });
       setStep('confirm');
+      clearAssessmentProgress();
 
       const intended =
         (typeof window !== 'undefined' ? sessionStorage.getItem(ASSESSMENT_REDIRECT_KEY) : null) || defaultRedirectTo || null;
@@ -373,6 +408,12 @@ export default function AssessmentForm({
                 {firstName} {lastName} • {programInterest} • All {ASSESSMENT_QUESTIONS.length} questions answered
               </p>
             </div>
+          )}
+
+          {restored && !error && (
+            <p className={styles.reviewBody} role="status" data-testid="assessment-progress-restored">
+              Welcome back. We kept the answers you already gave on this device.
+            </p>
           )}
 
           {error && (

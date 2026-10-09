@@ -5,6 +5,7 @@
 import 'server-only';
 
 import { ASSESSMENT_QUESTIONS, TOTAL_POINTS, type QuestionChoice } from '@/lib/assessment/answer-key';
+import { mostRepeatedAnswerCount, STRAIGHT_LINE_MIN_SAME } from '@/lib/assessment/answerPattern';
 
 export type AssessmentReviewRow = {
   id: number;
@@ -51,7 +52,12 @@ export function buildAssessmentReviewRows(rawAnswers: unknown): AssessmentReview
 /** Plain-text answer sheet for the staff notification email. */
 export function formatAssessmentReviewText(rows: AssessmentReviewRow[]): string[] {
   const earned = rows.reduce((sum, r) => sum + (r.correct ? r.points : 0), 0);
+  const chosen = Object.fromEntries(rows.flatMap((r) => (r.answer ? [[r.id, r.answer]] : [])));
+  const sameLetter = mostRepeatedAnswerCount(chosen);
   return [
+    ...(sameLetter >= STRAIGHT_LINE_MIN_SAME
+      ? [`WARNING: score not reliable. ${sameLetter} of ${rows.length} answers are the same letter; ask the member to retake it.`]
+      : []),
     `Answer sheet (${earned}/${TOTAL_POINTS} points):`,
     ...rows.map((r) =>
       `Q${r.id}. ${r.question} — ${
