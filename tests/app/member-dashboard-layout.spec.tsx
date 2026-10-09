@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => {
@@ -6,8 +7,9 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+const reqHeaders = vi.hoisted(() => ({ path: '/dashboard' }));
 vi.mock('next/headers', () => ({
-  headers: vi.fn(async () => new Headers()),
+  headers: vi.fn(async () => new Headers({ 'x-pathname': reqHeaders.path })),
 }));
 
 vi.mock('next-intl/server', () => ({
@@ -39,7 +41,14 @@ vi.mock('@/lib/db/prisma', () => ({
     user: {
       findUnique: vi.fn(),
     },
+    memberEvent: {
+      count: vi.fn(async () => 0),
+    },
   },
+}));
+
+vi.mock('@/components/portal/PreassessmentLoginPrompt', () => ({
+  default: vi.fn(({ loginCount }: { loginCount: number }) => <div data-testid="preassessment-prompt" data-logins={loginCount} />),
 }));
 
 vi.mock('@/components/portal/MemberWorkspaceShell', () => ({
@@ -75,8 +84,11 @@ describe('DashboardLayout portal switching', () => {
     vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole]);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       deletedAt: null,
+      assessmentCompleted: true,
       profile: { resumeOriginalPath: null, resumeEnhancedPath: null },
     } as any);
+    vi.mocked(prisma.memberEvent.count).mockResolvedValue(0);
+    reqHeaders.path = '/dashboard';
   });
 
   it('still redirects regular admins to the admin portal', async () => {
@@ -246,5 +258,67 @@ describe('DashboardLayout portal switching', () => {
     await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
 
     expect(getPortalSwitcherRoles).toHaveBeenCalledWith('user-1', { superAdmin: true });
+  });
+
+  describe('WIOA preassessment gate (ops 10/8/26)', () => {
+    const notAssessed = {
+      deletedAt: null,
+      assessmentCompleted: false,
+      profile: { resumeOriginalPath: null, resumeEnhancedPath: null },
+    };
+    const findPrompt = (tree: any): boolean => {
+      cleanup();
+      render(tree);
+      return screen.queryByTestId('preassessment-prompt') !== null;
+    };
+
+    it('sends a member on login 6 to the assessment before anything else', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(notAssessed as any);
+      vi.mocked(prisma.memberEvent.count).mockResolvedValue(6);
+      reqHeaders.path = '/dashboard/ai-tools';
+      await expect(DashboardLayout({ children: <div /> })).rejects.toThrow('REDIRECT:/dashboard/assessment?required=1');
+    });
+
+    it.each(['/dashboard/assessment', '/dashboard/messages', '/dashboard/help', '/dashboard/profile'])(
+      'still lets a gated member open %s',
+      async (path) => {
+        vi.mocked(prisma.user.findUnique).mockResolvedValue(notAssessed as any);
+        vi.mocked(prisma.memberEvent.count).mockResolvedValue(9);
+        reqHeaders.path = path;
+        await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
+      },
+    );
+
+    it('shows the dismissible prompt on logins 1-5', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(notAssessed as any);
+      vi.mocked(prisma.memberEvent.count).mockResolvedValue(3);
+      const tree = await DashboardLayout({ children: <div /> });
+      expect(findPrompt(tree)).toBe(true);
+    });
+
+    it('does nothing once the preassessment is done', async () => {
+      vi.mocked(prisma.memberEvent.count).mockResolvedValue(12);
+      const tree = await DashboardLayout({ children: <div /> });
+      expect(findPrompt(tree)).toBe(false);
+    });
+
+    it('never gates super admins previewing the member portal', async () => {
+      vi.mocked(getProfileRole).mockResolvedValue('super_admin');
+      vi.mocked(getStoredRoleIdentity).mockResolvedValue({ userExists: true, deletedAt: null, profileRole: 'super_admin' });
+      vi.mocked(isSuperAdmin).mockResolvedValue(true);
+      vi.mocked(getPortalSwitcherRoles).mockResolvedValue([memberRole, adminRole]);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(notAssessed as any);
+      vi.mocked(prisma.memberEvent.count).mockResolvedValue(20);
+      reqHeaders.path = '/dashboard/ai-tools';
+      await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
+      expect(prisma.memberEvent.count).not.toHaveBeenCalled();
+    });
+
+    it('fails open if the login count cannot be read', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(notAssessed as any);
+      vi.mocked(prisma.memberEvent.count).mockRejectedValue(new Error('db down'));
+      reqHeaders.path = '/dashboard/ai-tools';
+      await expect(DashboardLayout({ children: <div /> })).resolves.toBeTruthy();
+    });
   });
 });

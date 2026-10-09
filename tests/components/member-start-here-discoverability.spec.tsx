@@ -4,6 +4,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import MemberPortalTopNav from '@/components/portal/MemberPortalTopNav';
 import MemberStartHereCard from '@/components/portal/kit/pages/member/MemberStartHereCard';
+import PreassessmentLoginPrompt from '@/components/portal/PreassessmentLoginPrompt';
+import { fireEvent } from '@testing-library/react';
 
 /**
  * Ops (10/8/26): members were not finding the WIOA Preassessment or the AI
@@ -28,7 +30,7 @@ describe('member "Start here" shortcuts', () => {
     const pre = card.getByRole('link', { name: /WIOA Preassessment/ });
     expect(pre.getAttribute('href')).toBe('/dashboard/assessment');
     expect(pre.textContent).toMatch(/35 questions/);
-    expect(card.getByRole('link', { name: /AI Career Tools/ }).getAttribute('href')).toBe('/dashboard/ai-tools');
+    expect(card.getByRole('link', { name: /^AI Career Tools/ }).getAttribute('href')).toBe('/dashboard/ai-tools');
   });
 
   it('marks the preassessment done once taken instead of nagging', () => {
@@ -36,6 +38,53 @@ describe('member "Start here" shortcuts', () => {
     const pre = within(screen.getByTestId('member-start-here')).getByRole('link', { name: /WIOA Preassessment/ });
     expect(pre.textContent).toMatch(/Done/);
     expect(pre.getAttribute('data-done')).toBe('true');
+  });
+});
+
+describe('AI tools explained on the home', () => {
+  it('lists what the main tools do, each linked, plus the full list', () => {
+    render(<MemberStartHereCard preassessmentCompleted={false} />);
+    const tools = within(screen.getByTestId('member-start-here-tools')).getAllByRole('link');
+    expect(tools).toHaveLength(4);
+    expect(tools.map((a) => a.getAttribute('href'))).toEqual([
+      '/dashboard/ai-tools/resume-studio',
+      '/dashboard/ai-tools/interview-practice',
+      '/dashboard/ai-tools/cover-letter',
+      '/dashboard/ai-tools/job-match-scorer',
+    ]);
+    expect(tools[1].textContent).toMatch(/mock interviews/);
+    expect(screen.getByRole('link', { name: /See all the AI Career Tools/ }).getAttribute('href')).toBe('/dashboard/ai-tools?tab=toolkit');
+  });
+});
+
+describe('preassessment login prompt (logins 1-5)', () => {
+  it('asks to start the preassessment and says how many skips are left', () => {
+    window.sessionStorage.clear();
+    render(<PreassessmentLoginPrompt loginCount={2} />);
+    const dialog = screen.getByRole('dialog', { name: /WIOA Preassessment/ });
+    expect(within(dialog).getByRole('link', { name: 'Start preassessment' }).getAttribute('href')).toBe('/dashboard/assessment');
+    expect(dialog.textContent).toMatch(/3 more times/);
+  });
+
+  it('"Not now" closes it for this login only', () => {
+    window.sessionStorage.clear();
+    const { unmount } = render(<PreassessmentLoginPrompt loginCount={3} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    unmount();
+    // Same login: stays closed.
+    const again = render(<PreassessmentLoginPrompt loginCount={3} />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    again.unmount();
+    // Next login: asks again.
+    render(<PreassessmentLoginPrompt loginCount={4} />);
+    expect(screen.getByRole('dialog')).toBeTruthy();
+  });
+
+  it('warns on the fifth login that the next sign-in requires it', () => {
+    window.sessionStorage.clear();
+    render(<PreassessmentLoginPrompt loginCount={5} />);
+    expect(screen.getByRole('dialog').textContent).toMatch(/Next time you sign in it's required/);
   });
 });
 
