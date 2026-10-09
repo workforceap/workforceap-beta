@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Sparkles, Mail, Video, CheckCircle2, Ban, GripVertical, Briefcase } from 'lucide-react';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { Avatar, DesignSurface, colorVar, type KitColor } from '@/components/portal/kit';
-import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
+import EmployerEmptyState from '@/components/employer/EmployerEmptyState';
 
 /**
  * Employer candidate pipeline (Kanban) — Command Center visual language.
@@ -117,16 +117,7 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
     return (
       <DesignSurface surface="dense">
         <div className="wa-kit-card">
-          <KitEmptyState
-            headingAs="h2"
-            title="No pipeline yet"
-            description="Post a job and AI will match qualified candidates from the WorkforceAP member pool."
-            action={
-              <Link href="/employer/jobs/new" className="wa-kit-cta">
-                Post a Job
-              </Link>
-            }
-          />
+          <EmployerEmptyState variant="pipelineNoMatches" headingAs="h2" />
         </div>
       </DesignSurface>
     );

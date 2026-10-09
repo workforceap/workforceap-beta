@@ -84,6 +84,9 @@ export default async function EmployerMatchesPage() {
           {showingFirstLabel(matches.length, matchTotal, 'matches')}
         </p>
       )}
+      {/* Zero rows read as "no suggested candidates yet" (the client default). Splitting
+          "no posting" / "none live" here needs a tenant-scoped posting count, which waits
+          on the employer context carrying its organizationId (WAP-24 ratchet). */}
       <EmployerMatchHistoryClient initialRows={initialRows} />
     </PortalPageFrame>
   );

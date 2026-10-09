@@ -5,7 +5,10 @@ import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
+import { ListFilter } from 'lucide-react';
 import { StatusTag, type KitTone } from '@/components/portal/kit';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
+import { employerApplicationsListHref } from '@/lib/employer/employerApplicationsListQuery';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 
 const STATUS_CHIP_FILTERS = [
@@ -49,10 +52,14 @@ function initials(name: string | null): string {
 
 export default function MobileApplicationsClient({
   initialRows,
+  activeStatusFilter = null,
 }: {
   initialRows: EmployerApplicationRow[];
+  /** The `?status=` filter the page already applied server-side, so zero rows can be named honestly. */
+  activeStatusFilter?: string | null;
 }) {
   const tCommon = useTranslations('common');
+  const tEmpty = useTranslations('empty');
   const [rows, setRows] = useState(initialRows);
   const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -154,10 +161,42 @@ export default function MobileApplicationsClient({
       {/* Applicant cards */}
       <div style={{ padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {visible.length === 0 ? (
-          <div style={{ background: 'var(--color-white)', borderRadius: '0.75rem', padding: '1.5rem', textAlign: 'center' }}>
-            <span className="material-symbols-outlined text-3xl block mb-2" style={{ color: 'var(--outline-variant)' }} aria-hidden="true">inbox</span>
-            <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>No applications found.</p>
-          </div>
+          // The page renders this list only when applications exist or a stage
+          // filter is set, so every zero here is `filtered`: the local chip
+          // (cleared in place), the URL stage filter, or a page past the last
+          // applicant (both answered by the unfiltered first page).
+          filter !== 'all' ? (
+            <KitEmptyState
+              framed
+              kind="filtered"
+              headingAs="h2"
+              data-testid="employer-applications-empty"
+              data-variant="applicationsFiltered"
+              icon={<ListFilter size={13} aria-hidden="true" />}
+              title={tEmpty('employer.applicationsFiltered.title', { stage: applicationStatusLabel(filter) })}
+              description={tEmpty('employer.applicationsFiltered.body')}
+              primaryAction={{ label: tEmpty('employer.applicationsFiltered.action'), onClick: () => setFilter('all') }}
+            />
+          ) : (
+            <KitEmptyState
+              framed
+              kind="filtered"
+              headingAs="h2"
+              data-testid="employer-applications-empty"
+              data-variant={activeStatusFilter ? 'applicationsFiltered' : 'applicationsPage'}
+              icon={<ListFilter size={13} aria-hidden="true" />}
+              title={
+                activeStatusFilter
+                  ? tEmpty('employer.applicationsFiltered.title', { stage: applicationStatusLabel(activeStatusFilter) })
+                  : tEmpty('employer.applicationsPage.title')
+              }
+              description={activeStatusFilter ? tEmpty('employer.applicationsFiltered.body') : tEmpty('employer.applicationsPage.body')}
+              primaryAction={{
+                label: activeStatusFilter ? tEmpty('employer.applicationsFiltered.action') : tEmpty('employer.applicationsPage.action'),
+                href: employerApplicationsListHref({}),
+              }}
+            />
+          )
         ) : (
           visible.map((app) => {
             const isExpanded = expandedId === app.id;

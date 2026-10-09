@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useState, useCallback } from 'react';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { DataTable, Avatar, textColorVar, type Column, type KitColor } from '@/components/portal/kit';
-import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
+import EmployerEmptyState from '@/components/employer/EmployerEmptyState';
+import type { EmployerEmptyVariant } from '@/lib/employer/emptyState';
 
 export type EmployerMatchHistoryRow = {
   id: string;
@@ -103,11 +104,24 @@ function StatusSelect({
   );
 }
 
-export default function EmployerMatchHistoryClient({ initialRows }: { initialRows: EmployerMatchHistoryRow[] }) {
+export default function EmployerMatchHistoryClient({
+  initialRows,
+  emptyVariant = 'pipelineNoMatches',
+}: {
+  initialRows: EmployerMatchHistoryRow[];
+  /**
+   * Which empty state is honest when there are no rows, for a page that can count
+   * postings (lib/employer/emptyState.ts `employerPipelineEmptyVariant`): no posting
+   * at all → `postings`; postings but none live → `pipelineNotLive`; live postings
+   * the matcher has not paired yet → `pipelineNoMatches` (default).
+   */
+  emptyVariant?: Extract<EmployerEmptyVariant, 'postings' | 'pipelineNotLive' | 'pipelineNoMatches'>;
+}) {
   const [rows, setRows] = useState(initialRows);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const tCommon = useTranslations('common');
+  const tEmpty = useTranslations('empty');
   const connectionCopy = tCommon('connectionError');
 
   const patchStatus = useCallback(async (jobId: string, studentId: string, matchId: string, status: string) => {
@@ -149,16 +163,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
   if (rows.length === 0) {
     return (
       <div className="wa-kit-card">
-        <KitEmptyState
-          headingAs="h2"
-          title="No suggested candidates yet"
-          description="When WorkforceAP matches members to your open roles, they will appear here with match scores and pipeline status."
-          action={
-            <Link href="/employer/jobs/new" className="wa-kit-cta">
-              Post your first job <ArrowRight size={14} aria-hidden />
-            </Link>
-          }
-        />
+        <EmployerEmptyState variant={emptyVariant} headingAs="h2" />
       </div>
     );
   }
@@ -283,7 +288,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
             </div>
           </div>
         )}
-        emptyTitle="No suggested candidates yet"
+        empty={{ kind: 'unavailable', tone: 'info', title: tEmpty('employer.pipelineNoMatches.title') }}
       />
     </div>
   );

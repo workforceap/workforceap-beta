@@ -1,7 +1,10 @@
 process.env.TZ = 'UTC';
 
 import { renderToStaticMarkup } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 
 /**
  * The employer guided tour's page step (`tour-post-job`) must be on the real
@@ -59,7 +62,12 @@ describe('employer overview carries the guided-tour page anchor', () => {
   });
 
   it('the default (kit) overview renders exactly one tour-post-job anchor around the Post a role action', async () => {
-    const html = renderToStaticMarkup(await EmployerDashboardPage({ searchParams: Promise.resolve({}) }));
+    // The kit reads `empty.*` (its two zero states) through next-intl, as under the (portal) layout.
+    const html = renderToStaticMarkup(
+      <NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>
+        {await EmployerDashboardPage({ searchParams: Promise.resolve({}) })}
+      </NextIntlClientProvider>,
+    );
     expect(anchors(html, 'tour-post-job')).toBe(1);
     expect(html).toMatch(/data-tour="tour-post-job"[^>]*>[\s\S]{0,400}?href="\/employer\/jobs\/new"/);
     expect(html).toContain('Post a role');
