@@ -62,6 +62,33 @@ export default function MemberStartHereCard({
           </span>
         </Link>
       </div>
+      <h3 className="wa-text-sm wa-font-bold" style={{ margin: '14px 0 6px' }}>
+        What the AI Career Tools do
+      </h3>
+      <ul data-testid="member-start-here-tools" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 6 }}>
+        {START_HERE_TOOLS.map((tool) => (
+          <li key={tool.href}>
+            <Link href={tool.href} style={{ display: 'block', padding: '6px 0' }}>
+              <strong>{tool.title}</strong>
+              <span style={{ color: 'var(--wa-muted)' }}> — {tool.body}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link href={`${toolkitHref}?tab=toolkit`} className="wa-text-sm wa-font-bold" style={{ display: 'inline-block', marginTop: 8 }}>
+        See all the AI Career Tools →
+      </Link>
     </section>
   );
 }
+
+/**
+ * The four tools members reach for first, in plain words. Copy mirrors the
+ * full list in VoiceStudioKit's "All Tools" tab (TOOLKIT_STEPS).
+ */
+export const START_HERE_TOOLS = [
+  { title: 'Resume Studio', body: 'score your resume and get it rewritten', href: '/dashboard/ai-tools/resume-studio' },
+  { title: 'Interview Practice', body: 'live mock interviews with voice coaching', href: '/dashboard/ai-tools/interview-practice' },
+  { title: 'Cover Letter', body: 'a letter tailored to any job you saved', href: '/dashboard/ai-tools/cover-letter' },
+  { title: 'Job Match Scorer', body: 'see how well you fit a specific job', href: '/dashboard/ai-tools/job-match-scorer' },
+] as const;
