@@ -156,6 +156,7 @@ export function printedContentFields(content: TwoStageContent): PrintedField[] {
     { field: 'boardName', value: content.boardName, max: L.boardName },
     { field: 'counselor.name', value: content.counselor.name, max: L.personName },
     { field: 'training.className', value: content.training.className, max: L.className },
+    ...(content.training.classDescription ? [{ field: 'training.classDescription', value: content.training.classDescription, max: L.classDescription }] : []),
     { field: 'lineItems[0].label', value: content.lineItems[0]?.label ?? '', max: L.tuitionLabel },
     { field: 'signer.name', value: content.signer.name, max: L.personName },
     { field: 'signer.title', value: content.signer.title, max: L.signerTitle },
@@ -266,6 +267,9 @@ export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): 
     counselor: { name: content.counselor.name, email: content.counselor.email, phone: content.counselor.phone },
     programSlug: content.training.programSlug,
     className: content.training.className,
+    ...(content.kind === 'j5_quote_voucher_request' && content.training.classDescription
+      ? { classDescription: content.training.classDescription }
+      : {}),
     classHours: content.training.contactHours,
     classStartDate: content.training.classStartDate,
     classEndDate: content.training.classEndDate,

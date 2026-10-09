@@ -243,7 +243,7 @@ describe('two-stage WAP billing PDFs', () => {
   it('describes the class on the J5 with the approved syllabus Program Description, on one page, for every program (ops 10/8/26)', async () => {
     const norm = (value: string) => value.replace(/\s+/gu, ' ').trim();
     for (const syllabus of Object.values(PROGRAM_SYLLABI)) {
-      const facts = j5({ programSlug: syllabus.slug, className: syllabus.title, classHours: syllabus.totalHours as 160 | 200 });
+      const facts = j5({ programSlug: syllabus.slug, className: syllabus.title, classDescription: syllabus.description.replace(/\s+/gu, ' ').trim(), classHours: syllabus.totalHours as 160 | 200 });
       for (const bytes of [await renderJ5QuoteVoucherRequestDraftPdf(facts), await renderJ5QuoteVoucherRequestSignedPdf(facts, signaturePng)]) {
         const { text, positions } = await extract(Uint8Array.from(bytes));
         assert.match(text, /CLASS DESCRIPTION/u, syllabus.slug);
@@ -253,6 +253,11 @@ describe('two-stage WAP billing PDFs', () => {
         }
       }
     }
+  });
+
+  it('prints no description on a J5 frozen before the field existed (old content renders unchanged)', async () => {
+    const { text } = await extract(await renderJ5QuoteVoucherRequestDraftPdf(j5()));
+    assert.doesNotMatch(text, /CLASS DESCRIPTION/u);
   });
 
   it('keeps the J6 cover letter free of the class description', async () => {

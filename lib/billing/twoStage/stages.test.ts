@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { getProgramSyllabus } from '@/shared/programSyllabi';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
@@ -111,7 +112,15 @@ describe('J5: allowed before any voucher exists', () => {
     const c = built.content;
     assert.equal(c.title, 'Quote / Voucher Request');
     assert.equal(c.contentVersion, 2);
-    assert.deepEqual(c.training, { programSlug: IT_SUPPORT, className: 'IT Support Professional Certificate (IBM)', contactHours: 160, classStartDate: '2026-09-30', classEndDate: '2027-03-30' });
+    assert.deepEqual(c.training, {
+      programSlug: IT_SUPPORT,
+      className: 'IT Support Professional Certificate (IBM)',
+      // Ops (10/8/26): the approved syllabus description is frozen into the J5.
+      classDescription: getProgramSyllabus(IT_SUPPORT)!.description.replace(/\s+/gu, ' ').trim(),
+      contactHours: 160,
+      classStartDate: '2026-09-30',
+      classEndDate: '2027-03-30',
+    });
     assert.deepEqual(c.lineItems, [{ label: 'Tuition & Fees', amountCents: 750_000 }]);
     assert.equal(c.totalCents, 750_000);
     assert.deepEqual(c.recipients.map((r) => r.role), ['counselor', 'student']);
