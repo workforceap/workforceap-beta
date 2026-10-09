@@ -517,6 +517,7 @@ the reference PDFs themselves are not committed.
 | J6: TO finance name \| email, BOARD, COPY counselor; student (names only), RE "Payment for {student} training" | `finance.*`, `boardName`, `counselor.name`, `student.name` |
 | Intro sentence (J6 cites the voucher number and the class start) | fixed template with `headerLines[0]`, `student.name`; J6 `voucher.reference`, `classStarted.classStartDate` |
 | TRAINING DETAILS: Student, Class, Training hours, Class start, Class end (J6: Voucher / PO) | `student.name`, `training.className`, `training.contactHours`, `training.classStartDate`, `training.classEndDate`; J6 `voucher.reference` (the current voucher version) |
+| CLASS DESCRIPTION (J5 only; ops 10/8/26) | `training.classDescription`: the approved syllabus Program Description (`shared/programSyllabi`), **frozen into the J5 content and its version hash when the J5 is built**, so a later syllabus edit never changes a signed J5. Content frozen before this field existed has none and renders as before. Sized so the longest description (6 lines) keeps the J5 on one page with the signature clear of the footer. |
 | The single `Tuition & Fees $7,500.00` row | `lineItems[0].label`, `totalCents` |
 | J5 voucher-return and file-retention sentence; `Copy: {student} \| {email}` | fixed template with `headerLines[0]`; `student.name`, `student.email` |
 | J6 payment sentences | `paymentFollowUp.instruction`, then `paymentFollowUp.wording` (both frozen by M1) |

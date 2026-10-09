@@ -42,6 +42,8 @@ export const TWO_STAGE_TEXT_LIMITS = Object.freeze({
   boardName: 100,
   programSlug: 120,
   className: 110,
+  /** Longest approved syllabus description is ~720 chars; the 6-line layout cap is the real bound. */
+  classDescription: 900,
   addressLine: 100,
   tuitionLabel: 40,
   paymentFollowUpWording: 120,
@@ -75,6 +77,8 @@ type CommonFacts = {
   /** The enrolled program slug, not a display title or broad category. */
   readonly programSlug: string;
   readonly className: string;
+  /** Frozen approved Program Description (J5). Omitted on older content. */
+  readonly classDescription?: string;
   readonly classHours: 160 | 200;
   readonly classStartDate: string;
   readonly classEndDate: string; // the end date frozen under contentVersion
@@ -243,6 +247,7 @@ function validateFacts(input: TwoStageDocumentFacts, signed: boolean): Date {
     throw new Error(`Class hours must match the approved ${contractHours}-hour syllabus`);
   }
   required(input.className, 'className', L.className);
+  if (input.classDescription !== undefined) required(input.classDescription, 'classDescription', L.classDescription);
   if (input.className !== syllabus.title) throw new Error('Class name must match the approved program syllabus');
   isoDate(input.classStartDate, 'classStartDate');
   isoDate(input.classEndDate, 'classEndDate');
@@ -354,6 +359,23 @@ function details(page: PDFPage, fonts: Fonts, rows: ReadonlyArray<readonly [stri
   return bottom;
 }
 
+/** Size and line cap chosen so every approved description fits the one-page J5. */
+const DESCRIPTION_SIZE = 7.2;
+const DESCRIPTION_LINE_H = 8.4;
+const DESCRIPTION_MAX_LINES = 6;
+
+function classDescription(page: PDFPage, fonts: Fonts, frozenText: string, top: number): number {
+  const text = printable(frozenText);
+  let y = top - 10;
+  drawText(page, fonts, 'CLASS DESCRIPTION', LEFT, y, CONTENT_W, 7, true, MUTED);
+  y -= 9;
+  for (const line of wrap(text, fonts.regular, DESCRIPTION_SIZE, CONTENT_W, DESCRIPTION_MAX_LINES)) {
+    drawText(page, fonts, line, LEFT, y, CONTENT_W, DESCRIPTION_SIZE);
+    y -= DESCRIPTION_LINE_H;
+  }
+  return y + DESCRIPTION_LINE_H - 4;
+}
+
 export const DRAFT_BADGE = 'DRAFT - SIGNATURE REQUIRED';
 export const DRAFT_ON_HOLD_BADGE = 'DRAFT - ON HOLD - NOT SIGNABLE';
 export const MOCK_BADGE = 'MOCK - REVIEW ONLY - NOT SIGNED';
@@ -458,6 +480,10 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   ];
   if (facts.stage === 'j6') rows.push(['Voucher / PO', facts.signedVoucher.reference]);
   y = details(page, fonts, rows, y);
+  // Ops (10/8/26): the J5 must describe the class. Print the approved
+  // syllabus "Program Description" (the same text as the catalog) under the
+  // details, small enough that the longest description still fits one page.
+  if (facts.stage === 'j5' && facts.classDescription) y = classDescription(page, fonts, facts.classDescription, y) + 5;
   y -= 13;
   const priceBottom = y - 37;
   page.drawRectangle({ x: LEFT, y: priceBottom, width: CONTENT_W, height: 37, color: PRICE_PALE });

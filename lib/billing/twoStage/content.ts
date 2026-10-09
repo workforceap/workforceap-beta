@@ -4,6 +4,7 @@
  * immutable once signed. Hours, dates and the one line are frozen here, so a
  * later catalog or syllabus change cannot alter an issued document.
  */
+import { getProgramSyllabus } from '@/shared/programSyllabi';
 import type { Attestation } from './attestations';
 import { authorizedSignerLine, AUTHORIZED_SIGNER, CONTENT_VERSION, DOCUMENT_TITLES, J5_KIND, J6_KIND, PAYMENT_FOLLOW_UP_MAX_DAYS, PAYMENT_FOLLOW_UP_MIN_DAYS, type ContentVersion } from './constants';
 import { contentSha256 } from './canonical';
@@ -15,11 +16,23 @@ import { buildTuitionLineItems, type TuitionLine } from './lineItem';
 import { j5Recipients, j6Recipients, normalizeRecipientName, type Contact, type Recipient, type RecipientRole } from './recipients';
 import { checkJ5Prerequisites, checkJ6Prerequisites, type J6Prerequisites, type J6Variance, type PriorJ5Summary, type ReviewReason } from './stateMachine';
 
+/** The approved description to freeze, normalized to one line of single spaces. */
+function frozenClassDescription(programSlug: string): { classDescription?: string } {
+  const text = getProgramSyllabus(programSlug)?.description?.replace(/\s+/gu, ' ').trim();
+  return text ? { classDescription: text } : {};
+}
+
 export type CounselorContact = Contact & { phone: string };
 
 export type TrainingTerms = {
   programSlug: string;
   className: string;
+  /**
+   * Ops (10/8/26): the approved syllabus Program Description, frozen when the
+   * J5 is built so a signed document never changes if a syllabus is edited.
+   * Absent on content frozen before this field existed (renders as before).
+   */
+  classDescription?: string;
   contactHours: ContractHours;
   classStartDate: string;
   classEndDate: string;
@@ -195,7 +208,7 @@ export function buildJ5Content(input: {
     student: printed(recipients.recipients, 'student'),
     boardName: input.boardName.trim(),
     counselor: { ...printed(recipients.recipients, 'counselor'), phone: normalizeRecipientName(input.counselor.phone) },
-    training: { programSlug: terms.canonicalSlug, className: terms.className, contactHours: terms.hours, classStartDate: start, classEndDate: classEndDate(start) },
+    training: { programSlug: terms.canonicalSlug, className: terms.className, ...frozenClassDescription(terms.canonicalSlug), contactHours: terms.hours, classStartDate: start, classEndDate: classEndDate(start) },
     ...lineItems(),
     signer: signer(),
     signature,

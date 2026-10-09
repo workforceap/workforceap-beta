@@ -267,7 +267,7 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     const quote = j5({ ...refContacts, issueDate: '2026-09-27' });
     const letter = j6({ voucherReference: ref.contacts.voucherReference, ...refContacts, finance: ref.contacts.finance });
     for (const [content, lines] of [[quote, ref.j5], [letter, ref.j6]] as const) {
-      const expected = collapse(lines.map((line) => line.replace('{className}', content.training.className)).join(' '));
+      const expected = collapse(lines.map((line) => line.replace('{className}', content.training.className).replace('{classDescription}', content.training.classDescription ?? '')).join(' '));
       const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
       assert.equal(text, expected, content.kind);
     }

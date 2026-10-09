@@ -240,6 +240,31 @@ describe('two-stage WAP billing PDFs', () => {
     }
   });
 
+  it('describes the class on the J5 with the approved syllabus Program Description, on one page, for every program (ops 10/8/26)', async () => {
+    const norm = (value: string) => value.replace(/\s+/gu, ' ').trim();
+    for (const syllabus of Object.values(PROGRAM_SYLLABI)) {
+      const facts = j5({ programSlug: syllabus.slug, className: syllabus.title, classDescription: syllabus.description.replace(/\s+/gu, ' ').trim(), classHours: syllabus.totalHours as 160 | 200 });
+      for (const bytes of [await renderJ5QuoteVoucherRequestDraftPdf(facts), await renderJ5QuoteVoucherRequestSignedPdf(facts, signaturePng)]) {
+        const { text, positions } = await extract(Uint8Array.from(bytes));
+        assert.match(text, /CLASS DESCRIPTION/u, syllabus.slug);
+        assert.ok(norm(text).includes(norm(syllabus.description)), `${syllabus.slug}: full description printed`);
+        for (const position of positions) {
+          assert.ok(position.y >= 25 && position.y <= 775, `${syllabus.slug}: text y=${position.y} escaped page`);
+        }
+      }
+    }
+  });
+
+  it('prints no description on a J5 frozen before the field existed (old content renders unchanged)', async () => {
+    const { text } = await extract(await renderJ5QuoteVoucherRequestDraftPdf(j5()));
+    assert.doesNotMatch(text, /CLASS DESCRIPTION/u);
+  });
+
+  it('keeps the J6 cover letter free of the class description', async () => {
+    const { text } = await extract(await renderJ6InvoiceVoucherCoverLetterDraftPdf(j6()));
+    assert.doesNotMatch(text, /CLASS DESCRIPTION/u);
+  });
+
   it('renders the approved IBM software program at 200 hours as an unsigned J6 draft', async () => {
     const bytes = await renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({
       programSlug: 'software-developer-professional-certificate-ibm',
