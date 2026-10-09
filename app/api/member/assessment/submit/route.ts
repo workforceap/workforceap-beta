@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { scoreAssessment, TOTAL_POINTS } from '@/lib/assessment/answer-key';
+import { isStraightLined, STRAIGHT_LINE_MESSAGE } from '@/lib/assessment/answerPattern';
 import type { QuestionChoice } from '@/lib/assessment/answer-key';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
@@ -41,6 +42,12 @@ export const POST = withApiGuc(async (request: Request) => {
       answersTyped[id] = v as QuestionChoice;
     }
   
+    // Ops (10/9/26): one letter clicked for (nearly) every question is not an
+    // answer sheet; do not score or save it as the member's WIOA result.
+    if (isStraightLined(answersTyped)) {
+      return NextResponse.json({ error: STRAIGHT_LINE_MESSAGE, code: 'ANSWERS_ALL_SAME' }, { status: 422 });
+    }
+
     const { raw, pct } = scoreAssessment(answersTyped);
   
     const dbUser = await prisma.$transaction((tx) => tx.user.findUnique({
