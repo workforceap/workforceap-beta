@@ -12,18 +12,27 @@ PostgreSQL's row-level security has two enforcement modes:
 | Mode | Affects |
 |---|---|
 | `ENABLE ROW LEVEL SECURITY` | Non-superuser, non-owner roles |
-| `FORCE ROW LEVEL SECURITY`  | Everyone, including the table owner |
+| `FORCE ROW LEVEL SECURITY`  | Non-bypassing roles, including the table owner |
 
-WorkforceAP's app connection runs as the table owner (the Supabase
-`postgres` role on managed projects). Until we flip `FORCE`, the
-policies in migration `20260513040000_add_rls_policies` are effectively
-**advisory** for the app — every query the app makes bypasses RLS.
+Superusers and `BYPASSRLS` roles bypass both modes. Assertions therefore use
+a separate non-superuser `NOBYPASSRLS` role with table grants.
 
-Once we flip `FORCE`, a single missing GUC context (i.e. a route that
-forgets to call `withApiGuc()` or `runWithGucContext()`) becomes a
-**hard 500**, not a silent over-fetch. This rehearsal harness proves
-every authenticated persona's read surface still works **before** we
-flip prod.
+An application connection that owns its tables bypasses `ENABLE` unless
+`FORCE` applies and the role has neither superuser nor `BYPASSRLS` privileges.
+Verify the actual deployment role before promotion: `FORCE` cannot constrain
+a superuser or `BYPASSRLS` connection.
+
+For a role subject to RLS, missing transaction-local persona context can
+starve reads or reject writes; the visible result depends on the policy and
+client error handling. This rehearsal exercises the seeded
+persona read/write matrix against shadow policies **before** we flip prod.
+It uses a bare `PrismaClient`: `runWithGucContext()` stores async context but
+does not install the application client's middleware. The harness therefore
+uses `scripts/p1/force-rls-context.ts` to bind all five persona GUCs with
+parameterized `set_config(..., true)` on the assertion's transaction connection.
+Absent user/org/employer/partner IDs are explicitly set to empty strings.
+This proves rehearsal context delivery; it does not prove the production
+middleware, route wrappers or preview transaction-flattening path.
 
 ---
 
@@ -56,8 +65,8 @@ harness as required pre-merge.
    export SHADOW_DATABASE_URL=postgres://user:pw@host:5432/wap_shadow
    ```
 3. **Tooling.** `pnpm`, `npx`, and the project's normal dev deps. No
-   new packages are required — the harness uses `@prisma/client` and
-   the existing GUC middleware.
+   new packages are required - the harness uses `@prisma/client` and
+   an explicit harness-only transaction context helper.
 
 ---
 
@@ -76,7 +85,7 @@ The harness will:
    replaying the full historical migration chain, which contains early
    sprint migrations that are not cleanly replayable from empty.
 3. Seed 5 personas across 2 orgs (idempotent — safe to rerun).
-4. Toggle `FORCE ROW LEVEL SECURITY` on these **10 high-stakes tables**:
+4. Toggle `FORCE ROW LEVEL SECURITY` on these **25 high-stakes tables**:
    - `job_posting_applications`
    - `job_applications`
    - `users`
@@ -87,6 +96,21 @@ The harness will:
    - `member_next_best_actions`
    - `invitations`
    - `employers`
+   - `goals`
+   - `messages`
+   - `message_threads`
+   - `counselor_notes`
+   - `counselor_assignments`
+   - `course_enrollments`
+   - `courses`
+   - `organization_program_catalog`
+   - `referral_codes`
+   - `referral_conversions`
+   - `milestone_cascades`
+   - `xapi_statements`
+   - `partner_outreach_logs`
+   - `points_transactions`
+   - `member_points`
 5. Run the persona-test matrix (see below).
 6. Print a markdown summary to stdout.
 7. Clear `FORCE` (so the shadow DB is reusable for ad-hoc dev work).
@@ -96,19 +120,15 @@ The harness will:
 
 ## Persona-test matrix
 
-| Persona | Assertion |
-|---|---|
-| **Admin Org A** | Can read Org A members (≥2) |
-| **Admin Org A** | Cannot read Org B members (=0) |
-| **Counselor Org A** | Can read assigned member m1 (=1) |
-| **Counselor Org A** | Cannot read Org B member m2 (=0) |
-| **Member m1** | Can read own profile (=1) |
-| **Member m1** | Cannot read m2's profile (=0) |
-| **Member m1** | Cannot list users in own org (≤1, only self) |
-| **Partner Org A** | Can see own referrals (member m1) (≥1) |
-| **Partner Org A** | Cannot see Org B users (=0) |
-| **Anonymous** | Cannot read any users (=0) |
-| **Anonymous** | Cannot read any profiles (=0) |
+| Persona | Assertions | Surfaces |
+|---|---|---|
+| **Admin Org A** | 15 | Org-scoped users, employers, jobs, courses, threads, goals, xAPI; own-org job write and rejected cross-org job write |
+| **Counselor Org A** | 3 | Assigned member, excluded Org B member, notes |
+| **Member m1** | 7 | Own/other profiles and goals, self-only users, own application write, rejected application to Org B job |
+| **Partner Org A** | 4 | Referrals, excluded Org B users, referral codes, outreach logs |
+| **Anonymous** | 4 | No users, profiles, jobs or courses |
+| **Super Admin** | 2 | Users and employers across orgs |
+| **System** | 1 | Milestone cascades |
 
 **Pass threshold:** 100% pass. Any failure blocks the prod flip.
 
@@ -116,19 +136,98 @@ The harness will:
 
 ## Interpreting output
 
-The harness prints a markdown table. A typical clean run looks like:
+The harness prints a markdown table. A fully passing run would report:
 
 ```
-Total: 11  |  Passed: 11  |  Failed: 0
+Total: 36  |  Passed: 36  |  Failed: 0
 ```
 
-Each row in the matrix is one assertion against one persona under
+### Local validation receipt: 2026-10-04
+
+The harness-only transaction-context fix was validated against disposable
+local PostgreSQL 16. The full shadow rehearsal completed at
+`2026-10-04T19:15:09Z` with **36 assertions: 35 passed, 1 failed**, exit **1**.
+The credential-free context suite passed **6/6**, and the native PostgreSQL
+context proof passed, including its real raw and generated-model denials.
+
+The remaining failure is **Member m1: cannot INSERT job application for
+Org B job**. The insert actually succeeded. `job_applications_insert_own`
+checks the member's `user_id` but does not check that the referenced
+`curated_job_id` belongs to that member's organization. This is a genuine
+policy gap, rather than a context-delivery failure. All other assertions
+passed after the explicit transaction-local GUC setup.
+
+The policy correction requires a separate reviewed change; this harness
+fix makes no application policy or migration edits and leaves the failing
+expectation intact. The **30 consecutive clean full-rehearsal runs** gate
+and production FORCE-RLS promotion remain blocked. This local proof does
+not count as a ledger pass or reset an existing failure streak.
+
+Each result row is one assertion against one persona under
 `FORCE RLS`. A failure means **either**:
 
 - A policy is missing or too restrictive (the assertion that *should*
   succeed returned an unexpectedly low count), **or**
 - A policy is missing or too permissive (the assertion that *should*
-  see zero rows leaked data).
+  see zero rows leaked data), **or**
+- Context setup, schema, connection or query infrastructure failed.
+
+A rejected write passes only for a canonical PostgreSQL row-security row
+rejection: SQLSTATE `42501` with that diagnostic (direct, raw Prisma `P2010`
+or wrapped `PostgresError`), or Prisma `P2004` with the canonical diagnostic
+in `meta.database_error`. Ordinary GRANT denials, missing tables/columns,
+unique constraints, timeouts and arbitrary exceptions fail. Context setup
+errors cannot count as a successful denied mutation.
+
+Known application policy gaps remain failing expectations. In particular,
+`job_applications_insert_own` does not verify that `curated_job_id` belongs
+to the member's organization. Do not weaken the cross-org application
+assertion to make this harness green. Empty fixture counts and xAPI assertions
+against nonexistent IDs do not establish complete policy coverage.
+
+## Focused context checks
+
+Run the credential-free Node suite first:
+
+```bash
+node --import tsx --test scripts/p1/force-rls-context.test.ts
+```
+
+The suite imports `node:test` and is automatically owned by
+`scripts/test-unit.mjs` through its `scripts/**/*.test.ts` discovery. It
+matches no real-database skip rule and needs no Vitest manifest entry.
+To verify it through the repository runner, use
+`node scripts/test-unit.mjs --only scripts/p1/force-rls-context.test.ts`.
+
+The real PostgreSQL proof is separate from the full shadow rehearsal. It
+requires PostgreSQL **16**, a **loopback** URL whose database is named
+`wap_rls_proof`, and an explicit disposable-target acknowledgment. Create
+that empty database on a disposable local cluster using a superuser (or an
+RLS-bypassing role with permission to create roles):
+
+```bash
+createdb -h 127.0.0.1 -p 5432 -U postgres wap_rls_proof
+export SHADOW_DATABASE_URL=postgresql://postgres:local-test-password@127.0.0.1:5432/wap_rls_proof
+export FORCE_RLS_PROOF_ACK=disposable-local-postgres16
+pnpm tsx scripts/p1/force-rls-context-proof.ts
+```
+
+Adapt the local port/user/password to that disposable cluster. The proof
+does not apply the app schema or any migration. It creates a random fixture
+schema and a `NOSUPERUSER NOBYPASSRLS` role, applies fixture-only policies,
+and removes both in `finally`. With `connection_limit=1`, it checks backend
+PID reuse, all five GUCs across multiple statements, A/B/anonymous switching,
+absent employer/partner clearing, bound quote-bearing values, and session
+baseline restoration after both commit and rollback. A deliberately stale
+session baseline must be overridden inside each transaction; `SET LOCAL`
+restores that baseline afterwards rather than erasing it.
+
+The proof permits own-persona reads/writes, verifies actual cross-org and
+other-user write denials through raw SQL and a generated Prisma model,
+checks denied/rolled-back rows using the privileged fixture observer, and
+rejects real missing-table, GRANT and unique-constraint failures as denial
+evidence. A green context proof does not clear application policy gaps or
+extend the full-rehearsal ledger streak.
 
 ---
 
@@ -144,12 +243,16 @@ For a read-leak failure (e.g. *Admin Org A can see Org B members*):
 
 ```sql
 -- Connect to the shadow DB as the application user, then:
-SET LOCAL app.current_user_id = '00000000-0000-0000-0000-0000000000a1';
-SET LOCAL app.current_org_id  = '00000000-0000-0000-0000-00000000aaaa';
-SET LOCAL app.current_role    = 'admin';
+BEGIN;
+SELECT set_config('app.current_user_id', '00000000-0000-0000-0000-0000000000a1', true),
+       set_config('app.current_org_id', '00000000-0000-0000-0000-00000000aaaa', true),
+       set_config('app.current_role', 'admin', true),
+       set_config('app.current_employer_id', '', true),
+       set_config('app.current_partner_id', '', true);
 
 EXPLAIN (ANALYZE, VERBOSE)
 SELECT * FROM users WHERE organization_id = '00000000-0000-0000-0000-00000000bbbb';
+ROLLBACK;
 ```
 
 The `EXPLAIN VERBOSE` output shows which RLS policies were applied.

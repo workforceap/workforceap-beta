@@ -1,6 +1,12 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
+import {
+  isAllowedWhilePreassessmentRequired,
+  preassessmentGateFor,
+  type PreassessmentGate,
+} from '@/lib/member/preassessmentGate';
+import PreassessmentLoginPrompt from '@/components/portal/PreassessmentLoginPrompt';
 import { getUser } from '@/lib/auth/server';
 import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { prisma } from '@/lib/db/prisma';
@@ -29,7 +35,6 @@ export default async function DashboardLayout({
   const access = await getMemberDashboardAccess(user.id);
   if (access.redirectTo) redirect(access.redirectTo);
   const { portalRoles, superAdmin } = access;
-
   let memberLayoutLoadFailed = false;
   // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
   const memberTour = getHomeTourForRole('member');
@@ -37,6 +42,7 @@ export default async function DashboardLayout({
 
   let dbUser: {
     deletedAt: Date | null;
+    assessmentCompleted?: boolean;
     fullName: string | null;
     email: string | null;
     profile: {
@@ -50,6 +56,7 @@ export default async function DashboardLayout({
       where: { id: user.id },
       select: {
         deletedAt: true,
+        assessmentCompleted: true,
         fullName: true,
         email: true,
         profile: {
@@ -70,6 +77,29 @@ export default async function DashboardLayout({
 
   if (dbUser?.deletedAt) {
     redirect('/login?deleted=1');
+  }
+
+  // Ops (10/8/26): prompt for the WIOA preassessment on logins 1-5, require it
+  // from login 6. Super admins previewing the member portal are never gated,
+  // and any lookup failure leaves the member ungated (fail open).
+  const currentPath = (await headers()).get('x-pathname') ?? '/dashboard';
+  let preassessmentGate: PreassessmentGate = 'none';
+  let loginCount = 0;
+  if (!superAdmin && !readOnlyAudit && !memberLayoutLoadFailed && dbUser) {
+    try {
+      // Own MemberEvent rows only (userId = the signed-in member).
+      loginCount = await prisma.memberEvent.count({ where: { userId: user.id, eventName: 'member_logged_in' } });
+      preassessmentGate = preassessmentGateFor({
+        assessmentCompleted: Boolean(dbUser.assessmentCompleted),
+        loginCount,
+        isStaffOrNonMember: false,
+      });
+    } catch {
+      preassessmentGate = 'none';
+    }
+  }
+  if (preassessmentGate === 'require' && !isAllowedWhilePreassessmentRequired(currentPath)) {
+    redirect('/dashboard/assessment?required=1');
   }
 
   const hasResume = !!(
@@ -100,6 +130,9 @@ export default async function DashboardLayout({
       tour={tour}
     >
       {memberLayoutLoadFailed ? <span hidden data-portal-error-state="member-layout-load" /> : null}
+      {preassessmentGate === 'prompt' && !isAllowedWhilePreassessmentRequired(currentPath) ? (
+        <PreassessmentLoginPrompt loginCount={loginCount} />
+      ) : null}
       {children}
     </MemberWorkspaceShell>
   );

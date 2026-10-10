@@ -84,7 +84,11 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     });
   }
 
-  if (!!ctx.enrolledProgram && !ctx.assessmentCompleted) {
+  // Ops (9/2/26): the preassessment is open to every member who has applied,
+  // not only enrolled ones, and staff use it for WIOA review. Gating it on an
+  // enrolled program hid it from most members (4 of 141 had completed it,
+  // 2026-10-08), so prompt anyone with an application who has not taken it.
+  if (!ctx.noApplicationOnFile && !ctx.assessmentCompleted) {
     if (ctx.starterProfileReviewRequired) {
       const missing = ctx.starterProfileMissingFields?.slice(0, 3) ?? [];
       const missingNote = missing.length > 0 ? ` Missing: ${missing.join(', ')}.` : '';
@@ -100,15 +104,12 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     } else {
       out.push({
         id: 'skills_assessment',
-        title: 'Complete your Training Preassessment',
-        // A member with an enrolled program has already chosen it — do not tell
-        // them to pick one first (rendered 2026-09-18 for an enrolled member).
-        body: ctx.enrolledProgram
-          ? 'This short preassessment helps personalize your training plan and identify roles that may be a good fit.'
-          : 'After you choose a program, this short preassessment helps personalize your training plan and identify roles that may be a good fit.',
+        title: 'Take your WIOA Preassessment (35 questions)',
+        body: 'Your counselor uses it for WIOA funding review and to personalize your training plan. Your answers save as you go.',
         href: '/dashboard/assessment',
         cta: 'Start preassessment',
         variant: 'urgent',
+        // Behind "choose a program" (weight 95) for members who still need one.
         weight: 90,
       });
     }

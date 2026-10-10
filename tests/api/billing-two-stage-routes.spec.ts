@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 const h = vi.hoisted(() => {
   const ORG = '00000000-0000-4000-8000-000000000001';
@@ -26,6 +27,7 @@ const h = vi.hoisted(() => {
     signatureAssets: [] as Array<Record<string, unknown>>,
     payments: [] as Array<Record<string, unknown>>,
     auditCreate: null as null | (() => never),
+    failBillingReads: false,
   };
   return { ORG, OTHER_ORG, ADMIN, MEMBER, CASE, state };
 });
@@ -38,12 +40,14 @@ const mocks = vi.hoisted(() => ({
   archive: vi.fn(),
   readArchive: vi.fn(),
   txCreate: vi.fn(),
+  transaction: vi.fn(),
   receiptCreate: vi.fn(),
   storeSignature: vi.fn(),
   readSignature: vi.fn(),
   signatureCreate: vi.fn(),
   signatureRevoke: vi.fn(),
   artifactCreate: vi.fn(),
+  emailSend: vi.fn(async () => { throw new Error('a test must never reach the provider'); }),
   recordUpdate: vi.fn(async (_args: unknown): Promise<{ count: number }> => ({ count: 0 })),
   paymentCreate: vi.fn(async (_args: unknown): Promise<unknown> => ({ id: 'pay-new' })),
 }));
@@ -66,9 +70,7 @@ vi.mock('@/lib/email', () => ({ getResend: () => null }));
 vi.mock('@/lib/email/send', () => ({
   FixtureRecipientSkippedError: class extends Error {},
   ResendResolvedSendError: class extends Error {},
-  sendBrandedEmailOrThrowOnSkip: vi.fn(async () => {
-    throw new Error('a test must never reach the provider');
-  }),
+  sendBrandedEmailOrThrowOnSkip: mocks.emailSend,
 }));
 vi.mock('@/lib/billing/twoStage/storageArchive', () => ({
   FINANCE_ARCHIVE_KEY_SEGMENTS: { j5_signed_pdf: 'j5', j6_signed_pdf: 'j6', board_signed_voucher: 'voucher', board_invoice: 'board-invoice', external_j5_copy: 'external-j5' },
@@ -91,8 +93,10 @@ function prismaFake() {
       findMany: async () => [],
     },
     billingCase: {
-      findFirst: async ({ where }: { where: Record<string, unknown> }) =>
-        h.state.cases.find((c) => Object.entries(where).every(([k, v]) => c[k] === v)) ?? null,
+      findFirst: async ({ where }: { where: Record<string, unknown> }) => {
+        if (h.state.failBillingReads) throw new Error('billing schema must not be read');
+        return h.state.cases.find((c) => Object.entries(where).every(([k, v]) => c[k] === v)) ?? null;
+      },
       findMany: async () => h.state.cases,
       create: mocks.txCreate,
     },
@@ -142,7 +146,7 @@ function prismaFake() {
       },
     },
     billingDesignatedSigner: { findFirst: async () => h.state.designated },
-    $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(db),
+    $transaction: async (fn: (tx: unknown) => Promise<unknown>) => { mocks.transaction(); return fn(db); },
   };
   return db;
 }
@@ -155,6 +159,9 @@ vi.mock('@/lib/tenant/withTenantScope', async () => {
 import { GET as listCases, POST as openCase } from '@/app/api/admin/members/[id]/billing/two-stage/cases/route';
 import { GET as caseSummary } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/route';
 import { GET as downloadFile } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/files/[artifactId]/route';
+import { GET as previewDraft } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/preview/route';
+import { POST as reviewDraftRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/review/route';
+import { GET as memberPreviewGet, POST as memberPreviewPost } from '@/app/api/admin/members/[id]/billing/two-stage/[stage]/preview/route';
 import { POST as uploadVoucher } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/route';
 import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/sign/route';
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
@@ -166,8 +173,8 @@ import { POST as paymentReceivedRoute } from '@/app/api/admin/members/[id]/billi
 import { POST as freeze } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/freeze/route';
 import { GET as signatureGet, POST as signaturePost } from '@/app/api/admin/members/[id]/billing/two-stage/signature/route';
 import type { Attestation } from '@/lib/billing/twoStage/attestations';
-import { sha256Hex } from '@/lib/billing/twoStage/canonical';
-import { buildJ5Content, recipientRowsForContent } from '@/lib/billing/twoStage/content';
+import { contentSha256, sha256Hex } from '@/lib/billing/twoStage/canonical';
+import { buildJ5Content, buildJ6Content, recipientRowsForContent } from '@/lib/billing/twoStage/content';
 import { WAP_LOGO_PUBLIC_PATH } from '@/lib/billing/twoStage/letterhead';
 import { inspectSignaturePng, signatureApprovalStatement } from '@/lib/billing/twoStage/signatureAsset';
 import { RendererAdapterError, renderDraftFromContent } from '@/lib/billing/twoStage/rendererAdapter';
@@ -206,12 +213,14 @@ beforeEach(() => {
   h.state.designated = null;
   h.state.signatureAssets = [];
   h.state.payments = [];
+  h.state.failBillingReads = false;
   mocks.getUser.mockResolvedValue({ id: h.ADMIN });
   mocks.isAdmin.mockResolvedValue(true);
   mocks.isSuperAdmin.mockResolvedValue(false);
   mocks.archive.mockReset();
   mocks.readArchive.mockReset();
   mocks.txCreate.mockReset();
+  mocks.transaction.mockReset();
   mocks.receiptCreate.mockReset();
   mocks.recordUpdate.mockReset();
   mocks.recordUpdate.mockImplementation(async () => ({ count: 0 }));
@@ -232,7 +241,7 @@ afterEach(() => {
 });
 
 describe('two-stage routes: authorization and request checks', () => {
-  it('every route is closed with 503 MIGRATION_NOT_APPLIED by default, before auth or any read', async () => {
+  it('operational routes are closed with 503 MIGRATION_NOT_APPLIED by default, before auth or any read', async () => {
     delete process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED;
     const res = await listCases(new Request(base), memberParams());
     expect(res.status).toBe(503);
@@ -280,6 +289,134 @@ describe('two-stage routes: authorization and request checks', () => {
     const res = await caseSummary(new Request(`${base}/${h.CASE}`), caseParams());
     expect(res.status).toBe(404);
     expect((await res.json()).code).toBe('CASE_NOT_FOUND');
+  });
+});
+
+describe('member document previews: incomplete information is allowed without issuing anything', () => {
+  const url = (stage = 'j5', query = '') => `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/${stage}/preview${query}`;
+  const params = (stage = 'j5') => ({ params: Promise.resolve({ id: h.MEMBER, stage }) });
+  async function pdfText(response: Response) {
+    expect(response.status).toBe(200);
+    const pdf = await getDocument({ data: new Uint8Array(await response.arrayBuffer()), useSystemFonts: true, disableFontFace: true }).promise;
+    try {
+      expect(pdf.numPages).toBe(1);
+      return (await (await pdf.getPage(1)).getTextContent()).items.flatMap((item) => 'str' in item ? [item.str] : []).join(' ');
+    } finally { await pdf.destroy(); }
+  }
+
+  it('renders GET and POST for both stages without cases, enrollments, readiness, or an enabled billing schema', async () => {
+    delete process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED;
+    h.state.cases = [];
+    h.state.failBillingReads = true;
+    const auditCalls = mocks.auditLog.mock.calls.length;
+    const emailCalls = mocks.emailSend.mock.calls.length;
+    for (const stage of ['j5', 'j6']) {
+      const get = await memberPreviewGet(new Request(url(stage, '?download=1')), params(stage));
+      expect(get.headers.get('content-type')).toBe('application/pdf');
+      expect(get.headers.get('content-disposition')).toBe(`attachment; filename="${stage.toUpperCase()}-PREVIEW.pdf"`);
+      expect(get.headers.get('x-billing-document-mode')).toBe('preview');
+      expect(get.headers.get('cache-control')).toContain('no-store');
+      expect(get.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
+      const getText = await pdfText(get);
+      expect(getText).toContain('PREVIEW - NOT SIGNED');
+      expect(getText).toContain('Synthetic Student');
+      expect(getText).toContain('[Not provided]');
+      expect(getText).toContain('no program enrollment is recorded');
+      expect(getText).not.toMatch(/160 hours|September 30|2027|SYNTH-PO/);
+      const post = await memberPreviewPost(jsonReq(url(stage), {
+        student: { name: 'Typed Student', email: '' }, counselor: { name: 'Typed Counselor', email: '', phone: '' },
+        finance: { name: 'Typed Finance', email: '' }, boardName: '',
+      }), params(stage));
+      expect(post.headers.get('content-disposition')).toContain('inline');
+      const postText = await pdfText(post);
+      expect(postText).toContain('Typed Student');
+      expect(postText).not.toContain('student@example.test');
+      expect(postText).toContain(stage === 'j5' ? 'Typed Counselor' : 'Typed Finance');
+      if (stage === 'j6') expect(postText).toContain('not a payment request');
+    }
+    for (const mock of [mocks.transaction, mocks.txCreate, mocks.recordUpdate, mocks.artifactCreate, mocks.receiptCreate, mocks.signatureCreate,
+      mocks.signatureRevoke, mocks.storeSignature, mocks.readSignature, mocks.archive, mocks.readArchive, mocks.paymentCreate]) expect(mock).not.toHaveBeenCalled();
+    expect(mocks.auditLog).toHaveBeenCalledTimes(auditCalls);
+    expect(mocks.emailSend).toHaveBeenCalledTimes(emailCalls);
+    expect(h.state.records).toEqual([]);
+    expect(h.state.attestations).toEqual([]);
+  });
+
+  it('still renders incomplete J5 and J6 when billing is enabled but no case exists', async () => {
+    h.state.cases = [];
+    for (const stage of ['j5', 'j6']) {
+      expect(await pdfText(await memberPreviewGet(new Request(url(stage)), params(stage)))).toContain('[Not provided]');
+    }
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it('uses only a member-owned case and labels a selected catalog program without claiming enrollment', async () => {
+    h.state.cases[0].memberId = 'someone-else';
+    let response = await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params());
+    expect(response.status).toBe(404);
+    expect((await response.json()).code).toBe('CASE_NOT_FOUND');
+    h.state.cases[0].memberId = h.MEMBER;
+    h.state.cases[0].organizationId = h.OTHER_ORG;
+    response = await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params());
+    expect(response.status).toBe(404);
+    h.state.cases[0].organizationId = h.ORG;
+    response = await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}&programSlug=different-program`)), params());
+    expect(response.status).toBe(422);
+    h.state.cases = [];
+    const text = await pdfText(await memberPreviewGet(new Request(url('j5', '?programSlug=data-analytics-professional-certificate-google')), params()));
+    expect(text).toContain('160 hours');
+    expect(text).toContain('enrollment is not confirmed');
+    expect(text).toContain('[Not provided]');
+  });
+
+  it('uses an existing readiness date without creating evidence or requiring official gates', async () => {
+    h.state.attestations = [{ organizationId: h.ORG, caseId: h.CASE, kind: 'j5_readiness', classStartDate: new Date('2026-09-30T00:00:00Z') }];
+    const text = await pdfText(await memberPreviewGet(new Request(url('j6', `?caseId=${h.CASE}`)), params('j6')));
+    expect(text).toContain('September 30, 2026');
+    expect(text).toContain('March 30, 2027');
+    expect(text).toContain('not a payment request');
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(h.state.attestations).toHaveLength(1);
+  });
+
+  it('uses actual class-start evidence for a new J6 ahead of the quoted J5 dates, while retaining a saved J6 snapshot', async () => {
+    const quoted = { kind: 'j5_quote_voucher_request', training: { classStartDate: '2026-09-30', classEndDate: '2027-03-30' } };
+    h.state.records = [{ organizationId: h.ORG, caseId: h.CASE, stage: 'j5', status: 'draft', content: quoted }];
+    h.state.attestations = [{ organizationId: h.ORG, caseId: h.CASE, kind: 'class_started', classStartDate: new Date('2026-10-15T00:00:00Z'), classEndDate: new Date('2027-04-15T00:00:00Z') }];
+    const text = await pdfText(await memberPreviewGet(new Request(url('j6', `?caseId=${h.CASE}`)), params('j6')));
+    expect(text).toContain('October 15, 2026');
+    expect(text).toContain('April 15, 2027');
+    expect(text).not.toContain('September 30, 2026');
+    expect(text).not.toContain('March 30, 2027');
+    const j5Text = await pdfText(await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params()));
+    expect(j5Text).toContain('September 30, 2026');
+    expect(j5Text).toContain('March 30, 2027');
+    h.state.records.unshift({ organizationId: h.ORG, caseId: h.CASE, stage: 'j6', status: 'draft', content: { ...quoted, kind: 'j6_invoice_cover_letter' } });
+    const savedText = await pdfText(await memberPreviewGet(new Request(url('j6', `?caseId=${h.CASE}`)), params('j6')));
+    expect(savedText).toContain('September 30, 2026');
+    expect(savedText).toContain('March 30, 2027');
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it('keeps authentication, administrator, tenant, provider, origin, and stage guards with the migration gate off', async () => {
+    delete process.env.BILLING_TWO_STAGE_MIGRATION_APPLIED;
+    h.state.failBillingReads = true;
+    mocks.getUser.mockResolvedValueOnce(null);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(401);
+    mocks.isAdmin.mockResolvedValueOnce(false);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(403);
+    h.state.userOrg.set(h.ADMIN, h.OTHER_ORG);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(404);
+    h.state.userOrg.set(h.MEMBER, h.OTHER_ORG);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(403);
+    mocks.isSuperAdmin.mockResolvedValueOnce(true);
+    expect((await memberPreviewGet(new Request(url()), params())).status).toBe(403);
+    h.state.userOrg.set(h.ADMIN, h.ORG);
+    h.state.userOrg.set(h.MEMBER, h.ORG);
+    expect((await memberPreviewPost(jsonReq(url(), {}, { origin: 'https://evil.example' }), params())).status).toBe(403);
+    expect((await memberPreviewGet(new Request(url('j7')), params('j7'))).status).toBe(404);
+    expect((await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params())).status).toBe(404);
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });
 
@@ -553,6 +690,12 @@ describe('two-stage routes: case summary readiness and the staff-only archive', 
     expect(ok.headers.get('content-type')).toBe('application/pdf');
     expect(ok.headers.get('x-billing-sha256')).toBe('b'.repeat(64));
     expect(ok.headers.get('location')).toBeNull();
+    expect(ok.headers.get('content-disposition')).toBe('inline; filename="v.pdf"');
+    mocks.readArchive.mockResolvedValueOnce(new TextEncoder().encode('%PDF-'));
+    const download = await downloadFile(new Request(`${url}?download=1`), caseParams({ artifactId: 'v1' }));
+    expect(download.status).toBe(200);
+    expect(download.headers.get('content-disposition')).toBe('attachment; filename="v.pdf"');
+    expect(download.headers.get('cache-control')).toContain('no-store');
   });
 });
 
@@ -959,6 +1102,196 @@ describe('two-stage routes: signing a J5 with the approved image', () => {
     return { content, hash: built.contentSha256 };
   }
 
+  it('previews and downloads an unsigned J5 with closed signing gates, while enforcing version and tenant guards', async () => {
+    const { hash } = seedDraft(null);
+    delete process.env.BILLING_EXECUTIVE_SIGNER_USER_ID;
+    h.state.designated = null;
+    const path = `${base}/${h.CASE}/j5/draft/preview?recordId=${REC}&versionHash=${hash}`;
+    for (const [suffix, disposition] of [['', 'inline'], ['&download=1', 'attachment']] as const) {
+      const response = await previewDraft(new Request(`${path}${suffix}`), caseParams({ stage: 'j5' }));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('application/pdf');
+      expect(response.headers.get('content-disposition')).toBe(`${disposition}; filename="WAP-Q-2026-0001-DRAFT.pdf"`);
+      expect(response.headers.get('cache-control')).toContain('no-store');
+      expect(Buffer.from(await response.arrayBuffer()).subarray(0, 5).toString()).toBe('%PDF-');
+    }
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    const stale = await previewDraft(new Request(path.replace(hash, '0'.repeat(64))), caseParams({ stage: 'j5' }));
+    expect(stale.status).toBe(409);
+    expect((await stale.json()).code).toBe('VERSION_STALE');
+    h.state.userOrg.set(h.ADMIN, h.OTHER_ORG);
+    expect((await previewDraft(new Request(`${path}&download=1`), caseParams({ stage: 'j5' }))).status).toBe(404);
+  });
+
+  it('renders an explicit mock of the saved J5 despite signing gates, without signature, lifecycle, archive or email effects', async () => {
+    const { hash } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    h.state.signatureAssets = [assetRow()];
+    delete process.env.BILLING_EXECUTIVE_SIGNER_USER_ID;
+    h.state.designated = null;
+    const before = JSON.stringify(h.state.records);
+    const auditCalls = mocks.auditLog.mock.calls.length;
+    const emailCalls = mocks.emailSend.mock.calls.length;
+    const path = `${base}/${h.CASE}/j5/draft/preview?recordId=${REC}&versionHash=${hash}&mode=mock`;
+    for (const [suffix, disposition] of [['', 'inline'], ['&download=1', 'attachment']] as const) {
+      const response = await previewDraft(new Request(`${path}${suffix}`), caseParams({ stage: 'j5' }));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-disposition')).toBe(`${disposition}; filename="WAP-Q-2026-0001-MOCK.pdf"`);
+      expect(response.headers.get('x-billing-document-mode')).toBe('mock');
+      expect(response.headers.get('x-billing-version-hash')).toBe(hash);
+      expect(response.headers.get('cache-control')).toContain('no-store');
+      expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      const pdf = await getDocument({ data: bytes, useSystemFonts: true, disableFontFace: true }).promise;
+      try {
+        expect(pdf.numPages).toBe(1);
+        const content = await (await pdf.getPage(1)).getTextContent();
+        const text = content.items.flatMap((item) => 'str' in item ? [item.str] : []).join(' ');
+        expect(text).toContain('MOCK - REVIEW ONLY - NOT SIGNED');
+        expect(text).toContain('Jordan Example');
+      } finally {
+        await pdf.destroy();
+      }
+    }
+    expect(JSON.stringify(h.state.records)).toBe(before);
+    for (const fn of [mocks.archive, mocks.readArchive, mocks.readSignature, mocks.storeSignature, mocks.recordUpdate, mocks.artifactCreate, mocks.txCreate]) expect(fn).not.toHaveBeenCalled();
+    expect(mocks.auditLog).toHaveBeenCalledTimes(auditCalls);
+    expect(mocks.emailSend).toHaveBeenCalledTimes(emailCalls);
+
+    const stale = await previewDraft(new Request(path.replace(hash, '0'.repeat(64))), caseParams({ stage: 'j5' }));
+    expect([stale.status, await code(stale)]).toEqual([409, 'VERSION_STALE']);
+    mocks.isAdmin.mockResolvedValueOnce(false);
+    expect((await previewDraft(new Request(path), caseParams({ stage: 'j5' }))).status).toBe(403);
+    h.state.userOrg.set(h.ADMIN, h.OTHER_ORG);
+    expect((await previewDraft(new Request(path), caseParams({ stage: 'j5' }))).status).toBe(404);
+    h.state.userOrg.set(h.ADMIN, h.ORG);
+    h.state.cases[0].memberId = 'another-member';
+    expect((await previewDraft(new Request(path), caseParams({ stage: 'j5' }))).status).toBe(404);
+    h.state.cases[0].memberId = h.MEMBER;
+    h.state.records[0].status = 'signed';
+    const signed = await previewDraft(new Request(path), caseParams({ stage: 'j5' }));
+    expect([signed.status, await code(signed)]).toEqual([409, 'NOT_A_DRAFT']);
+  });
+
+  it('rejects J6 mock and unsupported preview modes before rendering', async () => {
+    const { hash } = seedDraft(null);
+    for (const [stage, mode] of [['j6', 'mock'], ['j5', 'signed'], ['j5', ''], ['j5', 'unknown']] as const) {
+      const response = await previewDraft(new Request(`${base}/${h.CASE}/${stage}/draft/preview?recordId=${REC}&versionHash=${hash}&mode=${mode}`), caseParams({ stage }));
+      expect([response.status, await code(response)]).toEqual([400, 'PREVIEW_MODE_INVALID']);
+    }
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.readSignature).not.toHaveBeenCalled();
+  });
+
+  const mockEditorValues = {
+    boardName: 'Synthetic Review Board',
+    student: { name: 'Typed Student', email: 'typed.student@example.test' },
+    counselor: { name: 'Typed Counselor', email: 'typed.counselor@example.test', phone: '(555) 010-9999' },
+    expectedVersionHash: null,
+  };
+
+  it('creates a mock directly from complete editor fields and recorded readiness with no saved draft or side effects', async () => {
+    seedDraft(null);
+    h.state.records = [];
+    delete process.env.BILLING_EXECUTIVE_SIGNER_USER_ID;
+    h.state.designated = null;
+    const before = JSON.stringify({ records: h.state.records, attestations: h.state.attestations, artifacts: h.state.artifacts });
+    const auditCalls = mocks.auditLog.mock.calls.length;
+    const emailCalls = mocks.emailSend.mock.calls.length;
+    const response = await reviewDraftRoute(jsonReq(`${base}/${h.CASE}/j5/draft/review?mode=mock`, mockEditorValues), caseParams({ stage: 'j5' }));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/pdf');
+    expect(response.headers.get('content-disposition')).toBe('inline; filename="J5-MOCK-REVIEW.pdf"');
+    expect(response.headers.get('x-billing-document-mode')).toBe('mock');
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(response.headers.get('content-security-policy')).toBe("frame-ancestors 'self'");
+    const pdf = await getDocument({ data: new Uint8Array(await response.arrayBuffer()), useSystemFonts: true, disableFontFace: true }).promise;
+    try {
+      const content = await (await pdf.getPage(1)).getTextContent();
+      const text = content.items.flatMap((item) => 'str' in item ? [item.str] : []).join(' ');
+      expect(text).toContain('MOCK - REVIEW ONLY - NOT SIGNED');
+      expect(text).toContain('Typed Student | typed.student@example.test');
+      expect(text).toContain('Typed Counselor | typed.counselor@example.test');
+      expect(text).toContain('Synthetic Review Board');
+      expect(text).toContain('March 30, 2027');
+      const metadata = await pdf.getMetadata();
+      expect((metadata.info as { Title?: string }).Title).toContain('WAP-MOCK-PREVIEW');
+    } finally {
+      await pdf.destroy();
+    }
+    expect(JSON.stringify({ records: h.state.records, attestations: h.state.attestations, artifacts: h.state.artifacts })).toBe(before);
+    for (const fn of [mocks.transaction, mocks.txCreate, mocks.archive, mocks.readArchive, mocks.readSignature, mocks.storeSignature, mocks.recordUpdate, mocks.artifactCreate, mocks.receiptCreate]) expect(fn).not.toHaveBeenCalled();
+    expect(mocks.auditLog).toHaveBeenCalledTimes(auditCalls);
+    expect(mocks.emailSend).toHaveBeenCalledTimes(emailCalls);
+  });
+
+  it('requires complete printed fields and existing readiness for an unsaved mock while default review stays JSON', async () => {
+    const path = `${base}/${h.CASE}/j5/draft/review`;
+    const incomplete = await reviewDraftRoute(jsonReq(`${path}?mode=mock`, { ...mockEditorValues, counselor: { ...mockEditorValues.counselor, phone: '' } }), caseParams({ stage: 'j5' }));
+    expect(incomplete.status).toBe(422);
+    expect(await incomplete.json()).toMatchObject({ code: 'DRAFT_INCOMPLETE', fields: { 'counselor.phone': { code: 'FIELD_REQUIRED' } }, blockers: [{ code: 'J5_READINESS_MISSING' }] });
+    const readiness = await reviewDraftRoute(jsonReq(`${path}?mode=mock`, mockEditorValues), caseParams({ stage: 'j5' }));
+    expect(readiness.status).toBe(422);
+    expect((await readiness.json()).blockers).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'J5_READINESS_MISSING' })]));
+    const normal = await reviewDraftRoute(jsonReq(path, {}), caseParams({ stage: 'j5' }));
+    expect(normal.status).toBe(200);
+    expect(normal.headers.get('content-type')).toContain('application/json');
+    expect(await normal.json()).toMatchObject({ stage: 'j5', current: null, complete: false });
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(h.state.records).toEqual([]);
+  });
+
+  it('applies origin, admin, tenant, case and optimistic-version checks to unsaved mock composition', async () => {
+    const { hash } = seedDraft(null);
+    const path = `${base}/${h.CASE}/j5/draft/review?mode=mock`;
+    const run = (body: unknown = mockEditorValues, headers?: Record<string, string>) => reviewDraftRoute(jsonReq(path, body, headers), caseParams({ stage: 'j5' }));
+    expect((await run(mockEditorValues, { origin: 'https://other.example.test' })).status).toBe(403);
+    mocks.getUser.mockResolvedValueOnce(null);
+    expect((await run()).status).toBe(401);
+    mocks.isAdmin.mockResolvedValueOnce(false);
+    expect((await run()).status).toBe(403);
+    h.state.userOrg.set(h.ADMIN, h.OTHER_ORG);
+    expect((await run()).status).toBe(404);
+    h.state.userOrg.set(h.ADMIN, h.ORG);
+    h.state.cases[0].memberId = 'another-member';
+    expect((await run()).status).toBe(404);
+    h.state.cases[0].memberId = h.MEMBER;
+    const stale = await run(); // caller thought there was no saved draft
+    expect([stale.status, await code(stale)]).toEqual([409, 'DRAFT_CONFLICT']);
+    expect((await run({ ...mockEditorValues, expectedVersionHash: hash })).status).toBe(200);
+    h.state.records = [];
+    const vanished = await run({ ...mockEditorValues, expectedVersionHash: hash });
+    expect([vanished.status, await code(vanished)]).toEqual([409, 'DRAFT_CONFLICT']);
+    for (const [stage, mode] of [['j6', 'mock'], ['j5', 'signed'], ['j5', '']] as const) {
+      const invalid = await reviewDraftRoute(jsonReq(`${base}/${h.CASE}/${stage}/draft/review?mode=${mode}`, mockEditorValues), caseParams({ stage }));
+      expect([invalid.status, await code(invalid)]).toEqual([400, 'PREVIEW_MODE_INVALID']);
+    }
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it('keeps a same-day legacy draft reviewable but requires six-month terms before freeze or sign', async () => {
+    const { content } = seedDraft({ assetId: 'sig-1', assetSha256: PNG_SHA });
+    h.state.signatureAssets = [assetRow()];
+    content.contentVersion = 1;
+    content.training.classEndDate = '2027-02-28';
+    const hash = contentSha256(content);
+    Object.assign(h.state.records[0], { contentVersion: 1, contentSha256: hash, classEndDate: day('2027-02-28') });
+    const before = JSON.stringify(h.state.records[0]);
+    const preview = await previewDraft(new Request(`${base}/${h.CASE}/j5/draft/preview?recordId=${REC}&versionHash=${hash}`), caseParams({ stage: 'j5' }));
+    expect(preview.status).toBe(200);
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j5.canSign).toBe(false);
+    expect(summary.j5.blockers).toContainEqual(expect.objectContaining({ code: 'DRAFT_STALE', message: expect.stringContaining('Save the draft again') }));
+    expect(summary.j5.readinessAttestation?.quotedClassEndDate).toBe('2027-02-28');
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j5/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j5' }));
+    expect([checkpoint.status, await code(checkpoint)]).toEqual([409, 'DRAFT_STALE']);
+    const signed = await sign(signReq(hash, content), caseParams({ stage: 'j5' }));
+    expect([signed.status, await code(signed)]).toEqual([409, 'DRAFT_STALE']);
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    expect(JSON.stringify(h.state.records[0])).toBe(before);
+  });
+
   const signReq = (hash: string, content: { title: string; documentNumber: string }) =>
     jsonReq(`${base}/${h.CASE}/j5/sign`, {
       recordId: REC,
@@ -1079,6 +1412,164 @@ describe('two-stage routes: signing a J5 with the approved image', () => {
     expect(res.status).toBe(403);
     expect(mocks.readSignature).not.toHaveBeenCalled();
     expect(mocks.archive).not.toHaveBeenCalled();
+  });
+});
+
+describe('two-stage routes: a newer class_started attestation stale-blocks J6 sign', () => {
+  const NOW_ISO = '2026-10-20T18:00:00.000Z';
+  const REC = 'rec-j6';
+  const J5_REC = 'rec-j5-sent';
+  const SLUG = 'data-analytics-professional-certificate-google';
+  const CLASS_NAME = 'Management Analyst & Business Intelligence Professional Certificate';
+  const logoSha = sha256Hex(new Uint8Array(readFileSync(join(process.cwd(), WAP_LOGO_PUBLIC_PATH))));
+  const VOUCHER_SHA = 'c'.repeat(64);
+  const day = (v: string) => new Date(`${v}T00:00:00.000Z`);
+
+  function classStarted(id: string, start: string, end: string, attestedAt: string): Attestation {
+    return {
+      id, kind: 'class_started', statement: 'synthetic class start', evidenceReference: 'synthetic attendance',
+      classStartDate: start, classEndDate: end, artifactId: null, voucherReference: null, authorizedAmountCents: null,
+      authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, receivingSignaturePresent: null,
+      externalReference: null, externalQuoteDate: null, quotedProgramSlug: null, quotedClassName: null,
+      authorizedProgramSlug: null, authorizedClassName: null, studentReadyConfirmed: null, counselorRequestedBy: null,
+      counselorRequestedOn: null, counselorRequestReference: null, attestedBySubjectId: h.ADMIN, attestedAt,
+    };
+  }
+
+  function seedSignableJ6(started: Attestation) {
+    const quote = buildJ5Content({
+      documentNumber: 'WAP-Q-2026-0001', logoSha256: logoSha, issueDate: '2026-09-20',
+      student: { name: 'Jordan Example', email: 'jordan@example.test' },
+      counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
+      boardName: 'Workforce Solutions Capital Area', programSlug: SLUG,
+      readiness: {
+        id: 'att-ready', kind: 'j5_readiness', statement: 'synthetic', evidenceReference: 'synthetic evidence',
+        classStartDate: '2026-09-30', classEndDate: null, artifactId: null, voucherReference: null, authorizedAmountCents: null,
+        authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, receivingSignaturePresent: null,
+        externalReference: null, externalQuoteDate: null, quotedProgramSlug: null, quotedClassName: null,
+        authorizedProgramSlug: null, authorizedClassName: null, studentReadyConfirmed: true,
+        counselorRequestedBy: 'Casey Counselor', counselorRequestedOn: '2026-09-19', counselorRequestReference: 'Email 2026-09-19',
+        attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-20T15:00:00.000Z',
+      },
+      signatureAsset: { assetId: 'sig-1', assetSha256: PNG_SHA },
+    });
+    if (!quote.ok) throw new Error(quote.errors.join('; '));
+    const voucherAttestation: Attestation = {
+      id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
+      classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
+      authorizedAmountCents: 750_000, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+      receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
+      quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
+      studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
+      attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-29T16:00:00.000Z',
+    };
+    const built = buildJ6Content({
+      now: new Date(NOW_ISO), hasOpenJ6: false, programSlug: SLUG,
+      priorJ5: { source: 'system', j5: { recordId: J5_REC, status: 'sent', content: quote.content, contentSha256: quote.contentSha256 } },
+      classStarted: started,
+      voucher: { id: 'art-voucher', kind: 'board_signed_voucher', fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: VOUCHER_SHA },
+      voucherAttestation, boardInvoice: null, documentNumber: 'WAP-I-2026-0001', logoSha256: logoSha,
+      signatureAsset: { assetId: 'sig-1', assetSha256: PNG_SHA }, issueDate: '2026-10-20',
+      student: { name: 'Jordan Example', email: 'jordan@example.test' },
+      counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
+      boardName: 'Workforce Solutions Capital Area', finance: { name: 'Morgan Finance', email: 'finance@example.test' },
+    });
+    if (!built.ok) throw new Error(built.errors.join('; '));
+    const content = built.content;
+    const emptyAttestationDates = {
+      counselorRequestedOn: null, authorizedStartDate: day(voucherAttestation.authorizedStartDate!),
+      authorizedEndDate: day(voucherAttestation.authorizedEndDate!), receivedOn: day(voucherAttestation.receivedOn!),
+      externalQuoteDate: null,
+    };
+    h.state.attestations = [
+      {
+        ...started, caseId: h.CASE, organizationId: h.ORG, classStartDate: day(started.classStartDate!),
+        classEndDate: day(started.classEndDate!), attestedAt: new Date(started.attestedAt),
+        counselorRequestedOn: null, authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, externalQuoteDate: null,
+      },
+      { ...voucherAttestation, caseId: h.CASE, organizationId: h.ORG, classStartDate: null, classEndDate: null, attestedAt: new Date(voucherAttestation.attestedAt), ...emptyAttestationDates },
+    ];
+    h.state.artifacts = [{
+      id: 'art-voucher', organizationId: h.ORG, caseId: h.CASE, kind: 'board_signed_voucher', source: 'uploaded',
+      fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: VOUCHER_SHA,
+      storageBucket: 'billing-finance', storageKey: 'cases/voucher.pdf', createdBySubjectId: h.ADMIN,
+      createdAt: new Date('2026-09-29T15:00:00Z'),
+    }];
+    h.state.receipt = [{
+      id: 'rs-1', organizationId: h.ORG, caseId: h.CASE, voucherArtifactId: 'art-voucher', voucherSha256: VOUCHER_SHA,
+      attestedByUserId: h.ADMIN, method: 'present_on_original', representationArtifactId: null, representationSha256: null,
+      attestedAt: new Date('2026-09-29T17:00:00Z'),
+    }];
+    h.state.records = [
+      {
+        id: J5_REC, organizationId: h.ORG, caseId: h.CASE, stage: 'j5', version: 1, status: 'sent',
+        documentNumber: quote.content.documentNumber, content: quote.content, contentSha256: quote.contentSha256,
+        className: quote.content.training.className, contactHours: quote.content.training.contactHours,
+        classStartDate: day(quote.content.training.classStartDate), classEndDate: day(quote.content.training.classEndDate),
+        createdBySubjectId: h.ADMIN, createdAt: new Date('2026-09-20T17:00:00Z'), updatedAt: new Date('2026-09-20T18:00:00Z'),
+        signedAt: new Date('2026-09-20T18:00:00Z'), signedBySubjectId: h.ADMIN, signedArtifactId: null,
+        sentAt: new Date('2026-09-20T18:30:00Z'), supersededAt: null, voidedAt: null, closedBySubjectId: null,
+        acceptedRolesAtClose: [], sendCancelledAt: null, sendCancelledBySubjectId: null, readinessAttestationId: 'att-ready',
+        recipients: [], sends: [],
+      },
+      {
+        id: REC, organizationId: h.ORG, caseId: h.CASE, stage: 'j6', version: 1, status: 'draft',
+        documentNumber: content.documentNumber, content, contentSha256: built.contentSha256,
+        className: content.training.className, contactHours: content.training.contactHours,
+        classStartDate: day(content.training.classStartDate), classEndDate: day(content.training.classEndDate),
+        createdBySubjectId: h.ADMIN, createdAt: new Date('2026-10-20T17:00:00Z'), updatedAt: new Date('2026-10-20T17:30:00Z'),
+        signedAt: null, signedBySubjectId: null, signedArtifactId: null, sentAt: null, supersededAt: null, voidedAt: null,
+        closedBySubjectId: null, acceptedRolesAtClose: [], sendCancelledAt: null, sendCancelledBySubjectId: null,
+        classStartAttestationId: started.id, voucherAttestationId: voucherAttestation.id, voucherArtifactId: 'art-voucher',
+        recipients: recipientRowsForContent(content).map((r) => ({
+          stageRecordId: REC, organizationId: h.ORG, stage: 'j6', recipientRole: r.role, recipientName: r.name, email: r.email, phone: r.phone,
+        })),
+        sends: [],
+      },
+    ];
+    return { content, hash: built.contentSha256 };
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(NOW_ISO));
+    asDesignatedSigner();
+    h.state.signatureAssets = [assetRow()];
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('refuses freeze and sign when a later class_started row supersedes the draft dates, without writing', async () => {
+    const original = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    const { content, hash } = seedSignableJ6(original);
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(checkpoint.status).toBe(200);
+
+    const corrected = classStarted('att-start-2', '2026-10-15', '2027-04-15', '2026-10-20T16:00:00.000Z');
+    h.state.attestations.unshift({
+      ...corrected, caseId: h.CASE, organizationId: h.ORG, classStartDate: day(corrected.classStartDate!),
+      classEndDate: day(corrected.classEndDate!), attestedAt: new Date(corrected.attestedAt),
+      counselorRequestedOn: null, authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, externalQuoteDate: null,
+    });
+    const before = JSON.stringify(h.state.records.find((r) => r.id === REC));
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.canSign).toBe(false);
+    expect(summary.j6.blockers).toContainEqual(expect.objectContaining({ code: 'DRAFT_STALE', message: expect.stringContaining('Save the draft again') }));
+    expect(summary.j6.classStarted?.attestationId).toBe('att-start-2');
+    expect(summary.j6.classStarted?.classStartDate).toBe('2026-10-15');
+
+    const staleFreeze = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect([staleFreeze.status, await code(staleFreeze)]).toEqual([409, 'DRAFT_STALE']);
+    const signed = await sign(jsonReq(`${base}/${h.CASE}/j6/sign`, {
+      recordId: REC, version: 1, contentSha256: hash, intentConfirmed: true,
+      intentText: signerIntentStatement({ documentTitle: content.title, documentNumber: content.documentNumber, contentSha256: hash }),
+    }), caseParams({ stage: 'j6' }));
+    expect([signed.status, await code(signed)]).toEqual([409, 'DRAFT_STALE']);
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    expect(JSON.stringify(h.state.records.find((r) => r.id === REC))).toBe(before);
   });
 });
 

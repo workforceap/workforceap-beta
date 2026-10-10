@@ -1,6 +1,8 @@
 import { PDFDocument, type PDFFont, type PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { getProgramSyllabus } from '@/shared/programSyllabi';
+import { CONTENT_VERSION, type ContentVersion } from './constants';
+import { classEndDate } from './dates';
 
 /**
  * One-page, side-effect-free renderers for the two distinct WAP billing
@@ -40,6 +42,8 @@ export const TWO_STAGE_TEXT_LIMITS = Object.freeze({
   boardName: 100,
   programSlug: 120,
   className: 110,
+  /** Longest approved syllabus description is ~720 chars; the 6-line layout cap is the real bound. */
+  classDescription: 900,
   addressLine: 100,
   tuitionLabel: 40,
   paymentFollowUpWording: 120,
@@ -62,6 +66,8 @@ export function isWinAnsiPrintable(value: string): boolean {
 type Person = { readonly name: string; readonly email: string };
 
 type CommonFacts = {
+  /** Frozen contract version; omitted standalone facts use the current terms. */
+  readonly contentVersion?: ContentVersion;
   readonly documentNumber: string;
   readonly issueDate: string; // YYYY-MM-DD, frozen by the server
   readonly frozenAt: string; // UTC ISO instant, also used for deterministic PDF metadata
@@ -71,9 +77,11 @@ type CommonFacts = {
   /** The enrolled program slug, not a display title or broad category. */
   readonly programSlug: string;
   readonly className: string;
+  /** Frozen approved Program Description (J5). Omitted on older content. */
+  readonly classDescription?: string;
   readonly classHours: 160 | 200;
   readonly classStartDate: string;
-  readonly classEndDate: string; // exactly five calendar months after start
+  readonly classEndDate: string; // the end date frozen under contentVersion
   readonly tuitionCents: 750_000;
   /** The printed line-item label (`Tuition & Fees`). */
   readonly tuitionLabel: string;
@@ -131,6 +139,24 @@ export type J6InvoiceVoucherCoverLetterFacts = CommonFacts & {
 
 export type TwoStageDocumentFacts = J5QuoteVoucherRequestFacts | J6InvoiceVoucherCoverLetterFacts;
 
+/** Incomplete review data is deliberately separate from the validated, issuable document facts. */
+export type BillingDocumentPreviewFacts = {
+  stage: 'j5' | 'j6';
+  preparedAt: string;
+  student: { name: string | null; email: string | null };
+  counselor: { name: string | null; email: string | null; phone: string | null };
+  finance: { name: string | null; email: string | null };
+  boardName: string | null;
+  className: string | null;
+  classHours: number | null;
+  classStartDate: string | null;
+  classEndDate: string | null;
+  voucherReference: string | null;
+  sourceNote: string;
+  signer: CommonFacts['signer'];
+  letterhead: CommonFacts['letterhead'];
+};
+
 const PAGE_W = 612;
 const PAGE_H = 792;
 const LEFT = 54;
@@ -177,14 +203,6 @@ function utcInstant(value: string, label: string): Date {
   return date;
 }
 
-function fiveMonthsLater(value: string): string {
-  const start = isoDate(value, 'classStartDate');
-  const year = start.getUTCFullYear();
-  const month = start.getUTCMonth() + 5;
-  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month, Math.min(start.getUTCDate(), lastDay))).toISOString().slice(0, 10);
-}
-
 /** "$7,500.00" from whole cents, locale-independent. */
 function formatCents(cents: number): string {
   const dollars = Math.floor(cents / 100)
@@ -198,8 +216,8 @@ function longDate(value: string): string {
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
-/** How the page is rendered: a DRAFT preview, or the final page with the signer's approved image. */
-type RenderMode = { readonly kind: 'draft' } | { readonly kind: 'signed'; readonly signaturePng: Uint8Array };
+/** A draft or explicit mock has no signature image; only a signed render accepts one. */
+type RenderMode = { readonly kind: 'draft' | 'mock' } | { readonly kind: 'signed'; readonly signaturePng: Uint8Array };
 
 function validateFacts(input: TwoStageDocumentFacts, signed: boolean): Date {
   if (input.stage !== 'j5' && input.stage !== 'j6') throw new Error('Unknown billing stage');
@@ -229,14 +247,16 @@ function validateFacts(input: TwoStageDocumentFacts, signed: boolean): Date {
     throw new Error(`Class hours must match the approved ${contractHours}-hour syllabus`);
   }
   required(input.className, 'className', L.className);
+  if (input.classDescription !== undefined) required(input.classDescription, 'classDescription', L.classDescription);
   if (input.className !== syllabus.title) throw new Error('Class name must match the approved program syllabus');
   isoDate(input.classStartDate, 'classStartDate');
   isoDate(input.classEndDate, 'classEndDate');
   const holds: readonly string[] = input.stage === 'j6' ? input.openHolds ?? [] : [];
   // A held J6 can be previewed as a DRAFT but is never signable.
   if (signed && holds.length > 0) throw new Error('A signed document cannot carry open holds');
-  if (input.classEndDate !== fiveMonthsLater(input.classStartDate) && !holds.includes('end_date_not_contract')) {
-    throw new Error('Class end must be five calendar months after start');
+  const contentVersion = input.contentVersion ?? CONTENT_VERSION;
+  if (input.classEndDate !== classEndDate(input.classStartDate, contentVersion) && !holds.includes('end_date_not_contract')) {
+    throw new Error(`Class end must be ${contentVersion === 1 ? 'five' : 'six'} calendar months after start`);
   }
   if (input.tuitionCents !== 750_000) throw new Error('Tuition & Fees must equal $7,500.00');
   if (!(input.letterhead?.logoPng instanceof Uint8Array) || input.letterhead.logoPng.length === 0) throw new Error('Approved WAP logo PNG is required');
@@ -339,8 +359,27 @@ function details(page: PDFPage, fonts: Fonts, rows: ReadonlyArray<readonly [stri
   return bottom;
 }
 
+/** Size and line cap chosen so every approved description fits the one-page J5. */
+const DESCRIPTION_SIZE = 7.2;
+const DESCRIPTION_LINE_H = 8.4;
+const DESCRIPTION_MAX_LINES = 6;
+
+function classDescription(page: PDFPage, fonts: Fonts, frozenText: string, top: number): number {
+  const text = printable(frozenText);
+  let y = top - 10;
+  drawText(page, fonts, 'CLASS DESCRIPTION', LEFT, y, CONTENT_W, 7, true, MUTED);
+  y -= 9;
+  for (const line of wrap(text, fonts.regular, DESCRIPTION_SIZE, CONTENT_W, DESCRIPTION_MAX_LINES)) {
+    drawText(page, fonts, line, LEFT, y, CONTENT_W, DESCRIPTION_SIZE);
+    y -= DESCRIPTION_LINE_H;
+  }
+  return y + DESCRIPTION_LINE_H - 4;
+}
+
 export const DRAFT_BADGE = 'DRAFT - SIGNATURE REQUIRED';
 export const DRAFT_ON_HOLD_BADGE = 'DRAFT - ON HOLD - NOT SIGNABLE';
+export const MOCK_BADGE = 'MOCK - REVIEW ONLY - NOT SIGNED';
+export const PREVIEW_BADGE = 'PREVIEW - NOT SIGNED';
 export const RECEIVING_SIGNATURE_PENDING_SUFFIX = '(receiving signature not yet attested)';
 
 function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeight: number, logo: Awaited<ReturnType<PDFDocument['embedPng']>>, badge: string | null): void {
@@ -348,14 +387,15 @@ function drawLetterhead(page: PDFPage, fonts: Fonts, logoWidth: number, logoHeig
   page.drawImage(logo, { x: LEFT, y: 682, width: logoWidth * scale, height: logoHeight * scale });
   // The final (signed) page carries no status badge.
   if (badge !== null) {
-    const statusW = fonts.bold.widthOfTextAtSize(badge, 7.5) + 22;
+    const badgeSize = badge === MOCK_BADGE || badge === PREVIEW_BADGE ? 9.5 : 7.5;
+    const statusW = fonts.bold.widthOfTextAtSize(badge, badgeSize) + 22;
     page.drawRectangle({ x: RIGHT - statusW, y: 749, width: statusW, height: 22, color: rgb(1, 0.94, 0.84) });
-    drawText(page, fonts, badge, RIGHT - statusW + 11, 756, statusW - 22, 7.5, true, rgb(110 / 255, 68 / 255, 12 / 255));
+    drawText(page, fonts, badge, RIGHT - statusW + 11, 756, statusW - 22, badgeSize, true, rgb(110 / 255, 68 / 255, 12 / 255));
   }
   page.drawLine({ start: { x: LEFT, y: 667 }, end: { x: RIGHT, y: 667 }, thickness: 1, color: GOLD });
 }
 
-function drawFooter(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts): void {
+function drawFooter(page: PDFPage, fonts: Fonts, input: Pick<CommonFacts, 'letterhead'>): void {
   page.drawLine({ start: { x: LEFT, y: 72 }, end: { x: RIGHT, y: 72 }, thickness: 0.6, color: RULE });
   const { organizationName, website, businessPhone, addressLine1, addressLine2 } = input.letterhead;
   drawCentered(page, fonts, organizationName, 56, 8.2, true, INK);
@@ -366,7 +406,7 @@ function drawFooter(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts): 
 /** The signature gap above the rule: 245pt wide (the rule), 26pt tall, clear of "Respectfully," above and the rule below. */
 const SIGNATURE_BOX = Object.freeze({ width: 240, height: 26, aboveRule: 2 });
 
-function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts, y: number, signature: Awaited<ReturnType<PDFDocument['embedPng']>> | null): void {
+function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts, y: number, signature: Awaited<ReturnType<PDFDocument['embedPng']>> | null, mock = false): void {
   if (y < 167) throw new Error('Signature area would collide with the footer');
   drawText(page, fonts, 'Respectfully,', LEFT, y, CONTENT_W, 9.3);
   if (signature) {
@@ -374,7 +414,7 @@ function drawSignature(page: PDFPage, fonts: Fonts, input: TwoStageDocumentFacts
     page.drawImage(signature, { x: LEFT + 2, y: y - 32 + SIGNATURE_BOX.aboveRule, width: signature.width * scale, height: signature.height * scale });
   }
   page.drawLine({ start: { x: LEFT, y: y - 32 }, end: { x: LEFT + 245, y: y - 32 }, thickness: 0.7, color: MUTED });
-  if (!signature) drawText(page, fonts, 'Executive signature required before issue', LEFT, y - 44, 350, 7.9, false, MUTED);
+  if (!signature) drawText(page, fonts, mock ? MOCK_BADGE : 'Executive signature required before issue', LEFT, y - 44, 350, mock ? 9 : 7.9, mock, mock ? RED : MUTED);
   drawText(page, fonts, input.signer.name, LEFT, y - 58, 350, 9.5, true);
   drawText(page, fonts, `${input.signer.title}, ${input.letterhead.organizationName}`, LEFT, y - 71, 350, 8.4);
   if (y - 71 < 78) throw new Error('Signature block overlaps the footer');
@@ -391,7 +431,7 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   const frozenAt = validateFacts(facts, mode.kind === 'signed');
   const doc = await PDFDocument.create();
   const org = facts.letterhead.organizationName;
-  doc.setTitle(`${facts.stage.toUpperCase()} ${facts.title} - ${facts.documentNumber}`);
+  doc.setTitle(`${facts.stage.toUpperCase()} ${facts.title} - ${facts.documentNumber}${mode.kind === 'mock' ? ' - MOCK' : ''}`);
   doc.setAuthor(org);
   doc.setCreator(`${org} billing`);
   doc.setProducer(`${org} billing`);
@@ -406,7 +446,7 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   const signatureImage = signatureBytes ? await doc.embedPng(signatureBytes) : null;
   const page = doc.addPage([PAGE_W, PAGE_H]);
   const held = facts.stage === 'j6' && (facts.openHolds?.length ?? 0) > 0;
-  drawLetterhead(page, fonts, logo.width, logo.height, logo, signatureImage ? null : held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE);
+  drawLetterhead(page, fonts, logo.width, logo.height, logo, mode.kind === 'mock' ? MOCK_BADGE : signatureImage ? null : held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE);
   drawFooter(page, fonts, facts);
 
   drawText(page, fonts, facts.stage.toUpperCase(), LEFT, 642, 50, 9.5, true, RED);
@@ -440,6 +480,10 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   ];
   if (facts.stage === 'j6') rows.push(['Voucher / PO', facts.signedVoucher.reference]);
   y = details(page, fonts, rows, y);
+  // Ops (10/8/26): the J5 must describe the class. Print the approved
+  // syllabus "Program Description" (the same text as the catalog) under the
+  // details, small enough that the longest description still fits one page.
+  if (facts.stage === 'j5' && facts.classDescription) y = classDescription(page, fonts, facts.classDescription, y) + 5;
   y -= 13;
   const priceBottom = y - 37;
   page.drawRectangle({ x: LEFT, y: priceBottom, width: CONTENT_W, height: 37, color: PRICE_PALE });
@@ -458,13 +502,96 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
     enclosure.forEach((line, index) => drawText(page, fonts, line, LEFT, y - index * 11, CONTENT_W, 8.4, false, MUTED));
     y -= (enclosure.length - 1) * 11;
   }
-  drawSignature(page, fonts, facts, y - 21, signatureImage);
+  drawSignature(page, fonts, facts, y - 21, signatureImage, mode.kind === 'mock');
+  if (mode.kind === 'mock') drawCentered(page, fonts, MOCK_BADGE, 85, 9, true, RED);
   return doc.save({ useObjectStreams: false });
 }
 
 export function renderJ5QuoteVoucherRequestDraftPdf(input: J5QuoteVoucherRequestFacts): Promise<Uint8Array> {
   if (input.stage !== 'j5') throw new Error('J5 renderer requires J5 facts');
   return renderTwoStagePdf(input, { kind: 'draft' });
+}
+
+/**
+ * A preview of either stage needs no operational evidence. Missing values stay
+ * visible; its wording never asserts enrollment approval, class start, voucher
+ * receipt, a payment obligation or a signature. No official facts are invented.
+ */
+export async function renderBillingDocumentPreviewPdf(input: BillingDocumentPreviewFacts): Promise<Uint8Array> {
+  const facts = structuredClone(input);
+  if (facts.stage !== 'j5' && facts.stage !== 'j6') throw new Error('Unknown billing stage');
+  const preparedAt = utcInstant(facts.preparedAt, 'preparedAt');
+  const doc = await PDFDocument.create();
+  const title = facts.stage === 'j5' ? 'Quote / Voucher Request' : 'Invoice / Voucher Cover Letter';
+  doc.setTitle(`${facts.stage.toUpperCase()} ${title} - PREVIEW`);
+  doc.setAuthor(facts.letterhead.organizationName);
+  doc.setCreationDate(preparedAt);
+  doc.setModificationDate(preparedAt);
+  const fonts: Fonts = { regular: await doc.embedFont(StandardFonts.Helvetica), bold: await doc.embedFont(StandardFonts.HelveticaBold) };
+  const logo = await doc.embedPng(new Uint8Array(facts.letterhead.logoPng));
+  const page = doc.addPage([PAGE_W, PAGE_H]);
+  drawLetterhead(page, fonts, logo.width, logo.height, logo, PREVIEW_BADGE);
+  drawFooter(page, fonts, facts);
+  drawText(page, fonts, facts.stage.toUpperCase(), LEFT, 642, 50, 9.5, true, RED);
+  drawRight(page, fonts, 'Preview only - not issued', RIGHT, 642, 9, false, MUTED);
+  drawText(page, fonts, title, LEFT, 621, CONTENT_W, 19, true);
+  // Unlike official renderers, missing/unprintable/long display values must not
+  // prevent review. Any substitution or clipping is explicitly visible.
+  const display = (value: string | null | undefined, width: number, size = 9.1): string => {
+    const text = value?.trim().replace(/\s+/gu, ' ') || '[Not provided]';
+    if (!isWinAnsiPrintable(text) || /[\x00-\x1f\x7f]/u.test(text)) return '[Text unavailable in preview]';
+    if (fonts.regular.widthOfTextAtSize(text, size) <= width) return text;
+    let low = 0;
+    let high = text.length;
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+      if (fonts.regular.widthOfTextAtSize(`${text.slice(0, middle)}...`, size) <= width) low = middle;
+      else high = middle - 1;
+    }
+    return `${text.slice(0, low)}...`;
+  };
+  const row = (label: string, value: string | null, y: number) => recipientRow(page, fonts, label, display(value, CONTENT_W - 62), y);
+  let y = 590;
+  const recipient = facts.stage === 'j5' ? facts.counselor : facts.finance;
+  y = row('TO', recipient.name, y);
+  y = row('EMAIL', recipient.email, y);
+  y = row('BOARD', facts.boardName, y);
+  y = row('STUDENT', facts.student.name, y);
+  y = row('EMAIL', facts.student.email, y);
+  if (facts.stage === 'j5') y = row('PHONE', facts.counselor.phone, y);
+  else y = row('COUNSELOR', facts.counselor.name, y);
+  y -= 10;
+  y = paragraph(page, fonts, facts.stage === 'j5'
+    ? 'Review the available details for a quote / voucher request. Missing information is marked below. This preview is not signed or issued.'
+    : 'Review the available details for an invoice / voucher cover letter. This is not a payment request and does not confirm a signed voucher or that training has started.', y, 3);
+  y -= 9;
+  drawText(page, fonts, 'TRAINING DETAILS', LEFT, y, CONTENT_W, 8.1, true, MUTED);
+  y -= 11;
+  const dateText = (value: string | null) => value ? longDate(value) : '[Not provided]';
+  const rows: Array<readonly [string, string]> = [
+    ['Class', display(facts.className, CONTENT_W - 144, 9.3)],
+    ['Training hours', facts.classHours === null ? '[Not provided]' : `${facts.classHours} hours`],
+    ['Class start', dateText(facts.classStartDate)],
+    ['Class end', dateText(facts.classEndDate)],
+  ];
+  if (facts.stage === 'j6') rows.push(['Voucher / PO', display(facts.voucherReference, CONTENT_W - 144, 9.3)]);
+  y = details(page, fonts, rows, y) - 16;
+  drawText(page, fonts, 'Standard tuition & fees: $7,500.00 - funding not confirmed by this preview.', LEFT, y, CONTENT_W, 8.6);
+  y -= 17;
+  drawText(page, fonts, display(facts.sourceNote, CONTENT_W, 8), LEFT, y, CONTENT_W, 8, false, MUTED);
+  y -= 25;
+  drawText(page, fonts, 'Signature (blank for preview)', LEFT, y, CONTENT_W, 9, true);
+  page.drawLine({ start: { x: LEFT, y: y - 30 }, end: { x: LEFT + 245, y: y - 30 }, thickness: 0.7, color: MUTED });
+  drawText(page, fonts, facts.signer.name, LEFT, y - 44, CONTENT_W, 9, true);
+  drawText(page, fonts, `${facts.signer.title}, ${facts.letterhead.organizationName}`, LEFT, y - 57, CONTENT_W, 8.4);
+  drawCentered(page, fonts, PREVIEW_BADGE, 85, 9, true, RED);
+  return doc.save({ useObjectStreams: false });
+}
+
+/** Review-only J5 using the exact saved facts, visibly marked and with a blank signature. */
+export function renderJ5QuoteVoucherRequestMockPdf(input: J5QuoteVoucherRequestFacts): Promise<Uint8Array> {
+  if (input.stage !== 'j5') throw new Error('J5 mock renderer requires J5 facts');
+  return renderTwoStagePdf(input, { kind: 'mock' });
 }
 
 export function renderJ6InvoiceVoucherCoverLetterDraftPdf(input: J6InvoiceVoucherCoverLetterFacts): Promise<Uint8Array> {

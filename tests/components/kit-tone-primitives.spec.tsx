@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import messages from '@/messages/en.json';
 import { ProgressBar, ProgressRing, StageTrack, SegmentedProgress, RankBars, type RankDatum } from '@/components/portal/kit';
 import { statusToKitTone } from '@/components/portal/kit/pages/admin-subviews/SystemHealthKit';
+import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 
 // Same literal detectors as portal-hex-token-sweep.spec.tsx: a hex or a bare
 // rgb() (jsdom's normalisation of an inline hex) that reached the DOM bypassed
@@ -88,9 +89,11 @@ afterEach(cleanup);
  * `.wa-kit-tone--<tone>` and the fill / stroke is `var(--wa-kit-tone)`.
  *
  * These cases live apart from `portal-hex-token-sweep.spec.tsx` on purpose:
- * three of them `await import(...)` whole page kits (AdminDashboardKit,
- * MemberHomeKit, StaffMemberResumePanel), and sharing a worker with the
+ * they load whole page kits (AdminDashboardKit, MemberHomeKit,
+ * StaffMemberResumePanel), and sharing a worker with the
  * sweep's SessionRunClient case pushed that case past its 5 s budget in CI.
+ * MemberHomeKit imports before the tests so cold module transformation is
+ * not charged against its synchronous render assertion's timeout.
  */
 describe('kit progress and rank primitives paint from tones', () => {
   it('ProgressBar / ProgressRing / StageTrack / SegmentedProgress: tone hook on the container, --wa-kit-tone fill, no literal', () => {
@@ -211,8 +214,7 @@ describe('AdminDashboardKit funnel bars paint from tones', () => {
 });
 
 describe('MemberHomeKit stat tiles are the kit StatSparkTile', () => {
-  it('renders the four home tiles through the shared tile (kit stat label, tone hook, --wa-kit-tone line) with no literal', async () => {
-    const { MemberHomeKit } = await import('@/components/portal/kit/pages/member/MemberHomeKit');
+  it('renders the four home tiles through the shared tile (kit stat label, tone hook, --wa-kit-tone line) with no literal', () => {
     const { container } = render(
       <NextIntlClientProvider locale="en" messages={messages}>
         <MemberHomeKit

@@ -78,16 +78,18 @@ export default function MemberPortalTopNav({
 
   /**
    * Mobile exposed only a handful of the member IA; the rest hid behind the
-   * hamburger. These 12 cover the daily destinations. Proofs pass hrefMap to
+   * hamburger. These 13 cover the daily destinations. Proofs pass hrefMap to
    * stay on /dev/member; omit unmapped tabs.
    */
   const tabs = [
     { canonical: '/dashboard', label: t('dashboard'), icon: 'home' },
     { canonical: '/dashboard/program', label: t('myProgram'), icon: 'school' },
+    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome' },
+    // Ops (10/8/26): members were not finding the preassessment; keep it a tap away.
+    { canonical: '/dashboard/assessment', label: t('wioaPreassessment'), icon: 'assignment_turned_in' },
     { canonical: '/dashboard/jobs', label: t('jobBoard'), icon: 'work' },
     { canonical: '/dashboard/readiness', label: t('myProgress'), icon: 'check_circle' },
     { canonical: '/dashboard/messages', label: t('counselorChat'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey },
-    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome' },
     { canonical: '/dashboard/missions', label: t('skillMissions'), icon: 'flag' },
     { canonical: '/dashboard/job-applications', label: t('jobApplications'), icon: 'assignment', badgeKey: 'applications_new' as NavBadgeKey },
     { canonical: '/dashboard/resume', label: t('resume'), icon: 'description' },
@@ -133,7 +135,11 @@ export default function MemberPortalTopNav({
             >
               <Link
                 href={href}
-                prefetch={tab.canonical === '/dashboard'}
+                // No full prefetch: this strip shows on every phone member page, and
+                // `prefetch` (true) would render the whole member home in the
+                // background from each of them. Tapping Home still navigates with
+                // app/(portal)/dashboard/loading.tsx, like the rail and header links.
+                prefetch={false}
                 className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
                 aria-current={active ? 'page' : undefined}
               >

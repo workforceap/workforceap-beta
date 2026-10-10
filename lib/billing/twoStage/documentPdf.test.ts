@@ -8,7 +8,10 @@ import { PROGRAM_SYLLABI } from '@/shared/programSyllabi';
 import { syntheticPng } from '../../../tests/fixtures/billing/syntheticPng';
 import {
   canEmbedSignaturePng,
+  renderBillingDocumentPreviewPdf,
+  MOCK_BADGE,
   renderJ5QuoteVoucherRequestDraftPdf,
+  renderJ5QuoteVoucherRequestMockPdf,
   renderJ5QuoteVoucherRequestSignedPdf,
   renderJ6InvoiceVoucherCoverLetterDraftPdf,
   renderJ6InvoiceVoucherCoverLetterSignedPdf,
@@ -33,7 +36,7 @@ function j5(overrides: Partial<J5QuoteVoucherRequestFacts> = {}): J5QuoteVoucher
     className: 'Management Analyst & Business Intelligence Professional Certificate',
     classHours: 160,
     classStartDate: '2026-09-30',
-    classEndDate: '2027-02-28',
+    classEndDate: '2027-03-30',
     tuitionCents: 750_000,
     tuitionLabel: 'Tuition & Fees',
     title: 'Quote / Voucher Request',
@@ -94,6 +97,63 @@ async function extract(bytes: Uint8Array): Promise<ExtractedPdf> {
 }
 
 describe('two-stage WAP billing PDFs', () => {
+  it('previews either incomplete stage with labeled missing values, a blank signature, and no invented class or voucher facts', async () => {
+    for (const stage of ['j5', 'j6'] as const) {
+      const facts = j5();
+      const bytes = await renderBillingDocumentPreviewPdf({
+        stage, preparedAt: facts.frozenAt, student: { name: 'Jordan Example', email: null },
+        counselor: { name: null, email: null, phone: null }, finance: { name: null, email: null }, boardName: null,
+        className: null, classHours: null, classStartDate: null, classEndDate: null, voucherReference: null,
+        sourceNote: 'Available member details; no program enrollment is recorded.', signer: facts.signer, letterhead: facts.letterhead,
+      });
+      const { text, positions } = await extract(new Uint8Array(bytes));
+      assert.match(text, /PREVIEW - NOT SIGNED/u);
+      assert.match(text, /\[Not provided\]/u);
+      assert.match(text, /Signature \(blank for preview\)/u);
+      assert.doesNotMatch(text, /September 30|160 hours|March 30|student began class|requests payment|received, signed training voucher/u);
+      assert.match(text, /funding not confirmed/u);
+      if (stage === 'j6') assert.match(text, /not a payment request/u);
+      for (const p of positions) {
+        assert.ok(p.x >= 24 && p.x + p.width <= 590);
+        assert.ok(p.y >= 25 && p.y <= 775);
+      }
+      const images = (data: Uint8Array) => (Buffer.from(data).toString('latin1').match(/\/Subtype \/Image\b/gu) ?? []).length;
+      assert.equal(images(bytes), images(await renderJ5QuoteVoucherRequestDraftPdf(facts)), 'only the logo is embedded');
+    }
+  });
+
+  it('keeps any-member previews renderable while visibly marking text the preview cannot display', async () => {
+    const facts = j5();
+    const { text } = await extract(await renderBillingDocumentPreviewPdf({
+      stage: 'j6', preparedAt: facts.frozenAt, student: { name: '李', email: 'x'.repeat(60_000) },
+      counselor: { name: null, email: null, phone: null }, finance: { name: null, email: null }, boardName: null,
+      className: null, classHours: null, classStartDate: null, classEndDate: null, voucherReference: null,
+      sourceNote: 'Available member details.', signer: facts.signer, letterhead: facts.letterhead,
+    }));
+    assert.match(text, /Text unavailable in preview/u);
+    assert.match(text, /x\.\.\./u);
+  });
+
+  it('renders an explicit one-page mock with visible review-only marks and a blank signature', async () => {
+    const bytes = await renderJ5QuoteVoucherRequestMockPdf(j5());
+    const pdf = await PDFDocument.load(bytes);
+    assert.match(pdf.getTitle() ?? '', / - MOCK$/u);
+    const { text, positions } = await extract(new Uint8Array(bytes));
+    assert.equal(text.split(MOCK_BADGE).length - 1, 3, 'header, signature caption and footer remain explicitly mock');
+    assert.match(text, /Jordan Example \| jordan@example\.test/u);
+    assert.match(text, /March 30, 2027/u);
+    assert.match(text, /Michael A\. Brown, PMP, ChE/u);
+    assert.doesNotMatch(text, /DRAFT - SIGNATURE REQUIRED|Executive signature required before issue/u);
+    const imageCount = (data: Uint8Array) => (Buffer.from(data).toString('latin1').match(/\/Subtype \/Image\b/gu) ?? []).length;
+    assert.equal(imageCount(bytes), imageCount(await renderJ5QuoteVoucherRequestDraftPdf(j5())), 'only the existing logo is embedded');
+    for (const position of positions) {
+      assert.ok(position.x >= 24 && position.x + position.width <= 590, 'mock text fits page width');
+      assert.ok(position.y >= 25 && position.y <= 775, 'mock text fits page height');
+    }
+    assert.throws(() => renderJ5QuoteVoucherRequestMockPdf(j6() as unknown as J5QuoteVoucherRequestFacts), /requires J5 facts/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestMockPdf({ ...j5(), signature: signaturePng } as J5QuoteVoucherRequestFacts), /not accepted/u);
+  });
+
   it('renders a one-page J5 quote before any voucher or finance facts exist', async () => {
     const bytes = await renderJ5QuoteVoucherRequestDraftPdf(j5());
     assert.equal(Buffer.from(bytes.slice(0, 5)).toString(), '%PDF-');
@@ -108,7 +168,7 @@ describe('two-stage WAP billing PDFs', () => {
     assert.match(text, /Management Analyst & Business Intelligence Professional Certificate/u);
     assert.match(text, /160 hours/u);
     assert.match(text, /September 30, 2026/u);
-    assert.match(text, /February 28, 2027/u);
+    assert.match(text, /March 30, 2027/u);
     assert.equal((text.match(/Tuition & Fees/gu) ?? []).length, 1);
     assert.match(text, /\$7,500\.00/u);
     assert.doesNotMatch(text, /SYNTH-PO-001|Training Invoice|Net 30|class-by-class|syllabus/iu);
@@ -180,6 +240,31 @@ describe('two-stage WAP billing PDFs', () => {
     }
   });
 
+  it('describes the class on the J5 with the approved syllabus Program Description, on one page, for every program (ops 10/8/26)', async () => {
+    const norm = (value: string) => value.replace(/\s+/gu, ' ').trim();
+    for (const syllabus of Object.values(PROGRAM_SYLLABI)) {
+      const facts = j5({ programSlug: syllabus.slug, className: syllabus.title, classDescription: syllabus.description.replace(/\s+/gu, ' ').trim(), classHours: syllabus.totalHours as 160 | 200 });
+      for (const bytes of [await renderJ5QuoteVoucherRequestDraftPdf(facts), await renderJ5QuoteVoucherRequestSignedPdf(facts, signaturePng)]) {
+        const { text, positions } = await extract(Uint8Array.from(bytes));
+        assert.match(text, /CLASS DESCRIPTION/u, syllabus.slug);
+        assert.ok(norm(text).includes(norm(syllabus.description)), `${syllabus.slug}: full description printed`);
+        for (const position of positions) {
+          assert.ok(position.y >= 25 && position.y <= 775, `${syllabus.slug}: text y=${position.y} escaped page`);
+        }
+      }
+    }
+  });
+
+  it('prints no description on a J5 frozen before the field existed (old content renders unchanged)', async () => {
+    const { text } = await extract(await renderJ5QuoteVoucherRequestDraftPdf(j5()));
+    assert.doesNotMatch(text, /CLASS DESCRIPTION/u);
+  });
+
+  it('keeps the J6 cover letter free of the class description', async () => {
+    const { text } = await extract(await renderJ6InvoiceVoucherCoverLetterDraftPdf(j6()));
+    assert.doesNotMatch(text, /CLASS DESCRIPTION/u);
+  });
+
   it('renders the approved IBM software program at 200 hours as an unsigned J6 draft', async () => {
     const bytes = await renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({
       programSlug: 'software-developer-professional-certificate-ibm',
@@ -206,7 +291,7 @@ describe('two-stage WAP billing PDFs', () => {
 
   it('rejects altered price, dates, missing logo, missing voucher proof and long layout fields', async () => {
     await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ tuitionCents: 700_000 as 750_000 })), /\$7,500/u);
-    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ classEndDate: '2027-03-01' })), /five calendar months/u);
+    await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ classEndDate: '2027-03-01' })), /six calendar months/u);
     await assert.rejects(renderJ5QuoteVoucherRequestDraftPdf(j5({ letterhead: { ...j5().letterhead, logoPng: new Uint8Array() } })), /logo PNG/u);
     await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ signedVoucher: { ...j6().signedVoucher, sha256: '' } })), /SHA-256/u);
     await assert.rejects(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ signedVoucher: { ...j6().signedVoucher, authorizedAmountCents: 700_000 } })), /authorized amount.*\$7,500/u);

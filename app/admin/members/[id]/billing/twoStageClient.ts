@@ -130,6 +130,40 @@ export function draftPreviewPath(memberId: string, caseId: string, stage: Billin
   return `${caseBase(memberId, caseId)}/${stage}/draft/preview?${q.toString()}`;
 }
 
+/** Always-available, non-binding preview; no billing case or saved draft is required. */
+export function documentPreviewPath(memberId: string, stage: BillingStage, caseId?: string): string {
+  const query = caseId ? `?${new URLSearchParams({ caseId }).toString()}` : '';
+  return `${twoStageBase(memberId)}/${stage}/preview${query}`;
+}
+
+/** Read-only POST: typed fields are rendered to a PDF without saving a draft. */
+async function requestPreviewPdf(path: string, body: DraftPatch<'j6'> & { caseId?: string }, signal?: AbortSignal): Promise<ApiResult<Blob>> {
+  const unavailable = 'The PDF could not be loaded. Try again.';
+  try {
+    const res = await fetchWithTimeout(path, {
+      method: 'POST', credentials: 'same-origin', cache: 'no-store', signal,
+      headers: { 'Content-Type': 'application/json', Accept: 'application/pdf' },
+      body: JSON.stringify(body),
+    }, DEFAULT_TIMEOUT_MS);
+    if (res.ok && res.headers.get('content-type')?.split(';')[0].trim() === 'application/pdf') {
+      const blob = await res.blob();
+      if (blob.size > 0) return { ok: true, status: res.status, data: blob };
+    } else if (!res.ok) {
+      const parsed: unknown = await res.json().catch(() => null);
+      if (isErrorBody(parsed)) return { ok: false, status: res.status, body: parsed, message: parsed.error, uncertain: false };
+    }
+    return { ok: false, status: res.status, body: null, message: unavailable, uncertain: false };
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    return { ok: false, status: 0, body: null, message: unavailable, uncertain: false };
+  }
+}
+
+/** A review-only mock of the exact saved J5; this GET does not change the case. */
+export function mockJ5PreviewPath(memberId: string, caseId: string, recordId: string, versionHash: string): string {
+  return `${draftPreviewPath(memberId, caseId, 'j5', recordId, versionHash)}&mode=mock`;
+}
+
 function pdfForm(file: File): FormData {
   const form = new FormData();
   form.append('file', file, file.name);
@@ -155,6 +189,8 @@ export const twoStageApi = {
 
   reviewDraft: <S extends BillingStage>(memberId: string, caseId: string, stage: S, body: DraftPatch<S>, signal?: AbortSignal) =>
     request<DraftReviewDto>(`${caseBase(memberId, caseId)}/${stage}/draft/review`, { method: 'POST', json: body, signal }),
+  previewDocument: (memberId: string, stage: BillingStage, body: DraftPatch<'j6'> & { caseId?: string }, signal?: AbortSignal) =>
+    requestPreviewPdf(documentPreviewPath(memberId, stage), body, signal),
   saveDraft: <S extends BillingStage>(memberId: string, caseId: string, stage: S, body: DraftSaveRequest<S>) =>
     request<DraftSaveDto>(`${caseBase(memberId, caseId)}/${stage}/draft`, { method: 'PUT', json: body }),
 

@@ -217,10 +217,10 @@ describe('buildNextBestActions', () => {
     });
     const body = actions.find((a) => a.id === 'skills_assessment')?.body ?? '';
     expect(body).not.toMatch(/choose a program/i);
-    expect(body).toMatch(/preassessment helps personalize your training plan/i);
+    expect(body).toMatch(/WIOA funding review/i);
   });
 
-  test('does not send a member without a program to the gated assessment', () => {
+  test('shows the WIOA preassessment to a member without a program (open to every member since 9/2/26)', () => {
     const actions = buildNextBestActions({
       state: 'B',
       noApplicationOnFile: false,
@@ -234,7 +234,27 @@ describe('buildNextBestActions', () => {
       counselorUnreadCount: 0,
       weeklyRecapUnopened: false,
     });
-    expect(actions.some((a) => a.id === 'skills_assessment')).toBe(false);
+    const pa = actions.find((a) => a.id === 'skills_assessment');
+    expect(pa).toBeDefined();
+    expect(pa?.title).toMatch(/WIOA/);
+    // Choosing a program still leads; the preassessment is right behind it.
     expect(actions[0].id).toBe('choose_program');
+    expect(pa?.body).not.toMatch(/after you choose a program/i);
+  });
+
+  test('a member with no application on file is sent to apply, not the preassessment', () => {
+    const actions = buildNextBestActions({
+      state: 'A',
+      noApplicationOnFile: true,
+      enrolledProgram: null,
+      assessmentCompleted: false,
+      hasResume: false,
+      profileCompletenessPct: 10,
+      jobApplicationCount: 0,
+      counselorUnreadCount: 0,
+      weeklyRecapUnopened: false,
+    });
+    expect(actions[0].id).toBe('submit_application');
+    expect(actions.some((a) => a.id === 'skills_assessment')).toBe(false);
   });
 });

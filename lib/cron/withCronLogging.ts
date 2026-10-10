@@ -29,9 +29,22 @@ if (!cronSecretBoot.ok) {
 
 const AUTH_REPORT_INTERVAL_MS = 300_000;
 
+// These handlers only make GET probes and write diagnostics. Do not extend this
+// exception to jobs that mutate business state, send messages or change provider state.
+const UNTRACKED_READ_ONLY_MONITORS = new Set(['cron_deploy_health', 'cron_smoke_test']);
+
+function untrackedMonitorResponse(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set('x-cron-execution-tracking', 'unavailable');
+  // Forward the body stream without reading it, including non-200 probe results.
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 /**
  * Authorize before the handler runs; track every authorized execution and
  * report failures even when tracking/settings storage is unavailable.
+ * Only the two explicitly allowlisted read-only monitors may probe untracked
+ * after the initial execution write fails; a readable disabled setting wins.
  *
  * Auth rejections leave a trace (WAP-177 fix 1): at most once per five minutes
  * per wrapper/configuration state the wrapper reports the 401 and records a
@@ -57,6 +70,39 @@ export function withCronLogging(
     }
     await logCronRun(workflowKey, { ok: false, error: message, status: 401, reason }, 'error');
   });
+
+  const runUntrackedMonitor = async (request: any, storageError: unknown) => {
+    unstable_rethrow(storageError);
+    captureApiError(storageError, { route, extra: { phase: 'start_execution', executionTracking: 'unavailable' } });
+    try {
+      if (!(await isCronEnabled(workflowKey))) {
+        return untrackedMonitorResponse(NextResponse.json({ skipped: true, reason: 'disabled' }));
+      }
+    } catch (settingsError) {
+      unstable_rethrow(settingsError);
+      captureApiError(settingsError, { route, extra: { phase: 'monitor_settings_unavailable', executionTracking: 'unavailable' } });
+    }
+
+    // The storage report must not suppress a later failed-probe report. There is
+    // deliberately no CronExecution context or synthetic ID: recordsProcessed
+    // becomes a no-op and the handler's diagnostic remains best effort.
+    return runWithApiErrorScope(async () => {
+      try {
+        const response = await handler(request);
+        if (response.status >= 400 && !hasReportedApiError()) {
+          captureApiError(new Error(`Cron handler returned HTTP ${response.status}`), {
+            route,
+            extra: { phase: 'monitor_handler', status: response.status, executionTracking: 'unavailable' },
+          });
+        }
+        return untrackedMonitorResponse(response);
+      } catch (error) {
+        unstable_rethrow(error);
+        captureApiError(error, { route, extra: { phase: 'monitor_handler', executionTracking: 'unavailable' } });
+        return untrackedMonitorResponse(NextResponse.json({ error: 'Cron failed' }, { status: 500 }));
+      }
+    }, { fresh: true });
+  };
 
   return (request: any): Promise<any> => runWithApiErrorScope(async () => {
     const unauthorized = authorizeCronRequest(request);
@@ -93,6 +139,7 @@ export function withCronLogging(
       try {
         executionId = await startCronExecution(workflowKey);
       } catch (error) {
+        if (UNTRACKED_READ_ONLY_MONITORS.has(workflowKey)) return runUntrackedMonitor(request, error);
         return fail(error);
       }
 

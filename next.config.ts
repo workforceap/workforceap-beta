@@ -18,7 +18,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 require('./scripts/ensure-prisma-env.cjs');
 
-// Keep the preview's single same-origin framing exception aligned with the
+// Keep the PDF previews' narrow same-origin framing exceptions aligned with the
 // default policy. All other CSP directives stay identical on both routes.
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -27,7 +27,8 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https://*.supabase.co https://*.public.blob.vercel-storage.com https://images.unsplash.com https://www.google-analytics.com https://www.googletagmanager.com https://api.dicebear.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
+  // The J5 review editor displays its locally generated PDF through an object URL.
+  "frame-src 'self' blob: https://www.googletagmanager.com https://challenges.cloudflare.com",
   "form-action 'self' https://formspree.io",
   "object-src 'none'",
   "base-uri 'self'",
@@ -54,6 +55,10 @@ const nextConfig: NextConfig = {
   // serverless route trace so a Vercel bundle cannot silently degrade to an
   // unavailable/stale knowledge response.
   outputFileTracingIncludes: {
+    // Member previews render their letterhead locally inside the serverless function.
+    '/api/admin/members/*/billing/two-stage/*/preview': ['./public/images/wap_logo.png'],
+    // Admin mock previews use the same letterhead.
+    '/api/admin/billing/preview/*': ['./public/images/wap_logo.png'],
     // The PDF parser is resolved at runtime inside a worker thread (webpack
     // rewrites require.resolve into a numeric module id, so the path cannot be
     // computed at module scope). That hides the dependency from the file
@@ -138,6 +143,15 @@ const nextConfig: NextConfig = {
           { key: 'Content-Security-Policy', value: previewContentSecurityPolicy },
         ],
       },
+      // Only authenticated synthetic PDFs may embed in their own Admin page.
+      // Real billing files, other APIs, and Admin HTML retain the global deny.
+      ...['j5', 'j6'].map((stage) => ({
+        source: `/api/admin/billing/preview/${stage}`,
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: previewContentSecurityPolicy },
+        ],
+      })),
       // Authenticated HTML routes should never be cached by browsers or
       // intermediate caches. Without this, hitting back-button after sign-
       // out (or shared CDN edge in front of Vercel) can surface a previous

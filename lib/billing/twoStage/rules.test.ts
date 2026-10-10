@@ -8,22 +8,28 @@ import { j5Recipients, j6Recipients } from './recipients';
 import { TUITION_AND_FEES_CENTS, authorizedSignerLine } from './constants';
 import { WAP_BILLING_LETTERHEAD } from './letterhead';
 
-describe('class end date: start + 5 calendar months, month-end clamped', () => {
+describe('class end date: start + 6 calendar months, month-end clamped', () => {
   const cases: Array<[string, string]> = [
-    ['2026-09-30', '2027-02-28'], // Mike's case (160h program)
-    ['2026-10-31', '2027-03-31'], // Mike's case (200h program)
-    ['2026-01-31', '2026-06-30'],
-    ['2026-08-31', '2027-01-31'],
-    ['2026-09-29', '2027-02-28'],
-    ['2027-09-30', '2028-02-29'], // leap year
-    ['2027-09-29', '2028-02-29'],
-    ['2028-09-30', '2029-02-28'],
-    ['2026-03-15', '2026-08-15'],
-    ['2026-12-01', '2027-05-01'],
+    ['2026-09-30', '2027-03-30'],
+    ['2026-10-31', '2027-04-30'],
+    ['2026-01-31', '2026-07-31'],
+    ['2026-08-31', '2027-02-28'],
+    ['2026-08-29', '2027-02-28'],
+    ['2027-08-31', '2028-02-29'], // leap year
+    ['2027-08-29', '2028-02-29'],
+    ['2028-08-31', '2029-02-28'],
+    ['2026-03-15', '2026-09-15'],
+    ['2026-12-01', '2027-06-01'],
   ];
   for (const [start, end] of cases) {
     it(`${start} -> ${end}`, () => assert.equal(classEndDate(start), end));
   }
+
+  it('preserves the frozen five-month rule only for content version 1', () => {
+    assert.equal(classEndDate('2026-09-30', 1), '2027-02-28');
+    assert.equal(classEndDate('2026-10-31', 1), '2027-03-31');
+    assert.equal(classEndDate('2026-09-30', 2), '2027-03-30');
+  });
 
   it('handles negative months and year boundaries', () => {
     assert.equal(addCalendarMonthsClamped('2027-03-31', -1), '2027-02-28');

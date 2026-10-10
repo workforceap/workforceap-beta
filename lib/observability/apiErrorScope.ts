@@ -3,9 +3,9 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 type ApiErrorScope = { reported: boolean; errors: WeakSet<Error> };
 const storage = new AsyncLocalStorage<ApiErrorScope>();
 
-/** Nested API/cron wrappers share one request's reporting state, never another request's. */
-export function runWithApiErrorScope<T>(fn: () => Promise<T>): Promise<T> {
-  return storage.getStore() ? fn() : storage.run({ reported: false, errors: new WeakSet() }, fn);
+/** Nested wrappers share reporting state unless a distinct operation needs a fresh scope. */
+export function runWithApiErrorScope<T>(fn: () => Promise<T>, options: { fresh?: boolean } = {}): Promise<T> {
+  return storage.getStore() && !options.fresh ? fn() : storage.run({ reported: false, errors: new WeakSet() }, fn);
 }
 
 export function markApiErrorReported(error: Error): boolean {

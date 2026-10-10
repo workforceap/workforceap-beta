@@ -1,4 +1,5 @@
 import type { AssessmentReviewRow } from '@/lib/assessment/reviewRows';
+import { mostRepeatedAnswerCount, STRAIGHT_LINE_MIN_SAME } from '@/lib/assessment/answerPattern';
 import styles from './staffReadonly.module.css';
 
 type Props = {
@@ -28,6 +29,11 @@ export default function AssessmentAnswersReadonly({
 }: Props) {
   const completed = completedAt ? new Date(completedAt) : null;
   const correctCount = rows.filter((r) => r.correct).length;
+  // Ops (10/9/26): results saved before the same-letter guard (e.g. "A" for
+  // all 35) are not a skills measure. Say so where staff read the score.
+  const chosen = Object.fromEntries(rows.flatMap((r) => (r.answer ? [[r.id, r.answer]] : [])));
+  const sameLetter = mostRepeatedAnswerCount(chosen);
+  const unreliable = sameLetter >= STRAIGHT_LINE_MIN_SAME;
   return (
     <section className="wa-kit-card">
       <h2 className={styles.title}>{title}</h2>
@@ -37,6 +43,12 @@ export default function AssessmentAnswersReadonly({
         {` · ${correctCount}/${rows.length} correct`}
         {programInterest ? ` · Interest: ${programInterest}` : ''}
       </p>
+      {unreliable ? (
+        <p className={`wa-kit-tone--danger ${styles.unreliable}`} role="note" data-testid="assessment-unreliable">
+          <strong>Score not reliable:</strong> {sameLetter} of {rows.length} answers are the same letter, which usually means the
+          member clicked through. Ask them to retake it before using this score for WIOA review.
+        </p>
+      ) : null}
       <details className={styles.body}>
         <summary className={styles.summary}>
           Full answer sheet ({rows.length} questions)

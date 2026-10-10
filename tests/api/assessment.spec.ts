@@ -121,6 +121,8 @@ import {
   scoreAssessment,
   TOTAL_POINTS,
 } from '@/lib/assessment/answer-key';
+import { ASSESSMENT_QUESTIONS_PUBLIC } from '@/lib/assessment/questions';
+import { layoutAssessment } from '@/lib/assessment/layout';
 import { prisma } from '@/lib/db/prisma';
 import { getUser } from '@/lib/auth/server';
 import { getCounselorStarterProfileReview } from '@/lib/member/starterProfileReview';
@@ -366,6 +368,49 @@ describe('POST /api/member/assessment/submit', () => {
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'Invalid submission data' });
+  });
+
+  it('refuses the same letter for every question and saves nothing (ops 10/9/26)', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const allA = Object.fromEntries(Array.from({ length: 35 }, (_, i) => [String(i + 1), 'A']));
+
+    const res = await submitAssessment(makeRequest({ ...validBody, answers: allA }));
+
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.code).toBe('ANSWERS_ALL_SAME');
+    expect(body.error).toMatch(/read each question/);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
+  it('refuses a shuffled click-through of one display letter (ops 10/9/26 + #2745)', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const seed = 'click-through';
+    const answers = Object.fromEntries(
+      layoutAssessment(ASSESSMENT_QUESTIONS_PUBLIC, seed).map((q) => [String(q.id), q.choices[0].value]),
+    );
+
+    const res = await submitAssessment(makeRequest({ ...validBody, answers, seed }));
+
+    expect(res.status).toBe(422);
+    expect((await res.json()).code).toBe('ANSWERS_ALL_SAME');
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
+  it('still accepts a real mixed sheet when the attempt seed is present', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+
+    const res = await submitAssessment(makeRequest({ ...validBody, seed: 'honest-1' }));
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).ok).toBe(true);
+    expect(prisma.user.updateMany).toHaveBeenCalled();
   });
 
   it('still accepts the submission when starter profile review is pending', async () => {

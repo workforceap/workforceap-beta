@@ -37,6 +37,7 @@ import {
   isWinAnsiPrintable,
   RECEIVING_SIGNATURE_PENDING_SUFFIX,
   renderJ5QuoteVoucherRequestDraftPdf,
+  renderJ5QuoteVoucherRequestMockPdf,
   renderJ5QuoteVoucherRequestSignedPdf,
   renderJ6InvoiceVoucherCoverLetterDraftPdf,
   renderJ6InvoiceVoucherCoverLetterSignedPdf,
@@ -84,6 +85,7 @@ export const FIXED_PRINTED_TEXT = Object.freeze({
     DRAFT_ON_HOLD_BADGE,
     DRAFT_BADGE,
     'TRAINING DETAILS',
+    'CLASS DESCRIPTION',
     'Training hours',
     'Class start',
     'Class end',
@@ -154,6 +156,7 @@ export function printedContentFields(content: TwoStageContent): PrintedField[] {
     { field: 'boardName', value: content.boardName, max: L.boardName },
     { field: 'counselor.name', value: content.counselor.name, max: L.personName },
     { field: 'training.className', value: content.training.className, max: L.className },
+    ...(content.training.classDescription ? [{ field: 'training.classDescription', value: content.training.classDescription, max: L.classDescription }] : []),
     { field: 'lineItems[0].label', value: content.lineItems[0]?.label ?? '', max: L.tuitionLabel },
     { field: 'signer.name', value: content.signer.name, max: L.personName },
     { field: 'signer.title', value: content.signer.title, max: L.signerTitle },
@@ -254,6 +257,7 @@ export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): 
   const receiptSignatureId = opts.receiptSignatureId?.trim() || null;
 
   const common = {
+    contentVersion: content.contentVersion,
     documentNumber: content.documentNumber,
     issueDate: content.issueDate,
     frozenAt: opts.frozenAt,
@@ -263,6 +267,9 @@ export function toRendererFacts(content: TwoStageContent, opts: RenderOptions): 
     counselor: { name: content.counselor.name, email: content.counselor.email, phone: content.counselor.phone },
     programSlug: content.training.programSlug,
     className: content.training.className,
+    ...(content.kind === 'j5_quote_voucher_request' && content.training.classDescription
+      ? { classDescription: content.training.classDescription }
+      : {}),
     classHours: content.training.contactHours,
     classStartDate: content.training.classStartDate,
     classEndDate: content.training.classEndDate,
@@ -311,6 +318,20 @@ export async function renderDraftFromContent(content: TwoStageContent, opts: Ren
   const facts = toRendererFacts(content, opts);
   try {
     return facts.stage === 'j5' ? await renderJ5QuoteVoucherRequestDraftPdf(facts) : await renderJ6InvoiceVoucherCoverLetterDraftPdf(facts);
+  } catch (error) {
+    throw layoutRefusal(error);
+  }
+}
+
+/** Explicit mock of saved J5 content. No signature image is accepted or loaded. */
+export async function renderMockJ5FromContent(content: TwoStageContent, opts: RenderOptions): Promise<Uint8Array> {
+  if (content.kind !== 'j5_quote_voucher_request') {
+    throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'Mock preview is available only for a saved J5 draft.');
+  }
+  const facts = toRendererFacts(content, opts);
+  if (facts.stage !== 'j5') throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'Mock preview requires J5 facts.');
+  try {
+    return await renderJ5QuoteVoucherRequestMockPdf(facts);
   } catch (error) {
     throw layoutRefusal(error);
   }

@@ -35,7 +35,7 @@ export const AI_SOFTWARE_CONTACT_HOURS = 200;
 export const ALLOWED_CONTACT_HOURS: ReadonlySet<number> = new Set([STANDARD_CONTACT_HOURS, AI_SOFTWARE_CONTACT_HOURS]);
 
 /** Class end = class start + this many calendar months (month-end clamped). */
-export const CLASS_LENGTH_CALENDAR_MONTHS = 5;
+export const CLASS_LENGTH_CALENDAR_MONTHS = 6;
 
 /**
  * After the J6 is sent, payment is *expected* in this window. This is a
@@ -60,5 +60,7 @@ export function authorizedSignerLine(): string {
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 export const ALLOWED_UPLOAD_MIME_TYPES: ReadonlySet<string> = new Set(['application/pdf']);
 
-/** Version of the frozen content snapshot shape (billing_documents.content_version). */
-export const CONTENT_VERSION = 1;
+/** V1 keeps the original five-month terms; new V2 snapshots use six months. */
+export const CONTENT_VERSION = 2;
+export type ContentVersion = 1 | typeof CONTENT_VERSION;
+export const CONTENT_VERSION_UPGRADE_MESSAGE = 'This draft uses earlier class-date terms. Save the draft again and review the six-month end date before signing.';

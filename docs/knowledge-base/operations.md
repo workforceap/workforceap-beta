@@ -144,6 +144,24 @@ Workflow enablement lives in `FeatureFlag.enabled` under the reserved `cron.enab
 
 [Notification creation](../../lib/notifications/create.ts) synchronously registers its full database → aggregated Discord operation with Next `after()` before returning, while preserving an awaitable promise for scripts and tests. Browser push remains best effort. An in-app `Notification` row proves app-inbox persistence only; a Resend success proves provider acceptance only; Discord/Web Push acceptance and user inbox/display receipt are separate boundaries. Placement-survey rows use nullable `sentAt` as pre-acceptance retry state and persist the complete helper-level provider payload—including recipient, rendered-input fields, signed URL, wave, and row/attempt key—before egress; ambiguous retries resolve persisted state before mutable email checks, reuse that frozen payload byte-for-byte even when current email is absent, and account the frozen recipient while intentional resends create a new attempt; admin readers and counters exclude that state until acceptance is stamped, while member exports represent it truthfully with `sentAt: null`. Review [sender tests](../../lib/email/send.test.ts), [bulk cron guard](../../lib/email/bulkCronGuard.test.ts), the request-lifetime lint ban on fire-and-forget `send*Email` in API routes ([eslint.config.mjs](../../eslint.config.mjs), `ABANDONED_ROUTE_EMAIL_BANS`), [contact route tests](../../tests/api/contact-route.spec.ts), [notification tests](../../tests/lib/notifications/create.spec.ts), and the changed workflow suite. Two naturally scheduled Sunday weekly-recap runs without relevant 429s remain timed operational acceptance; CI or synthetic sends cannot satisfy that gate.
 
+### Monitoring when execution tracking is unavailable
+
+Only `cron_deploy_health` and `cron_smoke_test` may continue after the initial
+`CronExecution` write fails. This fixed allowlist is for diagnostic GET probes,
+not enrollment, email, billing, or other mutating jobs. Authentication and the
+production cron-secret requirement still apply. A readable disabled setting is
+honored; if settings storage is also unavailable, these two monitors may run
+once so they can observe the outage. All other workflows remain fail-closed.
+
+The untracked path reports the storage failure and runs the monitor in a fresh
+API-error scope without inventing an execution ID. Its response carries
+`X-Cron-Execution-Tracking: unavailable`; probe failures retain their original
+failure status and body. A handler or completion-write failure never reruns the
+probes. This preserves monitoring during a tracking failure, not durable history
+or a repair to the underlying database connection. Existing handler-internal
+diagnostic error deduplication is unchanged. See the behavioral
+[wrapper regressions](../../tests/api/cron-wrapper-reliability.spec.ts).
+
 ## Health and observability
 
 | Signal | Meaning and source |
@@ -165,6 +183,8 @@ Each opt-in hydration sample also includes bounded milliseconds since the browse
 The [portal audit runner](../../scripts/audit-portal-routes.mjs) now installs the read-only capability as a host-only, HttpOnly browser cookie on the validated target. Middleware consumes and strips it before forwarding an authenticated request, while the runner removes it from copied role storage state and reinstalls it in each audit context. A browser redirect to a different host therefore does not carry the capability. Browser cookies are host-scoped, not port-scoped; this fix does not claim isolation between services on different ports of one host. The `hub_smoke` lane does not use the read-only capability.
 
 When a same-origin fetch or XHR exceeds the audit's five-second settlement window, the [portal audit artifact](../../docs/portal-audit-results.schema.json) now records the pending count and up to ten request summaries beside the existing timeout failure. Summaries contain only a checked-in portal or API route template (or a coarse redacted area), an allowlisted method and request type, and boolean RSC/prefetch flags. Queries, concrete IDs, origins, headers and bodies stay out of these summaries. This is diagnostic evidence; settlement, read-only policy and pass/fail rules are unchanged.
+
+The [data-request collector](../../scripts/lib/portal-audit-data-requests.mjs) recognizes an expected two-stage billing gate only after reading an allowlisted JSON gate code from a same-origin HTTP 503 fetch/XHR. It correlates Chromium's native resource console diagnostic to that exact URL before redaction and deduplication; application console errors, missing locations, mixed gate codes and unreadable or hung bodies remain failures. Body reads share the bounded settlement deadline. Aborted prefetches remain diagnostic only after the destination passes its existing health checks. Run `node scripts/test-portal-audit-gated-api-browser.mjs` for the disposable localhost Chromium regression; it proves collector behavior, not enabled billing or hosted preview acceptance.
 
 For the admin `/admin/dashboard` route, the static audit also waits for a same-origin `GET /api/admin/metrics` HTTP 200 and for the loaded KPI strip to replace the metrics loading state. It starts watching before navigation so a fast response is captured. Failure diagnostics use fixed labels; the audit does not record the metrics payload. This route-specific check does not add data-readiness claims to other portal pages.
 

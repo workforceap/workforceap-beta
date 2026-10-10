@@ -110,14 +110,14 @@ test('plural assessments alias redirects to Training Preassessment', () => {
 
 test('labeled preassessment CTAs use the assessment page', () => {
   const guide = source('app/(portal)/dashboard/guide/page.tsx');
-  assert.match(guide, /title: 'Complete your Training Preassessment'/);
+  assert.match(guide, /title: 'Take your WIOA Preassessment \(35 questions\)'/);
   assert.match(guide, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(guide, /href: '\/dashboard\/skills-assessment'/);
 
   // The member home's preassessment CTA comes from the next-best-action
   // builder the kit home renders (the legacy DashboardHomeClient is gone, WAP-195).
   const home = source('lib/member/nextBestActions.ts');
-  assert.match(home, /title: 'Complete your Training Preassessment'/);
+  assert.match(home, /title: 'Take your WIOA Preassessment \(35 questions\)'/);
   assert.match(home, /href: '\/dashboard\/assessment'/);
   assert.doesNotMatch(home, /href: '\/dashboard\/skills-assessment'/);
 
@@ -214,6 +214,15 @@ test('admin rail: Today keeps the home anchor; Applications opens the decision w
   assert.equal(getBestActiveHref('/admin', links), '/admin');
   assert.equal(getBestActiveHref('/admin/wioa-screening', links), '/admin/wioa-screening');
   assert.equal(getBestActiveHref('/admin/certifications', links), '/admin/certifications');
+});
+
+test('admin rail: unsigned billing mock is discoverable under Students for organization admins', () => {
+  const preview = navChildrenOf(ADMIN_PORTAL_NAV_ITEMS, '/admin/students').filter((item) => item.href === '/admin/billing/preview');
+  assert.equal(preview.length, 1);
+  assert.equal(preview[0].label, 'J5 / J6 preview');
+  assert.equal(preview[0].group, 'dailyWork');
+  assert.ok(!preview[0].requiresSuperAdminContext);
+  assert.equal(getBestActiveHref('/admin/billing/preview', navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS)), '/admin/billing/preview');
 });
 
 test('admin rail: Reporting is one top-level hub row with the reporting pages nested under it', () => {
