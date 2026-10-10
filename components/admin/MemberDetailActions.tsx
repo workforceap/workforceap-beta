@@ -95,7 +95,6 @@ export default function MemberDetailActions({
   };
 
   const handleResetAssessment = async () => {
-    if (!window.confirm(`Allow ${memberName} to retake the preassessment?\n\nTheir current score is saved in history, and the new attempt shows the questions and answers in a different order.`)) return;
     setLoading('assessment');
     setFeedback(null);
     try {
@@ -107,7 +106,7 @@ export default function MemberDetailActions({
         });
         return;
       }
-      setFeedback({ kind: 'success', text: 'Retake allowed. The previous score is saved in history.' });
+      setFeedback({ kind: 'success', text: 'Assessment reset.' });
       router.refresh();
     } catch {
       setFeedback({ kind: 'error', text: 'Could not reach the server.' });
@@ -218,7 +217,7 @@ export default function MemberDetailActions({
           onClick={handleResetAssessment}
           disabled={!!loading}
         >
-          {loading === 'assessment' ? '...' : 'Allow retake'}
+          {loading === 'assessment' ? '...' : 'Reset Assessment'}
         </button>
       )}
 
