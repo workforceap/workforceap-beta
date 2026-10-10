@@ -16,6 +16,8 @@ export type AssessmentProgress = {
   answers: Record<number, Letter>;
   programInterest: string;
   step: number;
+  /** Layout seed for this attempt (shuffle order); kept so a refresh shows the same order. */
+  seed?: string;
 };
 
 type Stored = AssessmentProgress & { savedAt: number };
@@ -48,6 +50,7 @@ export function readAssessmentProgress(now: number = Date.now()): AssessmentProg
       answers,
       programInterest: typeof parsed.programInterest === 'string' ? parsed.programInterest : '',
       step: typeof parsed.step === 'number' && Number.isFinite(parsed.step) ? Math.trunc(parsed.step) : 1,
+      ...(typeof parsed.seed === 'string' && /^[a-z0-9-]{1,64}$/u.test(parsed.seed) ? { seed: parsed.seed } : {}),
     };
   } catch {
     return null;

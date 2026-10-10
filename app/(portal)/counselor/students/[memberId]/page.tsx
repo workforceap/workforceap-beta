@@ -41,6 +41,7 @@ import BillingPacketList from '@/components/billing/BillingPacketList';
 import { listPacketsForMember } from '@/lib/billing/packetAccess';
 import WioaScreeningReadonly from '@/components/admin/WioaScreeningReadonly';
 import AssessmentAnswersReadonly from '@/components/admin/AssessmentAnswersReadonly';
+import AllowAssessmentRetakeButton from '@/components/admin/AllowAssessmentRetakeButton';
 import { buildAssessmentReviewRows } from '@/lib/assessment/reviewRows';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import { employerJobPostingApplicationStatusBadgeVariant } from '@/lib/employer/jobPostingApplicationStatus';
@@ -636,13 +637,16 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
             ) : null}
 
             {assessmentRows ? (
-              <AssessmentAnswersReadonly
-                rows={assessmentRows}
-                score={member.assessmentScore}
-                scorePct={member.assessmentScorePct}
-                completedAt={member.assessmentCompletedAt}
-                programInterest={member.programInterest}
-              />
+              <div>
+                <AssessmentAnswersReadonly
+                  rows={assessmentRows}
+                  score={member.assessmentScore}
+                  scorePct={member.assessmentScorePct}
+                  completedAt={member.assessmentCompletedAt}
+                  programInterest={member.programInterest}
+                />
+                <AllowAssessmentRetakeButton memberId={member.id} memberName={member.fullName ?? 'this member'} />
+              </div>
             ) : null}
 
             {/* Counselor 360 signals — at-risk, career quiz, next-best-actions */}

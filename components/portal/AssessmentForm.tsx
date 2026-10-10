@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PROGRAM_TITLES } from '@/lib/content/programs';
 // AUDIT-2026-05-16 §C-B3: client never imports the answer key. Question
@@ -14,6 +14,7 @@ import {
 } from '@/lib/assessment/questions';
 import { sectionAllSame, SECTION_SAME_ANSWER_WARNING } from '@/lib/assessment/answerPattern';
 import { clearAssessmentProgress, readAssessmentProgress, writeAssessmentProgress } from '@/lib/assessment/progressStorage';
+import { layoutAssessment, newAttemptSeed } from '@/lib/assessment/layout';
 import styles from './AssessmentForm.module.css';
 import { assessmentConfirmMessage } from '@/lib/member/assessmentConfirmMessage';
 
@@ -78,6 +79,11 @@ export default function AssessmentForm({
   const [phone, setPhone] = useState(defaultPhone);
   const [programInterest, setProgramInterest] = useState('');
   const [answers, setAnswers] = useState<Record<number, QuestionChoice>>({});
+  // Ops (10/9/26): each attempt shuffles question order within a section and
+  // the answer order on each question. Answers are still kept by their
+  // original letter, so scoring and staff answer sheets are unchanged.
+  const [seed, setSeed] = useState<string>('preview');
+  const layout = useMemo(() => layoutAssessment(ASSESSMENT_QUESTIONS, seed), [seed]);
   // Answers save as you go (ops 10/9/26): the prompt and emails promise it,
   // and losing 20 answers to a refresh is how people end up rushing. Kept in
   // this browser only (no answer key involved), cleared on submit.
@@ -85,6 +91,8 @@ export default function AssessmentForm({
   useEffect(() => {
     if (previewOutcome || previewStep) return;
     const saved = readAssessmentProgress();
+    // Keep the attempt's layout across refreshes; a new attempt gets a new one.
+    setSeed(saved?.seed || newAttemptSeed());
     if (saved) {
       setAnswers(saved.answers);
       if (saved.programInterest) setProgramInterest(saved.programInterest);
@@ -96,8 +104,9 @@ export default function AssessmentForm({
   }, []);
   useEffect(() => {
     if (previewOutcome || previewStep || step !== 'form') return;
-    writeAssessmentProgress({ answers, programInterest, step: currentStep });
-  }, [answers, programInterest, currentStep, step, previewOutcome, previewStep]);
+    if (seed === 'preview') return;
+    writeAssessmentProgress({ answers, programInterest, step: currentStep, seed });
+  }, [answers, programInterest, currentStep, step, previewOutcome, previewStep, seed]);
   const confirmHeadingRef = useRef<HTMLHeadingElement>(null);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const isFirstStepRender = useRef(true);
@@ -124,7 +133,7 @@ export default function AssessmentForm({
 
   const config = STEP_CONFIG[currentStep - 1];
   const questionsInStep = config?.questionRange
-    ? ASSESSMENT_QUESTIONS.filter((q) => q.id >= config.questionRange![0] && q.id <= config.questionRange![1])
+    ? layout.filter((q) => q.displayNumber >= config.questionRange![0] && q.displayNumber <= config.questionRange![1])
     : [];
   const answeredInStep = questionsInStep.filter((q) => answers[q.id] != null).length;
   const stepComplete = config?.questionRange
@@ -162,7 +171,7 @@ export default function AssessmentForm({
       setError(`Please answer all questions in this section before continuing.`);
       return;
     } else if (
-      sectionAllSame(questionsInStep.map((q) => answers[q.id])) &&
+      sectionAllSame(questionsInStep.map((q) => q.choices.find((c) => c.value === answers[q.id])?.displayLetter)) &&
       sameAnswerWarnedStep !== currentStep
     ) {
       setSameAnswerWarnedStep(currentStep);
@@ -373,12 +382,12 @@ export default function AssessmentForm({
                 {questionsInStep.map((q) => (
                   <fieldset key={q.id} className={styles.question}>
                     <legend className={styles.legend}>
-                      Q{q.id}. {q.question}
+                      Q{q.displayNumber}. {q.question}
                     </legend>
                     <div className={styles.answers}>
                       {q.choices.map((c) => (
                         <label
-                          key={c.value}
+                          key={`${q.id}-${c.value}`}
                           className={`${styles.answer} ${answers[q.id] === c.value ? styles.answerSelected : ''}`}
                         >
                           <input
@@ -390,7 +399,7 @@ export default function AssessmentForm({
                           />
                           <span className={styles.dot} aria-hidden="true" />
                           <span>
-                            {c.value}) {c.label}
+                            {c.displayLetter}) {c.label}
                           </span>
                         </label>
                       ))}
