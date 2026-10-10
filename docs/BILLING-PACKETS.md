@@ -1,17 +1,39 @@
-# J5 Training Invoice + J6 Cover Letter packets
+# J5/J6 billing and legacy packet history
 
 **Retired for new work (2026-09-28).** The combined packet does not match the
 current WorkforceAP process. Authorized POST requests to create or send one now
 return `410 LEGACY_BILLING_FLOW_RETIRED`; the admin page shows existing records
 only. GET history and protected PDF downloads remain available. The separate
 J5 Quote/Voucher Request and later J6 Invoice/Voucher Cover Letter with the
-received signed board voucher are under development; neither action is live
-through this legacy route.
+received signed board voucher use the separate two-stage routes below.
 
-> **Legacy.** Everything above "Two-stage J5/J6" describes the original
-> combined packet (`training_billing_packets`, one signed row with a J5
-> invoice and a J6 letter). Its rows stay unchanged and readable. New billing
-> will use the two-stage flow described below, which is not live yet.
+## Release reconciliation (2026-10-10)
+
+The two-stage schema, APIs, admin workbench and signed renderer have shipped:
+[#2699](https://github.com/workforceap/workforceap-beta/pull/2699),
+[#2700](https://github.com/workforceap/workforceap-beta/pull/2700) and
+[#2713](https://github.com/workforceap/workforceap-beta/pull/2713) are merged.
+The older combined-packet release candidate
+[#2687](https://github.com/workforceap/workforceap-beta/pull/2687) remains a
+superseded draft; its migrations and release checklist do not describe the
+current architecture. Its lifecycle protections require separate scoped work
+if carried forward.
+
+Read-only production checks at `e170c47d6` found the five current billing
+migrations applied with repository-matching checksums, a designated signer,
+an approved signature asset, and a signed J5 linked to its archived artifact.
+The production migration gate is enabled; the real-email gate remains disabled.
+No two-stage send receipt was present. DEMO still lacks the two-stage schema
+and has 26 pending current repository migrations. Local synthetic proofs do
+not establish authenticated DEMO, mailbox delivery, Storage API or restored
+production-backup acceptance. See the dated
+[evidence and remaining work](audits/billing-release-reconciliation-2026-10-10.md)
+before changing release gates.
+
+> **Legacy.** "Retired workflow" through "Not in scope (yet)" below describe
+> the original combined packet (`training_billing_packets`, one signed row
+> with a J5 invoice and a J6 letter). Its rows stay unchanged and readable.
+> The mock preview and the two-stage sections describe the current implementation.
 
 Ops request (9/3/26): "Need a J5 invoice and J6 cover letter system that creates a
 signed [document] with the classes and breakdown of prices. Then have a button
@@ -102,7 +124,7 @@ legitimately runs to two pages, with real content on the second.
   fields in `packetPdf.ts`.
 - Payment tracking (paid / partially paid). Status is `signed` or `sent`.
 
-## Two-stage J5/J6 (in progress, draft PR)
+## Two-stage J5/J6
 
 Requested by Mike Brown on 2026-09-27. Two separate stages, each with its own
 primary action, signature and send:
@@ -472,21 +494,22 @@ while a send is unresolved) and a retention/disposal policy.
 
 ## Two-stage API contract (M3)
 
-Status: reviewed by Mike Brown on 2026-09-28 and being implemented in the M3
-draft PR (stacked on #2699). Mike's review decided the engineering questions
-the first draft left open; they are recorded, one line each, in
-[Decisions](#decisions-m3). Sign and send are implemented but hard-disabled:
-every gate defaults off.
+Reviewed by Mike Brown on 2026-09-28 and shipped with #2713, including the M3
+routes previously reviewed in the now-closed #2707. Mike's review decided the
+engineering questions the first draft left open; they are recorded, one line
+each, in [Decisions](#decisions-m3). Sign and send remain subject to the
+server-side release gates, which default off. The dated release reconciliation
+above records the observed production configuration.
 
 **Sources**
 
 | Source | Ref |
 | --- | --- |
-| M1 model (#2699, draft) | `55a0562c` (on `877466fe` → `260ad599` → `b76cedee`, master `fde0066`; designated signer for both stages, send-failure and close rules, payment lower bound) (schema incl. `BillingDesignatedSigner` and `BillingVoucherReceiptSignature`, migration `20260927230000_billing_two_stage_j5_j6`, `lib/billing/twoStage/*` incl. `voucherReceipt.ts`, `lib/billing/providerOrg.ts`) |
+| M1 model (#2699, merged) | master `c4e932d9a`; designated signer for both stages, send-failure and close rules, payment lower bound (schema incl. `BillingDesignatedSigner` and `BillingVoucherReceiptSignature`, migration `20260927230000_billing_two_stage_j5_j6`, `lib/billing/twoStage/*` incl. `voucherReceipt.ts`, `lib/billing/providerOrg.ts`) |
 | M2 draft renderer (#2702, merged) | master `d9e5d1e` `lib/billing/twoStage/documentPdf.ts` (DRAFT only) |
 | Finance archive adapter (#2704, merged) | master `fde0066` `lib/billing/twoStage/storageArchive.ts` (`archiveFinancePdf`, `readFinanceArchivePdf`) |
 | Resend status-preserving error (#2705, merged) | master `5864328` `ResendResolvedSendError` in `lib/email/send.ts` |
-| M4 admin UI (#2706, draft) | `2717102c` `app/admin/members/[id]/billing/TwoStageBillingWorkbench.tsx` (readiness keys, `onPrepareJ5` / `onPrepareJ6`) |
+| M3 routes, M4 admin UI and signing (#2713, merged; includes #2706/#2707 work) | master `6e5f30b55`; `lib/billing/twoStage/api/`, `app/admin/members/[id]/billing/TwoStageBillingWorkbench.tsx` and the PNG-signature bucket migration |
 | Tenant/admin pattern | `app/api/admin/members/[id]/billing-packets/route.ts` (master) |
 
 Labels: **[M1]** the M1 model enforces or provides it; **[M3]** the route
@@ -1379,8 +1402,10 @@ Under `/api/admin/members/[id]/billing/two-stage/cases`; files under
 
 ## Release runbook (two-stage J5/J6)
 
-Everything ships dark: each gate below defaults off, so merging changes no
-behavior until the matching step is done. Production migrations run inside the
+Each gate below defaults off; the matching setup and acceptance step is needed
+before it is opened. The initial schema/bucket/API merges are complete, and
+the dated reconciliation above distinguishes setup already observed from
+remaining acceptance. Production migrations run inside the
 Vercel build (`build:with-migrate`, see `docs/DEPLOYMENT-CHECKLIST.md`), so a
 merge to `master` applies its migrations at deploy. Steps marked **Mike** or
 **Ops** are deliberately not automatable: they are identity, backup and
@@ -1389,7 +1414,7 @@ credential decisions.
 | # | Step | Owner | Done when |
 | --- | --- | --- | --- |
 | 1 | Take a fresh PROD backup (condition of the M1 merge) | Mike / Ops | Backup confirmed restorable per `docs/DATABASE-RECOVERY.md` |
-| 2 | Merge bottom-up: #2699 (M1 schema), #2707 (M3 routes), #2713 (M4 page, includes #2706), **then** #2700 (bucket), **then** the signing PR that adds `20260928140000` | Mike | Each deploy's migration stage is inspected before the next merge |
+| 2 | Initial rollout complete: #2699 (M1 schema), #2700 (bucket), then #2713 (M3 routes, M4 page and signing; includes #2706/#2707 work) | Mike / Ops | Applied migration checksums match current source; future schema work uses fresh scoped PRs |
 | 3 | Confirm the bucket: `billing-finance` exists, is private, 10 MiB, and allows `application/pdf` and `image/png` only (no Storage policy) | Ops | Checked with the Storage API, not only SQL |
 | 4 | Designate the signer (ops-reviewed change): one row in `billing_designated_signers` (`organization_id`, `user_id`, `designated_by`, `note`) naming Michael's own account | Ops | `SELECT user_id FROM billing_designated_signers` returns his id |
 | 5 | Set the environment: `BILLING_TWO_STAGE_MIGRATION_APPLIED=true`, `BILLING_EXECUTIVE_SIGNER_USER_ID=<his user id>` (must equal the row), `BILLING_PACKET_PROVIDER_ORG_ID` if the provider is not the default org. Leave `BILLING_TWO_STAGE_EMAIL_ENABLED` unset | Ops | The billing page loads and shows the case card; both sign gates read as expected |
