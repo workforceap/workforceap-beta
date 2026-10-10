@@ -202,7 +202,7 @@ export interface VoiceStudioKitProps {
   sessionEndpoint?: string;
   /** JSON body posted to `sessionEndpoint` (e.g. interview role + type). */
   sessionPayload?: Record<string, unknown>;
-  /** Which voice coach to preselect when deep-linking to the Live tab. */
+  /** Which voice coach to retain when deep-linking to any tab. */
   initialAgent?: VoiceStudioAgentKey;
 }
 
@@ -219,20 +219,6 @@ export function VoiceStudioKit({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const selectTab = useCallback(
-    (nextTab: StudioTab, nextAgent?: VoiceStudioAgentKey) => {
-      setTab(nextTab);
-      const next = new URLSearchParams(searchParams?.toString() ?? '');
-      if (nextTab === 'coaches') next.delete('tab');
-      else next.set('tab', nextTab);
-      if (nextTab !== 'session') next.delete('agent');
-      else if (nextAgent) next.set('agent', nextAgent);
-      const query = next.toString();
-      router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
-    },
-    [pathname, router, searchParams],
-  );
-
   const fallbackAgent: SessionAgentConfig = {
     label: 'Mock Interview',
     endpoint: sessionEndpoint,
@@ -242,6 +228,23 @@ export function VoiceStudioKit({
   };
   const [agent, setAgent] = useState<SessionAgentConfig>(
     initialAgent ? SESSION_AGENTS[initialAgent] : fallbackAgent,
+  );
+  const selectedAgentKey = VOICE_STUDIO_AGENT_KEYS.find((key) => SESSION_AGENTS[key] === agent);
+
+  const selectTab = useCallback(
+    (nextTab: StudioTab, nextAgent = selectedAgentKey) => {
+      setTab(nextTab);
+      const next = new URLSearchParams(searchParams?.toString() ?? '');
+      if (nextTab === 'coaches') next.delete('tab');
+      else next.set('tab', nextTab);
+      // Keep the selected coach on every tab so refresh can restore it.
+      // Local selection also covers tab changes before search params catch up.
+      if (nextAgent) next.set('agent', nextAgent);
+      else next.delete('agent');
+      const query = next.toString();
+      router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
+    },
+    [pathname, router, searchParams, selectedAgentKey],
   );
 
   const pickAgent = (next: SessionAgentConfig) => {
