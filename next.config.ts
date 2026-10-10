@@ -55,6 +55,15 @@ const nextConfig: NextConfig = {
   // serverless route trace so a Vercel bundle cannot silently degrade to an
   // unavailable/stale knowledge response.
   outputFileTracingIncludes: {
+    '/api/enrollment-agreements/template': ['./assets/enrollment/workforceap-enrollment-2026.pdf'],
+    '/api/enrollment-agreements': [
+      './lib/enrollmentAgreements/pdf-validation-worker.cjs',
+      './node_modules/pdf-lib/**/*',
+      './node_modules/.pnpm/@pdf-lib+standard-fonts@*/node_modules/@pdf-lib/standard-fonts/**/*',
+      './node_modules/.pnpm/@pdf-lib+upng@*/node_modules/@pdf-lib/upng/**/*',
+      './node_modules/.pnpm/pako@*/node_modules/pako/**/*',
+      './node_modules/.pnpm/tslib@*/node_modules/tslib/**/*',
+    ],
     // Member previews render their letterhead locally inside the serverless function.
     '/api/admin/members/*/billing/two-stage/*/preview': ['./public/images/wap_logo.png'],
     // Admin mock previews use the same letterhead.

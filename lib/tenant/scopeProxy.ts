@@ -53,6 +53,8 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'chapterMeeting',
   'chapterCurriculumItem',
   'trainingBillingPacket',
+  'enrollmentAgreementSubmission',
+  'enrollmentAgreementOperationLock',
   // Two-stage J5/J6 billing (lib/billing/twoStage, docs/BILLING-PACKETS.md).
   'billingCase',
   'billingAttestation',

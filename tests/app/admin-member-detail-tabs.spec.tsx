@@ -112,6 +112,9 @@ vi.mock('@/components/admin/AdminMemberWioaReviewPanel', () => panelMock('wioa-r
 vi.mock('@/components/admin/ApplicantTriageChecklist', () => panelMock('triage'));
 vi.mock('@/components/admin/MemberCourseraDiagnoseButton', () => panelMock('coursera-diagnose'));
 vi.mock('@/components/admin/AdminMemberSkillCheckpointPanel', () => panelMock('skill-checkpoints'));
+vi.mock('@/components/enrollment/EnrollmentAgreementCard', () => ({
+  default: ({ memberId }: { memberId?: string }) => <div data-panel="enrollment-agreement" data-member-id={memberId} />,
+}));
 vi.mock('@/app/admin/members/[id]/AdminMemberNotesPanel', () => panelMock('notes'));
 
 import AdminMemberDetailPage from '@/app/admin/members/[id]/page';
@@ -129,7 +132,7 @@ const TAB_IDS = ['overview', 'program', 'eligibility', 'placement', 'messages', 
 /** Every sub-panel the long page had, keyed by the tab that now owns it. */
 const PANELS_BY_TAB: Record<(typeof TAB_IDS)[number], string[]> = {
   overview: ['db-actions', 'quick-summary', 'send-links', 'counselor-assign', 'partner', 'subgroup', 'workspace-email'],
-  program: ['program-change', 'coursera-diagnose', 'skill-checkpoints', 'enrollment-funding'],
+  program: ['program-change', 'coursera-diagnose', 'skill-checkpoints', 'enrollment-funding', 'enrollment-agreement'],
   eligibility: ['consent', 'coursera-approval'],
   placement: ['placed-outcome-form', 'ai-matches', 'resumes'],
   messages: ['chat'],
@@ -163,6 +166,7 @@ function tab(doc: Document, id: string): HTMLElement {
 
 describe('AdminMemberDetailPage record tabs (server render)', () => {
   beforeEach(() => {
+    vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'true');
     for (const key of Object.keys(db.overrides)) delete db.overrides[key];
     db.overrides['user.findFirst'] = async () => ({
       id: 'member-1',
@@ -212,6 +216,23 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
       if (where.eventName) return [];
       return [{ id: 'e1', eventName: 'career_plan_saved', createdAt: new Date('2026-09-18T10:00:00Z') }];
     };
+  });
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('mounts one agreement card for the selected student in Program without changing billing panels', async () => {
+    const doc = await renderPage({ tab: 'program' });
+    const agreements = doc.querySelectorAll('[data-panel="enrollment-agreement"]');
+    expect(agreements).toHaveLength(1);
+    expect(agreements[0].getAttribute('data-member-id')).toBe('member-1');
+    expect(agreements[0].closest('[role="tabpanel"]')?.id).toBe(`${BASE}-panel-program`);
+    expect(panel(doc, 'program').querySelector('[data-panel="enrollment-funding"]')).not.toBeNull();
+  });
+
+  it('does not mount agreement collection while its migration gate is closed', async () => {
+    vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'false');
+    const doc = await renderPage({ tab: 'program' });
+    expect(doc.querySelector('[data-panel="enrollment-agreement"]')).toBeNull();
+    expect(panel(doc, 'program').querySelector('[data-panel="enrollment-funding"]')).not.toBeNull();
   });
 
   it('renders the seven tabs wired to seven server-rendered panels, Overview open by default', async () => {

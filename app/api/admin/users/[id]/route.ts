@@ -11,6 +11,8 @@ import { ADMIN_USER_ROLES, ensureProfileRole, syncManagedUserRoles } from '@/lib
 import { userAuthDeleteFailedResponse } from '@/lib/admin/userDeleteResponse';
 import { buildDeletedEmail, isDeletedEmailMarker, parseDeletedEmail } from '../_deletedEmail';
 import { disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
+import { assertNoAgreementOperationForAccountChange } from '@/lib/gdpr/accountLifecycle';
+import { EnrollmentAgreementError } from '@/lib/enrollmentAgreements/errors';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -53,12 +55,17 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
         );
       }
   
-      await withTenantScope(orgId, (db) =>
-        db.user.updateMany({
-          where: { id },
-          data: { deletedAt: now, email: newEmail },
-        }),
-      );
+      // This is reversible suspension, not GDPR erasure: retain PDFs and
+      // agreement history for the existing retention window. Serialize with
+      // document operations without claiming or clearing an erasure fence.
+      const changed = await prisma.$transaction(async (tx) => {
+        await assertNoAgreementOperationForAccountChange(id, tx, orgId);
+        return withTenantScope(orgId, (db) => db.user.updateMany({
+          where: { id, organizationId: orgId, email: target.email, deletedAt: target.deletedAt },
+          data: { deletedAt: target.deletedAt ?? now, email: newEmail },
+        }), tx);
+      });
+      if (changed.count !== 1) return NextResponse.json({ error: 'Account changed. Reload before trying again.' }, { status: 409 });
   
       // Soft delete = lock the login, never destroy it: restore must be able
       // to bring the account back (9/2/26 ops report).
@@ -78,6 +85,7 @@ import { logAuditEvent } from '@/lib/audit/log';async function _DELETE(
       logAuditEvent({ user: { id: actor.id, role: 'admin' }, verb: 'deleted', object: { type: 'User', id }, result: { success: true } }).catch(() => {});
       return NextResponse.json({ ok: true });
     } catch (err) {
+      if (err instanceof EnrollmentAgreementError) return NextResponse.json({ error: err.message, code: err.code }, { status: err.status });
       console.error('[admin/users/:id DELETE]', err);
       return NextResponse.json({ error: 'Failed to delete user.' }, { status: 500 });
     }

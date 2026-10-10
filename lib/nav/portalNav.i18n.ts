@@ -53,6 +53,7 @@ export const MEMBER_PORTAL_NAV_ITEMS_I18N: PortalNavItem[] = [
   { href: '/dashboard/readiness', label: 'nav:myProgress', group: 'insights', tab: 'jobs', Icon: CheckCircle },
   { href: '/dashboard/ai-tools', label: 'nav:careerToolkit', group: 'primary', tab: 'me', Icon: Sparkles, tourTarget: 'tour-ai-tools' },
   { href: '/dashboard/certifications', label: 'nav:certifications', group: 'manage', tab: 'program', Icon: Award, aliases: ['/certifications'] },
+  { href: '/dashboard/documents', label: 'nav:myDocuments', group: 'manage', tab: 'program', Icon: FileText },
   { href: '/dashboard/career-brief', label: 'nav:careerPlan', group: 'insights', tab: 'program', Icon: ClipboardList },
   ...(WIOA_AVAILABLE
     ? [

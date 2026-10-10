@@ -120,7 +120,7 @@ describe('POST /api/gdpr/delete', () => {
     );
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ ok: true });
+    expect(await res.json()).toMatchObject({ ok: true, message: expect.stringContaining('enrollment agreements and their review evidence are retained') });
 
     expect(anonymizeMember).toHaveBeenCalledTimes(1);
     expect(anonymizeMember).toHaveBeenCalledWith('user-123', { reason: 'gdpr_account_delete' }, prisma);
@@ -192,6 +192,22 @@ describe('POST /api/gdpr/delete', () => {
     expect(anonymizeMember).not.toHaveBeenCalled();
     expect(prisma.$executeRaw).not.toHaveBeenCalled();
     expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+  });
+
+  it('discloses retained agreements when account anonymization succeeds but Auth deletion fails', async () => {
+    vi.mocked(deleteSupabaseAuthUser).mockResolvedValueOnce({ error: new Error('synthetic auth failure') } as never);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const response = await POST(new Request('http://localhost:3000/api/gdpr/delete', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ password: 'correct-password' }),
+      }));
+      expect(response.status).toBe(500);
+      expect((await response.json()).error).toContain('enrollment agreements and their review evidence are retained');
+      expect(anonymizeMember).toHaveBeenCalledOnce();
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it('does not delete the login when the anonymiser fails', async () => {

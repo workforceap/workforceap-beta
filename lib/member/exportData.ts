@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { exportEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 
 /**
  * Builds a comprehensive GDPR-compliant data export for a member.
@@ -62,6 +63,7 @@ export async function buildMemberExport(userId: string) {
     applicationsAiFeedback,
     portalWorkflowEvents,
     emailSendLogs,
+    enrollmentAgreements,
   ] = await Promise.all([
     prisma.application.findMany({ where: { userId } }),
     prisma.jobApplication.findMany({ where: { userId } }),
@@ -121,6 +123,7 @@ export async function buildMemberExport(userId: string) {
     prisma.applicationAiFeedback.findMany({ where: { userId } }),
     prisma.portalWorkflowEvent.findMany({ where: { actorUserId: userId } }),
     prisma.emailSendLog.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
+    exportEnrollmentAgreementData(userId, prisma),
   ]);
 
   const exportData = {
@@ -402,6 +405,7 @@ export async function buildMemberExport(userId: string) {
       earnedAt: uc.earnedAt?.toISOString() ?? null,
       createdAt: uc.createdAt?.toISOString() ?? null,
     })),
+    enrollmentAgreements,
     aiToolResults: aiToolResults.map((aitr) => ({
       id: aitr.id,
       toolType: aitr.toolType,

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // WAP-169: one anonymiser for every deletion path. These cases pin what it
 // writes and, above all, what it never writes (the original address).
@@ -30,6 +30,9 @@ function fakeDb(user: { email: string; deletedAt: Date | null } | null) {
       update: vi.fn(async (_args: Call) => ({})),
     },
     profile: { updateMany: vi.fn(async (_args: Call) => ({ count: 1 })) },
+    $queryRaw: vi.fn(async (sql: TemplateStringsArray): Promise<Array<{ present: boolean } | { id: string }>> =>
+      sql.join('?').includes('FOR UPDATE') ? [{ id: USER_ID }] : [{ present: false }]),
+    enrollmentAgreementSubmission: { updateMany: vi.fn(async () => ({ count: 2 })) },
     auditLog: { create: vi.fn(async (_args: Call) => ({})) },
   };
   const $transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx));
@@ -37,7 +40,12 @@ function fakeDb(user: { email: string; deletedAt: Date | null } | null) {
 }
 
 describe('anonymizeMember', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv('VERCEL_ENV', '');
+    vi.stubEnv('PRISMA_FLATTEN_TX', '0');
+  });
+  afterEach(() => vi.unstubAllEnvs());
 
   it('scrubs the user row, nulls every profile PII column, and soft-deletes in one transaction', async () => {
     const { tx, $transaction, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
@@ -65,6 +73,25 @@ describe('anonymizeMember', () => {
     expect(parseDeletedEmail(String(userWrite.data.email))).toBe(ORIGINAL_EMAIL);
 
     expect(tx.profile.updateMany).toHaveBeenCalledWith({ where: { userId: USER_ID }, data: ANONYMIZED_PROFILE_DATA });
+    expect(tx.enrollmentAgreementSubmission.updateMany).not.toHaveBeenCalled();
+  });
+
+  it.each(['member_self_delete', 'gdpr_account_delete'] as const)('retains every agreement revision during %s', async (reason) => {
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
+    tx.$queryRaw.mockResolvedValue([{ present: true }]);
+    await anonymizeMember(USER_ID, { reason, now: NOW }, db);
+    expect(tx.enrollmentAgreementSubmission.updateMany).toHaveBeenCalledWith({ where: { memberId: USER_ID }, data: { memberId: null } });
+    expect(tx.enrollmentAgreementSubmission.updateMany.mock.invocationCallOrder[0])
+      .toBeLessThan(tx.auditLog.create.mock.invocationCallOrder[0]);
+  });
+
+  it('propagates agreement retention failure without writing a success audit', async () => {
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
+    tx.$queryRaw.mockResolvedValue([{ present: true }]);
+    tx.enrollmentAgreementSubmission.updateMany.mockRejectedValue(new Error('agreement cleanup failed'));
+    await expect(anonymizeMember(USER_ID, { reason: 'member_self_delete', now: NOW }, db))
+      .rejects.toThrow('agreement cleanup failed');
+    expect(tx.auditLog.create).not.toHaveBeenCalled();
   });
 
   it('clears every special-category and identifying profile column the policy names', () => {
@@ -129,6 +156,24 @@ describe('anonymizeMember', () => {
     expect(tx.user.update).not.toHaveBeenCalled();
     expect(tx.profile.updateMany).not.toHaveBeenCalled();
     expect(tx.auditLog.create).not.toHaveBeenCalled();
+  });
+  it('does not anonymize an account restored before the retention fallback acquires its lock', async () => {
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: null });
+    tx.$queryRaw.mockResolvedValueOnce([]);
+    expect(await anonymizeMember(USER_ID, { reason: 'retention_purge_blocked', deletedBefore: NOW }, db)).toBeNull();
+    expect(tx.user.findUnique).not.toHaveBeenCalled();
+    expect(tx.user.update).not.toHaveBeenCalled();
+    expect(tx.profile.updateMany).not.toHaveBeenCalled();
+    expect(tx.enrollmentAgreementSubmission.updateMany).not.toHaveBeenCalled();
+    expect(tx.auditLog.create).not.toHaveBeenCalled();
+  });
+  it('refuses retention fallback when a row lock cannot span the anonymization writes', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    const { tx, db } = fakeDb({ email: ORIGINAL_EMAIL, deletedAt: NOW });
+    await expect(anonymizeMember(USER_ID, { reason: 'retention_purge_blocked', deletedBefore: NOW }, db))
+      .rejects.toThrow('interactive transaction');
+    expect(tx.$queryRaw).not.toHaveBeenCalled();
+    expect(tx.user.update).not.toHaveBeenCalled();
   });
 
   it('propagates a failed audit write so the caller cannot report a deletion that did not commit', async () => {

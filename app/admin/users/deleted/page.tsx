@@ -12,7 +12,7 @@ import DeletedUsersClient, {
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
   title: 'Deleted users',
-  description: 'Soft-deleted user records — free their email to allow re-signup, or restore.',
+  description: 'Review deleted accounts, release email addresses, and request eligible restoration.',
   path: '/admin/users/deleted',
 });
 }
@@ -26,10 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
  * From here, an admin can:
  *   - "Free email" — rewrite the row's email to a sentinel form so
  *     the original address is reusable for new signups
- *   - "Restore" — clear deletedAt + restore the original email (if
- *     it was rewritten). NOTE: doesn't recreate Supabase auth, which
- *     is hard-deleted on delete — a restored member needs a fresh
- *     invite to sign in
+ *   - "Restore" — request sign-in and app-row restoration only when account
+ *     safeguards allow it. Retained document/erasure/restore fences block it;
+ *     erased files and anonymized data are not recovered. Auth may be unbanned
+ *     or re-created by the route, with password-reset guidance when needed.
  *   - "Free all emails" — batch-rewrite every soft-deleted row whose
  *     email still occupies the unique slot
  */
@@ -83,7 +83,7 @@ export default async function AdminDeletedUsersPage() {
         subtitle={
           isListTruncated(data.length, ADMIN_SSR_LIST_CAP, total)
             ? showingFirstLabel(data.length, total, 'deleted users')
-            : 'Soft-deleted user records. Free their email to release the unique constraint so the address can be reused for a new signup, or restore the row to bring the user back.'
+            : 'Review deleted records and release email addresses. Restoration depends on account safeguards and cannot recover erased data.'
         }
         breadcrumbs={[
           { label: 'Admin', href: '/admin' },

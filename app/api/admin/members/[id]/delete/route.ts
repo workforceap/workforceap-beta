@@ -14,6 +14,7 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
+import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -71,11 +72,12 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ error: 'The original email cannot be recovered from this deleted account. Contact support.' }, { status: 409 });
     }
     const newEmail = existing.deletedAt ? existing.email : buildDeletedEmail(id, now.getTime(), existing.email);
-    if (!newEmail) return NextResponse.json({ error: 'This email is too long to preserve safely for restore.' }, { status: 400 });
+    if (!newEmail) return NextResponse.json({ error: 'This email is too long to preserve the original address safely.' }, { status: 400 });
 
-    // Soft-delete still removes member-resumes / member-files objects so PII
-    // does not linger while the row is recoverable. Restore will not bring
-    // those blobs back. Fail closed before rewriting the row so a storage
+    // Soft-delete removes ordinary resumes, certificate proofs and photos,
+    // but retains enrollment agreements under the owner's policy. Erased
+    // blobs cannot be restored; an installed agreement erasure fence also
+    // blocks standard account restore. Fail closed before rewriting so a storage
     // error cannot leave a "deleted" member with leftover files.
     const extraPaths = [
       existing.profile?.resumeOriginalPath
@@ -95,6 +97,10 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
     }
 
+    // Preserve agreement evidence while removing its live-account link.
+    // The retained user row is not a promise that erased files are recoverable.
+    await withTenantScope(orgId, (db) => retainEnrollmentAgreementData(id, db));
+
     // If the row is already soft-deleted, leave its email rewrite alone —
     // don't double-rewrite (would build up nested "deleted_deleted_..."
     // prefixes if an admin clicks delete twice).
@@ -109,7 +115,8 @@ export const POST = withApiGuc(async (
     );
 
     // Soft delete = lock the login, never destroy it (see
-    // lib/admin/authUserLifecycle.ts): restore can lift the ban later.
+    // lib/admin/authUserLifecycle.ts). Keeping the Auth identity does not
+    // override an erasure fence or make erased member data recoverable.
     const disabled = await disableAuthUserForSoftDelete(getSupabaseAdmin(), id, originalEmail);
     if (!disabled.ok) {
       console.error('[admin/members/[id]/delete] Supabase auth disable error:', disabled.message);

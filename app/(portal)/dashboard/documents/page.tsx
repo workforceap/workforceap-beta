@@ -5,6 +5,7 @@ import { getUser } from '@/lib/auth/server';
 import { listPacketsForMember } from '@/lib/billing/packetAccess';
 import PageHeader from '@/components/portal/PageHeader';
 import BillingPacketList from '@/components/billing/BillingPacketList';
+import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -31,6 +32,7 @@ export default async function DashboardDocumentsPage() {
         subtitle="Signed training invoices and cover letters for your program. There is no cost to you; these are billed to your funding partner."
       />
       <div style={{ maxWidth: 800, display: 'grid', gap: '1rem' }}>
+        {process.env.ENROLLMENT_AGREEMENTS_ENABLED === 'true' && <EnrollmentAgreementCard />}
         <BillingPacketList
           packets={packets}
           emptyText="No documents yet. When your training invoice is signed, it appears here and is also emailed to you."

@@ -17,6 +17,8 @@ tmp-smoke/
 .claude/
 .venv-fonttools/
 coverage/
+!app/api/enrollment-agreements/coverage/
+!app/api/enrollment-agreements/coverage/route.ts
 
 # Vercel CLI link metadata — contains projectId/orgId. Per Vercel's own
 # README.txt: "you should not share the '.vercel' folder with anyone."

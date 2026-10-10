@@ -10,6 +10,7 @@ vi.mock('@/lib/db/prisma', () => {
     {},
     {
       get(_target, model: string) {
+        if (model === '$queryRaw') return vi.fn(async () => [{ present: false }]);
         if (!delegates.has(model)) {
           delegates.set(model, {
             findMany: vi.fn(async () => []),

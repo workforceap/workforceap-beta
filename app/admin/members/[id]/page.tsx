@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { Prisma } from '@prisma/client';
@@ -1182,6 +1183,7 @@ export default async function AdminMemberDetailPage({
             </section>
 
             <AdminMemberSkillCheckpointPanel memberId={member.id} summary={skillMissionSummary} />
+            {process.env.ENROLLMENT_AGREEMENTS_ENABLED === 'true' && <EnrollmentAgreementCard memberId={member.id} />}
 
             <section className="wa-kit-card" aria-labelledby="admin-member-funding-title">
               <h2 id="admin-member-funding-title" className={styles.sectionTitle}>Enrollment funding &amp; workspace</h2>

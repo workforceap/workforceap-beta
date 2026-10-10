@@ -30,6 +30,7 @@ This overview shows selected declared relationships. Use the [complete Mermaid r
 
 | Concept | Actual source or records | What to check before changing it |
 | --- | --- | --- |
+| Enrollment agreement vs signed billing | `EnrollmentAgreementSubmission`, `EnrollmentAgreementOperationLock`; [agreement runbook](../ENROLLMENT-AGREEMENTS.md) | Private per-member PDF revisions and staff review, not J5/J6 signatures, funding approval or training activation. Upload/erasure share a persistent fence. Do not extract sensitive agreement fields into AI or the KB. |
 | Identity vs application user | Supabase Auth identity; Prisma `User`, `Profile`, `Role`, `UserRole` | A provider identity and domain rows can be temporarily inconsistent. Follow provisioning/recovery and soft-deletion checks in [auth](../../lib/auth/server.ts) and [ensureAppUser](../../lib/member/ensureAppUser.ts). |
 | Organization vs partner/employer | `Organization` is the tenant; `Partner` and `Employer` belong to it | A partner/employer identifier is not a substitute for verified actor organization. |
 | Subgroup leader vs member detail | `SubgroupLeader`, `MemberSubgroup`; [subgroup member API](../../app/api/subgroup/members/route.ts) | Assigned leaders receive program progress and a limited placement summary. The member API does not return phone or salary; the dashboard reads only placement existence for its count. |

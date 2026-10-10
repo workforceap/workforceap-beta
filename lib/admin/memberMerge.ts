@@ -1,6 +1,7 @@
 import { Prisma, type CourseProgressStatus, type User } from '@prisma/client';
 
 import { getLevelForPoints } from '@/lib/member/pointsConfig';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
 import {
   MEMBER_MERGE_PREVIEW_ONLY,
   MEMBER_MERGE_REPOINT_PLAN,
@@ -429,6 +430,71 @@ export async function assertNoCourseraOwnershipForMemberMerge(
 }
 
 /**
+ * Agreement revisions are not transferable by the generic merge planner. The
+ * executor calls this only after locking both users above. Upload/erasure fence
+ * acquisition locks the same user row before inserting a fence, so this separate
+ * READ COMMITTED statement observes any operation that won the lock first and
+ * prevents a new one until the merge commits. Preview checks are advisory only.
+ */
+async function enrollmentAgreementMergeConflict(
+  tx: TxClient,
+  primaryId: string,
+  secondaryId: string,
+): Promise<MergeConflict | null> {
+  const schema = await tx.$queryRaw<Array<{
+    submissions: boolean;
+    locks: boolean;
+    isolation: string;
+  }>>(Prisma.sql`
+    SELECT
+      to_regclass('public.enrollment_agreement_submissions') IS NOT NULL AS submissions,
+      to_regclass('public.enrollment_agreement_operation_locks') IS NOT NULL AS locks,
+      current_setting('transaction_isolation') AS isolation
+  `);
+  if (
+    schema.length !== 1
+    || typeof schema[0].submissions !== 'boolean'
+    || typeof schema[0].locks !== 'boolean'
+  ) {
+    throw new Error('Member merge unavailable: enrollment document safeguards could not be checked. Contact support.');
+  }
+  if (!schema[0].submissions && !schema[0].locks) return null;
+  if (!schema[0].submissions || !schema[0].locks) {
+    throw new Error('Member merge unavailable: enrollment document safeguards are not fully installed. Contact support.');
+  }
+
+  const ownership = await tx.$queryRaw<Array<{ memberId: string }>>(Prisma.sql`
+    SELECT subject_member_id AS "memberId" FROM enrollment_agreement_submissions
+    WHERE subject_member_id IN (${Prisma.join([primaryId, secondaryId])})
+    UNION
+    SELECT member_id AS "memberId" FROM enrollment_agreement_operation_locks
+    WHERE member_id IN (${Prisma.join([primaryId, secondaryId])})
+  `);
+  if (ownership.length > 0) {
+    return {
+      field: 'enrollmentAgreement',
+      primaryValue: ownership.some((row) => row.memberId === primaryId),
+      secondaryValue: ownership.some((row) => row.memberId === secondaryId),
+      message:
+        'Cannot merge: one or both students have enrollment agreement records or a document operation in progress. ' +
+        'Contact support to reconcile the operation and map the agreement records before merging. ' +
+        'Signed documents will not be transferred automatically.',
+    };
+  }
+  if (!interactiveTransactionsGuaranteed() || schema[0].isolation !== 'read committed') {
+    return {
+      field: 'enrollmentAgreementTransaction',
+      primaryValue: null,
+      secondaryValue: null,
+      message:
+        'Cannot merge safely in this environment: enrollment document protection requires an interactive READ COMMITTED transaction. ' +
+        'Contact support; no student records have been changed.',
+    };
+  }
+  return null;
+}
+
+/**
  * Check for unresolvable conflicts before merging.
  * Returns empty array if safe to proceed.
  */
@@ -445,6 +511,11 @@ export async function checkMergeConflicts(
   ]);
 
   if (!primary || !secondary) return conflicts;
+
+  // Check every revision and operation fence, even when the feature UI is off.
+  // Missing both rollout tables is the only backwards-compatible no-op.
+  const agreementConflict = await enrollmentAgreementMergeConflict(tx, primaryId, secondaryId);
+  if (agreementConflict) conflicts.push(agreementConflict);
 
   // Critical scalar conflicts
   if (primary.enrolledProgram && secondary.enrolledProgram && primary.enrolledProgram !== secondary.enrolledProgram) {

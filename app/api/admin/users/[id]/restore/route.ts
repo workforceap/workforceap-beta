@@ -11,6 +11,8 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { isDeletedEmailMarker, parseDeletedEmail } from '../../_deletedEmail';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { reenableAuthUserAfterRestore } from '@/lib/admin/authUserLifecycle';
+import { assertNoAgreementOperationForAccountChange, assertAgreementAccountRestoreOwned, claimAgreementAccountRestore, releaseAgreementAccountRestore } from '@/lib/gdpr/accountLifecycle';
+import { EnrollmentAgreementError } from '@/lib/enrollmentAgreements/errors';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 export const POST = withApiGuc(async (
@@ -52,6 +54,9 @@ export const POST = withApiGuc(async (
     if (!target.deletedAt) {
       return NextResponse.json({ error: 'User is not soft-deleted; nothing to restore.' }, { status: 400 });
     }
+    // A retained erasure/upload fence is not recoverable by simply unbanning
+    // Auth. Check before any provider write, then repeat under the account lock.
+    await assertNoAgreementOperationForAccountChange(id);
   
     // If the email was rewritten, try to restore the original.
     let restoredEmail: string | null = null;
@@ -86,7 +91,12 @@ export const POST = withApiGuc(async (
     // Bring the login back too. Soft delete bans the auth user (or, before
     // 9/2/26, hard-deleted it); either way the member cannot sign in until
     // this succeeds, so a failure here is reported, not swallowed.
+    // Validate local client configuration before creating a persistent fence.
+    // Auth network operations still happen only after the claim below.
     const supabaseAdmin = getSupabaseAdmin();
+    // A persistent fence spans Auth and the final app transaction. Purge cannot
+    // remove the deleted row while Auth is being unbanned or its result is unknown.
+    const restoreToken = await claimAgreementAccountRestore(id, orgId);
     let authRestore: string;
     try {
       const result = await reenableAuthUserAfterRestore(supabaseAdmin, {
@@ -100,8 +110,10 @@ export const POST = withApiGuc(async (
         return NextResponse.json(
           {
             ok: false,
-            authRestored: false,
-            error: 'Sign-in could not be restored. The account remains deleted; retry restore or contact support.',
+            authRestored: restoreToken ? null : false,
+            accountRestored: false,
+            reconciliationRequired: restoreToken !== null,
+            error: restoreToken ? 'Sign-in restore could not be confirmed. The account remains deleted with its safeguard retained; contact support to reconcile it.' : 'Sign-in could not be restored. The account remains deleted; retry restore or contact support.',
           },
           { status: 502 },
         );
@@ -112,8 +124,10 @@ export const POST = withApiGuc(async (
       return NextResponse.json(
         {
           ok: false,
-          authRestored: false,
-          error: 'Sign-in could not be restored. The account remains deleted; retry restore or contact support.',
+          authRestored: restoreToken ? null : false,
+          accountRestored: false,
+          reconciliationRequired: restoreToken !== null,
+          error: restoreToken ? 'Sign-in restore could not be confirmed. The account remains deleted with its safeguard retained; contact support to reconcile it.' : 'Sign-in could not be restored. The account remains deleted; retry restore or contact support.',
         },
         { status: 502 },
       );
@@ -122,14 +136,25 @@ export const POST = withApiGuc(async (
     // Only publish the active app row once the exact Auth identity is restored.
     // Preserve the deleted state on provider failure so the action can be retried.
     try {
-      const changed = await withTenantScope(orgId, (db) =>
-        db.user.updateMany({
-          where: { id, email: target.email, deletedAt: target.deletedAt },
+      const changed = await prisma.$transaction(async (tx) => {
+        if (restoreToken) await assertAgreementAccountRestoreOwned(id, orgId, restoreToken, tx);
+        else await assertNoAgreementOperationForAccountChange(id, tx, orgId);
+        const updated = await withTenantScope(orgId, (db) => db.user.updateMany({
+          where: { id, organizationId: orgId, email: target.email, deletedAt: target.deletedAt },
           data: { deletedAt: null, email: emailToWrite },
-        }),
-      );
+        }), tx);
+        if (updated.count !== 1) throw new Error('Restore target changed during request');
+        if (restoreToken) await releaseAgreementAccountRestore(id, orgId, restoreToken, tx);
+        return updated;
+      });
       if (changed.count !== 1) throw new Error('Restore target changed during request');
     } catch (err) {
+      if (err instanceof EnrollmentAgreementError) {
+        return NextResponse.json({
+          ok: false, authRestored: true, accountRestored: false, reconciliationRequired: true,
+          error: err.message, code: err.code,
+        }, { status: err.status });
+      }
       // A concurrent restore may have won the conditional write. Never re-ban
       // that successfully activated identity as compensation for this request.
       const current = await withTenantScope(orgId, (db) =>
@@ -176,6 +201,9 @@ export const POST = withApiGuc(async (
           : 'Account restored. Sign in, or use password reset to set a password.',
     });
   } catch (error) {
+    if (error instanceof EnrollmentAgreementError) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    }
     console.error('/admin/users/[id]/restore:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

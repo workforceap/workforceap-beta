@@ -225,9 +225,10 @@ export const STRANDING_NOT_SURFACED: Record<string, string> = {
  * subset of the schema would leave the direction that actually matters
  * unchecked.
  *
- * Two groups. The first records **who acted** — repointing those would rewrite
+ * Three groups. The first records **who acted** — repointing those would rewrite
  * history, saying the surviving member approved something the duplicate
- * account approved. The second is member-owned data that arguably SHOULD move
+ * account approved. The second explicitly blocks merging sensitive evidence.
+ * The third is member-owned data that arguably SHOULD move
  * and does not; each is a real gap, not a decision, and they are called out in
  * the PR rather than quietly accepted.
  */
@@ -239,10 +240,16 @@ export const USER_FK_NOT_REPOINTED: Record<string, string> = {
   'employer.approvedById': 'the staff member who approved an employer',
   'job.approvedById': 'the staff member who approved a job posting',
   'trainingBillingPacket.signedById': 'who signed the billing packet',
+  'enrollmentAgreementSubmission.uploadedByUserId': 'who uploaded the original agreement revision; immutable provenance must not be reassigned',
+  'enrollmentAgreementSubmission.reviewedByUserId': 'who reviewed the agreement; moving this would falsify the signature-review audit trail',
   'courseraCanonicalCourseMapping.createdById': 'who created a catalog mapping',
   'advisorSessionNote.authorId': 'who wrote the note; the member side is advisorSessionNote.memberId',
   'chapter.leaderId': 'who leads a chapter — a staff role, not member data',
   'billingDesignatedSigner.userId': 'the designated billing signer principal (a staff identity set by an ops-reviewed change, not member data)',
+
+  // --- deliberately blocked: executeMemberMerge checks both accounts before writes ---
+  'enrollmentAgreementSubmission.memberId': 'nullable live link only; immutable subject/actor IDs are not User FKs; enrollmentAgreementMergeConflict refuses either historical subject having revisions',
+  'enrollmentAgreementOperationLock.memberId': 'upload/erasure fences cannot be transferred; enrollmentAgreementMergeConflict refuses either account having a fence',
 
   // --- member-owned and NOT moved today: gaps, listed so they are visible ---
   'referralCode.userId':

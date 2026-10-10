@@ -1,27 +1,32 @@
 // @vitest-environment node
 // Real orchestration and marker parsing; all Auth/DB boundaries are synthetic.
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextRequest } from 'next/server';
 
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(), isAdmin: vi.fn(), isSuperAdmin: vi.fn(),
   target: vi.fn(), collision: vi.fn(), updateMany: vi.fn(), findMany: vi.fn(),
   restoreAuth: vi.fn(), disableAuth: vi.fn(), audit: vi.fn(), event: vi.fn(),
-  org: vi.fn(),
+  org: vi.fn(), query: vi.fn(), execute: vi.fn(), scopedClient: vi.fn(), getAdmin: vi.fn(),
 }));
-const db = vi.hoisted(() => ({ user: { findFirst: mocks.target, updateMany: mocks.updateMany, findMany: mocks.findMany } }));
+const db = vi.hoisted(() => ({ $queryRaw: mocks.query, $executeRaw: mocks.execute, user: { findFirst: mocks.target, updateMany: mocks.updateMany, findMany: mocks.findMany } }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
 vi.mock('@/lib/auth/roles', () => ({ isAdmin: mocks.isAdmin, isSuperAdmin: mocks.isSuperAdmin }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: unknown) => handler }));
 vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: mocks.org }));
 vi.mock('@/lib/tenant/withTenantScope', () => ({
-  withTenantScope: async (org: string, fn: (client: typeof db) => Promise<unknown>) => {
+  withTenantScope: async (org: string, fn: (client: typeof db) => Promise<unknown>, client?: typeof db) => {
     expect(org).toBe('org-1');
-    return fn(db);
+    if (client) mocks.scopedClient(client);
+    return fn(client ?? db);
   },
   crossTenantOK: (fn: () => Promise<unknown>) => fn(),
 }));
-vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findFirst: mocks.collision } } }));
-vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: () => ({ syntheticProvider: true }) }));
+vi.mock('@/lib/db/prisma', () => ({ prisma: {
+  $queryRaw: mocks.query, $transaction: (fn: (client: typeof db) => Promise<unknown>) => fn(db),
+  user: { findFirst: mocks.collision },
+} }));
+vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: mocks.getAdmin }));
 vi.mock('@/lib/admin/authUserLifecycle', () => ({
   reenableAuthUserAfterRestore: mocks.restoreAuth,
   disableAuthUserForSoftDelete: mocks.disableAuth,
@@ -29,11 +34,14 @@ vi.mock('@/lib/admin/authUserLifecycle', () => ({
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.event, auditRequestMeta: () => ({}) }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
+vi.mock('@/lib/admin/adminUserProvisioning', () => ({ ADMIN_USER_ROLES: [], ensureProfileRole: vi.fn(), syncManagedUserRoles: vi.fn() }));
 
 import { POST as restore } from '@/app/api/admin/users/[id]/restore/route';
 import { POST as freeEmail } from '@/app/api/admin/users/[id]/free-email/route';
 import { POST as freeBatch } from '@/app/api/admin/users/free-deleted-emails/route';
+import { DELETE as suspend } from '@/app/api/admin/users/[id]/route';
 import { buildDeletedEmail } from '@/app/api/admin/users/_deletedEmail';
+import * as accountLifecycle from '@/lib/gdpr/accountLifecycle';
 
 const ID = '20000000-0000-4000-8000-000000000001';
 const ACTOR = '10000000-0000-4000-8000-000000000001';
@@ -42,7 +50,7 @@ const marker = buildDeletedEmail(ID, deletedAt.getTime(), 'Member@Example.com')!
 function deletedRow() {
   return { id: ID, email: marker, deletedAt, fullName: 'Synthetic Member', phone: null, profile: { role: 'member' }, userRoles: [] };
 }
-const req = () => new Request('http://localhost/api/admin/users/fixture', { method: 'POST' });
+const req = () => new NextRequest('http://localhost/api/admin/users/fixture', { method: 'POST' });
 const ctx = (id = ID) => ({ params: Promise.resolve({ id }) });
 type PrivilegedTargetCase = {
   name: string;
@@ -62,6 +70,11 @@ const privilegedTargets = [
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.stubEnv('VERCEL_ENV', '');
+  vi.stubEnv('PRISMA_FLATTEN_TX', '0');
+  mocks.query.mockResolvedValue([{ submissions: false, locks: false, isolation: 'read committed' }]);
+  mocks.execute.mockResolvedValue(1);
+  mocks.getAdmin.mockReturnValue({ syntheticProvider: true });
   mocks.getUser.mockResolvedValue({ id: ACTOR });
   mocks.isAdmin.mockResolvedValue(true);
   mocks.isSuperAdmin.mockResolvedValue(false);
@@ -75,6 +88,7 @@ beforeEach(() => {
   mocks.audit.mockResolvedValue(undefined);
   mocks.event.mockResolvedValue(undefined);
 });
+afterEach(() => vi.unstubAllEnvs());
 
 describe('administrator account restore', () => {
   it.each([false, null])('rejects unauthorized access before reading an account: %s', async (admin) => {
@@ -137,7 +151,7 @@ describe('administrator account restore', () => {
       id: ID, email: 'member@example.com', fullName: 'Synthetic Member', phone: null,
     });
     expect(mocks.updateMany).toHaveBeenCalledExactlyOnceWith({
-      where: { id: ID, email: marker, deletedAt }, data: { deletedAt: null, email: 'member@example.com' },
+      where: { id: ID, organizationId: 'org-1', email: marker, deletedAt }, data: { deletedAt: null, email: 'member@example.com' },
     });
     expect(mocks.restoreAuth.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
     expect(mocks.disableAuth).not.toHaveBeenCalled();
@@ -218,6 +232,125 @@ describe('administrator account restore', () => {
     expect(response.status).toBe(409);
     expect(mocks.restoreAuth).not.toHaveBeenCalled();
     expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('document safeguards across reversible account changes', () => {
+  const installed = { submissions: true, locks: true, isolation: 'read committed' };
+  function restoreQueries(owned = true) {
+    mocks.query.mockImplementation(async (sql: TemplateStringsArray, ...values: unknown[]) => {
+      const query = sql.join('?');
+      if (query.includes('to_regclass')) return [installed];
+      if (query.includes('WITH member_lock')) return [{ token: values[3] }];
+      if (query.includes('FOR UPDATE')) return [{ id: ID }];
+      return [{ present: query.includes("state = 'account_restore'") ? owned : false }];
+    });
+  }
+  it('preserves restore before migration even where transactions are flattened', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    expect((await restore(req(), ctx())).status).toBe(200);
+    expect(mocks.updateMany).toHaveBeenCalledOnce();
+  });
+  it('allows a guarded restore when no document operation exists', async () => {
+    restoreQueries();
+    expect((await restore(req(), ctx())).status).toBe(200);
+    expect(mocks.updateMany).toHaveBeenCalledOnce();
+    expect(mocks.scopedClient).toHaveBeenCalledExactlyOnceWith(db);
+    expect(mocks.query.mock.invocationCallOrder[3]).toBeLessThan(mocks.restoreAuth.mock.invocationCallOrder[0]);
+    expect(mocks.query.mock.invocationCallOrder[6]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
+    expect(mocks.updateMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.execute.mock.invocationCallOrder[0]);
+    expect(mocks.execute.mock.calls[0].slice(1)).toEqual([ID, 'org-1', mocks.query.mock.calls[3][4]]);
+  });
+  it('checks local provider configuration before claiming a persistent restore fence', async () => {
+    restoreQueries();
+    const claim = vi.spyOn(accountLifecycle, 'claimAgreementAccountRestore');
+    mocks.getAdmin.mockImplementationOnce(() => { throw new Error('Synthetic missing provider configuration'); });
+    try {
+      const response = await restore(req(), ctx());
+      expect(response.status).toBe(500);
+      expect(claim).not.toHaveBeenCalled();
+      expect(mocks.query.mock.calls.some(([sql]) => (sql as TemplateStringsArray).join('?').includes('WITH member_lock'))).toBe(false);
+      expect(mocks.restoreAuth).not.toHaveBeenCalled();
+      expect(mocks.updateMany).not.toHaveBeenCalled();
+      expect(mocks.execute).not.toHaveBeenCalled();
+    } finally {
+      claim.mockRestore();
+    }
+  });
+  it('rejects a retained fence before any Auth restore, regardless of feature flag', async () => {
+    vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'false');
+    mocks.query.mockResolvedValueOnce([installed]).mockResolvedValueOnce([{ present: true }]);
+    const response = await restore(req(), ctx());
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ code: 'ACCOUNT_DOCUMENT_OPERATION_PENDING' });
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+  it('requires exact restore-fence ownership after Auth and the tenant user lock', async () => {
+    restoreQueries(false);
+    const response = await restore(req(), ctx());
+    expect(response.status).toBe(409);
+    expect(mocks.restoreAuth).toHaveBeenCalledOnce();
+    expect(await response.json()).toMatchObject({ authRestored: true, accountRestored: false, reconciliationRequired: true });
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.query.mock.calls[5].slice(1)).toEqual([ID, 'org-1']);
+    expect(mocks.query.mock.invocationCallOrder[5]).toBeLessThan(mocks.query.mock.invocationCallOrder[6]);
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
+    expect(mocks.execute).not.toHaveBeenCalled();
+  });
+  it.each(['exception', 'failure'])('retains the restore fence when Auth reports %s', async (mode) => {
+    restoreQueries();
+    if (mode === 'exception') mocks.restoreAuth.mockRejectedValueOnce(new Error('provider connection lost'));
+    else mocks.restoreAuth.mockResolvedValueOnce({ ok: false, message: 'provider failure' });
+    const response = await restore(req(), ctx());
+    expect(response.status).toBe(502);
+    expect(await response.json()).toMatchObject({ authRestored: null, accountRestored: false, reconciliationRequired: true });
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.execute).not.toHaveBeenCalled();
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
+  });
+  it('retains its restore fence when final app activation is uncertain', async () => {
+    restoreQueries();
+    mocks.updateMany.mockRejectedValueOnce(new Error('database connection lost'));
+    expect((await restore(req(), ctx())).status).toBe(503);
+    expect(mocks.execute).not.toHaveBeenCalled();
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
+  });
+  it('refuses Auth when purge claimed the fence after the initial read', async () => {
+    mocks.query.mockResolvedValueOnce([installed]).mockResolvedValueOnce([{ present: false }])
+      .mockResolvedValueOnce([installed]).mockResolvedValueOnce([]);
+    expect((await restore(req(), ctx())).status).toBe(409);
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+  it.each([
+    { schema: { ...installed, locks: false }, flattened: false },
+    { schema: installed, flattened: true },
+    { schema: { ...installed, isolation: 'repeatable read' }, flattened: false },
+  ])('fails closed before Auth without complete interactive safeguards: %j', async ({ schema, flattened }) => {
+    if (flattened) vi.stubEnv('VERCEL_ENV', 'preview');
+    mocks.query.mockResolvedValue([schema]);
+    expect((await restore(req(), ctx())).status).toBe(503);
+    expect(mocks.restoreAuth).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+  it('blocks suspension while an upload or erasure fence exists', async () => {
+    mocks.isSuperAdmin.mockResolvedValue(true);
+    mocks.query.mockResolvedValueOnce([installed]).mockResolvedValueOnce([{ id: ID }]).mockResolvedValueOnce([{ present: true }]);
+    expect((await suspend(req(), ctx())).status).toBe(409);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.disableAuth).not.toHaveBeenCalled();
+  });
+  it('keeps ordinary suspension reversible and preserves its original retention date', async () => {
+    mocks.isSuperAdmin.mockResolvedValue(true);
+    mocks.query.mockResolvedValueOnce([installed]).mockResolvedValueOnce([{ id: ID }]).mockResolvedValueOnce([{ present: false }]);
+    expect((await suspend(req(), ctx())).status).toBe(200);
+    expect(mocks.scopedClient).toHaveBeenCalledExactlyOnceWith(db);
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: ID, organizationId: 'org-1', email: marker, deletedAt },
+      data: { deletedAt, email: marker },
+    });
+    expect(mocks.disableAuth).toHaveBeenCalledOnce();
   });
 });
 
