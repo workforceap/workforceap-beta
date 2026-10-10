@@ -25,19 +25,23 @@ import {
 } from '@/lib/email/resendWebhook';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { recordEmailDeliverySloEvent } from '@/lib/observability/sloObservations';
 import { checkWebhookRateLimit } from '@/lib/rate-limit';
 import { logWebhookEvent } from '@/lib/webhooks/logEvent';
 
 export const dynamic = 'force-dynamic';
 
 const prismaResendWebhookStore: ResendWebhookStore = {
-  async applyEvent({ providerMessageId, event, eventAt, bounceType }) {
+  async applyEvent({ providerMessageId, event, eventAt, eventAtTrusted, bounceType }) {
     const row = await prisma.emailSendLog.findUnique({
       where: { providerMessageId },
       select: { id: true, userId: true, lastEventAt: true, templateKey: true, entityType: true },
     });
     if (!row) return { matched: false, userId: null };
     const tags = { templateKey: row.templateKey, entityType: row.entityType };
+    // Record before the ordering guard: an older delivered event may arrive
+    // after opened/clicked and remains valid delivery evidence.
+    await recordEmailDeliverySloEvent({ sendLogId: row.id, event, eventAt: eventAtTrusted ? eventAt : null });
     // Svix retries and reorders; an older event must not overwrite a newer one.
     if (row.lastEventAt && row.lastEventAt.getTime() > eventAt.getTime()) {
       return { matched: true, userId: row.userId, ...tags };

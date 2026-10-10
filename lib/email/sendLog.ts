@@ -47,6 +47,8 @@ export interface EmailSendLogEntry {
   skipReason: string | null;
   failureReason: string | null;
   failureClass: string | null;
+  /** Start of the send invocation; stored as createdAt on the first log write. */
+  queuedAt: Date;
   sentAt: Date | null;
 }
 
@@ -117,6 +119,7 @@ export function buildEmailSendLogBase(args: EmailSendLogSubject, atMs: number): 
     skipReason: null,
     failureReason: null,
     failureClass: null,
+    queuedAt: new Date(atMs),
     sentAt: null,
   };
 }
@@ -235,6 +238,7 @@ export const prismaEmailSendLogStore: EmailSendLogStore = {
         failureReason: entry.failureReason,
         failureClass: entry.failureClass,
         sentAt: entry.sentAt,
+        createdAt: entry.queuedAt,
       },
       update: {
         status: entry.status,

@@ -26,6 +26,11 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { invalidateCache } from '@/lib/cache';
 import { withSystemGuc } from '@/lib/db/withRequestGuc';
 import { resolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
+import {
+  finishXapiSloObservation,
+  startXapiSloObservation,
+  XAPI_PERSISTENCE_DEADLINE_MS,
+} from '@/lib/observability/sloObservations';
 
 function tailFromObjectId(objectId: string | null | undefined): string | null {
   if (!objectId) return null;
@@ -91,6 +96,7 @@ function extractRawStatementActorFields(raw: Record<string, unknown>): {
 }
 
 export async function POST(request: Request) {
+  const receivedAtMs = Date.now();
   if (!getXapiReadiness({ request }).ready) {
     return NextResponse.json({ error: 'xAPI auth is not configured' }, { status: 503 });
   }
@@ -128,11 +134,17 @@ export async function POST(request: Request) {
     }
 
     const organizationId = await resolveOrgFromRequest(request.headers);
+    const observationId = await startXapiSloObservation({ organizationId, received: rawStatements.length, receivedAtMs });
+    let persistedWithin60s = 0;
+    const recordPersisted = () => {
+      if (Date.now() - receivedAtMs <= XAPI_PERSISTENCE_DEADLINE_MS) persistedWithin60s += 1;
+    };
   
     const completions: Array<Record<string, unknown>> = [];
     let statementsHandled = 0;
     const ingestErrors: Array<{ statementId?: string; message: string }> = [];
   
+    try {
     for (const raw of rawStatements) {
       const sidHint =
         typeof raw.id === 'string' ? raw.id : '(no statement id)';
@@ -158,6 +170,7 @@ export async function POST(request: Request) {
               courseItemId: null,
               itemType: null,
             });
+            recordPersisted();
           } catch (persistErr) {
             captureApiError(persistErr, {
               route: 'api/xapi/statements',
@@ -191,6 +204,7 @@ export async function POST(request: Request) {
           courseItemId: itemIdFromObjectId(parsed.courseObjectId),
           itemType: parsed.itemType ?? null,
         });
+        recordPersisted();
   
         // Duplicate statementId: skip only after prior side effects completed.
         if (persisted === 'already_processed') continue;
@@ -208,6 +222,9 @@ export async function POST(request: Request) {
           message: err instanceof Error ? err.message : 'statement pipeline failed',
         });
       }
+    }
+    } finally {
+      await finishXapiSloObservation({ id: observationId, received: rawStatements.length, receivedAtMs, persistedWithin60s });
     }
   
     trackXapiBatchProcessed({

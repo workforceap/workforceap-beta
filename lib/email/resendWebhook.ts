@@ -38,6 +38,8 @@ export interface ResendWebhookApplyInput {
   providerMessageId: string;
   event: ResendEmailEvent;
   eventAt: Date;
+  /** False when created_at is missing, invalid or in the future; unsuitable for timed SLOs. */
+  eventAtTrusted?: boolean;
   bounceType: string | null;
 }
 
@@ -108,6 +110,7 @@ export interface ParsedResendEvent {
   event: ResendEmailEvent | null;
   emailId: string | null;
   createdAt: Date;
+  createdAtTrusted: boolean;
   recipients: string[];
   bounceType: string | null;
   subject: string | null;
@@ -130,6 +133,7 @@ export function parseResendEvent(body: unknown, fallbackNowMs: number): ParsedRe
     event: event && KNOWN_EVENTS.has(event) ? (event as ResendEmailEvent) : null,
     emailId: typeof data.email_id === 'string' && data.email_id.trim() ? data.email_id.trim() : null,
     createdAt: Number.isFinite(createdAtRaw) ? new Date(createdAtRaw) : new Date(fallbackNowMs),
+    createdAtTrusted: Number.isFinite(createdAtRaw) && createdAtRaw >= 0 && createdAtRaw <= fallbackNowMs,
     recipients: to.map((address) => address.trim()).filter(Boolean),
     bounceType: bounce && typeof bounce.type === 'string' ? bounce.type : null,
     subject: typeof data.subject === 'string' ? data.subject : null,
@@ -201,6 +205,7 @@ export async function handleResendWebhook(input: HandleResendWebhookInput): Prom
     providerMessageId: parsed.emailId,
     event: parsed.event,
     eventAt: parsed.createdAt,
+    eventAtTrusted: parsed.createdAtTrusted,
     bounceType: parsed.bounceType,
   });
 

@@ -833,6 +833,8 @@ describe('sendBrandedEmail send log', () => {
     assert.ok(sent.recipientHash && !sent.recipientHash.includes('@'), 'no raw address on the row');
     assert.ok(sent.dedupeKey.startsWith('member_weekly_recap/'));
     assert.equal(sent.sentAt?.toISOString(), '2026-09-20T12:00:00.000Z');
+    assert.equal(sent.queuedAt.toISOString(), '2026-09-20T12:00:00.000Z');
+    assert.equal(entries[0].queuedAt.getTime(), sent.queuedAt.getTime(), 'provider retries preserve the send start');
   });
 
   it('derives the same dedupe key for the same message on the same UTC day and a different one the next day', () => {

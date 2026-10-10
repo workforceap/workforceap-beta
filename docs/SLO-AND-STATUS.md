@@ -1,7 +1,7 @@
 # SLOs and Status — WorkforceAP
 
 **Audience:** Procurement officers, IT directors, workforce-board diligence, and the on-call engineer at 2am.
-**Status:** Sprint D.1 foundation. Numbers are committed; instrumentation is partial.
+**Status:** Database-backed email and xAPI observations are implemented; external uptime, runtime isolation and provider latency coverage remain conditional.
 
 This document is the single answer to *"what's your uptime story, and how do we know you're meeting it?"*. It defines the platform's service-level objectives (SLOs), how each is measured, what happens when one breaches, and how we communicate status to the outside world.
 
@@ -30,9 +30,9 @@ SLOs are not aspirational. They are the floor below which we treat the service a
 | 1 | **Overall uptime** — process liveness: `/api/health` returns HTTP 200. **Dependency / org readiness** is `/api/health/ready` (503 if Prisma/org cannot be reached). Portal 504s can still happen while both are green — also alert on Vercel runtime timeouts. See `docs/HEALTH-PROBES.md`. | **99.9%** | rolling 30 days | Vercel + external uptime monitor (Better Uptime / UptimeRobot): liveness every 1 min; **ready** for 504-adjacent / DB-down pages |
 | 2 | **Dashboard latency** — server-side render time of `/dashboard` | **p95 < 500 ms** | rolling 7 days | Vercel Analytics + Sentry Performance (`pageload` and `navigation` transactions) |
 | 3 | **Outcomes admin latency** — server-side render time of `/admin/outcomes` | **p95 < 500 ms** | rolling 7 days | Vercel Analytics + Sentry Performance |
-| 4 | **Email delivery** — % of `Email` rows whose Resend webhook reports `delivered` within 5 min of `queuedAt` | **99% in 5 min** | rolling 7 days | Resend webhooks + `Email` table query |
+| 4 | **Email delivery** — % of deduplicated, non-skipped `EmailSendLog` sends with a signed Resend `delivered` timestamp within 5 min of the first logged send start | **99% in 5 min** | rolling 7 days, excluding the newest 5 min | `email_send_logs` + immutable `email_delivery_slo` observations in `workflow_diagnostics` |
 | 5 | **Cross-tenant isolation** — synthetic check probes Org A admin endpoints with Org B credentials and asserts a 403 every run | **0 leaks** (any breach is sev-1) | per-run | Synthetic monitor (Track A.3 deliverable; this SLO is conditional on that landing) |
-| 6 | **Coursera xAPI ingestion** — % of inbound xAPI statements that successfully persist within 60 s | **99.5%** | rolling 7 days | `XapiIngestionLog` table + Sentry exceptions in the xAPI route |
+| 6 | **Coursera xAPI ingestion** — % of recorded authenticated inbound statement attempts whose raw statement persists (or is already persisted) within 60 s of request arrival | **99.5%** | rolling 7 days, excluding the newest 60 s | `xapi_ingestion_slo` batch observations in `workflow_diagnostics` + Sentry exceptions in `/api/xapi/statements` |
 
 ### Why these specific numbers
 
@@ -61,12 +61,24 @@ We list these as gaps so a buyer understands what we *can't* tell them, not just
 SLO #1  Uptime               -> Vercel uptime + external monitor on /api/health (live) and /api/health/ready (deps)
 SLO #2  /dashboard p95       -> Vercel Analytics (Web Vitals) + Sentry Performance
 SLO #3  /admin/outcomes p95  -> Vercel Analytics + Sentry Performance
-SLO #4  Email delivery       -> Resend delivery webhooks aggregated against Email table
+SLO #4  Email delivery       -> Signed immutable delivery evidence joined to EmailSendLog
 SLO #5  Cross-tenant leak    -> Synthetic monitor (cron); fail = sev-1 page
-SLO #6  Coursera xAPI        -> XapiIngestionLog success/error counts + Sentry
+SLO #6  Coursera xAPI        -> Authenticated inbound batch persistence counts + Sentry
 ```
 
-Sentry is the **single pane of glass** for latency + errors; Vercel Analytics is the second source for traffic volume; the database (`Email`, `XapiIngestionLog`) is authoritative for delivery counts. The synthetic monitor for SLO #5 is itself a piece of infrastructure that has to exist (Track A.3 deliverable) — until then SLO #5 is *nominally* tracked via per-endpoint authorization tests in CI rather than live runtime probing.
+Sentry reports errors and performance; Vercel Analytics is a separate provider source. The database's send logs and versioned SLO observations are the delivery/ingestion sources. There are no `Email` or `XapiIngestionLog` models in the current schema. The synthetic monitor for SLO #5 is itself a piece of infrastructure that has to exist (Track A.3 deliverable) — until then SLO #5 is *nominally* tracked via per-endpoint authorization tests in CI rather than live runtime probing.
+
+### Database measurement rules and coverage
+
+The [SLO reader](../lib/observability/sloMetrics.ts) uses one UTC snapshot time for the rolling windows. Email rows younger than five minutes and xAPI batches younger than sixty seconds have not had their full deadline and are excluded. Future-dated and older-than-window records are excluded. Status compares the unrounded rate to an inclusive target; a displayed `99.00%` can still breach a 99% target if rounding hid a smaller rate.
+
+Email is measured per deduplicated send log, not per recipient. Skipped fixture/suppressed sends are excluded; known failed sends and permanent provider failures remain in the denominator. The [send writer](../lib/email/sendLog.ts) now sets the first row's `createdAt` from the send invocation start. Historical rows begin at their first log write, so their queue delay cannot be reconstructed. The [signed webhook](../app/api/webhooks/resend/route.ts) records immutable delivery evidence before applying its latest-event ordering guard: a delayed `delivered` receipt still counts after a newer `opened` or `clicked` receipt, and duplicate delivery receipts are reduced to the earliest valid delivery time. Missing, malformed, future or pre-send provider timestamps do not establish timely delivery. Historical mutable `lastEventAt` timestamps are not backfilled as delivery evidence.
+
+Any eligible email without a usable delivery timestamp or a definitive failure keeps the aggregate `current: null`, `status: unknown`; a missing webhook is not proof of delivery failure. Set `RESEND_WEBHOOK_SECRET` and subscribe the existing `/api/webhooks/resend` endpoint to `email.delivered`, `email.failed`, `email.bounced`, `email.sent` and `email.delivery_delayed` (plus complaint/open/click events as needed). Verify a signed matching receipt and its immutable observation on the intended deployment. Setting a secret alone does not prove webhook delivery. Historical unknown sends can keep the snapshot unknown until they leave the seven-day window.
+
+The [xAPI route](../app/api/xapi/statements/route.ts) records the full authenticated batch denominator before processing, and the count persisted within sixty seconds afterward. Failed writes stay in the denominator; retries/duplicate inbound deliveries are separate attempts whose existing durable statements count as persisted. Raw unparsed statements count if persisted. Downstream actor/course matching, completion side effects and `processedAt` are separate signals. A process exit or a failed final observation write leaves a `started` batch; matured incomplete batches and malformed counts make the result unknown. The observation writes have a 1.5-second budget and never cause a successful provider operation to fail. Logging is best-effort: an initial observation write that fails completely cannot be reconstructed, and a process lost before that write is not observed. The result describes recorded attempts, not all Coursera traffic or a seven-day service guarantee immediately after deployment.
+
+Tenant admins receive only their own organization: email/event rows join through the linked account's current organization, while xAPI batches carry the request's resolved organization. Unlinked or deleted-account email sends cannot be attributed to a tenant and appear only in the super-admin platform aggregate. Super admins can read all observations, project-wide latency and database pool metrics. No identifiers, addresses or statement payloads are returned in the SLO snapshot. These observation rows use the existing diagnostic retention (90 days), which exceeds the seven-day window; no migration or new provider credential is required.
 
 ---
 
@@ -86,6 +98,12 @@ Why this endpoint: `/api/health/ready` is the dependency probe (Prisma can read 
 | Secrets | none |
 
 **What it is not.** It is not burn-rate alerting, not a status page and not paging. The Vercel log drain (WAP-164 item 3) and the production Sentry alert rule (item 4) are operator-console changes, not repository changes, and remain open. When a hosted monitor (Better Uptime or similar) is set up, keep this workflow: two independent observers are cheap, and this one is versioned with the code it checks.
+
+### Requirement for a measured 30-day uptime value
+
+`/api/health/slo` keeps uptime unknown until a continuous external source exists. Configure an already-approved hosted monitor with separate HTTPS checks for `https://www.workforceap.org/api/health` (liveness) and `https://www.workforceap.org/api/health/ready` (dependency readiness), HTTP 200 success, one-minute cadence and a five-second request timeout. Keep those probe definitions separate: healthy liveness does not prove usable pages.
+
+The integration needs the selected provider's documented server API or authenticated event feed, a monitor-to-production-target mapping, UTC outage/coverage intervals over the exact rolling 30 days, and read credentials provisioned through the deployment's secret settings. Validate freshness, target identity, full interval coverage and provider response units before displaying time-weighted uptime. Gaps and unsupported responses must remain unknown; sparse Actions run success counts cannot replace covered uptime duration. No hosted monitor, subscription or token has been created by this source change.
 
 ## Nightly heavy suites (WAP-204)
 
@@ -169,7 +187,7 @@ We have two viable options. **Recommendation: option (b) — self-hosted `/statu
 
 ## The internal SLO endpoint: `GET /api/health/slo`
 
-A NEW route landed in this PR. **Admin-only**, returns recent SLO performance as JSON.
+**Admin-only**, returns recent SLO performance as JSON. Organization membership determines tenant observations; only super admins receive project-wide metrics.
 
 ### Why admin-only (not public)
 
@@ -203,15 +221,7 @@ If a buyer wants the raw JSON for diligence, an admin can issue them a one-off s
 }
 ```
 
-The current implementation is **stub data** with `TODO` comments at each measurement site, marking where Sprint D.2 will wire in real Sentry / Vercel / DB queries.
-
-### Why stub now
-
-Wiring real Sentry queries requires a Sentry API token + project configuration and a non-trivial query layer; wiring Vercel Analytics requires their `@vercel/analytics` server-side API that is currently in beta. Neither is in scope for the foundation sprint. Shipping the route stub now means:
-
-1. The contract is fixed (response shape, auth, route path).
-2. The status page can be designed against real-shaped data.
-3. D.2 is a localized PR — replace each stub function with its real implementation, no surface-area changes.
+The route returns source-backed observations or explicit `current: null` / `status: unknown`. Email and xAPI follow the coverage rules above. Member-event errors use literal `_failed` / `_error` suffixes within the actor's organization over 24 hours. Database pool utilization is live platform telemetry. Latency requires the configured Vercel API to return a finite, nonnegative value; missing configuration, unsupported API responses and insufficient traffic remain unknown. Uptime and runtime cross-tenant synthetic checks remain unknown until their external sources exist.
 
 ---
 
