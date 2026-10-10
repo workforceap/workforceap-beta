@@ -518,7 +518,7 @@ describe('VoiceStudioKit cards cast their shadow from tokens (were rgba(120,20,3
 
   for (const scheme of SCHEMES) {
     it(`${scheme}: every coach card shadow is its token value and no inline box-shadow on the Coaches tab carries a literal`, () => {
-      const { container } = renderIn(scheme, <VoiceStudioKit />);
+      const { container } = renderIn(scheme, <NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit /></NextIntlClientProvider>);
       for (const { badge, shadow } of CARDS) {
         const card = screen.getByText(badge).closest('.vs-hero-card') as HTMLElement | null;
         expect(card, `${badge} card`).not.toBeNull();
@@ -532,7 +532,7 @@ describe('VoiceStudioKit cards cast their shadow from tokens (were rgba(120,20,3
 
     it(`${scheme}: the Resume Studio banner and the "Resume coach" card tint --wa-accent under their --wa-accent gradient`, () => {
       // The "Resume coach" card renders once a resume is on file and scored.
-      const { container } = renderIn(scheme, <VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: true, structuralScore: 72, issues: [] }} />);
+      const { container } = renderIn(scheme, <NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: true, structuralScore: 72, issues: [] }} /></NextIntlClientProvider>);
       const banner = shadowHost(screen.getByRole('heading', { name: 'Resume Studio' }));
       expect(computed(banner, 'background')).toContain('var(--wa-accent)');
       expect(computed(banner, 'box-shadow')).toBe(ACCENT_SHADOW);

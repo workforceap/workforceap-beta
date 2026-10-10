@@ -102,13 +102,15 @@ export function namedRefusal(message: string): { code: ErrorCode; status: number
  */
 export function twoStageRoute<P extends BaseParams>(
   name: string,
-  opts: { mutation: boolean; caseRoute: boolean },
+  opts: { mutation: boolean; caseRoute: boolean; readOnlyPreview?: boolean },
   fn: (ctx: TwoStageContext<P>) => Promise<Response>,
 ): (request: Request, context: { params: Promise<P> }) => Promise<Response> {
   return async (request, context) => {
     const effects = new SideEffects();
     try {
-      requireMigrationApplied();
+      // Member-level layout previews never issue a document or require the billing schema.
+      // They retain every identity/tenant/provider check below; official routes keep the gate.
+      if (!opts.readOnlyPreview) requireMigrationApplied();
       if (opts.mutation) requireSameOriginMutation(request);
       const user = await getUser();
       if (!user) throw apiError(401, 'UNAUTHENTICATED', 'Sign in again to continue.');

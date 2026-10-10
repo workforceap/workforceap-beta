@@ -39,6 +39,18 @@ describe('WAP-36 phase 1: CSP nonce policy', () => {
     expect(enforced).toBe(CSP_ENFORCED_DIRECTIVES.join('; '));
   });
 
+  it('allows local PDF blob frames while preserving the frame hosts and embedding restrictions', async () => {
+    const headers = (await nextConfig.headers?.()) as HeaderRule[];
+    const enforced = headers.find((entry) => entry.source === '/(.*)')?.headers.find((header) => header.key === 'Content-Security-Policy')?.value ?? '';
+    for (const policy of [enforced, buildCspReportOnlyPolicy(generateCspNonce())]) {
+      expect(directive(policy, 'frame-src')).toEqual([
+        'frame-src', "'self'", 'blob:', 'https://www.googletagmanager.com', 'https://challenges.cloudflare.com',
+      ]);
+      expect(directive(policy, 'object-src')).toEqual(['object-src', "'none'"]);
+      expect(directive(policy, 'frame-ancestors')).toEqual(['frame-ancestors', "'none'"]);
+    }
+  });
+
   it('mints a fresh base64 nonce per call in the format Next.js re-applies to its scripts', () => {
     const a = generateCspNonce();
     const b = generateCspNonce();

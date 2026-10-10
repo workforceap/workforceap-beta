@@ -1,9 +1,8 @@
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
-import { withTenantScope } from '@/lib/tenant/withTenantScope';
+import { allowAssessmentRetake } from '@/lib/assessment/retake';
 import { getActorOrganizationId } from "@/lib/tenant/organization";
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -22,22 +21,14 @@ export const POST = withApiGuc(async (
     const { id } = await params;
     const orgId = await getActorOrganizationId(user.id);
 
-    const result = await withTenantScope(orgId, (db) =>
-      db.user.updateMany({
-        where: { id },
-        data: {
-          assessmentCompleted: false,
-          assessmentCompletedAt: null,
-          assessmentScore: null,
-          assessmentScorePct: null,
-          assessmentAnswers: Prisma.JsonNull,
-          programInterest: null,
-        },
-      }),
-    );
-
-    if (result.count === 0) {
-      return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+    // Ops (10/9/26): archive the previous result to assessment history before
+    // clearing it (this used to delete the score and answers outright). The
+    // member's program interest is kept; the retake asks for it again anyway.
+    const result = await allowAssessmentRetake({ memberId: id, staffUserId: user.id, staffRole: 'admin' });
+    if (!result.ok) {
+      return result.reason === 'not_found'
+        ? NextResponse.json({ error: 'Member not found' }, { status: 404 })
+        : NextResponse.json({ error: 'This member has not completed the preassessment yet.' }, { status: 409 });
     }
 
     const profileRole = await withDbRetry(() => getProfileRole(user.id)).catch((err) => {

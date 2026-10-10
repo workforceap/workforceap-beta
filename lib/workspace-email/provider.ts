@@ -102,9 +102,9 @@ function readProviderId(): WorkspaceEmailProviderId {
 }
 
 /**
- * Pick a provider implementation from env. Only `noop` is implemented today.
- * Throws a clear error for `google`/`microsoft` so future setup is obvious —
- * those require real credentials configured outside the repo (Vercel env).
+ * Pick a real provider implementation from env. The local stub must never
+ * mark a member's mailbox provisioned or revoked through the application.
+ * Instantiate NoopWorkspaceEmailProvider directly in isolated fixtures only.
  */
 /**
  * Non-throwing availability check so admin UIs can disable the provisioning
@@ -123,7 +123,9 @@ export function getWorkspaceEmailProvider(): WorkspaceEmailProvider {
   const id = readProviderId();
   switch (id) {
     case 'noop':
-      return new NoopWorkspaceEmailProvider();
+      throw new Error(
+        'Mailbox creation is not connected. An email administrator must create the mailbox with the organization’s email provider and share its sign-in instructions.',
+      );
     case 'google':
       throw new Error(
         'WORKSPACE_EMAIL_PROVIDER=google is not implemented. Wire up the Google Workspace Admin SDK Directory API and supply credentials via env (see docs/WORKSPACE_EMAIL.md).',

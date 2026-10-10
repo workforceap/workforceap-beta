@@ -31,8 +31,8 @@ const JOURNEY_STEPS = [
   },
   {
     num: 2,
-    title: 'Complete your Training Preassessment',
-    desc: 'This short assessment helps place you into the right training flow before Coursera unlocks.',
+    title: 'Take your WIOA Preassessment (35 questions)',
+    desc: 'Your counselor uses it for WIOA funding review and to place you in the right training. It does not unlock Coursera.',
     href: '/dashboard/assessment',
     cta: 'Start preassessment',
     icon: 'assignment',

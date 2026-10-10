@@ -399,6 +399,31 @@ describe('POST /api/apply/signup ageGroup validation', () => {
     expect(await res.json()).toMatchObject({ reason: 'invalid_field', field: 'email' });
   });
 
+  // Staff were receiving mistyped contact details; reject them server-side too.
+  it.each([
+    ['too few digits', '512555010'],
+    ['too many digits', '51255501001'],
+    ['area code starting with 0', '0125550100'],
+    ['one repeated digit', '5555555555'],
+  ])('rejects a phone number with %s', async (_label, phone) => {
+    const res = await POST(makeRequest({ phone }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ reason: 'invalid_field', field: 'phone' });
+    expect(state.applicationCreates).toHaveLength(0);
+  });
+
+  it('accepts a phone typed with the +1 country code', async () => {
+    const res = await POST(makeRequest({ phone: '+1 (512) 555-0100' }));
+    expect(res.status).toBe(200);
+  });
+
+  it.each(['mike@gmial.com', 'mike@gmail.con', 'mike@gmail'])('rejects the mistyped email %s', async (email) => {
+    const res = await POST(makeRequest({ email }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ reason: 'invalid_field', field: 'email' });
+    expect(state.applicationCreates).toHaveLength(0);
+  });
+
   it('accepts a missing ageGroup (optional field)', async () => {
     const res = await POST(makeRequest());
     expect(res.status).toBe(200);

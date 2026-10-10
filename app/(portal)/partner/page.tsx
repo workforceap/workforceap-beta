@@ -21,7 +21,7 @@ import { buildPartnerReferralLink } from '@/lib/partner/referralLink';
 import { buildPartnerShareLinks } from '@/lib/partner/shareLinks';
 import PartnerMembersList from '@/components/portal/PartnerMembersList';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { isSuperAdmin } from '@/lib/auth/roles';
 import { PARTNER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
@@ -29,7 +29,7 @@ import PortalVoiceSessionLazy from '@/components/portal/PortalVoiceSessionLazy';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
 import { partnerVoiceSurface } from '@/lib/portal/voice';
 import { getTranslations } from 'next-intl/server';
-import { BarChart3, CheckCircle2, Download, GraduationCap, Percent, Target, Users, Wallet } from 'lucide-react';
+import { BarChart3, CheckCircle2, Download, Clock3, GraduationCap, Target, Users, Wallet } from 'lucide-react';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PortalKpiCard from '@/components/portal/PortalKpiCard';
 import PortalCard from '@/components/portal/ui/PortalCard';
@@ -471,12 +471,6 @@ export default async function PartnerDashboardPage({
                 subtitle: t('startedAProgram'),
                 icon: <GraduationCap size={16} />,
               },
-              {
-                label: t('placementRate'),
-                value: `${placementRate}%`,
-                subtitle: t('placementEstimate'),
-                icon: <Percent size={16} />,
-              },
               showPayouts
                 ? {
                     label: 'Payout due',
@@ -487,9 +481,19 @@ export default async function PartnerDashboardPage({
                 : {
                     label: t('membersPlaced'),
                     value: placedCount,
-                    subtitle: t('verifiedHires'),
+                    subtitle: t('placementRateOfReferrals', { rate: placementRate }),
+                    tone: 'ok',
                     icon: <CheckCircle2 size={16} />,
                   },
+              // Stitch partner layout: reported placements get their own tile
+              // and are never folded into the placed count above.
+              {
+                label: t('awaitingVerificationKpi'),
+                value: pendingPlacementCount,
+                subtitle: t('awaitingVerificationHint'),
+                tone: pendingPlacementCount > 0 ? 'warn' : undefined,
+                icon: <Clock3 size={16} />,
+              },
             ]}
           />
 
@@ -566,6 +570,11 @@ export default async function PartnerDashboardPage({
               <PartnerReferredMembersMobile rows={referralMobileRows} />
             </div>
             <div className="wa-hidden md:wa-block">
+              {referralRows.length === 0 ? (
+                /* Same population as the "Members referred" tile: zero rows means no
+                   member applied through this partner's link or invite yet. */
+                <PartnerEmptyState variant="referrals" framed />
+              ) : (
               <KitDataTable<ReferralKitRow>
                 columns={[
                   {
@@ -586,9 +595,8 @@ export default async function PartnerDashboardPage({
                 rows={referralRows}
                 rowKey={(row) => row.id}
                 mobile="scroll"
-                emptyTitle="No referred members yet"
-                emptyDescription="New referrals will appear here after members apply through this partner."
               />
+              )}
             </div>
           </div>
 
@@ -986,14 +994,7 @@ export default async function PartnerDashboardPage({
             rows={referralTableRows}
             rowKey={(row) => row.id}
             density="compact"
-            emptyState={
-              <PortalEmptyState
-                title={t('noReferredMembersYet')}
-                description={t('shareReferralLink')}
-                icon={<span className="material-symbols-outlined" aria-hidden="true">group_add</span>}
-                primaryAction={{ label: t('referralGuide'), href: '/partner/guide' }}
-              />
-            }
+            emptyState={<PartnerEmptyState variant="referrals" framed />}
           />
         </PortalCard>
       </div>
@@ -1271,14 +1272,7 @@ export default async function PartnerDashboardPage({
             columns={referralColumns}
             rows={referralTableRows}
             rowKey={(row) => row.id}
-            emptyState={
-              <PortalEmptyState
-                icon={<span className="material-symbols-outlined" aria-hidden="true">group_add</span>}
-                title={t('noReferredMembersYet')}
-                description={t('sendApplicantsTo', { partnerName: ctx.partner.name })}
-                primaryAction={{ label: t('openReferralGuide'), href: '/partner/guide' }}
-              />
-            }
+            emptyState={<PartnerEmptyState variant="referrals" framed />}
           />
         </PortalCard>
       </section>

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { scoreAssessment, TOTAL_POINTS } from '@/lib/assessment/answer-key';
+import { isStraightLined, STRAIGHT_LINE_MESSAGE } from '@/lib/assessment/answerPattern';
+import { displayLettersForAnswers, isValidAttemptSeed } from '@/lib/assessment/layout';
+import { ASSESSMENT_QUESTIONS_PUBLIC } from '@/lib/assessment/questions';
 import type { QuestionChoice } from '@/lib/assessment/answer-key';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
@@ -32,7 +35,7 @@ export const POST = withApiGuc(async (request: Request) => {
       return NextResponse.json({ error: 'Invalid submission data' }, { status: 400 });
     }
   
-    const { firstName, lastName, phone, programInterest, answers } = parsed;
+    const { firstName, lastName, phone, programInterest, answers, seed } = parsed;
   
     const answersTyped: Record<number, QuestionChoice> = {};
     for (const [k, v] of Object.entries(answers)) {
@@ -41,6 +44,17 @@ export const POST = withApiGuc(async (request: Request) => {
       answersTyped[id] = v as QuestionChoice;
     }
   
+    // Ops (10/9/26): one letter clicked for (nearly) every question is not an
+    // answer sheet; do not score or save it as the member's WIOA result.
+    // After shuffle (#2745) the form stores original letters, so a click-through
+    // of display "A" looks mixed unless we reconstruct that attempt's layout.
+    if (
+      isStraightLined(answersTyped)
+      || (seed !== null && isStraightLined(displayLettersForAnswers(ASSESSMENT_QUESTIONS_PUBLIC, seed, answersTyped)))
+    ) {
+      return NextResponse.json({ error: STRAIGHT_LINE_MESSAGE, code: 'ANSWERS_ALL_SAME' }, { status: 422 });
+    }
+
     const { raw, pct } = scoreAssessment(answersTyped);
   
     const dbUser = await prisma.$transaction((tx) => tx.user.findUnique({
@@ -216,6 +230,7 @@ function parseBody(body: unknown): {
   phone: string;
   programInterest: string;
   answers: Record<string, string>;
+  seed: string | null;
 } | null {
   if (!body || typeof body !== 'object') return null;
   const o = body as Record<string, unknown>;
@@ -234,5 +249,6 @@ function parseBody(body: unknown): {
     phone: o.phone.trim(),
     programInterest: o.programInterest.trim(),
     answers,
+    seed: isValidAttemptSeed(o.seed) ? o.seed : null,
   };
 }

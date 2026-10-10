@@ -45,7 +45,7 @@ export default function WioaScreeningReadonly({ snapshot, reviewStatus, reviewed
           <strong>Dislocated worker:</strong> {a.dislocatedWorker ? 'Yes' : 'No'}
         </li>
         <li>
-          <strong>Receiving TANF / WIC / Food stamps (SNAP):</strong> {publicAssistanceLabel(a.publicAssistanceSelfReport)}
+          <strong>Receiving TANF / WIC / Food stamps (SNAP) / MAP:</strong> {publicAssistanceLabel(a.publicAssistanceSelfReport)}
         </li>
         {a.publicAssistanceSelfReport === true ? (
           <>

@@ -64,3 +64,5 @@ export const VOUCHER_RECEIPT_FUTURE_MESSAGE = 'The voucher received date is afte
 export const J6_ISSUE_DATE_NOT_TODAY_MESSAGE = 'The J6 is dated the day it is signed. Save the draft again today before signing.';
 
 export const J5_ISSUE_DATE_NOT_TODAY_MESSAGE = 'The J5 is dated the day it is signed. Save the draft again today before signing.';
+
+export const DRAFT_STALE_MESSAGE = 'The evidence or letterhead changed since this draft was saved. Save the draft again and review the new preview.';

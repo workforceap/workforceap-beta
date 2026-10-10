@@ -1,5 +1,5 @@
 /**
- * TANF / WIC / SNAP follow-up questions (WAP-53).
+ * TANF / WIC / SNAP / MAP follow-up questions (WAP-53).
  *
  * The apply flow, member eligibility form, public questionnaire and WIOA
  * self-screening all ask one yes/no: "Are you receiving TANF, WIC, and/or
@@ -16,7 +16,9 @@
 import { z } from 'zod';
 import { isYesNo, type YesNo } from './eligibilityExtendedFields';
 
-export const PUBLIC_ASSISTANCE_PROGRAM_VALUES = ['tanf', 'wic', 'snap', 'other_unsure'] as const;
+// `map` = Central Health's Medical Access Program (Austin / Travis County), a
+// local health-coverage program for uninsured residents up to 200% FPL.
+export const PUBLIC_ASSISTANCE_PROGRAM_VALUES = ['tanf', 'wic', 'snap', 'map', 'other_unsure'] as const;
 export type PublicAssistanceProgram = (typeof PUBLIC_ASSISTANCE_PROGRAM_VALUES)[number];
 
 /** Staff-facing English labels; member UIs translate their own. */
@@ -24,6 +26,7 @@ export const PUBLIC_ASSISTANCE_PROGRAM_LABELS: Record<PublicAssistanceProgram, s
   tanf: 'TANF',
   wic: 'WIC',
   snap: 'SNAP / food stamps',
+  map: 'MAP (Medical Access Program)',
   other_unsure: 'Other / unsure',
 };
 
@@ -109,13 +112,17 @@ export function publicAssistanceFollowUpComplete(input: {
 }
 
 /**
- * WIC alone is a nutrition benefit with its own income test; it is not a
- * WIOA categorical low-income qualifier the way TANF and SNAP are, so it must
- * not be presented as definitive eligibility (acceptance 6).
+ * Programs with their own income test that are not WIOA categorical
+ * low-income qualifiers the way TANF and SNAP are: WIC (nutrition) and MAP
+ * (local health coverage). Selected only by themselves, they must not be
+ * presented as definitive eligibility; staff review household income instead
+ * (WAP-53 acceptance 6).
  */
+const REVIEW_ONLY_PROGRAMS: ReadonlySet<string> = new Set(['wic', 'map']);
+
 export function wicOnlyPublicAssistance(programs: readonly string[] | null | undefined): boolean {
   if (!programs || programs.length === 0) return false;
-  return programs.every((program) => program === 'wic');
+  return programs.every((program) => REVIEW_ONLY_PROGRAMS.has(program));
 }
 
 export function formatPublicAssistancePrograms(programs: readonly string[] | null | undefined): string {

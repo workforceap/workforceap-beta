@@ -15,7 +15,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1.2;
-  white-space: nowrap;
+  max-width: 100%;
 }
 .badge svg { flex-shrink: 0; }
 
@@ -26,6 +26,19 @@
 .in_training {
   color: light-dark(#5b35d0, #c3b2ff);
   background: light-dark(#f3f0fd, rgba(112, 72, 232, 0.22));
+}
+.enrolled {
+  color: light-dark(#1b4d89, #9cc0f0);
+  background: light-dark(#eef3fa, rgba(27, 77, 137, 0.26));
+}
+.certified,
+.job_searching {
+  color: light-dark(#7a5e29, #d8b25e);
+  background: var(--wa-gold-soft);
+}
+.closed {
+  color: var(--wa-muted-strong);
+  background: light-dark(var(--wa-border), rgba(255, 255, 255, 0.08));
 }
 .course_complete {
   color: light-dark(#0d6e6e, #7fd3d3);

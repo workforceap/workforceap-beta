@@ -2,8 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { DataTable, StatusTag, StageTrack, type Column, type KitTone } from '@/components/portal/kit';
+import { DataTable, StageTrack, type Column } from '@/components/portal/kit';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
+import PartnerStageBadge from '@/components/partner/PartnerStageBadge';
+import { partnerDirectoryStage } from '@/lib/partner/memberStage';
+import { partnerReferralsEmptyVariant } from '@/lib/partner/emptyState';
 
 type PartnerMember = {
   id: string;
@@ -22,16 +26,6 @@ type PartnerMember = {
 /** Referral milestone order for the StageTrack column — shared with the pipeline stage model. */
 const STAGE_ORDER = PIPELINE_STAGES_ORDERED;
 
-const STAGE_TONE: Record<string, KitTone> = {
-  applied: 'muted',
-  enrolled: 'info',
-  in_training: 'warn',
-  certified: 'info',
-  job_searching: 'warn',
-  placed: 'ok',
-  closed: 'danger',
-};
-
 function stageTrackIndex(stage: string): number {
   const idx = STAGE_ORDER.indexOf(stage as PipelineStage);
   return idx === -1 ? 0 : idx + 1;
@@ -40,6 +34,11 @@ function stageTrackIndex(stage: string): number {
 export default function PartnerMembersList({ members }: { members: PartnerMember[] }) {
   const [search, setSearch] = useState('');
   const [stage, setStage] = useState('all');
+
+  const clearFilters = () => {
+    setSearch('');
+    setStage('all');
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -52,6 +51,9 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
         .includes(q);
     });
   }, [members, search, stage]);
+  // Rows are this partner's tenant-scoped referrals (lib/partner/referralBundle);
+  // zero of them is "nobody referred yet", zero visible is the search / stage filter.
+  const emptyVariant = partnerReferralsEmptyVariant({ total: members.length, visible: filtered.length });
 
   const columns: Column<PartnerMember>[] = [
     {
@@ -76,14 +78,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
       key: 'stage',
       header: 'Status',
       render: (m) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
-          <StatusTag tone={STAGE_TONE[m.stage] ?? 'muted'}>{m.stageLabel}</StatusTag>
-          {m.placementVerified != null ? (
-            <StatusTag tone={m.placementVerified ? 'ok' : 'warn'}>
-              {m.placementVerified ? 'Verified' : 'Pending verification'}
-            </StatusTag>
-          ) : null}
-        </div>
+        <PartnerStageBadge stage={partnerDirectoryStage(m.stage, m.placementVerified)} />
       ),
     },
     {
@@ -161,18 +156,15 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
       <p style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
         {filtered.length} member{filtered.length !== 1 ? 's' : ''} shown
       </p>
-      <DataTable<PartnerMember>
-        columns={columns}
-        rows={filtered}
-        rowKey={(m) => m.id}
-        mobile="scroll"
-        emptyTitle={members.length === 0 ? "You haven't referred any members yet" : 'No members match this filter'}
-        emptyDescription={
-          members.length === 0
-            ? 'Use the Invite Member button to start building your referral pipeline.'
-            : 'Try clearing your search or changing the stage filter.'
-        }
-      />
+      {emptyVariant !== null ? (
+        emptyVariant === 'referrals' ? (
+          <PartnerEmptyState variant="referrals" framed hideSecondary />
+        ) : (
+          <PartnerEmptyState variant="referralsFiltered" framed onPrimary={clearFilters} />
+        )
+      ) : (
+        <DataTable<PartnerMember> columns={columns} rows={filtered} rowKey={(m) => m.id} mobile="scroll" />
+      )}
     </section>
   );
 }

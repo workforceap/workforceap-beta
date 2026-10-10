@@ -88,6 +88,7 @@
     "aiCounselor": "Lilley",
     "aiAdvisor": "Consultor de IA",
     "trainingPreassessment": "Pré-avaliação de Treinamento",
+    "wioaPreassessment": "Pré-avaliação WIOA",
     "counselorChat": "Mensagens",
     "aboutUs": "Sobre Nós",
     "whatWeDo": "O Que Fazemos",
@@ -701,7 +702,7 @@
     "programIntroCompareAll": "comparar todos os programas",
     "applySocialProof": "Financiado por bolsas e parceiros. Certificados reconhecidos pela indústria e apoio à colocação.",
     "eligibilityPhoneHint": "Número dos EUA de 10 dígitos — seu conselheiro usa para acompanhamento e atualizações de inscrição.",
-    "phoneValidationError": "Insira um número de telefone de 10 dígitos.",
+    "phoneValidationError": "Digite um número dos EUA com 10 dígitos e código de área, como (512) 555-0100.",
     "applyConsentLine": "Ao continuar, você concorda com nossa",
     "applyConsentAnd": "e",
     "applyConsentPrivacy": "Política de Privacidade",
@@ -751,7 +752,7 @@
     "step1WhatNextStrong": "O que vem a seguir:",
     "step1WhatNextBody": "O passo 2 é a escolha dos programas. O passo 3 cria sua conta para salvar sua escolha, analisar sua inscrição e entrar em contato.",
     "personalSectionTitle": "Como entramos em contato",
-    "contactIncompleteError": "Adicione nome, sobrenome, um e-mail válido e telefone com pelo menos 10 dígitos.",
+    "contactIncompleteError": "Adicione nome, sobrenome, um e-mail válido e um telefone dos EUA com 10 dígitos.",
     "saveContinueLater": "Salvar e continuar depois",
     "autoSavedNotice": "Progresso salvo automaticamente neste dispositivo.",
     "saveContinueHint": "Salvo neste dispositivo. Você pode fechar a aba e voltar a esta página quando quiser.",
@@ -792,13 +793,14 @@
     "eligibilityLayoffCompanyLabel": "De qual empresa você foi demitido(a), ou para qual trabalhou por último?",
     "eligibilityLayoffCompanyPlaceholder": "Nome da empresa ou empregador",
     "eligibilityLayoffCompanyHint": "Opcional — seu empregador mais recente, ou a empresa da demissão se for o caso.",
-    "eligibilitySnapWicLegend": "TANF / WIC / Vale-alimentação",
-    "eligibilitySnapWicPrompt": "Você recebe TANF, WIC e/ou vale-alimentação (SNAP)?",
+    "eligibilitySnapWicLegend": "TANF / WIC / Vale-alimentação / MAP",
+    "eligibilitySnapWicPrompt": "Você recebe TANF, WIC, vale-alimentação (SNAP) e/ou MAP?",
     "eligibilityPublicAssistanceProgramsLegend": "Quais benefícios",
     "eligibilityPublicAssistanceProgramsPrompt": "Quais destes você recebe? Marque todos que se aplicam.",
     "publicAssistanceTanf": "TANF",
     "publicAssistanceWic": "WIC",
     "publicAssistanceSnap": "Vale-alimentação (SNAP)",
+    "publicAssistanceMap": "MAP (Programa de Acesso Médico)",
     "publicAssistanceOtherUnsure": "Outro / não tenho certeza",
     "eligibilityPublicAssistanceProgramsError": "Selecione pelo menos um benefício para continuar. Escolha “Outro / não tenho certeza” se não souber.",
     "eligibilityHelpApplyingLegend": "Ajuda para solicitar",
@@ -934,7 +936,9 @@
     "errEmailRequired": "Digite um endereço de e-mail.",
     "errEmailInvalid": "Use um endereço de e-mail válido (inclua @ e um domínio como .com).",
     "errPhoneRequired": "Digite um número de telefone.",
-    "errPhoneDigits": "Use um número de telefone com pelo menos 10 dígitos.",
+    "errPhoneDigits": "Digite um número dos EUA com 10 dígitos e código de área.",
+    "phoneInvalidError": "Esse não parece ser um número dos EUA válido. Confira o código de área e o número.",
+    "emailTypoError": "Confira o que vem depois do @ (por exemplo gmail.com, não gmial.com nem gmail.con).",
     "errZipFormat": "Por favor, digite um código postal válido",
     "errPasswordShort": "Use pelo menos 8 caracteres.",
     "errPasswordMismatch": "As senhas não coincidem.",
@@ -1549,11 +1553,8 @@
     "appliedViaYourLink": "Aplicou via seu link: {count}",
     "enrollmentAndPlacementDates": "As datas de matrícula e colocação refletem os registros da WorkforceAP.",
     "viewAll": "Ver todos",
-    "noReferredMembersYet": "Nenhum membro indicado ainda",
     "shareReferralLink": "Compartilhe seu link de indicação para que os candidatos possam se matricular com sua organização atribuída.",
     "referralGuide": "Guia de indicação",
-    "sendApplicantsTo": "Envie candidatos para workforceap.org/apply e peça que liste {partnerName} quando perguntado como conheceu a WorkforceAP.",
-    "openReferralGuide": "Abrir guia de indicação",
     "partnerAssistant": "Assistente do parceiro",
     "askAboutReferrals": "Pergunte sobre indicações, progresso dos membros ou uso do portal do parceiro.",
     "quickActions": "Ações rápidas",
@@ -1576,6 +1577,9 @@
     "notPlaced": "Não colocado",
     "includedInEstimate": "Incluído na estimativa",
     "pendingVerification": "Aguardando verificação",
+    "awaitingVerificationKpi": "Aguardando verificação",
+    "awaitingVerificationHint": "Colocações relatadas, não contadas como colocadas",
+    "placementRateOfReferrals": "{rate}% das indicações",
     "placementRate": "Taxa de colocação",
     "referralLinkUsage": "Uso do link de indicação",
     "membersWhoAppliedUsingLink": "Membros que se candidataram usando seu link de indicação.",
@@ -1631,12 +1635,6 @@
     "messagesMetaDescription": "Envie uma mensagem à equipe WorkforceAP.",
     "noMessagesYetTitle": "Ainda não há mensagens",
     "messagesAuditPaused": "O acesso às mensagens está disponível. Conteúdo, confirmações de leitura e sincronização em tempo real estão pausados para esta auditoria.",
-    "noMilestonesYet": "Ainda não há marcos",
-    "noMilestonesYetDescription": "Os marcos aparecerão aqui conforme seus membros avançarem na capacitação.",
-    "noMembersYet": "Ainda não há membros",
-    "noMembersYetDescription": "Você ainda não indicou nenhum membro. Toque em Convidar membro acima para começar seu pipeline.",
-    "noMembersMatchFilter": "Nenhum membro corresponde a este filtro. Tente outra opção.",
-    "noMembersInFilter": "Não há membros neste filtro. Tente “Todos” ou volte mais tarde.",
     "exportsTitle": "Exportações",
     "exportsGoal": "Baixe um CSV de cada membro indicado, estágio, progresso e última atualização — apenas da sua organização. Abra no Excel ou Google Sheets.",
     "resourcesTitle": "Recursos",
@@ -3518,12 +3516,13 @@
     "unemployedHelp": "Isso pode apoiar um caminho do WIOA. A equipe confirmará a elegibilidade.",
     "lowIncome": "A renda da minha família é limitada ou mal cobre as necessidades básicas",
     "lowIncomeHelp": "A equipe pode solicitar comprovantes de renda.",
-    "assistance": "Você recebe TANF, WIC ou assistência alimentar (SNAP)?",
+    "assistance": "Você recebe TANF, WIC, auxílio alimentar (SNAP) e/ou MAP?",
     "assistancePrograms": "Quais destes você recebe? Marque todos que se aplicam.",
     "assistanceProgramsHelp": "A equipe confirmará qualquer benefício com você; isto não é uma inscrição verificada.",
     "programTanf": "TANF",
     "programWic": "WIC",
     "programSnap": "Vale-alimentação (SNAP)",
+    "programMap": "MAP (Programa de Acesso Médico)",
     "programOtherUnsure": "Outro / não tenho certeza",
     "assistanceHelp": "Você gostaria de ajuda para solicitar esses ou outros benefícios?",
     "assistanceProgramsRequired": "Selecione pelo menos um benefício ou escolha “Outro / não tenho certeza”.",
@@ -3591,7 +3590,7 @@
     },
     "reasons": {
       "public_assistance": "Você informou que recebe TANF, WIC ou SNAP, o que geralmente atende aos critérios de baixa renda do WIOA após verificação pela equipe.",
-      "wic_only_review": "Você informou que recebe WIC. Sozinho, o WIC não confirma a elegibilidade de baixa renda do WIOA, então a equipe revisará a renda da sua família com você.",
+      "wic_only_review": "Você informou que recebe WIC ou MAP. Sozinhos, WIC e MAP não confirmam a elegibilidade de baixa renda do WIOA, então a equipe revisará a renda da sua família com você.",
       "low_income": "Você informou que a renda da sua família pode atender aos critérios comuns do WIOA, que a equipe poderá verificar.",
       "dislocated_worker": "Você informou que está desempregado ou foi demitido, o que costuma corresponder aos caminhos do WIOA para trabalhadores deslocados.",
       "barrier": "Você identificou uma barreira, {barrier}, que pode apoiar a necessidade de serviços de suporte junto com a capacitação.",
@@ -4156,6 +4155,72 @@
         "body": "Limpe o filtro ou a busca para ver todas as conversas.",
         "action": "Limpar filtros"
       }
+    },
+    "partner": {
+      "referrals": {
+        "title": "Ainda não há membros indicados",
+        "body": "Os membros que se inscrevem com seu link de indicação ou um convite aparecem aqui com as datas de matrícula e colocação.",
+        "action": "Abrir o guia de indicação",
+        "secondary": "Membros indicados"
+      },
+      "referralsFiltered": {
+        "title": "Nenhum membro corresponde a este filtro",
+        "body": "Limpe a busca e o filtro de etapa para ver todos os membros indicados.",
+        "action": "Limpar filtros"
+      },
+      "payouts": {
+        "title": "Ainda não há pagamentos",
+        "body": "Um pagamento é registrado aqui depois que a WorkforceAP verifica a colocação de um membro que você indicou.",
+        "action": "Membros indicados"
+      },
+      "pendingReviewsClear": {
+        "title": "Nenhuma revisão de colocação pendente",
+        "body": "Nenhum membro que você indicou relatou, nos últimos 90 dias, uma colocação que ainda aguarde revisão.",
+        "action": "Membros indicados"
+      },
+      "attentionClear": {
+        "title": "Nenhum membro precisa de atenção",
+        "body": "Nenhum registro de membro indicado está sem atualização há tempo suficiente para entrar nesta fila.",
+        "action": "Membros indicados"
+      },
+      "attentionFiltered": {
+        "title": "Nenhum membro com este nível de urgência",
+        "body": "Os membros dos outros níveis continuam na fila: mostre todos os níveis para vê-los.",
+        "action": "Mostrar todos os níveis"
+      },
+      "attentionUnavailable": {
+        "title": "Não foi possível carregar a fila de atenção",
+        "body": "A fila não respondeu. Tente novamente.",
+        "action": "Tentar novamente"
+      },
+      "milestones": {
+        "title": "Ainda não há marcos",
+        "body": "Certificações, colocações e atividades dos membros que você indicou são registradas aqui conforme acontecem.",
+        "action": "Membros indicados"
+      },
+      "milestonesPendingClear": {
+        "title": "Nenhum marco pendente de revisão",
+        "body": "Ainda não há nenhuma certificação ou colocação registrada para seus membros; a atividade já registrada aparece mais abaixo."
+      },
+      "milestonesUnavailable": {
+        "title": "Não foi possível carregar os marcos",
+        "body": "A lista de marcos não respondeu. Tente novamente.",
+        "action": "Tentar novamente"
+      }
     }
+  },
+  "aiToolsDiscovery": {
+    "title": "AI Career Tools",
+    "homeIntro": "Receba ajuda com seu currículo, entrevistas e candidaturas. Escolha uma ferramenta, siga as instruções e revise e edite o resultado antes de usá-lo.",
+    "tryNext": "Experimente: {title}",
+    "explore": "Explorar ferramentas de carreira com IA",
+    "exploreAll": "Explorar todas as ferramentas de carreira com IA",
+    "hubIntro": "Receba ajuda com seu currículo, respostas de entrevista e candidaturas.",
+    "startTitle": "Comece com uma tarefa",
+    "startIntro": "Abra uma ferramenta abaixo, adicione os detalhes solicitados e revise as sugestões. Você pode editar o resultado antes de usá-lo em uma candidatura.",
+    "resume": "Melhorar meu currículo",
+    "interview": "Praticar respostas de entrevista",
+    "coverLetter": "Escrever uma carta de apresentação",
+    "preparation": "Tenha um currículo ou uma vaga em mãos se a ferramenta solicitar. Para orientação por voz, escolha um orientador e pressione Start quando estiver pronto para usar o microfone. Escolha All Tools abaixo para ver mais opções."
   }
 }

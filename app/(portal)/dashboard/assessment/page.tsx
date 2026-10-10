@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AssessmentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; required?: string }>;
 }) {
   const params = await searchParams;
   const redirectTo = params.redirect?.trim();
@@ -66,6 +66,12 @@ export default async function AssessmentPage({
           }
           icon={<ClipboardCheck size={13} aria-hidden="true" />}
         />
+        {params.required === '1' && !dbUser.assessmentCompleted ? (
+          <div className="wa-kit-card" role="status" data-testid="preassessment-required-notice" style={{ maxWidth: 720, padding: '12px 14px' }}>
+            <strong>Please finish this first.</strong> The WIOA Preassessment is required before the rest of the portal.
+            You can still message your counselor, get help, or update your profile from the menu.
+          </div>
+        ) : null}
         <div style={{ maxWidth: 720 }}>
           {dbUser.assessmentCompleted ? (
             <>

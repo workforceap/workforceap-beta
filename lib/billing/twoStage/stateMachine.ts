@@ -115,7 +115,7 @@ export const REVIEW_REASON_TEXT: Readonly<Record<ReviewReason, string>> = {
   voucher_amount_differs: 'The voucher authorizes a different amount than the $7,500.00 quote. Record a corrected voucher; a review note cannot clear this.',
   voucher_class_differs: 'The voucher authorizes a different program or class than this J6. Get a corrected voucher.',
   voucher_period_conflict: 'The class dates fall outside the period the voucher authorizes. Record a corrected voucher (period) or class-start attestation.',
-  end_date_not_contract: 'The confirmed end date is not five calendar months after the actual start. Record corrected class dates.',
+  end_date_not_contract: 'The confirmed end date is not six calendar months after the actual start. Record corrected class dates.',
   class_differs_from_quote: 'The program, class or hours differ from the quote this J6 follows. Issue a corrected document.',
 };
 

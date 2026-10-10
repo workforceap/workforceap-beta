@@ -1,4 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), pendingCount: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn(), unpaid: vi.fn() }));
@@ -87,7 +90,7 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe('partner overview pending placement count (WAP-214)', () => {
   it('heads the 8 listed members with the full unique-member count', async () => {
-    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     expect(html).toContain('nextActionReviewPlacements({&quot;count&quot;:23})');
     expect(html).not.toContain('nextActionReviewPlacements({&quot;count&quot;:8})');
   });
@@ -118,7 +121,7 @@ describe('partner overview pending placement count (WAP-214)', () => {
   });
 
   it('uses fixed pending wording and does not select or render event metadata', async () => {
-    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     const listCall = mocks.events.mock.calls.find(([args]) => args.take === 8);
     expect(listCall?.[0].select).not.toHaveProperty('metadata');
     expect(html).toContain('pendingVerification');

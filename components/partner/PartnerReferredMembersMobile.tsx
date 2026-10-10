@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Avatar, KitEmptyState, StatusTag, StageTrack, type KitTone } from '@/components/portal/kit';
+import { Avatar, StageTrack } from '@/components/portal/kit';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
-import { useTranslations } from 'next-intl';
+import PartnerStageBadge from '@/components/partner/PartnerStageBadge';
+import { partnerDirectoryStage } from '@/lib/partner/memberStage';
 
 export type PartnerMemberRow = {
   id: string;
@@ -23,23 +25,12 @@ type Filter = 'all' | 'active' | 'placed' | 'atRisk';
 
 const STAGE_ORDER = PIPELINE_STAGES_ORDERED;
 
-const STAGE_TONE: Record<string, KitTone> = {
-  applied: 'muted',
-  enrolled: 'info',
-  in_training: 'warn',
-  certified: 'info',
-  job_searching: 'warn',
-  placed: 'ok',
-  closed: 'danger',
-};
-
 function stageTrackIndex(stage: string): number {
   const idx = STAGE_ORDER.indexOf(stage as PipelineStage);
   return idx === -1 ? 0 : idx + 1;
 }
 
 export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMemberRow[] }) {
-  const t = useTranslations('partner');
   const [filter, setFilter] = useState<Filter>('all');
 
   const counts = useMemo(
@@ -103,13 +94,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
 
       <div style={{ padding: '0 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
         {rows.length === 0 ? (
-          <div className="wa-kit-card">
-            <KitEmptyState title={t('noMembersYet')} description={t('noMembersYetDescription')} />
-          </div>
+          <PartnerEmptyState variant="referrals" framed hideSecondary />
         ) : filtered.length === 0 ? (
-          <div className="wa-kit-card">
-            <KitEmptyState title={t('noMembersYet')} description={t('noMembersMatchFilter')} />
-          </div>
+          <PartnerEmptyState variant="referralsFiltered" framed onPrimary={() => setFilter('all')} />
         ) : (
           filtered.map((row) => {
             const initials = (row.fullName ?? '?')
@@ -145,20 +132,15 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                     <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 6px' }}>
                       {row.programTitle} &middot; Referred {row.referredAtLabel}
                     </p>
-                    <StageTrack
-                      index={stageTrackIndex(row.stage)}
-                      total={STAGE_ORDER.length}
-                      tone={isPlaced ? 'ok' : undefined}
-                      width={90}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem', flexShrink: 0 }}>
-                    <StatusTag tone={STAGE_TONE[row.stage] ?? 'muted'}>{row.stageLabel}</StatusTag>
-                    {row.placementVerified != null ? (
-                      <StatusTag tone={row.placementVerified ? 'ok' : 'warn'}>
-                        {row.placementVerified ? 'Verified' : 'Pending verification'}
-                      </StatusTag>
-                    ) : null}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+                      <PartnerStageBadge stage={partnerDirectoryStage(row.stage, row.placementVerified)} />
+                      <StageTrack
+                        index={stageTrackIndex(row.stage)}
+                        total={STAGE_ORDER.length}
+                        tone={isPlaced ? 'ok' : undefined}
+                        width={90}
+                      />
+                    </div>
                   </div>
                 </div>
               </Link>

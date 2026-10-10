@@ -132,7 +132,7 @@ test('member mobile top nav prefers Profile over a duplicate AI Advisor tab', ()
   assert.doesNotMatch(topNav, /canonical: '\/dashboard\/counselor'/);
 });
 
-test('member mobile top nav surfaces Jobs and Training progress before toolkit', () => {
+test('member mobile top nav surfaces AI Career Tools before Jobs and Training progress', () => {
   const topNav = source('components/portal/MemberPortalTopNav.tsx');
   const jobs = topNav.indexOf("canonical: '/dashboard/jobs'");
   const progress = topNav.indexOf("canonical: '/dashboard/readiness'");
@@ -142,7 +142,8 @@ test('member mobile top nav surfaces Jobs and Training progress before toolkit',
 
   assert.ok(jobs >= 0, 'Job board tab is missing');
   assert.ok(progress >= 0, 'Training progress tab is missing');
-  assert.ok(jobs < progress && progress < messages && messages < toolkit && toolkit < profile);
+  assert.ok(toolkit >= 0, 'AI Career Tools tab is missing');
+  assert.ok(toolkit < jobs && jobs < progress && progress < messages && messages < profile);
 });
 
 test('localized signup opens root legal documents without Next prefetch requests', () => {

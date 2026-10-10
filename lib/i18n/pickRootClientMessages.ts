@@ -15,6 +15,7 @@ export const ROOT_MARKETING_CLIENT_KEYS = ['programs', 'testimonials', 'careers'
 export const PORTAL_CLIENT_NAMESPACES = [
   'enrollmentAgreement',
   'dashboard',
+  'aiToolsDiscovery',
   'profile',
   'jobs',
   'workspace',

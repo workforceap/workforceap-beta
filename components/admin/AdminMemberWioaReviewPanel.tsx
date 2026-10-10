@@ -117,7 +117,7 @@ export default function AdminMemberWioaReviewPanel({
           <strong>Low income (self-reported):</strong> {a.lowIncomeSelfReport ? 'Yes' : 'No'}
         </li>
         <li>
-          <strong>Receiving TANF / WIC / Food stamps (SNAP):</strong> {publicAssistanceLabel(a.publicAssistanceSelfReport)}
+          <strong>Receiving TANF / WIC / Food stamps (SNAP) / MAP:</strong> {publicAssistanceLabel(a.publicAssistanceSelfReport)}
         </li>
         {a.publicAssistanceSelfReport === true ? (
           <>

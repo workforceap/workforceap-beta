@@ -84,6 +84,55 @@ describe('empty.* copy', () => {
     expect(c.placements.body).not.toMatch(/it will appear/);
   });
 
+  it('partner: the referral list is a first state with the guide route, filters clear, zero-is-good queues are titled as the goal, failures name what did not load', () => {
+    const p = en.empty.partner;
+    expect(p.referrals.title).toBe('No referred members yet');
+    expect(p.referrals.body).toMatch(/referral link or an invite/);
+    expect(p.referrals.body).not.toMatch(/will appear|approv|Tap Invite/i);
+    expect(p.referrals.action).toBe('Open referral guide');
+    expect(p.referrals.secondary).toBe('Referred members');
+    expect(p.referralsFiltered.title).toBe('No members match this filter');
+    expect(p.referralsFiltered.action).toBe('Clear filters');
+    expect(p.attentionFiltered.action).toBe('Show all tiers');
+    // Clear: the goal and the rule that keeps the queue empty, never a promise.
+    expect(p.attentionClear.title).toBe('No members need attention');
+    expect(p.pendingReviewsClear.title).toBe('No placement reviews pending');
+    expect(p.pendingReviewsClear.body).toMatch(/90 days/);
+    expect(p.milestonesPendingClear.title).toBe('No milestones pending review');
+    expect(p.milestonesPendingClear).not.toHaveProperty('action');
+    // Unavailable (failed): what did not load + a retry verb.
+    for (const group of [p.attentionUnavailable, p.milestonesUnavailable]) {
+      expect(group.title).toMatch(/load/i);
+      expect(group.action).toBe('Try again');
+    }
+    // First: payouts and milestones say what is recorded here without "will appear".
+    expect(p.payouts.title).toBe('No payouts yet');
+    expect(p.payouts.body).toMatch(/verifies a placement/);
+    expect(p.milestones.title).toBe('No milestones yet');
+    for (const group of [p.payouts, p.milestones]) expect(group.body).not.toMatch(/will appear/);
+  });
+
+  it('partner: es/fr/pt are translated and reuse each locale’s partner nav words', () => {
+    const catalogs = { en, es, fr, pt } as const;
+    const enLeaves = new Map(leaves(en.empty.partner as unknown as Tree));
+    for (const [locale, messages] of Object.entries(catalogs)) {
+      const p = messages.empty.partner;
+      // The route buttons say what the nav says (partner.referredMembers / partner.referralGuide).
+      for (const label of [p.referrals.secondary, p.payouts.action, p.pendingReviewsClear.action, p.attentionClear.action, p.milestones.action]) {
+        expect(label, locale).toBe(messages.partner.referredMembers);
+      }
+      expect(p.referrals.action.toLowerCase(), locale).toContain(messages.partner.referralGuide.toLowerCase());
+      if (locale === 'en') continue;
+      for (const [key, value] of leaves(p as unknown as Tree)) {
+        expect(value, `${locale} empty.partner.${key} is still English`).not.toBe(enLeaves.get(key));
+      }
+      // The attention tier chips and the phone "Completed" toggle render in English for now,
+      // so translated bodies must not cite them by a translated label.
+      expect(p.attentionFiltered.body, locale).not.toMatch(/\b(Todos|Tous)\b/);
+      expect(p.milestonesPendingClear.body, locale).not.toMatch(/Completados|Terminés|Concluídos/);
+    }
+  });
+
   it('first states name the thing, say what appears here, and end on the first action', () => {
     for (const group of ['activeApplications', 'applications', 'matches'] as const) {
       const leaf = en.empty[group];
