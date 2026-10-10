@@ -14,6 +14,7 @@ export const ROOT_MARKETING_CLIENT_KEYS = ['programs', 'testimonials', 'careers'
 /** Member + staff portal namespaces used by client components under `(portal)`. */
 export const PORTAL_CLIENT_NAMESPACES = [
   'dashboard',
+  'aiToolsDiscovery',
   'profile',
   'jobs',
   'workspace',

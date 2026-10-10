@@ -220,12 +220,13 @@ export function VoiceStudioKit({
   const searchParams = useSearchParams();
 
   const selectTab = useCallback(
-    (nextTab: StudioTab) => {
+    (nextTab: StudioTab, nextAgent?: VoiceStudioAgentKey) => {
       setTab(nextTab);
       const next = new URLSearchParams(searchParams?.toString() ?? '');
       if (nextTab === 'coaches') next.delete('tab');
       else next.set('tab', nextTab);
       if (nextTab !== 'session') next.delete('agent');
+      else if (nextAgent) next.set('agent', nextAgent);
       const query = next.toString();
       router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
     },
@@ -245,7 +246,8 @@ export function VoiceStudioKit({
 
   const pickAgent = (next: SessionAgentConfig) => {
     setAgent(next);
-    selectTab('session');
+    const agentKey = VOICE_STUDIO_AGENT_KEYS.find((key) => SESSION_AGENTS[key] === next);
+    selectTab('session', agentKey);
   };
 
   return (
@@ -871,13 +873,15 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
               position: 'relative',
             }}
           >
-            <div style={{ position: 'absolute', top: 24, left: 24, display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--wa-type-meta)', fontWeight: 700 }}>
-              <span aria-hidden="true" className={isLive ? 'vs-dot' : undefined} style={{ width: 8, height: 8, borderRadius: 999, background: dotColor }} />
-              {status}
-            </div>
-            <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--wa-type-meta)', color: SESSION_MUTED }}>
-              <Clock size={13} aria-hidden="true" />
-              {formatClock(elapsed)}
+            <div style={{ alignSelf: 'stretch', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--wa-type-meta)', fontWeight: 700 }}>
+                <span aria-hidden="true" className={isLive ? 'vs-dot' : undefined} style={{ width: 8, height: 8, flexShrink: 0, borderRadius: 999, background: dotColor }} />
+                {status}
+              </div>
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--wa-type-meta)', color: SESSION_MUTED }}>
+                <Clock size={13} aria-hidden="true" />
+                {formatClock(elapsed)}
+              </div>
             </div>
 
             {/* audio-reactive orb — core scale + rings track live mic/agent volume */}

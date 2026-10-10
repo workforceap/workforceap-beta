@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
+import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
 
@@ -16,7 +17,7 @@ afterEach(cleanup);
 describe('member AI Career Tools discovery', () => {
   it('keeps an actionable introduction on Home even without a recommended tool', () => {
     render(
-      <NextIntlClientProvider locale="en" messages={en}>
+      <NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>
         <MemberHomeKit recommendedTool={null} />
       </NextIntlClientProvider>,
     );
@@ -29,7 +30,7 @@ describe('member AI Career Tools discovery', () => {
 
   it('retains the stage-specific action alongside the full tools destination', () => {
     render(
-      <NextIntlClientProvider locale="en" messages={en}>
+      <NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>
         <MemberHomeKit
           toolkitHref="/dev/member/toolkit"
           recommendedTool={{
@@ -50,7 +51,7 @@ describe('member AI Career Tools discovery', () => {
   });
 
   it('offers direct task starting points on the default hub without starting a voice session', () => {
-    render(<NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit /></NextIntlClientProvider>);
+    render(<NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}><VoiceStudioKit /></NextIntlClientProvider>);
     const start = within(screen.getByRole('region', { name: 'Start with one task' }));
     expect(start.getByRole('link', { name: 'Improve my resume' }))
       .toHaveAttribute('href', '/dashboard/ai-tools/resume-studio');
