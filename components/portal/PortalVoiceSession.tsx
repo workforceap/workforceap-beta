@@ -12,6 +12,7 @@ import { Check, X, AlertTriangle } from 'lucide-react';
 import type { BaseSessionConfig, Conversation } from '@elevenlabs/client';
 import { mayRetryElevenLabsWithoutDynamicVariables } from '@/lib/ai/elevenLabsDynamicVariablePolicy';
 import { RESUME_COACH_LIVE_DRAFT_MAX_CHARS } from '@/lib/ai/resumeCoachDataContract';
+import { requestVoiceSession } from '@/lib/portal/requestVoiceSession';
 import { VoiceOrb } from './kit/VoiceOrb';
 
 type VoiceDisconnectDetails = {
@@ -275,6 +276,7 @@ export default function PortalVoiceSession({
   const [parsingSuggestions, setParsingSuggestions] = useState(false);
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
   const convRef = useRef<Conversation | null>(null);
+  const startupRef = useRef<AbortController | null>(null);
   const intentionalRef = useRef(false);
   const transcriptRef = useRef<Array<{ speaker: string; text: string }>>([]);
   const phaseRef = useRef<Phase>('pre');
@@ -339,6 +341,7 @@ export default function PortalVoiceSession({
 
   useEffect(() => {
     return () => {
+      startupRef.current?.abort();
       intentionalRef.current = true;
       convRef.current?.endSession();
       stopVideoRecordingStream();
@@ -423,6 +426,9 @@ export default function PortalVoiceSession({
   }, [phase, pushLiveResumeDraftContext, sessionPayload]);
 
   async function startSession() {
+    const startup = new AbortController();
+    startupRef.current?.abort();
+    startupRef.current = startup;
     disconnectIssueRef.current = false;
     completionPostedRef.current = false;
     setVoiceError('');
@@ -434,11 +440,13 @@ export default function PortalVoiceSession({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((t) => t.stop());
     } catch {
+      if (startup.signal.aborted) return;
       logVoice('mic_denied');
       setVoiceError('Microphone: access is required. Allow it in your browser and try again.');
       setPhase('pre');
       return;
     }
+    if (startup.signal.aborted) return;
 
     if (acquireVideoForRecording && videoStreamRef) {
       let vs: MediaStream | null = null;
@@ -448,11 +456,16 @@ export default function PortalVoiceSession({
           audio: false,
         });
       } catch {
+        if (startup.signal.aborted) return;
         try {
           vs = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         } catch {
           /* handled below */
         }
+      }
+      if (startup.signal.aborted) {
+        vs?.getTracks().forEach((track) => track.stop());
+        return;
       }
       if (vs) {
         videoStreamRef.current = vs;
@@ -472,21 +485,7 @@ export default function PortalVoiceSession({
     let signedUrl: string;
     let dynamicVariables: Record<string, string | number | boolean> | undefined;
     try {
-      const res = await fetch(sessionEndpoint, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: sessionPayload ? JSON.stringify(sessionPayload) : '{}',
-      });
-      const data = (await res.json()) as {
-        signedUrl?: string;
-        dynamicVariables?: Record<string, string | number | boolean>;
-        error?: string;
-        agent?: string;
-      };
-      if (!res.ok || !data.signedUrl) {
-        throw new Error(data.error ?? 'Voice is not available right now.');
-      }
+      const data = await requestVoiceSession(sessionEndpoint, sessionPayload, startup.signal);
       signedUrl = data.signedUrl;
       dynamicVariables = data.dynamicVariables;
       setSessionNotice(
@@ -499,6 +498,7 @@ export default function PortalVoiceSession({
         agent: data.agent ?? 'primary',
       });
     } catch (err) {
+      if (startup.signal.aborted) return;
       logVoice('signed_url_failed', err);
       stopVideoRecordingStream();
       setVoiceError(
@@ -507,6 +507,7 @@ export default function PortalVoiceSession({
       setPhase('pre');
       return;
     }
+    if (startup.signal.aborted) return;
 
     const pushInitialLiveResumeDraft = (conv: Conversation) => {
       if (!pushLiveResumeDraftContext) return;
@@ -547,6 +548,7 @@ export default function PortalVoiceSession({
 
     const sessionCallbacks = {
       onConnect: () => {
+        if (startup.signal.aborted) return;
         logVoice('session_connected');
         setPhase('active');
         // onConnect may run before `convRef` is assigned; flush after the current stack.
@@ -556,6 +558,7 @@ export default function PortalVoiceSession({
         });
       },
       onDisconnect: (details: unknown) => {
+        if (startup.signal.aborted) return;
         const typed = (details ?? {}) as VoiceDisconnectDetails;
         const disconnectMessage = formatDisconnectReason(typed);
         const startupDisconnect = phaseRef.current === 'connecting';
@@ -598,6 +601,7 @@ export default function PortalVoiceSession({
         setAgentSpeaking(false);
       },
       onMessage: (event: unknown) => {
+        if (startup.signal.aborted) return;
         const ev = event as Record<string, unknown>;
         // @elevenlabs/client passes { source, role, message, event_id } — not { type, text }.
         const rawText =
@@ -631,6 +635,7 @@ export default function PortalVoiceSession({
         }
       },
       onError: (msg: unknown, context?: unknown) => {
+        if (startup.signal.aborted) return;
         logVoice('runtime_error', { msg, context });
         stopVideoRecordingStream();
         const errorText = formatVoiceRuntimeReason(String(msg) || 'Connection error', {
@@ -652,6 +657,15 @@ export default function PortalVoiceSession({
 
     try {
       const { Conversation: ConversationClient } = await import('@elevenlabs/client');
+      if (startup.signal.aborted) return;
+      const attachConversation = async (conversation: Conversation) => {
+        if (startup.signal.aborted) {
+          await conversation.endSession();
+          return;
+        }
+        convRef.current = conversation;
+        pushInitialLiveResumeDraft(conversation);
+      };
       if (hasDynamicVariables) {
         try {
           logVoice('start_attempt', { withDynamicVariables: true });
@@ -661,9 +675,9 @@ export default function PortalVoiceSession({
             ...(conversationOverrides ? { overrides: conversationOverrides } : {}),
             ...sessionCallbacks,
           });
-          convRef.current = conv;
-          pushInitialLiveResumeDraft(conv);
+          await attachConversation(conv);
         } catch (firstErr) {
+          if (startup.signal.aborted) return;
           logVoice('start_threw_with_dynamic_variables', firstErr);
           if (!mayRetryWithoutDynamicVariables) {
             throw firstErr;
@@ -674,8 +688,7 @@ export default function PortalVoiceSession({
             ...(conversationOverrides ? { overrides: conversationOverrides } : {}),
             ...sessionCallbacks,
           });
-          convRef.current = conv;
-          pushInitialLiveResumeDraft(conv);
+          await attachConversation(conv);
         }
       } else {
         logVoice('start_attempt', { plain: true });
@@ -684,10 +697,10 @@ export default function PortalVoiceSession({
           ...(conversationOverrides ? { overrides: conversationOverrides } : {}),
           ...sessionCallbacks,
         });
-        convRef.current = conv;
-        pushInitialLiveResumeDraft(conv);
+        await attachConversation(conv);
       }
     } catch (err) {
+      if (startup.signal.aborted) return;
       logVoice('start_failed_final', err);
       stopVideoRecordingStream();
       setVoiceError(

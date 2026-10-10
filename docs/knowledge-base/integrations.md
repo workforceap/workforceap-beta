@@ -47,6 +47,17 @@ Source inventory reviewed on 2026-09-12. “Implemented” below means an import
 
 **State and egress.** [Portal context](../../lib/ai/elevenlabsPortalContext.ts) derives server context from app state; resume sessions explicitly bound the text sent to the provider. The provider owns its remote agent configuration and live conversation. Checked-in patches and [sync scripts](../../scripts/elevenlabs/sync-member-agent-tools.mjs) describe intended remote configuration; they do not prove it is synchronized. Read-only tools enter through [agent-tools/v1](../../app/api/agent-tools/v1), use [gateway session state](../../lib/agents/gateway/sessionStore.ts#L53) in Upstash, and validate [the knowledge manifest](../../config/agent-knowledge/manifest.v1.json). Environment-bound opaque tokens and allowed-tool lists are separate from provider session URLs.
 
+**Browser startup failures.** The hub and shared voice coach use
+[requestVoiceSession](../../lib/portal/requestVoiceSession.ts) to bound the
+signed-URL request and its JSON body with the existing member deadline.
+Missing/malformed responses, outages, network failures, and expired sessions
+return actionable copy and restore the start control. Navigation cancels the
+pending request and disposes of late camera/client connections. Synthetic
+[component cases](../../tests/components/voice-startup-recovery.spec.tsx) and
+[local mobile browser cases](../../tests/e2e/mobile-member-recovery.spec.ts)
+exercise these boundaries without provider calls; they do not prove a real
+ElevenLabs session or Safari microphone behavior.
+
 **Failure and verification.** Private routes check identity and rate limits. Missing/unavailable voice can return 503; public WIOA explicitly keeps the written screening usable. Gateway sessions fail closed without Redis. Test [voice session boundaries](../../tests/api/voice-session-boundaries.spec.ts), [gateway routes](../../tests/api/agent-gateway-route.spec.ts), [registry](../../lib/elevenlabs/agentRegistry.test.ts), and [provider session behavior](../../lib/ai/elevenlabsSession.test.ts). Remote agent checks/patching and live voice acceptance require separate scoped provider work; they were not run for this inventory.
 
 ## Anthropic, Groq and Gemini

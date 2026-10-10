@@ -381,6 +381,13 @@ unchanged page. Keep 4xx validation sentences from the server; replace 5xx
 bodies with the plain "temporarily unavailable" copy so retry classifiers
 still recognise them.
 
+Voice startup in `VoiceStudioKit` and `PortalVoiceSession` uses
+`requestVoiceSession` with the same deadline and failure copy. Its response
+consumer keeps that deadline active through JSON body reads. Leaving the
+surface cancels the startup request, stops any camera stream granted later,
+and ends a client session that connects after unmount. Microphone permission
+denial leaves the start control available and does not request a session URL.
+
 `SkillMissionChallenge` owns its focus trap and close guard. Callers must not
 wrap it in a second Escape handler. Escape, backdrop, and close buttons share
 the same discard confirmation for unfinished work; pending evaluation stays
