@@ -28,6 +28,7 @@ vi.mock('@prisma/client', () => ({ Prisma: { JsonNull: 'JSON_NULL' } }));
 import { POST } from '@/app/api/counselor/assessment-retake/route';
 import { getUser } from '@/lib/auth/server';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
+import { getSubjectOrganizationId } from '@/lib/tenant/organization';
 
 const req = (body: unknown) => new Request('https://x.test/api/counselor/assessment-retake', { method: 'POST', body: JSON.stringify(body) });
 const completed = {
@@ -92,5 +93,21 @@ describe('POST /api/counselor/assessment-retake', () => {
     const res = await POST(req({ memberId: 'member-1' }) as never);
     expect(res.status).toBe(409);
     expect(tx.workflowDiagnostic.create).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the member has no tenant', async () => {
+    vi.mocked(getSubjectOrganizationId).mockRejectedValueOnce(new Error('no org'));
+    const res = await POST(req({ memberId: 'member-1' }) as never);
+    expect(res.status).toBe(404);
+    expect(tx.workflowDiagnostic.create).not.toHaveBeenCalled();
+    expect(tx.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('truncates a long staff reason before it is archived', async () => {
+    const reason = 'x'.repeat(600);
+    const res = await POST(req({ memberId: 'member-1', reason }) as never);
+    expect(res.status).toBe(200);
+    const archived = (tx.workflowDiagnostic.create.mock.calls as unknown as Array<[{ data: { metadata: { reason: string } } }]>)[0]![0].data;
+    expect(archived.metadata.reason).toHaveLength(500);
   });
 });

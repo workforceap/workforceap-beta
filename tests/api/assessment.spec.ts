@@ -380,7 +380,26 @@ describe('POST /api/member/assessment/submit', () => {
     expect(body.code).toBe('ANSWERS_ALL_SAME');
     expect(body.error).toMatch(/read each question/);
     expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
     expect(resendSend).not.toHaveBeenCalled();
+  });
+
+  it('refuses at the 20-same-letter threshold and still accepts 19 (the honest-key margin)', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const mixed = (n: number) =>
+      Object.fromEntries(Array.from({ length: 35 }, (_, i) => [String(i + 1), i < n ? 'A' : ['B', 'C', 'D'][i % 3]]));
+
+    const refused = await submitAssessment(makeRequest({ ...validBody, answers: mixed(20) }));
+    expect(refused.status).toBe(422);
+    expect((await refused.json()).code).toBe('ANSWERS_ALL_SAME');
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+
+    const accepted = await submitAssessment(makeRequest({ ...validBody, answers: mixed(19) }));
+    expect(accepted.status).toBe(200);
+    expect((await accepted.json()).ok).toBe(true);
+    expect(prisma.user.updateMany).toHaveBeenCalled();
   });
 
   it('still accepts the submission when starter profile review is pending', async () => {
