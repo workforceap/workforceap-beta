@@ -172,6 +172,11 @@ export function latestAttestation(snapshot: Pick<CaseSnapshot, 'attestations'>, 
   return snapshot.attestations.filter((a) => a.kind === kind).sort((a, b) => b.attestedAt.getTime() - a.attestedAt.getTime())[0] ?? null;
 }
 
+/** True when the frozen J6 still names the latest class_started row (a newer attestation makes the draft stale). */
+export function j6DraftBindsLatestClassStarted(content: J6Content, snapshot: Pick<CaseSnapshot, 'attestations'>): boolean {
+  return latestAttestation(snapshot, 'class_started')?.id === content.classStarted.attestationId;
+}
+
 export function stageRecords(snapshot: Pick<CaseSnapshot, 'records'>, stage: BillingStage): RecordWithRelations[] {
   return snapshot.records.filter((r) => r.stage === stage).sort((a, b) => b.version - a.version);
 }
