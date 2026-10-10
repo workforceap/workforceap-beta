@@ -45,26 +45,52 @@ describe('AssessmentForm', () => {
     expect((screen.getByRole('radio', { name: /A planned travel route/ }) as HTMLInputElement).checked).toBe(true);
   });
 
-  it('warns once when a section is all the same letter, then lets the member continue', async () => {
-    writeAssessmentProgress({ answers: { 1: 'B', 2: 'B', 3: 'B', 4: 'B', 5: 'B' }, programInterest: '', step: 2 });
+  it('warns once when a section is all the same on-screen letter, then lets the member continue', async () => {
+    writeAssessmentProgress({ answers: {}, programInterest: 'IT Support', step: 2, seed: 'fixed-seed' });
     render(<AssessmentForm {...props} />);
-    await screen.findByTestId('assessment-progress-restored');
+    // Click the first on-screen option ("A)") on all five questions in this section.
+    for (const group of screen.getAllByRole('group')) {
+      await act(async () => fireEvent.click(group.querySelectorAll('input[type="radio"]')[0]));
+    }
     const next = screen.getByRole('button', { name: /next/i });
     await act(async () => fireEvent.click(next));
     expect(screen.getByRole('alert').textContent).toBe(SECTION_SAME_ANSWER_WARNING);
-    expect(screen.getByText(/Q1\./)).toBeTruthy();
+    expect(screen.getByText(/^Q1\./)).toBeTruthy();
     await act(async () => fireEvent.click(next));
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByText(/Q6\./)).toBeTruthy();
+    expect(screen.getByText(/^Q6\./)).toBeTruthy();
+  });
+
+  it('shows the same shuffled order after a refresh, and a new attempt gets a different order', async () => {
+    writeAssessmentProgress({ answers: { 1: 'A' }, programInterest: '', step: 2, seed: 'seed-one' });
+    const first = render(<AssessmentForm {...props} />);
+    await screen.findByTestId('assessment-progress-restored');
+    const order = () => screen.getAllByRole('group').map((g) => g.querySelector('legend')!.textContent);
+    const a = order();
+    first.unmount();
+    render(<AssessmentForm {...props} />);
+    await screen.findByTestId('assessment-progress-restored');
+    expect(order()).toEqual(a);
+    cleanup();
+    window.localStorage.clear();
+    writeAssessmentProgress({ answers: { 1: 'A' }, programInterest: '', step: 2, seed: 'seed-two' });
+    render(<AssessmentForm {...props} />);
+    await screen.findByTestId('assessment-progress-restored');
+    const choicesB = screen.getAllByRole('radio').map((r) => r.closest('label')!.textContent);
+    expect(choicesB.length).toBe(20);
   });
 
   it('does not warn on a normal mixed section', async () => {
-    writeAssessmentProgress({ answers: { 1: 'A', 2: 'C', 3: 'C', 4: 'A', 5: 'A' }, programInterest: '', step: 2 });
+    writeAssessmentProgress({ answers: {}, programInterest: 'IT Support', step: 2, seed: 'fixed-seed' });
     render(<AssessmentForm {...props} />);
-    await screen.findByTestId('assessment-progress-restored');
+    // Pick on-screen A, B, C, D, A: a mixed pattern whatever the shuffle.
+    const groups = screen.getAllByRole('group');
+    for (const [i, group] of groups.entries()) {
+      await act(async () => fireEvent.click(group.querySelectorAll('input[type="radio"]')[i % 4]));
+    }
     await act(async () => fireEvent.click(screen.getByRole('button', { name: /next/i })));
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByText(/Q6\./)).toBeTruthy();
+    expect(screen.getByText(/^Q6\./)).toBeTruthy();
   });
 });
 
