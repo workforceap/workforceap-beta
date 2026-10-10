@@ -21,7 +21,7 @@ import { buildPartnerReferralLink } from '@/lib/partner/referralLink';
 import { buildPartnerShareLinks } from '@/lib/partner/shareLinks';
 import PartnerMembersList from '@/components/portal/PartnerMembersList';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { isSuperAdmin } from '@/lib/auth/roles';
 import { PARTNER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
@@ -566,6 +566,11 @@ export default async function PartnerDashboardPage({
               <PartnerReferredMembersMobile rows={referralMobileRows} />
             </div>
             <div className="wa-hidden md:wa-block">
+              {referralRows.length === 0 ? (
+                /* Same population as the "Members referred" tile: zero rows means no
+                   member applied through this partner's link or invite yet. */
+                <PartnerEmptyState variant="referrals" framed />
+              ) : (
               <KitDataTable<ReferralKitRow>
                 columns={[
                   {
@@ -586,9 +591,8 @@ export default async function PartnerDashboardPage({
                 rows={referralRows}
                 rowKey={(row) => row.id}
                 mobile="scroll"
-                emptyTitle="No referred members yet"
-                emptyDescription="New referrals will appear here after members apply through this partner."
               />
+              )}
             </div>
           </div>
 
@@ -986,14 +990,7 @@ export default async function PartnerDashboardPage({
             rows={referralTableRows}
             rowKey={(row) => row.id}
             density="compact"
-            emptyState={
-              <PortalEmptyState
-                title={t('noReferredMembersYet')}
-                description={t('shareReferralLink')}
-                icon={<span className="material-symbols-outlined" aria-hidden="true">group_add</span>}
-                primaryAction={{ label: t('referralGuide'), href: '/partner/guide' }}
-              />
-            }
+            emptyState={<PartnerEmptyState variant="referrals" framed />}
           />
         </PortalCard>
       </div>
@@ -1271,14 +1268,7 @@ export default async function PartnerDashboardPage({
             columns={referralColumns}
             rows={referralTableRows}
             rowKey={(row) => row.id}
-            emptyState={
-              <PortalEmptyState
-                icon={<span className="material-symbols-outlined" aria-hidden="true">group_add</span>}
-                title={t('noReferredMembersYet')}
-                description={t('sendApplicantsTo', { partnerName: ctx.partner.name })}
-                primaryAction={{ label: t('openReferralGuide'), href: '/partner/guide' }}
-              />
-            }
+            emptyState={<PartnerEmptyState variant="referrals" framed />}
           />
         </PortalCard>
       </section>

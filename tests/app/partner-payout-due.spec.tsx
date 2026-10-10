@@ -1,4 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn(), unpaid: vi.fn() }));
@@ -72,7 +75,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 async function payoutTile() {
-  const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+  const html = renderToStaticMarkup(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
   const match = html.match(/<div data-kpi="Payout due">(.*?)<\/div>/);
   if (!match) throw new Error('no Payout due tile');
   return match[1];
