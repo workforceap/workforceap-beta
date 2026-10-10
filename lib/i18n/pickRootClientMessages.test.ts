@@ -165,3 +165,16 @@ test('root payload is a fraction of the full catalog and of the legacy union', (
   assert.ok(rootBytes < fullBytes / 8, `root ${rootBytes} vs full ${fullBytes}`);
   assert.ok(portalBytes < legacyBytes, `portal ${portalBytes} vs legacy ${legacyBytes}`);
 });
+
+test('AI Tools labels reach the portal client in every shipped locale', () => {
+  for (const locale of ['en', 'es', 'fr', 'pt']) {
+    const localeCatalog = JSON.parse(
+      readFileSync(join(root, `messages/${locale}.json`), 'utf8'),
+    ) as AbstractIntlMessages;
+    const expected = ns(localeCatalog, 'aiToolsDiscovery');
+    const actual = ns(pickPortalClientMessages(localeCatalog), 'aiToolsDiscovery');
+    assert.equal(typeof actual.hubIntro, 'string', `${locale}: aiToolsDiscovery.hubIntro`);
+    assert.deepEqual(actual, expected, `${locale}: preserve the discovery labels`);
+    assert.equal(pickRootClientMessages(localeCatalog).aiToolsDiscovery, undefined);
+  }
+});
