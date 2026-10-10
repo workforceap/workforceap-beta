@@ -83,3 +83,27 @@ export function newAttemptSeed(): string {
   globalThis.crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+/** Same shape the form persists and submits; anything else is ignored. */
+export function isValidAttemptSeed(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-z0-9-]{1,64}$/u.test(value);
+}
+
+/**
+ * On-screen letters for a stored answer sheet. Used to refuse a click-through
+ * of one display letter after shuffle: submitted values are original letters,
+ * so a same-display-letter sheet looks mixed unless we reconstruct the layout.
+ */
+export function displayLettersForAnswers(
+  questions: readonly AssessmentQuestionPublic[],
+  seed: string,
+  answers: Record<number | string, string>,
+): Record<number, string> {
+  const out: Record<number, string> = {};
+  for (const q of layoutAssessment(questions, seed)) {
+    const original = answers[q.id];
+    const shown = q.choices.find((c) => c.value === original);
+    if (shown) out[q.id] = shown.displayLetter;
+  }
+  return out;
+}

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ASSESSMENT_QUESTIONS, scoreAssessment, TOTAL_POINTS } from './answer-key';
 import { ASSESSMENT_QUESTIONS_PUBLIC } from './questions';
-import { layoutAssessment, newAttemptSeed } from './layout';
+import { displayLettersForAnswers, isValidAttemptSeed, layoutAssessment, newAttemptSeed } from './layout';
 import { isStraightLined } from './answerPattern';
 
 const key = new Map(ASSESSMENT_QUESTIONS.map((q) => [q.id, q.correct]));
@@ -59,4 +59,29 @@ test('clicking display "A" everywhere becomes a random mix, not a pattern', () =
 test('the server guard still catches same-letter submissions regardless of layout', () => {
   const allA = Object.fromEntries(ASSESSMENT_QUESTIONS_PUBLIC.map((q) => [q.id, 'A']));
   assert.equal(isStraightLined(allA), true);
+});
+
+test('clicking one display letter everywhere is a straight line once the layout is reconstructed', () => {
+  for (const seed of ['click-0', 'click-1', newAttemptSeed()]) {
+    const answers: Record<number, string> = {};
+    for (const q of layoutAssessment(ASSESSMENT_QUESTIONS_PUBLIC, seed)) answers[q.id] = q.choices[0].value;
+    assert.equal(isStraightLined(answers), false, `original letters look mixed (${seed})`);
+    const display = displayLettersForAnswers(ASSESSMENT_QUESTIONS_PUBLIC, seed, answers);
+    assert.equal(Object.keys(display).length, 35);
+    assert.ok(Object.values(display).every((letter) => letter === 'A'));
+    assert.equal(isStraightLined(display), true, `display letters are all A (${seed})`);
+  }
+});
+
+test('an honest answer sheet stays under the display-letter threshold', () => {
+  const seed = 'honest-1';
+  const answers = Object.fromEntries(ASSESSMENT_QUESTIONS.map((q) => [q.id, q.correct]));
+  assert.equal(isStraightLined(displayLettersForAnswers(ASSESSMENT_QUESTIONS_PUBLIC, seed, answers)), false);
+});
+
+test('attempt seeds are short lowercase tokens', () => {
+  assert.equal(isValidAttemptSeed(newAttemptSeed()), true);
+  assert.equal(isValidAttemptSeed('preview'), true);
+  assert.equal(isValidAttemptSeed('not a seed'), false);
+  assert.equal(isValidAttemptSeed(''), false);
 });
