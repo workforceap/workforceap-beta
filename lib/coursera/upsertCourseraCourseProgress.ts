@@ -1,8 +1,9 @@
 import { Prisma } from '@prisma/client';
 
-import { prisma } from '@/lib/db/prisma';
-import { ensureCourseProgressTenantKeys } from '@/lib/coursera/rawProgressTenantKeys';
 import { adoptLegacyRawCourseProgressRows } from '@/lib/coursera/legacyRawProgressAdoption.server';
+import { ensureCourseProgressTenantKeys } from '@/lib/coursera/rawProgressTenantKeys';
+import { EXACT_EMAIL_CANDIDATE_LIMIT, pickExactEmailMatch } from '@/lib/db/exactEmailMatch';
+import { prisma } from '@/lib/db/prisma';
 
 export type CourseraCourseProgressUpsertInput = {
   externalEmail: string;
@@ -73,7 +74,14 @@ export async function upsertCourseraCourseProgress(
       ],
     });
 
-    const existing = await tx.courseraCourseProgress.findFirst({
+    // `mode: 'insensitive'` compiles to ILIKE, so `_`/`%` in a Coursera
+    // learner email are wildcards: `m_johnson@x.org` also matches
+    // `mrjohnson@x.org`. The B4B cron writes unmatched rows with this
+    // helper, and an ILIKE hit would merge that learner's progress onto
+    // the neighbor (or permanently block the underscore address once it
+    // has a WAP user). Collect candidates, then keep only a genuine
+    // case-insensitive equality. See lib/db/exactEmailMatch.ts.
+    const existingCandidates = await tx.courseraCourseProgress.findMany({
       where: {
         organizationId,
         externalEmail: { equals: externalEmail, mode: 'insensitive' },
@@ -89,7 +97,12 @@ export async function upsertCourseraCourseProgress(
         lastActivityTime: true,
         completionTime: true,
       },
+      take: EXACT_EMAIL_CANDIDATE_LIMIT,
     });
+    const existing = pickExactEmailMatch(
+      existingCandidates.map((row) => ({ ...row, email: row.externalEmail })),
+      externalEmail,
+    );
 
     if (existing?.userId && input.userId && existing.userId !== input.userId) {
       throw new Error('Coursera progress identity conflict for existing linked row');
