@@ -2935,6 +2935,11 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   .member-portal-top-nav__list::-webkit-scrollbar {
     display: none;
   }
+  /* Keyboard focus must keep its target visible instead of snapping away.
+     Pointer/swipe scrolling retains the rail's proximity snap behavior. */
+  .member-portal-top-nav__list:has(.member-portal-top-nav__link:focus-visible) {
+    scroll-snap-type: none;
+  }
   .member-portal-top-nav__item {
     flex-shrink: 0;
     scroll-snap-align: start;

@@ -21,6 +21,18 @@ for (const link of navItemsForActiveRoute(MEMBER_PORTAL_NAV_ITEMS)) {
   if (!RAIL_LINKS.has(link.href)) RAIL_LINKS.set(link.href, link);
 }
 
+/** Centre a destination horizontally without scrolling the document. */
+function centerRailItem(list: HTMLUListElement, item: HTMLElement) {
+  const target = item.offsetLeft - (list.clientWidth - item.offsetWidth) / 2;
+  const max = Math.max(0, list.scrollWidth - list.clientWidth);
+  const next = Math.max(0, Math.min(target, max));
+  if (typeof list.scrollTo === 'function') {
+    list.scrollTo({ left: next, behavior: 'auto' });
+  } else {
+    list.scrollLeft = next;
+  }
+}
+
 export default function MemberPortalTopNav({
   badgeCounts,
   hrefMap,
@@ -44,6 +56,12 @@ export default function MemberPortalTopNav({
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const setVar = () => {
       document.documentElement.style.setProperty('--member-portal-top-nav-h', `${el.offsetHeight}px`);
+      // Compact chrome can expand after native keyboard focus scrolls the page.
+      // Keep that focused destination visible as the rail geometry changes.
+      const list = listRef.current;
+      const focused = el.querySelector<HTMLElement>('.member-portal-top-nav__link:focus-visible');
+      const item = focused?.parentElement;
+      if (list && item) centerRailItem(list, item);
     };
     setVar();
     const ro = new ResizeObserver(setVar);
@@ -64,14 +82,7 @@ export default function MemberPortalTopNav({
     const list = listRef.current;
     const item = activeItemRef.current;
     if (!list || !item) return;
-    const target = item.offsetLeft - (list.clientWidth - item.offsetWidth) / 2;
-    const max = Math.max(0, list.scrollWidth - list.clientWidth);
-    const next = Math.max(0, Math.min(target, max));
-    if (typeof list.scrollTo === 'function') {
-      list.scrollTo({ left: next, behavior: 'auto' });
-    } else {
-      list.scrollLeft = next;
-    }
+    centerRailItem(list, item);
   }, [pathname]);
 
   const remap = (href: string) => hrefMap?.[href] ?? href;
@@ -140,6 +151,13 @@ export default function MemberPortalTopNav({
                 // background from each of them. Tapping Home still navigates with
                 // app/(portal)/dashboard/loading.tsx, like the rail and header links.
                 prefetch={false}
+                onFocus={(event) => {
+                  const list = listRef.current;
+                  const item = event.currentTarget.parentElement;
+                  if (list && item && event.currentTarget.matches(':focus-visible')) {
+                    centerRailItem(list, item);
+                  }
+                }}
                 className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
                 aria-current={active ? 'page' : undefined}
               >
