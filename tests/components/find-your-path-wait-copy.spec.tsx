@@ -2,6 +2,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import en from '@/messages/en.json';
+import { pickRootClientMessages } from '@/lib/i18n/pickRootClientMessages';
 
 /**
  * /find-your-path results: the two "follow up within 1–2 business days"
@@ -35,15 +36,15 @@ afterEach(() => {
 });
 
 describe('find-your-path results copy', () => {
-  it('states the review and the email instead of a fixed wait', async () => {
+  it.each([en.apply.applicationTimeEstimate, 'Updated total estimate'])('states the review and email with the shared estimate %s', async (applicationTimeEstimate) => {
     const { container } = render(
-      <NextIntlClientProvider locale="en" messages={en}>
+      <NextIntlClientProvider locale="en" messages={pickRootClientMessages({ ...en, apply: { ...en.apply, applicationTimeEstimate } })}>
         <FindYourPathClient />
       </NextIntlClientProvider>,
     );
     await waitFor(() => expect(screen.getAllByText(/IT Support Professional Certificate/).length).toBeGreaterThan(0));
     expect(container.textContent).toContain(
-      'Apply in about 10 minutes. A counselor reviews every application, and you’ll get an email when a decision is made.',
+      `${applicationTimeEstimate} to apply. A counselor reviews every application, and you’ll get an email when a decision is made.`,
     );
     expect(container.textContent).toContain(
       'Choose the track that fits you best, then apply. A counselor reviews every application and follows up by email.',

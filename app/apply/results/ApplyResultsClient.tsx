@@ -253,7 +253,7 @@ export default function ApplyResultsClient({
         <p className="apply-step-back-nav">
           <LocalizedLink href={applyRecoveryHref('/apply', recoveryContext)}>{t(isSchool ? 'schoolResultsBackStep1' : 'resultsBackStep1')}</LocalizedLink>
         </p>
-        <p className="apply-step-kicker">{t(isSchool ? 'schoolResultsKicker' : 'resultsKicker')}</p>
+        <p className="apply-step-kicker">{isSchool ? t('schoolResultsKicker') : t('resultsKicker', { duration: t('applicationTimeEstimate') })}</p>
         <details className="apply-transition-details">
           <summary className="apply-transition-details__summary">{t('resultsTransitionSummary')}</summary>
           <div className="apply-transition-details__body">

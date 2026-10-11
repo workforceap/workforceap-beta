@@ -1,4 +1,6 @@
 ---
+import { useT } from '../i18n/t';
+const t = useT('en');
 import Layout from '../layouts/Layout.astro';
 
 const evidenceQuestions = [
@@ -96,7 +98,7 @@ const evidenceQuestions = [
         </div>
         <div>
           <dt>A real team reviews your application</dt>
-          <dd>Apply in about five minutes; a real team reviews it and follows up by email. <a href="/how-it-works">See the next steps</a></dd>
+          <dd>{t('apply.applicationTimeEstimate')} to apply; a real team reviews it and follows up by email. <a href="/how-it-works">See the next steps</a></dd>
         </div>
       </dl>
     </div>

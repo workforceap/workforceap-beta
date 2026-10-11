@@ -40,14 +40,16 @@ test('legacy fat picker still ships admin + apply + dashboard to every client', 
   assert.ok(clientMessagesBytes(fat) > 100_000);
 });
 
-test('root picker keeps a marketing nav string and drops admin/portal/apply', () => {
+test('root picker keeps marketing chrome and only the shared application estimate', () => {
   const rootMessages = pickRootClientMessages(catalog);
   assert.equal(ns(rootMessages, 'nav').programs, 'Programs');
   const testimonials = ns(rootMessages, 'marketing').testimonials as Record<string, unknown>;
   assert.equal(testimonials.sectionTitle, 'Hear from our members');
   assert.equal((rootMessages as Record<string, unknown>).admin, undefined);
   assert.equal((rootMessages as Record<string, unknown>).dashboard, undefined);
-  assert.equal((rootMessages as Record<string, unknown>).apply, undefined);
+  assert.deepEqual(ns(rootMessages, 'apply'), {
+    applicationTimeEstimate: ns(catalog, 'apply').applicationTimeEstimate,
+  });
   assert.ok(clientMessagesBytes(rootMessages) < 20_000);
 });
 

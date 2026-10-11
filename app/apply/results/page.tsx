@@ -55,8 +55,8 @@ export default async function ApplyResultsPage({ searchParams }: {
         </div>
       </section>
           )}
-          readyIntro={<><ApplyMobileTrustBar /><ApplyMobileStepNav activeStep={1} showTimeHint school={isSchool} />
-            <p className="apply-funnel-form-kicker afd-kicker" role="note">{t(isSchool ? 'schoolResultsKicker' : 'resultsKicker')}</p></>}
+          readyIntro={<><ApplyMobileTrustBar /><ApplyMobileStepNav activeStep={1} showStepHint school={isSchool} />
+            <p className="apply-funnel-form-kicker afd-kicker" role="note">{isSchool ? t('schoolResultsKicker') : t('resultsKicker', { duration: t('applicationTimeEstimate') })}</p></>}
         />
       </Suspense>
 

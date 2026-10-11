@@ -321,7 +321,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
 
           <div id="apply-form-start" className="apply-main-form__primary">
             <ApplyMobileTrustBar />
-            <ApplyMobileStepNav activeStep={0} showTimeHint school={isSchool} />
+            <ApplyMobileStepNav activeStep={0} showStepHint school={isSchool} />
             <p className="apply-organic-form-kicker" role="note">
               {t('step1Kicker')}
             </p>

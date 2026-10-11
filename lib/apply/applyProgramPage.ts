@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { buildPageMetadataAsync, SITE_URL } from '@/app/seo';
 import { getRequestLocale } from '@/lib/i18n/server';
 import { withLocalePrefix } from '@/lib/i18n/config';
@@ -32,11 +33,11 @@ function programFieldLabel(program: Program): string {
   return map[program.category] ?? 'career training';
 }
 
-export function buildApplyProgramSeo(program: Program): { title: string; description: string } {
+export function buildApplyProgramSeo(program: Program, applicationTimeEstimate: string): { title: string; description: string } {
   const cert = program.partner;
   const field = programFieldLabel(program);
   const title = `Apply for ${program.title} Training — WorkforceAP`;
-  const description = `Get ${program.title} training at no cost to members with ${cert} from WorkforceAP. Career certification in ${field}. Apply in 10 minutes.`;
+  const description = `Get ${program.title} training at no cost to members with ${cert} from WorkforceAP. Career certification in ${field}. ${applicationTimeEstimate} to apply.`;
   return { title, description };
 }
 
@@ -44,6 +45,7 @@ export async function buildApplyPageMetadata(programParam: string | undefined): 
   const slug = resolveApplyProgramSlug(programParam);
   const program = slug ? getProgramBySlug(slug) : undefined;
   const locale = await getRequestLocale();
+  const apply = program ? await getTranslations({ locale, namespace: 'apply' }) : undefined;
 
   // Use the existing full-resolution brand asset, including its real dimensions.
   const applyOgImage = {
@@ -52,7 +54,7 @@ export async function buildApplyPageMetadata(programParam: string | undefined): 
     height: 985,
     alt: 'Workforce Advancement Project — Empowering People. Advancing Futures.',
   };
-  const { title, description } = program ? buildApplyProgramSeo(program) : {
+  const { title, description } = program && apply ? buildApplyProgramSeo(program, apply('applicationTimeEstimate')) : {
     title: 'Apply for Career Training',
     description:
       'Apply for career certification training at no cost to members. CompTIA, Google, IBM, AWS, and more. Serving communities nationwide. A counselor reviews every application; you\'ll get an email when a decision is made.',

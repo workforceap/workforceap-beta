@@ -36,7 +36,7 @@ const p = lang === 'en' ? '' : `/${lang}`; // locale-prefixed internal links
           <svg viewBox="0 0 100 100" style="transform:rotate(-90deg)"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="9"/><circle cx="50" cy="50" r="42" fill="none" stroke="#fff" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="88" stroke-linecap="round"/></svg>
         </div>
       </div>
-      <div class="step"><div class="n">1</div><div class="t"><b>{t('marketing.home.heroStep1')}</b></div><span class="pill">~5 min</span></div>
+      <div class="step"><div class="n">1</div><div class="t"><b>{t('marketing.home.heroStep1', { duration: t('apply.applicationTimeEstimate') })}</b></div><span class="pill">{t('apply.applicationTimeEstimate')}</span></div>
       <div class="step"><div class="n">2</div><div class="t"><b>{t('marketing.home.programsTitle')}</b></div></div>
       <div class="step active"><div class="n">3</div><div class="t"><b>{t('marketing.home.credBarLabel')}</b><span>IBM · Google · Microsoft · AWS · CompTIA</span></div></div>
     </div>
@@ -66,7 +66,7 @@ const p = lang === 'en' ? '' : `/${lang}`; // locale-prefixed internal links
 <!-- CTA -->
 <section class="band"><div class="wrap"><div class="cta">
   <h2>{t('marketing.home.ctaTitle')}</h2>
-  <p>{t('marketing.home.ctaCopy')}</p>
+  <p>{t('marketing.home.ctaCopy', { duration: t('apply.applicationTimeEstimate') })}</p>
   <div class="acts">
     <a class="btn btn--light" href={`${p}/apply`}>{t('marketing.home.ctaApply')}</a>
     <a class="btn btn--translucent" href={`${p}/find-your-path`}>{t('marketing.home.ctaFind')}</a>
