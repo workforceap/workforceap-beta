@@ -78,6 +78,8 @@ const ADMIN_ORG_TABS: BottomTab[] = [
 interface MobileBottomNavProps {
   variant?: 'marketing' | 'portal' | 'employer' | 'counselor' | 'partner' | 'admin';
   badgeCounts?: Partial<Record<NavBadgeKey, number>>;
+  /** Canonical route represented by a synthetic dev fixture; destinations stay real. */
+  activePathname?: string;
   /** Admin variant only: the same super-admin context the admin rail filters on. */
   superAdmin?: boolean;
   /**
@@ -97,8 +99,9 @@ function prefetchForBottomTab(variant: MobileBottomNavProps['variant'], href: st
   return false;
 }
 
-export default function MobileBottomNav({ variant = 'marketing', badgeCounts, superAdmin = false, search }: MobileBottomNavProps) {
-  const pathname = usePathname() ?? '';
+export default function MobileBottomNav({ variant = 'marketing', badgeCounts, superAdmin = false, search, activePathname }: MobileBottomNavProps) {
+  const currentPathname = usePathname() ?? '';
+  const pathname = activePathname ?? currentPathname;
   const t = useTranslations('nav.mobileBottomNav');
   const tNav = useTranslations('nav');
   // Member portal switched from bottom-tab to sticky-top horizontal-scroll nav

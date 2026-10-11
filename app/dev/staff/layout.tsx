@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import DevPartnerFrame from './DevPartnerFrame';
 // Full portal stylesheet chain so staff-side kits (incl. the counselor roster,
 // which needs counselor.css) render exactly as production does.
 import '@/css/portal.css';
@@ -10,5 +11,6 @@ import '@/css/mobile-dashboard-fixes.css';
 export const metadata = { robots: { index: false, follow: false } };
 
 export default function DevStaffLayout({ children }: { children: ReactNode }) {
-  return children;
+  if (process.env.VERCEL_ENV === 'production') return children;
+  return <DevPartnerFrame>{children}</DevPartnerFrame>;
 }
