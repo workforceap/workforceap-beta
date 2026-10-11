@@ -83,3 +83,7 @@ Next application/authentication, protected portal and tenant API routing remain
 covered by behavioral regressions. The [bounded receipt](audits/localized-home-routing-2026-10-11.md)
 records fresh static-output ownership and integrated local GET checks. Independent
 review and exact-deployment acceptance remain separate gates.
+
+## 2026-10-11 — WAP-301 member phone keyboard-focus candidate
+
+Member phone tabs center keyboard-visible focus horizontally and suspend snap while that focus is inside the rail. The [bounded receipt](audits/member-phone-keyboard-focus-2026-10-11.md) records an actual baseline failure and six passing light/dark viewport regressions, per-link geometry, touch/zoom/desktop checks and unchanged route-state centering. Locale, aliases, badges and production role guards remain intact; component-fixture evidence does not certify authenticated destinations. Compact-chrome native focus scrolling is recorded separately. Independent review, hosted gates and release acceptance remain pending.
