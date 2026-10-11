@@ -11,7 +11,7 @@ import 'server-only';
  *   letterhead.footer          -> footer phone and address line(s)
  *   title                      -> document title (and PDF metadata title)
  *   signer.name / signer.title -> signature caption (`name`, then `title, organization`)
- *   lineItems[0].label/amount  -> the one Tuition & Fees line
+ *   lineItems[0].label/amount  -> J6 Tuition & Fees; J5 cost summary uses the frozen total
  *   paymentFollowUp.wording    -> J6 follow-up sentence
  *   issueDate, contacts, board, training terms, voucher reference
  *
@@ -86,6 +86,10 @@ export const FIXED_PRINTED_TEXT = Object.freeze({
     DRAFT_BADGE,
     'TRAINING DETAILS',
     'CLASS DESCRIPTION',
+    'Training and Fees',
+    'Books & Supplies',
+    'Total Required Cost',
+    '$0.00',
     'Training hours',
     'Class start',
     'Class end',
@@ -157,7 +161,7 @@ export function printedContentFields(content: TwoStageContent): PrintedField[] {
     { field: 'counselor.name', value: content.counselor.name, max: L.personName },
     { field: 'training.className', value: content.training.className, max: L.className },
     ...(content.training.classDescription ? [{ field: 'training.classDescription', value: content.training.classDescription, max: L.classDescription }] : []),
-    { field: 'lineItems[0].label', value: content.lineItems[0]?.label ?? '', max: L.tuitionLabel },
+    ...(content.kind === 'j6_invoice_cover_letter' ? [{ field: 'lineItems[0].label', value: content.lineItems[0]?.label ?? '', max: L.tuitionLabel }] : []),
     { field: 'signer.name', value: content.signer.name, max: L.personName },
     { field: 'signer.title', value: content.signer.title, max: L.signerTitle },
   ];

@@ -25,7 +25,7 @@ export const DOCUMENT_TITLES: Readonly<Record<BillingDocumentKind, string>> = {
   [J6_KIND]: 'Invoice / Voucher Cover Letter',
 };
 
-/** The one and only line on both documents: `Tuition & Fees $7,500.00`. */
+/** The one accounting item for both stages; J5 displays a three-row cost summary. */
 export const TUITION_AND_FEES_LABEL = 'Tuition & Fees';
 export const TUITION_AND_FEES_CENTS = 750_000;
 
