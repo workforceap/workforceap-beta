@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { IdCard } from 'lucide-react';
+import { VStack } from '@astryxdesign/core/VStack';
 import { DesignSurface, FormField, Toggle, PageOpener } from '@/components/portal/kit';
 import { MemberProfilePhotoEditor } from '@/components/portal/kit/MemberProfilePhotoEditor';
 import { getErrorMessageFromResponse } from '@/lib/fetchWithTimeout';
@@ -236,7 +237,7 @@ export function MemberProfileKit({
         {/* Profile header */}
         <div className="wa-kit-card wa-flex wa-flex-col sm:wa-flex-row wa-items-center wa-gap-5">
           <MemberProfilePhotoEditor initials={initials || '?'} photoUrl={photoUrl} live={live} />
-          <div style={{ flex: 1, textAlign: 'center' }} className="sm:wa-text-left">
+          <div style={{ flex: 1 }} className="wa-text-center sm:wa-text-left">
             <h2 className="h-font" style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>
               {name || 'Name not on file'}
             </h2>
@@ -388,47 +389,50 @@ export function MemberProfileKit({
             </button>
           </div>
 
-          {/* Notifications */}
-          <div className="wa-kit-card">
-            <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Notifications</h3>
-            {prefError ? (
-              <p
-                ref={prefErrorRef}
-                role="alert"
-                tabIndex={-1}
-                style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-danger)', fontWeight: 600, marginBottom: 12 }}
-              >
-                {prefError}
-              </p>
-            ) : null}
-            {prefs.length === 0 ? (
-              <p className="wa-kit-lede" style={{ margin: 0 }}>Notification preferences appear here when your account is connected.</p>
-            ) : (
-            <div className="wa-space-y-4">
-              {prefs.map((p) => (
-                <Toggle
-                  key={p.key}
-                  label={savingPref === p.key ? `${p.label} (saving…)` : p.label}
-                  checked={p.enabled}
-                  onChange={(v) => togglePref(p.key, v)}
-                />
-              ))}
-            </div>
-            )}
-            {live ? (
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--wa-border)' }}>
-                <PushNotificationsToggle />
+          {/* Compact preferences column; DOM order stays account → notifications → language. */}
+          <VStack gap={5} className="wa-self-start wa-min-w-0 wa-w-full">
+            {/* Notifications */}
+            <div className="wa-kit-card">
+              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Notifications</h3>
+              {prefError ? (
+                <p
+                  ref={prefErrorRef}
+                  role="alert"
+                  tabIndex={-1}
+                  style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-danger)', fontWeight: 600, marginBottom: 12 }}
+                >
+                  {prefError}
+                </p>
+              ) : null}
+              {prefs.length === 0 ? (
+                <p className="wa-kit-lede" style={{ margin: 0 }}>Notification preferences appear here when your account is connected.</p>
+              ) : (
+              <div className="wa-space-y-4">
+                {prefs.map((p) => (
+                  <Toggle
+                    key={p.key}
+                    label={savingPref === p.key ? `${p.label} (saving…)` : p.label}
+                    checked={p.enabled}
+                    onChange={(v) => togglePref(p.key, v)}
+                  />
+                ))}
               </div>
-            ) : null}
-          </div>
-        </div>
+              )}
+              {live ? (
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--wa-border)' }}>
+                  <PushNotificationsToggle />
+                </div>
+              ) : null}
+            </div>
 
-        {/* Language — reuses the same switcher as desktop portal chrome so
-            mobile members (who land here via the "Profile & Settings" nav
-            item) can change locale without a bookmarked /fr or /pt URL. */}
-        <div className="wa-kit-card">
-          <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Language</h3>
-          <LanguageToggle />
+            {/* Language — reuses the same switcher as desktop portal chrome so
+                mobile members (who land here via the "Profile & Settings" nav
+                item) can change locale without a bookmarked /fr or /pt URL. */}
+            <div className="wa-kit-card">
+              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Language</h3>
+              <LanguageToggle />
+            </div>
+          </VStack>
         </div>
 
         {live ? (
