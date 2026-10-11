@@ -9,6 +9,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { getResourcesForCategory } from '@/lib/content/programResources';
 import { getCareerBriefContext } from '@/lib/content/careerBriefPersonalization';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import ResourcesClient from './ResourcesClient';
 import PageHeader from '@/components/portal/PageHeader';
 import { DesignSurface, CardHead, KitEmptyState } from '@/components/portal/kit';
@@ -39,7 +40,14 @@ export default async function DashboardResourcesPage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { enrolledProgram: true, enrolledAt: true },
+    select: {
+      enrolledProgram: true,
+      enrolledAt: true,
+      courseEnrollments: {
+        select: { id: true, programSlug: true, isPrimary: true, enrolledAt: true },
+        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+      },
+    },
   });
 
   const counselorAssignment = await prisma.counselorAssignment.findFirst({
@@ -55,7 +63,13 @@ export default async function DashboardResourcesPage() {
   });
   const counselorContact = counselorAssignment?.counselor.user ?? null;
 
-  const program = dbUser?.enrolledProgram ? getProgramBySlug(dbUser.enrolledProgram) : null;
+  // Match the dashboard/training assignment; the legacy pointer can be absent
+  // or stale even when staff assigned a valid primary CourseEnrollment.
+  const { activeProgramSlug } = resolveActiveDashboardProgram({
+    enrollments: dbUser?.courseEnrollments ?? [],
+    legacyEnrolledProgram: dbUser?.enrolledProgram ?? null,
+  });
+  const program = activeProgramSlug ? getProgramBySlug(activeProgramSlug) : null;
   const category = program?.category ?? 'digital-literacy';
   const categoryLabel = CATEGORY_LABELS[category] ?? category;
 
