@@ -13,14 +13,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--mdx-crimson, #ad2c4d);
+  color: var(--color-marketing-rose-on-light);
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
 }
 
 .back:hover {
-  color: var(--mdx-accent-dark, #8c0f37);
+  color: var(--color-marketing-rose-on-light);
 }
 
 .form {

@@ -91,7 +91,7 @@ export default function MentorApplyForm() {
         Back
       </LocalizedLink>
 
-      <p style={{ color: 'var(--mdx-muted, #6e6a66)', margin: '0.75rem 0 1.75rem', fontSize: '0.95rem' }}>
+      <p style={{ color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 1.75rem', fontSize: '0.95rem' }}>
         Tell us about yourself so we can match you with the right members.
       </p>
 
