@@ -1,6 +1,6 @@
 import type { AnchorHTMLAttributes } from 'react';
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 /**
  * WAP-188 Phase A: Request help (POST /api/member/request-help) and Share
@@ -220,7 +220,7 @@ describe('Need a person? actions', () => {
 
     expect(await screen.findByText('We saved your feedback.')).toBeInTheDocument();
     expect(announceMock).toHaveBeenCalledWith('We saved your feedback.');
-    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus());
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/member/feedback');
     // WAP-197: the event records the page the feedback came from.
