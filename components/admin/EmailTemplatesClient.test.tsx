@@ -33,13 +33,13 @@ const mockTemplates = [
 
 describe('EmailTemplatesClient', () => {
   it('renders template list', () => {
-    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" />);
+    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" adminUserId="synthetic-admin" />);
     expect(screen.getByText('Welcome Member')).toBeInTheDocument();
     expect(screen.getByText('Inactive Nudge')).toBeInTheDocument();
   });
 
   it('filters templates by search', () => {
-    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" />);
+    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" adminUserId="synthetic-admin" />);
     const input = screen.getByPlaceholderText('Search templates...');
     fireEvent.change(input, { target: { value: 'welcome' } });
     expect(screen.getByText('Welcome Member')).toBeInTheDocument();
@@ -47,12 +47,12 @@ describe('EmailTemplatesClient', () => {
   });
 
   it('shows inactive badge for inactive templates', () => {
-    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" />);
+    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" adminUserId="synthetic-admin" />);
     expect(screen.getByText('Inactive')).toBeInTheDocument();
   });
 
   it('opens edit modal when edit is clicked', () => {
-    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" />);
+    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" adminUserId="synthetic-admin" />);
     const closed = document.querySelector('dialog');
     expect(closed).not.toBeNull();
     expect(closed).not.toHaveAttribute('open');
@@ -71,14 +71,14 @@ describe('EmailTemplatesClient', () => {
   });
 
   it('shows empty state when search matches nothing', () => {
-    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" />);
+    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" adminUserId="synthetic-admin" />);
     const input = screen.getByPlaceholderText('Search templates...');
     fireEvent.change(input, { target: { value: 'nonexistent' } });
     expect(screen.getByText(/no templates match your search/i)).toBeInTheDocument();
   });
 
   it('shows select-a-template placeholder initially', () => {
-    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" />);
+    render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" adminUserId="synthetic-admin" />);
     expect(screen.getByText('Select a template')).toBeInTheDocument();
   });
 });

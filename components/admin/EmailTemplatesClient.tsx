@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
 import { Layout, LayoutContent, LayoutFooter, HStack } from '@astryxdesign/core/Layout';
 import { Button } from '@astryxdesign/core/Button';
 import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import { emailTemplateTestAttemptAge, emailTemplateTestStorageKey, readEmailTemplateTestAttempt, type EmailTemplateTestAttempt } from '@/lib/admin/emailTemplateTestAttempt';
 
 type Template = {
   id: string;
@@ -31,9 +33,15 @@ type PreviewResponse = {
 type Props = {
   templates: Template[];
   adminEmail: string;
+  adminUserId: string;
 };
 
-export default function EmailTemplatesClient({ templates: initialTemplates, adminEmail }: Props) {
+export default function EmailTemplatesClient(props: Props) {
+  // A changed Auth actor gets independent refs and state, even with the same email.
+  return <ActorEmailTemplatesClient key={props.adminUserId} {...props} />;
+}
+
+function ActorEmailTemplatesClient({ templates: initialTemplates, adminEmail, adminUserId }: Props) {
   const [templates, setTemplates] = useState(initialTemplates);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<PreviewResponse | null>(null);
@@ -43,7 +51,13 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [testSending, setTestSending] = useState(false);
-  const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [testResult, setTestResult] = useState<{ templateId: string; ok: boolean; message: string } | null>(null);
+  const [pendingTests, setPendingTests] = useState<Record<string, EmailTemplateTestAttempt>>({});
+  const pendingTestsRef = useRef<Record<string, EmailTemplateTestAttempt>>({});
+  const testSendingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const [retryStateReady, setRetryStateReady] = useState(false);
+  const [retryStateError, setRetryStateError] = useState<string | null>(null);
   const [customVars, setCustomVars] = useState<Record<string, string>>({});
   // Edit modal is an Astryx Dialog (native <dialog>): scrim, focus trap,
   // Escape, focus restore and --z-* stacking come from the design system
@@ -54,6 +68,33 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
   const [search, setSearch] = useState('');
 
   const selected = templates.find((t) => t.id === selectedId);
+  const pendingTest = selectedId ? pendingTests[selectedId] : undefined;
+  const retryExpired = pendingTest && emailTemplateTestAttemptAge(pendingTest) !== 'valid';
+  const displayedTestResult = (testResult?.templateId === selectedId ? testResult : null) ?? (retryStateError ? { ok: false, message: retryStateError }
+    : pendingTest ? { ok: false, message: retryExpired
+      ? 'The retry window expired. Check the previous test in your inbox before sending a new test.'
+      : 'The previous test outcome is not confirmed. Retry the same test to recover its provider receipt.' } : null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    try {
+      const raw = sessionStorage.getItem(emailTemplateTestStorageKey(adminUserId));
+      const saved: unknown = raw ? JSON.parse(raw) : {};
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved)) throw new Error('Invalid saved state');
+      const restored: Record<string, EmailTemplateTestAttempt> = {};
+      for (const [id, value] of Object.entries(saved)) {
+        const attempt = readEmailTemplateTestAttempt(value);
+        if (!attempt || attempt.actorId !== adminUserId || attempt.templateId !== id) throw new Error('Invalid saved attempt');
+        restored[id] = attempt;
+      }
+      pendingTestsRef.current = restored;
+      setPendingTests(restored);
+      setRetryStateReady(true);
+    } catch {
+      setRetryStateError('Saved test state could not be read. No new test was sent. Check your inbox before clearing saved browser state.');
+    }
+    return () => { mountedRef.current = false; };
+  }, [adminUserId]);
 
   const loadPreview = useCallback(async (id: string, vars?: Record<string, string>) => {
     setPreviewLoading(true);
@@ -138,27 +179,59 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
     }
   };
 
-  const handleTestSend = async (id: string) => {
+  const handleTestSend = async (id: string, startNew = false) => {
+    // React's disabled state is not committed until the event returns.
+    if (testSendingRef.current || !retryStateReady || retryStateError) return;
+    testSendingRef.current = true;
     setTestSending(true);
     setTestResult(null);
     try {
-      const res = await fetch(`/api/admin/email-templates/${id}/test`, {
+      const current = templates.find(t => t.id === id);
+      if (!current) throw new Error('Template is no longer available.');
+      const attempt = (!startNew && pendingTestsRef.current[id]) || readEmailTemplateTestAttempt({
+        actorId: adminUserId, templateId: id, attemptId: `${Date.now()}-${crypto.randomUUID()}`,
+        templateUpdatedAt: current.updatedAt, to: adminEmail, variables: { ...customVars },
+      });
+      if (!attempt) throw new Error('Test inputs are invalid or too large. No test was sent.');
+      if (emailTemplateTestAttemptAge(attempt) !== 'valid') throw new Error('The retry window expired. Check the previous test before sending a new test.');
+      const saved = { ...pendingTestsRef.current, [id]: attempt };
+      // Persist before any egress. Storage failure must not leave an accepted
+      // operation without its retry key after a reload.
+      try { sessionStorage.setItem(emailTemplateTestStorageKey(adminUserId), JSON.stringify(saved)); }
+      catch { throw new Error('Retry state could not be saved. No test was sent.'); }
+      pendingTestsRef.current = saved;
+      setPendingTests(saved);
+      const response = await fetchWithTimeout(`/api/admin/email-templates/${id}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: adminEmail, variables: customVars }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Send failed');
+        body: JSON.stringify(attempt),
+      }, 30_000, async res => ({ ok: res.ok, body: await res.json() }));
+      // The request may finish after logout/relogin or navigation. Leave its
+      // saved operation intact rather than clearing another mounted view's state.
+      if (!mountedRef.current) return;
+      if (!response.ok || response.body?.ok !== true || typeof response.body?.providerMessageId !== 'string' || !response.body.providerMessageId.trim()) {
+        throw new Error(response.body?.error || 'Retry the same test to recover its provider receipt.');
       }
-      setTestResult({ ok: true, message: `Test email sent to ${adminEmail}` });
+      const remaining = { ...pendingTestsRef.current };
+      delete remaining[id];
+      let cleanupWarning = '';
+      try {
+        sessionStorage.setItem(emailTemplateTestStorageKey(adminUserId), JSON.stringify(remaining));
+        pendingTestsRef.current = remaining;
+        setPendingTests(remaining);
+      } catch { cleanupWarning = ' Saved retry state could not be cleared; this receipt is confirmed.'; }
+      setTestResult({ templateId: id, ok: true, message: `Test accepted by the email provider for ${attempt.to}.${cleanupWarning}` });
     } catch (e) {
+      if (!mountedRef.current) return;
+      const error = e instanceof Error ? e.message : 'Request failed';
       setTestResult({
+        templateId: id,
         ok: false,
-        message: e instanceof Error ? e.message : 'Send failed',
+        message: pendingTestsRef.current[id] ? `Test outcome is not confirmed. ${error}` : error,
       });
     } finally {
-      setTestSending(false);
+      testSendingRef.current = false;
+      if (mountedRef.current) setTestSending(false);
     }
   };
 
@@ -384,15 +457,16 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => handleTestSend(selected.id)}
-                      disabled={testSending}
+                      disabled={testSending || !retryStateReady || !!retryStateError || !!retryExpired}
                     >
                       <span
                         className="material-symbols-outlined"
+                        aria-hidden="true"
                         style={{ fontSize: '0.875rem' }}
                       >
                         send
                       </span>
-                      {testSending ? 'Sending…' : 'Test Send'}
+                      {testSending ? 'Sending…' : pendingTest ? 'Retry Same Test' : 'Test Send'}
                     </button>
                   </div>
                 </div>
@@ -454,27 +528,34 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
               )}
 
               {/* Test result */}
-              {testResult && (
+              {displayedTestResult && (
                 <div
+                  role={displayedTestResult.ok ? 'status' : 'alert'}
                   style={{
                     padding: '0.75rem 1rem',
                     borderRadius: '0.75rem',
-                    background: testResult.ok
+                    background: displayedTestResult.ok
                       ? 'rgba(74,155,79,0.08)'
                       : 'rgba(173,44,77,0.08)',
                     border: `1px solid ${
-                      testResult.ok
+                      displayedTestResult.ok
                         ? 'rgba(74,155,79,0.2)'
                         : 'rgba(173,44,77,0.2)'
                     }`,
                     fontSize: '0.8125rem',
-                    color: testResult.ok
+                    color: displayedTestResult.ok
                       ? 'var(--wa-success-dark)'
                       : 'var(--color-accent)',
                   }}
                 >
-                  {testResult.message}
+                  {displayedTestResult.message}
                 </div>
+              )}
+              {pendingTest && (
+                <>
+                  <p className="wa-kit-meta">A new test may send a second message. Check your inbox first; it uses the current variables and template.</p>
+                  <Button label="Send a New Test" variant="secondary" isDisabled={testSending || !retryStateReady || !!retryStateError} onClick={() => handleTestSend(selected.id, true)} />
+                </>
               )}
 
               {/* Preview */}

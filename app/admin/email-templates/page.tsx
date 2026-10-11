@@ -45,7 +45,7 @@ export default async function AdminEmailTemplatesPage({
     return renderKit();
   }
 
-  return renderLegacy(user.email ?? '');
+  return renderLegacy(user.id, user.email ?? '');
 }
 
 /** Design-kit default: dense roster of transactional templates → <EmailTemplatesKit/>. */
@@ -91,7 +91,7 @@ async function renderKit() {
 }
 
 /** Legacy email-template manager: list + live preview + editor + test-send. */
-async function renderLegacy(adminEmail: string) {
+async function renderLegacy(adminUserId: string, adminEmail: string) {
   const templates = await prisma.emailTemplate.findMany({
     orderBy: { name: 'asc' },
   });
@@ -109,6 +109,7 @@ async function renderLegacy(adminEmail: string) {
           updatedAt: t.updatedAt.toISOString(),
         }))}
         adminEmail={adminEmail}
+        adminUserId={adminUserId}
       />
     </div>
   );
