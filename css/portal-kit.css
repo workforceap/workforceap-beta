@@ -1664,6 +1664,33 @@ a.wa-kit-tab {
   }
 }
 
+/* Member Jobs: one inline desktop panel or a native phone dialog. */
+.job-filters-inline {
+  display: none;
+}
+@media (min-width: 768px) {
+  .job-filters-inline {
+    display: block;
+    margin-bottom: var(--wa-pad-sm);
+  }
+}
+.job-filters-dialog .job-filters-panel {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--wa-pad-sm);
+}
+.job-filters-dialog .job-filter-row {
+  flex-direction: column;
+}
+.job-filters-dialog-content {
+  overscroll-behavior: contain;
+}
+.job-filters-dialog button[aria-label="Close"] {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
 /* Job listing filters — keep .job-filters-drawer behavior, paint with --wa-*.
    main.css sets .job-filters-drawer-inner { position: absolute } AFTER the
    md+ promotion block, so desktop never un-fixed. These selectors win. */
