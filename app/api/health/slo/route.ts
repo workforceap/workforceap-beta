@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
-import { isAdmin } from '@/lib/auth/roles';
+import { isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { logger } from '@/lib/observability/logger';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { measureCourseraIngestion, measureEmailDelivery, type SloReport } from '@/lib/observability/sloMetrics';
 
 /**
  * GET /api/health/slo
@@ -29,7 +31,13 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  *     correlated with HTTP 5xx (the next iteration will join /api/health
  *     and Sentry) but it is honest.
  *   - DB pool utilization: `pg_stat_activity` via `prisma.$queryRaw`,
- *     returning current backend count vs `max_connections`.
+ *     returning current backend count vs `max_connections` (super admin only).
+ *   - Email: deduplicated non-skipped send logs + immutable signed Resend
+ *     delivery evidence, matured over five minutes. Missing evidence is unknown.
+ *   - xAPI: recorded authenticated batch attempts + raw persistence within
+ *     sixty seconds. Incomplete observations are unknown; matching is separate.
+ *   - Tenant admins read their actor organization's observations. Super admins
+ *     can read the platform aggregate; the response includes no identifiers.
  *
  * NOTE TO MAINTAINERS: do not "fill in" any helper with synthetic numbers
  * to make a dashboard look populated. Either wire to a real source or keep
@@ -38,18 +46,6 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  */
 
 export const dynamic = 'force-dynamic';
-
-type SloStatus = 'within' | 'breaching' | 'unknown';
-
-type SloReport = {
-  id: string;
-  name: string;
-  target: string;
-  current: string | null;
-  status: SloStatus;
-  source: string;
-  note?: string;
-};
 
 type SloEnvelope = {
   generatedAt: string;
@@ -103,11 +99,12 @@ async function fetchVercelP95Ms(
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${config.token}` },
       cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { p95?: number; value?: number };
-    if (typeof data.p95 === 'number') return data.p95;
-    if (typeof data.value === 'number') return data.value;
+    if (typeof data.p95 === 'number' && Number.isFinite(data.p95) && data.p95 >= 0) return data.p95;
+    if (typeof data.value === 'number' && Number.isFinite(data.value) && data.value >= 0) return data.value;
     return null;
   } catch (err) {
     logger.warn('vercel analytics fetch failed', { err, route });
@@ -122,7 +119,15 @@ function evaluateLatencySlo(
   thresholdMs: number,
   ms: number | null,
   configured: boolean,
+  platformAccess = true,
 ): SloReport {
+  if (!platformAccess) {
+    return {
+      id, name, target: `< ${thresholdMs} ms`, current: null, status: 'unknown',
+      source: `Vercel Analytics — route:${route}, p95`,
+      note: 'Project-wide latency telemetry is available to super admins',
+    };
+  }
   if (!configured) {
     return {
       id,
@@ -159,24 +164,24 @@ function evaluateLatencySlo(
 // Error rate: MemberEvent rows in the last 24h.
 // ---------------------------------------------------------------------------
 
-async function measureMemberEventErrorRate(): Promise<SloReport> {
+async function measureMemberEventErrorRate(organizationId: string | null, now: Date): Promise<SloReport> {
   const id = 'event_error_rate_24h';
   const name = 'Member event error rate (24h)';
   const target = '< 1%';
-  const source = 'member_events table — count(eventName ~ "_failed|_error") / count(*) over 24h';
+  const source = 'member_events joined to users — literal _failed/_error suffixes / total over 24h, scoped to the actor';
   try {
     const rows = await prisma.$queryRaw<
       Array<{ total: bigint | number; errors: bigint | number }>
     >`
       SELECT
+        COUNT(*) AS total,
         COUNT(*) FILTER (
-          WHERE created_at > NOW() - INTERVAL '24 hours'
-        ) AS total,
-        COUNT(*) FILTER (
-          WHERE created_at > NOW() - INTERVAL '24 hours'
-            AND (event_name LIKE '%_failed' OR event_name LIKE '%_error')
+          WHERE RIGHT(e.event_name, 7) = '_failed' OR RIGHT(e.event_name, 6) = '_error'
         ) AS errors
-      FROM member_events
+      FROM member_events e
+      JOIN users u ON u.id = e.user_id
+      WHERE e.created_at >= ${new Date(now.getTime() - 86_400_000)} AND e.created_at <= ${now}
+        AND (${organizationId}::text IS NULL OR u.organization_id = ${organizationId})
     `;
     const row = rows[0];
     const total = Number(row?.total ?? 0);
@@ -272,8 +277,7 @@ async function measureDbPoolUtilization(): Promise<SloReport> {
 }
 
 // ---------------------------------------------------------------------------
-// Uptime, email delivery, cross-tenant isolation, Coursera ingestion all
-// still depend on external sources we haven't wired yet. Keep them honest:
+// Uptime and cross-tenant isolation still depend on external sources. Keep them honest:
 // unknown with a clear note.
 // ---------------------------------------------------------------------------
 
@@ -284,8 +288,8 @@ function measureUptime(): SloReport {
     target: '99.9%',
     current: null,
     status: 'unknown',
-    source: 'External uptime monitor (Better Uptime) hitting /api/health (live) and /api/health/ready (Prisma/org)',
-    note: 'External monitor not yet wired — measurement unavailable',
+    source: 'Hosted external monitor probing /api/health (liveness) and /api/health/ready (dependencies)',
+    note: 'No continuous 30-day external uptime series is configured. GitHub Actions readiness pings can be hours apart and cannot establish 99.9% uptime. See docs/SLO-AND-STATUS.md for setup.',
   };
 }
 
@@ -301,48 +305,42 @@ function measureCrossTenantIsolation(): SloReport {
   };
 }
 
-function measureCourseraIngestion(): SloReport {
-  return {
-    id: 'coursera_xapi_ingestion',
-    name: 'Coursera xAPI ingestion success',
-    target: '99.5%',
-    current: null,
-    status: 'unknown',
-    source: 'XapiIngestionLog table + Sentry exceptions on /api/coursera/xapi',
-    note: 'XapiIngestionLog not yet aggregated here — measurement deferred',
-  };
-}
-
-function measureEmailDelivery(): SloReport {
-  return {
-    id: 'email_delivered_5min',
-    name: 'Email delivered within 5 min',
-    target: '99% in 5 min',
-    current: null,
-    status: 'unknown',
-    source: 'Email table + Resend delivery webhook',
-    note: 'Resend delivery webhook backfill not yet wired — measurement unavailable',
-  };
-}
-
 async function _GET() {
   try {
     const user = await getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!(await isAdmin(user.id))) {
+    const superAdmin = await isSuperAdmin(user.id);
+    let organizationId: string | null = null;
+    if (!superAdmin) {
+      try {
+        organizationId = await getActorOrganizationId(user.id);
+      } catch {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+    if (!superAdmin && !(await isAdminInOrg(user.id, organizationId!))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const generatedAt = new Date().toISOString();
-    const vercelConfig = readVercelAnalyticsConfig();
+    const now = new Date();
+    const generatedAt = now.toISOString();
+    // Project-wide latency/pool numbers are platform telemetry. Tenant admins
+    // may read only their own event, email and ingestion observations.
+    const vercelConfig = superAdmin ? readVercelAnalyticsConfig() : null;
 
-    const [dashboardMs, outcomesMs, errorRate, dbPool] = await Promise.all([
+    const [dashboardMs, outcomesMs, errorRate, dbPool, emailDelivery, courseraIngestion] = await Promise.all([
       vercelConfig ? fetchVercelP95Ms(vercelConfig, '/dashboard', 7) : Promise.resolve(null),
       vercelConfig ? fetchVercelP95Ms(vercelConfig, '/admin/outcomes', 7) : Promise.resolve(null),
-      measureMemberEventErrorRate(),
-      measureDbPoolUtilization(),
+      measureMemberEventErrorRate(organizationId, now),
+      superAdmin ? measureDbPoolUtilization() : Promise.resolve({
+        id: 'db_pool_utilization', name: 'Database connection pool utilization', target: '< 80%',
+        current: null, status: 'unknown' as const, source: 'pg_stat_activity / max_connections',
+        note: 'Project-wide database telemetry is available to super admins',
+      }),
+      measureEmailDelivery(organizationId, now),
+      measureCourseraIngestion(organizationId, now),
     ]);
 
     const slos: SloReport[] = [
@@ -354,6 +352,7 @@ async function _GET() {
         500,
         dashboardMs,
         Boolean(vercelConfig),
+        superAdmin,
       ),
       evaluateLatencySlo(
         'outcomes_latency_p95',
@@ -362,17 +361,18 @@ async function _GET() {
         500,
         outcomesMs,
         Boolean(vercelConfig),
+        superAdmin,
       ),
-      measureEmailDelivery(),
+      emailDelivery,
       measureCrossTenantIsolation(),
-      measureCourseraIngestion(),
+      courseraIngestion,
       errorRate,
       dbPool,
     ];
 
     const body: SloEnvelope = {
       generatedAt,
-      window: 'last 7 days (latency) / last 24h (errors) / live (db pool)',
+      window: 'rolling 7 days (latency, matured email and recorded xAPI batches) / last 24h (errors) / live (db pool)',
       slos,
     };
 

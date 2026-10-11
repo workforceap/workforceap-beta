@@ -17,6 +17,7 @@
  *  2. tests/migrations/*.mjs — isolated migration proofs (need SHADOW_DATABASE_URL).
  *  3. tests/rls/*.mjs — RLS proofs (skipped unless RLS_PROOF_DATABASE_URL is set).
  *  4. The node:test suites the default lane skips as `realDb`, with TEST_REAL_DB=1.
+ *  5. Vitest PostgreSQL SLO aggregates, using temporary tables with TEST_REAL_DB=1.
  */
 import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
@@ -85,5 +86,7 @@ if (rlsProofUrl) {
 }
 
 run('real-database node:test suites', 'node', ['scripts/test-unit.mjs', ...REAL_DB_SUITES.flatMap((file) => ['--only', file])], { ...prismaEnv, TEST_REAL_DB: '1' });
+
+run('real-database email SLO aggregates', 'npm', ['exec', '--', 'vitest', 'run', 'tests/lib/slo-email-realdb.spec.ts'], { ...prismaEnv, TEST_REAL_DB: '1' });
 
 console.log('\n✔ database contract lane passed');

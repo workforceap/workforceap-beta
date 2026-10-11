@@ -196,6 +196,14 @@ describe('handleResendWebhook', () => {
 });
 
 describe('parseResendEvent / isHardDeliveryFailure', () => {
+  it('does not use an inferred or future event timestamp for delivery SLOs', () => {
+    for (const created_at of [undefined, 'invalid-time', '2026-09-21T17:59:30.000Z']) {
+      const parsed = parseResendEvent({ type: 'email.delivered', created_at, data: { email_id: 'fixture-id' } }, NOW_MS);
+      assert.equal(parsed?.createdAtTrusted, false);
+    }
+    const parsed = parseResendEvent(JSON.parse(eventBody('email.delivered')), NOW_MS);
+    assert.equal(parsed?.createdAtTrusted, true);
+  });
   it('reads recipients, bounce type and timestamp defensively', () => {
     const parsed = parseResendEvent(JSON.parse(eventBody('email.bounced', { to: 'single@example.org', bounce: { type: 'Undetermined' } })), NOW_MS);
     assert.ok(parsed);

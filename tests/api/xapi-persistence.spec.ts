@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // ─── Mocks ───
 vi.mock('server-only', () => ({}));
@@ -61,6 +61,12 @@ vi.mock('@/lib/diagnostics', () => ({
   recordWorkflowDiagnostic: vi.fn(),
 }));
 
+vi.mock('@/lib/observability/sloObservations', () => ({
+  startXapiSloObservation: vi.fn(),
+  finishXapiSloObservation: vi.fn(),
+  XAPI_PERSISTENCE_DEADLINE_MS: 60_000,
+}));
+
 vi.mock('@/lib/db/withRequestGuc', () => ({
   withSystemGuc: vi.fn((fn: () => Promise<unknown>) => fn()),
 }));
@@ -80,6 +86,7 @@ import { withSystemGuc } from '@/lib/db/withRequestGuc';
 import { trackXapiBatchProcessed } from '@/lib/analytics/track';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { resolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
+import { finishXapiSloObservation, startXapiSloObservation } from '@/lib/observability/sloObservations';
 
 const validToken = 'valid-jwt-token';
 
@@ -150,7 +157,10 @@ describe('POST /api/xapi/statements', () => {
     vi.mocked(prisma.xapiStatement.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.xapiStatement.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(resolveOrgFromRequest).mockResolvedValue('org-default');
+    vi.mocked(startXapiSloObservation).mockResolvedValue('observation-1');
+    vi.mocked(finishXapiSloObservation).mockResolvedValue(undefined);
   });
+  afterEach(() => vi.useRealTimers());
 
   it('returns 503 before database scope or payload processing when auth is unconfigured', async () => {
     vi.mocked(getXapiReadiness).mockReturnValue({
@@ -172,6 +182,7 @@ describe('POST /api/xapi/statements', () => {
     expect(resolveOrgFromRequest).not.toHaveBeenCalled();
     expect(prisma.xapiStatement.create).not.toHaveBeenCalled();
     expect(handleInboundParsedStatement).not.toHaveBeenCalled();
+    expect(startXapiSloObservation).not.toHaveBeenCalled();
   });
 
   it('returns 401 when authorization header is missing', async () => {
@@ -217,6 +228,7 @@ describe('POST /api/xapi/statements', () => {
     expect(body.received).toBe(true);
     expect(body.processed).toBe(0);
     expect(body.completions).toEqual([]);
+    expect(startXapiSloObservation).not.toHaveBeenCalled();
   });
 
   it('persists a valid single statement and returns 201', async () => {
@@ -267,6 +279,7 @@ describe('POST /api/xapi/statements', () => {
     expect(body.processed).toBe(0);
     expect(body.completions).toEqual([]);
     expect(handleInboundParsedStatement).not.toHaveBeenCalled();
+    expect(finishXapiSloObservation).toHaveBeenCalledWith(expect.objectContaining({ received: 1, persistedWithin60s: 1 }));
   });
 
   it('retries duplicate statements whose side effects were not processed', async () => {
@@ -317,6 +330,39 @@ describe('POST /api/xapi/statements', () => {
 
     // Pipeline should only be called for the valid statement
     expect(handleInboundParsedStatement).toHaveBeenCalledTimes(1);
+    expect(finishXapiSloObservation).toHaveBeenCalledWith(expect.objectContaining({ received: 2, persistedWithin60s: 2 }));
+  });
+
+  it('keeps failed persistence attempts in the SLO denominator', async () => {
+    vi.mocked(prisma.xapiStatement.create).mockRejectedValueOnce(new Error('Persistence unavailable'));
+    const response = await POST(makeRequest([sampleStatement, progressedStatement], { token: validToken }));
+    expect(response.status).toBe(500);
+    expect(startXapiSloObservation).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 'org-default', received: 2 }));
+    expect(finishXapiSloObservation).toHaveBeenCalledWith(expect.objectContaining({ received: 2, persistedWithin60s: 1 }));
+  });
+
+  it('counts persistence at exactly sixty seconds and excludes a later statement in the same batch', async () => {
+    vi.useFakeTimers();
+    const receivedAtMs = Date.parse('2026-10-10T12:00:00.000Z');
+    vi.setSystemTime(receivedAtMs);
+    vi.mocked(prisma.xapiStatement.create)
+      .mockImplementationOnce(() => { vi.setSystemTime(receivedAtMs + 60_000); return Promise.resolve({ id: 'first' }) as never; })
+      .mockImplementationOnce(() => { vi.setSystemTime(receivedAtMs + 60_001); return Promise.resolve({ id: 'second' }) as never; });
+    const response = await POST(makeRequest([sampleStatement, progressedStatement], { token: validToken }));
+    expect(response.status).toBe(201);
+    expect(finishXapiSloObservation).toHaveBeenCalledWith({ id: 'observation-1', receivedAtMs, received: 2, persistedWithin60s: 1 });
+  });
+
+  it('measures raw persistence independently of slow downstream member matching', async () => {
+    vi.useFakeTimers();
+    const receivedAtMs = Date.parse('2026-10-10T12:00:00.000Z');
+    vi.setSystemTime(receivedAtMs);
+    vi.mocked(handleInboundParsedStatement).mockImplementationOnce(async () => {
+      vi.setSystemTime(receivedAtMs + 70_000);
+      return { completions: [] };
+    });
+    expect((await POST(makeRequest(sampleStatement, { token: validToken }))).status).toBe(201);
+    expect(finishXapiSloObservation).toHaveBeenCalledWith(expect.objectContaining({ received: 1, persistedWithin60s: 1 }));
   });
 
   it('maps actor.account fields correctly', async () => {
