@@ -388,6 +388,14 @@ surface cancels the startup request, stops any camera stream granted later,
 and ends a client session that connects after unmount. Microphone permission
 denial leaves the start control available and does not request a session URL.
 
+The hub's All Tools overview promotes its three stages only when the toolkit
+container has at least 900px, allowing for the portal rail. On wide layouts,
+stage numbers and their connector sit above the heading copy. Stage headings
+and directory rows use `--wa-pad-sm` spacing; complete descriptions wrap rather
+than being clamped. Row overrides stay inside `.wa-kit-toolkit` because Career
+brief shares the base row/list classes. The narrow jump strip stacks each number
+above its label so Resume, Interview and Profile remain readable and clickable.
+
 `SkillMissionChallenge` owns its focus trap and close guard. Callers must not
 wrap it in a second Escape handler. Escape, backdrop, and close buttons share
 the same discard confirmation for unfinished work; pending evaluation stays

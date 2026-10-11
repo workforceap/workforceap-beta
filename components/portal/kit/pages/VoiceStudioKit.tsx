@@ -13,6 +13,8 @@
  *   session  → Live Voice Session       (dark panel, animated mic orb)
  *   studio   → Resume Studio · Beta     (Career Studio: score + issues + rewrite)
  *   toolkit  → AI Career Toolkit        (3-stage path + scannable directory rows)
+ *              Columns follow available content width; stage copy and complete
+ *              tool descriptions stay clear of connectors and status tags.
  *
  * The "Mock Interview" coach card and the Live Session tab button both switch to
  * the `session` tab. Page chrome is PageOpener + SegmentedControl on the shared
