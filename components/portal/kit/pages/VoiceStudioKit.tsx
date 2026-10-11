@@ -81,6 +81,14 @@ type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
 export const VOICE_STUDIO_AGENT_KEYS: VoiceStudioAgentKey[] = ['readiness', 'resume', 'mock', 'counselor', 'business'];
 
+type StudioSelection = { tab: StudioTab; agentKey?: VoiceStudioAgentKey };
+type StudioRoute = StudioSelection & { query: string };
+type StudioNavigationState = {
+  selection: StudioSelection;
+  received: StudioRoute;
+  pending: StudioRoute[];
+};
+
 /**
  * Config for a voice agent that the Live Session tab can run. Each voice coach
  * card picks one of these and switches to the session tab, so every agent uses
@@ -191,7 +199,7 @@ export type ResumeStudioData = {
 };
 
 export interface VoiceStudioKitProps {
-  /** Which tab to show first. */
+  /** Tab selected by the current route, including same-page navigation. */
   initialTab?: StudioTab;
   /**
    * Real resume data for the Resume Studio tab, computed server-side from the
@@ -217,10 +225,69 @@ export function VoiceStudioKit({
   initialAgent,
 }: VoiceStudioKitProps) {
   const t = useTranslations('aiToolsDiscovery');
-  const [tab, setTab] = useState<StudioTab>(initialTab);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const query = searchParams?.toString() ?? '';
+  const [navigation, setNavigation] = useState<StudioNavigationState>(() => ({
+    selection: { tab: initialTab, agentKey: initialAgent },
+    received: { tab: initialTab, agentKey: initialAgent, query },
+    pending: [],
+  }));
+
+  if (navigation.received.tab !== initialTab
+    || navigation.received.agentKey !== initialAgent
+    || navigation.received.query !== query) {
+    const matchesRoute = (selection: StudioSelection) => selection.tab === initialTab && selection.agentKey === initialAgent;
+    const latestPending = navigation.pending.at(-1);
+    // Earlier router acknowledgements must not replace a newer local choice.
+    const earlierAcknowledgement = latestPending && !matchesRoute(latestPending)
+      && navigation.pending.some(matchesRoute);
+    // Reconcile before rendering children, without writing back to the URL.
+    setNavigation({
+      selection: earlierAcknowledgement ? navigation.selection : { tab: initialTab, agentKey: initialAgent },
+      received: { tab: initialTab, agentKey: initialAgent, query },
+      pending: earlierAcknowledgement ? navigation.pending : [],
+    });
+  }
+
+  const { tab, agentKey: selectedAgentKey } = navigation.selection;
+
+  useEffect(() => {
+    const interruptPending = (destination: URL) => {
+      if (destination.origin !== window.location.origin) return;
+      const isHubRoute = destination.pathname === pathname
+        || (pathname === '/dashboard/ai-tools' && destination.pathname === '/dashboard/ai-tools/studio');
+      if (!isHubRoute) return;
+      setNavigation((current) => {
+        if (!current.pending.length) return current;
+        const params = destination.searchParams;
+        const knownDestination = [...current.pending].reverse().find((issued) => issued.query === params.toString())
+          ?? current.pending.find((issued) => issued.tab === (params.get('tab') ?? 'coaches')
+            && issued.agentKey === (params.get('agent') ?? undefined));
+        return {
+          ...current,
+          selection: knownDestination ?? current.selection,
+          pending: [],
+        };
+      });
+    };
+    const onPopState = () => interruptPending(new URL(window.location.href));
+    // Back/forward can cancel the latest local router request.
+    // Such navigation must not be mistaken for an earlier acknowledgement.
+    window.addEventListener('popstate', onPopState);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+    };
+  }, [pathname]);
+
+  const onResumeCoachNavigate = useCallback(() => {
+    setNavigation((current) => ({
+      ...current,
+      selection: { tab: 'session', agentKey: 'resume' },
+      pending: [],
+    }));
+  }, []);
 
   const fallbackAgent: SessionAgentConfig = {
     label: 'Mock Interview',
@@ -229,14 +296,11 @@ export function VoiceStudioKit({
     askRole: true,
     ...AGENT_ACCENT.crimson,
   };
-  const [agent, setAgent] = useState<SessionAgentConfig>(
-    initialAgent ? SESSION_AGENTS[initialAgent] : fallbackAgent,
-  );
-  const selectedAgentKey = VOICE_STUDIO_AGENT_KEYS.find((key) => SESSION_AGENTS[key] === agent);
+  const agent = selectedAgentKey ? SESSION_AGENTS[selectedAgentKey] : fallbackAgent;
 
   const selectTab = useCallback(
     (nextTab: StudioTab, nextAgent = selectedAgentKey) => {
-      setTab(nextTab);
+      const selection = { tab: nextTab, agentKey: nextAgent };
       const next = new URLSearchParams(searchParams?.toString() ?? '');
       if (nextTab === 'coaches') next.delete('tab');
       else next.set('tab', nextTab);
@@ -245,13 +309,22 @@ export function VoiceStudioKit({
       if (nextAgent) next.set('agent', nextAgent);
       else next.delete('agent');
       const query = next.toString();
+      setNavigation((current) => ({
+        ...current,
+        selection,
+        // At most one entry per finite tab/coach choice, including fallback.
+        pending: [
+          ...(current.pending.length ? current.pending : [current.received])
+            .filter((issued) => issued.tab !== nextTab || issued.agentKey !== nextAgent),
+          { ...selection, query },
+        ],
+      }));
       router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
     },
     [pathname, router, searchParams, selectedAgentKey],
   );
 
   const pickAgent = (next: SessionAgentConfig) => {
-    setAgent(next);
     const agentKey = VOICE_STUDIO_AGENT_KEYS.find((key) => SESSION_AGENTS[key] === next);
     selectTab('session', agentKey);
   };
@@ -315,8 +388,8 @@ export function VoiceStudioKit({
           style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
         >
           {tab === 'coaches' && <CoachesPanel onPick={pickAgent} />}
-          {tab === 'session' && <SessionPanel agent={agent} />}
-          {tab === 'studio' && <StudioPanel data={resumeStudio} />}
+          {tab === 'session' && <SessionPanel key={selectedAgentKey ?? `fallback:${sessionEndpoint}`} agent={agent} />}
+          {tab === 'studio' && <StudioPanel data={resumeStudio} onResumeCoachNavigate={onResumeCoachNavigate} />}
           {tab === 'toolkit' && <ToolkitPanel />}
         </div>
       </div>
@@ -1257,7 +1330,7 @@ function scoreBand(score: number): { color: string; label: string } {
   return { color: 'var(--wa-accent)', label: 'Needs work — start with the fixes below' };
 }
 
-function StudioPanel({ data }: { data: ResumeStudioData }) {
+function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; onResumeCoachNavigate: () => void }) {
   const hasResume = data.hasResume;
   const score =
     typeof data.structuralScore === 'number'
@@ -1413,6 +1486,7 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
             {/* Crimson "Talk it through" voice card → unified Resume Coach session */}
             <Link
               href="/dashboard/ai-tools/studio?tab=session&agent=resume"
+              onNavigate={onResumeCoachNavigate}
               className="wa-kit-focus vs-hero-card"
               style={{
                 textAlign: 'left',
