@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 1,
+  "sourceMaster": "82e11ce57d09e266aa909f11edd3612c2b5f0488",
+  "observedAt": "2026-10-11T03:20:32.105Z",
+  "source": "read-only production supabase_migrations.schema_migrations",
+  "provenance": "Recovered files contain the exact single stored SQL statement per version, not reconstructed original pre-splitting files. The six original active files are retained byte-for-byte; each has an extra trailing semicolon and LF compared with its stored statement.",
+  "applied": [
+    {
+      "version": "20260329212535",
+      "name": "add_funding_source_workspace_email",
+      "path": "supabase/migrations/20260329212535_add_funding_source_workspace_email.sql",
+      "disposition": "retained-original-file",
+      "sha256": "f847a26eaaacf53809e1681eaf1022fd06e617c3d5d6fa880e3c63b17adb2364",
+      "bytes": 625,
+      "storedStatementSha256": "99732cc1186b7725e4774efe3f4a1f6c79e0550b9902150367febbd3ad419c74",
+      "storedStatementBytes": 623
+    },
+    {
+      "version": "20260329212657",
+      "name": "add_mentor_portal",
+      "path": "supabase/migrations/20260329212657_add_mentor_portal.sql",
+      "disposition": "retained-original-file",
+      "sha256": "6fe98c559469f9820cc3659ee825f27e46f0a899530376f7f83a4aa229730745",
+      "bytes": 2710,
+      "storedStatementSha256": "7b97110717fdafbb80e5f71cd84b822de8238fe71a1297daeaa31d38c892a951",
+      "storedStatementBytes": 2708
+    },
+    {
+      "version": "20260402013356",
+      "name": "create_member_resumes_storage_bucket",
+      "path": "supabase/migrations/20260402013356_create_member_resumes_storage_bucket.sql",
+      "disposition": "retained-original-file",
+      "sha256": "5d8f09026f96196e36f9e26d13c136cd12b3d646ad9562fcbe9ffcf7c6db4a18",
+      "bytes": 175,
+      "storedStatementSha256": "5306005df5a76b6c9b8114eff9ee221393f901749352e45191fc2e63e018f16e",
+      "storedStatementBytes": 173
+    },
+    {
+      "version": "20260411155736",
+      "name": "create_member_next_best_actions",
+      "path": "supabase/migrations/20260411155736_create_member_next_best_actions.sql",
+      "disposition": "retained-original-file",
+      "sha256": "42583b85eda919bc79fce42629b76e213049040001c1359c25b5c0debce93978",
+      "bytes": 589,
+      "storedStatementSha256": "0847c1a466d6c24919f5cfd16358d61eb162a82940f8d6abfa462f3be7ce3114",
+      "storedStatementBytes": 587
+    },
+    {
+      "version": "20260411155746",
+      "name": "add_wioa_columns_to_users",
+      "path": "supabase/migrations/20260411155746_add_wioa_columns_to_users.sql",
+      "disposition": "retained-original-file",
+      "sha256": "39c4b6339df475d5db3544bbcceb759733f1f2fd9feebeed08a67b7cad90f82c",
+      "bytes": 337,
+      "storedStatementSha256": "36ed8d1711029009731d0cc0ee218bb42a2379711d951be0a0b325f8793c29ff",
+      "storedStatementBytes": 335
+    },
+    {
+      "version": "20260411155747",
+      "name": "add_placement_tracking_columns",
+      "path": "supabase/migrations/20260411155747_add_placement_tracking_columns.sql",
+      "disposition": "retained-original-file",
+      "sha256": "d79c025bf668e7cf6631146e216f8eb11f90f723470ec702a8617c8c3159eba8",
+      "bytes": 342,
+      "storedStatementSha256": "cb05de74e27f8bf73f4ab727e095590e537899f9f1cf867cab71a0644f17e713",
+      "storedStatementBytes": 340
+    },
+    {
+      "version": "20260428005559",
+      "name": "member_rewards",
+      "path": "supabase/migrations/20260428005559_member_rewards.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "4ddfcfc70060ea7361d29a97e08836fe6dfa42e284549c681819cf719998f2dc",
+      "bytes": 1857,
+      "storedStatementSha256": "4ddfcfc70060ea7361d29a97e08836fe6dfa42e284549c681819cf719998f2dc",
+      "storedStatementBytes": 1857
+    },
+    {
+      "version": "20260504224607",
+      "name": "coursera_skillset_progress",
+      "path": "supabase/migrations/20260504224607_coursera_skillset_progress.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "4ca6902e6e81fedfd005c8cf3b96c5185b3259de4937c148a9c85af0767db3f7",
+      "bytes": 1130,
+      "storedStatementSha256": "4ca6902e6e81fedfd005c8cf3b96c5185b3259de4937c148a9c85af0767db3f7",
+      "storedStatementBytes": 1130
+    },
+    {
+      "version": "20260504230236",
+      "name": "user_stale_training_detected_at",
+      "path": "supabase/migrations/20260504230236_user_stale_training_detected_at.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "4c4765bbbc7e25434401886bc8c47ee08debbcee279f829171496a26975baea2",
+      "bytes": 168,
+      "storedStatementSha256": "4c4765bbbc7e25434401886bc8c47ee08debbcee279f829171496a26975baea2",
+      "storedStatementBytes": 168
+    },
+    {
+      "version": "20260506013124",
+      "name": "create_courses_table_fix",
+      "path": "supabase/migrations/20260506013124_create_courses_table_fix.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "e81854ff62fa491e7c3268a4936a96817cd7ac201c1809f3cf4cc526d82a1abf",
+      "bytes": 1359,
+      "storedStatementSha256": "e81854ff62fa491e7c3268a4936a96817cd7ac201c1809f3cf4cc526d82a1abf",
+      "storedStatementBytes": 1359
+    },
+    {
+      "version": "20260507001005",
+      "name": "add_xapi_actor_account_and_payload",
+      "path": "supabase/migrations/20260507001005_add_xapi_actor_account_and_payload.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "29c7becbf074de5e97a48542d7c6aa71b163f7e2c7476da9231ee13dde1494d1",
+      "bytes": 629,
+      "storedStatementSha256": "29c7becbf074de5e97a48542d7c6aa71b163f7e2c7476da9231ee13dde1494d1",
+      "storedStatementBytes": 629
+    },
+    {
+      "version": "20260514215726",
+      "name": "add_coursera_identity_mapping_model",
+      "path": "supabase/migrations/20260514215726_add_coursera_identity_mapping_model.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "45e0ab66b865148cac76bc8fa45df7bc0a45909ed5be74e47912adc6bd6a6a0d",
+      "bytes": 1369,
+      "storedStatementSha256": "45e0ab66b865148cac76bc8fa45df7bc0a45909ed5be74e47912adc6bd6a6a0d",
+      "storedStatementBytes": 1369
+    },
+    {
+      "version": "20260514215742",
+      "name": "fix_schema_drift",
+      "path": "supabase/migrations/20260514215742_fix_schema_drift.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "7f7bbeb95be6c2dfe6b13ccf1140832f9225bc2e2b1e9d42e1fd8e8eb1df2fcc",
+      "bytes": 74,
+      "storedStatementSha256": "7f7bbeb95be6c2dfe6b13ccf1140832f9225bc2e2b1e9d42e1fd8e8eb1df2fcc",
+      "storedStatementBytes": 74
+    },
+    {
+      "version": "20260514215750",
+      "name": "add_missing_member_mentor_survey_models",
+      "path": "supabase/migrations/20260514215750_add_missing_member_mentor_survey_models.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "05fd9e2c90e587746c84da827e69d7498a135cf9ca764dd4d3f2cd4891be09bb",
+      "bytes": 2033,
+      "storedStatementSha256": "05fd9e2c90e587746c84da827e69d7498a135cf9ca764dd4d3f2cd4891be09bb",
+      "storedStatementBytes": 2033
+    },
+    {
+      "version": "20260514215806",
+      "name": "add_placement_survey_wave",
+      "path": "supabase/migrations/20260514215806_add_placement_survey_wave.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "3e1bf5eaa84e021dbbce3fb569ff6a19de5adf1f14669c6b32e616d17303ba1a",
+      "bytes": 575,
+      "storedStatementSha256": "3e1bf5eaa84e021dbbce3fb569ff6a19de5adf1f14669c6b32e616d17303ba1a",
+      "storedStatementBytes": 575
+    },
+    {
+      "version": "20260514215811",
+      "name": "add_webhook_events",
+      "path": "supabase/migrations/20260514215811_add_webhook_events.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "3a8039538ec3aa22d12d62cc62998e1f3db2bfd05ad7251d1dfb3067987529b1",
+      "bytes": 1025,
+      "storedStatementSha256": "3a8039538ec3aa22d12d62cc62998e1f3db2bfd05ad7251d1dfb3067987529b1",
+      "storedStatementBytes": 1025
+    },
+    {
+      "version": "20260514215819",
+      "name": "add_org_white_label_fields",
+      "path": "supabase/migrations/20260514215819_add_org_white_label_fields.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "fb64913edb9171da9fad98c7969399218c303328ccbf89b7832471b5ef740663",
+      "bytes": 258,
+      "storedStatementSha256": "fb64913edb9171da9fad98c7969399218c303328ccbf89b7832471b5ef740663",
+      "storedStatementBytes": 258
+    },
+    {
+      "version": "20260514215910",
+      "name": "add_missing_at_risk_alerts_table",
+      "path": "supabase/migrations/20260514215910_add_missing_at_risk_alerts_table.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "63a05dd97177f88a8f117254a0176bb3ef4162704c7f46041e69bc0715d80733",
+      "bytes": 901,
+      "storedStatementSha256": "63a05dd97177f88a8f117254a0176bb3ef4162704c7f46041e69bc0715d80733",
+      "storedStatementBytes": 901
+    },
+    {
+      "version": "20260514215918",
+      "name": "add_at_risk_alert_notification_fields",
+      "path": "supabase/migrations/20260514215918_add_at_risk_alert_notification_fields.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "b795b2572450f931147fa14c14e5941625eb92ad05597dae34f310eac10a6229",
+      "bytes": 151,
+      "storedStatementSha256": "b795b2572450f931147fa14c14e5941625eb92ad05597dae34f310eac10a6229",
+      "storedStatementBytes": 151
+    },
+    {
+      "version": "20260514215936",
+      "name": "add_milestone_cascade_model",
+      "path": "supabase/migrations/20260514215936_add_milestone_cascade_model.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "d98e95ede0f7b4cf75b00d6c3b09856b751b61bfee20cdffa696467059eafcaa",
+      "bytes": 1417,
+      "storedStatementSha256": "d98e95ede0f7b4cf75b00d6c3b09856b751b61bfee20cdffa696467059eafcaa",
+      "storedStatementBytes": 1417
+    },
+    {
+      "version": "20260514215945",
+      "name": "add_testimonial",
+      "path": "supabase/migrations/20260514215945_add_testimonial.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "0140737c76961105087c1f85dacb94135309df692f760cc76845efe4ef2d67be",
+      "bytes": 2018,
+      "storedStatementSha256": "0140737c76961105087c1f85dacb94135309df692f760cc76845efe4ef2d67be",
+      "storedStatementBytes": 2018
+    },
+    {
+      "version": "20260514220121",
+      "name": "add_rls_policies",
+      "path": "supabase/migrations/20260514220121_add_rls_policies.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "cb937f27b921784afb6a0c26b034b650115a43ea2cdb044b4bbc79f913b458ea",
+      "bytes": 4765,
+      "storedStatementSha256": "cb937f27b921784afb6a0c26b034b650115a43ea2cdb044b4bbc79f913b458ea",
+      "storedStatementBytes": 4765
+    },
+    {
+      "version": "20260514220406",
+      "name": "add_rls_policies_policies_and_force",
+      "path": "supabase/migrations/20260514220406_add_rls_policies_policies_and_force.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "a65016e7f2b262de4ec2505889aa1f981dcc34f8d61e4a59cce798fd44bae65a",
+      "bytes": 39214,
+      "storedStatementSha256": "a65016e7f2b262de4ec2505889aa1f981dcc34f8d61e4a59cce798fd44bae65a",
+      "storedStatementBytes": 39214
+    },
+    {
+      "version": "20260514220428",
+      "name": "add_cron_execution",
+      "path": "supabase/migrations/20260514220428_add_cron_execution.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "4906480443a9e3383172bdbd66cdccbf7ffa013ff640dfc40cf51ae7fe7be446",
+      "bytes": 765,
+      "storedStatementSha256": "4906480443a9e3383172bdbd66cdccbf7ffa013ff640dfc40cf51ae7fe7be446",
+      "storedStatementBytes": 765
+    },
+    {
+      "version": "20260514220432",
+      "name": "add_performance_indexes",
+      "path": "supabase/migrations/20260514220432_add_performance_indexes.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "92fdd1f838b212bf4fa0a99b303748901feab7892a1de2b1a8b7a9695b29b829",
+      "bytes": 994,
+      "storedStatementSha256": "92fdd1f838b212bf4fa0a99b303748901feab7892a1de2b1a8b7a9695b29b829",
+      "storedStatementBytes": 994
+    },
+    {
+      "version": "20260514220437",
+      "name": "add_feature_flags",
+      "path": "supabase/migrations/20260514220437_add_feature_flags.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "f7c492cd98c7bec49356fa598d3ea205eb2a335a01f65ee70b78f27f58473dd6",
+      "bytes": 733,
+      "storedStatementSha256": "f7c492cd98c7bec49356fa598d3ea205eb2a335a01f65ee70b78f27f58473dd6",
+      "storedStatementBytes": 733
+    },
+    {
+      "version": "20260514220441",
+      "name": "add_member_feedback",
+      "path": "supabase/migrations/20260514220441_add_member_feedback.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "b1310d95a3fca89b44de7ae135806ce57531b7139a148246f0318469745e0765",
+      "bytes": 911,
+      "storedStatementSha256": "b1310d95a3fca89b44de7ae135806ce57531b7139a148246f0318469745e0765",
+      "storedStatementBytes": 911
+    },
+    {
+      "version": "20260514220445",
+      "name": "add_email_templates",
+      "path": "supabase/migrations/20260514220445_add_email_templates.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "5f63230a27526b8b9865e72efdd66cea01ce87de51482a393282381a387b86c8",
+      "bytes": 719,
+      "storedStatementSha256": "5f63230a27526b8b9865e72efdd66cea01ce87de51482a393282381a387b86c8",
+      "storedStatementBytes": 719
+    },
+    {
+      "version": "20260514220449",
+      "name": "add_notifications_table",
+      "path": "supabase/migrations/20260514220449_add_notifications_table.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "ce89d6f90c97daff87126def9af3f9f661a12645061032b52508835c77618918",
+      "bytes": 915,
+      "storedStatementSha256": "ce89d6f90c97daff87126def9af3f9f661a12645061032b52508835c77618918",
+      "storedStatementBytes": 915
+    },
+    {
+      "version": "20260514220523",
+      "name": "add_webhook_events_20260514_a",
+      "path": "supabase/migrations/20260514220523_add_webhook_events_20260514_a.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "2a95e323d48bcf71a11957b2c40b9eb3dc43911231c24e7577bd7956fa2cbcd2",
+      "bytes": 1003,
+      "storedStatementSha256": "2a95e323d48bcf71a11957b2c40b9eb3dc43911231c24e7577bd7956fa2cbcd2",
+      "storedStatementBytes": 1003
+    },
+    {
+      "version": "20260514220546",
+      "name": "defer_rls_force_authorize_system",
+      "path": "supabase/migrations/20260514220546_defer_rls_force_authorize_system.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "33ec6c0484f32bc9d71b9d90204d5cc8730de54883b58b0915f6825514175697",
+      "bytes": 3803,
+      "storedStatementSha256": "33ec6c0484f32bc9d71b9d90204d5cc8730de54883b58b0915f6825514175697",
+      "storedStatementBytes": 3803
+    },
+    {
+      "version": "20260514220559",
+      "name": "add_webhook_events_20260514_b",
+      "path": "supabase/migrations/20260514220559_add_webhook_events_20260514_b.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "2a95e323d48bcf71a11957b2c40b9eb3dc43911231c24e7577bd7956fa2cbcd2",
+      "bytes": 1003,
+      "storedStatementSha256": "2a95e323d48bcf71a11957b2c40b9eb3dc43911231c24e7577bd7956fa2cbcd2",
+      "storedStatementBytes": 1003
+    },
+    {
+      "version": "20260514220607",
+      "name": "rls_goals_writes_mentor_sessions_enable",
+      "path": "supabase/migrations/20260514220607_rls_goals_writes_mentor_sessions_enable.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "c7c213f445886f01ba12280305e448f666434694af94f7e6c134a3ff276d0b85",
+      "bytes": 1412,
+      "storedStatementSha256": "c7c213f445886f01ba12280305e448f666434694af94f7e6c134a3ff276d0b85",
+      "storedStatementBytes": 1412
+    },
+    {
+      "version": "20260514220612",
+      "name": "rls_milestone_cascades",
+      "path": "supabase/migrations/20260514220612_rls_milestone_cascades.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "1518d68a5a6b8447870c0132a4ecc616e0a1d4f1262ca924dd4eeeb0808c3a89",
+      "bytes": 2075,
+      "storedStatementSha256": "1518d68a5a6b8447870c0132a4ecc616e0a1d4f1262ca924dd4eeeb0808c3a89",
+      "storedStatementBytes": 2075
+    },
+    {
+      "version": "20260516204017",
+      "name": "add_partner_type",
+      "path": "supabase/migrations/20260516204017_add_partner_type.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "d2c4d7f5e4387912de1f7f2800f6133ae3050299f88c7db1a69fc2b39695c491",
+      "bytes": 189,
+      "storedStatementSha256": "d2c4d7f5e4387912de1f7f2800f6133ae3050299f88c7db1a69fc2b39695c491",
+      "storedStatementBytes": 189
+    },
+    {
+      "version": "20260610033949",
+      "name": "create_member_files_storage_bucket",
+      "path": "supabase/migrations/20260610033949_create_member_files_storage_bucket.sql",
+      "disposition": "recovered-stored-statement",
+      "sha256": "bd9a2d6c1e7611cd700ad10e023b36f2f831ce3d3f50d94756d0e54ed078b0b6",
+      "bytes": 167,
+      "storedStatementSha256": "bd9a2d6c1e7611cd700ad10e023b36f2f831ce3d3f50d94756d0e54ed078b0b6",
+      "storedStatementBytes": 167
+    }
+  ],
+  "archived": [
+    {
+      "originalPath": "supabase/migrations/20260413183000_enable_rls_for_mentor_and_enrollment_tables.sql",
+      "path": "supabase/history/unapplied/20260413183000_enable_rls_for_mentor_and_enrollment_tables.sql",
+      "version": "20260413183000",
+      "sha256": "c9bb2ccd04c6328ade4812c395865a87e9ae1d7bb7e69200fcb5f51bae7f9f42",
+      "bytes": 5652
+    },
+    {
+      "originalPath": "supabase/migrations/20260510020512_add_missing_columns_to_course_progress.sql",
+      "path": "supabase/history/unapplied/20260510020512_add_missing_columns_to_course_progress.sql",
+      "version": "20260510020512",
+      "sha256": "89a17564bc5a6ef849b9afe567bf0ef775dcb6c3954bca7379374fe0409e1c37",
+      "bytes": 392
+    },
+    {
+      "originalPath": "supabase/migrations/20260510020512_add_progress_pct_to_course_progress.sql",
+      "path": "supabase/history/unapplied/20260510020512_add_progress_pct_to_course_progress.sql",
+      "version": "20260510020512",
+      "sha256": "549fd8715588a8cbea1ef134efbb518fb28957bc9ac65bb088237ab922be45f3",
+      "bytes": 256
+    },
+    {
+      "originalPath": "supabase/migrations/20260610000000_create_member_files_storage_bucket.sql",
+      "path": "supabase/history/unapplied/20260610000000_create_member_files_storage_bucket.sql",
+      "version": "20260610000000",
+      "sha256": "8a68f95f222ae0974dd8afc6a4e8605d3a1ebbd2ad2fc02d3cac6074e08eee90",
+      "bytes": 168
+    }
+  ],
+  "activeVersionCount": 36,
+  "archivedOriginalFileCount": 4
+}

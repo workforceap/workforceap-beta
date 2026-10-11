@@ -214,3 +214,45 @@ a recovery method. Preserve both the recorded checksums and repository history;
 do not rewrite or resolve them to make a status report look clean. Review each
 new additive migration against the actual live objects. The complete comparison
 is retained in `artifacts/workforceap-stakeholder-workflows-2026-09-09/migration-preflight.json`.
+
+## Supabase GitHub history reconciliation, 2026-10-11
+
+The Supabase GitHub app uses `supabase/migrations` and
+`supabase_migrations.schema_migrations`; these are separate from Prisma's
+history above. Its default `main` mapped to GitHub `master` reported
+`Remote migration versions not found in local migrations directory.` on both
+the deployed pre-release baseline and the October 11 release. Application
+migration source was unchanged by that release, and its separate production
+Prisma preflight found no pending or unfinished migration.
+
+A read-only ledger export at **2026-10-11 03:20:32 UTC** recovered 36 applied
+Supabase versions with stored statements. The source reconciliation restores
+the 30 missing versions using exact stored SQL bytes, preserves the six
+existing files, and archives four remote-absent original files outside the
+active directory. The archived originals include a duplicated version; their
+bytes and filenames remain available for review. Both histories and all
+Prisma checksums remain untouched in production.
+
+[Supabase's directory runbook](../supabase/README.md) and
+[hash manifest](../supabase/history/recovery-20261011.json) record provenance,
+archival reasons and acceptance boundaries. The shared prepush/CI guard pins
+this recovered and archived history while allowing unique later migrations.
+Its optional captured-ledger comparison and a disposable PostgreSQL 17.11
+fixture found 36 matching versions, no pending SQL and no duplicate active
+version. No migration SQL executed in the existing-ledger fixture.
+
+This does not establish complete fresh recovery. Bare SQL replay in the
+disposable fixture fails immediately with `42P01` because the first Supabase
+migration alters `course_enrollments`, absent from that chain's initial state.
+Its transaction rolled back; subsequent migrations were not run. No baseline
+was adopted. Current Supabase GitHub integration documentation builds new
+branch schemas from committed migrations and applies only new migrations to
+production; the existing-default-branch history repair is distinct from a
+fully working migration-built preview or reset.
+
+The integration's automatic-branching/production-deployment settings were not
+accessible through the current connector. Verify the actual candidate check's
+branch and project, then the native check on the exact merged `master` SHA
+before claiming provider acceptance. Preserve the zero-pending comparison and
+do not repair tracking records, replay recovered historical SQL in production,
+or reset a branch to force a green check.

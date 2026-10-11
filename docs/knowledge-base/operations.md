@@ -2,6 +2,8 @@
 
 This reference describes the checked-in operating paths reviewed on 2026-09-12. It does not establish the current deployed SHA, provider configuration, backup availability, or successful delivery. Start with [AGENTS.md](../../AGENTS.md), the [deployment checklist](../DEPLOYMENT-CHECKLIST.md), and [database recovery](../DATABASE-RECOVERY.md) for release work. Provider entry points are in [integrations](integrations.md).
 
+**October 11, 2026 release evidence:** the [dated release and acceptance receipt](../RELEASE-ACCEPTANCE-2026-10-11.md) records the eight merged PRs, exact `82e11ce57` application release, engineering/build checks, production readiness and bounded Vercel log window. It also records pending authenticated-role and application-email acceptance, the separate Supabase history-recovery status, and actual Linear follow-ups. The supplied plan's WAP-01–WAP-08 names identify plan sections rather than those issue records.
+
 ## Enter by task
 
 | Task | Start here |

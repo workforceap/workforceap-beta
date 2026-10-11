@@ -91,3 +91,11 @@ It does not certify live Auth, Storage, or database policies.
 [Database recovery](../DATABASE-RECOVERY.md) is the governing runbook. Clean historical migration replay is not currently supported. `db:push` is for disposable development fixtures and omits migration-only security DDL. Do not rewrite old migration checksums or infer restore readiness from a successful application build.
 
 Before a schema-dependent release, confirm the intended environment, existing migration state, backup/recovery evidence, release owner and applicable deployment preflight. The [operations guide](operations.md) describes the build and release paths; this static model index does not certify either database's current schema.
+
+The [October 11 Supabase history reconciliation](../../supabase/README.md) is
+separate from Prisma recovery: 30 stored-statement files were recovered, six
+original files retained and four unapplied originals archived with pinned
+hashes. Its observed existing-production source/ledger comparison has 36
+matching versions and zero pending SQL. Bare reset/replay still lacks initial
+application tables, and native provider acceptance requires the exact merged
+check receipt; source hashes and local fixtures do not establish it.
