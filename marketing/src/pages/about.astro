@@ -1,4 +1,6 @@
 ---
+import { useT } from '../i18n/t';
+const t = useT('en');
 import Layout from '../layouts/Layout.astro';
 ---
 <Layout
@@ -73,7 +75,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="close__veil" aria-hidden="true"></div>
     <div class="close__inner wrap">
       <h2>Your next step starts with one application.</h2>
-      <p>Apply in about 5 minutes — no cost for members who qualify through scholarship/grant funded membership. A real team reviews it and follows up by email.</p>
+      <p>{t('apply.applicationTimeEstimate')} to apply — no cost for members who qualify through scholarship/grant funded membership. A real team reviews it and follows up by email.</p>
       <div class="acts acts--center">
         <a class="bbtn bbtn--gold" href="/apply">Start your application</a>
         <a class="bbtn bbtn--outline" href="/find-your-path">Find Your Path</a>

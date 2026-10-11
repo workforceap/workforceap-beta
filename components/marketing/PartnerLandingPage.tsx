@@ -32,11 +32,12 @@ export default async function PartnerLandingPage({
   /** Locale-prefixed `/apply?ref=<code>`. */
   applyHref: string;
 }) {
-  const [t, home, mission, disclosureCopy] = await Promise.all([
+  const [t, home, mission, disclosureCopy, apply] = await Promise.all([
     getTranslations('partnerLanding'),
     getTranslations('marketing.home'),
     getTranslations('mission'),
     getPartnerDisclosureCopy(),
+    getTranslations('apply'),
   ]);
   const partner = model.name;
 
@@ -46,7 +47,7 @@ export default async function PartnerLandingPage({
     { icon: Briefcase, title: home('trustEmployer'), body: home('trustEmployerDetail') },
   ];
   const steps = [
-    { icon: FileText, title: home('heroStep1') },
+    { icon: FileText, title: home('heroStep1', { duration: apply('applicationTimeEstimate') }) },
     { icon: Search, title: home('heroStep2') },
     { icon: CheckCircle2, title: home('heroStep3') },
   ];
@@ -69,7 +70,7 @@ export default async function PartnerLandingPage({
               {t('eyebrow', { partner })}
             </span>
             <h1 id="partner-landing-title">{t('title', { partner })}</h1>
-            <p className="sub">{home('memberPromiseBody1')}</p>
+            <p className="sub">{home('memberPromiseBody1', { duration: apply('applicationTimeEstimate') })}</p>
             <div className="acts">
               <Link className="dbtn dbtn--solid" href={applyHref}>
                 {t('applyCta')} <ArrowRight size={18} aria-hidden="true" />

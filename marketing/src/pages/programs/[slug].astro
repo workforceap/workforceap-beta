@@ -1,4 +1,6 @@
 ---
+import { useT } from '../../i18n/t';
+const t = useT('en');
 import { publicProgramFundingCopy } from '../../data/programFunding';
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
@@ -371,7 +373,7 @@ const metaDescription = `Explore ${display}: ${program.duration}, course content
       <!-- Bottom CTA -->
       <div class="bottomcta">
         <h3>Ready to start your career in {program.categoryLabel}?</h3>
-        <p>Applications take about 5 minutes. No cost for <a href={applyHomeHref}>qualifying members</a>. A counselor reviews every application and you'll hear by email.</p>
+        <p>{t('apply.applicationTimeEstimate')} to apply. No cost for <a href={applyHomeHref}>qualifying members</a>. A counselor reviews every application and you'll hear by email.</p>
         <a class="btn btn--primary btn--lg" href={primaryHref} {...primaryAttrs}>{primaryLabel}</a>
         <div class="cta-links">
           {externalCourseUrl && <a href={applyHref}>Want a WorkforceAP advisor alongside the course? Apply here</a>}

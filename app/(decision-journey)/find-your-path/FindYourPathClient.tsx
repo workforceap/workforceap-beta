@@ -141,6 +141,7 @@ function QuizResultsView({
   careerMatch?: CareerMatchResult | null;
 }) {
   const t = useTranslations('findYourPath');
+  const applyT = useTranslations('apply');
   const topProgram = programs[0];
   const topOcc = careerMatch?.topOccupations[0];
   const topApplyHref = topProgram ? getApplyHref(topProgram.slug) : '/apply';
@@ -335,7 +336,7 @@ function QuizResultsView({
             <div style={{ padding: '1rem', borderRadius: '0.9rem', background: 'var(--surface-container)', border: '1px solid var(--outline-variant)' }}>
               <strong>3 · Your next step</strong>
               <p style={{ margin: '0.5rem 0 0', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
-                Apply in about 10 minutes. A counselor reviews every application, and you’ll get an email when a decision is made.
+                {applyT('applicationTimeEstimate')} to apply. A counselor reviews every application, and you’ll get an email when a decision is made.
               </p>
             </div>
           </div>

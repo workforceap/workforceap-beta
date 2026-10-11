@@ -50,7 +50,7 @@ export default function PaidApplyVariant({ utmSource, stepNav, mobileTrustBar, p
           {t('paidHeroHeading')}
         </h1>
         <p className="paid-apply-hero__subhead">
-          {t('paidHeroSubhead')}
+          {t('paidHeroSubhead', { duration: t('applicationTimeEstimate') })}
         </p>
         <p className="paid-apply-hero__help-compact">
           {t('questionsCall')}{' '}

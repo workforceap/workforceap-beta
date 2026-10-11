@@ -1,8 +1,13 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
+import { createTranslator } from 'next-intl';
+import en from '@/messages/en.json';
 
 vi.mock('@/lib/i18n/server', () => ({ getRequestLocale: async () => 'en' }));
+vi.mock('next-intl/server', () => ({
+  getTranslations: async () => createTranslator({ locale: 'en', messages: en, namespace: 'apply' }),
+}));
 
 import { buildApplyPageMetadata } from '@/lib/apply/applyProgramPage';
 

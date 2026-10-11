@@ -65,8 +65,8 @@ export default async function ApplyCreateAccountPage({ searchParams }: {
         </div>
       </section>
           )}
-          readyIntro={<><ApplyMobileTrustBar /><ApplyMobileStepNav activeStep={2} showTimeHint school={isSchool} />
-            <p className="apply-funnel-form-kicker afd-kicker" role="note">{t('createAccountFormKicker')}</p></>}
+          readyIntro={<><ApplyMobileTrustBar /><ApplyMobileStepNav activeStep={2} showStepHint school={isSchool} />
+            <p className="apply-funnel-form-kicker afd-kicker" role="note">{t('createAccountFormKicker', { duration: t('applicationTimeEstimate') })}</p></>}
         />
       </Suspense>
 

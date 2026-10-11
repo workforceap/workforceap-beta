@@ -1,4 +1,6 @@
 ---
+import { useT } from '../../i18n/t';
+const t = useT('en');
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 
@@ -80,7 +82,7 @@ const wioaCriteria = [
       <p class="sub">Training in Austin at no cost for members who qualify through scholarship/grant funded membership. {duration}. Build on basic IT or Python knowledge and prepare for a {partner}-recognized certificate.</p>
       <div class="acts">
         <a class="dbtn dbtn--solid" href={applyUrl}>Apply now <span>→</span></a>
-        <span class="meta-note">Takes 3 minutes • No credit card required</span>
+        <span class="meta-note">{t('apply.applicationTimeEstimate')} to apply • No credit card required</span>
       </div>
     </div>
 
@@ -199,7 +201,7 @@ const wioaCriteria = [
   <div class="close__inner wrap">
     <span class="pill pill--solid"><span class="pill__star"><Icon name="star" size={11} /></span>Austin, TX • Remote-friendly</span>
     <h2>Start your IT career today</h2>
-    <p>Free {partner} certification for members who qualify through scholarship/grant funded membership. WIOA-funded. Apply in 3 minutes.</p>
+    <p>Free {partner} certification for members who qualify through scholarship/grant funded membership. WIOA-funded. {t('apply.applicationTimeEstimate')} to apply.</p>
     <div class="acts acts--center">
       <a class="bbtn bbtn--gold" href={applyUrl}>Apply now →</a>
       <a class="bbtn bbtn--outline" href="/find-your-path">Find your path</a>

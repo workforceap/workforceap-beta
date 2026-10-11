@@ -14,38 +14,32 @@ const SCHOOL_PROGRESS_STEPS = [
   { labelKey: 'stepProgramSelectionMobile', icon: 'key' },
 ] as const;
 
-const STEP_TIME_HINT_KEYS = {
-  0: 'step1TimeHintMobile',
-  1: 'step2TimeHintMobile',
-  2: 'step3TimeHintMobile',
-} as const;
-
 type ApplyMobileStepNavProps = {
   activeStep?: 0 | 1 | 2;
-  /** When true, appends a step-specific time hint to the mobile summary line. */
-  showTimeHint?: boolean;
+  /** When true, appends a translated active-step label to the mobile summary line. */
+  showStepHint?: boolean;
   /** High-school collection: step 1 is "You" not "Eligibility". */
   school?: boolean;
 };
 
 export default async function ApplyMobileStepNav({
   activeStep = 0,
-  showTimeHint = false,
+  showStepHint = false,
   school = false,
 }: ApplyMobileStepNavProps) {
   const t = await getTranslations('apply');
   const steps = school ? SCHOOL_PROGRESS_STEPS : APPLY_PROGRESS_STEPS;
   const totalSteps = steps.length;
-  const timeHintKey = showTimeHint ? STEP_TIME_HINT_KEYS[activeStep] : null;
+  const hintKey = showStepHint ? steps[activeStep].labelKey : null;
 
   return (
     <nav className="apply-mobile-step-nav" aria-label={t('applicationProgress')}>
       <p className="apply-mobile-step-nav__summary">
-        {timeHintKey
-          ? t('mobileStepSummaryWithTime', {
+        {hintKey
+          ? t('mobileStepSummaryWithHint', {
               current: activeStep + 1,
               total: totalSteps,
-              time: t(timeHintKey as Parameters<typeof t>[0]),
+              hint: t(hintKey as Parameters<typeof t>[0]),
             })
           : t('mobileStepSummary', { current: activeStep + 1, total: totalSteps })}
       </p>

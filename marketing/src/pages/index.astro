@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { useT } from '../i18n/t';
+const t = useT('en');
 import Icon from '../components/Icon.astro';
 import { heroPhotoForKey } from '../../../lib/marketing/heroPhotos';
 const homeHeroPhoto = heroPhotoForKey('/');
@@ -83,7 +85,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
             <strong>$0</strong>
           </div>
           <div class="chips">
-            <span>~5 min to apply</span>
+            <span>{t('apply.applicationTimeEstimate')} to apply</span>
             <span>No cost to qualifying members</span>
             <span>Real career support</span>
           </div>
@@ -110,8 +112,8 @@ const homeHeroPhoto = heroPhotoForKey('/');
         <div class="imm-jcard">
           <div class="imm-jnum">01</div>
           <h3>Apply</h3>
-          <p>Takes about 5 minutes. No cost for members who qualify through scholarship/grant funded membership — a real team reviews it.</p>
-          <span class="imm-tag">~5 min</span>
+          <p>{t('apply.applicationTimeEstimate')} to apply. No cost for members who qualify through scholarship/grant funded membership — a real team reviews it.</p>
+          <span class="imm-tag">{t('apply.applicationTimeEstimate')}</span>
         </div>
         <div class="imm-jcard">
           <div class="imm-jnum">02</div>
@@ -187,7 +189,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
     <div class="close__inner wrap">
       <span class="pill pill--solid"><span class="pill__star">★</span>Reviewed by a real team</span>
       <h2>Your next step starts with<br><span class="gold">one application.</span></h2>
-      <p>Apply in about 5 minutes — no cost for members who qualify through scholarship/grant funded membership. A real team reviews your application and follows up about next steps.</p>
+      <p>{t('apply.applicationTimeEstimate')} to apply — no cost for members who qualify through scholarship/grant funded membership. A real team reviews your application and follows up about next steps.</p>
       <div class="acts acts--center">
         <a class="bbtn bbtn--gold" href="/apply">Start your application</a>
         <a class="bbtn bbtn--outline" href="/find-your-path">Find your path</a>

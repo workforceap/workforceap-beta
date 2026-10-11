@@ -109,7 +109,8 @@ function pickMarketingClientSlice(messages: MsgRecord): MsgRecord | undefined {
 /**
  * Root-layout client payload: chrome + marketing client keys + tiny find-your-path.
  * Portal / admin / apply / auth catalogs attach in those route-group layouts so a
- * marketing HTML response does not serialize `admin.*` / `dashboard.*` / `apply.*`.
+ * marketing HTML response does not serialize the full admin/dashboard/apply catalog.
+ * Only the shared application estimate is needed by Find Your Path results.
  */
 export function pickRootClientMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
   return pickClientMessageSlice(messages, 'root');
@@ -148,6 +149,10 @@ export function pickClientMessageSlice(
       const marketing = pickMarketingClientSlice(m);
       if (marketing) out.marketing = marketing;
       if (m.findYourPath !== undefined) out.findYourPath = m.findYourPath;
+      const apply = m.apply as MsgRecord | undefined;
+      if (apply?.applicationTimeEstimate !== undefined) {
+        out.apply = { applicationTimeEstimate: apply.applicationTimeEstimate };
+      }
       break;
     }
     case 'portal':

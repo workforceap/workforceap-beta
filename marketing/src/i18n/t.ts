@@ -16,14 +16,16 @@ function dig(obj: unknown, key: string): unknown {
   return key.split('.').reduce<unknown>((o, k) => (o == null ? undefined : (o as Record<string, unknown>)[k]), obj);
 }
 
-/** t(key) for a locale; falls back to English for any missing key (like the Next deepMerge). */
+/** Plain-text messages with named values; missing keys fall back to English. */
 export function useT(locale: string) {
   const loc = (LOCALES as readonly string[]).includes(locale) ? locale : 'en';
-  return (key: string): string => {
+  return (key: string, values: Record<string, string | number> = {}): string => {
     const v = dig(MESSAGES[loc], key);
-    if (typeof v === 'string') return v;
     const f = dig(MESSAGES.en, key);
-    return typeof f === 'string' ? f : key;
+    const message = typeof v === 'string' ? v : typeof f === 'string' ? f : key;
+    return message.replace(/\{(\w+)\}/g, (placeholder, name: string) =>
+      Object.hasOwn(values, name) ? String(values[name]) : placeholder,
+    );
   };
 }
 
