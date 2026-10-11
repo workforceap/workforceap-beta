@@ -17,6 +17,8 @@ vi.mock('@/lib/db/prisma', () => ({
     counselorAssignment: { findMany: vi.fn() },
     profile: { findMany: vi.fn() },
     userRole: { findMany: vi.fn() },
+    emailSendLog: { findMany: vi.fn(async () => []) },
+    notification: { findMany: vi.fn(async () => []) },
   },
 }));
 vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn(() => Promise.resolve()) }));
@@ -57,19 +59,16 @@ function snapshot(ageDays: number) {
   };
 }
 
-type UserFindManyArgs = { where?: { wioaReviewStatus?: unknown; updatedAt?: unknown; interviewEligible?: unknown; enrolledProgram?: unknown; id?: unknown } };
+type UserFindManyArgs = { where?: { wioaReviewStatus?: unknown; interviewEligible?: unknown; enrolledProgram?: unknown; OR?: unknown } };
 
-/** Route the four `user.findMany` calls by their where-clause shape. */
+/** Route population/admin reads by their where-clause shape. */
 function installUsers(opts: { stalled: Array<{ id: string }>; awaiting: Array<{ wioaQualificationJson: unknown; updatedAt: Date }>; admins?: Array<{ id: string; email: string }> }) {
   vi.mocked(prisma.user.findMany).mockImplementation((async (args?: unknown) => {
     const where = (args as UserFindManyArgs | undefined)?.where ?? {};
     if ('interviewEligible' in where) return [];
     if ('enrolledProgram' in where) return [];
-    if ('wioaReviewStatus' in where && 'updatedAt' in where) {
-      return opts.stalled.map((m) => ({ id: m.id, fullName: `Member ${m.id}`, email: `${m.id}@example.org`, updatedAt: new Date(NOW.getTime() - 6 * DAY) }));
-    }
-    if ('wioaReviewStatus' in where) return opts.awaiting;
-    if ('id' in where) return opts.admins ?? [{ id: 'admin-1', email: 'ops@example.org' }];
+    if ('wioaReviewStatus' in where) return opts.awaiting.map((row, index) => ({ ...row, id: opts.stalled[index]?.id ?? `waiting-${index}`, fullName: `Member ${index}`, email: `member-${index}@example.org`, organizationId: 'org-1', wioaReviewStatus: 'pending' }));
+    if ('OR' in where) return (opts.admins ?? [{ id: 'admin-1', email: 'ops@example.org' }]).map((admin) => ({ ...admin, organizationId: 'org-1', profile: { role: 'admin' }, userRoles: [] }));
     return [];
   }) as never);
 }
@@ -102,7 +101,7 @@ describe('onboarding-stalls digest: oldest pending WIOA screening', () => {
     expect(body.wioaOldestPendingDays).toBe(125);
     expect(body.wioaQueueOverdue).toBe(true);
     expect(vi.mocked(sendOnboardingStallsDigestEmail)).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(sendOnboardingStallsDigestEmail).mock.calls[0][0]).toMatchObject({ wioaOldestPendingDays: 125, wioaCount: 1 });
+    expect(vi.mocked(sendOnboardingStallsDigestEmail).mock.calls[0][0]).toMatchObject({ wioaOldestPendingDays: 125, wioaCount: 2 });
     expect(vi.mocked(createNotification).mock.calls[0][0]).toMatchObject({
       body: expect.stringContaining(`Oldest pending WIOA screening: 125 days (over the ${WIOA_QUEUE_AGE_ALERT_DAYS}-day threshold).`),
       data: expect.objectContaining({ wioaOldestPendingDays: 125 }),

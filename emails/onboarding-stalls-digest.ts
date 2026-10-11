@@ -52,6 +52,8 @@ export function onboardingStallsDigestHtml(params: {
   wioaQueueLink: string;
   membersQueueLink: string;
   memberAdminBaseUrl: string;
+  /** Counts reflect a bounded scan rather than the complete queue when true. */
+  truncated?: boolean;
 }): string {
   const {
     interviewCount,
@@ -85,7 +87,8 @@ export function onboardingStallsDigestHtml(params: {
   `;
 
   return `
-    <p>Here is this week's onboarding-stall summary — members stuck between applying and starting training with nobody automatically pinged:</p>
+    <p>Here is this week's onboarding-stall summary for active members:</p>
+    ${params.truncated ? '<p><strong>Queue scan capped:</strong> these counts cover the scanned records. Open the staff queues for the full backlog.</p>' : ''}
     ${summaryTable}
     <div style="margin-bottom:1.5rem;border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;">
       <div style="padding:0.75rem 1rem;background:#f8f5f3;border-bottom:1px solid #e5e5e5;">

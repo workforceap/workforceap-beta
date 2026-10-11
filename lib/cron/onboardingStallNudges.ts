@@ -23,8 +23,8 @@ import { crossTenantOK } from '@/lib/tenant/withTenantScope';
  *
  *  - The whole path is OFF unless `MEMBER_STALL_NUDGES_ENABLED` is `true`/`1`.
  *    Mike flips it; with the flag off the cron behaves exactly as before.
- *  - The route's stall queries are the STAFF digest population (every
- *    non-deleted account), so before anything is planned the candidates are
+ *  - The route's stall queries use the active-member STAFF digest population.
+ *    Before anything is planned the candidates are
  *    re-read through a member-only, opted-in filter (`MEMBER_ONLY_WHERE` +
  *    `notificationsReminders`): staff, employer, partner and role-less
  *    accounts, unsubscribed members and the dogfood addresses are dropped
