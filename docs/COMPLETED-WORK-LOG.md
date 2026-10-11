@@ -58,6 +58,10 @@ General application duration is supplied by one `apply.applicationTimeEstimate` 
 
 The local candidate aligns the member identity heading/headline with its badges on wider screens and groups Notifications with Language in the existing preferences column. Account fields, save/passthrough logic and account→notifications→language→security/delete DOM order remain intact. The [design audit](audits/member-profile-preferences-2026-10-11.md) records synthetic local browser evidence and focused contact-save regressions; independent review and hosted/release acceptance are separate gates.
 
+## 2026-10-11 — WAP-301 member phone keyboard-focus candidate
+
+Member phone tabs center keyboard-visible focus horizontally and suspend snap while that focus is inside the rail. The [bounded receipt](audits/member-phone-keyboard-focus-2026-10-11.md) records an actual baseline failure and six passing light/dark viewport regressions, per-link geometry, touch/zoom/desktop checks and unchanged route-state centering. Locale, aliases, badges and production role guards remain intact; component-fixture evidence does not certify authenticated destinations. Compact-chrome native focus scrolling is recorded separately. Independent review, hosted gates and release acceptance remain pending.
+
 ## 2026-10-11 — WAP-298 mentor application contrast candidate
 
 The public mentor application's pre-form instruction and Back normal/hover now consume existing theme-aware foreground tokens. The [contrast receipt](audits/mentor-application-contrast-2026-10-11.md) records actual light/dark normal, hover and keyboard-focus rendering at phone and desktop widths, plus rendered form and native invalid-submission comparisons. White form controls, labels, copy and the POST handler are preserved. Independent review, hosted CI and release acceptance remain separate gates; no provider action or live submission was performed.
@@ -83,7 +87,3 @@ Next application/authentication, protected portal and tenant API routing remain
 covered by behavioral regressions. The [bounded receipt](audits/localized-home-routing-2026-10-11.md)
 records fresh static-output ownership and integrated local GET checks. Independent
 review and exact-deployment acceptance remain separate gates.
-
-## 2026-10-11 — WAP-301 member phone keyboard-focus candidate
-
-Member phone tabs center keyboard-visible focus horizontally and suspend snap while that focus is inside the rail. The [bounded receipt](audits/member-phone-keyboard-focus-2026-10-11.md) records an actual baseline failure and six passing light/dark viewport regressions, per-link geometry, touch/zoom/desktop checks and unchanged route-state centering. Locale, aliases, badges and production role guards remain intact; component-fixture evidence does not certify authenticated destinations. Compact-chrome native focus scrolling is recorded separately. Independent review, hosted gates and release acceptance remain pending.
