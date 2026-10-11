@@ -70,3 +70,7 @@ native checkbox behavior, focus, targets and motion stay intact. The
 [audit receipt](audits/shared-toggle-contrast-2026-10-11.md) records measured contrast
 and browser regression coverage. Independent review and hosted/release acceptance
 remain separate gates.
+
+## 2026-10-11 — WAP-299 cookie Accept candidate
+
+Local source candidate pairs the cookie banner's stable accent fill with the existing white accent foreground. Global adaptive tokens and consent behavior remain unchanged. Focused behavior tests and guarded paired browser evidence are recorded in the [contrast audit](audits/cookie-accept-contrast-2026-10-11.md); hosted/release acceptance is pending.
