@@ -3,242 +3,187 @@ import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { sendOnboardingStallsDigestEmail } from '@/lib/email';
 import { isFixtureEmailRecipient } from '@/lib/email/send';
+import { hasAdminAccess, hasSuperAdminAccess, resolveEffectiveRole } from '@/lib/auth/roleAccess';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { sendMemberStallNudges } from '@/lib/cron/onboardingStallNudges';
-import { WIOA_AWAITING_REVIEW_STATUSES, WIOA_QUEUE_AGE_ALERT_DAYS, oldestWioaWaitDays } from '@/lib/wioa/wioaQueueAge';
+import { operationalMemberWhere, cappedQueue, OPERATIONAL_QUEUE_CAP } from '@/lib/cron/operationalQueue';
+import { queueDigest, loadQueueDigestHistory } from '@/lib/cron/queueDigest';
+import { WIOA_AWAITING_REVIEW_STATUSES, WIOA_QUEUE_AGE_ALERT_DAYS, oldestWioaWaitDays, wioaDaysWaiting } from '@/lib/wioa/wioaQueueAge';
 
-// WAP-177 fix 4: bound the function so a hung run is killed and swept to FAILED
-// by data-cleanup instead of pinning a RUNNING row forever.
 export const maxDuration = 300;
-
 const JOB_NAME = 'cron_onboarding_stalls';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const STALL_DAYS = 5;
 const NO_PROGRAM_DAYS = 7;
 const MAX_NAMED_PER_BUCKET = 10;
-
 const INTERVIEW_QUEUE_LINK = '/admin/members/interview-ready';
 const WIOA_QUEUE_LINK = '/admin/wioa-screening';
 const MEMBERS_QUEUE_LINK = '/admin/members';
 
 type NamedMember = { id: string; fullName: string | null; email: string | null };
-
-function toNamedMember(m: { id: string; fullName: string | null; email: string | null }): NamedMember {
-  return { id: m.id, fullName: m.fullName, email: m.email };
-}
+const toNamedMember = (member: NamedMember): NamedMember => ({ id: member.id, fullName: member.fullName, email: member.email });
+const memberSelect = { id: true, fullName: true, email: true, organizationId: true } as const;
 
 /**
- * Weekly onboarding-stall digest (Tuesdays 15:30 — see vercel.json).
- *
- * Surfaces three places applicants/members get stuck between applying and
- * starting training where nobody is automatically pinged, modeled on
- * cron/applicant-followup's "one staff digest, not per-member spam" shape:
- *
- *  - Interview requested but never completed (5+ days).
- *  - WIOA screening stuck in pending/in_review (5+ days since last update —
- *    there's no dedicated "submitted at" timestamp, so `updatedAt` is the
- *    best queryable proxy without a schema change).
- *  - No program selected, no active counselor assignment, and the account
- *    is 7+ days old (the classic "signed up, then nothing" stall).
- *
- * One digest notification (type 'task_assigned') per admin + one staff
- * email listing counts and up to 10 named members per bucket, linking to
- * the relevant admin queue.
- *
- * WAP-92: after the staff digest, the same buckets feed the member-side
- * nudges in lib/cron/onboardingStallNudges.ts (one email per member per
- * bucket, ever; shared 7-day cross-cron cooldown). That path is OFF unless
- * `MEMBER_STALL_NUDGES_ENABLED=true` — see the module for the guard rails.
- *
- * WAP-166 item 2: the digest also names the oldest screening still awaiting
- * review ("oldest pending WIOA screening: N days"), measured from the
- * member's `submittedAt` in `wioa_qualification_json` across every
- * pending/in_review row — not only the `updatedAt`-stalled bucket above,
- * since a profile edit resets that proxy while the member keeps waiting.
+ * Tuesday staff digest of active members under the established roster/fixture
+ * policy. Canonical enrollment and counselor exclusions happen before the cap.
+ * WIOA age uses the existing submittedAt helper (updatedAt is only a fallback).
+ * Org admins receive their organization; platform super admins receive all.
+ * Same-day unchanged queue reminders are deduped separately by app persistence
+ * and provider acceptance, so failures remain retryable. Member nudges retain
+ * their independent opt-in flag, member filter and existing nudge ledgers.
  */
 async function handle(_request: Request) {
   const now = new Date();
   const stallThreshold = new Date(now.getTime() - STALL_DAYS * MS_PER_DAY);
   const noProgramThreshold = new Date(now.getTime() - NO_PROGRAM_DAYS * MS_PER_DAY);
-
-  const [interviewStalled, wioaStalled, noProgramCandidates, wioaAwaitingReview] = await Promise.all([
+  const population = operationalMemberWhere();
+  const [interviewRows, wioaRows, noProgramRows] = await Promise.all([
     prisma.user.findMany({
-      where: {
-        deletedAt: null,
-        interviewEligible: true,
-        interviewRequestedAt: { not: null, lte: stallThreshold },
-        interviewCompletedAt: null,
-      },
-      select: { id: true, fullName: true, email: true, interviewRequestedAt: true },
-      orderBy: { interviewRequestedAt: 'asc' },
-      take: 500,
+      where: { ...population, interviewEligible: true, interviewRequestedAt: { not: null, lte: stallThreshold }, interviewCompletedAt: null },
+      select: { ...memberSelect, interviewRequestedAt: true },
+      orderBy: [{ interviewRequestedAt: 'asc' }, { id: 'asc' }], take: OPERATIONAL_QUEUE_CAP + 1,
+    }),
+    prisma.user.findMany({
+      where: { ...population, wioaReviewStatus: { in: [...WIOA_AWAITING_REVIEW_STATUSES] } },
+      select: { ...memberSelect, wioaQualificationJson: true, wioaReviewStatus: true, updatedAt: true },
+      orderBy: [{ updatedAt: 'asc' }, { id: 'asc' }], take: OPERATIONAL_QUEUE_CAP + 1,
     }),
     prisma.user.findMany({
       where: {
-        deletedAt: null,
-        wioaReviewStatus: { in: ['pending', 'in_review'] },
-        updatedAt: { lte: stallThreshold },
+        ...population, enrolledProgram: null, courseEnrollments: { none: {} },
+        counselorAssignments: { none: { active: true } }, createdAt: { lte: noProgramThreshold },
       },
-      select: { id: true, fullName: true, email: true, updatedAt: true },
-      orderBy: { updatedAt: 'asc' },
-      take: 500,
-    }),
-    prisma.user.findMany({
-      where: {
-        deletedAt: null,
-        enrolledProgram: null,
-        createdAt: { lte: noProgramThreshold },
-      },
-      select: { id: true, fullName: true, email: true, createdAt: true },
-      orderBy: { createdAt: 'asc' },
-      take: 500,
-    }),
-    // Every screening still waiting on staff, regardless of `updatedAt`, so
-    // the oldest wait is measured from submission (see header).
-    prisma.user.findMany({
-      where: {
-        deletedAt: null,
-        wioaReviewStatus: { in: [...WIOA_AWAITING_REVIEW_STATUSES] },
-      },
-      select: { wioaQualificationJson: true, updatedAt: true },
-      take: 500,
+      select: { ...memberSelect, createdAt: true },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], take: OPERATIONAL_QUEUE_CAP + 1,
     }),
   ]);
-
-  const wioaOldestPendingDays = oldestWioaWaitDays(wioaAwaitingReview, now);
-  const wioaQueueOverdue = wioaOldestPendingDays !== null && wioaOldestPendingDays >= WIOA_QUEUE_AGE_ALERT_DAYS;
-
-  // Exclude members who already have an active counselor from the
-  // "no program" bucket — one batched query rather than N+1 lookups.
-  let noProgramStalled: typeof noProgramCandidates = [];
-  if (noProgramCandidates.length > 0) {
-    const assignments = await prisma.counselorAssignment.findMany({
-      where: { memberId: { in: noProgramCandidates.map((m) => m.id) }, active: true },
-      select: { memberId: true },
-    });
-    const assignedIds = new Set(assignments.map((a) => a.memberId));
-    noProgramStalled = noProgramCandidates.filter((m) => !assignedIds.has(m.id));
-  }
-
+  const interviewQueue = cappedQueue(interviewRows);
+  // Keep the oldest observed submission in the sample, including the lookahead
+  // row. A capped updatedAt scan still cannot prove the full queue's oldest age.
+  const wioaQueue = cappedQueue(wioaRows.sort((a, b) => (wioaDaysWaiting(b, now) ?? -1) - (wioaDaysWaiting(a, now) ?? -1)));
+  const noProgramQueue = cappedQueue(noProgramRows);
+  const interviewStalled = interviewQueue.rows;
+  const wioaAwaitingReview = wioaQueue.rows;
+  const wioaStalled = wioaAwaitingReview.filter((member) => (wioaDaysWaiting(member, now) ?? -1) >= STALL_DAYS)
+    .sort((a, b) => (wioaDaysWaiting(b, now) ?? -1) - (wioaDaysWaiting(a, now) ?? -1));
+  const noProgramStalled = noProgramQueue.rows;
+  const queueTruncated = { interview: interviewQueue.truncated, wioa: wioaQueue.truncated, noProgram: noProgramQueue.truncated };
+  const truncated = Object.values(queueTruncated).some(Boolean);
+  const wioaOldestScannedPendingDays = oldestWioaWaitDays(wioaAwaitingReview, now);
+  const wioaOldestPendingDays = queueTruncated.wioa ? null : wioaOldestScannedPendingDays;
+  const wioaQueueOverdue = wioaOldestScannedPendingDays !== null && wioaOldestScannedPendingDays >= WIOA_QUEUE_AGE_ALERT_DAYS
+    ? true : queueTruncated.wioa ? null : false;
   const interviewCount = interviewStalled.length;
   const wioaCount = wioaStalled.length;
   const noProgramCount = noProgramStalled.length;
   const totalStalled = interviewCount + wioaCount + noProgramCount;
-
   let notificationsSent = 0;
-  let emailSent = false;
+  let notificationsFailed = 0;
+  let digestEmailsSent = 0;
+  let digestsSkippedDuplicate = 0;
+  let emailFailed = 0;
+  let emailSkipped = 0;
+  const pacer = createBulkEmailCronPacer({ maxDurationSeconds: maxDuration });
 
   if (totalStalled > 0) {
-    const [profileAdmins, userRoleAdmins] = await Promise.all([
-      prisma.profile.findMany({
-        where: { role: { in: ['admin', 'super_admin'] } },
-        select: { userId: true },
-      }),
-      prisma.userRole.findMany({
-        where: { role: { name: 'admin' } },
-        select: { userId: true },
-      }),
-    ]);
-    const adminUserIds = Array.from(
-      new Set([...profileAdmins.map((p) => p.userId), ...userRoleAdmins.map((r) => r.userId)])
-    );
-    const adminUsers = adminUserIds.length
-      ? await prisma.user.findMany({
-          where: { id: { in: adminUserIds }, deletedAt: null },
-          select: { id: true, email: true },
-        })
-      : [];
-
-    const title = `${totalStalled} onboarding stall${totalStalled === 1 ? '' : 's'} need attention`;
-    const oldestLine =
-      wioaOldestPendingDays !== null
-        ? ` Oldest pending WIOA screening: ${wioaOldestPendingDays} day${wioaOldestPendingDays === 1 ? '' : 's'}${wioaQueueOverdue ? ' (over the ' + WIOA_QUEUE_AGE_ALERT_DAYS + '-day threshold)' : ''}.`
-        : '';
-    const body = `${interviewCount} interview${interviewCount === 1 ? '' : 's'} awaiting completion, ${wioaCount} WIOA screening${wioaCount === 1 ? '' : 's'} pending review, ${noProgramCount} member${noProgramCount === 1 ? '' : 's'} without a program or counselor.${oldestLine}`;
-
-    for (const admin of adminUsers) {
-      try {
-        await createNotification({
-          userId: admin.id,
-          type: 'task_assigned',
-          title,
-          body,
-          data: {
-            link: MEMBERS_QUEUE_LINK,
-            interviewCount,
-            wioaCount,
-            noProgramCount,
-            wioaOldestPendingDays,
-          },
-        });
-        notificationsSent++;
-      } catch (err) {
-        captureApiError(err, { route: 'cron/onboarding-stalls', extra: { adminUserId: admin.id } });
-      }
+    const admins = await prisma.user.findMany({
+      where: { deletedAt: null, OR: [
+        { profile: { role: { in: ['admin', 'super_admin'] } } },
+        { userRoles: { some: { role: { name: { in: ['admin', 'super_admin'] } } } } },
+      ] },
+      select: { id: true, email: true, organizationId: true, profile: { select: { role: true } }, userRoles: { select: { role: { select: { name: true } } } } },
+      take: OPERATIONAL_QUEUE_CAP,
+    });
+    const groups = new Map<string, typeof admins>();
+    for (const admin of admins) {
+      const roles = admin.userRoles.map((entry) => entry.role.name);
+      const role = resolveEffectiveRole({ deletedAt: null, profileRole: admin.profile?.role, userRoleNames: roles }).role;
+      if (!hasAdminAccess(role, [])) continue;
+      if (!hasSuperAdminAccess(role, []) && !admin.organizationId) continue;
+      const scope = hasSuperAdminAccess(role, []) ? 'platform' : `organization/${admin.organizationId}`;
+      groups.set(scope, [...(groups.get(scope) ?? []), admin]);
     }
 
-    // One fixture alias in the admin list must not skip the digest for the
-    // real admins (the shared sender skips a send when ANY recipient is a
-    // fixture), so drop fixtures here rather than at the envelope.
-    const recipientEmails = Array.from(
-      new Set(adminUsers.map((a) => a.email?.trim()).filter((e): e is string => !!e))
-    ).filter((email) => !isFixtureEmailRecipient(email));
-    if (recipientEmails.length > 0) {
-      try {
-        const result = await sendOnboardingStallsDigestEmail({
-          to: recipientEmails,
-          interviewCount,
-          wioaCount,
-          noProgramCount,
-          interviewMembers: interviewStalled.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember),
-          wioaMembers: wioaStalled.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember),
-          wioaOldestPendingDays,
-          noProgramMembers: noProgramStalled.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember),
-          interviewQueueLink: `${SITE_URL}${INTERVIEW_QUEUE_LINK}`,
-          wioaQueueLink: `${SITE_URL}${WIOA_QUEUE_LINK}`,
-          membersQueueLink: `${SITE_URL}${MEMBERS_QUEUE_LINK}`,
-          memberAdminBaseUrl: `${SITE_URL}${MEMBERS_QUEUE_LINK}`,
-        });
-        emailSent = result.ok;
-      } catch (err) {
-        captureApiError(err, { route: 'cron/onboarding-stalls/email' });
+    for (const [scope, staff] of groups) {
+      const inScope = <T extends { organizationId: string }>(members: T[]) => scope === 'platform' ? members : members.filter((member) => member.organizationId === scope.slice('organization/'.length));
+      const interview = inScope(interviewStalled);
+      const wioa = inScope(wioaStalled);
+      const noProgram = inScope(noProgramStalled);
+      const scopedTotal = interview.length + wioa.length + noProgram.length;
+      if (scopedTotal === 0) continue;
+      const oldest = queueTruncated.wioa ? null : oldestWioaWaitDays(inScope(wioaAwaitingReview), now);
+      const params = {
+        interviewCount: interview.length, wioaCount: wioa.length, noProgramCount: noProgram.length,
+        interviewMembers: interview.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember),
+        wioaMembers: wioa.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember), wioaOldestPendingDays: oldest,
+        noProgramMembers: noProgram.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember), truncated,
+        interviewQueueLink: SITE_URL + INTERVIEW_QUEUE_LINK, wioaQueueLink: SITE_URL + WIOA_QUEUE_LINK,
+        membersQueueLink: SITE_URL + MEMBERS_QUEUE_LINK, memberAdminBaseUrl: SITE_URL + MEMBERS_QUEUE_LINK,
+      };
+      const state = {
+        interview: interview.map((member) => member.id).sort(),
+        wioa: wioa.map((member) => [member.id, member.wioaReviewStatus]).sort(),
+        noProgram: noProgram.map((member) => member.id).sort(), truncated,
+      };
+      const plans = staff.map((admin) => {
+        const email = admin.email.trim().toLowerCase();
+        const payload = { ...params, to: [email] };
+        const digest = queueDigest({ workflow: JOB_NAME, scope, recipients: [email], state, payload, userId: admin.id }, now);
+        return { email, payload, digest };
+      });
+      const history = await loadQueueDigestHistory(plans.map((plan) => plan.digest));
+      const oldestLine = oldest === null ? '' : ` Oldest pending WIOA screening: ${oldest} day${oldest === 1 ? '' : 's'}${oldest >= WIOA_QUEUE_AGE_ALERT_DAYS ? ` (over the ${WIOA_QUEUE_AGE_ALERT_DAYS}-day threshold)` : ''}.`;
+      for (const { digest, email, payload } of plans) {
+        if (!history.notified.has(digest.userId!)) {
+          try {
+            await createNotification({
+              userId: digest.userId!, type: 'task_assigned', title: `${scopedTotal} onboarding stall${scopedTotal === 1 ? '' : 's'} need attention`,
+              body: `${interview.length} interview${interview.length === 1 ? '' : 's'} awaiting completion, ${wioa.length} WIOA screening${wioa.length === 1 ? '' : 's'} pending review, ${noProgram.length} member${noProgram.length === 1 ? '' : 's'} without a program or counselor.${oldestLine}${truncated ? ' Queue scan capped; open the queues for the full backlog.' : ''}`,
+              data: { link: MEMBERS_QUEUE_LINK, queueDigestKey: digest.key, interviewCount: interview.length, wioaCount: wioa.length, noProgramCount: noProgram.length, wioaOldestPendingDays: oldest },
+              dedupeUnread: true,
+            });
+            notificationsSent++;
+          } catch (error) {
+            notificationsFailed++;
+            captureApiError(error, { route: 'cron/onboarding-stalls/notification' });
+          }
+        }
+        if (history.emailed.has(digest.key)) { digestsSkippedDuplicate++; continue; }
+        if (!email || isFixtureEmailRecipient(email)) { emailSkipped++; continue; }
+        try {
+          const result = await pacer.run(() => sendOnboardingStallsDigestEmail({ ...payload, ...digest }));
+          if (result.ok) digestEmailsSent++;
+          else if (result.skipped) emailSkipped++;
+          else emailFailed++;
+        } catch (err) {
+          emailFailed++;
+          captureApiError(err, { route: 'cron/onboarding-stalls/email' });
+        }
       }
     }
   }
 
-  // Member-side nudges run after the staff digest so a slow or paced member
-  // batch can never delay the digest. Flag-gated inside; counts only.
-  const pacer = createBulkEmailCronPacer({ maxDurationSeconds: maxDuration });
-  const memberNudges = await sendMemberStallNudges(
-    {
-      interview: interviewStalled.map(toNamedMember),
-      no_program: noProgramStalled.map(toNamedMember),
-      wioa: wioaStalled.map(toNamedMember),
-    },
-    pacer,
-  );
-
+  const memberNudges = await sendMemberStallNudges({
+    interview: interviewStalled.map(toNamedMember), no_program: noProgramStalled.map(toNamedMember), wioa: wioaStalled.map(toNamedMember),
+  }, pacer);
   const runResult = {
-    ok: true,
-    checkedAt: now.toISOString(),
-    interviewStalled: interviewCount,
-    wioaStalled: wioaCount,
-    wioaOldestPendingDays,
-    wioaQueueOverdue,
-    noProgramStalled: noProgramCount,
-    totalStalled,
-    notificationsSent,
-    emailSent,
-    memberNudges,
+    ok: emailFailed === 0 && notificationsFailed === 0, checkedAt: now.toISOString(), interviewStalled: interviewCount, wioaStalled: wioaCount,
+    wioaOldestPendingDays, wioaOldestScannedPendingDays, wioaQueueOverdue, wioaAgeUnknown: wioaAwaitingReview.filter((member) => wioaDaysWaiting(member, now) === null).length,
+    noProgramStalled: noProgramCount, noProgramOldestAgeDays: noProgramStalled.length ? Math.floor((now.getTime() - noProgramStalled[0].createdAt.getTime()) / MS_PER_DAY) : null,
+    totalStalled, distinctStalledMembers: new Set([...interviewStalled, ...wioaStalled, ...noProgramStalled].map((member) => member.id)).size,
+    // Resolved helper calls are attempts, not proof of notification persistence.
+    queueTruncated, notificationsSent, notificationsFailed, notificationAccounting: 'helper_resolved_attempts', emailSent: digestEmailsSent > 0, digestEmailsSent, digestsSkippedDuplicate, emailFailed, emailSkipped,
+    memberNudges, emailPacing: pacer.summary(),
   };
   await setCronRecordsProcessed(totalStalled);
-  await logCronRun(JOB_NAME, runResult);
-  return NextResponse.json(runResult);
+  await logCronRun(JOB_NAME, runResult, runResult.ok ? 'ok' : 'error');
+  return NextResponse.json(runResult, { status: runResult.ok ? 200 : 500 });
 }
 
 export const GET = withCronLogging(JOB_NAME, handle);

@@ -17,6 +17,8 @@ vi.mock('@/lib/db/prisma', () => ({
     counselorAssignment: { findMany: vi.fn(async () => []) },
     profile: { findMany: vi.fn(async () => []) },
     userRole: { findMany: vi.fn(async () => []) },
+    emailSendLog: { findMany: vi.fn(async () => []) },
+    notification: { findMany: vi.fn(async () => []) },
     // Shared ledger (lib/cron/nudgeThrottle.ts + per-bucket suppression).
     memberNudgeLog: {
       findMany: vi.fn(async () => []),
@@ -414,18 +416,14 @@ describe('suppression', () => {
 
 describe('GET /api/cron/onboarding-stalls wiring', () => {
   function seedBuckets() {
-    // Promise.all order in the route: interview, wioa, no-program candidates,
-    // then every WIOA screening awaiting review (WAP-166 queue-age line).
+    // Promise.all order: interview, all pending WIOA, no-program cohort.
     prismaMock.user.findMany.mockReset();
     prismaMock.user.findMany
-      .mockResolvedValueOnce([{ ...alice, interviewRequestedAt: new Date('2026-09-01') }])
-      .mockResolvedValueOnce([{ ...carol, updatedAt: new Date('2026-09-01') }])
-      .mockResolvedValueOnce([{ ...bob, createdAt: new Date('2026-09-01') }])
-      .mockResolvedValueOnce([
-        { wioaQualificationJson: { submittedAt: '2026-09-01T00:00:00.000Z' }, updatedAt: new Date('2026-09-01') },
-      ])
+      .mockResolvedValueOnce([{ ...alice, organizationId: 'org-1', interviewRequestedAt: new Date('2026-09-01') }])
+      .mockResolvedValueOnce([{ ...carol, organizationId: 'org-1', wioaQualificationJson: null, wioaReviewStatus: 'pending', updatedAt: new Date('2026-09-01') }])
+      .mockResolvedValueOnce([{ ...bob, organizationId: 'org-1', createdAt: new Date('2026-09-01') }])
       // admin users lookup
-      .mockResolvedValueOnce([{ id: 'admin-1', email: 'admin@example.com' }])
+      .mockResolvedValueOnce([{ id: 'admin-1', email: 'admin@example.com', organizationId: 'org-1', profile: { role: 'admin' }, userRoles: [] }])
       // member-only filter in lib/cron/onboardingStallNudges.ts: carol (wioa) is
       // a member too but her bucket has no member template.
       .mockResolvedValueOnce([alice, bob, carol]);

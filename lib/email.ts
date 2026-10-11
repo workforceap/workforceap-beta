@@ -651,6 +651,11 @@ export async function sendOnboardingStallsDigestEmail(params: {
   wioaQueueLink: string;
   membersQueueLink: string;
   memberAdminBaseUrl: string;
+  truncated?: boolean;
+  userId?: string;
+  entityType?: string;
+  entityId?: string;
+  idempotencyKey?: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
@@ -674,6 +679,10 @@ export async function sendOnboardingStallsDigestEmail(params: {
     await sendBrandedEmail(resend, {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.onboarding_stalls_digest,
+      userId: params.userId,
+      entityType: params.entityType,
+      entityId: params.entityId,
+      idempotencyKey: params.idempotencyKey,
       to: recipients,
       subject: sanitizeEmailSubjectLine(
         `Onboarding Stalls: ${params.interviewCount} interview, ${params.wioaCount} WIOA, ${params.noProgramCount} unassigned`
@@ -2074,6 +2083,11 @@ export async function sendEmployerPendingApplicantsEmail(params: {
   candidateCount: number;
   jobsAffected: number;
   oldestWaitingDays: number;
+  truncated?: boolean;
+  userId?: string;
+  entityType?: string;
+  entityId?: string;
+  idempotencyKey?: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
@@ -2091,6 +2105,11 @@ export async function sendEmployerPendingApplicantsEmail(params: {
       from: getFrom(),
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.candidateCount} candidate${params.candidateCount === 1 ? '' : 's'} waiting on ${params.jobsAffected} of your job posts`),
+      templateKey: 'employer_pending_applicants',
+      userId: params.userId,
+      entityType: params.entityType,
+      entityId: params.entityId,
+      idempotencyKey: params.idempotencyKey,
       html,
     });
     return { ok: true };
@@ -2106,6 +2125,10 @@ export async function sendEmployerPendingApplicantsEmail(params: {
 /** Admin digest of employers with 10+ unreviewed applicants 5+ days old. */
 export async function sendAdminStaleApplicantsDigestEmail(params: {
   employers: { companyName: string; candidateCount: number }[];
+  truncated?: boolean;
+  entityType?: string;
+  entityId?: string;
+  idempotencyKey?: string;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
@@ -2123,6 +2146,10 @@ export async function sendAdminStaleApplicantsDigestEmail(params: {
       from: getFrom(),
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`${params.employers.length} employer${params.employers.length === 1 ? '' : 's'} with 10+ stale applicants`),
+      templateKey: 'admin_stale_applicants_digest',
+      entityType: params.entityType,
+      entityId: params.entityId,
+      idempotencyKey: params.idempotencyKey,
       html,
     });
     return { ok: true };
