@@ -26,6 +26,15 @@ Use this table to enter a business workflow, then follow [static references](gen
 | Platform administration, flags and reporting | [admin](../../app/admin), [organization API](../../app/api/org), [feature flags](../../app/api/feature-flags) | [platform](../../lib/platform), [feature flags](../../lib/feature-flags), [analytics](../../lib/analytics), [reporting](../../lib/reporting) | `Organization`, `FeatureFlag`, domain reporting projections; [admin portal](../ADMIN_PORTAL.md) |
 | Shared UI, accessibility, locale and theme | [portal kit](../../components/portal/kit), [shared UI](../../components/ui), [styles](../../css), [translations](../../messages) | [navigation](../../lib/nav), [i18n](../../lib/i18n), [accessibility](../../lib/a11y) | [kit guide](../KIT_GUIDE.md), [design coexistence in AGENTS](../../AGENTS.md), [test catalog](generated/tests.json) |
 
+The Astro [program comparison page](../../marketing/src/pages/program-comparison.astro)
+keeps its wide table in a focusable horizontal-scroll region, with sticky comparison
+columns and stacked phone cards. WAP-300 pins the scroll region's containing boundary
+so tablet widths do not pan the document sideways, and matches the fixed Compare
+column width to both Track sticky offsets so labels remain readable during table pan;
+the [browser regression]
+(../../tests/e2e/program-comparison-overflow.spec.ts) checks 768/1024px containment,
+keyboard and wheel scrolling, four-track comparison, and the 375px card layout.
+
 The shared [Toggle](../../components/portal/kit/FormField.tsx) uses the interactive
 `--wa-control-border` token for its unchecked track and retains the accent checked
 track (WAP-297). This covers member and partner notification settings, admin flags,

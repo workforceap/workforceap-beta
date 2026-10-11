@@ -83,3 +83,7 @@ Next application/authentication, protected portal and tenant API routing remain
 covered by behavioral regressions. The [bounded receipt](audits/localized-home-routing-2026-10-11.md)
 records fresh static-output ownership and integrated local GET checks. Independent
 review and exact-deployment acceptance remain separate gates.
+
+## 2026-10-11 — WAP-300 program comparison overflow candidate
+
+The Astro program comparison table stays within its labelled horizontal scroll region at tablet widths. Its sticky Compare column now has a fixed 104px desktop width shared with both Track offsets, preventing the 44px inherited overlap while the table remains fully pannable; phone cards retain their existing layout. The [site-wide audit](audits/sitewide-uiux-2026-10-11.md) contains the complete route coverage and the [browser regression](../tests/e2e/program-comparison-overflow.spec.ts) checks document containment, keyboard/wheel scrolling, full-pan sticky alignment, four-track comparison, and 375px cards. Local synthetic verification does not establish hosted or production acceptance.
