@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PROGRAMS, getProgramBySlug } from '@/lib/content/programs';
+import { PROGRAM_SLUG_ALIASES } from '@/lib/content/programSlug';
 import {
   buildAssignableProgramOptions,
   buildMemberProgramOptions,
+  CATALOG_REPAIR_STATUS,
 } from './assignableProgramOptions';
 
 test('bulk assignment choices come from the active catalog, not current-page enrollments', () => {
@@ -127,4 +129,92 @@ test('single-member choices keep a current program that left the catalog, disabl
       curriculumMigrationPending: false,
     },
   );
+});
+
+// ---- WAP-286: alias-only tenant catalog rows --------------------------------
+
+/** A legacy alias whose canonical program exists and is assignable. */
+function assignableAlias() {
+  for (const [alias, canonical] of Object.entries(PROGRAM_SLUG_ALIASES)) {
+    const program = PROGRAMS.find((p) => p.slug === canonical);
+    if (program && !program.curriculumMigrationPending && getProgramBySlug(alias)?.slug === canonical) {
+      return { alias, program };
+    }
+  }
+  throw new Error('no assignable aliased program in the catalog');
+}
+
+test('WAP-286: an active alias-only row is shown as needing catalog repair, never as assignable', () => {
+  const { alias, program } = assignableAlias();
+  const catalog = [{ slug: alias, name: 'Old tenant title', status: 'active' }];
+
+  assert.deepEqual(buildMemberProgramOptions(catalog, null), [
+    { slug: program.slug, name: program.title, status: CATALOG_REPAIR_STATUS, curriculumMigrationPending: false },
+  ]);
+  assert.deepEqual(buildAssignableProgramOptions([{ slug: alias }]), []);
+});
+
+test('WAP-286: an exact canonical row wins over an alias row for the same program', () => {
+  const { alias, program } = assignableAlias();
+  for (const [exactStatus, expected] of [['active', 'active'], ['inactive', undefined]] as const) {
+    const catalog = [
+      { slug: alias, name: 'Old tenant title', status: 'active' },
+      { slug: program.slug, name: 'Tenant title', status: exactStatus },
+    ];
+    const option = buildMemberProgramOptions(catalog, null).find((o) => o.slug === program.slug);
+    assert.equal(option?.status, expected, `exact row ${exactStatus}`);
+  }
+  assert.deepEqual(buildAssignableProgramOptions([{ slug: alias }, { slug: program.slug }]), [
+    { slug: program.slug, title: program.title },
+  ]);
+});
+
+test('WAP-286: inactive alias rows stay hidden, and a current alias-only program is shown needing repair', () => {
+  const { alias, program } = assignableAlias();
+  assert.deepEqual(buildMemberProgramOptions([{ slug: alias, name: 'x', status: 'inactive' }], null), []);
+  assert.deepEqual(buildMemberProgramOptions([{ slug: alias, name: 'x', status: 'active' }], program.slug), [
+    { slug: program.slug, name: program.title, status: CATALOG_REPAIR_STATUS, curriculumMigrationPending: false },
+  ]);
+});
+
+/**
+ * The writers' contract (PATCH /api/admin/members/[id]/program and
+ * bulk-update): an explicit catalog must have an active row with exactly the
+ * canonical slug; an empty catalog falls back to the static catalog. Paused
+ * curricula are refused either way.
+ */
+function writerAccepts(catalog: Array<{ slug: string; status?: string }>, canonical: string) {
+  const program = PROGRAMS.find((p) => p.slug === canonical);
+  if (!program || program.curriculumMigrationPending) return false;
+  return catalog.length === 0 || catalog.some((row) => row.slug === canonical && row.status === 'active');
+}
+
+test('WAP-286 parity: the pickers mark assignable exactly what the writers accept', () => {
+  const { alias, program: aliased } = assignableAlias();
+  const [a, b] = PROGRAMS.filter((p) => !p.curriculumMigrationPending && p.slug !== aliased.slug);
+  const paused = PROGRAMS.find((p) => p.curriculumMigrationPending)!;
+  const catalogs: Array<Array<{ slug: string; name: string; status: string }>> = [
+    [{ slug: alias, name: 'alias', status: 'active' }],
+    [{ slug: alias, name: 'alias', status: 'active' }, { slug: aliased.slug, name: 'exact', status: 'active' }],
+    [{ slug: alias, name: 'alias', status: 'active' }, { slug: aliased.slug, name: 'exact', status: 'inactive' }],
+    [{ slug: a.slug, name: 'a', status: 'active' }, { slug: b.slug, name: 'b', status: 'inactive' }],
+    [{ slug: paused.slug, name: 'paused', status: 'active' }, { slug: a.slug, name: 'a', status: 'active' }],
+    [{ slug: a.slug.toUpperCase(), name: 'case variant', status: 'active' }],
+    [{ slug: a.title, name: 'title as slug', status: 'active' }],
+  ];
+  for (const catalog of catalogs) {
+    for (const current of [null, aliased.slug, a.slug, paused.slug]) {
+      const member = buildMemberProgramOptions(catalog, current);
+      const bulk = buildAssignableProgramOptions(catalog.filter((row) => row.status === 'active'));
+      for (const program of PROGRAMS) {
+        const accepted = writerAccepts(catalog, program.slug);
+        const memberOption = member.find((o) => o.slug === program.slug);
+        const memberAssignable = Boolean(memberOption && !memberOption.curriculumMigrationPending
+          && (!memberOption.status || memberOption.status === 'active'));
+        const label = `${JSON.stringify(catalog.map((r) => [r.slug, r.status]))} current=${current} program=${program.slug}`;
+        assert.equal(memberAssignable, accepted, `member picker: ${label}`);
+        assert.equal(bulk.some((o) => o.slug === program.slug), accepted, `bulk picker: ${label}`);
+      }
+    }
+  }
 });

@@ -1106,7 +1106,7 @@ export default async function AdminMemberDetailPage({
                     : null
                 }
                 assessmentCompleted={member.assessmentCompleted}
-                programOptions={programOptions ?? []}
+                programOptions={programOptions}
               />
             </section>
 

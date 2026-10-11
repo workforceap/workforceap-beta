@@ -24,7 +24,8 @@ type MemberDetailActionsProps = {
   enrollmentGateBlocked: boolean;
   currentProgramSlug: string | null;
   assessmentCompleted: boolean;
-  programOptions: ProgramOption[];
+  /** null is a truly absent catalog; an explicit empty list stays empty. */
+  programOptions: ProgramOption[] | null;
 };
 
 export default function MemberDetailActions({
@@ -42,9 +43,7 @@ export default function MemberDetailActions({
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
 
   const options: ProgramOption[] =
-    programOptions.length > 0
-      ? programOptions
-      : PROGRAMS
+    programOptions ?? PROGRAMS
           .filter((program) => (
             !program.curriculumMigrationPending || program.slug === currentProgramSlug
           ))
