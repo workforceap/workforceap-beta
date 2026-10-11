@@ -1,10 +1,11 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const fixture = vi.hoisted(() => ({ findUnique: vi.fn(), update: vi.fn(), create: vi.fn() }));
+const fixture = vi.hoisted(() => ({ findUnique: vi.fn(), update: vi.fn(), create: vi.fn(), mute: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   emailSendLog: { findUnique: fixture.findUnique, update: fixture.update },
   workflowDiagnostic: { create: fixture.create },
+  user: { updateMany: fixture.mute },
 } }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withSystemGuc: (fn: () => Promise<Response>) => fn() }));
 vi.mock('@/lib/billing/twoStage/api/webhookLinkage', () => ({ billingDeliveryLinker: () => async () => ({ matched: false }) }));
@@ -20,8 +21,10 @@ import { signSvixPayload } from '@/lib/email/webhookSignature';
 const NOW = Date.parse('2026-10-10T12:00:00.000Z');
 const SECRET = `whsec_${Buffer.from('slo-regression-signing-secret-32bytes').toString('base64')}`;
 
-function signedRequest(createdAt: string | undefined, badSignature = false) {
-  const rawBody = JSON.stringify({ type: 'email.delivered', created_at: createdAt, data: { email_id: 'private-provider-id' } });
+function signedRequest(createdAt: string | undefined, badSignature = false, event = 'delivered', bounceType?: string) {
+  const rawBody = JSON.stringify({ type: `email.${event}`, created_at: createdAt, data: {
+    email_id: 'private-provider-id', ...(bounceType ? { bounce: { type: bounceType } } : {}),
+  } });
   const msgId = 'fixture-receipt';
   const timestamp = String(NOW / 1_000);
   return new Request('https://example.test/api/webhooks/resend', {
@@ -42,6 +45,7 @@ describe('signed delivery evidence and event ordering', () => {
     fixture.findUnique.mockResolvedValue({ id: 'send-log-1', userId: 'member-fixture', lastEventAt: new Date(NOW - 100_000), templateKey: 'welcome', entityType: null });
     fixture.update.mockResolvedValue({ id: 'send-log-1' });
     fixture.create.mockResolvedValue({ id: 'evidence-1' });
+    fixture.mute.mockResolvedValue({ count: 1 });
   });
   afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); });
 
@@ -75,5 +79,17 @@ describe('signed delivery evidence and event ordering', () => {
     fixture.create.mockRejectedValue(new Error('observation store unavailable'));
     expect((await POST(signedRequest(new Date(NOW).toISOString()))).status).toBe(200);
     expect(fixture.update).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([['failed', undefined], ['bounced', 'Permanent']])('persists only signature-verified %s terminal evidence on the matched send', async (event, bounceType) => {
+    const timestamp = new Date(NOW).toISOString();
+    expect((await POST(signedRequest(timestamp, true, event, bounceType))).status).toBe(401);
+    expect(fixture.update).not.toHaveBeenCalled();
+    expect((await POST(signedRequest(timestamp, false, event, bounceType))).status).toBe(200);
+    expect(fixture.update).toHaveBeenCalledWith({
+      where: { id: 'send-log-1' }, data: expect.objectContaining({
+        lastEvent: event, lastEventAt: new Date(NOW), ...(event === 'bounced' ? { bounceType } : {}),
+      }),
+    });
   });
 });

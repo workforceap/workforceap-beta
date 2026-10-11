@@ -52,13 +52,15 @@ const emailReport = {
   name: 'Email delivered within 5 min',
   target: '99% in 5 min',
   source: 'email_send_logs + immutable signed Resend delivery observations, rolling 7 days',
-  note: 'Deduplicated non-skipped sends; timing starts at the first logged send. Org admins see account-linked sends in their organization. Historical latest-event timestamps do not establish immutable delivery evidence.',
+  note: 'Deduplicated non-skipped sends; timing starts at the first logged send. Local send failures without signed terminal provider evidence remain unknown. Org admins see account-linked sends in their organization. Historical latest-event timestamps do not establish immutable delivery evidence.',
 };
 
 export async function measureEmailDelivery(organizationId: string | null, now: Date): Promise<SloReport> {
   if (!process.env.RESEND_WEBHOOK_SECRET?.trim()) {
     return { ...emailReport, current: null, status: 'unknown', note: 'RESEND_WEBHOOK_SECRET not configured — delivery measurement unavailable' };
   }
+  // Local failures collapse retry history; a missing response/message ID
+  // cannot prove non-delivery. Only signed provider terminal events can.
   const since = new Date(now.getTime() - 7 * DAY_MS);
   const matured = new Date(now.getTime() - 5 * 60_000);
   try {
@@ -77,7 +79,7 @@ export async function measureEmailDelivery(organizationId: string | null, now: D
           AND created_at >= ${since} AND created_at <= ${now}
         GROUP BY entity_id
       ), eligible AS (
-        SELECT e.status, e.last_event, e.bounce_type, e.provider_message_id,
+        SELECT e.last_event, e.bounce_type,
           EXTRACT(EPOCH FROM e.created_at) * 1000 AS queued_ms,
           d.delivered_ms
         FROM email_send_logs e
@@ -91,7 +93,7 @@ export async function measureEmailDelivery(organizationId: string | null, now: D
         COUNT(*) FILTER (WHERE delivered_ms >= queued_ms AND delivered_ms <= queued_ms + 300000) AS satisfied,
         COUNT(*) FILTER (WHERE
           (delivered_ms IS NOT NULL AND (delivered_ms < queued_ms OR delivered_ms > ${now.getTime()}))
-          OR (delivered_ms IS NULL AND NOT (status = 'failed' AND provider_message_id IS NULL)
+          OR (delivered_ms IS NULL
             AND NOT (COALESCE(last_event, '') = 'failed'
               OR (COALESCE(last_event, '') = 'bounced' AND LOWER(COALESCE(bounce_type, '')) = 'permanent')))
         ) AS unobserved
