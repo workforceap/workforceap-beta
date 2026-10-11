@@ -67,6 +67,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { Conversation } from '@elevenlabs/client';
+import { requestVoiceSession } from '@/lib/portal/requestVoiceSession';
 import { DesignSurface } from '../DesignSurface';
 import { PageOpener } from '../PageOpener';
 import { KitEmptyState } from '../KitEmptyState';
@@ -621,6 +622,7 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
   const [interviewType, setInterviewType] = useState('behavioral');
 
   const convRef = useRef<Conversation | null>(null);
+  const startupRef = useRef<AbortController | null>(null);
   const intentionalRef = useRef(false);
   const phaseRef = useRef<SessionPhase>('idle');
   const startedAtRef = useRef<number | null>(null);
@@ -656,12 +658,16 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
   // End any live session if the user leaves the tab/page.
   useEffect(() => {
     return () => {
+      startupRef.current?.abort();
       intentionalRef.current = true;
       convRef.current?.endSession();
     };
   }, []);
 
   const start = useCallback(async () => {
+    const startup = new AbortController();
+    startupRef.current?.abort();
+    startupRef.current = startup;
     setError('');
     setLines([]);
     intentionalRef.current = false;
@@ -672,10 +678,12 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((t) => t.stop());
     } catch {
+      if (startup.signal.aborted) return;
       setError('Microphone access is required. Allow it in your browser and try again.');
       setPhase('idle');
       return;
     }
+    if (startup.signal.aborted) return;
 
     let signedUrl: string;
     let dynamicVariables: Record<string, string | number | boolean> | undefined;
@@ -683,31 +691,21 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
       const effectivePayload = askRole
         ? { ...(payload ?? {}), role: role.trim() || 'a general professional role', interviewType }
         : payload ?? {};
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(effectivePayload),
-      });
-      const data = (await res.json()) as {
-        signedUrl?: string;
-        dynamicVariables?: Record<string, string | number | boolean>;
-        error?: string;
-      };
-      if (!res.ok || !data.signedUrl) {
-        throw new Error(data.error ?? 'Voice sessions are not available right now.');
-      }
+      const data = await requestVoiceSession(endpoint, effectivePayload, startup.signal);
       signedUrl = data.signedUrl;
       dynamicVariables = data.dynamicVariables;
     } catch (err) {
+      if (startup.signal.aborted) return;
       setError(err instanceof Error ? err.message : 'Could not start the session.');
       setPhase('idle');
       return;
     }
+    if (startup.signal.aborted) return;
 
     const callbacks = {
-      onConnect: () => setPhase('active'),
+      onConnect: () => { if (!startup.signal.aborted) setPhase('active'); },
       onDisconnect: (details: unknown) => {
+        if (startup.signal.aborted) return;
         const intentional = intentionalRef.current;
         intentionalRef.current = false;
         setAgentSpeaking(false);
@@ -720,6 +718,7 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
         }
       },
       onMessage: (event: unknown) => {
+        if (startup.signal.aborted) return;
         const ev = event as Record<string, unknown>;
         const rawText =
           typeof ev.message === 'string'
@@ -740,6 +739,7 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
         }
       },
       onError: (msg: unknown) => {
+        if (startup.signal.aborted) return;
         setError(typeof msg === 'string' && msg ? msg : 'Connection error. Please try again.');
         setPhase('idle');
       },
@@ -747,17 +747,25 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
 
     try {
       const { Conversation: ConversationClient } = await import('@elevenlabs/client');
+      if (startup.signal.aborted) return;
       const hasVars = Boolean(dynamicVariables && Object.keys(dynamicVariables).length > 0);
+      let conversation: Conversation;
       if (hasVars) {
         try {
-          convRef.current = await ConversationClient.startSession({ signedUrl, dynamicVariables, ...callbacks });
+          conversation = await ConversationClient.startSession({ signedUrl, dynamicVariables, ...callbacks });
         } catch {
           throw new Error('Your personalized coach context could not be attached. Please try again.');
         }
       } else {
-        convRef.current = await ConversationClient.startSession({ signedUrl, ...callbacks });
+        conversation = await ConversationClient.startSession({ signedUrl, ...callbacks });
       }
+      if (startup.signal.aborted) {
+        await conversation.endSession();
+        return;
+      }
+      convRef.current = conversation;
     } catch (err) {
+      if (startup.signal.aborted) return;
       setError(err instanceof Error ? err.message : 'Voice session failed to start.');
       setPhase('idle');
     }

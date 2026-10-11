@@ -6,12 +6,26 @@
  * A caller's own `init.signal` is honoured alongside the timeout: aborting it
  * (an effect cleanup on unmount or re-render) aborts the request with that
  * signal's reason, so components can tell a cancellation from a timeout.
+ * Pass a response consumer as the fourth argument to keep the deadline and
+ * cancellation active while reading a streamed body (for example, JSON).
  */
-export async function fetchWithTimeout(
+export function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  timeoutMs?: number,
+): Promise<Response>;
+export function fetchWithTimeout<T>(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  timeoutMs: number,
+  consumeResponse: (response: Response) => Promise<T>,
+): Promise<T>;
+export async function fetchWithTimeout<T>(
   input: RequestInfo | URL,
   init: RequestInit = {},
   timeoutMs = 30000,
-): Promise<Response> {
+  consumeResponse?: (response: Response) => Promise<T>,
+): Promise<Response | T> {
   const controller = new AbortController();
   const external = init.signal ?? null;
   const forwardAbort = () => controller.abort(external?.reason);
@@ -20,7 +34,14 @@ export async function fetchWithTimeout(
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(input, { ...init, signal: controller.signal });
-    return response;
+    if (!consumeResponse) return response;
+    const consumed = await consumeResponse(response);
+    controller.signal.throwIfAborted();
+    return consumed;
+  } catch (error) {
+    // Error-body readers may swallow an abort while selecting fallback copy.
+    if (consumeResponse && controller.signal.aborted) throw controller.signal.reason;
+    throw error;
   } finally {
     clearTimeout(id);
     external?.removeEventListener('abort', forwardAbort);

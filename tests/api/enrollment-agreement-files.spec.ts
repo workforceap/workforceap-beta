@@ -130,7 +130,8 @@ describe('original-only PDF active-content policy', () => {
     // uploaded bytes remain untouched; this fixture is never a delivered PDF.
     const bytes = Uint8Array.from(await document.save({ updateFieldAppearances: false }));
     const uploaded = await readAgreementPdf(new File([bytes.buffer], 'filled-agreement.pdf', { type: 'application/pdf' }));
-    expect(uploaded).toEqual(bytes);
+    expect(uploaded.byteLength).toBe(bytes.byteLength);
+    expect(Buffer.compare(uploaded, bytes)).toBe(0);
   }, 15000);
 });
 
