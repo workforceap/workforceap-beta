@@ -139,7 +139,7 @@ primary action, signature and send:
 
 ### Fixed terms (`lib/billing/twoStage/constants.ts`)
 
-- One line only: `Tuition & Fees $7,500.00`, stored as `750000` cents. There is
+- One accounting line only: `Tuition & Fees $7,500.00`, stored as `750000` cents. J5 displays Training and Fees $7,500.00, Books & Supplies $0.00, and Total Required Cost $7,500.00 (WAP-292, ops 10/8/26). The three display rows derive from the frozen total and add no accounting items. J6 retains the single Tuition & Fees display row. Already signed artifacts continue to download their archived bytes. There is
   no class/syllabus itemization. This supersedes the legacy "$7,500 is a cap"
   and empty-row behavior, for two-stage documents only.
 - Hours: `canonicalizeProgramSlug(programSlug)`, then the approved syllabus
@@ -540,8 +540,8 @@ the reference PDFs themselves are not committed.
 | J6: TO finance name \| email, BOARD, COPY counselor; student (names only), RE "Payment for {student} training" | `finance.*`, `boardName`, `counselor.name`, `student.name` |
 | Intro sentence (J6 cites the voucher number and the class start) | fixed template with `headerLines[0]`, `student.name`; J6 `voucher.reference`, `classStarted.classStartDate` |
 | TRAINING DETAILS: Student, Class, Training hours, Class start, Class end (J6: Voucher / PO) | `student.name`, `training.className`, `training.contactHours`, `training.classStartDate`, `training.classEndDate`; J6 `voucher.reference` (the current voucher version) |
-| CLASS DESCRIPTION (J5 only; ops 10/8/26) | `training.classDescription`: the approved syllabus Program Description (`shared/programSyllabi`), **frozen into the J5 content and its version hash when the J5 is built**, so a later syllabus edit never changes a signed J5. Content frozen before this field existed has none and renders as before. Sized so the longest description (6 lines) keeps the J5 on one page with the signature clear of the footer. |
-| The single `Tuition & Fees $7,500.00` row | `lineItems[0].label`, `totalCents` |
+| CLASS DESCRIPTION (J5 only; ops 10/8/26) | `training.classDescription`: the approved syllabus Program Description (`shared/programSyllabi`), **frozen into the J5 content and its version hash when the J5 is built**, so a later syllabus edit never changes a signed J5. Content frozen before this field existed prints no description. Sized so the longest description (6 lines) keeps the J5 on one page with the signature clear of the footer. |
+| J5 cost summary / J6 single tuition row | J5 uses reviewed fixed labels Training and Fees, Books & Supplies, and Total Required Cost; training and total both use frozen `totalCents`, supplies is fixed $0.00. J6 uses `lineItems[0].label`, `totalCents`. Stored content retains one accounting item. |
 | J5 voucher-return and file-retention sentence; `Copy: {student} \| {email}` | fixed template with `headerLines[0]`; `student.name`, `student.email` |
 | J6 payment sentences | `paymentFollowUp.instruction`, then `paymentFollowUp.wording` (both frozen by M1) |
 | J6 `Enclosure for issued packet: received, signed training voucher {PO}` | fixed template with `voucher.reference` |

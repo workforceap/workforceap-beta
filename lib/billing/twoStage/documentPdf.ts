@@ -83,7 +83,7 @@ type CommonFacts = {
   readonly classStartDate: string;
   readonly classEndDate: string; // the end date frozen under contentVersion
   readonly tuitionCents: 750_000;
-  /** The printed line-item label (`Tuition & Fees`). */
+  /** The accounting label, printed on J6 (`Tuition & Fees`); J5 uses fixed cost labels. */
   readonly tuitionLabel: string;
   /** The printed document title, e.g. `Quote / Voucher Request`. */
   readonly title: string;
@@ -485,10 +485,26 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   // details, small enough that the longest description still fits one page.
   if (facts.stage === 'j5' && facts.classDescription) y = classDescription(page, fonts, facts.classDescription, y) + 5;
   y -= 13;
-  const priceBottom = y - 37;
-  page.drawRectangle({ x: LEFT, y: priceBottom, width: CONTENT_W, height: 37, color: PRICE_PALE });
-  drawText(page, fonts, facts.tuitionLabel, LEFT + 13, priceBottom + 13, 210, 10.2, true);
-  drawRight(page, fonts, formatCents(facts.tuitionCents), RIGHT - 13, priceBottom + 13, 10.4, true);
+  // J5's requested cost breakdown is presentation only: the frozen accounting
+  // item remains Tuition & Fees, and supplies never add a second charge.
+  const priceHeight = 37;
+  const priceBottom = y - priceHeight;
+  page.drawRectangle({ x: LEFT, y: priceBottom, width: CONTENT_W, height: priceHeight, color: PRICE_PALE });
+  if (facts.stage === 'j5') {
+    const costs = [
+      ['Training and Fees', formatCents(facts.tuitionCents)],
+      ['Books & Supplies', formatCents(0)],
+      ['Total Required Cost', formatCents(facts.tuitionCents)],
+    ] as const;
+    costs.forEach(([label, amount], index) => {
+      const baseline = priceBottom + 26 - index * 11;
+      drawText(page, fonts, label, LEFT + 13, baseline, 300, 8.7, index === 2);
+      drawRight(page, fonts, amount, RIGHT - 13, baseline, 8.7, index === 2);
+    });
+  } else {
+    drawText(page, fonts, facts.tuitionLabel, LEFT + 13, priceBottom + 13, 210, 10.2, true);
+    drawRight(page, fonts, formatCents(facts.tuitionCents), RIGHT - 13, priceBottom + 13, 10.4, true);
+  }
   y = priceBottom - 18;
   if (facts.stage === 'j5') {
     y = paragraph(page, fonts, `Please send the issued voucher and any authorization details to ${org}. A copy of this request will be retained in the student's file.`, y, 2);

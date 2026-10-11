@@ -169,7 +169,8 @@ describe('two-stage WAP billing PDFs', () => {
     assert.match(text, /160 hours/u);
     assert.match(text, /September 30, 2026/u);
     assert.match(text, /March 30, 2027/u);
-    assert.equal((text.match(/Tuition & Fees/gu) ?? []).length, 1);
+    assert.match(text, /Training and Fees\s+\$7,500\.00\s+Books & Supplies\s+\$0\.00\s+Total Required Cost\s+\$7,500\.00/u);
+    assert.doesNotMatch(text, /Tuition & Fees/u);
     assert.match(text, /\$7,500\.00/u);
     assert.doesNotMatch(text, /SYNTH-PO-001|Training Invoice|Net 30|class-by-class|syllabus/iu);
   });
@@ -244,9 +245,11 @@ describe('two-stage WAP billing PDFs', () => {
     const norm = (value: string) => value.replace(/\s+/gu, ' ').trim();
     for (const syllabus of Object.values(PROGRAM_SYLLABI)) {
       const facts = j5({ programSlug: syllabus.slug, className: syllabus.title, classDescription: syllabus.description.replace(/\s+/gu, ' ').trim(), classHours: syllabus.totalHours as 160 | 200 });
-      for (const bytes of [await renderJ5QuoteVoucherRequestDraftPdf(facts), await renderJ5QuoteVoucherRequestSignedPdf(facts, signaturePng)]) {
+      for (const bytes of [await renderJ5QuoteVoucherRequestDraftPdf(facts), await renderJ5QuoteVoucherRequestMockPdf(facts), await renderJ5QuoteVoucherRequestSignedPdf(facts, signaturePng)]) {
+        if (process.env.WAP_PDF_PREVIEW_DIR) writeFileSync(join(process.env.WAP_PDF_PREVIEW_DIR, `J5-${syllabus.slug}.pdf`), bytes);
         const { text, positions } = await extract(Uint8Array.from(bytes));
         assert.match(text, /CLASS DESCRIPTION/u, syllabus.slug);
+        assert.match(text, /Training and Fees\s+\$7,500\.00\s+Books & Supplies\s+\$0\.00\s+Total Required Cost\s+\$7,500\.00/u, syllabus.slug);
         assert.ok(norm(text).includes(norm(syllabus.description)), `${syllabus.slug}: full description printed`);
         for (const position of positions) {
           assert.ok(position.y >= 25 && position.y <= 775, `${syllabus.slug}: text y=${position.y} escaped page`);
@@ -255,7 +258,7 @@ describe('two-stage WAP billing PDFs', () => {
     }
   });
 
-  it('prints no description on a J5 frozen before the field existed (old content renders unchanged)', async () => {
+  it('prints no description on a J5 frozen before the field existed (older facts remain renderable)', async () => {
     const { text } = await extract(await renderJ5QuoteVoucherRequestDraftPdf(j5()));
     assert.doesNotMatch(text, /CLASS DESCRIPTION/u);
   });

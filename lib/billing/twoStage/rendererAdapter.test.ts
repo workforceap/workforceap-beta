@@ -254,6 +254,17 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     }
   });
 
+  it('shows the J5 cost breakdown without changing its frozen accounting item or total', async () => {
+    const content = j5();
+    const before = JSON.stringify(content);
+    const text = await pageText(await renderDraftFromContent(content, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }));
+    assert.ok(text.includes('Training and Fees $7,500.00 Books & Supplies $0.00 Total Required Cost $7,500.00'));
+    assert.equal(content.lineItems.length, 1);
+    assert.equal(content.lineItems[0].label, 'Tuition & Fees');
+    assert.equal(content.totalCents, 750_000);
+    assert.equal(JSON.stringify(content), before);
+  });
+
   it('matches the approved J5 and J6 layout references line for line (synthetic fixture)', async () => {
     const ref = JSON.parse(readFileSync(join(process.cwd(), 'tests/fixtures/billing/two-stage-layout-reference.json'), 'utf8')) as {
       contacts: { student: { name: string; email: string }; counselor: { name: string; email: string; phone: string }; finance: { name: string; email: string }; boardName: string; voucherReference: string };
