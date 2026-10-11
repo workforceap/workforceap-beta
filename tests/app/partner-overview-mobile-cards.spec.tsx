@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
 
 /**
  * Scout 2026-09-22 M9: at 390px the /partner "Referred members" section was
@@ -8,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  * and the kit table from `md` up, both fed from the same recent referrals.
  */
 
-const mocks = vi.hoisted(() => ({ referrals: vi.fn() }));
+const mocks = vi.hoisted(() => ({ referrals: vi.fn(), user: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
@@ -16,7 +17,7 @@ vi.mock('next/link', () => ({
 }));
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
-vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'partner-user' })) }));
+vi.mock('@/lib/auth/server', () => ({ getUser: mocks.user }));
 vi.mock('@/lib/auth/roles', () => ({
   getPartnerForUser: vi.fn(async () => ({
     partnerId: 'partner-1',
@@ -26,6 +27,7 @@ vi.mock('@/lib/auth/roles', () => ({
 }));
 vi.mock('@/lib/auth/portalGuards', () => ({ unlinkedPartnerHref: async () => '/dashboard' }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => true }));
+vi.mock('@/lib/partner/attentionQueue', () => ({ countPartnerAttention: async () => 0 }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     partner: { findUnique: vi.fn(async () => ({ name: 'Synthetic Community', slug: 'community-slug', referralCode: 'code', status: 'active' })) },
@@ -56,16 +58,17 @@ vi.mock('@/components/portal/kit', () => ({
     </table>
   ),
   QueueRow: () => null,
+  Avatar: () => null,
+  StageTrack: () => null,
 }));
-vi.mock('@/components/partner/PartnerReferredMembersMobile', () => ({
-  default: ({ rows }: { rows: Array<{ id: string; fullName: string | null; stageLabel: string; placementVerified?: boolean | null }> }) => (
-    <ul data-testid="referred-members-cards">
-      {rows.map((row) => (
-        <li key={row.id}>{row.fullName} · {row.stageLabel}{row.placementVerified ? ' · Verified' : ''}</li>
-      ))}
-    </ul>
-  ),
-}));
+vi.mock('@/components/partner/PartnerReferredMembersMobile', async (importOriginal) => {
+  const { default: MemberCards } = await importOriginal<typeof import('@/components/partner/PartnerReferredMembersMobile')>();
+  return {
+    default: ({ rows }: { rows: PartnerMemberRow[] }) => (
+      <div data-testid="referred-members-cards"><MemberCards rows={rows} /></div>
+    ),
+  };
+});
 
 import PartnerDashboardPage from '@/app/(portal)/partner/page';
 import { prisma } from '@/lib/db/prisma';
@@ -73,11 +76,13 @@ import { prisma } from '@/lib/db/prisma';
 const REFERRED_AT = new Date('2026-09-10T15:00:00Z');
 
 beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.user.mockResolvedValue({ id: 'partner-user' });
   mocks.referrals.mockResolvedValue([
-    { id: 'ref-1', referredAt: REFERRED_AT, member: { id: 'm-placed', fullName: 'Keisha Washington', enrolledAt: REFERRED_AT, enrolledProgram: 'it-support', placementRecord: { startDateVerified: true } } },
-    { id: 'ref-2', referredAt: REFERRED_AT, member: { id: 'm-enrolled', fullName: 'Jordan Williams', enrolledAt: REFERRED_AT, enrolledProgram: null, placementRecord: null } },
-    { id: 'ref-3', referredAt: REFERRED_AT, member: { id: 'm-referred', fullName: 'Angela Davis', enrolledAt: null, enrolledProgram: null, placementRecord: null } },
-    { id: 'ref-4', referredAt: REFERRED_AT, member: { id: 'm-pending', fullName: 'Sam Rivera', enrolledAt: REFERRED_AT, enrolledProgram: 'it-support', placementRecord: { startDateVerified: false } } },
+    { id: 'ref-1', referredAt: REFERRED_AT, member: { id: 'm-placed', fullName: 'Keisha Washington', enrolledAt: REFERRED_AT, enrolledProgram: 'it-support', courseEnrollments: [], placementRecord: { startDateVerified: true } } },
+    { id: 'ref-2', referredAt: REFERRED_AT, member: { id: 'm-enrolled', fullName: 'Jordan Williams', enrolledAt: REFERRED_AT, enrolledProgram: null, courseEnrollments: [], placementRecord: null } },
+    { id: 'ref-3', referredAt: REFERRED_AT, member: { id: 'm-referred', fullName: 'Angela Davis', enrolledAt: null, enrolledProgram: null, courseEnrollments: [], placementRecord: null } },
+    { id: 'ref-4', referredAt: REFERRED_AT, member: { id: 'm-pending', fullName: 'Sam Rivera', enrolledAt: REFERRED_AT, enrolledProgram: 'it-support', courseEnrollments: [], placementRecord: { startDateVerified: false } } },
   ]);
 });
 
@@ -94,21 +99,21 @@ describe('/partner referred members at phone width', () => {
     expect(cards.parentElement).not.toHaveClass('wa-hidden');
     expect(table.parentElement).not.toHaveClass('wa-block');
 
-    const cardNames = within(cards).getAllByRole('listitem').map((li) => li.textContent?.split(' · ')[0]);
     const tableNames = within(table).getAllByRole('cell').map((td) => td.textContent);
-    expect(cardNames).toEqual(['Keisha Washington', 'Jordan Williams', 'Angela Davis', 'Sam Rivera']);
-    expect(tableNames).toEqual(cardNames);
+    expect(tableNames).toEqual(['Keisha Washington', 'Jordan Williams', 'Angela Davis', 'Sam Rivera']);
+    expect(within(cards).getAllByRole('link')).toHaveLength(tableNames.length);
+    for (const name of tableNames) {
+      expect(within(cards).getByRole('link', { name: new RegExp(name!) })).toBeVisible();
+    }
   });
 
-  it('labels each card with the coarse referred → enrolled → placed stage the lean overview knows', async () => {
+  it('preserves enrollment and verified/pending placement badges on the mounted cards', async () => {
     render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
-    const items = within(screen.getByTestId('referred-members-cards')).getAllByRole('listitem').map((li) => li.textContent);
-    expect(items).toEqual([
-      'Keisha Washington · Placed · Verified',
-      'Jordan Williams · Enrolled',
-      'Angela Davis · Applied',
-      'Sam Rivera · Enrolled',
-    ]);
+    const cards = within(screen.getByTestId('referred-members-cards'));
+    expect(within(cards.getByRole('link', { name: /Keisha Washington/ })).getByText('Placed – verified')).toBeVisible();
+    expect(within(cards.getByRole('link', { name: /Jordan Williams/ })).getByText('Enrolled')).toBeVisible();
+    expect(within(cards.getByRole('link', { name: /Angela Davis/ })).getByText('Referred')).toBeVisible();
+    expect(within(cards.getByRole('link', { name: /Sam Rivera/ })).getByText('Placement reported, pending verification')).toBeVisible();
   });
 
   it('counts only verified placements in the default overview', async () => {
@@ -117,5 +122,83 @@ describe('/partner referred members at phone width', () => {
       startDateVerified: true,
       user: { organizationId: 'org-1' },
     });
+  });
+});
+
+describe('/partner overview canonical enrollment display', () => {
+  const PRIMARY_PROGRAM = 'it-support-professional-certificate-ibm';
+  const LEGACY_PROGRAM = 'core-construction-training-certificate';
+  const PRIMARY_TITLE = 'IT Support Professional Certificate (IBM)';
+  const LEGACY_TITLE = 'Core Construction';
+
+  function referral(enrolledProgram: string | null, courseEnrollments: Array<{
+    programSlug: string; curriculumVersion: string; isPrimary: boolean;
+  }>) {
+    return [{
+      id: 'ref-synthetic', referredAt: REFERRED_AT,
+      member: {
+        id: 'member-synthetic', fullName: 'Synthetic Enrollee', enrolledAt: REFERRED_AT,
+        enrolledProgram, courseEnrollments, placementRecord: null,
+      },
+    }];
+  }
+
+  it.each([null, LEGACY_PROGRAM])('shows the primary program when the legacy pointer is %s', async (legacy) => {
+    mocks.referrals.mockResolvedValue(referral(legacy, [
+      { programSlug: LEGACY_PROGRAM, curriculumVersion: 'legacy-v1', isPrimary: false },
+      { programSlug: PRIMARY_PROGRAM, curriculumVersion: 'legacy-v1', isPrimary: true },
+    ]));
+    render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const card = screen.getByRole('link', { name: /Synthetic Enrollee/ });
+    expect(card).toHaveTextContent(PRIMARY_TITLE);
+    expect(card).not.toHaveTextContent(LEGACY_TITLE);
+    expect(within(card).getByText('Enrolled')).toBeVisible();
+    expect(card).toHaveAttribute('href', '/partner/referred-members/member-synthetic');
+  });
+
+  it('keeps the legacy-only program label for an unmigrated member', async () => {
+    mocks.referrals.mockResolvedValue(referral(LEGACY_PROGRAM, []));
+    render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const card = screen.getByRole('link', { name: /Synthetic Enrollee/ });
+    expect(card).toHaveTextContent(LEGACY_TITLE);
+    expect(within(card).getByText('Enrolled')).toBeVisible();
+  });
+
+  it('leaves an ambiguous assignment unnamed without changing its enrollment stage', async () => {
+    mocks.referrals.mockResolvedValue(referral(LEGACY_PROGRAM, [
+      { programSlug: PRIMARY_PROGRAM, curriculumVersion: 'legacy-v1', isPrimary: false },
+    ]));
+    render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const card = screen.getByRole('link', { name: /Synthetic Enrollee/ });
+    expect(within(card).getByText(/^— · Referred/)).toBeVisible();
+    expect(card).not.toHaveTextContent(LEGACY_TITLE);
+    expect(within(card).getByText('Enrolled')).toBeVisible();
+  });
+
+  it('loads enrollment labels only through this partner’s visible tenant members', async () => {
+    await PartnerDashboardPage({ searchParams: Promise.resolve({}) });
+    expect(mocks.referrals.mock.calls[0][0]).toMatchObject({
+      where: {
+        partnerId: 'partner-1', partner: { organizationId: 'org-1' },
+        member: { organizationId: 'org-1', deletedAt: null },
+      },
+      select: {
+        member: {
+          select: {
+            courseEnrollments: {
+              where: { organizationId: 'org-1' },
+              select: { programSlug: true, curriculumVersion: true, isPrimary: true },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('redirects an anonymous visitor before reading partner or member data', async () => {
+    mocks.user.mockResolvedValue(null);
+    await expect(PartnerDashboardPage({ searchParams: Promise.resolve({}) })).rejects.toThrow('REDIRECT:/login?redirectTo=/partner');
+    expect(vi.mocked(prisma.partner.findUnique)).not.toHaveBeenCalled();
+    expect(mocks.referrals).not.toHaveBeenCalled();
   });
 });

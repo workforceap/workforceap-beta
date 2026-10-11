@@ -13,6 +13,7 @@ import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 import { loadPartnerReferralBundle, pendingPlacementWindowStart, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
 import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/lib/pipeline/stage';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import PartnerReferredMembersMobile, { type PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
 import { formatPortalDate } from '@/lib/formatDate';
 import CopyReferralLink from '@/components/partner/CopyReferralLink';
@@ -267,6 +268,10 @@ export default async function PartnerDashboardPage({
                 fullName: true,
                 enrolledAt: true,
                 enrolledProgram: true,
+                courseEnrollments: {
+                  where: { organizationId: ctx.partner.organizationId },
+                  select: { programSlug: true, curriculumVersion: true, isPrimary: true },
+                },
                 placementRecord: { select: { startDateVerified: true } },
               },
             },
@@ -330,6 +335,7 @@ export default async function PartnerDashboardPage({
     const referralMobileRows: PartnerMemberRow[] = recentReferrals.flatMap((r) => {
       const m = r.member;
       if (!m) return [];
+      const assignment = resolveTrainingProgressAssignment(m.enrolledProgram, m.courseEnrollments ?? []);
       const stage: PipelineStage = m.placementRecord?.startDateVerified ? 'placed' : m.enrolledAt ? 'enrolled' : 'applied';
       return [
         {
@@ -338,7 +344,7 @@ export default async function PartnerDashboardPage({
           stage,
           stageLabel: PIPELINE_STAGE_LABELS[stage],
           progress: 0,
-          programTitle: m.enrolledProgram ? programDisplayTitle(m.enrolledProgram) : '—',
+          programTitle: assignment.programSlug ? programDisplayTitle(assignment.programSlug) : '—',
           story: '',
           referredAtLabel: formatPortalDate(r.referredAt),
           placementVerified: m.placementRecord ? m.placementRecord.startDateVerified : null,
