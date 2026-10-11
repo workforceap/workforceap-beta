@@ -26,6 +26,10 @@ import {
   DIGITAL_LITERACY_PROGRAM_TITLE,
   digitalLiteracyCatalogCourses,
 } from '../../../shared/digitalLiteracyPathway';
+import {
+  DISCOVERED_COURSERA_PROGRAMS,
+  type CourseraDiscoveredCourse,
+} from '../../../lib/content/courseraDiscoveredCatalog';
 
 export type LanguageSupportLevel = 'full' | 'subtitles' | 'ai-subtitles' | 'none';
 export interface LanguageSupport {
@@ -648,7 +652,35 @@ function applyCurriculum(program: Program): Program {
   };
 }
 
-export const PROGRAMS: Program[] = BASE_PROGRAMS.map(applySyllabus).map(applyCurriculum);
+/**
+ * Non-regulated provider tracks use the same existing course snapshot as the
+ * member catalog. Supplied syllabi and in-house curricula retain precedence;
+ * this does not validate live provider availability or change assignments.
+ */
+function applyDiscoveredCourses(program: Program): Program {
+  if (program.syllabus || program.curriculum) return program;
+  const discovered = DISCOVERED_COURSERA_PROGRAMS[program.slug]?.courses;
+  if (!discovered?.length) return program;
+  const defaultHours = program.courses[0]?.estimatedHours ?? 10;
+  const courses = discovered.map((course: CourseraDiscoveredCourse) => ({
+    slug: course.slug,
+    name: course.name,
+    estimatedHours: course.estimatedHours ?? defaultHours,
+  }));
+  // Keep existing public identifiers when the displayed snapshot already agrees.
+  if (courses.length === program.courses.length && courses.every((course, index) =>
+    course.name === program.courses[index].name && course.estimatedHours === program.courses[index].estimatedHours
+  )) return program;
+  return {
+    ...program,
+    courses,
+  };
+}
+
+export const PROGRAMS: Program[] = BASE_PROGRAMS
+  .map(applySyllabus)
+  .map(applyCurriculum)
+  .map(applyDiscoveredCourses);
 
 export function getProgramBySlug(slug: string): Program | undefined {
   return PROGRAMS.find((p) => p.slug === slug);
