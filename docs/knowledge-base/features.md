@@ -43,6 +43,8 @@ client age parameters can only tighten them. [Route/page regressions](../../test
 cover 130 openings, page 2, exclusions, cache isolation/invalidation and age rules;
 [kit tests](../../tests/components/member-jobs-open-roles.spec.tsx) cover the See-all threshold.
 
+The shared [Jobs listing client](../../app/(portal)/dashboard/jobs/JobsListingClient.tsx) presents one filter-control set: inline above the listing from 768px, and an Astryx native dialog on phones (WAP-295). The kit focus trap keeps Tab/Shift+Tab inside the dialog and consumes only the topmost non-IME Escape; the primitive keeps background content inert, locks page scrolling and restores the trigger on dismissal. The mobile panel uses intrinsic field heights and scrolls to the final salary field. Backdrop and Close dismiss without clearing filter state/query parameters; resizing to desktop releases the modal and scroll lock, and returning to mobile does not reopen it. Synthetic-fixture browser checks establish UI interaction, not authenticated job saves or inventory filtering.
+
 The [WAP-04 stakeholder request ledger](../audits/wap-04-stakeholder-request-ledger-2026-10-11.md)
 reconciles the four exact March 2/March 11 source messages against public routes,
 actual implementation receipts and later owner changes. Older founder/process copy

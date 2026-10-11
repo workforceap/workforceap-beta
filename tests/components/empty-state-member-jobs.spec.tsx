@@ -45,6 +45,12 @@ beforeEach(() => {
   routerMock.push.mockReset();
   searchParams = new URLSearchParams();
   vi.stubGlobal('fetch', fetchMock);
+  // This desktop empty-state harness now renders the responsive filter panel.
+  vi.stubGlobal('matchMedia', vi.fn((media: string) => ({
+    matches: true, media, onchange: null,
+    addEventListener: vi.fn(), removeEventListener: vi.fn(),
+    addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn(),
+  })));
 });
 afterEach(() => {
   cleanup();

@@ -5,7 +5,11 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Search, SlidersHorizontal, X, Bookmark } from 'lucide-react';
+import { Search, SlidersHorizontal, Bookmark } from 'lucide-react';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
+import { useMediaQuery } from '@astryxdesign/core/hooks';
+import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
 import { PROGRAMS } from '@/lib/content/programs';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
 import { JobListingRow, JobListingRowSkeleton, KitEmptyState, FormField } from '@/components/portal/kit';
@@ -237,6 +241,21 @@ export default function JobsListingClient({
   const [loading, setLoading] = useState(!hasInitialData);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // CSS keeps the SSR inline panel hidden on phones until the media query hydrates.
+  const desktopFilters = useMediaQuery('(min-width: 768px)', true);
+  const filterTriggerRef = useRef<HTMLButtonElement>(null);
+  const filterDialogRef = useFocusTrap<HTMLDialogElement>(filtersOpen && !desktopFilters, {
+    onEscape: () => setFiltersOpen(false),
+    skipInitialFocus: true, // Astryx focuses the search after native showModal().
+  });
+  const filterFieldWrap = desktopFilters ? FILTER_FIELD_WRAP : { minWidth: 0, flex: '0 0 auto' };
+
+  useEffect(() => {
+    if (desktopFilters && filtersOpen) {
+      setFiltersOpen(false);
+      document.getElementById('job-search-q')?.focus();
+    }
+  }, [desktopFilters, filtersOpen]);
 
   const qParam = (searchParams?.get('q') ?? '') ?? '';
   const [qLocal, setQLocal] = useState(qParam);
@@ -373,8 +392,8 @@ export default function JobsListingClient({
   }, [preview]);
 
   const filterPanel = (
-    <div className="job-filters-panel wa-kit-card">
-      <div style={{ ...FILTER_FIELD_WRAP, minWidth: 200, flex: '2 1 220px' }}>
+    <div className={`job-filters-panel${desktopFilters ? ' wa-kit-card' : ''}`}>
+      <div style={desktopFilters ? { ...FILTER_FIELD_WRAP, minWidth: 200, flex: '2 1 220px' } : filterFieldWrap}>
         <label htmlFor="job-search-q" className="wa-kit-field-label">
           {t('searchJobs')}
         </label>
@@ -393,6 +412,7 @@ export default function JobsListingClient({
           />
           <input
             id="job-search-q"
+            data-autofocus={!desktopFilters || undefined}
             type="search"
             placeholder="Titles, companies, keywords…"
             value={qLocal}
@@ -404,7 +424,7 @@ export default function JobsListingClient({
         </div>
       </div>
 
-      <div style={FILTER_FIELD_WRAP}>
+      <div style={filterFieldWrap}>
         <FormField label="Program" id="job-filter-program">
           <select
             value={program}
@@ -421,7 +441,7 @@ export default function JobsListingClient({
         </FormField>
       </div>
 
-      <div style={FILTER_FIELD_WRAP}>
+      <div style={filterFieldWrap}>
         <FormField label="Location type" id="job-filter-location">
           <select
             value={locationType}
@@ -437,7 +457,7 @@ export default function JobsListingClient({
         </FormField>
       </div>
 
-      <div style={FILTER_FIELD_WRAP}>
+      <div style={filterFieldWrap}>
         <FormField label="Job type" id="job-filter-type">
           <select
             value={jobType}
@@ -453,7 +473,7 @@ export default function JobsListingClient({
         </FormField>
       </div>
 
-      <div style={FILTER_FIELD_WRAP}>
+      <div style={filterFieldWrap}>
         <FormField label="Sort by" id="job-filter-sort">
           <select
             value={sort}
@@ -469,8 +489,8 @@ export default function JobsListingClient({
         </FormField>
       </div>
 
-      <div className="job-filter-row" style={{ flex: '1 1 100%', gap: 12 }}>
-        <div style={FILTER_FIELD_WRAP}>
+      <div className="job-filter-row" style={{ flex: desktopFilters ? '1 1 100%' : '0 0 auto', gap: desktopFilters ? 12 : 'var(--wa-pad-sm)' }}>
+        <div style={filterFieldWrap}>
           <FormField label="Min salary ($/yr)" id="job-filter-salary-min">
             <input
               type="number"
@@ -484,7 +504,7 @@ export default function JobsListingClient({
             />
           </FormField>
         </div>
-        <div style={FILTER_FIELD_WRAP}>
+        <div style={filterFieldWrap}>
           <FormField label="Max salary ($/yr)" id="job-filter-salary-max">
             <input
               type="number"
@@ -548,10 +568,16 @@ export default function JobsListingClient({
       <div className="job-board-header">
         <button
           type="button"
-          onClick={() => setFiltersOpen((o) => !o)}
+          ref={filterTriggerRef}
+          onClick={() => {
+            // Safari does not consistently focus buttons on pointer activation.
+            filterTriggerRef.current?.focus();
+            setFiltersOpen((open) => !open);
+          }}
           className="job-filters-toggle wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
           aria-expanded={filtersOpen}
-          aria-controls="job-filters-drawer"
+          aria-controls={desktopFilters ? undefined : "job-filters-dialog"}
+          aria-haspopup="dialog"
           style={{
             alignItems: 'center',
             gap: 8,
@@ -571,51 +597,32 @@ export default function JobsListingClient({
         </button>
       </div>
 
-      {/* Single filter panel — CSS in main.css promotes .job-filters-drawer
-          to a static sidebar at md+ (always visible, drawer behavior
-          ignored) and keeps it as a fixed drawer below md (controlled by
-          .is-open). Closes audit #34: previously rendered twice in the
-          DOM with duplicate input ids breaking <label htmlFor> a11y. */}
-      <aside
-        id="job-filters-drawer"
-        className={`job-filters-drawer ${filtersOpen ? 'is-open' : ''}`}
-        data-kit-filters="true"
-      >
-        <div className="job-filters-drawer-inner">
-          <div className="job-filters-drawer-header">
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>
-              Filters
-            </h3>
-            <button
-              type="button"
-              onClick={() => setFiltersOpen(false)}
-              className="job-filters-drawer-close wa-kit-focus"
-              aria-label="Close filters"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 44,
-                height: 44,
-                borderRadius: 999,
-                border: '1px solid var(--wa-border)',
-                background: 'var(--wa-surface-2)',
-                color: 'var(--wa-muted)',
-                cursor: 'pointer',
-              }}
-            >
-              <X size={18} />
-            </button>
-          </div>
+      {/* One set of filter controls: desktop inline or native modal on phones.
+          The dialog provides inert background, focus/scroll containment, Escape
+          (with the kit IME/top-layer guards), backdrop close and trigger restore. */}
+      {desktopFilters ? (
+        <aside className="job-filters-inline" aria-label="Job filters">
           {filterPanel}
-        </div>
-        <button
-          type="button"
-          className="job-filters-drawer-backdrop"
-          onClick={() => setFiltersOpen(false)}
-          aria-label="Close filters"
-        />
-      </aside>
+        </aside>
+      ) : (
+        <Dialog
+          id="job-filters-dialog"
+          ref={filterDialogRef}
+          className="job-filters-dialog"
+          isOpen={filtersOpen}
+          onOpenChange={setFiltersOpen}
+          purpose="info"
+          aria-label="Job filters"
+          width="calc(100vw - 2 * var(--wa-pad-sm))"
+          maxHeight="calc(100dvh - 2 * var(--wa-pad-sm))"
+          padding={4}
+        >
+          <Layout
+            header={<DialogHeader title="Filters" onOpenChange={setFiltersOpen} />}
+            content={<LayoutContent className="job-filters-dialog-content">{filterPanel}</LayoutContent>}
+          />
+        </Dialog>
+      )}
 
       {loading ? (
         <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }} aria-busy="true" aria-live="polite">
