@@ -100,6 +100,7 @@ function quote(file) {
 function plan() {
   const checks = [
     { name: 'Migration timestamp history', cmd: 'node scripts/check-duplicate-migrations.mjs' },
+    { name: 'Supabase recovered migration history (WAP-280)', cmd: 'node scripts/check-supabase-history.mjs' },
     { name: 'No new source-text tests (WAP-175)', cmd: 'node scripts/verify-no-source-text-tests.mjs' },
     { name: 'Admin mutation audit coverage (WAP-18)', cmd: 'node scripts/verify-admin-mutation-audit.cjs' },
     { name: 'High-risk tenant routes', cmd: 'node scripts/verify-high-risk-tenant-routes.cjs' },
