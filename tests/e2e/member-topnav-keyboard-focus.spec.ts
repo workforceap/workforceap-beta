@@ -37,7 +37,7 @@ for (const theme of ['light', 'dark'] as const) {
       }
       await expect(links.first()).toBeFocused();
       const pageY = await page.evaluate(() => window.scrollY);
-      const assertVisible = async () => {
+      const assertVisible = async (preservePageY = true) => {
         await page.waitForTimeout(250); // Include focus CSS transitions and snap settlement.
         const bounds = await rail.evaluate((nav) => {
           const link = document.activeElement as HTMLElement;
@@ -59,7 +59,7 @@ for (const theme of ['light', 'dark'] as const) {
         expect(bounds.right).toBeGreaterThanOrEqual(4);
         expect(bounds.outline).toBe('solid');
         expect(bounds.shadow).not.toBe('none');
-        expect(bounds.pageY).toBe(pageY);
+        if (preservePageY) expect(bounds.pageY).toBe(pageY);
       };
       for (let i = 0; i < count; i++) {
         if (i) await page.keyboard.press('Tab');
@@ -70,6 +70,24 @@ for (const theme of ['light', 'dark'] as const) {
         await page.keyboard.press('Shift+Tab');
         await expect(links.nth(i)).toBeFocused();
         await assertVisible();
+      }
+      if (width === 375) {
+        // Native Tab may scroll sticky chrome toward the document top. Its
+        // compact-to-expanded geometry must still reveal every focused link.
+        await page.evaluate(() => window.scrollTo(0, 180));
+        await page.waitForTimeout(250);
+        expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+        await expect(page.locator('html')).toHaveClass(/wap-portal-chrome-compact/);
+        for (let i = 1; i < count; i++) {
+          await page.keyboard.press('Tab');
+          await expect(links.nth(i)).toBeFocused();
+          await assertVisible(false);
+        }
+        for (let i = count - 2; i >= 0; i--) {
+          await page.keyboard.press('Shift+Tab');
+          await expect(links.nth(i)).toBeFocused();
+          await assertVisible(false);
+        }
       }
     });
   }

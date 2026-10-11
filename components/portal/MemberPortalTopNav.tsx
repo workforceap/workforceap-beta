@@ -56,6 +56,12 @@ export default function MemberPortalTopNav({
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const setVar = () => {
       document.documentElement.style.setProperty('--member-portal-top-nav-h', `${el.offsetHeight}px`);
+      // Compact chrome can expand after native keyboard focus scrolls the page.
+      // Keep that focused destination visible as the rail geometry changes.
+      const list = listRef.current;
+      const focused = el.querySelector<HTMLElement>('.member-portal-top-nav__link:focus-visible');
+      const item = focused?.parentElement;
+      if (list && item) centerRailItem(list, item);
     };
     setVar();
     const ro = new ResizeObserver(setVar);
