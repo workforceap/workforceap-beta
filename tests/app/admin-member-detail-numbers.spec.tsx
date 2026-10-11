@@ -89,8 +89,8 @@ vi.mock('@/app/admin/members/[id]/AdminMemberAiMatches', () => panelMock('ai-mat
 vi.mock('@/components/admin/AdminMemberResumeSection', () => panelMock('resumes'));
 vi.mock('@/components/admin/AssessmentAnswersReadonly', () => panelMock('assessment'));
 vi.mock('@/components/admin/MemberDetailActions', () => ({
-  default: ({ userId, programOptions, currentProgramSlug }: { userId: string; programOptions: unknown[]; currentProgramSlug: string | null }) => (
-    <form data-panel="program-change" data-user-id={userId} data-options={programOptions.length} data-current={currentProgramSlug ?? ''} />
+  default: ({ userId, programOptions, currentProgramSlug }: { userId: string; programOptions: unknown[] | null; currentProgramSlug: string | null }) => (
+    <form data-panel="program-change" data-user-id={userId} data-options={programOptions === null ? 'fallback' : programOptions.length} data-current={currentProgramSlug ?? ''} />
   ),
 }));
 vi.mock('@/components/admin/MemberCourseraEnrollmentApproval', () => panelMock('coursera-approval'));

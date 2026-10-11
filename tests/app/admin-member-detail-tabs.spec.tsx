@@ -90,8 +90,8 @@ vi.mock('@/app/admin/members/[id]/AdminMemberAiMatches', () => panelMock('ai-mat
 vi.mock('@/components/admin/AdminMemberResumeSection', () => panelMock('resumes'));
 vi.mock('@/components/admin/AssessmentAnswersReadonly', () => panelMock('assessment'));
 vi.mock('@/components/admin/MemberDetailActions', () => ({
-  default: ({ userId, programOptions, currentProgramSlug }: { userId: string; programOptions: unknown[]; currentProgramSlug: string | null }) => (
-    <form data-panel="program-change" data-user-id={userId} data-options={programOptions.length} data-current={currentProgramSlug ?? ''} />
+  default: ({ userId, programOptions, currentProgramSlug }: { userId: string; programOptions: unknown[] | null; currentProgramSlug: string | null }) => (
+    <form data-panel="program-change" data-user-id={userId} data-options={programOptions === null ? 'fallback' : programOptions.length} data-current={currentProgramSlug ?? ''} />
   ),
 }));
 vi.mock('@/components/admin/MemberCourseraEnrollmentApproval', () => panelMock('coursera-approval'));
@@ -334,9 +334,24 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const doc = await renderPage();
     const form = doc.querySelector('[data-panel="program-change"]') as HTMLElement;
     expect(form.getAttribute('data-user-id')).toBe('member-1');
-    expect(form.getAttribute('data-options')).toBe('0');
+    expect(form.getAttribute('data-options')).toBe('fallback');
     expect(form.getAttribute('data-current')).toBe('');
     expect(form.closest('[role="tabpanel"]')?.id).toBe(`${BASE}-panel-program`);
+  });
+
+  it.each([
+    [{ programSlug: 'ai-practitioner-professional-certificate-aws', name: 'AWS', status: 'inactive' }],
+    [
+      { programSlug: 'ai-professional-developer-certificate-ibm', name: 'Legacy AWS', status: 'active' },
+      { programSlug: 'ai-practitioner-professional-certificate-aws', name: 'AWS', status: 'inactive' },
+    ],
+    [{ programSlug: 'unknown-tenant-track', name: 'Retired track', status: 'active' }],
+  ].map((rows) => [rows]))('preserves an explicit catalog with no derived choices through the actual page', async (rows) => {
+    db.overrides['organizationProgramCatalog.findMany'] = async () => rows;
+    const doc = await renderPage({ tab: 'program' });
+    const form = doc.querySelector('[data-panel="program-change"]') as HTMLElement;
+    expect(form.getAttribute('data-options')).toBe('0');
+    expect(form.getAttribute('data-current')).toBe('');
   });
 
   it('keeps the #placed-outcome anchor (with the placement form) inside the Placement panel', async () => {

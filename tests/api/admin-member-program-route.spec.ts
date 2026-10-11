@@ -27,13 +27,17 @@ vi.mock('@/lib/auth/roles', () => ({
 vi.mock('@/lib/tenant/organization', () => ({
   getActorOrganizationId: vi.fn(),
   getSubjectOrganizationId: vi.fn(),
+  getDefaultOrganizationId: vi.fn(),
 }));
+
+vi.mock('@/lib/db/optionalBuildDb', () => ({ shouldSkipOptionalDbQueriesAtBuild: () => false }));
 
 vi.mock('@/lib/tenant/adminSubjectAccess', () => ({
   canAdminActInSubjectOrganization: vi.fn(() => true),
 }));
 
-vi.mock('@/lib/content/programs', () => ({
+vi.mock('@/lib/content/programs', async (importOriginal) => ({
+  ...await importOriginal<typeof import('@/lib/content/programs')>(),
   getProgramBySlug: vi.fn(),
   CURRICULUM_MIGRATION_PENDING_CODE: 'CURRICULUM_MIGRATION_PENDING',
   CURRICULUM_MIGRATION_PENDING_MESSAGE: 'Training assignment paused.',
@@ -67,6 +71,7 @@ vi.mock('@/lib/db/prisma', () => {
     organizationProgramCatalog: {
       count: vi.fn(),
       findFirst: vi.fn(),
+      findMany: vi.fn(),
     },
     $transaction: vi.fn(async (fn: (txClient: typeof tx) => Promise<unknown>) => fn(tx)),
     __tx: tx,
@@ -76,17 +81,20 @@ vi.mock('@/lib/db/prisma', () => {
 
 import { PATCH } from '@/app/api/admin/members/[id]/program/route';
 import { getUser } from '@/lib/auth/server';
-import { requireAdmin } from '@/lib/auth/roles';
+import { isSuperAdmin, requireAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId, getSubjectOrganizationId } from '@/lib/tenant/organization';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
 import { rewardReferralOnEnrollment } from '@/lib/member/referrals';
+import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 
 const ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
 const MEMBER_ID = '550e8400-e29b-41d4-a716-446655440002';
 const ORG_ID = '550e8400-e29b-41d4-a716-446655440003';
+const OTHER_ORG_ID = '550e8400-e29b-41d4-a716-446655440004';
+const OTHER_MEMBER_ID = '550e8400-e29b-41d4-a716-446655440005';
 
 function makeRequest(body: Record<string, unknown>) {
   return new Request('http://localhost:3000/api/admin/members/member/program', {
@@ -179,25 +187,39 @@ describe('PATCH /api/admin/members/[id]/program', () => {
 describe('PATCH /api/admin/members/[id]/program: picker parity (WAP-286)', () => {
   type Row = { programSlug: string; status: string };
   let catalog: Row[] = [];
+  let otherCatalog: Row[] = [];
 
   beforeEach(async () => {
     vi.clearAllMocks();
     // The real static catalog and alias resolution, as the picker uses them.
     const actual = await vi.importActual<typeof import('@/lib/content/programs')>('@/lib/content/programs');
     vi.mocked(getProgramBySlug).mockImplementation(actual.getProgramBySlug);
+    const access = await vi.importActual<typeof import('@/lib/tenant/adminSubjectAccess')>('@/lib/tenant/adminSubjectAccess');
+    vi.mocked(canAdminActInSubjectOrganization).mockImplementation(access.canAdminActInSubjectOrganization);
+    vi.mocked(isSuperAdmin).mockResolvedValue(false);
     vi.mocked(getUser).mockResolvedValue({ id: ADMIN_ID } as any);
     vi.mocked(requireAdmin).mockResolvedValue(undefined as any);
     vi.mocked(getActorOrganizationId).mockResolvedValue(ORG_ID);
     vi.mocked(getSubjectOrganizationId).mockResolvedValue(ORG_ID);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: MEMBER_ID } as any);
+    vi.mocked(prisma.user.findFirst).mockImplementation((async (args: any) => {
+      const { id, organizationId } = args.where;
+      return (id === MEMBER_ID && organizationId === ORG_ID)
+        || (id === OTHER_MEMBER_ID && organizationId === OTHER_ORG_ID) ? { id } : null;
+    }) as any);
     // An in-memory tenant catalog answering the route's exact queries.
-    vi.mocked(prisma.organizationProgramCatalog.count).mockImplementation((async () => catalog.length) as any);
+    catalog = [];
+    otherCatalog = [];
+    const rowsFor = (organizationId: string) => organizationId === ORG_ID ? catalog
+      : organizationId === OTHER_ORG_ID ? otherCatalog : [];
+    vi.mocked(prisma.organizationProgramCatalog.count).mockImplementation((async (args: any) =>
+      rowsFor(args.where.organizationId).length) as any);
     vi.mocked(prisma.organizationProgramCatalog.findFirst).mockImplementation((async (args: any) => {
       const { organizationId, programSlug, status } = args.where;
-      if (organizationId !== ORG_ID) return null;
-      const row = catalog.find((r) => r.programSlug === programSlug && r.status === status);
+      const row = rowsFor(organizationId).find((r) => r.programSlug === programSlug && r.status === status);
       return row ? { programSlug: row.programSlug } : null;
     }) as any);
+    vi.mocked(prisma.organizationProgramCatalog.findMany).mockImplementation((async (args: any) =>
+      rowsFor(args.where.organizationId).filter((r) => r.status === args.where.status)) as any);
     (prisma as any).__tx.user.updateMany.mockResolvedValue({ count: 1 });
     (prisma as any).__tx.courseEnrollment.findMany.mockResolvedValue([]);
     (prisma as any).__tx.courseEnrollment.upsert.mockResolvedValue({ id: 'enrollment-1' });
@@ -227,6 +249,11 @@ describe('PATCH /api/admin/members/[id]/program: picker parity (WAP-286)', () =>
         { programSlug: 'ai-professional-developer-certificate-ibm', status: 'active' },
         { programSlug: 'ai-practitioner-professional-certificate-aws', status: 'active' },
       ],
+      [
+        { programSlug: 'ai-professional-developer-certificate-ibm', status: 'active' },
+        { programSlug: 'ai-practitioner-professional-certificate-aws', status: 'inactive' },
+      ],
+      [{ programSlug: 'ai-professional-developer-certificate-ibm', status: 'inactive' }],
       [{ programSlug: a.slug, status: 'active' }, { programSlug: b.slug, status: 'inactive' }],
       [],
     ];
@@ -243,5 +270,81 @@ describe('PATCH /api/admin/members/[id]/program: picker parity (WAP-286)', () =>
         expect(res.status === 200, `${JSON.stringify(rows)} ${program.slug} -> ${res.status}`).toBe(pickerAssignable);
       }
     }
+  });
+
+  it('keeps raw aliases through the real catalog loader and refuses another tenant\'s canonical row', async () => {
+    const { getActivePrograms } = await import('@/lib/platform/programCatalog');
+    const { buildAssignableProgramOptions } = await import('@/lib/admin/assignableProgramOptions');
+    const canonical = 'ai-practitioner-professional-certificate-aws';
+    const alias = 'ai-professional-developer-certificate-ibm';
+    catalog = [{ programSlug: alias, status: 'active' }];
+    otherCatalog = [{ programSlug: canonical, status: 'active' }];
+
+    const loaded = await getActivePrograms(ORG_ID);
+    expect(loaded.map((row) => row.slug)).toEqual([alias]);
+    expect(buildAssignableProgramOptions(loaded)).toEqual([]);
+    expect(prisma.organizationProgramCatalog.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { organizationId: ORG_ID, status: 'active' },
+    }));
+    const res = await patch(canonical);
+    expect(res.status).toBe(400);
+    expect(prisma.organizationProgramCatalog.findFirst).toHaveBeenLastCalledWith({
+      where: { organizationId: ORG_ID, programSlug: canonical, status: 'active' },
+      select: { programSlug: true },
+    });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect((prisma as any).__tx.user.updateMany).not.toHaveBeenCalled();
+    expect((prisma as any).__tx.courseEnrollment.upsert).not.toHaveBeenCalled();
+    expect(sendPartnerMilestoneEmail).not.toHaveBeenCalled();
+    expect(invalidateMemberState).not.toHaveBeenCalled();
+    expect(rewardReferralOnEnrollment).not.toHaveBeenCalled();
+  });
+
+  it('keeps an inactive-only tenant catalog empty instead of borrowing the static or foreign catalog', async () => {
+    const { getActivePrograms } = await import('@/lib/platform/programCatalog');
+    catalog = [{ programSlug: 'ai-professional-developer-certificate-ibm', status: 'inactive' }];
+    otherCatalog = [{ programSlug: 'ai-practitioner-professional-certificate-aws', status: 'active' }];
+    expect(await getActivePrograms(ORG_ID)).toEqual([]);
+    expect((await patch('ai-practitioner-professional-certificate-aws')).status).toBe(400);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('refuses an org admin acting on a foreign member before catalog reads or writes', async () => {
+    catalog = [{ programSlug: 'ai-practitioner-professional-certificate-aws', status: 'active' }];
+    otherCatalog = [...catalog];
+    vi.mocked(getSubjectOrganizationId).mockResolvedValue(OTHER_ORG_ID);
+    const res = await PATCH(makeRequest({ programSlug: catalog[0].programSlug }), {
+      params: Promise.resolve({ id: OTHER_MEMBER_ID }),
+    });
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'Member not found' });
+    expect(prisma.organizationProgramCatalog.count).not.toHaveBeenCalled();
+    expect(prisma.organizationProgramCatalog.findFirst).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('uses the subject tenant catalog and scoped writes for an authorized super-admin', async () => {
+    const canonical = 'ai-practitioner-professional-certificate-aws';
+    catalog = [{ programSlug: canonical, status: 'active' }];
+    otherCatalog = [{ programSlug: 'ai-professional-developer-certificate-ibm', status: 'active' }];
+    vi.mocked(isSuperAdmin).mockResolvedValue(true);
+    vi.mocked(getSubjectOrganizationId).mockResolvedValue(OTHER_ORG_ID);
+    const change = () => PATCH(makeRequest({ programSlug: canonical }), {
+      params: Promise.resolve({ id: OTHER_MEMBER_ID }),
+    });
+    expect((await change()).status).toBe(400);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+
+    otherCatalog.push({ programSlug: canonical, status: 'active' });
+    expect((await change()).status).toBe(200);
+    expect(getActorOrganizationId).not.toHaveBeenCalled();
+    expect(prisma.organizationProgramCatalog.count).toHaveBeenLastCalledWith({ where: { organizationId: OTHER_ORG_ID } });
+    expect((prisma as any).__tx.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: OTHER_MEMBER_ID, organizationId: OTHER_ORG_ID, deletedAt: null },
+      data: expect.objectContaining({ enrolledProgram: canonical }),
+    }));
+    expect((prisma as any).__tx.courseEnrollment.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      create: expect.objectContaining({ organizationId: OTHER_ORG_ID, userId: OTHER_MEMBER_ID, programSlug: canonical }),
+    }));
   });
 });

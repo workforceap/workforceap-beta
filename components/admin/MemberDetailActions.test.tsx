@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MemberDetailActions from './MemberDetailActions';
+import { buildMemberProgramOptions } from '@/lib/admin/assignableProgramOptions';
 import { getProgramBySlug } from '@/lib/content/programs';
 
 const refresh = vi.hoisted(() => vi.fn());
@@ -133,11 +134,46 @@ describe('MemberDetailActions program assignment', () => {
   });
 
   it('does not offer paused curricula for a fresh assignment in fallback options', () => {
-    render(<MemberDetailActions {...defaultProps} programOptions={[]} />);
+    render(<MemberDetailActions {...defaultProps} programOptions={null} />);
 
     expect(
       screen.queryByRole('option', { name: /curriculum activation pending/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['inactive canonical', [{ slug: 'ai-practitioner-professional-certificate-aws', status: 'inactive' }]],
+    ['active alias plus inactive canonical', [
+      { slug: 'ai-professional-developer-certificate-ibm', status: 'active' },
+      { slug: 'ai-practitioner-professional-certificate-aws', status: 'inactive' },
+    ]],
+    ['inactive alias', [{ slug: 'ai-professional-developer-certificate-ibm', status: 'inactive' }]],
+    ['unknown catalog', [{ slug: 'retired-tenant-track', status: 'active' }]],
+  ] as const)('keeps an explicit %s catalog with no assignment choices empty', (_name, rows) => {
+    const options = buildMemberProgramOptions(rows, null);
+    expect(options).toEqual([]);
+    render(<MemberDetailActions {...defaultProps} programOptions={options} />);
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('shows an alias-only program as needing repair and keeps a current inactive program disabled', () => {
+    const canonical = 'ai-practitioner-professional-certificate-aws';
+    const title = getProgramBySlug(canonical)!.title;
+    const { unmount } = render(<MemberDetailActions {...defaultProps} programOptions={buildMemberProgramOptions([
+      { slug: 'ai-professional-developer-certificate-ibm', status: 'active' },
+    ], null)} />);
+    expect(screen.getByRole('option', { name: title + ' (needs catalog repair)' })).toBeDisabled();
+
+    unmount();
+    render(<MemberDetailActions {...defaultProps} currentProgramSlug={canonical} programOptions={buildMemberProgramOptions([
+      { slug: canonical, status: 'inactive' },
+    ], canonical)} />);
+    expect(screen.getByRole('option', { name: title + ' (inactive)' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('does not describe an existing grant-funded program as WIOA-blocked', () => {
@@ -226,7 +262,7 @@ describe('MemberDetailActions program assignment', () => {
 
   it('uses the Grant exemption with the existing static catalog fallback', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({ ok: true } as Response);
-    render(<MemberDetailActions {...fundingProps} programOptions={[]} />);
+    render(<MemberDetailActions {...fundingProps} programOptions={null} />);
     fireEvent.change(screen.getByRole('combobox'), { target: { value: grantProgramSlug } });
     expect(screen.queryByText(/WIOA status is still blocking/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
