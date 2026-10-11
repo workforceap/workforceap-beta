@@ -297,10 +297,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(target, 308);
   }
 
-  // Strip locale prefix internally (URL bar still shows /es/…)
+  // Astro emits only the es/fr/pt homepages as localized static HTML. Select
+  // their actual assets; stripping these prefixes would serve the English root.
+  // Every leaf and Next-owned route keeps the existing prefix-strip contract.
   let rewriteUrl: URL | null = null;
   if (prefixLocale && pathnameWithoutLocale !== pathname) {
-    rewriteUrl = new URL(pathnameWithoutLocale, request.url);
+    const localizedAstroHome = /^\/(?:es|fr|pt)\/?$/.test(pathname);
+    rewriteUrl = new URL(localizedAstroHome ? `/${prefixLocale}/index.html` : pathnameWithoutLocale, request.url);
     rewriteUrl.search = request.nextUrl.search;
   }
 

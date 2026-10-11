@@ -48,6 +48,15 @@ Anchors: [root layout](../../app/layout.tsx), [Astro routing/build configuration
 
 The codebase combines static Astro marketing output with dynamic Next routes. Locale-prefixed URLs are rewritten internally by [middleware](../../middleware.ts); there is no `app/[locale]` directory. The older i18n design document still names former Next public-page locations, so use the current route catalog and source when locating a public URL. Static assets do not traverse the Next root layout in the same way as server-rendered application pages.
 
+Astro currently emits localized homepage assets only at `es/index.html`,
+`fr/index.html` and `pt/index.html`. Middleware selects those assets for the exact
+`/es`, `/fr` and `/pt` homepage URLs (including their trailing-slash forms),
+preserving the query string. `/en` retains its English-root alias. Other prefixed
+paths retain the existing prefix-stripping and Next authentication/tenant guards;
+the homepage exception does not establish translated marketing leaf output.
+See the [routing regression](../../tests/api/middleware-explicit-locale.spec.ts)
+and [bounded routing receipt](../audits/localized-home-routing-2026-10-11.md).
+
 ## Request and authorization boundaries
 
 ```mermaid

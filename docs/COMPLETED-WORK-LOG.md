@@ -74,3 +74,12 @@ remain separate gates.
 ## 2026-10-11 — WAP-299 cookie Accept candidate
 
 Local source candidate pairs the cookie banner's stable accent fill with the existing white accent foreground. Global adaptive tokens and consent behavior remain unchanged. Focused behavior tests and guarded paired browser evidence are recorded in the [contrast audit](audits/cookie-accept-contrast-2026-10-11.md); hosted/release acceptance is pending.
+
+## 2026-10-11 — WAP-294 Localized homepage routing candidate
+
+Exact es/fr/pt homepage URLs select their emitted Astro HTML instead of the English
+root; both slash forms preserve query strings. The English alias and existing
+Next application/authentication, protected portal and tenant API routing remain
+covered by behavioral regressions. The [bounded receipt](audits/localized-home-routing-2026-10-11.md)
+records fresh static-output ownership and integrated local GET checks. Independent
+review and exact-deployment acceptance remain separate gates.
