@@ -9,7 +9,8 @@ import { eligibilityScreeningSummaryHtml } from './eligibility-screening-summary
 import { memberWelcomeLetterHtml } from './member-welcome-letter';
 import type { EligibilityScreeningFields } from '@/lib/apply/eligibilityScreeningFields';
 
-const PORTAL_LOGIN = 'https://www.workforceap.org/login';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
+const PORTAL_LOGIN = `${SITE_URL.replace(/\/+$/, '')}/login`;
 const portalLink = (path: string) => `${PORTAL_LOGIN}?redirectTo=${encodeURIComponent(path)}`;
 
 /**
@@ -19,7 +20,7 @@ const portalLink = (path: string) => `${PORTAL_LOGIN}?redirectTo=${encodeURIComp
  */
 export function memberStartHereHtml(): string {
   const button = (href: string, label: string) =>
-    `<a href="${href}" style="display:inline-block;background:#4a9b4f;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:6px;margin:4px 0;">${label}</a>`;
+    `<a href="${escapeHtml(href)}" style="display:inline-block;background:#4a9b4f;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:6px;margin:4px 0;">${label}</a>`;
   return `
     <div style="border:2px solid #4a9b4f;border-radius:8px;padding:14px 16px;margin:0 0 18px;">
       <p style="margin:0 0 8px;"><strong>Start here: your first two steps</strong></p>

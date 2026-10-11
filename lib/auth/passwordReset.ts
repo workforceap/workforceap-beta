@@ -199,6 +199,7 @@ export async function sendPasswordResetEmail(
         `,
         ctaText: 'Reset password',
         ctaUrl: resetLink,
+        supabaseAuthAction: 'recovery',
         branding,
       });
 

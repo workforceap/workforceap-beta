@@ -41,6 +41,7 @@ async function handle(_request: Request) {
   const members = await prisma.user.findMany({
     where: {
       deletedAt: null,
+      notificationsUpdates: true,
       OR: [
         { courseEnrollments: { some: {} } },
         { enrolledProgram: { not: null } },

@@ -3,8 +3,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseCookieOptions } from '@/lib/supabaseCookieOptions';
 import { prisma } from '@/lib/db/prisma';
-import { sanitizeRedirectPath } from '@/lib/auth/safeRedirectPath';
-import { resolveRoleAwarePostLoginRedirect } from '@/lib/auth/postLoginRedirect';
+import { normalizePostLoginRedirect, resolveRoleAwarePostLoginRedirect } from '@/lib/auth/postLoginRedirect';
 import { getSupabaseEnv } from '@/lib/supabase/env';
 import { emitEmailVerifiedFromCallback } from '@/lib/events/emailVerified';
 import { trackEvent } from '@/lib/events/track';
@@ -16,7 +15,7 @@ import { withDbRetry } from '@/lib/db/withDbRetry';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const nextRaw = searchParams.get('next') ?? '/dashboard';
+  const safeNext = normalizePostLoginRedirect(searchParams.get('next'), '/dashboard');
 
   if (code) {
     const cookieStore = await cookies();
@@ -39,9 +38,14 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      const safeNext = sanitizeRedirectPath(nextRaw, '/dashboard');
+    let exchangeFailed = true;
+    try {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      exchangeFailed = Boolean(error);
+    } catch (err) {
+      logger.warn('auth/callback: confirmation exchange failed', { err });
+    }
+    if (!exchangeFailed) {
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
       // Resilient + non-fatal: a transient pooler blip here must not 500 the
@@ -83,9 +87,8 @@ export async function GET(request: NextRequest) {
       }
 
       try {
-        const destPath = new URL(destination, 'https://internal.invalid').pathname;
-        const redirectUrl =
-          destPath === '/dashboard' ? `${origin}/dashboard?verified=1` : `${origin}${destination}`;
+        const redirectUrl = new URL(destination, origin);
+        if (redirectUrl.pathname === '/dashboard') redirectUrl.searchParams.set('verified', '1');
         return NextResponse.redirect(redirectUrl);
       } catch {
         return NextResponse.redirect(`${origin}/dashboard?verified=1`);
@@ -93,5 +96,8 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=confirmation_failed`);
+  const loginUrl = new URL('/login', origin);
+  loginUrl.searchParams.set('error', 'confirmation_failed');
+  loginUrl.searchParams.set('redirectTo', safeNext);
+  return NextResponse.redirect(loginUrl);
 }
