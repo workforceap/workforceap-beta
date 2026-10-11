@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PROGRAMS as APP_PROGRAMS } from './programs';
 import { PROGRAMS as MARKETING_PROGRAMS } from '../../marketing/src/data/programs';
+import { getProgramSyllabus } from '../../shared/programSyllabi';
 
 /**
  * Locks marketing/src/data/programs.ts (the public site — and the source
@@ -10,21 +11,12 @@ import { PROGRAMS as MARKETING_PROGRAMS } from '../../marketing/src/data/program
  * lib/content/programs.ts (the app catalog used for enrollment and the
  * member dashboard).
  *
- * For every program slug present in both catalogs: titles must match, and
- * the total course-contact-hours must match. A failure here means either a
- * change needs to be reverted, or both catalogs (and, for hours, the price
- * list) need to be updated together.
- *
- * KNOWN DRIFT (found 2026-07-02, pre-dating this test): lib/content/programs.ts
- * derives every course's estimatedHours from a single per-program
- * `defaultHours` value (see `mkProgram()`), and for programs with a
- * Coursera-discovered catalog entry (lib/content/courseraDiscoveredCatalog.ts)
- * the course *count* there can differ from the hand-verified marketing
- * syllabus. Nine programs already disagree on total hours as a result. Those
- * are marked `skip` below with the reason, so this test stays green while
- * still catching *new* drift on the eleven programs that already agree.
- * Remove an entry from KNOWN_HOUR_DRIFT once its two catalogs are
- * reconciled so parity is enforced on it again.
+ * Both catalogs must expose the same slugs, titles, duration labels and
+ * estimated-hour totals. Active course lists must also agree. The two amended
+ * programs below retain frozen operational keys for existing learner progress;
+ * their public course lists must instead match the supplied approved syllabus,
+ * and new assignments must remain paused. This source comparison does not
+ * certify current provider availability, licenses, or owner policy approval.
  */
 
 function sumHours(courses: { estimatedHours: number }[]): number {
@@ -33,24 +25,14 @@ function sumHours(courses: { estimatedHours: number }[]): number {
 
 const appBySlug = new Map(APP_PROGRAMS.map((p) => [p.slug, p]));
 const marketingBySlug = new Map(MARKETING_PROGRAMS.map((p) => [p.slug, p]));
-const sharedSlugs = [...marketingBySlug.keys()].filter((slug) => appBySlug.has(slug));
-
-const KNOWN_HOUR_DRIFT = new Set([
-  'it-support-professional-certificate-ibm',
-  // Curriculum sync (2026-09-17) added a 12-course discovered catalog for this
-  // slug; marketing still carries the prior 6-name hand syllabus (60 vs 120 hrs).
-  'it-support-and-entry-level-cyber-security-certificate',
-  'project-management-professional-certificate-microsoft',
+const sharedSlugs = [...marketingBySlug.keys()];
+const FROZEN_OPERATIONAL_PROGRAMS = new Set([
   'data-analytics-professional-certificate-google',
   'data-science-professional-certificate-ibm',
-  'comptia-a-professional-certificate',
-  'comptia-security-professional-certificate',
-  'cybersecurity-professional-certificate-google',
-  'digital-marketing-e-commerce-google',
 ]);
 
-test('marketing and app program catalogs share overlapping slugs', () => {
-  assert.ok(sharedSlugs.length > 0, 'expected overlap between marketing and app program catalogs');
+test('marketing and app program catalogs expose the same program slugs', () => {
+  assert.deepEqual([...marketingBySlug.keys()].sort(), [...appBySlug.keys()].sort());
 });
 
 for (const slug of sharedSlugs) {
@@ -61,17 +43,32 @@ for (const slug of sharedSlugs) {
     assert.equal(marketingProgram.title, appProgram.title, `title mismatch for ${slug}`);
   });
 
-  test(
-    `program catalog parity — contact hours: ${slug}`,
-    { skip: KNOWN_HOUR_DRIFT.has(slug) ? 'known pre-existing hour drift — see file header' : false },
-    () => {
-      const appHours = sumHours(appProgram.courses);
-      const marketingHours = sumHours(marketingProgram.courses);
-      assert.equal(
-        marketingHours,
-        appHours,
-        `contact-hour total mismatch for ${slug}: marketing=${marketingHours} app=${appHours}`
-      );
+  test(`program catalog parity — duration: ${slug}`, () => {
+    assert.equal(marketingProgram.duration, appProgram.duration);
+  });
+
+  test(`program catalog parity — estimated course hours: ${slug}`, () => {
+    const appHours = sumHours(appProgram.courses);
+    const marketingHours = sumHours(marketingProgram.courses);
+    assert.equal(
+      marketingHours,
+      appHours,
+      `estimated-hour total mismatch for ${slug}: marketing=${marketingHours} app=${appHours}`
+    );
+  });
+
+  test(`program catalog parity — course list: ${slug}`, () => {
+    const projectCourses = (program: typeof appProgram | typeof marketingProgram) =>
+      program.courses.map(({ name, estimatedHours }) => ({ name, estimatedHours }));
+    if (FROZEN_OPERATIONAL_PROGRAMS.has(slug)) {
+      assert.equal(appProgram.curriculumMigrationPending, true);
+      const syllabus = getProgramSyllabus(slug);
+      assert.ok(syllabus, `expected an approved syllabus for ${slug}`);
+      assert.deepEqual(projectCourses(marketingProgram), syllabus.courses.map(({ name, hours }) => ({
+        name, estimatedHours: hours,
+      })));
+      return;
     }
-  );
+    assert.deepEqual(projectCourses(marketingProgram), projectCourses(appProgram));
+  });
 }
