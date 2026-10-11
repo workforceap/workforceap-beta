@@ -63,4 +63,20 @@ describe('MemberJobsKit open roles', () => {
     expect(document.querySelector('a[href^="/dashboard/jobs/"]')).toBeNull();
     expect(screen.queryByText(/^\d+ live openings?$/)).toBeNull();
   });
+
+  it.each([0, 20, 21, 130])('offers See all only when the total %i exceeds the 20-row overview', (total) => {
+    show(<MemberJobsKit openRoles={total ? openRoles : []} openRolesTotal={total} />);
+    const link = screen.queryByRole('link', { name: `See all ${total} openings` });
+    if (total > 20) {
+      expect(link).toHaveAttribute('href', '/dashboard/jobs?view=all#open-roles');
+    } else {
+      expect(link).toBeNull();
+    }
+  });
+
+  it('does not advertise a total or See all when openings failed to load', () => {
+    show(<MemberJobsKit openRoles={openRoles} openRolesTotal={130} openRolesLoadFailed />);
+    expect(screen.queryByRole('link', { name: /See all/ })).toBeNull();
+    expect(screen.queryByText('130 live openings')).toBeNull();
+  });
 });

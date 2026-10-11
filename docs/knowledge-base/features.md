@@ -26,6 +26,23 @@ Use this table to enter a business workflow, then follow [static references](gen
 | Platform administration, flags and reporting | [admin](../../app/admin), [organization API](../../app/api/org), [feature flags](../../app/api/feature-flags) | [platform](../../lib/platform), [feature flags](../../lib/feature-flags), [analytics](../../lib/analytics), [reporting](../../lib/reporting) | `Organization`, `FeatureFlag`, domain reporting projections; [admin portal](../ADMIN_PORTAL.md) |
 | Shared UI, accessibility, locale and theme | [portal kit](../../components/portal/kit), [shared UI](../../components/ui), [styles](../../css), [translations](../../messages) | [navigation](../../lib/nav), [i18n](../../lib/i18n), [accessibility](../../lib/a11y) | [kit guide](../KIT_GUIDE.md), [design coexistence in AGENTS](../../AGENTS.md), [test catalog](generated/tests.json) |
 
+The [member jobs kit](../../components/portal/kit/pages/member/MemberJobsKit.tsx) offers
+“See all N openings” above 20 live roles, staying on the current
+[jobs page](../../app/(portal)/dashboard/jobs/page.tsx) at `?view=all&page=N` with
+20-row pages and Previous/Next links. The [listing API](../../app/api/(portal)/dashboard/jobs/route.ts)
+keeps its existing array response unless `page` or `pageSize` opts into
+`{jobs,total,page,pageSize,totalPages}` (page size defaults to 20, capped at 100).
+The [shared visibility helper](../../lib/jobs/publicJobsPage.ts) aligns count and
+page exclusions, including whitespace-padded QA fixtures; metadata inspection
+uses 200-row id-cursor batches and fails unavailable above 5,000 inspected candidates
+or 1,000 padded exclusions, preserving exact results within those bounds.
+Cached exclusions and API pages retain the 15-minute `jobs:list:*` cache/invalidation
+boundary, separated by trusted request scope, effective age and filters; missing
+GUC context bypasses caching. Server profile restrictions still fail closed and
+client age parameters can only tighten them. [Route/page regressions](../../tests/components/member-jobs-pagination.spec.tsx)
+cover 130 openings, page 2, exclusions, cache isolation/invalidation and age rules;
+[kit tests](../../tests/components/member-jobs-open-roles.spec.tsx) cover the See-all threshold.
+
 The [WAP-04 stakeholder request ledger](../audits/wap-04-stakeholder-request-ledger-2026-10-11.md)
 reconciles the four exact March 2/March 11 source messages against public routes,
 actual implementation receipts and later owner changes. Older founder/process copy

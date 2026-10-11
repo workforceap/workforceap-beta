@@ -7,7 +7,6 @@ import { prisma } from '@/lib/db/prisma';
 import {
   isExcludedPublicEmployerName,
   isExcludedPublicJobTitle,
-  PUBLIC_JOB_EXCLUSION_WHERE,
 } from '@/lib/jobs/publicJobFilters';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
 import { resolveJobBoardAgeGroup } from '@/lib/jobs/jobBoardAgeGroup';
@@ -27,6 +26,7 @@ import { buildExternalJobBoards, buildExternalJobSearchQuery } from '@/lib/membe
 import type { CareerMatchResult } from '@/lib/onet/types';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
 import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
+import { JOBS_PAGE_SIZE, jobBoardCacheScope, jobPageBounds, positiveJobPage, publicJobsWhere } from '@/lib/jobs/publicJobsPage';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ ui?: string }>;
+  searchParams?: Promise<{ ui?: string; view?: string; page?: string }>;
 }) {
   const user = await getUser();
 
@@ -73,6 +73,8 @@ export default async function JobsPage({
   let statusCounts: Partial<Record<(typeof pipelineRows)[number]['status'], number>> = {};
   let pipelineLoadFailed = false;
   const needsPipeline = requestedUi !== 'legacy' && !!user;
+  const allOpenRoles = needsPipeline && params?.view === 'all';
+  const requestedPage = allOpenRoles ? positiveJobPage(params?.page) : 1;
 
   if (user) {
     // Only the job-board query below depends on the profile (ageGroup); the
@@ -174,7 +176,7 @@ export default async function JobsPage({
   ].filter((location, index, arr) => arr.indexOf(location) === index);
   const externalBoards = buildExternalJobBoards({ query: externalSearch.query, location: primaryLocation });
 
-  // SSR: Prefetch first 20 jobs for SEO and faster initial load
+  // The current kit has a 20-row overview and a paginated all-openings view.
   let initialJobs: Array<{
     id: string;
     title: string;
@@ -187,13 +189,14 @@ export default async function JobsPage({
   }> = [];
   let initialTotal = 0;
   let openRolesLoadFailed = false;
+  let openRolesPage = requestedPage;
+  let openRolesTotalPages = 0;
 
   try {
     const liveJobsWhere: Prisma.JobWhereInput = {
       status: 'live',
       AND: [
         ACTIVE_EMPLOYER_JOB_WHERE,
-        PUBLIC_JOB_EXCLUSION_WHERE,
         ...(ageGroup === 'under14' ? [{ id: 'impossible-match' }] : []),
         ...(ageGroup === 'youth14to17' ? [{
           youthAppropriate: true,
@@ -210,19 +213,26 @@ export default async function JobsPage({
         },
       ],
     };
-    // The count uses the same `where`, so "N live openings" is every
-    // matching job, not the 20 listed here (WAP-261).
-    const [jobs, liveJobsCount] = await Promise.all([
-      prisma.job.findMany({
-        where: liveJobsWhere,
-        orderBy: { updatedAt: 'desc' },
-        take: 20,
-        include: {
-          employer: { select: { companyName: true, logoUrl: true } },
-        },
-      }),
-      prisma.job.count({ where: liveJobsWhere }),
-    ]);
+    const scope = jobBoardCacheScope(user?.id ?? null);
+    const visibleWhere = await publicJobsWhere(
+      liveJobsWhere,
+      scope ? `jobs:list:exclusions:v2:${JSON.stringify([scope, ['', '', '', '', '', '', ageGroup]])}` : null,
+    );
+    // Count and page use identical exclusions, including whitespace-padded QA
+    // fixtures. Clamp after counting so an out-of-range URL remains useful.
+    const liveJobsCount = await prisma.job.count({ where: visibleWhere });
+    const bounds = jobPageBounds(liveJobsCount, requestedPage, JOBS_PAGE_SIZE);
+    openRolesPage = bounds.page;
+    openRolesTotalPages = bounds.totalPages;
+    const jobs = await prisma.job.findMany({
+      where: visibleWhere,
+      orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+      take: JOBS_PAGE_SIZE,
+      skip: bounds.skip,
+      include: {
+        employer: { select: { companyName: true, logoUrl: true } },
+      },
+    });
     const visible = jobs
       .filter(
         (j) => !isExcludedPublicEmployerName(j.employer.companyName) && !isExcludedPublicJobTitle(j.title),
@@ -235,7 +245,7 @@ export default async function JobsPage({
         },
       }));
     initialJobs = visible;
-    initialTotal = Math.max(liveJobsCount, visible.length);
+    initialTotal = liveJobsCount;
   } catch (err) {
     // Unknown, not empty (WAP-261): the kit says "couldn't load" instead of
     // "no live openings".
@@ -389,6 +399,8 @@ export default async function JobsPage({
         recommended={recommended}
         openRoles={openRoles}
         openRolesTotal={initialTotal}
+        openRolesPagination={allOpenRoles ? { page: openRolesPage, pageSize: JOBS_PAGE_SIZE, totalPages: openRolesTotalPages } : undefined}
+        retryHref={allOpenRoles ? `/dashboard/jobs?view=all&page=${openRolesPage}${JOBS_OPEN_ROLES_ANCHOR}` : undefined}
         pipelineLoadFailed={pipelineLoadFailed}
         openRolesLoadFailed={openRolesLoadFailed}
         recommendationsLoadFailed={recommendationLoadFailed}
