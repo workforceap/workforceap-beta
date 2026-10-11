@@ -86,6 +86,31 @@ describe('GET /api/cron/weekly-recap', () => {
     expect(sendWeeklyRecapEmail).toHaveBeenCalledTimes(2);
   });
 
+  it('excludes members who opted out of updates before generating or sending a recap', async () => {
+    const fixtures = [
+      { id: 'opted-out', email: 'muted@example.test', fullName: 'Muted Member', enrolledProgram: 'cyber', notificationsUpdates: false },
+      { id: 'opted-in', email: 'active@example.test', fullName: 'Active Member', enrolledProgram: 'cyber', notificationsUpdates: true },
+    ];
+    // A synthetic database boundary applies the requested preference predicate,
+    // so an omitted filter reproduces a send to the opted-out recipient.
+    vi.mocked(prisma.user.findMany).mockImplementation((args) => Promise.resolve(fixtures.filter((member) =>
+      args?.where?.notificationsUpdates === undefined || member.notificationsUpdates === args.where.notificationsUpdates,
+    )) as unknown as ReturnType<typeof prisma.user.findMany>);
+    vi.mocked(generateWeeklyRecaps).mockImplementation(async (members) => members.map((member) => ({
+      userId: member.id, recapData: { coursesCompleted: 1 },
+    })) as never);
+    vi.mocked(sendWeeklyRecapEmail).mockResolvedValue({ ok: true });
+
+    const res = await weeklyRecapGET(new Request('http://localhost:3000/api/cron/weekly-recap'));
+
+    expect(await res.json()).toMatchObject({ sent: 1, failed: 0, total: 1 });
+    expect(generateWeeklyRecaps).toHaveBeenCalledWith([fixtures[1]], expect.any(Date));
+    expect(sendWeeklyRecapEmail).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ to: 'active@example.test' }));
+    expect(prisma.weeklyRecap.update).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      where: expect.objectContaining({ userId_weekStartDate: expect.objectContaining({ userId: 'opted-in' }) }),
+    }));
+  });
+
   it('skips members when recap generation returns nothing', async () => {
     const members = [{ id: 'user-1', email: 'a@example.com', fullName: 'Alice', enrolledProgram: 'cyber' }];
     vi.mocked(prisma.user.findMany).mockResolvedValue(members as any);

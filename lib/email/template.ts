@@ -17,12 +17,40 @@ const DEFAULT_LOGO_URL = `${DEFAULT_SITE_URL}/images/wap_logo.png`;
 const DEFAULT_NAME = 'Workforce Advancement Project';
 const DEFAULT_ACCENT = '#4a9b4f';
 
+type SupabaseAuthAction = 'signup' | 'recovery';
+
+/** Only server-minted Auth actions may use the configured provider's verify endpoint. */
+function isAllowedSupabaseAuthAction(
+  url: URL,
+  action: SupabaseAuthAction,
+  returnOrigins: ReadonlySet<string>,
+): boolean {
+  try {
+    const provider = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '');
+    if (provider.protocol !== 'http:' && provider.protocol !== 'https:') return false;
+    if (url.origin !== provider.origin || url.pathname !== '/auth/v1/verify' || url.username || url.password) return false;
+    // Reject duplicates: different parsers must not disagree about the action
+    // or destination of the same token-bearing link.
+    for (const key of ['token', 'type', 'redirect_to']) {
+      if (url.searchParams.getAll(key).length !== 1) return false;
+    }
+    if (!url.searchParams.get('token')?.trim() || url.searchParams.get('type') !== action) return false;
+    const destination = new URL(url.searchParams.get('redirect_to')!);
+    return (destination.protocol === 'http:' || destination.protocol === 'https:') &&
+      !destination.username && !destination.password && returnOrigins.has(destination.origin);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Restrict mail CTA links to a small allowlist of "our" origins to avoid
  * open redirects in href. The allowlist is:
  *   - The resolved branding origin (e.g. `https://aaul.workforceap.org`)
  *   - The canonical `DEFAULT_SITE_URL` (`NEXT_PUBLIC_SITE_URL` or
  *     `https://www.workforceap.org`)
+ * Signup/recovery templates can additionally opt into the configured Supabase
+ * verification endpoint with a matching action and an allowlisted return host.
  *
  * Codex P1 catch on PR #1052: when an org has a `customDomain`, the
  * invite/auth flows still build URLs on the canonical `NEXT_PUBLIC_SITE_URL`
@@ -32,7 +60,7 @@ const DEFAULT_ACCENT = '#4a9b4f';
  * preserves token-bearing CTAs without opening up arbitrary external
  * redirects.
  */
-export function safeEmailCtaHref(url: string, baseOrigin?: string): string {
+export function safeEmailCtaHref(url: string, baseOrigin?: string, supabaseAuthAction?: SupabaseAuthAction): string {
   const base = baseOrigin || DEFAULT_SITE_URL;
   try {
     const u = new URL(url, base);
@@ -45,6 +73,7 @@ export function safeEmailCtaHref(url: string, baseOrigin?: string): string {
     try { allowed.add(new URL(DEFAULT_SITE_URL).origin); } catch {}
 
     if (allowed.has(u.origin)) return u.href;
+    if (supabaseAuthAction && isAllowedSupabaseAuthAction(u, supabaseAuthAction, allowed)) return u.href;
     return `${new URL(base).origin}/`;
   } catch {
     try {
@@ -60,6 +89,8 @@ export function brandedEmailLayout(options: {
   bodyHtml: string;
   ctaText?: string;
   ctaUrl?: string;
+  /** Opt in only for server-generated signup/recovery links, never ordinary CTAs. */
+  supabaseAuthAction?: SupabaseAuthAction;
   /**
    * Org branding bundle from `getOrganizationBranding(orgId)`. When omitted
    * the template renders WorkforceAP defaults — that's the legacy behavior
@@ -77,7 +108,7 @@ export function brandedEmailLayout(options: {
   const accent = options.branding?.primaryColor || DEFAULT_ACCENT;
   const domainLabel = options.branding?.domainLabel || new URL(DEFAULT_SITE_URL).host;
 
-  const ctaUrl = options.ctaUrl ? safeEmailCtaHref(options.ctaUrl, siteUrl) : undefined;
+  const ctaUrl = options.ctaUrl ? safeEmailCtaHref(options.ctaUrl, siteUrl, options.supabaseAuthAction) : undefined;
   const ctaBlock =
     ctaText && ctaUrl
       ? `

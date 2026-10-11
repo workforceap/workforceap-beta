@@ -2353,6 +2353,7 @@ export async function sendEmployerVerificationEmail(params: {
     }),
     ctaText: 'Verify Email Address',
     ctaUrl: params.verifyUrl,
+    supabaseAuthAction: 'signup',
   });
   try {
     await sendBrandedEmail(resend, {
