@@ -53,13 +53,20 @@ async function _POST(request: Request) {
     return NextResponse.json({ error: 'Complete your assessment first.' }, { status: 400 });
   }
 
-  const existing = await prisma.$transaction((tx) => tx.preScreeningResponse.findUnique({
+  const loadSubmitted = () => prisma.$transaction((tx) => tx.preScreeningResponse.findUnique({
     where: { userId: user.id },
-    select: { id: true },
+    select: {
+      employmentStatus: true,
+      primaryGoal: true,
+      weeklyHours: true,
+      barrier: true,
+      hearAbout: true,
+      hearAboutOther: true,
+      workforceAssistance: true,
+      user: { select: { phone: true, profile: { select: { profileAddress: true } } } },
+    },
   }));
-  if (existing) {
-    return NextResponse.json({ error: 'Pre-screening already submitted.' }, { status: 400 });
-  }
+  const existing = await loadSubmitted();
 
   let body: unknown;
   try {
@@ -73,43 +80,80 @@ async function _POST(request: Request) {
     return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Validation failed' }, { status: 400 });
   }
 
+  // The response is immutable after submission. A lost HTTP response can be
+  // retried only with the same normalized answers and currently saved contact
+  // details; staff/member contact edits conservatively require a refresh.
+  const acknowledgeSubmitted = (row: NonNullable<typeof existing>) => {
+    const same = row.employmentStatus === parsed.data.employmentStatus
+      && row.primaryGoal === parsed.data.primaryGoal
+      && row.weeklyHours === parsed.data.weeklyHours
+      && row.barrier === parsed.data.barrier
+      && row.hearAbout === parsed.data.hearAbout
+      && row.hearAboutOther === (parsed.data.hearAboutOther ?? null)
+      && row.workforceAssistance === parsed.data.workforceAssistance
+      && row.user.phone === parsed.data.phone
+      && row.user.profile?.profileAddress === parsed.data.address;
+    return same
+      ? NextResponse.json({ ok: true, alreadySubmitted: true })
+      : NextResponse.json({ error: 'Pre-screening already submitted.' }, { status: 400 });
+  };
+  if (existing) return acknowledgeSubmitted(existing);
+
   const organizationId = dbUser.organizationId;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.preScreeningDraft.deleteMany({ where: { userId: user.id } });
-    await tx.preScreeningResponse.create({
-      data: {
-        userId: user.id,
-        organizationId,
-        employmentStatus: parsed.data.employmentStatus,
-        primaryGoal: parsed.data.primaryGoal,
-        weeklyHours: parsed.data.weeklyHours,
-        barrier: parsed.data.barrier,
-        hearAbout: parsed.data.hearAbout,
-        hearAboutOther: parsed.data.hearAboutOther ?? null,
-        workforceAssistance: parsed.data.workforceAssistance,
-      },
+  let responseInsertRace = false;
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.preScreeningDraft.deleteMany({ where: { userId: user.id } });
+      await tx.preScreeningResponse.create({
+        data: {
+          userId: user.id,
+          organizationId,
+          employmentStatus: parsed.data.employmentStatus,
+          primaryGoal: parsed.data.primaryGoal,
+          weeklyHours: parsed.data.weeklyHours,
+          barrier: parsed.data.barrier,
+          hearAbout: parsed.data.hearAbout,
+          hearAboutOther: parsed.data.hearAboutOther ?? null,
+          workforceAssistance: parsed.data.workforceAssistance,
+        },
+      }).catch((error: unknown) => {
+        const known = error as { code?: string; meta?: { target?: unknown } } | null;
+        const target = known?.meta?.target;
+        responseInsertRace = known?.code === 'P2002'
+          && Array.isArray(target) && target.length === 1
+          && (target[0] === 'user_id' || target[0] === 'userId');
+        throw error;
+      });
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          phone: parsed.data.phone,
+          interviewEligible: true,
+        },
+      });
+      await tx.profile.upsert({
+        where: { userId: user.id },
+        create: {
+          userId: user.id,
+          profilePhone: parsed.data.phone,
+          profileAddress: parsed.data.address,
+        },
+        update: {
+          profilePhone: parsed.data.phone,
+          profileAddress: parsed.data.address,
+        },
+      });
     });
-    await tx.user.update({
-      where: { id: user.id },
-      data: {
-        phone: parsed.data.phone,
-        interviewEligible: true,
-      },
-    });
-    await tx.profile.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        profilePhone: parsed.data.phone,
-        profileAddress: parsed.data.address,
-      },
-      update: {
-        profilePhone: parsed.data.phone,
-        profileAddress: parsed.data.address,
-      },
-    });
-  });
+  } catch (error) {
+    // A concurrent insert commits before PostgreSQL releases its unique-key
+    // conflict. Re-read after our transaction rolled back, and acknowledge
+    // only the same member's matching response. Other failures stay failures.
+    if (!responseInsertRace) throw error;
+    const submitted = await loadSubmitted();
+    if (!submitted) throw error;
+    return acknowledgeSubmitted(submitted);
+  }
 
   const dbAfter = await prisma.$transaction((tx) => tx.user.findUnique({
     where: { id: user.id },

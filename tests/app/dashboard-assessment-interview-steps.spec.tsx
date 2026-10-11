@@ -109,7 +109,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
     expect(within(section).getByRole('textbox', { name: /Biggest barrier/ })).toBeInTheDocument();
     expect(within(section).getByRole('progressbar', { name: 'Pre-screening completion' })).toBeInTheDocument();
     expect(within(section).getByRole('button', { name: 'Submit pre-screening' }).className).toContain('wa-kit-cta');
-    await waitFor(() => expect(mocks.fetch).toHaveBeenCalledWith('/api/member/pre-screening/draft'));
+    await waitFor(() => expect(within(section).getByRole('textbox', { name: /Biggest barrier/ })).toBeEnabled());
     expect(screen.queryByRole('region', { name: 'Interview' })).toBeNull();
     // Kit page: no Material Symbols ligatures and no legacy --color-* refs in the form.
     expect(container.querySelector('.material-symbols-outlined')).toBeNull();
@@ -119,7 +119,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
   it('submits to /api/member/pre-screening and refreshes the page on success', async () => {
     await renderPage();
     const section = screen.getByRole('region', { name: 'Pre-screening' });
-    await waitFor(() => expect(mocks.fetch).toHaveBeenCalledWith('/api/member/pre-screening/draft'));
+    await waitFor(() => expect(within(section).getByRole('textbox', { name: /Biggest barrier/ })).toBeEnabled());
     mocks.fetch.mockResolvedValue(Response.json({ ok: true }));
     fireEvent.change(within(section).getByRole('textbox', { name: /Biggest barrier/ }), { target: { value: 'Childcare' } });
     fireEvent.click(within(section).getByRole('radio', { name: 'No' }));
@@ -133,7 +133,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
   it('keeps a server validation sentence visible when the submit is refused', async () => {
     await renderPage();
     const section = screen.getByRole('region', { name: 'Pre-screening' });
-    await waitFor(() => expect(mocks.fetch).toHaveBeenCalledWith('/api/member/pre-screening/draft'));
+    await waitFor(() => expect(within(section).getByRole('textbox', { name: /Biggest barrier/ })).toBeEnabled());
     mocks.fetch.mockResolvedValue(Response.json({ error: 'Pre-screening already submitted.' }, { status: 400 }));
     fireEvent.click(within(section).getByRole('radio', { name: 'Yes' }));
     fireEvent.submit(within(section).getByRole('button', { name: 'Submit pre-screening' }).closest('form') as HTMLFormElement);

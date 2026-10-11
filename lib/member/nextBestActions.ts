@@ -95,24 +95,24 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
       out.push({
         id: 'review_starter_profile',
         title: 'Review your starter profile details',
-        body: `Before WorkforceAP unlocks your Training Preassessment, confirm the contact and referral details your counselor entered.${missingNote}`,
+        body: `Confirm the contact and referral details your counselor entered. You can also take your Training Preassessment while these details are being reviewed.${missingNote}`,
         href: '/dashboard/profile',
         cta: 'Review profile',
         variant: 'urgent',
         weight: 92,
       });
-    } else {
-      out.push({
-        id: 'skills_assessment',
-        title: 'Take your WIOA Preassessment (35 questions)',
-        body: 'Your counselor uses it for WIOA funding review and to personalize your training plan. Your answers save as you go.',
-        href: '/dashboard/assessment',
-        cta: 'Start preassessment',
-        variant: 'urgent',
-        // Behind "choose a program" (weight 95) for members who still need one.
-        weight: 90,
-      });
     }
+    out.push({
+      id: 'skills_assessment',
+      title: 'Take your WIOA Preassessment (35 questions)',
+      body: 'Your counselor uses it for WIOA funding review and to personalize your training plan. Your answers save as you go.',
+      href: '/dashboard/assessment',
+      cta: 'Start preassessment',
+      variant: 'urgent',
+      // Behind program selection and the profile reminder; the current
+      // assessment page and submit route allow missing starter details.
+      weight: 90,
+    });
   }
 
   if (

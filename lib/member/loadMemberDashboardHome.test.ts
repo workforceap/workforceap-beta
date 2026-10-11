@@ -695,6 +695,8 @@ test('lean loader uses real starter-profile gaps and keeps the one-operation bud
   }) });
   const view = await loadMemberDashboardHome({ userId: 'member' }, db);
   assert.equal(view.doThisNext?.id, 'review_starter_profile');
+  assert.equal(view.upNext.find((action) => action.id === 'skills_assessment')?.href, '/dashboard/assessment');
+  assert.doesNotMatch(view.doThisNext.body, /before.*unlock|must.*first/i);
   assert.equal(view.coursePercent, 0);
   assert.equal(view.approvalStatus.intake, 'verified');
   assert.equal(view.approvalStatus.training, 'pending');

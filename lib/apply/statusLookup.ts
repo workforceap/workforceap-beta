@@ -23,6 +23,7 @@ import {
   emailMatchesStatusLink,
   type ApplicationStatusLinkVerifyResult,
 } from '@/lib/apply/statusLinkToken';
+import type { DashboardEnrollment } from '@/lib/member/resolveActiveDashboardProgram';
 
 type StatusLookupMatch = {
   applicationId: string;
@@ -82,6 +83,7 @@ export type StatusLinkApplication = {
     enrolledProgram: string | null;
     enrolledAt: Date | null;
     assessmentCompleted: boolean;
+    courseEnrollments: DashboardEnrollment[];
     counselorAssignments: Array<{ counselor: { user: { fullName: string } } }>;
   };
 };
@@ -107,6 +109,11 @@ export async function loadApplicationForStatusLink(
             enrolledProgram: true,
             enrolledAt: true,
             assessmentCompleted: true,
+            courseEnrollments: {
+              where: { organizationId: verified.organizationId },
+              orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+              select: { id: true, programSlug: true, isPrimary: true, enrolledAt: true },
+            },
             // Same shape the member dashboard reads (lib/member/getMemberState.ts).
             counselorAssignments: {
               where: { active: true },
