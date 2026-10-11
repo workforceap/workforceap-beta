@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
+import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import '@/css/portal.css';
 
 export const metadata = {
@@ -6,6 +9,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function DevVoiceStudioLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+export default async function DevVoiceStudioLayout({ children }: { children: ReactNode }) {
+  const [locale, catalog] = await Promise.all([getLocale(), getMessages()]);
+  const messages = pickPortalClientMessages(catalog);
+  return <NextIntlClientProvider locale={locale} messages={messages}>{children}</NextIntlClientProvider>;
 }
