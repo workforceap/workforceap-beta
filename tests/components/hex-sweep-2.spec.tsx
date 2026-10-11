@@ -441,7 +441,8 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     const icon = declsOf(rail, `${SHELL} .workspace-sidebar-link.active .workspace-sidebar-icon,\n${SHELL} .workspace-sidebar-link.active svg`);
     const badge = declsOf(rail, `${SHELL} .workspace-nav-badge`);
     const activeBadge = declsOf(rail, `${SHELL} .workspace-sidebar-link.active .workspace-nav-badge`);
-    const tab = declsOf(rail, '.workspace-shell-root[data-workspace-role] .marketing-bottom-nav__link--active');
+    // The same rule covers authenticated workspace tabs and synthetic partner labs.
+    const tab = declsOf(rail, ':is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link--active');
     for (const [name, tokens] of cascades) {
       expect(ratio(row.color, row.background, tokens, scheme), `${scheme} ${name} active row label`).toBeGreaterThanOrEqual(4.5);
       expect(ratio(icon.color, row.background, tokens, scheme), `${scheme} ${name} active row icon`).toBeGreaterThanOrEqual(4.5);

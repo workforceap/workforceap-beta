@@ -9976,21 +9976,21 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
 
 /* Staff mobile destinations follow portal surface tokens in both modes; the
    public marketing navigation keeps its independent visual contract. */
-.workspace-shell-root[data-workspace-role] .mobile-bottom-nav-root {
+:is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .mobile-bottom-nav-root {
     background: var(--wa-surface);
     border-top: 1px solid var(--wa-border);
 }
-.workspace-shell-root[data-workspace-role] .marketing-bottom-nav__link {
+:is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link {
     color: var(--wa-muted);
     border-radius: var(--wa-radius-sm);
     box-shadow: none;
     transform: none;
 }
-.workspace-shell-root[data-workspace-role] .marketing-bottom-nav__link--active {
+:is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link--active {
     color: var(--wa-on-accent-control);
     background: var(--wa-accent);
 }
-.workspace-shell-root[data-workspace-role] .marketing-bottom-nav__label {
+:is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__label {
     color: inherit;
 }
 
