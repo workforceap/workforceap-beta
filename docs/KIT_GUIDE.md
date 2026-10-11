@@ -120,7 +120,12 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   foreground adapts in dark mode. `--wa-on-accent` remains white for existing
   gradient/hero contexts and must not be globally replaced with the control
   foreground. Ghost buttons use `--wa-control-border`, not the low-contrast
-  decorative `--wa-border`. Small tinted status labels use
+  decorative `--wa-border`.
+  The shared Toggle uses `--wa-control-border` as its unchecked track fill, with
+  `--wa-surface` for the thumb; the checked fill stays `--wa-accent`. This keeps
+  thumb position visible at 3:1 or better in both themes and surface modes
+  (WAP-297). Keep the low-contrast `--wa-track` token for decorative tracks.
+  Small tinted status labels use
   `--wa-accent-text`, `--wa-info-dark`, `--wa-success-dark`, or
   `--wa-gold-dark` with their matching soft tint.
 - **Shape / density / pop (flip per surface, §2):** `--wa-radius`, `--wa-radius-sm`, `--wa-pad`,

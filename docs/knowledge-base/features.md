@@ -26,6 +26,15 @@ Use this table to enter a business workflow, then follow [static references](gen
 | Platform administration, flags and reporting | [admin](../../app/admin), [organization API](../../app/api/org), [feature flags](../../app/api/feature-flags) | [platform](../../lib/platform), [feature flags](../../lib/feature-flags), [analytics](../../lib/analytics), [reporting](../../lib/reporting) | `Organization`, `FeatureFlag`, domain reporting projections; [admin portal](../ADMIN_PORTAL.md) |
 | Shared UI, accessibility, locale and theme | [portal kit](../../components/portal/kit), [shared UI](../../components/ui), [styles](../../css), [translations](../../messages) | [navigation](../../lib/nav), [i18n](../../lib/i18n), [accessibility](../../lib/a11y) | [kit guide](../KIT_GUIDE.md), [design coexistence in AGENTS](../../AGENTS.md), [test catalog](generated/tests.json) |
 
+The shared [Toggle](../../components/portal/kit/FormField.tsx) uses the interactive
+`--wa-control-border` token for its unchecked track and retains the accent checked
+track (WAP-297). This covers member and partner notification settings, admin flags,
+counselor roster filtering and the resume rewriter's ATS option. The
+[browser regression](../../tests/e2e/kit-toggle-contrast.spec.ts) measures thumb/track
+contrast in both themes and warm/dense modes, plus focus, label targets and reduced
+motion. See the [audit receipt](../audits/shared-toggle-contrast-2026-10-11.md) for
+the local evidence and its authenticated/provider limits.
+
 The [member jobs kit](../../components/portal/kit/pages/member/MemberJobsKit.tsx) offers
 “See all N openings” above 20 live roles, staying on the current
 [jobs page](../../app/(portal)/dashboard/jobs/page.tsx) at `?view=all&page=N` with

@@ -57,3 +57,12 @@ General application duration is supplied by one `apply.applicationTimeEstimate` 
 ## 2026-10-11 — WAP-296 Profile layout candidate
 
 The local candidate aligns the member identity heading/headline with its badges on wider screens and groups Notifications with Language in the existing preferences column. Account fields, save/passthrough logic and account→notifications→language→security/delete DOM order remain intact. The [design audit](audits/member-profile-preferences-2026-10-11.md) records synthetic local browser evidence and focused contact-save regressions; independent review and hosted/release acceptance are separate gates.
+
+## 2026-10-11 — WAP-297 Shared Toggle contrast candidate
+
+The shared unchecked Toggle track consumes `--wa-control-border` so the thumb's
+position remains visible in both themes and warm/dense modes. Checked styling,
+native checkbox behavior, focus, targets and motion stay intact. The
+[audit receipt](audits/shared-toggle-contrast-2026-10-11.md) records measured contrast
+and browser regression coverage. Independent review and hosted/release acceptance
+remain separate gates.
