@@ -10,6 +10,7 @@ import {
   MEMBER_APPLICATION_PROGRESS_STEPS,
   buildMemberApplicationStatusView,
 } from '@/lib/member/memberApplicationStatus';
+import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import {
   APPLICATION_STATUS_LINK_PARAM,
   APPLICATION_STATUS_LINK_TTL_MINUTES,
@@ -120,8 +121,12 @@ export default async function ApplyStatusViewPage(props: { searchParams: Promise
     );
   }
 
+  const { primaryProgramSlug } = resolveActiveDashboardProgram({
+    enrollments: application.user.courseEnrollments,
+    legacyEnrolledProgram: application.user.enrolledProgram,
+  });
   const view = buildMemberApplicationStatusView(application, {
-    enrolledProgram: application.user.enrolledProgram,
+    enrolledProgram: primaryProgramSlug,
     enrolledAt: application.user.enrolledAt,
     assessmentCompleted: application.user.assessmentCompleted,
   });

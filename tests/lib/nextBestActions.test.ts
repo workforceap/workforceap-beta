@@ -72,7 +72,7 @@ describe('buildNextBestActions', () => {
     expect(actions.find((a) => a.id === 'skills_assessment')?.variant).toBe('urgent');
   });
 
-  it('shows review_starter_profile for state B when review required', () => {
+  it('keeps the preassessment reachable alongside the starter profile reminder', () => {
     const actions = buildNextBestActions(makeCtx({
       state: 'B',
       enrolledProgram: 'cyber',
@@ -80,9 +80,10 @@ describe('buildNextBestActions', () => {
       starterProfileMissingFields: ['phone', 'address'],
     }));
     expect(actions.some((a) => a.id === 'review_starter_profile')).toBe(true);
-    expect(actions.some((a) => a.id === 'skills_assessment')).toBe(false);
+    expect(actions.find((a) => a.id === 'skills_assessment')?.href).toBe('/dashboard/assessment');
     const review = actions.find((a) => a.id === 'review_starter_profile');
     expect(review?.body).toContain('Missing: phone, address');
+    expect(review?.body).not.toMatch(/before.*unlock|must.*first/i);
   });
 
   it('shows counselor_messages when unread count > 0', () => {

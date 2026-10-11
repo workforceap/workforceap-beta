@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@astryxdesign/core/Button';
 import HearAboutSelect from '@/components/apply/HearAboutSelect';
 import { ProgressBar } from '@/components/portal/kit';
 import { hearAboutNeedsOther } from '@/lib/apply/eligibilityExtendedFields';
@@ -36,7 +37,9 @@ type DraftPayload = {
  * the row `/admin/members/interview-ready` lists). Drafts autosave through
  * /api/member/pre-screening/draft. Mounted on /dashboard/assessment once the
  * preassessment is complete (WAP-197; it used to render only in the legacy
- * home's never-shown `!homeOnly` block). Kit controls on `--wa-*` tokens.
+ * home's never-shown `!homeOnly` block). Editing waits for a successful draft
+ * read so defaults cannot overwrite saved answers after a load failure.
+ * Kit controls on `--wa-*` tokens.
  */
 export default function MemberPreScreeningForm() {
   const router = useRouter();
@@ -52,6 +55,8 @@ export default function MemberPreScreeningForm() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [draftHydrated, setDraftHydrated] = useState(false);
+  const [draftLoadError, setDraftLoadError] = useState(false);
+  const [draftLoadAttempt, setDraftLoadAttempt] = useState(0);
   const [draftSaveState, setDraftSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
   const skipNextAutosave = useRef(true);
@@ -82,14 +87,26 @@ export default function MemberPreScreeningForm() {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
+    setDraftHydrated(false);
+    setDraftLoadError(false);
     (async () => {
       try {
-        const res = await fetch('/api/member/pre-screening/draft');
-        const data = await res.json().catch(() => ({}));
-        if (cancelled || !res.ok) {
-          if (!cancelled) setDraftHydrated(true);
-          return;
-        }
+        const data = await fetchWithTimeout(
+          '/api/member/pre-screening/draft',
+          { signal: controller.signal },
+          MEMBER_REQUEST_TIMEOUT_MS,
+          async (res) => {
+            if (!res.ok) throw new Error('Draft load failed');
+            const body: unknown = await res.json();
+            if (!body || typeof body !== 'object' || !('draft' in body)
+              || (body.draft !== null && (typeof body.draft !== 'object' || Array.isArray(body.draft)))) {
+              throw new Error('Invalid draft response');
+            }
+            return body;
+          },
+        );
+        if (cancelled) return;
         const d = data.draft as {
           employmentStatus: string | null;
           primaryGoal: string | null;
@@ -121,19 +138,17 @@ export default function MemberPreScreeningForm() {
           if (d.phone != null) setPhone(d.phone);
           if (d.address != null) setAddress(d.address);
         }
+        skipNextAutosave.current = true;
+        setDraftHydrated(true);
       } catch {
-        /* ignore */
-      } finally {
-        if (!cancelled) {
-          skipNextAutosave.current = true;
-          setDraftHydrated(true);
-        }
+        if (!cancelled) setDraftLoadError(true);
       }
     })();
     return () => {
       cancelled = true;
+      controller.abort();
     };
-  }, []);
+  }, [draftLoadAttempt]);
 
   useEffect(() => {
     if (!draftHydrated) return;
@@ -165,6 +180,7 @@ export default function MemberPreScreeningForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!draftHydrated || loading) return;
     setError('');
     setLoading(true);
     try {
@@ -200,7 +216,11 @@ export default function MemberPreScreeningForm() {
   };
 
   const draftHint =
-    draftSaveState === 'saving'
+    !draftHydrated
+      ? draftLoadError
+        ? 'Could not load your saved draft. Retry loading it before editing.'
+        : 'Loading saved draft…'
+      : draftSaveState === 'saving'
       ? 'Saving draft…'
       : draftSaveState === 'error'
         ? 'Could not save draft. Check your connection.'
@@ -243,12 +263,17 @@ export default function MemberPreScreeningForm() {
         </div>
         <ProgressBar pct={progressPct} tone={isComplete ? 'ok' : undefined} aria-label="Pre-screening completion" />
       </div>
-      <p className="wa-kit-meta" style={{ margin: 0 }} aria-live="polite">
+      <p className="wa-kit-meta" style={{ margin: 0 }} aria-live="polite" role={draftLoadError ? 'alert' : undefined}>
         {draftHint}
       </p>
+      {draftLoadError ? (
+        <div>
+          <Button type="button" label="Retry loading draft" variant="secondary" size="sm" onClick={() => setDraftLoadAttempt((attempt) => attempt + 1)} />
+        </div>
+      ) : null}
       <div style={FIELD_STYLE}>
         <label htmlFor="emp" className="wa-kit-field-label">Current employment status</label>
-        <select id="emp" className={CONTROL_CLASS} value={employmentStatus} onChange={(e) => setEmploymentStatus(e.target.value)} required>
+        <select id="emp" className={CONTROL_CLASS} value={employmentStatus} onChange={(e) => setEmploymentStatus(e.target.value)} required disabled={!draftHydrated}>
           {EMPLOYMENT.map((x) => (
             <option key={x} value={x}>
               {x}
@@ -258,7 +283,7 @@ export default function MemberPreScreeningForm() {
       </div>
       <div style={FIELD_STYLE}>
         <label htmlFor="goal" className="wa-kit-field-label">Primary goal</label>
-        <select id="goal" className={CONTROL_CLASS} value={primaryGoal} onChange={(e) => setPrimaryGoal(e.target.value)} required>
+        <select id="goal" className={CONTROL_CLASS} value={primaryGoal} onChange={(e) => setPrimaryGoal(e.target.value)} required disabled={!draftHydrated}>
           {GOALS.map((x) => (
             <option key={x} value={x}>
               {x}
@@ -268,7 +293,7 @@ export default function MemberPreScreeningForm() {
       </div>
       <div style={FIELD_STYLE}>
         <label htmlFor="hrs" className="wa-kit-field-label">Time you can commit weekly</label>
-        <select id="hrs" className={CONTROL_CLASS} value={weeklyHours} onChange={(e) => setWeeklyHours(e.target.value)} required>
+        <select id="hrs" className={CONTROL_CLASS} value={weeklyHours} onChange={(e) => setWeeklyHours(e.target.value)} required disabled={!draftHydrated}>
           {HOURS.map((x) => (
             <option key={x} value={x}>
               {x}
@@ -283,6 +308,7 @@ export default function MemberPreScreeningForm() {
           className={CONTROL_CLASS}
           rows={3}
           maxLength={200}
+          disabled={!draftHydrated}
           value={barrier}
           onChange={(e) => setBarrier(e.target.value)}
           required
@@ -290,23 +316,23 @@ export default function MemberPreScreeningForm() {
       </div>
       <div style={FIELD_STYLE}>
         <label htmlFor="hear" className="wa-kit-field-label">How did you hear about us?</label>
-        <HearAboutSelect id="hear" className={CONTROL_CLASS} value={hearAbout} onChange={setHearAbout} required />
+        <HearAboutSelect id="hear" className={CONTROL_CLASS} value={hearAbout} onChange={setHearAbout} required disabled={!draftHydrated} />
       </div>
       {hearAboutNeedsOther(hearAbout) ? (
         <div style={FIELD_STYLE}>
           <label htmlFor="hearOther" className="wa-kit-field-label">Please specify</label>
-          <input id="hearOther" className={CONTROL_CLASS} value={hearAboutOther} onChange={(e) => setHearAboutOther(e.target.value)} required />
+          <input id="hearOther" className={CONTROL_CLASS} value={hearAboutOther} onChange={(e) => setHearAboutOther(e.target.value)} required disabled={!draftHydrated} />
         </div>
       ) : null}
       <div style={FIELD_STYLE}>
         <label htmlFor="phone" className="wa-kit-field-label">Phone number</label>
-        <input id="phone" className={CONTROL_CLASS} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required minLength={10} />
+        <input id="phone" className={CONTROL_CLASS} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required minLength={10} disabled={!draftHydrated} />
       </div>
       <div style={FIELD_STYLE}>
         <label htmlFor="addr" className="wa-kit-field-label">Physical address (street, city, state)</label>
-        <input id="addr" className={CONTROL_CLASS} type="text" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} required minLength={5} />
+        <input id="addr" className={CONTROL_CLASS} type="text" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} required minLength={5} disabled={!draftHydrated} />
       </div>
-      <fieldset style={{ border: 0, margin: 0, padding: 0 }}>
+      <fieldset style={{ border: 0, margin: 0, padding: 0 }} disabled={!draftHydrated}>
         <legend className="wa-kit-field-label" style={{ marginBottom: 4 }}>
           Are you currently receiving any workforce assistance?
         </legend>
@@ -334,7 +360,7 @@ export default function MemberPreScreeningForm() {
         <button
           type="submit"
           className="wa-kit-cta wa-kit-focus hover:wa-opacity-90"
-          disabled={loading || workforceAssistance === ''}
+          disabled={!draftHydrated || loading || workforceAssistance === ''}
           aria-busy={loading}
         >
           {loading ? 'Submitting…' : 'Submit pre-screening'}

@@ -57,6 +57,7 @@ function application(overrides: Partial<StatusLinkApplication> = {}, user: Parti
       enrolledProgram: null,
       enrolledAt: null,
       assessmentCompleted: false,
+      courseEnrollments: [],
       counselorAssignments: [{ counselor: { user: { fullName: 'Casey Counselor' } } }],
       ...user,
     },
