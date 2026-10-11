@@ -1041,10 +1041,7 @@ describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(sendNewApplicationAdminEmail).toHaveBeenCalled();
     const adminArgs = vi.mocked(sendNewApplicationAdminEmail).mock.calls.at(-1)?.[0];
-    expect(adminArgs?.eligibility).toMatchObject({
-      receivingUnemployment: 'yes',
-      snapWic: 'yes',
-    });
+    expect(adminArgs).not.toHaveProperty('eligibility');
     // The staff alert's notes block is the same pointer-only text.
     const alertNotes = adminArgs?.applicationNotes ?? '';
     expect(alertNotes).toContain('Eligibility screening: on file');

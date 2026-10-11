@@ -1,8 +1,9 @@
 /**
  * WS5 email payload coverage — confirmation + admin alert templates.
  *
- * WAP-170: every eligibility email carries the quick-fit flag and an answer
- * count, and never an answer. These cases pin both halves.
+ * WAP-170: acknowledgements carry the quick-fit flag and an answer count,
+ * never an answer. WAP-185: the signup staff alert carries only the on-file
+ * pointer; it receives no screening answers or derived result.
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,6 +12,7 @@ import { newApplicationAlertHtml } from './new-application-alert';
 import { eligibilityScreeningSummaryHtml } from './eligibility-screening-summary';
 import { eligibilityScreeningConfirmationHtml } from './eligibility-screening-confirmation';
 import { eligibilityScreeningAdminAlertHtml } from './eligibility-screening-admin-alert';
+import { eligibilityScreeningNotesPointer } from '@/lib/apply/eligibilityScreeningFields';
 
 const SAMPLE = {
   q1: 'yes',
@@ -102,16 +104,29 @@ describe('applicationConfirmationHtml WS5 eligibility payload', () => {
 });
 
 describe('newApplicationAlertHtml WS5 eligibility payload', () => {
-  it('gives Mike/admin the quick-fit flag and count, not the answers', () => {
-    const html = newApplicationAlertHtml({
+  it('renders only the on-file pointer even if an older caller supplies an eligibility object', () => {
+    const legacyPayload = {
       applicantName: 'Alex Rivera',
       applicantEmail: 'alex@example.com',
       programInterest: 'IT Support',
       applicationId: 'app-1',
+      applicationNotes: eligibilityScreeningNotesPointer(SAMPLE) ?? undefined,
       eligibility: SAMPLE,
+    };
+    const html = newApplicationAlertHtml(legacyPayload);
+    assert.match(html, /Eligibility screening: on file/);
+    assert.doesNotMatch(html, /Quick eligibility fit|Answers saved|yes \(2\/3\)/);
+    assertNoAnswers(html);
+  });
+
+  it('renders the staff review alert without any screening payload or pointer', () => {
+    const html = newApplicationAlertHtml({
+      applicantName: 'Alex Rivera', applicantEmail: 'alex@example.com',
+      programInterest: 'IT Support', applicationId: 'app-1',
     });
-    assert.match(html, /Quick eligibility fit:<\/strong> yes \(2\/3\)/);
-    assert.match(html, /Answers saved:<\/strong> 11/);
+    assert.match(html, /A new application has been submitted/);
+    assert.match(html, /Please review the application in the admin panel/);
+    assert.doesNotMatch(html, /Eligibility screening|Quick eligibility fit|Answers saved/);
     assertNoAnswers(html);
   });
 });

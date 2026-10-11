@@ -11,10 +11,12 @@ const REDACTED_VALUE = '[redacted]';
 export const CONTACT_AND_SECRET_KEY = /email|phone|token|password/i;
 
 /**
- * Contact details, postal addresses and secrets — what the generic
- * `workflow_diagnostics` writer strips from a template payload.
+ * Personal names, recipients, contact details, postal addresses and secrets —
+ * what the generic `workflow_diagnostics` writer strips from a template payload.
+ * Name and recipient keys are anchored so templateName, workflowName and
+ * programName remain useful operational context.
  */
-export const PERSONAL_DATA_KEY = /email|phone|address|token|password/i;
+export const PERSONAL_DATA_KEY = /email|phone|address|token|password|^(?:(?:full|first|last|applicant|member|student|guardian|recipient|sender|counselor|display|user)[_-]?)?name$|^(?:to|cc|bcc|reply[_-]?to|recipients?)$/i;
 
 /**
  * Deep copy of `value` with every object key matching `keyPattern` replaced by

@@ -3,8 +3,6 @@
  */
 
 import { escapeHtml } from '@/lib/email/escapeHtml';
-import { eligibilityScreeningSummaryHtml } from './eligibility-screening-summary';
-import type { EligibilityScreeningFields } from '@/lib/apply/eligibilityScreeningFields';
 
 export function newApplicationAlertHtml(params: {
   applicantName: string;
@@ -13,8 +11,6 @@ export function newApplicationAlertHtml(params: {
   programInterest: string;
   applicationId: string;
   applicationNotes?: string;
-  /** Structured WS4 fields (also may appear in applicationNotes). */
-  eligibility?: EligibilityScreeningFields | null;
 }): string {
   const {
     applicantName,
@@ -23,12 +19,10 @@ export function newApplicationAlertHtml(params: {
     programInterest,
     applicationId,
     applicationNotes,
-    eligibility,
   } = params;
   const phoneLine = applicantPhone?.trim()
     ? `<p><strong>Phone:</strong> ${escapeHtml(applicantPhone.trim())}</p>`
     : '';
-  const eligibilityBlock = eligibilityScreeningSummaryHtml(eligibility);
   const detailsBlock = applicationNotes?.trim()
     ? `<p><strong>Application details:</strong></p>
     <p>${escapeHtml(applicationNotes.trim()).replace(/\n/g, '<br>')}</p>`
@@ -39,7 +33,6 @@ export function newApplicationAlertHtml(params: {
     <p><strong>Email:</strong> ${escapeHtml(applicantEmail)}</p>
     ${phoneLine}
     <p><strong>Program interest:</strong> ${escapeHtml(programInterest)}</p>
-    ${eligibilityBlock}
     ${detailsBlock}
     <p><strong>Application ID:</strong> ${escapeHtml(applicationId)}</p>
     <p>Please review the application in the admin panel.</p>

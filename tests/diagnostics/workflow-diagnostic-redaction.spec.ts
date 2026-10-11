@@ -27,7 +27,7 @@ beforeEach(() => {
 });
 
 describe('recordWorkflowDiagnostic', () => {
-  it('redacts contact / address / secret keys inside templateParams before a generic row is written', async () => {
+  it('redacts personal names, recipients, contact details and secrets before a generic row is written', async () => {
     await recordWorkflowDiagnostic({
       workflow: 'some_workflow',
       status: 'error',
@@ -37,11 +37,17 @@ describe('recordWorkflowDiagnostic', () => {
         templateParams: {
           fullName: 'Ada Lovelace',
           programName: 'IT Support',
+          templateName: 'course_kickoff',
+          workflowName: 'member_onboarding',
+          to: 'to@example.org',
+          cc: ['copy@example.org'],
+          bcc: ['hidden@example.org'],
+          replyTo: 'reply@example.org',
           email: 'ada@example.org',
           phone: '512-555-0100',
           address: { line1: '1 Main St' },
-          nested: { contactEmail: 'ada@example.org', count: 2 },
-          items: [{ phoneNumber: '512-555-0101', slug: 'it-support' }],
+          nested: { name: 'Grace Hopper', first_name: 'Grace', contactEmail: 'ada@example.org', count: 2 },
+          items: [{ memberName: 'Katherine Johnson', phoneNumber: '512-555-0101', slug: 'it-support' }],
           resetToken: 'tok_secret',
           password: 'hunter2',
         },
@@ -51,19 +57,25 @@ describe('recordWorkflowDiagnostic', () => {
     expect(writtenMetadata()).toEqual({
       template: 'course_kickoff',
       templateParams: {
-        fullName: 'Ada Lovelace',
+        fullName: '[redacted]',
         programName: 'IT Support',
+        templateName: 'course_kickoff',
+        workflowName: 'member_onboarding',
+        to: '[redacted]',
+        cc: '[redacted]',
+        bcc: '[redacted]',
+        replyTo: '[redacted]',
         email: '[redacted]',
         phone: '[redacted]',
         address: '[redacted]',
-        nested: { contactEmail: '[redacted]', count: 2 },
-        items: [{ phoneNumber: '[redacted]', slug: 'it-support' }],
+        nested: { name: '[redacted]', first_name: '[redacted]', contactEmail: '[redacted]', count: 2 },
+        items: [{ memberName: '[redacted]', phoneNumber: '[redacted]', slug: 'it-support' }],
         resetToken: '[redacted]',
         password: '[redacted]',
       },
     });
     const serialized = JSON.stringify(writtenMetadata());
-    for (const value of ['ada@example.org', '512-555-010', '1 Main St', 'tok_secret', 'hunter2']) {
+    for (const value of ['Ada Lovelace', 'Grace Hopper', 'Grace', 'Katherine Johnson', '@example.org', '512-555-010', '1 Main St', 'tok_secret', 'hunter2']) {
       expect(serialized).not.toContain(value);
     }
   });
@@ -119,9 +131,15 @@ describe('redactMetadataKeys (shared helper)', () => {
     });
   });
 
-  it('leaves names and recipient keys alone under the generic key set', () => {
-    expect(redactMetadataKeys({ to: 'x', fullName: 'Ada', total: 4 }, PERSONAL_DATA_KEY)).toEqual({
-      to: 'x', fullName: 'Ada', total: 4,
+  it('redacts explicit personal keys while retaining safe identifiers with similar names', () => {
+    expect(redactMetadataKeys({
+      full_name: 'Ada', lastName: 'Lovelace', 'guardian-name': 'Guardian',
+      recipient: 'recipient@example.org', recipients: ['other@example.org'], reply_to: 'reply@example.org',
+      templateName: 'course_kickoff', programName: 'IT Support', total: 4,
+    }, PERSONAL_DATA_KEY)).toEqual({
+      full_name: '[redacted]', lastName: '[redacted]', 'guardian-name': '[redacted]',
+      recipient: '[redacted]', recipients: '[redacted]', reply_to: '[redacted]',
+      templateName: 'course_kickoff', programName: 'IT Support', total: 4,
     });
   });
 });

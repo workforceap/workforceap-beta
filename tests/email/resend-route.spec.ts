@@ -41,6 +41,8 @@ import { getUser } from '@/lib/auth/server';
 import { requireAdmin } from '@/lib/auth/roles';
 import { auditLog } from '@/lib/audit';
 import { sendApplicantFollowupEmail, sendCourseKickoffEmail } from '@/lib/email';
+import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
+import { buildEmailFailureMetadata } from '@/lib/email/failureRecord';
 import { RESENDABLE_TEMPLATE_NAMES, getResendableTemplate, validateResendParams } from '@/lib/email/resendRegistry';
 
 const call = (id = 'diag-1') =>
@@ -107,6 +109,34 @@ describe('resend registry', () => {
 });
 
 describe('POST /api/admin/email-failures/[id]/resend', () => {
+  it('replays an opted-in failure from the diagnostic writer with its original recipient, name and program', async () => {
+    const params = { to: 'ada@example.org', fullName: 'Ada Lovelace', programName: 'IT Support' };
+    const failure = buildEmailFailureMetadata(
+      { to: params.to, subject: 'Next steps', template: { name: 'course_kickoff', params } },
+      new Error('network'),
+      new Date('2026-10-11T12:00:00Z'),
+    );
+    await recordWorkflowDiagnostic({
+      workflow: 'email_send',
+      status: 'error',
+      summary: 'Email send failed: course_kickoff (network)',
+      metadata: { ...failure },
+      retainTemplateParams: true,
+    });
+    const stored = vi.mocked(prisma.workflowDiagnostic.create).mock.calls[0][0].data.metadata as Record<string, unknown>;
+    expect(stored.templateParams).toEqual(params);
+    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow(stored) as never);
+    vi.mocked(sendCourseKickoffEmail).mockResolvedValue({ ok: true });
+
+    const res = await call();
+
+    expect(res.status).toBe(200);
+    expect(sendCourseKickoffEmail).toHaveBeenCalledExactlyOnceWith(params);
+    expect(prisma.workflowDiagnostic.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: { metadata: expect.objectContaining({ templateParams: params, resentOk: true }) },
+    }));
+  });
+
   it('requires an authenticated admin', async () => {
     vi.mocked(getUser).mockResolvedValue(null as never);
     expect((await call()).status).toBe(401);

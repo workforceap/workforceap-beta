@@ -839,7 +839,6 @@ export async function sendNewApplicationAdminEmail(params: {
   programInterest: string;
   applicationId: string;
   applicationNotes?: string;
-  eligibility?: EligibilityScreeningFields | null;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
