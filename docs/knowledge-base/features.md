@@ -26,6 +26,13 @@ Use this table to enter a business workflow, then follow [static references](gen
 | Platform administration, flags and reporting | [admin](../../app/admin), [organization API](../../app/api/org), [feature flags](../../app/api/feature-flags) | [platform](../../lib/platform), [feature flags](../../lib/feature-flags), [analytics](../../lib/analytics), [reporting](../../lib/reporting) | `Organization`, `FeatureFlag`, domain reporting projections; [admin portal](../ADMIN_PORTAL.md) |
 | Shared UI, accessibility, locale and theme | [portal kit](../../components/portal/kit), [shared UI](../../components/ui), [styles](../../css), [translations](../../messages) | [navigation](../../lib/nav), [i18n](../../lib/i18n), [accessibility](../../lib/a11y) | [kit guide](../KIT_GUIDE.md), [design coexistence in AGENTS](../../AGENTS.md), [test catalog](generated/tests.json) |
 
+The [WAP-04 stakeholder request ledger](../audits/wap-04-stakeholder-request-ledger-2026-10-11.md)
+reconciles the four exact March 2/March 11 source messages against public routes,
+actual implementation receipts and later owner changes. Older founder/process copy
+is superseded by explicit owner decisions; laptop policy, universal eligibility,
+partner/credential claims and mailbox ownership retain separate evidence limits.
+Its local Astro rendering receipt is not production or provider certification.
+
 ## Application and staff workflow contracts
 
 - The member [Home](../../components/portal/kit/pages/member/MemberHomeKit.tsx) keeps an [AI Career Tools introduction](../../components/portal/kit/pages/member/MemberAiToolsCard.tsx) directly below Today even when no stage-specific tool is recommended. The existing recommendation still links to its original tool. The [phone navigation](../../components/portal/MemberPortalTopNav.tsx) puts AI Career Tools after Home and My program, and the [hub](../../components/portal/kit/pages/VoiceStudioKit.tsx) provides direct resume, interview and cover-letter starts with brief preparation/review guidance. New guidance uses all four locale catalogs. These entry points do not start AI or microphone sessions or change tool authorization. [Discovery tests](../../tests/components/member-ai-tools-discovery.spec.tsx) and [navigation tests](../../tests/components/member-portal-top-nav-active.spec.tsx) cover the entry points and existing locale/route behavior.
