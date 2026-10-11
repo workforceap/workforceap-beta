@@ -27,9 +27,10 @@ export type WorkflowDiagnosticParams = {
 /**
  * `metadata.templateParams` is the one metadata block that carries personal
  * data by construction (a rendered email's payload). Unless the caller opts
- * out, keys named like email / phone / address / token / password are
- * replaced by "[redacted]" before the row is written. Every other metadata
- * key is written as given.
+ * out, personal-name and recipient keys plus email / phone / address / token /
+ * password keys are replaced by "[redacted]" before the row is written. Safe
+ * template identifiers, arbitrary prose and every other metadata block are
+ * written as given; this is key-based redaction, not content anonymization.
  */
 export function redactDiagnosticMetadata(
   metadata: Record<string, unknown> | null | undefined,

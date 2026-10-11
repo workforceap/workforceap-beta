@@ -944,7 +944,6 @@ export const POST = withApiGuc(async (request: NextRequest) => {
               programInterest: programInterestSummary,
               applicationId: applicationIdForAlert,
               applicationNotes: adminAlertNotes || undefined,
-              eligibility: eligibilityEmailFields,
             });
             if (!result.ok) {
               throw new Error(result.error ?? 'Admin new-application alert failed');
