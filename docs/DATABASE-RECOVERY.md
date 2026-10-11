@@ -256,3 +256,23 @@ branch and project, then the native check on the exact merged `master` SHA
 before claiming provider acceptance. Preserve the zero-pending comparison and
 do not repair tracking records, replay recovered historical SQL in production,
 or reset a branch to force a green check.
+
+## WAP-76 guarded course-progress rollback
+
+The historical migration directory's `down.sql` restores merged destination rows
+unconditionally and can discard subsequent learning activity. Preserve its bytes
+for history; use [the guarded operator script](../scripts/db/rollback-wap76-course-slug-remap.sql)
+for a reviewed WAP-76 recovery instead. This source change does not run recovery.
+
+After the preflight above, the guarded script locks progress and journal tables
+while checking each merged destination against the exact post-migration row
+reconstructed from the journal. Only unchanged rows restore their two preimages.
+Changed/missing destinations and occupied source keys remain untouched; their
+journal entries remain available and a NOTICE identifies each skipped entry.
+Review remaining journal rows before reporting recovery complete. Renamed rows
+carry current values back to the synthetic key, which can still hide newly earned
+progress. A skipped recovery requires manual reconciliation, not blind retries.
+
+`tests/migrations/wap76-course-slug-remap.mjs` exercises this script on its dedicated
+local disposable PostgreSQL database, including immediate restoration, later
+activity, timestamp-independent changes, missing destinations, and occupied keys.

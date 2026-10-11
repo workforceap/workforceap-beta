@@ -7,7 +7,7 @@
  * the portal shows nothing. After: those rows sit on the new keys, a member who
  * has both a pre-fix synthetic row and post-fix activity on the real key ends
  * up with one merged row, rows outside the mapping are untouched, the migration
- * is safe to apply twice, and down.sql restores the exact preimage including
+ * is safe to apply twice, and the guarded rollback restores the exact preimage including
  * the merged pair. Runs only against a dedicated disposable local database.
  */
 import assert from 'node:assert/strict';
@@ -16,7 +16,7 @@ import { spawnSync } from 'node:child_process';
 
 const migrationDir = 'prisma/migrations/20260921220000_wap76_course_progress_slug_remap';
 const migration = readFileSync(`${migrationDir}/migration.sql`, 'utf8');
-const rollback = readFileSync(`${migrationDir}/down.sql`, 'utf8');
+const rollback = readFileSync('scripts/db/rollback-wap76-course-slug-remap.sql', 'utf8');
 
 /**
  * The mapping is NOT re-typed here. It is loaded from
@@ -223,6 +223,7 @@ try {
 
   resetTables();
   const before = byId(rows());
+  const beforeWholeRows = sql("SELECT jsonb_agg(to_jsonb(cp) ORDER BY id) FROM public.course_progress cp;");
 
   // Preimage: the completions sit on keys no course in the program carries.
   assert.equal(before['cp-orphan'].course_slug, 'software-developer-professional-certificate-ibm-course-2');
@@ -289,15 +290,53 @@ try {
   assert.equal(journal().length, 3, 'a second run must not journal again');
   console.log('PASS the migration is idempotent');
 
-  // 6. down.sql restores the exact preimage, merged pair included.
+  // 6. Guarded recovery restores the exact preimage, merged pair included.
   sql(rollback);
   assert.deepEqual(byId(rows()), before);
+  assert.equal(sql("SELECT jsonb_agg(to_jsonb(cp) ORDER BY id) FROM public.course_progress cp;"), beforeWholeRows, 'immediate recovery restores every column');
   assert.equal(journal().length, 0, 'the rollback consumes the journal');
-  console.log('PASS down.sql restores the exact preimage');
+  console.log('PASS guarded recovery restores the exact preimage');
 
   sql(rollback);
   assert.deepEqual(byId(rows()), before);
   console.log('PASS the rollback is idempotent');
+
+  // WAP-186: merged destination activity after migration must survive,
+  // including edits whose activity timestamp was not advanced.
+  for (const edit of [
+    "statement_count = statement_count + 1, last_activity_at = '2026-10-01'",
+    "score_raw = 91",
+    "course_slug = 'replacement-key'",
+  ]) {
+    resetTables();
+    sql(migration);
+    sql(`UPDATE public.course_progress SET ${edit} WHERE id='cp-both-new';`);
+    const newer = byId(rows())['cp-both-new'];
+    const wholeRow = sql("SELECT to_jsonb(cp) FROM public.course_progress cp WHERE id='cp-both-new';");
+    sql(rollback);
+    assert.deepEqual(byId(rows())['cp-both-new'], newer);
+    assert.equal(sql("SELECT to_jsonb(cp) FROM public.course_progress cp WHERE id='cp-both-new';"), wholeRow);
+    assert.equal(byId(rows())['cp-both-old'], undefined);
+    assert.equal(journal().length, 1, 'unsafe merged entry is retained for reconciliation');
+    sql(rollback);
+    assert.equal(journal().length, 1, 'retries must retain skipped journal entries');
+  }
+  resetTables();
+  sql(migration);
+  sql("DELETE FROM public.course_progress WHERE id='cp-both-new';");
+  sql(rollback);
+  assert.equal(byId(rows())['cp-both-old'], undefined);
+  assert.equal(journal().length, 1, 'missing destination retains journal');
+  resetTables();
+  const occupiedSource = sql("SELECT to_jsonb(cp) FROM public.course_progress cp WHERE id='cp-both-old';");
+  sql(migration);
+  sql(`INSERT INTO public.course_progress SELECT * FROM jsonb_populate_record(NULL::public.course_progress, '${occupiedSource}'::jsonb);`);
+  const occupiedPair = byId(rows());
+  sql(rollback);
+  assert.deepEqual(byId(rows())['cp-both-new'], occupiedPair['cp-both-new']);
+  assert.deepEqual(byId(rows())['cp-both-old'], occupiedPair['cp-both-old']);
+  assert.equal(journal().length, 1, 'occupied merged source retains both rows and journal');
+  console.log('PASS changed/missing merged destinations survive with journal retained');
 
   // 6b. The rollback's occupied-key guard. down.sql documents that it skips a
   //     key new activity has re-taken rather than failing, but nothing proved
