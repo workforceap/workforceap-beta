@@ -1,4 +1,5 @@
 ---
+import { publicProgramFundingCopy } from '../../data/programFunding';
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { PROGRAMS, partnerBadge, type Program } from '../../data/programs';
@@ -32,10 +33,7 @@ const rampNote = program.slug === 'cybersecurity-professional-certificate-google
   ? 'Assumes basic computer comfort.'
   : extra?.rampNote;
 
-// Funding copy (verbatim from the Next detail page)
-const fundingCopy = program.fundingSource
-  ? `Available at no cost through ${program.fundingSource} funding for qualifying members.`
-  : 'No-cost training for qualifying members.';
+const fundingCopy = publicProgramFundingCopy(program);
 
 // Language support (verbatim labels from the Next ProgramDetailClient)
 type LangLevel = 'full' | 'subtitles' | 'ai-subtitles' | 'none';
