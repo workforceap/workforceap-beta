@@ -57,6 +57,10 @@ export default function MemberDetailActions({
     ? getProgramBySlug(currentProgramSlug)?.slug ?? currentProgramSlug
     : null;
   const selectedProgram = options.find((option) => option.slug === programSlug);
+  // Match member enrollment: Grant is exempt; unmapped funding defaults to WIOA.
+  // The warning follows the destination, not the member's current program.
+  const selectedWioaGateBlocked = enrollmentGateBlocked
+    && (getProgramBySlug(programSlug)?.fundingSource ?? 'WIOA') === 'WIOA';
   const assignmentBlocked = selectedProgram?.curriculumMigrationPending === true
     || Boolean(selectedProgram?.status && selectedProgram.status !== 'active');
 
@@ -64,7 +68,7 @@ export default function MemberDetailActions({
     if (!programSlug || assignmentBlocked || programSlug === resolvedCurrentProgramSlug) return;
     const selected = options.find((o) => o.slug === programSlug);
     const label = selected?.name ?? programSlug;
-    if (enrollmentGateBlocked) {
+    if (selectedWioaGateBlocked) {
       const ok = window.confirm(
         `Enroll ${memberName} in ${label}?\n\nThis member is not yet verified for self-serve training enrollment. Admin enrollment will still work and create an admin bypass.`
       );
@@ -138,7 +142,7 @@ export default function MemberDetailActions({
 
   return (
     <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {enrollmentGateBlocked && (
+      {selectedWioaGateBlocked && (
         <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: 0 }}>
           WIOA status is still blocking self-serve training enrollment — admin program changes still apply and set an admin enrollment bypass.
         </p>
