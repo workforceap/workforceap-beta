@@ -1,0 +1,634 @@
+{
+  "schemaVersion": 1,
+  "reviewedApplicationRevision": "f1ab436e1a6cbc834ad15ed3519aef2a9e4d4db5",
+  "verifiedOn": "2026-10-11",
+  "target": "localhost Astro preview of freshly built unchanged application sources",
+  "browser": "Chromium",
+  "externalAnalytics": "blocked",
+  "limits": [
+    "No production screenshot or combined Next route acceptance",
+    "No authentication or form submission",
+    "No email or provider enrollment",
+    "No current claims, licensing or inventory certification"
+  ],
+  "captures": [
+    {
+      "path": "/",
+      "viewport": 375,
+      "status": 200,
+      "metrics": {
+        "width": 375,
+        "documentWidth": 375,
+        "h1": [
+          "Empowering People.Advancing Futures."
+        ],
+        "homeSteps": [
+          "Apply",
+          "Get matched",
+          "Train & certify",
+          "Launch"
+        ],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "WorkforceAP is a 501(c)(3) nonprofit providing employer-aligned training, professional certificates, and career support at no cost to members who qualify through scholarship/grant funded membership.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/about",
+      "viewport": 375,
+      "status": 200,
+      "metrics": {
+        "width": 375,
+        "documentWidth": 375,
+        "h1": [
+          "About WorkforceAP"
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "WorkforceAP has spent 25+ years bridging the gap between education and industry, connecting skilled individuals with meaningful employment opportunities.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/how-it-works",
+      "viewport": 375,
+      "status": 200,
+      "metrics": {
+        "width": 375,
+        "documentWidth": 375,
+        "h1": [
+          "Your path starts here."
+        ],
+        "homeSteps": [],
+        "processSteps": [
+          "Apply",
+          "Overview & Eligibility Review",
+          "Membership Enrollment",
+          "Skills Assessment",
+          "Interview",
+          "Resources & Workforce Readiness",
+          "Training",
+          "Certificate Completion",
+          "Job Readiness & Placement Assistance",
+          "Career Opportunities & Growth"
+        ],
+        "phaseConnectors": [
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          },
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          },
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          }
+        ],
+        "leaderProfiles": [],
+        "description": "Your path from application through certification and job placement \u2014 organized into three phases so you always know what we\u2019re focusing on together.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/leadership",
+      "viewport": 375,
+      "status": 200,
+      "metrics": {
+        "width": 375,
+        "documentWidth": 375,
+        "h1": [
+          "Stewards of the Future Workforce."
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [
+          "/leadership/michael-brown",
+          "/leadership/adriane-brown",
+          "/leadership/lakecia-gunter",
+          "/leadership/brandon-frye",
+          "/leadership/derrick-fishback",
+          "/leadership/michael-brown-ii"
+        ],
+        "description": "Meet the leadership team behind WorkforceAP \u2014 decades of workforce experience, employer-side tech credibility, military discipline, and nationwide community impact.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/leadership/michael-brown",
+      "viewport": 375,
+      "status": 200,
+      "metrics": {
+        "width": 375,
+        "documentWidth": 375,
+        "h1": [
+          "Michael A. Brown"
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "Learn more about Michael A. Brown, PMP, ChE, Executive Director & Chief Executive Officer at Workforce Advancement Project.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/",
+      "viewport": 768,
+      "status": 200,
+      "metrics": {
+        "width": 768,
+        "documentWidth": 768,
+        "h1": [
+          "Empowering People.Advancing Futures."
+        ],
+        "homeSteps": [
+          "Apply",
+          "Get matched",
+          "Train & certify",
+          "Launch"
+        ],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "WorkforceAP is a 501(c)(3) nonprofit providing employer-aligned training, professional certificates, and career support at no cost to members who qualify through scholarship/grant funded membership.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/about",
+      "viewport": 768,
+      "status": 200,
+      "metrics": {
+        "width": 768,
+        "documentWidth": 768,
+        "h1": [
+          "About WorkforceAP"
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "WorkforceAP has spent 25+ years bridging the gap between education and industry, connecting skilled individuals with meaningful employment opportunities.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/how-it-works",
+      "viewport": 768,
+      "status": 200,
+      "metrics": {
+        "width": 768,
+        "documentWidth": 768,
+        "h1": [
+          "Your path starts here."
+        ],
+        "homeSteps": [],
+        "processSteps": [
+          "Apply",
+          "Overview & Eligibility Review",
+          "Membership Enrollment",
+          "Skills Assessment",
+          "Interview",
+          "Resources & Workforce Readiness",
+          "Training",
+          "Certificate Completion",
+          "Job Readiness & Placement Assistance",
+          "Career Opportunities & Growth"
+        ],
+        "phaseConnectors": [
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          },
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          },
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          }
+        ],
+        "leaderProfiles": [],
+        "description": "Your path from application through certification and job placement \u2014 organized into three phases so you always know what we\u2019re focusing on together.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/leadership",
+      "viewport": 768,
+      "status": 200,
+      "metrics": {
+        "width": 768,
+        "documentWidth": 768,
+        "h1": [
+          "Stewards of the Future Workforce."
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [
+          "/leadership/michael-brown",
+          "/leadership/adriane-brown",
+          "/leadership/lakecia-gunter",
+          "/leadership/brandon-frye",
+          "/leadership/derrick-fishback",
+          "/leadership/michael-brown-ii"
+        ],
+        "description": "Meet the leadership team behind WorkforceAP \u2014 decades of workforce experience, employer-side tech credibility, military discipline, and nationwide community impact.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/leadership/michael-brown",
+      "viewport": 768,
+      "status": 200,
+      "metrics": {
+        "width": 768,
+        "documentWidth": 768,
+        "h1": [
+          "Michael A. Brown"
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "Learn more about Michael A. Brown, PMP, ChE, Executive Director & Chief Executive Officer at Workforce Advancement Project.",
+        "logo": [
+          {
+            "width": 78.15625,
+            "height": 40,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/",
+      "viewport": 1440,
+      "status": 200,
+      "metrics": {
+        "width": 1440,
+        "documentWidth": 1440,
+        "h1": [
+          "Empowering People.Advancing Futures."
+        ],
+        "homeSteps": [
+          "Apply",
+          "Get matched",
+          "Train & certify",
+          "Launch"
+        ],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "WorkforceAP is a 501(c)(3) nonprofit providing employer-aligned training, professional certificates, and career support at no cost to members who qualify through scholarship/grant funded membership.",
+        "logo": [
+          {
+            "width": 89.890625,
+            "height": 46,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/about",
+      "viewport": 1440,
+      "status": 200,
+      "metrics": {
+        "width": 1440,
+        "documentWidth": 1440,
+        "h1": [
+          "About WorkforceAP"
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "WorkforceAP has spent 25+ years bridging the gap between education and industry, connecting skilled individuals with meaningful employment opportunities.",
+        "logo": [
+          {
+            "width": 89.890625,
+            "height": 46,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/how-it-works",
+      "viewport": 1440,
+      "status": 200,
+      "metrics": {
+        "width": 1440,
+        "documentWidth": 1440,
+        "h1": [
+          "Your path starts here."
+        ],
+        "homeSteps": [],
+        "processSteps": [
+          "Apply",
+          "Overview & Eligibility Review",
+          "Membership Enrollment",
+          "Skills Assessment",
+          "Interview",
+          "Resources & Workforce Readiness",
+          "Training",
+          "Certificate Completion",
+          "Job Readiness & Placement Assistance",
+          "Career Opportunities & Growth"
+        ],
+        "phaseConnectors": [
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          },
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          },
+          {
+            "color": "linear-gradient(rgb(236, 229, 224), rgba(0, 0, 0, 0))",
+            "width": 2
+          }
+        ],
+        "leaderProfiles": [],
+        "description": "Your path from application through certification and job placement \u2014 organized into three phases so you always know what we\u2019re focusing on together.",
+        "logo": [
+          {
+            "width": 89.890625,
+            "height": 46,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/leadership",
+      "viewport": 1440,
+      "status": 200,
+      "metrics": {
+        "width": 1440,
+        "documentWidth": 1440,
+        "h1": [
+          "Stewards of the Future Workforce."
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [
+          "/leadership/michael-brown",
+          "/leadership/adriane-brown",
+          "/leadership/lakecia-gunter",
+          "/leadership/brandon-frye",
+          "/leadership/derrick-fishback",
+          "/leadership/michael-brown-ii"
+        ],
+        "description": "Meet the leadership team behind WorkforceAP \u2014 decades of workforce experience, employer-side tech credibility, military discipline, and nationwide community impact.",
+        "logo": [
+          {
+            "width": 89.890625,
+            "height": 46,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "path": "/leadership/michael-brown",
+      "viewport": 1440,
+      "status": 200,
+      "metrics": {
+        "width": 1440,
+        "documentWidth": 1440,
+        "h1": [
+          "Michael A. Brown"
+        ],
+        "homeSteps": [],
+        "processSteps": [],
+        "phaseConnectors": [],
+        "leaderProfiles": [],
+        "description": "Learn more about Michael A. Brown, PMP, ChE, Executive Director & Chief Executive Officer at Workforce Advancement Project.",
+        "logo": [
+          {
+            "width": 89.890625,
+            "height": 46,
+            "complete": true
+          },
+          {
+            "width": 105.515625,
+            "height": 54,
+            "complete": true
+          }
+        ],
+        "fontsLoaded": true
+      },
+      "pageErrors": [],
+      "blockedHosts": [
+        "www.googletagmanager.com"
+      ]
+    }
+  ]
+}
