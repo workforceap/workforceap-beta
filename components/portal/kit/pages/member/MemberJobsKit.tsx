@@ -75,6 +75,8 @@ export interface MemberJobsKitProps {
   openRoles?: OpenRoleRow[];
   /** Total live openings when more exist than are listed. */
   openRolesTotal?: number;
+  /** Present in the current kit's all-openings view; overview callers omit it. */
+  openRolesPagination?: { page: number; pageSize: number; totalPages: number };
   /**
    * A load failed (WAP-261): the section shows "couldn't load", never 0 or
    * its empty state, because an unknown count is not an empty one.
@@ -119,6 +121,7 @@ export function MemberJobsKit({
   recommended = [],
   openRoles = [],
   openRolesTotal,
+  openRolesPagination,
   pipelineLoadFailed = false,
   openRolesLoadFailed = false,
   recommendationsLoadFailed = false,
@@ -262,6 +265,29 @@ export function MemberJobsKit({
               ))}
             </div>
           )}
+          {!openRolesLoadFailed && openRolesCount > 20 && !openRolesPagination ? (
+            <div className="wa-flex wa-justify-end" style={{ marginTop: 'var(--wa-pad-sm)' }}>
+              <JobsCta href={`/dashboard/jobs?view=all${JOBS_OPEN_ROLES_ANCHOR}`} variant="secondary">
+                See all {openRolesCount} openings
+              </JobsCta>
+            </div>
+          ) : null}
+          {!openRolesLoadFailed && openRolesPagination ? (
+            <nav aria-label="Open role pages" className="wa-flex wa-items-center wa-justify-between wa-flex-wrap wa-gap-3" style={{ marginTop: 'var(--wa-pad-sm)' }}>
+              <p className="wa-kit-meta" style={{ margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                Showing {openRoles.length ? (openRolesPagination.page - 1) * openRolesPagination.pageSize + 1 : 0}–{openRoles.length ? (openRolesPagination.page - 1) * openRolesPagination.pageSize + openRoles.length : 0} of {openRolesCount} openings
+              </p>
+              <div className="wa-flex wa-items-center wa-flex-wrap wa-gap-3">
+                {openRolesPagination.page > 1 ? (
+                  <JobsCta href={`/dashboard/jobs?view=all&page=${openRolesPagination.page - 1}${JOBS_OPEN_ROLES_ANCHOR}`} variant="secondary">Previous page</JobsCta>
+                ) : null}
+                {openRolesPagination.page < openRolesPagination.totalPages ? (
+                  <JobsCta href={`/dashboard/jobs?view=all&page=${openRolesPagination.page + 1}${JOBS_OPEN_ROLES_ANCHOR}`} variant="secondary">Next page</JobsCta>
+                ) : null}
+                <JobsCta href={`/dashboard/jobs${JOBS_OPEN_ROLES_ANCHOR}`} variant="secondary">Back to overview</JobsCta>
+              </div>
+            </nav>
+          ) : null}
         </section>
 
         <div>

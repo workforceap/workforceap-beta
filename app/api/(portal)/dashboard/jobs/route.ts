@@ -10,6 +10,8 @@ import { ACTIVE_EMPLOYER_JOB_WHERE } from '@/lib/jobs/memberVisibleJob';
 import { getUser } from '@/lib/auth/server';
 import { isAgeGroup, resolveJobBoardAgeGroup, stricterAgeGroup } from '@/lib/jobs/jobBoardAgeGroup';
 import type { AgeGroup } from '@/lib/util/ageCalculation';
+import { JOBS_PAGE_SIZE, jobBoardCacheScope, jobPageBounds, positiveJobPage, publicJobsWhere } from '@/lib/jobs/publicJobsPage';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 
 /** Public jobs listing - only live jobs for students */
 async function _GET(request: NextRequest) {
@@ -22,6 +24,10 @@ async function _GET(request: NextRequest) {
     const salaryMinParam = searchParams.get('salaryMin');
     const salaryMaxParam = searchParams.get('salaryMax');
     const sort = searchParams.get('sort') || 'newest';
+    // Pagination is opt-in: existing consumers still receive the capped array.
+    const paginated = searchParams.has('page') || searchParams.has('pageSize');
+    const requestedPage = positiveJobPage(searchParams.get('page'));
+    const pageSize = Math.min(100, positiveJobPage(searchParams.get('pageSize'), JOBS_PAGE_SIZE));
     // A signed-in member's board comes from their own profile, not the query
     // string (WAP-260): `?ageGroup=` may only tighten it, never loosen it, and
     // a failed profile read fails closed. Signed-out visitors keep the public
@@ -123,6 +129,7 @@ async function _GET(request: NextRequest) {
           : sort === 'title'
             ? [{ title: 'asc' }]
             : [{ updatedAt: 'desc' }];
+    orderBy.push({ id: 'asc' });
 
     const cacheKeyParts = [
       keyword || '',
@@ -131,37 +138,46 @@ async function _GET(request: NextRequest) {
       program || '',
       salaryMinNum ?? '',
       salaryMaxNum ?? '',
-      sort,
       ageGroup || '',
     ];
-    const cacheKey = `jobs:list:${cacheKeyParts.join('|')}`;
+    const scope = jobBoardCacheScope(user?.id ?? null);
+    const exclusionCacheKey = scope ? `jobs:list:exclusions:v2:${JSON.stringify([scope, cacheKeyParts])}` : null;
+    const cacheKey = scope
+      ? `jobs:list:page:v2:${JSON.stringify([scope, cacheKeyParts, sort, paginated, requestedPage, pageSize])}`
+      : null;
 
-    const visible = await getCacheOrFetch(
-      cacheKey,
-      async () => {
-        const jobs = await prisma.job.findMany({
-          where,
-          orderBy,
-          include: {
-            employer: { select: { companyName: true, logoUrl: true } },
+    const readListing = async () => {
+      const visibleWhere = await publicJobsWhere(where, exclusionCacheKey);
+      // This is the existing public board, including signed-out visitors.
+      // The marker preserves the caller's GUC/RLS and does not grant access.
+      const total = paginated ? await crossTenantOK(() => prisma.job.count({ where: visibleWhere })) : 0;
+      const bounds = jobPageBounds(total, requestedPage, pageSize);
+      const jobs = await crossTenantOK(() => prisma.job.findMany({
+        where: visibleWhere,
+        orderBy,
+        include: {
+          employer: { select: { companyName: true, logoUrl: true } },
+        },
+        take: paginated ? pageSize : 100,
+        ...(paginated ? { skip: bounds.skip } : {}),
+      }));
+      const visible = jobs
+        .filter(
+          (j) => !isExcludedPublicEmployerName(j.employer.companyName) && !isExcludedPublicJobTitle(j.title),
+        )
+        .map((job) => ({
+          ...job,
+          employer: {
+            ...job.employer,
+            logoUrl: resolveSupabasePublicAssetUrl('employer-logos', job.employer.logoUrl),
           },
-          take: 100,
-        });
-        return jobs
-          .filter(
-            (j) => !isExcludedPublicEmployerName(j.employer.companyName) && !isExcludedPublicJobTitle(j.title),
-          )
-          .map((job) => ({
-            ...job,
-            employer: {
-              ...job.employer,
-              logoUrl: resolveSupabasePublicAssetUrl('employer-logos', job.employer.logoUrl),
-            },
-          }));
-      },
-      900,
-    );
-    return NextResponse.json(visible);
+        }));
+      return paginated
+        ? { jobs: visible, total, page: bounds.page, pageSize, totalPages: bounds.totalPages }
+        : visible;
+    };
+    const result = cacheKey ? await getCacheOrFetch(cacheKey, readListing, 900) : await readListing();
+    return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error, 'GET /api/jobs');
   }

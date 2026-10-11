@@ -45,6 +45,12 @@ function matchesField(value: unknown, cond: unknown): boolean {
           ? value.toLowerCase().startsWith(String(arg).toLowerCase())
           : value.startsWith(String(arg));
       }
+      case 'endsWith': {
+        if (typeof value !== 'string') return false;
+        return insensitive
+          ? value.toLowerCase().endsWith(String(arg).toLowerCase())
+          : value.endsWith(String(arg));
+      }
       case 'not':
         return isPlainObject(arg) ? !matchesField(value, arg) : value !== arg;
       case 'in':
@@ -256,6 +262,7 @@ vi.mock('@/lib/member/getMemberResumePlainText', () => ({
 }));
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
+  crossTenantOK: vi.fn(async (fn: () => unknown) => fn()),
   withTenantScope: vi.fn(async (_orgId: string, fn: (db: unknown) => unknown) => {
     const { prisma } = await import('@/lib/db/prisma');
     return fn(prisma);
@@ -311,6 +318,8 @@ beforeEach(() => {
   vi.mocked(getUser).mockResolvedValue({ id: MEMBER_ID, email: 'member@example.com' } as any);
   vi.mocked(invalidateCache).mockClear();
   vi.mocked(prisma.jobPostingApplication.findUnique).mockReset();
+  vi.mocked(prisma.job.findMany).mockReset().mockImplementation(((args: any) => Promise.resolve(findAll(JOBS, args))) as any);
+  vi.mocked(prisma.job.count).mockReset().mockImplementation(((args: any) => Promise.resolve(findAll(JOBS, args).length)) as any);
 });
 
 describe('member job list and matches exclude inactive employers', () => {
@@ -359,7 +368,8 @@ describe('member job list and matches exclude inactive employers', () => {
 describe('/dashboard/jobs fails closed to the youth board', () => {
   const ADULT_ONLY = { ...JOBS[0], id: '66666666-6666-4666-8666-666666666666', youthAppropriate: false };
   const openRoleIds = async () => {
-    vi.mocked(prisma.job.findMany).mockImplementationOnce(((args: any) => Promise.resolve(findAll([...JOBS, ADULT_ONLY], args))) as any);
+    vi.mocked(prisma.job.findMany).mockImplementation(((args: any) => Promise.resolve(findAll([...JOBS, ADULT_ONLY], args))) as any);
+    vi.mocked(prisma.job.count).mockImplementation(((args: any) => Promise.resolve(findAll([...JOBS, ADULT_ONLY], args).length)) as any);
     const page = (await JobsPage({ searchParams: Promise.resolve({}) })) as any;
     return (page.props.children.props.openRoles as Array<{ id: string }>).map((r) => r.id);
   };
@@ -421,8 +431,8 @@ describe('/dashboard/jobs counts every row, not the capped lists', () => {
     return page.props.children.props;
   };
   const withJobs = (rows: Row[]) => {
-    vi.mocked(prisma.job.findMany).mockImplementationOnce(((args: any) => Promise.resolve(findAll(rows, args))) as any);
-    vi.mocked(prisma.job.count).mockImplementationOnce(((args: any) => Promise.resolve(findAll(rows, args).length)) as any);
+    vi.mocked(prisma.job.findMany).mockImplementation(((args: any) => Promise.resolve(findAll(rows, args))) as any);
+    vi.mocked(prisma.job.count).mockImplementation(((args: any) => Promise.resolve(findAll(rows, args).length)) as any);
   };
 
   it('25 live jobs list 20 and report 25 live openings', async () => {
