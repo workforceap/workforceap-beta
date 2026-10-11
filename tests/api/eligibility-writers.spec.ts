@@ -83,7 +83,11 @@ function transactionClient(draft: any) {
     } },
     preScreeningDraft: { deleteMany: async () => { draft.preDraft = null; return { count: 1 }; } },
     preScreeningResponse: {
-      findUnique: async () => draft.preScreening,
+      findUnique: async ({ where, select }: { where: { userId: string }; select?: { user?: unknown } }) => {
+        const row = draft.preScreening;
+        if (row?.userId !== where.userId) return null;
+        return select?.user ? { ...row, user: { ...draft.member, profile: draft.profile } } : row;
+      },
       create: async ({ data }: any) => { if (h.failPreScreening) throw new Error('Response unavailable'); draft.preScreening = { id: 'pre-1', ...data }; return draft.preScreening; },
     },
     publicWioaScreening: { create: async ({ data }: any) => { draft.leadRecord = { id: 'lead-1', ...data }; return { id: 'lead-1' }; } },
@@ -266,8 +270,15 @@ describe('distinct pre-screening workflow', () => {
     expect(h.store.profile).toMatchObject({ profilePhone: body.phone, profileAddress: body.address });
     expect(h.store.member.wioaQualificationJson).toEqual(oldSnapshot);
     expect(h.screening).not.toHaveBeenCalled();
-    expect((await preScreeningPost(request(body, 'POST'))).status).toBe(400);
+    const firstSaved = structuredClone(h.store);
+    const retry = await preScreeningPost(request(body, 'POST'));
+    expect(retry.status).toBe(200);
+    expect(await retry.json()).toEqual({ ok: true, alreadySubmitted: true });
+    expect(h.store).toEqual(firstSaved);
+    expect((await preScreeningPost(request({ ...body, barrier: 'Changed after completion' }, 'POST'))).status).toBe(400);
+    expect(h.store).toEqual(firstSaved);
     expect(h.after).toHaveBeenCalledOnce();
+    expect(h.audit).toHaveBeenCalledOnce();
   });
 
   it('rejects an incomplete assessment without effects and retains a draft after transaction failure', async () => {
