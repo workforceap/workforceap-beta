@@ -58,6 +58,11 @@ vi.mock('@/lib/member/exportData', () => ({
   buildMemberExport: vi.fn(),
 }));
 
+// The real role/assignment boundary is covered by member-data-access-boundaries.spec.ts.
+vi.mock('@/lib/counselor/staffMemberAccess', () => ({
+  assertStaffCanAccessMemberRecord: vi.fn(async () => true),
+}));
+
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $transaction: vi.fn(async (arg: any) => { const { prisma } = await import('@/lib/db/prisma'); return typeof arg === 'function' ? arg(prisma) : Promise.all(arg); }),

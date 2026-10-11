@@ -7,11 +7,12 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 
 /**
  * GET /api/admin/members/[id]/export-data
  *
- * Admin/counselor can export any member's data.
+ * Tenant admins and assigned counselors can export a member's data.
  * Returns the same comprehensive JSON structure as the member self-export.
  *
  * Tenant scope: only members of the actor's organization are exportable.
@@ -41,6 +42,9 @@ async function _GET(
       select: { id: true },
     });
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+    if (!(await assertStaffCanAccessMemberRecord(actor.id, id))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const exportData = await buildMemberExport(id);
 

@@ -70,6 +70,16 @@ it; the broader Auth-only enrollment and recovery policy is tracked separately.
 
 Read [tenant scope](../../lib/tenant/withTenantScope.ts), [organization helpers](../../lib/tenant/organization.ts), [request organization resolution](../../lib/tenant/resolveOrgFromRequest.ts), [Prisma](../../lib/db/prisma.ts), and [request GUC context](../../lib/db/withRequestGuc.ts).
 
+Comprehensive member exports follow the same staff assignment boundary as private
+resumes and assessment retakes. The [self-export route](../../app/api/member/export-data/route.ts)
+uses the verified actor ID. The [staff export route](../../app/api/admin/members/[id]/export-data/route.ts)
+first restricts the subject to the actor's organization, then checks
+[staff member access](../../lib/counselor/staffMemberAccess.ts) before building the export:
+tenant admins and superadmins retain their existing same-organization export access;
+counselors need an active assignment. The [synthetic endpoint matrix](../../tests/api/member-data-access-boundaries.spec.ts)
+covers direct role denials, assignment removal, tenant boundaries, and allowed controls.
+It does not certify live Auth, Storage, or database policies.
+
 - Resolve the actor from a verified session and application account state. Resolve a subject's organization only after authorizing the actor to operate on that subject.
 - `crossTenantOK` names an intentional escape hatch; it does not by itself authorize a caller. Review the gate and the returned data.
 - GUC context uses `AsyncLocalStorage`; database-local settings and RLS enforcement depend on the configured Prisma path, transaction scope, database role and deployed policies. The normal client returns without installing the GUC layer unless explicitly enabled. Do not infer database-enforced tenant isolation from the presence of `withApiGuc` in a route.
