@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { PROGRAMS as CATALOG } from '../data/programs';
+import { publicProgramFundingLabel } from '../data/programFunding';
 import { languageSupportLine } from '../data/languageSupport';
 import Icon from '../components/Icon.astro';
 
@@ -9,9 +10,6 @@ import Icon from '../components/Icon.astro';
 // again (it did: three programs were renamed for TWC/EdVera alignment).
 // Grouping, category labels, and icons stay page-local, keyed by slug.
 const CATALOG_BY_SLUG = new Map(CATALOG.map((p) => [p.slug, p]));
-function fundingLabel(source: string) {
-  return source === 'WIOA' ? 'WIOA/Grant' : source;
-}
 function row(slug: string, category: string, cat: string, icon: string) {
   const p = CATALOG_BY_SLUG.get(slug);
   if (!p) throw new Error(`programs.astro: slug not in data/programs.ts: ${slug}`);
@@ -23,7 +21,7 @@ function row(slug: string, category: string, cat: string, icon: string) {
     title: p.title,
     duration: p.duration,
     partner: p.partner,
-    funding: fundingLabel(p.fundingSource ?? 'WIOA'),
+    funding: publicProgramFundingLabel(p),
     skills: p.skills.slice(0, 3),
     languages: languageSupportLine(p.languagesSupported),
     external: p.externalCourseUrl ?? '',

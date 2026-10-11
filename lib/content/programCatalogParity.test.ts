@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { PROGRAMS as APP_PROGRAMS } from './programs';
 import { PROGRAMS as MARKETING_PROGRAMS } from '../../marketing/src/data/programs';
 import { getProgramSyllabus } from '../../shared/programSyllabi';
+import { publicProgramFundingCopy, publicProgramFundingLabel } from '../../marketing/src/data/programFunding';
 
 /**
  * Locks marketing/src/data/programs.ts (the public site — and the source
@@ -30,6 +31,20 @@ const FROZEN_OPERATIONAL_PROGRAMS = new Set([
   'data-analytics-professional-certificate-google',
   'data-science-professional-certificate-ibm',
 ]);
+
+test('October catalog funding exclusions change public claims without changing enrollment policy', () => {
+  for (const slug of ['certified-production-technician-cpt', 'certified-logistics-technician-clt']) {
+    const program = marketingBySlug.get(slug)!;
+    assert.equal(publicProgramFundingLabel(program), 'Funding confirmation required');
+    assert.equal(publicProgramFundingCopy(program), 'Ask an advisor to confirm available funding and any costs before enrollment.');
+    assert.equal(program.fundingSource, 'WIOA');
+    assert.equal(appBySlug.get(slug)!.fundingSource, 'WIOA');
+  }
+  for (const slug of ['digital-literacy-empowerment-class', 'it-support-professional-certificate-ibm', 'core-construction-training-certificate']) {
+    const program = marketingBySlug.get(slug)!;
+    assert.equal(publicProgramFundingLabel(program), program.fundingSource === 'WIOA' ? 'WIOA/Grant' : program.fundingSource);
+  }
+});
 
 test('marketing and app program catalogs expose the same program slugs', () => {
   assert.deepEqual([...marketingBySlug.keys()].sort(), [...appBySlug.keys()].sort());
