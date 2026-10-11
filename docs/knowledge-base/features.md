@@ -103,3 +103,5 @@ The count is static import references across indexed source, including tests and
 ## Historical and supporting areas
 
 The catalog includes active Astro `marketing/` build inputs, `graph/`, `.cursor/`, `.agents/`, `.stitch/`, design exports, screenshots, branding assets, review evidence and operational scripts. They have different purposes. Consult their own instructions and the [documentation authority order](README.md#what-is-authoritative); do not classify an entire tree as dead merely because another framework serves related routes.
+
+Partner mobile referral cards show full member names with normal wrapping and break long unbroken names within the card, retaining their existing detail link and title ([roster component](../../components/partner/PartnerReferredMembersMobile.tsx)).
