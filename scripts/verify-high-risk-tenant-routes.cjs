@@ -680,4 +680,10 @@ assertMatches(
   'admin WIOA generate keeps no report in lambda memory',
 );
 
-console.log('[verify-high-risk-tenant-routes] OK — 70 routes verified');
+assertContains(
+  'app/api/admin/members/[id]/reset-assessment/route.ts',
+  ['canAdminActInSubjectOrganization', 'getSubjectOrganizationId', 'isSuperAdmin'],
+  'admin assessment reset refuses cross-tenant org admins before clearing official scores',
+);
+
+console.log('[verify-high-risk-tenant-routes] OK — 71 routes verified');

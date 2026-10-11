@@ -81,6 +81,7 @@ vi.mock('@/lib/db/prisma', () => {
 // These imports use the real persisted-role guards and member-assignment helper.
 // Only Auth, database records, and external/export side effects are synthetic.
 import { GET as staffExport } from '@/app/api/admin/members/[id]/export-data/route';
+import { POST as adminResetAssessment } from '@/app/api/admin/members/[id]/reset-assessment/route';
 import { GET as selfExport } from '@/app/api/member/export-data/route';
 import { POST as assessmentRetake } from '@/app/api/counselor/assessment-retake/route';
 import { GET as counselorResume } from '@/app/api/counselor/members/[memberId]/resume/route';
@@ -150,6 +151,51 @@ describe('member self export ignores caller-supplied subject IDs', () => {
     const response = await selfExport(new Request('https://example.test/api/member/export-data?userId=member-b') as never);
     expect(response.status).toBe(200);
     expect(fx.exportData).toHaveBeenCalledExactlyOnceWith('member-a');
+  });
+});
+
+describe('admin assessment reset stays inside the actor tenant', () => {
+  const resetRequest = (member: string) => new Request(`https://example.test/api/admin/members/${member}/reset-assessment`, {
+    method: 'POST',
+  });
+  const resetParams = (member: string) => ({ params: Promise.resolve({ id: member }) });
+
+  it('denies an Org A admin before clearing an Org B member\'s official preassessment', async () => {
+    fx.actor = 'admin-a';
+    const response = await adminResetAssessment(resetRequest('member-b'), resetParams('member-b'));
+    expect(response.status).toBe(404);
+    expect(fx.retake).not.toHaveBeenCalled();
+    expect(fx.audit).not.toHaveBeenCalled();
+  });
+
+  it('allows a tenant admin to reset a member in the same organization', async () => {
+    fx.actor = 'admin-a';
+    const response = await adminResetAssessment(resetRequest('member-a'), resetParams('member-a'));
+    expect(response.status).toBe(200);
+    expect(fx.retake).toHaveBeenCalledExactlyOnceWith({
+      memberId: 'member-a',
+      staffUserId: 'admin-a',
+      staffRole: 'admin',
+    });
+    expect(fx.audit).toHaveBeenCalled();
+  });
+
+  it('allows a super-admin to reset a member in another organization', async () => {
+    fx.actor = 'support-a';
+    const response = await adminResetAssessment(resetRequest('member-b'), resetParams('member-b'));
+    expect(response.status).toBe(200);
+    expect(fx.retake).toHaveBeenCalledExactlyOnceWith({
+      memberId: 'member-b',
+      staffUserId: 'support-a',
+      staffRole: 'admin',
+    });
+  });
+
+  it('returns 404 for an unknown member before mutation', async () => {
+    fx.actor = 'admin-a';
+    const response = await adminResetAssessment(resetRequest('missing-member'), resetParams('missing-member'));
+    expect(response.status).toBe(404);
+    expect(fx.retake).not.toHaveBeenCalled();
   });
 });
 
