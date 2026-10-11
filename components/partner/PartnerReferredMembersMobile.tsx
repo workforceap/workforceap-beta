@@ -121,9 +121,8 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                         fontSize: 13,
                         color: 'var(--wa-text)',
                         margin: 0,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        whiteSpace: 'normal',
+                        overflowWrap: 'anywhere',
                       }}
                       title={row.fullName ?? undefined}
                     >
