@@ -572,6 +572,11 @@ export async function sendBrandedEmail(
     let result: Awaited<ReturnType<Resend['emails']['send']>>;
     try {
       result = await resend.emails.send(payload, { idempotencyKey });
+      // An empty SDK response does not prove provider acceptance. Keep this
+      // ambiguous outcome on the existing unknown/retryable failure path.
+      if (!result?.error && (typeof result?.data?.id !== 'string' || !result.data.id.trim())) {
+        throw new Error('Resend returned no provider acceptance receipt (message ID); acceptance is unknown');
+      }
     } catch (err) {
       const nowMs = now();
       const delayMs = resendRetryDelayMs(err, attempt, nowMs, random);
