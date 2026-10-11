@@ -28,6 +28,7 @@ Append-only record of shipped work that was previously tracked in backlogs or sp
 | 2026-09 | Self-serve counselor + assessment copy | Round-robin / least-loaded WAP staff assignment on signup, enroll, and first counselor-thread open (`ensureSelfServeCounselorAssigned`); partner-referred members (`PartnerReferral` row) are skipped and left to the partner. Unassigned messages notify the counselor pool, then admins. Preassessment copy is a placement check, not a Coursera unlock. | WAP-126, WAP-82, WAP-125 item 5. Grant enroll / DL unlock / SLA sentence already on master. |
 
 | 2026-08 | Go-live UI + health probes | Rewrote apply `PreLaunchTag` off “Pilot Program”; cheap `/api/health` liveness + `/api/health/ready` Prisma/org probe; apply dark-mode tokens; cookie Accept token + focus trap; contact error next-step; placements empty/error CTA | Pre-prod. Operators: `docs/HEALTH-PROBES.md`. |
+| 2026-10-11 | Application release | Eight reviewed PRs (#2755–#2762) shipped access boundaries, canonical enrollment/resource views, safer email destinations/preferences, public catalog corrections, stakeholder-ledger reconciliation, intake retry/draft protection and operational queue reliability at `82e11ce57`. | [Release and acceptance receipt](RELEASE-ACCEPTANCE-2026-10-11.md): final application CI/KB/build and production health passed; the 15-minute retained Vercel error/fatal window was zero. Fresh live role and application-email acceptance remain pending. |
 
 ## Live site comparison (workforceap.org)
 
