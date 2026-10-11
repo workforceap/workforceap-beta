@@ -1,0 +1,9 @@
+# Cookie Accept contrast — 2026-10-11
+
+WAP-299 corrects the React cookie banner Accept foreground on its stable crimson fill. Staff observed dark-theme text `rgb(42,13,22)` against `rgb(173,44,77)` at 2.779:1 in normal, hover and keyboard focus states. Light-theme white text measured 6.473:1. WAP-148 placement and WAP-145 shared-kit controls are distinct prior work.
+
+The component now pairs the existing constant `--wa-on-accent` with `--color-accent`. The global adaptive foreground, banner layout, localized labels, links, consent handlers, GPC and storage are preserved. UI/UX skill contrast guidance supports 4.5:1 normal text. Astryx discovery found Banner/BannerDismissable references; a generic detail template did not fit this existing consent region, so no component replacement or new palette was introduced.
+
+Local candidate evidence lives in `/workspace/artifacts/wap-sitewide-uiux-20261011/cookie/`. The browser checks the actual component on the shared local baseline server, with the candidate's exact foreground declaration applied as a CSS overlay. Cookie component and relevant token blobs are unchanged between that server base `7c4c8e3` and candidate base `42be2a95c`. Paired 375/768/1440 light/dark viewport captures cover normal, hover and keyboard focus. External requests and non-read HTTP are blocked; consent decisions are browser-local synthetic state. This is bounded local evidence, not hosted or production acceptance.
+
+Local results: all six candidate viewport/theme combinations maintain 6.473:1 text contrast across normal/hover/focus, minimum 44px button height, actual Tab focus and keyboard acceptance with reload suppression. The existing 21 cookie component behavior tests pass, including decline, GPC and placement contracts. No hosted or production claim is made.

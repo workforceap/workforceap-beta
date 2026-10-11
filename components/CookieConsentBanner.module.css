@@ -60,7 +60,8 @@
 }
 .accept {
   background: var(--color-accent);
-  color: var(--wa-on-accent-control, #ffffff);
+  /* The legacy accent fill stays crimson in both themes. */
+  color: var(--wa-on-accent, #ffffff);
   border: 1px solid transparent;
 }
 .banner a:focus-visible,
