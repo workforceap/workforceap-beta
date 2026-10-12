@@ -1,5 +1,6 @@
 'use client';
 
+/** Coursera CTAs use native tracked links so rendering never prefetches a launch redirect. */
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,8 +15,6 @@ import { HStack } from '@astryxdesign/core/HStack';
 import { DesignSurface, PageOpener, KitEmptyState, useAnnounce } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import SkillMissionChallenge from '@/components/portal/SkillMissionChallenge';
-import { logCourseraLaunchFromPortal } from '@/app/(portal)/dashboard/_actions/analyticsActions';
-import { trackLearningMilestone } from '@/lib/analytics/events';
 import type { TrainingCoursePractice } from '@/lib/member/trainingCoursePractice';
 import { buildTrainingSchedule, isValidPlanDate, type TrainingWorkspace } from '@/lib/member/trainingWorkspace';
 import { IT_SUPPORT_LAB_SCOPE, listPracticeLabsForAssignment } from '@/lib/content/itSupportLabs';
@@ -60,20 +59,21 @@ function ContinueThisCourseButton({
   // `a { color: inherit }` in css/main.css beats any layered rule on an
   // anchor, so the Astryx `<a>` label inherited body text (2.69:1 on crimson).
   // `.wa-kit-cta` pairs --wa-accent with --wa-on-accent-control in both modes.
+  if (target.kind === 'coursera') {
+    return (
+      <TrackedCourseraLaunchLink
+        href={target.href}
+        courseSlug={courseSlug}
+        className="wa-kit-cta wa-kit-focus"
+      >
+        Continue this course
+      </TrackedCourseraLaunchLink>
+    );
+  }
   return (
     <Link
       href={target.href}
       className="wa-kit-cta wa-kit-focus"
-      target={target.kind === 'coursera' ? '_blank' : undefined}
-      rel={target.kind === 'coursera' ? 'noopener noreferrer' : undefined}
-      onClick={
-        target.kind === 'coursera'
-          ? () => {
-              void logCourseraLaunchFromPortal(courseSlug);
-              trackLearningMilestone('course_launched', courseSlug);
-            }
-          : undefined
-      }
     >
       Continue this course
     </Link>

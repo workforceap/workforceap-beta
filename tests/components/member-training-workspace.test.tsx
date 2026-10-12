@@ -7,12 +7,15 @@ import { MemberTrainingWorkspace, nextCourseContinueTarget } from '@/components/
 import type { TrainingWorkspace } from '@/lib/member/trainingWorkspace';
 import { PROGRAM_SYLLABI } from '@/shared/programSyllabi';
 import type { TrainingCoursePractice } from '@/lib/member/trainingCoursePractice';
+import { logCourseraLaunchFromPortal } from '@/app/(portal)/dashboard/_actions/analyticsActions';
+import { trackLearningMilestone } from '@/lib/analytics/events';
 
 // This is the server action called by the real Coursera launch link. Keep the
 // actual link, form controls, kit components, and workspace behavior mounted.
 vi.mock('@/app/(portal)/dashboard/_actions/analyticsActions', () => ({
   logCourseraLaunchFromPortal: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock('@/lib/analytics/events', () => ({ trackLearningMilestone: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const programSlug = 'it-support-professional-certificate-ibm';
@@ -70,6 +73,7 @@ function savedCourse(workspace: TrainingWorkspace, index: number, text: string, 
 }
 
 beforeEach(() => {
+  vi.clearAllMocks();
   window.history.replaceState(null, '', '/dashboard/program');
   // Browser capability shim for jsdom; no workspace component is mocked.
   vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
@@ -241,11 +245,30 @@ describe('member training workspace', () => {
     const courseraContinue = screen.getByRole('link', { name: 'Continue this course' });
     expect(courseraContinue).toHaveAttribute('href', launchHref);
     expect(courseraContinue).toHaveAttribute('target', '_blank');
+    expect(courseraContinue).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(courseraContinue).toHaveClass('wa-kit-cta', 'wa-kit-focus');
+    expect(logCourseraLaunchFromPortal).not.toHaveBeenCalled();
+    expect(trackLearningMilestone).not.toHaveBeenCalled();
+    // Keep jsdom local while exercising the real tracked link's click handler.
+    courseraContinue.addEventListener('click', (event) => event.preventDefault(), { once: true });
+    await userEvent.click(courseraContinue);
+    expect(logCourseraLaunchFromPortal).toHaveBeenCalledExactlyOnceWith(courseSlug(0));
+    expect(trackLearningMilestone).toHaveBeenCalledExactlyOnceWith('course_launched', courseSlug(0));
     unmount();
 
     mount(fixture(), [courseSlug(0), courseSlug(1), courseSlug(2), courseSlug(3), courseSlug(4), courseSlug(5), courseSlug(6), courseSlug(7), courseSlug(8)]);
     expect(screen.getByRole('link', { name: 'Continue this course' })).toHaveAttribute('href', moduleHref);
     expect(screen.getByRole('link', { name: 'Continue this course' })).not.toHaveAttribute('target', '_blank');
+  });
+
+  it('keeps the course-selection fallback when the next course has no launch destination', async () => {
+    mount(fixture(), [courseSlug(0)]);
+    await chooseCourse(8);
+    await userEvent.click(screen.getByRole('button', { name: 'Continue this course' }));
+    expect(within(editor()).getByRole('heading', { name: syllabus.courses[1].name })).toBeInTheDocument();
+    expect(logCourseraLaunchFromPortal).not.toHaveBeenCalled();
+    expect(trackLearningMilestone).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('carries only assigned identifiers into a reviewable feedback request', async () => {

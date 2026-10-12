@@ -223,11 +223,6 @@ export function fixtureConditionMatches(condition, role, claims) {
     // record because the source page redirects there only after that lookup.
     return role === 'member' && claims?.role === 'member' && claims?.superAdmin === false;
   }
-  if (condition === 'member_without_active_program_slug') {
-    // Both program subpages redirect to My Program when the fixture has no
-    // active program slug. The exact redirect proves that source guard ran.
-    return role === 'member' && claims?.role === 'member' && claims?.superAdmin === false;
-  }
   return false;
 }
 
