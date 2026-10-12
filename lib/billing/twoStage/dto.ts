@@ -348,7 +348,7 @@ export type RoleDeliveryView = {
   followUp: boolean;
 };
 
-export type TrainingView = { programSlug: string; className: string; contactHours: 160 | 200; classStartDate: IsoDate; classEndDate: IsoDate };
+export type TrainingView = { programSlug: string; className: string; classDescription?: string; contactHours: 160 | 200; classStartDate: IsoDate; classEndDate: IsoDate };
 
 export type StageVersionView = {
   recordId: string;
@@ -534,7 +534,7 @@ export type SignatureUploadAttestation = { statementConfirmed: boolean; statemen
 export type SignatureUploadDto = { signature: SignatureAssetDto; replaced: SignatureAssetDto | null };
 
 export type CaseSummaryDto = {
-  case: { id: string; programSlug: string; className: string | null; contactHours: 160 | 200 | null; createdAt: IsoInstant; createdBy: Actor };
+  case: { id: string; programSlug: string; className: string | null; classDescription: string | null; contactHours: 160 | 200 | null; createdAt: IsoInstant; createdBy: Actor };
   progress: CaseProgress;
   gates: Record<GateName, GateState>;
   viewer: { isExecutiveSigner: boolean; isDesignatedSigner: boolean };

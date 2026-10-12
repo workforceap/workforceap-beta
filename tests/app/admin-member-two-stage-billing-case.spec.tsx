@@ -176,6 +176,36 @@ describe('two-stage billing container (route integration)', () => {
     expect(end).toHaveValue('');
   });
 
+  it('shows the approved class, recorded dates and fixed costs while creating J5', async () => {
+    mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] })
+      : c.url.endsWith('/draft/review') ? jsonResponse(reviewDto()) : jsonResponse(j5DraftSummary()));
+    renderCase();
+    const edit = await screen.findByRole('button', { name: 'Edit J5 Quote / Voucher Request draft' });
+    fireEvent.click(edit);
+    const editor = within(await screen.findByRole('region', { name: 'J5 draft' }));
+    const facts = editor.getByRole('region', { name: 'J5 class and cost summary' });
+    expect(facts).toHaveTextContent('Google IT Support Professional Certificate');
+    expect(facts).toHaveTextContent('Learn IT support skills in this approved program.');
+    expect(facts).toHaveTextContent('Planned class start2026-10-05');
+    expect(facts).toHaveTextContent('Calculated class end2027-04-05');
+    expect(facts).toHaveTextContent('Training and Fees$7,500.00');
+    expect(facts).toHaveTextContent('Books & Supplies$0.00');
+    expect(facts).toHaveTextContent('Total Required Cost$7,500.00');
+  });
+
+  it('marks unrecorded dates as missing and keeps J6 on its single tuition item', async () => {
+    mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] })
+      : c.url.endsWith('/draft/review') ? jsonResponse(reviewDto({ stage: 'j6' })) : jsonResponse(emptyCaseSummary()));
+    renderCase();
+    const editor = within(await openEditor('j6'));
+    const facts = editor.getByRole('region', { name: 'J6 class and cost summary' });
+    expect(facts).toHaveTextContent('Actual class startNot provided');
+    expect(facts).toHaveTextContent('Calculated class endNot provided');
+    expect(facts).toHaveTextContent('Tuition & Fees$7,500.00');
+    expect(facts).not.toHaveTextContent('Books & Supplies');
+    expect(facts).not.toHaveTextContent('Class description');
+  });
+
   it('opens and downloads a mock of the exact saved J5 without opening the editor or taking a signing action', async () => {
     const calls = mockRoutes((c) => c.url === `${BASE}/cases`
       ? jsonResponse({ cases: [caseItem] })

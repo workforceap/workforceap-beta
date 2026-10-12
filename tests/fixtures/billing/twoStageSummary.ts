@@ -148,7 +148,7 @@ function j6View(overrides: Partial<J6StageView> = {}): J6StageView {
 /** A case with nothing recorded yet: no attestations, no drafts, every release gate closed except the migration. */
 export function emptyCaseSummary(overrides: Partial<CaseSummaryDto> = {}): CaseSummaryDto {
   return {
-    case: { id: CASE_ID, programSlug: training.programSlug, className: training.className, contactHours: 160, createdAt: '2026-09-28T14:00:00.000Z', createdBy: staff },
+    case: { id: CASE_ID, programSlug: training.programSlug, className: training.className, classDescription: 'Learn IT support skills in this approved program.', contactHours: 160, createdAt: '2026-09-28T14:00:00.000Z', createdBy: staff },
     progress: { j5: 'none', voucher: 'none', j6: 'none', payment: 'not_applicable' },
     gates: closedGates(),
     viewer: { isExecutiveSigner: false, isDesignatedSigner: false },

@@ -10,6 +10,16 @@ October 8 message `1a11d282193ca290` asks for website consistency; October 9
 `1a1212e2dac3decb` repeats the instruction and reports a missing AI program choice.
 Personal correspondence and applicant details are not copied here.
 
+On October 12, message `1a131637333e086f` reattached the 29-page catalog.
+Its complete extracted text (113,657 characters) has the same SHA-256
+`dd632566c390e6cd123fde2857784b4079b34fd63657e4cb81dfb1f56e5a06da`
+as the October 8 extraction; this does not establish that the PDF binaries are
+identical. The repeated J5 class-description, date and cost request is tracked
+as WAP-303 for creation/preview parity; the saved J5 PDF cost presentation was
+already shipped under WAP-292. Sending an enrollment template is separate
+WAP-304 work, distinct from current upload/review/download and WAP-288's
+controlled billing-mail acceptance. The catalog decisions below remain open.
+
 The owner's exact funding instruction is “All are funded except 0,1,14,15”.
 These are document numbers, not positions in the application's array:
 

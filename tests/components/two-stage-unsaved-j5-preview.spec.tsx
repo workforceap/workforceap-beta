@@ -38,7 +38,9 @@ function mockNetwork(mockResponse: (call: Call) => Response | Promise<Response> 
 }
 
 function editor(caseId = CASE_ID, stage: 'j5' | 'j6' = 'j5') {
-  return <TwoStageStageEditor memberId={MEMBER_ID} caseId={caseId} stage={stage} canSaveDraft={false} onSaved={onSaved} onClose={onClose} />;
+  return <TwoStageStageEditor memberId={MEMBER_ID} caseId={caseId} stage={stage}
+    classFacts={{ name: 'Sample Certificate', description: 'Approved syllabus description.', hours: 160, start: '2026-09-30', end: '2027-03-30' }}
+    canSaveDraft={false} onSaved={onSaved} onClose={onClose} />;
 }
 
 async function startPreview() {
@@ -74,7 +76,7 @@ describe('editor PDF preview', () => {
       method: 'POST', body: {
         boardName: 'Unsaved Board', student: { name: 'Sam Student', email: 'sam@example.test' },
         counselor: { name: 'Unsaved Counselor', email: 'counselor@example.test', phone: '512-555-0100' },
-        caseId: CASE_ID,
+        caseId: CASE_ID, previewSource: 'editor',
       },
     });
     expect(calls.every((call) => call.method === 'POST' && [REVIEW, `${BASE}/j5/preview`].includes(call.url))).toBe(true);

@@ -6,6 +6,7 @@ import 'server-only';
  * every check. No I/O.
  */
 import type { BillingArtifact, BillingAttestation, BillingPaymentEvent } from '@prisma/client';
+import { getProgramSyllabus } from '@/shared/programSyllabi';
 import { CONTENT_VERSION, CONTENT_VERSION_UPGRADE_MESSAGE, type BillingStage } from '../constants';
 import type { J5Content, J6Content } from '../content';
 import { billingToday, classEndDate, compareIsoDates } from '../dates';
@@ -226,16 +227,18 @@ export function voucherAttestationView(snapshot: CaseSnapshot, row: BillingAttes
 export function versionView(snapshot: CaseSnapshot, memberId: string, record: RecordWithRelations, now: Date): StageVersionView {
   const signedArtifact = record.signedArtifactId ? snapshot.artifacts.find((f) => f.id === record.signedArtifactId) : undefined;
   const closedAt = record.supersededAt ?? record.voidedAt;
+  const content = recordContent<J5Content | J6Content>(record);
   return {
     recordId: record.id,
     version: record.version,
     status: record.status as StageStatus,
     documentNumber: record.documentNumber,
     versionHash: record.contentSha256,
-    issueDate: (recordContent<J5Content>(record).issueDate ?? '') as string,
+    issueDate: content.issueDate ?? '',
     training: {
       programSlug: snapshot.billingCase.programSlug,
       className: record.className,
+      ...(content.training.classDescription ? { classDescription: content.training.classDescription } : {}),
       contactHours: record.contactHours as 160 | 200,
       classStartDate: isoDate(record.classStartDate) ?? '',
       classEndDate: isoDate(record.classEndDate) ?? '',
@@ -644,6 +647,7 @@ export function buildCaseSummary(input: SummaryInput): CaseSummaryDto {
       id: snapshot.billingCase.id,
       programSlug: snapshot.billingCase.programSlug,
       className: terms.ok ? terms.className : null,
+      classDescription: terms.ok ? getProgramSyllabus(terms.canonicalSlug)?.description.replace(/\s+/gu, ' ').trim() ?? null : null,
       contactHours: terms.ok ? terms.hours : null,
       createdAt: snapshot.billingCase.createdAt.toISOString(),
       createdBy: actor(snapshot, snapshot.billingCase.createdBySubjectId),

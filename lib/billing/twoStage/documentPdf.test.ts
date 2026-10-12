@@ -134,6 +134,46 @@ describe('two-stage WAP billing PDFs', () => {
     assert.match(text, /x\.\.\./u);
   });
 
+  it('prints approved descriptions, six-month dates and the fixed J5 costs in one-page member previews', async () => {
+    for (const syllabus of Object.values(PROGRAM_SYLLABI)) {
+      const facts = j5();
+      const { text, positions } = await extract(await renderBillingDocumentPreviewPdf({
+        stage: 'j5', preparedAt: facts.frozenAt, student: facts.student,
+        counselor: facts.counselor, finance: { name: null, email: null }, boardName: facts.boardName,
+        className: syllabus.title, classDescription: syllabus.description, classHours: syllabus.totalHours,
+        classStartDate: facts.classStartDate, classEndDate: facts.classEndDate, voucherReference: null,
+        sourceNote: 'Approved program selected for preview.', signer: facts.signer, letterhead: facts.letterhead,
+      }));
+      assert.ok(text.replace(/\s+/gu, ' ').includes(syllabus.description.replace(/\s+/gu, ' ').trim()), syllabus.slug);
+      assert.match(text, /CLASS DESCRIPTION/u, syllabus.slug);
+      assert.match(text, /September 30, 2026.*March 30, 2027/u, syllabus.slug);
+      assert.match(text, /Training and Fees\s+\$7,500\.00\s+Books & Supplies\s+\$0\.00\s+Total Required Cost\s+\$7,500\.00/u, syllabus.slug);
+      for (const p of positions) assert.ok(p.y >= 25 && p.y <= 775, `${syllabus.slug}: text y=${p.y} escaped page`);
+    }
+  });
+
+  it('marks missing and oversized J5 descriptions without losing an incomplete preview', async () => {
+    const facts = j5();
+    const common = {
+      stage: 'j5' as const, preparedAt: facts.frozenAt, student: facts.student,
+      counselor: facts.counselor, finance: { name: null, email: null }, boardName: facts.boardName,
+      className: facts.className, classHours: facts.classHours, classStartDate: null, classEndDate: null,
+      voucherReference: null, sourceNote: 'Review only.', signer: facts.signer, letterhead: facts.letterhead,
+    };
+    const missing = await extract(await renderBillingDocumentPreviewPdf(common));
+    assert.match(missing.text, /CLASS DESCRIPTION\s+\[Not provided\]/u);
+    assert.equal(missing.text.match(/CLASS DESCRIPTION/gu)?.length, 1);
+    const oversized = await extract(await renderBillingDocumentPreviewPdf({ ...common, classDescription: 'word '.repeat(1000) }));
+    assert.match(oversized.text, /CLASS DESCRIPTION\s+\[Description exceeds preview layout\]/u);
+    assert.equal(oversized.text.match(/CLASS DESCRIPTION/gu)?.length, 1);
+    const unprintable = await extract(await renderBillingDocumentPreviewPdf({ ...common, classDescription: 'A class with 李' }));
+    assert.match(unprintable.text, /CLASS DESCRIPTION\s+\[Text unavailable in preview\]/u);
+    assert.equal(unprintable.text.match(/CLASS DESCRIPTION/gu)?.length, 1);
+    for (const preview of [missing, oversized, unprintable]) {
+      for (const p of preview.positions) assert.ok(p.y >= 25 && p.y <= 775, `preview text y=${p.y} escaped page`);
+    }
+  });
+
   it('renders an explicit one-page mock with visible review-only marks and a blank signature', async () => {
     const bytes = await renderJ5QuoteVoucherRequestMockPdf(j5());
     const pdf = await PDFDocument.load(bytes);

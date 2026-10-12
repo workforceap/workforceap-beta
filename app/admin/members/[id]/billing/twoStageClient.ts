@@ -137,7 +137,7 @@ export function documentPreviewPath(memberId: string, stage: BillingStage, caseI
 }
 
 /** Read-only POST: typed fields are rendered to a PDF without saving a draft. */
-async function requestPreviewPdf(path: string, body: DraftPatch<'j6'> & { caseId?: string }, signal?: AbortSignal): Promise<ApiResult<Blob>> {
+async function requestPreviewPdf(path: string, body: DraftPatch<'j6'> & { caseId?: string; previewSource?: 'editor' }, signal?: AbortSignal): Promise<ApiResult<Blob>> {
   const unavailable = 'The PDF could not be loaded. Try again.';
   try {
     const res = await fetchWithTimeout(path, {
@@ -189,7 +189,7 @@ export const twoStageApi = {
 
   reviewDraft: <S extends BillingStage>(memberId: string, caseId: string, stage: S, body: DraftPatch<S>, signal?: AbortSignal) =>
     request<DraftReviewDto>(`${caseBase(memberId, caseId)}/${stage}/draft/review`, { method: 'POST', json: body, signal }),
-  previewDocument: (memberId: string, stage: BillingStage, body: DraftPatch<'j6'> & { caseId?: string }, signal?: AbortSignal) =>
+  previewDocument: (memberId: string, stage: BillingStage, body: DraftPatch<'j6'> & { caseId?: string; previewSource?: 'editor' }, signal?: AbortSignal) =>
     requestPreviewPdf(documentPreviewPath(memberId, stage), body, signal),
   saveDraft: <S extends BillingStage>(memberId: string, caseId: string, stage: S, body: DraftSaveRequest<S>) =>
     request<DraftSaveDto>(`${caseBase(memberId, caseId)}/${stage}/draft`, { method: 'PUT', json: body }),
