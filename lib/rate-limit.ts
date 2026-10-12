@@ -93,6 +93,8 @@ let adminInviteRateLimiter: Ratelimit | null = null;
 // the domain reputation craters. 3 bulk-sends per hour per admin
 // covers normal communications while blocking compromise/abuse.
 let bulkEmailRateLimiter: Ratelimit | null = null;
+let enrollmentTemplateAdminRateLimiter: Ratelimit | null = null;
+let enrollmentTemplateMemberRateLimiter: Ratelimit | null = null;
 let employerJobImportRateLimiter: Ratelimit | null = null;
 let partnerSignupRateLimiter: Ratelimit | null = null;
 let confirmationEmailRateLimiter: Ratelimit | null = null;
@@ -319,6 +321,12 @@ if (redisUrl && redisToken) {
     redis,
     limiter: Ratelimit.slidingWindow(3, '1 h'),
     prefix: 'ratelimit:bulk-email',
+  });
+  enrollmentTemplateAdminRateLimiter = new Ratelimit({
+    redis, limiter: Ratelimit.slidingWindow(30, '1 h'), prefix: 'ratelimit:enrollment-template-admin',
+  });
+  enrollmentTemplateMemberRateLimiter = new Ratelimit({
+    redis, limiter: Ratelimit.slidingWindow(8, '1 d'), prefix: 'ratelimit:enrollment-template-member',
   });
   employerJobImportRateLimiter = new Ratelimit({
     redis,
@@ -592,6 +600,16 @@ export async function checkAdminInviteRateLimit(userId: string): Promise<{ succe
  */
 export async function checkBulkEmailRateLimit(userId: string, request?: Request): Promise<{ success: boolean; remaining?: number }> {
   return failClosedLimit(bulkEmailRateLimiter, 'bulk-email', `bulk-email:${userId}`, request);
+}
+
+/** Explicit agreement-template sends and bounded same-key retries. */
+export async function checkEnrollmentTemplateSendRateLimit(
+  adminId: string, memberId: string, request?: Request,
+): Promise<{ success: boolean }> {
+  const admin = await failClosedLimit(enrollmentTemplateAdminRateLimiter, 'enrollment-template-admin', adminId, request);
+  if (!admin.success) return { success: false };
+  const member = await failClosedLimit(enrollmentTemplateMemberRateLimiter, 'enrollment-template-member', memberId, request);
+  return { success: member.success };
 }
 
 /** Per-user cap on employer job import POSTs (single + bulk share one bucket). Fail-open without Redis. */

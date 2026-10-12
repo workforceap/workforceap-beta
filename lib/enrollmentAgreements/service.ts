@@ -32,7 +32,7 @@ export async function getAgreementSummary(actor: EnrollmentAgreementActor, membe
   }));
   const current = submissions.find((row) => row.isCurrent);
   return { status: (current?.status ?? 'missing') as EnrollmentAgreementCoverageStatus,
-    canUpload: access.canUpload, canReview: access.canReview && current?.status === 'pending',
+    canUpload: access.canUpload, canReview: access.canReview && current?.status === 'pending', canSendTemplate: access.canSendTemplate,
     templateUrl: ENROLLMENT_TEMPLATE_URL, submissions: submissions.map(submissionView) };
 }
 

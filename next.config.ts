@@ -56,6 +56,7 @@ const nextConfig: NextConfig = {
   // unavailable/stale knowledge response.
   outputFileTracingIncludes: {
     '/api/enrollment-agreements/template': ['./assets/enrollment/workforceap-enrollment-2026.pdf'],
+    '/api/enrollment-agreements/template/send': ['./assets/enrollment/workforceap-enrollment-2026.pdf'],
     '/api/enrollment-agreements': [
       './lib/enrollmentAgreements/pdf-validation-worker.cjs',
       './node_modules/pdf-lib/**/*',
