@@ -122,7 +122,7 @@ import {
   TOTAL_POINTS,
 } from '@/lib/assessment/answer-key';
 import { ASSESSMENT_QUESTIONS_PUBLIC } from '@/lib/assessment/questions';
-import { layoutAssessment } from '@/lib/assessment/layout';
+import { layoutAssessment, MISSING_ATTEMPT_SEED_MESSAGE } from '@/lib/assessment/layout';
 import { prisma } from '@/lib/db/prisma';
 import { getUser } from '@/lib/auth/server';
 import { getCounselorStarterProfileReview } from '@/lib/member/starterProfileReview';
@@ -208,6 +208,7 @@ describe('POST /api/member/assessment/submit', () => {
     lastName: 'Doe',
     phone: '512-555-1234',
     programInterest: 'Digital Literacy Empowerment Class (6 weeks, 30 hours total)',
+    seed: 'honest-1',
     answers: {
       '1': 'A',
       '2': 'C',
@@ -397,6 +398,46 @@ describe('POST /api/member/assessment/submit', () => {
 
     expect(res.status).toBe(422);
     expect((await res.json()).code).toBe('ANSWERS_ALL_SAME');
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
+  it('refuses a shuffled click-through when the attempt seed is omitted', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const seed = 'click-through';
+    const answers = Object.fromEntries(
+      layoutAssessment(ASSESSMENT_QUESTIONS_PUBLIC, seed).map((q) => [String(q.id), q.choices[0].value]),
+    );
+
+    const res = await submitAssessment(makeRequest({
+      firstName: validBody.firstName,
+      lastName: validBody.lastName,
+      phone: validBody.phone,
+      programInterest: validBody.programInterest,
+      answers,
+    }));
+
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.code).toBe('MISSING_ATTEMPT_SEED');
+    expect(body.error).toBe(MISSING_ATTEMPT_SEED_MESSAGE);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
+  it('refuses a shuffled click-through when the attempt seed is invalid', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const seed = 'click-through';
+    const answers = Object.fromEntries(
+      layoutAssessment(ASSESSMENT_QUESTIONS_PUBLIC, seed).map((q) => [String(q.id), q.choices[0].value]),
+    );
+
+    const res = await submitAssessment(makeRequest({ ...validBody, answers, seed: 'not a seed' }));
+
+    expect(res.status).toBe(422);
+    expect((await res.json()).code).toBe('MISSING_ATTEMPT_SEED');
     expect(prisma.user.updateMany).not.toHaveBeenCalled();
     expect(resendSend).not.toHaveBeenCalled();
   });
