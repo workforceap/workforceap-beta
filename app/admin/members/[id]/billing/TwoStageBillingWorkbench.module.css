@@ -628,7 +628,7 @@
 }
 
 .draftFacts .summary {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem 1rem;
 }
 
@@ -883,7 +883,8 @@
     width: 100%;
   }
 
-  .fieldGrid {
+  .fieldGrid,
+  .draftFacts .summary {
     grid-template-columns: 1fr;
   }
 
