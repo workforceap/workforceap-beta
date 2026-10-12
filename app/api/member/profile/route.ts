@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
+import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { loadProgramRouteAuditFacts } from '@/lib/member/programRouteAuditFacts';
 
 const updateSchema = z.object({
   fullName: z.string().min(1).max(200).optional(),
@@ -14,7 +16,7 @@ const updateSchema = z.object({
   city: z.string().max(100).optional().nullable(),
   state: z.string().max(50).optional().nullable(),
   zip: z.string().max(20).optional().nullable(),
-});async function _GET() {
+});async function _GET(request: Request) {
   try {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -25,7 +27,14 @@ const updateSchema = z.object({
   }));
   if (!dbUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
+  const programRouteFacts =
+    new URL(request.url).searchParams.get('portalAudit') === 'program-subpages' &&
+    isReadOnlyPortalAuditHeader(request.headers)
+      ? await loadProgramRouteAuditFacts(user.id)
+      : undefined;
+
   return NextResponse.json({
+    ...(programRouteFacts ? { programRouteFacts } : {}),
     user: {
       id: dbUser.id,
       email: dbUser.email,

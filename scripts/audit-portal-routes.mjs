@@ -73,6 +73,11 @@ import {
   formatPortalRouteInventoryDrift,
 } from './lib/portal-audit-inventory.mjs';
 import {
+  MEMBER_PROGRAM_FIXTURE_CONDITION,
+  memberProgramRouteExpectation,
+  readMemberProgramRouteFacts,
+} from './lib/portal-audit-program-routes.mjs';
+import {
   formatPortalAuditTargetErrors,
   normalizePortalAuditMode,
   validatePortalAuditTarget,
@@ -895,6 +900,9 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
   const results = [];
 
   try {
+    const programFacts = entries.some((entry) => entry.fixtureCondition === MEMBER_PROGRAM_FIXTURE_CONDITION)
+      ? await readMemberProgramRouteFacts(context.request, trustedOrigin, remainingTimeout(10_000))
+      : null;
     for (const entry of entries) {
       const resolved = resolveRedirectAuditEntry(entry, resolvedPaths);
       const missingFixtureOutcome = resolved
@@ -927,7 +935,27 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         results.push(result);
         continue;
       }
-      if (!fixtureConditionMatches(entry.fixtureCondition, role, fixtureClaims)) {
+      const programExpectation = entry.fixtureCondition === MEMBER_PROGRAM_FIXTURE_CONDITION
+        ? memberProgramRouteExpectation(entry.path, role, fixtureClaims, programFacts)
+        : null;
+      if (programExpectation) {
+        result.programFixture = {
+          source: 'authenticated_read_only_profile',
+          facts: programFacts?.facts ?? null,
+          expectedBehavior: programExpectation.behavior,
+        };
+        result.target = programExpectation.target;
+        resolved.targetPath = programExpectation.target;
+        result.resolvedTargetPath = programExpectation.target;
+        if (programExpectation.behavior === 'unavailable' || programExpectation.behavior === 'unverified') {
+          result.status = programExpectation.behavior === 'unavailable' ? 'not_applicable' : 'failed';
+          result.resultReason = programExpectation.reason;
+          result.resolvedTargetPath = null;
+          if (result.status === 'failed') result.failureReasons.push(programExpectation.reason);
+          results.push(result);
+          continue;
+        }
+      } else if (!fixtureConditionMatches(entry.fixtureCondition, role, fixtureClaims)) {
         result.failureReasons.push('fixture_condition_mismatch');
         result.resultReason = 'fixture_condition_not_verified';
         results.push(result);
@@ -971,7 +999,12 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           remainingTimeout(7_000)
         );
         await waitForPortalReady(page, remainingTimeout(5_000));
-        if (entry.fixtureCondition) {
+        if (programExpectation?.behavior === 'render') {
+          await waitForPortalRouteContent(page, remainingTimeout(5_000)).catch(() => {});
+          await page.getByRole('heading', { level: 1, name: programExpectation.heading, exact: true })
+            .waitFor({ state: 'visible', timeout: remainingTimeout(5_000) })
+            .catch(() => result.failureReasons.push('program_route_heading_missing'));
+        } else if (entry.fixtureCondition) {
           await page.locator('h1:visible').first().waitFor({
             state: 'visible',
             timeout: remainingTimeout(5_000),
@@ -999,20 +1032,26 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         }));
         if (result.failureReasons.length === 0) {
           result.status = 'passed';
-          result.resultReason = entry.target === '/partners#partner-signup'
+          result.resultReason = programExpectation?.behavior === 'render'
+            ? 'fixture_program_page_render_verified'
+            : entry.target === '/partners#partner-signup'
             ? 'public_partner_signup_redirect_verified'
             : entry.fixtureCondition
               ? 'fixture_conditional_redirect_verified'
               : 'exact_internal_redirect_verified';
         } else {
-          result.resultReason = entry.fixtureCondition
+          result.resultReason = programExpectation?.behavior === 'render'
+            ? 'fixture_program_page_unhealthy'
+            : entry.fixtureCondition
             ? 'fixture_conditional_redirect_unhealthy'
             : 'redirect_target_unhealthy';
         }
       } catch (error) {
         result.finalUrl = sanitizeAuditUrl(page.url(), allDynamicPatterns);
         result.failureReasons.push(sanitizePortalDiagnostic(error?.message ?? String(error)));
-        result.resultReason = 'redirect_probe_failed';
+        result.resultReason = programExpectation?.behavior === 'render'
+          ? 'program_page_probe_failed'
+          : 'redirect_probe_failed';
       } finally {
         page.off('console', handleConsole);
         page.off('pageerror', handlePageError);

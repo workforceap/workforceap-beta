@@ -380,10 +380,10 @@ export const ATTENDED_ACTION_GATES = {
 };
 
 /**
- * App Router pages that redirect for the audited fixture (including permanent
- * aliases and explicit role/data gates). These are checked as exact redirects,
- * not counted as independently rendered static pages. A fixtureCondition is
- * verified against the authenticated role before its redirect can pass.
+ * App Router aliases and fixture-dependent pages. Program subpages select a
+ * healthy redirect or render from authenticated read-only resolver facts;
+ * absent screening packs are explicit noncoverage. Entries remain separate
+ * from unconditional static-page coverage.
  */
 export const REDIRECT_ONLY_PATHS = {
   member: [
@@ -396,8 +396,8 @@ export const REDIRECT_ONLY_PATHS = {
     ...['/dashboard/program/start', '/dashboard/program/employer-screening'].map((path) => ({
       path,
       target: '/dashboard/program',
-      reason: 'member_without_active_program_slug',
-      fixtureCondition: 'member_without_active_program_slug',
+      reason: 'member_program_route_depends_on_verified_fixture',
+      fixtureCondition: 'member_program_route',
     })),
     {
       path: '/dashboard/ai-tools/application-tracker',

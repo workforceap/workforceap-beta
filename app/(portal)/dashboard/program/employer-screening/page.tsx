@@ -3,12 +3,12 @@ import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
 import { buildPageMetadata } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
-import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import PageHeader from '@/components/portal/PageHeader';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
+import { loadMemberEmployerScreeningPack, loadMemberEmployerScreeningProgram } from '@/lib/member/employerScreeningRoute';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Employer screening',
@@ -22,30 +22,8 @@ export default async function EmployerScreeningMemberPage() {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/program/employer-screening');
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: {
-      enrolledProgram: true,
-      courseEnrollments: {
-        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
-        take: 1,
-        select: { programSlug: true, curriculumVersion: true },
-      },
-      courseProgress: {
-        select: {
-          programSlug: true,
-          courseSlug: true,
-          courseId: true,
-          status: true,
-          percentComplete: true,
-        },
-      },
-    },
-  });
-  if (!dbUser) redirect('/dashboard/program');
-  const activeEnrollment = dbUser.courseEnrollments[0] ?? null;
-  const slug = activeEnrollment?.programSlug ?? dbUser.enrolledProgram;
-  if (!slug) redirect('/dashboard/program');
+  const { dbUser, activeEnrollment, slug } = await loadMemberEmployerScreeningProgram(user.id);
+  if (!dbUser || !slug) redirect('/dashboard/program');
 
   const program = getProgramBySlug(slug);
   const curriculumCourses = program
@@ -70,14 +48,10 @@ export default async function EmployerScreeningMemberPage() {
   const done = reconciliation.completedCount;
   const nearComplete = total > 0 && reconciliation.programPercent >= 85;
 
-  const pack = await prisma.employerScreeningPack.findFirst({
-    where: { programSlug: slug, isActive: true },
-    orderBy: { updatedAt: 'desc' },
-  });
-  if (!pack) notFound();
+  const { pack, status } = await loadMemberEmployerScreeningPack(slug);
+  if (!pack || status !== 'available') notFound();
 
   const questions = (pack.questionsJson as unknown) as Question[];
-  if (!Array.isArray(questions)) notFound();
 
   return (
     <>

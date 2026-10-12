@@ -415,6 +415,7 @@
         "resolvedTargetPath": { "type": ["string", "null"] },
         "status": { "enum": ["passed", "failed", "not_applicable"] },
         "resultReason": { "type": "string" },
+        "programFixture": { "$ref": "#/$defs/programFixture" },
         "finalUrl": { "type": ["string", "null"] },
         "failureReasons": { "type": "array", "items": { "type": "string" } },
         "consoleErrors": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
@@ -427,6 +428,43 @@
         "pendingDataRequests": { "type": "array", "items": { "$ref": "#/$defs/pendingDataRequest" }, "maxItems": 10 },
         "blockedTelemetryRequestCount": { "type": "integer", "minimum": 0 },
         "suppressedSideEffectRequestCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "programFixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "facts", "expectedBehavior"],
+      "properties": {
+        "source": { "const": "authenticated_read_only_profile" },
+        "expectedBehavior": { "enum": ["redirect", "render", "unavailable", "unverified"] },
+        "facts": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["version", "start", "employerScreening"],
+              "properties": {
+                "version": { "const": 1 },
+                "start": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["hasResolvedProgram"],
+                  "properties": { "hasResolvedProgram": { "type": "boolean" } }
+                },
+                "employerScreening": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["hasResolvedProgram", "pack"],
+                  "properties": {
+                    "hasResolvedProgram": { "type": "boolean" },
+                    "pack": { "enum": ["available", "absent", "invalid", "not_applicable"] }
+                  }
+                }
+              }
+            }
+          ]
+        }
       }
     },
     "redirectCoverage": {

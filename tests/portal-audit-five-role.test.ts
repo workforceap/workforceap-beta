@@ -353,7 +353,7 @@ describe('portal route inventory gate', () => {
     ).toBe(true);
   });
 
-  it('keeps fixture-gated pages out of rendered static coverage and in exact redirect coverage', () => {
+  it('keeps fixture-gated pages out of unconditional static coverage and inventories their conditional checks', () => {
     const adminGates = [
       '/admin/audit-logs',
       '/admin/csp-report',
@@ -377,8 +377,8 @@ describe('portal route inventory gate', () => {
       expect(REDIRECT_ONLY_PATHS.member).toContainEqual({
         path,
         target: '/dashboard/program',
-        reason: 'member_without_active_program_slug',
-        fixtureCondition: 'member_without_active_program_slug',
+        reason: 'member_program_route_depends_on_verified_fixture',
+        fixtureCondition: 'member_program_route',
       });
     }
     expect(STATIC_PATHS.member).not.toContain('/dashboard/mentor');
@@ -1164,7 +1164,8 @@ describe('read-only portal action contracts', () => {
     expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: false })).toBe(true);
     expect(fixtureConditionMatches('regular_admin', 'admin', { role: 'admin', superAdmin: true })).toBe(false);
     expect(fixtureConditionMatches('member_without_mentor', 'member', { role: 'member', superAdmin: false })).toBe(true);
-    expect(fixtureConditionMatches('member_without_active_program_slug', 'member', { role: 'member', superAdmin: false })).toBe(true);
+    expect(fixtureConditionMatches('member_without_active_program_slug', 'member', { role: 'member', superAdmin: false })).toBe(false);
+    expect(fixtureConditionMatches('member_program_route', 'member', { role: 'member', superAdmin: false })).toBe(false);
     expect(fixtureConditionMatches('unknown_condition', 'member', { role: 'member', superAdmin: false })).toBe(false);
 
     const destination = {
@@ -1739,6 +1740,14 @@ describe('portal row quality signals', () => {
     expect(schema.$defs.redirectResult.required).toContain('pendingDataRequestCount');
     expect(schema.$defs.redirectResult.required).toContain('pageErrors');
     expect(schema.$defs.redirectResult.required).toContain('consoleErrors');
+    expect(schema.$defs.redirectResult.properties.programFixture.$ref).toBe('#/$defs/programFixture');
+    expect(schema.$defs.programFixture.additionalProperties).toBe(false);
+    expect(schema.$defs.programFixture.properties.expectedBehavior.enum).toEqual([
+      'redirect', 'render', 'unavailable', 'unverified',
+    ]);
+    expect(schema.$defs.programFixture.properties.facts.anyOf[1].properties.employerScreening.properties.pack.enum).toEqual([
+      'available', 'absent', 'invalid', 'not_applicable',
+    ]);
     expect(schema.properties.summary.anyOf[1].required).toContain('abortedDataRequestCount');
     expect(schema.properties.executionPolicy.properties.actions.enum).toContain(
       'root_access_only',

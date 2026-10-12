@@ -21,6 +21,11 @@ awaiting approval and approved cascades with incomplete delivery. Delivery
 rows stay visible for retry or staff reconciliation; provider acceptance is
 not labelled as confirmed inbox delivery.
 
+Member training Coursera CTAs use `TrackedCourseraLaunchLink` (a native anchor)
+for `/api/member/coursera/launch` redirects. Next `Link` would prefetch the launch
+as RSC before a click and trigger cross-origin CSP errors. Keep Next `Link` for
+in-app modules; preserve the tracked new-tab action and kit CTA classes.
+
 ---
 
 ## 1. Token families — which one to use
