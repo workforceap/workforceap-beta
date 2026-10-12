@@ -18,6 +18,24 @@ import styles from './enrollment.module.css';
 
 export const AGREEMENT_TONES = { missing: 'muted', pending: 'warn', verified: 'ok', needs_correction: 'alert' } as const;
 
+interface TemplateSendView {
+  memberName: string;
+  memberEmail: string;
+  templateVersion: string;
+  available: boolean;
+  latest: null | {
+    operationId: string;
+    status: string;
+    requestedAt: string;
+    acceptedAt: string | null;
+    deliveryEvent: string | null;
+    deliveryEventAt: string | null;
+    matchesCurrentRecipient: boolean;
+    matchesCurrentPayload: boolean;
+    canRetry: boolean;
+  };
+}
+
 export function AgreementStatus({ status }: { status: EnrollmentAgreementCoverageStatus }) {
   const t = useTranslations('enrollmentAgreement');
   return <StatusTag tone={AGREEMENT_TONES[status]}>{t(`status.${status}`)}</StatusTag>;
@@ -42,11 +60,16 @@ function AgreementCardForMember({ memberId }: { memberId?: string }) {
   const [previous, setPrevious] = useState(false);
   const [attested, setAttested] = useState(false);
   const [note, setNote] = useState('');
+  const [sendView, setSendView] = useState<TemplateSendView | null>(null);
+  const [sendError, setSendError] = useState('');
+  const [sendConfirmed, setSendConfirmed] = useState(false);
   const lock = useRef(false);
   const lifetime = useRef<AbortController | null>(null);
   const endpoint = '/api/enrollment-agreements' + (memberId ? `?memberId=${encodeURIComponent(memberId)}` : '');
 
   const reload = useCallback(async (signal: AbortSignal) => {
+    setSendView(null);
+    setSendConfirmed(false);
     const response = await fetchWithTimeout(endpoint, { signal, cache: 'no-store' });
     await requireAgreementResponse(response);
     const data: EnrollmentAgreementSummary = await response.json();
@@ -55,7 +78,19 @@ function AgreementCardForMember({ memberId }: { memberId?: string }) {
       setAttested(false);
       setNote('');
     }
-  }, [endpoint]);
+    if (memberId && data.canSendTemplate) {
+      try {
+        const sendResponse = await fetchWithTimeout(`/api/enrollment-agreements/template/send?memberId=${encodeURIComponent(memberId)}`, { signal, cache: 'no-store' });
+        await requireAgreementResponse(sendResponse);
+        const sendData: TemplateSendView = await sendResponse.json();
+        if (!signal.aborted) {
+          setSendView(sendData); setSendError('');
+        }
+      } catch (err) {
+        if (!signal.aborted) setSendError(agreementRequestError(err));
+      }
+    }
+  }, [endpoint, memberId]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -118,6 +153,33 @@ function AgreementCardForMember({ memberId }: { memberId?: string }) {
     }, t('reviewSaved'));
   };
 
+  const sendTemplate = async () => {
+    if (!memberId || !sendView?.available || !sendConfirmed || lock.current || !lifetime.current) return;
+    const operationId = sendView.latest?.canRetry ? sendView.latest.operationId : crypto.randomUUID();
+    lock.current = true; setBusy(true); setSendError(''); setNotice('');
+    const signal = lifetime.current.signal;
+    try {
+      const response = await fetchWithTimeout('/api/enrollment-agreements/template/send', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
+        body: JSON.stringify({ memberId, operationId, templateVersion: ENROLLMENT_TEMPLATE_VERSION,
+          recipientEmail: sendView.memberEmail, expectedLatestOperationId: sendView.latest?.operationId ?? null }),
+      }, 60_000);
+      await requireAgreementResponse(response);
+      if (!signal.aborted) {
+        setSendConfirmed(false);
+        setNotice(t('sendAccepted'));
+        announce(t('sendAccepted'));
+      }
+    } catch (err) {
+      if (!signal.aborted) { setSendError(agreementRequestError(err)); announce(agreementRequestError(err), 'assertive'); }
+    } finally {
+      if (!signal.aborted) {
+        try { await reload(signal); } catch (err) { setSendError(agreementRequestError(err)); }
+        lock.current = false; setBusy(false);
+      }
+    }
+  };
+
   return (
     <section className={`wa-kit-card ${styles.card}`} aria-labelledby={headingId} aria-busy={loading || busy} data-testid="enrollment-agreement">
       <div className={styles.row}>
@@ -131,6 +193,27 @@ function AgreementCardForMember({ memberId }: { memberId?: string }) {
       {summary && <>
         <p>{t(`explanation.${summary.status}`)}</p>
         <a className={`wa-kit-focus ${styles.link}`} href={summary.templateUrl} download>{t('downloadTemplate')}</a>
+        {memberId && summary.canSendTemplate && <div className={styles.stack}>
+          <h3 className={styles.subtitle}>{t('sendTitle')}</h3>
+          {sendError && <p className={styles.error} role="alert">{sendError}</p>}
+          {sendView && <>
+            <p>{t('sendRecipient', { name: sendView.memberName, email: sendView.memberEmail })}</p>
+            <p className={styles.muted}>{t('sendVersion', { version: sendView.templateVersion })}</p>
+            {sendView.latest && <p className={styles.muted}>{
+              sendView.latest.status === 'sent'
+                ? t('sendLatestAccepted', { date: new Date(sendView.latest.acceptedAt ?? sendView.latest.requestedAt).toLocaleString(locale) })
+                : sendView.latest.canRetry ? t('sendLatestRetry') : t('sendLatestReconcile')
+            }{sendView.latest?.deliveryEvent === 'delivered' ? ` ${t('sendDelivered')}` : ''}</p>}
+            {sendView.latest && !sendView.latest.matchesCurrentPayload && <p className={styles.muted}>{t('sendAddressChanged')}</p>}
+            {!sendView.available && <p className={styles.muted}>{t('sendUnavailable')}</p>}
+            {sendView.available && (sendView.latest?.status === 'sent' || !sendView.latest || sendView.latest.canRetry) && <>
+              <CheckboxInput label={t('sendConfirm', { name: sendView.memberName, email: sendView.memberEmail, version: sendView.templateVersion })}
+                value={sendConfirmed} onChange={setSendConfirmed} isDisabled={busy} />
+              <Button label={sendView.latest?.canRetry ? t('sendRetry') : t('sendButton')}
+                onClick={() => void sendTemplate()} isDisabled={!sendConfirmed || busy || loading} isLoading={busy} />
+            </>}
+          </>}
+        </div>}
         <p className={styles.muted}>{t('instructions')}</p>
         <p className={styles.muted}>{t('privacy')}</p>
         {current && <div className={styles.current}>

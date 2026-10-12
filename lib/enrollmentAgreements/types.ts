@@ -23,6 +23,7 @@ export interface EnrollmentAgreementSummary {
   status: EnrollmentAgreementCoverageStatus;
   canUpload: boolean;
   canReview: boolean;
+  canSendTemplate: boolean;
   templateUrl: string;
   submissions: EnrollmentAgreementSubmissionView[];
 }

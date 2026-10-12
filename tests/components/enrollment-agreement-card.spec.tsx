@@ -17,7 +17,7 @@ const fetchMock = vi.fn<typeof fetch>();
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 const provider = (ui: ReactElement) => <NextIntlClientProvider locale="en" timeZone="UTC" messages={messages}>{ui}</NextIntlClientProvider>;
 const summary = (overrides: Partial<EnrollmentAgreementSummary> = {}): EnrollmentAgreementSummary => ({
-  status: 'missing', canUpload: true, canReview: false, templateUrl: ENROLLMENT_TEMPLATE_URL, submissions: [], ...overrides,
+  status: 'missing', canUpload: true, canReview: false, canSendTemplate: false, templateUrl: ENROLLMENT_TEMPLATE_URL, submissions: [], ...overrides,
 });
 const submission = (overrides: Partial<EnrollmentAgreementSubmissionView> = {}): EnrollmentAgreementSubmissionView => ({
   id: 'submission-1', status: 'pending', isCurrent: true, templateVersion: ENROLLMENT_TEMPLATE_VERSION,
@@ -110,6 +110,50 @@ describe('EnrollmentAgreementCard', () => {
     expect(fetchMock.mock.calls[0][0]).toBe('/api/enrollment-agreements?memberId=member-1');
   });
 
+  it('requires confirmation of the selected student, address, and version before sending', async () => {
+    const sendView = {
+      memberName: 'Test Student', memberEmail: 'student@example.org', templateVersion: ENROLLMENT_TEMPLATE_VERSION,
+      available: true, latest: null,
+    };
+    fetchMock.mockResolvedValueOnce(json(summary({ canUpload: false, canSendTemplate: true }))).mockResolvedValueOnce(json(sendView));
+    render(provider(<EnrollmentAgreementCard memberId="member-1" />));
+    const confirm = await screen.findByRole('checkbox', { name: copy.sendConfirm
+      .replace('{version}', ENROLLMENT_TEMPLATE_VERSION).replace('{name}', 'Test Student').replace('{email}', 'student@example.org') });
+    const send = screen.getByRole('button', { name: copy.sendButton });
+    expect(send).toBeDisabled();
+    fireEvent.click(confirm);
+    expect(send).toBeEnabled();
+    fetchMock.mockResolvedValueOnce(json({ acceptedAt: '2026-10-12T12:00:00.000Z', alreadyAccepted: false }))
+      .mockResolvedValueOnce(json(summary({ canUpload: false, canSendTemplate: true })))
+      .mockResolvedValueOnce(json({ ...sendView, latest: {
+        operationId: '33333333-3333-4333-8333-333333333333', status: 'sent', requestedAt: '2026-10-12T12:00:00.000Z',
+        acceptedAt: '2026-10-12T12:00:00.000Z', deliveryEvent: null, deliveryEventAt: null,
+        matchesCurrentRecipient: true, matchesCurrentPayload: true, canRetry: false,
+      } }));
+    fireEvent.click(send);
+    expect(await screen.findByText(copy.sendAccepted)).toBeInTheDocument();
+    const [url, init] = mutations()[0];
+    expect(url).toBe('/api/enrollment-agreements/template/send');
+    expect(JSON.parse(String(init?.body))).toMatchObject({ memberId: 'member-1', recipientEmail: 'student@example.org', templateVersion: ENROLLMENT_TEMPLATE_VERSION });
+    expect(screen.getByText(/Provider accepted the latest send/)).toBeInTheDocument();
+  });
+
+  it('removes a stale send confirmation when its status refresh fails', async () => {
+    const sendView = { memberName: 'Test Student', memberEmail: 'student@example.org',
+      templateVersion: ENROLLMENT_TEMPLATE_VERSION, available: true, latest: null };
+    fetchMock.mockResolvedValueOnce(json(summary({ canSendTemplate: true }))).mockResolvedValueOnce(json(sendView));
+    render(provider(<EnrollmentAgreementCard memberId="member-1" />));
+    const confirm = await screen.findByRole('checkbox', { name: /I confirm sending version/ });
+    fireEvent.click(confirm);
+    fetchMock.mockResolvedValueOnce(json({ acceptedAt: '2026-10-12T12:00:00.000Z' }))
+      .mockResolvedValueOnce(json(summary({ canSendTemplate: true })))
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    fireEvent.click(screen.getByRole('button', { name: copy.sendButton }));
+    expect(await screen.findByText(copy.sendAccepted)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: copy.sendButton })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: /I confirm sending version/ })).not.toBeInTheDocument();
+  });
+
   it('uploads the selected PDF for the intended member as a new pending revision', async () => {
     await show(summary(), 'member/one');
     const file = choosePdf();
@@ -122,7 +166,7 @@ describe('EnrollmentAgreementCard', () => {
     expect(form.get('file')).toBe(file);
     expect(form.get('memberId')).toBe('member/one');
     expect(form.get('templateVersion')).toBe(ENROLLMENT_TEMPLATE_VERSION);
-    expect(fetchMock.mock.calls.at(-1)?.[0]).toBe('/api/enrollment-agreements?memberId=member%2Fone');
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/enrollment-agreements?memberId=member%2Fone')).toHaveLength(2);
     expect(screen.getByText(copy.explanation.pending)).toBeInTheDocument();
     expect(screen.queryByText(copy.status.verified)).not.toBeInTheDocument();
     expect(announce).toHaveBeenCalledWith(copy.uploaded);
@@ -254,7 +298,7 @@ describe('EnrollmentAgreementCard', () => {
     expect(screen.queryByDisplayValue('Old private note.')).not.toBeInTheDocument();
     await act(async () => upload.resolve(json({ ok: true }, 201)));
     expect(screen.queryByText(copy.uploaded)).not.toBeInTheDocument();
-    expect(fetchMock.mock.calls).toHaveLength(3);
+    expect(fetchMock.mock.calls.filter(([url]) => !String(url).includes('/template/send'))).toHaveLength(3);
     expect(announce).not.toHaveBeenCalledWith(copy.uploaded);
   });
 });

@@ -18,6 +18,7 @@ export interface EnrollmentAgreementAccess {
   organizationId: string;
   canUpload: boolean;
   canReview: boolean;
+  canSendTemplate: boolean;
 }
 
 export const isAgreementAdmin = (role: string) => role === 'admin' || role === 'super_admin';
@@ -94,7 +95,7 @@ export function validateAgreementId(value: string): string {
 }
 
 export async function requireAgreementMemberAccess(
-  actor: EnrollmentAgreementActor, memberId: string, intent: 'read' | 'upload' | 'review' = 'read',
+  actor: EnrollmentAgreementActor, memberId: string, intent: 'read' | 'upload' | 'review' | 'send' = 'read',
 ): Promise<EnrollmentAgreementAccess> {
   const self = actor.id === memberId && actor.role === 'member';
   const admin = isAgreementAdmin(actor.role);
@@ -110,7 +111,8 @@ export async function requireAgreementMemberAccess(
   }
   const canUpload = admin || (self && actor.role === 'member');
   const canReview = admin && actor.id !== memberId;
-  if (!(self || admin || assignedCounselor) || (intent === 'upload' && !canUpload) || (intent === 'review' && !canReview)) {
+  const canSendTemplate = admin;
+  if (!(self || admin || assignedCounselor) || (intent === 'upload' && !canUpload) || (intent === 'review' && !canReview) || (intent === 'send' && !canSendTemplate)) {
     throw new EnrollmentAgreementError(403, 'FORBIDDEN', 'You do not have permission for this enrollment agreement action.');
   }
   // Authorization precedes target validation, existence, student classification,
@@ -122,5 +124,5 @@ export async function requireAgreementMemberAccess(
   }));
   if (!member) throw new EnrollmentAgreementError(404, 'NOT_FOUND', 'Student not found.');
   await assertEnrollmentAgreementNotErasing(memberId, actor.organizationId);
-  return { memberId, organizationId: actor.organizationId, canUpload, canReview };
+  return { memberId, organizationId: actor.organizationId, canUpload, canReview, canSendTemplate };
 }

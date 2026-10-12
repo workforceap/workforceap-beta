@@ -2,13 +2,17 @@
 
 ## Scope and rollout status
 
-This feature collects a private agreement for each active member account and records a separate Admin review. It does **not** sign a document, authenticate a typed signature, activate an enrollment, approve funding, change billing, issue points, send mail, or block access to training.
+This feature collects a private agreement for each active member account and records a separate Admin review. Authorized staff can explicitly email the approved blank 2026-09-30 template to a selected student from that student's record. It does **not** sign a document, authenticate a typed signature, activate an enrollment, approve funding, change billing, issue points, automatically mail a form, or block access to training.
 
 Collection and review are held behind server-only `ENROLLMENT_AGREEMENTS_ENABLED=true`. Keep it unset until the release gates below pass. Authorized Admin archive access and account-deletion safeguards are independent of that flag. A green unit suite or local UI fixture is not authenticated preview acceptance.
 
+The staff send action is behind the same flag. Admins can use it for an active student in their organization; assigned counselors and case managers retain read-only agreement access. The card displays the student's current account address and template version and links the exact blank PDF for review; admins must confirm the recipient and version before sending. The server rechecks the current address and attaches only the bundled PDF with its approved SHA-256. It sends no uploaded or signed agreement and changes no agreement, enrollment, or billing status. Missing Resend configuration or an invalid student address disables the action. The source asset is the repository-approved version; verify its displayed terms with the owner before enabling live sends. The October 12 email attachment has not been byte-verified against this asset.
+
+Each explicit send has a durable operation key, a per-student gate, and an audit record before provider egress. A provider receipt is recorded strictly and shown as **accepted**, which does not establish inbox delivery; a later provider delivery event is shown separately. Uncertain sends can replay the same frozen message and key within 23 hours after the in-flight interval. Address, sender, or message changes block replay. Older uncertain outcomes block another send until staff reconcile provider history. Gate rows use an internal provider marker and have no member association, so they do not appear as email deliveries or in member mail export. No automatic retry job is configured.
+
 Mike selected retention after student account deletion. Every committed agreement revision and its exact PDF bytes remain as organization records, including earlier verified revisions and submissions awaiting review or needing correction. Those unverified states do not establish that a PDF is unsigned. No retention duration or automatic disposal policy has been set; this implementation has no automatic agreement expiry and makes no signature-authenticity or legal-protection guarantee.
 
-The supplied agreement states six months; existing J5/J6 policy uses five months. This change deliberately leaves that unresolved policy decision, existing signed records, program assignments and J5/J6 calculations untouched. Earlier signed agreements may be uploaded and reviewed as `previous`; nobody is forced to sign again just to populate the portal.
+The supplied agreement states six months, as does the current J5/J6 content v2 policy in [BILLING-PACKETS.md](BILLING-PACKETS.md). Legacy v1 signed documents retain their original dates and terms. This feature leaves existing signed records, program assignments and J5/J6 calculations untouched. Earlier signed agreements may be uploaded and reviewed as `previous`; nobody is forced to sign again just to populate the portal.
 
 ## Where to use it
 

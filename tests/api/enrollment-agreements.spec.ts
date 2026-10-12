@@ -148,7 +148,13 @@ describe('enrollment agreement authenticated routes', () => {
     expect(await requireAgreementMemberAccess(counselor, MEMBER)).toMatchObject({ canUpload: false, canReview: false });
     await expect(requireAgreementMemberAccess(counselor, MEMBER, 'upload')).rejects.toMatchObject({ status: 403 });
     await expect(requireAgreementMemberAccess(counselor, MEMBER, 'review')).rejects.toMatchObject({ status: 403 });
+    await expect(requireAgreementMemberAccess(counselor, MEMBER, 'send')).rejects.toMatchObject({ status: 403 });
     expect(mocks.findAssignment).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ active: true, member: { organizationId: ORG, deletedAt: null } }) }));
+  });
+  it('restricts template sending to an active same-org student selected by an admin', async () => {
+    await expect(requireAgreementMemberAccess(member, MEMBER, 'send')).rejects.toMatchObject({ status: 403 });
+    expect(await requireAgreementMemberAccess(admin, MEMBER, 'send')).toMatchObject({ canSendTemplate: true });
+    await expect(requireAgreementMemberAccess(admin, OTHER, 'send')).rejects.toMatchObject({ status: 404 });
   });
   it('uploads exact bytes as pending; names/text cannot establish signatures', async () => {
     const response = await POST(uploadRequest());
