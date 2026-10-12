@@ -18,7 +18,33 @@ identical. The repeated J5 class-description, date and cost request is tracked
 as WAP-303 for creation/preview parity; the saved J5 PDF cost presentation was
 already shipped under WAP-292. Sending an enrollment template is separate
 WAP-304 work, distinct from current upload/review/download and WAP-288's
-controlled billing-mail acceptance. The catalog decisions below remain open.
+controlled billing-mail acceptance. A later October 12 attachment resolves the
+DBA title discrepancy, as recorded below; the remaining catalog decisions stay open.
+
+## October 12 updated attachment
+
+The owner's reply `1a1319a55cd6192f` at 19:32:24 UTC supplies an updated
+`0a-WorkforceAP_Catalog_Final_2026.pdf` (29 pages, 2,126,411 bytes) for the
+website and invoicing system. Its effective date remains September 17, 2026.
+Complete extracted text contains 113,663 characters, with SHA-256
+`345138014ddb4ff03c85efcc9d1a19715df6caf700299fae7ff24b6120d61d50`.
+
+Compared with the earlier complete extraction, only pages 2 (contents) and 16
+(program heading) change: both now say **Database Administrator (DBA)
+Professional Certificate (IBM)**. This matches the existing approved syllabus,
+app and public catalogs, application option and current J5/J6 generation terms
+for canonical slug `data-science-professional-certificate-ibm`. No product title
+change or rewrite of saved/signed billing snapshots is needed. The DBA title
+source discrepancy is resolved.
+
+The live public program listing and detail page were checked at HTTP 200 with
+that exact title. Existing catalog/title parity tests (39 cases) and title-helper
+and billing-rule tests (35 cases) passed on source `9204cb22`. No construction
+pathway text changed. This comparison covers the complete extracted text only;
+original PDF bytes were unavailable for hashing or visual comparison, so it does
+not establish binary or non-text equality.
+
+## Funding and curriculum reconciliation
 
 The owner's exact funding instruction is “All are funded except 0,1,14,15”.
 These are document numbers, not positions in the application's array:
@@ -64,10 +90,7 @@ their absence from this document. Preserve existing enrollment/course keys.
    an explicit curriculum migration plan so existing mission/checkpoint keys and
    learner progress remain valid; do not overwrite those keys or activate courses
    solely because the PDF publishes them.
-3. Resolve the DBA title discrepancy: page 16 omits “(DBA)” whereas the existing
-   EDvera-approved August source includes it. Record which source governs public
-   display before changing the regulated transcription.
-4. Reproduce the reported first-dropdown issue with its actual entry/referral URL.
+3. Reproduce the reported first-dropdown issue with its actual entry/referral URL.
    Current regular [application results](../../app/apply/results/ApplyResultsClient.tsx)
    use all `PROGRAMS` and contain AI and Software Developer; school referral
    catalogs may restrict choices. No broad picker change is justified by the
