@@ -396,8 +396,8 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
       <section className={styles.draftFacts} aria-label={`${stage.toUpperCase()} class and cost summary`}>
         <h4 className={styles.sectionLabel}>Class and cost for this draft</h4>
         <dl className={styles.summary}>
-          <div><dt>Class</dt><dd>{classFacts.name ?? 'Not provided'}</dd></div>
-          {stage === 'j5' ? <div><dt>Class description</dt><dd>{classFacts.description ?? 'Not provided'}</dd></div> : null}
+          <div className={styles.draftWideFact}><dt>Class</dt><dd>{classFacts.name ?? 'Not provided'}</dd></div>
+          {stage === 'j5' ? <div className={styles.draftWideFact}><dt>Class description</dt><dd>{classFacts.description ?? 'Not provided'}</dd></div> : null}
           <div><dt>Training hours</dt><dd>{classFacts.hours === null ? 'Not provided' : `${classFacts.hours} hours`}</dd></div>
           <div><dt>{stage === 'j5' ? 'Planned class start' : 'Actual class start'}</dt><dd>{classFacts.start ?? 'Not provided'}</dd></div>
           <div><dt>Calculated class end</dt><dd>{classFacts.end ?? 'Not provided'}</dd></div>

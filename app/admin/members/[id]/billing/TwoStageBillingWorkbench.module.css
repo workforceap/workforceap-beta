@@ -636,6 +636,14 @@
   overflow-wrap: anywhere;
 }
 
+.draftWideFact {
+  grid-column: 1 / -1;
+}
+
+.draftWideFact dd {
+  max-width: 75ch;
+}
+
 .fieldGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
