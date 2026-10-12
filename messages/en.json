@@ -29,7 +29,7 @@
     "sendLatestReconcile": "The latest send is in progress or needs provider reconciliation. Do not start another send yet.",
     "sendDelivered": "The provider reported delivery.",
     "sendAddressChanged": "The recipient or message changed since the latest send. Reconcile that send before retrying.",
-    "sendUnavailable": "Sending is unavailable until the email provider and a valid student address are configured.",
+    "sendUnavailable": "Sending is unavailable until the email provider and a deliverable student address are configured.",
     "instructions": "Complete and save the form in Adobe Acrobat Reader. Its Finalize button opens an email draft; it does not upload to this portal. Return here to upload your saved PDF.",
     "privacy": "This is a private record. Only you and authorized staff can access it. Exact uploaded agreements and their review history are retained after account deletion, with access restricted to authorized staff. Do not put SSN, birth date, or other sensitive details in review notes.",
     "downloadCurrent": "Download current agreement",

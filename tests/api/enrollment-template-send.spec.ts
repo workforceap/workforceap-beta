@@ -61,7 +61,10 @@ vi.mock('@/lib/enrollmentAgreements/access', () => ({
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/email', () => ({ getResend: () => ({}) }));
-vi.mock('@/lib/email/send', () => ({ sendBrandedEmailOrThrowOnSkip: mocks.send }));
+vi.mock('@/lib/email/send', () => ({
+  sendBrandedEmailOrThrowOnSkip: mocks.send,
+  isFixtureEmailRecipient: (address: string) => address.endsWith('@example.com'),
+}));
 vi.mock('@/lib/email/template', () => ({ brandedEmailLayout: () => '<p>Blank agreement</p>' }));
 
 import { getTemplateSendView, sendApprovedTemplate } from '@/lib/enrollmentAgreements/templateSend';
@@ -110,6 +113,15 @@ describe('approved enrollment template send', () => {
     mocks.member.email = 'changed@example.org';
     await expect(sendApprovedTemplate(actor, MEMBER, OP1, 'student@example.org', null)).rejects.toMatchObject({ code: 'RECIPIENT_CHANGED' });
     expect(mocks.rows.size).toBe(0);
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('blocks a fixture recipient before any durable attempt or provider call', async () => {
+    mocks.member.email = 'student@example.com';
+    expect((await getTemplateSendView(actor, MEMBER)).available).toBe(false);
+    await expect(sendApprovedTemplate(actor, MEMBER, OP1, 'student@example.com', null)).rejects.toMatchObject({ code: 'RECIPIENT_UNAVAILABLE' });
+    expect(mocks.rows.size).toBe(0);
+    expect(mocks.audit).not.toHaveBeenCalled();
     expect(mocks.send).not.toHaveBeenCalled();
   });
 

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
 import { auditLog } from '@/lib/audit';
 import { getResend } from '@/lib/email';
-import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import { isFixtureEmailRecipient, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { recipientDomain, recipientHash } from '@/lib/email/failureRecord';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
@@ -57,6 +57,7 @@ async function claimMemberGate(memberId: string, operationId: string, digest: st
     if (prior?.status !== 'sent') throw new EnrollmentAgreementError(409, 'SEND_IN_PROGRESS', 'Finish or reconcile the earlier send before starting another.');
   } else if (gate.status === 'gate_busy') {
     if (gate.entityType !== digest) throw new EnrollmentAgreementError(409, 'SEND_CHANGED', 'The recipient or message changed. Reconcile the earlier request.');
+    if (Date.now() - gate.updatedAt.getTime() >= RETRY_WINDOW_MS) throw new EnrollmentAgreementError(409, 'SEND_RECONCILIATION_REQUIRED', 'This request is too old to retry safely.');
     if (Date.now() - gate.updatedAt.getTime() < IN_FLIGHT_MS) throw new EnrollmentAgreementError(409, 'SEND_IN_PROGRESS', 'This send is still in progress. Refresh before retrying.');
   } else if (gate.status !== 'gate_idle') {
     throw new EnrollmentAgreementError(409, 'SEND_RECONCILIATION_REQUIRED', 'The send lock needs staff reconciliation.');
@@ -114,12 +115,12 @@ export async function getTemplateSendView(actor: EnrollmentAgreementActor, membe
     memberName: member.fullName,
     memberEmail: member.email,
     templateVersion: ENROLLMENT_TEMPLATE_VERSION,
-    available: Boolean(getResend()) && emailSchema.safeParse(member.email).success,
+    available: Boolean(getResend()) && emailSchema.safeParse(member.email).success && !isFixtureEmailRecipient(member.email),
     latest: orphanGate ? {
       operationId: gate.entityId!, status: 'reserved', requestedAt: gate.updatedAt.toISOString(), acceptedAt: null,
       deliveryEvent: null, deliveryEventAt: null, matchesCurrentRecipient: gate.entityType === currentDigest,
       matchesCurrentPayload: gate.entityType === currentDigest,
-      canRetry: gate.entityType === currentDigest && gateReady,
+      canRetry: gate.entityType === currentDigest && gateReady && Date.now() - gate.updatedAt.getTime() < RETRY_WINDOW_MS,
     } : latest ? {
       operationId: latest.dedupeKey.slice(KEY_PREFIX.length), status: latest.status,
       requestedAt: latest.createdAt.toISOString(), acceptedAt: latest.sentAt?.toISOString() ?? null,
@@ -140,6 +141,7 @@ export async function sendApprovedTemplate(actor: EnrollmentAgreementActor, memb
   const member = await memberForSend(actor, memberId);
   if (member.email !== confirmedEmail) throw new EnrollmentAgreementError(409, 'RECIPIENT_CHANGED', 'The student email changed. Refresh and confirm the current address before sending.');
   if (!emailSchema.safeParse(member.email).success) throw new EnrollmentAgreementError(409, 'RECIPIENT_UNAVAILABLE', 'This student has no usable email address.');
+  if (isFixtureEmailRecipient(member.email)) throw new EnrollmentAgreementError(409, 'RECIPIENT_UNAVAILABLE', 'This student address cannot receive email from the portal.');
   const resend = getResend();
   if (!resend) throw new EnrollmentAgreementError(503, 'EMAIL_UNAVAILABLE', 'Email sending is not configured.');
   const bytes = await approvedTemplate();

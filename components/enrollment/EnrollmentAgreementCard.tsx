@@ -195,7 +195,8 @@ function AgreementCardForMember({ memberId }: { memberId?: string }) {
         <a className={`wa-kit-focus ${styles.link}`} href={summary.templateUrl} download>{t('downloadTemplate')}</a>
         {memberId && summary.canSendTemplate && <div className={styles.stack}>
           <h3 className={styles.subtitle}>{t('sendTitle')}</h3>
-          {sendError && <p className={styles.error} role="alert">{sendError}</p>}
+          {sendError && <div className={styles.error} role="alert"><p>{sendError}</p>
+            <Button label={t('retry')} onClick={() => void retry()} isDisabled={busy || loading} /></div>}
           {sendView && <>
             <p>{t('sendRecipient', { name: sendView.memberName, email: sendView.memberEmail })}</p>
             <p className={styles.muted}>{t('sendVersion', { version: sendView.templateVersion })}</p>

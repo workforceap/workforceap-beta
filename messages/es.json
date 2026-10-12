@@ -29,7 +29,7 @@
     "sendLatestReconcile": "El último envío está en curso o requiere conciliación con el proveedor. No inicie otro envío todavía.",
     "sendDelivered": "El proveedor informó la entrega.",
     "sendAddressChanged": "El destinatario o el mensaje cambió desde el último envío. Concilie ese envío antes de reintentarlo.",
-    "sendUnavailable": "El envío no está disponible hasta que se configuren el proveedor y una dirección válida del estudiante.",
+    "sendUnavailable": "El envío no está disponible hasta que se configuren el proveedor y una dirección de estudiante que pueda recibir correo.",
     "instructions": "Complete y guarde el formulario en Adobe Acrobat Reader. Finalize abre un borrador de correo; no sube el archivo al portal. Regrese aquí para subir el PDF guardado.",
     "privacy": "Este registro es privado. Solo usted y el personal autorizado pueden acceder. Los acuerdos subidos se conservan sin cambios junto con su historial de revisión después de eliminar la cuenta, con acceso restringido al personal autorizado. No incluya SSN, fecha de nacimiento ni datos sensibles en las notas.",
     "downloadCurrent": "Descargar acuerdo actual",

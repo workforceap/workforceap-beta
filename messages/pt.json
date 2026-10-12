@@ -29,7 +29,7 @@
     "sendLatestReconcile": "O último envio está em andamento ou exige conferência com o provedor. Não inicie outro envio ainda.",
     "sendDelivered": "O provedor informou a entrega.",
     "sendAddressChanged": "O destinatário ou a mensagem mudou desde o último envio. Confira esse envio antes de tentar novamente.",
-    "sendUnavailable": "O envio fica indisponível até que o provedor e um endereço válido do estudante estejam configurados.",
+    "sendUnavailable": "O envio fica indisponível até que o provedor e um endereço de estudante apto a receber emails estejam configurados.",
     "instructions": "Preencha e salve o formulário no Adobe Acrobat Reader. Finalize abre um rascunho de e-mail, sem enviar ao portal. Volte aqui para enviar o PDF salvo.",
     "privacy": "Este registro é privado. Somente você e a equipe autorizada têm acesso. Os acordos enviados são mantidos sem alterações com seu histórico de revisão após a exclusão da conta, com acesso restrito à equipe autorizada. Não inclua SSN, data de nascimento ou dados sensíveis nas notas.",
     "downloadCurrent": "Baixar acordo atual",
